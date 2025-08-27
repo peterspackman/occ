@@ -12,6 +12,31 @@ CPMAddPackage(
     VERSION "1.x"
 )
 
+if(NOT "${USE_SYSTEM_TBB}")
+
+set(TBB_OPTIONS "")
+list(APPEND TBB_OPTIONS "TBB_TEST OFF")
+list(APPEND TBB_OPTIONS "TBB_STRICT OFF")
+# Enable HWLOC for better NUMA topology detection on native builds, disable for Emscripten
+if(EMSCRIPTEN)
+    list(APPEND TBB_OPTIONS "TBB_DISABLE_HWLOC_AUTOMATIC_SEARCH ON")
+else()
+    list(APPEND TBB_OPTIONS "TBB_DISABLE_HWLOC_AUTOMATIC_SEARCH OFF")
+endif()
+
+# Windows MinGW-specific workarounds for TBB compilation issues
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND TBB_OPTIONS "CMAKE_CXX_FLAGS=-O2 -fno-stack-clash-protection -fno-fcf-protection")
+endif()
+
+CPMAddPackage(
+    NAME oneTBB
+    GITHUB_REPOSITORY "uxlfoundation/oneTBB"
+    VERSION "2022.2.0"
+    OPTIONS ${TBB_OPTIONS}
+)
+endif()
+
 CPMAddPackage(
     NAME unordered_dense
     GITHUB_REPOSITORY "martinus/unordered_dense"

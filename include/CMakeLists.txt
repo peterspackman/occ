@@ -9,6 +9,7 @@ add_subdirectory(occ/interaction)
 add_subdirectory(occ/isosurface)
 add_subdirectory(occ/io)
 add_subdirectory(occ/main)
+add_subdirectory(occ/opt)
 add_subdirectory(occ/qm)
 add_subdirectory(occ/sht)
 add_subdirectory(occ/slater)
@@ -32,6 +33,7 @@ set(OCC_INCLUDE_FILES
     ${OCC_GTO_INCLUDE_FILES}
     ${OCC_INTERACTION_INCLUDE_FILES}
     ${OCC_MAIN_INCLUDE_FILES}
+    ${OCC_OPT_INCLUDE_FILES}
     ${OCC_QM_INCLUDE_FILES}
     ${OCC_SHT_INCLUDE_FILES}
     ${OCC_SLATER_INCLUDE_FILES}

@@ -119,10 +119,17 @@ double compute_polarization_energy(const Wavefunction &wfn_a,
     bool charged_b = (wfn_b.atoms.size() == 1) && (wfn_b.charge() != 0);
     log::debug("using charged atom polarizabilities: A={} B={}", charged_a,
                charged_b);
-    e_pol = ce_model_polarization_energy(wfn_a.atomic_numbers(), field_a,
-                                         charged_a) +
-            ce_model_polarization_energy(wfn_b.atomic_numbers(), field_b,
-                                         charged_b);
+    double e_pol_a = ce_model_polarization_energy(wfn_a.atomic_numbers(), field_a, charged_a);
+    double e_pol_b = ce_model_polarization_energy(wfn_b.atomic_numbers(), field_b, charged_b);
+    e_pol = e_pol_a + e_pol_b;
+    
+    // Debug logging for field comparison
+    auto field_a_norms = field_a.colwise().norm();
+    auto field_b_norms = field_b.colwise().norm();
+    log::trace("PAIR_POL_DEBUG: Mol A atoms={}, max_field={:.6f} au, avg_field={:.6f} au, e_pol={:.6f} au", 
+                wfn_a.atomic_numbers().size(), field_a_norms.maxCoeff(), field_a_norms.mean(), e_pol_a);
+    log::trace("PAIR_POL_DEBUG: Mol B atoms={}, max_field={:.6f} au, avg_field={:.6f} au, e_pol={:.6f} au", 
+                wfn_b.atomic_numbers().size(), field_b_norms.maxCoeff(), field_b_norms.mean(), e_pol_b);
   }
   return e_pol;
 }

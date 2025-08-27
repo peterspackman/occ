@@ -3,6 +3,7 @@ add_library(occ_driver
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_growth.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dma_driver.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vibrational_analysis.cpp"
     ${OCC_DRIVER_INCLUDE_FILES}
 )
 
@@ -17,6 +18,7 @@ target_link_libraries(occ_driver
     occ_solvent
     occ_crystal
     occ_cg
+    occ_opt
 )
 target_include_directories(occ_driver PUBLIC 
     ${OCC_INCLUDE_DIR} 

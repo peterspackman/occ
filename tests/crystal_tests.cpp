@@ -13,8 +13,10 @@
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/crystal/muldin.h>
 #include <occ/crystal/spacegroup.h>
+#include <occ/crystal/standard_bonds.h>
 #include <occ/crystal/surface.h>
 #include <occ/crystal/symmetryoperation.h>
+#include <occ/io/cifwriter.h>
 
 using occ::format_matrix;
 using occ::IVec3;
@@ -1454,5 +1456,190 @@ TEST_CASE("TCYETY01 high symmetry crystal atom ordering",
 
     fmt::print("Successfully mapped all {} UC molecules without permutations\n",
                uc_molecules.size());
+  }
+}
+
+TEST_CASE("Hydrogen bond length normalization", "[crystal][normalize]") {
+  
+  SECTION("Simple organic molecule with C-H, N-H, O-H bonds") {
+    // Create a test crystal with known hydrogen positions that are intentionally wrong
+    AsymmetricUnit asym;
+    asym.atomic_numbers.resize(8);
+    asym.atomic_numbers << 6, 1, 1, 1, 7, 1, 8, 1; // CH3-NH-OH
+    asym.positions.resize(3, 8);
+    
+    // Set positions with incorrect H bond lengths (in fractional coordinates)
+    // We'll use a 10 Angstrom cubic cell for simplicity
+    UnitCell uc(10.0, 10.0, 10.0, 90.0, 90.0, 90.0);
+    
+    // C at origin (in Angstroms, then convert to fractional)
+    asym.positions.col(0) = Vec3(0.0, 0.0, 0.0) / 10.0;
+    // H atoms with wrong distances (should be ~1.083 Å for C-H)
+    asym.positions.col(1) = Vec3(0.8, 0.0, 0.0) / 10.0;  // Too short (0.8 Å)
+    asym.positions.col(2) = Vec3(-0.5, 0.9, 0.0) / 10.0; // Wrong distance
+    asym.positions.col(3) = Vec3(-0.5, -0.9, 0.0) / 10.0; // Wrong distance
+    
+    // N atom at 2 Angstroms from origin
+    asym.positions.col(4) = Vec3(2.0, 0.0, 0.0) / 10.0;
+    // N-H with wrong distance (should be ~1.009 Å)
+    asym.positions.col(5) = Vec3(2.0, 1.2, 0.0) / 10.0; // Too long (1.2 Å)
+    
+    // O atom at 4 Angstroms from origin
+    asym.positions.col(6) = Vec3(4.0, 0.0, 0.0) / 10.0;
+    // O-H with wrong distance (should be ~0.983 Å)
+    asym.positions.col(7) = Vec3(4.0, 0.7, 0.0) / 10.0; // Too short (0.7 Å)
+    
+    // Create crystal
+    SpaceGroup sg(1); // P1 for simplicity
+    Crystal crystal(asym, sg, uc);
+    
+    // Normalize hydrogen positions
+    int normalized = crystal.normalize_hydrogen_bondlengths();
+    
+    REQUIRE(normalized == 5); // Should normalize 5 hydrogens
+    
+    // Check bond lengths after normalization
+    Mat3N cart_pos = crystal.to_cartesian(crystal.asymmetric_unit().positions);
+    
+    // Check C-H bonds (indices 1, 2, 3)
+    for (int i = 1; i <= 3; ++i) {
+      Vec3 ch_bond = cart_pos.col(i) - cart_pos.col(0);
+      double length = ch_bond.norm();
+      CHECK_THAT(length, Catch::Matchers::WithinAbs(1.083, 0.001));
+    }
+    
+    // Check N-H bond (index 5)
+    Vec3 nh_bond = cart_pos.col(5) - cart_pos.col(4);
+    CHECK_THAT(nh_bond.norm(), Catch::Matchers::WithinAbs(1.009, 0.001));
+    
+    // Check O-H bond (index 7)
+    Vec3 oh_bond = cart_pos.col(7) - cart_pos.col(6);
+    CHECK_THAT(oh_bond.norm(), Catch::Matchers::WithinAbs(0.983, 0.001));
+  }
+  
+  SECTION("Crystal with no hydrogens") {
+    // Create crystal with only heavy atoms
+    AsymmetricUnit asym;
+    asym.atomic_numbers.resize(4);
+    asym.atomic_numbers << 6, 7, 8, 16; // C, N, O, S
+    asym.positions = Mat3N::Random(3, 4) * 0.5; // Random positions in unit cell
+    
+    UnitCell uc(10.0, 10.0, 10.0, 90.0, 90.0, 90.0);
+    SpaceGroup sg(1);
+    Crystal crystal(asym, sg, uc);
+    
+    int normalized = crystal.normalize_hydrogen_bondlengths();
+    REQUIRE(normalized == 0); // No hydrogens to normalize
+  }
+  
+  SECTION("Custom bond lengths") {
+    // Test with custom bond length overrides
+    AsymmetricUnit asym;
+    asym.atomic_numbers.resize(2);
+    asym.atomic_numbers << 6, 1; // C-H
+    asym.positions.resize(3, 2);
+    asym.positions.col(0) = Vec3(0.0, 0.0, 0.0);
+    asym.positions.col(1) = Vec3(0.1, 0.0, 0.0); // 1.0 Å in 10 Å cell
+    
+    UnitCell uc(10.0, 10.0, 10.0, 90.0, 90.0, 90.0);
+    SpaceGroup sg(1);
+    Crystal crystal(asym, sg, uc);
+    
+    // Use custom C-H bond length of 1.2 Å
+    ankerl::unordered_dense::map<int, double> custom_lengths = {{6, 1.2}};
+    crystal.normalize_hydrogen_bondlengths(custom_lengths);
+    
+    Mat3N cart_pos = crystal.to_cartesian(crystal.asymmetric_unit().positions);
+    Vec3 ch_bond = cart_pos.col(1) - cart_pos.col(0);
+    CHECK_THAT(ch_bond.norm(), Catch::Matchers::WithinAbs(1.2, 0.001));
+  }
+  
+  SECTION("Preservation of molecular geometry") {
+    // Test that normalization preserves bond angles
+    AsymmetricUnit asym;
+    asym.atomic_numbers.resize(5);
+    asym.atomic_numbers << 6, 1, 1, 1, 1; // CH4
+    asym.positions.resize(3, 5);
+    
+    // Tetrahedral geometry with wrong H distances in Cartesian coordinates
+    UnitCell uc(10.0, 10.0, 10.0, 90.0, 90.0, 90.0);
+    
+    Mat3N cart_coords(3, 5);
+    cart_coords.col(0) = Vec3(5.0, 5.0, 5.0); // C at center
+    
+    // Tetrahedral H positions with 1.2 Å bonds (wrong, should be 1.083)
+    double bond_length = 1.2;
+    double s = bond_length / std::sqrt(3.0);
+    cart_coords.col(1) = Vec3(5.0 + s, 5.0 + s, 5.0 + s);      // H1
+    cart_coords.col(2) = Vec3(5.0 - s, 5.0 - s, 5.0 + s);      // H2  
+    cart_coords.col(3) = Vec3(5.0 - s, 5.0 + s, 5.0 - s);      // H3
+    cart_coords.col(4) = Vec3(5.0 + s, 5.0 - s, 5.0 - s);      // H4
+    
+    // Convert to fractional coordinates
+    asym.positions = uc.to_fractional(cart_coords);
+    
+    SpaceGroup sg(1);
+    Crystal crystal(asym, sg, uc);
+    
+    // Store original angles
+    Mat3N cart_before = crystal.to_cartesian(crystal.asymmetric_unit().positions);
+    std::vector<double> angles_before;
+    for (int i = 1; i < 5; ++i) {
+      for (int j = i + 1; j < 5; ++j) {
+        Vec3 v1 = cart_before.col(i) - cart_before.col(0);
+        Vec3 v2 = cart_before.col(j) - cart_before.col(0);
+        double angle = std::acos(v1.normalized().dot(v2.normalized()));
+        angles_before.push_back(angle);
+      }
+    }
+    
+    // Check initial C-H distances
+    for (int i = 1; i < 5; ++i) {
+      Vec3 ch_bond = cart_before.col(i) - cart_before.col(0);
+      fmt::print("Initial C-H{} distance: {:.4f} Å\n", i, ch_bond.norm());
+    }
+    
+    // Normalize
+    int normalized = crystal.normalize_hydrogen_bondlengths();
+    fmt::print("Normalized {} hydrogens\n", normalized);
+    
+    // Check angles are preserved
+    Mat3N cart_after = crystal.to_cartesian(crystal.asymmetric_unit().positions);
+    size_t angle_idx = 0;
+    for (int i = 1; i < 5; ++i) {
+      for (int j = i + 1; j < 5; ++j) {
+        Vec3 v1 = cart_after.col(i) - cart_after.col(0);
+        Vec3 v2 = cart_after.col(j) - cart_after.col(0);
+        double angle = std::acos(v1.normalized().dot(v2.normalized()));
+        CHECK_THAT(angle, Catch::Matchers::WithinAbs(angles_before[angle_idx], 0.001));
+        angle_idx++;
+      }
+    }
+    
+    // Check all C-H bonds have correct length
+    for (int i = 1; i < 5; ++i) {
+      Vec3 ch_bond = cart_after.col(i) - cart_after.col(0);
+      CHECK_THAT(ch_bond.norm(), Catch::Matchers::WithinAbs(1.083, 0.001));
+    }
+  }
+  
+  SECTION("B-H bonds") {
+    // Test normalization of B-H bonds
+    AsymmetricUnit asym;
+    asym.atomic_numbers.resize(2);
+    asym.atomic_numbers << 5, 1; // B-H
+    asym.positions.resize(3, 2);
+    asym.positions.col(0) = Vec3(0.0, 0.0, 0.0);
+    asym.positions.col(1) = Vec3(0.1, 0.0, 0.0); // 1.0 Å in 10 Å cell
+    
+    UnitCell uc(10.0, 10.0, 10.0, 90.0, 90.0, 90.0);
+    SpaceGroup sg(1);
+    Crystal crystal(asym, sg, uc);
+    
+    crystal.normalize_hydrogen_bondlengths();
+    
+    Mat3N cart_pos = crystal.to_cartesian(crystal.asymmetric_unit().positions);
+    Vec3 bh_bond = cart_pos.col(1) - cart_pos.col(0);
+    CHECK_THAT(bh_bond.norm(), Catch::Matchers::WithinAbs(1.180, 0.001));
   }
 }

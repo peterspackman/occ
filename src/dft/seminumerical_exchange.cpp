@@ -29,71 +29,83 @@ SemiNumericalExchange::SemiNumericalExchange(const qm::AOBasis &basis,
 Mat SemiNumericalExchange::compute_overlap_matrix() const {
   const auto &basis = m_engine.aobasis();
   size_t nbf = basis.nbf();
-  using occ::parallel::nthreads;
   constexpr size_t BLOCKSIZE = 64;
 
-  std::vector<Mat> SS(nthreads);
-  for (size_t i = 0; i < nthreads; i++) {
-    SS[i] = Mat::Zero(nbf, nbf);
-  }
+  occ::parallel::thread_local_storage<Mat> S_local(Mat::Zero(nbf, nbf));
+  
   for (const auto &atom_grid : m_atom_grids) {
     const auto &atom_pts = atom_grid.points;
     const auto &atom_weights = atom_grid.weights;
     const size_t npt_total = atom_pts.cols();
     const size_t num_blocks = npt_total / BLOCKSIZE + 1;
 
-    auto lambda = [&](int thread_id) {
-      auto &S = SS[thread_id];
+    occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
+      auto &S = S_local.local();
       Mat rho(BLOCKSIZE, 1);
-      for (size_t block = 0; block < num_blocks; block++) {
-        if (block % nthreads != thread_id)
-          continue;
-        Eigen::Index l = block * BLOCKSIZE;
-        Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
-        Eigen::Index npt = u - l;
-        if (npt <= 0)
-          continue;
+      
+      Eigen::Index l = block * BLOCKSIZE;
+      Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
+      Eigen::Index npt = u - l;
+      if (npt <= 0)
+        return;
 
-        const auto &pts_block = atom_pts.middleCols(l, npt);
-        const auto &weights_block = atom_weights.segment(l, npt);
-        occ::gto::GTOValues ao;
-        occ::gto::evaluate_basis(basis, pts_block, ao, 0);
-        S.noalias() +=
-            ao.phi.transpose() *
-            (ao.phi.array().colwise() * weights_block.array()).matrix();
-      }
-    };
-    occ::parallel::parallel_do(lambda);
+      const auto &pts_block = atom_pts.middleCols(l, npt);
+      const auto &weights_block = atom_weights.segment(l, npt);
+      occ::gto::GTOValues ao;
+      occ::gto::evaluate_basis(basis, pts_block, ao, 0);
+      S.noalias() +=
+          ao.phi.transpose() *
+          (ao.phi.array().colwise() * weights_block.array()).matrix();
+    });
   }
 
-  for (size_t i = 1; i < nthreads; i++) {
-    SS[0].noalias() += SS[i];
+  // Reduce results from all threads
+  Mat S_result = Mat::Zero(nbf, nbf);
+  for (const auto &S_thread : S_local) {
+    S_result.noalias() += S_thread;
   }
-  return SS[0];
+  return S_result;
 }
 
 template <ShellKind kind, typename Lambda>
-void three_center_screened_aux_kernel(
+void three_center_screened_aux_kernel_tbb(
     Lambda &f, qm::cint::IntegralEnvironment &env, const qm::AOBasis &aobasis,
-    const qm::AOBasis &auxbasis, const ShellPairList &shellpairs,
-
-    occ::qm::cint::Optimizer &opt, int thread_id = 0) noexcept {
-  auto nthreads = occ::parallel::get_num_threads();
-  size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
-                   auxbasis.max_shell_size();
-  auto buffer = std::make_unique<double[]>(bufsize);
-  IntegralResult args;
-  args.thread = thread_id;
-  args.buffer = buffer.get();
-  std::array<int, 3> shell_idx;
-  const auto &first_bf_ao = aobasis.first_bf();
-  const auto &first_bf_aux = auxbasis.first_bf();
+    const qm::AOBasis &auxbasis, const ShellPairList &shellpairs) noexcept {
+  
+  // Build a list of auxiliary shells to process in parallel
+  std::vector<int> aux_shells_to_process;
   for (int auxP = 0; auxP < auxbasis.size(); auxP++) {
-    if (auxP % nthreads != thread_id)
-      continue;
+    aux_shells_to_process.push_back(auxP);
+  }
+  
+  // Thread-local storage for optimizer and buffer
+  occ::parallel::thread_local_storage<occ::qm::cint::Optimizer> opt_local(
+    [&env]() { return occ::qm::cint::Optimizer(env, Op::coulomb, 3); }
+  );
+  
+  occ::parallel::thread_local_storage<std::unique_ptr<double[]>> buffer_local(
+    [&aobasis, &auxbasis]() {
+      size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
+                       auxbasis.max_shell_size();
+      return std::make_unique<double[]>(bufsize);
+    }
+  );
+  
+  occ::parallel::parallel_for(size_t(0), aux_shells_to_process.size(), [&](size_t idx) {
+    auto &opt = opt_local.local();
+    auto &buffer = buffer_local.local();
+    
+    int auxP = aux_shells_to_process[idx];
     const auto &shauxP = auxbasis[auxP];
+    const auto &first_bf_ao = aobasis.first_bf();
+    const auto &first_bf_aux = auxbasis.first_bf();
+    
+    IntegralResult args;
+    args.thread = 0; // Not used in TBB version
+    args.buffer = buffer.get();
     args.bf[2] = first_bf_aux[auxP];
     args.shell[2] = auxP;
+    
     for (int p = 0; p < aobasis.size(); p++) {
       args.bf[0] = first_bf_ao[p];
       args.shell[0] = p;
@@ -107,7 +119,7 @@ void three_center_screened_aux_kernel(
         args.bf[1] = first_bf_ao[q];
         args.shell[1] = q;
         const auto &shq = aobasis[q];
-        shell_idx = {p, q, auxP + static_cast<int>(aobasis.size())};
+        std::array<int, 3> shell_idx = {p, q, auxP + static_cast<int>(aobasis.size())};
         if ((shq.extent > 0.0) &&
             (shq.origin - shauxP.origin).norm() > shq.extent) {
           continue;
@@ -119,7 +131,16 @@ void three_center_screened_aux_kernel(
         }
       }
     }
-  }
+  });
+}
+
+// Legacy function kept for compatibility
+template <ShellKind kind, typename Lambda>
+void three_center_screened_aux_kernel(
+    Lambda &f, qm::cint::IntegralEnvironment &env, const qm::AOBasis &aobasis,
+    const qm::AOBasis &auxbasis, const ShellPairList &shellpairs,
+    occ::qm::cint::Optimizer &opt, int thread_id = 0) noexcept {
+  // This function is deprecated - use three_center_screened_aux_kernel_tbb instead
 }
 
 Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
@@ -153,17 +174,7 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
           Fg.block(n, args.bf[1], 1, args.dims[1]) * tmp.transpose();
     }
   };
-  auto lambda = [&](int thread_id) {
-    if (m_engine.is_spherical()) {
-      three_center_screened_aux_kernel<qm::Shell::Kind::Spherical>(
-          f, m_engine.env(), m_engine.aobasis(), m_engine.auxbasis(),
-          m_engine.shellpairs(), opt, thread_id);
-    } else {
-      three_center_screened_aux_kernel<qm::Shell::Kind::Cartesian>(
-          f, m_engine.env(), m_engine.aobasis(), m_engine.auxbasis(),
-          m_engine.shellpairs(), opt, thread_id);
-    }
-  };
+  // Lambda function removed - now using TBB directly in the loop below
 
   std::vector<qm::Atom> dummy_atoms;
   std::vector<qm::Shell> aux_shells;
@@ -202,7 +213,15 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
       Fg = wao * D2q;
       Gg.setZero();
 
-      occ::parallel::parallel_do(lambda);
+      if (m_engine.is_spherical()) {
+        three_center_screened_aux_kernel_tbb<qm::Shell::Kind::Spherical>(
+            f, m_engine.env(), m_engine.aobasis(), m_engine.auxbasis(),
+            m_engine.shellpairs());
+      } else {
+        three_center_screened_aux_kernel_tbb<qm::Shell::Kind::Cartesian>(
+            f, m_engine.env(), m_engine.aobasis(), m_engine.auxbasis(),
+            m_engine.shellpairs());
+      }
       K.noalias() -= ao.phi.transpose() * Gg.block(0, 0, npt, nbf);
     }
   }

@@ -41,6 +41,24 @@ DFT::DFT(const std::string &method, const AOBasis &basis,
   set_integration_grid(grid_settings);
 }
 
+DFT DFT::with_new_basis(const AOBasis &new_basis) const {
+  // Create new DFT instance with same method string and grid settings
+  DFT new_dft(m_method_string, new_basis, m_grid.settings());
+  
+  // Copy additional settings
+  new_dft.set_precision(this->integral_precision());
+  new_dft.m_density_threshold = m_density_threshold;
+  new_dft.m_blocksize = m_blocksize;
+  
+  // Copy DF basis if present
+  // Note: This is a limitation - we'd need to store the DF basis name to properly copy it
+  if (!m_hf.supports_incremental_fock_build()) {
+    occ::log::warn("Density fitting basis not preserved in DFT::with_new_basis - needs implementation");
+  }
+  
+  return new_dft;
+}
+
 void DFT::set_method(const std::string &method_string) {
   if (m_method_string == method_string)
     return;

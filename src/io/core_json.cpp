@@ -73,6 +73,50 @@ void from_json(const nlohmann::json &j, occ::core::Molecule &mol) {
   }
 }
 
+void to_json(nlohmann::json &j, const VibrationalModes &vib) {
+  // Frequencies
+  j["frequencies_cm"] = vib.frequencies_cm;
+  j["frequencies_hartree"] = vib.frequencies_hartree;
+  
+  // Matrices
+  j["normal_modes"] = vib.normal_modes;
+  j["mass_weighted_hessian"] = vib.mass_weighted_hessian;
+  
+  // Optional original Hessian
+  if (vib.hessian.size() > 0) {
+    j["hessian"] = vib.hessian;
+  }
+  
+  // Add summary statistics
+  j["n_atoms"] = vib.n_atoms();
+  j["n_modes"] = vib.n_modes();
+  
+  // Add sorted frequencies for convenience
+  Vec all_freqs = vib.get_all_frequencies();
+  j["sorted_frequencies_cm"] = all_freqs;
+  
+  // Add some metadata
+  if (all_freqs.size() > 0) {
+    j["lowest_freq_cm"] = all_freqs[0];
+    j["highest_freq_cm"] = all_freqs[all_freqs.size() - 1];
+  }
+}
+
+void from_json(const nlohmann::json &j, VibrationalModes &vib) {
+  // Frequencies
+  vib.frequencies_cm = j.at("frequencies_cm").get<Vec>();
+  vib.frequencies_hartree = j.at("frequencies_hartree").get<Vec>();
+  
+  // Matrices
+  vib.normal_modes = j.at("normal_modes").get<Mat>();
+  vib.mass_weighted_hessian = j.at("mass_weighted_hessian").get<Mat>();
+  
+  // Optional original Hessian
+  if (j.contains("hessian")) {
+    vib.hessian = j["hessian"].get<Mat>();
+  }
+}
+
 } // namespace occ::core
 
 namespace nlohmann {

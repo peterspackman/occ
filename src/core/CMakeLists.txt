@@ -28,6 +28,7 @@ add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/quasirandom.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/table.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vibration.cpp"
     ${OCC_CORE_INCLUDE_FILES}
 )
 
@@ -44,6 +45,11 @@ target_link_libraries(occ_core
     OpenMP::OpenMP_CXX
 )
 endif()
+
+target_link_libraries(occ_core
+    PUBLIC
+    TBB::tbb
+)
 
 if(NOT ENABLE_HOST_OPT)
     target_compile_definitions(occ_core PUBLIC OCC_DISABLE_SIMD)

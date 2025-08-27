@@ -107,6 +107,8 @@ const char *category_name(category cat) {
     return "Marching cubes extract";
   case gradient:
     return "Gradient evaluation";
+  case hessian:
+    return "Hessian evaluation";
   case dma_analytic:
     return "DMA analytic integration";
   case dma_grid_eval:
@@ -156,6 +158,7 @@ void print_timings() {
       mc_primal,
       mc_surface,
       gradient,
+      hessian,
       dma_analytic,
       dma_grid_eval,
       dma_grid_int,

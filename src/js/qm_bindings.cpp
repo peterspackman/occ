@@ -19,6 +19,8 @@
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
+#include <occ/qm/hessians.h>
+#include <occ/qm/gradients.h>
 #include <sstream>
 
 using namespace emscripten;
@@ -434,6 +436,15 @@ void register_qm_bindings() {
                     [](const HartreeFock &hf, const MolecularOrbitals &mo) {
                       return hf.compute_fock(mo);
                     }))
+      .function("computeGradient",
+                optional_override([](HartreeFock &hf, const MolecularOrbitals &mo) {
+                  GradientEvaluator<HartreeFock> grad(hf);
+                  return grad(mo);
+                }))
+      .function("hessianEvaluator",
+                optional_override([](HartreeFock &hf) {
+                  return HessianEvaluator<HartreeFock>(hf);
+                }))
       .function("toString", optional_override([](const HartreeFock &hf) {
                   return std::string("<HartreeFock (") + hf.aobasis().name() +
                          ", " + std::to_string(hf.atoms().size()) + " atoms)>";

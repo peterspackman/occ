@@ -131,6 +131,57 @@ H  0.6276 -0.6276 -0.6276`);
     });
   });
 
+  describe('Threading Control', () => {
+    it('should get and set number of threads', () => {
+      const initialThreads = Module.getNumThreads();
+      expect(initialThreads).toBeGreaterThan(0);
+      
+      // Test setting threads to 2
+      Module.setNumThreads(2);
+      expect(Module.getNumThreads()).toBe(2);
+      
+      // Test setting threads to 1
+      Module.setNumThreads(1);
+      expect(Module.getNumThreads()).toBe(1);
+      
+      // Restore original setting
+      Module.setNumThreads(initialThreads);
+      expect(Module.getNumThreads()).toBe(initialThreads);
+    });
+
+    it('should affect performance of parallel calculations', async () => {
+      // Use a larger molecule for more noticeable threading effects
+      const calc = await createQMCalculation(waterMolecule, '6-31g');
+      
+      // Run with 1 thread
+      Module.setNumThreads(1);
+      const start1 = performance.now();
+      const energy1 = await calc.runHF();
+      const time1 = performance.now() - start1;
+      
+      // Reset calculation state for fair comparison
+      calc.energy = null;
+      calc.wavefunction = null;
+      
+      // Run with 2 threads (if available)
+      const hardwareConcurrency = (typeof globalThis !== 'undefined' && globalThis.navigator) ? globalThis.navigator.hardwareConcurrency : undefined;
+      Module.setNumThreads(Math.min(2, hardwareConcurrency || 2));
+      const start2 = performance.now();
+      const energy2 = await calc.runHF();
+      const time2 = performance.now() - start2;
+      
+      // Both should give the same energy (within numerical precision)
+      expect(Math.abs(energy1 - energy2)).toBeLessThan(1e-10);
+      
+      // Note: In practice, threading overhead might make small calculations slower
+      // This test just ensures the threading controls work without crashing
+      expect(energy1).toBeLessThan(0);
+      expect(energy2).toBeLessThan(0);
+      expect(time1).toBeGreaterThan(0);
+      expect(time2).toBeGreaterThan(0);
+    }, 30000);
+  });
+
   describe('QMCalculation - Basic Setup', () => {
     it('should create QM calculation from factory', async () => {
       const calc = await createQMCalculation(h2Molecule, 'sto-3g');

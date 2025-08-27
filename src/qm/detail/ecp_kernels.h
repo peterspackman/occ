@@ -53,11 +53,8 @@ Mat ecp_operator_kernel(const AOBasis &aobasis,
   using Result = IntegralEngine::IntegralResult<2>;
   auto nthreads = occ::parallel::get_num_threads();
 
-  std::vector<Mat> results;
-  results.emplace_back(Mat::Zero(aobasis.nbf(), aobasis.nbf()));
-  for (size_t i = 1; i < nthreads; i++) {
-    results.push_back(results[0]);
-  }
+  // Use TBB thread-local storage instead of thread-indexed arrays
+  occ::parallel::thread_local_storage<Mat> tl_results(Mat::Zero(aobasis.nbf(), aobasis.nbf()));
 
   if constexpr (kind == ShellKind::Spherical) {
     std::vector<Mat> cart2sph;
@@ -66,8 +63,8 @@ Mat ecp_operator_kernel(const AOBasis &aobasis,
           occ::gto::cartesian_to_spherical_transformation_matrix(i));
     }
 
-    auto f = [&results, &aobasis, &cart2sph](const Result &args) {
-      auto &result = results[args.thread];
+    auto f = [&tl_results, &aobasis, &cart2sph](const Result &args) {
+      auto &result = tl_results.local();
       Eigen::Map<const occ::MatRM> tmp(args.buffer, args.dims[0], args.dims[1]);
       const int bf0 = aobasis.first_bf()[args.shell[0]];
       const int bf1 = aobasis.first_bf()[args.shell[1]];
@@ -82,15 +79,15 @@ Mat ecp_operator_kernel(const AOBasis &aobasis,
             result.block(bf0, bf1, dim0, dim1).transpose();
       }
     };
-    auto lambda = [&](int thread_id) {
+
+    occ::parallel::parallel_for(size_t(0), size_t(nthreads), [&](size_t thread_id) {
       evaluate_two_center_ecp_with_shellpairs(f, aoshells, ecps, ao_max_l,
-                                              ecp_max_l, shellpairs, thread_id);
-    };
-    occ::parallel::parallel_do(lambda);
+                                              ecp_max_l, shellpairs, int(thread_id));
+    });
 
   } else {
-    auto f = [&results, &aobasis](const Result &args) {
-      auto &result = results[args.thread];
+    auto f = [&tl_results, &aobasis](const Result &args) {
+      auto &result = tl_results.local();
       Eigen::Map<const occ::MatRM> tmp(args.buffer, args.dims[0], args.dims[1]);
       const int bf0 = aobasis.first_bf()[args.shell[0]];
       const int bf1 = aobasis.first_bf()[args.shell[1]];
@@ -100,17 +97,19 @@ Mat ecp_operator_kernel(const AOBasis &aobasis,
         result.block(bf1, bf0, args.dims[1], args.dims[0]) = tmp.transpose();
       }
     };
-    auto lambda = [&](int thread_id) {
+
+    occ::parallel::parallel_for(size_t(0), size_t(nthreads), [&](size_t thread_id) {
       evaluate_two_center_ecp_with_shellpairs(f, aoshells, ecps, ao_max_l,
-                                              ecp_max_l, shellpairs, thread_id);
-    };
-    occ::parallel::parallel_do(lambda);
+                                              ecp_max_l, shellpairs, int(thread_id));
+    });
   };
 
-  for (auto i = 1; i < nthreads; ++i) {
-    results[0].noalias() += results[i];
+  // Reduce thread-local results
+  Mat result = Mat::Zero(aobasis.nbf(), aobasis.nbf());
+  for (const auto &local_result : tl_results) {
+    result += local_result;
   }
-  return results[0];
+  return result;
 }
 
 } // namespace occ::qm::detail

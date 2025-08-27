@@ -82,26 +82,17 @@ public:
 
   void batch(Eigen::Ref<const FMat3N> pos, Eigen::Ref<FVec> layer) const {
     m_num_calls += layer.size();
-    int num_threads = occ::parallel::get_num_threads();
 
-    auto inner_func = [&](int thread_id) {
-      int total_elements = pos.cols();
-      int block_size = total_elements / num_threads;
-      int start_index = thread_id * block_size;
-      int end_index = (thread_id == num_threads - 1) ? total_elements
-                                                     : start_index + block_size;
-
-      for (int pt = start_index; pt < end_index; pt++) {
-        FVec3 p = pos.col(pt);
-        if (!m_bounding_box.inside(p)) {
-          layer(pt) = 0.0;
-          continue;
-        }
+    // Use TBB parallel_for with automatic load balancing
+    // Each point processed independently for optimal work distribution
+    occ::parallel::parallel_for(0, int(pos.cols()), [&](int pt) {
+      FVec3 p = pos.col(pt);
+      if (!m_bounding_box.inside(p)) {
+        layer(pt) = 0.0;
+      } else {
         layer(pt) = compute_weight(p);
       }
-    };
-
-    occ::parallel::parallel_do(inner_func);
+    });
   }
 
   OCC_ALWAYS_INLINE FVec3 gradient(const FVec3 &pos) const {

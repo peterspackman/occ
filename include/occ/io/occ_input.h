@@ -44,6 +44,7 @@ struct MethodInput {
   GridSettings dft_grid;
   double integral_precision{1e-12};
   double orbital_smearing_sigma{0.0};
+  bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
 };
 
 struct BasisSetInput {
@@ -63,6 +64,28 @@ struct SolventInput {
 struct RuntimeInput {
   int threads{1};
   std::string output_filename{""};
+};
+
+struct OptimizationInput {
+  // Convergence criteria 
+  double gradient_max{0.15e-3};     // Maximum gradient component (Ha/Angstrom) - more strict, ~ORCA's 3e-4 Ha/bohr
+  double gradient_rms{0.05e-3};     // RMS gradient (Ha/Angstrom) - more strict, ~ORCA's 1e-4 Ha/bohr
+  double step_max{1.8e-3};          // Maximum step (Angstrom)
+  double step_rms{1.2e-3};          // RMS step (Angstrom)
+  double energy_change{1e-6};       // Energy convergence (Hartree)
+  bool use_energy_criterion{false}; // Whether to use energy criterion
+  int max_iterations{100};          // Maximum optimization steps
+  
+  // Integral accuracy control
+  double gradient_integral_precision{1e-10}; // Final gradient integral cutoff
+  double early_gradient_integral_precision{1e-8}; // Looser cutoff for early steps
+  double tight_gradient_threshold{1e-3}; // Switch to tight precision when |ΔE| < this (Hartree)
+  
+  // Output options
+  bool write_wavefunction_steps{false}; // Write wavefunction at each optimization step
+  
+  // Frequency analysis
+  bool compute_frequencies{false};  // Compute vibrational frequencies after optimization
 };
 
 struct DispersionCorrectionInput {
@@ -108,6 +131,7 @@ struct OccInput {
   CrystalInput crystal;
   IsosurfaceInput isosurface;
   OutputInput output;
+  OptimizationInput optimization;
   std::string name{""};
   std::string filename{""};
   std::string chelpg_filename{""};

@@ -11,6 +11,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
+#include <occ/core/parallel.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
 #include <occ/io/xyz.h>
@@ -396,6 +397,10 @@ void register_core_bindings() {
   // Data directory functions
   function("setDataDirectory", &set_data_directory_wrapper);
   function("getDataDirectory", &get_data_directory_wrapper);
+
+  // Parallel threading functions
+  function("setNumThreads", &occ::parallel::set_num_threads);
+  function("getNumThreads", &occ::parallel::get_num_threads);
 
   // Logging level enum
   enum_<spdlog::level::level_enum>("LogLevel")

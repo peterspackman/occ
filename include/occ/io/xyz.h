@@ -30,4 +30,7 @@ private:
 occ::core::Molecule molecule_from_xyz_file(const std::string &);
 occ::core::Molecule molecule_from_xyz_string(const std::string &);
 
+std::string to_xyz_string(const occ::core::Molecule &molecule);
+std::string to_xyz_string(const occ::core::Molecule &molecule, const std::string &comment);
+
 } // namespace occ::io

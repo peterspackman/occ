@@ -16,6 +16,12 @@ void HartreeFock::set_density_fitting_basis(
       atoms(), m_engine.aobasis().shells(), dfbasis.shells());
 }
 
+void HartreeFock::set_density_fitting_policy(IntegralEngineDF::Policy policy) {
+  if (m_df_engine) {
+    m_df_engine->set_integral_policy(policy);
+  }
+}
+
 HartreeFock::HartreeFock(const AOBasis &basis)
     : SCFMethodBase(basis.atoms()), m_engine(basis) {
 
@@ -28,6 +34,23 @@ HartreeFock::HartreeFock(const AOBasis &basis)
   }
   set_frozen_electrons(frozen);
   m_num_frozen = num_frozen;
+}
+
+HartreeFock HartreeFock::with_new_basis(const AOBasis &new_basis) const {
+  HartreeFock new_hf(new_basis);
+  
+  // Copy settings from this instance
+  if (m_df_engine != nullptr) {
+    // Find the density fitting basis name if we have one
+    // For now, we'll need to reconstruct it or store the name
+    // This is a limitation we could improve later
+    occ::log::warn("Density fitting basis not preserved in with_new_basis - needs implementation");
+  }
+  
+  // Copy precision settings
+  new_hf.set_precision(this->integral_precision());
+  
+  return new_hf;
 }
 
 double HartreeFock::nuclear_point_charge_interaction_energy(
@@ -260,5 +283,6 @@ MatTriple HartreeFock::compute_nuclear_attraction_gradient() const {
 MatTriple HartreeFock::compute_rinv_gradient_for_atom(size_t atom_index) const {
   return m_engine.rinv_operator_grad_atom(atom_index);
 }
+
 
 } // namespace occ::qm

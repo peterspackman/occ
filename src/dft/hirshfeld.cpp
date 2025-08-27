@@ -250,7 +250,6 @@ HirshfeldPartition::calculate_multipoles(const occ::qm::MolecularOrbitals &mo) {
 void HirshfeldPartition::compute_hirshfeld_weights(
     const occ::qm::MolecularOrbitals &mo, bool calculate_higher_multipoles) {
 
-  int nthreads = occ::parallel::get_num_threads();
   const auto &atoms = m_basis.atoms();
   const size_t num_atoms = atoms.size();
 
@@ -263,23 +262,22 @@ void HirshfeldPartition::compute_hirshfeld_weights(
 
   constexpr int max_derivative{1}; // Only need density, not derivatives
 
-  // Thread-local storage for parallel accumulation
-  std::vector<Vec> tl_hirshfeld_charges(nthreads, Vec::Zero(num_atoms));
-  std::vector<std::vector<occ::core::Multipole<4>>> tl_multipoles;
-  if (calculate_higher_multipoles) {
-    for (int i = 0; i < nthreads; i++) {
+  // Use TBB-based thread-local storage
+  occ::parallel::thread_local_storage<Vec> tl_hirshfeld_charges(Vec::Zero(num_atoms));
+  occ::parallel::thread_local_storage<std::vector<occ::core::Multipole<4>>> tl_multipoles(
+    [num_atoms]() {
       std::vector<occ::core::Multipole<4>> thread_multipoles(num_atoms);
       for (auto &m : thread_multipoles) {
         std::fill(m.components.begin(), m.components.end(), 0.0);
       }
-      tl_multipoles.push_back(thread_multipoles);
+      return thread_multipoles;
     }
-  }
+  );
 
-  std::vector<Vec> tl_atom_volumes(nthreads, Vec::Zero(num_atoms));
-  std::vector<Vec> tl_free_atom_volumes(nthreads, Vec::Zero(num_atoms));
-  std::vector<double> tl_num_electrons(nthreads, 0.0);
-  std::vector<double> tl_num_electrons_promol(nthreads, 0.0);
+  occ::parallel::thread_local_storage<Vec> tl_atom_volumes(Vec::Zero(num_atoms));
+  occ::parallel::thread_local_storage<Vec> tl_free_atom_volumes(Vec::Zero(num_atoms));
+  occ::parallel::thread_local_storage<double> tl_num_electrons(0.0);
+  occ::parallel::thread_local_storage<double> tl_num_electrons_promol(0.0);
 
   for (const auto &atom_grid : m_atom_grids) {
     const auto &atom_pts = atom_grid.points;
@@ -287,97 +285,99 @@ void HirshfeldPartition::compute_hirshfeld_weights(
     const size_t npt_total = atom_pts.cols();
     const size_t num_blocks = npt_total / BLOCKSIZE + 1;
 
-    auto lambda = [&](int thread_id) {
-      occ::gto::GTOValues gto_vals;
-      gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, max_derivative);
-      auto &hirshfeld_charges = tl_hirshfeld_charges[thread_id];
-      auto &atom_volumes = tl_atom_volumes[thread_id];
-      auto &free_atom_volumes = tl_free_atom_volumes[thread_id];
-      auto &num_e = tl_num_electrons[thread_id];
-      auto &num_e_promol = tl_num_electrons_promol[thread_id];
+    // Use TBB-based thread-local storage for temporary variables
+    occ::parallel::thread_local_storage<occ::gto::GTOValues> gto_vals_local(
+      [this]() {
+        occ::gto::GTOValues gto_vals;
+        gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, max_derivative);
+        return gto_vals;
+      }
+    );
 
-      for (size_t block = 0; block < num_blocks; block++) {
-        if (block % nthreads != thread_id)
-          continue;
+    occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
+      auto &gto_vals = gto_vals_local.local();
+      auto &hirshfeld_charges = tl_hirshfeld_charges.local();
+      auto &atom_volumes = tl_atom_volumes.local();
+      auto &free_atom_volumes = tl_free_atom_volumes.local();
+      auto &num_e = tl_num_electrons.local();
+      auto &num_e_promol = tl_num_electrons_promol.local();
 
-        Eigen::Index l = block * BLOCKSIZE;
-        Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
-        Eigen::Index npt = u - l;
-        if (npt <= 0)
-          continue;
+      Eigen::Index l = block * BLOCKSIZE;
+      Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
+      Eigen::Index npt = u - l;
+      if (npt <= 0)
+        return;
 
-        Mat hirshfeld_weights = Mat::Zero(npt, num_atoms);
-        Mat r = Mat::Zero(npt, num_atoms);
-        Mat rho = Mat::Zero(num_rows_factor * npt,
-                            occ::density::num_components(max_derivative));
+      Mat hirshfeld_weights = Mat::Zero(npt, num_atoms);
+      Mat r = Mat::Zero(npt, num_atoms);
+      Mat rho = Mat::Zero(num_rows_factor * npt,
+                          occ::density::num_components(max_derivative));
 
-        std::vector<Mat3N> r_vec;
+      std::vector<Mat3N> r_vec;
+      if (calculate_higher_multipoles) {
+        r_vec.resize(num_atoms, Mat3N::Zero(3, npt));
+      }
+
+      const auto &pts_block = atom_pts.middleCols(l, npt);
+      const auto &weights_block = atom_weights.segment(l, npt);
+
+      occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, max_derivative);
+
+      if (unrestricted) {
+        occ::density::evaluate_density<
+            max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
+            mo.D, gto_vals, rho);
+      } else {
+        occ::density::evaluate_density<max_derivative,
+                                       occ::qm::SpinorbitalKind::Restricted>(
+            mo.D, gto_vals, rho);
+      }
+
+      for (int i = 0; i < num_atoms; i++) {
+        const auto &sb = m_slater_basis[i];
+        occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
+
         if (calculate_higher_multipoles) {
-          r_vec.resize(num_atoms, Mat3N::Zero(3, npt));
+          for (int j = 0; j < npt; j++) {
+            r_vec[i].col(j) = pts_block.col(j) - pos;
+          }
         }
 
-        const auto &pts_block = atom_pts.middleCols(l, npt);
-        const auto &weights_block = atom_weights.segment(l, npt);
+        r.col(i) = (pts_block.colwise() - pos).colwise().norm();
+        const auto &ria = r.col(i).array();
 
-        occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, max_derivative);
+        hirshfeld_weights.col(i) = sb.rho(r.col(i));
 
+        free_atom_volumes(i) += (hirshfeld_weights.col(i).array() *
+                                 weights_block.array() * ria * ria * ria)
+                                    .sum();
+      }
+
+      if (calculate_higher_multipoles) {
+        auto &multipoles = tl_multipoles.local();
         if (unrestricted) {
-          occ::density::evaluate_density<
-              max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
-              mo.D, gto_vals, rho);
+          impl::hirshfeld_multipole_kernel_unrestricted(
+              r, r_vec, rho, weights_block, hirshfeld_weights,
+              multipoles, atom_volumes, num_e, num_e_promol,
+              m_max_multipole_order);
         } else {
-          occ::density::evaluate_density<max_derivative,
-                                         occ::qm::SpinorbitalKind::Restricted>(
-              mo.D, gto_vals, rho);
+          impl::hirshfeld_multipole_kernel_restricted(
+              r, r_vec, rho, weights_block, hirshfeld_weights,
+              multipoles, atom_volumes, num_e, num_e_promol,
+              m_max_multipole_order);
         }
-
-        for (int i = 0; i < num_atoms; i++) {
-          const auto &sb = m_slater_basis[i];
-          occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
-
-          if (calculate_higher_multipoles) {
-            for (int j = 0; j < npt; j++) {
-              r_vec[i].col(j) = pts_block.col(j) - pos;
-            }
-          }
-
-          r.col(i) = (pts_block.colwise() - pos).colwise().norm();
-          const auto &ria = r.col(i).array();
-
-          hirshfeld_weights.col(i) = sb.rho(r.col(i));
-
-          free_atom_volumes(i) += (hirshfeld_weights.col(i).array() *
-                                   weights_block.array() * ria * ria * ria)
-                                      .sum();
-        }
-
-        if (calculate_higher_multipoles) {
-          if (unrestricted) {
-            impl::hirshfeld_multipole_kernel_unrestricted(
-                r, r_vec, rho, weights_block, hirshfeld_weights,
-                tl_multipoles[thread_id], atom_volumes, num_e, num_e_promol,
-                m_max_multipole_order);
-          } else {
-            impl::hirshfeld_multipole_kernel_restricted(
-                r, r_vec, rho, weights_block, hirshfeld_weights,
-                tl_multipoles[thread_id], atom_volumes, num_e, num_e_promol,
-                m_max_multipole_order);
-          }
+      } else {
+        if (unrestricted) {
+          impl::hirshfeld_kernel_unrestricted(
+              r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
+              atom_volumes, num_e, num_e_promol);
         } else {
-          if (unrestricted) {
-            impl::hirshfeld_kernel_unrestricted(
-                r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
-                atom_volumes, num_e, num_e_promol);
-          } else {
-            impl::hirshfeld_kernel_restricted(
-                r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
-                atom_volumes, num_e, num_e_promol);
-          }
+          impl::hirshfeld_kernel_restricted(
+              r, rho, weights_block, hirshfeld_weights, hirshfeld_charges,
+              atom_volumes, num_e, num_e_promol);
         }
       }
-    };
-
-    occ::parallel::parallel_do(lambda);
+    });
   }
 
   // Initialize charges with nuclear charges
@@ -405,25 +405,36 @@ void HirshfeldPartition::compute_hirshfeld_weights(
     }
   }
 
-  for (size_t i = 0; i < nthreads; i++) {
-    if (calculate_higher_multipoles) {
+  // Reduce results from thread-local storage
+  if (calculate_higher_multipoles) {
+    for (const auto &multipoles : tl_multipoles) {
       for (size_t j = 0; j < num_atoms; j++) {
         // Add all multipole components except monopole (already set above)
         for (size_t k = 1; k < m_multipoles[j].components.size(); k++) {
-          m_multipoles[j].components[k] += tl_multipoles[i][j].components[k];
+          m_multipoles[j].components[k] += multipoles[j].components[k];
         }
         // Add the monopole (charge) component separately
-        m_hirshfeld_charges(j) += tl_multipoles[i][j].components[0];
+        m_hirshfeld_charges(j) += multipoles[j].components[0];
         m_multipoles[j].components[0] = m_hirshfeld_charges(j);
       }
-    } else {
-      m_hirshfeld_charges += tl_hirshfeld_charges[i];
     }
+  } else {
+    for (const auto &charges : tl_hirshfeld_charges) {
+      m_hirshfeld_charges += charges;
+    }
+  }
 
-    m_atom_volumes += tl_atom_volumes[i];
-    m_free_atom_volumes += tl_free_atom_volumes[i];
-    num_electrons += tl_num_electrons[i];
-    num_electrons_promol += tl_num_electrons_promol[i];
+  for (const auto &volumes : tl_atom_volumes) {
+    m_atom_volumes += volumes;
+  }
+  for (const auto &free_volumes : tl_free_atom_volumes) {
+    m_free_atom_volumes += free_volumes;
+  }
+  for (const auto &ne : tl_num_electrons) {
+    num_electrons += ne;
+  }
+  for (const auto &ne_promol : tl_num_electrons_promol) {
+    num_electrons_promol += ne_promol;
   }
 
   occ::log::debug("Hirshfeld analysis: electrons in molecule = {:.6f}, in "

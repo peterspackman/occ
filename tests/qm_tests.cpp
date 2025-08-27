@@ -1061,3 +1061,4 @@ TEST_CASE("Four-center integrals tensor validation", "[integrals]") {
   // Check that matrices are close
   REQUIRE(all_close(K_reference, K_manual, 1e-10, 1e-10));
 }
+

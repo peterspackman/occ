@@ -58,18 +58,15 @@ void IntegralEngineDF::compute_stored_integrals() {
     };
 
     occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
-    auto lambda2 = [&](int thread_id) {
-      if (m_ao_engine.is_spherical()) {
-        detail::three_center_aux_kernel<ShellKind::Spherical>(
-            lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
-            m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt, thread_id);
-      } else {
-        detail::three_center_aux_kernel<ShellKind::Cartesian>(
-            lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
-            m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt, thread_id);
-      }
-    };
-    occ::parallel::parallel_do(lambda2);
+    if (m_ao_engine.is_spherical()) {
+      detail::compute_three_center_integrals_tbb<ShellKind::Spherical>(
+          lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
+          m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt);
+    } else {
+      detail::compute_three_center_integrals_tbb<ShellKind::Cartesian>(
+          lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
+          m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt);
+    }
   }
   occ::timing::stop(occ::timing::category::df);
 }
@@ -244,54 +241,39 @@ IntegralEngineDF::four_center_integrals_tensor() const {
   // Create single shared result tensor like the conventional AO code
   Eigen::Tensor<double, 4> result(nbf, nbf, nbf, nbf);
   result.setZero();
+  
+  // Use TBB parallel_for to distribute work over μν pairs
+  size_t total_pairs = nbf * nbf;
+  occ::parallel::parallel_for(size_t(0), total_pairs, [&](size_t pair_idx) {
+    size_t mu = pair_idx / nbf;
+    size_t nu = pair_idx % nbf;
 
-  // Use a simple kernel that writes directly to the shared tensor
-  auto kernel = [&result, this](int thread_id) {
-    const auto nbf = m_ao_engine.aobasis().nbf();
-    const auto naux = m_aux_engine.aobasis().nbf();
-    const auto nthreads = occ::parallel::get_num_threads();
-
-    // Divide work among threads by μν pairs
-    size_t total_pairs = nbf * nbf;
-    size_t pairs_per_thread = (total_pairs + nthreads - 1) / nthreads;
-    size_t pair_start = thread_id * pairs_per_thread;
-    size_t pair_end = std::min(pair_start + pairs_per_thread, total_pairs);
-
-    // Process assigned μν pairs
-    for (size_t pair_idx = pair_start; pair_idx < pair_end; ++pair_idx) {
-      size_t mu = pair_idx / nbf;
-      size_t nu = pair_idx % nbf;
-
-      // For each ρσ pair, compute (μν|ρσ) = Σ_P (μν|P) * V^(-1) * (ρσ|P)
-      for (size_t rho = 0; rho < nbf; ++rho) {
-        for (size_t sigma = 0; sigma < nbf; ++sigma) {
-          // Extract (ρσ|P) vector
-          Vec rhosigmaP = Vec::Zero(naux);
-          for (size_t P = 0; P < naux; ++P) {
-            const auto eri_P =
-                Eigen::Map<const Mat>(m_integral_store.col(P).data(), nbf, nbf);
-            rhosigmaP(P) = eri_P(rho, sigma);
-          }
-
-          // Solve V * x = (ρσ|P) to get x = V^(-1) * (ρσ|P)
-          Vec x = V_LLt.solve(rhosigmaP);
-
-          // Compute (μν|ρσ) = (μν|P) * V^(-1) * (ρσ|P)
-          double integral_value = 0.0;
-          for (size_t P = 0; P < naux; ++P) {
-            const auto eri_P =
-                Eigen::Map<const Mat>(m_integral_store.col(P).data(), nbf, nbf);
-            integral_value += eri_P(mu, nu) * x(P);
-          }
-
-          result(mu, nu, rho, sigma) = integral_value;
+    // For each ρσ pair, compute (μν|ρσ) = Σ_P (μν|P) * V^(-1) * (ρσ|P)
+    for (size_t rho = 0; rho < nbf; ++rho) {
+      for (size_t sigma = 0; sigma < nbf; ++sigma) {
+        // Extract (ρσ|P) vector
+        Vec rhosigmaP = Vec::Zero(naux);
+        for (size_t P = 0; P < naux; ++P) {
+          const auto eri_P =
+              Eigen::Map<const Mat>(m_integral_store.col(P).data(), nbf, nbf);
+          rhosigmaP(P) = eri_P(rho, sigma);
         }
+
+        // Solve V * x = (ρσ|P) to get x = V^(-1) * (ρσ|P)
+        Vec x = V_LLt.solve(rhosigmaP);
+
+        // Compute (μν|ρσ) = (μν|P) * V^(-1) * (ρσ|P)
+        double integral_value = 0.0;
+        for (size_t P = 0; P < naux; ++P) {
+          const auto eri_P =
+              Eigen::Map<const Mat>(m_integral_store.col(P).data(), nbf, nbf);
+          integral_value += eri_P(mu, nu) * x(P);
+        }
+
+        result(mu, nu, rho, sigma) = integral_value;
       }
     }
-  };
-
-  // Execute parallel reconstruction
-  occ::parallel::parallel_do(kernel);
+  });
 
   occ::timing::stop(occ::timing::category::df);
   occ::log::debug("DF AO integral tensor computation completed");

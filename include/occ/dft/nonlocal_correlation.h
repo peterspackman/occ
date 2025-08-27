@@ -22,6 +22,15 @@ public:
     Mat Vxc;
   };
 
+  // WARNING: VV10/NLC gradients are experimental and not fully tested.
+  // Current implementation assumes post-SCF correction (not self-consistent)
+  // and may not match programs that include VV10 in the SCF.
+  struct GradientResult {
+    double energy;
+    Mat Vxc;
+    Mat3N gradient;  // Nuclear gradient contributions
+  };
+
   NonLocalCorrelationFunctional();
   void set_parameters(const Parameters &params);
   void set_integration_grid(const qm::AOBasis &basis,
@@ -30,9 +39,11 @@ public:
                                 false}); // don't reduce H by default
 
   Result operator()(const qm::AOBasis &, const qm::MolecularOrbitals &);
+  GradientResult compute_gradient(const qm::AOBasis &, const qm::MolecularOrbitals &) const;
 
 private:
   Result vv10(const qm::AOBasis &, const qm::MolecularOrbitals &mo);
+  GradientResult vv10_gradient(const qm::AOBasis &, const qm::MolecularOrbitals &mo) const;
   Parameters m_params;
   std::vector<AtomGrid> m_nlc_atom_grids;
 };

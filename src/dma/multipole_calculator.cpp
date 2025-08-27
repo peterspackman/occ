@@ -472,125 +472,122 @@ void MultipoleCalculator::process_electronic_contributions(
   const auto &grid = grid_gen.get_molecular_grid_points();
   const auto &grid_points = grid.points();
 
-  // Prepare for parallel execution
-  const int nthreads = occ::parallel::get_num_threads();
-  
-  // Thread-local storage for multipoles and grid density
-  std::vector<std::vector<Mult>> thread_site_multipoles(nthreads);
-  std::vector<Vec> thread_grid_density(nthreads);
-  std::vector<bool> thread_use_quadrature(nthreads, false);
-  
-  // Initialize thread-local multipole arrays
-  for (int t = 0; t < nthreads; t++) {
-    thread_site_multipoles[t].resize(site_multipoles.size());
-    for (size_t i = 0; i < site_multipoles.size(); i++) {
-      thread_site_multipoles[t][i] = Mult(m_settings.max_rank);
+  // Use TBB-based thread-local storage for multipoles and grid density
+  occ::parallel::thread_local_storage<std::vector<Mult>> thread_site_multipoles(
+    [&]() {
+      std::vector<Mult> local_multipoles(site_multipoles.size());
+      for (size_t i = 0; i < site_multipoles.size(); i++) {
+        local_multipoles[i] = Mult(m_settings.max_rank);
+      }
+      return local_multipoles;
     }
-    thread_grid_density[t] = Vec::Zero(grid.num_points());
+  );
+  occ::parallel::thread_local_storage<Vec> thread_grid_density(Vec::Zero(grid.num_points()));
+  occ::parallel::thread_local_storage<bool> thread_use_quadrature(false);
+  
+  // Thread-local analytical and grid integrators
+  occ::parallel::thread_local_storage<AnalyticalIntegrator> analytical_local(
+    [&m_settings = m_settings]() { return AnalyticalIntegrator(m_settings); }
+  );
+  occ::parallel::thread_local_storage<GridIntegrator> grid_local(
+    [&m_settings = m_settings]() { return GridIntegrator(m_settings); }
+  );
+
+  // Build list of unique shell pairs (i,j) with i >= j
+  std::vector<std::pair<int, int>> shell_pairs_to_process;
+  for (int i_shell_idx = 0; i_shell_idx < n_shells; i_shell_idx++) {
+    for (int j_shell_idx = 0; j_shell_idx <= i_shell_idx; j_shell_idx++) {
+      shell_pairs_to_process.emplace_back(i_shell_idx, j_shell_idx);
+    }
   }
-
-  // Calculate total number of shell pairs
-  int total_shell_pairs = n_shells * (n_shells + 1) / 2;
-
-  auto lambda = [&](int thread_id) {
-    auto &local_site_multipoles = thread_site_multipoles[thread_id];
-    auto &local_grid_density = thread_grid_density[thread_id];
-    bool local_use_quadrature = false;
+  
+  occ::parallel::parallel_for(size_t(0), shell_pairs_to_process.size(), [&](size_t idx) {
+    auto &local_site_multipoles = thread_site_multipoles.local();
+    auto &local_grid_density = thread_grid_density.local();
+    bool &local_use_quadrature = thread_use_quadrature.local();
+    auto &local_analytical = analytical_local.local();
+    auto &local_grid = grid_local.local();
     
-    // Thread-local analytical and grid integrators
-    AnalyticalIntegrator local_analytical(m_settings);
-    GridIntegrator local_grid(m_settings);
+    int i_shell_idx = shell_pairs_to_process[idx].first;
+    int j_shell_idx = shell_pairs_to_process[idx].second;
     
-    int pair_idx = 0;
-    for (int i_shell_idx = 0; i_shell_idx < n_shells; i_shell_idx++) {
-      for (int j_shell_idx = 0; j_shell_idx <= i_shell_idx; j_shell_idx++) {
-        
-        // Distribute work among threads
-        if (pair_idx % nthreads != thread_id) {
-          pair_idx++;
+    const auto &shell_i = shells[i_shell_idx];
+    const auto &shell_j = shells[j_shell_idx];
+    const bool i_shell_equals_j_shell = (i_shell_idx == j_shell_idx);
+
+    Mat d_block = m_normalized_density.block(first_bf[i_shell_idx],
+                                             first_bf[j_shell_idx],
+                                             shell_i.size(), shell_j.size());
+
+    // Calculate shell separation
+    const Vec3 r_shell_ij = shell_j.origin - shell_i.origin;
+    const double shell_r2 = r_shell_ij.squaredNorm();
+
+    // Loop over primitives in shell i
+    for (int i_prim = 0; i_prim < shell_i.num_primitives(); i_prim++) {
+      const double alpha_i = shell_i.exponents[i_prim];
+
+      int j_prim_max =
+          i_shell_equals_j_shell ? i_prim + 1 : shell_j.num_primitives();
+
+      for (int j_prim = 0; j_prim < j_prim_max; j_prim++) {
+        const double alpha_j = shell_j.exponents[j_prim];
+        const double alpha_sum = alpha_i + alpha_j;
+
+        // Skip if shell distance is too large or exponential term is
+        // negligible
+        const double dum = alpha_j * alpha_i * shell_r2 / alpha_sum;
+        if (dum > m_tolerance)
           continue;
+
+        double fac = std::exp(-dum);
+
+        if (i_prim != j_prim || !(i_shell_equals_j_shell)) {
+          fac *= 2.0;
         }
-        pair_idx++;
-        
-        const auto &shell_i = shells[i_shell_idx];
-        const auto &shell_j = shells[j_shell_idx];
-        const bool i_shell_equals_j_shell = (i_shell_idx == j_shell_idx);
 
-        Mat d_block = m_normalized_density.block(first_bf[i_shell_idx],
-                                                 first_bf[j_shell_idx],
-                                                 shell_i.size(), shell_j.size());
+        const double p = alpha_j / alpha_sum;
+        const Vec3 P = shell_i.origin + p * r_shell_ij;
 
-        // Calculate shell separation
-        const Vec3 r_shell_ij = shell_j.origin - shell_i.origin;
-        const double shell_r2 = r_shell_ij.squaredNorm();
+        if ((alpha_i + alpha_j) > m_settings.big_exponent) {
+          // Use analytical method for large exponents
+          Mult qt(m_settings.max_rank);
 
-        // Loop over primitives in shell i
-        for (int i_prim = 0; i_prim < shell_i.num_primitives(); i_prim++) {
-          const double alpha_i = shell_i.exponents[i_prim];
+          local_analytical.calculate_primitive_contribution(
+              shell_i, shell_j, i_prim, j_prim, fac, d_block, P, qt);
 
-          int j_prim_max =
-              i_shell_equals_j_shell ? i_prim + 1 : shell_j.num_primitives();
+          MultipoleShifter shifter(P, qt, m_sites, local_site_multipoles,
+                                   m_settings.max_rank);
+          shifter.shift();
 
-          for (int j_prim = 0; j_prim < j_prim_max; j_prim++) {
-            const double alpha_j = shell_j.exponents[j_prim];
-            const double alpha_sum = alpha_i + alpha_j;
-
-            // Skip if shell distance is too large or exponential term is
-            // negligible
-            const double dum = alpha_j * alpha_i * shell_r2 / alpha_sum;
-            if (dum > m_tolerance)
-              continue;
-
-            double fac = std::exp(-dum);
-
-            if (i_prim != j_prim || !(i_shell_equals_j_shell)) {
-              fac *= 2.0;
-            }
-
-            const double p = alpha_j / alpha_sum;
-            const Vec3 P = shell_i.origin + p * r_shell_ij;
-
-            if ((alpha_i + alpha_j) > m_settings.big_exponent) {
-              // Use analytical method for large exponents
-              Mult qt(m_settings.max_rank);
-
-              local_analytical.calculate_primitive_contribution(
-                  shell_i, shell_j, i_prim, j_prim, fac, d_block, P, qt);
-
-              MultipoleShifter shifter(P, qt, m_sites, local_site_multipoles,
-                                       m_settings.max_rank);
-              shifter.shift();
-
-            } else {
-              // For small exponents, use numerical integration
-              if (!local_use_quadrature) {
-                local_use_quadrature = true;
-              }
-              local_grid.add_primitive_to_grid(shell_i, shell_j, i_prim, j_prim, fac,
-                                               d_block, P, grid_points,
-                                               local_grid_density, etol);
-            }
+        } else {
+          // For small exponents, use numerical integration
+          if (!local_use_quadrature) {
+            local_use_quadrature = true;
           }
+          local_grid.add_primitive_to_grid(shell_i, shell_j, i_prim, j_prim, fac,
+                                           d_block, P, grid_points,
+                                           local_grid_density, etol);
         }
       }
     }
-  };
-
-  // Execute parallel computation
-  occ::parallel::parallel_do(lambda);
+  });
 
   // Reduce results from all threads
-  for (int t = 0; t < nthreads; t++) {
+  for (const auto &local_multipoles : thread_site_multipoles) {
     for (size_t i = 0; i < site_multipoles.size(); i++) {
-      site_multipoles[i].q += thread_site_multipoles[t][i].q;
+      site_multipoles[i].q += local_multipoles[i].q;
     }
-    // Check if this thread used quadrature by seeing if density is non-zero
-    if (thread_grid_density[t].norm() > 0) {
+  }
+  
+  // Check if any thread used quadrature by seeing if density is non-zero
+  for (const auto &local_grid_density : thread_grid_density) {
+    if (local_grid_density.norm() > 0) {
       if (!m_use_quadrature) {
         m_grid_density = Vec::Zero(grid.num_points());
         m_use_quadrature = true;
       }
-      m_grid_density += thread_grid_density[t];
+      m_grid_density += local_grid_density;
     }
   }
 

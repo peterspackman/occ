@@ -1,6 +1,7 @@
 #pragma once
 #include "kernel_traits.h"
 #include <occ/core/timings.h>
+#include <occ/core/parallel.h>
 #include <occ/qm/integral_engine.h>
 
 namespace occ::qm::detail {
@@ -9,26 +10,37 @@ template <ShellKind kind, typename Lambda>
 void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
                              const qm::AOBasis &aobasis,
                              const qm::AOBasis &auxbasis,
-                             const ShellPairList &shellpairs,
-                             int thread_id = 0) noexcept {
+                             const ShellPairList &shellpairs) noexcept {
   using Result = IntegralEngine::IntegralResult<3>;
   occ::timing::start(occ::timing::category::ints3c2e);
-  auto nthreads = occ::parallel::get_num_threads();
-  occ::qm::cint::Optimizer opt(env, Op::coulomb, 3);
-  size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
-                   auxbasis.max_shell_size();
-  auto buffer = std::make_unique<double[]>(bufsize);
-  Result args;
-  args.thread = thread_id;
-  args.buffer = buffer.get();
-  std::array<int, 3> shell_idx;
+
+  // Use TBB for dynamic load balancing
+  occ::parallel::thread_local_storage<std::unique_ptr<double[]>> buffer_local(
+      [&]() {
+        size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
+                         auxbasis.max_shell_size();
+        return std::make_unique<double[]>(bufsize);
+      });
+
+  occ::parallel::thread_local_storage<occ::qm::cint::Optimizer> opt_local(
+      [&]() { return occ::qm::cint::Optimizer(env, Op::coulomb, 3); });
+
   const auto &first_bf_ao = aobasis.first_bf();
   const auto &first_bf_aux = auxbasis.first_bf();
-  for (int auxP = 0; auxP < auxbasis.size(); auxP++) {
-    if (auxP % nthreads != thread_id)
-      continue;
+
+  occ::parallel::parallel_for(0, static_cast<size_t>(auxbasis.size()), [&](size_t auxP_idx) {
+    int auxP = static_cast<int>(auxP_idx);
+    auto &buffer = buffer_local.local();
+    auto &opt = opt_local.local();
+    
+    Result args;
+    args.thread = 0; // Not used in TBB mode
+    args.buffer = buffer.get();
     args.bf[2] = first_bf_aux[auxP];
     args.shell[2] = auxP;
+    
+    std::array<int, 3> shell_idx;
+    
     for (int p = 0; p < aobasis.size(); p++) {
       args.bf[0] = first_bf_ao[p];
       args.shell[0] = p;
@@ -45,7 +57,7 @@ void three_center_aux_kernel(Lambda &f, qm::cint::IntegralEnvironment &env,
         }
       }
     }
-  }
+  });
   occ::timing::stop(occ::timing::category::ints3c2e);
 }
 
@@ -55,11 +67,15 @@ Mat point_charge_potential_kernel(cint::IntegralEnvironment &env,
                                   const AOBasis &auxbasis,
                                   const ShellPairList &shellpairs) {
   using Result = IntegralEngine::IntegralResult<3>;
-  auto nthreads = occ::parallel::get_num_threads();
   const auto nbf = aobasis.nbf();
-  std::vector<Mat> results(nthreads, Mat::Zero(nbf, nbf));
-  auto f = [&results](const Result &args) {
-    auto &result = results[args.thread];
+  
+  // Use TBB thread-local storage for proper accumulation
+  occ::parallel::thread_local_storage<Mat> results_local(
+    [nbf]() { return Mat::Zero(nbf, nbf); }
+  );
+  
+  auto f = [&results_local](const Result &args) {
+    auto &result = results_local.local();
     Eigen::Map<const Mat> tmp(args.buffer, args.dims[0], args.dims[1]);
     result.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) += tmp;
     if (args.shell[0] != args.shell[1]) {
@@ -68,16 +84,15 @@ Mat point_charge_potential_kernel(cint::IntegralEnvironment &env,
     }
   };
 
-  auto lambda = [&](int thread_id) {
-    three_center_aux_kernel<kind>(f, env, aobasis, auxbasis, shellpairs,
-                                  thread_id);
-  };
-  occ::parallel::parallel_do(lambda);
+  // Use the TBB implementation in three_center_aux_kernel directly
+  three_center_aux_kernel<kind>(f, env, aobasis, auxbasis, shellpairs);
 
-  for (auto i = 1; i < nthreads; i++) {
-    results[0] += results[i];
+  // Combine results from all threads
+  Mat result = Mat::Zero(nbf, nbf);
+  for (const auto &local : results_local) {
+    result += local;
   }
-  return results[0];
+  return result;
 }
 
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
@@ -86,13 +101,15 @@ Vec electric_potential_kernel(cint::IntegralEnvironment &env,
                               const ShellPairList &shellpairs,
                               const MolecularOrbitals &mo) {
   using Result = IntegralEngine::IntegralResult<3>;
-  auto nthreads = occ::parallel::get_num_threads();
   size_t npts = auxbasis.size();
-  std::vector<Vec> results(nthreads, Vec::Zero(npts));
+
+  // Use TBB thread-local storage for better scalability
+  occ::parallel::thread_local_storage<Vec> results_local(
+      [npts]() { return Vec::Zero(npts); });
 
   const auto &D = mo.D;
-  auto f = [&D, &results](const Result &args) {
-    auto &v = results[args.thread];
+  auto f = [&D, &results_local](const Result &args) {
+    auto &v = results_local.local();
     auto scale = (args.shell[0] == args.shell[1]) ? 1 : 2;
     Eigen::Map<const Mat> tmp(args.buffer, args.dims[0], args.dims[1]);
     if constexpr (sk == SpinorbitalKind::Restricted) {
@@ -124,16 +141,15 @@ Vec electric_potential_kernel(cint::IntegralEnvironment &env,
     }
   };
 
-  auto lambda = [&](int thread_id) {
-    three_center_aux_kernel<kind>(f, env, aobasis, auxbasis, shellpairs,
-                                  thread_id);
-  };
-  occ::parallel::parallel_do(lambda);
+  // Use the TBB implementation in three_center_aux_kernel directly
+  three_center_aux_kernel<kind>(f, env, aobasis, auxbasis, shellpairs);
 
-  for (auto i = 1; i < nthreads; i++) {
-    results[0] += results[i];
+  // Combine results from all threads
+  Vec result = Vec::Zero(npts);
+  for (const auto &local : results_local) {
+    result += local;
   }
-  return 2 * results[0];
+  return 2 * result;
 }
 
 template <ShellKind kind, typename Lambda>
@@ -193,9 +209,12 @@ Mat point_charge_potential_screened_kernel(cint::IntegralEnvironment &env,
   auto nthreads = occ::parallel::get_num_threads();
   const auto nbf = aobasis.nbf();
   const auto nsh = aobasis.size();
-  std::vector<Mat> results(nthreads, Mat::Zero(nbf, nbf));
-  auto f = [&results](const Result &args) {
-    auto &result = results[args.thread];
+  
+  // Use TBB thread-local storage instead of thread-indexed arrays
+  occ::parallel::thread_local_storage<Mat> tl_results(Mat::Zero(nbf, nbf));
+  
+  auto f = [&tl_results](const Result &args) {
+    auto &result = tl_results.local();
     Eigen::Map<const Mat> tmp(args.buffer, args.dims[0], args.dims[1]);
     result.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) += tmp;
     if (args.shell[0] != args.shell[1]) {
@@ -204,16 +223,18 @@ Mat point_charge_potential_screened_kernel(cint::IntegralEnvironment &env,
     }
   };
 
-  auto lambda = [&, unit_shell_index](int thread_id) {
+  // Use TBB parallel_for instead of deprecated parallel_do
+  occ::parallel::parallel_for(size_t(0), size_t(nthreads), [&, unit_shell_index](size_t thread_id) {
     three_center_screened_kernel<kind>(f, env, aobasis, auxbasis, shellpairs,
-                                       unit_shell_index, thread_id);
-  };
-  occ::parallel::parallel_do(lambda);
+                                       unit_shell_index, int(thread_id));
+  });
 
-  for (auto i = 1; i < nthreads; i++) {
-    results[0] += results[i];
+  // Reduce thread-local results
+  Mat result = Mat::Zero(nbf, nbf);
+  for (const auto &local_result : tl_results) {
+    result += local_result;
   }
-  return results[0];
+  return result;
 }
 
 } // namespace occ::qm::detail

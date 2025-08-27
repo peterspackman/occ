@@ -17,6 +17,7 @@
 #include <occ/interaction/polarization.h>
 #include <occ/interaction/xtb_energy_model.h>
 #include <occ/io/cifparser.h>
+#include <occ/io/cifwriter.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/eigen_json.h>
@@ -299,6 +300,25 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   std::string filename = settings.crystal_filename;
   std::string basename = fs::path(filename).stem().string();
   Crystal c = read_crystal(filename);
+  
+  if (settings.normalize_hydrogens) {
+    try {
+      occ::log::info("Starting hydrogen bond normalization...");
+      ankerl::unordered_dense::map<int, double> empty_map;
+      int normalized_bonds = c.normalize_hydrogen_bondlengths(empty_map);
+      occ::log::info("Normalized {} hydrogen bonds", normalized_bonds);
+      
+      // Write normalized crystal to CIF file
+      std::string normalized_filename = basename + "_norm.cif";
+      occ::io::CifWriter writer;
+      writer.write(normalized_filename, c, basename + "_normalized");
+      occ::log::info("Wrote normalized crystal structure to {}", normalized_filename);
+    } catch (const std::exception& e) {
+      occ::log::error("Error during normalization: {}", e.what());
+      throw;
+    }
+  }
+  
   occ::log::info("Energy model: {}", settings.model_name);
   occ::log::info("Loaded crystal from {}", filename);
   auto molecules = c.symmetry_unique_molecules();
@@ -433,6 +453,8 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
   elat->add_option(
       "--external-command", config->external_command,
       "external command for energy calculations (for model=external)");
+  elat->add_flag("--normalize-hbonds", config->normalize_hydrogens,
+                 "normalize hydrogen bond lengths");
   elat->fallthrough();
   elat->callback([config, use_xtb]() {
     if (*use_xtb) {

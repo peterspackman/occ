@@ -102,7 +102,7 @@ void register_cube_bindings() {
           optional_override([](io::Cube &cube, const qm::Wavefunction &wfn) {
             // Create electron density functor and fill the cube
             isosurface::ElectronDensityFunctor func(wfn);
-            auto batch_func = [&func](const Mat3N &points, Vec &result) {
+            auto batch_func = [&func](Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> result) {
               // Convert double precision points to float for the functor
               FMat3N float_points = points.cast<float>();
               FVec float_result(result.size());
