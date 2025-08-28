@@ -1,0 +1,4 @@
+set(TRAJAN_MAIN_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/trajan_rdf.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/version.h"
+    PARENT_SCOPE)
