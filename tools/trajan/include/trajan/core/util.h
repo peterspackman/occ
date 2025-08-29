@@ -85,21 +85,21 @@ using occ::crystal::UnitCell;
 //   return s;
 // }
 //
-// static inline std::vector<std::string> split_string(const std::string &input,
-//                                                     char delimiter) {
-//   std::vector<std::string> tokens;
-//   std::stringstream ss(input);
-//   std::string token;
-//
-//   while (std::getline(ss, token, delimiter)) {
-//     token.erase(0, token.find_first_not_of(" \t"));
-//     token.erase(token.find_last_not_of(" \t") + 1);
-//     if (!token.empty()) {
-//       tokens.push_back(token);
-//     }
-//   }
-//   return tokens;
-// }
+static inline std::vector<std::string> split_string(const std::string &input,
+                                                    char delimiter) {
+  std::vector<std::string> tokens;
+  std::stringstream ss(input);
+  std::string token;
+
+  while (std::getline(ss, token, delimiter)) {
+    token.erase(0, token.find_first_not_of(" \t"));
+    token.erase(token.find_last_not_of(" \t") + 1);
+    if (!token.empty()) {
+      tokens.push_back(token);
+    }
+  }
+  return tokens;
+}
 //
 // template <typename T>
 // constexpr bool is_close(T a, T b,
@@ -291,22 +291,12 @@ struct Opts {
   std::vector<fs::path> infiles;
 };
 
-inline std::pair<Mat3N, Mat3N> wrap_coordinates(Mat3N &cart_pos, UnitCell &uc,
-                                                bool dummy_unit_cell = false) {
-  if (dummy_unit_cell) {
-    Vec3 min_vals = cart_pos.rowwise().minCoeff();
-    Mat3N shifted_cart_pos = cart_pos.colwise() - min_vals;
-    Mat3N frac_pos = uc.to_fractional(shifted_cart_pos);
-    return {frac_pos, cart_pos};
-  }
+inline std::pair<Mat3N, Mat3N> wrap_coordinates(const Mat3N &cart_pos,
+                                                const UnitCell &uc) {
   Mat3N frac_pos = uc.to_fractional(cart_pos);
   frac_pos = frac_pos.array() - frac_pos.array().floor();
   Mat3N wrapped_cart_pos = uc.to_cartesian(frac_pos);
   return {frac_pos, wrapped_cart_pos};
 }
-
-// class DummyUnitCell : public UnitCell {
-//
-// };
 
 } // namespace trajan::util

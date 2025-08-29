@@ -1,5 +1,4 @@
 #pragma once
-
 #include <algorithm>
 #include <optional>
 #include <string>
@@ -146,10 +145,10 @@ private:
 };
 
 template <typename SelectionType>
-std::vector<core::EntityType>
+std::vector<core::EntityVariant>
 process_selection(const SelectionType &selection, std::vector<Atom> &atoms,
                   std::vector<Molecule> &molecules,
-                  std::vector<core::EntityType> &entities) {
+                  std::vector<core::EntityVariant> &entities) {
   trajan::log::debug("Processing selection of type {}", selection.name());
   if constexpr (std::is_same_v<SelectionType, io::AtomIndexSelection>) {
     for (Atom &atom : atoms) {

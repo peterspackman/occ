@@ -128,11 +128,11 @@ void Trajectory::reset() {
   m_frame_loaded = false;
 }
 
-std::vector<EntityType>
+std::vector<EntityVariant>
 Trajectory::get_entities(const io::SelectionCriteria &selection) {
   std::vector<Atom> atoms = this->atoms();
   std::vector<Molecule> molecules;
-  std::vector<EntityType> entities;
+  std::vector<EntityVariant> entities;
   entities.reserve(atoms.size());
 
   trajan::log::debug("Processing selection {}", selection.index());
@@ -161,11 +161,11 @@ Trajectory::get_entities(const io::SelectionCriteria &selection) {
   return entities;
 }
 
-std::vector<EntityType>
+std::vector<EntityVariant>
 Trajectory::get_entities(const std::vector<io::SelectionCriteria> &selections) {
-  std::vector<EntityType> entities;
+  std::vector<EntityVariant> entities;
   for (const io::SelectionCriteria &sel : selections) {
-    std::vector<EntityType> e2 = this->get_entities(sel);
+    std::vector<EntityVariant> e2 = this->get_entities(sel);
     entities.reserve(entities.size() + e2.size());
     entities.insert(entities.end(), e2.begin(), e2.end());
   }
@@ -194,10 +194,10 @@ void Trajectory::update_topology() {
   trajan::log::debug("BondGraph created successfully");
   trajan::log::debug("Creating NeighbourList with cutoff {:.3f}",
                      max_cov_cutoff);
-  NeighbourList nl(this->unit_cell(), max_cov_cutoff);
+  NeighbourList nl(max_cov_cutoff);
   trajan::log::debug("NeighbourList created, updating with atoms...");
 
-  nl.update(atoms);
+  nl.update(atoms, this->unit_cell());
   trajan::log::debug("NeighbourList updated successfully");
 
   double tol = 0.4; // FIXME:

@@ -40,9 +40,9 @@ struct Entity {
   }
 };
 
-using EntityType = std::variant<Atom, Molecule>;
+using EntityVariant = std::variant<Atom, Molecule>;
 
-struct VariantHash {
+struct EntityVariantHash {
   std::size_t operator()(const std::variant<Atom, Molecule> &var) const {
     if (std::holds_alternative<Atom>(var)) {
       const Atom &atom = std::get<Atom>(var);
@@ -54,7 +54,7 @@ struct VariantHash {
   }
 };
 
-struct VariantEqual {
+struct EntityVariantEqual {
   bool operator()(const std::variant<Atom, Molecule> &lhs,
                   const std::variant<Atom, Molecule> &rhs) const {
     if (lhs.index() != rhs.index()) {
@@ -70,34 +70,28 @@ struct VariantEqual {
 };
 
 struct NeighbourListPacket {
-  Mat3N wrapped_cart_pos;
-  Mat3N wrapped_frac_pos;
-  std::vector<Entity::Type> obj_types;
+  Mat3N cart_pos;
+  std::vector<Entity::Type> entity_types;
+
   std::vector<size_t> presence_tracker;
   bool check_presence{false};
   ankerl::unordered_dense::map<size_t, size_t> index_to_canonical;
 
   NeighbourListPacket() = default;
-  NeighbourListPacket(const std::vector<Entity::Type> &obj_types,
-                      const Mat3N &cart_pos, const Mat3N &frac_pos) {
-    this->wrapped_cart_pos = cart_pos;
-    this->wrapped_frac_pos = frac_pos;
-    this->obj_types = obj_types;
-    this->check();
-  }
 
-  size_t size() const { return obj_types.size(); }
+  NeighbourListPacket(const std::vector<Atom> &atoms);
 
-  void check() const {
-    if (this->wrapped_cart_pos.size() != this->wrapped_frac_pos.size()) {
-      throw std::runtime_error(
-          "Cartesian and fractional positions must be the same size");
-    };
-    if (this->wrapped_cart_pos.cols() != this->obj_types.size()) {
-      throw std::runtime_error(
-          "Entities vector and position matrix not same size.");
-    };
-  }
+  NeighbourListPacket(const std::vector<Molecule> &molecules,
+                      Molecule::Origin o = Molecule::CentreOfMass);
+
+  NeighbourListPacket(const std::vector<EntityVariant> &entities,
+                      Molecule::Origin o = Molecule::CentreOfMass);
+
+  NeighbourListPacket(
+      const std::vector<std::vector<EntityVariant>> &entities_vectors,
+      Molecule::Origin o = Molecule::CentreOfMass);
+
+  size_t size() const { return entity_types.size(); }
 
   inline bool are_same_entity(size_t idx1, size_t idx2) const {
     auto it1 = index_to_canonical.find(idx1);
@@ -109,6 +103,64 @@ struct NeighbourListPacket {
 
     return it1->second == it2->second;
   }
+
+private:
+  void initialise_from_entities(const std::vector<EntityVariant> &entities,
+                                Molecule::Origin o = Molecule::CentreOfMass);
+};
+
+struct CellListPacket : public NeighbourListPacket {
+  Mat3N wrapped_cart_pos;
+  Mat3N wrapped_frac_pos;
+  Vec3 side_lengths;
+  std::optional<UnitCell> unit_cell;
+
+  CellListPacket() = default;
+
+  CellListPacket(const std::vector<Atom> &atoms,
+                 const std::optional<UnitCell> &uc);
+
+  CellListPacket(const std::vector<Molecule> &molecules,
+                 const std::optional<UnitCell> &uc,
+                 Molecule::Origin o = Molecule::CentreOfMass);
+
+  CellListPacket(const std::vector<EntityVariant> &entities,
+                 const std::optional<UnitCell> &uc,
+                 Molecule::Origin o = Molecule::CentreOfMass);
+
+  CellListPacket(
+      const std::vector<std::vector<EntityVariant>> &entities_vectors,
+      const std::optional<UnitCell> &uc,
+      Molecule::Origin o = Molecule::CentreOfMass);
+
+private:
+  void initialise_from_unit_cell(const std::optional<UnitCell> &uc);
+};
+
+struct VerletListPacket : public NeighbourListPacket {
+  std::optional<UnitCell> unit_cell;
+
+  VerletListPacket() = default;
+
+  VerletListPacket(const std::vector<Atom> &atoms,
+                   const std::optional<UnitCell> &uc)
+      : NeighbourListPacket(atoms), unit_cell(uc) {};
+
+  VerletListPacket(const std::vector<Molecule> &molecules,
+                   const std::optional<UnitCell> &uc,
+                   Molecule::Origin o = Molecule::CentreOfMass)
+      : NeighbourListPacket(molecules, o), unit_cell(uc) {};
+
+  VerletListPacket(const std::vector<EntityVariant> &entities,
+                   const std::optional<UnitCell> &uc,
+                   Molecule::Origin o = Molecule::CentreOfMass)
+      : NeighbourListPacket(entities, o), unit_cell(uc) {};
+
+  VerletListPacket(
+      const std::vector<std::vector<EntityVariant>> &entities_vectors,
+      const std::optional<UnitCell> &uc,
+      Molecule::Origin o = Molecule::CentreOfMass)
+      : NeighbourListPacket(entities_vectors, o), unit_cell(uc) {};
 };
 
 using NeighbourCallback =
@@ -119,22 +171,37 @@ class NeighbourListBase {
 public:
   virtual ~NeighbourListBase() = default;
 
-  NeighbourListBase(const UnitCell &unit_cell, double cutoff);
-  virtual void update(const NeighbourListPacket &np) = 0;
+  NeighbourListBase(double cutoff);
+
+  // virtual void update(const std::vector<EntityVariant> &entities,
+  //                     const std::optional<UnitCell> &unit_cell,
+  //                     Molecule::Origin o = Molecule::CentreOfMass) = 0;
+
+  template <typename PacketType> void update(const PacketType &packet) {
+    update_impl(packet);
+  }
+
   virtual void iterate_neighbours(const NeighbourCallback &callback) const = 0;
 
-  virtual void update_unit_cell(const UnitCell &unit_cell,
-                                bool dummy_unit_cell) = 0;
-  virtual void update_cutoff(double rcut) = 0;
+  inline void update_cutoff(double rcut) {
+    m_cutoff = rcut;
+    m_cutoffsq = rcut * rcut;
+  };
 
-  inline const UnitCell &unit_cell() { return m_unit_cell; }
-
-  inline const bool &dummy_unit_cell() { return m_dummy_unit_cell; }
+  const inline double &cutoff() const { return m_cutoff; }
 
 protected:
-  const UnitCell &m_unit_cell;
-  bool m_dummy_unit_cell{false};
-  double m_cutoff, m_cutoffsq;
+  double m_cutoff = 10.0, m_cutoffsq = 100.0;
+
+  virtual void update_impl(const CellListPacket &packet) {
+    throw std::runtime_error(
+        "CellListPacket not supported by this neighbour list type");
+  }
+
+  virtual void update_impl(const VerletListPacket &packet) {
+    throw std::runtime_error(
+        "VerletListPacket not supported by this neighbour list type");
+  }
 };
 
 struct CellIndex {
@@ -186,25 +253,21 @@ struct CellListParameters {
 // cell list algorithm for neighbours
 class CellList : public NeighbourListBase {
 public:
-  CellList(const UnitCell &unit_cell, double cutoff);
-  void update(const NeighbourListPacket &np) override;
+  CellList(double cutoff) : NeighbourListBase(cutoff) {};
+
   void iterate_neighbours(const NeighbourCallback &callback) const override {
     this->cell_loop(callback);
   };
 
-  void update_unit_cell(const UnitCell &unit_cell,
-                        bool dummy_unit_cell) override {
-    m_dummy_unit_cell = dummy_unit_cell;
-    CellList(unit_cell, m_cutoff);
-  }
-  void update_cutoff(double rcut) override { CellList(m_unit_cell, rcut); }
+protected:
+  void update_impl(const CellListPacket &clp) override;
 
 private:
   // TODO: test non-periodic
   static constexpr size_t CELLDIVISOR = 2;
   static constexpr size_t GHOSTCELLS = CELLDIVISOR;
 
-  NeighbourListPacket m_current_nlp;
+  CellListPacket m_clp;
   CellListParameters m_params;
   std::vector<Cell> m_cells;
   ankerl::unordered_dense::map<size_t, std::vector<size_t>> m_cell_neighs;
@@ -221,9 +284,9 @@ private:
     return m_cells[linear_index(a, b, c)];
   }
 
-  CellListParameters
-  generate_cell_params(size_t ghost_cells = GHOSTCELLS) const;
-  void initialise_cells(size_t ghost_cells = GHOSTCELLS);
+  CellListParameters generate_cell_params(const Vec3 &side_lengths,
+                                          size_t ghost_cells) const;
+  void initialise_cells(const Vec3 &side_lengths, size_t ghost_cells);
   void clear_cells();
   void cell_loop(const NeighbourCallback &callback) const;
 };
@@ -231,21 +294,21 @@ private:
 // verlet/double loop algorithm for neighbours
 class VerletList : public NeighbourListBase {
 public:
-  VerletList(const UnitCell &unit_cell, double cutoff);
-  void update(const NeighbourListPacket &np) override;
+  VerletList(double cutoff) : NeighbourListBase(cutoff) {};
+
+  // void update(const std::vector<EntityVariant> &entities,
+  //             const std::optional<UnitCell> &unit_cell,
+  //             Molecule::Origin o = Molecule::CentreOfMass) override;
+
   void iterate_neighbours(const NeighbourCallback &callback) const override {
     this->verlet_loop(callback);
   };
 
-  void update_unit_cell(const UnitCell &unit_cell,
-                        bool dummy_unit_cell) override {
-    m_dummy_unit_cell = dummy_unit_cell;
-    VerletList(unit_cell, m_cutoff);
-  }
-  void update_cutoff(double rcut) override { VerletList(m_unit_cell, rcut); }
+protected:
+  void update_impl(const VerletListPacket &vlp) override;
 
 private:
-  NeighbourListPacket m_current_nlp;
+  VerletListPacket m_vlp;
   void verlet_loop(const NeighbourCallback &callback) const;
 };
 
@@ -255,44 +318,78 @@ public:
   enum class Type { Cell, Verlet };
 
   NeighbourList() = default;
-  NeighbourList(const UnitCell &unit_cell, double cutoff,
-                Type type = Type::Cell) {
+  NeighbourList(double cutoff, Type type = Type::Cell) {
 
     switch (type) {
     case Type::Cell:
-      m_impl = std::make_unique<CellList>(unit_cell, cutoff);
+      m_impl = std::make_unique<CellList>(cutoff);
+      m_type = Type::Cell;
       break;
     case Type::Verlet:
-      m_impl = std::make_unique<VerletList>(unit_cell, cutoff);
+      m_impl = std::make_unique<VerletList>(cutoff);
+      m_type = Type::Verlet;
       break;
     }
-    m_init = true;
   }
 
-  void update(const std::vector<Atom> &atoms);
-  void update(const std::vector<EntityType> &og_objects,
+  void update(const std::vector<Atom> &atoms,
+              const std::optional<UnitCell> &uc);
+
+  // inline void update(const std::vector<Atom> &atoms,
+  //                    const std::optional<UnitCell> &uc) {
+  //   this->update_impl(atoms, uc);
+  // }
+
+  void update(const std::vector<Molecule> &molecules,
+              const std::optional<UnitCell> &uc,
               Molecule::Origin o = Molecule::CentreOfMass);
-  void update(const std::vector<std::vector<EntityType>> &og_objects_vec,
+
+  void update(const std::vector<EntityVariant> &entities,
+              const std::optional<UnitCell> &uc,
+              Molecule::Origin o = Molecule::CentreOfMass);
+
+  void update(const std::vector<std::vector<EntityVariant>> &entities_vectors,
+              const std::optional<UnitCell> &uc,
               Molecule::Origin o = Molecule::CentreOfMass);
 
   void iterate_neighbours(const NeighbourCallback &callback) {
     m_impl->iterate_neighbours(callback);
   }
 
-  void update_unit_cell(const UnitCell &unit_cell,
-                        bool dummy_unit_cell = false) {
-    m_impl->update_unit_cell(unit_cell, dummy_unit_cell);
-  }
   void update_cutoff(double rcut) { m_impl->update_cutoff(rcut); }
 
+  inline void update_type(Type type) {
+    double current_cutoff = m_impl->cutoff();
+    switch (type) {
+    case Type::Cell:
+      m_impl = std::make_unique<CellList>(current_cutoff);
+      m_type = Type::Cell;
+      break;
+    case Type::Verlet:
+      m_impl = std::make_unique<VerletList>(current_cutoff);
+      m_type = Type::Verlet;
+      break;
+    }
+  }
+
+protected:
+  template <typename... Args> void update_impl(Args &&...args) {
+    switch (m_type) {
+    case Type::Cell: {
+      CellListPacket clp(std::forward<Args>(args)...);
+      m_impl->update(clp);
+      break;
+    }
+    case Type::Verlet: {
+      VerletListPacket vlp(std::forward<Args>(args)...);
+      m_impl->update(vlp);
+      break;
+    }
+    }
+  }
+
 private:
-  std::vector<EntityType> m_original_objects;
-  NeighbourListPacket m_current_nlp;
+  Type m_type = Type::Cell;
   std::unique_ptr<NeighbourListBase> m_impl;
-  bool m_init{false};
-
-  void base_update(const std::vector<EntityType> &og_objects,
-                   Molecule::Origin o);
 };
-
 }; // namespace trajan::core

@@ -1,6 +1,6 @@
+#include <occ/core/util.h>
 #include <trajan/core/element.h>
 #include <trajan/core/log.h>
-#include <trajan/core/util.h>
 
 namespace trajan::core {
 
@@ -25,7 +25,7 @@ Element::Element(int num) : m_data(ELEMENTDATA_TABLE[0]) {
 
 Element::Element(const std::string &s, bool exact_match)
     : m_data(ELEMENTDATA_TABLE[0]) {
-  std::string symbol = trajan::util::trim_copy(s);
+  std::string symbol = occ::util::trim_copy(s);
   size_t match_length = 0;
   auto it = std::find_if(
       std::rbegin(ELEMENTDATA_TABLE) + 1, std::rend(ELEMENTDATA_TABLE) - 1,

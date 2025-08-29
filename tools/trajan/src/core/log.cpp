@@ -1,61 +1,15 @@
 #include <memory>
+#include <occ/core/util.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <trajan/core/log.h>
-#include <trajan/core/util.h>
 
 namespace trajan::log {
-
-// void setup_logging(const std::string &verbosity) {
-//   auto level = trajan::log::level::info;
-//   std::string level_lower = trajan::util::to_lower_copy(verbosity);
-//   if (level_lower == "debug")
-//     level = trajan::log::level::trace;
-//   else if (level_lower == "normal")
-//     level = trajan::log::level::info;
-//   else if (level_lower == "verbose")
-//     level = trajan::log::level::debug;
-//   else if (level_lower == "minimal")
-//     level = trajan::log::level::warn;
-//   else if (level_lower == "silent")
-//     level = trajan::log::level::critical;
-//   trajan::log::set_level(level);
-//   spdlog::set_level(level);
-//   // store the last 32 debug messages in a buffer
-//   spdlog::enable_backtrace(32);
-//   spdlog::set_pattern("%v");
-// }
-//
-// void setup_logging(int verbosity) {
-//   auto level = trajan::log::level::info;
-//   switch (verbosity) {
-//   case 4:
-//     level = trajan::log::level::trace;
-//     break;
-//   case 3:
-//     level = trajan::log::level::debug;
-//     break;
-//   case 1:
-//     level = trajan::log::level::warn;
-//     break;
-//   case 0:
-//     level = trajan::log::level::critical;
-//     break;
-//   default:
-//     level = trajan::log::level::info;
-//     break;
-//   }
-//   trajan::log::set_level(level);
-//   spdlog::set_level(level);
-//   // store the last 32 debug messages in a buffer
-//   spdlog::enable_backtrace(32);
-//   spdlog::set_pattern("%v");
-// }
 
 namespace {
 std::shared_ptr<spdlog::logger> current_logger = spdlog::default_logger();
 
 spdlog::level::level_enum verbosity_to_level(const std::string &verbosity) {
-  std::string level_lower = trajan::util::to_lower_copy(verbosity);
+  std::string level_lower = occ::util::to_lower_copy(verbosity);
   if (level_lower == "debug")
     return spdlog::level::trace;
   if (level_lower == "verbose")

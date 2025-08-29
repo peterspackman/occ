@@ -13,7 +13,7 @@ namespace trajan::io {
 
 namespace fs = std::filesystem;
 
-using occ::crystal::UnitCell;
+// using occ::crystal::UnitCell;
 
 static const std::unordered_map<std::string, std::function<FileHandlerPtr()>>
     handler_map = {{".pdb", []() { return std::make_unique<PDBHandler>(); }},
@@ -39,59 +39,60 @@ bool FileHandler::initialise(Mode mode) {
 void FileHandler::finalise() { return this->_finalise(); }
 
 bool FileHandler::read_frame(core::Frame &frame) {
+  // FIXME: removing validate_frame method
   bool has_more_frames = this->read_next_frame(frame);
   if (!has_more_frames) {
     return false;
   }
-  return this->validate_frame(frame);
+  // return this->validate_frame(frame);
+  return true;
 }
 
 bool FileHandler::write_frame(const core::Frame &frame) {
   return this->write_next_frame(frame);
 }
 
-bool FileHandler::validate_frame(core::Frame &frame) {
-  std::vector<core::Atom> atoms = frame.atoms();
-  if (atoms.empty()) {
-    throw std::runtime_error("No atoms found.");
-  }
-  trajan::log::debug("Found {} atoms for frame {}", atoms.size(),
-                     frame.index());
-  UnitCell uc = frame.unit_cell();
-  Mat3N cart_pos = frame.cart_pos();
-  if (uc.volume() == 0.0) {
-    trajan::log::debug(
-        "Found no real unit cell for frame {}. Creating a dummy unit cell.",
-        frame.index());
-    // create dummy unit cell for neighlist
-    Vec3 min_vals = cart_pos.rowwise().minCoeff();
-    Vec3 max_vals = cart_pos.rowwise().maxCoeff();
-    Vec3 max_dims = max_vals - min_vals;
-    UnitCell dummy_uc = core::dummy_cell(max_dims[0], max_dims[1], max_dims[2]);
-    frame.set_uc(dummy_uc);
-    Mat3N shifted_cart_pos = cart_pos.colwise() - min_vals;
-    Mat3N frac_pos = dummy_uc.to_fractional(shifted_cart_pos);
-    frame.set_frac_pos(frac_pos);
-    frame.set_wrapped_cart_pos(cart_pos);
-    trajan::log::debug(
-        "  Unit cell: {:8.6f} {:8.6f} {:8.6f} {:8.6f} {:8.6f} {:8.6f}",
-        dummy_uc.a(), dummy_uc.b(), dummy_uc.c(),
-        units::degrees(dummy_uc.alpha()), units::degrees(dummy_uc.beta()),
-        units::degrees(dummy_uc.gamma()));
-    return true;
-  }
-  trajan::log::debug("Found a real unit cell for frame {}.", frame.index());
-  Mat3N frac_pos = uc.to_fractional(cart_pos);
-  frac_pos = frac_pos.array() - frac_pos.array().floor();
-  frame.set_frac_pos(frac_pos);
-  Mat3N wrapped_cart_pos = uc.to_cartesian(frac_pos);
-  frame.set_wrapped_cart_pos(wrapped_cart_pos);
-  trajan::log::debug(
-      "  Unit cell: {:8.6f} {:8.6f} {:8.6f} {:8.6f} {:8.6f} {:8.6f}", uc.a(),
-      uc.b(), uc.c(), units::degrees(uc.alpha()), units::degrees(uc.beta()),
-      units::degrees(uc.gamma()));
-  return true;
-}
+// bool FileHandler::validate_frame(core::Frame &frame) {
+//   std::vector<core::Atom> atoms = frame.atoms();
+//   if (atoms.empty()) {
+//     throw std::runtime_error("No atoms found.");
+//   }
+//   trajan::log::debug("Found {} atoms for frame {}", atoms.size(),
+//                      frame.index());
+//   UnitCell uc = frame.unit_cell();
+//   Mat3N cart_pos = frame.cart_pos();
+//   if (uc.volume() == 0.0) {
+//     trajan::log::debug(
+//         "Found no real unit cell for frame {}. Creating a dummy unit cell.",
+//         frame.index());
+//     // create dummy unit cell for neighlist
+//     Vec3 min_vals = cart_pos.rowwise().minCoeff();
+//     Vec3 max_vals = cart_pos.rowwise().maxCoeff();
+//     Vec3 max_dims = max_vals - min_vals;
+//     UnitCell dummy_uc = core::dummy_cell(max_dims[0], max_dims[1],
+//     max_dims[2]); frame.set_uc(dummy_uc); Mat3N shifted_cart_pos =
+//     cart_pos.colwise() - min_vals; Mat3N frac_pos =
+//     dummy_uc.to_fractional(shifted_cart_pos); frame.set_frac_pos(frac_pos);
+//     frame.set_wrapped_cart_pos(cart_pos);
+//     trajan::log::debug(
+//         "  Unit cell: {:8.6f} {:8.6f} {:8.6f} {:8.6f} {:8.6f} {:8.6f}",
+//         dummy_uc.a(), dummy_uc.b(), dummy_uc.c(),
+//         units::degrees(dummy_uc.alpha()), units::degrees(dummy_uc.beta()),
+//         units::degrees(dummy_uc.gamma()));
+//     return true;
+//   }
+//   trajan::log::debug("Found a real unit cell for frame {}.", frame.index());
+//   Mat3N frac_pos = uc.to_fractional(cart_pos);
+//   frac_pos = frac_pos.array() - frac_pos.array().floor();
+//   frame.set_frac_pos(frac_pos);
+//   Mat3N wrapped_cart_pos = uc.to_cartesian(frac_pos);
+//   frame.set_wrapped_cart_pos(wrapped_cart_pos);
+//   trajan::log::debug(
+//       "  Unit cell: {:8.6f} {:8.6f} {:8.6f} {:8.6f} {:8.6f} {:8.6f}", uc.a(),
+//       uc.b(), uc.c(), units::degrees(uc.alpha()), units::degrees(uc.beta()),
+//       units::degrees(uc.gamma()));
+//   return true;
+// }
 
 void check_handlers(std::vector<FileHandlerPtr> &handlers) {
   std::unordered_map<FileType, int> file_type_counts;

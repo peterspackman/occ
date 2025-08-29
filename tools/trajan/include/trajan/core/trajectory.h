@@ -53,9 +53,10 @@ public:
 
   const std::vector<Molecule> extract_molecules();
 
-  std::vector<EntityType> get_entities(const io::SelectionCriteria &selection);
+  std::vector<EntityVariant>
+  get_entities(const io::SelectionCriteria &selection);
 
-  std::vector<EntityType>
+  std::vector<EntityVariant>
   get_entities(const std::vector<io::SelectionCriteria> &selections);
 
   const Topology &get_topology();

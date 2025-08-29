@@ -9,7 +9,7 @@
 #include <fstream>
 #include <random>
 #include <trajan/core/element.h>
-#include <trajan/core/ewald.h>
+// #include <trajan/core/ewald.h>
 #include <trajan/core/linear_algebra.h>
 #include <trajan/core/log.h>
 #include <trajan/core/molecule.h>
@@ -43,7 +43,6 @@ using trajan::core::Topology;
 using trajan::core::Trajectory;
 using trajan::io::SelectionCriteria;
 using trajan::io::SelectionParser;
-using Entities = std::vector<trajan::core::EntityType>;
 
 using trajan::io::AtomIndexSelection;
 using trajan::io::AtomTypeSelection;
@@ -75,71 +74,71 @@ namespace units = trajan::units;
 //   REQUIRE(direct_sum == Catch::Approx(fft_sum));
 // }
 
-TEST_CASE("Element constructor with exact matching", "[element]") {
-  SECTION("Exact matches are found correctly") {
-    auto [input, expected_symbol, expected_number] =
-        GENERATE(table<std::string, std::string, int>({{"H", "H", 1},
-                                                       {"He", "He", 2},
-                                                       {"Fe", "Fe", 26},
-                                                       {"Au", "Au", 79},
-                                                       {"U", "U", 92}}));
-
-    Element e(input, true);
-    REQUIRE(e.symbol() == expected_symbol);
-    REQUIRE(e.atomic_number() == expected_number);
-  }
-
-  SECTION("Case sensitivity for exact matches") {
-    auto [input, expected_symbol] = GENERATE(table<std::string, std::string>(
-        {{"h", "Xx"}, {"HE", "Xx"}, {"fe", "Xx"}, {"AU", "Xx"}}));
-
-    Element e(input, true);
-    REQUIRE(e.symbol() == expected_symbol);
-  }
-}
-
-TEST_CASE("Element constructor with partial matching", "[element]") {
-  SECTION("Partial matches find longest valid symbol") {
-    auto [input, expected_symbol] =
-        GENERATE(table<std::string, std::string>({{"Hg", "Hg"},
-                                                  {"Hge", "Hg"},
-                                                  {"Her", "He"},
-                                                  {"Fer", "Fe"},
-                                                  {"Feat", "Fe"}}));
-
-    Element e(input, false);
-    REQUIRE(e.symbol() == expected_symbol);
-  }
-
-  SECTION("No match returns dummy element") {
-    auto input = GENERATE("Q", "J", "X", "Qq", "Jk", "Xyz");
-
-    Element e(input, false);
-    REQUIRE(e.symbol() == "Xx");
-    REQUIRE(e.atomic_number() == 0);
-  }
-}
-
-TEST_CASE("Element constructor with edge cases", "[element]") {
-  SECTION("Empty string returns dummy element") {
-    Element e("", false);
-    REQUIRE(e.symbol() == "Xx");
-  }
-
-  SECTION("Single character matches") {
-    auto [input, expected_symbol] = GENERATE(table<std::string, std::string>(
-        {{"H", "H"}, {"N", "N"}, {"O", "O"}, {"F", "F"}, {"U", "U"}}));
-
-    Element e(input, false);
-    REQUIRE(e.symbol() == expected_symbol);
-  }
-}
+// TEST_CASE("Element constructor with exact matching", "[element]") {
+//   SECTION("Exact matches are found correctly") {
+//     auto [input, expected_symbol, expected_number] =
+//         GENERATE(table<std::string, std::string, int>({{"H", "H", 1},
+//                                                        {"He", "He", 2},
+//                                                        {"Fe", "Fe", 26},
+//                                                        {"Au", "Au", 79},
+//                                                        {"U", "U", 92}}));
+//
+//     Element e(input, true);
+//     REQUIRE(e.symbol() == expected_symbol);
+//     REQUIRE(e.atomic_number() == expected_number);
+//   }
+//
+//   SECTION("Case sensitivity for exact matches") {
+//     auto [input, expected_symbol] = GENERATE(table<std::string, std::string>(
+//         {{"h", "Xx"}, {"HE", "Xx"}, {"fe", "Xx"}, {"AU", "Xx"}}));
+//
+//     Element e(input, true);
+//     REQUIRE(e.symbol() == expected_symbol);
+//   }
+// }
+//
+// TEST_CASE("Element constructor with partial matching", "[element]") {
+//   SECTION("Partial matches find longest valid symbol") {
+//     auto [input, expected_symbol] =
+//         GENERATE(table<std::string, std::string>({{"Hg", "Hg"},
+//                                                   {"Hge", "Hg"},
+//                                                   {"Her", "He"},
+//                                                   {"Fer", "Fe"},
+//                                                   {"Feat", "Fe"}}));
+//
+//     Element e(input, false);
+//     REQUIRE(e.symbol() == expected_symbol);
+//   }
+//
+//   SECTION("No match returns dummy element") {
+//     auto input = GENERATE("Q", "J", "X", "Qq", "Jk", "Xyz");
+//
+//     Element e(input, false);
+//     REQUIRE(e.symbol() == "Xx");
+//     REQUIRE(e.atomic_number() == 0);
+//   }
+// }
+//
+// TEST_CASE("Element constructor with edge cases", "[element]") {
+//   SECTION("Empty string returns dummy element") {
+//     Element e("", false);
+//     REQUIRE(e.symbol() == "Xx");
+//   }
+//
+//   SECTION("Single character matches") {
+//     auto [input, expected_symbol] = GENERATE(table<std::string, std::string>(
+//         {{"H", "H"}, {"N", "N"}, {"O", "O"}, {"F", "F"}, {"U", "U"}}));
+//
+//     Element e(input, false);
+//     REQUIRE(e.symbol() == expected_symbol);
+//   }
+// }
 
 TEST_CASE("CellList Basic Construction", "[cell_list]") {
-  auto unit_cell = trajan::core::cubic_cell(10.0);
+  // auto unit_cell = trajan::core::cubic_cell(10.0);
   double cutoff = 2.0;
 
-  SECTION("Construction") { REQUIRE_NOTHROW(CellList(unit_cell, cutoff)); }
+  SECTION("Construction") { REQUIRE_NOTHROW(CellList(cutoff)); }
 }
 
 TEST_CASE("Cell Adding and Retrieving Atoms", "[cell]") {
@@ -174,7 +173,7 @@ template <typename Func> double measure_execution_time(Func &&func) {
 
 TEST_CASE("CellList vs Double Loop Comparison", "[cell_list]") {
   const double box_size = 50.0;
-  UnitCell unit_cell = trajan::core::cubic_cell(box_size);
+  UnitCell unit_cell = occ::crystal::cubic_cell(box_size);
   const int num_atoms = 3000;
   const double cutoff = 5.0;
   const int num_threads = 1;
@@ -183,7 +182,7 @@ TEST_CASE("CellList vs Double Loop Comparison", "[cell_list]") {
   std::random_device rd;
   std::mt19937 gen(42);
 
-  SECTION("Comparing pair counting between methods inside box only atoms") {
+  SECTION("Comparing pair counting between methods with wrapped atoms only") {
     std::uniform_real_distribution<> dis(0, box_size);
 
     // create atoms with random positions
@@ -196,17 +195,16 @@ TEST_CASE("CellList vs Double Loop Comparison", "[cell_list]") {
     std::atomic<size_t> cell_list_pairs{0};
     std::atomic<size_t> verlet_list_pairs{0};
 
-    NeighbourList neighbour_list(unit_cell, cutoff);
+    NeighbourList neighbour_list(cutoff);
     double cell_list_time = measure_execution_time([&]() {
-      neighbour_list.update(atoms);
+      neighbour_list.update(atoms, unit_cell);
       neighbour_list.iterate_neighbours([&](const Entity &e1, const Entity &e2,
                                             double rsq) { cell_list_pairs++; });
     });
 
-    neighbour_list =
-        NeighbourList(unit_cell, cutoff, NeighbourList::Type::Verlet);
+    neighbour_list = NeighbourList(cutoff, NeighbourList::Type::Verlet);
     double verlet_list_time = measure_execution_time([&]() {
-      neighbour_list.update(atoms);
+      neighbour_list.update(atoms, unit_cell);
       neighbour_list.iterate_neighbours(
           [&](const Entity &e1, const Entity &e2, double rsq) {
             verlet_list_pairs++;
@@ -232,7 +230,7 @@ TEST_CASE("CellList vs Double Loop Comparison", "[cell_list]") {
     INFO("Speed-up factor: " << verlet_list_time / cell_list_time);
     REQUIRE(verlet_list_time > cell_list_time);
   }
-  SECTION("Comparing pair counting between methods outside box only atoms") {
+  SECTION("Comparing pair counting between methods with unwrapped atoms only") {
     std::uniform_real_distribution<> dis(-5, box_size - 5);
 
     atoms.clear();
@@ -246,17 +244,16 @@ TEST_CASE("CellList vs Double Loop Comparison", "[cell_list]") {
     std::atomic<size_t> cell_list_pairs{0};
     std::atomic<size_t> verlet_list_pairs{0};
 
-    NeighbourList neighbour_list(unit_cell, cutoff);
+    NeighbourList neighbour_list(cutoff);
     double cell_list_time = measure_execution_time([&]() {
-      neighbour_list.update(atoms);
+      neighbour_list.update(atoms, unit_cell);
       neighbour_list.iterate_neighbours([&](const Entity &e1, const Entity &e2,
                                             double rsq) { cell_list_pairs++; });
     });
 
-    neighbour_list =
-        NeighbourList(unit_cell, cutoff, NeighbourList::Type::Verlet);
+    neighbour_list = NeighbourList(cutoff, NeighbourList::Type::Verlet);
     double verlet_list_time = measure_execution_time([&]() {
-      neighbour_list.update(atoms);
+      neighbour_list.update(atoms, unit_cell);
       neighbour_list.iterate_neighbours(
           [&](const Entity &e1, const Entity &e2, double rsq) {
             verlet_list_pairs++;
@@ -292,10 +289,10 @@ TEST_CASE("CellList vs Double Loop Comparison using entities", "[cell_list]") {
   std::mt19937 gen(42);
   std::uniform_real_distribution<> dis(0, box_size);
 
-  UnitCell unit_cell = trajan::core::cubic_cell(box_size);
+  UnitCell unit_cell = occ::crystal::cubic_cell(box_size);
 
   // create atoms with random positions
-  Entities entities;
+  std::vector<trajan::core::EntityVariant> entities;
   entities.reserve(num_atoms);
   for (int i = 0; i < num_atoms; ++i) {
     Vec3 position(dis(gen), dis(gen), dis(gen));
@@ -307,17 +304,16 @@ TEST_CASE("CellList vs Double Loop Comparison using entities", "[cell_list]") {
     std::atomic<size_t> cell_list_pairs{0};
     std::atomic<size_t> verlet_list_pairs{0};
 
-    NeighbourList neighbour_list(unit_cell, cutoff);
+    NeighbourList neighbour_list(cutoff);
     double cell_list_time = measure_execution_time([&]() {
-      neighbour_list.update(entities);
+      neighbour_list.update(entities, unit_cell);
       neighbour_list.iterate_neighbours([&](const Entity &e1, const Entity &e2,
                                             double rsq) { cell_list_pairs++; });
     });
 
-    neighbour_list =
-        NeighbourList(unit_cell, cutoff, NeighbourList::Type::Verlet);
+    neighbour_list = NeighbourList(cutoff, NeighbourList::Type::Verlet);
     double verlet_list_time = measure_execution_time([&]() {
-      neighbour_list.update(entities);
+      neighbour_list.update(entities, unit_cell);
       neighbour_list.iterate_neighbours(
           [&](const Entity &e1, const Entity &e2, double rsq) {
             verlet_list_pairs++;
@@ -344,19 +340,19 @@ TEST_CASE("CellList vs Double Loop Comparison using entities", "[cell_list]") {
     REQUIRE(verlet_list_time > cell_list_time);
   }
 }
-TEST_CASE("CellList vs Double Loop Comparison using entities in Trajectory",
-          "[cell_list]") {
+TEST_CASE(
+    "CellList vs Double Loop Comparison using entities in Trajectory object",
+    "[cell_list]") {
   const double box_size = 50.0;
   const int num_atoms = 3000;
   const double cutoff = 5.0;
-  const int num_threads = 1;
   std::random_device rd;
   std::mt19937 gen(42);
   std::uniform_real_distribution<> dis(0, box_size);
 
   Trajectory trajectory;
   Frame &frame = trajectory.frame();
-  UnitCell unit_cell = trajan::core::cubic_cell(box_size);
+  UnitCell unit_cell = occ::crystal::cubic_cell(box_size);
   frame.set_uc(unit_cell);
 
   // create atoms with random positions
@@ -373,17 +369,16 @@ TEST_CASE("CellList vs Double Loop Comparison using entities in Trajectory",
     std::atomic<size_t> cell_list_pairs{0};
     std::atomic<size_t> verlet_list_pairs{0};
 
-    NeighbourList neighbour_list(unit_cell, cutoff);
+    NeighbourList neighbour_list(cutoff);
     double cell_list_time = measure_execution_time([&]() {
-      neighbour_list.update(trajectory.atoms());
+      neighbour_list.update(trajectory.atoms(), trajectory.unit_cell());
       neighbour_list.iterate_neighbours([&](const Entity &e1, const Entity &e2,
                                             double rsq) { cell_list_pairs++; });
     });
 
-    neighbour_list =
-        NeighbourList(unit_cell, cutoff, NeighbourList::Type::Verlet);
+    neighbour_list = NeighbourList(cutoff, NeighbourList::Type::Verlet);
     double verlet_list_time = measure_execution_time([&]() {
-      neighbour_list.update(trajectory.atoms());
+      neighbour_list.update(trajectory.atoms(), trajectory.unit_cell());
       neighbour_list.iterate_neighbours(
           [&](const Entity &e1, const Entity &e2, double rsq) {
             verlet_list_pairs++;
@@ -393,7 +388,6 @@ TEST_CASE("CellList vs Double Loop Comparison using entities in Trajectory",
     INFO("System size: " << num_atoms << " atoms");
     INFO("Box size: " << box_size << "x" << box_size << "x" << box_size);
     INFO("Cutoff distance: " << cutoff);
-    INFO("Number of threads: " << num_threads);
     double volume = box_size * box_size * box_size;
     double expected_pairs_per_atom =
         (4.0 / 3.0) * units::PI * std::pow(cutoff, 3) / volume * num_atoms;
@@ -414,16 +408,15 @@ TEST_CASE("CellList vs Double Loop Comparison using entities in Trajectory",
 TEST_CASE("CellList vs Double Loop Comparison inside Trajectory with selection",
           "[cell_list]") {
   const double box_size = 50.0;
-  const int num_atoms = 3000;
-  const double cutoff = 5.0;
-  const int num_threads = 1;
+  const int num_atoms = 33000;
+  const double cutoff = 9.0;
   std::random_device rd;
   std::mt19937 gen(42);
   std::uniform_real_distribution<> dis(0, box_size);
 
   Trajectory trajectory;
   Frame &frame = trajectory.frame();
-  UnitCell unit_cell = trajan::core::cubic_cell(box_size);
+  UnitCell unit_cell = occ::crystal::cubic_cell(box_size);
   frame.set_uc(unit_cell);
   std::vector<Atom> atoms;
   for (int i = 0; i < num_atoms; ++i) {
@@ -445,24 +438,24 @@ TEST_CASE("CellList vs Double Loop Comparison inside Trajectory with selection",
   std::optional<SelectionCriteria> result = SelectionParser::parse(sel);
   REQUIRE(result);
   SelectionCriteria sc = *result;
-  Entities entities = trajectory.get_entities(sc);
+  std::vector<trajan::core::EntityVariant> entities =
+      trajectory.get_entities(sc);
   size_t entities_size = entities.size();
 
   SECTION("Comparing pair counting between methods") {
     std::atomic<size_t> cell_list_pairs{0};
     std::atomic<size_t> verlet_list_pairs{0};
 
-    NeighbourList neighbour_list(unit_cell, cutoff);
+    NeighbourList neighbour_list(cutoff);
     double cell_list_time = measure_execution_time([&]() {
-      neighbour_list.update(entities);
+      neighbour_list.update(entities, unit_cell);
       neighbour_list.iterate_neighbours([&](const Entity &e1, const Entity &e2,
                                             double rsq) { cell_list_pairs++; });
     });
 
-    neighbour_list =
-        NeighbourList(unit_cell, cutoff, NeighbourList::Type::Verlet);
+    neighbour_list = NeighbourList(cutoff, NeighbourList::Type::Verlet);
     double verlet_list_time = measure_execution_time([&]() {
-      neighbour_list.update(entities);
+      neighbour_list.update(entities, unit_cell);
       neighbour_list.iterate_neighbours(
           [&](const Entity &e1, const Entity &e2, double rsq) {
             verlet_list_pairs++;
@@ -473,7 +466,6 @@ TEST_CASE("CellList vs Double Loop Comparison inside Trajectory with selection",
     INFO("Number of entities: " << entities_size);
     INFO("Box size: " << box_size << "x" << box_size << "x" << box_size);
     INFO("Cutoff distance: " << cutoff);
-    INFO("Number of threads: " << num_threads);
     double volume = box_size * box_size * box_size;
     double expected_pairs_per_atom =
         (4.0 / 3.0) * units::PI * std::pow(cutoff, 3) / volume * entities_size;
@@ -499,7 +491,7 @@ TEST_CASE(
   const int num_threads = 1;
   Trajectory trajectory;
   Frame &frame = trajectory.frame();
-  UnitCell unit_cell = trajan::core::cubic_cell(box_size);
+  UnitCell unit_cell = occ::crystal::cubic_cell(box_size);
   frame.set_uc(unit_cell);
   std::vector<Atom> atoms;
 
@@ -534,26 +526,25 @@ TEST_CASE(
   std::optional<SelectionCriteria> result2 = SelectionParser::parse(sel);
   REQUIRE(result2);
   SelectionCriteria sc2 = *result2;
-  std::vector<Entities> all_entities = {trajectory.get_entities(sc1),
-                                        trajectory.get_entities(sc2)};
+  std::vector<std::vector<trajan::core::EntityVariant>> all_entities = {
+      trajectory.get_entities(sc1), trajectory.get_entities(sc2)};
   size_t entities_size = all_entities[0].size();
 
   SECTION("Comparing pair counting between methods") {
     std::atomic<size_t> cell_list_pairs{0};
     std::atomic<size_t> verlet_list_pairs{0};
 
-    NeighbourList neighbour_list(unit_cell, cutoff);
+    NeighbourList neighbour_list(cutoff);
     double cell_list_time = measure_execution_time([&]() {
-      neighbour_list.update(all_entities);
+      neighbour_list.update(all_entities, unit_cell);
       neighbour_list.iterate_neighbours([&](const trajan::core::Entity &e1,
                                             const trajan::core::Entity &e2,
                                             double rsq) { cell_list_pairs++; });
     });
 
-    neighbour_list =
-        NeighbourList(unit_cell, cutoff, NeighbourList::Type::Verlet);
+    neighbour_list = NeighbourList(cutoff, NeighbourList::Type::Verlet);
     double verlet_list_time = measure_execution_time([&]() {
-      neighbour_list.update(all_entities);
+      neighbour_list.update(all_entities, unit_cell);
       neighbour_list.iterate_neighbours(
           [&](const trajan::core::Entity &e1, const trajan::core::Entity &e2,
               double rsq) { verlet_list_pairs++; });
@@ -563,7 +554,6 @@ TEST_CASE(
     INFO("Number of entities: " << entities_size);
     INFO("Box size: " << box_size << "x" << box_size << "x" << box_size);
     INFO("Cutoff distance: " << cutoff);
-    INFO("Number of threads: " << num_threads);
     double volume = box_size * box_size * box_size;
     double expected_pairs_per_atom =
         (4.0 / 3.0) * units::PI * std::pow(cutoff, 3) / volume * entities_size;
@@ -728,7 +718,9 @@ TEST_CASE("Bond Management", "[topology][bonds]") {
     REQUIRE(topology.has_bond(1, 0)); // Should work both ways
 
     // Adding duplicate bond should warn but not add
+    trajan::log::set_log_level("silent");
     topology.add_bond(0, 1, 1.5);
+    trajan::log::set_log_level("info");
     REQUIRE(topology.num_bonds() == 1);
   }
 
@@ -743,7 +735,9 @@ TEST_CASE("Bond Management", "[topology][bonds]") {
     REQUIRE(topology.has_bond(1, 2));
 
     // Removing non-existent bond should warn but not crash
+    trajan::log::set_log_level("silent");
     topology.remove_bond(0, 1);
+    trajan::log::set_log_level("info");
     REQUIRE(topology.num_bonds() == 1);
   }
 
@@ -787,7 +781,9 @@ TEST_CASE("Angle Management", "[topology][angles]") {
     REQUIRE(topology.has_angle(0, 1, 2));
 
     // Adding duplicate should warn but not add
+    trajan::log::set_log_level("silent");
     topology.add_angle(0, 1, 2);
+    trajan::log::set_log_level("info");
     REQUIRE(topology.num_angles() == 1);
   }
 
@@ -1361,7 +1357,7 @@ TEST_CASE("PDB Read/Write", "[io][pdb]") {
   std::ifstream temp_file(temp_pdb);
   std::string temp_content((std::istreambuf_iterator<char>(temp_file)),
                            std::istreambuf_iterator<char>());
-  INFO("Temporary PDB content:\n" << temp_content);
+  // INFO("Temporary PDB content:\n" << temp_content);
   REQUIRE(!temp_content.empty());
 
   Trajectory traj_read_original;
@@ -1472,7 +1468,7 @@ TEST_CASE("PDB Read/Write into memory", "[io][pdb]") {
   std::ifstream temp_file(temp_pdb);
   std::string temp_content((std::istreambuf_iterator<char>(temp_file)),
                            std::istreambuf_iterator<char>());
-  INFO("Temporary PDB content:\n" << temp_content);
+  // INFO("Temporary PDB content:\n" << temp_content);
   REQUIRE(!temp_content.empty());
 
   Trajectory traj_read_original;

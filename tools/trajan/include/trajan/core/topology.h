@@ -1,9 +1,9 @@
 #pragma once
+#include <occ/core/util.h>
 #include <trajan/core/atom.h>
 #include <trajan/core/graph.h>
 #include <trajan/core/linear_algebra.h>
 #include <trajan/core/molecule.h>
-#include <trajan/core/util.h>
 #include <vector>
 
 namespace trajan::core {
@@ -52,8 +52,8 @@ inline std::string dihedral_type_to_string(DihedralType type) {
 }
 
 inline DihedralType dihedral_type_from_string(const std::string &str) {
-  std::string edit_str = trajan::util::trim_copy(str);
-  trajan::util::to_upper(edit_str);
+  std::string edit_str = occ::util::trim_copy(str);
+  occ::util::to_upper(edit_str);
 
   if (edit_str == "PROPER")
     return DihedralType::PROPER;

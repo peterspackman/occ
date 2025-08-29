@@ -1,6 +1,7 @@
 #include <CLI/CLI.hpp>
 #include <ankerl/unordered_dense.h>
 #include <memory>
+#include <occ/core/units.h>
 #include <stdexcept>
 #include <trajan/core/log.h>
 #include <trajan/core/neigh.h>
@@ -32,7 +33,7 @@ void run_rdf_subcommand(const RDFOpts &opts) {
   RDFResult rdf(opts.nbins);
   double bin_width = opts.rcut / opts.nbins;
   double inv_bin_width = 1 / bin_width;
-  double norm = 4.0 * trajan::units::PI / 3.0;
+  double norm = 4.0 * occ::units::PI / 3.0;
   for (size_t i = 0; i < opts.nbins; i++) {
     double ri = (i + 0.5) * bin_width;
     rdf.r[i] = ri;
@@ -40,20 +41,22 @@ void run_rdf_subcommand(const RDFOpts &opts) {
 
   core::Trajectory trajectory;
 
+  // TODO: add flag to call load_files_into_memory() if desired
   trajectory.load_files(opts.infiles);
+
+  core::NeighbourList nl(opts.rcut);
 
   size_t frame_count = 0;
   while (trajectory.next_frame()) {
     core::UnitCell uc = trajectory.unit_cell();
     // TODO: find a way to not create a new nl each time
-    core::NeighbourList nl(uc, opts.rcut);
-    std::vector<core::EntityType> sel1 =
+    std::vector<core::EntityVariant> selection1 =
         trajectory.get_entities(*opts.parsed_sel1);
-    std::vector<core::EntityType> sel2 =
+    std::vector<core::EntityVariant> selection2 =
         trajectory.get_entities(*opts.parsed_sel2);
     // TODO: molecule origin input
 
-    nl.update({sel1, sel2});
+    nl.update({selection1, selection2}, trajectory.unit_cell());
 
     std::fill(rdf.nofr.begin(), rdf.nofr.end(), 0.0);
 
@@ -64,7 +67,7 @@ void run_rdf_subcommand(const RDFOpts &opts) {
       rdf.nofr[bin_idx]++;
     };
     nl.iterate_neighbours(func);
-    double density_norm = sel1.size() * sel2.size() / uc.volume();
+    double density_norm = selection1.size() * selection2.size() / uc.volume();
     for (size_t i = 0; i < opts.nbins; i++) {
       double ri = rdf.r[i];
       double shell_volume = norm * (std::pow(ri + bin_width / 2, 3) -
@@ -116,7 +119,7 @@ CLI::App *add_rdf_subcommand(CLI::App &app) {
       ->required()
       ->check(io::selection_validator(opts->parsed_sel2));
 
-  opts->num_threads = app.get_option("--threads")->as<size_t>();
+  // opts->num_threads = app.get_option("--threads")->as<size_t>();
 
   rdf->callback([opts]() { run_rdf_subcommand(*opts); });
   return rdf;
