@@ -3,7 +3,7 @@
 
 namespace occ::interaction {
 
-static const std::array<double, 110> Thakkar_atomic_polarizability{
+const std::array<double, 110> Thakkar_atomic_polarizability{
     4.50,   1.38,   164.04, 37.74,  20.43,  11.67,  7.26,   5.24,   3.70,
     2.66,   162.88, 71.22,  57.79,  37.17,  24.93,  19.37,  14.57,  11.09,
     291.10, 157.90, 142.30, 114.30, 97.30,  94.70,  75.50,  63.90,  57.70,
@@ -24,7 +24,7 @@ static const std::array<double, 110> Thakkar_atomic_polarizability{
 // + will be SIGNIFICANTLY smaller than neutral, - should be a bit larger than
 // neutral val for iodine was interpolated
 
-static const std::array<double, 110> Charged_atomic_polarizibility{
+const std::array<double, 110> Charged_atomic_polarizibility{
     4.50,   1.38,   0.19,   0.052,  20.43,  11.67,  7.26,   5.24,   7.25,
     2.66,   0.986,  0.482,  57.79,  37.17,  24.93,  19.37,  21.20,  11.09,
     5.40,   3.20,   142.30, 114.30, 97.30,  94.70,  75.50,  63.90,  57.70,

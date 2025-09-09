@@ -11,6 +11,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
+#include <occ/core/parallel.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
 #include <occ/io/xyz.h>
@@ -114,6 +115,24 @@ void register_core_bindings() {
                 }))
       .class_function("create", optional_override([](int size) {
                         Vec result = Vec::Zero(size);
+                        return result;
+                      }));
+
+  class_<Vec6>("Vec6")
+      .function("size",
+                optional_override([](const Vec6 &v) { return v.size(); }))
+      .function("get",
+                optional_override([](const Vec6 &v, int i) { return v(i); }))
+      .function("set", optional_override(
+                           [](Vec6 &v, int i, double val) { v(i) = val; }))
+      .function("toString", optional_override([](const Vec6 &v) {
+                  return occ::format_matrix(v);
+                }))
+      .function("toStringFormatted", optional_override([](const Vec6 &v, const std::string &fmt) {
+                  return occ::format_matrix(v, fmt);
+                }))
+      .class_function("create", optional_override([]() {
+                        Vec6 result = Vec6::Zero();
                         return result;
                       }));
 
@@ -379,6 +398,10 @@ void register_core_bindings() {
   function("setDataDirectory", &set_data_directory_wrapper);
   function("getDataDirectory", &get_data_directory_wrapper);
 
+  // Parallel threading functions
+  function("setNumThreads", &occ::parallel::set_num_threads);
+  function("getNumThreads", &occ::parallel::get_num_threads);
+
   // Logging level enum
   enum_<spdlog::level::level_enum>("LogLevel")
       .value("TRACE", spdlog::level::trace)
@@ -520,7 +543,10 @@ void register_core_bindings() {
 
       // Matrix access
       .property("voigtC", &ElasticTensor::voigt_c)
-      .property("voigtS", &ElasticTensor::voigt_s);
+      .property("voigtS", &ElasticTensor::voigt_s)
+      
+      // Eigenvalues
+      .function("eigenvalues", &ElasticTensor::eigenvalues);
 
   // Helper function to generate directional data for visualization
   function("generateDirectionalData",

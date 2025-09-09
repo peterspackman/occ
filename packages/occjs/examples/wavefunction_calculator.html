@@ -276,6 +276,46 @@
                                 <p class="text-sm text-gray-600">Export the calculated wavefunction for use in other quantum chemistry programs or analysis tools.</p>
                             </div>
                             
+                            <!-- Cube File Generation -->
+                            <div id="cubeGeneration" class="mb-6 p-4 bg-purple-50 rounded-lg hidden">
+                                <h4 class="text-md font-medium text-purple-900 mb-3">Generate Cube Files</h4>
+                                <div class="grid grid-cols-2 gap-4 mb-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Property</label>
+                                        <select id="cubeProperty" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                            <option value="density">Electron Density</option>
+                                            <option value="mo">Molecular Orbital</option>
+                                            <option value="mo_alpha">Alpha Molecular Orbital</option>
+                                            <option value="mo_beta">Beta Molecular Orbital</option>
+                                            <option value="esp">Electrostatic Potential</option>
+                                        </select>
+                                    </div>
+                                    <div id="moIndexContainer" class="hidden">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Orbital Index</label>
+                                        <input type="number" id="moIndex" min="0" value="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                        <p id="moIndexHint" class="text-xs text-gray-500 mt-1"></p>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 mb-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Grid X</label>
+                                        <input type="number" id="cubeNx" min="10" max="200" value="80" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Grid Y</label>
+                                        <input type="number" id="cubeNy" min="10" max="200" value="80" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Grid Z</label>
+                                        <input type="number" id="cubeNz" min="10" max="200" value="80" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                </div>
+                                <button id="generateCubeBtn" class="bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors font-medium">
+                                    Generate Cube File
+                                </button>
+                                <p class="text-sm text-gray-600 mt-2">Generate cube files for visualization in molecular viewers like NGL, VMD, or ChimeraX.</p>
+                            </div>
+                            
                             <!-- Info Panel -->
                             <div class="mt-6 p-4 bg-blue-50 rounded-lg">
                                 <h4 class="text-md font-medium text-blue-900 mb-2">About This Calculation</h4>
@@ -435,6 +475,10 @@
                     document.getElementById('calculateBtn').textContent = 'Run Calculation';
                     document.getElementById('cancelBtn').classList.add('hidden');
                     break;
+                    
+                case 'cubeResult':
+                    handleCubeResult(data);
+                    break;
             }
         }
 
@@ -574,6 +618,7 @@
             document.getElementById('energyResults').classList.add('hidden');
             document.getElementById('wavefunctionExport').classList.add('hidden');
             document.getElementById('workerProperties').classList.add('hidden');
+            document.getElementById('cubeGeneration').classList.add('hidden');
         });
 
         async function handleFile(file) {
@@ -751,6 +796,29 @@
                 // Show wavefunction export if data available
                 if (results.wavefunctionData) {
                     document.getElementById('wavefunctionExport').classList.remove('hidden');
+                    document.getElementById('cubeGeneration').classList.remove('hidden');
+                    
+                    // Update MO index hint based on results
+                    if (results.wavefunctionData) {
+                        const nAlpha = results.wavefunctionData.numAlphaElectrons;
+                        const nBeta = results.wavefunctionData.numBetaElectrons;
+                        // For closed-shell, both are equal and HOMO is the highest occupied orbital
+                        // For open-shell, we need to consider both alpha and beta
+                        const homoAlphaIndex = nAlpha - 1;
+                        const homoBetaIndex = nBeta - 1;
+                        const lumoAlphaIndex = nAlpha;
+                        const lumoBetaIndex = nBeta;
+                        
+                        if (nAlpha === nBeta) {
+                            // Closed shell
+                            document.getElementById('moIndexHint').textContent = `HOMO: ${homoAlphaIndex}, LUMO: ${lumoAlphaIndex}`;
+                            document.getElementById('moIndex').value = homoAlphaIndex;
+                        } else {
+                            // Open shell
+                            document.getElementById('moIndexHint').textContent = `HOMO α: ${homoAlphaIndex}, HOMO β: ${homoBetaIndex}, LUMO α: ${lumoAlphaIndex}, LUMO β: ${lumoBetaIndex}`;
+                            document.getElementById('moIndex').value = homoAlphaIndex;
+                        }
+                    }
                 }
                 
                 // Show matrix section if matrices available
@@ -1010,6 +1078,94 @@
                 showError('Failed to download wavefunction: ' + error.message);
             }
         }
+        
+        function generateCubeFile() {
+            if (!worker || !currentResults || !currentResults.wavefunctionData) {
+                showError('No wavefunction data available. Run a calculation first.');
+                return;
+            }
+            
+            const property = document.getElementById('cubeProperty').value;
+            const nx = parseInt(document.getElementById('cubeNx').value);
+            const ny = parseInt(document.getElementById('cubeNy').value);
+            const nz = parseInt(document.getElementById('cubeNz').value);
+            
+            const params = {
+                property: property,
+                nx: nx,
+                ny: ny,
+                nz: nz
+            };
+            
+            // Add MO index if needed
+            if (property.includes('mo')) {
+                params.moIndex = parseInt(document.getElementById('moIndex').value);
+            }
+            
+            // Determine filename
+            let filename = property;
+            if (params.moIndex !== undefined) {
+                filename += `_${params.moIndex}`;
+            }
+            params.filename = `${filename}.cube`;
+            
+            // Disable button and show progress
+            document.getElementById('generateCubeBtn').disabled = true;
+            document.getElementById('generateCubeBtn').textContent = 'Generating...';
+            
+            // Switch to output tab to show progress
+            switchTab('output');
+            
+            // Send request to worker
+            worker.postMessage({
+                type: 'generateCube',
+                data: params
+            });
+        }
+        
+        function handleCubeResult(data) {
+            // Re-enable button
+            document.getElementById('generateCubeBtn').disabled = false;
+            document.getElementById('generateCubeBtn').textContent = 'Generate Cube File';
+            
+            if (data.success) {
+                // Download the cube file
+                const blob = new Blob([data.cubeData], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = data.filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Show success message
+                addLogMessage(`Cube file generated and downloaded: ${data.filename}`, 'info');
+                updateStatus(`Cube file ${data.filename} generated successfully!`);
+                
+                // Show sample NGL code
+                const nglCode = `
+// To visualize in NGL Viewer:
+stage.loadFile(new Blob([cubeData], {type: 'text/plain'}), {ext: 'cube'})
+    .then(o => {
+        o.addRepresentation('surface', {
+            isolevel: ${data.property === 'density' ? '0.02' : '0.05'},
+            color: '${data.property === 'density' ? 'lightblue' : 'blue'}',
+            opacity: 0.7,
+            side: 'double'
+        });
+    });`;
+                
+                addLogMessage('NGL Viewer code:', 'info');
+                addLogMessage(nglCode, 'debug');
+                
+            } else {
+                showError('Cube generation failed: ' + data.error);
+                updateStatus('Cube generation failed.');
+            }
+        }
 
         // Setup other event listeners
         function setupOtherListeners() {
@@ -1026,6 +1182,27 @@
             if (downloadWavefunction) {
                 downloadWavefunction.addEventListener('click', () => {
                     downloadWavefunctionFile();
+                });
+            }
+            
+            // Cube generation controls
+            const cubeProperty = document.getElementById('cubeProperty');
+            if (cubeProperty) {
+                cubeProperty.addEventListener('change', (e) => {
+                    const property = e.target.value;
+                    const moIndexContainer = document.getElementById('moIndexContainer');
+                    if (property.includes('mo')) {
+                        moIndexContainer.classList.remove('hidden');
+                    } else {
+                        moIndexContainer.classList.add('hidden');
+                    }
+                });
+            }
+            
+            const generateCubeBtn = document.getElementById('generateCubeBtn');
+            if (generateCubeBtn) {
+                generateCubeBtn.addEventListener('click', () => {
+                    generateCubeFile();
                 });
             }
 

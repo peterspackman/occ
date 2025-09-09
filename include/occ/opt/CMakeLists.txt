@@ -1,0 +1,10 @@
+set(OCC_OPT_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/angle_coordinate.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/bond_coordinate.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dihedral_coordinate.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/internal_coordintes.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/linear_search.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/optimization_state.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pseudoinverse.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/species_data.h"
+    PARENT_SCOPE)

@@ -45,7 +45,20 @@ public:
     m_hf.set_density_fitting_basis(density_fitting_basis);
   }
 
+  inline void set_density_fitting_policy(qm::IntegralEngineDF::Policy policy) {
+    m_hf.set_density_fitting_policy(policy);
+  }
+
   inline void set_precision(double precision) { m_hf.set_precision(precision); }
+  
+  inline double integral_precision() const { return m_hf.integral_precision(); }
+  
+  /**
+   * @brief Create a new DFT instance with the same settings but different basis
+   * @param new_basis The new basis set to use  
+   * @return New DFT instance
+   */
+  DFT with_new_basis(const qm::AOBasis &new_basis) const;
 
   double exchange_correlation_energy() const { return m_exc_dft; }
   double exchange_energy_total() const { return m_exchange_energy; }
@@ -148,16 +161,8 @@ public:
     m_two_electron_energy = 0.0;
     m_exc_dft = 0.0;
 
-    size_t num_rows_factor =
-        (spinorbital_kind == SpinorbitalKind::Unrestricted) ? 2 : 1;
-
     double total_density_a{0.0}, total_density_b{0.0};
     const Mat D2 = 2 * D;
-
-    std::vector<Mat> Kt(occ::parallel::nthreads, Mat::Zero(D.rows(), D.cols()));
-    std::vector<double> energies(occ::parallel::nthreads, 0.0);
-    std::vector<double> alpha_densities(occ::parallel::nthreads, 0.0);
-    std::vector<double> beta_densities(occ::parallel::nthreads, 0.0);
 
     const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
                             ? m_method.functionals_polarized
@@ -175,46 +180,59 @@ public:
     const auto &all_weights = molecular_grid.weights();
     const size_t npt_total = all_points.cols();
 
-    const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
+    occ::log::debug("Processing {} grid points with adaptive blocking", npt_total);
 
-    occ::log::debug("Processing {} grid points in {} blocks", npt_total,
-                    num_blocks);
-
-    auto lambda = [&](int thread_id) {
-      for (size_t block = 0; block < num_blocks; block++) {
-        if (block % nthreads != thread_id)
-          continue;
-
-        Eigen::Index l = block * m_blocksize;
-        Eigen::Index u =
-            std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
-        Eigen::Index npt = u - l;
-
-        if (npt <= 0)
-          continue;
-
-        const auto &pts_block = all_points.middleCols(l, npt);
-        const auto &weights_block = all_weights.segment(l, npt);
-
-        auto gto_vals =
-            occ::gto::evaluate_basis(basis, pts_block, derivative_order);
-
-        kernels::process_grid_block<derivative_order, spinorbital_kind>(
-            D2, gto_vals, pts_block, weights_block, funcs, Kt[thread_id],
-            energies[thread_id], alpha_densities[thread_id],
-            beta_densities[thread_id], m_density_threshold);
-      }
+    // Consolidated thread-local storage with better alignment
+    struct ThreadLocalData {
+      Mat K_local;
+      double energy_local{0.0};
+      double alpha_density_local{0.0};
+      double beta_density_local{0.0};
+      
+      ThreadLocalData(size_t rows, size_t cols) : K_local(Mat::Zero(rows, cols)) {}
     };
+    
+    occ::parallel::thread_local_storage<ThreadLocalData> thread_data(
+        [K_rows, K_cols]() { return ThreadLocalData(K_rows, K_cols); }
+    );
 
-    occ::parallel::parallel_do(lambda);
-    occ::timing::stop(occ::timing::category::dft_xc);
+    // Let TBB determine optimal grain size based on work complexity
+    const size_t min_points_per_chunk = std::max(size_t(32), nbf / 4);
+    const size_t max_chunks = nthreads * 8; // Allow good work stealing
+    size_t adaptive_grain = std::max(min_points_per_chunk, 
+                                   npt_total / max_chunks);
 
-    for (size_t i = 0; i < nthreads; i++) {
-      K += Kt[i];
-      m_exc_dft += energies[i];
-      total_density_a += alpha_densities[i];
-      total_density_b += beta_densities[i];
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, npt_total, adaptive_grain),
+        [&](const tbb::blocked_range<size_t> &range) {
+            const size_t l = range.begin();
+            const size_t u = range.end();
+            const size_t npt = u - l;
+
+            if (npt == 0) return;
+
+            const auto &pts_block = all_points.middleCols(l, npt);
+            const auto &weights_block = all_weights.segment(l, npt);
+
+            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, derivative_order);
+            auto &data = thread_data.local();
+
+            kernels::process_grid_block<derivative_order, spinorbital_kind>(
+                D2, gto_vals, pts_block, weights_block, funcs, 
+                data.K_local, data.energy_local, data.alpha_density_local, 
+                data.beta_density_local, m_density_threshold);
+        }
+    );
+
+    // Efficient reduction with vectorized operations where possible
+    for (const auto &data : thread_data) {
+        K.noalias() += data.K_local;
+        m_exc_dft += data.energy_local;
+        total_density_a += data.alpha_density_local;
+        total_density_b += data.beta_density_local;
     }
+    
+    occ::timing::stop(occ::timing::category::dft_xc);
 
     occ::log::debug("Total density: alpha = {} beta = {}", total_density_a,
                     total_density_b);
@@ -319,13 +337,25 @@ public:
     return m_nlc_energy;
   }
 
+  // WARNING: VV10/NLC gradients are not fully tested and may not be correct.
+  // Current implementation is post-SCF only (not self-consistent) and
+  // does not include SCF response. Use with caution.
+  Mat3N compute_nlc_gradient(const MolecularOrbitals &mo) const {
+    if (!have_nonlocal_correlation()) {
+      const size_t natoms = m_hf.atoms().size();
+      return Mat3N::Zero(3, natoms);
+    }
+    auto nlc_result = m_nlc.compute_gradient(m_hf.aobasis(), mo);
+    return nlc_result.gradient;
+  }
+
   Mat compute_fock(const MolecularOrbitals &mo, const Mat &Schwarz = Mat()) {
     auto [J, K] = compute_JK(mo, Schwarz);
     return J - K;
   }
 
   MatTriple compute_fock_gradient(const MolecularOrbitals &mo,
-                                  const Mat &Schwarz = Mat()) const;
+                                  const Mat &Schwarz = Mat());
 
   const auto &hf() const { return m_hf; }
 
@@ -389,7 +419,7 @@ public:
   }
 
   qm::JKTriple compute_JK_gradient(const MolecularOrbitals &mo,
-                                   const Mat &Schwarz = Mat()) const;
+                                   const Mat &Schwarz = Mat());
 
   MatTriple compute_J_gradient(const MolecularOrbitals &mo,
                                const Mat &Schwarz = Mat()) const {
@@ -421,8 +451,6 @@ private:
 
     Mat3N gradient = Mat3N::Zero(3, natoms);
 
-    std::vector<Mat3N> gradients_t(nthreads, Mat3N::Zero(3, natoms));
-
     const auto &funcs = (spinorbital_kind == SpinorbitalKind::Unrestricted)
                             ? m_method.functionals_polarized
                             : m_method.functionals;
@@ -439,43 +467,43 @@ private:
     const auto &all_weights = molecular_grid.weights();
     const size_t npt_total = all_points.cols();
 
-    const size_t num_blocks = (npt_total + m_blocksize - 1) / m_blocksize;
+    occ::log::debug("Processing {} grid points for gradient with adaptive blocking", npt_total);
 
-    occ::log::debug(
-        "Processing {} grid points in {} blocks for gradient calculation",
-        npt_total, num_blocks);
+    // Thread-local storage for gradients
+    occ::parallel::thread_local_storage<Mat3N> gradients_local(
+        [natoms]() { return Mat3N::Zero(3, natoms); }
+    );
 
-    auto lambda = [&](int thread_id) {
-      for (size_t block = 0; block < num_blocks; block++) {
-        if (block % nthreads != thread_id)
-          continue;
+    // Adaptive grain size for gradient computation (typically needs larger chunks)
+    const size_t min_points_per_chunk = std::max(size_t(64), nbf / 2);
+    const size_t max_chunks = nthreads * 6; // Slightly fewer chunks for gradient work
+    size_t adaptive_grain = std::max(min_points_per_chunk, 
+                                   npt_total / max_chunks);
 
-        Eigen::Index l = block * m_blocksize;
-        Eigen::Index u =
-            std::min<Eigen::Index>(npt_total, (block + 1) * m_blocksize);
-        Eigen::Index npt = u - l;
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, npt_total, adaptive_grain),
+        [&](const tbb::blocked_range<size_t> &range) {
+            const size_t l = range.begin();
+            const size_t u = range.end();
+            const size_t npt = u - l;
 
-        if (npt <= 0)
-          continue;
+            if (npt == 0) return;
 
-        const auto &pts_block = all_points.middleCols(l, npt);
-        const auto &weights_block = all_weights.segment(l, npt);
+            const auto &pts_block = all_points.middleCols(l, npt);
+            const auto &weights_block = all_weights.segment(l, npt);
 
-        auto gto_vals =
-            occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
+            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
+            auto &local_gradient = gradients_local.local();
 
-        kernels::process_grid_block_gradient<derivative_order,
-                                             spinorbital_kind>(
-            D, gto_vals, pts_block, weights_block, funcs,
-            gradients_t[thread_id], m_density_threshold, basis);
-      }
-    };
+            kernels::process_grid_block_gradient<derivative_order, spinorbital_kind>(
+                D, gto_vals, pts_block, weights_block, funcs,
+                local_gradient, m_density_threshold, basis);
+        }
+    );
 
-    occ::parallel::parallel_do(lambda);
-
-    // Combine results from all threads
-    for (size_t i = 0; i < nthreads; i++) {
-      gradient += gradients_t[i];
+    // Efficient gradient reduction
+    for (const auto &local_gradient : gradients_local) {
+        gradient.noalias() += local_gradient;
     }
 
     occ::timing::stop(occ::timing::category::dft_gradient);

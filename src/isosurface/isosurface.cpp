@@ -1,5 +1,6 @@
 #include <occ/core/eeq.h>
 #include <occ/core/kdtree.h>
+#include <occ/core/parallel.h>
 #include <occ/geometry/marching_cubes.h>
 #include <occ/isosurface/curvature.h>
 #include <occ/isosurface/isosurface.h>
@@ -131,7 +132,6 @@ void IsosurfaceCalculator::compute_default_atom_surface_properties() {
   constexpr size_t num_results = 6;
   FVec di_norm = FVec::Constant(N, std::numeric_limits<float>::max());
   FVec dnorm = FVec::Constant(N, std::numeric_limits<float>::max());
-  int nthreads = occ::parallel::get_num_threads();
 
   if (m_molecule.size() > 0) {
     Eigen::Matrix3Xf inside = m_molecule.positions().cast<float>();
@@ -145,44 +145,44 @@ void IsosurfaceCalculator::compute_default_atom_surface_properties() {
     IVec di_idx = IVec::Constant(N, -1);
     IVec di_norm_idx = IVec::Constant(N, -1);
 
-    auto fill_interior_properties = [&](int thread_id) {
-      std::vector<size_t> indices(num_results);
-      std::vector<float> dist_sq(num_results);
-      std::vector<float> dist_norm(num_results);
-
-      for (int i = 0; i < vertices.cols(); i++) {
-        if (i % nthreads != thread_id)
-          continue;
-
-        Eigen::Vector3f v = vertices.col(i);
-        float dist_inside_norm = std::numeric_limits<float>::max();
-        nanoflann::KNNResultSet<float> results(num_results);
-        results.init(&indices[0], &dist_sq[0]);
-        bool populated = interior_tree.index->findNeighbors(
-            results, v.data(), nanoflann::SearchParams());
-        if (!populated)
-          continue;
-        di(i) = std::sqrt(dist_sq[0]);
-        di_idx(i) = indices[0];
-
-        size_t inside_idx = 0;
-        for (int idx = 0; idx < results.size(); idx++) {
-
-          float vdw = vdw_inside(indices[idx]);
-          float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
-
-          if (dnorm < dist_inside_norm) {
-            inside_idx = indices[idx];
-            dist_inside_norm = dnorm;
-          }
-        }
-        di_norm(i) = dist_inside_norm;
-        di_norm_idx(i) = inside_idx;
-      }
-    };
+    // Use TBB-based thread-local storage for temporary arrays
+    occ::parallel::thread_local_storage<std::vector<size_t>> indices_local(
+      [num_results]() { return std::vector<size_t>(num_results); }
+    );
+    occ::parallel::thread_local_storage<std::vector<float>> dist_sq_local(
+      [num_results]() { return std::vector<float>(num_results); }
+    );
 
     occ::timing::start(occ::timing::category::isosurface_properties);
-    occ::parallel::parallel_do(fill_interior_properties);
+    occ::parallel::parallel_for(size_t(0), size_t(N), [&](size_t i) {
+      auto &indices = indices_local.local();
+      auto &dist_sq = dist_sq_local.local();
+
+      Eigen::Vector3f v = vertices.col(i);
+      float dist_inside_norm = std::numeric_limits<float>::max();
+      nanoflann::KNNResultSet<float> results(num_results);
+      results.init(&indices[0], &dist_sq[0]);
+      bool populated = interior_tree.index->findNeighbors(
+          results, v.data(), nanoflann::SearchParams());
+      if (!populated)
+        return;
+      
+      di(i) = std::sqrt(dist_sq[0]);
+      di_idx(i) = indices[0];
+
+      size_t inside_idx = 0;
+      for (int idx = 0; idx < results.size(); idx++) {
+        float vdw = vdw_inside(indices[idx]);
+        float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
+
+        if (dnorm < dist_inside_norm) {
+          inside_idx = indices[idx];
+          dist_inside_norm = dnorm;
+        }
+      }
+      di_norm(i) = dist_inside_norm;
+      di_norm_idx(i) = inside_idx;
+    });
     occ::timing::stop(occ::timing::category::isosurface_properties);
 
     m_isosurface.properties.add("di", di);
@@ -201,47 +201,48 @@ void IsosurfaceCalculator::compute_default_atom_surface_properties() {
     occ::core::KDTree<float> exterior_tree(outside.rows(), outside,
                                            occ::core::max_leaf);
     exterior_tree.index->buildIndex();
-    auto fill_exterior_properties = [&](int thread_id) {
-      std::vector<size_t> indices(num_results);
-      std::vector<float> dist_sq(num_results);
-      std::vector<float> dist_norm(num_results);
+    // Use TBB-based thread-local storage for temporary arrays
+    occ::parallel::thread_local_storage<std::vector<size_t>> ext_indices_local(
+      [num_results]() { return std::vector<size_t>(num_results); }
+    );
+    occ::parallel::thread_local_storage<std::vector<float>> ext_dist_sq_local(
+      [num_results]() { return std::vector<float>(num_results); }
+    );
 
-      for (int i = 0; i < vertices.cols(); i++) {
-        if (i % nthreads != thread_id)
-          continue;
+    occ::timing::start(occ::timing::category::isosurface_properties);
+    occ::parallel::parallel_for(size_t(0), size_t(N), [&](size_t i) {
+      auto &indices = ext_indices_local.local();
+      auto &dist_sq = ext_dist_sq_local.local();
 
-        Eigen::Vector3f v = vertices.col(i);
-        float dist_outside_norm = std::numeric_limits<float>::max();
-        nanoflann::KNNResultSet<float> results(num_results);
-        results.init(&indices[0], &dist_sq[0]);
-        bool populated = exterior_tree.index->findNeighbors(
-            results, v.data(), nanoflann::SearchParams());
-        if (!populated)
-          continue;
-        de(i) = std::sqrt(dist_sq[0]);
-        de_idx(i) = indices[0];
+      Eigen::Vector3f v = vertices.col(i);
+      float dist_outside_norm = std::numeric_limits<float>::max();
+      nanoflann::KNNResultSet<float> results(num_results);
+      results.init(&indices[0], &dist_sq[0]);
+      bool populated = exterior_tree.index->findNeighbors(
+          results, v.data(), nanoflann::SearchParams());
+      if (!populated)
+        return;
+        
+      de(i) = std::sqrt(dist_sq[0]);
+      de_idx(i) = indices[0];
 
-        size_t outside_idx = 0;
-        for (int idx = 0; idx < results.size(); idx++) {
+      size_t outside_idx = 0;
+      for (int idx = 0; idx < results.size(); idx++) {
+        float vdw = vdw_outside(indices[idx]);
+        float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
 
-          float vdw = vdw_outside(indices[idx]);
-          float dnorm = (std::sqrt(dist_sq[idx]) - vdw) / vdw;
-
-          if (dnorm < dist_outside_norm) {
-            outside_idx = indices[idx];
-            dist_outside_norm = dnorm;
-          }
-        }
-        de_norm(i) = dist_outside_norm;
-        de_norm_idx(i) = outside_idx;
-
-        if (m_molecule.size() > 0) {
-          dnorm(i) = de_norm(i) + di_norm(i);
+        if (dnorm < dist_outside_norm) {
+          outside_idx = indices[idx];
+          dist_outside_norm = dnorm;
         }
       }
-    };
-    occ::timing::start(occ::timing::category::isosurface_properties);
-    occ::parallel::parallel_do(fill_exterior_properties);
+      de_norm(i) = dist_outside_norm;
+      de_norm_idx(i) = outside_idx;
+
+      if (m_molecule.size() > 0) {
+        dnorm(i) = de_norm(i) + di_norm(i);
+      }
+    });
     occ::timing::stop(occ::timing::category::isosurface_properties);
 
     m_isosurface.properties.add("de_idx", de_idx);

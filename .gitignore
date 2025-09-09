@@ -1,5 +1,8 @@
 build/
+build-*/
+.venv/
 debug/
+junk_scripts/
 CMakeLists.txt.user
 .vscode/
 tags
@@ -13,6 +16,7 @@ __pycache__
 occjs.js
 occjs.wasm
 wasm/
+examples/*
 
 # Node.js
 node_modules/
@@ -29,3 +33,5 @@ packages/occjs/examples/share/
 
 # Coverage
 coverage/
+*.cube
+*.pgrid

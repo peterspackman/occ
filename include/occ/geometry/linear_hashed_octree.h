@@ -74,7 +74,12 @@ template <typename N> struct LinearHashedOctree {
         }
       }
     };
-    occ::parallel::parallel_do(worker_fn);
+
+    // Use TBB's parallel task execution instead of parallel_do
+    int num_threads = occ::parallel::get_num_threads();
+    occ::parallel::parallel_for(0, num_threads, [&](int i) {
+      worker_fn(i);
+    });
     occ::log::info("Octree build workers joined");
 
     // Copy from the temporary shared leaves vector to the class member

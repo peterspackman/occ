@@ -3,6 +3,8 @@
 
 let OCC = null;
 let occModule = null;
+let currentWavefunction = null;
+let currentMolecule = null;
 
 // Initialize OCC module when worker starts
 self.addEventListener('message', async function(e) {
@@ -20,6 +22,10 @@ self.addEventListener('message', async function(e) {
                 
             case 'setLogLevel':
                 setLogLevel(data.level);
+                break;
+                
+            case 'generateCube':
+                await generateCubeFile(data);
                 break;
                 
             default:
@@ -104,6 +110,7 @@ async function runCalculation(params) {
         });
         
         const molecule = await OCC.moleculeFromXYZ(params.xyzData);
+        currentMolecule = molecule; // Store for cube generation
         
         postMessage({ 
             type: 'log', 
@@ -189,10 +196,13 @@ async function runCalculation(params) {
         // Export wavefunction data
         try {
             const wf = calc.wavefunction;
+            currentWavefunction = wf; // Store for cube generation
             results.wavefunctionData = {
                 fchk: wf.exportToString('fchk'),
                 numBasisFunctions: calc.basis.nbf(),
-                numAtoms: molecule.size()
+                numAtoms: molecule.size(),
+                numAlphaElectrons: wf.molecularOrbitals.numAlpha,
+                numBetaElectrons: wf.molecularOrbitals.numBeta || wf.molecularOrbitals.numAlpha
             };
         } catch (e) {
             postMessage({ 
@@ -309,6 +319,135 @@ async function runCalculation(params) {
     } catch (error) {
         postMessage({ 
             type: 'result', 
+            success: false,
+            error: error.message,
+            stack: error.stack
+        });
+    }
+}
+
+async function generateCubeFile(params) {
+    try {
+        if (!currentWavefunction) {
+            throw new Error('No wavefunction available. Run a calculation first.');
+        }
+        
+        postMessage({ 
+            type: 'progress', 
+            stage: 'cube_start',
+            message: `Generating ${params.property} cube file...` 
+        });
+        
+        const Module = occModule || OCC.getModule();
+        
+        // Set default grid dimensions if not specified
+        const nx = params.nx || 80;
+        const ny = params.ny || 80;
+        const nz = params.nz || 80;
+        
+        let cubeString;
+        
+        switch(params.property) {
+            case 'density':
+                postMessage({ 
+                    type: 'log', 
+                    level: 'info', 
+                    message: `Generating electron density cube (${nx}x${ny}x${nz})...` 
+                });
+                cubeString = Module.generateElectronDensityCube(currentWavefunction, nx, ny, nz);
+                break;
+                
+            case 'mo':
+                if (params.moIndex === undefined) {
+                    throw new Error('MO index required for molecular orbital cube');
+                }
+                postMessage({ 
+                    type: 'log', 
+                    level: 'info', 
+                    message: `Generating MO ${params.moIndex} cube (${nx}x${ny}x${nz})...` 
+                });
+                cubeString = Module.generateMOCube(currentWavefunction, params.moIndex, nx, ny, nz);
+                break;
+                
+            case 'mo_alpha':
+                if (params.moIndex === undefined) {
+                    throw new Error('MO index required for molecular orbital cube');
+                }
+                postMessage({ 
+                    type: 'log', 
+                    level: 'info', 
+                    message: `Generating alpha MO ${params.moIndex} cube (${nx}x${ny}x${nz})...` 
+                });
+                cubeString = Module.generateMOCubeWithSpin(
+                    currentWavefunction, 
+                    params.moIndex, 
+                    Module.SpinConstraint.Alpha, 
+                    nx, ny, nz
+                );
+                break;
+                
+            case 'mo_beta':
+                if (params.moIndex === undefined) {
+                    throw new Error('MO index required for molecular orbital cube');
+                }
+                postMessage({ 
+                    type: 'log', 
+                    level: 'info', 
+                    message: `Generating beta MO ${params.moIndex} cube (${nx}x${ny}x${nz})...` 
+                });
+                cubeString = Module.generateMOCubeWithSpin(
+                    currentWavefunction, 
+                    params.moIndex, 
+                    Module.SpinConstraint.Beta, 
+                    nx, ny, nz
+                );
+                break;
+                
+            case 'esp': {
+                postMessage({ 
+                    type: 'log', 
+                    level: 'info', 
+                    message: `Generating electrostatic potential cube (${nx}x${ny}x${nz})...` 
+                });
+                // Use VolumeCalculator for ESP
+                const calc = new Module.VolumeCalculator();
+                calc.setWavefunction(currentWavefunction);
+                
+                const volParams = new Module.VolumeGenerationParameters();
+                volParams.property = Module.VolumePropertyKind.ElectricPotential;
+                volParams.setSteps(nx, ny, nz);
+                
+                const volume = calc.computeVolume(volParams);
+                cubeString = calc.volumeAsCubeString(volume);
+                
+                // Clean up
+                volume.delete();
+                volParams.delete();
+                calc.delete();
+                break;
+            }
+                
+            default:
+                throw new Error(`Unknown cube property: ${params.property}`);
+        }
+        
+        postMessage({ 
+            type: 'progress', 
+            stage: 'cube_complete',
+            message: 'Cube file generated successfully!' 
+        });
+        
+        postMessage({ 
+            type: 'cubeResult', 
+            success: true,
+            cubeData: cubeString,
+            property: params.property,
+            filename: params.filename || `${params.property}.cube`
+        });
+        
+    } catch (error) {
+        postMessage({ 
+            type: 'cubeResult', 
             success: false,
             error: error.message,
             stack: error.stack

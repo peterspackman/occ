@@ -31,6 +31,14 @@ public:
   }
 
   void set_density_fitting_basis(const std::string &);
+  void set_density_fitting_policy(IntegralEngineDF::Policy policy);
+  
+  /**
+   * @brief Create a new HartreeFock instance with the same settings but different basis
+   * @param new_basis The new basis set to use
+   * @return New HartreeFock instance
+   */
+  HartreeFock with_new_basis(const AOBasis &new_basis) const;
 
   inline void set_precision(double precision) {
     m_engine.set_precision(precision);
@@ -38,6 +46,10 @@ public:
     if (m_df_engine != nullptr) {
       m_df_engine->set_precision(precision);
     }
+  }
+
+  inline double integral_precision() const {
+    return m_engine.precision();
   }
 
   double nuclear_point_charge_interaction_energy(const PointChargeList &) const;

@@ -89,6 +89,15 @@ import {
   DMAResult
 } from './dma.js';
 
+// Import optimization functionality
+import {
+  optimizeHF,
+  optimizeDFT,
+  computeFrequencies,
+  optimizeAndAnalyze,
+  moleculeToXYZ
+} from './optimization.js';
+
 /**
  * Main QM calculation factory with module loading
  * @param {Object} molecule - Molecule object
@@ -133,7 +142,10 @@ export async function wavefunctionFromString(content, format) {
 }
 
 
-// Export the main functions and constants
+// Re-export all bindings from the WASM module
+export * from './occjs.js';
+
+// Export the main functions and constants (including our convenience methods)
 export {
   // Core module loading
   loadOCC,
@@ -157,5 +169,11 @@ export {
   calculateDMA,
   generatePunchFile,
   DMAConfig,
-  DMAResult
+  DMAResult,
+  // Optimization functionality
+  optimizeHF,
+  optimizeDFT,
+  computeFrequencies,
+  optimizeAndAnalyze,
+  moleculeToXYZ
 };

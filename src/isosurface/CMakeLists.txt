@@ -6,11 +6,13 @@ add_library(occ_isosurface
     "${CMAKE_CURRENT_SOURCE_DIR}/electron_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/orbital_index.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/promolecule_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/stockholder_weight.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/surface_types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/void.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/volume.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/volume_calculator.cpp"
     ${OCC_ISOSURFACE_INCLUDE_FILES}
 )
 

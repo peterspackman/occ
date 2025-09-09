@@ -265,6 +265,55 @@ public:
   }
 
   template <Operator OP, Shell::Kind ST>
+  inline std::array<int, 2>
+  two_center_helper_hess(std::array<int, 2> shells, libcint::CINTOpt *opt,
+                         double *buffer, double *cache) {
+    std::array<int, 2> dims{cgto<ST>(shells[0]), cgto<ST>(shells[1])};
+    if constexpr (ST == Shell::Kind::Spherical) {
+      if constexpr (OP == Operator::overlap)
+        libcint::int1e_ipipovlp_sph(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::nuclear)
+        libcint::int1e_ipipnuc_sph(buffer, dims.data(), shells.data(),
+                                   atom_data_ptr(), num_atoms(), basis_data_ptr(),
+                                   num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::kinetic)
+        libcint::int1e_ipipkin_sph(buffer, dims.data(), shells.data(),
+                                   atom_data_ptr(), num_atoms(), basis_data_ptr(),
+                                   num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::rinv)
+        libcint::int1e_ipiprinv_sph(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else {
+        impl::static_invalid_operator();
+      }
+    } else {
+      if constexpr (OP == Operator::overlap)
+        libcint::int1e_ipipovlp_cart(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::nuclear)
+        libcint::int1e_ipipnuc_cart(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::kinetic)
+        libcint::int1e_ipipkin_cart(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::rinv)
+        libcint::int1e_ipiprinv_cart(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else {
+        impl::static_invalid_operator();
+      }
+    }
+    return dims;
+  }
+
+  template <Operator OP, Shell::Kind ST>
   inline std::array<int, 2> two_center_helper(std::array<int, 2> shells,
                                               libcint::CINTOpt *opt,
                                               double *buffer, double *cache) {
@@ -366,6 +415,34 @@ public:
           basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
     } else {
       nonzero = libcint::int2e_ip1_cart(
+          buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+          basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+    }
+    if (nonzero == 0) {
+      dims[0] = -1;
+    }
+    return dims;
+  }
+
+  template <Operator OP, Shell::Kind ST>
+  inline std::array<int, 4>
+  four_center_helper_hess(std::array<int, 4> shells, libcint::CINTOpt *opt,
+                          double *buffer, double *cache) {
+    static_assert(OP == Operator::coulomb, "not a two-electron operator");
+    std::array<int, 4> dims{
+        cgto<ST>(shells[0]),
+        cgto<ST>(shells[1]),
+        cgto<ST>(shells[2]),
+        cgto<ST>(shells[3]),
+    };
+    int nonzero = 0;
+
+    if constexpr (ST == Shell::Kind::Spherical) {
+      nonzero = libcint::int2e_ipip1_sph(
+          buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+          basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+    } else {
+      nonzero = libcint::int2e_ipip1_cart(
           buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
           basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
     }

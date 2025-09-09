@@ -136,6 +136,9 @@ public:
   MatTriple one_electron_operator_grad(Op op,
                                        bool use_shellpair_list = true) const;
 
+  MatSix one_electron_operator_hess(Op op,
+                                    bool use_shellpair_list = true) const;
+
   Mat effective_core_potential(bool use_shellpair_list = true) const;
   Mat fock_operator(SpinorbitalKind, const MolecularOrbitals &mo,
                     const Mat &Schwarz = Mat()) const;
@@ -145,11 +148,20 @@ public:
   MatTriple fock_operator_grad(SpinorbitalKind, const MolecularOrbitals &mo,
                                const Mat &Schwarz = Mat()) const;
 
+  MatSix fock_operator_hess(SpinorbitalKind, const MolecularOrbitals &mo,
+                            const Mat &Schwarz = Mat()) const;
+
   Mat coulomb(SpinorbitalKind, const MolecularOrbitals &mo,
               const Mat &Schwarz = Mat()) const;
 
   MatTriple coulomb_grad(SpinorbitalKind, const MolecularOrbitals &mo,
                          const Mat &Schwarz = Mat()) const;
+
+  MatSix coulomb_hess(SpinorbitalKind, const MolecularOrbitals &mo,
+                      const Mat &Schwarz = Mat()) const;
+
+  MatSix exchange_hess(SpinorbitalKind, const MolecularOrbitals &mo,
+                       const Mat &Schwarz = Mat()) const;
 
   JKTriple coulomb_exchange_grad(SpinorbitalKind, const MolecularOrbitals &mo,
                                  const Mat &Schwarz = Mat()) const;
@@ -220,6 +232,9 @@ public:
                                 bool use_shellpair_list = true) const;
   MatTriple rinv_operator_grad_atom(size_t atom_index,
                                     bool use_shellpair_list = true) const;
+
+  MatSix rinv_operator_hess_atom(size_t atom_index,
+                                 bool use_shellpair_list = true) const;
 
   Vec multipole(int order, const MolecularOrbitals &mo,
                 const Vec3 &origin = {0, 0, 0}) const;

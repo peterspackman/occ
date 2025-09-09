@@ -25,6 +25,10 @@ private:
   void initialize_wolf_sum();
   bool is_converged(double current, double previous) const;
   void report_convergence_statistics(const CEEnergyComponents &total);
+  void apply_crystal_field_polarization_partitioning(
+    crystal::CrystalDimers &dimers, 
+    std::vector<CEEnergyComponents> &energies,
+    double radius);
 
   std::unique_ptr<EnergyModelBase> m_energy_model;
   crystal::Crystal m_crystal;

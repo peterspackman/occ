@@ -13,11 +13,15 @@
 #include <occ/io/moldenreader.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/expectation.h>
+#include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
+#include <occ/qm/hessians.h>
+#include <occ/core/vibration.h>
+#include <occ/driver/vibrational_analysis.h>
 
 using namespace nb::literals;
 using occ::Mat;
@@ -245,10 +249,105 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
            [](const HartreeFock &hf, const MolecularOrbitals &mo) {
              return hf.compute_fock(mo);
            })
+      .def("compute_gradient",
+           [](HartreeFock &hf, const MolecularOrbitals &mo) {
+             GradientEvaluator<HartreeFock> grad(hf);
+             return grad(mo);
+           }, "mo"_a, "Compute atomic gradients for the given molecular orbitals")
+      .def("nuclear_repulsion_gradient",
+           [](HartreeFock &hf) {
+             return hf.nuclear_repulsion_gradient();
+           }, "Compute nuclear repulsion gradient")
+      .def("hessian_evaluator",
+           [](HartreeFock &hf) {
+             return occ::qm::HessianEvaluator<HartreeFock>(hf);
+           }, "Create a Hessian evaluator for this HF object")
       .def("__repr__", [](const HartreeFock &hf) {
         return fmt::format("<HartreeFock ({}, {} atoms)>", hf.aobasis().name(),
                            hf.atoms().size());
       });
+
+  // Hessian evaluator for HartreeFock
+  nb::class_<occ::qm::HessianEvaluator<HartreeFock>>(m, "HessianEvaluatorHF")
+      .def(nb::init<HartreeFock &>(), "hf"_a)
+      .def("set_method", &occ::qm::HessianEvaluator<HartreeFock>::set_method, "method"_a)
+      .def("set_step_size", &occ::qm::HessianEvaluator<HartreeFock>::set_step_size, "h"_a,
+           "Set finite differences step size in Bohr")
+      .def("set_use_acoustic_sum_rule", &occ::qm::HessianEvaluator<HartreeFock>::set_use_acoustic_sum_rule, "use"_a,
+           "Enable/disable acoustic sum rule optimization")
+      .def("step_size", &occ::qm::HessianEvaluator<HartreeFock>::step_size,
+           "Get current step size")
+      .def("use_acoustic_sum_rule", &occ::qm::HessianEvaluator<HartreeFock>::use_acoustic_sum_rule,
+           "Check if acoustic sum rule is enabled")
+      .def("nuclear_repulsion", &occ::qm::HessianEvaluator<HartreeFock>::nuclear_repulsion,
+           "Compute nuclear repulsion Hessian")
+      .def("__call__", &occ::qm::HessianEvaluator<HartreeFock>::operator(), "mo"_a,
+           "Compute the full molecular Hessian")
+      .def("__repr__", [](const occ::qm::HessianEvaluator<HartreeFock> &hess) {
+        return fmt::format("<HessianEvaluatorHF step_size={:.4f} acoustic_sum_rule={}>",
+                           hess.step_size(), hess.use_acoustic_sum_rule());
+      });
+  
+  // Vibrational analysis results
+  nb::class_<occ::core::VibrationalModes>(m, "VibrationalModes")
+      .def_ro("frequencies_cm", &occ::core::VibrationalModes::frequencies_cm,
+              "Frequencies in cm⁻¹")
+      .def_ro("frequencies_hartree", &occ::core::VibrationalModes::frequencies_hartree,
+              "Frequencies in Hartree")
+      .def_ro("normal_modes", &occ::core::VibrationalModes::normal_modes,
+              "Normal mode vectors (3N×3N)")
+      .def_ro("mass_weighted_hessian", &occ::core::VibrationalModes::mass_weighted_hessian,
+              "Mass-weighted Hessian matrix")
+      .def_ro("hessian", &occ::core::VibrationalModes::hessian,
+              "Original Hessian matrix")
+      .def("n_modes", &occ::core::VibrationalModes::n_modes,
+           "Number of vibrational modes")
+      .def("n_atoms", &occ::core::VibrationalModes::n_atoms,
+           "Number of atoms")
+      .def("summary_string", &occ::core::VibrationalModes::summary_string,
+           "Get formatted summary of vibrational analysis")
+      .def("frequencies_string", &occ::core::VibrationalModes::frequencies_string,
+           "Get formatted frequency table")
+      .def("normal_modes_string", &occ::core::VibrationalModes::normal_modes_string,
+           "threshold"_a = 0.1,
+           "Get formatted normal mode vectors")
+      .def("get_all_frequencies", &occ::core::VibrationalModes::get_all_frequencies,
+           "Get all frequencies as a sorted vector")
+      .def("__repr__", [](const occ::core::VibrationalModes &modes) {
+        return fmt::format("<VibrationalModes n_modes={} n_atoms={}>",
+                           modes.n_modes(), modes.n_atoms());
+      });
+
+  // Vibrational analysis functions
+  m.def("compute_vibrational_modes",
+        nb::overload_cast<const Mat &, const Vec &, const occ::Mat3N &, bool>(
+            &occ::core::compute_vibrational_modes),
+        "hessian"_a, "masses"_a, "positions"_a = occ::Mat3N(), "project_tr_rot"_a = false,
+        "Compute vibrational modes from Hessian matrix");
+
+  m.def("compute_vibrational_modes",
+        nb::overload_cast<const Mat &, const occ::core::Molecule &, bool>(
+            &occ::core::compute_vibrational_modes),
+        "hessian"_a, "molecule"_a, "project_tr_rot"_a = false,
+        "Compute vibrational modes from Hessian matrix and molecule");
+
+  m.def("mass_weighted_hessian",
+        nb::overload_cast<const Mat &, const Vec &>(&occ::core::mass_weighted_hessian),
+        "hessian"_a, "masses"_a,
+        "Construct mass-weighted Hessian matrix");
+
+  m.def("mass_weighted_hessian",
+        nb::overload_cast<const Mat &, const occ::core::Molecule &>(&occ::core::mass_weighted_hessian),
+        "hessian"_a, "molecule"_a,
+        "Construct mass-weighted Hessian matrix from molecule");
+
+  m.def("eigenvalues_to_frequencies_cm", &occ::core::eigenvalues_to_frequencies_cm,
+        "eigenvalues"_a,
+        "Convert eigenvalues to frequencies in cm⁻¹");
+
+  m.def("frequencies_cm_to_hartree", &occ::core::frequencies_cm_to_hartree,
+        "frequencies_cm"_a,
+        "Convert frequencies from cm⁻¹ to Hartree");
 
   nb::class_<JKPair>(m, "JKPair")
       .def(nb::init<>())

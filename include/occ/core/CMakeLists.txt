@@ -37,4 +37,5 @@ set(OCC_CORE_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/units.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/util.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vibration.h"
     PARENT_SCOPE)

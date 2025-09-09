@@ -16,6 +16,7 @@ add_subdirectory(solvent)
 add_subdirectory(xdm)
 add_subdirectory(xtb)
 add_subdirectory(cg)
+add_subdirectory(opt)
 add_subdirectory(driver)
 
 add_subdirectory(isosurface)
@@ -31,6 +32,7 @@ set(PYTHON_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/python/dma_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/isosurface_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/interaction_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/opt_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/qm_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occpy.cpp"
 )
@@ -50,6 +52,7 @@ target_compile_definitions(_occpy PRIVATE VERSION_INFO=${PROJECT_VERSION})
 target_compile_features(_occpy PUBLIC cxx_std_20)
 target_link_libraries(_occpy PUBLIC 
     occ_main
+    occ_opt
 )
 
 install(TARGETS _occpy LIBRARY DESTINATION occpy)
@@ -62,10 +65,12 @@ set(JS_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/js/core_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/qm_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/dft_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/opt_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/isosurface_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/cube_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/crystal_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/dma_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/volume_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
 )
 
@@ -89,6 +94,7 @@ target_link_libraries(occjs PUBLIC
     occ_dma
     occ_driver
     occ_isosurface
+    occ_opt
 )
 
 # Emscripten-specific linker flags for JavaScript bindings

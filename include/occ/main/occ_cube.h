@@ -1,5 +1,6 @@
 #pragma once
 #include <CLI/App.hpp>
+#include <occ/isosurface/orbital_index.h>
 
 namespace occ::main {
 
@@ -11,7 +12,8 @@ struct CubeConfig {
 
   std::string spin{"both"};
   std::string functional{"blyp"};
-  int mo_number{-1};
+  std::string orbitals_input{"all"};
+  int mo_number{-1};  // Computed from orbitals_input
 
   std::vector<int> steps;
   std::vector<double> da;
@@ -30,6 +32,9 @@ struct CubeConfig {
   // Crystal symmetry options
   std::string crystal_filename{""};  // CIF file for crystal structure
   bool unit_cell_only{false};
+  
+  // Help flags
+  bool list_properties{false};
 };
 
 CLI::App *add_cube_subcommand(CLI::App &app);

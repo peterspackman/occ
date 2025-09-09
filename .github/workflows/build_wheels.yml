@@ -14,27 +14,65 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }}-py${{ matrix.pyver }}-${{ matrix.arch || 'default' }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        pyver: [cp310, cp311, cp312, cp313]
+        include:
+          # Linux builds - single arch
+          - os: ubuntu-latest
+            pyver: cp310
+            arch: x86_64
+          - os: ubuntu-latest
+            pyver: cp311
+            arch: x86_64
+          - os: ubuntu-latest
+            pyver: cp312
+            arch: x86_64
+          - os: ubuntu-latest
+            pyver: cp313
+            arch: x86_64
+          # macOS ARM64 builds
+          - os: macos-latest
+            pyver: cp310
+            arch: arm64
+          - os: macos-latest
+            pyver: cp311
+            arch: arm64
+          - os: macos-latest
+            pyver: cp312
+            arch: arm64
+          - os: macos-latest
+            pyver: cp313
+            arch: arm64
+          # macOS Universal2 builds
+          - os: macos-latest
+            pyver: cp310
+            arch: universal2
+          - os: macos-latest
+            pyver: cp311
+            arch: universal2
+          - os: macos-latest
+            pyver: cp312
+            arch: universal2
+          - os: macos-latest
+            pyver: cp313
+            arch: universal2
 
     steps:
       - name: Checkout repos
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22.0
+        uses: pypa/cibuildwheel@v3.1.4
         env:
           CIBW_BUILD: ${{matrix.pyver}}-*
-          CIBW_ARCHS_LINUX: auto64
-          CIBW_ARCHS_MACOS: auto64 universal2
-          CIBW_ARCHS_WINDOWS: auto64
+          CIBW_ARCHS: ${{matrix.arch}}
           CIBW_BUILD_FRONTEND: "build[uv]"
           CIBW_TEST_SKIP: ${{matrix.pyver}}-*
 
@@ -42,16 +80,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
-          name: occpy-${{ matrix.os }}-${{ matrix.pyver }}
+          name: occpy-${{ matrix.os }}-${{ matrix.pyver }}-${{ matrix.arch }}
 
   build_pyodide_wheel:
     name: Build wheel for pyodide
     runs-on: ubuntu-22.04
+    continue-on-error: true  # Allow this job to fail without failing the workflow
     steps:
-      - uses: actions/checkout@v4
-      - uses: pypa/cibuildwheel@v2.20.0
+      - uses: actions/checkout@v5
+      - uses: pypa/cibuildwheel@v3.1.4
         env:
            CIBW_PLATFORM: pyodide
+           CIBW_ARCHS: wasm32
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -60,18 +100,37 @@ jobs:
 
   upload_all:
     runs-on: ubuntu-latest
-    needs: build_wheels
+    needs: [build_wheels, build_pyodide_wheel]
     environment:
       name: pypi
       url: https://pypi.org/p/occpy/
     permissions:
       id-token: write
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_pypi)
+    if: always() && (needs.build_wheels.result == 'success') && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_pypi))
     steps:
-    - uses: actions/download-artifact@v4
+    # Download regular wheels (always required)
+    - uses: actions/download-artifact@v5
       with:
         path: dist
-        pattern: occpy-*
+        pattern: 'occpy-*'
         merge-multiple: true
 
+    # Try to download Pyodide wheel if it succeeded (optional)
+    - name: Download Pyodide wheel (if available)
+      uses: actions/download-artifact@v5
+      continue-on-error: true
+      with:
+        path: dist
+        pattern: 'wasm-occpy-pyodide'
+        merge-multiple: true
+
+    - name: List downloaded wheels
+      run: |
+        echo "Downloaded wheels:"
+        ls -la dist/
+        echo "Checking wheel integrity:"
+        python -m zipfile -t dist/*.whl || true
+
     - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip-existing: true

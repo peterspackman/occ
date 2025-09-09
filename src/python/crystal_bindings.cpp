@@ -1,4 +1,5 @@
 #include "crystal_bindings.h"
+#include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <nanobind/eigen/dense.h>
 #include <nanobind/stl/pair.h>
@@ -126,6 +127,24 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
       .def("unit_cell_dimers", &Crystal::unit_cell_dimers)
       .def("atom_surroundings", &Crystal::atom_surroundings)
       .def("dimer_symmetry_string", &Crystal::dimer_symmetry_string)
+      .def("normalize_hydrogen_bondlengths", 
+           [](Crystal &self, const nb::dict &custom_lengths) {
+             ankerl::unordered_dense::map<int, double> lengths_map;
+             for (auto [key, value] : custom_lengths) {
+               lengths_map[nb::cast<int>(key)] = nb::cast<double>(value);
+             }
+             return self.normalize_hydrogen_bondlengths(lengths_map);
+           },
+           "custom_lengths"_a = nb::dict(),
+           "Normalize hydrogen bond lengths to standard values.\n"
+           "Returns the number of hydrogens normalized.\n"
+           "custom_lengths: optional dict mapping atomic numbers to bond lengths in Angstroms")
+      .def("normalize_hydrogen_bondlengths", 
+           [](Crystal &self) {
+             return self.normalize_hydrogen_bondlengths();
+           },
+           "Normalize hydrogen bond lengths to standard values.\n"
+           "Returns the number of hydrogens normalized.")
       .def("asymmetric_unit_atom_surroundings",
            &Crystal::asymmetric_unit_atom_surroundings)
       .def("num_sites", &Crystal::num_sites)

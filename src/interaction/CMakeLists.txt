@@ -10,6 +10,7 @@ add_library(occ_interaction
     "${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pair_potential.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/polarization.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/polarization_partitioning.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_transform.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xtb_energy_model.cpp"

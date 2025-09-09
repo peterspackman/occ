@@ -1,4 +1,5 @@
 #include "crystal_bindings.h"
+#include <ankerl/unordered_dense.h>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 #include <memory>
@@ -365,6 +366,22 @@ void register_crystal_bindings() {
             }
             return result;
           }))
+      .function("normalizeHydrogenBondlengths",
+                optional_override([](Crystal &crystal) {
+                  return crystal.normalize_hydrogen_bondlengths();
+                }))
+      .function("normalizeHydrogenBondlengthsCustom",
+                optional_override([](Crystal &crystal, const val &customLengths) {
+                  ankerl::unordered_dense::map<int, double> lengths_map;
+                  val keys = val::global("Object")["keys"](customLengths);
+                  int length = keys["length"].as<int>();
+                  for (int i = 0; i < length; ++i) {
+                    int atomic_number = keys[i].as<int>();
+                    double bond_length = customLengths[keys[i]].as<double>();
+                    lengths_map[atomic_number] = bond_length;
+                  }
+                  return crystal.normalize_hydrogen_bondlengths(lengths_map);
+                }))
       .class_function("fromCifFile",
                       optional_override([](const std::string &filename) {
                         occ::io::CifParser parser;

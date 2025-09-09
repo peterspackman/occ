@@ -52,6 +52,7 @@ enum category {
   mc_primal,
   mc_surface,
   gradient,
+  hessian,
   dma_analytic,
   dma_grid_eval,
   dma_grid_int,

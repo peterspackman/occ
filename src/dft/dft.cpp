@@ -26,9 +26,37 @@ int DFT::density_derivative() const {
 DFT::DFT(const std::string &method, const AOBasis &basis,
          const GridSettings &grid_settings)
     : SCFMethodBase(basis.atoms()), m_hf(basis), m_grid(basis, grid_settings) {
+
   update_electron_count();
+
+  std::vector<int> frozen(basis.atoms().size(), 0);
+  int num_frozen = basis.total_ecp_electrons();
+  if (num_frozen > 0) {
+    frozen = basis.ecp_electrons();
+  }
+  set_frozen_electrons(frozen);
+  m_num_frozen = num_frozen;
+
   set_method(method);
   set_integration_grid(grid_settings);
+}
+
+DFT DFT::with_new_basis(const AOBasis &new_basis) const {
+  // Create new DFT instance with same method string and grid settings
+  DFT new_dft(m_method_string, new_basis, m_grid.settings());
+  
+  // Copy additional settings
+  new_dft.set_precision(this->integral_precision());
+  new_dft.m_density_threshold = m_density_threshold;
+  new_dft.m_blocksize = m_blocksize;
+  
+  // Copy DF basis if present
+  // Note: This is a limitation - we'd need to store the DF basis name to properly copy it
+  if (!m_hf.supports_incremental_fock_build()) {
+    occ::log::warn("Density fitting basis not preserved in DFT::with_new_basis - needs implementation");
+  }
+  
+  return new_dft;
 }
 
 void DFT::set_method(const std::string &method_string) {

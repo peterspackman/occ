@@ -148,20 +148,16 @@ Mat compute_sap_matrix(const std::vector<occ::core::Atom> &atoms,
     }
   };
 
-  // Call the 3-center kernel
-  auto lambda = [&](int thread_id) {
-    if (engine.is_spherical()) {
-      detail::three_center_aux_kernel<Shell::Kind::Spherical>(
-          collect_integrals, engine.env(), engine.aobasis(), engine.auxbasis(),
-          engine.shellpairs(), thread_id);
-    } else {
-      detail::three_center_aux_kernel<Shell::Kind::Cartesian>(
-          collect_integrals, engine.env(), engine.aobasis(), engine.auxbasis(),
-          engine.shellpairs(), thread_id);
-    }
-  };
-
-  occ::parallel::parallel_do(lambda);
+  // Call the 3-center kernel directly with TBB
+  if (engine.is_spherical()) {
+    detail::three_center_aux_kernel<Shell::Kind::Spherical>(
+        collect_integrals, engine.env(), engine.aobasis(), engine.auxbasis(),
+        engine.shellpairs());
+  } else {
+    detail::three_center_aux_kernel<Shell::Kind::Cartesian>(
+        collect_integrals, engine.env(), engine.aobasis(), engine.auxbasis(),
+        engine.shellpairs());
+  }
 
   occ::log::debug("SAP matrix computed with {} x {} elements", nbf, nbf);
   return -V_sap;

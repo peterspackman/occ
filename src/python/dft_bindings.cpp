@@ -4,6 +4,8 @@
 #include <nanobind/stl/string.h>
 #include <occ/dft/dft.h>
 #include <occ/qm/scf.h>
+#include <occ/qm/hessians.h>
+#include <occ/qm/gradients.h>
 
 using namespace nb::literals;
 using occ::dft::DFT;
@@ -70,9 +72,39 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
             return KS(dft, kind);
           },
           "unrestricted"_a = SpinorbitalKind::Restricted)
+      .def("compute_gradient",
+           [](DFT &dft, const MolecularOrbitals &mo) {
+             occ::qm::GradientEvaluator<DFT> grad(dft);
+             return grad(mo);
+           }, "mo"_a, "Compute atomic gradients for the given molecular orbitals")
+      .def("hessian_evaluator",
+           [](DFT &dft) {
+             return occ::qm::HessianEvaluator<DFT>(dft);
+           }, "Create a Hessian evaluator for this DFT object")
       .def("__repr__", [](const DFT &dft) {
         return fmt::format("<DFT {} ({}, {} atoms)>", dft.method_string(),
                            dft.aobasis().name(), dft.atoms().size());
+      });
+
+  // Hessian evaluator for DFT
+  nb::class_<occ::qm::HessianEvaluator<DFT>>(m, "HessianEvaluatorDFT")
+      .def(nb::init<DFT &>(), "dft"_a)
+      .def("set_method", &occ::qm::HessianEvaluator<DFT>::set_method, "method"_a)
+      .def("set_step_size", &occ::qm::HessianEvaluator<DFT>::set_step_size, "h"_a,
+           "Set finite differences step size in Bohr")
+      .def("set_use_acoustic_sum_rule", &occ::qm::HessianEvaluator<DFT>::set_use_acoustic_sum_rule, "use"_a,
+           "Enable/disable acoustic sum rule optimization")
+      .def("step_size", &occ::qm::HessianEvaluator<DFT>::step_size,
+           "Get current step size")
+      .def("use_acoustic_sum_rule", &occ::qm::HessianEvaluator<DFT>::use_acoustic_sum_rule,
+           "Check if acoustic sum rule is enabled")
+      .def("nuclear_repulsion", &occ::qm::HessianEvaluator<DFT>::nuclear_repulsion,
+           "Compute nuclear repulsion Hessian")
+      .def("__call__", &occ::qm::HessianEvaluator<DFT>::operator(), "mo"_a,
+           "Compute the full molecular Hessian")
+      .def("__repr__", [](const occ::qm::HessianEvaluator<DFT> &hess) {
+        return fmt::format("<HessianEvaluatorDFT step_size={:.4f} acoustic_sum_rule={}>",
+                           hess.step_size(), hess.use_acoustic_sum_rule());
       });
 
   return m;

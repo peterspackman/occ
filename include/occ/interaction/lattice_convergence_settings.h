@@ -17,6 +17,7 @@ struct LatticeConvergenceSettings {
   bool spherical_basis{false};
   std::string charge_string;
   std::string external_command{""};
+  bool normalize_hydrogens{false};
 };
 
 } // namespace occ::interaction

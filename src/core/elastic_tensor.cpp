@@ -243,4 +243,9 @@ double &ElasticTensor::component(int i, int j, int k, int l) {
   return m_components[i][j][k][l];
 }
 
+Vec6 ElasticTensor::eigenvalues() const {
+  Eigen::SelfAdjointEigenSolver<occ::Mat6> solv(m_c);
+  return solv.eigenvalues();
+}
+
 } // namespace occ::core

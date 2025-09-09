@@ -98,9 +98,11 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def("vdw_radii", &Molecule::vdw_radii)
       .def("molar_mass", &Molecule::molar_mass)
       .def("atoms", &Molecule::atoms)
+      .def("bonds", &Molecule::bonds)
       .def("center_of_mass", &Molecule::center_of_mass)
       .def("centroid", &Molecule::centroid)
       .def("unit_cell_molecule_idx", &Molecule::unit_cell_molecule_idx)
+      .def("asymmetric_unit_idx", &Molecule::asymmetric_unit_idx)
       .def("is_equivalent_to", &Molecule::is_equivalent_to)
       .def("cell_shift", &Molecule::cell_shift)
       .def("rotate",
@@ -261,6 +263,7 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def_prop_ro("voigt_c", &ElasticTensor::voigt_c)
       .def("component", nb::overload_cast<int, int, int, int>(
                             &ElasticTensor::component, nb::const_))
+      .def("eigenvalues", &ElasticTensor::eigenvalues)
 
       // Convenience methods for plotting
       .def(

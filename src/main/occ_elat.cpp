@@ -17,6 +17,7 @@
 #include <occ/interaction/polarization.h>
 #include <occ/interaction/xtb_energy_model.h>
 #include <occ/io/cifparser.h>
+#include <occ/io/cifwriter.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/eigen_json.h>
@@ -190,6 +191,35 @@ write_elat_json(const std::string &basename, const std::string &model,
   if (uc_dimers.has_value()) {
     j["all_pairs"] = {};
     const occ::crystal::CrystalDimers uc_dimers_value = uc_dimers.value();
+
+    using Offset = std::tuple<int, int, int, int>;
+    ankerl::unordered_dense::set<Offset> global_molecule_offsets;
+    for (const auto &mol_pairs : uc_dimers_value.molecule_neighbors) {
+      for (const auto &[dimer, unique_idx] : mol_pairs) {
+        const auto &unique_dimer = dimers.unique_dimers[unique_idx];
+        if (unique_dimer.interaction_energy() == 0.0)
+          continue;
+
+        const auto shift_a = dimer.a().cell_shift();
+        Offset mol_a{dimer.a().unit_cell_molecule_idx(), shift_a[0], shift_a[1],
+                     shift_a[2]};
+        global_molecule_offsets.insert(mol_a);
+        const auto shift_b = dimer.b().cell_shift();
+        Offset mol_b{dimer.b().unit_cell_molecule_idx(), shift_b[0], shift_b[1],
+                     shift_b[2]};
+        global_molecule_offsets.insert(mol_b);
+      }
+    }
+    ankerl::unordered_dense::map<Offset, int> map_molecules;
+    ankerl::unordered_dense::map<int, int> map_mol_uc_idx;
+    int counter = 0;
+    for (const auto &offset : global_molecule_offsets) {
+      map_molecules[offset] = counter;
+      int mol_uc_idx = std::get<0>(offset);
+      map_mol_uc_idx[counter] = mol_uc_idx;
+      counter++;
+    }
+
     for (const auto &mol_pairs : uc_dimers_value.molecule_neighbors) {
       nlohmann::json m;
       for (const auto &[dimer, unique_idx] : mol_pairs) {
@@ -222,7 +252,20 @@ write_elat_json(const std::string &basename, const std::string &model,
         d["r"] = r;
         occ::Vec3 r_vec = dimer.v_ab_com();
         d["rvec"] = std::array<double, 3>({r_vec[0], r_vec[1], r_vec[2]});
-        d["mass"] = dimer.a().molar_mass();
+
+        d["mass"] = std::tuple<double, double>{dimer.a().molar_mass(),
+                                               dimer.b().molar_mass()};
+        const auto shift_a = dimer.a().cell_shift();
+        Offset mol_a{dimer.a().unit_cell_molecule_idx(), shift_a[0], shift_a[1],
+                     shift_a[2]};
+        const auto shift_b = dimer.b().cell_shift();
+        Offset mol_b{dimer.b().unit_cell_molecule_idx(), shift_b[0], shift_b[1],
+                     shift_b[2]};
+        int idx_a = map_molecules[mol_a];
+        int idx_b = map_molecules[mol_b];
+        d["pair_indices"] = std::tuple<int, int>{idx_a, idx_b};
+        d["pair_uc_indices"] =
+            std::tuple<int, int>{map_mol_uc_idx[idx_a], map_mol_uc_idx[idx_b]};
 
         m.push_back(d);
       }
@@ -261,6 +304,25 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   std::string filename = settings.crystal_filename;
   std::string basename = fs::path(filename).stem().string();
   Crystal c = read_crystal(filename);
+  
+  if (settings.normalize_hydrogens) {
+    try {
+      occ::log::info("Starting hydrogen bond normalization...");
+      ankerl::unordered_dense::map<int, double> empty_map;
+      int normalized_bonds = c.normalize_hydrogen_bondlengths(empty_map);
+      occ::log::info("Normalized {} hydrogen bonds", normalized_bonds);
+      
+      // Write normalized crystal to CIF file
+      std::string normalized_filename = basename + "_norm.cif";
+      occ::io::CifWriter writer;
+      writer.write(normalized_filename, c, basename + "_normalized");
+      occ::log::info("Wrote normalized crystal structure to {}", normalized_filename);
+    } catch (const std::exception& e) {
+      occ::log::error("Error during normalization: {}", e.what());
+      throw;
+    }
+  }
+  
   occ::log::info("Energy model: {}", settings.model_name);
   occ::log::info("Loaded crystal from {}", filename);
   auto molecules = c.symmetry_unique_molecules();
@@ -395,6 +457,9 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
   elat->add_option(
       "--external-command", config->external_command,
       "external command for energy calculations (for model=external)");
+  elat->add_flag("--normalize-hbonds", config->normalize_hydrogens,
+                 "normalize hydrogen bond lengths");
+
   elat->fallthrough();
   elat->callback([config, use_xtb]() {
     if (*use_xtb) {

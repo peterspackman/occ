@@ -72,7 +72,9 @@ double MP2::compute_correlation_energy() {
   const size_t n_ao = m_mo.n_ao;
   const Vec &orbital_energies = m_mo.energies;
 
-  auto [n_occ_active, n_virt_active] = get_active_orbital_ranges();
+  auto active_ranges = get_active_orbital_ranges();
+  size_t n_occ_active = active_ranges.first;
+  size_t n_virt_active = active_ranges.second;
 
   occ::log::debug("Active space: {}/{} occupied, {}/{} virtual orbitals",
                   n_occ_active, n_occ_total, n_virt_active, n_virt_total);
@@ -127,7 +129,9 @@ std::pair<size_t, size_t> MP2::get_active_orbital_ranges() const {
 }
 
 double MP2::compute_ri_mp2_energy() {
-  auto [n_occ_active, n_virt_active] = get_active_orbital_ranges();
+  auto active_ranges = get_active_orbital_ranges();
+  size_t n_occ_active = active_ranges.first;
+  size_t n_virt_active = active_ranges.second;
   const size_t n_occ_total = n_occupied();
   const size_t n_virt_total = n_virtual();
 
@@ -162,7 +166,9 @@ double MP2::compute_ri_mp2_energy() {
 }
 
 double MP2::compute_conventional_mp2_energy() {
-  auto [n_occ_active, n_virt_active] = get_active_orbital_ranges();
+  auto active_ranges = get_active_orbital_ranges();
+  size_t n_occ_active = active_ranges.first;
+  size_t n_virt_active = active_ranges.second;
   const size_t n_occ_total = n_occupied();
 
   double same_spin_energy = 0.0;
@@ -181,72 +187,65 @@ double MP2::compute_conventional_mp2_energy() {
     occ::log::debug("Computing MP2 energy with {} threads",
                     occ::parallel::get_num_threads());
 
-    // Thread-local storage for results
-    const int num_threads = occ::parallel::get_num_threads();
-
+    // Thread-local storage for results using TBB
     struct ThreadData {
       double total = 0.0;
       double same_spin = 0.0;
       double opposite_spin = 0.0;
     };
 
-    std::vector<ThreadData> thread_data(num_threads);
+    occ::parallel::thread_local_storage<ThreadData> thread_data_local;
 
-    auto dense_mp2_lambda = [&](int thread_id) {
-      size_t i_start = (thread_id * n_occ_active) / num_threads;
-      size_t i_end = ((thread_id + 1) * n_occ_active) / num_threads;
-
-      auto &local_data = thread_data[thread_id];
+    occ::timing::start(occ::timing::category::mp2_energy);
+    occ::parallel::parallel_for(size_t(0), n_occ_active, [&](size_t i) {
+      auto &local_data = thread_data_local.local();
       double &local_total = local_data.total;
       double &local_same_spin = local_data.same_spin;
       double &local_opposite_spin = local_data.opposite_spin;
 
-      for (size_t i = i_start; i < i_end; ++i) {
-        for (size_t j = 0; j < n_occ_active; ++j) {
-          for (size_t a = 0; a < n_virt_active; ++a) {
-            for (size_t b = 0; b < n_virt_active; ++b) {
+      for (size_t j = 0; j < n_occ_active; ++j) {
+        for (size_t a = 0; a < n_virt_active; ++a) {
+          for (size_t b = 0; b < n_virt_active; ++b) {
 
-              // Map to full orbital space indices
-              size_t i_full = i + m_n_frozen_core;
-              size_t j_full = j + m_n_frozen_core;
+            // Map to full orbital space indices
+            size_t i_full = i + m_n_frozen_core;
+            size_t j_full = j + m_n_frozen_core;
 
-              // Get integrals (ia|jb) and (ib|ja) from tensor
-              double integral_iajb = ovov_tensor(i_full, a, j_full, b);
-              double integral_ibja = ovov_tensor(i_full, b, j_full, a);
+            // Get integrals (ia|jb) and (ib|ja) from tensor
+            double integral_iajb = ovov_tensor(i_full, a, j_full, b);
+            double integral_ibja = ovov_tensor(i_full, b, j_full, a);
 
-              double eps_i = orbital_energies(i_full);
-              double eps_j = orbital_energies(j_full);
-              double eps_a = orbital_energies(n_occ_total + a);
-              double eps_b = orbital_energies(n_occ_total + b);
-              double denominator = eps_i + eps_j - eps_a - eps_b;
+            double eps_i = orbital_energies(i_full);
+            double eps_j = orbital_energies(j_full);
+            double eps_a = orbital_energies(n_occ_total + a);
+            double eps_b = orbital_energies(n_occ_total + b);
+            double denominator = eps_i + eps_j - eps_a - eps_b;
 
-              constexpr double denominator_threshold = 1e-12;
-              if (std::abs(denominator) < denominator_threshold) {
-                continue;
-              }
-
-              double numerator =
-                  integral_iajb * (2.0 * integral_iajb - integral_ibja);
-              double mp2_contribution = numerator / denominator;
-              local_total += mp2_contribution;
-
-              double opposite_spin_contrib =
-                  2.0 * integral_iajb * integral_iajb / denominator;
-              double same_spin_contrib =
-                  -integral_iajb * integral_ibja / denominator;
-
-              local_opposite_spin += opposite_spin_contrib;
-              local_same_spin += same_spin_contrib;
+            constexpr double denominator_threshold = 1e-12;
+            if (std::abs(denominator) < denominator_threshold) {
+              continue;
             }
+
+            double numerator =
+                integral_iajb * (2.0 * integral_iajb - integral_ibja);
+            double mp2_contribution = numerator / denominator;
+            local_total += mp2_contribution;
+
+            double opposite_spin_contrib =
+                2.0 * integral_iajb * integral_iajb / denominator;
+            double same_spin_contrib =
+                -integral_iajb * integral_ibja / denominator;
+
+            local_opposite_spin += opposite_spin_contrib;
+            local_same_spin += same_spin_contrib;
           }
         }
       }
-    };
+    });
+    occ::timing::stop(occ::timing::category::mp2_energy);
 
-    occ::parallel::parallel_do_timed(dense_mp2_lambda,
-                                     occ::timing::category::mp2_energy);
-
-    for (const auto &data : thread_data) {
+    // Reduce thread-local results
+    for (const auto &data : thread_data_local) {
       total_correlation += data.total;
       same_spin_energy += data.same_spin;
       opposite_spin_energy += data.opposite_spin;

@@ -41,6 +41,7 @@ public:
 
   int total_electrons() const { return m_proc.total_electrons(); }
   int active_electrons() const { return m_proc.active_electrons(); }
+  const auto &frozen_electrons() const { return m_proc.frozen_electrons(); }
 
   double nuclear_repulsion_energy() const {
     return m_proc.nuclear_repulsion_energy();
@@ -188,6 +189,7 @@ public:
 
   int total_electrons() const { return m_proc.total_electrons(); }
   int active_electrons() const { return m_proc.active_electrons(); }
+  const auto &frozen_electrons() const { return m_proc.frozen_electrons(); }
 
   double nuclear_repulsion_energy() const {
     return m_proc.nuclear_repulsion_energy();
