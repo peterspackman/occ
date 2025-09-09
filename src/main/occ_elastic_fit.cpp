@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iterator>
 #include <nlohmann/json.hpp>
+#include <occ/core/constants.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
@@ -27,14 +28,10 @@ using occ::main::MorseWrapper;
 using occ::main::PES;
 using occ::main::PotentialType;
 
-using occ::units::AVOGADRO;
-using occ::units::BOLTZMANN;
 using occ::units::degrees;
 using occ::units::EV_TO_KJ_PER_MOL;
 using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
-using occ::units::LIGHTSPEED;
 using occ::units::PI;
-using occ::units::PLANCK;
 
 inline void print_vector(const occ::Vec &vec, int per_line) {
   std::string line;
@@ -459,7 +456,7 @@ void PES::phonons(const occ::IVec3 &shrinking_factors, const occ::Vec3 shift,
   double temp = this->get_temperature();
 
   double Uvib = 0;
-  double kBT = temp * BOLTZMANN * AVOGADRO / 1000;
+  double kBT = temp * occ::constants::boltzmann<double> * occ::constants::avogadro<double> / 1000;
   double zpe = 0;
 
   std::vector<occ::Vec> all_freqs;
@@ -487,8 +484,8 @@ void PES::phonons(const occ::IVec3 &shrinking_factors, const occ::Vec3 shift,
                         f_wvn);
         continue;
       }
-      double f_Hz = LIGHTSPEED / ((1 / f_wvn) / 100);
-      double Uf = f_Hz * PLANCK * AVOGADRO / 1000;
+      double f_Hz = occ::constants::speed_of_light<double> / ((1 / f_wvn) / 100);
+      double Uf = f_Hz * occ::constants::planck<double> * occ::constants::avogadro<double> / 1000;
       double f_zpe = 0.5 * Uf;
       zpe += f_zpe * weight;
       if (kBT > 0.0) {
@@ -609,7 +606,7 @@ PES::compute_phonons_at_kpoint(const occ::CMat &Dyn_ij) {
   }
 
   occ::Vec freq_Hz = frequencies * std::sqrt(1e23);
-  occ::Vec freq_wavenumbers = freq_Hz / (LIGHTSPEED * 100.0) / (2.0 * PI);
+  occ::Vec freq_wavenumbers = freq_Hz / (occ::constants::speed_of_light<double> * 100.0) / (2.0 * PI);
 
   size_t n = eigenvalues.size();
   std::vector<int> indices(n);

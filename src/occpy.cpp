@@ -34,7 +34,6 @@ NB_MODULE(_occpy, m) {
   auto intr = register_interaction_bindings(m);
   auto opt = register_opt_bindings(m);
 
-
   // LogLevel enum is already registered in core_bindings.cpp
   m.def("set_log_level", nb::overload_cast<int>(occ::log::set_log_level));
   m.def("set_log_level",

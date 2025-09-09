@@ -459,7 +459,6 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
       "external command for energy calculations (for model=external)");
   elat->add_flag("--normalize-hbonds", config->normalize_hydrogens,
                  "normalize hydrogen bond lengths");
-
   elat->fallthrough();
   elat->callback([config, use_xtb]() {
     if (*use_xtb) {

@@ -3,7 +3,6 @@
 #include <occ/core/constants.h>
 
 namespace occ::units {
-
 // Length conversions (CODATA 2018)
 constexpr double BOHR_TO_ANGSTROM = 0.52917721067;
 constexpr double ANGSTROM_TO_BOHR = 1.0 / BOHR_TO_ANGSTROM;
@@ -41,10 +40,6 @@ constexpr double PI = constants::pi<double>;
 
 // Other conversions
 constexpr double KJ_PER_MOL_PER_ANGSTROM3_TO_GPA = 1.6605388;
-constexpr double LIGHTSPEED = 299792458.0;
-constexpr double PLANCK = 6.62607015e-34;
-constexpr double AVOGADRO = 6.02214076e23;
-constexpr double BOLTZMANN = 1.380649e-23;
 
 template <typename T> constexpr auto radians(T x) { return x * constants::pi<double> / 180; }
 
