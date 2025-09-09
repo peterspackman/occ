@@ -1,5 +1,6 @@
 #pragma once
-#include "occ/crystal/crystal.h"
+
+#include <occ/crystal/crystal.h>
 #include <CLI/App.hpp>
 #include <Eigen/Eigenvalues>
 #include <cmath>
@@ -14,6 +15,7 @@ namespace occ::main {
 struct EFSettings;
 
 enum class LinearSolverType { LU, SVD, QR, LDLT };
+
 
 struct Morse {
   double D0;
@@ -95,6 +97,7 @@ struct LJ {
   double second_derivative() const { return 72 * eps / std::pow(r0, 2); }
 };
 
+
 struct LJ_A {
   double r0;
   double eps;
@@ -146,6 +149,7 @@ public:
   virtual double second_derivative() const = 0;
   virtual std::string to_string() const = 0;
 
+
   inline void set_pair_indices(const PairIndices &pair_indices) {
     m_pair_indices = pair_indices;
   }
@@ -168,6 +172,7 @@ public:
   occ::Vec3 r_hat;
   PairIndices m_pair_indices, m_uc_pair_indices;
   std::pair<double, double> m_pair_mass;
+
   double r0;
 };
 
@@ -223,6 +228,7 @@ public:
   std::string to_string() const override { return lj.to_string(); }
 };
 
+
 class LJ_AWrapper : public PotentialBase {
 private:
   LJ_A lj_a;
@@ -265,12 +271,14 @@ public:
   }
 
   inline double lattice_energy() const {
+
     double energy = 0.0;
     for (const auto &pot : m_potentials) {
       energy += pot->energy();
     }
     return energy / 2.0;
   }
+
 
   inline size_t number_of_potentials() const { return m_potentials.size(); }
 
@@ -406,6 +414,7 @@ struct MonkhorstPack {
 
   inline auto begin() const { return grid.colwise().begin(); }
   inline auto end() const { return grid.colwise().end(); }
+  
 };
 
 struct EFSettings {
@@ -426,7 +435,7 @@ struct EFSettings {
   std::vector<size_t> shrinking_factors_raw{1};
   occ::IVec3 shrinking_factors{1, 1, 1};
   std::vector<double> shift_raw{0.0};
-  occ::Vec3 shift{0.0, 0.0, 0.0};
+
 };
 
 CLI::App *add_elastic_fit_subcommand(CLI::App &app);

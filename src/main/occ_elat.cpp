@@ -191,6 +191,7 @@ write_elat_json(const std::string &basename, const std::string &model,
   if (uc_dimers.has_value()) {
     j["all_pairs"] = {};
     const occ::crystal::CrystalDimers uc_dimers_value = uc_dimers.value();
+
     using Offset = std::tuple<int, int, int, int>;
     ankerl::unordered_dense::set<Offset> global_molecule_offsets;
     for (const auto &mol_pairs : uc_dimers_value.molecule_neighbors) {
@@ -218,6 +219,7 @@ write_elat_json(const std::string &basename, const std::string &model,
       map_mol_uc_idx[counter] = mol_uc_idx;
       counter++;
     }
+
     for (const auto &mol_pairs : uc_dimers_value.molecule_neighbors) {
       nlohmann::json m;
       for (const auto &[dimer, unique_idx] : mol_pairs) {
@@ -250,6 +252,7 @@ write_elat_json(const std::string &basename, const std::string &model,
         d["r"] = r;
         occ::Vec3 r_vec = dimer.v_ab_com();
         d["rvec"] = std::array<double, 3>({r_vec[0], r_vec[1], r_vec[2]});
+
         d["mass"] = std::tuple<double, double>{dimer.a().molar_mass(),
                                                dimer.b().molar_mass()};
         const auto shift_a = dimer.a().cell_shift();
@@ -263,6 +266,7 @@ write_elat_json(const std::string &basename, const std::string &model,
         d["pair_indices"] = std::tuple<int, int>{idx_a, idx_b};
         d["pair_uc_indices"] =
             std::tuple<int, int>{map_mol_uc_idx[idx_a], map_mol_uc_idx[idx_b]};
+
         m.push_back(d);
       }
       j["all_pairs"].push_back(m);
@@ -455,6 +459,7 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
       "external command for energy calculations (for model=external)");
   elat->add_flag("--normalize-hbonds", config->normalize_hydrogens,
                  "normalize hydrogen bond lengths");
+
   elat->fallthrough();
   elat->callback([config, use_xtb]() {
     if (*use_xtb) {

@@ -3,6 +3,7 @@
 #include <occ/core/constants.h>
 
 namespace occ::units {
+
 // Length conversions (CODATA 2018)
 constexpr double BOHR_TO_ANGSTROM = 0.52917721067;
 constexpr double ANGSTROM_TO_BOHR = 1.0 / BOHR_TO_ANGSTROM;

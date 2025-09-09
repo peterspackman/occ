@@ -14,16 +14,19 @@
 #include <occ/interaction/ce_energy_model.h>
 #include <occ/io/crystal_json.h>
 #include <occ/main/occ_elastic_fit.h>
+
 #include <stdexcept>
 
 using occ::crystal::Crystal;
 using occ::main::EFSettings;
 using occ::main::LinearSolverType;
 using occ::main::LJ_AWrapper;
+
 using occ::main::LJWrapper;
 using occ::main::MorseWrapper;
 using occ::main::PES;
 using occ::main::PotentialType;
+
 using occ::units::AVOGADRO;
 using occ::units::BOLTZMANN;
 using occ::units::degrees;
@@ -98,6 +101,7 @@ inline void print_matrix(const occ::Mat6 &matrix,
     print_matrix_full(matrix, precision, width);
   }
 }
+
 
 inline void save_matrix(const occ::Mat &matrix, const std::string &filename,
                         std::vector<std::string> comments = {},
@@ -285,6 +289,7 @@ determine_potential_type(const std::string &user_preference) {
   occ::log::info("Using default potential type (Lennard-Jones)");
   return PotentialType::LJ;
 }
+
 
 inline LinearSolverType
 determine_solver_type(const std::string &user_preference) {
@@ -711,6 +716,7 @@ void PES::animate_phonons(const occ::Vec &frequencies,
   occ::log::info("");
 }
 
+
 inline void analyse_elat_results(const occ::main::EFSettings &settings) {
   std::string filename = settings.json_filename;
   occ::log::info("Reading elat results from: {}", filename);
@@ -733,6 +739,7 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
 
   occ::log::info("Title: {}", j["title"].get<std::string>());
   occ::log::info("Model: {}", j["model"].get<std::string>());
+
 
   Crystal crystal = j["crystal"];
 
@@ -847,9 +854,11 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   auto config = std::make_shared<EFSettings>();
 
   elastic_fit
+
       ->add_option("json_file", config->json_filename, "ELAT JSON results file")
       ->required()
       ->check(CLI::ExistingFile);
+
 
   elastic_fit->add_option("-o,--out", config->output_file,
                           "Output filename for elastic tensor");
