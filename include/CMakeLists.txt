@@ -3,6 +3,7 @@ add_subdirectory(occ/crystal)
 add_subdirectory(occ/descriptors)
 add_subdirectory(occ/dft)
 add_subdirectory(occ/dma)
+add_subdirectory(occ/elastic_fit)
 add_subdirectory(occ/geometry)
 add_subdirectory(occ/gto)
 add_subdirectory(occ/interaction)
@@ -29,6 +30,7 @@ set(OCC_INCLUDE_FILES
     ${OCC_DESCRIPTORS_INCLUDE_FILES}
     ${OCC_DFT_INCLUDE_FILES}
     ${OCC_DMA_INCLUDE_FILES}
+    ${OCC_ELASTIC_FIT_INCLUDE_FILES}
     ${OCC_GEOMETRY_INCLUDE_FILES}
     ${OCC_GTO_INCLUDE_FILES}
     ${OCC_INTERACTION_INCLUDE_FILES}
