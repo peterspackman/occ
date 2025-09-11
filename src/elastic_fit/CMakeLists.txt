@@ -9,6 +9,7 @@ target_link_libraries(occ_elastic_fit
     PUBLIC 
     occ_core
     occ_crystal
+    occ_io
 )
 
 target_include_directories(occ_elastic_fit PUBLIC 

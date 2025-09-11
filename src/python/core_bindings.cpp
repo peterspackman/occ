@@ -259,6 +259,17 @@ nb::module_ register_core_bindings(nb::module_ &m) {
            "avg"_a = ElasticTensor::AveragingScheme::Hill)
       .def("average_poisson_ratio", &ElasticTensor::average_poisson_ratio,
            "avg"_a = ElasticTensor::AveragingScheme::Hill)
+
+      // Directional averages and reduced modulus
+      .def("average_poisson_ratio_direction",
+           &ElasticTensor::average_poisson_ratio_direction,
+           "direction"_a, "num_samples"_a = 360,
+           "Compute average Poisson's ratio for a given direction")
+      .def("reduced_youngs_modulus",
+           &ElasticTensor::reduced_youngs_modulus,
+           "direction"_a, "num_samples"_a = 360,
+           "Compute reduced Young's modulus for a given direction")
+
       .def_prop_ro("voigt_s", &ElasticTensor::voigt_s)
       .def_prop_ro("voigt_c", &ElasticTensor::voigt_c)
       .def("component", nb::overload_cast<int, int, int, int>(

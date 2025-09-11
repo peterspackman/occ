@@ -39,6 +39,8 @@ public:
   double poisson_ratio(CartesianDirection, double angle) const;
   double poisson_ratio(CartesianDirection, CartesianDirection) const;
   std::pair<double, double> poisson_ratio_minmax(CartesianDirection) const;
+  double average_poisson_ratio_direction(CartesianDirection, int num_samples = 360) const;
+  double reduced_youngs_modulus(CartesianDirection, int num_samples = 360) const;
 
   double
   average_bulk_modulus(AveragingScheme avg = AveragingScheme::Hill) const;

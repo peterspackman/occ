@@ -16,6 +16,7 @@ struct LatticeConvergenceSettings {
   std::string output_json_filename{""};
   bool spherical_basis{false};
   std::string charge_string;
+  std::string multiplicity_string;
   std::string external_command{""};
   bool normalize_hydrogens{false};
 };

@@ -6,6 +6,8 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
+#include <occ/crystal/surface.h>
+#include <occ/io/cifparser.h>
 #include <occ/geometry/icosphere_mesh.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
@@ -77,10 +79,13 @@ compute_mesh_properties(const IcosphereMesh &icosphere,
   const auto &verts = icosphere.vertices();
   {
     occ::FVec ym(verts.cols());
+    occ::FVec ym_reduced(verts.cols());
     for (int i = 0; i < verts.cols(); i++) {
       ym(i) = static_cast<float>(tensor.youngs_modulus(verts.col(i)));
+      ym_reduced(i) = static_cast<float>(tensor.reduced_youngs_modulus(verts.col(i)));
     }
     result.add("youngs_modulus", ym);
+    result.add("youngs_modulus_reduced", ym_reduced);
   }
 
   {
@@ -106,13 +111,16 @@ compute_mesh_properties(const IcosphereMesh &icosphere,
   {
     occ::FVec p_min(verts.cols());
     occ::FVec p_max(verts.cols());
+    occ::FVec p_iso(verts.cols());
     for (int i = 0; i < verts.cols(); i++) {
       auto [l, u] = tensor.poisson_ratio_minmax(verts.col(i));
       p_min(i) = static_cast<float>(l);
       p_max(i) = static_cast<float>(u);
+      p_iso(i) = static_cast<float>(tensor.average_poisson_ratio_direction(verts.col(i)));
     }
     result.add("poissons_ratio_min", p_min);
     result.add("poissons_ratio_max", p_max);
+    result.add("poissons_ratio_iso", p_iso);
   }
   return result;
 }
@@ -152,6 +160,10 @@ CLI::App *add_elastic_subcommand(CLI::App &app) {
       ->add_option("--tensor", config->tensor_filename,
                    "input tensor filename (txt)")
       ->required();
+  elastic->add_option("--crystal", config->crystal_filename,
+                      "input crystal structure (CIF) for face analysis");
+  elastic->add_option("--max-surfaces", config->max_surfaces,
+                      "maximum number of crystal surfaces to analyze");
   elastic->add_option("--subdivisions", config->subdivisions,
                       "icosphere mesh subdivisions (resolution) for surfaces");
   elastic->add_option("--json", config->output_json_filename,
@@ -178,6 +190,76 @@ void run_elastic_subcommand(const ElasticSettings &settings) {
 
   print_averaged_properties(tensor);
   write_meshes(tensor, settings.subdivisions, "elastic");
+  
+  // Crystal face analysis if crystal file is provided
+  if (!settings.crystal_filename.empty()) {
+    occ::io::CifParser parser;
+    auto crystal_result = parser.parse_crystal_from_file(settings.crystal_filename);
+    if (crystal_result.has_value()) {
+      Crystal crystal = crystal_result.value();
+      occ::log::info("Loaded crystal structure from {}", settings.crystal_filename);
+      
+      // Compute properties along crystal faces
+      compute_crystal_face_properties(tensor, crystal, settings);
+    } else {
+      occ::log::error("Failed to load crystal structure from {}", settings.crystal_filename);
+    }
+  }
+}
+
+void compute_crystal_face_properties(const ElasticTensor &tensor, const Crystal &crystal, const ElasticSettings &settings) {
+  occ::log::info("{:=<80}", "Crystal Face Properties ");
+  
+  // Generate crystal surfaces with parameters similar to crystal surface energy calculation
+  occ::crystal::CrystalSurfaceGenerationParameters params;
+  params.d_min = 0.1;
+  params.unique = true;
+  auto surfaces = occ::crystal::generate_surfaces(crystal, params);
+  
+  if (surfaces.empty()) {
+    occ::log::warn("No crystal surfaces generated");
+    return;
+  }
+  
+  // Follow the same logic as occ cg - just take the first N surfaces as generated
+  int num_surfaces = std::min(static_cast<int>(surfaces.size()), settings.max_surfaces);
+  
+  occ::log::info("Analyzing first {} crystallographic surfaces", num_surfaces);
+  occ::log::info("Total surfaces generated: {}", surfaces.size());
+  occ::log::info("");
+  
+  // Table header
+  occ::log::info("{:<12} {:>25} {:>12} {:>12} {:>12} {:>14} {:>12} {:>8}", 
+                 "Surface", "Normal [x y z]", "E (GPa)", "v_avg", "E_R (GPa)", "K_lin", "G_max", "d (Å)");
+  occ::log::info("{:-<110}", "");
+  
+  for (int i = 0; i < num_surfaces; ++i) {
+    const auto& surface = surfaces[i];
+    const auto& hkl = surface.hkl();
+    std::string surface_name = fmt::format("({} {} {})", hkl.h, hkl.k, hkl.l);
+    
+    // Get the surface normal vector
+    occ::Vec3 normal = surface.normal_vector();
+    std::string normal_str = fmt::format("[{: 6.3f} {: 6.3f} {: 6.3f}]", normal.x(), normal.y(), normal.z());
+    
+    // Compute elastic properties along this surface normal
+    double E = tensor.youngs_modulus(normal);
+    double v_avg = tensor.average_poisson_ratio_direction(normal);
+    double E_red = tensor.reduced_youngs_modulus(normal);
+    double K_lin = tensor.linear_compressibility(normal);
+    auto [G_min, G_max] = tensor.shear_modulus_minmax(normal);
+    double reciprocal_d = surface.d();  // This is in Å⁻¹
+    double d_spacing = 1.0 / reciprocal_d;  // Convert to Å
+    
+    occ::log::info("{:<12} {:>25} {:>12.2f} {:>12.4f} {:>12.2f} {:>14.4f} {:>12.2f} {:>8.2f}", 
+                   surface_name, normal_str, E, v_avg, E_red, K_lin, G_max, d_spacing);
+  }
+  
+  occ::log::info("{:-<110}", "");
+  occ::log::info("E: Young's modulus, v_avg: Average Poisson's ratio");
+  occ::log::info("E_R: Reduced Young's modulus, K_lin: Linear compressibility");  
+  occ::log::info("G_max: Maximum shear modulus, d: d-spacing");
+  occ::log::info("Properties computed along surface normal directions");
 }
 
 } // namespace occ::main

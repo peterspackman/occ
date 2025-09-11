@@ -541,6 +541,18 @@ void register_core_bindings() {
                   return et.average_poisson_ratio(avg);
                 }))
 
+      // Directional averages and reduced modulus
+      .function("averagePoissonRatioDirection",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir,
+                                     int num_samples) {
+                  return et.average_poisson_ratio_direction(dir, num_samples);
+                }))
+      .function("reducedYoungsModulus",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir,
+                                     int num_samples) {
+                  return et.reduced_youngs_modulus(dir, num_samples);
+                }))
+
       // Matrix access
       .property("voigtC", &ElasticTensor::voigt_c)
       .property("voigtS", &ElasticTensor::voigt_s)

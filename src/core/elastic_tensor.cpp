@@ -50,8 +50,7 @@ ElasticTensor::ElasticTensor(Eigen::Ref<const Mat6> c_voigt)
           m_components[i][j][k][l] = sv_coeff(p, q) * m_s(p, q);
         }
       }
-    }
-  }
+    } }
 }
 
 double ElasticTensor::youngs_modulus_angular(AngularDirection dir) const {
@@ -178,6 +177,28 @@ ElasticTensor::poisson_ratio_minmax(CartesianDirection n) const {
   }
 
   return {min_poisson, max_poisson};
+}
+
+double ElasticTensor::average_poisson_ratio_direction(CartesianDirection dir, int num_samples) const {
+  double sum_poisson = 0.0;
+  const double step = 2 * M_PI / num_samples;
+  
+  for (int i = 0; i < num_samples; ++i) {
+    double angle = i * step;
+    sum_poisson += poisson_ratio(dir, angle);
+  }
+  
+  return sum_poisson / num_samples;
+}
+
+double ElasticTensor::reduced_youngs_modulus(CartesianDirection dir, int num_samples) const {
+  double E = youngs_modulus(dir);
+  double v = average_poisson_ratio_direction(dir, num_samples);
+  
+  // For contact mechanics: E_R = E / (1 - v^2) (corrected formula)
+  // The formula E_R = E/(1+v)^2 is incorrect for reduced modulus
+  // The correct formula for reduced modulus in contact mechanics is E_R = E/(1-v^2)
+  return E / (1.0 - v * v);
 }
 
 double ElasticTensor::average_bulk_modulus(AveragingScheme avg) const {
