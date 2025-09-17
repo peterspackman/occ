@@ -18,6 +18,7 @@
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
 #include <occ/core/quasirandom.h>
+#include <occ/crystal/crystal.h>
 #include <occ/io/xyz.h>
 #include <spdlog/spdlog.h>
 
@@ -29,6 +30,7 @@ using occ::Mat4;
 using occ::Vec3;
 using namespace occ::core;
 using namespace occ;
+using occ::crystal::Crystal;
 
 nb::module_ register_core_bindings(nb::module_ &m) {
   using namespace nb::literals;
@@ -269,6 +271,15 @@ nb::module_ register_core_bindings(nb::module_ &m) {
            &ElasticTensor::reduced_youngs_modulus,
            "direction"_a, "num_samples"_a = 360,
            "Compute reduced Young's modulus for a given direction")
+      // Acoustic velocities
+      .def("transverse_acoustic_velocity",
+           &ElasticTensor::transverse_acoustic_velocity,
+           "bulk_modulus_gpa"_a, "shear_modulus_gpa"_a, "density_g_cm3"_a,
+           "Compute transverse acoustic velocity V_s = sqrt(G/ρ)")
+      .def("longitudinal_acoustic_velocity",
+           &ElasticTensor::longitudinal_acoustic_velocity,
+           "bulk_modulus_gpa"_a, "shear_modulus_gpa"_a, "density_g_cm3"_a,
+           "Compute longitudinal acoustic velocity V_p = sqrt((4G + 3K)/(3ρ))")
 
       .def_prop_ro("voigt_s", &ElasticTensor::voigt_s)
       .def_prop_ro("voigt_c", &ElasticTensor::voigt_c)
@@ -304,7 +315,31 @@ nb::module_ register_core_bindings(nb::module_ &m) {
 
             return std::make_tuple(theta, phi, youngs, linear_comp);
           },
-          "n_theta"_a = 50, "n_phi"_a = 50);
+          "n_theta"_a = 50, "n_phi"_a = 50)
+      // Convenience methods with Crystal for elastic properties and acoustic velocities
+      .def("youngs_modulus_with_crystal",
+           [](const ElasticTensor &self, const Vec3 &direction, const Crystal &crystal) {
+             return self.youngs_modulus(direction);
+           },
+           "direction"_a, "crystal"_a,
+           "Compute Young's modulus in a given direction (crystal parameter for consistency)")
+      .def("reduced_youngs_modulus_with_crystal",
+           [](const ElasticTensor &self, const Vec3 &direction, const Crystal &crystal, int num_samples = 360) {
+             return self.reduced_youngs_modulus(direction, num_samples);
+           },
+           "direction"_a, "crystal"_a, "num_samples"_a = 360,
+           "Compute reduced Young's modulus in a given direction")
+      .def("acoustic_velocities_with_crystal",
+           [](const ElasticTensor &self, const Crystal &crystal, ElasticTensor::AveragingScheme scheme = ElasticTensor::AveragingScheme::Hill) {
+             double density = crystal.density();
+             double K = self.average_bulk_modulus(scheme);
+             double G = self.average_shear_modulus(scheme);
+             double v_s = self.transverse_acoustic_velocity(K, G, density);
+             double v_p = self.longitudinal_acoustic_velocity(K, G, density);
+             return nb::make_tuple(v_s, v_p, density);
+           },
+           "crystal"_a, "scheme"_a = ElasticTensor::AveragingScheme::Hill,
+           "Compute acoustic velocities using crystal density. Returns (V_s, V_p, density)");
 
   using occ::core::MirrorType;
   using occ::core::PointGroup;

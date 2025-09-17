@@ -152,6 +152,7 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
       .def("to_fractional", &Crystal::to_fractional)
       .def("to_cartesian", &Crystal::to_cartesian)
       .def("volume", &Crystal::volume)
+      .def("density", &Crystal::density, "Crystal density in g/cm³")
       .def("slab", &Crystal::slab)
       .def("asymmetric_unit",
            nb::overload_cast<>(&Crystal::asymmetric_unit, nb::const_))

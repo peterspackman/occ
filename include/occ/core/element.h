@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <occ/core/linear_algebra.h>
 #define ELEMENT_MAX 103
 
 namespace occ::core {
@@ -316,5 +317,16 @@ private:
  */
 
 std::string chemical_formula(const std::vector<Element> &elements);
+
+/**
+ * Calculate the total atomic mass of a collection of atoms.
+ *
+ * \param atomic_numbers Vector of atomic numbers
+ * \returns Total mass in atomic mass units (u)
+ *
+ * Sums the atomic masses of all atoms specified by their atomic numbers.
+ * Useful for calculating molecular weights or crystal densities.
+ */
+double total_atomic_mass(const IVec &atomic_numbers);
 
 } // namespace occ::core

@@ -1,5 +1,6 @@
 #include <occ/core/elastic_tensor.h>
 #include <occ/core/optimize.h>
+#include <occ/core/units.h>
 
 namespace occ::core {
 
@@ -250,6 +251,25 @@ double ElasticTensor::average_poisson_ratio(AveragingScheme avg) const {
   double K = average_bulk_modulus(avg);
   double G = average_shear_modulus(avg);
   return (3 * K - 2 * G) / (2 * (3 * K + G));
+}
+
+double ElasticTensor::transverse_acoustic_velocity(double bulk_modulus_gpa, double shear_modulus_gpa, double density_g_cm3) const {
+  // V_s = sqrt(G/ρ)
+  // Input: G in GPa, ρ in g/cm³
+  // Output: velocity in m/s
+  double G_pa = shear_modulus_gpa * units::GPA_TO_PA;  // Convert GPa to Pa
+  double rho_kg_m3 = density_g_cm3 * units::G_CM3_TO_KG_M3;  // Convert g/cm³ to kg/m³
+  return std::sqrt(G_pa / rho_kg_m3);
+}
+
+double ElasticTensor::longitudinal_acoustic_velocity(double bulk_modulus_gpa, double shear_modulus_gpa, double density_g_cm3) const {
+  // V_p = sqrt((4G + 3K)/(3ρ))
+  // Input: K, G in GPa, ρ in g/cm³
+  // Output: velocity in m/s
+  double K_pa = bulk_modulus_gpa * units::GPA_TO_PA;   // Convert GPa to Pa
+  double G_pa = shear_modulus_gpa * units::GPA_TO_PA;  // Convert GPa to Pa
+  double rho_kg_m3 = density_g_cm3 * units::G_CM3_TO_KG_M3;  // Convert g/cm³ to kg/m³
+  return std::sqrt((4.0 * G_pa + 3.0 * K_pa) / (3.0 * rho_kg_m3));
 }
 
 const Mat6 &ElasticTensor::voigt_s() const { return m_s; }
