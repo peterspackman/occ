@@ -41,6 +41,14 @@ constexpr double PI = constants::pi<double>;
 // Other conversions
 constexpr double KJ_PER_MOL_PER_ANGSTROM3_TO_GPA = 1.6605388;
 
+// Pressure conversions
+constexpr double GPA_TO_PA = 1e9;
+constexpr double PA_TO_GPA = 1e-9;
+
+// Density conversions
+constexpr double G_CM3_TO_KG_M3 = 1000.0;
+constexpr double KG_M3_TO_G_CM3 = 1e-3;
+
 template <typename T> constexpr auto radians(T x) { return x * constants::pi<double> / 180; }
 
 template <typename T> constexpr auto degrees(T x) { return x * 180 / constants::pi<double>; }

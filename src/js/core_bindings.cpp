@@ -8,6 +8,7 @@
 #include <occ/core/eeq.h>
 #include <occ/core/elastic_tensor.h>
 #include <occ/core/element.h>
+#include <occ/crystal/crystal.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
@@ -18,6 +19,7 @@
 
 using namespace emscripten;
 using namespace occ::core;
+using namespace occ::crystal;
 using namespace occ;
 
 void set_data_directory_wrapper(std::string path) {
@@ -541,12 +543,49 @@ void register_core_bindings() {
                   return et.average_poisson_ratio(avg);
                 }))
 
+      // Directional averages and reduced modulus
+      .function("averagePoissonRatioDirection",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir,
+                                     int num_samples) {
+                  return et.average_poisson_ratio_direction(dir, num_samples);
+                }))
+      .function("reducedYoungsModulus",
+                optional_override([](const ElasticTensor &et, const Vec3 &dir,
+                                     int num_samples) {
+                  return et.reduced_youngs_modulus(dir, num_samples);
+                }))
+
       // Matrix access
       .property("voigtC", &ElasticTensor::voigt_c)
       .property("voigtS", &ElasticTensor::voigt_s)
       
       // Eigenvalues
-      .function("eigenvalues", &ElasticTensor::eigenvalues);
+      .function("eigenvalues", &ElasticTensor::eigenvalues)
+
+      // Acoustic velocities
+      .function("transverseAcousticVelocity",
+                optional_override([](const ElasticTensor &et, double bulk_modulus_gpa,
+                                     double shear_modulus_gpa, double density_g_cm3) {
+                  return et.transverse_acoustic_velocity(bulk_modulus_gpa, shear_modulus_gpa, density_g_cm3);
+                }))
+      .function("longitudinalAcousticVelocity",
+                optional_override([](const ElasticTensor &et, double bulk_modulus_gpa,
+                                     double shear_modulus_gpa, double density_g_cm3) {
+                  return et.longitudinal_acoustic_velocity(bulk_modulus_gpa, shear_modulus_gpa, density_g_cm3);
+                }))
+      .function("acousticVelocitiesWithCrystal",
+                optional_override([](const ElasticTensor &et, const Crystal &crystal, ElasticTensor::AveragingScheme scheme) {
+                  double density = crystal.density();
+                  double K = et.average_bulk_modulus(scheme);
+                  double G = et.average_shear_modulus(scheme);
+                  double v_s = et.transverse_acoustic_velocity(K, G, density);
+                  double v_p = et.longitudinal_acoustic_velocity(K, G, density);
+                  emscripten::val result = emscripten::val::object();
+                  result.set("vs", v_s);
+                  result.set("vp", v_p);
+                  result.set("density", density);
+                  return result;
+                }));
 
   // Helper function to generate directional data for visualization
   function("generateDirectionalData",

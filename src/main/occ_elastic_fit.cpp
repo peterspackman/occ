@@ -2,113 +2,66 @@
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
 #include <CLI/Validators.hpp>
+#include <algorithm>
 #include <fmt/os.h>
 #include <fstream>
+#include <iterator>
 #include <nlohmann/json.hpp>
+#include <occ/core/constants.h>
 #include <occ/core/log.h>
+#include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_labeller.h>
+#include <occ/crystal/dimer_mapping_table.h>
+#include <occ/elastic_fit/elastic_fitting.h>
 #include <occ/interaction/ce_energy_model.h>
+#include <occ/interaction/interaction_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/main/occ_elastic_fit.h>
 
+#include <stdexcept>
+
 using occ::crystal::Crystal;
 using occ::main::EFSettings;
+using occ::main::LinearSolverType;
 using occ::main::LJ_AWrapper;
+
 using occ::main::LJWrapper;
 using occ::main::MorseWrapper;
 using occ::main::PES;
 using occ::main::PotentialType;
 
-inline PES construct_pes_from_json(nlohmann::json j,
-                                   PotentialType potential_type,
-                                   EFSettings settings) {
-  const auto &pairs = j["all_pairs"];
-  PES pes(settings.scale_factor);
-  int discarded_count = 0;
-  double discarded_total_energy = 0.0;
+using occ::units::degrees;
+using occ::units::EV_TO_KJ_PER_MOL;
+using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
+using occ::units::PI;
 
-  double max_energy = 0.0;
-  if (settings.max_to_zero) {
-    if (settings.include_positive) {
-      occ::log::warn("Can't include positive and set max to zero.");
-    }
-    for (size_t mol_idx = 0; mol_idx < pairs.size(); mol_idx++) {
-      const auto &mol_pairs = pairs[mol_idx];
-      for (const auto &pair : mol_pairs) {
-        const auto &energies_json = pair["energies"];
-        double total_energy = energies_json["Total"];
-        if (total_energy > max_energy) {
-          max_energy = total_energy;
-        }
-      }
-    }
-    occ::log::info("Shifting all pair energies down by {:.4f} kJ/mol",
-                   max_energy);
-    pes.set_shift(max_energy);
-  }
+inline void print_vector(const occ::Vec &vec, int per_line) {
+  std::string line;
 
-  for (size_t mol_idx = 0; mol_idx < pairs.size(); mol_idx++) {
-    const auto &mol_pairs = pairs[mol_idx];
-    for (const auto &pair : mol_pairs) {
-      const auto r_arr = pair["rvec"];
-      occ::Vec3 rvec(r_arr[0], r_arr[1], r_arr[2]);
-      occ::Vec3 unit_vec = rvec.normalized();
+  occ::Vec sorted_vec = vec;
+  std::sort(sorted_vec.begin(), sorted_vec.end());
 
-      const auto &energies_json = pair["energies"];
-      double total_energy = energies_json["Total"];
-      total_energy -= max_energy;
-      double r0 = pair["r"];
-      if (total_energy > 0.0) {
-        if (!settings.include_positive) {
-          occ::log::debug("Skipping pair with positive total energy {:.4f}",
-                          total_energy);
-          discarded_count++;
-          discarded_total_energy += total_energy;
-          continue;
-        }
-        double eps = -1.0 * total_energy;
-        auto potential = std::make_unique<LJ_AWrapper>(eps, r0, rvec);
-        occ::log::debug("Added LJ_A potential: {}", potential->to_string());
-        pes.add_potential(std::move(potential));
-        continue;
-      }
-
-      switch (potential_type) {
-      case PotentialType::MORSE: {
-        double D0 = -1.0 * total_energy;
-        double m = static_cast<double>(pair["mass"]); // kg / mole
-        double h = std::pow(10, 13);
-        double conversion_factor = 1.6605388e-24 * std::pow(h, 2) * 6.0221418;
-        double k = m * conversion_factor; // kj/mol/angstrom^2
-        double alpha = sqrt(k / (2 * abs(D0)));
-
-        auto potential = std::make_unique<MorseWrapper>(D0, r0, alpha, rvec);
-        occ::log::debug("Added Morse potential: {}", potential->to_string());
-        pes.add_potential(std::move(potential));
-        break;
-      }
-      case PotentialType::LJ: {
-        double eps = -1.0 * total_energy;
-        auto potential = std::make_unique<LJWrapper>(eps, r0, rvec);
-        occ::log::debug("Added LJ potential: {}", potential->to_string());
-        pes.add_potential(std::move(potential));
-        break;
-      }
-      case PotentialType::LJ_A: {
-        throw std::runtime_error("Should not have happened.");
-      }
-      }
+  for (size_t i = 0; i < sorted_vec.size(); ++i) {
+    double val = sorted_vec(i);
+    line += fmt::format("{:9.3f}", val);
+    if ((i + 1) % per_line == 0 || i == vec.size() - 1) {
+      spdlog::info("{}", line);
+      line.clear();
     }
   }
+}
 
-  if (discarded_count > 0) {
-    occ::log::warn("Discarded {} pairs with positive interaction energies "
-                   "(total: {:.3f} kJ/mol)",
-                   discarded_count, discarded_total_energy / 2.0);
+inline void print_matrix_full(const occ::CMat &matrix, int precision = 6,
+                              int width = 12) {
+  for (int i = 0; i < matrix.rows(); ++i) {
+    std::string row;
+    for (int j = 0; j < matrix.cols(); ++j) {
+      row += fmt::format("{:{}.{}f}", matrix(i, j).real(), width, precision);
+    }
+    occ::log::info("{}", row);
   }
-
-  return pes;
+  occ::log::info("");
 }
 
 inline void print_matrix_full(const occ::Mat6 &matrix, int precision = 6,
@@ -149,19 +102,75 @@ inline void print_matrix(const occ::Mat6 &matrix,
   }
 }
 
-inline void save_matrix(const occ::Mat6 &matrix, const std::string &filename) {
+inline void save_matrix(const occ::Mat &matrix, const std::string &filename,
+                        std::vector<std::string> comments = {},
+                        bool upper_triangle_only = false, int width = 6) {
   std::ofstream file(filename);
   occ::log::info("Writing matrix to file {}", filename);
-  file << std::fixed << std::setprecision(6);
+  for (const auto &comment : comments) {
+    file << "# " << comment << std::endl;
+  }
+  file << std::fixed << std::setprecision(4);
+
+  if (upper_triangle_only) {
+    int count = 0;
+    for (int i = 0; i < matrix.rows(); ++i) {
+      for (int j = i; j < matrix.cols(); ++j) {
+        file << std::setw(12) << matrix(i, j);
+        count++;
+        if (count % width == 0) {
+          file << std::endl;
+        } else {
+          file << " ";
+        }
+      }
+    }
+    if (count % width != 0) {
+      file << std::endl;
+    }
+    file.close();
+    return;
+  }
+
+  int count = 0;
   for (int i = 0; i < matrix.rows(); ++i) {
     for (int j = 0; j < matrix.cols(); ++j) {
-      file << std::setw(10) << matrix(i, j);
-      if (j < matrix.cols() - 1)
+      file << std::setw(12) << matrix(i, j);
+      count++;
+      if (count % width == 0) {
+        file << std::endl;
+      } else {
         file << " ";
+      }
     }
-    file << "\n";
   }
+  if (count % width != 0) {
+    file << std::endl;
+  }
+
   file.close();
+}
+
+// Old JSON parsing functions removed - functionality moved to structured data
+// classes
+
+// Convert EFSettings to FittingSettings
+inline occ::elastic_fit::FittingSettings
+convert_to_fitting_settings(const occ::main::EFSettings &ef_settings) {
+  occ::elastic_fit::FittingSettings settings;
+  settings.potential_type = ef_settings.potential_type;
+  settings.include_positive = ef_settings.include_positive;
+  settings.max_to_zero = ef_settings.max_to_zero;
+  settings.scale_factor = ef_settings.scale_factor;
+  settings.temperature = ef_settings.temperature;
+  settings.gulp_scale = ef_settings.gulp_scale;
+  settings.solver_type = ef_settings.solver_type;
+  settings.svd_threshold = ef_settings.svd_threshold;
+  settings.animate_phonons = ef_settings.animate_phonons;
+  settings.save_debug_matrices = ef_settings.save_debug_matrices;
+  settings.shrinking_factors = ef_settings.shrinking_factors;
+  settings.shift = ef_settings.shift;
+  return settings;
 }
 
 inline PotentialType
@@ -179,57 +188,106 @@ determine_potential_type(const std::string &user_preference) {
   return PotentialType::LJ;
 }
 
+inline LinearSolverType
+determine_solver_type(const std::string &user_preference) {
+  if (!user_preference.empty()) {
+    if (user_preference == "lu")
+      return occ::main::LinearSolverType::LU;
+    if (user_preference == "svd")
+      return occ::main::LinearSolverType::SVD;
+    if (user_preference == "qr")
+      return occ::main::LinearSolverType::QR;
+    if (user_preference == "ldlt")
+      return occ::main::LinearSolverType::LDLT;
+  }
+  occ::log::debug("Unrecognised solver type '{}', using SVD decomposition",
+                  user_preference);
+  occ::log::debug("Options are 'lu', 'svd', 'qr', 'ldlt'");
+  return occ::main::LinearSolverType::SVD;
+}
+
+inline occ::IVec3 determine_mp_shrinking_factors(
+    const std::vector<size_t> &shrinking_factors_raw) {
+  size_t n_sf = shrinking_factors_raw.size();
+  if (n_sf == 1) {
+    size_t sf = shrinking_factors_raw[0];
+    return occ::IVec3(sf, sf, sf);
+  } else if (n_sf == 3) {
+    return occ::IVec3(shrinking_factors_raw[0], shrinking_factors_raw[1],
+                      shrinking_factors_raw[2]);
+  } else {
+    throw std::runtime_error(fmt::format(
+        "Raw shrinking factor input had size {} (should be 1 or 3)", n_sf));
+  }
+}
+
+inline occ::Vec3 determine_mp_shifts(const std::vector<double> &shifts_raw) {
+  size_t n_shifts = shifts_raw.size();
+  if (n_shifts == 1) {
+    double shift = shifts_raw[0];
+    return occ::Vec3(shift, shift, shift);
+  } else if (n_shifts == 3) {
+    return occ::Vec3(shifts_raw[0], shifts_raw[1], shifts_raw[2]);
+  } else {
+    throw std::runtime_error(fmt::format(
+        "Raw shifts input had size {} (should be 1 or 3)", n_shifts));
+  }
+}
+
 inline void analyse_elat_results(const occ::main::EFSettings &settings) {
-  std::string filename = settings.json_filename;
-  occ::log::info("Reading elat results from: {}", filename);
+  // Load data using unified approach
+  occ::interaction::ElatResults elat_data =
+      occ::interaction::read_elat_json(settings.json_filename);
 
-  std::ifstream file(filename);
-  if (!file.is_open()) {
-    throw std::runtime_error(fmt::format("Could not open file: {}", filename));
-  }
+  // Set up fitting configuration
+  occ::main::EFSettings updated_settings = settings;
+  updated_settings.potential_type =
+      determine_potential_type(settings.potential_type_str);
+  updated_settings.solver_type =
+      determine_solver_type(settings.solver_type_str);
+  updated_settings.shrinking_factors =
+      determine_mp_shrinking_factors(settings.shrinking_factors_raw);
+  updated_settings.shift = determine_mp_shifts(settings.shift_raw);
 
-  nlohmann::json j;
-  file >> j;
+  occ::elastic_fit::FittingSettings fitting_settings =
+      convert_to_fitting_settings(updated_settings);
 
-  if (j["result_type"] != "elat") {
-    throw std::runtime_error("Invalid JSON: not an elat result file");
-  }
-
-  if (!j.contains("all_pairs")) {
-    throw std::runtime_error("Need 'all_pairs' in JSON output.");
-  }
-
-  occ::log::info("Title: {}", j["title"].get<std::string>());
-  occ::log::info("Model: {}", j["model"].get<std::string>());
-
-  PotentialType pot_type = determine_potential_type(settings.potential_type);
-
-  const char *type_name =
-      (pot_type == PotentialType::MORSE) ? "Morse" : "Lennard-Jones";
+  std::string type_name =
+      (fitting_settings.potential_type == PotentialType::MORSE)
+          ? "Morse"
+          : "Lennard-Jones";
   occ::log::info("Using {} potential", type_name);
 
-  Crystal crystal = j["crystal"];
+  // Perform elastic fitting
+  occ::elastic_fit::ElasticFitter fitter(fitting_settings);
+  occ::elastic_fit::FittingResults results =
+      fitter.fit_elastic_tensor(elat_data);
 
-  PES pes = construct_pes_from_json(j, pot_type, settings);
-
-  double elat = pes.lattice_energy(); // per mole of unit cells
-  occ::Mat6 cij = pes.compute_voigt_elastic_tensor_analytical(crystal.volume());
-  if (settings.max_to_zero) {
-    double og_elat = elat + pes.number_of_potentials() * pes.shift() / 2.0;
-    occ::log::info("Original lattice energy {:.3f} kJ/(mole unit cells)",
-                   og_elat);
-    occ::log::info("Shifted lattice energy {:.3f} kJ/(mole unit cells)", elat);
-    occ::log::info("Original elastic constant matrix: (Units=GPa)");
-    print_matrix(cij, true);
-    cij *= og_elat / elat;
-    occ::log::info("Shifted elastic constant matrix: (Units=GPa)");
-    print_matrix(cij, true);
-  } else {
-    occ::log::info("Lattice energy {:.3f} kJ/(mole unit cells)", elat);
-    occ::log::info("Elastic constant matrix: (Units=GPa)");
-    print_matrix(cij, true);
+  // Output results
+  if (!settings.gulp_file.empty()) {
+    occ::log::info("Writing coarse-grained crystal to GULP input '{}'",
+                   settings.gulp_file);
+    occ::log::warn("The coarse-grained GULP input has not been thoroughly "
+                   "tested. Use with caution.");
+    std::ofstream gulp_file(settings.gulp_file);
+    if (gulp_file.is_open()) {
+      std::copy(results.gulp_strings.begin(), results.gulp_strings.end(),
+                std::ostream_iterator<std::string>(gulp_file, "\n"));
+    }
   }
-  save_matrix(cij, settings.output_file);
+
+  if (settings.max_to_zero && results.energy_shift_applied > 0.0) {
+    occ::elastic_fit::ElasticFitter::print_elastic_tensor(
+        results.elastic_tensor, "Shifted elastic constant matrix: (Units=GPa)");
+    occ::log::info("Final elastic constant matrix: (Units=GPa)");
+  } else {
+    occ::log::info("Lattice energy {:.3f} kJ/(mole unit cells)",
+                   results.lattice_energy);
+  }
+  occ::elastic_fit::ElasticFitter::print_elastic_tensor(
+      results.elastic_tensor, "Elastic constant matrix: (Units=GPa)");
+  occ::elastic_fit::ElasticFitter::save_elastic_tensor(results.elastic_tensor,
+                                                       settings.output_file);
 }
 
 namespace occ::main {
@@ -237,9 +295,11 @@ namespace occ::main {
 CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   CLI::App *elastic_fit = app.add_subcommand(
       "elastic_fit", "fit elastic tensor from ELAT JSON results");
+  elastic_fit->fallthrough();
   auto config = std::make_shared<EFSettings>();
 
   elastic_fit
+
       ->add_option("json_file", config->json_filename, "ELAT JSON results file")
       ->required()
       ->check(CLI::ExistingFile);
@@ -250,8 +310,15 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   elastic_fit->add_option("-s,--scale", config->scale_factor,
                           "Factor to scale alpha by.");
 
-  elastic_fit->add_option("-p,--potential", config->potential_type,
+  elastic_fit->add_option("-p,--potential", config->potential_type_str,
                           "Potential type to fit to. Either 'morse' or 'lj'.");
+
+  elastic_fit->add_option("-g,--gulp-file", config->gulp_file,
+                          "Write coarse grained crystal as a GULP input file.");
+
+  elastic_fit->add_option(
+      "--gulp-scale", config->gulp_scale,
+      "Fraction of pair distance to set min and max cutoff for GULP.");
 
   elastic_fit->add_flag("--include-positive", config->include_positive,
                         "Whether or not to include positive "
@@ -261,18 +328,43 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
                         "Whether or not to shift all pair energies "
                         "such that the maximum is zero.");
 
+  elastic_fit->add_option("--solver", config->solver_type_str,
+                          "Linear solver type for elastic tensor calculation. "
+                          "Options: 'lu', 'svd' (default), 'qr', 'ldlt'.");
+
+  elastic_fit->add_option("-t,--temperature", config->temperature,
+                          "Temperature in Kelvin for Uvib calculation.");
+
+  elastic_fit->add_option(
+      "--svd-threshold", config->svd_threshold,
+      "SVD threshold for pseudoinverse (when using SVD solver).");
+
+  elastic_fit->add_flag("--animate-phonons", config->animate_phonons,
+                        "Animate the phonons and write them to XYZ files.");
+
+  elastic_fit->add_flag(
+      "--save-debug-matrices", config->save_debug_matrices,
+      "Save debug matrices (D_ij, D_ei, D_ee, etc.) to files.");
+
+  elastic_fit
+      ->add_option("--mp-shrinking-factors", config->shrinking_factors_raw,
+                   "Shrinking factors for Monkhorst-Pack for phonons (either 1 "
+                   "or 3 numbers).")
+      ->expected(1, 3);
+
+  elastic_fit
+      ->add_option(
+          "--mp-shift", config->shift_raw,
+          "Origin shift for Monkhorst-Pack for phonons (either 1 or 3 numbers)")
+      ->expected(1, 3);
+
   elastic_fit->callback([config]() { run_elastic_fit_subcommand(*config); });
 
   return elastic_fit;
 }
 
 void run_elastic_fit_subcommand(const EFSettings &settings) {
-  try {
-    analyse_elat_results(settings);
-  } catch (const std::exception &e) {
-    occ::log::error("Error analysing ELAT results: {}", e.what());
-    exit(1);
-  }
+  analyse_elat_results(settings);
 }
 
 } // namespace occ::main

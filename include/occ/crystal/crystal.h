@@ -98,7 +98,7 @@ struct CrystalAtomRegion {
     disorder_group.resize(n);
   }
 
-  /**
+  /**./fitting/fit.py
    * \brief Returns the number of atoms in the region.
    *
    * \return The size of the region, i.e., the number of atoms it contains.
@@ -441,6 +441,13 @@ public:
    * \return The volume of the unit cell of the lattice, as a double.
    */
   double volume() const;
+
+  /**
+   * \brief Returns the density of the crystal in g/cm^3.
+   *
+   * \return The density of the crystal in g/cm^3.
+   */
+  double density() const;
 
   /**
    * \brief Returns the neighbouring dimers for the symmetry-unique molecules
