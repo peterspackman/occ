@@ -8,8 +8,8 @@
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/surface.h>
-#include <occ/io/cifparser.h>
 #include <occ/geometry/icosphere_mesh.h>
+#include <occ/io/cifparser.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/ply.h>
@@ -44,7 +44,8 @@ inline ElasticTensor read_tensor(const std::string &filename) {
   return ElasticTensor(tensor);
 }
 
-template <typename F> void print_averages(const std::string &name, const std::string &units, F f) {
+template <typename F>
+void print_averages(const std::string &name, const std::string &units, F f) {
   occ::log::info("");
   occ::log::info("{} ({})", name, units);
   occ::log::info("{:<10s} {:>12s}", "Scheme", "Value");
@@ -57,7 +58,8 @@ template <typename F> void print_averages(const std::string &name, const std::st
   }
 }
 
-void print_averaged_properties(const ElasticTensor &tensor, const Crystal *crystal = nullptr) {
+void print_averaged_properties(const ElasticTensor &tensor,
+                               const Crystal *crystal = nullptr) {
   print_averages("Young's modulus", "GPa", [&](auto scheme) {
     return tensor.average_youngs_modulus(scheme);
   });
@@ -79,7 +81,8 @@ void print_averaged_properties(const ElasticTensor &tensor, const Crystal *cryst
     double density = crystal->density();
     occ::log::info("");
     occ::log::info("Acoustic velocities (density: {:.3f} g/cm³)", density);
-    occ::log::info("{:<10s} {:>10s} {:>10s}", "Scheme", "V_s (m/s)", "V_p (m/s)");
+    occ::log::info("{:<10s} {:>10s} {:>10s}", "Scheme", "V_s (m/s)",
+                   "V_p (m/s)");
     occ::log::info("{:-<32s}", "");
 
     for (const auto &[k, v] :
@@ -106,7 +109,8 @@ compute_mesh_properties(const IcosphereMesh &icosphere,
     occ::FVec ym_reduced(verts.cols());
     for (int i = 0; i < verts.cols(); i++) {
       ym(i) = static_cast<float>(tensor.youngs_modulus(verts.col(i)));
-      ym_reduced(i) = static_cast<float>(tensor.reduced_youngs_modulus(verts.col(i)));
+      ym_reduced(i) =
+          static_cast<float>(tensor.reduced_youngs_modulus(verts.col(i)));
     }
     result.add("youngs_modulus", ym);
     result.add("youngs_modulus_reduced", ym_reduced);
@@ -140,7 +144,8 @@ compute_mesh_properties(const IcosphereMesh &icosphere,
       auto [l, u] = tensor.poisson_ratio_minmax(verts.col(i));
       p_min(i) = static_cast<float>(l);
       p_max(i) = static_cast<float>(u);
-      p_iso(i) = static_cast<float>(tensor.average_poisson_ratio_direction(verts.col(i)));
+      p_iso(i) = static_cast<float>(
+          tensor.average_poisson_ratio_direction(verts.col(i)));
     }
     result.add("poissons_ratio_min", p_min);
     result.add("poissons_ratio_max", p_max);
@@ -215,8 +220,8 @@ void run_elastic_subcommand(const ElasticSettings &settings) {
 
   occ::log::info("");
   occ::log::info("Eigenvalues of Voigt C (GPa)");
-  occ::log::info("{:8.3f} {:8.3f} {:8.3f} {:8.3f} {:8.3f} {:8.3f}", e(0),
-                 e(1), e(2), e(3), e(4), e(5));
+  occ::log::info("{:8.3f} {:8.3f} {:8.3f} {:8.3f} {:8.3f} {:8.3f}", e(0), e(1),
+                 e(2), e(3), e(4), e(5));
 
   // Crystal loading and acoustic velocity calculation
   Crystal *crystal_ptr = nullptr;
@@ -224,13 +229,16 @@ void run_elastic_subcommand(const ElasticSettings &settings) {
 
   if (!settings.crystal_filename.empty()) {
     occ::io::CifParser parser;
-    auto crystal_result = parser.parse_crystal_from_file(settings.crystal_filename);
+    auto crystal_result =
+        parser.parse_crystal_from_file(settings.crystal_filename);
     if (crystal_result.has_value()) {
       crystal_storage = std::make_unique<Crystal>(crystal_result.value());
       crystal_ptr = crystal_storage.get();
-      occ::log::info("Loaded crystal structure from {}", settings.crystal_filename);
+      occ::log::info("Loaded crystal structure from {}",
+                     settings.crystal_filename);
     } else {
-      occ::log::error("Failed to load crystal structure from {}", settings.crystal_filename);
+      occ::log::error("Failed to load crystal structure from {}",
+                      settings.crystal_filename);
     }
   }
 
@@ -244,12 +252,15 @@ void run_elastic_subcommand(const ElasticSettings &settings) {
   }
 }
 
-void compute_crystal_face_properties(const ElasticTensor &tensor, const Crystal &crystal, const ElasticSettings &settings) {
+void compute_crystal_face_properties(const ElasticTensor &tensor,
+                                     const Crystal &crystal,
+                                     const ElasticSettings &settings) {
   occ::log::info("");
   occ::log::info("Crystal Face Properties");
   occ::log::info("");
 
-  // Generate crystal surfaces with parameters similar to crystal surface energy calculation
+  // Generate crystal surfaces with parameters similar to crystal surface energy
+  // calculation
   occ::crystal::CrystalSurfaceGenerationParameters params;
   params.d_min = 0.1;
   params.unique = true;
@@ -260,34 +271,38 @@ void compute_crystal_face_properties(const ElasticTensor &tensor, const Crystal 
     return;
   }
 
-  // Follow the same logic as occ cg - just take the first N surfaces as generated
-  int num_surfaces = std::min(static_cast<int>(surfaces.size()), settings.max_surfaces);
+  // Follow the same logic as occ cg - just take the first N surfaces as
+  // generated
+  int num_surfaces =
+      std::min(static_cast<int>(surfaces.size()), settings.max_surfaces);
 
-  occ::log::info("Analyzing {} of {} crystallographic surfaces", num_surfaces, surfaces.size());
+  occ::log::info("Analyzing {} of {} crystallographic surfaces", num_surfaces,
+                 surfaces.size());
   occ::log::info("");
 
   // Simplified table header
-  occ::log::info("{:<17} {:>20} {:>8} {:>8} {:>8} {:>8}",
-                 "Surface", "Normal", "E", "v_avg", "E_R", "d");
-  occ::log::info("{:<17} {:>20} {:>8} {:>8} {:>8} {:>8}",
-                 "", "", "(GPa)", "", "(GPa)", "(Å)");
+  occ::log::info("{:<17} {:>20} {:>8} {:>8} {:>8} {:>8}", "Surface", "Normal",
+                 "E", "v_avg", "E_R", "d");
+  occ::log::info("{:<17} {:>20} {:>8} {:>8} {:>8} {:>8}", "", "", "(GPa)", "",
+                 "(GPa)", "(Å)");
   occ::log::info("{:-<73}", "");
-  
+
   for (int i = 0; i < num_surfaces; ++i) {
-    const auto& surface = surfaces[i];
-    const auto& hkl = surface.hkl();
+    const auto &surface = surfaces[i];
+    const auto &hkl = surface.hkl();
     std::string surface_name = fmt::format("({} {} {})", hkl.h, hkl.k, hkl.l);
 
     // Get the surface normal vector
     occ::Vec3 normal = surface.normal_vector();
-    std::string normal_str = fmt::format("[{: .2f} {: .2f} {: .2f}]", normal.x(), normal.y(), normal.z());
+    std::string normal_str = fmt::format("[{: .2f} {: .2f} {: .2f}]",
+                                         normal.x(), normal.y(), normal.z());
 
     // Compute elastic properties along this surface normal
     double E = tensor.youngs_modulus(normal);
     double v_avg = tensor.average_poisson_ratio_direction(normal);
     double E_red = tensor.reduced_youngs_modulus(normal);
-    double reciprocal_d = surface.d();  // This is in Å⁻¹
-    double d_spacing = 1.0 / reciprocal_d;  // Convert to Å
+    double reciprocal_d = surface.d();     // This is in Å⁻¹
+    double d_spacing = 1.0 / reciprocal_d; // Convert to Å
 
     occ::log::info("{:<17} {:>20} {:>8.1f} {:>8.3f} {:>8.1f} {:>8.1f}",
                    surface_name, normal_str, E, v_avg, E_red, d_spacing);

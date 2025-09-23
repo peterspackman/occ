@@ -31,6 +31,7 @@ struct EFSettings {
   std::string solver_type_str = "svd";
   double svd_threshold = 1e-12;
   bool animate_phonons = false;
+  bool save_debug_matrices = false;
   std::vector<size_t> shrinking_factors_raw{1};
   occ::IVec3 shrinking_factors{1, 1, 1};
   std::vector<double> shift_raw{0.0};

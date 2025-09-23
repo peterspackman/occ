@@ -313,6 +313,55 @@ TEST_CASE("crystal_json", "[write,read]") {
   }
 }
 
+TEST_CASE("crystal_dimers_json", "[write,read]") {
+  using occ::crystal::CrystalDimers;
+
+  SECTION("CrystalDimers serialization/deserialization") {
+    // Create a crystal and compute dimers
+    auto crystal = acetic_crystal();
+    double radius = 8.0;
+
+    // Generate symmetry unique dimers with energies
+    CrystalDimers original_dimers = crystal.symmetry_unique_dimers(radius);
+
+    // Set some test energies on the unique dimers
+    for (size_t i = 0; i < original_dimers.unique_dimers.size(); i++) {
+      double test_energy = -1.5 * (i + 1); // Some test energies
+      original_dimers.unique_dimers[i].set_interaction_energy(test_energy);
+    }
+
+    // Serialize to JSON
+    nlohmann::json j;
+    j["dimers"] = original_dimers;
+
+    // Deserialize from JSON
+    CrystalDimers loaded_dimers = j["dimers"].get<CrystalDimers>();
+
+    // Verify basic structure
+    REQUIRE(loaded_dimers.radius == original_dimers.radius);
+    REQUIRE(loaded_dimers.unique_dimers.size() == original_dimers.unique_dimers.size());
+    REQUIRE(loaded_dimers.molecule_neighbors.size() == original_dimers.molecule_neighbors.size());
+
+    // Verify energies are preserved
+    for (size_t i = 0; i < original_dimers.unique_dimers.size(); i++) {
+      double original_energy = original_dimers.unique_dimers[i].interaction_energy();
+      double loaded_energy = loaded_dimers.unique_dimers[i].interaction_energy();
+      REQUIRE(original_energy == loaded_energy);
+    }
+
+    // Verify molecule neighbors structure
+    for (size_t mol_idx = 0; mol_idx < original_dimers.molecule_neighbors.size(); mol_idx++) {
+      const auto& original_neighbors = original_dimers.molecule_neighbors[mol_idx];
+      const auto& loaded_neighbors = loaded_dimers.molecule_neighbors[mol_idx];
+      REQUIRE(loaded_neighbors.size() == original_neighbors.size());
+
+      for (size_t i = 0; i < original_neighbors.size(); i++) {
+        REQUIRE(loaded_neighbors[i].unique_index == original_neighbors[i].unique_index);
+      }
+    }
+  }
+}
+
 TEST_CASE("Write PLY mesh validation", "[io][ply]") {
   using occ::io::write_ply_mesh;
   using occ::isosurface::Isosurface;

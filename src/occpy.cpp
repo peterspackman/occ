@@ -1,6 +1,7 @@
 #include "python/cg_bindings.h"
 #include "python/core_bindings.h"
 #include "python/crystal_bindings.h"
+#include "python/descriptors_bindings.h"
 #include "python/dft_bindings.h"
 #include "python/dma_bindings.h"
 #include "python/interaction_bindings.h"
@@ -27,6 +28,7 @@ NB_MODULE(_occpy, m) {
   auto core = register_core_bindings(m);
   auto cg = register_cg_bindings(m);
   auto crystal = register_crystal_bindings(m);
+  auto descriptors = register_descriptors_bindings(m);
   auto qm = register_qm_bindings(m);
   auto dft = register_dft_bindings(m);
   auto dma = register_dma_bindings(m);

@@ -2,7 +2,8 @@ add_library(occ_elastic_fit
     "${CMAKE_CURRENT_SOURCE_DIR}/monkhorst_pack.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pes.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/potentials.cpp"
-    ${OCC_SHT_INCLUDE_FILES}
+    "${CMAKE_CURRENT_SOURCE_DIR}/elastic_fitting.cpp"
+    ${OCC_ELASTIC_FIT_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_elastic_fit

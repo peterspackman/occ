@@ -67,10 +67,9 @@ public:
 
   occ::Mat inv_mass_matrix();
 
-  occ::Mat6
-  compute_elastic_tensor(double volume,
-                         LinearSolverType solver_type = LinearSolverType::SVD,
-                         double svd_threshold = 1e-12);
+  occ::Mat6 compute_elastic_tensor(
+      double volume, LinearSolverType solver_type = LinearSolverType::SVD,
+      double svd_threshold = 1e-12, bool save_debug_matrices = false);
 
   occ::CMat compute_fm_at_kpoint(const occ::Vec3 &kp);
 

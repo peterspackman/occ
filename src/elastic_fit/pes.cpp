@@ -1,12 +1,12 @@
-#include <occ/core/units.h>
 #include <occ/core/constants.h>
-#include <occ/elastic_fit/pes.h>
+#include <occ/core/units.h>
 #include <occ/elastic_fit/monkhorst_pack.h>
+#include <occ/elastic_fit/pes.h>
 
 namespace occ::elastic_fit {
 
-using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
 using occ::units::EV_TO_KJ_PER_MOL;
+using occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
 using occ::units::PI;
 
 inline void save_matrix(const occ::Mat &matrix, const std::string &filename,
@@ -76,7 +76,8 @@ inline void print_vector(const occ::Vec &vec, int per_line) {
 
 occ::Mat6 PES::compute_elastic_tensor(double volume,
                                       LinearSolverType solver_type,
-                                      double svd_threshold) {
+                                      double svd_threshold,
+                                      bool save_debug_matrices) {
 
   size_t n_molecules = this->num_unique_molecules();
   size_t dim = 3 * n_molecules;
@@ -157,31 +158,33 @@ occ::Mat6 PES::compute_elastic_tensor(double volume,
   occ::Mat6 correction = D_ei * X; // This gives D_ei * D_ij^(-1) * D_ei^T
   occ::Mat6 C = (D_ee - correction) / volume * KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
 
-  save_matrix(D_ij, "D_ij.txt",
-              {"Cartesian-cartesian Hessian "
-               "(kJ/mol/Ang**2)"});
-  save_matrix(D_ei.transpose(), "D_ei.txt",
-              {"Strain-cartesian second derivative matrix "
-               " (kJ/mol/Ang)"},
-              false);
-  save_matrix(D_ee, "D_ee.txt",
-              {"Strain-strain second derivative matrix "
-               "(kJ/mol)"},
-              false);
-  save_matrix(Dyn_ij, "Dyn_ij.txt",
-              {"Dynamical cartesian-cartesian Hessian "
-               "(kJ/Ang**2/kg)"},
-              false);
-  save_matrix(D_ij / EV_TO_KJ_PER_MOL, "D_ij_gulp.txt",
-              {"Cartesian-cartesian Hessian"
-               "(eV/Ang**2)"},
-              false, 3);
-  save_matrix(D_ee / EV_TO_KJ_PER_MOL, "D_ee_gulp.txt",
-              {"Strain-strain second derivative matrix (eV)"}, false, 3);
-  save_matrix(D_ei.transpose() / EV_TO_KJ_PER_MOL, "D_ei_gulp.txt",
-              {"Strain-cartesian second derivative "
-               "(eV/Ang)"},
-              false, 3);
+  if (save_debug_matrices) {
+    save_matrix(D_ij, "D_ij.txt",
+                {"Cartesian-cartesian Hessian "
+                 "(kJ/mol/Ang**2)"});
+    save_matrix(D_ei.transpose(), "D_ei.txt",
+                {"Strain-cartesian second derivative matrix "
+                 " (kJ/mol/Ang)"},
+                false);
+    save_matrix(D_ee, "D_ee.txt",
+                {"Strain-strain second derivative matrix "
+                 "(kJ/mol)"},
+                false);
+    save_matrix(Dyn_ij, "Dyn_ij.txt",
+                {"Dynamical cartesian-cartesian Hessian "
+                 "(kJ/Ang**2/kg)"},
+                false);
+    save_matrix(D_ij / EV_TO_KJ_PER_MOL, "D_ij_gulp.txt",
+                {"Cartesian-cartesian Hessian"
+                 "(eV/Ang**2)"},
+                false, 3);
+    save_matrix(D_ee / EV_TO_KJ_PER_MOL, "D_ee_gulp.txt",
+                {"Strain-strain second derivative matrix (eV)"}, false, 3);
+    save_matrix(D_ei.transpose() / EV_TO_KJ_PER_MOL, "D_ei_gulp.txt",
+                {"Strain-cartesian second derivative "
+                 "(eV/Ang)"},
+                false, 3);
+  }
 
   return C;
 }

@@ -3,6 +3,8 @@
 #include <CLI/Formatter.hpp>
 #include <filesystem>
 #include <fmt/os.h>
+#include <fmt/format.h>
+#include <sstream>
 #include <occ/core/kabsch.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
@@ -15,6 +17,7 @@
 #include <occ/interaction/lattice_energy.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
+#include <occ/interaction/interaction_json.h>
 #include <occ/interaction/xtb_energy_model.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/cifwriter.h>
@@ -24,6 +27,8 @@
 #include <occ/main/monomer_wavefunctions.h>
 #include <occ/main/occ_elat.h>
 #include <occ/qm/wavefunction.h>
+#include <occ/elastic_fit/elastic_fitting.h>
+#include <occ/main/occ_elastic_fit.h>
 
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;
@@ -110,171 +115,6 @@ inline void map_interactions_to_uc(const Crystal &crystal,
       dimer.set_interaction_id(idx);
     }
   }
-}
-
-inline void
-write_elat_json(const std::string &basename, const std::string &model,
-                const occ::crystal::Crystal &crystal,
-                const occ::crystal::CrystalDimers &dimers,
-                const std::optional<occ::crystal::CrystalDimers> &uc_dimers =
-                    std::nullopt) {
-  nlohmann::json j;
-  j["result_type"] = "elat";
-  j["title"] = basename;
-  j["crystal"] = crystal;
-  j["model"] = model;
-  j["has_permutation_symmetry"] = true;
-
-  const auto &uc_atoms = crystal.unit_cell_atoms();
-  auto dimer_labeller = SymmetryDimerLabeller(crystal);
-  dimer_labeller.connection = "-";
-  dimer_labeller.format.fmt_string = "{}";
-
-  j["pairs"] = {};
-  for (const auto &mol_pairs : dimers.molecule_neighbors) {
-    nlohmann::json m;
-    for (const auto &[dimer, unique_idx] : mol_pairs) {
-      const auto &unique_dimer = dimers.unique_dimers[unique_idx];
-      if (unique_dimer.interaction_energy() == 0.0)
-        continue;
-
-      nlohmann::json d;
-      nlohmann::json e;
-
-      // Label generation
-      auto label = dimer_labeller(dimer);
-      d["Label"] = label;
-      d["Unique Index"] = unique_idx;
-
-      // Energy components
-      const auto &energies = unique_dimer.interaction_energies();
-      for (const auto &[k, v] : energies) {
-        e[k] = v;
-      }
-      d["energies"] = e;
-
-      // Nearest neighbor calculation based on distance threshold
-      bool is_nearest = dimer.nearest_distance() <=
-                        4.0; // You may want to make this threshold configurable
-      d["Nearest Neighbor"] = is_nearest;
-
-      // Unit cell atom offsets
-      nlohmann::json offsets_a = {};
-      {
-        const auto &a = dimer.a();
-        const auto &a_uc_idx = a.unit_cell_idx();
-        const auto &a_uc_shift = a.unit_cell_shift();
-        for (int i = 0; i < a_uc_idx.rows(); i++) {
-          offsets_a.push_back(std::array<int, 4>{a_uc_idx(i), a_uc_shift(0, i),
-                                                 a_uc_shift(1, i),
-                                                 a_uc_shift(2, i)});
-        }
-      }
-
-      nlohmann::json offsets_b = {};
-      {
-        const auto &b = dimer.b();
-        const auto &b_uc_idx = b.unit_cell_idx();
-        const auto &b_uc_shift = b.unit_cell_shift();
-        for (int i = 0; i < b_uc_idx.rows(); i++) {
-          offsets_b.push_back(std::array<int, 4>{b_uc_idx(i), b_uc_shift(0, i),
-                                                 b_uc_shift(1, i),
-                                                 b_uc_shift(2, i)});
-        }
-      }
-      d["uc_atom_offsets"] = {offsets_a, offsets_b};
-
-      m.push_back(d);
-    }
-    j["pairs"].push_back(m);
-  }
-  if (uc_dimers.has_value()) {
-    j["all_pairs"] = {};
-    const occ::crystal::CrystalDimers uc_dimers_value = uc_dimers.value();
-
-    using Offset = std::tuple<int, int, int, int>;
-    ankerl::unordered_dense::set<Offset> global_molecule_offsets;
-    for (const auto &mol_pairs : uc_dimers_value.molecule_neighbors) {
-      for (const auto &[dimer, unique_idx] : mol_pairs) {
-        const auto &unique_dimer = dimers.unique_dimers[unique_idx];
-        if (unique_dimer.interaction_energy() == 0.0)
-          continue;
-
-        const auto shift_a = dimer.a().cell_shift();
-        Offset mol_a{dimer.a().unit_cell_molecule_idx(), shift_a[0], shift_a[1],
-                     shift_a[2]};
-        global_molecule_offsets.insert(mol_a);
-        const auto shift_b = dimer.b().cell_shift();
-        Offset mol_b{dimer.b().unit_cell_molecule_idx(), shift_b[0], shift_b[1],
-                     shift_b[2]};
-        global_molecule_offsets.insert(mol_b);
-      }
-    }
-    ankerl::unordered_dense::map<Offset, int> map_molecules;
-    ankerl::unordered_dense::map<int, int> map_mol_uc_idx;
-    int counter = 0;
-    for (const auto &offset : global_molecule_offsets) {
-      map_molecules[offset] = counter;
-      int mol_uc_idx = std::get<0>(offset);
-      map_mol_uc_idx[counter] = mol_uc_idx;
-      counter++;
-    }
-
-    for (const auto &mol_pairs : uc_dimers_value.molecule_neighbors) {
-      nlohmann::json m;
-      for (const auto &[dimer, unique_idx] : mol_pairs) {
-        const auto &unique_dimer = dimers.unique_dimers[unique_idx];
-        if (unique_dimer.interaction_energy() == 0.0)
-          continue;
-
-        nlohmann::json d;
-        nlohmann::json e;
-
-        // Label generation
-        auto label = dimer_labeller(dimer);
-        d["Label"] = label;
-        d["Unique Index"] = unique_idx;
-
-        // Energy components
-        const auto &energies = unique_dimer.interaction_energies();
-        for (const auto &[k, v] : energies) {
-          e[k] = v;
-        }
-        d["energies"] = e;
-
-        // Nearest neighbor calculation based on distance threshold
-        bool is_nearest =
-            dimer.nearest_distance() <=
-            4.0; // You may want to make this threshold configurable
-        d["Nearest Neighbor"] = is_nearest;
-
-        double r = dimer.center_of_mass_distance();
-        d["r"] = r;
-        occ::Vec3 r_vec = dimer.v_ab_com();
-        d["rvec"] = std::array<double, 3>({r_vec[0], r_vec[1], r_vec[2]});
-
-        d["mass"] = std::tuple<double, double>{dimer.a().molar_mass(),
-                                               dimer.b().molar_mass()};
-        const auto shift_a = dimer.a().cell_shift();
-        Offset mol_a{dimer.a().unit_cell_molecule_idx(), shift_a[0], shift_a[1],
-                     shift_a[2]};
-        const auto shift_b = dimer.b().cell_shift();
-        Offset mol_b{dimer.b().unit_cell_molecule_idx(), shift_b[0], shift_b[1],
-                     shift_b[2]};
-        int idx_a = map_molecules[mol_a];
-        int idx_b = map_molecules[mol_b];
-        d["pair_indices"] = std::tuple<int, int>{idx_a, idx_b};
-        d["pair_uc_indices"] =
-            std::tuple<int, int>{map_mol_uc_idx[idx_a], map_mol_uc_idx[idx_b]};
-
-        m.push_back(d);
-      }
-      j["all_pairs"].push_back(m);
-    }
-  }
-
-  std::ofstream dest(fmt::format("{}_elat_results.json", basename));
-  dest << j.dump(2);
 }
 
 inline void set_charges_and_multiplicities(const std::string &charge_string,
@@ -389,7 +229,7 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
     exit(0);
   }
   std::optional<occ::crystal::CrystalDimers> uc_dimers;
-  if (settings.write_all_pairs) {
+  if (settings.write_all_pairs || settings.run_elastic_fitting) {
     uc_dimers = c.unit_cell_dimers(settings.max_radius);
   }
 
@@ -437,8 +277,48 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
   occ::log::info("Lattice energy: {:.3f} kJ/mol",
                  lattice_energy_result.lattice_energy);
 
-  write_elat_json(basename, settings.model_name, c,
-                  lattice_energy_result.dimers, uc_dimers);
+  // Create ElatResults and write using unified function
+  occ::interaction::ElatResults elat_results{
+    c,
+    lattice_energy_result,
+    basename,
+    settings.model_name
+  };
+
+  std::string json_filename = fmt::format("{}_elat_results.json", basename);
+  occ::interaction::write_elat_json(json_filename, elat_results);
+
+  // Run elastic fitting if requested
+  if (settings.run_elastic_fitting) {
+    occ::log::info("Running elastic tensor fitting...");
+
+    // Create default fitting settings
+    occ::elastic_fit::FittingSettings fitting_settings;
+    fitting_settings.potential_type = occ::elastic_fit::PotentialType::LJ;
+    fitting_settings.include_positive = false;
+    fitting_settings.max_to_zero = false;
+    fitting_settings.scale_factor = 2.0;
+    fitting_settings.temperature = 0.0;
+    fitting_settings.gulp_scale = 0.01;
+    fitting_settings.solver_type = occ::elastic_fit::LinearSolverType::SVD;
+    fitting_settings.svd_threshold = 1e-12;
+    fitting_settings.animate_phonons = false;
+    fitting_settings.shrinking_factors = occ::IVec3(1, 1, 1);
+    fitting_settings.shift = occ::Vec3(0.0, 0.0, 0.0);
+
+    occ::log::info("Using Lennard-Jones potential with default settings for elastic fitting");
+
+    occ::elastic_fit::ElasticFitter fitter(fitting_settings);
+    // Pass the original elat_results and let fit_elastic_tensor handle unit cell mapping
+    // fit_elastic_tensor will generate unit cell dimers and map energies as needed
+    auto results = fitter.fit_elastic_tensor(elat_results);
+
+    // Output results
+    occ::log::info("Lattice energy from elastic fitting: {:.3f} kJ/(mole unit cells)", results.lattice_energy);
+    occ::elastic_fit::ElasticFitter::print_elastic_tensor(results.elastic_tensor, "Elastic constant matrix: (Units=GPa)");
+
+    occ::log::info("Elastic tensor fitting completed successfully");
+  }
 }
 
 namespace occ::main {
@@ -482,6 +362,11 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
       "external command for energy calculations (for model=external)");
   elat->add_flag("--normalize-hbonds", config->normalize_hydrogens,
                  "normalize hydrogen bond lengths");
+
+  // Elastic fitting options
+  elat->add_flag("--elastic-fit", config->run_elastic_fitting,
+                 "run elastic tensor fitting after lattice energy calculation");
+
   elat->fallthrough();
   elat->callback([config, use_xtb]() {
     if (*use_xtb) {
