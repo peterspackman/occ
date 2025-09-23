@@ -7,7 +7,7 @@ var searchData=
   ['impl_4',['impl',['../structtinyply_1_1PlyFile.html#a97f1fc1106ac605bef3b00681d7492e3',1,'tinyply::PlyFile']]],
   ['include_5fdihedrals_5',['include_dihedrals',['../structocc_1_1opt_1_1InternalCoordinates_1_1Options.html#a97a5184f66b1aeff914f4a08f86cd2b3',1,'occ::opt::InternalCoordinates::Options']]],
   ['include_5fnuclei_6',['include_nuclei',['../structocc_1_1dma_1_1DMASettings.html#a864093884d3aabfc6e99b25e114bd122',1,'occ::dma::DMASettings::include_nuclei'],['../structocc_1_1dma_1_1LinearDMASettings.html#ab36ceaaf27767998c7eb262aebdf7627',1,'occ::dma::LinearDMASettings::include_nuclei']]],
-  ['include_5fpositive_7',['include_positive',['../structocc_1_1main_1_1EFSettings.html#a5f62c77880a04c42297281be851ef3ab',1,'occ::main::EFSettings']]],
+  ['include_5fpositive_7',['include_positive',['../structocc_1_1elastic__fit_1_1FittingSettings.html#aef30c5923fed4a48a993d479b12de6a9',1,'occ::elastic_fit::FittingSettings::include_positive'],['../structocc_1_1main_1_1EFSettings.html#a5f62c77880a04c42297281be851ef3ab',1,'occ::main::EFSettings::include_positive']]],
   ['incremental_5ffbuild_5fstarted_8',['incremental_Fbuild_started',['../structocc_1_1qm_1_1SCF.html#aaee7cfb6092fa8374bec136744e46dfa',1,'occ::qm::SCF']]],
   ['incremental_5ffock_5fthreshold_9',['incremental_fock_threshold',['../structocc_1_1qm_1_1SCFConvergenceSettings.html#ad0b6f3e7a27ea22dd152a71d8f9a5f3f',1,'occ::qm::SCFConvergenceSettings']]],
   ['index_10',['index',['../structocc_1_1crystal_1_1DimerMappingVertex.html#ab1b6360fbe238d60e36bc81df3f64661',1,'occ::crystal::DimerMappingVertex::index'],['../structocc_1_1crystal_1_1SiteMappingVertex.html#ad3e9f41bfde623f0747d9472e2bdd3a8',1,'occ::crystal::SiteMappingVertex::index']]],

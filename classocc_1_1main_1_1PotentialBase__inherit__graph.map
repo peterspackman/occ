@@ -1,9 +1,0 @@
-<map id="occ::main::PotentialBase" name="occ::main::PotentialBase">
-<area shape="rect" id="Node000001" title=" " alt="" coords="184,5,367,31"/>
-<area shape="rect" id="Node000002" href="$classocc_1_1main_1_1LJWrapper.html" title=" " alt="" coords="5,79,164,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="233,38,117,81,115,76,231,33"/>
-<area shape="rect" id="Node000003" href="$classocc_1_1main_1_1LJ__AWrapper.html" title=" " alt="" coords="188,79,363,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="278,44,278,79,273,79,273,44"/>
-<area shape="rect" id="Node000004" href="$classocc_1_1main_1_1MorseWrapper.html" title=" " alt="" coords="387,79,575,104"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="322,33,448,76,447,81,320,38"/>
-</map>

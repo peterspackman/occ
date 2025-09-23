@@ -1,12 +1,12 @@
 var searchData=
 [
   ['r_0',['R',['../structocc_1_1core_1_1KalmanEstimator.html#ac9c2fa1210d11d21843441c9bc7381fb',1,'occ::core::KalmanEstimator']]],
-  ['r0_1',['r0',['../structocc_1_1main_1_1Morse.html#a5943c33d24f6a8372c9c87a54384cd7f',1,'occ::main::Morse::r0'],['../classocc_1_1main_1_1PotentialBase.html#a6191f48f601d2f10b70d340eb59be3f7',1,'occ::main::PotentialBase::r0'],['../structocc_1_1main_1_1LJ__A.html#a51b27f0ad2f6ac871a796dfcd57025f0',1,'occ::main::LJ_A::r0'],['../structocc_1_1main_1_1LJ.html#a41bd84a9bfad8f9cef4202ccd68b3f2c',1,'occ::main::LJ::r0']]],
-  ['r012_2',['r012',['../structocc_1_1main_1_1LJ.html#a0e228c330e2f673abdf509e0a4721ef5',1,'occ::main::LJ::r012'],['../structocc_1_1main_1_1LJ__A.html#ad8421e5688b2bc7ceab6de2da8c9f90e',1,'occ::main::LJ_A::r012']]],
-  ['r06_3',['r06',['../structocc_1_1main_1_1LJ.html#a415bd8a11cb03b0cfec4c51c286476ee',1,'occ::main::LJ']]],
+  ['r0_1',['r0',['../structocc_1_1elastic__fit_1_1Morse.html#a51f77563369f10d56a4b9cc99fd29cea',1,'occ::elastic_fit::Morse::r0'],['../classocc_1_1elastic__fit_1_1PotentialBase.html#a812187b06ebaa3ad05dee6cad4e12a67',1,'occ::elastic_fit::PotentialBase::r0'],['../structocc_1_1elastic__fit_1_1LJ__A.html#aea8f117789d368a2c81ecadc5a68c3c6',1,'occ::elastic_fit::LJ_A::r0'],['../structocc_1_1elastic__fit_1_1LJ.html#adf7223015d831114dfa497d93125c59c',1,'occ::elastic_fit::LJ::r0']]],
+  ['r012_2',['r012',['../structocc_1_1elastic__fit_1_1LJ.html#aa80475c08118c1dee3a0ace9233aef83',1,'occ::elastic_fit::LJ::r012'],['../structocc_1_1elastic__fit_1_1LJ__A.html#af806164f691ec91d052925be88b40374',1,'occ::elastic_fit::LJ_A::r012']]],
+  ['r06_3',['r06',['../structocc_1_1elastic__fit_1_1LJ.html#a036483c9addcbc29dc8cbec81051c6e4',1,'occ::elastic_fit::LJ']]],
   ['r_5fexponents_4',['r_exponents',['../structocc_1_1io_1_1ECPShell.html#a478d10a27488de2553553f05c6641a61',1,'occ::io::ECPShell']]],
-  ['r_5fhat_5',['r_hat',['../structocc_1_1main_1_1Morse.html#a26dab4be5bf01325f1494ee055104be4',1,'occ::main::Morse::r_hat'],['../structocc_1_1main_1_1LJ.html#a0f3e65b5db3a4a76a5a9bdd27dc34b04',1,'occ::main::LJ::r_hat'],['../structocc_1_1main_1_1LJ__A.html#ad166f5727fac4863ffef01a0da06f26b',1,'occ::main::LJ_A::r_hat'],['../classocc_1_1main_1_1PotentialBase.html#a35e31bee147cc4b7908c9bf8dc0eff56',1,'occ::main::PotentialBase::r_hat']]],
-  ['r_5fvector_6',['r_vector',['../structocc_1_1main_1_1Morse.html#af5e2ac634b89db84c821073cb43dfd11',1,'occ::main::Morse::r_vector'],['../structocc_1_1main_1_1LJ.html#a9ea3723da7254335b1c9764b18a9f856',1,'occ::main::LJ::r_vector'],['../structocc_1_1main_1_1LJ__A.html#a350f1c5c877f089b4fe737fd7d3e87d2',1,'occ::main::LJ_A::r_vector'],['../classocc_1_1main_1_1PotentialBase.html#a13d8e31e482da5fd6fa0bc6b3ff7e7d9',1,'occ::main::PotentialBase::r_vector']]],
+  ['r_5fhat_5',['r_hat',['../structocc_1_1elastic__fit_1_1Morse.html#a98a84bdaa4fb1911dc239d6caebb6d09',1,'occ::elastic_fit::Morse::r_hat'],['../structocc_1_1elastic__fit_1_1LJ.html#a655b3a950890d402eac7dde66093e532',1,'occ::elastic_fit::LJ::r_hat'],['../structocc_1_1elastic__fit_1_1LJ__A.html#a6593906041abb9542714841059566105',1,'occ::elastic_fit::LJ_A::r_hat'],['../classocc_1_1elastic__fit_1_1PotentialBase.html#aea546a9cfed47e42b7f6187e0c8025c9',1,'occ::elastic_fit::PotentialBase::r_hat']]],
+  ['r_5fvector_6',['r_vector',['../structocc_1_1elastic__fit_1_1Morse.html#a901767b919b3bad11346d94df34ec2e6',1,'occ::elastic_fit::Morse::r_vector'],['../structocc_1_1elastic__fit_1_1LJ.html#abf079dd1af54c5c7cd2d6f7d92372977',1,'occ::elastic_fit::LJ::r_vector'],['../structocc_1_1elastic__fit_1_1LJ__A.html#a07beeef6419898caa8c13c5610c57d0e',1,'occ::elastic_fit::LJ_A::r_vector'],['../classocc_1_1elastic__fit_1_1PotentialBase.html#a9826f12e058abdd7bb61c5ee7dd0c655',1,'occ::elastic_fit::PotentialBase::r_vector']]],
   ['rad_5fper_5fdeg_7',['rad_per_deg',['../namespaceocc_1_1constants.html#ae858a811c43d86ce39ec058c2bacee69',1,'occ::constants']]],
   ['radial_5fpoints_8',['radial_points',['../structocc_1_1io_1_1GridSettings.html#a4fa233008eed95583cdddbf6f71bd9de',1,'occ::io::GridSettings']]],
   ['radial_5fprecision_9',['radial_precision',['../structocc_1_1io_1_1GridSettings.html#ab4156324fb12b5c435ab38474cd29ccd',1,'occ::io::GridSettings']]],
@@ -47,5 +47,6 @@ var searchData=
   ['row0_44',['row0',['../structocc_1_1geometry_1_1IndexCache.html#a891708b1f4e5ea9bfaef8319012909fe',1,'occ::geometry::IndexCache']]],
   ['row1_45',['row1',['../structocc_1_1geometry_1_1IndexCache.html#ae6e1611067c5d8697443145ab0624889',1,'occ::geometry::IndexCache']]],
   ['rows_46',['rows',['../structocc_1_1core_1_1TerminalSize.html#abdcc9528a21c4d0a7e6bb3684cff42b4',1,'occ::core::TerminalSize']]],
-  ['runtime_47',['runtime',['../structocc_1_1io_1_1OccInput.html#a376ccf0ea82ab03e97682fb1cee74b61',1,'occ::io::OccInput']]]
+  ['run_5felastic_5ffitting_47',['run_elastic_fitting',['../structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a02f3b55d9e0e796e669893dc5c8a1890',1,'occ::interaction::LatticeConvergenceSettings']]],
+  ['runtime_48',['runtime',['../structocc_1_1io_1_1OccInput.html#a376ccf0ea82ab03e97682fb1cee74b61',1,'occ::io::OccInput']]]
 ];

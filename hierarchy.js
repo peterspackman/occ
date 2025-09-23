@@ -105,8 +105,10 @@ var hierarchy =
     [ "occ::isosurface::EEQEspFunctor", "structocc_1_1isosurface_1_1EEQEspFunctor.html", null ],
     [ "occ::main::EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", null ],
     [ "occ::main::EFSettings", "structocc_1_1main_1_1EFSettings.html", null ],
+    [ "occ::elastic_fit::ElasticFitter", "classocc_1_1elastic__fit_1_1ElasticFitter.html", null ],
     [ "occ::main::ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", null ],
     [ "occ::core::ElasticTensor", "classocc_1_1core_1_1ElasticTensor.html", null ],
+    [ "occ::interaction::ElatResults", "structocc_1_1interaction_1_1ElatResults.html", null ],
     [ "occ::isosurface::ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", null ],
     [ "occ::isosurface::ElectricPotentialFunctorPC", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html", null ],
     [ "occ::isosurface::ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", null ],
@@ -143,6 +145,8 @@ var hierarchy =
     [ "occ::io::impl::FchkScalarWriter", "structocc_1_1io_1_1impl_1_1FchkScalarWriter.html", null ],
     [ "occ::io::impl::FchkVectorWriter", "structocc_1_1io_1_1impl_1_1FchkVectorWriter.html", null ],
     [ "occ::io::FchkWriter", "classocc_1_1io_1_1FchkWriter.html", null ],
+    [ "occ::elastic_fit::FittingResults", "structocc_1_1elastic__fit_1_1FittingResults.html", null ],
+    [ "occ::elastic_fit::FittingSettings", "structocc_1_1elastic__fit_1_1FittingSettings.html", null ],
     [ "occ::core::Fraction", "classocc_1_1core_1_1Fraction.html", null ],
     [ "occ::dft::FuncComponent", "structocc_1_1dft_1_1FuncComponent.html", null ],
     [ "occ::io::GaussianInputFile", "structocc_1_1io_1_1GaussianInputFile.html", null ],
@@ -205,8 +209,8 @@ var hierarchy =
     [ "occ::dma::LinearMultipoleCalculator", "classocc_1_1dma_1_1LinearMultipoleCalculator.html", null ],
     [ "occ::dma::LinearMultipoleShifter", "classocc_1_1dma_1_1LinearMultipoleShifter.html", null ],
     [ "occ::core::opt::LineSearch< Function >", "classocc_1_1core_1_1opt_1_1LineSearch.html", null ],
-    [ "occ::main::LJ", "structocc_1_1main_1_1LJ.html", null ],
-    [ "occ::main::LJ_A", "structocc_1_1main_1_1LJ__A.html", null ],
+    [ "occ::elastic_fit::LJ", "structocc_1_1elastic__fit_1_1LJ.html", null ],
+    [ "occ::elastic_fit::LJ_A", "structocc_1_1elastic__fit_1_1LJ__A.html", null ],
     [ "occ::isosurface::LogSumExpFunctor< Metric >", "classocc_1_1isosurface_1_1LogSumExpFunctor.html", null ],
     [ "ankerl::unordered_dense::map", null, [
       [ "occ::core::EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", null ]
@@ -236,8 +240,9 @@ var hierarchy =
     [ "occ::cg::MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", null ],
     [ "occ::gto::Momenta", "structocc_1_1gto_1_1Momenta.html", null ],
     [ "occ::gto::MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", null ],
+    [ "occ::elastic_fit::MonkhorstPack", "structocc_1_1elastic__fit_1_1MonkhorstPack.html", null ],
     [ "occ::interaction::PairEnergy::Monomer", "structocc_1_1interaction_1_1PairEnergy_1_1Monomer.html", null ],
-    [ "occ::main::Morse", "structocc_1_1main_1_1Morse.html", null ],
+    [ "occ::elastic_fit::Morse", "structocc_1_1elastic__fit_1_1Morse.html", null ],
     [ "occ::qm::MP2Components", "structocc_1_1qm_1_1MP2Components.html", null ],
     [ "occ::qm::MP2OrbitalInfo", "structocc_1_1qm_1_1MP2OrbitalInfo.html", null ],
     [ "occ::qm::MP2OrbitalSpec", "structocc_1_1qm_1_1MP2OrbitalSpec.html", null ],
@@ -284,7 +289,7 @@ var hierarchy =
     [ "occ::core::graph::PeriodicEdge", "structocc_1_1core_1_1graph_1_1PeriodicEdge.html", null ],
     [ "occ::io::PeriodicGrid", "classocc_1_1io_1_1PeriodicGrid.html", null ],
     [ "occ::core::graph::PeriodicVertex", "structocc_1_1core_1_1graph_1_1PeriodicVertex.html", null ],
-    [ "occ::main::PES", "classocc_1_1main_1_1PES.html", null ],
+    [ "occ::elastic_fit::PES", "classocc_1_1elastic__fit_1_1PES.html", null ],
     [ "quickhull::Plane< T >", "classquickhull_1_1Plane.html", null ],
     [ "tinyply::PlyData", "structtinyply_1_1PlyData.html", null ],
     [ "tinyply::PlyElement", "structtinyply_1_1PlyElement.html", null ],
@@ -301,10 +306,10 @@ var hierarchy =
     [ "occ::qm::PostHFMethod", "classocc_1_1qm_1_1PostHFMethod.html", [
       [ "occ::qm::MP2", "classocc_1_1qm_1_1MP2.html", null ]
     ] ],
-    [ "occ::main::PotentialBase", "classocc_1_1main_1_1PotentialBase.html", [
-      [ "occ::main::LJWrapper", "classocc_1_1main_1_1LJWrapper.html", null ],
-      [ "occ::main::LJ_AWrapper", "classocc_1_1main_1_1LJ__AWrapper.html", null ],
-      [ "occ::main::MorseWrapper", "classocc_1_1main_1_1MorseWrapper.html", null ]
+    [ "occ::elastic_fit::PotentialBase", "classocc_1_1elastic__fit_1_1PotentialBase.html", [
+      [ "occ::elastic_fit::LJWrapper", "classocc_1_1elastic__fit_1_1LJWrapper.html", null ],
+      [ "occ::elastic_fit::LJ_AWrapper", "classocc_1_1elastic__fit_1_1LJ__AWrapper.html", null ],
+      [ "occ::elastic_fit::MorseWrapper", "classocc_1_1elastic__fit_1_1MorseWrapper.html", null ]
     ] ],
     [ "occ::core::ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", null ],
     [ "occ::isosurface::PromolDensityFunctor", "structocc_1_1isosurface_1_1PromolDensityFunctor.html", null ],

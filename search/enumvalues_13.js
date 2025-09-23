@@ -22,5 +22,6 @@ var searchData=
   ['standard_19',['Standard',['../namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b',1,'occ::io']]],
   ['steinhardt_20',['Steinhardt',['../structocc_1_1main_1_1DescribeConfig.html#ac91ac77089e90af7c50e74ac1a56bbfaa51f1f8de2cd3a22e548e17e9a419b0f8',1,'occ::main::DescribeConfig']]],
   ['stored_21',['Stored',['../classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710da8ca3074133a77a7a6fb965a9b08ac3c2',1,'occ::qm::IntegralEngineDF']]],
-  ['stratmannscuseria_22',['StratmannScuseria',['../namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67',1,'occ::dft']]]
+  ['stratmannscuseria_22',['StratmannScuseria',['../namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67',1,'occ::dft']]],
+  ['svd_23',['SVD',['../namespaceocc_1_1elastic__fit.html#ac3e8c91ec2f8e6a091ce339e4f700e97a595e2d2f1a68ede96e96f849a85370bc',1,'occ::elastic_fit']]]
 ];

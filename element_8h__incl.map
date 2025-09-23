@@ -1,7 +1,15 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/element.h" name="/home/runner/work/occ/occ/include/occ/core/element.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,176,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="19,108,77,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,61,62,97,58,94,75,59"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="102,108,165,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="106,59,124,94,119,97,101,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="35,5,205,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,64,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="96,62,58,100,54,96,92,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="89,108,151,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="123,60,123,94,117,94,117,60"/>
+<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="175,108,361,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="167,58,238,99,235,103,164,62"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="79,181,182,207"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="247,136,166,177,164,173,245,131"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="206,181,330,207"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="271,134,271,168,265,168,265,134"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="354,181,443,207"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="290,131,367,172,364,177,288,136"/>
 </map>

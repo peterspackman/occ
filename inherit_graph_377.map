@@ -1,3 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structtinyply_1_1PlyProperty.html" title=" " alt="" coords="5,5,155,31"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,75,117,100"/>
+<area shape="rect" id="Node000001" href="$structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html" title=" " alt="" coords="183,5,386,60"/>
+<area shape="poly" id="edge24_Node000000_Node000001" title=" " alt="" coords="126,69,182,55,184,60,128,74"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html" title=" " alt="" coords="165,84,404,197"/>
+<area shape="poly" id="edge25_Node000000_Node000002" title=" " alt="" coords="129,101,166,110,165,115,128,106"/>
 </map>

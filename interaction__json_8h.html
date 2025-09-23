@@ -98,6 +98,7 @@ $(document).ready(function(){initNavTree('interaction__json_8h.html',''); initRe
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">interaction_json.h File Reference</div></div>
@@ -105,12 +106,24 @@ $(document).ready(function(){initNavTree('interaction__json_8h.html',''); initRe
 <div class="contents">
 <div class="textblock"><code>#include &lt;nlohmann/json.hpp&gt;</code><br />
 <code>#include &lt;<a class="el" href="pairinteraction_8h.html">occ/interaction/pairinteraction.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="lattice__energy_8h.html">occ/interaction/lattice_energy.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="crystal_8h.html">occ/crystal/crystal.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for interaction_json.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="interaction__json_8h__incl.svg" width="2579" height="652"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="interaction__json_8h__incl.svg" width="3423" height="946"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+</div><div class="textblock"><div class="dynheader">
+This graph shows which files directly or indirectly include this file:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="interaction__json_8h__dep__incl.svg" width="210" height="168"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1ElatResults.html">occ::interaction::ElatResults</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespaceocc" id="r_namespaceocc"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html">occ</a></td></tr>
@@ -125,6 +138,12 @@ Functions</h2></td></tr>
 <tr class="separator:a208d2eacf7ce54ef9229c9bb070df86a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3711d6671357216305554442fceb3d49" id="r_a3711d6671357216305554442fceb3d49"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a3711d6671357216305554442fceb3d49">occ::interaction::from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;)</td></tr>
 <tr class="separator:a3711d6671357216305554442fceb3d49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04576ff1e3817530986bef606ffcc6cc" id="r_a04576ff1e3817530986bef606ffcc6cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a04576ff1e3817530986bef606ffcc6cc">occ::interaction::write_elat_json</a> (const std::string &amp;filename, const <a class="el" href="structocc_1_1interaction_1_1ElatResults.html">ElatResults</a> &amp;results)</td></tr>
+<tr class="memdesc:a04576ff1e3817530986bef606ffcc6cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write elat JSON results in compact format.  <br /></td></tr>
+<tr class="separator:a04576ff1e3817530986bef606ffcc6cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04c9cf1e2075637695e4563ce47650c9" id="r_a04c9cf1e2075637695e4563ce47650c9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1ElatResults.html">ElatResults</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a04c9cf1e2075637695e4563ce47650c9">occ::interaction::read_elat_json</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:a04c9cf1e2075637695e4563ce47650c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read elat JSON results and reconstruct data structures.  <br /></td></tr>
+<tr class="separator:a04c9cf1e2075637695e4563ce47650c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

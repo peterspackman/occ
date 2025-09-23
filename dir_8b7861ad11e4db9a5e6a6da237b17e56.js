@@ -8,6 +8,7 @@ var dir_8b7861ad11e4db9a5e6a6da237b17e56 =
     [ "disp", "dir_12bdba9056c519c74d1fba995bf16c1b.html", "dir_12bdba9056c519c74d1fba995bf16c1b" ],
     [ "dma", "dir_d3bfe22a5b44db5907f7a3b9c4b2d1a8.html", "dir_d3bfe22a5b44db5907f7a3b9c4b2d1a8" ],
     [ "driver", "dir_ebd379896397d727b5a519429e0506e7.html", "dir_ebd379896397d727b5a519429e0506e7" ],
+    [ "elastic_fit", "dir_4f24fc6e55ee85dc7b7f34360214d5ab.html", "dir_4f24fc6e55ee85dc7b7f34360214d5ab" ],
     [ "geometry", "dir_f71aeec53af52887bf7238294c17f1a6.html", "dir_f71aeec53af52887bf7238294c17f1a6" ],
     [ "gto", "dir_cfc5afc38a17fd298438dc647b813568.html", "dir_cfc5afc38a17fd298438dc647b813568" ],
     [ "interaction", "dir_29fadc98e3e70bfdc2bb36e646c9c464.html", "dir_29fadc98e3e70bfdc2bb36e646c9c464" ],

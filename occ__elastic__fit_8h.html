@@ -100,42 +100,23 @@ $(document).ready(function(){initNavTree('occ__elastic__fit_8h.html',''); initRe
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">occ_elastic_fit.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="units_8h.html">occ/core/units.h</a>&quot;</code><br />
-<code>#include &lt;CLI/App.hpp&gt;</code><br />
-<code>#include &lt;cmath&gt;</code><br />
-<code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
-<code>#include &lt;stdexcept&gt;</code><br />
-<code>#include &lt;string&gt;</code><br />
-<code>#include &lt;vector&gt;</code><br />
+<div class="textblock"><code>#include &lt;CLI/App.hpp&gt;</code><br />
+<code>#include &lt;<a class="el" href="crystal_8h.html">occ/crystal/crystal.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="monkhorst__pack_8h.html">occ/elastic_fit/monkhorst_pack.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="pes_8h.html">occ/elastic_fit/pes.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="potentials_8h.html">occ/elastic_fit/potentials.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for occ_elastic_fit.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="occ__elastic__fit_8h__incl.svg" width="835" height="212"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="occ__elastic__fit_8h__incl.svg" width="2516" height="770"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1Morse.html">occ::main::Morse</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1LJ.html">occ::main::LJ</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1LJ__A.html">occ::main::LJ_A</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PotentialBase.html">occ::main::PotentialBase</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1MorseWrapper.html">occ::main::MorseWrapper</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1LJWrapper.html">occ::main::LJWrapper</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1LJ__AWrapper.html">occ::main::LJ_AWrapper</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1main_1_1PES.html">occ::main::PES</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1EFSettings.html">occ::main::EFSettings</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -146,14 +127,6 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespaceocc_1_1main" id="r_namespaceocc_1_1main"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html">occ::main</a></td></tr>
 <tr class="memdesc:namespaceocc_1_1main"><td class="mdescLeft">&#160;</td><td class="mdescRight">main module for functionaliity related to single point energies etc. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
-Enumerations</h2></td></tr>
-<tr class="memitem:ad0d0e916933700c0a71955747f8a9262" id="r_ad0d0e916933700c0a71955747f8a9262"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#ad0d0e916933700c0a71955747f8a9262">occ::main::PotentialType</a> { <a class="el" href="namespaceocc_1_1main.html#ad0d0e916933700c0a71955747f8a9262afe73263580a8fc053b1f0dad16c22927">occ::main::MORSE</a>
-, <a class="el" href="namespaceocc_1_1main.html#ad0d0e916933700c0a71955747f8a9262a388d9e1171b3e4aeae9adc4e26ca15ae">occ::main::LJ</a>
-, <a class="el" href="namespaceocc_1_1main.html#ad0d0e916933700c0a71955747f8a9262a684cce8e597d42fa061d1369dc222171">occ::main::LJ_A</a>
- }</td></tr>
-<tr class="separator:ad0d0e916933700c0a71955747f8a9262"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>

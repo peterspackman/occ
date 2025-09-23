@@ -6,6 +6,7 @@ var classocc_1_1crystal_1_1Crystal =
     [ "asymmetric_unit_atom_surroundings", "classocc_1_1crystal_1_1Crystal.html#a262daf6c6cbd4146dd4f773b4e77ab54", null ],
     [ "atom_site_mapping_table", "classocc_1_1crystal_1_1Crystal.html#a933e32a75af9d3e9b566ba644a85c5cd", null ],
     [ "atom_surroundings", "classocc_1_1crystal_1_1Crystal.html#af61a6255cfcd1d9a8f062c0c065a54b8", null ],
+    [ "density", "classocc_1_1crystal_1_1Crystal.html#acc053e812a6faa53cb5c3217c4773da1", null ],
     [ "dimer_symmetry_string", "classocc_1_1crystal_1_1Crystal.html#a7d88c14753f98a230d5580f5ec0fc80d", null ],
     [ "frac", "classocc_1_1crystal_1_1Crystal.html#a8b18b4e2935110e69245e5b091d3ae93", null ],
     [ "gamma_point_unit_cell_molecules", "classocc_1_1crystal_1_1Crystal.html#a8d86677ab74155fe342e4a5dd196c0e2", null ],

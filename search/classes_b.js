@@ -10,9 +10,9 @@ var searchData=
   ['linearmultipolecalculator_7',['LinearMultipoleCalculator',['../classocc_1_1dma_1_1LinearMultipoleCalculator.html',1,'occ::dma']]],
   ['linearmultipoleshifter_8',['LinearMultipoleShifter',['../classocc_1_1dma_1_1LinearMultipoleShifter.html',1,'occ::dma']]],
   ['linesearch_9',['LineSearch',['../classocc_1_1core_1_1opt_1_1LineSearch.html',1,'occ::core::opt']]],
-  ['lj_10',['LJ',['../structocc_1_1main_1_1LJ.html',1,'occ::main']]],
-  ['lj_5fa_11',['LJ_A',['../structocc_1_1main_1_1LJ__A.html',1,'occ::main']]],
-  ['lj_5fawrapper_12',['LJ_AWrapper',['../classocc_1_1main_1_1LJ__AWrapper.html',1,'occ::main']]],
-  ['ljwrapper_13',['LJWrapper',['../classocc_1_1main_1_1LJWrapper.html',1,'occ::main']]],
+  ['lj_10',['LJ',['../structocc_1_1elastic__fit_1_1LJ.html',1,'occ::elastic_fit']]],
+  ['lj_5fa_11',['LJ_A',['../structocc_1_1elastic__fit_1_1LJ__A.html',1,'occ::elastic_fit']]],
+  ['lj_5fawrapper_12',['LJ_AWrapper',['../classocc_1_1elastic__fit_1_1LJ__AWrapper.html',1,'occ::elastic_fit']]],
+  ['ljwrapper_13',['LJWrapper',['../classocc_1_1elastic__fit_1_1LJWrapper.html',1,'occ::elastic_fit']]],
   ['logsumexpfunctor_14',['LogSumExpFunctor',['../classocc_1_1isosurface_1_1LogSumExpFunctor.html',1,'occ::isosurface']]]
 ];

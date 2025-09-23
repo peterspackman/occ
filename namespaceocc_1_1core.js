@@ -153,6 +153,7 @@ var namespaceocc_1_1core =
     [ "set_bond_tolerance", "namespaceocc_1_1core.html#a062390827251be4cdda8275f26d42230", null ],
     [ "to_json", "namespaceocc_1_1core.html#ab539a0fe1dedd7d494d33ba2aec7157b", null ],
     [ "to_json", "namespaceocc_1_1core.html#ad5c48f070553f2f6bd57719768705bc8", null ],
+    [ "total_atomic_mass", "namespaceocc_1_1core.html#aa7cc2ff83621321d05ab7bd860a2bb81", null ],
     [ "total_num_multipole_components", "namespaceocc_1_1core.html#a4c43c80b170febf6fb0c2e6fbaa82d9a", null ],
     [ "translate_atoms", "namespaceocc_1_1core.html#a03ad31d684771525fec5bd1c8d0524a8", null ],
     [ "try_transformation_with_grouped_permutations", "namespaceocc_1_1core.html#abcf2553ba43ff999b49849a7fdcd1ff2", null ],

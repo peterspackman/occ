@@ -1,0 +1,7 @@
+<map id="occ::main::EFSettings" name="occ::main::EFSettings">
+<area shape="rect" id="Node000001" title=" " alt="" coords="53,93,215,119"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,116,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="69,43,81,68,95,81,111,91,108,95,92,85,77,71,64,45"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="141,5,274,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="198,44,180,71,153,95,149,91,176,68,194,41"/>
+</map>
