@@ -1,6 +1,5 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
-#include <optional>
 #include <queue>
 #include <stack>
 
@@ -53,8 +52,10 @@ public:
     return m_current_edge_descriptor++;
   }
 
-  const EdgeType &edge(EdgeDescriptor e) const { return m_edges[e]; }
-  const VertexType &vertex(VertexDescriptor v) const { return m_vertices[v]; }
+  const EdgeType &edge(EdgeDescriptor e) const { return m_edges.at(e); }
+  const VertexType &vertex(VertexDescriptor v) const {
+    return m_vertices.at(v);
+  }
 
   const auto &vertices() const { return m_vertices; }
   const auto &edges() const { return m_edges; }
@@ -137,8 +138,9 @@ public:
   template <typename T> void connected_component_traversal(T &func) {
     ankerl::unordered_dense::set<VertexDescriptor> visited;
     size_t current_component{0};
-    auto call_with_component = [&current_component,
+    auto call_with_component = [&current_component, &visited,
                                 &func](const VertexDescriptor &desc) {
+      visited.insert(desc);
       func(desc, current_component);
     };
 

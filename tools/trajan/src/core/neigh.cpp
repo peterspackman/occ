@@ -1,11 +1,14 @@
 #include <occ/crystal/unitcell.h>
 #include <stdexcept>
+#include <trajan/core/atom.h>
 #include <trajan/core/frame.h>
 #include <trajan/core/log.h>
 #include <trajan/core/neigh.h>
 #include <trajan/core/util.h>
 
 namespace trajan::core {
+
+using occ::IVec;
 
 NeighbourListPacket::NeighbourListPacket(const std::vector<Atom> &atoms) {
   size_t num_atoms = atoms.size();
@@ -33,8 +36,8 @@ NeighbourListPacket::NeighbourListPacket(const std::vector<Molecule> &molecules,
     case Molecule::Centroid:
       O = mol.centroid();
       break;
-    case Molecule::CentreOfMass:
-      O = mol.centre_of_mass();
+    case Molecule::CenterOfMass:
+      O = mol.center_of_mass();
       break;
     }
     cart_pos(0, i) = O.x();
@@ -68,8 +71,8 @@ void NeighbourListPacket::initialise_from_entities(
             case Molecule::Centroid:
               O = entity.centroid();
               break;
-            case Molecule::CentreOfMass:
-              O = entity.centre_of_mass();
+            case Molecule::CenterOfMass:
+              O = entity.center_of_mass();
               break;
             }
             cart_pos(0, i) = O.x();
@@ -271,12 +274,12 @@ void CellList::cell_loop(const NeighbourCallback &callback) const {
       for (size_t j = i + 1; j < center_entities.size(); ++j) {
         const Entity &ent2 = center_entities[j];
         if (m_clp.check_presence) {
-          bool is_cross_section = m_clp.presence_tracker[ent1.idx] !=
-                                  m_clp.presence_tracker[ent2.idx];
+          bool is_cross_section = m_clp.presence_tracker[ent1.index] !=
+                                  m_clp.presence_tracker[ent2.index];
           if (!is_cross_section) {
             continue;
           }
-          if (m_clp.are_same_entity(ent1.idx, ent2.idx)) {
+          if (m_clp.are_same_entity(ent1.index, ent2.index)) {
             continue;
           }
         }
@@ -292,12 +295,12 @@ void CellList::cell_loop(const NeighbourCallback &callback) const {
       for (const Entity &ent1 : center_entities) {
         for (const Entity &ent2 : neigh_entities) {
           if (m_clp.check_presence) {
-            bool is_cross_section = m_clp.presence_tracker[ent1.idx] !=
-                                    m_clp.presence_tracker[ent2.idx];
+            bool is_cross_section = m_clp.presence_tracker[ent1.index] !=
+                                    m_clp.presence_tracker[ent2.index];
             if (!is_cross_section) {
               continue;
             }
-            if (m_clp.are_same_entity(ent1.idx, ent2.idx)) {
+            if (m_clp.are_same_entity(ent1.index, ent2.index)) {
               continue;
             }
           }

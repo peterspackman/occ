@@ -1,12 +1,17 @@
 #pragma once
+#include <occ/core/linear_algebra.h>
 #include <occ/core/util.h>
 #include <trajan/core/atom.h>
-#include <trajan/core/graph.h>
-#include <trajan/core/linear_algebra.h>
+#include <trajan/core/atomgraph.h>
+#include <trajan/core/log.h>
 #include <trajan/core/molecule.h>
 #include <vector>
 
 namespace trajan::core {
+
+using Atom = trajan::core::EnhancedAtom;
+using Molecule = trajan::core::EnhancedMolecule;
+using trajan::core::AtomGraph;
 
 struct Angle {
   std::array<size_t, 3> atom_indices; // [atom1, center_atom, atom3]
@@ -104,46 +109,19 @@ struct BondPairHash {
 class Topology {
 public:
   Topology() = default;
-  Topology(const BondGraph &bond_graph);
   Topology(const std::vector<Atom> &atoms);
+  Topology(const std::vector<Atom> &atoms, const AtomGraph &atom_graph);
 
   Topology &operator=(const Topology &) = default;
 
-  // Topology &operator=(const Topology &other) {
-  //   if (this == &other)
-  //     return *this;
-  //
-  //   trajan::log::critical("Copying m_bond_graph");
-  //   m_bond_graph = other.m_bond_graph;
-  //
-  //   trajan::log::critical("Copying m_angles");
-  //   m_angles = other.m_angles;
-  //
-  //   trajan::log::critical("Copying m_dihedrals");
-  //   m_dihedrals = other.m_dihedrals;
-  //
-  //   trajan::log::critical("Copying m_angle_set");
-  //   m_angle_set = other.m_angle_set;
-  //
-  //   trajan::log::critical("Copying m_dihedral_set");
-  //   m_dihedral_set = other.m_dihedral_set;
-  //
-  //   trajan::log::critical("Copying m_bond_storage");
-  //   m_bond_storage = other.m_bond_storage;
-  //
-  //   return *this;
-  // }
-
-  inline const std::vector<Atom> &get_atoms() const {
-    return m_bond_graph.nodes();
-  }
-  inline size_t num_atoms() const { return m_bond_graph.num_nodes(); }
+  inline const std::vector<Atom> &atoms() const { return m_atoms; }
+  inline size_t num_atoms() const { return m_atoms.size(); }
 
   void add_bond(size_t atom1, size_t atom2, double bond_length = 0.0);
   void remove_bond(size_t atom1, size_t atom2);
   bool has_bond(size_t atom1, size_t atom2) const;
   void clear_bonds();
-  std::vector<Bond> get_bonds() const;
+  std::vector<Bond> get_bonds(bool bidirectional = false) const;
 
   void add_angle(size_t atom1, size_t center, size_t atom3);
   void remove_angle(size_t atom1, size_t center, size_t atom3);
@@ -166,7 +144,7 @@ public:
   void generate_improper_dihedrals_from_bonds();
   void generate_all_from_bonds();
 
-  // graph-based queries - delegates to BondGraph
+  // graph-based queries - delegates to AtomGraph
   std::vector<size_t> get_bonded_atoms(size_t atom_idx) const;
   std::vector<size_t> get_atoms_at_distance(size_t atom_idx,
                                             size_t distance) const;
@@ -190,11 +168,12 @@ public:
   std::string to_string() const;
 
   // access to underlying graph
-  const BondGraph &get_bond_graph() const { return m_bond_graph; }
-  BondGraph &get_bond_graph() { return m_bond_graph; }
+  const AtomGraph &get_atom_graph() const { return m_atom_graph; }
+  AtomGraph &get_atom_graph() { return m_atom_graph; }
 
 private:
-  BondGraph m_bond_graph;
+  std::vector<Atom> m_atoms;
+  AtomGraph m_atom_graph;
   std::vector<Angle> m_angles;
   std::vector<Dihedral> m_dihedrals;
 

@@ -589,6 +589,12 @@ public:
   void rotate(const Mat3 &r, Origin o = Cartesian);
 
   /**
+   * Obtain a description for the position of the molecule based on the origin
+   * choice.
+   */
+  Vec3 position(Origin origin) const;
+
+  /**
    * Rotate this Molecule by the given rotation, about the specified origin.
    * Overload for any Mat3.
    *

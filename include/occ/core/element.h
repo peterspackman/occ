@@ -131,6 +131,15 @@ static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] = {
 
 /// @endcond
 
+inline double max_covalent_radius() {
+  ElementData *max_element = std::max_element(
+      std::begin(ELEMENTDATA_TABLE), std::end(ELEMENTDATA_TABLE),
+      [](const ElementData &a, const ElementData &b) {
+        return a.cov_radius < b.cov_radius;
+      });
+  return max_element->cov_radius;
+}
+
 /**
  * Utility class representing and holding data for a chemical element.
  *

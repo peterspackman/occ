@@ -3,7 +3,7 @@
 #include <occ/crystal/unitcell.h>
 #include <stdexcept>
 #include <trajan/core/atom.h>
-#include <trajan/core/element.h>
+// #include <trajan/core/element.h>
 #include <trajan/core/frame.h>
 #include <trajan/core/log.h>
 // #include <trajan/core/unit_cell.h>
@@ -16,6 +16,7 @@ using occ::crystal::triclinic_cell;
 using occ::crystal::UnitCell;
 using trajan::core::Frame;
 using trajan::units::radians;
+using Atom = trajan::core::EnhancedAtom;
 
 bool PDBHandler::_initialise() {
   if (m_mode == Mode::Read) {
@@ -63,7 +64,7 @@ bool PDBHandler::parse_pdb(Frame &frame) {
     if (line.substr(0, 4) != "ATOM" && line.substr(0, 6) != "HETATM") {
       continue;
     };
-    core::Atom atom;
+    Atom atom;
     char record_name[7], name_buffer[5], alt_loc[2], res_name[4], ins_code[2],
         tmp[12];
     char chain_id[2], element_buffer[3], charge[3];
@@ -85,7 +86,7 @@ bool PDBHandler::parse_pdb(Frame &frame) {
     ins_code[1] = '\0';
     element_buffer[2] = '\0';
     charge[2] = '\0';
-    atom.serial = serial;
+    atom.uindex = serial;
     atom.type = name_buffer;
     occ::util::trim(atom.type);
     std::string element_identifier;
@@ -99,6 +100,7 @@ bool PDBHandler::parse_pdb(Frame &frame) {
       element_identifier = name_buffer;
     }
     atom.element = core::Element(element_identifier, exact);
+
     atom.index = atoms.size();
     atoms.push_back(atom);
   }
@@ -131,11 +133,12 @@ bool PDBHandler::write_next_frame(const Frame &frame) {
               << std::endl;
   }
 
+  int i = 1;
   for (const auto &atom : atoms) {
     std::string line =
         fmt::format(PDB_LINE_FMT_WRITE.data(),
                     "ATOM",                 // field 1: 6 chars
-                    atom.serial,            // field 2: 5 digits
+                    i,                      // field 2: 5 digits
                     ' ',                    // field 3: 1 char
                     atom.type,              // field 4: 4 chars
                     ' ',                    // field 5: 1 char
@@ -152,9 +155,9 @@ bool PDBHandler::write_next_frame(const Frame &frame) {
                     atom.element.symbol(),  // 2 chars
                     ""                      // charge (2 chars)
         );
-
     trajan::log::debug("Writing PDB line: {}", line);
     m_outfile << line << std::endl;
+    i++;
   }
 
   m_outfile << "ENDMDL" << std::endl;

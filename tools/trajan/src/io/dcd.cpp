@@ -1,10 +1,12 @@
 // #include "trajan/core/unit_cell.h"
+#include <occ/core/linear_algebra.h>
+#include <occ/core/units.h>
 #include <occ/crystal/unitcell.h>
-#include <trajan/core/units.h>
 #include <trajan/io/dcd.h>
 
 namespace trajan::io {
 
+using occ::Vec3;
 using occ::crystal::UnitCell;
 using trajan::core::Frame;
 
@@ -304,9 +306,9 @@ bool DCDHandler::_parse_dcd(core::Frame &frame) {
         beta = std::acos(beta);
         gamma = std::acos(gamma);
       } else {
-        alpha = units::radians(alpha);
-        beta = units::radians(beta);
-        gamma = units::radians(gamma);
+        alpha = occ::units::radians(alpha);
+        beta = occ::units::radians(beta);
+        gamma = occ::units::radians(gamma);
       }
       UnitCell uc = frame.unit_cell();
       uc.set_a(a);

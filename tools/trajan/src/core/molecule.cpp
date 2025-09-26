@@ -2,62 +2,21 @@
 
 namespace trajan::core {
 
-Molecule::Molecule(const std::vector<Atom> &atoms)
-    : m_atomic_numbers(atoms.size()), m_positions(3, atoms.size()),
-      m_partial_charges(Vec::Zero(atoms.size())) {
-  m_elements.reserve(atoms.size());
-  for (size_t i = 0; i < atoms.size(); i++) {
-    const Atom &atom = atoms[i];
-    m_elements.push_back(atom.element);
-    m_atomic_numbers(i) = atom.element.atomic_number();
-    m_positions(0, i) = atom.x;
-    m_positions(1, i) = atom.y;
-    m_positions(2, i) = atom.z;
+static std::vector<occ::core::Atom>
+convert_atoms(const std::vector<Atom> &atoms) {
+  std::vector<occ::core::Atom> occ_atoms;
+  occ_atoms.reserve(atoms.size());
+
+  for (const auto &atom : atoms) {
+    const auto &pos = atom.position();
+    occ::core::Atom occ_atom(atom.atomic_number(), pos[0], pos[1], pos[2]);
+    occ_atoms.push_back(occ_atom);
   }
-  m_name = chemical_formula(m_elements);
+
+  return occ_atoms;
 }
 
-Molecule::Molecule(const graph::ConnectedComponent<Atom, Bond> &cc) {
-  auto atoms = cc.get_nodes();
-  auto bonds = cc.get_edges();
-  m_elements.reserve(atoms.size());
-  m_atoms.reserve(atoms.size());
-  m_atomic_numbers.resize(atoms.size());
-  m_positions.resize(3, atoms.size());
-  m_partial_charges.resize(atoms.size(), 0.0);
-  size_t i = 0;
-  for (const auto &[idx, atom] : atoms) {
-    m_atoms.push_back(atom);
-    m_elements.push_back(atom.element);
-    m_atomic_numbers(i) = atom.element.atomic_number();
-    m_positions(0, i) = atom.x;
-    m_positions(1, i) = atom.y;
-    m_positions(2, i) = atom.z;
-    i++;
-  }
-  m_name = chemical_formula(m_elements);
-  m_bonds.reserve(bonds.size());
-  for (auto &[p, bond] : bonds) {
-    bond.idxs = p;
-    m_bonds.push_back(bond);
-  }
-  this->type = "UNK";
-};
-
-Vec Molecule::atomic_masses() const {
-  Vec masses(size());
-  for (size_t i = 0; i < masses.size(); i++) {
-    masses(i) = static_cast<double>(m_elements[i].mass());
-  }
-  return masses;
-}
-
-Vec3 Molecule::centroid() const { return m_positions.rowwise().mean(); }
-
-Vec3 Molecule::centre_of_mass() const {
-  trajan::RowVec masses = atomic_masses();
-  masses.array() /= masses.sum();
-  return (m_positions.array().rowwise() * masses.array()).rowwise().sum();
-}
+EnhancedMolecule::EnhancedMolecule(const std::vector<Atom> &atoms)
+    : occ::core::Molecule(convert_atoms(atoms)), enhanced_atoms(atoms) {}
 
 }; // namespace trajan::core

@@ -1,70 +1,93 @@
+#include "trajan/core/atomgraph.h"
 #include <Eigen/Geometry>
 #include <trajan/core/topology.h>
 
 namespace trajan::core {
 
-Topology::Topology(const BondGraph &bond_graph) : m_bond_graph(bond_graph) {
-  const auto &adj_list = m_bond_graph.get_adjacency_list();
+Topology::Topology(const std::vector<Atom> &atoms, const AtomGraph &atom_graph)
+    : m_atom_graph(atom_graph), m_atoms(atoms) {
 
-  for (const auto &[node_id, neighbours] : adj_list) {
-    for (const auto &[neighbour_id, bond] : neighbours) {
-      if (node_id < neighbour_id) {
-        auto bond_pair = this->make_bond_pair(node_id, neighbour_id);
-        Bond corrected_bond = bond;
-        corrected_bond.idxs = bond_pair;
-        m_bond_storage[bond_pair] = corrected_bond;
-      }
-    }
+  using VD = AtomGraph::VertexDescriptor;
+  using ED = AtomGraph::EdgeDescriptor;
+  std::vector<std::tuple<VD, VD, ED>> result;
+  ankerl::unordered_dense::set<VD> visited;
+
+  auto collect_edges = [&](const VD &current, const VD &predecessor,
+                           const ED &edge_desc) {
+    visited.insert(current);
+    if (current == predecessor)
+      return;
+    auto bond_pair = this->make_bond_pair(current, predecessor);
+    const Bond &bond = atom_graph.edge(edge_desc);
+    Bond forward_bond(bond.bond_length, bond_pair);
+    m_bond_storage[bond_pair] = forward_bond;
+  };
+
+  for (const auto &[vertex_desc, vertex_data] : atom_graph.vertices()) {
+    if (visited.contains(vertex_desc))
+      continue;
+    atom_graph.breadth_first_traversal_with_edge(vertex_desc, collect_edges);
   }
 
   this->generate_all_from_bonds();
 }
 
-Topology::Topology(const std::vector<Atom> &atoms) : m_bond_graph(atoms) {
-  for (size_t i = 0; i < atoms.size(); i++) {
-    for (size_t j = i + 1; j < atoms.size(); j++) {
-      auto bond_opt = atoms[i].is_bonded(atoms[j]);
-      if (bond_opt.has_value()) {
-        Bond bond = bond_opt.value();
-        auto bond_pair = this->make_bond_pair(i, j);
-        bond.idxs = bond_pair;
+Topology::Topology(const std::vector<Atom> &atoms) : m_atoms(atoms) {
 
-        m_bond_graph.add_edge(i, j, bond);
-        m_bond_storage[bond_pair] = bond;
+  for (int i = 0; i < atoms.size(); i++) {
+    m_atom_graph.add_vertex(trajan::core::AtomVertex{i});
+  }
+  for (int i = 0; i < atoms.size(); i++) {
+    for (int j = i + 1; j < atoms.size(); j++) {
+      auto bond_opt = atoms[i].is_bonded(atoms[j]);
+      if (!bond_opt.has_value()) {
+        continue;
       }
+      Bond bond = bond_opt.value();
+      auto bond_pair = this->make_bond_pair(i, j);
+      bond.indices = bond_pair;
+
+      m_atom_graph.add_edge(i, j, bond, true);
+      m_bond_storage[bond_pair] = bond;
     }
   }
   this->generate_all_from_bonds();
 }
 
 void Topology::add_bond(size_t atom1, size_t atom2, double bond_length) {
-  auto bond_pair = this->make_bond_pair(atom1, atom2);
+  const auto &[p1, p2] = this->make_bond_pair(atom1, atom2);
 
-  if (m_bond_storage.find(bond_pair) != m_bond_storage.end()) {
+  if (m_bond_storage.find({p1, p2}) != m_bond_storage.end()) {
     trajan::log::warn(
         fmt::format("Bond ({} {}) already in Topology.", atom1, atom2));
     return;
   }
 
   Bond bond(bond_length);
-  bond.idxs = bond_pair;
+  bond.indices = {p1, p2};
 
-  m_bond_graph.add_edge(atom1, atom2, bond);
-  m_bond_storage[bond_pair] = bond;
-}
-
-void Topology::remove_bond(size_t atom1, size_t atom2) {
-  auto bond_pair = this->make_bond_pair(atom1, atom2);
-
-  if (m_bond_storage.find(bond_pair) == m_bond_storage.end()) {
-    trajan::log::warn(
-        fmt::format("Bond ({} {}) not in Topology.", atom1, atom2));
-    return;
+  if (m_atom_graph.vertex(atom1) == m_atom_graph.vertices().end()) {
+    m_atom_graph.add_vertex(AtomVertex{static_cast<int>(p1)});
   }
-
-  m_bond_graph.remove_edge(atom1, atom2);
-  m_bond_storage.erase(bond_pair);
+  if (m_atom_graph.vertex(atom2) == m_atom_graph.vertices().end()) {
+    m_atom_graph.add_vertex(AtomVertex{static_cast<int>(p2)});
+  }
+  m_atom_graph.add_edge(p1, p2, bond, true);
+  m_bond_storage[{p1, p2}] = bond;
 }
+
+// void Topology::remove_bond(size_t atom1, size_t atom2) {
+//   auto bond_pair = this->make_bond_pair(atom1, atom2);
+//
+//   if (m_bond_storage.find(bond_pair) == m_bond_storage.end()) {
+//     trajan::log::warn(
+//         fmt::format("Bond ({} {}) not in Topology.", atom1, atom2));
+//     return;
+//   }
+//
+//   m_atom_graph.remove_edge(atom1, atom2);
+//   m_bond_storage.erase(bond_pair);
+// }
 
 bool Topology::has_bond(size_t atom1, size_t atom2) const {
   auto bond_pair = this->make_bond_pair(atom1, atom2);
@@ -72,18 +95,29 @@ bool Topology::has_bond(size_t atom1, size_t atom2) const {
 }
 
 void Topology::clear_bonds() {
-  m_bond_graph.clear_edges();
+  // m_atom_graph.clear_edges();
+  m_atom_graph = AtomGraph();
   m_bond_storage.clear();
   this->clear_angles();
   this->clear_dihedrals();
 }
 
-std::vector<Bond> Topology::get_bonds() const {
+std::vector<Bond> Topology::get_bonds(bool bidrectional) const {
   std::vector<Bond> bonds;
   bonds.reserve(m_bond_storage.size());
 
-  for (const auto &[bond_pair, bond] : m_bond_storage) {
+  auto f = [&bonds](const auto &bond, const auto &bond_pair) {
     bonds.push_back(bond);
+  };
+  if (bidrectional) {
+    auto f = [&bonds](const auto &bond, const auto &bond_pair) {
+      bonds.push_back(bond);
+      bonds.push_back(
+          Bond(bond.bond_length, {bond_pair.second, bond_pair.first}));
+    };
+  }
+  for (const auto &[bond_pair, bond] : m_bond_storage) {
+    f(bond, bond_pair);
   }
 
   return bonds;
@@ -107,12 +141,9 @@ bool Topology::update_bond(size_t atom1, size_t atom2,
 
   if (it != m_bond_storage.end()) {
     Bond corrected_bond = updated_bond;
-    corrected_bond.idxs = bond_pair;
-
+    corrected_bond.indices = bond_pair;
     it->second = corrected_bond;
-
-    m_bond_graph.add_edge(atom1, atom2, corrected_bond);
-
+    m_atom_graph.add_edge(atom1, atom2, corrected_bond, true);
     return true;
   }
 
@@ -195,11 +226,8 @@ void Topology::clear_dihedrals() {
 void Topology::generate_angles_from_bonds() {
   this->clear_angles();
 
-  const auto &adj_list = m_bond_graph.get_adjacency_list();
+  const auto &adj_list = m_atom_graph.adjacency_list();
   for (const auto &[atom_idx, neighbours] : adj_list) {
-    if (neighbours.size() < 2) {
-      continue;
-    }
     auto angles = this->find_angles_around_atom(atom_idx);
     for (const auto &angle : angles) {
       m_angles.push_back(angle);
@@ -240,7 +268,7 @@ void Topology::generate_proper_dihedrals_from_bonds() {
 
 void Topology::generate_improper_dihedrals_from_bonds() {
   std::vector<Dihedral> improper_dihedrals;
-  const auto &adj_list = m_bond_graph.get_adjacency_list();
+  const auto &adj_list = m_atom_graph.adjacency_list();
 
   for (const auto &[atom_idx, neighbours] : adj_list) {
     if (neighbours.size() != 3) {
@@ -265,17 +293,16 @@ void Topology::generate_all_from_bonds() {
 }
 
 std::vector<size_t> Topology::get_bonded_atoms(size_t atom_idx) const {
-  const auto &adj_list = m_bond_graph.get_adjacency_list();
-  auto it = adj_list.find(atom_idx);
-  if (it != adj_list.end()) {
-    std::vector<size_t> bonded;
-    bonded.reserve(it->second.size());
-    for (const auto &[neighbour_id, bond] : it->second) {
-      bonded.push_back(neighbour_id);
-    }
-    return bonded;
+  const auto &neighbours = m_atom_graph.neighbors(atom_idx);
+  if (neighbours == m_atom_graph.adjacency_list().end()) {
+    return {};
   }
-  return {};
+  std::vector<size_t> bonded;
+  bonded.reserve(neighbours->second.size());
+  for (const auto &[neighbour_id, bond] : neighbours->second) {
+    bonded.push_back(neighbour_id);
+  }
+  return bonded;
 }
 
 std::vector<Bond> Topology::get_bonds_involving_atom(size_t atom_idx) const {
@@ -328,12 +355,21 @@ std::vector<size_t> Topology::get_atoms_at_distance(size_t atom_idx,
 }
 
 std::vector<Molecule> Topology::extract_molecules() const {
+
+  auto components = m_atom_graph.connected_components();
+  ankerl::unordered_dense::map<size_t, std::vector<AtomGraph::VertexDescriptor>>
+      grouped;
+  for (const auto &[vertex, component_id] : components) {
+    grouped[component_id].push_back(vertex);
+  }
   std::vector<Molecule> molecules{};
-
-  auto components = m_bond_graph.find_connected_components();
-
-  for (const auto &component : components) {
-    molecules.emplace_back(component);
+  for (const auto &[component_id, vertices] : grouped) {
+    std::vector<Atom> atoms;
+    for (const auto vertex : vertices) {
+      atoms.push_back(m_atoms[vertex]);
+    }
+    Molecule molecule(atoms);
+    molecules.emplace_back(atoms);
   }
 
   return molecules;

@@ -1,11 +1,9 @@
 #pragma once
 #include <filesystem>
+#include <occ/crystal/unitcell.h>
 #include <trajan/core/frame.h>
-#include <trajan/core/graph.h>
 #include <trajan/core/neigh.h>
 #include <trajan/core/topology.h>
-// #include <trajan/core/unit_cell.h>
-#include <occ/crystal/unitcell.h>
 #include <trajan/io/file_handler.h>
 #include <trajan/io/selection.h>
 #include <vector>
@@ -15,6 +13,8 @@ namespace trajan::core {
 namespace fs = std::filesystem;
 
 using occ::crystal::UnitCell;
+using Atom = trajan::core::EnhancedAtom;
+using Molecule = trajan::core::EnhancedMolecule;
 
 class Trajectory {
 
@@ -59,9 +59,9 @@ public:
   std::vector<EntityVariant>
   get_entities(const std::vector<io::SelectionCriteria> &selections);
 
-  const Topology &get_topology();
+  const Topology &get_topology(std::optional<double> bond_tolerance = 0.4);
 
-  void update_topology();
+  void update_topology(std::optional<double> bond_tolerance = 0.4);
 
 private:
   bool m_guess_connectivity{true};

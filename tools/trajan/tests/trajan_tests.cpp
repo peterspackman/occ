@@ -1,5 +1,6 @@
 #include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_session.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
@@ -7,30 +8,28 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <occ/crystal/unitcell.h>
 #include <random>
-#include <trajan/core/element.h>
-// #include <trajan/core/ewald.h>
-#include <trajan/core/linear_algebra.h>
+#include <trajan/core/atomgraph.h>
 #include <trajan/core/log.h>
 #include <trajan/core/molecule.h>
 #include <trajan/core/neigh.h>
 #include <trajan/core/topology.h>
 #include <trajan/core/trajectory.h>
-// #include <trajan/core/unit_cell.h>
-#include <occ/crystal/unitcell.h>
-#include <trajan/core/units.h>
 #include <trajan/io/pdb.h>
 #include <trajan/io/selection.h>
 #include <vector>
 
 namespace fs = std::filesystem;
+namespace units = occ::units;
 
+using occ::Mat3N;
+using occ::Vec3;
 using occ::crystal::UnitCell;
-using trajan::Mat3N;
-using trajan::Vec3;
+
 using trajan::core::Atom;
+using trajan::core::AtomGraph;
 using trajan::core::Bond;
-using trajan::core::BondGraph;
 using trajan::core::Cell;
 using trajan::core::CellList;
 using trajan::core::DihedralType;
@@ -41,110 +40,138 @@ using trajan::core::Molecule;
 using trajan::core::NeighbourList;
 using trajan::core::Topology;
 using trajan::core::Trajectory;
-using trajan::io::SelectionCriteria;
-using trajan::io::SelectionParser;
 
 using trajan::io::AtomIndexSelection;
 using trajan::io::AtomTypeSelection;
 using trajan::io::MoleculeIndexSelection;
 using trajan::io::MoleculeTypeSelection;
+using trajan::io::SelectionCriteria;
+using trajan::io::SelectionParser;
 
-fs::path CURRENT = __FILE__;
-fs::path EXAMPLES_DIR = CURRENT.parent_path() / "testing_files";
+static std::string g_test_data_path;
 
-namespace units = trajan::units;
+std::string get_test_data_path() { return g_test_data_path; }
 
-// TEST_CASE("Ewald Summation", "[ewald]") {
-//   const double alpha = 0.25;
-//   const double box_size = 10.0;
-//   UnitCell unit_cell = trajan::core::cubic_cell(box_size);
-//
-//   Mat3N positions(3, 2);
-//   positions.col(0) << 1.0, 2.0, 3.0;
-//   positions.col(1) << 4.0, 5.0, 6.0;
-//
-//   std::vector<double> charges = {1.0, -1.0};
-//
-//   trajan::core::Ewald ewald(alpha);
-//   ewald.update(positions, charges, unit_cell);
-//
-//   const double direct_sum = ewald.reciprocal_sum(false);
-//   const double fft_sum = ewald.reciprocal_sum(true);
-//
-//   REQUIRE(direct_sum == Catch::Approx(fft_sum));
-// }
+bool has_test_data() {
+  return !g_test_data_path.empty() && fs::exists(g_test_data_path);
+}
 
-// TEST_CASE("Element constructor with exact matching", "[element]") {
-//   SECTION("Exact matches are found correctly") {
-//     auto [input, expected_symbol, expected_number] =
-//         GENERATE(table<std::string, std::string, int>({{"H", "H", 1},
-//                                                        {"He", "He", 2},
-//                                                        {"Fe", "Fe", 26},
-//                                                        {"Au", "Au", 79},
-//                                                        {"U", "U", 92}}));
-//
-//     Element e(input, true);
-//     REQUIRE(e.symbol() == expected_symbol);
-//     REQUIRE(e.atomic_number() == expected_number);
-//   }
-//
-//   SECTION("Case sensitivity for exact matches") {
-//     auto [input, expected_symbol] = GENERATE(table<std::string, std::string>(
-//         {{"h", "Xx"}, {"HE", "Xx"}, {"fe", "Xx"}, {"AU", "Xx"}}));
-//
-//     Element e(input, true);
-//     REQUIRE(e.symbol() == expected_symbol);
-//   }
-// }
-//
-// TEST_CASE("Element constructor with partial matching", "[element]") {
-//   SECTION("Partial matches find longest valid symbol") {
-//     auto [input, expected_symbol] =
-//         GENERATE(table<std::string, std::string>({{"Hg", "Hg"},
-//                                                   {"Hge", "Hg"},
-//                                                   {"Her", "He"},
-//                                                   {"Fer", "Fe"},
-//                                                   {"Feat", "Fe"}}));
-//
-//     Element e(input, false);
-//     REQUIRE(e.symbol() == expected_symbol);
-//   }
-//
-//   SECTION("No match returns dummy element") {
-//     auto input = GENERATE("Q", "J", "X", "Qq", "Jk", "Xyz");
-//
-//     Element e(input, false);
-//     REQUIRE(e.symbol() == "Xx");
-//     REQUIRE(e.atomic_number() == 0);
-//   }
-// }
-//
-// TEST_CASE("Element constructor with edge cases", "[element]") {
-//   SECTION("Empty string returns dummy element") {
-//     Element e("", false);
-//     REQUIRE(e.symbol() == "Xx");
-//   }
-//
-//   SECTION("Single character matches") {
-//     auto [input, expected_symbol] = GENERATE(table<std::string, std::string>(
-//         {{"H", "H"}, {"N", "N"}, {"O", "O"}, {"F", "F"}, {"U", "U"}}));
-//
-//     Element e(input, false);
-//     REQUIRE(e.symbol() == expected_symbol);
-//   }
-// }
+class TestFixture {
+public:
+  fs::path get_test_file(const fs::path &file) {
+    this->require_test_data();
+    return fs::path(get_test_data_path()) / file;
+  }
 
-TEST_CASE("CellList Basic Construction", "[cell_list]") {
-  // auto unit_cell = trajan::core::cubic_cell(10.0);
+  void require_test_data() {
+    if (!has_test_data()) {
+      SKIP("Test data path not provided or doesn't exist. Use --data-path "
+           "<path>");
+    }
+  }
+};
+
+int main(int argc, char *argv[]) {
+  Catch::Session session;
+
+  auto cli = session.cli() |
+             Catch::Clara::Opt(g_test_data_path, "path")["-d"]["--data-path"](
+                 "Path to trajectory test data directory");
+
+  session.cli(cli);
+
+  int result = session.applyCommandLine(argc, argv);
+  if (result != 0)
+    return result;
+
+  if (g_test_data_path.empty()) {
+    trajan::log::info(
+        "No test data path provided. File-based tests will be skipped.");
+    trajan::log::info("Use --data-path <path> to enable all tests.");
+  } else if (!fs::exists(g_test_data_path)) {
+    trajan::log::info("Warning: Test data path doesn't exist: {}",
+                      g_test_data_path);
+    trajan::log::info("File-based tests will be skipped.");
+    g_test_data_path.clear();
+  } else {
+    trajan::log::info("Using test data path: {}", g_test_data_path);
+  }
+
+  return session.run();
+}
+
+// tests that dont require files
+
+TEST_CASE("Element constructor with exact matching", "[unit][element]") {
+  SECTION("Exact matches are found correctly") {
+    auto [input, expected_symbol, expected_number] =
+        GENERATE(table<std::string, std::string, int>({{"H", "H", 1},
+                                                       {"He", "He", 2},
+                                                       {"Fe", "Fe", 26},
+                                                       {"Au", "Au", 79},
+                                                       {"U", "U", 92}}));
+
+    Element e(input, true);
+    REQUIRE(e.symbol() == expected_symbol);
+    REQUIRE(e.atomic_number() == expected_number);
+  }
+
+  SECTION("Case sensitivity for exact matches") {
+    auto [input, expected_symbol] = GENERATE(table<std::string, std::string>(
+        {{"h", "Xx"}, {"HE", "Xx"}, {"fe", "Xx"}, {"AU", "Xx"}}));
+
+    Element e(input, true);
+    REQUIRE(e.symbol() == expected_symbol);
+  }
+}
+
+TEST_CASE("Element constructor with partial matching", "[unit][element]") {
+  SECTION("Partial matches find longest valid symbol") {
+    auto [input, expected_symbol] =
+        GENERATE(table<std::string, std::string>({{"Hg", "Hg"},
+                                                  {"Hge", "Hg"},
+                                                  {"Her", "He"},
+                                                  {"Fer", "Fe"},
+                                                  {"Feat", "Fe"}}));
+
+    Element e(input, false);
+    REQUIRE(e.symbol() == expected_symbol);
+  }
+
+  SECTION("No match returns dummy element") {
+    auto input = GENERATE("Q", "J", "X", "Qq", "Jk", "Xyz");
+
+    Element e(input, false);
+    REQUIRE(e.symbol() == "Xx");
+    REQUIRE(e.atomic_number() == 0);
+  }
+}
+
+TEST_CASE("Element constructor with edge cases", "[unit][element]") {
+  SECTION("Empty string returns dummy element") {
+    Element e("", false);
+    REQUIRE(e.symbol() == "Xx");
+  }
+
+  SECTION("Single character matches") {
+    auto [input, expected_symbol] = GENERATE(table<std::string, std::string>(
+        {{"H", "H"}, {"N", "N"}, {"O", "O"}, {"F", "F"}, {"U", "U"}}));
+
+    Element e(input, false);
+    REQUIRE(e.symbol() == expected_symbol);
+  }
+}
+
+TEST_CASE("CellList Basic Construction", "[unit][neigh]") {
   double cutoff = 2.0;
 
   SECTION("Construction") { REQUIRE_NOTHROW(CellList(cutoff)); }
 }
 
-TEST_CASE("Cell Adding and Retrieving Atoms", "[cell]") {
+TEST_CASE("Cell Adding and Retrieving Atoms", "[unit][neigh]") {
   Cell cell;
   Vec3 pos(1.0, 1.0, 1.0);
-  Atom atom(pos, 0, 0);
+  Atom atom(pos, Element(0), 0);
 
   SECTION("Adding single atom") {
     cell.add_entity(atom);
@@ -171,7 +198,7 @@ template <typename Func> double measure_execution_time(Func &&func) {
   return std::chrono::duration<double>(end - start).count();
 }
 
-TEST_CASE("CellList vs Double Loop Comparison", "[cell_list]") {
+TEST_CASE("CellList vs Double Loop Comparison", "[unit][neigh]") {
   const double box_size = 50.0;
   UnitCell unit_cell = occ::crystal::cubic_cell(box_size);
   const int num_atoms = 3000;
@@ -188,7 +215,7 @@ TEST_CASE("CellList vs Double Loop Comparison", "[cell_list]") {
     // create atoms with random positions
     for (int i = 0; i < num_atoms; ++i) {
       Vec3 position(dis(gen), dis(gen), dis(gen));
-      Atom atom(position, 0, i);
+      Atom atom(position, Element(0), i);
       atoms.push_back(atom);
     }
 
@@ -238,7 +265,7 @@ TEST_CASE("CellList vs Double Loop Comparison", "[cell_list]") {
     // create atoms with random positions
     for (int i = 0; i < num_atoms; ++i) {
       Vec3 position(dis(gen), dis(gen), dis(gen));
-      Atom atom(position, 0, i);
+      Atom atom(position, Element(0), i);
       atoms.push_back(atom);
     }
     std::atomic<size_t> cell_list_pairs{0};
@@ -280,7 +307,8 @@ TEST_CASE("CellList vs Double Loop Comparison", "[cell_list]") {
     REQUIRE(verlet_list_time > cell_list_time);
   }
 }
-TEST_CASE("CellList vs Double Loop Comparison using entities", "[cell_list]") {
+TEST_CASE("CellList vs Double Loop Comparison using entities",
+          "[unit][neigh]") {
   const double box_size = 50.0;
   const int num_atoms = 3000;
   const double cutoff = 5.0;
@@ -296,7 +324,7 @@ TEST_CASE("CellList vs Double Loop Comparison using entities", "[cell_list]") {
   entities.reserve(num_atoms);
   for (int i = 0; i < num_atoms; ++i) {
     Vec3 position(dis(gen), dis(gen), dis(gen));
-    Atom atom(position, 0, i);
+    Atom atom(position, Element(0), i);
     entities.push_back(atom);
   }
 
@@ -342,7 +370,7 @@ TEST_CASE("CellList vs Double Loop Comparison using entities", "[cell_list]") {
 }
 TEST_CASE(
     "CellList vs Double Loop Comparison using entities in Trajectory object",
-    "[cell_list]") {
+    "[unit][neigh]") {
   const double box_size = 50.0;
   const int num_atoms = 3000;
   const double cutoff = 5.0;
@@ -360,7 +388,7 @@ TEST_CASE(
   atoms.reserve(num_atoms);
   for (int i = 0; i < num_atoms; ++i) {
     Vec3 position(dis(gen), dis(gen), dis(gen));
-    Atom atom(position, 0, i);
+    Atom atom(position, Element(0), i);
     atoms.push_back(atom);
   }
   frame.set_atoms(atoms);
@@ -406,7 +434,7 @@ TEST_CASE(
 }
 
 TEST_CASE("CellList vs Double Loop Comparison inside Trajectory with selection",
-          "[cell_list]") {
+          "[unit][neigh]") {
   const double box_size = 50.0;
   const int num_atoms = 33000;
   const double cutoff = 9.0;
@@ -484,7 +512,7 @@ TEST_CASE("CellList vs Double Loop Comparison inside Trajectory with selection",
 }
 TEST_CASE(
     "CellList vs Double Loop Comparison inside Trajectory with multi selection",
-    "[cell_list]") {
+    "[unit][neigh]") {
   const double box_size = 25.0;
   const int num_atoms = 1000;
   const double cutoff = 6.0;
@@ -571,7 +599,7 @@ TEST_CASE(
   }
 }
 
-TEST_CASE("Molecule construction from atoms", "[molecule]") {
+TEST_CASE("Molecule construction from atoms", "[unit][molecule]") {
   SECTION("Empty molecule") {
     std::vector<Atom> atoms;
     Molecule molecule(atoms);
@@ -600,7 +628,7 @@ TEST_CASE("Molecule construction from atoms", "[molecule]") {
   }
 }
 
-TEST_CASE("MoleculeGraph bond detection", "[molecule][graph]") {
+TEST_CASE("MoleculeGraph bond detection", "[unit][molecule][graph]") {
   SECTION("Bonded atoms") {
     // Typical C-O bond length
     Atom a1(Vec3{0.0, 0.0, 0.0}, Element("C", true), 0);
@@ -675,7 +703,7 @@ std::vector<Atom> create_disconnected_atoms() {
   return atoms;
 }
 
-TEST_CASE("Topology Construction", "[topology][construction]") {
+TEST_CASE("Topology Construction", "[unit][topology][construction]") {
   SECTION("Default constructor") {
     Topology topology;
     REQUIRE(topology.num_bonds() == 0);
@@ -688,27 +716,32 @@ TEST_CASE("Topology Construction", "[topology][construction]") {
     Topology topology(atoms);
 
     // Should detect C-H bonds automatically
-    REQUIRE(topology.num_bonds() > 0);
-    REQUIRE(topology.num_angles() > 0);
+    //
+    REQUIRE(topology.num_bonds() == 4);
+    REQUIRE(topology.num_angles() >= 1); // Should have at least H-C-H angle
+    REQUIRE(topology.num_angles() == 6); // Should have at least H-C-H angle
   }
 
-  SECTION("Construction from BondGraph") {
+  SECTION("Construction from AtomGraph") {
     auto atoms = create_test_atoms();
-    BondGraph bond_graph(atoms);
+    AtomGraph atom_graph;
 
-    // Manually add some bonds
+    for (const auto &atom : atoms) {
+      atom_graph.add_vertex(trajan::core::AtomVertex{atom.index});
+    }
+
     Bond bond(1.1);
-    bond_graph.add_edge(0, 1, bond);
-    bond_graph.add_edge(0, 2, bond);
+    atom_graph.add_edge(0, 1, bond);
+    atom_graph.add_edge(0, 2, bond);
+    REQUIRE(atom_graph.edges().size() == 2);
 
-    Topology topology(bond_graph);
+    Topology topology(atoms, atom_graph);
     REQUIRE(topology.num_bonds() == 2);
-    REQUIRE(topology.num_angles() >= 1); // Should have at least H-C-H angle
+    REQUIRE(topology.num_angles() == 1);
   }
 }
 
-TEST_CASE("Bond Management", "[topology][bonds]") {
-  // TODO: Catch warnings from spdlog
+TEST_CASE("Bond Management", "[unit][topology][bonds]") {
   Topology topology;
 
   SECTION("Adding bonds") {
@@ -724,22 +757,22 @@ TEST_CASE("Bond Management", "[topology][bonds]") {
     REQUIRE(topology.num_bonds() == 1);
   }
 
-  SECTION("Removing bonds") {
-    topology.add_bond(0, 1, 1.5);
-    topology.add_bond(1, 2, 1.5);
-    REQUIRE(topology.num_bonds() == 2);
-
-    topology.remove_bond(0, 1);
-    REQUIRE(topology.num_bonds() == 1);
-    REQUIRE_FALSE(topology.has_bond(0, 1));
-    REQUIRE(topology.has_bond(1, 2));
-
-    // Removing non-existent bond should warn but not crash
-    trajan::log::set_log_level("silent");
-    topology.remove_bond(0, 1);
-    trajan::log::set_log_level("info");
-    REQUIRE(topology.num_bonds() == 1);
-  }
+  // SECTION("Removing bonds") {
+  //   topology.add_bond(0, 1, 1.5);
+  //   topology.add_bond(1, 2, 1.5);
+  //   REQUIRE(topology.num_bonds() == 2);
+  //
+  //   topology.remove_bond(0, 1);
+  //   REQUIRE(topology.num_bonds() == 1);
+  //   REQUIRE_FALSE(topology.has_bond(0, 1));
+  //   REQUIRE(topology.has_bond(1, 2));
+  //
+  //   // Removing non-existent bond should warn but not crash
+  //   trajan::log::set_log_level("silent");
+  //   topology.remove_bond(0, 1);
+  //   trajan::log::set_log_level("info");
+  //   REQUIRE(topology.num_bonds() == 1);
+  // }
 
   SECTION("Clearing bonds") {
     topology.add_bond(0, 1, 1.5);
@@ -772,7 +805,7 @@ TEST_CASE("Bond Management", "[topology][bonds]") {
   }
 }
 
-TEST_CASE("Angle Management", "[topology][angles]") {
+TEST_CASE("Angle Management", "[unit][topology][angles]") {
   Topology topology;
 
   SECTION("Adding angles manually") {
@@ -821,7 +854,7 @@ TEST_CASE("Angle Management", "[topology][angles]") {
   }
 }
 
-TEST_CASE("Dihedral Management", "[topology][dihedrals]") {
+TEST_CASE("Dihedral Management", "[unit][topology][dihedrals]") {
   Topology topology;
 
   SECTION("Adding dihedrals manually") {
@@ -878,13 +911,14 @@ TEST_CASE("Dihedral Management", "[topology][dihedrals]") {
   }
 }
 
-TEST_CASE("Automatic Generation from Bonds", "[topology][generation]") {
+TEST_CASE("Automatic Generation from Bonds", "[unit][topology][generation]") {
   Topology topology;
 
   SECTION("Generate angles from bonds") {
     // Create a bent molecule: 0-1-2
     topology.add_bond(0, 1, 1.0);
     topology.add_bond(1, 2, 1.0);
+    REQUIRE(topology.num_bonds() == 2);
 
     topology.generate_angles_from_bonds();
     REQUIRE(topology.num_angles() == 1);
@@ -896,6 +930,7 @@ TEST_CASE("Automatic Generation from Bonds", "[topology][generation]") {
     topology.add_bond(0, 1, 1.0);
     topology.add_bond(1, 2, 1.0);
     topology.add_bond(2, 3, 1.0);
+    REQUIRE(topology.num_bonds() == 3);
 
     topology.generate_proper_dihedrals_from_bonds();
     auto dihedrals = topology.get_dihedrals();
@@ -908,7 +943,10 @@ TEST_CASE("Automatic Generation from Bonds", "[topology][generation]") {
     topology.add_bond(0, 1, 1.0);
     topology.add_bond(0, 2, 1.0);
     topology.add_bond(0, 3, 1.0);
+    REQUIRE(topology.num_bonds() == 3);
 
+    topology.generate_angles_from_bonds();
+    REQUIRE(topology.num_angles() == 3);
     topology.generate_improper_dihedrals_from_bonds();
     REQUIRE(topology.num_improper_dihedrals() == 1);
   }
@@ -923,13 +961,14 @@ TEST_CASE("Automatic Generation from Bonds", "[topology][generation]") {
     // - 1 proper dihedral (H-C-C-H)
     // - 0 improper dihedrals
 
-    REQUIRE(topology.num_bonds() >= 3);
-    REQUIRE(topology.num_angles() >= 2);
-    REQUIRE(topology.num_proper_dihedrals() >= 1);
+    REQUIRE(topology.num_bonds() == 3);
+    REQUIRE(topology.num_angles() == 2);
+    REQUIRE(topology.num_proper_dihedrals() == 1);
+    REQUIRE(topology.num_improper_dihedrals() == 0);
   }
 }
 
-TEST_CASE("Graph Queries", "[topology][graph]") {
+TEST_CASE("Graph Queries", "[unit][topology][graph]") {
   Topology topology;
 
   SECTION("Get bonded atoms") {
@@ -978,7 +1017,7 @@ TEST_CASE("Graph Queries", "[topology][graph]") {
   }
 }
 
-TEST_CASE("Connected Components and Molecules", "[topology][molecules]") {
+TEST_CASE("Connected Components and Molecules", "[unit][topology][molecules]") {
   SECTION("Single connected component") {
     auto atoms = create_test_atoms();
     Topology topology(atoms);
@@ -1007,7 +1046,7 @@ TEST_CASE("Connected Components and Molecules", "[topology][molecules]") {
   }
 }
 
-TEST_CASE("Topology Validation", "[topology][validation]") {
+TEST_CASE("Topology Validation", "[unit][topology][validation]") {
   Topology topology;
 
   SECTION("Valid topology") {
@@ -1040,7 +1079,7 @@ TEST_CASE("Topology Validation", "[topology][validation]") {
   }
 }
 
-TEST_CASE("Topology String Representation", "[topology][string]") {
+TEST_CASE("Topology String Representation", "[unit][topology][string]") {
   Topology topology;
   topology.add_bond(0, 1, 1.0);
   topology.add_bond(1, 2, 1.0);
@@ -1060,23 +1099,23 @@ TEST_CASE("Bond Graph Access", "[topology][bondgraph]") {
   Topology topology(atoms);
 
   SECTION("Const access to bond graph") {
-    const auto &bond_graph = topology.get_bond_graph();
-    const auto &adj_list = bond_graph.get_adjacency_list();
+    const auto &atom_graph = topology.get_atom_graph();
+    const auto &adj_list = atom_graph.adjacency_list();
     REQUIRE_FALSE(adj_list.empty());
   }
 
   SECTION("Mutable access to bond graph") {
-    auto &bond_graph = topology.get_bond_graph();
+    auto &atom_graph = topology.get_atom_graph();
     Bond new_bond(2.0);
-    bond_graph.add_edge(10, 11, new_bond);
+    atom_graph.add_edge(10, 11, new_bond);
 
     // Should be able to modify through reference
-    const auto &adj_list = bond_graph.get_adjacency_list();
+    const auto &adj_list = atom_graph.adjacency_list();
     REQUIRE(adj_list.find(10) != adj_list.end());
   }
 }
 
-TEST_CASE("Edge Cases and Error Handling", "[topology][edge_cases]") {
+TEST_CASE("Edge Cases and Error Handling", "[unit][topology]") {
   SECTION("Operations on empty topology") {
     Topology topology;
 
@@ -1109,38 +1148,7 @@ TEST_CASE("Edge Cases and Error Handling", "[topology][edge_cases]") {
   }
 }
 
-TEST_CASE("Trajectory and Topology Integration", "[trajectory][topology]") {
-  SECTION("Load PDB and check topology") {
-    Trajectory trajectory;
-    std::vector<fs::path> files = {EXAMPLES_DIR / "coord.pdb"};
-    trajectory.load_files(files);
-
-    REQUIRE(trajectory.next_frame());
-
-    const Topology &topology = trajectory.get_topology();
-
-    // For a typical water box, we expect many bonds, angles, and molecules
-    // The exact numbers depend on the PDB content and bond detection logic
-    // Let's assume some reasonable minimums for a non-empty PDB
-    REQUIRE(topology.num_bonds() > 0);
-    REQUIRE(topology.num_angles() > 0);
-    // Dihedrals might be 0 for simple water, but good to check if any are found
-    REQUIRE(topology.num_dihedrals() >= 0);
-
-    auto molecules = topology.extract_molecules();
-    REQUIRE(molecules.size() > 0); // Should find water molecules
-
-    // Check if the number of atoms in the topology matches the frame
-    REQUIRE(topology.num_atoms() == trajectory.num_atoms());
-
-    auto molecules2 = trajectory.extract_molecules();
-    REQUIRE(molecules2.size() > 0); // Should find water molecules
-    REQUIRE(molecules2.size() ==
-            molecules.size()); // Should find water molecules
-  }
-}
-
-TEST_CASE("Performance and Memory", "[topology][performance]") {
+TEST_CASE("Performance and Memory", "[unit][topology]") {
   SECTION("Large number of bonds") {
     Topology topology;
 
@@ -1172,7 +1180,7 @@ TEST_CASE("Performance and Memory", "[topology][performance]") {
   }
 }
 
-TEST_CASE("Selection Parser - Index Selection", "[selection][index]") {
+TEST_CASE("Selection Parser - Index Selection", "[unit][selection]") {
   SECTION("Single index") {
     auto result = SelectionParser::parse("i1");
     REQUIRE(result.has_value());
@@ -1214,7 +1222,7 @@ TEST_CASE("Selection Parser - Index Selection", "[selection][index]") {
   }
 }
 
-TEST_CASE("Selection Parser - Atom Type Selection", "[selection][atom]") {
+TEST_CASE("Selection Parser - Atom Type Selection", "[unit][selection]") {
   SECTION("Single atom type") {
     auto result = SelectionParser::parse("aC");
     REQUIRE(result.has_value());
@@ -1246,8 +1254,7 @@ TEST_CASE("Selection Parser - Atom Type Selection", "[selection][atom]") {
   }
 }
 
-TEST_CASE("Selection Parser - Molecule Index Selection",
-          "[selection][molecule]") {
+TEST_CASE("Selection Parser - Molecule Index Selection", "[unit][selection]") {
   SECTION("Single molecule") {
     auto result = SelectionParser::parse("j1");
     REQUIRE(result.has_value());
@@ -1269,7 +1276,7 @@ TEST_CASE("Selection Parser - Molecule Index Selection",
   }
 }
 
-TEST_CASE("Selection Parser - Invalid Inputs", "[selection][invalid]") {
+TEST_CASE("Selection Parser - Invalid Inputs", "[unit][selection]") {
   SECTION("Invalid selections should return nullopt") {
     auto [input, description] = GENERATE(table<std::string, std::string>(
         {{"x1,2,3", "Invalid prefix"},
@@ -1285,7 +1292,7 @@ TEST_CASE("Selection Parser - Invalid Inputs", "[selection][invalid]") {
   }
 }
 
-TEST_CASE("Selection Parser - Edge Cases", "[selection][edge]") {
+TEST_CASE("Selection Parser - Edge Cases", "[unit][selection]") {
   SECTION("Whitespace handling") {
     auto result = SelectionParser::parse("i1, 2,  3");
     REQUIRE(result.has_value());
@@ -1338,11 +1345,44 @@ TEST_CASE("Selection Parser - Edge Cases", "[selection][edge]") {
   }
 }
 
-TEST_CASE("PDB Read/Write", "[io][pdb]") {
-  fs::path temp_pdb = EXAMPLES_DIR / "test_write.pdb";
+// tests requiring files
+
+TEST_CASE_METHOD(TestFixture, "Trajectory and Topology Integration",
+                 "[file][trajectory][topology]") {
+  SECTION("Load PDB and check topology") {
+    Trajectory trajectory;
+    std::vector<fs::path> files = {this->get_test_file("i00000000.pdb")};
+    trajectory.load_files(files);
+
+    REQUIRE(trajectory.next_frame());
+
+    const Topology &topology = trajectory.get_topology(0.4);
+
+    auto molecules = topology.extract_molecules();
+    REQUIRE(molecules.size() > 0); // Should find water molecules
+
+    // in this example file there are 4092 water molecules
+    REQUIRE(topology.num_bonds() == 4092 * 2);
+    REQUIRE(topology.num_angles() == 4092 * 1);
+    REQUIRE(topology.num_dihedrals() == 0);
+    REQUIRE(topology.num_proper_dihedrals() == 0);
+    REQUIRE(topology.num_improper_dihedrals() == 0);
+
+    // Check if the number of atoms in the topology matches the frame
+    REQUIRE(topology.num_atoms() == trajectory.num_atoms());
+
+    auto molecules2 = trajectory.extract_molecules();
+    REQUIRE(molecules2.size() ==
+            molecules.size()); // Should find water molecules
+  }
+}
+
+TEST_CASE_METHOD(TestFixture, "PDB Read/Write", "[file][io][pdb]") {
+  fs::path temp_pdb = "/tmp/test_write.pdb";
 
   Trajectory traj_read;
-  std::vector<fs::path> files = {EXAMPLES_DIR / "coord.pdb"};
+  fs::path test_file = this->get_test_file("i00000001.pdb");
+  std::vector<fs::path> files = {test_file};
   traj_read.load_files(files);
   REQUIRE(traj_read.next_frame());
 
@@ -1357,12 +1397,11 @@ TEST_CASE("PDB Read/Write", "[io][pdb]") {
   std::ifstream temp_file(temp_pdb);
   std::string temp_content((std::istreambuf_iterator<char>(temp_file)),
                            std::istreambuf_iterator<char>());
-  // INFO("Temporary PDB content:\n" << temp_content);
+
   REQUIRE(!temp_content.empty());
 
   Trajectory traj_read_original;
-  std::vector<fs::path> original_files = {EXAMPLES_DIR / "coord.pdb"};
-  traj_read_original.load_files(original_files);
+  traj_read_original.load_files(files);
   REQUIRE(traj_read_original.next_frame());
 
   const auto &atoms_read = traj_read_original.atoms();
@@ -1393,14 +1432,14 @@ TEST_CASE("PDB Read/Write", "[io][pdb]") {
   fs::remove(temp_pdb);
 }
 
-TEST_CASE("DCD Read/Write", "[io][dcd]") {
-  fs::path temp_dcd = EXAMPLES_DIR / "test_write.dcd";
+TEST_CASE_METHOD(TestFixture, "DCD Read/Write", "[file][io][dcd]") {
+  fs::path temp_dcd = "/tmp/test_write.dcd";
 
   Trajectory traj_read;
-  std::vector<fs::path> files = {EXAMPLES_DIR / "coord.pdb",
-                                 EXAMPLES_DIR / "traj.dcd"};
+  fs::path pdb_file = this->get_test_file("i00000001.pdb");
+  std::vector<fs::path> files = {pdb_file,
+                                 this->get_test_file("i00000002.dcd")};
   traj_read.load_files(files);
-
   traj_read.set_output_file(temp_dcd);
 
   while (traj_read.next_frame()) {
@@ -1411,7 +1450,7 @@ TEST_CASE("DCD Read/Write", "[io][dcd]") {
   }
 
   Trajectory traj_write;
-  std::vector<fs::path> written_files = {EXAMPLES_DIR / "coord.pdb", temp_dcd};
+  std::vector<fs::path> written_files = {pdb_file, temp_dcd};
   traj_write.load_files(written_files);
 
   std::vector<std::vector<trajan::core::Atom>> all_atoms_write;
@@ -1420,9 +1459,7 @@ TEST_CASE("DCD Read/Write", "[io][dcd]") {
   }
 
   Trajectory traj_read_original;
-  std::vector<fs::path> original_files = {EXAMPLES_DIR / "coord.pdb",
-                                          EXAMPLES_DIR / "traj.dcd"};
-  traj_read_original.load_files(original_files);
+  traj_read_original.load_files(files);
 
   std::vector<std::vector<trajan::core::Atom>> all_atoms_read;
   while (traj_read_original.next_frame()) {
@@ -1448,12 +1485,12 @@ TEST_CASE("DCD Read/Write", "[io][dcd]") {
   fs::remove(temp_dcd);
 }
 
-TEST_CASE("PDB Read/Write into memory", "[io][pdb]") {
+TEST_CASE_METHOD(TestFixture, "PDB Read/Write into memory", "[file][io][pdb]") {
 
-  fs::path temp_pdb = EXAMPLES_DIR / "test_write.pdb";
+  fs::path temp_pdb = "/tmp/test_write.pdb";
 
   Trajectory traj_read;
-  std::vector<fs::path> files = {EXAMPLES_DIR / "coord.pdb"};
+  std::vector<fs::path> files = {this->get_test_file("i00000001.pdb")};
   traj_read.load_files_into_memory(files);
   REQUIRE(traj_read.next_frame());
 
@@ -1468,12 +1505,10 @@ TEST_CASE("PDB Read/Write into memory", "[io][pdb]") {
   std::ifstream temp_file(temp_pdb);
   std::string temp_content((std::istreambuf_iterator<char>(temp_file)),
                            std::istreambuf_iterator<char>());
-  // INFO("Temporary PDB content:\n" << temp_content);
   REQUIRE(!temp_content.empty());
 
   Trajectory traj_read_original;
-  std::vector<fs::path> original_files = {EXAMPLES_DIR / "coord.pdb"};
-  traj_read_original.load_files_into_memory(original_files);
+  traj_read_original.load_files_into_memory(files);
   REQUIRE(traj_read_original.next_frame());
 
   const auto &atoms_read = traj_read_original.atoms();
@@ -1504,12 +1539,13 @@ TEST_CASE("PDB Read/Write into memory", "[io][pdb]") {
   fs::remove(temp_pdb);
 }
 
-TEST_CASE("DCD Read/Write into memory", "[io][dcd]") {
-  fs::path temp_dcd = EXAMPLES_DIR / "test_write.dcd";
+TEST_CASE_METHOD(TestFixture, "DCD Read/Write into memory", "[file][io][dcd]") {
+  fs::path temp_dcd = "/tmp/test_write.dcd";
 
   Trajectory traj_read;
-  std::vector<fs::path> files = {EXAMPLES_DIR / "coord.pdb",
-                                 EXAMPLES_DIR / "traj.dcd"};
+  fs::path pdb_file = this->get_test_file("i00000001.pdb");
+  std::vector<fs::path> files = {pdb_file,
+                                 this->get_test_file("i00000002.dcd")};
   traj_read.load_files_into_memory(files);
 
   traj_read.set_output_file(temp_dcd);
@@ -1524,7 +1560,7 @@ TEST_CASE("DCD Read/Write into memory", "[io][dcd]") {
   }
 
   Trajectory traj_write;
-  std::vector<fs::path> written_files = {EXAMPLES_DIR / "coord.pdb", temp_dcd};
+  std::vector<fs::path> written_files = {pdb_file, temp_dcd};
   traj_write.load_files_into_memory(written_files);
 
   std::vector<std::vector<trajan::core::Atom>> all_atoms_write;

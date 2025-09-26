@@ -1,10 +1,7 @@
 add_library(
   trajan_core
   "${CMAKE_CURRENT_SOURCE_DIR}/rdf.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/element.cpp"
-  # "${CMAKE_CURRENT_SOURCE_DIR}/ewald.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/frame.cpp"
-  # "${CMAKE_CURRENT_SOURCE_DIR}/unit_cell.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/molecule.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/neigh.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/log.cpp" 

@@ -3,7 +3,8 @@
 #include <fmt/format.h>
 #include <stdexcept>
 #include <trajan/core/atom.h>
-#include <trajan/core/linear_algebra.h>
+// #include <trajan/core/linear_algebra.h>
+#include <occ/core/linear_algebra.h>
 #include <trajan/core/log.h>
 #include <trajan/core/molecule.h>
 // #include <trajan/core/unit_cell.h>
@@ -13,20 +14,27 @@
 
 namespace trajan::core {
 
+using occ::Mat3N;
 using occ::crystal::UnitCell;
+using Atom = trajan::core::EnhancedAtom;
+using Molecule = trajan::core::EnhancedMolecule;
 
 struct Entity {
-  size_t idx;
+  int index;
   double x, y, z;
   enum class Type { Atom, Molecule } type;
 
-  Entity(size_t idx, const Vec3 &pos, Type t)
-      : idx(idx), x(pos.x()), y(pos.y()), z(pos.z()), type(t) {}
+  Entity(int index, const Vec3 &pos, Type t)
+      : index(index), x(pos.x()), y(pos.y()), z(pos.z()), type(t) {}
   Entity(const Atom &atom)
-      : idx(atom.index), x(atom.x), y(atom.y), z(atom.z), type(Type::Atom) {}
-  Entity(const Molecule &molecule)
-      : idx(molecule.index), x(molecule.x), y(molecule.y), z(molecule.z),
-        type(Type::Molecule) {}
+      : index(atom.index), x(atom.x), y(atom.y), z(atom.z), type(Type::Atom) {}
+  Entity(const Molecule &molecule, Molecule::Origin o = Molecule::CenterOfMass)
+      : index(molecule.index), x(0.0), y(0.0), z(0.0), type(Type::Molecule) {
+    Vec3 position = molecule.position(o);
+    x = position[0];
+    y = position[1];
+    z = position[2];
+  }
 
   inline Vec3 position() const { return {x, y, z}; }
   inline double square_distance(const Entity &other) const {
@@ -82,14 +90,14 @@ struct NeighbourListPacket {
   NeighbourListPacket(const std::vector<Atom> &atoms);
 
   NeighbourListPacket(const std::vector<Molecule> &molecules,
-                      Molecule::Origin o = Molecule::CentreOfMass);
+                      Molecule::Origin o = Molecule::CenterOfMass);
 
   NeighbourListPacket(const std::vector<EntityVariant> &entities,
-                      Molecule::Origin o = Molecule::CentreOfMass);
+                      Molecule::Origin o = Molecule::CenterOfMass);
 
   NeighbourListPacket(
       const std::vector<std::vector<EntityVariant>> &entities_vectors,
-      Molecule::Origin o = Molecule::CentreOfMass);
+      Molecule::Origin o = Molecule::CenterOfMass);
 
   size_t size() const { return entity_types.size(); }
 
@@ -106,7 +114,7 @@ struct NeighbourListPacket {
 
 private:
   void initialise_from_entities(const std::vector<EntityVariant> &entities,
-                                Molecule::Origin o = Molecule::CentreOfMass);
+                                Molecule::Origin o = Molecule::CenterOfMass);
 };
 
 struct CellListPacket : public NeighbourListPacket {
@@ -122,16 +130,16 @@ struct CellListPacket : public NeighbourListPacket {
 
   CellListPacket(const std::vector<Molecule> &molecules,
                  const std::optional<UnitCell> &uc,
-                 Molecule::Origin o = Molecule::CentreOfMass);
+                 Molecule::Origin o = Molecule::CenterOfMass);
 
   CellListPacket(const std::vector<EntityVariant> &entities,
                  const std::optional<UnitCell> &uc,
-                 Molecule::Origin o = Molecule::CentreOfMass);
+                 Molecule::Origin o = Molecule::CenterOfMass);
 
   CellListPacket(
       const std::vector<std::vector<EntityVariant>> &entities_vectors,
       const std::optional<UnitCell> &uc,
-      Molecule::Origin o = Molecule::CentreOfMass);
+      Molecule::Origin o = Molecule::CenterOfMass);
 
 private:
   void initialise_from_unit_cell(const std::optional<UnitCell> &uc);
@@ -148,18 +156,18 @@ struct VerletListPacket : public NeighbourListPacket {
 
   VerletListPacket(const std::vector<Molecule> &molecules,
                    const std::optional<UnitCell> &uc,
-                   Molecule::Origin o = Molecule::CentreOfMass)
+                   Molecule::Origin o = Molecule::CenterOfMass)
       : NeighbourListPacket(molecules, o), unit_cell(uc) {};
 
   VerletListPacket(const std::vector<EntityVariant> &entities,
                    const std::optional<UnitCell> &uc,
-                   Molecule::Origin o = Molecule::CentreOfMass)
+                   Molecule::Origin o = Molecule::CenterOfMass)
       : NeighbourListPacket(entities, o), unit_cell(uc) {};
 
   VerletListPacket(
       const std::vector<std::vector<EntityVariant>> &entities_vectors,
       const std::optional<UnitCell> &uc,
-      Molecule::Origin o = Molecule::CentreOfMass)
+      Molecule::Origin o = Molecule::CenterOfMass)
       : NeighbourListPacket(entities_vectors, o), unit_cell(uc) {};
 };
 
@@ -172,10 +180,6 @@ public:
   virtual ~NeighbourListBase() = default;
 
   NeighbourListBase(double cutoff);
-
-  // virtual void update(const std::vector<EntityVariant> &entities,
-  //                     const std::optional<UnitCell> &unit_cell,
-  //                     Molecule::Origin o = Molecule::CentreOfMass) = 0;
 
   template <typename PacketType> void update(const PacketType &packet) {
     update_impl(packet);
@@ -296,10 +300,6 @@ class VerletList : public NeighbourListBase {
 public:
   VerletList(double cutoff) : NeighbourListBase(cutoff) {};
 
-  // void update(const std::vector<EntityVariant> &entities,
-  //             const std::optional<UnitCell> &unit_cell,
-  //             Molecule::Origin o = Molecule::CentreOfMass) override;
-
   void iterate_neighbours(const NeighbourCallback &callback) const override {
     this->verlet_loop(callback);
   };
@@ -335,22 +335,17 @@ public:
   void update(const std::vector<Atom> &atoms,
               const std::optional<UnitCell> &uc);
 
-  // inline void update(const std::vector<Atom> &atoms,
-  //                    const std::optional<UnitCell> &uc) {
-  //   this->update_impl(atoms, uc);
-  // }
-
   void update(const std::vector<Molecule> &molecules,
               const std::optional<UnitCell> &uc,
-              Molecule::Origin o = Molecule::CentreOfMass);
+              Molecule::Origin o = Molecule::CenterOfMass);
 
   void update(const std::vector<EntityVariant> &entities,
               const std::optional<UnitCell> &uc,
-              Molecule::Origin o = Molecule::CentreOfMass);
+              Molecule::Origin o = Molecule::CenterOfMass);
 
   void update(const std::vector<std::vector<EntityVariant>> &entities_vectors,
               const std::optional<UnitCell> &uc,
-              Molecule::Origin o = Molecule::CentreOfMass);
+              Molecule::Origin o = Molecule::CenterOfMass);
 
   void iterate_neighbours(const NeighbourCallback &callback) {
     m_impl->iterate_neighbours(callback);

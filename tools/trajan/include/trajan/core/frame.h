@@ -1,14 +1,16 @@
 #pragma once
+#include <occ/core/linear_algebra.h>
 #include <occ/crystal/unitcell.h>
 #include <trajan/core/atom.h>
 #include <trajan/core/molecule.h>
 #include <trajan/core/neigh.h>
-// #include <trajan/core/unit_cell.h>
 #include <vector>
 
 namespace trajan::core {
 
+using occ::Mat3N;
 using occ::crystal::UnitCell;
+using Molecule = trajan::core::EnhancedMolecule;
 
 struct Frame {
 
