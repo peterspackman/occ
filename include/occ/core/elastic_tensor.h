@@ -39,6 +39,8 @@ public:
   double poisson_ratio(CartesianDirection, double angle) const;
   double poisson_ratio(CartesianDirection, CartesianDirection) const;
   std::pair<double, double> poisson_ratio_minmax(CartesianDirection) const;
+  double average_poisson_ratio_direction(CartesianDirection, int num_samples = 360) const;
+  double reduced_youngs_modulus(CartesianDirection, int num_samples = 360) const;
 
   double
   average_bulk_modulus(AveragingScheme avg = AveragingScheme::Hill) const;
@@ -48,6 +50,33 @@ public:
   average_youngs_modulus(AveragingScheme avg = AveragingScheme::Hill) const;
   double
   average_poisson_ratio(AveragingScheme avg = AveragingScheme::Hill) const;
+
+  /**
+   * Calculate the transverse (shear) acoustic velocity.
+   *
+   * \param bulk_modulus_gpa Bulk modulus in GPa (not used in calculation, included for API consistency)
+   * \param shear_modulus_gpa Shear modulus in GPa
+   * \param density_g_cm3 Density in g/cm³
+   * \returns Transverse acoustic velocity in m/s
+   *
+   * Calculates V_s = sqrt(G/ρ) where G is the shear modulus and ρ is the density.
+   * This represents the velocity of shear waves propagating through the material.
+   */
+  double transverse_acoustic_velocity(double bulk_modulus_gpa, double shear_modulus_gpa, double density_g_cm3) const;
+
+  /**
+   * Calculate the longitudinal (compressional) acoustic velocity.
+   *
+   * \param bulk_modulus_gpa Bulk modulus in GPa
+   * \param shear_modulus_gpa Shear modulus in GPa
+   * \param density_g_cm3 Density in g/cm³
+   * \returns Longitudinal acoustic velocity in m/s
+   *
+   * Calculates V_p = sqrt((4G + 3K)/(3ρ)) where G is the shear modulus,
+   * K is the bulk modulus, and ρ is the density.
+   * This represents the velocity of compressional waves propagating through the material.
+   */
+  double longitudinal_acoustic_velocity(double bulk_modulus_gpa, double shear_modulus_gpa, double density_g_cm3) const;
 
   const Mat6 &voigt_s() const;
   const Mat6 &voigt_c() const;

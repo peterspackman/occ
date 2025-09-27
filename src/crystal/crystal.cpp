@@ -3,6 +3,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/molecular_symmetry.h>
+#include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/crystal/standard_bonds.h>
@@ -968,6 +969,19 @@ Crystal::dimer_symmetry_string(const occ::core::Dimer &dimer) const {
 }
 
 double Crystal::volume() const { return m_unit_cell.volume(); }
+
+double Crystal::density() const {
+  const auto &uc_atoms = unit_cell_atoms();
+  double total_mass = occ::core::total_atomic_mass(uc_atoms.atomic_numbers);
+  double volume_angstrom3 = volume();
+
+  // Convert from amu/Angstrom^3 to g/cm^3
+  // Use constants from units header
+  constexpr double amu_to_g = occ::units::AMU_TO_KG * 1000.0;  // kg to g
+  constexpr double angstrom3_to_cm3 = 1e-24;  // 1 Angstrom^3 = 1e-24 cm^3
+
+  return (total_mass * amu_to_g) / (volume_angstrom3 * angstrom3_to_cm3);
+}
 
 SiteMappingTable Crystal::atom_site_mapping_table() const {
   return SiteMappingTable::build_atom_table(*this);

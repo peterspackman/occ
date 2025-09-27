@@ -324,6 +324,7 @@ void register_crystal_bindings() {
           allow_raw_pointers())
       .function("numSites", &Crystal::num_sites)
       .function("volume", &Crystal::volume)
+      .function("density", &Crystal::density)
       .function("chemicalFormula",
                 optional_override([](const Crystal &crystal) {
                   return crystal.asymmetric_unit().chemical_formula();

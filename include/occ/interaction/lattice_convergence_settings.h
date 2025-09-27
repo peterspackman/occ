@@ -16,8 +16,13 @@ struct LatticeConvergenceSettings {
   std::string output_json_filename{""};
   bool spherical_basis{false};
   std::string charge_string;
+  std::string multiplicity_string;
   std::string external_command{""};
   bool normalize_hydrogens{false};
+
+  // Elastic fitting options
+  bool run_elastic_fitting{false};
+  std::string elastic_output_file{"elastic_tensor.txt"};
 };
 
 } // namespace occ::interaction

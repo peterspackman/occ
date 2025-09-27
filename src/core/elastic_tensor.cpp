@@ -1,5 +1,6 @@
 #include <occ/core/elastic_tensor.h>
 #include <occ/core/optimize.h>
+#include <occ/core/units.h>
 
 namespace occ::core {
 
@@ -50,8 +51,7 @@ ElasticTensor::ElasticTensor(Eigen::Ref<const Mat6> c_voigt)
           m_components[i][j][k][l] = sv_coeff(p, q) * m_s(p, q);
         }
       }
-    }
-  }
+    } }
 }
 
 double ElasticTensor::youngs_modulus_angular(AngularDirection dir) const {
@@ -180,6 +180,28 @@ ElasticTensor::poisson_ratio_minmax(CartesianDirection n) const {
   return {min_poisson, max_poisson};
 }
 
+double ElasticTensor::average_poisson_ratio_direction(CartesianDirection dir, int num_samples) const {
+  double sum_poisson = 0.0;
+  const double step = 2 * M_PI / num_samples;
+  
+  for (int i = 0; i < num_samples; ++i) {
+    double angle = i * step;
+    sum_poisson += poisson_ratio(dir, angle);
+  }
+  
+  return sum_poisson / num_samples;
+}
+
+double ElasticTensor::reduced_youngs_modulus(CartesianDirection dir, int num_samples) const {
+  double E = youngs_modulus(dir);
+  double v = average_poisson_ratio_direction(dir, num_samples);
+  
+  // For contact mechanics: E_R = E / (1 - v^2) (corrected formula)
+  // The formula E_R = E/(1+v)^2 is incorrect for reduced modulus
+  // The correct formula for reduced modulus in contact mechanics is E_R = E/(1-v^2)
+  return E / (1.0 - v * v);
+}
+
 double ElasticTensor::average_bulk_modulus(AveragingScheme avg) const {
   double KV = (m_c(0, 0) + m_c(1, 1) + m_c(2, 2) +
                2 * (m_c(0, 1) + m_c(1, 2) + m_c(0, 2))) /
@@ -229,6 +251,25 @@ double ElasticTensor::average_poisson_ratio(AveragingScheme avg) const {
   double K = average_bulk_modulus(avg);
   double G = average_shear_modulus(avg);
   return (3 * K - 2 * G) / (2 * (3 * K + G));
+}
+
+double ElasticTensor::transverse_acoustic_velocity(double bulk_modulus_gpa, double shear_modulus_gpa, double density_g_cm3) const {
+  // V_s = sqrt(G/ρ)
+  // Input: G in GPa, ρ in g/cm³
+  // Output: velocity in m/s
+  double G_pa = shear_modulus_gpa * units::GPA_TO_PA;  // Convert GPa to Pa
+  double rho_kg_m3 = density_g_cm3 * units::G_CM3_TO_KG_M3;  // Convert g/cm³ to kg/m³
+  return std::sqrt(G_pa / rho_kg_m3);
+}
+
+double ElasticTensor::longitudinal_acoustic_velocity(double bulk_modulus_gpa, double shear_modulus_gpa, double density_g_cm3) const {
+  // V_p = sqrt((4G + 3K)/(3ρ))
+  // Input: K, G in GPa, ρ in g/cm³
+  // Output: velocity in m/s
+  double K_pa = bulk_modulus_gpa * units::GPA_TO_PA;   // Convert GPa to Pa
+  double G_pa = shear_modulus_gpa * units::GPA_TO_PA;  // Convert GPa to Pa
+  double rho_kg_m3 = density_g_cm3 * units::G_CM3_TO_KG_M3;  // Convert g/cm³ to kg/m³
+  return std::sqrt((4.0 * G_pa + 3.0 * K_pa) / (3.0 * rho_kg_m3));
 }
 
 const Mat6 &ElasticTensor::voigt_s() const { return m_s; }

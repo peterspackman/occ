@@ -45,6 +45,14 @@ constexpr double PLANCK = 6.62607015e-34;
 constexpr double AVOGADRO = 6.02214076e23;
 constexpr double BOLTZMANN = 1.380649e-23;
 
+// Pressure conversions
+constexpr double GPA_TO_PA = 1e9;
+constexpr double PA_TO_GPA = 1e-9;
+
+// Density conversions
+constexpr double G_CM3_TO_KG_M3 = 1000.0;
+constexpr double KG_M3_TO_G_CM3 = 1e-3;
+
 template <typename T> constexpr auto radians(T x) { return x * constants::pi<double> / 180; }
 
 template <typename T> constexpr auto degrees(T x) { return x * 180 / constants::pi<double>; }

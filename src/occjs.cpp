@@ -5,6 +5,7 @@
 #include "js/isosurface_bindings.h"
 #include "js/cube_bindings.h"
 #include "js/crystal_bindings.h"
+#include "js/descriptors_bindings.h"
 #include "js/dma_bindings.h"
 #include "js/volume_bindings.h"
 #include <emscripten/bind.h>
@@ -24,6 +25,7 @@ EMSCRIPTEN_BINDINGS(occ) {
     register_isosurface_bindings();
     register_cube_bindings();
     register_crystal_bindings();
+    register_descriptors_bindings();
     register_dma_bindings();
     register_volume_bindings();
 

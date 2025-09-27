@@ -443,6 +443,13 @@ public:
   double volume() const;
 
   /**
+   * \brief Returns the density of the crystal in g/cm^3.
+   *
+   * \return The density of the crystal in g/cm^3.
+   */
+  double density() const;
+
+  /**
    * \brief Returns the neighbouring dimers for the symmetry-unique molecules
    * in this crystal, within a certain neighbour radius.
    *

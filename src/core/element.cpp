@@ -100,4 +100,15 @@ double Element::polarizability(bool charged) const {
     return thakkar_atomic_polarizability[m_data.atomic_number - 1];
 }
 
+double total_atomic_mass(const IVec &atomic_numbers) {
+  double total_mass = 0.0;
+  for (int atomic_number : atomic_numbers) {
+    if (atomic_number > 0 && atomic_number <= ELEMENT_MAX) {
+      Element element(atomic_number);
+      total_mass += element.mass();
+    }
+  }
+  return total_mass;
+}
+
 } // namespace occ::core

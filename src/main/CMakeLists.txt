@@ -40,6 +40,7 @@ target_link_libraries(occ_main
     occ_sht
     occ_descriptors
     occ_cg
+    occ_elastic_fit
     CLI11::CLI11
 )
 target_include_directories(occ_main PUBLIC 
