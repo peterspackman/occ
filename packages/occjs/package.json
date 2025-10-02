@@ -37,6 +37,7 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
+    "examples": "node examples/serve.js",
     "lint": "eslint src test --ext .js,.ts",
     "format": "prettier --write \"src/**/*.{js,ts}\" \"test/**/*.{js,ts}\"",
     "typecheck": "tsc --noEmit",
@@ -44,8 +45,7 @@
     "docs": "typedoc",
     "dev": "npm run build:wrapper && vitest watch",
     "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('../../wasm/src/occjs.wasm')) {console.error('WASM not built. Run: npm run build:wasm'); process.exit(1);}\"",
-    "ci-check": "node scripts/ci-check.js",
-    "examples": "npm run build && npx http-server . -p 8080 -o /examples/dma_calculator.html"
+    "ci-check": "node scripts/ci-check.js"
   },
   "repository": {
     "type": "git",

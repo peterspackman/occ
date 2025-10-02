@@ -23,7 +23,11 @@ self.addEventListener('message', async function(e) {
             case 'setLogLevel':
                 setLogLevel(data.level);
                 break;
-                
+
+            case 'setNumThreads':
+                setNumThreads(data.numThreads);
+                break;
+
             case 'generateCube':
                 await generateCubeFile(data);
                 break;
@@ -84,10 +88,21 @@ async function initializeOCC(config) {
 function setLogLevel(level) {
     if (occModule && occModule.setLogLevel) {
         occModule.setLogLevel(level);
-        postMessage({ 
-            type: 'log', 
-            level: 'info', 
-            message: `Log level set to ${level}` 
+        postMessage({
+            type: 'log',
+            level: 'info',
+            message: `Log level set to ${level}`
+        });
+    }
+}
+
+function setNumThreads(numThreads) {
+    if (occModule && occModule.setNumThreads) {
+        occModule.setNumThreads(numThreads);
+        postMessage({
+            type: 'log',
+            level: 'info',
+            message: `Number of threads set to ${numThreads}`
         });
     }
 }

@@ -55,6 +55,9 @@ export class QMCalculation {
     this.energy = null;
     this.method = null;
     this.properties = new Map();
+    // Store C++ objects to prevent premature garbage collection
+    this._cppProcedure = null;  // HartreeFock or DFT object
+    this._cppScf = null;  // SCF object
   }
 
   /**

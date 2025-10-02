@@ -86,7 +86,7 @@ target_include_directories(occjs PRIVATE
 
 target_compile_definitions(occjs PRIVATE VERSION_INFO=${PROJECT_VERSION})
 target_compile_features(occjs PUBLIC cxx_std_20)
-target_compile_options(occjs PRIVATE -fexceptions)
+target_compile_options(occjs PRIVATE -fexceptions -pthread)
 
 # Link against the core OCC libraries
 target_link_libraries(occjs PUBLIC
@@ -104,7 +104,7 @@ target_link_libraries(occjs PUBLIC
 
 # Emscripten-specific linker flags for JavaScript bindings
 set_target_properties(occjs PROPERTIES
-    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=5MB -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions --bind --preload-file ${CMAKE_SOURCE_DIR}/share@/"
+    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=5MB -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread -sPTHREAD_POOL_SIZE=8 --bind --preload-file ${CMAKE_SOURCE_DIR}/share@/"
 )
 
 # Set output file extension
