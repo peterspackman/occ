@@ -1,5 +1,11 @@
 var NAVTREEINDEX27 =
 {
+"parameters_8h.html#a2ec60ec6ae249db4d19306e670c03649":[5,0,1,0,19,2,0],
+"parameters_8h.html#a6f1f7d0599fb7191b010e196091d473b":[5,0,1,0,19,2,3],
+"parameters_8h.html#aeb9911f245379dfd8e6b17ce52ed2f86":[5,0,1,0,19,2,1],
+"partitioning_8h.html":[5,0,1,0,16,23],
+"partitioning_8h.html#abbd3ff1729602847daf45753f527aa15":[5,0,1,0,16,23,0],
+"pc_8h.html":[5,0,1,0,12,25],
 "pc_8h.html#a3903e63674924c2d0b6cf6089690b474":[5,0,1,0,12,25,2],
 "pc_8h.html#ac7b49e759281fa2bff63c6e075a41559":[5,0,1,0,12,25,1],
 "pdd__amd_8h.html":[5,0,1,0,3,1],
@@ -243,11 +249,5 @@ var NAVTREEINDEX27 =
 "spacegroup_8h.html":[5,0,1,0,2,8],
 "spacegroup_8h.html#a6be09bba05cb5f7143b28c936b9da7b1":[5,0,1,0,2,8,2],
 "species__data_8h.html":[5,0,1,0,15,8],
-"species__data_8h.html#a2af1b333a69edd01604bc8eac4655396":[5,0,1,0,15,8,1],
-"species__data_8h.html#a33d3e26fcbe029d6feead622ecd7c79f":[5,0,1,0,15,8,3],
-"species__data_8h.html#a76c6801e87e65e3291916f83c84de270":[5,0,1,0,15,8,2],
-"spherical__harmonics_8h.html":[5,0,1,0,17,4],
-"spinorbital_8h.html":[5,0,1,0,16,31],
-"spinorbital_8h.html#acc9a0510ac1c6ace69ae9cf3da07c4a8":[5,0,1,0,16,31,4],
-"spinorbital_8h.html#adb09bba283593dd336a2fbce44d4e2c2":[5,0,1,0,16,31,2]
+"species__data_8h.html#a2af1b333a69edd01604bc8eac4655396":[5,0,1,0,15,8,1]
 };

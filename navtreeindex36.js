@@ -1,5 +1,11 @@
 var NAVTREEINDEX36 =
 {
+"structocc_1_1interaction_1_1LatticeConvergenceSettings.html#aa98c7379fe244437d97717bfafd2d0e5":[4,0,2,11,12,16],
+"structocc_1_1interaction_1_1LatticeConvergenceSettings.html#ab6f941ca366b5ca134b2534f7096b937":[4,0,2,11,12,12],
+"structocc_1_1interaction_1_1LatticeConvergenceSettings.html#ab6f941ca366b5ca134b2534f7096b937":[2,0,2,13,12,12],
+"structocc_1_1interaction_1_1LatticeConvergenceSettings.html#abdf8015eadff6968655fd4bd9abe3e74":[2,0,2,13,12,9],
+"structocc_1_1interaction_1_1LatticeConvergenceSettings.html#abdf8015eadff6968655fd4bd9abe3e74":[4,0,2,11,12,9],
+"structocc_1_1interaction_1_1LatticeConvergenceSettings.html#acb10f98f3c769a11a13c275ef6d8a7c9":[2,0,2,13,12,5],
 "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#acb10f98f3c769a11a13c275ef6d8a7c9":[4,0,2,11,12,5],
 "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#acd7172d4119830ad23cbcabf07425756":[4,0,2,11,12,0],
 "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#acd7172d4119830ad23cbcabf07425756":[2,0,2,13,12,0],
@@ -243,11 +249,5 @@ var NAVTREEINDEX36 =
 "structocc_1_1io_1_1ElectronInput.html#a86542811622d7948f2920ba9f79cdc5b":[4,0,2,12,18,1],
 "structocc_1_1io_1_1ElectronInput.html#aec4261d5ac245728559a7c85acd92b0b":[4,0,2,12,18,2],
 "structocc_1_1io_1_1ElectronInput.html#aec4261d5ac245728559a7c85acd92b0b":[2,0,2,14,20,2],
-"structocc_1_1io_1_1ElectronShell.html":[2,0,2,14,21],
-"structocc_1_1io_1_1ElectronShell.html":[4,0,2,12,19],
-"structocc_1_1io_1_1ElectronShell.html#a6754384783492c58ca433365211cbf88":[2,0,2,14,21,1],
-"structocc_1_1io_1_1ElectronShell.html#a6754384783492c58ca433365211cbf88":[4,0,2,12,19,1],
-"structocc_1_1io_1_1ElectronShell.html#a70c3afe8b208a5f869a218c028d07287":[2,0,2,14,21,4],
-"structocc_1_1io_1_1ElectronShell.html#a70c3afe8b208a5f869a218c028d07287":[4,0,2,12,19,4],
-"structocc_1_1io_1_1ElectronShell.html#a7e86681115ea11a7bc78d5ed55860bf4":[2,0,2,14,21,3]
+"structocc_1_1io_1_1ElectronShell.html":[2,0,2,14,21]
 };

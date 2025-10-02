@@ -173,6 +173,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a843f3c9256783c74b1da068b709842d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac65e870050a6092eda3bf923f392ee8a" id="r_ac65e870050a6092eda3bf923f392ee8a"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#ac65e870050a6092eda3bf923f392ee8a">voigt_c</a> () const</td></tr>
 <tr class="separator:ac65e870050a6092eda3bf923f392ee8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a538ac46da4f4ee25c2ac4e5b53d14644" id="r_a538ac46da4f4ee25c2ac4e5b53d14644"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a538ac46da4f4ee25c2ac4e5b53d14644">voigt_rotation_matrix</a> (const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;rotation) const</td></tr>
+<tr class="memdesc:a538ac46da4f4ee25c2ac4e5b53d14644"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the 6x6 rotation matrix in order to rotate the Voigt representations of the tensors.  <br /></td></tr>
+<tr class="separator:a538ac46da4f4ee25c2ac4e5b53d14644"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc2d9980384ebc126a2f91cbf225f334" id="r_acc2d9980384ebc126a2f91cbf225f334"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#acc2d9980384ebc126a2f91cbf225f334">rotate_voigt_stiffness</a> (const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;rotation) const</td></tr>
+<tr class="memdesc:acc2d9980384ebc126a2f91cbf225f334"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotate the elastic tensor using a 3x3 rotation matrix.  <br /></td></tr>
+<tr class="separator:acc2d9980384ebc126a2f91cbf225f334"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e2d3e4a079fd3630fb827974d7ba583" id="r_a0e2d3e4a079fd3630fb827974d7ba583"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#a0e2d3e4a079fd3630fb827974d7ba583">rotate_voigt_compliance</a> (const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;rotation) const</td></tr>
+<tr class="memdesc:a0e2d3e4a079fd3630fb827974d7ba583"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotate the compliance tensor using a 3x3 rotation matrix.  <br /></td></tr>
+<tr class="separator:a0e2d3e4a079fd3630fb827974d7ba583"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2089bb56e71a899621a6bc3b236f918" id="r_aa2089bb56e71a899621a6bc3b236f918"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#aa2089bb56e71a899621a6bc3b236f918">component</a> (int i, int j, int k, int l) const</td></tr>
 <tr class="separator:aa2089bb56e71a899621a6bc3b236f918"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0feaa1596c808066f20eabc9f3daf72" id="r_ac0feaa1596c808066f20eabc9f3daf72"><td class="memItemLeft" align="right" valign="top">double &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html#ac0feaa1596c808066f20eabc9f3daf72">component</a> (int i, int j, int k, int l)</td></tr>
@@ -733,6 +742,60 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a0e2d3e4a079fd3630fb827974d7ba583" name="a0e2d3e4a079fd3630fb827974d7ba583"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e2d3e4a079fd3630fb827974d7ba583">&#9670;&#160;</a></span>rotate_voigt_compliance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a> occ::core::ElasticTensor::rotate_voigt_compliance </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;&#160;</td>
+          <td class="paramname"><em>rotation</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Rotate the compliance tensor using a 3x3 rotation matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">rotation</td><td>3x3 rotation matrix R </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Rotated 6x6 compliance tensor in Voigt notation (S' = T @ S @ T^T) </dd></dl>
+
+</div>
+</div>
+<a id="acc2d9980384ebc126a2f91cbf225f334" name="acc2d9980384ebc126a2f91cbf225f334"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc2d9980384ebc126a2f91cbf225f334">&#9670;&#160;</a></span>rotate_voigt_stiffness()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a> occ::core::ElasticTensor::rotate_voigt_stiffness </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;&#160;</td>
+          <td class="paramname"><em>rotation</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Rotate the elastic tensor using a 3x3 rotation matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">rotation</td><td>3x3 rotation matrix R </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Rotated 6x6 stiffness tensor in Voigt notation (C' = T @ C @ T^T) </dd></dl>
+
+</div>
+</div>
 <a id="abfac72800952ea643b9a5df88e29ddf8" name="abfac72800952ea643b9a5df88e29ddf8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abfac72800952ea643b9a5df88e29ddf8">&#9670;&#160;</a></span>shear_modulus() <span class="overload">[1/2]</span></h2>
 
@@ -895,6 +958,33 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a538ac46da4f4ee25c2ac4e5b53d14644" name="a538ac46da4f4ee25c2ac4e5b53d14644"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a538ac46da4f4ee25c2ac4e5b53d14644">&#9670;&#160;</a></span>voigt_rotation_matrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#abc0f8b29c42815ff2318bb8c63673c19">Mat6</a> occ::core::ElasticTensor::voigt_rotation_matrix </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;&#160;</td>
+          <td class="paramname"><em>rotation</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the 6x6 rotation matrix in order to rotate the Voigt representations of the tensors. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">rotation</td><td>3x3 rotation matrix R </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>6x6 rotation matrix Tto be used as (C' = T @ C @ T^T) </dd></dl>
 
 </div>
 </div>
