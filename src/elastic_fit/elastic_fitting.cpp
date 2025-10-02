@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <ankerl/unordered_dense.h>
 #include <cmath>
+#include <fmt/os.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/elastic_fit/elastic_fitting.h>
@@ -355,29 +356,8 @@ void ElasticFitter::print_elastic_tensor(const occ::Mat6 &tensor,
 
 void ElasticFitter::save_elastic_tensor(const occ::Mat6 &tensor,
                                         const std::string &filename) {
-  std::ofstream file(filename);
-  fmt::print("Writing matrix to file {}\n", filename);
-
-  file << std::fixed << std::setprecision(4);
-
-  // Save upper triangle only, 6 values per line
-  int count = 0;
-  for (int i = 0; i < 6; ++i) {
-    for (int j = i; j < 6; ++j) {
-      file << std::setw(12) << tensor(i, j);
-      count++;
-      if (count % 6 == 0) {
-        file << std::endl;
-      } else {
-        file << " ";
-      }
-    }
-  }
-  if (count % 6 != 0) {
-    file << std::endl;
-  }
-
-  file.close();
+  auto dest = fmt::output_file(filename);
+  dest.print("{}", format_matrix(tensor));
 }
 
 } // namespace occ::elastic_fit

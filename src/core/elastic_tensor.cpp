@@ -51,7 +51,8 @@ ElasticTensor::ElasticTensor(Eigen::Ref<const Mat6> c_voigt)
           m_components[i][j][k][l] = sv_coeff(p, q) * m_s(p, q);
         }
       }
-    } }
+    }
+  }
 }
 
 double ElasticTensor::youngs_modulus_angular(AngularDirection dir) const {
@@ -180,25 +181,28 @@ ElasticTensor::poisson_ratio_minmax(CartesianDirection n) const {
   return {min_poisson, max_poisson};
 }
 
-double ElasticTensor::average_poisson_ratio_direction(CartesianDirection dir, int num_samples) const {
+double ElasticTensor::average_poisson_ratio_direction(CartesianDirection dir,
+                                                      int num_samples) const {
   double sum_poisson = 0.0;
   const double step = 2 * M_PI / num_samples;
-  
+
   for (int i = 0; i < num_samples; ++i) {
     double angle = i * step;
     sum_poisson += poisson_ratio(dir, angle);
   }
-  
+
   return sum_poisson / num_samples;
 }
 
-double ElasticTensor::reduced_youngs_modulus(CartesianDirection dir, int num_samples) const {
+double ElasticTensor::reduced_youngs_modulus(CartesianDirection dir,
+                                             int num_samples) const {
   double E = youngs_modulus(dir);
   double v = average_poisson_ratio_direction(dir, num_samples);
-  
+
   // For contact mechanics: E_R = E / (1 - v^2) (corrected formula)
   // The formula E_R = E/(1+v)^2 is incorrect for reduced modulus
-  // The correct formula for reduced modulus in contact mechanics is E_R = E/(1-v^2)
+  // The correct formula for reduced modulus in contact mechanics is E_R =
+  // E/(1-v^2)
   return E / (1.0 - v * v);
 }
 
@@ -253,28 +257,86 @@ double ElasticTensor::average_poisson_ratio(AveragingScheme avg) const {
   return (3 * K - 2 * G) / (2 * (3 * K + G));
 }
 
-double ElasticTensor::transverse_acoustic_velocity(double bulk_modulus_gpa, double shear_modulus_gpa, double density_g_cm3) const {
+double ElasticTensor::transverse_acoustic_velocity(double bulk_modulus_gpa,
+                                                   double shear_modulus_gpa,
+                                                   double density_g_cm3) const {
   // V_s = sqrt(G/ρ)
   // Input: G in GPa, ρ in g/cm³
   // Output: velocity in m/s
-  double G_pa = shear_modulus_gpa * units::GPA_TO_PA;  // Convert GPa to Pa
-  double rho_kg_m3 = density_g_cm3 * units::G_CM3_TO_KG_M3;  // Convert g/cm³ to kg/m³
+  double G_pa = shear_modulus_gpa * units::GPA_TO_PA; // Convert GPa to Pa
+  double rho_kg_m3 =
+      density_g_cm3 * units::G_CM3_TO_KG_M3; // Convert g/cm³ to kg/m³
   return std::sqrt(G_pa / rho_kg_m3);
 }
 
-double ElasticTensor::longitudinal_acoustic_velocity(double bulk_modulus_gpa, double shear_modulus_gpa, double density_g_cm3) const {
+double
+ElasticTensor::longitudinal_acoustic_velocity(double bulk_modulus_gpa,
+                                              double shear_modulus_gpa,
+                                              double density_g_cm3) const {
   // V_p = sqrt((4G + 3K)/(3ρ))
   // Input: K, G in GPa, ρ in g/cm³
   // Output: velocity in m/s
-  double K_pa = bulk_modulus_gpa * units::GPA_TO_PA;   // Convert GPa to Pa
-  double G_pa = shear_modulus_gpa * units::GPA_TO_PA;  // Convert GPa to Pa
-  double rho_kg_m3 = density_g_cm3 * units::G_CM3_TO_KG_M3;  // Convert g/cm³ to kg/m³
+  double K_pa = bulk_modulus_gpa * units::GPA_TO_PA;  // Convert GPa to Pa
+  double G_pa = shear_modulus_gpa * units::GPA_TO_PA; // Convert GPa to Pa
+  double rho_kg_m3 =
+      density_g_cm3 * units::G_CM3_TO_KG_M3; // Convert g/cm³ to kg/m³
   return std::sqrt((4.0 * G_pa + 3.0 * K_pa) / (3.0 * rho_kg_m3));
 }
 
 const Mat6 &ElasticTensor::voigt_s() const { return m_s; }
 
 const Mat6 &ElasticTensor::voigt_c() const { return m_c; }
+
+Mat6 ElasticTensor::voigt_rotation_matrix(const Mat3 &R) const {
+  // Construct the 6x6 rotation matrix for transforming Voigt notation tensors
+  // Follows the standard approach for 4th-order tensor rotation in Voigt
+  // notation
+  //
+  // Voigt index mapping: 0->00, 1->11, 2->22, 3->12, 4->02, 5->01
+  constexpr int voigt_to_tensor[6][2] = {{0, 0}, {1, 1}, {2, 2},
+                                         {1, 2}, {0, 2}, {0, 1}};
+
+  Mat6 T = Mat6::Zero();
+
+  for (int i = 0; i < 6; ++i) {
+    for (int j = 0; j < 6; ++j) {
+      int p = voigt_to_tensor[i][0];
+      int q = voigt_to_tensor[i][1];
+      int r = voigt_to_tensor[j][0];
+      int s = voigt_to_tensor[j][1];
+
+      if (i < 3) {   // diagonal terms (00, 11, 22)
+        if (j < 3) { // diagonal terms
+          T(i, j) = R(p, r) * R(q, s);
+        } else { // off-diagonal terms (need factor of 2)
+          T(i, j) = 2.0 * R(p, r) * R(q, s);
+        }
+      } else {       // off-diagonal terms (12, 02, 01)
+        if (j < 3) { // diagonal terms
+          T(i, j) = R(p, r) * R(q, s);
+        } else { // off-diagonal terms
+          T(i, j) = R(p, r) * R(q, s) + R(p, s) * R(q, r);
+        }
+      }
+    }
+  }
+
+  return T;
+}
+
+Mat6 ElasticTensor::rotate_voigt_stiffness(const Mat3 &R) const {
+
+  Mat6 T = voigt_rotation_matrix(R);
+
+  return T * m_c * T.transpose();
+}
+
+Mat6 ElasticTensor::rotate_voigt_compliance(const Mat3 &R) const {
+
+  Mat6 T = voigt_rotation_matrix(R);
+
+  return T * m_s * T.transpose();
+}
 
 double ElasticTensor::component(int i, int j, int k, int l) const {
   return m_components[i][j][k][l];

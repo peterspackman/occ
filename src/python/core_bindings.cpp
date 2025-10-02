@@ -287,6 +287,17 @@ nb::module_ register_core_bindings(nb::module_ &m) {
                             &ElasticTensor::component, nb::const_))
       .def("eigenvalues", &ElasticTensor::eigenvalues)
 
+      // Rotation methods
+      .def("voigt_rotation_matrix", &ElasticTensor::voigt_rotation_matrix,
+           "rotation"_a,
+           "Get the 6x6 Voigt rotation matrix from a 3x3 rotation matrix")
+      .def("rotate_voigt_stiffness", &ElasticTensor::rotate_voigt_stiffness,
+           "rotation"_a,
+           "Rotate the elastic stiffness tensor using a 3x3 rotation matrix")
+      .def("rotate_voigt_compliance", &ElasticTensor::rotate_voigt_compliance,
+           "rotation"_a,
+           "Rotate the elastic compliance tensor using a 3x3 rotation matrix")
+
       // Convenience methods for plotting
       .def(
           "compute_directional_properties",
