@@ -127,10 +127,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: wasm-build
-        path: |
-          packages/occjs/src/occ_js.js
-          packages/occjs/src/occ_js.wasm
-          packages/occjs/dist/
+        path: packages/occjs/dist/
         retention-days: 30
 
     - name: Upload package artifact
@@ -163,15 +160,11 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: wasm-build
-        path: packages/occjs/
+        path: packages/occjs/dist/
 
     - name: Install dependencies
       working-directory: packages/occjs
       run: npm ci
-
-    - name: Build package (wrapper only)
-      working-directory: packages/occjs  
-      run: npm run build:wrapper
 
     - name: Check if version changed
       id: version
@@ -220,15 +213,11 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: wasm-build
-        path: packages/occjs/
+        path: packages/occjs/dist/
 
     - name: Install dependencies
       working-directory: packages/occjs
       run: npm ci
-
-    - name: Build package (wrapper only)
-      working-directory: packages/occjs  
-      run: npm run build:wrapper
 
     - name: Configure package for GitHub registry
       working-directory: packages/occjs
