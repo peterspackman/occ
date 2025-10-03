@@ -15,8 +15,11 @@ using Molecule = trajan::core::EnhancedMolecule;
 struct Frame {
 
 public:
-  inline const UnitCell &unit_cell() const { return m_uc; }
-  void set_uc(UnitCell &uc);
+  inline const std::optional<UnitCell> &unit_cell() const {
+    return m_unit_cell;
+  }
+  inline bool has_unit_cell() const { return m_unit_cell.has_value(); }
+  void set_unit_cell(const UnitCell &unit_cell);
 
   inline const std::vector<Atom> &atoms() const { return m_atoms; }
   void set_atoms(const std::vector<Atom> &atoms);
@@ -42,7 +45,7 @@ public:
 
   Frame(const Frame &other) {
     this->m_index = other.index();
-    this->m_uc = other.unit_cell();
+    this->m_unit_cell = other.unit_cell();
     this->m_atoms = other.atoms();
     this->m_num_atoms = other.num_atoms();
     this->m_cart_pos = other.cart_pos();
@@ -52,7 +55,7 @@ public:
 
 private:
   size_t m_index = 0;
-  UnitCell m_uc;
+  std::optional<UnitCell> m_unit_cell;
   std::vector<Atom> m_atoms;
   size_t m_num_atoms = 0;
   Mat3N m_cart_pos;

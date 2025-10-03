@@ -39,8 +39,6 @@ private:
   std::vector<float> m_x_coords;
   std::vector<float> m_y_coords;
   std::vector<float> m_z_coords;
-
-  std::ofstream m_file;
 };
 
 } // namespace trajan::io

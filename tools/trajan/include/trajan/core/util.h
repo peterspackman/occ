@@ -221,4 +221,30 @@ inline std::pair<Mat3N, Mat3N> wrap_coordinates(const Mat3N &cart_pos,
   return {frac_pos, wrapped_cart_pos};
 }
 
+inline bool unitcell_is_reasonable(double a, double b, double c, double alpha,
+                                   double beta, double gamma,
+                                   double ltol = 1e-6, double htol = 1e6) {
+  if (a < ltol || b < ltol || c < ltol || alpha < ltol || beta < ltol ||
+      gamma < ltol) {
+    return false;
+  }
+  if (a > htol || b > htol || c > htol || alpha > htol || beta > htol ||
+      gamma > htol) {
+    return false;
+  }
+  return true;
+}
+
+inline bool unitcell_is_reasonable(const occ::Mat3 &box, double ltol = 1e-6,
+                                   double htol = 1e6) {
+  for (int col = 0; col < 3; col++) {
+    for (int row = 0; row < 3; row++) {
+      if (box(col, row) < ltol || box(col, row) > htol) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 } // namespace trajan::util

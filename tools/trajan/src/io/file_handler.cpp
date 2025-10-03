@@ -7,6 +7,8 @@
 #include <trajan/io/dcd.h>
 #include <trajan/io/file_handler.h>
 #include <trajan/io/pdb.h>
+#include <trajan/io/xtc.h>
+#include <trajan/io/xyz.h>
 #include <unordered_map>
 
 namespace trajan::io {
@@ -17,7 +19,9 @@ namespace fs = std::filesystem;
 
 static const std::unordered_map<std::string, std::function<FileHandlerPtr()>>
     handler_map = {{".pdb", []() { return std::make_unique<PDBHandler>(); }},
-                   {".dcd", []() { return std::make_unique<DCDHandler>(); }}};
+                   {".dcd", []() { return std::make_unique<DCDHandler>(); }},
+{ ".xyz", []() { return std::make_unique<XYZHandler>(); }}, 
+                   {".xtc", []() { return std::make_unique<XTCHandler>(); }}};
 
 bool FileHandler::initialise(Mode mode) {
   m_mode = mode;

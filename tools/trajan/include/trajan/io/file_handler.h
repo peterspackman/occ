@@ -17,6 +17,8 @@ public:
   enum class FileType {
     PDB,
     DCD,
+    XYZ,
+    XTC,
   };
   enum class Mode { Read, Write };
   virtual ~FileHandler() = default;

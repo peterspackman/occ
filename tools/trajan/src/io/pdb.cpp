@@ -58,7 +58,7 @@ bool PDBHandler::parse_pdb(Frame &frame) {
       z[4] = '\0';
       UnitCell uc = triclinic_cell(a, b, c, radians(alpha), radians(beta),
                                    radians(gamma));
-      frame.set_uc(uc);
+      frame.set_unit_cell(uc);
       continue;
     }
     if (line.substr(0, 4) != "ATOM" && line.substr(0, 6) != "HETATM") {
@@ -123,13 +123,14 @@ bool PDBHandler::write_next_frame(const Frame &frame) {
   const auto &atoms = frame.atoms();
   const auto &uc = frame.unit_cell();
 
-  if (uc.volume() > 0.0) {
+  if (uc.has_value()) {
+    const auto &unit_cell = uc.value();
     m_outfile << fmt::format("CRYST1{:9.3f}{:9.3f}{:9.3f}{:7.2f}{:7.2f}{:7.2f} "
                              "P 1           1",
-                             uc.a(), uc.b(), uc.c(),
-                             trajan::units::degrees(uc.alpha()),
-                             trajan::units::degrees(uc.beta()),
-                             trajan::units::degrees(uc.gamma()))
+                             unit_cell.a(), unit_cell.b(), unit_cell.c(),
+                             trajan::units::degrees(unit_cell.alpha()),
+                             trajan::units::degrees(unit_cell.beta()),
+                             trajan::units::degrees(unit_cell.gamma()))
               << std::endl;
   }
 

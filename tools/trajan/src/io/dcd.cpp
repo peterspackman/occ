@@ -1,4 +1,5 @@
 // #include "trajan/core/unit_cell.h"
+#include "trajan/core/util.h"
 #include <occ/core/linear_algebra.h>
 #include <occ/core/units.h>
 #include <occ/crystal/unitcell.h>
@@ -310,14 +311,10 @@ bool DCDHandler::_parse_dcd(core::Frame &frame) {
         beta = occ::units::radians(beta);
         gamma = occ::units::radians(gamma);
       }
-      UnitCell uc = frame.unit_cell();
-      uc.set_a(a);
-      uc.set_b(b);
-      uc.set_c(c);
-      uc.set_alpha(alpha);
-      uc.set_beta(beta);
-      uc.set_gamma(gamma);
-      frame.set_uc(uc);
+      if (trajan::util::unitcell_is_reasonable(a, b, c, alpha, beta, gamma)) {
+        UnitCell uc = occ::crystal::triclinic_cell(a, b, c, alpha, beta, gamma);
+        frame.set_unit_cell(uc);
+      }
     }
   }
 
@@ -406,7 +403,7 @@ bool DCDHandler::write_dcd_header(const Frame &frame) {
   int_data[10] = static_cast<int32_t>(1.0f);
 
   // Set unit cell flag
-  int_data[11] = 1; // Has unit cell data
+  int_data[11] = frame.has_unit_cell() ? 1 : 0; // Has unit cell data
 
   if (!write_fortran_record(header_buffer)) {
     return false;
@@ -439,12 +436,21 @@ bool DCDHandler::write_unit_cell_data(const Frame &frame) {
   double *cell_data = reinterpret_cast<double *>(unit_cell_buffer.data());
 
   // Store unit cell parameters
-  cell_data[0] = uc.a();               // a
-  cell_data[1] = std::cos(uc.gamma()); // cos(gamma) - angle between A and B
-  cell_data[2] = uc.b();               // b
-  cell_data[3] = std::cos(uc.beta());  // cos(beta) - angle between A and C
-  cell_data[4] = std::cos(uc.alpha()); // cos(alpha) - angle between B and C
-  cell_data[5] = uc.c();               // c
+  if (uc.has_value()) {
+    cell_data[0] = uc->a();               // a
+    cell_data[1] = std::cos(uc->gamma()); // cos(gamma) - angle between A and B
+    cell_data[2] = uc->b();               // b
+    cell_data[3] = std::cos(uc->beta());  // cos(beta) - angle between A and C
+    cell_data[4] = std::cos(uc->alpha()); // cos(alpha) - angle between B and C
+    cell_data[5] = uc->c();               // c
+  } else {
+    cell_data[0] = 0.0;
+    cell_data[1] = 0.0;
+    cell_data[2] = 0.0;
+    cell_data[3] = 0.0;
+    cell_data[4] = 0.0;
+    cell_data[5] = 0.0;
+  }
 
   return write_fortran_record(unit_cell_buffer);
 }

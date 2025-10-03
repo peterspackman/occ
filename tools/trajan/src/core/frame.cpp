@@ -23,7 +23,9 @@ void Frame::set_atoms(const std::vector<Atom> &atoms) {
   m_atoms = atoms;
 }
 
-void Frame::set_uc(UnitCell &uc) { m_uc = uc; }
+void Frame::set_unit_cell(const UnitCell &unit_cell) {
+  m_unit_cell = unit_cell;
+}
 
 const Mat3N Frame::cart_pos() const {
   Mat3N cart_pos(3, m_num_atoms);
