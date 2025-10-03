@@ -183,7 +183,7 @@ jobs:
     - name: Publish to npm
       if: steps.version.outputs.should_publish == 'true'
       working-directory: packages/occjs
-      run: npm publish
+      run: npm publish --ignore-scripts
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   
@@ -229,6 +229,6 @@ jobs:
 
     - name: Publish to GitHub Packages
       working-directory: packages/occjs
-      run: npm publish
+      run: npm publish --ignore-scripts
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
