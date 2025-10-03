@@ -123,7 +123,7 @@ jobs:
       run: npm pack
 
     - name: Upload WASM build artifacts
-      if: matrix.node-version == 20 && (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')))
+      if: matrix.node-version == 20 && ((github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || github.event_name == 'workflow_dispatch')
       uses: actions/upload-artifact@v4
       with:
         name: wasm-build
@@ -131,7 +131,7 @@ jobs:
         retention-days: 30
 
     - name: Upload package artifact
-      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+      if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || github.event_name == 'workflow_dispatch'
       uses: actions/upload-artifact@v4
       with:
         name: occjs-package-node${{ matrix.node-version }}
