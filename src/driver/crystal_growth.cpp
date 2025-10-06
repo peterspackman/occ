@@ -723,29 +723,34 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
   total.solution_term = (m_solvated_energies[i] - m_gas_phase_energies[i]) *
                         occ::units::AU_TO_KJ_PER_MOL;
 
-  double dimers_solv_total = 0.0;
-  {
-    size_t j = 0;
-    for (const auto &[dimer, unique_idx] : full_neighbors) {
-      dimers_solv_total += m_solvated_dimer_energies[unique_idx];
-      j++;
-    }
-    dimers_solv_total *= occ::units::AU_TO_KJ_PER_MOL;
+  // Compute weights from desolvation penalties (only nearest neighbors)
+  // We'll partition E_solv(A) among nearest neighbors based on these weights
+  double total_weight = 0.0;
+  for (const auto &[dimer, unique_idx] : nearest_neighbors) {
+    total_weight += std::abs(m_solvated_dimer_energies[unique_idx]);
   }
-  double dimers_solv_scale_factor = total.solution_term * 2 / dimers_solv_total;
 
-  occ::log::debug("Total dimers solvation: {} vs {}", dimers_solv_total,
-                  total.solution_term);
+  // Check if we have any desolvation (avoid division by zero)
+  if (total_weight < 1e-10) {
+    occ::log::warn("Warning: total desolvation weight is near zero for molecule {}", i);
+    total_weight = 1.0; // Fallback to equal weighting
+  }
+
+  occ::log::info("\n=== Solvation decomposition for molecule {} ===", i);
+  occ::log::info("  Molecule solvation energy:          {: 9.4f} kJ/mol", total.solution_term);
+  occ::log::info("  Number of nearest neighbors:        {}", nearest_neighbors.size());
+  occ::log::info("  Total desolvation weight:           {: 9.6f} au\n", total_weight);
 
   occ::log::warn("Neighbors for asymmetric molecule {}", molname);
 
   occ::log::warn("nn {:>3s} {:>7s} {:>7s} {:<28s} "
-                 "{:>7s} {:>7s} {:>7s} {:>7s}",
-                 "id", "Rn", "Rc", "Label", "E_crys", "E_solv", "E_nn",
-                 "E_int");
-  occ::log::warn(std::string(83, '='));
+                 "{:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}",
+                 "id", "Rn", "Rc", "Label", "E_crys", "ES_AB", "ES_BA", "E_S",
+                 "E_nn", "E_int");
+  occ::log::warn(std::string(95, '='));
 
   size_t j = 0;
+  double total_solvation_assigned = 0.0;
   for (const auto &[dimer, unique_idx] : full_neighbors) {
     double e = m_dimer_energies[unique_idx];
     auto dimer_name = dimer.name();
@@ -759,9 +764,31 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
     total.crystal_energy += e;
 
     cg::DimerSolventTerm solvent_term;
-    solvent_term.total = m_solvated_dimer_energies[unique_idx] *
-                         occ::units::AU_TO_KJ_PER_MOL *
-                         dimers_solv_scale_factor;
+
+    // Only assign solvation to nearest neighbors
+    if (is_nearest_neighbor) {
+      // Compute weighted solvation contribution based on desolvation penalty
+      double desolvation_penalty = m_solvated_dimer_energies[unique_idx];
+      double weight = std::abs(desolvation_penalty) / total_weight;
+
+      // ES_AB: contribution to A from neighbor B (partition of E_solv(A))
+      solvent_term.ab = weight * total.solution_term;
+      total_solvation_assigned += solvent_term.ab;
+
+      // ES_BA: contribution to B from neighbor A (partition of E_solv(B))
+      int neighbor_idx = dimer.b().asymmetric_molecule_idx();
+      double neighbor_solvation = (m_solvated_energies[neighbor_idx] -
+                                   m_gas_phase_energies[neighbor_idx]) *
+                                   occ::units::AU_TO_KJ_PER_MOL;
+      solvent_term.ba = weight * neighbor_solvation;
+
+      // Total solvation for this dimer pair
+      solvent_term.total = solvent_term.ab + solvent_term.ba;
+    } else {
+      solvent_term.ab = 0.0;
+      solvent_term.ba = 0.0;
+      solvent_term.total = 0.0;
+    }
 
     double interaction_energy =
         solvent_term.total - e - -crystal_contributions[j].energy;
@@ -775,6 +802,8 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
           {
               {cg::components::crystal_nn, crystal_contributions[j].energy},
               {cg::components::crystal_total, e},
+              {cg::components::solvation_ab, solvent_term.ab},
+              {cg::components::solvation_ba, solvent_term.ba},
               {cg::components::solvation_total, solvent_term.total},
               {cg::components::total, interaction_energy},
           }});
@@ -793,21 +822,30 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
 
     if (is_nearest_neighbor) {
       occ::log::warn(" {} {:>3d} {: 7.2f} {: 7.2f} {:<28s} {: 7.2f} {: 7.2f} "
-                     "{: 7.2f} {: 7.2f}",
-                     '|', unique_idx, rn, rc, dimer_name, e, solvent_term.total,
-                     crystal_contribution, interaction_energy);
+                     "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}",
+                     '|', unique_idx, rn, rc, dimer_name, e, solvent_term.ab,
+                     solvent_term.ba, solvent_term.total, crystal_contribution,
+                     interaction_energy);
 
     } else {
-      occ::log::debug(" {} {:>3d} {: 7.2f} {: 7.2f} {:<28s} {: 7.2f} {: "
-                      "7.2f} {: 7.2f} {: 7.2f}",
-                      ' ', unique_idx, rn, rc, dimer_name, e,
-                      solvent_term.total, crystal_contribution,
+      occ::log::debug(" {} {:>3d} {: 7.2f} {: 7.2f} {:<28s} {: 7.2f} {: 7.2f} "
+                      "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}",
+                      ' ', unique_idx, rn, rc, dimer_name, e, solvent_term.ab,
+                      solvent_term.ba, solvent_term.total, crystal_contribution,
                       interaction_energy);
     }
 
     dimer_energy_results.add_dimer_result(interactions.back());
     j++;
   }
+
+  // Verify partition sums to molecule solvation energy
+  occ::log::info("\n=== Solvation partition verification ===");
+  occ::log::info("  Sum of NN contributions:       {: 9.4f} kJ/mol", total_solvation_assigned);
+  occ::log::info("  Molecule solvation E_solv(A):  {: 9.4f} kJ/mol", total.solution_term);
+  occ::log::info("  Difference:                    {: 9.4f} kJ/mol\n",
+                 std::abs(total_solvation_assigned - total.solution_term));
+
   return dimer_energy_results;
 }
 
