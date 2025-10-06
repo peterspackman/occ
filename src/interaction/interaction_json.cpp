@@ -1,6 +1,8 @@
 #include <occ/interaction/interaction_json.h>
+#include <occ/interaction/polarization_partitioning.h>
 #include <occ/io/crystal_json.h>
 #include <occ/crystal/dimer_labeller.h>
+#include <occ/core/units.h>
 #include <ankerl/unordered_dense.h>
 #include <fmt/format.h>
 #include <fstream>
@@ -46,6 +48,41 @@ void from_json(const nlohmann::json &j, CEEnergyComponents &c) {
     j.at("Total").get_to(c.total);
   if (j.contains("total"))
     j.at("total").get_to(c.total);
+}
+
+void to_json(nlohmann::json &j, const polarization_partitioning::CouplingTerm &c) {
+  j["neighbor_b"] = c.neighbor_b_idx;
+  j["neighbor_c"] = c.neighbor_c_idx;
+  j["coupling_energy_au"] = c.coupling_energy;
+  j["coupling_energy_kjmol"] = c.coupling_energy * occ::units::AU_TO_KJ_PER_MOL;
+}
+
+void from_json(const nlohmann::json &j, polarization_partitioning::CouplingTerm &c) {
+  j.at("neighbor_b").get_to(c.neighbor_b_idx);
+  j.at("neighbor_c").get_to(c.neighbor_c_idx);
+  j.at("coupling_energy_au").get_to(c.coupling_energy);
+}
+
+void to_json(nlohmann::json &j, const polarization_partitioning::MoleculeCouplingResults &m) {
+  j["molecule_idx"] = m.molecule_idx;
+  j["couplings"] = nlohmann::json::array();
+  for (const auto& coupling : m.couplings) {
+    nlohmann::json c;
+    to_json(c, coupling);
+    j["couplings"].push_back(c);
+  }
+}
+
+void from_json(const nlohmann::json &j, polarization_partitioning::MoleculeCouplingResults &m) {
+  j.at("molecule_idx").get_to(m.molecule_idx);
+  if (j.contains("couplings")) {
+    m.couplings.clear();
+    for (const auto& coupling_json : j.at("couplings")) {
+      polarization_partitioning::CouplingTerm coupling;
+      from_json(coupling_json, coupling);
+      m.couplings.push_back(coupling);
+    }
+  }
 }
 
 void write_elat_json(const std::string& filename, const ElatResults& results) {
@@ -122,6 +159,16 @@ void write_elat_json(const std::string& filename, const ElatResults& results) {
       m.push_back(d);
     }
     j["pairs"].push_back(m);
+  }
+
+  // Add coupling terms if available
+  if (!results.lattice_energy_result.coupling_terms.empty()) {
+    j["coupling_terms"] = nlohmann::json::array();
+    for (const auto& molecule_coupling : results.lattice_energy_result.coupling_terms) {
+      nlohmann::json mc;
+      to_json(mc, molecule_coupling);
+      j["coupling_terms"].push_back(mc);
+    }
   }
 
   std::ofstream dest(filename);

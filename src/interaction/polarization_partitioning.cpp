@@ -176,4 +176,53 @@ std::vector<PairContribution> partition_all_pairs(
     return results;
 }
 
+std::vector<CouplingTerm> compute_coupling_terms(
+    const std::vector<Mat3N>& neighbor_fields,
+    const std::vector<size_t>& neighbor_indices,
+    const Vec& polarizabilities
+) {
+    std::vector<CouplingTerm> couplings;
+    const size_t num_neighbors = neighbor_fields.size();
+
+    if (num_neighbors < 2) {
+        return couplings; // No coupling terms if less than 2 neighbors
+    }
+
+    // Reserve space for all pairs: N*(N-1)/2
+    couplings.reserve(num_neighbors * (num_neighbors - 1) / 2);
+
+    // Compute coupling for each pair of neighbors
+    for (size_t b = 0; b < num_neighbors; ++b) {
+        for (size_t c = b + 1; c < num_neighbors; ++c) {
+            const Mat3N& field_b = neighbor_fields[b];
+            const Mat3N& field_c = neighbor_fields[c];
+            const int num_atoms = polarizabilities.size();
+
+            // Compute C_BC = -Σ_i α_i (F_B,i · F_C,i)
+            double coupling = 0.0;
+            for (int i = 0; i < num_atoms; ++i) {
+                const Vec3 f_b = field_b.col(i);
+                const Vec3 f_c = field_c.col(i);
+                coupling += polarizabilities(i) * f_b.dot(f_c);
+            }
+            coupling = -coupling; // Apply negative sign
+
+            CouplingTerm term;
+            term.neighbor_b_idx = neighbor_indices[b];
+            term.neighbor_c_idx = neighbor_indices[c];
+            term.coupling_energy = coupling;
+
+            couplings.push_back(term);
+
+            occ::log::debug("Coupling term between neighbors {} and {}: {:.6f} au",
+                           neighbor_indices[b], neighbor_indices[c], coupling);
+        }
+    }
+
+    occ::log::debug("Computed {} coupling terms for {} neighbors",
+                   couplings.size(), num_neighbors);
+
+    return couplings;
+}
+
 } // namespace occ::interaction::polarization_partitioning

@@ -2,6 +2,7 @@
 #include <occ/interaction/energy_model_base.h>
 #include <occ/interaction/lattice_convergence_settings.h>
 #include <occ/interaction/pair_energy.h>
+#include <occ/interaction/polarization_partitioning.h>
 #include <occ/interaction/wolf.h>
 
 namespace occ::interaction {
@@ -10,6 +11,7 @@ struct LatticeEnergyResult {
   double lattice_energy{0.0};
   occ::crystal::CrystalDimers dimers;
   std::vector<CEEnergyComponents> energy_components;
+  std::vector<polarization_partitioning::MoleculeCouplingResults> coupling_terms;
 };
 
 class LatticeEnergyCalculator {
@@ -25,8 +27,9 @@ private:
   void initialize_wolf_sum();
   bool is_converged(double current, double previous) const;
   void report_convergence_statistics(const CEEnergyComponents &total);
-  void apply_crystal_field_polarization_partitioning(
-    crystal::CrystalDimers &dimers, 
+  std::vector<polarization_partitioning::MoleculeCouplingResults>
+  apply_crystal_field_polarization_partitioning(
+    crystal::CrystalDimers &dimers,
     std::vector<CEEnergyComponents> &energies,
     double radius);
 

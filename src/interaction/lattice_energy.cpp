@@ -9,6 +9,7 @@
 #include <occ/interaction/pair_energy_store.h>
 #include <occ/interaction/polarization_partitioning.h>
 #include <occ/interaction/wolf.h>
+#include <algorithm>
 #include <atomic>
 #include <mutex>
 
@@ -178,14 +179,15 @@ LatticeEnergyResult LatticeEnergyCalculator::compute() {
 
   // Apply crystal field polarization partitioning if enabled and recalculate lattice energy
   double final_lattice_energy = lattice_energy;
+  std::vector<polarization_partitioning::MoleculeCouplingResults> coupling_results;
   if (m_settings.crystal_field_polarization) {
     double converged_radius = current_radius - m_settings.radius_increment;
-    apply_crystal_field_polarization_partitioning(all_dimers, converged_energies, converged_radius);
-    
+    coupling_results = apply_crystal_field_polarization_partitioning(all_dimers, converged_energies, converged_radius);
+
     // Recalculate lattice energy with updated total energies
     CEEnergyComponents updated_total = compute_cycle_energy(converged_energies, all_dimers);
     final_lattice_energy = 0.5 * updated_total.total_kjmol();
-    
+
     occ::log::info("Updated lattice energy after crystal field partitioning: {:.3f} kJ/mol", final_lattice_energy);
   }
 
@@ -204,7 +206,7 @@ LatticeEnergyResult LatticeEnergyCalculator::compute() {
     }
   }
 
-  return {final_lattice_energy, all_dimers, converged_energies};
+  return {final_lattice_energy, all_dimers, converged_energies, coupling_results};
 }
 
 namespace {
@@ -303,18 +305,19 @@ void apply_gradient_partitioning(
 
 } // anonymous namespace
 
-void LatticeEnergyCalculator::apply_crystal_field_polarization_partitioning(
-    crystal::CrystalDimers &dimers, 
+std::vector<polarization_partitioning::MoleculeCouplingResults>
+LatticeEnergyCalculator::apply_crystal_field_polarization_partitioning(
+    crystal::CrystalDimers &dimers,
     std::vector<CEEnergyComponents> &energies,
     double radius) {
-  
+
   occ::log::info("Computing crystal field polarization with radius {:.3f}", radius);
   
   // Validate that we have a CE energy model
   auto *ce_model = dynamic_cast<CEEnergyModel*>(m_energy_model.get());
   if (!ce_model) {
     occ::log::warn("Crystal field polarization requires CE energy model, skipping");
-    return;
+    return {};
   }
 
   // Report original polarization energy breakdown
@@ -328,7 +331,11 @@ void LatticeEnergyCalculator::apply_crystal_field_polarization_partitioning(
   std::vector<Mat3N> total_fields(unique_molecules.size());
   std::vector<double> crystal_pol_energies(unique_molecules.size());
   std::vector<std::vector<double>> pair_contributions(unique_molecules.size());
-  
+
+  // Storage for individual neighbor field contributions (for coupling term calculation)
+  std::vector<std::vector<Mat3N>> neighbor_fields_per_molecule(unique_molecules.size());
+  std::vector<std::vector<size_t>> neighbor_indices_per_molecule(unique_molecules.size());
+
   // Initialize storage
   for (size_t mol_type = 0; mol_type < unique_molecules.size(); ++mol_type) {
     const auto &molecule = unique_molecules[mol_type];
@@ -385,8 +392,13 @@ void LatticeEnergyCalculator::apply_crystal_field_polarization_partitioning(
       
       occ::log::info("  Neighbor {}: unique_idx={}, max_field={:.4f} au, avg_field={:.4f} au, single_neighbor_pol={:.4f} kJ/mol",
                       neighbor_idx, unique_idx, max_field, avg_field, single_neighbor_pol_kjmol);
-      
+
       total_fields[mol_type] += neighbor_field;
+
+      // Store field contribution for coupling term calculation
+      neighbor_fields_per_molecule[mol_type].push_back(neighbor_field);
+      neighbor_indices_per_molecule[mol_type].push_back(unique_idx);
+
       neighbor_idx++;
     }
     
@@ -414,7 +426,104 @@ void LatticeEnergyCalculator::apply_crystal_field_polarization_partitioning(
     occ::log::info("Difference (combined - sum_single): {:.6f} kJ/mol", crystal_pol_kjmol - sum_individual_pol);
     occ::log::info("Difference (combined - pairwise_sum): {:.6f} kJ/mol", crystal_pol_kjmol - pairwise_pol_sum);
   }
-  
+
+  // Compute coupling terms for each molecule
+  occ::log::info("\n=== Computing polarization coupling terms ===");
+  std::vector<polarization_partitioning::MoleculeCouplingResults> coupling_results;
+  coupling_results.reserve(unique_molecules.size());
+
+  for (size_t mol_type = 0; mol_type < unique_molecules.size(); ++mol_type) {
+    const auto &central_molecule = unique_molecules[mol_type];
+    const auto &neighbor_fields = neighbor_fields_per_molecule[mol_type];
+    const auto &neighbor_indices = neighbor_indices_per_molecule[mol_type];
+
+    if (neighbor_fields.size() < 2) {
+      occ::log::info("Molecule type {}: {} neighbors, skipping coupling calculation",
+                     mol_type, neighbor_fields.size());
+      continue;
+    }
+
+    auto couplings = polarization_partitioning::compute_coupling_terms(
+        neighbor_fields,
+        neighbor_indices,
+        ce_model->get_polarizabilities(central_molecule)
+    );
+
+    polarization_partitioning::MoleculeCouplingResults result;
+    result.molecule_idx = mol_type;
+    result.couplings = couplings;
+    coupling_results.push_back(result);
+
+    occ::log::info("Molecule type {}: computed {} coupling terms from {} neighbors",
+                   mol_type, couplings.size(), neighbor_fields.size());
+
+    // Analyze and print coupling terms
+    if (!couplings.empty()) {
+      // Sort by absolute magnitude
+      std::vector<std::pair<size_t, double>> sorted_couplings;
+      for (size_t i = 0; i < couplings.size(); ++i) {
+        sorted_couplings.push_back({i, std::abs(couplings[i].coupling_energy)});
+      }
+      std::sort(sorted_couplings.begin(), sorted_couplings.end(),
+                [](const auto& a, const auto& b) { return a.second > b.second; });
+
+      // Print top 10 (or all if less than 10)
+      size_t num_to_print = std::min(size_t(10), sorted_couplings.size());
+      occ::log::info("\n  Top {} coupling terms by magnitude:", num_to_print);
+      for (size_t i = 0; i < num_to_print; ++i) {
+        const auto& coupling = couplings[sorted_couplings[i].first];
+        double kjmol = coupling.coupling_energy * occ::units::AU_TO_KJ_PER_MOL;
+        occ::log::info("    [{:2d}] Neighbors {:3d}-{:3d}: {:+.6f} au ({:+.4f} kJ/mol)",
+                       i + 1, coupling.neighbor_b_idx, coupling.neighbor_c_idx,
+                       coupling.coupling_energy, kjmol);
+      }
+
+      // Compute total coupling energy
+      double total_coupling = 0.0;
+      for (const auto& coupling : couplings) {
+        total_coupling += coupling.coupling_energy;
+      }
+      occ::log::info("  Total coupling energy: {:.6f} au ({:.4f} kJ/mol)",
+                     total_coupling, total_coupling * occ::units::AU_TO_KJ_PER_MOL);
+
+      // Verify exact decomposition: E_total = Σ E_pair + Σ C_BC
+      // Compute sum of pairwise energies E_B^pair = -1/2 Σ_i α_i |F_B,i|²
+      double sum_pairwise = 0.0;
+      const auto& polarizabilities = ce_model->get_polarizabilities(central_molecule);
+      for (const auto& field : neighbor_fields) {
+        double pair_energy = 0.0;
+        for (int i = 0; i < polarizabilities.size(); ++i) {
+          const Vec3 f = field.col(i);
+          pair_energy += -0.5 * polarizabilities(i) * f.squaredNorm();
+        }
+        sum_pairwise += pair_energy;
+      }
+
+      // Exact crystal field polarization
+      double exact_crystal_pol = crystal_pol_energies[mol_type];
+
+      // Reconstructed = pairwise + couplings
+      double reconstructed = sum_pairwise + total_coupling;
+
+      occ::log::info("\n  Energy decomposition check:");
+      occ::log::info("    Exact crystal field polarization:  {:+.6f} au ({:+.4f} kJ/mol)",
+                     exact_crystal_pol, exact_crystal_pol * occ::units::AU_TO_KJ_PER_MOL);
+      occ::log::info("    Sum of pairwise E_B^pair:          {:+.6f} au ({:+.4f} kJ/mol)",
+                     sum_pairwise, sum_pairwise * occ::units::AU_TO_KJ_PER_MOL);
+      occ::log::info("    Sum of coupling terms C_BC:        {:+.6f} au ({:+.4f} kJ/mol)",
+                     total_coupling, total_coupling * occ::units::AU_TO_KJ_PER_MOL);
+      occ::log::info("    Reconstructed (pairwise + coupling): {:+.6f} au ({:+.4f} kJ/mol)",
+                     reconstructed, reconstructed * occ::units::AU_TO_KJ_PER_MOL);
+      occ::log::info("    Difference (exact - reconstructed): {:+.6e} au ({:+.6e} kJ/mol)",
+                     exact_crystal_pol - reconstructed,
+                     (exact_crystal_pol - reconstructed) * occ::units::AU_TO_KJ_PER_MOL);
+
+      // Percentage of total energy from coupling
+      double coupling_fraction = total_coupling / exact_crystal_pol * 100.0;
+      occ::log::info("    Coupling contribution: {:.2f}% of total polarization", coupling_fraction);
+    }
+  }
+
   // Now apply gradient-based partitioning using stored contributions
   occ::log::info("\n=== Applying gradient-based partitioning ===");
   apply_gradient_partitioning(dimers, energies, unique_molecules, total_fields, pair_contributions, ce_model);
@@ -458,10 +567,12 @@ void LatticeEnergyCalculator::apply_crystal_field_polarization_partitioning(
   occ::log::info("Total partitioned polarization energy (from neighbors): {:.6f} kJ/mol", total_partitioned_pol);
   occ::log::info("Total from final table (0.5 * sum): 0.5 * {:.6f} = {:.6f} kJ/mol", table_sum, 0.5 * table_sum);
   occ::log::info("Total crystal field polarization energy: {:.6f} kJ/mol", total_crystal_field_pol);
-  occ::log::info("Conservation check: crystal field ({:.6f}) vs partitioned ({:.6f}) difference: {:.6f} kJ/mol", 
+  occ::log::info("Conservation check: crystal field ({:.6f}) vs partitioned ({:.6f}) difference: {:.6f} kJ/mol",
                  total_crystal_field_pol, total_partitioned_pol, total_partitioned_pol - total_crystal_field_pol);
-  
+
   occ::log::info("Crystal field polarization computation completed for {} molecule types", unique_molecules.size());
+
+  return coupling_results;
 }
 
 } // namespace occ::interaction

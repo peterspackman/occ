@@ -2,12 +2,19 @@
 #include <nlohmann/json.hpp>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/lattice_energy.h>
+#include <occ/interaction/polarization_partitioning.h>
 #include <occ/crystal/crystal.h>
 
 namespace occ::interaction {
 
 void to_json(nlohmann::json &j, const CEEnergyComponents &);
 void from_json(const nlohmann::json &j, CEEnergyComponents &);
+
+void to_json(nlohmann::json &j, const polarization_partitioning::CouplingTerm &);
+void from_json(const nlohmann::json &j, polarization_partitioning::CouplingTerm &);
+
+void to_json(nlohmann::json &j, const polarization_partitioning::MoleculeCouplingResults &);
+void from_json(const nlohmann::json &j, polarization_partitioning::MoleculeCouplingResults &);
 
 struct ElatResults {
     occ::crystal::Crystal crystal;

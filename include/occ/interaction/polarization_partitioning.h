@@ -22,10 +22,32 @@ struct AtomContribution {
  */
 struct PairContribution {
     size_t molecule_a_idx;                      ///< Index of molecule A
-    size_t molecule_b_idx;                      ///< Index of molecule B  
+    size_t molecule_b_idx;                      ///< Index of molecule B
     std::vector<AtomContribution> atoms_a;      ///< Atom-level contributions in molecule A
     std::vector<AtomContribution> atoms_b;      ///< Atom-level contributions in molecule B
     double total_energy;                        ///< Total attributed pair energy (atomic units)
+};
+
+/**
+ * @brief Represents a pairwise coupling term between two neighbor interactions
+ *
+ * For central molecule A with neighbors B and C:
+ * coupling_energy = -Σ_i α_i (F_B,i · F_C,i)
+ *
+ * This captures field reinforcement (positive) or cancellation (negative)
+ */
+struct CouplingTerm {
+    size_t neighbor_b_idx;     ///< Index of neighbor B (unique dimer index)
+    size_t neighbor_c_idx;     ///< Index of neighbor C (unique dimer index)
+    double coupling_energy;    ///< Coupling energy in atomic units
+};
+
+/**
+ * @brief Results from coupling term calculation for a central molecule
+ */
+struct MoleculeCouplingResults {
+    size_t molecule_idx;                     ///< Index of central molecule
+    std::vector<CouplingTerm> couplings;     ///< All pairwise coupling terms for this molecule
 };
 
 using FieldMap = ankerl::unordered_dense::map<std::pair<size_t, size_t>, Mat3N>;
@@ -64,6 +86,26 @@ std::vector<PairContribution> partition_all_pairs(
     const FieldMap& total_fields,
     const FieldMap& pair_fields,
     const std::vector<Vec>& polarizabilities
+);
+
+/**
+ * @brief Compute coupling terms between all pairs of neighbors for a molecule
+ *
+ * For each pair of neighbors (B,C) of a central molecule, computes:
+ * C_BC = -Σ_i α_i (F_B,i · F_C,i)
+ *
+ * where i runs over atoms in the central molecule, F_B,i is the field at atom i
+ * from neighbor B, and α_i is the atomic polarizability.
+ *
+ * @param neighbor_fields Vector of field contributions from each neighbor (Mat3N)
+ * @param neighbor_indices Vector of unique dimer indices for each neighbor
+ * @param polarizabilities Atomic polarizabilities for the central molecule
+ * @return Vector of coupling terms for all neighbor pairs
+ */
+std::vector<CouplingTerm> compute_coupling_terms(
+    const std::vector<Mat3N>& neighbor_fields,
+    const std::vector<size_t>& neighbor_indices,
+    const Vec& polarizabilities
 );
 
 } // namespace occ::interaction::polarization_partitioning
