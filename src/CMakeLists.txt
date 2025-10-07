@@ -80,7 +80,7 @@ set(JS_BINDING_SOURCES
 
 add_executable(occjs ${JS_BINDING_SOURCES})
 
-target_include_directories(occjs PRIVATE 
+target_include_directories(occjs PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/js"
 )
 
@@ -109,5 +109,23 @@ set_target_properties(occjs PROPERTIES
 
 # Set output file extension
 set_target_properties(occjs PROPERTIES SUFFIX ".js")
+
+# WASM executable version of occ CLI (standalone, non-modularized)
+add_executable(occ.wasm "${CMAKE_CURRENT_SOURCE_DIR}/main/occ.cpp")
+
+target_compile_features(occ.wasm PUBLIC cxx_std_20)
+target_compile_options(occ.wasm PRIVATE -fexceptions -pthread)
+
+target_link_libraries(occ.wasm PUBLIC
+    occ_main
+)
+
+# Emscripten-specific linker flags for CLI executable (standalone script with threading)
+set_target_properties(occ.wasm PROPERTIES
+    LINK_FLAGS "-s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=5MB -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread -sPTHREAD_POOL_SIZE=8 -sPROXY_TO_PTHREAD -s EXIT_RUNTIME=1 --preload-file ${CMAKE_SOURCE_DIR}/share@/"
+)
+
+# Set output file extension (will generate occ.js and occ.wasm)
+set_target_properties(occ.wasm PROPERTIES OUTPUT_NAME "occ" SUFFIX ".js")
 
 endif()

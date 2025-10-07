@@ -25,7 +25,10 @@ if (!fs.existsSync(DIST_DIR)) {
 const filesToCopy = [
   { src: path.join(WASM_BUILD_DIR, 'occjs.js'), dest: path.join(SRC_DIR, 'occjs.js') },
   { src: path.join(WASM_BUILD_DIR, 'occjs.wasm'), dest: path.join(SRC_DIR, 'occjs.wasm') },
-  { src: path.join(WASM_BUILD_DIR, 'occjs.data'), dest: path.join(SRC_DIR, 'occjs.data') }
+  { src: path.join(WASM_BUILD_DIR, 'occjs.data'), dest: path.join(SRC_DIR, 'occjs.data') },
+  { src: path.join(WASM_BUILD_DIR, 'occ.js'), dest: path.join(SRC_DIR, 'occ.js') },
+  { src: path.join(WASM_BUILD_DIR, 'occ.wasm'), dest: path.join(SRC_DIR, 'occ.wasm') },
+  { src: path.join(WASM_BUILD_DIR, 'occ.data'), dest: path.join(SRC_DIR, 'occ.data') }
 ];
 
 // Copy WASM files to src for development
@@ -99,6 +102,9 @@ const distPackageJson = {
   main: 'index.js',
   types: 'index.d.ts',
   module: 'index.mjs',
+  bin: {
+    occ: './occ.cjs'
+  },
   exports: {
     '.': {
       types: './index.d.ts',
@@ -107,6 +113,18 @@ const distPackageJson = {
     },
     './wasm': {
       default: './occjs.wasm'
+    },
+    './data': {
+      default: './occjs.data'
+    },
+    './cli': {
+      default: './occ.cjs'
+    },
+    './cli-wasm': {
+      default: './occ.wasm'
+    },
+    './cli-data': {
+      default: './occ.data'
     }
   },
   repository: packageJson.repository,
@@ -119,10 +137,15 @@ const distPackageJson = {
 };
 
 fs.writeFileSync(
-  path.join(DIST_DIR, 'package.json'), 
+  path.join(DIST_DIR, 'package.json'),
   JSON.stringify(distPackageJson, null, 2)
 );
 console.log('✓ Created dist/package.json');
 
+// Rename occ.js to occ.cjs (CommonJS executable)
+if (fs.existsSync(path.join(DIST_DIR, 'occ.js'))) {
+  fs.renameSync(path.join(DIST_DIR, 'occ.js'), path.join(DIST_DIR, 'occ.cjs'));
+  console.log('✓ Renamed occ.js to occ.cjs');
+}
 
 console.log('\n✅ Build complete!');

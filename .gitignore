@@ -29,7 +29,12 @@ packages/occjs/dist/
 packages/occjs/src/occjs.js
 packages/occjs/src/occjs.wasm
 packages/occjs/src/occjs.data
+packages/occjs/src/occ.js
+packages/occjs/src/occ.wasm
+packages/occjs/src/occ.data
 packages/occjs/examples/share/
+packages/occjs/debug-test.js
+*.min.js
 
 # Coverage
 coverage/
