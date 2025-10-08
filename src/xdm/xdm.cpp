@@ -331,124 +331,117 @@ void XDM::populate_moments(const occ::qm::MolecularOrbitals &mo) {
   }
   m_density_matrix = mo.D;
 
+  // Dispatch to templated implementation based on spinorbital kind (like DFT does)
+  if (mo.kind == occ::qm::SpinorbitalKind::Unrestricted) {
+    populate_moments_impl<occ::qm::SpinorbitalKind::Unrestricted>(mo);
+  } else {
+    populate_moments_impl<occ::qm::SpinorbitalKind::Restricted>(mo);
+  }
+}
+
+template <occ::qm::SpinorbitalKind spinorbital_kind>
+void XDM::populate_moments_impl(const occ::qm::MolecularOrbitals &mo) {
   const auto &atoms = m_basis.atoms();
   const size_t num_atoms = atoms.size();
 
-  bool unrestricted = (mo.kind == occ::qm::SpinorbitalKind::Unrestricted);
   occ::log::debug("XDM using {} wavefunction",
-                  unrestricted ? "unrestricted" : "restricted");
+                  spinorbital_kind == occ::qm::SpinorbitalKind::Unrestricted ? "unrestricted" : "restricted");
 
-  constexpr size_t BLOCKSIZE = 64;
-  int num_rows_factor = 1;
-  if (unrestricted)
-    num_rows_factor = 2;
-
-  // constexpr double density_tolerance = 1e-10;
   constexpr int max_derivative{2};
-  
-  // Build list of all grid blocks across all atoms for proper parallelization
-  struct GridBlock {
-    size_t atom_idx;
-    size_t start_idx;
-    size_t end_idx;
-    const Mat3N* points;
-    const Vec* weights;
-  };
-  
-  std::vector<GridBlock> all_blocks;
-  for (size_t atom_idx = 0; atom_idx < m_atom_grids.size(); ++atom_idx) {
-    const auto &atom_grid = m_atom_grids[atom_idx];
-    const size_t npt_total = atom_grid.points.cols();
-    const size_t num_blocks = (npt_total + BLOCKSIZE - 1) / BLOCKSIZE; // Fix off-by-one
-    
-    for (size_t block = 0; block < num_blocks; ++block) {
-      size_t start = block * BLOCKSIZE;
-      size_t end = std::min(npt_total, (block + 1) * BLOCKSIZE);
-      if (start < end) {
-        all_blocks.push_back({atom_idx, start, end, &atom_grid.points, &atom_grid.weights});
-      }
-    }
-  }
-  
-  // Use thread-local storage for results and pre-allocated working matrices
+  constexpr int num_rows_factor = (spinorbital_kind == occ::qm::SpinorbitalKind::Unrestricted) ? 2 : 1;
+
+  occ::log::debug("XDM: Processing {} atom grids", m_atom_grids.size());
+
+  // Use thread-local storage for results only (like DFT does)
   occ::parallel::thread_local_storage<Vec> tl_hirshfeld_charges(Vec::Zero(num_atoms));
   occ::parallel::thread_local_storage<Vec> tl_volumes(Vec::Zero(num_atoms));
   occ::parallel::thread_local_storage<Vec> tl_free_volumes(Vec::Zero(num_atoms));
   occ::parallel::thread_local_storage<Mat> tl_moments(Mat::Zero(3, num_atoms));
   occ::parallel::thread_local_storage<double> tl_num_electrons(0.0);
   occ::parallel::thread_local_storage<double> tl_num_electrons_promol(0.0);
-  
-  // Pre-allocate working matrices in thread-local storage to avoid repeated allocations
-  occ::parallel::thread_local_storage<occ::gto::GTOValues> tl_gto_vals([this]() {
-    occ::gto::GTOValues gto_vals;
-    gto_vals.reserve(m_basis.nbf(), BLOCKSIZE, 2);
-    return gto_vals;
-  });
-  occ::parallel::thread_local_storage<Mat> tl_hirshfeld_weights([&]() { return Mat::Zero(BLOCKSIZE, num_atoms); });
-  occ::parallel::thread_local_storage<Mat> tl_r([&]() { return Mat::Zero(BLOCKSIZE, num_atoms); });
-  occ::parallel::thread_local_storage<Mat> tl_rho([&]() { 
-    return Mat::Zero(num_rows_factor * BLOCKSIZE, occ::density::num_components(max_derivative)); 
-  });
 
-  // Now parallelize over ALL blocks from ALL atoms - much better load balancing!
-  occ::parallel::parallel_for(size_t(0), all_blocks.size(), [&](size_t block_idx) {
-    const auto &block = all_blocks[block_idx];
-    const size_t npt = block.end_idx - block.start_idx;
-    
-    auto &gto_vals = tl_gto_vals.local();
-    auto &hirshfeld_charges = tl_hirshfeld_charges.local();
-    auto &volume = tl_volumes.local();
-    auto &volume_free = tl_free_volumes.local();
-    auto &moments = tl_moments.local();
-    auto &num_e = tl_num_electrons.local();
-    auto &num_e_promol = tl_num_electrons_promol.local();
-    
-    // Reuse pre-allocated matrices (just resize the view, no new allocation)
-    auto &hirshfeld_weights = tl_hirshfeld_weights.local();
-    auto &r = tl_r.local();
-    auto &rho = tl_rho.local();
-    
-    const auto &pts_block = block.points->middleCols(block.start_idx, npt);
-    const auto &weights_block = block.weights->segment(block.start_idx, npt);
-    
-    // Resize views to current block size (no allocation, just changes matrix dimensions)
-    hirshfeld_weights.conservativeResize(npt, num_atoms);
-    r.conservativeResize(npt, num_atoms);  
-    rho.conservativeResize(num_rows_factor * npt, occ::density::num_components(max_derivative));
-    
-    occ::gto::evaluate_basis(m_basis, pts_block, gto_vals, max_derivative);
-    if (unrestricted) {
-      occ::density::evaluate_density<max_derivative, occ::qm::SpinorbitalKind::Unrestricted>(
-          mo.D, gto_vals, rho);
-    } else {
-      occ::density::evaluate_density<max_derivative, occ::qm::SpinorbitalKind::Restricted>(
-          mo.D, gto_vals, rho);
-    }
+  // Process each atom grid sequentially, parallelize over blocks within each grid (like DFT)
+  for (const auto &atom_grid : m_atom_grids) {
+    const auto &atom_pts = atom_grid.points;
+    const auto &atom_weights = atom_grid.weights;
+    const size_t npt_total = atom_pts.cols();
 
-    for (int i = 0; i < num_atoms; i++) {
-      const auto &sb = m_slater_basis[i];
-      occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
-      r.col(i) = (pts_block.colwise() - pos).colwise().norm();
-      const auto &ria = r.col(i).array();
-      hirshfeld_weights.col(i) = sb.rho(r.col(i));
-      volume_free(i) += (hirshfeld_weights.col(i).array() *
-                         weights_block.array() * ria * ria * ria).sum();
-    }
-    
-    if (unrestricted) {
-      impl::xdm_moment_kernel_unrestricted(r, rho, weights_block, hirshfeld_weights, 
-                                           hirshfeld_charges, volume, moments, num_e, num_e_promol);
-    } else {
-      impl::xdm_moment_kernel_restricted(r, rho, weights_block, hirshfeld_weights, 
-                                         hirshfeld_charges, volume, moments, num_e, num_e_promol);
-    }
-  });
+    occ::log::debug("XDM: Processing grid with {} points", npt_total);
+
+    // Adaptive grain size (like DFT)
+    const size_t min_points_per_chunk = std::max(size_t(32), m_basis.nbf() / 4);
+    const size_t max_chunks = occ::parallel::nthreads * 8;
+    size_t adaptive_grain = std::max(min_points_per_chunk, npt_total / max_chunks);
+
+    occ::log::debug("XDM: nthreads={}, npt_total={}, adaptive_grain={}, max_chunks={}",
+                    occ::parallel::nthreads, npt_total, adaptive_grain, max_chunks);
+
+    // Use static_partitioner to disable work stealing in WASM (more stable)
+    tbb::static_partitioner partitioner;
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, npt_total, adaptive_grain),
+        [&](const tbb::blocked_range<size_t> &range) {
+            const size_t l = range.begin();
+            const size_t u = range.end();
+            const size_t npt = u - l;
+
+            if (npt == 0) return;
+
+            const auto &pts_block = atom_pts.middleCols(l, npt);
+            const auto &weights_block = atom_weights.segment(l, npt);
+
+            // Allocate working matrices locally (exactly like DFT does)
+            Mat rho(num_rows_factor * npt, occ::density::num_components(max_derivative));
+            Mat hirshfeld_weights = Mat::Zero(npt, num_atoms);
+            Mat r = Mat::Zero(npt, num_atoms);
+
+            // Evaluate basis locally (like DFT does)
+            auto gto_vals = occ::gto::evaluate_basis(m_basis, pts_block, max_derivative);
+
+            // Get thread-local results storage
+            auto &hirshfeld_charges = tl_hirshfeld_charges.local();
+            auto &volume = tl_volumes.local();
+            auto &volume_free = tl_free_volumes.local();
+            auto &moments = tl_moments.local();
+            auto &num_e = tl_num_electrons.local();
+            auto &num_e_promol = tl_num_electrons_promol.local();
+
+            // Evaluate density (compile-time dispatch like DFT)
+            occ::density::evaluate_density<max_derivative, spinorbital_kind>(
+                mo.D, gto_vals, rho);
+
+            // Calculate Hirshfeld weights
+            for (int i = 0; i < num_atoms; i++) {
+              const auto &sb = m_slater_basis[i];
+              occ::Vec3 pos{atoms[i].x, atoms[i].y, atoms[i].z};
+              r.col(i) = (pts_block.colwise() - pos).colwise().norm();
+              const auto &ria = r.col(i).array();
+              hirshfeld_weights.col(i) = sb.rho(r.col(i));
+              volume_free(i) += (hirshfeld_weights.col(i).array() *
+                                 weights_block.array() * ria * ria * ria).sum();
+            }
+
+            // Calculate moments (compile-time dispatch like DFT)
+            if constexpr (spinorbital_kind == occ::qm::SpinorbitalKind::Unrestricted) {
+              impl::xdm_moment_kernel_unrestricted(r, rho, weights_block, hirshfeld_weights,
+                                                   hirshfeld_charges, volume, moments, num_e, num_e_promol);
+            } else {
+              impl::xdm_moment_kernel_restricted(r, rho, weights_block, hirshfeld_weights,
+                                                 hirshfeld_charges, volume, moments, num_e, num_e_promol);
+            }
+        },
+        partitioner
+    );
+  }
+
+  occ::log::debug("XDM: Finished parallel_for, reducing results");
 
   m_hirshfeld_charges = Vec::Zero(num_atoms);
   const auto &ecp_electrons = m_basis.ecp_electrons();
+  occ::log::debug("XDM: ecp_electrons.size()={}, num_atoms={}", ecp_electrons.size(), num_atoms);
   for (int i = 0; i < num_atoms; i++) {
     m_hirshfeld_charges(i) = static_cast<double>(atoms[i].atomic_number);
-    if (ecp_electrons.size() >= i) {
+    if (ecp_electrons.size() > i) {  // Fixed: was >=, should be >
       m_hirshfeld_charges(i) -= ecp_electrons[i];
     }
   }
@@ -494,5 +487,11 @@ void XDM::populate_polarizabilities() {
         atoms[i].atomic_number, m_volume(i), m_volume_free(i), m_atomic_ion);
   }
 }
+
+// Explicit template instantiations
+template void XDM::populate_moments_impl<occ::qm::SpinorbitalKind::Restricted>(
+    const occ::qm::MolecularOrbitals &mo);
+template void XDM::populate_moments_impl<occ::qm::SpinorbitalKind::Unrestricted>(
+    const occ::qm::MolecularOrbitals &mo);
 
 } // namespace occ::xdm

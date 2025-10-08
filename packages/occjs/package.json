@@ -1,13 +1,13 @@
 {
   "name": "@peterspackman/occjs",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "JavaScript/WebAssembly bindings for OCC - a quantum chemistry and crystallography library",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.mjs",
   "bin": {
-    "occ": "./dist/occ.cjs"
+    "occ": "./dist/occ.js"
   },
   "exports": {
     ".": {
@@ -23,7 +23,7 @@
       "default": "./dist/occjs.data"
     },
     "./cli": {
-      "default": "./dist/occ.cjs"
+      "default": "./dist/occ.js"
     },
     "./cli-wasm": {
       "default": "./dist/occ.wasm"

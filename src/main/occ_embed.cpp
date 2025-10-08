@@ -6,13 +6,18 @@
 #include <fstream>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
+#include <occ/core/progress.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/dft/hirshfeld.h>
 #include <occ/driver/single_point.h>
 #include <occ/interaction/wolf.h>
+#include <occ/interaction/pairinteraction.h>
+#include <occ/interaction/coulomb.h>
+#include <occ/interaction/ce_energy_model.h>
 #include <occ/io/load_geometry.h>
+#include <occ/xdm/xdm.h>
 #include <occ/io/occ_input.h>
 #include <occ/main/cli_validators.h>
 #include <occ/main/occ_embed.h>
@@ -64,15 +69,20 @@ std::vector<double> calculate_charges(const Wavefunction &wfn,
 
   if (charge_scheme == "mulliken") {
     charges_vec = wfn.mulliken_charges();
-  } else if (charge_scheme == "hirshfeld") {
-    charges_vec =
-        occ::dft::calculate_hirshfeld_charges(wfn.basis, wfn.mo, wfn.charge());
+  } else if (charge_scheme == "hirshfeld" || charge_scheme == "xdm") {
+    // Use XDM for both "hirshfeld" and "xdm" schemes
+    // XDM provides consistent Hirshfeld charges + polarizabilities
+    occ::xdm::XDM xdm(wfn.basis, wfn.charge());
+    xdm.energy(wfn.mo); // This populates the charges
+    charges_vec = xdm.hirshfeld_charges();
   } else if (charge_scheme == "chelpg") {
     charges_vec = occ::qm::chelpg_charges(wfn);
   } else {
-    occ::log::error("Unknown charge scheme: {}. Using Mulliken.",
+    occ::log::error("Unknown charge scheme: {}. Using XDM Hirshfeld.",
                     charge_scheme);
-    charges_vec = wfn.mulliken_charges();
+    occ::xdm::XDM xdm(wfn.basis, wfn.charge());
+    xdm.energy(wfn.mo);
+    charges_vec = xdm.hirshfeld_charges();
   }
 
   // Convert to std::vector<double> and print charges
@@ -88,13 +98,25 @@ std::vector<double> calculate_charges(const Wavefunction &wfn,
   return charges;
 }
 
-std::vector<occ::core::PointCharge> create_external_charges(
+struct NeighborChargeInfo {
+  size_t neighbor_idx;
+  Vec charges;        // Charges for this neighbor's atoms
+  Mat3N positions;    // Positions for this neighbor's atoms (Bohr)
+};
+
+struct ExternalChargesWithNeighbors {
+  std::vector<occ::core::PointCharge> all_charges;
+  std::vector<NeighborChargeInfo> per_neighbor_info;
+};
+
+ExternalChargesWithNeighbors create_external_charges_with_neighbors(
     const crystal::Crystal &crystal, const Vec &asymmetric_charges,
     const core::Molecule &target_molecule, double cutoff_radius) {
 
   occ::log::info("Creating external charge environment using crystal dimers");
 
-  std::vector<occ::core::PointCharge> external_charges;
+  ExternalChargesWithNeighbors result;
+  std::vector<occ::core::PointCharge> &external_charges = result.all_charges;
 
   // Get target molecule center for reference
   Mat3N target_pos = target_molecule.positions(); // already in Bohr
@@ -122,10 +144,17 @@ std::vector<occ::core::PointCharge> create_external_charges(
     occ::log::info("Target molecule has {} neighboring dimers",
                    neighbors.size());
 
+    size_t neighbor_count = 0;
     for (const auto &[dimer, unique_idx] : neighbors) {
       // Get the A and B molecules in the dimer for debugging
       const auto &mol_a = dimer.a();
       const auto &neighbor_mol = dimer.b();
+
+      // Prepare per-neighbor info
+      NeighborChargeInfo neighbor_info;
+      neighbor_info.neighbor_idx = neighbor_count;
+      neighbor_info.charges = Vec(neighbor_mol.size());
+      neighbor_info.positions = Mat3N(3, neighbor_mol.size());
 
       occ::log::debug("Processing dimer - unique_idx: {}", unique_idx);
       occ::log::debug("  Molecule A center: ({:.3f}, {:.3f}, {:.3f})",
@@ -167,8 +196,15 @@ std::vector<occ::core::PointCharge> create_external_charges(
                           distance_angstrom);
 
           external_charges.emplace_back(charge, atom_pos_bohr);
+
+          // Store in per-neighbor info
+          neighbor_info.charges(atom_idx) = charge;
+          neighbor_info.positions.col(atom_idx) = atom_pos_bohr;
         }
       }
+
+      result.per_neighbor_info.push_back(neighbor_info);
+      neighbor_count++;
     }
   }
 
@@ -242,7 +278,17 @@ std::vector<occ::core::PointCharge> create_external_charges(
     }
   }
 
-  return external_charges;
+  occ::log::info("Tracked {} unique neighbors", result.per_neighbor_info.size());
+  return result;
+}
+
+// Backward compatibility wrapper
+std::vector<occ::core::PointCharge> create_external_charges(
+    const crystal::Crystal &crystal, const Vec &asymmetric_charges,
+    const core::Molecule &target_molecule, double cutoff_radius) {
+  return create_external_charges_with_neighbors(crystal, asymmetric_charges,
+                                                 target_molecule, cutoff_radius)
+      .all_charges;
 }
 
 Wavefunction perform_embedded_scf(
@@ -348,6 +394,7 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
   // Initialize charges for each unique molecule
   std::vector<std::vector<double>> molecular_charges(unique_molecules.size());
   std::vector<Wavefunction> wavefunctions(unique_molecules.size());
+  std::vector<Wavefunction> gas_phase_wavefunctions(unique_molecules.size());
   std::vector<double> gas_phase_energies(unique_molecules.size());
 
   // Initial gas phase calculations to get starting charges
@@ -378,6 +425,7 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
     // Perform gas phase SCF calculation
     auto gas_wfn = occ::driver::single_point(gas_input);
     wavefunctions[i] = gas_wfn;
+    gas_phase_wavefunctions[i] = gas_wfn;  // Save for later comparison
     gas_phase_energies[i] = gas_wfn.energy.total;
 
     // Calculate initial charges
@@ -489,6 +537,233 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
     }
   }
 
+  // Compute effective pair energies and coupling terms after convergence
+  occ::log::info("Computing pair energies and coupling terms");
+  occ::log::info("Using pair energy radius: {:.2f} Å", config.pair_energy_radius);
+
+  // Create CE energy models for both gas-phase and embedded wavefunctions
+  interaction::CEEnergyModel ce_model_embedded(crystal, wavefunctions, wavefunctions);
+  ce_model_embedded.set_model_name("ce-1p");
+
+  interaction::CEEnergyModel ce_model_gas(crystal, gas_phase_wavefunctions, gas_phase_wavefunctions);
+  ce_model_gas.set_model_name("ce-1p");
+
+  // Get dimers from crystal (use smaller radius for CE calculations)
+  auto crystal_dimers = crystal.symmetry_unique_dimers(config.pair_energy_radius);
+
+  for (size_t i = 0; i < unique_molecules.size(); i++) {
+    const auto &mol = unique_molecules[i];
+    auto &wfn_a = wavefunctions[i];
+
+    occ::log::info("Processing molecule {} pair energies", i);
+
+    // Get neighbors for this molecule
+    if (i >= crystal_dimers.molecule_neighbors.size()) {
+      occ::log::warn("No neighbors found for molecule {}", i);
+      continue;
+    }
+
+    const auto &neighbors = crystal_dimers.molecule_neighbors[i];
+    occ::log::info("  Found {} neighboring dimers", neighbors.size());
+
+    // Compute XDM for polarizabilities (for coupling)
+    occ::xdm::XDM xdm_a(wfn_a.basis, wfn_a.charge());
+    xdm_a.energy(wfn_a.mo);
+    Vec alpha_a = xdm_a.polarizabilities();
+    wfn_a.xdm_polarizabilities = alpha_a;
+    wfn_a.have_xdm_parameters = true;
+
+    // Track electric fields for coupling
+    std::vector<Mat3N> E_fields;
+    Mat3N mol_a_pos = mol.positions();
+
+    // Compute pair energies
+    double total_ce_embedded = 0.0;
+    double total_ce_gas = 0.0;
+    double total_wolf_classical = 0.0;
+
+    // Setup progress tracking
+    size_t total_neighbors = neighbors.size();
+    occ::core::ProgressTracker progress(total_neighbors);
+
+    // Detailed energy accounting for first pair
+    bool first_pair = true;
+
+    size_t pair_count = 0;
+    for (const auto &[dimer, unique_idx] : neighbors) {
+      const auto &mol_b = dimer.b();
+      int mol_b_idx = mol_b.asymmetric_molecule_idx();
+
+      // Get wavefunction for molecule B
+      auto &wfn_b = wavefunctions[mol_b_idx];
+
+      // Ensure wfn_b has XDM parameters
+      if (!wfn_b.have_xdm_parameters) {
+        occ::xdm::XDM xdm_b(wfn_b.basis, wfn_b.charge());
+        xdm_b.energy(wfn_b.mo);
+        wfn_b.xdm_polarizabilities = xdm_b.polarizabilities();
+        wfn_b.have_xdm_parameters = true;
+      }
+
+      // Compute CE-1p energy with EMBEDDED wavefunctions
+      auto ce_embedded = ce_model_embedded.compute_energy(dimer);
+
+      // Compute CE-1p energy with GAS-PHASE wavefunctions
+      auto ce_gas = ce_model_gas.compute_energy(dimer);
+
+      // Compute Wolf classical Coulomb for this dimer
+      double wolf_classical = interaction::coulomb_interaction_energy_asym_charges(
+          dimer, asymmetric_charges);
+
+      // Detailed accounting for first pair
+      if (first_pair) {
+        occ::log::info("");
+        occ::log::info("  Detailed energy accounting for first pair [{}, {}]:", i, mol_b_idx);
+        occ::log::info("  Dimer: {}", dimer.name());
+        occ::log::info("  Distance: {:.3f} Å", dimer.nearest_distance());
+        occ::log::info("");
+        occ::log::info("  Monomer energies:");
+        occ::log::info("    E_A (gas):      {:.8f} Ha", gas_phase_energies[i]);
+        occ::log::info("    E_A (embedded): {:.8f} Ha", wfn_a.energy.total);
+        occ::log::info("    E_B (gas):      {:.8f} Ha", gas_phase_energies[mol_b_idx]);
+        occ::log::info("    E_B (embedded): {:.8f} Ha", wfn_b.energy.total);
+        occ::log::info("");
+        occ::log::info("  CE interaction energies (E_AB - E_A - E_B):");
+        occ::log::info("    CE (gas wfns):      {:.8f} Ha ({:.2f} kJ/mol)",
+                       ce_gas.total, ce_gas.total * 2625.5);
+        occ::log::info("      Coulomb:          {:.8f} Ha", ce_gas.coulomb);
+        occ::log::info("      Exchange:         {:.8f} Ha", ce_gas.exchange);
+        occ::log::info("      Repulsion:        {:.8f} Ha", ce_gas.repulsion);
+        occ::log::info("      Dispersion:       {:.8f} Ha", ce_gas.dispersion);
+        occ::log::info("");
+        occ::log::info("    CE (embedded wfns): {:.8f} Ha ({:.2f} kJ/mol)",
+                       ce_embedded.total, ce_embedded.total * 2625.5);
+        occ::log::info("      Coulomb:          {:.8f} Ha", ce_embedded.coulomb);
+        occ::log::info("      Exchange:         {:.8f} Ha", ce_embedded.exchange);
+        occ::log::info("      Repulsion:        {:.8f} Ha", ce_embedded.repulsion);
+        occ::log::info("      Dispersion:       {:.8f} Ha", ce_embedded.dispersion);
+        occ::log::info("");
+        occ::log::info("  Wolf classical (point charges): {:.8f} Ha ({:.2f} kJ/mol)",
+                       wolf_classical, wolf_classical * 2625.5);
+        occ::log::info("");
+        first_pair = false;
+      }
+
+      total_ce_embedded += ce_embedded.total;
+      total_ce_gas += ce_gas.total;
+      total_wolf_classical += wolf_classical;
+
+      occ::log::debug("  Pair [{},{}]: CE_embed={:.6f}, CE_gas={:.6f}, Wolf={:.6f} Ha",
+                      i, mol_b_idx, ce_embedded.total, ce_gas.total, wolf_classical);
+
+      // Compute electric field from this neighbor for coupling
+      Vec charges_b(mol_b.size());
+      Mat3N pos_b(3, mol_b.size());
+      auto asym_indices_b = mol_b.asymmetric_unit_idx();
+      auto mol_b_atoms = mol_b.atoms();
+      for (size_t j = 0; j < mol_b.size(); j++) {
+        charges_b(j) = asymmetric_charges(asym_indices_b(j));
+        const auto &atom = mol_b_atoms[j];
+        pos_b.col(j) = Vec3(atom.x, atom.y, atom.z);
+      }
+
+      interaction::WolfParameters wolf_params{config.wolf_cutoff, config.wolf_alpha};
+      Mat3N E_field = interaction::wolf_electric_field(
+          charges_b, pos_b, mol_a_pos, wolf_params);
+      E_fields.push_back(E_field);
+
+      // Update progress
+      pair_count++;
+      progress.update(pair_count, total_neighbors,
+                      fmt::format("Mol {} | E[{}|{}]: {}", i,
+                                  i, mol_b_idx, dimer.name()));
+    }
+
+    // Compute coupling terms
+    auto coupling_result = interaction::compute_wolf_coupling_terms(E_fields, alpha_a);
+
+    // Calculate total embedding energy
+    double embed_energy = wfn_a.energy.total - gas_phase_energies[i];
+
+    // Summary for this molecule
+    occ::log::info("");
+    occ::log::info("========================================");
+    occ::log::info("Molecule {} energy analysis:", i);
+    occ::log::info("========================================");
+    occ::log::info("");
+    occ::log::info("  Reference energies:");
+    occ::log::info("    E_gas:               {:.8f} Ha", gas_phase_energies[i]);
+    occ::log::info("    E_embedded:          {:.8f} Ha", wfn_a.energy.total);
+    occ::log::info("    Embedding effect:    {:.8f} Ha ({:.2f} kJ/mol)",
+                   embed_energy, embed_energy * 2625.5);
+    occ::log::info("");
+    occ::log::info("  Pair interaction energies (sum over {} near neighbors, r < {:.2f} Å):",
+                   total_neighbors, config.pair_energy_radius);
+    occ::log::info("    ΣE_int (embedded):   {:.8f} Ha ({:.2f} kJ/mol)",
+                   total_ce_embedded, total_ce_embedded * 2625.5);
+    occ::log::info("    ΣE_int (gas):        {:.8f} Ha ({:.2f} kJ/mol)",
+                   total_ce_gas, total_ce_gas * 2625.5);
+    occ::log::info("    Polarization gain:   {:.8f} Ha ({:.2f} kJ/mol) [{:.1f}%]",
+                   total_ce_embedded - total_ce_gas,
+                   (total_ce_embedded - total_ce_gas) * 2625.5,
+                   100.0 * (total_ce_embedded - total_ce_gas) / total_ce_gas);
+    occ::log::info("");
+    occ::log::info("  Classical reference:");
+    occ::log::info("    ΣE_Wolf (classical): {:.8f} Ha ({:.2f} kJ/mol)",
+                   total_wolf_classical, total_wolf_classical * 2625.5);
+    occ::log::info("");
+    occ::log::info("  Non-additive effects:");
+    occ::log::info("    Total coupling:      {:.8f} Ha ({:.2f} kJ/mol)",
+                   coupling_result.total_coupling,
+                   coupling_result.total_coupling * 2625.5);
+    occ::log::info("");
+    occ::log::info("========================================");
+    occ::log::info("Lattice Energy Estimates:");
+    occ::log::info("========================================");
+    occ::log::info("");
+
+    // Method 1: Simple sum of gas-phase CE pairs
+    double lattice_energy_gas_simple = 0.5 * total_ce_gas;
+
+    // Method 2: Embedding energy + quantum correction for near neighbors
+    // E_latt = (E_embed - E_gas) + (1/2) Σ_near [E_int^gas - E_Wolf]
+    double quantum_correction = 0.5 * (total_ce_gas - total_wolf_classical);
+    double lattice_energy_corrected = embed_energy + quantum_correction;
+
+    occ::log::info("  Method 1: Simple gas-phase CE sum");
+    occ::log::info("    E_latt = (1/2) × ΣE_int^gas");
+    occ::log::info("           = {:.8f} Ha ({:.2f} kJ/mol)",
+                   lattice_energy_gas_simple, lattice_energy_gas_simple * 2625.5);
+    occ::log::info("");
+    occ::log::info("  Method 2: Embedding + quantum correction");
+    occ::log::info("    E_embedding = E_embed - E_gas");
+    occ::log::info("                = {:.8f} Ha ({:.2f} kJ/mol) [Wolf all neighbors]",
+                   embed_energy, embed_energy * 2625.5);
+    occ::log::info("    Quantum correction = (1/2) × Σ_near [E_int^gas - E_Wolf]");
+    occ::log::info("                       = {:.8f} Ha ({:.2f} kJ/mol) [Replace near Wolf with CE]",
+                   quantum_correction, quantum_correction * 2625.5);
+    occ::log::info("    E_latt = E_embedding + Quantum correction");
+    occ::log::info("           = {:.8f} Ha ({:.2f} kJ/mol)",
+                   lattice_energy_corrected, lattice_energy_corrected * 2625.5);
+    occ::log::info("");
+
+    // Print significant coupling terms
+    occ::log::info("  Significant coupling terms (|C| > 0.0001 Ha):");
+    int printed = 0;
+    for (const auto &term : coupling_result.coupling_terms) {
+      if (std::abs(term.coupling_energy) > 0.0001 && printed < 10) {
+        occ::log::info("    Neighbors [{}, {}]: {:.6f} Ha ({:.2f} kJ/mol)",
+                       term.neighbor_a, term.neighbor_b,
+                       term.coupling_energy, term.coupling_energy * 2625.5);
+        printed++;
+      }
+    }
+    if (coupling_result.coupling_terms.size() > printed) {
+      occ::log::info("    ... and {} more coupling terms",
+                     coupling_result.coupling_terms.size() - printed);
+    }
+  }
+
   // Write output files
   for (size_t i = 0; i < unique_molecules.size(); i++) {
     std::string filename =
@@ -539,7 +814,9 @@ CLI::App *add_embed_subcommand(CLI::App &app) {
   embed->add_option("--wolf-alpha", config->wolf_alpha,
                     "Wolf sum damping parameter");
   embed->add_option("--wolf-cutoff", config->wolf_cutoff,
-                    "Wolf sum cutoff radius");
+                    "Wolf sum cutoff radius (Angstroms)");
+  embed->add_option("--pair-radius", config->pair_energy_radius,
+                    "Radius for computing CE pair energies (Angstroms)");
   embed->add_option("--max-cycles", config->max_embed_cycles,
                     "maximum embedding cycles");
   embed->add_option("--output-prefix", config->output_prefix,

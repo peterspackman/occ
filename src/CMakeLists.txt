@@ -103,8 +103,9 @@ target_link_libraries(occjs PUBLIC
 )
 
 # Emscripten-specific linker flags for JavaScript bindings
+# Note: static_partitioner in XDM code avoids Firefox WASM threading issues
 set_target_properties(occjs PROPERTIES
-    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=5MB -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread -sPTHREAD_POOL_SIZE=8 --bind --preload-file ${CMAKE_SOURCE_DIR}/share@/"
+    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=8MB -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread --bind --preload-file ${CMAKE_SOURCE_DIR}/share@/"
 )
 
 # Set output file extension
@@ -114,15 +115,15 @@ set_target_properties(occjs PROPERTIES SUFFIX ".js")
 add_executable(occ.wasm "${CMAKE_CURRENT_SOURCE_DIR}/main/occ.cpp")
 
 target_compile_features(occ.wasm PUBLIC cxx_std_20)
-target_compile_options(occ.wasm PRIVATE -fexceptions -pthread)
+target_compile_options(occ.wasm PRIVATE -O3 -DNDEBUG -fexceptions -pthread)
 
 target_link_libraries(occ.wasm PUBLIC
     occ_main
 )
 
-# Emscripten-specific linker flags for CLI executable (standalone script with threading)
+# Emscripten-specific linker flags for CLI executable (matching occjs for performance)
 set_target_properties(occ.wasm PROPERTIES
-    LINK_FLAGS "-s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=5MB -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread -sPTHREAD_POOL_SIZE=8 -sPROXY_TO_PTHREAD -s EXIT_RUNTIME=1 --preload-file ${CMAKE_SOURCE_DIR}/share@/"
+    LINK_FLAGS "-O3 -DNDEBUG -flto -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=8MB -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread -s EXIT_RUNTIME=0 -s INVOKE_RUN=0 -s FORCE_FILESYSTEM=1 -s EXPORTED_RUNTIME_METHODS=['callMain','FS'] --preload-file ${CMAKE_SOURCE_DIR}/share@/ -s ASSERTIONS=0"
 )
 
 # Set output file extension (will generate occ.js and occ.wasm)

@@ -43,7 +43,12 @@ TerminalSize TerminalSize::get_current_size() {
 }
 
 ProgressTracker::ProgressTracker(int total) : m_total(total) {
+#ifdef __EMSCRIPTEN__
+  // WASM doesn't support terminal control codes, always use simple line output
+  m_is_tty = false;
+#else
   m_is_tty = stdout_is_tty();
+#endif
   m_tsize = TerminalSize::get_current_size();
   m_time_points.push_back(std::chrono::high_resolution_clock::now());
 }

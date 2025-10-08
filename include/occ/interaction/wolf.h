@@ -2,6 +2,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/interaction/energy_model_base.h>
 #include <occ/interaction/pair_energy.h>
+#include <vector>
 
 namespace occ::interaction {
 
@@ -13,6 +14,32 @@ struct WolfParameters {
 double wolf_coulomb_energy(double qi, const Vec3 &pi, Eigen::Ref<const Vec> qj,
                            Eigen::Ref<const Mat3N> pj,
                            const WolfParameters &params);
+
+double wolf_pair_energy(Eigen::Ref<const Vec> charges_a,
+                        Eigen::Ref<const Mat3N> positions_a,
+                        Eigen::Ref<const Vec> charges_b,
+                        Eigen::Ref<const Mat3N> positions_b,
+                        const WolfParameters &params);
+
+Mat3N wolf_electric_field(Eigen::Ref<const Vec> charges,
+                          Eigen::Ref<const Mat3N> source_positions,
+                          Eigen::Ref<const Mat3N> target_positions,
+                          const WolfParameters &params);
+
+struct WolfCouplingTerm {
+  size_t neighbor_a;
+  size_t neighbor_b;
+  double coupling_energy; // in Hartree
+};
+
+struct WolfCouplingResult {
+  std::vector<WolfCouplingTerm> coupling_terms;
+  double total_coupling;
+};
+
+WolfCouplingResult compute_wolf_coupling_terms(
+    const std::vector<Mat3N> &electric_fields_per_neighbor,
+    Eigen::Ref<const Vec> polarizabilities);
 
 class WolfSum {
 public:

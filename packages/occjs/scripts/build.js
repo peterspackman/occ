@@ -103,7 +103,7 @@ const distPackageJson = {
   types: 'index.d.ts',
   module: 'index.mjs',
   bin: {
-    occ: './occ.cjs'
+    occ: './occ.js'
   },
   exports: {
     '.': {
@@ -118,7 +118,7 @@ const distPackageJson = {
       default: './occjs.data'
     },
     './cli': {
-      default: './occ.cjs'
+      default: './occ.js'
     },
     './cli-wasm': {
       default: './occ.wasm'
@@ -141,11 +141,5 @@ fs.writeFileSync(
   JSON.stringify(distPackageJson, null, 2)
 );
 console.log('✓ Created dist/package.json');
-
-// Rename occ.js to occ.cjs (CommonJS executable)
-if (fs.existsSync(path.join(DIST_DIR, 'occ.js'))) {
-  fs.renameSync(path.join(DIST_DIR, 'occ.js'), path.join(DIST_DIR, 'occ.cjs'));
-  console.log('✓ Renamed occ.js to occ.cjs');
-}
 
 console.log('\n✅ Build complete!');

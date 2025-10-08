@@ -40,6 +40,8 @@ public:
 
 private:
   void populate_moments(const occ::qm::MolecularOrbitals &mo);
+  template <occ::qm::SpinorbitalKind spinorbital_kind>
+  void populate_moments_impl(const occ::qm::MolecularOrbitals &mo);
   void populate_polarizabilities();
 
   occ::qm::AOBasis m_basis;

@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCC Terminal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1a1b26;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #24283b;
+            border-right: 1px solid #414868;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #414868;
+            color: #c0caf5;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .refresh-btn {
+            background: #414868;
+            border: none;
+            color: #c0caf5;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .refresh-btn:hover {
+            background: #565f89;
+        }
+
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+
+        .file-item, .dir-item {
+            padding: 0.4rem 1rem;
+            color: #a9b1d6;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.85rem;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            transition: background 0.15s;
+            user-select: none;
+        }
+
+        .file-item:hover, .dir-item:hover {
+            background: #414868;
+            color: #c0caf5;
+        }
+
+        .dir-item {
+            font-weight: 500;
+        }
+
+        .dir-arrow {
+            font-size: 0.6rem;
+            width: 12px;
+            transition: transform 0.15s;
+            flex-shrink: 0;
+        }
+
+        .dir-arrow.expanded {
+            transform: rotate(90deg);
+        }
+
+        .dir-children {
+            display: none;
+        }
+
+        .dir-children.expanded {
+            display: block;
+        }
+
+        .file-item.nested {
+            padding-left: 2.5rem;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .terminal-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        #terminal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 1rem;
+        }
+
+        .drop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(122, 162, 247, 0.1);
+            border: 3px dashed #7aa2f7;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #7aa2f7;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .drop-overlay.active {
+            display: flex;
+        }
+
+        .status-bar {
+            background: #24283b;
+            border-top: 1px solid #414868;
+            padding: 0.5rem 1rem;
+            color: #565f89;
+            font-size: 0.8rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .status-ready {
+            color: #9ece6a;
+        }
+
+        .status-error {
+            color: #f7768e;
+        }
+
+        /* Scrollbar styling */
+        .file-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .file-list::-webkit-scrollbar-track {
+            background: #1a1b26;
+        }
+
+        .file-list::-webkit-scrollbar-thumb {
+            background: #414868;
+            border-radius: 4px;
+        }
+
+        .file-list::-webkit-scrollbar-thumb:hover {
+            background: #565f89;
+        }
+
+        .empty-state {
+            padding: 2rem 1rem;
+            text-align: center;
+            color: #565f89;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            Files
+            <button class="refresh-btn" id="refreshBtn">↻</button>
+        </div>
+        <div class="file-list" id="fileList">
+            <div class="empty-state">Loading...</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="terminal-wrapper">
+            <div id="terminal"></div>
+            <div class="drop-overlay" id="dropOverlay">
+                📁 Drop files here to upload
+            </div>
+        </div>
+        <div class="status-bar">
+            <div class="status-item" id="statusIndicator">
+                <span>●</span>
+                <span id="statusText">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let currentFile = null;
+        let moduleLoaded = false;
+        let currentLine = '';
+        let isRunningCommand = false;
+        let cwd = '/';
+        let commandHistory = [];
+        let historyIndex = -1;
+        let worker = null;
+        let workerReady = false;
+
+        // Initialize persistent worker
+        function initWorker() {
+            worker = new Worker('occ-worker.js');
+
+            worker.onmessage = (e) => {
+                handleWorkerMessage(e.data);
+            };
+
+            worker.onerror = (error) => {
+                term.writeln(`\x1b[91mWorker error: ${error.message}\x1b[0m\r\n`);
+            };
+        }
+
+        // Initialize xterm.js terminal with Tokyo Night theme
+        const term = new Terminal({
+            theme: {
+                background: '#1a1b26',
+                foreground: '#a9b1d6',
+                cursor: '#c0caf5',
+                cursorAccent: '#1a1b26',
+                selection: '#283457',
+                black: '#32344a',
+                red: '#f7768e',
+                green: '#9ece6a',
+                yellow: '#e0af68',
+                blue: '#7aa2f7',
+                magenta: '#ad8ee6',
+                cyan: '#449dab',
+                white: '#787c99',
+                brightBlack: '#444b6a',
+                brightRed: '#ff7a93',
+                brightGreen: '#b9f27c',
+                brightYellow: '#ff9e64',
+                brightBlue: '#7da6ff',
+                brightMagenta: '#bb9af7',
+                brightCyan: '#0db9d7',
+                brightWhite: '#acb0d0'
+            },
+            fontFamily: '"Cascadia Code", Menlo, Monaco, "Courier New", monospace',
+            fontSize: 13,
+            cursorBlink: true,
+            scrollback: 10000
+        });
+        term.open(document.getElementById('terminal'));
+        term.writeln('\x1b[1;34mOCC WebAssembly Terminal\x1b[0m');
+        term.writeln('Type "help" for commands. Use Up/Down arrows for history');
+        term.writeln('Drag & drop files to upload\r\n');
+
+        // Handle messages from persistent worker
+        function handleWorkerMessage(msg) {
+            switch (msg.type) {
+                case 'ready':
+                    workerReady = true;
+                    setStatus('Ready', true);
+                    term.writeln('\x1b[32mReady\x1b[0m');
+                    writePrompt();
+                    refreshFileList();
+                    break;
+                case 'error':
+                    term.writeln(`\x1b[91m${msg.text}\x1b[0m`);
+                    break;
+                case 'ls':
+                    msg.files.forEach(f => term.writeln(f));
+                    term.writeln('');
+                    isRunningCommand = false;
+                    writePrompt();
+                    break;
+                case 'cat':
+                    msg.content.split('\n').forEach(line => term.writeln(line));
+                    term.writeln('');
+                    isRunningCommand = false;
+                    writePrompt();
+                    break;
+                case 'pwd':
+                    cwd = msg.path;
+                    term.writeln(cwd + '\r\n');
+                    isRunningCommand = false;
+                    writePrompt();
+                    break;
+                case 'cd':
+                    cwd = msg.path;
+                    isRunningCommand = false;
+                    writePrompt();
+                    break;
+                case 'mkdir':
+                    isRunningCommand = false;
+                    writePrompt();
+                    refreshFileList();
+                    break;
+                case 'writeFile':
+                case 'syncFiles':
+                    refreshFileList();
+                    break;
+                case 'getFiles':
+                    // Handled by specific promises, don't write to terminal
+                    break;
+            }
+        }
+
+        // Terminal input handling
+        function writePrompt() {
+            term.write(`\r\n\x1b[36m${cwd}\x1b[0m \x1b[32m$\x1b[0m `);
+        }
+
+        term.onData(data => {
+            if (isRunningCommand) return;
+
+            // Handle arrow keys for history
+            if (data === '\x1b[A') { // Arrow Up
+                if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+                    term.write('\r\x1b[K');
+                    writePrompt();
+                    historyIndex++;
+                    currentLine = commandHistory[commandHistory.length - 1 - historyIndex];
+                    term.write(currentLine);
+                }
+                return;
+            }
+
+            if (data === '\x1b[B') { // Arrow Down
+                if (historyIndex > 0) {
+                    term.write('\r\x1b[K');
+                    writePrompt();
+                    historyIndex--;
+                    currentLine = commandHistory[commandHistory.length - 1 - historyIndex];
+                    term.write(currentLine);
+                } else if (historyIndex === 0) {
+                    term.write('\r\x1b[K');
+                    writePrompt();
+                    historyIndex = -1;
+                    currentLine = '';
+                }
+                return;
+            }
+
+            // Handle Enter
+            if (data === '\r') {
+                term.write('\r\n');
+                if (currentLine.trim()) {
+                    commandHistory.push(currentLine.trim());
+                    historyIndex = -1;
+                    handleCommand(currentLine.trim());
+                    currentLine = '';
+                } else {
+                    writePrompt();
+                }
+                return;
+            }
+
+            // Handle Backspace
+            if (data === '\x7f') {
+                if (currentLine.length > 0) {
+                    currentLine = currentLine.slice(0, -1);
+                    term.write('\b \b');
+                }
+                return;
+            }
+
+            // Handle Ctrl+C
+            if (data === '\x03') {
+                term.write('^C\r\n');
+                currentLine = '';
+                isRunningCommand = false;
+                writePrompt();
+                return;
+            }
+
+            // Regular character input
+            if (data >= String.fromCharCode(0x20) && data <= String.fromCharCode(0x7e)) {
+                currentLine += data;
+                term.write(data);
+            }
+        });
+
+        // Fit terminal to container
+        function fitTerminal() {
+            const container = document.getElementById('terminal');
+            const dims = {
+                cols: Math.floor(container.clientWidth / 9),
+                rows: Math.floor(container.clientHeight / 17)
+            };
+            term.resize(dims.cols, dims.rows);
+        }
+
+        window.addEventListener('resize', fitTerminal);
+        setTimeout(fitTerminal, 100);
+
+        // Handle terminal commands
+        async function handleCommand(cmdLine) {
+            if (!workerReady) {
+                term.writeln('\x1b[91mModule not ready yet, please wait...\x1b[0m\r\n');
+                return;
+            }
+
+            isRunningCommand = true;
+
+            const parts = cmdLine.trim().split(/\s+/);
+            const cmd = parts[0];
+            const args = parts.slice(1);
+
+            try {
+                switch (cmd) {
+                    case 'clear':
+                        term.clear();
+                        isRunningCommand = false;
+                        writePrompt();
+                        break;
+
+                    case 'pwd':
+                        worker.postMessage({ type: 'pwd' });
+                        break;
+
+                    case 'cd':
+                        let targetPath;
+                        if (args.length === 0) {
+                            targetPath = '/';
+                        } else if (args[0] === '..') {
+                            if (cwd !== '/') {
+                                targetPath = cwd.substring(0, cwd.lastIndexOf('/')) || '/';
+                            } else {
+                                targetPath = '/';
+                            }
+                        } else if (args[0].startsWith('/')) {
+                            targetPath = args[0];
+                        } else {
+                            targetPath = cwd === '/' ? '/' + args[0] : cwd + '/' + args[0];
+                        }
+                        worker.postMessage({ type: 'cd', data: { path: targetPath } });
+                        break;
+
+                    case 'ls':
+                        const targetDir = args.length > 0 ? args[0] : cwd;
+                        worker.postMessage({ type: 'ls', data: { path: targetDir } });
+                        break;
+
+                    case 'mkdir':
+                        if (args.length === 0) {
+                            term.writeln('mkdir: missing operand\r\n');
+                            isRunningCommand = false;
+                            writePrompt();
+                        } else {
+                            const mkdirPath = args[0].startsWith('/') ? args[0] :
+                                (cwd === '/' ? '/' + args[0] : cwd + '/' + args[0]);
+                            worker.postMessage({ type: 'mkdir', data: { path: mkdirPath } });
+                        }
+                        break;
+
+                    case 'cat':
+                        if (args.length === 0) {
+                            term.writeln('cat: missing operand\r\n');
+                            isRunningCommand = false;
+                            writePrompt();
+                        } else {
+                            const catPath = args[0].startsWith('/') ? args[0] :
+                                (cwd === '/' ? '/' + args[0] : cwd + '/' + args[0]);
+                            worker.postMessage({ type: 'cat', data: { path: catPath } });
+                        }
+                        break;
+
+                    case 'help':
+                        term.writeln('Available commands:');
+                        term.writeln('  occ <args>  - Run OCC with arguments');
+                        term.writeln('  ls [dir]    - List directory contents');
+                        term.writeln('  cd <dir>    - Change directory');
+                        term.writeln('  pwd         - Print working directory');
+                        term.writeln('  cat <file>  - Display file contents');
+                        term.writeln('  mkdir <dir> - Create directory');
+                        term.writeln('  clear       - Clear the terminal');
+                        term.writeln('  help        - Show this help\r\n');
+                        isRunningCommand = false;
+                        writePrompt();
+                        break;
+
+                    case 'occ':
+                        await runOccCommand(args);
+                        return;
+
+                    default:
+                        term.writeln(`\x1b[91mCommand not found: ${cmd}\x1b[0m`);
+                        term.writeln('Type "help" for available commands\r\n');
+                        isRunningCommand = false;
+                        writePrompt();
+                }
+            } catch (e) {
+                term.writeln(`\x1b[91mError: ${e.message}\x1b[0m\r\n`);
+                isRunningCommand = false;
+                writePrompt();
+            }
+        }
+
+        // Run OCC command in temporary worker (fresh state each time)
+        async function runOccCommand(args) {
+            return new Promise((resolve, reject) => {
+                setStatus('Running...', false);
+
+                // Get current filesystem state from persistent worker
+                const getFilesPromise = new Promise((resolveFiles) => {
+                    const handler = (e) => {
+                        if (e.data.type === 'getFiles') {
+                            worker.removeEventListener('message', handler);
+                            resolveFiles(e.data.files);
+                        }
+                    };
+                    worker.addEventListener('message', handler);
+                    worker.postMessage({ type: 'getFiles', data: { path: '/' } });
+                });
+
+                getFilesPromise.then((files) => {
+                    const occWorker = new Worker('occ-run-worker.js');
+
+                    occWorker.onmessage = (e) => {
+                        const { type, text, code, files: outputFiles } = e.data;
+
+                        switch (type) {
+                            case 'output':
+                                term.writeln(text);
+                                break;
+                            case 'error':
+                                term.writeln(`\x1b[91m${text}\x1b[0m`);
+                                break;
+                            case 'ready':
+                                break;
+                            case 'exit':
+                                worker.postMessage({
+                                    type: 'syncFiles',
+                                    data: { files: outputFiles }
+                                });
+
+                                setStatus(code === 0 ? 'Ready' : 'Error', code === 0);
+                                occWorker.terminate();
+                                isRunningCommand = false;
+                                writePrompt();
+                                resolve(code);
+                                break;
+                        }
+                    };
+
+                    occWorker.onerror = (error) => {
+                        term.writeln(`\x1b[91mWorker error: ${error.message}\x1b[0m`);
+                        setStatus('Error', false);
+                        occWorker.terminate();
+                        isRunningCommand = false;
+                        writePrompt();
+                        reject(error);
+                    };
+
+                    occWorker.postMessage({
+                        command: args.join(' '),
+                        cwd: cwd,
+                        files: files
+                    });
+                });
+            });
+        }
+
+        // Status bar
+        function setStatus(text, isReady) {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = text;
+            indicator.className = 'status-item ' + (isReady ? 'status-ready' : (text === 'Error' ? 'status-error' : ''));
+        }
+
+        // File list management
+        function refreshFileList() {
+            const handler = (e) => {
+                if (e.data.type === 'getFiles') {
+                    worker.removeEventListener('message', handler);
+                    updateFileList(e.data.files);
+                }
+            };
+            worker.addEventListener('message', handler);
+            worker.postMessage({ type: 'getFiles', data: { path: '/' } });
+        }
+
+        // Track expanded directories
+        const expandedDirs = new Set(['/']);
+
+        function updateFileList(files) {
+            const fileList = document.getElementById('fileList');
+            const paths = Object.keys(files).sort();
+
+            if (paths.length === 0) {
+                fileList.innerHTML = '<div class="empty-state">No files</div>';
+                return;
+            }
+
+            // Build tree structure
+            const tree = {};
+            paths.forEach(path => {
+                const parts = path.split('/').filter(p => p);
+                let current = tree;
+
+                parts.forEach((part, idx) => {
+                    if (idx === parts.length - 1) {
+                        // This is a file
+                        if (!current._files) current._files = [];
+                        current._files.push({ name: part, path: path });
+                    } else {
+                        // This is a directory
+                        if (!current[part]) current[part] = {};
+                        current = current[part];
+                    }
+                });
+            });
+
+            // Render tree
+            function renderTree(node, level = 0, parentPath = '') {
+                let html = '';
+
+                // Render directories
+                for (const [name, children] of Object.entries(node)) {
+                    if (name === '_files') continue;
+
+                    const dirPath = parentPath + '/' + name;
+                    const isExpanded = expandedDirs.has(dirPath);
+                    const indent = level * 1.5;
+
+                    html += `
+                        <div class="dir-item" data-dir="${dirPath}" style="padding-left: ${indent + 1}rem">
+                            <span class="dir-arrow ${isExpanded ? 'expanded' : ''}">▶</span>
+                            <span>${name}/</span>
+                        </div>
+                        <div class="dir-children ${isExpanded ? 'expanded' : ''}" data-parent="${dirPath}">
+                            ${renderTree(children, level + 1, dirPath)}
+                        </div>
+                    `;
+                }
+
+                // Render files in this directory
+                if (node._files) {
+                    node._files.forEach(file => {
+                        const indent = level * 1.5;
+                        html += `
+                            <div class="file-item" data-path="${file.path}" style="padding-left: ${indent + 1.2}rem">
+                                <span>${file.name}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                return html;
+            }
+
+            fileList.innerHTML = renderTree(tree);
+
+            // Add click handlers for directories
+            fileList.querySelectorAll('.dir-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const dirPath = item.dataset.dir;
+                    const arrow = item.querySelector('.dir-arrow');
+                    const children = fileList.querySelector(`.dir-children[data-parent="${dirPath}"]`);
+
+                    if (expandedDirs.has(dirPath)) {
+                        expandedDirs.delete(dirPath);
+                        arrow.classList.remove('expanded');
+                        children.classList.remove('expanded');
+                    } else {
+                        expandedDirs.add(dirPath);
+                        arrow.classList.add('expanded');
+                        children.classList.add('expanded');
+                    }
+                });
+            });
+
+            // Add click handlers for files (download)
+            fileList.querySelectorAll('.file-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const path = item.dataset.path;
+                    downloadFile(path, files[path]);
+                });
+            });
+        }
+
+        function downloadFile(path, content) {
+            const blob = new Blob([content], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = path.split('/').pop();
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            term.writeln(`\x1b[32mDownloaded: ${path}\x1b[0m\r\n`);
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', refreshFileList);
+
+        // Drag and drop file upload
+        const mainContent = document.querySelector('.main-content');
+        const dropOverlay = document.getElementById('dropOverlay');
+
+        mainContent.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropOverlay.classList.add('active');
+        });
+
+        mainContent.addEventListener('dragleave', (e) => {
+            if (e.target === mainContent) {
+                dropOverlay.classList.remove('active');
+            }
+        });
+
+        mainContent.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropOverlay.classList.remove('active');
+
+            const files = Array.from(e.dataTransfer.files);
+            for (const file of files) {
+                const content = await file.arrayBuffer();
+                const uint8Array = new Uint8Array(content);
+
+                worker.postMessage({
+                    type: 'writeFile',
+                    data: {
+                        path: cwd === '/' ? '/' + file.name : cwd + '/' + file.name,
+                        content: uint8Array
+                    }
+                });
+
+                term.writeln(`\x1b[32mUploaded: ${file.name}\x1b[0m\r\n`);
+            }
+
+            setTimeout(refreshFileList, 100);
+        });
+
+        // Initialize worker
+        initWorker();
+        setStatus('Loading...', false);
+    </script>
+</body>
+</html>
