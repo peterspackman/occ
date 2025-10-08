@@ -21,7 +21,9 @@
   },
   "ignorePatterns": [
     "src/occjs.js",
-    "dist/occjs.js"
+    "dist/occjs.js",
+    "src/occ.js",
+    "dist/occ.js"
   ],
   "overrides": [
     {
