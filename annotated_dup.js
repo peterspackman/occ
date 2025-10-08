@@ -198,6 +198,8 @@ var annotated_dup =
       [ "interaction", "namespaceocc_1_1interaction.html", [
         [ "polarization_partitioning", "namespaceocc_1_1interaction_1_1polarization__partitioning.html", [
           [ "AtomContribution", "structocc_1_1interaction_1_1polarization__partitioning_1_1AtomContribution.html", "structocc_1_1interaction_1_1polarization__partitioning_1_1AtomContribution" ],
+          [ "CouplingTerm", "structocc_1_1interaction_1_1polarization__partitioning_1_1CouplingTerm.html", "structocc_1_1interaction_1_1polarization__partitioning_1_1CouplingTerm" ],
+          [ "MoleculeCouplingResults", "structocc_1_1interaction_1_1polarization__partitioning_1_1MoleculeCouplingResults.html", "structocc_1_1interaction_1_1polarization__partitioning_1_1MoleculeCouplingResults" ],
           [ "PairContribution", "structocc_1_1interaction_1_1polarization__partitioning_1_1PairContribution.html", "structocc_1_1interaction_1_1polarization__partitioning_1_1PairContribution" ]
         ] ],
         [ "transform", "namespaceocc_1_1interaction_1_1transform.html", [
@@ -221,6 +223,8 @@ var annotated_dup =
         [ "PairEnergy", "structocc_1_1interaction_1_1PairEnergy.html", "structocc_1_1interaction_1_1PairEnergy" ],
         [ "PairEnergyStore", "classocc_1_1interaction_1_1PairEnergyStore.html", "classocc_1_1interaction_1_1PairEnergyStore" ],
         [ "PairEnergyStoreBase", "classocc_1_1interaction_1_1PairEnergyStoreBase.html", "classocc_1_1interaction_1_1PairEnergyStoreBase" ],
+        [ "WolfCouplingResult", "structocc_1_1interaction_1_1WolfCouplingResult.html", "structocc_1_1interaction_1_1WolfCouplingResult" ],
+        [ "WolfCouplingTerm", "structocc_1_1interaction_1_1WolfCouplingTerm.html", "structocc_1_1interaction_1_1WolfCouplingTerm" ],
         [ "WolfParameters", "structocc_1_1interaction_1_1WolfParameters.html", "structocc_1_1interaction_1_1WolfParameters" ],
         [ "WolfSum", "classocc_1_1interaction_1_1WolfSum.html", "classocc_1_1interaction_1_1WolfSum" ],
         [ "XTBEnergyModel", "classocc_1_1interaction_1_1XTBEnergyModel.html", "classocc_1_1interaction_1_1XTBEnergyModel" ]

@@ -12,6 +12,7 @@ var structocc_1_1main_1_1EmbedConfig =
     [ "multiplicities", "structocc_1_1main_1_1EmbedConfig.html#a70cd6cda821740abb6e2f87bf790e7c6", null ],
     [ "net_charges", "structocc_1_1main_1_1EmbedConfig.html#ae22c619d839b9d20596b6b7cc94810fe", null ],
     [ "output_prefix", "structocc_1_1main_1_1EmbedConfig.html#a05a1063415e8026fda83f287b010e401", null ],
+    [ "pair_energy_radius", "structocc_1_1main_1_1EmbedConfig.html#af6dc89ad2df6c85dbceb0f140f0cd852", null ],
     [ "use_wolf_sum", "structocc_1_1main_1_1EmbedConfig.html#acd55ea13ed1a701cd2381a5090451e1f", null ],
     [ "wolf_alpha", "structocc_1_1main_1_1EmbedConfig.html#a601873c8ad18a96436b7ada6517c93e4", null ],
     [ "wolf_cutoff", "structocc_1_1main_1_1EmbedConfig.html#a4de89cea8eca2012fcde7f12d50ddb2b", null ]

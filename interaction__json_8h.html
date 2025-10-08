@@ -107,11 +107,12 @@ $(document).ready(function(){initNavTree('interaction__json_8h.html',''); initRe
 <div class="textblock"><code>#include &lt;nlohmann/json.hpp&gt;</code><br />
 <code>#include &lt;<a class="el" href="pairinteraction_8h.html">occ/interaction/pairinteraction.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="lattice__energy_8h.html">occ/interaction/lattice_energy.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="polarization__partitioning_8h.html">occ/interaction/polarization_partitioning.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="crystal_8h.html">occ/crystal/crystal.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for interaction_json.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="interaction__json_8h__incl.svg" width="3423" height="946"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="interaction__json_8h__incl.svg" width="3510" height="960"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
@@ -138,6 +139,14 @@ Functions</h2></td></tr>
 <tr class="separator:a208d2eacf7ce54ef9229c9bb070df86a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3711d6671357216305554442fceb3d49" id="r_a3711d6671357216305554442fceb3d49"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a3711d6671357216305554442fceb3d49">occ::interaction::from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1interaction_1_1CEEnergyComponents.html">CEEnergyComponents</a> &amp;)</td></tr>
 <tr class="separator:a3711d6671357216305554442fceb3d49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60f0d0b821772fa81d85afb86279827b" id="r_a60f0d0b821772fa81d85afb86279827b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a60f0d0b821772fa81d85afb86279827b">occ::interaction::to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1CouplingTerm.html">polarization_partitioning::CouplingTerm</a> &amp;)</td></tr>
+<tr class="separator:a60f0d0b821772fa81d85afb86279827b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a469d7ab4198fb824c2e39d74da915b38" id="r_a469d7ab4198fb824c2e39d74da915b38"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a469d7ab4198fb824c2e39d74da915b38">occ::interaction::from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1CouplingTerm.html">polarization_partitioning::CouplingTerm</a> &amp;)</td></tr>
+<tr class="separator:a469d7ab4198fb824c2e39d74da915b38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a708cb3448891e50c9ed1bfca3492e687" id="r_a708cb3448891e50c9ed1bfca3492e687"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a708cb3448891e50c9ed1bfca3492e687">occ::interaction::to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1MoleculeCouplingResults.html">polarization_partitioning::MoleculeCouplingResults</a> &amp;)</td></tr>
+<tr class="separator:a708cb3448891e50c9ed1bfca3492e687"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89e299999ac5591e227df790e0ef963f" id="r_a89e299999ac5591e227df790e0ef963f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a89e299999ac5591e227df790e0ef963f">occ::interaction::from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1MoleculeCouplingResults.html">polarization_partitioning::MoleculeCouplingResults</a> &amp;)</td></tr>
+<tr class="separator:a89e299999ac5591e227df790e0ef963f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04576ff1e3817530986bef606ffcc6cc" id="r_a04576ff1e3817530986bef606ffcc6cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a04576ff1e3817530986bef606ffcc6cc">occ::interaction::write_elat_json</a> (const std::string &amp;filename, const <a class="el" href="structocc_1_1interaction_1_1ElatResults.html">ElatResults</a> &amp;results)</td></tr>
 <tr class="memdesc:a04576ff1e3817530986bef606ffcc6cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write elat JSON results in compact format.  <br /></td></tr>
 <tr class="separator:a04576ff1e3817530986bef606ffcc6cc"><td class="memSeparator" colspan="2">&#160;</td></tr>

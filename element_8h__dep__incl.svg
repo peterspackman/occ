@@ -869,7 +869,7 @@
 <g id="Node000061" class="node">
 <title>Node61</title>
 <g id="a_Node000061"><a xlink:href="polarization__partitioning_8h.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="2696.5,-272 2547.5,-272 2547.5,-231 2696.5,-231 2696.5,-272"/>
+<polygon fill="#fff0f0" stroke="red" points="2696.5,-272 2547.5,-272 2547.5,-231 2696.5,-231 2696.5,-272"/>
 <text text-anchor="start" x="2555.5" y="-260" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
 <text text-anchor="start" x="2555.5" y="-249" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/interaction</text>
 <text text-anchor="middle" x="2622" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00">/polarization_partitioning.h</text>

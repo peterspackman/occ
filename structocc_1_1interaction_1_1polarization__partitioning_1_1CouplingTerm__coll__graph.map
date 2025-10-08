@@ -1,0 +1,5 @@
+<map id="occ::interaction::polarization_partitioning::CouplingTerm" name="occ::interaction::polarization_partitioning::CouplingTerm">
+<area shape="rect" id="Node000001" title="Represents a pairwise coupling term between two neighbor interactions." alt="" coords="5,108,212,148"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="79,5,139,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,45,111,108,106,108,106,45"/>
+</map>

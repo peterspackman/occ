@@ -110,6 +110,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1AtomContribution.html">AtomContribution</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the contribution of a single atom to polarization energy attribution.  <a href="structocc_1_1interaction_1_1polarization__partitioning_1_1AtomContribution.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1CouplingTerm.html">CouplingTerm</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a pairwise coupling term between two neighbor interactions.  <a href="structocc_1_1interaction_1_1polarization__partitioning_1_1CouplingTerm.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1MoleculeCouplingResults.html">MoleculeCouplingResults</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Results from coupling term calculation for a central molecule.  <a href="structocc_1_1interaction_1_1polarization__partitioning_1_1MoleculeCouplingResults.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1PairContribution.html">PairContribution</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the partitioned polarization energy contribution from a dimer pair.  <a href="structocc_1_1interaction_1_1polarization__partitioning_1_1PairContribution.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -127,6 +133,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ae8111f1f440b07eaa913cf02be2e255d" id="r_ae8111f1f440b07eaa913cf02be2e255d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1PairContribution.html">PairContribution</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction_1_1polarization__partitioning.html#ae8111f1f440b07eaa913cf02be2e255d">partition_all_pairs</a> (const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Dimer.html">core::Dimer</a> &gt; &amp;dimers, const <a class="el" href="namespaceocc_1_1interaction_1_1polarization__partitioning.html#a40d108dd6785cdfffdbe01e42abee11c">FieldMap</a> &amp;total_fields, const <a class="el" href="namespaceocc_1_1interaction_1_1polarization__partitioning.html#a40d108dd6785cdfffdbe01e42abee11c">FieldMap</a> &amp;pair_fields, const std::vector&lt; <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &gt; &amp;polarizabilities)</td></tr>
 <tr class="memdesc:ae8111f1f440b07eaa913cf02be2e255d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Partition multiple dimer pairs simultaneously.  <br /></td></tr>
 <tr class="separator:ae8111f1f440b07eaa913cf02be2e255d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98105a2d884b67ec7ec2e91bb2eb8b6b" id="r_a98105a2d884b67ec7ec2e91bb2eb8b6b"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1CouplingTerm.html">CouplingTerm</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction_1_1polarization__partitioning.html#a98105a2d884b67ec7ec2e91bb2eb8b6b">compute_coupling_terms</a> (const std::vector&lt; <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; &amp;neighbor_fields, const std::vector&lt; size_t &gt; &amp;neighbor_indices, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;polarizabilities)</td></tr>
+<tr class="memdesc:a98105a2d884b67ec7ec2e91bb2eb8b6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute coupling terms between all pairs of neighbors for a molecule.  <br /></td></tr>
+<tr class="separator:a98105a2d884b67ec7ec2e91bb2eb8b6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a40d108dd6785cdfffdbe01e42abee11c" name="a40d108dd6785cdfffdbe01e42abee11c"></a>
@@ -144,6 +153,53 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a98105a2d884b67ec7ec2e91bb2eb8b6b" name="a98105a2d884b67ec7ec2e91bb2eb8b6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98105a2d884b67ec7ec2e91bb2eb8b6b">&#9670;&#160;</a></span>compute_coupling_terms()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structocc_1_1interaction_1_1polarization__partitioning_1_1CouplingTerm.html">CouplingTerm</a> &gt; occ::interaction::polarization_partitioning::compute_coupling_terms </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>neighbor_fields</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; size_t &gt; &amp;&#160;</td>
+          <td class="paramname"><em>neighbor_indices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
+          <td class="paramname"><em>polarizabilities</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Compute coupling terms between all pairs of neighbors for a molecule. </p>
+<p>For each pair of neighbors (B,C) of a central molecule, computes: C_BC = -Σ_i α_i (F_B,i · F_C,i)</p>
+<p>where i runs over atoms in the central molecule, F_B,i is the field at atom i from neighbor B, and α_i is the atomic polarizability.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">neighbor_fields</td><td>Vector of field contributions from each neighbor (Mat3N) </td></tr>
+    <tr><td class="paramname">neighbor_indices</td><td>Vector of unique dimer indices for each neighbor </td></tr>
+    <tr><td class="paramname">polarizabilities</td><td>Atomic polarizabilities for the central molecule </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Vector of coupling terms for all neighbor pairs </dd></dl>
+
+</div>
+</div>
 <a id="ae8111f1f440b07eaa913cf02be2e255d" name="ae8111f1f440b07eaa913cf02be2e255d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae8111f1f440b07eaa913cf02be2e255d">&#9670;&#160;</a></span>partition_all_pairs()</h2>
 

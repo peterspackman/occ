@@ -107,10 +107,11 @@ $(document).ready(function(){initNavTree('wolf_8h.html',''); initResizable(); })
 <div class="textblock"><code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="energy__model__base_8h.html">occ/interaction/energy_model_base.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="pair__energy_8h.html">occ/interaction/pair_energy.h</a>&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for wolf.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="wolf_8h__incl.svg" width="3647" height="858"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="wolf_8h__incl.svg" width="3795" height="858"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
@@ -121,6 +122,10 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1WolfParameters.html">occ::interaction::WolfParameters</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1WolfCouplingTerm.html">occ::interaction::WolfCouplingTerm</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1interaction_1_1WolfCouplingResult.html">occ::interaction::WolfCouplingResult</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1interaction_1_1WolfSum.html">occ::interaction::WolfSum</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -137,6 +142,12 @@ Namespaces</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:a991e221e369e867b273535a7fbd4d430" id="r_a991e221e369e867b273535a7fbd4d430"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a991e221e369e867b273535a7fbd4d430">occ::interaction::wolf_coulomb_energy</a> (double qi, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;pi, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &gt; qj, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; pj, const <a class="el" href="structocc_1_1interaction_1_1WolfParameters.html">WolfParameters</a> &amp;params)</td></tr>
 <tr class="separator:a991e221e369e867b273535a7fbd4d430"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af45947c95efc20c6afc07fb423ea798a" id="r_af45947c95efc20c6afc07fb423ea798a"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#af45947c95efc20c6afc07fb423ea798a">occ::interaction::wolf_pair_energy</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &gt; charges_a, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; positions_a, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &gt; charges_b, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; positions_b, const <a class="el" href="structocc_1_1interaction_1_1WolfParameters.html">WolfParameters</a> &amp;params)</td></tr>
+<tr class="separator:af45947c95efc20c6afc07fb423ea798a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d37dce95555221421d633cf722f9b56" id="r_a2d37dce95555221421d633cf722f9b56"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a2d37dce95555221421d633cf722f9b56">occ::interaction::wolf_electric_field</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &gt; charges, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; source_positions, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; target_positions, const <a class="el" href="structocc_1_1interaction_1_1WolfParameters.html">WolfParameters</a> &amp;params)</td></tr>
+<tr class="separator:a2d37dce95555221421d633cf722f9b56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4aca6030b82b5b5db8dc0b4b1d16fffc" id="r_a4aca6030b82b5b5db8dc0b4b1d16fffc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1WolfCouplingResult.html">WolfCouplingResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a4aca6030b82b5b5db8dc0b4b1d16fffc">occ::interaction::compute_wolf_coupling_terms</a> (const std::vector&lt; <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; &amp;electric_fields_per_neighbor, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &gt; polarizabilities)</td></tr>
+<tr class="separator:a4aca6030b82b5b5db8dc0b4b1d16fffc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

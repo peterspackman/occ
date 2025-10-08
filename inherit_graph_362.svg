@@ -11,9 +11,9 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="classquickhull_1_1ConvexHull.html" target="_top" xlink:title=" ">
+<g id="a_Node000000"><a xlink:href="structocc_1_1xdm_1_1XDM_1_1Parameters.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="152,-19 0,-19 0,0 152,0 152,-19"/>
-<text text-anchor="middle" x="76" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">quickhull::ConvexHull&lt; T &gt;</text>
+<text text-anchor="middle" x="76" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">occ::xdm::XDM::Parameters</text>
 </a>
 </g>
 </g>

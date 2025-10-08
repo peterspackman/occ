@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['d_0',['d',['../namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6af623e75af30e62bbd73d6df5b50bb7b5',1,'occ::core::D'],['../structocc_1_1qm_1_1MolecularOrbitals.html#adfd73ec3e0f6cd915c15839f03e88c73',1,'occ::qm::MolecularOrbitals::D'],['../structocc_1_1crystal_1_1HKL.html#a6a5d4c58ad5469a64a3ac169409fc25e',1,'occ::crystal::HKL::d()'],['../classocc_1_1crystal_1_1Surface.html#af627668d9f813c541939e093835842c5',1,'occ::crystal::Surface::d()']]],
+  ['d_0',['d',['../namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6af623e75af30e62bbd73d6df5b50bb7b5',1,'occ::core::D'],['../structocc_1_1crystal_1_1HKL.html#a6a5d4c58ad5469a64a3ac169409fc25e',1,'occ::crystal::HKL::d()'],['../classocc_1_1crystal_1_1Surface.html#af627668d9f813c541939e093835842c5',1,'occ::crystal::Surface::d()'],['../structocc_1_1qm_1_1MolecularOrbitals.html#adfd73ec3e0f6cd915c15839f03e88c73',1,'occ::qm::MolecularOrbitals::D']]],
   ['d0_1',['D0',['../structocc_1_1elastic__fit_1_1Morse.html#a3456355aa54d12d22f94d62fb7859278',1,'occ::elastic_fit::Morse']]],
   ['d2_2',['D2',['../namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5ac4d62b6dcca08e5caf06c01889282859',1,'occ::core']]],
   ['d2d_3',['D2d',['../namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5af92f643f3f349e6f5eefc4f10867a660',1,'occ::core']]],
@@ -72,7 +72,7 @@ var searchData=
   ['df_5fname_69',['df_name',['../structocc_1_1io_1_1BasisSetInput.html#a56e8d8ae52f0cea5480597c2ee381487',1,'occ::io::BasisSetInput']]],
   ['dfid_70',['dfid',['../namespaceocc_1_1dft.html#a85d3cc3d9e5f9f2d739ccb6568ff6f28',1,'occ::dft']]],
   ['dfid_5fto_5fstring_71',['dfid_to_string',['../namespaceocc_1_1dft.html#a70f0a7522541ba34eecfed52b8460f6e',1,'occ::dft']]],
-  ['dft_72',['dft',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aeed532ff5d7ed069627dfe50cb4b0db1',1,'occ::timing::dft'],['../namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5acca8fc743f62bb262491fb02b5c0fd73',1,'occ::driver::DFT'],['../classocc_1_1dft_1_1DFT.html#a43247d9dd3a694bcb09841f6880dc242',1,'occ::dft::DFT::DFT()'],['../structocc_1_1io_1_1GaussianInputFile.html#a51627d96aba86721b7969ea8e4905d4da921714953f7f8bfe27f5b9fb6edd4cb2',1,'occ::io::GaussianInputFile::DFT'],['../classocc_1_1dft_1_1DFT.html',1,'occ::dft::DFT']]],
+  ['dft_72',['dft',['../namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5acca8fc743f62bb262491fb02b5c0fd73',1,'occ::driver::DFT'],['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aeed532ff5d7ed069627dfe50cb4b0db1',1,'occ::timing::dft'],['../classocc_1_1dft_1_1DFT.html#a43247d9dd3a694bcb09841f6880dc242',1,'occ::dft::DFT::DFT()'],['../structocc_1_1io_1_1GaussianInputFile.html#a51627d96aba86721b7969ea8e4905d4da921714953f7f8bfe27f5b9fb6edd4cb2',1,'occ::io::GaussianInputFile::DFT'],['../classocc_1_1dft_1_1DFT.html',1,'occ::dft::DFT']]],
   ['dft_2eh_73',['dft.h',['../dft_8h.html',1,'']]],
   ['dft_5ffock_5fgradient_74',['dft_fock_gradient',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a79dd5fb88f946bb1a17105367e9288f8',1,'occ::timing']]],
   ['dft_5fgradient_75',['dft_gradient',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aa59a07e7c0ca3a85bd0bf11d136b55b2',1,'occ::timing']]],
@@ -92,7 +92,7 @@ var searchData=
   ['dihedral_5fgroup_89',['dihedral_group',['../namespaceocc_1_1core.html#ab561d38b11fc9c420c92a46a8dfea6ce',1,'occ::core']]],
   ['dihedralcoordinate_90',['dihedralcoordinate',['../classocc_1_1opt_1_1DihedralCoordinate.html',1,'occ::opt::DihedralCoordinate'],['../classocc_1_1opt_1_1DihedralCoordinate.html#a9ca8b47a67311a003d857a28d085010d',1,'occ::opt::DihedralCoordinate::DihedralCoordinate()']]],
   ['dihedrals_91',['dihedrals',['../classocc_1_1opt_1_1InternalCoordinates.html#a2e6cd6d34e9a1b85f1d0f0128a0dc2b2',1,'occ::opt::InternalCoordinates']]],
-  ['diis_92',['diis',['../structocc_1_1qm_1_1SCF.html#aed803702b5c000474ad39e8024e45703',1,'occ::qm::SCF::diis'],['../classocc_1_1core_1_1diis_1_1DIIS.html#a6d287fa8c5c8701af4f6c67ab5dab6e5',1,'occ::core::diis::DIIS::DIIS()'],['../classocc_1_1core_1_1diis_1_1DIIS.html',1,'occ::core::diis::DIIS'],['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16af6400cca291c26dddf346d5c46a8c8c8',1,'occ::timing::diis']]],
+  ['diis_92',['diis',['../classocc_1_1core_1_1diis_1_1DIIS.html#a6d287fa8c5c8701af4f6c67ab5dab6e5',1,'occ::core::diis::DIIS::DIIS()'],['../structocc_1_1qm_1_1SCF.html#aed803702b5c000474ad39e8024e45703',1,'occ::qm::SCF::diis'],['../classocc_1_1core_1_1diis_1_1DIIS.html',1,'occ::core::diis::DIIS'],['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16af6400cca291c26dddf346d5c46a8c8c8',1,'occ::timing::diis']]],
   ['diis_2eh_93',['diis.h',['../diis_8h.html',1,'']]],
   ['diis_5ferror_94',['diis_error',['../structocc_1_1qm_1_1SCF.html#a0c93e72dadabe41cce552caa62f209c8',1,'occ::qm::SCF']]],
   ['dilatem0_95',['dilateM0',['../namespaceocc_1_1geometry_1_1constants.html#a592768353d7a42e030df52fbbd9ed021',1,'occ::geometry::constants']]],

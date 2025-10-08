@@ -1,0 +1,10 @@
+<map id="/home/runner/work/occ/occ/include/occ/interaction/polarization_partitioning.h" name="/home/runner/work/occ/occ/include/occ/interaction/polarization_partitioning.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,204,60"/>
+<area shape="rect" id="Node000002" href="$interaction__json_8h.html" title=" " alt="" coords="5,211,204,265"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,73,65,109,60,135,65,162,74,187,87,209,83,212,69,189,59,163,55,135,59,107,75,71"/>
+<area shape="rect" id="Node000004" href="$lattice__energy_8h.html" title=" " alt="" coords="73,108,272,163"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="132,70,157,106,153,109,128,73"/>
+<area shape="rect" id="Node000003" href="$elastic__fitting_8h.html" title=" " alt="" coords="19,313,191,368"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="107,279,107,313,102,313,102,279"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="149,176,125,212,120,209,145,173"/>
+</map>
