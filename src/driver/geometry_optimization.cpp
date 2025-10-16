@@ -5,6 +5,7 @@
 #include <occ/core/data_directory.h>
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
+#include <occ/disp/dftd4.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/vibrational_analysis.h>
 #include <occ/driver/method_parser.h>
@@ -41,9 +42,12 @@ run_method_for_optimization(const Molecule &m, const occ::qm::AOBasis &basis,
                             const Wavefunction *prev_wfn = nullptr,
                             double energy_change = 1.0) {
 
+  // Parse method name to extract dispersion correction
+  auto method_spec = parse_method_string(config.method.name);
+
   T proc = [&]() {
     if constexpr (std::is_same<T, DFT>::value)
-      return T(config.method.name, basis, config.method.dft_grid);
+      return T(method_spec.base_method, basis, config.method.dft_grid);
     else
       return T(basis);
   }();
@@ -117,13 +121,43 @@ run_method_for_optimization(const Molecule &m, const occ::qm::AOBasis &basis,
   }
 
   auto wfn = scf.wavefunction();
-  
+
+  // Add D4 dispersion energy if specified
+  if (!method_spec.dispersion.empty() && method_spec.dispersion == "d4") {
+    occ::disp::D4Dispersion disp(m.atoms());
+    disp.set_charge(config.electronic.charge);
+
+    bool success = disp.set_functional(method_spec.base_method);
+    if (!success) {
+      log::warn("D4 parameters not found for functional '{}', using default PBE parameters",
+                method_spec.base_method);
+    }
+
+    double e_d4 = disp.energy();
+    log::info("D4 dispersion correction:        {: 20.12f}", e_d4);
+    wfn.energy.total += e_d4;
+    log::info("Dispersion-corrected energy:     {: 20.12f}", wfn.energy.total);
+  }
+
   // Set gradient-specific precision if different from SCF precision
   if (gradient_precision != integral_precision) {
     proc.set_precision(gradient_precision);
   }
-  
+
   occ::qm::GradientEvaluator eval(scf.m_procedure);
+
+  // Enable D4 dispersion correction if specified
+  if (!method_spec.dispersion.empty()) {
+    if (method_spec.dispersion == "d4") {
+      eval.set_dispersion_d4(method_spec.base_method);
+      occ::log::info("D4 dispersion gradient enabled for functional: {}",
+                     method_spec.base_method);
+    } else {
+      occ::log::warn("Unsupported dispersion type '{}' - ignoring",
+                     method_spec.dispersion);
+    }
+  }
+
   Mat3N gradient = eval(wfn.mo);
   // Convert gradients from Hartree/Bohr to Hartree/Angstrom for optimizer
   gradient /= occ::units::ANGSTROM_TO_BOHR;

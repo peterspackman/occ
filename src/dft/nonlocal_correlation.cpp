@@ -191,6 +191,143 @@ Vec grad_rho(Eigen::Ref<const Mat> rho) {
          gz.array() * gz.array();
 }
 
+// Compute grid displacement gradient contributions for VV10
+// Based on Vydrov & Van Voorhis, JCP 133, 244103 (2010), Eqs. 25-26
+// This computes ∂Φ(r,r')/∂R_atom where Φ is the VV10 kernel
+Mat3N compute_vv10_grid_displacement_gradient(
+    ArrayConstRef rho, ArrayConstRef grad_rho, PointsRef points,
+    ArrayConstRef weights, const std::vector<AtomGrid> &atom_grids,
+    const NonLocalCorrelationFunctional::Parameters &params) {
+
+  using Array = Eigen::ArrayXd;
+  constexpr double pi = occ::constants::pi<double>;
+  constexpr double pi4_3 = 4 * pi / 3;
+  constexpr double rho_thresh = 1e-8;
+  constexpr double distance_cutoff = 15.0; // Bohr - grid pairs beyond this are screened
+
+  const double kappa_factor =
+      params.vv10_b * 1.5 * pi * (std::pow(9 * pi, -1.0 / 6));
+  const double beta =
+      std::pow(3.0 / (params.vv10_b * params.vv10_b), 0.75) / 32.0;
+
+  // Precompute VV10 parameters at each grid point
+  Array rho_weighted = rho * weights;
+  Array tmp = grad_rho / (rho * rho);
+  tmp = params.vv10_C * tmp * tmp;
+  Array omega0 = (tmp + pi4_3 * rho).sqrt();
+  Array kappa = kappa_factor * (rho.pow(1. / 6.));
+
+  const size_t natoms = atom_grids.size();
+  const size_t npt = points.cols();
+
+  Mat3N gradient = Mat3N::Zero(3, natoms);
+
+  // Map grid points to atoms
+  std::vector<size_t> grid_to_atom(npt);
+  size_t offset = 0;
+  for (size_t atom_id = 0; atom_id < natoms; atom_id++) {
+    const size_t npt_atom = atom_grids[atom_id].num_points();
+    for (size_t i = 0; i < npt_atom; i++) {
+      grid_to_atom[offset + i] = atom_id;
+    }
+    offset += npt_atom;
+  }
+
+  occ::timing::start(occ::timing::category::dft_nlc);
+
+  // Thread-local storage for gradients
+  occ::parallel::thread_local_storage<Mat3N> gradients_local(
+      [natoms]() { return Mat3N::Zero(3, natoms); });
+
+  // Parallelize over grid points
+  // For each point i, compute interactions with all points j
+  occ::parallel::parallel_for(size_t(0), npt, [&](size_t i) {
+    if (rho(i) < rho_thresh)
+      return;
+
+    const auto &r_i = points.col(i);
+    const double w_i = weights(i);
+    const double rho_i = rho(i);
+    const double omega_i = omega0(i);
+    const double kappa_i = kappa(i);
+    const size_t atom_i = grid_to_atom[i];
+
+    auto &local_grad = gradients_local.local();
+
+    for (size_t j = 0; j < npt; j++) {
+      if (i == j || rho(j) < rho_thresh)
+        continue;
+
+      const auto r_ij = r_i - points.col(j);
+      const double r2 = r_ij.squaredNorm();
+      const double r_dist = std::sqrt(r2);
+
+      // Distance screening for performance
+      if (r_dist > distance_cutoff)
+        continue;
+
+      const double w_j = weights(j);
+      const double rho_j = rho(j);
+      const double omega_j = omega0(j);
+      const double kappa_j = kappa(j);
+      const size_t atom_j = grid_to_atom[j];
+
+      // VV10 kernel: Φ = -1.5 * Θ / (g_i * g_j * (g_i + g_j))
+      // where g = r² * ω₀ + κ
+      const double g_i = r2 * omega_i + kappa_i;
+      const double g_j = r2 * omega_j + kappa_j;
+      const double Theta = 2.0 * rho_i * w_i * rho_j * w_j;
+      const double denom = g_i * g_j * (g_i + g_j);
+
+      if (std::abs(denom) < 1e-20)
+        continue;
+
+      const double Phi = -1.5 * Theta / denom;
+
+      // Derivative of Φ with respect to r_ij
+      // ∂Φ/∂r_ij = -1.5 * Θ * ∂/∂r_ij[1/(g_i * g_j * (g_i + g_j))]
+      //
+      // Let D = g_i * g_j * (g_i + g_j)
+      // ∂D/∂r_ij = ∂g_i/∂r_ij * [g_j*(g_i + g_j) + g_i*g_j]
+      //          + ∂g_j/∂r_ij * [g_i*(g_i + g_j) + g_i*g_j]
+      //
+      // ∂g/∂r_ij = 2*r_ij * ω₀  (since g = r² * ω₀ + κ, and κ doesn't depend on r_ij)
+
+      const double dg_i_dr = 2.0 * omega_i;  // ∂g_i/∂r²
+      const double dg_j_dr = 2.0 * omega_j;  // ∂g_j/∂r²
+
+      const double dD_dr2 = dg_i_dr * (g_j * (g_i + g_j) + g_i * g_j) +
+                            dg_j_dr * (g_i * (g_i + g_j) + g_i * g_j);
+
+      // ∂Φ/∂r² = -1.5 * Θ * (-1/D²) * ∂D/∂r²
+      const double dPhi_dr2 = 1.5 * Theta * dD_dr2 / (denom * denom);
+
+      // ∂Φ/∂r_ij = ∂Φ/∂r² * ∂r²/∂r_ij = ∂Φ/∂r² * 2*r_ij
+      // Force on atom = -∂E/∂R = -∂Φ/∂r_ij
+      //
+      // When atom_i moves: r_ij changes by +dR, so ∂r_ij/∂R_i = +I
+      // When atom_j moves: r_ij changes by -dR, so ∂r_ij/∂R_j = -I
+
+      Vec3 force = 2.0 * dPhi_dr2 * r_ij;  // This is ∂Φ/∂r_ij
+
+      // Add contribution to atomic gradients
+      // Grid point i belongs to atom_i, grid point j belongs to atom_j
+      // Force from this interaction acts on both atoms
+      local_grad.col(atom_i) -= force;  // Force on atom containing grid i
+      local_grad.col(atom_j) += force;  // Equal and opposite on atom containing grid j
+    }
+  });
+
+  // Reduce thread-local gradients
+  for (const auto &local_grad : gradients_local) {
+    gradient += local_grad;
+  }
+
+  occ::timing::stop(occ::timing::category::dft_nlc);
+
+  return gradient;
+}
+
 NonLocalCorrelationFunctional::Result
 NonLocalCorrelationFunctional::vv10(const qm::AOBasis &basis,
                                     const qm::MolecularOrbitals &mo) {
@@ -359,7 +496,7 @@ NonLocalCorrelationFunctional::vv10_gradient(const qm::AOBasis &basis,
   aow.array() += pzz.array().colwise() * (2.0 * vsigma * dz);
   Vz.noalias() += (p.transpose() * aow).transpose();
 
-  // Distribute to atoms using basis function to atom mapping
+  // Distribute to atoms using basis function to atom mapping (XC potential gradient)
   const auto &bf_to_atom = basis.bf_to_atom();
   for (size_t mu = 0; mu < nbf; mu++) {
     int atom_mu = bf_to_atom[mu];
@@ -374,6 +511,13 @@ NonLocalCorrelationFunctional::vv10_gradient(const qm::AOBasis &basis,
       gradient(2, atom_mu) -= Vz(mu, nu) * Dval;
     }
   }
+
+  // Add grid displacement gradient contributions (∂Φ(r,r')/∂R terms)
+  occ::log::debug("Computing VV10 grid displacement gradients");
+  Mat3N grid_gradient = compute_vv10_grid_displacement_gradient(
+      rho.col(0), g, points, weights, m_nlc_atom_grids, m_params);
+
+  gradient += grid_gradient;
 
   return {etot, Vxc, gradient};
 }

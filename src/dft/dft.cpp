@@ -122,6 +122,10 @@ void DFT::set_integration_grid(const GridSettings &settings) {
   }
 }
 
+void DFT::set_nlc_grid(const qm::AOBasis &basis, const GridSettings &settings) {
+  m_nlc.set_integration_grid(basis, settings);
+}
+
 RangeSeparatedParameters DFT::range_separated_parameters() const {
   return m_rs_params;
 }

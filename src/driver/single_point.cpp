@@ -1,6 +1,7 @@
 #include <occ/core/constants.h>
 #include <occ/core/data_directory.h>
 #include <occ/dft/dft.h>
+#include <occ/disp/dftd4.h>
 #include <occ/driver/method_parser.h>
 #include <occ/driver/single_point.h>
 #include <occ/io/occ_input.h>
@@ -88,9 +89,12 @@ template <typename T, SpinorbitalKind SK>
 Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
                         const OccInput &config) {
 
+  // Parse method name to extract dispersion correction
+  auto method_spec = parse_method_string(config.method.name);
+
   T proc = [&]() {
     if constexpr (std::is_same<T, DFT>::value)
-      return T(config.method.name, basis, config.method.dft_grid);
+      return T(method_spec.base_method, basis, config.method.dft_grid);
     else
       return T(basis);
   }();
@@ -134,6 +138,27 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
       log::info("Post SCF NLC correction:         {: 20.12f}", enlc);
       e += enlc;
       log::info("Corrected total energy:          {: 20.12f}", e);
+    }
+  }
+
+  // Add D4 dispersion correction if specified
+  if (!method_spec.dispersion.empty()) {
+    if (method_spec.dispersion == "d4") {
+      occ::disp::D4Dispersion disp(m.atoms());
+      disp.set_charge(config.electronic.charge);
+
+      bool success = disp.set_functional(method_spec.base_method);
+      if (!success) {
+        log::warn("D4 parameters not found for functional '{}', using default PBE parameters",
+                  method_spec.base_method);
+      }
+
+      double e_disp = disp.energy();
+      log::info("D4 dispersion correction:        {: 20.12f}", e_disp);
+      e += e_disp;
+      log::info("Dispersion-corrected energy:     {: 20.12f}", e);
+    } else {
+      log::warn("Unsupported dispersion type '{}' - ignoring", method_spec.dispersion);
     }
   }
 

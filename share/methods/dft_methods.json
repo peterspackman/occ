@@ -7,22 +7,6 @@
         }
       ]
     },
-    "b3lyp-d3": {
-      "components": [
-        {
-          "id": "hyb_gga_xc_b3lyp"
-        }
-      ],
-      "dispersion": "d3zero"
-    },
-    "b3lyp-d3bj": {
-      "components": [
-        {
-          "id": "hyb_gga_xc_b3lyp"
-        }
-      ],
-      "dispersion": "d3bj"
-    },
     "b3lyp5": {
       "components": [
         {
@@ -206,17 +190,6 @@
         }
       ]
     },
-    "pbe-d3": {
-      "components": [
-        {
-          "id": "gga_x_pbe"
-        },
-        {
-          "id": "gga_c_pbe"
-        }
-      ],
-      "dispersion": "d3zero"
-    },
     "pbe0": {
       "components": [
         {
@@ -278,7 +251,6 @@
           "id": "mgga_c_r2scan"
         }
       ],
-      "dispersion": "d3bj",
       "gcp": "gcp3c"
     },
     "svwn": {
@@ -340,6 +312,14 @@
           "id": "hyb_gga_xc_wb97x"
         }
       ]
+    },
+    "wb97x-v": {
+      "components": [
+        {
+          "id": "hyb_gga_xc_wb97x_v"
+        }
+      ],
+      "dispersion": "vv10"
     },
     "x3lyp": {
       "components": [

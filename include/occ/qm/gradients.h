@@ -1,13 +1,22 @@
 #pragma once
+#include <occ/core/atom.h>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
+#include <string>
+#include <optional>
 
 namespace occ::qm {
 
 namespace impl {
+
+// Helper to compute D4 dispersion energy and gradient
+std::pair<double, Mat3N> compute_d4_dispersion(
+    const std::vector<core::Atom> &atoms,
+    int charge,
+    const std::string &functional);
 
 inline double accumulate1(SpinorbitalKind sk, int r, Mat op, Mat D) {
   double result = 0.0;
@@ -54,6 +63,14 @@ template <typename Proc> class GradientEvaluator {
 public:
   explicit GradientEvaluator(Proc &p)
       : m_proc(p), m_gradients(Mat3N::Zero(3, p.atoms().size())), m_schwarz_computed(false) {}
+
+  /**
+   * @brief Enable D4 dispersion correction
+   * @param functional DFT functional name for D4 parameters (e.g., "pbe", "b3lyp")
+   */
+  inline void set_dispersion_d4(const std::string &functional) {
+    m_d4_functional = functional;
+  }
 
   inline Mat3N nuclear_repulsion() const {
     Mat3N result = m_proc.nuclear_repulsion_gradient();
@@ -127,16 +144,26 @@ public:
   inline const Mat3N &operator()(const MolecularOrbitals &mo) {
 
     occ::timing::start(occ::timing::gradient);
-    
+
     m_gradients = nuclear_repulsion();
     m_gradients += electronic(mo);
-    
+
+    // Add D4 dispersion gradient if enabled
+    if (m_d4_functional.has_value()) {
+      occ::log::debug("Computing D4 dispersion gradient");
+      const auto &atoms = m_proc.atoms();
+      int charge = 0; // TODO: Get charge from proc if available
+      auto [e_d4, grad_d4] = impl::compute_d4_dispersion(atoms, charge, m_d4_functional.value());
+      occ::log::info("D4 dispersion energy: {:20.12f} Ha", e_d4);
+      m_gradients += grad_d4;
+    }
+
     occ::timing::stop(occ::timing::gradient);
-    
+
     // Log Cartesian gradients with atom labels
     const auto &atoms = m_proc.atoms();
     for (int atom = 0; atom < m_gradients.cols(); atom++) {
-      occ::log::info("{:2s}{:3d}: {:12.8f} {:12.8f} {:12.8f}", 
+      occ::log::info("{:2s}{:3d}: {:12.8f} {:12.8f} {:12.8f}",
                      core::Element(atoms[atom].atomic_number).symbol(), atom,
                      m_gradients(0, atom), m_gradients(1, atom),
                      m_gradients(2, atom));
@@ -149,6 +176,7 @@ private:
   Mat3N m_gradients;
   mutable Mat m_schwarz;
   mutable bool m_schwarz_computed;
+  std::optional<std::string> m_d4_functional;
 };
 
 } // namespace occ::qm

@@ -20,6 +20,14 @@ add_executable(dft_tests "${CMAKE_CURRENT_SOURCE_DIR}/dft_tests.cpp")
 target_link_libraries(dft_tests PRIVATE occ_dft occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(dft_tests)
 
+add_executable(dft_gradient_tests "${CMAKE_CURRENT_SOURCE_DIR}/dft_gradient_tests.cpp")
+target_link_libraries(dft_gradient_tests PRIVATE occ_dft occ_qm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(dft_gradient_tests)
+
+add_executable(isolated_xc_tests "${CMAKE_CURRENT_SOURCE_DIR}/isolated_xc_tests.cpp")
+target_link_libraries(isolated_xc_tests PRIVATE occ_dft occ_qm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(isolated_xc_tests)
+
 add_executable(disp_tests "${CMAKE_CURRENT_SOURCE_DIR}/disp_tests.cpp")
 target_link_libraries(disp_tests PRIVATE occ_disp Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(disp_tests)
@@ -51,6 +59,10 @@ catch_discover_tests(interaction_tests)
 add_executable(qm_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_tests.cpp")
 target_link_libraries(qm_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(qm_tests)
+
+add_executable(qm_gradient_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_gradient_tests.cpp")
+target_link_libraries(qm_gradient_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(qm_gradient_tests)
 
 add_executable(qm_hessian_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_hessian_tests.cpp")
 target_link_libraries(qm_hessian_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)

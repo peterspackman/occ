@@ -213,13 +213,16 @@ coulomb_kernel_grad(cint::IntegralEnvironment &env, const AOBasis &basis,
   Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
   const auto &D = mo.D;
 
+  // Calculate matrix dimensions based on spinorbital kind
+  auto [rows, cols] = matrix_dimensions<sk>(nbf);
+
   // Use TBB-based thread-local storage
   occ::parallel::thread_local_storage<MatTriple> results_local(
-    [nbf]() {
+    [rows, cols]() {
       MatTriple r;
-      r.x = Mat::Zero(nbf, nbf);
-      r.y = Mat::Zero(nbf, nbf);
-      r.z = Mat::Zero(nbf, nbf);
+      r.x = Mat::Zero(rows, cols);
+      r.y = Mat::Zero(rows, cols);
+      r.z = Mat::Zero(rows, cols);
       return r;
     }
   );
@@ -236,10 +239,10 @@ coulomb_kernel_grad(cint::IntegralEnvironment &env, const AOBasis &basis,
 
   // Reduce thread-local results
   MatTriple result;
-  result.x = Mat::Zero(nbf, nbf);
-  result.y = Mat::Zero(nbf, nbf);
-  result.z = Mat::Zero(nbf, nbf);
-  
+  result.x = Mat::Zero(rows, cols);
+  result.y = Mat::Zero(rows, cols);
+  result.z = Mat::Zero(rows, cols);
+
   for (const auto &local_result : results_local) {
     result.x.noalias() += local_result.x;
     result.y.noalias() += local_result.y;
@@ -303,22 +306,25 @@ JKTriple coulomb_exchange_kernel_grad(IntEnv &env, const AOBasis &basis,
   Mat Dnorm = shellblock_norm<sk, kind>(basis, mo.D);
   const auto &D = mo.D;
 
+  // Calculate matrix dimensions based on spinorbital kind
+  auto [rows, cols] = matrix_dimensions<sk>(nbf);
+
   // Use TBB-based thread-local storage for J and K matrices
   occ::parallel::thread_local_storage<MatTriple> jmats_local(
-    [nbf]() {
+    [rows, cols]() {
       MatTriple r;
-      r.x = Mat::Zero(nbf, nbf);
-      r.y = Mat::Zero(nbf, nbf);
-      r.z = Mat::Zero(nbf, nbf);
+      r.x = Mat::Zero(rows, cols);
+      r.y = Mat::Zero(rows, cols);
+      r.z = Mat::Zero(rows, cols);
       return r;
     }
   );
   occ::parallel::thread_local_storage<MatTriple> kmats_local(
-    [nbf]() {
+    [rows, cols]() {
       MatTriple r;
-      r.x = Mat::Zero(nbf, nbf);
-      r.y = Mat::Zero(nbf, nbf);
-      r.z = Mat::Zero(nbf, nbf);
+      r.x = Mat::Zero(rows, cols);
+      r.y = Mat::Zero(rows, cols);
+      r.z = Mat::Zero(rows, cols);
       return r;
     }
   );
@@ -338,12 +344,12 @@ JKTriple coulomb_exchange_kernel_grad(IntEnv &env, const AOBasis &basis,
 
   // Reduce thread-local results
   MatTriple jmat, kmat;
-  jmat.x = Mat::Zero(nbf, nbf);
-  jmat.y = Mat::Zero(nbf, nbf);
-  jmat.z = Mat::Zero(nbf, nbf);
-  kmat.x = Mat::Zero(nbf, nbf);
-  kmat.y = Mat::Zero(nbf, nbf);
-  kmat.z = Mat::Zero(nbf, nbf);
+  jmat.x = Mat::Zero(rows, cols);
+  jmat.y = Mat::Zero(rows, cols);
+  jmat.z = Mat::Zero(rows, cols);
+  kmat.x = Mat::Zero(rows, cols);
+  kmat.y = Mat::Zero(rows, cols);
+  kmat.z = Mat::Zero(rows, cols);
 
   for (const auto &local_j : jmats_local) {
     jmat.x.noalias() += local_j.x;

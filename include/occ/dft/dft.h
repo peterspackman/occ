@@ -39,6 +39,7 @@ public:
   inline auto nbf() const { return m_hf.nbf(); }
 
   void set_integration_grid(const GridSettings & = {});
+  void set_nlc_grid(const qm::AOBasis &basis, const GridSettings &settings = {110, 50, 50, 1e-7, false});
 
   inline void
   set_density_fitting_basis(const std::string &density_fitting_basis) {
@@ -492,7 +493,12 @@ private:
             const auto &pts_block = all_points.middleCols(l, npt);
             const auto &weights_block = all_weights.segment(l, npt);
 
-            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
+            // For gradients, we need derivatives of basis functions
+            // LDA (deriv=0): need 1st derivatives -> max_deriv = 1
+            // GGA (deriv=1): need 2nd derivatives -> max_deriv = 2
+            // MGGA (deriv=2): need 2nd derivatives -> max_deriv = 2
+            int max_deriv = (derivative_order == 0) ? 1 : 2;
+            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, max_deriv);
             auto &local_gradient = gradients_local.local();
 
             kernels::process_grid_block_gradient<derivative_order, spinorbital_kind>(

@@ -3,6 +3,7 @@ add_library(occ_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/chelpg.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cint_interface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ediis.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gradients.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/guess_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_2c.cpp"
@@ -29,10 +30,11 @@ add_library(occ_qm
 )
 
 target_link_libraries(occ_qm
-    PUBLIC 
+    PUBLIC
     occ_core
     occ_io
     occ_gto
+    occ_disp
     libcint::libcint
     libecpint_static
 )

@@ -12,7 +12,9 @@ qm::JKTriple DFT::compute_JK_gradient(const MolecularOrbitals &mo,
   occ::log::debug("Computing DFT JK gradient");
 
   MatTriple J;
-  MatTriple K = MatTriple::Zero(mo.n_ao, mo.n_ao);
+  // For unrestricted, gradient matrices have shape (2*n_ao, n_ao) like density matrix
+  size_t K_rows = (mo.kind == SpinorbitalKind::Unrestricted) ? 2 * mo.n_ao : mo.n_ao;
+  MatTriple K = MatTriple::Zero(K_rows, mo.n_ao);
   double k_factor = exact_exchange_factor();
   RangeSeparatedParameters rs = range_separated_parameters();
 
@@ -67,7 +69,6 @@ MatTriple DFT::compute_fock_gradient(const MolecularOrbitals &mo,
 Mat3N DFT::compute_xc_gradient(const MolecularOrbitals &mo,
                                const Mat &Schwarz) const {
   occ::timing::start(occ::timing::category::dft_gradient);
-  occ::log::debug("Computing DFT XC gradient");
   constexpr auto G = SpinorbitalKind::General;
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto R = SpinorbitalKind::Restricted;
@@ -79,6 +80,8 @@ Mat3N DFT::compute_xc_gradient(const MolecularOrbitals &mo,
 
   Mat3N gradient = Mat3N::Zero(3, natoms);
   int deriv = density_derivative();
+  occ::log::debug("Computing DFT XC gradient: density_derivative = {}", deriv);
+
 
   if (mo.kind == R) {
     if (deriv == 0) {

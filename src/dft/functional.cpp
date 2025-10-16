@@ -70,6 +70,7 @@ bool DensityFunctional::needs_nlc_correction() const {
   default:
     return false;
   case hyb_mgga_xc_wb97m_v:
+  case hyb_gga_xc_wb97x_v:
     return true;
   }
 }
