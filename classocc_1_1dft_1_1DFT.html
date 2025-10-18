@@ -126,6 +126,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aab1a405290a0252b3791d134d9b38c6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c07b286f4a496232c140112a54be356" id="r_a8c07b286f4a496232c140112a54be356"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a8c07b286f4a496232c140112a54be356">set_integration_grid</a> (const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;={})</td></tr>
 <tr class="separator:a8c07b286f4a496232c140112a54be356"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a317990822a63abe487aa39561c191ae1" id="r_a317990822a63abe487aa39561c191ae1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a317990822a63abe487aa39561c191ae1">set_nlc_grid</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">qm::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;settings={110, 50, 50, 1e-7, false})</td></tr>
+<tr class="separator:a317990822a63abe487aa39561c191ae1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2eeda64973fe7c0b9635d290b1b911f" id="r_ab2eeda64973fe7c0b9635d290b1b911f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#ab2eeda64973fe7c0b9635d290b1b911f">set_density_fitting_basis</a> (const std::string &amp;density_fitting_basis)</td></tr>
 <tr class="separator:ab2eeda64973fe7c0b9635d290b1b911f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5219c663b82922ae4b8138e1a3e31006" id="r_a5219c663b82922ae4b8138e1a3e31006"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1DFT.html#a5219c663b82922ae4b8138e1a3e31006">set_density_fitting_policy</a> (<a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710d">qm::IntegralEngineDF::Policy</a> policy)</td></tr>
@@ -1704,6 +1706,34 @@ template&lt;unsigned int order = 1&gt; </div>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>method_string</em></td><td>)</td>
           <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a317990822a63abe487aa39561c191ae1" name="a317990822a63abe487aa39561c191ae1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a317990822a63abe487aa39561c191ae1">&#9670;&#160;</a></span>set_nlc_grid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::dft::DFT::set_nlc_grid </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">qm::AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;&#160;</td>
+          <td class="paramname"><em>settings</em> = <code>{110,&#160;50,&#160;50,&#160;1e-7,&#160;false}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -11,7 +11,7 @@ var searchData=
   ['facets_8',['facets',['../classocc_1_1geometry_1_1WulffConstruction.html#a19075d0bcc50359e7e9ec6f93c9c5293',1,'occ::geometry::WulffConstruction::facets()'],['../structocc_1_1main_1_1CrystalSurfaceEnergies.html#a507c999748edd845aa56eb2d017082d6',1,'occ::main::CrystalSurfaceEnergies::facets']]],
   ['factor_9',['factor',['../structocc_1_1dft_1_1FuncComponent.html#a28ad09529131f73440a1fd985c309452',1,'occ::dft::FuncComponent']]],
   ['failure_5fdescription_10',['failure_description',['../classocc_1_1io_1_1CifParser.html#a330e96e6afe7dd628061b412aa3fcbab',1,'occ::io::CifParser']]],
-  ['family_11',['family',['../classocc_1_1dft_1_1DensityFunctional.html#abecc0a59a365ad908763722bcc5a9590',1,'occ::dft::DensityFunctional::family() const'],['../classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadf',1,'occ::dft::DensityFunctional::Family']]],
+  ['family_11',['family',['../classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadf',1,'occ::dft::DensityFunctional::Family'],['../classocc_1_1dft_1_1DensityFunctional.html#abecc0a59a365ad908763722bcc5a9590',1,'occ::dft::DensityFunctional::family() const']]],
   ['family_5fstring_12',['family_string',['../classocc_1_1dft_1_1DensityFunctional.html#ab946ee80dc74f2fff8c8d6ef9046fae2',1,'occ::dft::DensityFunctional']]],
   ['fast_5fneighbors_2eh_13',['fast_neighbors.h',['../fast__neighbors_8h.html',1,'']]],
   ['fastneighborfinder_14',['FastNeighborFinder',['../classocc_1_1descriptors_1_1FastNeighborFinder.html',1,'occ::descriptors']]],

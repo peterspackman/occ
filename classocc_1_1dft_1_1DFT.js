@@ -51,6 +51,7 @@ var classocc_1_1dft_1_1DFT =
     [ "set_density_fitting_policy", "classocc_1_1dft_1_1DFT.html#a5219c663b82922ae4b8138e1a3e31006", null ],
     [ "set_integration_grid", "classocc_1_1dft_1_1DFT.html#a8c07b286f4a496232c140112a54be356", null ],
     [ "set_method", "classocc_1_1dft_1_1DFT.html#abb30ad8fddfa487ad5973303f283e7b6", null ],
+    [ "set_nlc_grid", "classocc_1_1dft_1_1DFT.html#a317990822a63abe487aa39561c191ae1", null ],
     [ "set_precision", "classocc_1_1dft_1_1DFT.html#aba711c566435ce5b9b858c6133800d02", null ],
     [ "supports_incremental_fock_build", "classocc_1_1dft_1_1DFT.html#aa42b20881dc0bdb097c9f677803305ec", null ],
     [ "update_core_hamiltonian", "classocc_1_1dft_1_1DFT.html#a45b6bac4a630b7fc16b259dc96d1a67c", null ],

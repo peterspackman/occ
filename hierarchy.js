@@ -227,6 +227,7 @@ var hierarchy =
     [ "quickhull::MeshBuilder< FloatType >", "classquickhull_1_1MeshBuilder.html", null ],
     [ "occ::dft::MethodDefinition", "structocc_1_1dft_1_1MethodDefinition.html", null ],
     [ "occ::io::MethodInput", "structocc_1_1io_1_1MethodInput.html", null ],
+    [ "occ::driver::MethodSpec", "structocc_1_1driver_1_1MethodSpec.html", null ],
     [ "occ::geometry::MIndex", "structocc_1_1geometry_1_1MIndex.html", null ],
     [ "occ::geometry::MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", null ],
     [ "occ::qm::MOIntegralEngine", "classocc_1_1qm_1_1MOIntegralEngine.html", null ],

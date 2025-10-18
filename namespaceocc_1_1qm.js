@@ -25,7 +25,8 @@ var namespaceocc_1_1qm =
     ] ],
     [ "impl", "namespaceocc_1_1qm_1_1impl.html", [
       [ "accumulate1", "namespaceocc_1_1qm_1_1impl.html#a90d330aae8695310847c6faf75fb6a1d", null ],
-      [ "accumulate2", "namespaceocc_1_1qm_1_1impl.html#a62eb74092482256f843a653357ad87e7", null ]
+      [ "accumulate2", "namespaceocc_1_1qm_1_1impl.html#a62eb74092482256f843a653357ad87e7", null ],
+      [ "compute_d4_dispersion", "namespaceocc_1_1qm_1_1impl.html#ae467f65ead72114675c1d0a9a6673b09", null ]
     ] ],
     [ "orb", "namespaceocc_1_1qm_1_1orb.html", [
       [ "density_matrix_general", "namespaceocc_1_1qm_1_1orb.html#abae4c82b14dce142db3c9c0968487092", null ],

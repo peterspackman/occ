@@ -153,6 +153,7 @@ var annotated_dup =
         [ "DMAConfig", "structocc_1_1driver_1_1DMAConfig.html", "structocc_1_1driver_1_1DMAConfig" ],
         [ "DMADriver", "classocc_1_1driver_1_1DMADriver.html", "classocc_1_1driver_1_1DMADriver" ],
         [ "DummyCrystalGrowthCalculator", "classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html", "classocc_1_1driver_1_1DummyCrystalGrowthCalculator" ],
+        [ "MethodSpec", "structocc_1_1driver_1_1MethodSpec.html", "structocc_1_1driver_1_1MethodSpec" ],
         [ "VibrationalAnalysisConfig", "structocc_1_1driver_1_1VibrationalAnalysisConfig.html", "structocc_1_1driver_1_1VibrationalAnalysisConfig" ],
         [ "XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator" ]
       ] ],
