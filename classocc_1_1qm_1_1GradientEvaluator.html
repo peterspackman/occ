@@ -113,6 +113,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8ad2b85df061d53b704f51603f65440f" id="r_a8ad2b85df061d53b704f51603f65440f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1GradientEvaluator.html#a8ad2b85df061d53b704f51603f65440f">set_dispersion_d4</a> (const std::string &amp;functional)</td></tr>
 <tr class="memdesc:a8ad2b85df061d53b704f51603f65440f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable D4 dispersion correction.  <br /></td></tr>
 <tr class="separator:a8ad2b85df061d53b704f51603f65440f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73cf0a49a91dbbbf386ceb2b0916379a" id="r_a73cf0a49a91dbbbf386ceb2b0916379a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1GradientEvaluator.html#a73cf0a49a91dbbbf386ceb2b0916379a">set_dispersion_xdm</a> (const std::string &amp;functional, const std::optional&lt; <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">occ::xdm::XDM::Parameters</a> &gt; &amp;params=std::nullopt)</td></tr>
+<tr class="memdesc:a73cf0a49a91dbbbf386ceb2b0916379a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable XDM dispersion correction.  <br /></td></tr>
+<tr class="separator:a73cf0a49a91dbbbf386ceb2b0916379a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45cbedb5aed975bee538db0c0e2454fa" id="r_a45cbedb5aed975bee538db0c0e2454fa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1GradientEvaluator.html#a45cbedb5aed975bee538db0c0e2454fa">nuclear_repulsion</a> () const</td></tr>
 <tr class="separator:a45cbedb5aed975bee538db0c0e2454fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ed89c8c5472d8b49d1b76f249cbd213" id="r_a7ed89c8c5472d8b49d1b76f249cbd213"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1GradientEvaluator.html#a7ed89c8c5472d8b49d1b76f249cbd213">electronic</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo)</td></tr>
@@ -263,6 +266,53 @@ template&lt;typename Proc &gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">functional</td><td>DFT functional name for D4 parameters (e.g., "pbe", "b3lyp") </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a73cf0a49a91dbbbf386ceb2b0916379a" name="a73cf0a49a91dbbbf386ceb2b0916379a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73cf0a49a91dbbbf386ceb2b0916379a">&#9670;&#160;</a></span>set_dispersion_xdm()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Proc &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classocc_1_1qm_1_1GradientEvaluator.html">occ::qm::GradientEvaluator</a>&lt; Proc &gt;::set_dispersion_xdm </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>functional</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::optional&lt; <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">occ::xdm::XDM::Parameters</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>params</em> = <code>std::nullopt</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Enable XDM dispersion correction. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">functional</td><td>DFT functional name for XDM parameters (e.g., "pbe", "b3lyp") </td></tr>
+    <tr><td class="paramname">params</td><td>Optional XDM parameters to override functional defaults </td></tr>
   </table>
   </dd>
 </dl>

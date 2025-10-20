@@ -26,7 +26,8 @@ var namespaceocc_1_1qm =
     [ "impl", "namespaceocc_1_1qm_1_1impl.html", [
       [ "accumulate1", "namespaceocc_1_1qm_1_1impl.html#a90d330aae8695310847c6faf75fb6a1d", null ],
       [ "accumulate2", "namespaceocc_1_1qm_1_1impl.html#a62eb74092482256f843a653357ad87e7", null ],
-      [ "compute_d4_dispersion", "namespaceocc_1_1qm_1_1impl.html#ae467f65ead72114675c1d0a9a6673b09", null ]
+      [ "compute_d4_dispersion", "namespaceocc_1_1qm_1_1impl.html#ae467f65ead72114675c1d0a9a6673b09", null ],
+      [ "compute_xdm_dispersion", "namespaceocc_1_1qm_1_1impl.html#a31916adeeed2bd8263d7e399ef3e6df3", null ]
     ] ],
     [ "orb", "namespaceocc_1_1qm_1_1orb.html", [
       [ "density_matrix_general", "namespaceocc_1_1qm_1_1orb.html#abae4c82b14dce142db3c9c0968487092", null ],
@@ -75,6 +76,11 @@ var namespaceocc_1_1qm =
     [ "HessianMatrix", "namespaceocc_1_1qm.html#aa8bb245cfcce8ea42381f7dc22329952", null ],
     [ "PointChargeList", "namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb", null ],
     [ "Tensor4D", "namespaceocc_1_1qm.html#aaede53ed6341f3101ea1f4c5cae9b4b9", null ],
+    [ "DispersionType", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98db", [
+      [ "None", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba6adf97f83acf6453d4a6a4b1070f3754", null ],
+      [ "D4", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba2521dc256a4368da87585c936b451dd7", null ],
+      [ "XDM", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba8fdbb506111f5675e109c02bbb0deabb", null ]
+    ] ],
     [ "SpinorbitalKind", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4", [
       [ "Restricted", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a7eb505a798e7bd90ce15f4467154e837", null ],
       [ "Unrestricted", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a637317163a8a9d4712705b6bb0ae5799", null ],

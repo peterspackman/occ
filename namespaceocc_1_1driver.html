@@ -483,15 +483,15 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Parse method string to separate base method and dispersion type. </p>
-<p>Parses method strings like "pbe-d4", "wb97x" into base method name and optional dispersion correction type.</p>
+<p>Parses method strings like "pbe-d4", "pbe-xdm", "wb97x" into base method name and optional dispersion correction type.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">method_string</td><td>Full method string (e.g., "pbe-d4") </td></tr>
+    <tr><td class="paramname">method_string</td><td>Full method string (e.g., "pbe-d4", "b3lyp-xdm") </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1driver_1_1MethodSpec.html">MethodSpec</a> with base_method and dispersion fields</dd></dl>
-<p>Examples: "pbe-d4" -&gt; <a class="el" href="structocc_1_1driver_1_1MethodSpec.html">MethodSpec</a>("pbe", "d4") "b3lyp-d4" -&gt; <a class="el" href="structocc_1_1driver_1_1MethodSpec.html">MethodSpec</a>("b3lyp", "d4") "pbe" -&gt; <a class="el" href="structocc_1_1driver_1_1MethodSpec.html">MethodSpec</a>("pbe", "") </p>
+<p>Examples: "pbe-d4" -&gt; <a class="el" href="structocc_1_1driver_1_1MethodSpec.html">MethodSpec</a>("pbe", "d4") "b3lyp-xdm" -&gt; <a class="el" href="structocc_1_1driver_1_1MethodSpec.html">MethodSpec</a>("b3lyp", "xdm") "pbe" -&gt; <a class="el" href="structocc_1_1driver_1_1MethodSpec.html">MethodSpec</a>("pbe", "") </p>
 
 </div>
 </div>

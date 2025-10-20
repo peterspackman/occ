@@ -123,6 +123,9 @@ Functions</h2></td></tr>
 <tr class="separator:a74b21052ae1b6350a3098f2403dea2b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd14e46c74705f0a7827c57fd260c14f" id="r_acd14e46c74705f0a7827c57fd260c14f"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#acd14e46c74705f0a7827c57fd260c14f">xdm_dispersion_interaction_energy</a> (const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;atom_info_a, const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;atom_info_b, const <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &amp;params={})</td></tr>
 <tr class="separator:acd14e46c74705f0a7827c57fd260c14f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8de29a8aea1cead89ed4d33cac8ca74" id="r_af8de29a8aea1cead89ed4d33cac8ca74"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#af8de29a8aea1cead89ed4d33cac8ca74">get_xdm_parameters</a> (const std::string &amp;functional)</td></tr>
+<tr class="memdesc:af8de29a8aea1cead89ed4d33cac8ca74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get functional-specific <a class="el" href="classocc_1_1xdm_1_1XDM.html">XDM</a> damping parameters.  <br /></td></tr>
+<tr class="separator:af8de29a8aea1cead89ed4d33cac8ca74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="adc1b870f50b1fd8768323a3d27429b71" name="adc1b870f50b1fd8768323a3d27429b71"></a>
@@ -238,6 +241,38 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="af8de29a8aea1cead89ed4d33cac8ca74" name="af8de29a8aea1cead89ed4d33cac8ca74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8de29a8aea1cead89ed4d33cac8ca74">&#9670;&#160;</a></span>get_xdm_parameters()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &gt; occ::xdm::get_xdm_parameters </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>functional</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get functional-specific <a class="el" href="classocc_1_1xdm_1_1XDM.html">XDM</a> damping parameters. </p>
+<p>Returns <a class="el" href="classocc_1_1xdm_1_1XDM.html">XDM</a> damping parameters (a1, a2) for the given functional name. Parameters are based on literature values.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">functional</td><td>Name of the functional (case-insensitive) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> if found, std::nullopt otherwise</dd></dl>
+<p>References:</p><ul>
+<li>Becke &amp; Johnson, J. Chem. Phys. 127, 154108 (2007)</li>
+<li>Otero-de-la-Roza &amp; Johnson, J. Chem. Phys. 138, 204109 (2013) </li>
+</ul>
 
 </div>
 </div>
