@@ -35,6 +35,7 @@ target_link_libraries(occ_qm
     occ_io
     occ_gto
     occ_disp
+    occ_xdm
     libcint::libcint
     libecpint_static
 )

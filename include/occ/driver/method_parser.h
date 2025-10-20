@@ -23,19 +23,19 @@ struct MethodSpec {
 /**
  * @brief Parse method string to separate base method and dispersion type
  *
- * Parses method strings like "pbe-d4", "wb97x" into base method
+ * Parses method strings like "pbe-d4", "pbe-xdm", "wb97x" into base method
  * name and optional dispersion correction type.
  *
- * @param method_string Full method string (e.g., "pbe-d4")
+ * @param method_string Full method string (e.g., "pbe-d4", "b3lyp-xdm")
  * @return MethodSpec with base_method and dispersion fields
  *
  * Examples:
  *   "pbe-d4" -> MethodSpec("pbe", "d4")
- *   "b3lyp-d4" -> MethodSpec("b3lyp", "d4")
+ *   "b3lyp-xdm" -> MethodSpec("b3lyp", "xdm")
  *   "pbe" -> MethodSpec("pbe", "")
  */
 inline MethodSpec parse_method_string(const std::string &method_string) {
-  // Look for dispersion suffix like "-d4"
+  // Look for dispersion suffix like "-d4" or "-xdm"
   size_t dash_pos = method_string.rfind('-');
 
   if (dash_pos == std::string::npos) {
@@ -47,7 +47,7 @@ inline MethodSpec parse_method_string(const std::string &method_string) {
   std::string suffix = method_string.substr(dash_pos + 1);
 
   // Check if suffix is a known dispersion type
-  if (suffix == "d4") {
+  if (suffix == "d4" || suffix == "xdm") {
     return MethodSpec(base, suffix);
   }
 

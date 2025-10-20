@@ -5,12 +5,14 @@
 #include <occ/driver/method_parser.h>
 #include <occ/driver/single_point.h>
 #include <occ/io/occ_input.h>
+#include <occ/qm/gradients.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/mo_integral_engine.h>
 #include <occ/qm/mp2.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/solvent/solvation_correction.h>
+#include <occ/xdm/xdm.h>
 
 namespace occ::driver {
 
@@ -141,9 +143,12 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
     }
   }
 
-  // Add D4 dispersion correction if specified
-  if (!method_spec.dispersion.empty()) {
-    if (method_spec.dispersion == "d4") {
+  // Add dispersion correction if specified via method string or --xdm flag
+  bool use_xdm = (method_spec.dispersion == "xdm") || config.dispersion.evaluate_correction;
+  bool use_d4 = (method_spec.dispersion == "d4");
+
+  if (use_d4 || use_xdm) {
+    if (use_d4) {
       occ::disp::D4Dispersion disp(m.atoms());
       disp.set_charge(config.electronic.charge);
 
@@ -156,6 +161,21 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
       double e_disp = disp.energy();
       log::info("D4 dispersion correction:        {: 20.12f}", e_disp);
       e += e_disp;
+      log::info("Dispersion-corrected energy:     {: 20.12f}", e);
+    } else if (use_xdm) {
+      auto wfn = scf.wavefunction();
+
+      // Check if user specified custom XDM parameters via flags
+      std::optional<xdm::XDM::Parameters> xdm_params;
+      if (config.dispersion.xdm_a1 != 1.0 || config.dispersion.xdm_a2 != 1.0) {
+        xdm_params = xdm::XDM::Parameters{config.dispersion.xdm_a1, config.dispersion.xdm_a2};
+      }
+
+      auto [e_xdm, grad_xdm] = qm::impl::compute_xdm_dispersion(
+          wfn.basis, wfn.mo, config.electronic.charge, method_spec.base_method, xdm_params);
+
+      log::info("XDM dispersion correction:       {: 20.12f}", e_xdm);
+      e += e_xdm;
       log::info("Dispersion-corrected energy:     {: 20.12f}", e);
     } else {
       log::warn("Unsupported dispersion type '{}' - ignoring", method_spec.dispersion);

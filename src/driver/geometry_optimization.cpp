@@ -13,6 +13,7 @@
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
+#include <occ/xdm/xdm.h>
 
 using occ::core::Molecule;
 using occ::dft::DFT;
@@ -122,21 +123,39 @@ run_method_for_optimization(const Molecule &m, const occ::qm::AOBasis &basis,
 
   auto wfn = scf.wavefunction();
 
-  // Add D4 dispersion energy if specified
-  if (!method_spec.dispersion.empty() && method_spec.dispersion == "d4") {
-    occ::disp::D4Dispersion disp(m.atoms());
-    disp.set_charge(config.electronic.charge);
+  // Add dispersion energy if specified via method string or --xdm flag
+  bool use_xdm = (method_spec.dispersion == "xdm") || config.dispersion.evaluate_correction;
+  bool use_d4 = (method_spec.dispersion == "d4");
 
-    bool success = disp.set_functional(method_spec.base_method);
-    if (!success) {
-      log::warn("D4 parameters not found for functional '{}', using default PBE parameters",
-                method_spec.base_method);
+  if (use_d4 || use_xdm) {
+    if (use_d4) {
+      occ::disp::D4Dispersion disp(m.atoms());
+      disp.set_charge(config.electronic.charge);
+
+      bool success = disp.set_functional(method_spec.base_method);
+      if (!success) {
+        log::warn("D4 parameters not found for functional '{}', using default PBE parameters",
+                  method_spec.base_method);
+      }
+
+      double e_d4 = disp.energy();
+      log::info("D4 dispersion correction:        {: 20.12f}", e_d4);
+      wfn.energy.total += e_d4;
+      log::info("Dispersion-corrected energy:     {: 20.12f}", wfn.energy.total);
+    } else if (use_xdm) {
+      // Check if user specified custom XDM parameters via flags
+      std::optional<xdm::XDM::Parameters> xdm_params;
+      if (config.dispersion.xdm_a1 != 1.0 || config.dispersion.xdm_a2 != 1.0) {
+        xdm_params = xdm::XDM::Parameters{config.dispersion.xdm_a1, config.dispersion.xdm_a2};
+      }
+
+      auto [e_xdm, grad_xdm] = qm::impl::compute_xdm_dispersion(
+          wfn.basis, wfn.mo, config.electronic.charge, method_spec.base_method, xdm_params);
+
+      log::info("XDM dispersion correction:       {: 20.12f}", e_xdm);
+      wfn.energy.total += e_xdm;
+      log::info("Dispersion-corrected energy:     {: 20.12f}", wfn.energy.total);
     }
-
-    double e_d4 = disp.energy();
-    log::info("D4 dispersion correction:        {: 20.12f}", e_d4);
-    wfn.energy.total += e_d4;
-    log::info("Dispersion-corrected energy:     {: 20.12f}", wfn.energy.total);
   }
 
   // Set gradient-specific precision if different from SCF precision
@@ -146,15 +165,21 @@ run_method_for_optimization(const Molecule &m, const occ::qm::AOBasis &basis,
 
   occ::qm::GradientEvaluator eval(scf.m_procedure);
 
-  // Enable D4 dispersion correction if specified
-  if (!method_spec.dispersion.empty()) {
-    if (method_spec.dispersion == "d4") {
+  // Enable dispersion gradient if specified via method string or --xdm flag
+  if (use_d4 || use_xdm) {
+    if (use_d4) {
       eval.set_dispersion_d4(method_spec.base_method);
       occ::log::info("D4 dispersion gradient enabled for functional: {}",
                      method_spec.base_method);
-    } else {
-      occ::log::warn("Unsupported dispersion type '{}' - ignoring",
-                     method_spec.dispersion);
+    } else if (use_xdm) {
+      // Pass custom XDM parameters to gradient evaluator if specified
+      std::optional<xdm::XDM::Parameters> xdm_params;
+      if (config.dispersion.xdm_a1 != 1.0 || config.dispersion.xdm_a2 != 1.0) {
+        xdm_params = xdm::XDM::Parameters{config.dispersion.xdm_a1, config.dispersion.xdm_a2};
+      }
+      eval.set_dispersion_xdm(method_spec.base_method, xdm_params);
+      occ::log::info("XDM dispersion gradient enabled for functional: {}",
+                     method_spec.base_method);
     }
   }
 
