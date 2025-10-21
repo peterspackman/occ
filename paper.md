@@ -9,12 +9,12 @@ tags:
   - density functional theory
   - crystal growth
 authors:
-  - name: Peter Spackman
+  - name: Peter R. Spackman
     orcid: 0000-0002-6532-8571
     corresponding: true
     affiliation: 1
 affiliations:
- - name: School of Molecular and Life Sciences, Curtin University, Australia
+ - name: School of Molecular and Life Sciences, Curtin University, Perth, WA 6845, Australia
    index: 1
 date: 21 October 2025
 bibliography: paper.bib
