@@ -25,6 +25,9 @@ add_subdirectory(main)
 
 if("${WITH_PYTHON_BINDINGS}")
 
+# Include Python bindings utilities
+include(PythonBindings)
+
 set(PYTHON_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/python/cg_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/core_bindings.cpp"
@@ -46,7 +49,7 @@ nanobind_add_module(_occpy
     ${PYTHON_BINDING_SOURCES}
 )
 
-target_include_directories(_occpy PRIVATE 
+target_include_directories(_occpy PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/python"
 )
 
@@ -59,6 +62,10 @@ target_link_libraries(_occpy PUBLIC
 )
 
 install(TARGETS _occpy LIBRARY DESTINATION occpy)
+
+# Generate Python stub files for type hints and documentation
+add_nanobind_stubs(_occpy _occpy ${CMAKE_CURRENT_BINARY_DIR}/stubs)
+
 endif()
 
 # JavaScript/WASM bindings for Emscripten
