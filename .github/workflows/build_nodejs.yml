@@ -11,6 +11,7 @@ on:
       - 'include/occ/slater/**'
       - 'src/occjs.cpp'
       - 'scripts/build_wasm.sh'
+      - 'share/**'
       - '.github/workflows/build_nodejs.yml'
   pull_request:
     branches: ["main", "develop"]
@@ -21,6 +22,7 @@ on:
       - 'include/occ/slater/**'
       - 'src/occjs.cpp'
       - 'scripts/build_wasm.sh'
+      - 'share/**'
       - '.github/workflows/build_nodejs.yml'
   workflow_dispatch:
     inputs:
@@ -73,7 +75,7 @@ jobs:
       with:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
-        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
+        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh', 'share/**/*.json') }}
         restore-keys: |
           js-build-${{ runner.os }}-
 

@@ -69,7 +69,9 @@ jobs:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
           ${{github.workspace}}/build
-        key: ${{ matrix.name }}-occ-build-cache
+        key: ${{ matrix.name }}-occ-build-${{ hashFiles('**/CMakeLists.txt', 'share/**/*.json') }}
+        restore-keys: |
+          ${{ matrix.name }}-occ-build-
 
     - name: Run build script (non-Windows)
       if: runner.os != 'Windows'
