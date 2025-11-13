@@ -19,6 +19,7 @@ public:
   Mat3N compute_electric_field(const core::Dimer &dimer) override;
   const std::vector<Vec> &partial_charges() const override;
   double coulomb_scale_factor() const override;
+  double polarization_scale_factor() const { return m_model_params.polarization; }
   void compute_total_energy(CEEnergyComponents &components) const override;
 
   Mat3N compute_total_electric_field_from_neighbors(

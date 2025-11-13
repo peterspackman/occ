@@ -4,6 +4,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <fstream>
+#include <numeric>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/progress.h>
@@ -551,6 +552,81 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
   // Get dimers from crystal (use smaller radius for CE calculations)
   auto crystal_dimers = crystal.symmetry_unique_dimers(config.pair_energy_radius);
 
+  // Compute external potential energies for each embedded wavefunction
+  // This is <ψ|V_ext|ψ> where V_ext is from point charges at all neighbor positions
+  std::vector<double> external_potential_energies(unique_molecules.size(), 0.0);
+
+  // Also store per-neighbor contributions for corrected pair energies
+  // external_potential_per_neighbor[i][neighbor_idx] = V_ext contribution from that neighbor
+  std::vector<std::vector<double>> external_potential_per_neighbor(unique_molecules.size());
+
+  occ::log::info("Computing external potential energies for embedded wavefunctions");
+  for (size_t i = 0; i < unique_molecules.size(); i++) {
+    const auto &mol = unique_molecules[i];
+    const auto &wfn = wavefunctions[i];
+
+    // Get point charges at all neighbor positions for this molecule
+    auto external_info = create_external_charges_with_neighbors(
+        crystal, asymmetric_charges, mol, config.pair_energy_radius);
+
+    if (!external_info.all_charges.empty()) {
+      // Create basis for computing V_ext matrix
+      auto basis = qm::AOBasis::load(mol.atoms(), config.basis_name);
+      basis.set_pure(config.basis_spherical);
+      qm::HartreeFock hf(basis);
+
+      // Compute per-neighbor V_ext contributions (using linearity of expectation value)
+      external_potential_per_neighbor[i].resize(external_info.per_neighbor_info.size());
+      double V_ext_total = 0.0;
+
+      for (size_t neighbor_idx = 0; neighbor_idx < external_info.per_neighbor_info.size(); neighbor_idx++) {
+        const auto &neighbor_info = external_info.per_neighbor_info[neighbor_idx];
+
+        // Build point charge list for this specific neighbor
+        std::vector<occ::core::PointCharge> neighbor_charges;
+        for (size_t j = 0; j < neighbor_info.charges.size(); j++) {
+          neighbor_charges.emplace_back(neighbor_info.charges(j), neighbor_info.positions.col(j));
+        }
+
+        // Compute V_ext for this neighbor
+        Mat V_ext_neighbor = hf.compute_point_charge_interaction_matrix(neighbor_charges);
+        double V_ext_elec_neighbor = 2 * occ::qm::expectation(wfn.mo.kind, wfn.mo.D, V_ext_neighbor);
+        double V_ext_nuc_neighbor = hf.nuclear_point_charge_interaction_energy(neighbor_charges);
+        double V_ext_neighbor_total = V_ext_elec_neighbor + V_ext_nuc_neighbor;
+
+        external_potential_per_neighbor[i][neighbor_idx] = V_ext_neighbor_total;
+        V_ext_total += V_ext_neighbor_total;
+      }
+
+      external_potential_energies[i] = V_ext_total;
+
+      occ::log::info("  Molecule {}: V_ext(total) = {:.8f} Ha ({:.2f} kJ/mol) from {} neighbors",
+                     i, V_ext_total, V_ext_total * 2625.5, external_info.per_neighbor_info.size());
+
+      // Write point charges to file for debugging
+      std::string pc_filename = fmt::format("point_charges_mol_{}.xyz", i);
+      std::ofstream pc_file(pc_filename);
+      if (pc_file.is_open()) {
+        pc_file << external_info.all_charges.size() << "\n";
+        pc_file << fmt::format("Point charges for molecule {} (total charge: {:.4f})\n",
+                               i, std::accumulate(external_info.all_charges.begin(),
+                                                 external_info.all_charges.end(), 0.0,
+                                                 [](double sum, const auto &pc) { return sum + pc.charge(); }));
+        for (const auto &pc : external_info.all_charges) {
+          auto pos = pc.position();
+          // Use 'X' as element symbol, with charge in the comment field
+          pc_file << fmt::format("X {:.6f} {:.6f} {:.6f}  # q={:.4f}\n",
+                                pos(0) / occ::units::ANGSTROM_TO_BOHR,
+                                pos(1) / occ::units::ANGSTROM_TO_BOHR,
+                                pos(2) / occ::units::ANGSTROM_TO_BOHR,
+                                pc.charge());
+        }
+        pc_file.close();
+        occ::log::info("  Wrote {} point charges to {}", external_info.all_charges.size(), pc_filename);
+      }
+    }
+  }
+
   for (size_t i = 0; i < unique_molecules.size(); i++) {
     const auto &mol = unique_molecules[i];
     auto &wfn_a = wavefunctions[i];
@@ -581,6 +657,10 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
     double total_ce_embedded = 0.0;
     double total_ce_gas = 0.0;
     double total_wolf_classical = 0.0;
+
+    // Track CE components
+    interaction::CEEnergyComponents sum_ce_embedded;
+    interaction::CEEnergyComponents sum_ce_gas;
 
     // Setup progress tracking
     size_t total_neighbors = neighbors.size();
@@ -653,6 +733,10 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
       total_ce_gas += ce_gas.total;
       total_wolf_classical += wolf_classical;
 
+      // Accumulate CE components
+      sum_ce_embedded += ce_embedded;
+      sum_ce_gas += ce_gas;
+
       occ::log::debug("  Pair [{},{}]: CE_embed={:.6f}, CE_gas={:.6f}, Wolf={:.6f} Ha",
                       i, mol_b_idx, ce_embedded.total, ce_gas.total, wolf_classical);
 
@@ -712,6 +796,10 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
     occ::log::info("    ΣE_Wolf (classical): {:.8f} Ha ({:.2f} kJ/mol)",
                    total_wolf_classical, total_wolf_classical * 2625.5);
     occ::log::info("");
+    occ::log::info("  External potential correction:");
+    occ::log::info("    V_ext (total):       {:.8f} Ha ({:.2f} kJ/mol)",
+                   external_potential_energies[i], external_potential_energies[i] * 2625.5);
+    occ::log::info("");
     occ::log::info("  Non-additive effects:");
     occ::log::info("    Total coupling:      {:.8f} Ha ({:.2f} kJ/mol)",
                    coupling_result.total_coupling,
@@ -730,21 +818,92 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
     double quantum_correction = 0.5 * (total_ce_gas - total_wolf_classical);
     double lattice_energy_corrected = embed_energy + quantum_correction;
 
-    occ::log::info("  Method 1: Simple gas-phase CE sum");
-    occ::log::info("    E_latt = (1/2) × ΣE_int^gas");
-    occ::log::info("           = {:.8f} Ha ({:.2f} kJ/mol)",
-                   lattice_energy_gas_simple, lattice_energy_gas_simple * 2625.5);
+    // Print CE component breakdown table
     occ::log::info("");
-    occ::log::info("  Method 2: Embedding + quantum correction");
-    occ::log::info("    E_embedding = E_embed - E_gas");
-    occ::log::info("                = {:.8f} Ha ({:.2f} kJ/mol) [Wolf all neighbors]",
-                   embed_energy, embed_energy * 2625.5);
-    occ::log::info("    Quantum correction = (1/2) × Σ_near [E_int^gas - E_Wolf]");
-    occ::log::info("                       = {:.8f} Ha ({:.2f} kJ/mol) [Replace near Wolf with CE]",
-                   quantum_correction, quantum_correction * 2625.5);
-    occ::log::info("    E_latt = E_embedding + Quantum correction");
-    occ::log::info("           = {:.8f} Ha ({:.2f} kJ/mol)",
-                   lattice_energy_corrected, lattice_energy_corrected * 2625.5);
+    occ::log::info("========================================");
+    occ::log::info("CE Pairwise Energy Components");
+    occ::log::info("========================================");
+    occ::log::info("");
+    occ::log::info("  {:<25} {:>12} {:>12} {:>12}", "Component", "Gas", "Embedded", "Δ(Pol)");
+    occ::log::info("  {:<25} {:>12} {:>12} {:>12}", "", "(kJ/mol)", "(kJ/mol)", "(kJ/mol)");
+    occ::log::info("  {:<25} {:>12} {:>12} {:>12}", std::string(25, '-'), std::string(12, '-'), std::string(12, '-'), std::string(12, '-'));
+    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Coulomb",
+                   sum_ce_gas.coulomb_kjmol(), sum_ce_embedded.coulomb_kjmol(),
+                   (sum_ce_embedded.coulomb - sum_ce_gas.coulomb) * 2625.5);
+    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Exchange",
+                   sum_ce_gas.exchange_kjmol(), sum_ce_embedded.exchange_kjmol(),
+                   (sum_ce_embedded.exchange - sum_ce_gas.exchange) * 2625.5);
+    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Repulsion",
+                   sum_ce_gas.repulsion_kjmol(), sum_ce_embedded.repulsion_kjmol(),
+                   (sum_ce_embedded.repulsion - sum_ce_gas.repulsion) * 2625.5);
+    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Polarization",
+                   sum_ce_gas.polarization_kjmol(), sum_ce_embedded.polarization_kjmol(),
+                   (sum_ce_embedded.polarization - sum_ce_gas.polarization) * 2625.5);
+    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Dispersion",
+                   sum_ce_gas.dispersion_kjmol(), sum_ce_embedded.dispersion_kjmol(),
+                   (sum_ce_embedded.dispersion - sum_ce_gas.dispersion) * 2625.5);
+    occ::log::info("  {:<25} {:>12} {:>12} {:>12}", std::string(25, '-'), std::string(12, '-'), std::string(12, '-'), std::string(12, '-'));
+    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Total",
+                   sum_ce_gas.total_kjmol(), sum_ce_embedded.total_kjmol(),
+                   (sum_ce_embedded.total - sum_ce_gas.total) * 2625.5);
+    occ::log::info("");
+
+    // Decompose energies
+    double polarization_from_embed = embed_energy - external_potential_energies[i];
+    double polarization_from_ce = total_ce_embedded - total_ce_gas;
+
+    occ::log::info("");
+    occ::log::info("========================================");
+    occ::log::info("Energy Components Table");
+    occ::log::info("========================================");
+    occ::log::info("");
+    occ::log::info("  {:<40} {:>12} {:>12}", "Component", "Hartree", "kJ/mol");
+    occ::log::info("  {:<40} {:>12} {:>12}", std::string(40, '-'), std::string(12, '-'), std::string(12, '-'));
+    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "E_gas (monomer)", gas_phase_energies[i], gas_phase_energies[i] * 2625.5);
+    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "E_embedded (monomer)", wfn_a.energy.total, wfn_a.energy.total * 2625.5);
+    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΔE_embed = E_emb - E_gas", embed_energy, embed_energy * 2625.5);
+    occ::log::info("");
+    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "V_ext (total, all neighbors)", external_potential_energies[i], external_potential_energies[i] * 2625.5);
+    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "E_pol = ΔE_embed - V_ext", polarization_from_embed, polarization_from_embed * 2625.5);
+    occ::log::info("");
+    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΣE_CE(gas)", total_ce_gas, total_ce_gas * 2625.5);
+    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΣE_CE(embedded)", total_ce_embedded, total_ce_embedded * 2625.5);
+    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΔE_pol(CE) = ΣE_CE(emb) - ΣE_CE(gas)", polarization_from_ce, polarization_from_ce * 2625.5);
+    occ::log::info("");
+    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΣE_Wolf(classical)", total_wolf_classical, total_wolf_classical * 2625.5);
+    occ::log::info("");
+
+    // Get CE model scale factors
+    double coulomb_scale = ce_model_embedded.coulomb_scale_factor();
+    double polarization_scale = ce_model_embedded.polarization_scale_factor();
+
+    occ::log::info("  CE Model Parameters:");
+    occ::log::info("    Coulomb scale factor:      {:.4f}", coulomb_scale);
+    occ::log::info("    Polarization scale factor: {:.4f}", polarization_scale);
+    occ::log::info("");
+
+    // Lattice energy estimates (factor of 0.5 for double counting in sums)
+    double latt_simple_gas = 0.5 * total_ce_gas;
+    double latt_simple_embedded = 0.5 * total_ce_embedded;
+    double latt_corrected = embed_energy + 0.5 * total_ce_embedded - external_potential_energies[i];
+
+    // Remove CE polarization term since it's already included in the model
+    double ce_pol_correction = 0.5 * polarization_scale * sum_ce_embedded.polarization;
+    double latt_no_ce_pol = latt_corrected - ce_pol_correction;
+
+    occ::log::info("========================================");
+    occ::log::info("Lattice Energy Estimates");
+    occ::log::info("========================================");
+    occ::log::info("");
+    occ::log::info("  {:<50} {:>12.6f} {:>12.2f}", "0.5 × ΣE_CE(gas)", latt_simple_gas, latt_simple_gas * 2625.5);
+    occ::log::info("  {:<50} {:>12.6f} {:>12.2f}", "0.5 × ΣE_CE(embedded)", latt_simple_embedded, latt_simple_embedded * 2625.5);
+    occ::log::info("  {:<50} {:>12.6f} {:>12.2f}", "ΔE_embed + 0.5×ΣE_CE(emb) - V_ext", latt_corrected, latt_corrected * 2625.5);
+    occ::log::info("");
+    occ::log::info("  Removing CE polarization term (already in model):");
+    occ::log::info("    0.5 × k_pol × ΣCE_pol(emb) = 0.5 × {:.4f} × {:.6f}", polarization_scale, sum_ce_embedded.polarization);
+    occ::log::info("                                = {:>12.6f} {:>12.2f}", ce_pol_correction, ce_pol_correction * 2625.5);
+    occ::log::info("");
+    occ::log::info("  {:<50} {:>12.6f} {:>12.2f}", "ΔE_embed + 0.5×ΣE_CE - V_ext - 0.5×k×ΣCEpol", latt_no_ce_pol, latt_no_ce_pol * 2625.5);
     occ::log::info("");
 
     // Print significant coupling terms
@@ -807,7 +966,7 @@ CLI::App *add_embed_subcommand(CLI::App &app) {
                   "use Wolf sum instead of regular point charges");
   embed->add_flag("--atomic", config->atomic_mode,
                   "treat each atom as separate molecule (for ionic crystals)");
-  embed->add_option("--net-charges", config->net_charges,
+  embed->add_option("--charges,--net-charges", config->net_charges,
                     "net charges for each molecule/atom (comma-separated)");
   embed->add_option("--multiplicities", config->multiplicities,
                     "multiplicities for each molecule/atom (comma-separated)");
