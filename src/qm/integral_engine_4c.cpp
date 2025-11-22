@@ -1,9 +1,5 @@
 #include "detail/four_center_kernels.h"
-#include <chrono>
-#include <cmath>
-#include <occ/core/log.h>
-#include <occ/core/timings.h>
-#include <occ/qm/integral_engine.h>
+
 
 namespace occ::qm {
 

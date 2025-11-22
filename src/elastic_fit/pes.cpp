@@ -82,7 +82,7 @@ occ::Mat PES::solve_linear_system(const occ::Mat &A, const occ::Mat &B,
     return A.lu().solve(B);
   case LinearSolverType::SVD: {
     Eigen::JacobiSVD<occ::Mat> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
-    svd.setThreshold(svd_threshold);
+    svd.setThreshold(svd_threshold); // Added to control svd_threshold  
     return svd.solve(B);
   }
   case LinearSolverType::QR:
