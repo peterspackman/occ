@@ -100,26 +100,9 @@ public:
     }
   }
 
-  static inline occ::Mat solve_linear_system(const occ::Mat &A,
-                                             const occ::Mat &B,
-                                             LinearSolverType solver_type,
-                                             double svd_threshold = 1e-12) {
-    switch (solver_type) {
-    case LinearSolverType::LU:
-      return A.lu().solve(B);
-    case LinearSolverType::SVD: {
-      Eigen::JacobiSVD<occ::Mat> svd(A,
-                                     Eigen::ComputeThinU | Eigen::ComputeThinV);
-      return svd.solve(B);
-    }
-    case LinearSolverType::QR:
-      return A.householderQr().solve(B);
-    case LinearSolverType::LDLT:
-      return A.ldlt().solve(B);
-    default:
-      throw std::runtime_error("Unknown linear solver type");
-    }
-  }
+  static occ::Mat solve_linear_system(const occ::Mat &A, const occ::Mat &B,
+                                      LinearSolverType solver_type,
+                                      double svd_threshold = 1e-12);
 };
 
 } // namespace occ::elastic_fit
