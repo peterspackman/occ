@@ -22,6 +22,25 @@ if(SKBUILD)
   set(WITH_PYTHON_BINDINGS ON)
 endif()
 
+#Use ccache to speed up rebuilds
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    message(STATUS "Found ccache in ${CCACHE_PROGRAM}")
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+else()
+    message(WARNING "ccache not found, compiling without it")  
+endif()
+
+#Use lld as faster alternative to ld
+find_program(LLD_PROGRAM lld)
+if(LLD_PROGRAM)
+    message(STATUS "Using lld linker at ${LLD_PROGRAM}")
+    set(CMAKE_LINKER "${LLD_PROGRAM}")
+else()
+    message(WARNING "lld linker not found, using default linker")
+endif()
+
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
