@@ -86,6 +86,18 @@ struct Wavefunction {
     c -= basis.total_ecp_electrons();
     return c;
   }
+  Vec nuclear_charges() const { return  nuclear_charges(atomic_numbers());}
+  Vec nuclear_charges(const IVec& nums) const {
+    Vec atomic_prop = nums.cast<double>();
+    if (basis.have_ecps()) {
+      // set nuclear charges to include ecp
+      const auto &ecp_electrons = basis.ecp_electrons();
+      for (int i = 0; i < atoms.size(); i++) {
+        atomic_prop(i) -= ecp_electrons[i];
+      }
+    }
+    return atomic_prop;
+  }
   inline int n_alpha() const { return mo.n_alpha; }
   inline int n_beta() const { return mo.n_beta; }
   bool is_restricted() const { return mo.kind == SpinorbitalKind::Restricted; }
