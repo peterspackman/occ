@@ -31,7 +31,8 @@ OccInput read_occ_input_file(const std::string path) {
     throw std::runtime_error("Not yet implemented, only SCF has direct reading implemented.");
 
   result.runtime.threads = config["threads"].value_or(result.runtime.threads);
-  result.filename = config["input"].value_or(result.filename);
+  result.verbosity = config["verbosity"].value_or(result.verbosity);
+  result.filename = scf["input"].value_or(result.filename);
   result.method.name = scf["method"].value_or(result.method.name);
   result.basis.name = scf["basis"].value_or(result.basis.name);
   result.electronic.charge = scf["charge"].value_or(result.electronic.charge);
