@@ -344,48 +344,37 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   // Optimization convergence criteria
   scf->add_option("--opt-gradient-max,--opt_gradient_max",
                   config->optimization.gradient_max,
-                  "Maximum gradient component for convergence (Ha/Angstrom)")
-      ->group(gOpt);
+                  "Maximum gradient component for convergence (Ha/Angstrom)");
   scf->add_option("--opt-gradient-rms,--opt_gradient_rms",
                   config->optimization.gradient_rms,
-                  "RMS gradient for convergence (Ha/Angstrom)")
-      ->group(gOpt);
+                  "RMS gradient for convergence (Ha/Angstrom)");
   scf->add_option("--opt-step-max,--opt_step_max",
                   config->optimization.step_max,
-                  "Maximum displacement for convergence (Angstrom)")
-      ->group(gOpt);
+                  "Maximum displacement for convergence (Angstrom)");
   scf->add_option("--opt-step-rms,--opt_step_rms",
                   config->optimization.step_rms,
-                  "RMS displacement for convergence (Angstrom)")
-      ->group(gOpt);
+                  "RMS displacement for convergence (Angstrom)");
   scf->add_option("--opt-energy-change,--opt_energy_change",
                   config->optimization.energy_change,
-                  "Energy change threshold for convergence (Hartree)")
-      ->group(gOpt);
+                  "Energy change threshold for convergence (Hartree)");
   scf->add_flag("--opt-use-energy,--opt_use_energy",
                 config->optimization.use_energy_criterion,
-                "Use energy change as convergence criterion")
-      ->group(gOpt);
+                "Use energy change as convergence criterion");
   scf->add_option("--opt-max-iterations,--opt_max_iterations",
                   config->optimization.max_iterations,
-                  "Maximum number of optimization steps")
-      ->group(gOpt);
+                  "Maximum number of optimization steps");
   scf->add_option("--opt-gradient-precision,--opt_gradient_precision",
                   config->optimization.gradient_integral_precision,
-                  "Final gradient integral precision")
-      ->group(kHidden);
+                  "Final gradient integral precision");
   scf->add_option("--opt-early-gradient-precision,--opt_early_gradient_precision",
                   config->optimization.early_gradient_integral_precision,
-                  "Looser gradient integral precision for early steps")
-      ->group(kHidden);
+                  "Looser gradient integral precision for early steps");
   scf->add_option("--opt-tight-threshold,--opt_tight_threshold",
                   config->optimization.tight_gradient_threshold,
-                  "Energy change threshold to switch to tight gradient precision (Hartree)")
-      ->group(kHidden);
+                  "Energy change threshold to switch to tight gradient precision (Hartree)");
   scf->add_flag("--opt-write-wavefunctions,--opt_write_wavefunctions",
                 config->optimization.write_wavefunction_steps,
-                "Write wavefunction at each optimization step")
-      ->group(gOpt);
+                "Write wavefunction at each optimization step");
   scf->add_flag("--frequencies,--freq",
                 config->optimization.compute_frequencies,
                 "Compute vibrational frequencies after geometry optimization")
@@ -454,6 +443,31 @@ void run_scf_subcommand(occ::io::OccInput config) {
       write_output_files(config, wfn2);
     }
   }
+}
+
+Wavefunction run_scf_external(occ::io::OccInput config, bool write_wfn = false) {
+  occ::main::print_header();
+
+  occ::timing::start(occ::timing::category::io);
+
+  config.name = config.filename;
+  // read input file first so we can override with command line settings
+  read_input_file(config.filename, config);
+  if (config.filename.empty()) {
+    config.filename = config.name;
+  }
+  occ::timing::stop(occ::timing::category::io);
+
+  if (!config.geometry.point_charge_filename.empty()) {
+    occ::io::PointChargeFileReader pc(config.geometry.point_charge_filename);
+    pc.update_occ_input(config);
+  }
+
+  Wavefunction wfn = occ::driver::single_point(config);
+  occ::log::info("Driver: {}", config.driver.driver);
+  if (write_wfn)
+      write_output_files(config, wfn);
+  return wfn;
 }
 
 } // namespace occ::main
