@@ -67,7 +67,7 @@ jobs:
     - name: Setup Emscripten
       uses: mymindstorm/setup-emsdk@v14
       with:
-        version: '3.1.69'
+        version: '4.0.9'
         actions-cache-folder: 'emsdk-cache'
 
     - name: Cache CPM Dependencies

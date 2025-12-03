@@ -17,6 +17,7 @@ jobs:
     name: Build wheels on ${{ matrix.os }}-py${{ matrix.pyver }}-${{ matrix.arch || 'default' }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           # Linux builds - single arch
