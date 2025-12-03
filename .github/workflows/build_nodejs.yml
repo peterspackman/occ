@@ -145,7 +145,10 @@ jobs:
     needs: test-js
     runs-on: ubuntu-latest
     if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
-    
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v5
@@ -159,7 +162,7 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
 
     - name: Download WASM build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: wasm-build
         path: packages/occjs/dist/
@@ -185,10 +188,8 @@ jobs:
     - name: Publish to npm
       if: steps.version.outputs.should_publish == 'true'
       working-directory: packages/occjs
-      run: npm publish --ignore-scripts
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  
+      run: npm publish --provenance --access public --ignore-scripts
+
   publish-github:
     name: Publish to GitHub Packages
     needs: test-js
@@ -197,7 +198,7 @@ jobs:
       contents: read
       packages: write
     if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v5
@@ -212,7 +213,7 @@ jobs:
         scope: '@peterspackman'
 
     - name: Download WASM build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: wasm-build
         path: packages/occjs/dist/
@@ -220,14 +221,6 @@ jobs:
     - name: Install dependencies
       working-directory: packages/occjs
       run: npm ci
-
-    - name: Configure package for GitHub registry
-      working-directory: packages/occjs
-      run: |
-        # Update package.json to use GitHub scope
-        npm pkg set name="@peterspackman/occjs"
-        # Ensure publishConfig points to GitHub
-        npm pkg set publishConfig.registry="https://npm.pkg.github.com"
 
     - name: Publish to GitHub Packages
       working-directory: packages/occjs
