@@ -9,5 +9,6 @@ var classocc_1_1interaction_1_1CEEnergyModel =
     [ "coulomb_scale_factor", "classocc_1_1interaction_1_1CEEnergyModel.html#addbad8ef23e6c57bb40f66f136834200", null ],
     [ "get_polarizabilities", "classocc_1_1interaction_1_1CEEnergyModel.html#abd2c26e3d401b4ffe2e91fdc733029cc", null ],
     [ "partial_charges", "classocc_1_1interaction_1_1CEEnergyModel.html#a632359a397d87a1c478039cc15959840", null ],
+    [ "polarization_scale_factor", "classocc_1_1interaction_1_1CEEnergyModel.html#ae648ff73176ee54c1436c885ea8c435b", null ],
     [ "set_model_name", "classocc_1_1interaction_1_1CEEnergyModel.html#a606675ea82dd28e34b016fc6739108cc", null ]
 ];

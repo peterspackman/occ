@@ -1,7 +1,7 @@
 var searchData=
 [
   ['i_0',['i',['../classocc_1_1opt_1_1BondCoordinate.html#a799afd07aad54b72d8729041de877840',1,'occ::opt::BondCoordinate::i'],['../classocc_1_1opt_1_1AngleCoordinate.html#a57d4f4ff7c3d58cbf84405b4c4f73469',1,'occ::opt::AngleCoordinate::i'],['../classocc_1_1opt_1_1DihedralCoordinate.html#ae974de6b86210c00b53274546108305d',1,'occ::opt::DihedralCoordinate::i']]],
-  ['id_1',['id',['../structocc_1_1dft_1_1FuncComponent.html#a7f6a413e3e9311e982c3a3913a52fcfa',1,'occ::dft::FuncComponent']]],
+  ['id_1',['id',['../structocc_1_1dft_1_1FuncComponent.html#a7f6a413e3e9311e982c3a3913a52fcfa',1,'occ::dft::FuncComponent::id'],['../structocc_1_1elastic__fit_1_1MoleculeInput.html#a47c45dae4f61b52f501f3f3a9320ec79',1,'occ::elastic_fit::MoleculeInput::id']]],
   ['idx_5fa_2',['idx_a',['../structocc_1_1io_1_1QCSchemaBond.html#adc0c8e6cedf0965fc9ba8dcf2dfc50ff',1,'occ::io::QCSchemaBond']]],
   ['idx_5fb_3',['idx_b',['../structocc_1_1io_1_1QCSchemaBond.html#a5f4c31ab90d5b06f7dcb8039eb0f32fa',1,'occ::io::QCSchemaBond']]],
   ['impl_4',['impl',['../structtinyply_1_1PlyFile.html#a97f1fc1106ac605bef3b00681d7492e3',1,'tinyply::PlyFile']]],

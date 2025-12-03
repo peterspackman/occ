@@ -6,7 +6,7 @@ var searchData=
   ['labels_3',['labels',['../classocc_1_1crystal_1_1Crystal.html#a1c666ab37eb2002e7f4a0cf4fd04adf3',1,'occ::crystal::Crystal']]],
   ['lattice_5fenergies_4',['lattice_energies',['../classocc_1_1driver_1_1CrystalGrowthCalculator.html#a2e1c9f503c97e1a0fb2e056c7aabc1f6',1,'occ::driver::CrystalGrowthCalculator']]],
   ['lattice_5fenergy_5',['lattice_energy',['../classocc_1_1elastic__fit_1_1PES.html#a2a58b800de356dc83b00ad6ee3fad066',1,'occ::elastic_fit::PES']]],
-  ['lattice_5fvectors_6',['lattice_vectors',['../classocc_1_1xtb_1_1TbliteCalculator.html#aee41b572a9128719fc929dc95e53bf86',1,'occ::xtb::TbliteCalculator::lattice_vectors()'],['../classocc_1_1xtb_1_1XTBCalculator.html#ad593a9d594833a1a293e08cc6053f8cc',1,'occ::xtb::XTBCalculator::lattice_vectors()']]],
+  ['lattice_5fvectors_6',['lattice_vectors',['../classocc_1_1xtb_1_1XTBCalculator.html#ad593a9d594833a1a293e08cc6053f8cc',1,'occ::xtb::XTBCalculator::lattice_vectors()'],['../classocc_1_1elastic__fit_1_1PES.html#a7ffb3eb20e1fbabe342d53c8b3139c93',1,'occ::elastic_fit::PES::lattice_vectors()'],['../classocc_1_1xtb_1_1TbliteCalculator.html#aee41b572a9128719fc929dc95e53bf86',1,'occ::xtb::TbliteCalculator::lattice_vectors()']]],
   ['latticeenergycalculator_7',['LatticeEnergyCalculator',['../classocc_1_1interaction_1_1LatticeEnergyCalculator.html#a695ddf5cad12305dccf0ae4fb089e91b',1,'occ::interaction::LatticeEnergyCalculator']]],
   ['lebedev_8',['lebedev',['../namespaceocc_1_1dft_1_1grid.html#a3353768834541038f7e0d6efd4905137',1,'occ::dft::grid']]],
   ['left_9',['left',['../classocc_1_1core_1_1opt_1_1LineSearch.html#af9ab108f76993dbd3cddf5b38977d75c',1,'occ::core::opt::LineSearch']]],

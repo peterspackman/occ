@@ -4,7 +4,7 @@ var searchData=
   ['pairenergy_1',['PairEnergy',['../structocc_1_1interaction_1_1PairEnergy.html',1,'occ::interaction']]],
   ['pairenergystore_2',['PairEnergyStore',['../classocc_1_1interaction_1_1PairEnergyStore.html',1,'occ::interaction']]],
   ['pairenergystorebase_3',['PairEnergyStoreBase',['../classocc_1_1interaction_1_1PairEnergyStoreBase.html',1,'occ::interaction']]],
-  ['pairinput_4',['PairInput',['../structocc_1_1io_1_1PairInput.html',1,'occ::io']]],
+  ['pairinput_4',['pairinput',['../structocc_1_1elastic__fit_1_1PairInput.html',1,'occ::elastic_fit::PairInput'],['../structocc_1_1io_1_1PairInput.html',1,'occ::io::PairInput']]],
   ['parameters_5',['parameters',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html',1,'occ::dft::NonLocalCorrelationFunctional::Parameters'],['../structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html',1,'occ::io::AdaptiveGridBounds&lt; PropertyFunctor &gt;::Parameters'],['../structocc_1_1xdm_1_1XDM_1_1Parameters.html',1,'occ::xdm::XDM::Parameters']]],
   ['params_6',['Params',['../structocc_1_1dft_1_1DensityFunctional_1_1Params.html',1,'occ::dft::DensityFunctional']]],
   ['partitionmethod_7',['PartitionMethod',['../structocc_1_1dft_1_1PartitionMethod.html',1,'occ::dft']]],

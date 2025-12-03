@@ -1,6 +1,7 @@
 var structocc_1_1main_1_1EFSettings =
 [
     [ "animate_phonons", "structocc_1_1main_1_1EFSettings.html#a76aafaf1e06d4a107729396a4ed794a2", null ],
+    [ "export_pairs_file", "structocc_1_1main_1_1EFSettings.html#ae39999372cabf9bccb1ac6ed480a9347", null ],
     [ "gulp_file", "structocc_1_1main_1_1EFSettings.html#a47703384f1119ec08221cb0d7a9f4d7b", null ],
     [ "gulp_scale", "structocc_1_1main_1_1EFSettings.html#a5ed89bb9a82b15f1c243433e9d5ee5c6", null ],
     [ "include_positive", "structocc_1_1main_1_1EFSettings.html#a5f62c77880a04c42297281be851ef3ab", null ],

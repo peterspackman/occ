@@ -2,6 +2,8 @@
 <area shape="rect" id="Node000001" title=" " alt="" coords="103,5,275,60"/>
 <area shape="rect" id="Node000002" href="$elastic__fitting_8h.html" title=" " alt="" coords="5,108,177,163"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,72,119,110,115,106,152,68"/>
-<area shape="rect" id="Node000003" href="$occ__elastic__fit_8h.html" title=" " alt="" coords="202,108,373,163"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="226,68,263,106,260,110,222,72"/>
+<area shape="rect" id="Node000004" href="$occ__elastic__fit_8h.html" title=" " alt="" coords="202,108,373,163"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="226,68,263,106,260,110,222,72"/>
+<area shape="rect" id="Node000003" href="$elastic__fit__json_8h.html" title=" " alt="" coords="5,211,177,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="94,176,94,211,89,211,89,176"/>
 </map>

@@ -6,13 +6,15 @@
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="418,70,365,110,361,106,415,66"/>
 <area shape="rect" id="Node000004" href="$lattice__energy_8h.html" title=" " alt="" coords="432,211,631,265"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="470,73,478,117,491,162,516,209,511,212,486,164,473,118,465,74"/>
-<area shape="rect" id="Node000007" href="$wolf_8h.html" title=" " alt="" coords="500,108,699,163"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="511,66,565,106,562,110,508,70"/>
-<area shape="rect" id="Node000008" href="$xtb__energy__model_8h.html" title=" " alt="" coords="723,108,921,163"/>
-<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="571,61,729,105,728,111,569,66"/>
+<area shape="rect" id="Node000008" href="$wolf_8h.html" title=" " alt="" coords="500,108,699,163"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="511,66,565,106,562,110,508,70"/>
+<area shape="rect" id="Node000009" href="$xtb__energy__model_8h.html" title=" " alt="" coords="723,108,921,163"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="571,61,729,105,728,111,569,66"/>
 <area shape="rect" id="Node000005" href="$interaction__json_8h.html" title=" " alt="" coords="432,313,631,368"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="534,279,534,313,529,313,529,279"/>
 <area shape="rect" id="Node000006" href="$elastic__fitting_8h.html" title=" " alt="" coords="445,416,617,471"/>
 <area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="534,382,534,416,529,416,529,382"/>
-<area shape="poly" id="edge7_Node000007_Node000004" title=" " alt="" coords="576,176,551,212,547,209,572,173"/>
+<area shape="rect" id="Node000007" href="$elastic__fit__json_8h.html" title=" " alt="" coords="445,519,617,573"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="534,484,534,519,529,519,529,484"/>
+<area shape="poly" id="edge8_Node000008_Node000004" title=" " alt="" coords="576,176,551,212,547,209,572,173"/>
 </map>

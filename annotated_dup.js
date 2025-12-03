@@ -158,6 +158,7 @@ var annotated_dup =
         [ "XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator" ]
       ] ],
       [ "elastic_fit", "namespaceocc_1_1elastic__fit.html", [
+        [ "ElasticFitInput", "structocc_1_1elastic__fit_1_1ElasticFitInput.html", "structocc_1_1elastic__fit_1_1ElasticFitInput" ],
         [ "ElasticFitter", "classocc_1_1elastic__fit_1_1ElasticFitter.html", "classocc_1_1elastic__fit_1_1ElasticFitter" ],
         [ "FittingResults", "structocc_1_1elastic__fit_1_1FittingResults.html", "structocc_1_1elastic__fit_1_1FittingResults" ],
         [ "FittingSettings", "structocc_1_1elastic__fit_1_1FittingSettings.html", "structocc_1_1elastic__fit_1_1FittingSettings" ],
@@ -165,9 +166,11 @@ var annotated_dup =
         [ "LJ_A", "structocc_1_1elastic__fit_1_1LJ__A.html", "structocc_1_1elastic__fit_1_1LJ__A" ],
         [ "LJ_AWrapper", "classocc_1_1elastic__fit_1_1LJ__AWrapper.html", "classocc_1_1elastic__fit_1_1LJ__AWrapper" ],
         [ "LJWrapper", "classocc_1_1elastic__fit_1_1LJWrapper.html", "classocc_1_1elastic__fit_1_1LJWrapper" ],
+        [ "MoleculeInput", "structocc_1_1elastic__fit_1_1MoleculeInput.html", "structocc_1_1elastic__fit_1_1MoleculeInput" ],
         [ "MonkhorstPack", "structocc_1_1elastic__fit_1_1MonkhorstPack.html", "structocc_1_1elastic__fit_1_1MonkhorstPack" ],
         [ "Morse", "structocc_1_1elastic__fit_1_1Morse.html", "structocc_1_1elastic__fit_1_1Morse" ],
         [ "MorseWrapper", "classocc_1_1elastic__fit_1_1MorseWrapper.html", "classocc_1_1elastic__fit_1_1MorseWrapper" ],
+        [ "PairInput", "structocc_1_1elastic__fit_1_1PairInput.html", "structocc_1_1elastic__fit_1_1PairInput" ],
         [ "PES", "classocc_1_1elastic__fit_1_1PES.html", "classocc_1_1elastic__fit_1_1PES" ],
         [ "PotentialBase", "classocc_1_1elastic__fit_1_1PotentialBase.html", "classocc_1_1elastic__fit_1_1PotentialBase" ]
       ] ],

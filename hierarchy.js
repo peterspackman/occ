@@ -106,6 +106,7 @@ var hierarchy =
     [ "occ::isosurface::EEQEspFunctor", "structocc_1_1isosurface_1_1EEQEspFunctor.html", null ],
     [ "occ::main::EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", null ],
     [ "occ::main::EFSettings", "structocc_1_1main_1_1EFSettings.html", null ],
+    [ "occ::elastic_fit::ElasticFitInput", "structocc_1_1elastic__fit_1_1ElasticFitInput.html", null ],
     [ "occ::elastic_fit::ElasticFitter", "classocc_1_1elastic__fit_1_1ElasticFitter.html", null ],
     [ "occ::main::ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", null ],
     [ "occ::core::ElasticTensor", "classocc_1_1core_1_1ElasticTensor.html", null ],
@@ -240,6 +241,7 @@ var hierarchy =
     [ "occ::core::MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", null ],
     [ "occ::core::Molecule", "classocc_1_1core_1_1Molecule.html", null ],
     [ "occ::interaction::polarization_partitioning::MoleculeCouplingResults", "structocc_1_1interaction_1_1polarization__partitioning_1_1MoleculeCouplingResults.html", null ],
+    [ "occ::elastic_fit::MoleculeInput", "structocc_1_1elastic__fit_1_1MoleculeInput.html", null ],
     [ "occ::cg::MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", null ],
     [ "occ::gto::Momenta", "structocc_1_1gto_1_1Momenta.html", null ],
     [ "occ::gto::MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", null ],
@@ -283,6 +285,7 @@ var hierarchy =
       [ "occ::interaction::FileSystemPairEnergyStore", "classocc_1_1interaction_1_1FileSystemPairEnergyStore.html", null ],
       [ "occ::interaction::MemoryPairEnergyStore", "classocc_1_1interaction_1_1MemoryPairEnergyStore.html", null ]
     ] ],
+    [ "occ::elastic_fit::PairInput", "structocc_1_1elastic__fit_1_1PairInput.html", null ],
     [ "occ::io::PairInput", "structocc_1_1io_1_1PairInput.html", null ],
     [ "occ::dft::NonLocalCorrelationFunctional::Parameters", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html", null ],
     [ "occ::io::AdaptiveGridBounds< PropertyFunctor >::Parameters", "structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html", null ],

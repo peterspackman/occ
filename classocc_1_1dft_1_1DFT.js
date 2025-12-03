@@ -27,6 +27,7 @@ var classocc_1_1dft_1_1DFT =
     [ "compute_rinv_gradient_for_atom", "classocc_1_1dft_1_1DFT.html#a5230dafdecc61f4f0b1bb66f102a54ab", null ],
     [ "compute_schwarz_ints", "classocc_1_1dft_1_1DFT.html#a35a5f0b71f5bd8817ee37e1f1d452764", null ],
     [ "compute_vxc", "classocc_1_1dft_1_1DFT.html#a63ad152c3d4b15de72c9b7ee74359c11", null ],
+    [ "compute_wolf_interaction_matrix", "classocc_1_1dft_1_1DFT.html#a1d68ed4add2539ad67a7da7d1bb1cf74", null ],
     [ "compute_xc_gradient", "classocc_1_1dft_1_1DFT.html#a3459533e627203281b8e5938090569e2", null ],
     [ "density_derivative", "classocc_1_1dft_1_1DFT.html#afce161d3fcc2d46749bb83be78332746", null ],
     [ "electronic_electric_field_contribution", "classocc_1_1dft_1_1DFT.html#a56e2e46322f3b102d1fc3405fede55f6", null ],
@@ -57,5 +58,6 @@ var classocc_1_1dft_1_1DFT =
     [ "update_core_hamiltonian", "classocc_1_1dft_1_1DFT.html#a45b6bac4a630b7fc16b259dc96d1a67c", null ],
     [ "update_scf_energy", "classocc_1_1dft_1_1DFT.html#ae27c4e061d8d6cdea857d96358c492cd", null ],
     [ "usual_scf_energy", "classocc_1_1dft_1_1DFT.html#a104737a357429abc647b281804526ac6", null ],
-    [ "with_new_basis", "classocc_1_1dft_1_1DFT.html#a61d056cc5ba37646c6d98eb5ff8695b6", null ]
+    [ "with_new_basis", "classocc_1_1dft_1_1DFT.html#a61d056cc5ba37646c6d98eb5ff8695b6", null ],
+    [ "wolf_point_charge_interaction_energy", "classocc_1_1dft_1_1DFT.html#ae3f4f2456e998e97d472f36e08f5fd85", null ]
 ];
