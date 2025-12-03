@@ -12,11 +12,13 @@
 #include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/dft/hirshfeld.h>
+#include <occ/dft/dft.h>
 #include <occ/driver/single_point.h>
 #include <occ/interaction/wolf.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/coulomb.h>
 #include <occ/interaction/ce_energy_model.h>
+#include <occ/interaction/wavefunction_transform.h>
 #include <occ/io/load_geometry.h>
 #include <occ/xdm/xdm.h>
 #include <occ/io/occ_input.h>
@@ -36,6 +38,202 @@ namespace fs = std::filesystem;
 using occ::io::OccInput;
 using occ::qm::SpinorbitalKind;
 using occ::qm::Wavefunction;
+
+// Helper function to compute electric field from point charges at given positions
+Mat3N compute_point_charge_electric_field(
+    const Vec &charges,
+    const Mat3N &charge_positions,
+    const Mat3N &target_positions) {
+
+  size_t n_target = target_positions.cols();
+  size_t n_charges = charge_positions.cols();
+
+  Mat3N electric_field = Mat3N::Zero(3, n_target);
+
+  for (size_t i = 0; i < n_target; i++) {
+    Vec3 r_target = target_positions.col(i);
+
+    for (size_t j = 0; j < n_charges; j++) {
+      Vec3 r_charge = charge_positions.col(j);
+      Vec3 r_vec = r_target - r_charge;
+      double r = r_vec.norm();
+
+      if (r < 1e-10) continue; // Skip self-interaction
+
+      double q = charges(j);
+      double r3 = r * r * r;
+
+      // Classical Coulomb field: E = q * r_vec / r^3
+      electric_field.col(i) += q * r_vec / r3;
+    }
+  }
+
+  return electric_field;
+}
+
+// Compute electric field from a wavefunction at given positions
+Mat3N compute_wavefunction_electric_field(
+    const Wavefunction &wfn,
+    const Mat3N &target_positions) {
+
+  // Create HF object for computing fields
+  qm::HartreeFock hf(wfn.basis);
+
+  // Electronic contribution (from electron density)
+  Mat3N E_electronic = hf.electronic_electric_field_contribution(wfn.mo, target_positions);
+
+  // Nuclear contribution (from nuclei)
+  Mat3N E_nuclear = hf.nuclear_electric_field_contribution(target_positions);
+
+  // Debug: check for NaNs
+  if (E_electronic.hasNaN()) {
+    occ::log::warn("E_electronic has NaNs in wavefunction field calculation");
+  }
+  if (E_nuclear.hasNaN()) {
+    occ::log::warn("E_nuclear has NaNs in wavefunction field calculation");
+  }
+
+  // Total field
+  return E_electronic + E_nuclear;
+}
+
+struct PolarizationCorrectionResult {
+  double correction_A{0.0};  // Correction for molecule A
+  double correction_B{0.0};  // Correction for molecule B
+  double total_correction{0.0};  // Total correction
+
+  // Diagnostic information
+  Vec field_mag_pc_A;        // |E_pc| at each atom in A (Coulomb)
+  Vec field_mag_wolf_A;      // |E_wolf| at each atom in A (Wolf sum)
+  Vec field_mag_wfn_A;       // |E_wfn| at each atom in A
+  Vec field_mag_pc_B;        // |E_pc| at each atom in B (Coulomb)
+  Vec field_mag_wolf_B;      // |E_wolf| at each atom in B (Wolf sum)
+  Vec field_mag_wfn_B;       // |E_wfn| at each atom in B
+  Vec per_atom_correction_A; // Per-atom corrections for A
+  Vec per_atom_correction_B; // Per-atom corrections for B
+};
+
+// Compute polarization field correction for a dimer pair
+PolarizationCorrectionResult compute_polarization_field_correction(
+    Wavefunction wfn_A,
+    Wavefunction wfn_B,
+    const core::Molecule &mol_A,
+    const core::Molecule &mol_B,
+    const crystal::Crystal &crystal,
+    const Vec &charges_A,
+    const Mat3N &positions_A,
+    const Vec &charges_B,
+    const Mat3N &positions_B,
+    const Vec &polarizabilities_A,
+    const Vec &polarizabilities_B,
+    double wolf_alpha,
+    double wolf_cutoff) {
+
+  PolarizationCorrectionResult result;
+
+  size_t n_atoms_A = positions_A.cols();
+  size_t n_atoms_B = positions_B.cols();
+
+  // Transform wavefunctions to match dimer positions (avoid r=0 singularity)
+  auto transform_A = interaction::transform::WavefunctionTransformer::calculate_transform(
+      wfn_A, mol_A, crystal);
+  auto transform_B = interaction::transform::WavefunctionTransformer::calculate_transform(
+      wfn_B, mol_B, crystal);
+
+  wfn_A = transform_A.wfn;
+  wfn_B = transform_B.wfn;
+
+  occ::log::debug("Transformed wfn_A RMSD: {:.6f} Å", transform_A.rmsd);
+  occ::log::debug("Transformed wfn_B RMSD: {:.6f} Å", transform_B.rmsd);
+
+  // Initialize diagnostic arrays
+  result.field_mag_pc_A = Vec::Zero(n_atoms_A);
+  result.field_mag_wolf_A = Vec::Zero(n_atoms_A);
+  result.field_mag_wfn_A = Vec::Zero(n_atoms_A);
+  result.field_mag_pc_B = Vec::Zero(n_atoms_B);
+  result.field_mag_wolf_B = Vec::Zero(n_atoms_B);
+  result.field_mag_wfn_B = Vec::Zero(n_atoms_B);
+  result.per_atom_correction_A = Vec::Zero(n_atoms_A);
+  result.per_atom_correction_B = Vec::Zero(n_atoms_B);
+
+  // ==============================================
+  // Correction for molecule A experiencing B's field
+  // ==============================================
+
+  // Compute field from B's point charges at A's atomic positions (Coulomb)
+  Mat3N E_B_pc = compute_point_charge_electric_field(charges_B, positions_B, positions_A);
+
+  // Compute field from B's point charges using Wolf sum (for comparison/diagnostics)
+  interaction::WolfParameters wolf_params{wolf_cutoff, wolf_alpha};
+  Mat3N E_B_wolf = interaction::wolf_electric_field(charges_B, positions_B, positions_A, wolf_params);
+
+  // Compute field from B's wavefunction at A's atomic positions
+  Mat3N E_B_wfn = compute_wavefunction_electric_field(wfn_B, positions_A);
+
+  // Compute polarization correction for A
+  // ΔE_pol_A = -0.5 * Σ_i α_i * |E_B_wfn - E_B_pc|²
+  // This is a perturbative correction for swapping PC field → wavefunction field
+  for (size_t i = 0; i < n_atoms_A; i++) {
+    Vec3 E_pc = E_B_pc.col(i);
+    Vec3 E_wolf = E_B_wolf.col(i);
+    Vec3 E_wfn = E_B_wfn.col(i);
+
+    // Store magnitudes for diagnostics
+    result.field_mag_pc_A(i) = E_pc.norm();
+    result.field_mag_wolf_A(i) = E_wolf.norm();
+    result.field_mag_wfn_A(i) = E_wfn.norm();
+
+    // Field difference (vector) - perturbation from PC → wavefunction
+    Vec3 delta_E = E_wfn - E_pc;
+    double delta_E_mag_sq = delta_E.squaredNorm();
+
+    // Polarization correction for this atom
+    double correction = -0.5 * polarizabilities_A(i) * delta_E_mag_sq;
+    result.per_atom_correction_A(i) = correction;
+    result.correction_A += correction;
+  }
+
+  // ==============================================
+  // Correction for molecule B experiencing A's field
+  // ==============================================
+
+  // Compute field from A's point charges at B's atomic positions (Coulomb)
+  Mat3N E_A_pc = compute_point_charge_electric_field(charges_A, positions_A, positions_B);
+
+  // Compute field from A's point charges using Wolf sum (for comparison/diagnostics)
+  Mat3N E_A_wolf = interaction::wolf_electric_field(charges_A, positions_A, positions_B, wolf_params);
+
+  // Compute field from A's wavefunction at B's atomic positions
+  Mat3N E_A_wfn = compute_wavefunction_electric_field(wfn_A, positions_B);
+
+  // Compute polarization correction for B
+  // ΔE_pol_B = -0.5 * Σ_i α_i * |E_A_wfn - E_A_pc|²
+  // This is a perturbative correction for swapping PC field → wavefunction field
+  for (size_t i = 0; i < n_atoms_B; i++) {
+    Vec3 E_pc = E_A_pc.col(i);
+    Vec3 E_wolf = E_A_wolf.col(i);
+    Vec3 E_wfn = E_A_wfn.col(i);
+
+    // Store magnitudes for diagnostics
+    result.field_mag_pc_B(i) = E_pc.norm();
+    result.field_mag_wolf_B(i) = E_wolf.norm();
+    result.field_mag_wfn_B(i) = E_wfn.norm();
+
+    // Field difference (vector) - perturbation from PC → wavefunction
+    Vec3 delta_E = E_wfn - E_pc;
+    double delta_E_mag_sq = delta_E.squaredNorm();
+
+    // Polarization correction for this atom
+    double correction = -0.5 * polarizabilities_B(i) * delta_E_mag_sq;
+    result.per_atom_correction_B(i) = correction;
+    result.correction_B += correction;
+  }
+
+  // Total correction
+  result.total_correction = result.correction_A + result.correction_B;
+
+  return result;
+}
 
 crystal::Crystal read_crystal_structure(const std::string &filename) {
   occ::timing::start(occ::timing::category::io);
@@ -86,11 +284,32 @@ std::vector<double> calculate_charges(const Wavefunction &wfn,
     charges_vec = xdm.hirshfeld_charges();
   }
 
-  // Convert to std::vector<double> and print charges
+  // Convert to std::vector<double>
   std::vector<double> charges(charges_vec.size());
-  occ::log::info("{} charges:", charge_scheme);
   for (int i = 0; i < charges_vec.size(); i++) {
     charges[i] = charges_vec(i);
+  }
+
+  // Constrain charges to sum to the correct net charge
+  double charge_sum = std::accumulate(charges.begin(), charges.end(), 0.0);
+  double expected_charge = static_cast<double>(wfn.charge());
+  double charge_error = charge_sum - expected_charge;
+
+  if (std::abs(charge_error) > 1e-6) {
+    occ::log::warn("Unconstrained {} charges sum to {:.6f} (expected {:.0f}), applying constraint",
+                   charge_scheme, charge_sum, expected_charge);
+    // Distribute error evenly across all atoms
+    double correction = charge_error / charges.size();
+    for (auto &q : charges) {
+      q -= correction;
+    }
+    double new_sum = std::accumulate(charges.begin(), charges.end(), 0.0);
+    occ::log::info("After constraint: charges sum to {:.10f}", new_sum);
+  }
+
+  // Print charges
+  occ::log::info("{} charges (constrained to sum to {:.0f}):", charge_scheme, expected_charge);
+  for (int i = 0; i < charges.size(); i++) {
     occ::log::info("  Atom {:2d} ({}): {:8.4f}", i,
                    occ::core::Element(wfn.atoms[i].atomic_number).symbol(),
                    charges[i]);
@@ -307,62 +526,126 @@ Wavefunction perform_embedded_scf(
   basis.set_pure(config.basis_spherical);
 
   if (!external_charges.empty()) {
-    // Create HF procedure
-    qm::HartreeFock hf(basis);
+    // Determine if we're using DFT or HF
+    bool is_dft = (config.method_name != "hf" && config.method_name != "rhf" &&
+                   config.method_name != "uhf");
 
-    // Use appropriate wrapper based on configuration
-    if (config.use_wolf_sum) {
-      occ::log::info("Setting up SCF with Wolf sum external potential");
-      qm::WolfSumCorrectedProcedure<qm::HartreeFock> wolf_hf(
-          hf, external_charges, molecular_charges, config.wolf_alpha,
-          config.wolf_cutoff);
-      qm::SCF<qm::WolfSumCorrectedProcedure<qm::HartreeFock>> scf(
-          wolf_hf, SpinorbitalKind::Restricted);
+    if (is_dft) {
+      // Create DFT procedure
+      dft::DFT dft_proc(config.method_name, basis);
 
-      // Set charge and multiplicity
-      scf.set_charge_multiplicity(net_charge, multiplicity);
+      // Use appropriate wrapper based on configuration
+      if (config.use_wolf_sum) {
+        occ::log::info("Setting up DFT SCF with Wolf sum external potential");
+        qm::WolfSumCorrectedProcedure<dft::DFT> wolf_dft(
+            dft_proc, external_charges, molecular_charges, config.wolf_alpha,
+            config.wolf_cutoff);
+        qm::SCF<qm::WolfSumCorrectedProcedure<dft::DFT>> scf(
+            wolf_dft, SpinorbitalKind::Restricted);
 
-      // Set initial guess from previous cycle if available
-      if (initial_guess.has_value()) {
-        occ::log::info(
-            "Using wavefunction from previous cycle as initial guess");
-        scf.set_initial_guess_from_wfn(initial_guess.value());
+        // Set charge and multiplicity
+        scf.set_charge_multiplicity(net_charge, multiplicity);
+
+        // Set initial guess from previous cycle if available
+        if (initial_guess.has_value()) {
+          occ::log::info(
+              "Using wavefunction from previous cycle as initial guess");
+          scf.set_initial_guess_from_wfn(initial_guess.value());
+        }
+
+        // Run SCF
+        double energy = scf.compute_scf_energy();
+        auto wfn = scf.wavefunction();
+
+        occ::log::info("Embedded DFT SCF with Wolf potential converged. Total "
+                       "energy: {:.8f} Hartree",
+                       energy);
+        return wfn;
+
+      } else {
+        occ::log::info("Setting up DFT SCF with point charge external potential");
+        qm::PointChargeCorrectedProcedure<dft::DFT> pc_dft(
+            dft_proc, external_charges);
+        qm::SCF<qm::PointChargeCorrectedProcedure<dft::DFT>> scf(
+            pc_dft, SpinorbitalKind::Restricted);
+
+        // Set charge and multiplicity
+        scf.set_charge_multiplicity(net_charge, multiplicity);
+
+        // Set initial guess from previous cycle if available
+        if (initial_guess.has_value()) {
+          occ::log::info(
+              "Using wavefunction from previous cycle as initial guess");
+          scf.set_initial_guess_from_wfn(initial_guess.value());
+        }
+
+        // Run SCF
+        double energy = scf.compute_scf_energy();
+        auto wfn = scf.wavefunction();
+
+        occ::log::info("Embedded DFT SCF with point charges converged. Total energy: "
+                       "{:.8f} Hartree",
+                       energy);
+        return wfn;
       }
-
-      // Run SCF
-      double energy = scf.compute_scf_energy();
-      auto wfn = scf.wavefunction();
-
-      occ::log::info("Embedded SCF with Wolf potential converged. Total "
-                     "energy: {:.8f} Hartree",
-                     energy);
-      return wfn;
-
     } else {
-      occ::log::info("Setting up SCF with point charge external potential");
-      qm::PointChargeCorrectedProcedure<qm::HartreeFock> pc_hf(
-          hf, external_charges);
-      qm::SCF<qm::PointChargeCorrectedProcedure<qm::HartreeFock>> scf(
-          pc_hf, SpinorbitalKind::Restricted);
+      // Create HF procedure
+      qm::HartreeFock hf(basis);
 
-      // Set charge and multiplicity
-      scf.set_charge_multiplicity(net_charge, multiplicity);
+      // Use appropriate wrapper based on configuration
+      if (config.use_wolf_sum) {
+        occ::log::info("Setting up HF SCF with Wolf sum external potential");
+        qm::WolfSumCorrectedProcedure<qm::HartreeFock> wolf_hf(
+            hf, external_charges, molecular_charges, config.wolf_alpha,
+            config.wolf_cutoff);
+        qm::SCF<qm::WolfSumCorrectedProcedure<qm::HartreeFock>> scf(
+            wolf_hf, SpinorbitalKind::Restricted);
 
-      // Set initial guess from previous cycle if available
-      if (initial_guess.has_value()) {
-        occ::log::info(
-            "Using wavefunction from previous cycle as initial guess");
-        scf.set_initial_guess_from_wfn(initial_guess.value());
+        // Set charge and multiplicity
+        scf.set_charge_multiplicity(net_charge, multiplicity);
+
+        // Set initial guess from previous cycle if available
+        if (initial_guess.has_value()) {
+          occ::log::info(
+              "Using wavefunction from previous cycle as initial guess");
+          scf.set_initial_guess_from_wfn(initial_guess.value());
+        }
+
+        // Run SCF
+        double energy = scf.compute_scf_energy();
+        auto wfn = scf.wavefunction();
+
+        occ::log::info("Embedded HF SCF with Wolf potential converged. Total "
+                       "energy: {:.8f} Hartree",
+                       energy);
+        return wfn;
+
+      } else {
+        occ::log::info("Setting up HF SCF with point charge external potential");
+        qm::PointChargeCorrectedProcedure<qm::HartreeFock> pc_hf(
+            hf, external_charges);
+        qm::SCF<qm::PointChargeCorrectedProcedure<qm::HartreeFock>> scf(
+            pc_hf, SpinorbitalKind::Restricted);
+
+        // Set charge and multiplicity
+        scf.set_charge_multiplicity(net_charge, multiplicity);
+
+        // Set initial guess from previous cycle if available
+        if (initial_guess.has_value()) {
+          occ::log::info(
+              "Using wavefunction from previous cycle as initial guess");
+          scf.set_initial_guess_from_wfn(initial_guess.value());
+        }
+
+        // Run SCF
+        double energy = scf.compute_scf_energy();
+        auto wfn = scf.wavefunction();
+
+        occ::log::info("Embedded HF SCF with point charges converged. Total energy: "
+                       "{:.8f} Hartree",
+                       energy);
+        return wfn;
       }
-
-      // Run SCF
-      double energy = scf.compute_scf_energy();
-      auto wfn = scf.wavefunction();
-
-      occ::log::info("Embedded SCF with point charges converged. Total energy: "
-                     "{:.8f} Hartree",
-                     energy);
-      return wfn;
     }
   } else {
     // No external charges, just do gas phase
@@ -614,8 +897,8 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
                                                  [](double sum, const auto &pc) { return sum + pc.charge(); }));
         for (const auto &pc : external_info.all_charges) {
           auto pos = pc.position();
-          // Use 'X' as element symbol, with charge in the comment field
-          pc_file << fmt::format("X {:.6f} {:.6f} {:.6f}  # q={:.4f}\n",
+          // Format: x y z charge
+          pc_file << fmt::format("{:.6f} {:.6f} {:.6f} {:.6f}\n",
                                 pos(0) / occ::units::ANGSTROM_TO_BOHR,
                                 pos(1) / occ::units::ANGSTROM_TO_BOHR,
                                 pos(2) / occ::units::ANGSTROM_TO_BOHR,
@@ -662,6 +945,10 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
     interaction::CEEnergyComponents sum_ce_embedded;
     interaction::CEEnergyComponents sum_ce_gas;
 
+    // Track polarization field corrections
+    double total_polarization_correction = 0.0;
+    std::vector<double> polarization_corrections_per_pair;
+
     // Setup progress tracking
     size_t total_neighbors = neighbors.size();
     occ::core::ProgressTracker progress(total_neighbors);
@@ -695,6 +982,39 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
       double wolf_classical = interaction::coulomb_interaction_energy_asym_charges(
           dimer, asymmetric_charges);
 
+      // Compute polarization field correction for this pair
+      // Get charges and positions for molecule A
+      Vec charges_a(mol.size());
+      Mat3N pos_a(3, mol.size());
+      auto asym_indices_a = mol.asymmetric_unit_idx();
+      auto mol_a_atoms = mol.atoms();
+      for (size_t j = 0; j < mol.size(); j++) {
+        charges_a(j) = asymmetric_charges(asym_indices_a(j));
+        const auto &atom = mol_a_atoms[j];
+        pos_a.col(j) = Vec3(atom.x, atom.y, atom.z);
+      }
+
+      // Get charges and positions for molecule B
+      Vec charges_b(mol_b.size());
+      Mat3N pos_b(3, mol_b.size());
+      auto asym_indices_b = mol_b.asymmetric_unit_idx();
+      auto mol_b_atoms = mol_b.atoms();
+      for (size_t j = 0; j < mol_b.size(); j++) {
+        charges_b(j) = asymmetric_charges(asym_indices_b(j));
+        const auto &atom = mol_b_atoms[j];
+        pos_b.col(j) = Vec3(atom.x, atom.y, atom.z);
+      }
+
+      // Compute polarization correction
+      auto pol_correction = compute_polarization_field_correction(
+          wfn_a, wfn_b, mol, mol_b, crystal,
+          charges_a, pos_a, charges_b, pos_b,
+          alpha_a, wfn_b.xdm_polarizabilities,
+          config.wolf_alpha, config.wolf_cutoff);
+
+      total_polarization_correction += pol_correction.total_correction;
+      polarization_corrections_per_pair.push_back(pol_correction.total_correction);
+
       // Detailed accounting for first pair
       if (first_pair) {
         occ::log::info("");
@@ -726,6 +1046,38 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
         occ::log::info("  Wolf classical (point charges): {:.8f} Ha ({:.2f} kJ/mol)",
                        wolf_classical, wolf_classical * 2625.5);
         occ::log::info("");
+        occ::log::info("  Polarization field correction:");
+        occ::log::info("    ΔE_pol (A<-B):  {:.8f} Ha ({:.2f} kJ/mol)",
+                       pol_correction.correction_A, pol_correction.correction_A * 2625.5);
+        occ::log::info("    ΔE_pol (B<-A):  {:.8f} Ha ({:.2f} kJ/mol)",
+                       pol_correction.correction_B, pol_correction.correction_B * 2625.5);
+        occ::log::info("    ΔE_pol (total): {:.8f} Ha ({:.2f} kJ/mol)",
+                       pol_correction.total_correction, pol_correction.total_correction * 2625.5);
+        occ::log::info("");
+        occ::log::info("  Electric field details for molecule A (experiencing B's field):");
+        occ::log::info("    (All fields in a.u.)");
+        for (size_t atom_idx = 0; atom_idx < pos_a.cols(); atom_idx++) {
+          occ::log::info("    Atom {:2d}: |E_pc|={:.6f}, |E_wolf|={:.6f}, |E_wfn|={:.6f}, ΔE_pol={:.8f} Ha ({:.4f} kJ/mol)",
+                         atom_idx,
+                         pol_correction.field_mag_pc_A(atom_idx),
+                         pol_correction.field_mag_wolf_A(atom_idx),
+                         pol_correction.field_mag_wfn_A(atom_idx),
+                         pol_correction.per_atom_correction_A(atom_idx),
+                         pol_correction.per_atom_correction_A(atom_idx) * 2625.5);
+        }
+        occ::log::info("");
+        occ::log::info("  Electric field details for molecule B (experiencing A's field):");
+        occ::log::info("    (All fields in a.u.)");
+        for (size_t atom_idx = 0; atom_idx < pos_b.cols(); atom_idx++) {
+          occ::log::info("    Atom {:2d}: |E_pc|={:.6f}, |E_wolf|={:.6f}, |E_wfn|={:.6f}, ΔE_pol={:.8f} Ha ({:.4f} kJ/mol)",
+                         atom_idx,
+                         pol_correction.field_mag_pc_B(atom_idx),
+                         pol_correction.field_mag_wolf_B(atom_idx),
+                         pol_correction.field_mag_wfn_B(atom_idx),
+                         pol_correction.per_atom_correction_B(atom_idx),
+                         pol_correction.per_atom_correction_B(atom_idx) * 2625.5);
+        }
+        occ::log::info("");
         first_pair = false;
       }
 
@@ -737,20 +1089,11 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
       sum_ce_embedded += ce_embedded;
       sum_ce_gas += ce_gas;
 
-      occ::log::debug("  Pair [{},{}]: CE_embed={:.6f}, CE_gas={:.6f}, Wolf={:.6f} Ha",
-                      i, mol_b_idx, ce_embedded.total, ce_gas.total, wolf_classical);
+      occ::log::debug("  Pair [{},{}]: CE_embed={:.6f}, CE_gas={:.6f}, Wolf={:.6f}, Pol={:.6f} Ha",
+                      i, mol_b_idx, ce_embedded.total, ce_gas.total, wolf_classical,
+                      pol_correction.total_correction);
 
       // Compute electric field from this neighbor for coupling
-      Vec charges_b(mol_b.size());
-      Mat3N pos_b(3, mol_b.size());
-      auto asym_indices_b = mol_b.asymmetric_unit_idx();
-      auto mol_b_atoms = mol_b.atoms();
-      for (size_t j = 0; j < mol_b.size(); j++) {
-        charges_b(j) = asymmetric_charges(asym_indices_b(j));
-        const auto &atom = mol_b_atoms[j];
-        pos_b.col(j) = Vec3(atom.x, atom.y, atom.z);
-      }
-
       interaction::WolfParameters wolf_params{config.wolf_cutoff, config.wolf_alpha};
       Mat3N E_field = interaction::wolf_electric_field(
           charges_b, pos_b, mol_a_pos, wolf_params);
@@ -763,164 +1106,96 @@ void run_self_consistent_embedding(const crystal::Crystal &crystal,
                                   i, mol_b_idx, dimer.name()));
     }
 
-    // Compute coupling terms
-    auto coupling_result = interaction::compute_wolf_coupling_terms(E_fields, alpha_a);
-
     // Calculate total embedding energy
     double embed_energy = wfn_a.energy.total - gas_phase_energies[i];
 
-    // Summary for this molecule
-    occ::log::info("");
-    occ::log::info("========================================");
-    occ::log::info("Molecule {} energy analysis:", i);
-    occ::log::info("========================================");
-    occ::log::info("");
-    occ::log::info("  Reference energies:");
-    occ::log::info("    E_gas:               {:.8f} Ha", gas_phase_energies[i]);
-    occ::log::info("    E_embedded:          {:.8f} Ha", wfn_a.energy.total);
-    occ::log::info("    Embedding effect:    {:.8f} Ha ({:.2f} kJ/mol)",
-                   embed_energy, embed_energy * 2625.5);
-    occ::log::info("");
-    occ::log::info("  Pair interaction energies (sum over {} near neighbors, r < {:.2f} Å):",
-                   total_neighbors, config.pair_energy_radius);
-    occ::log::info("    ΣE_int (embedded):   {:.8f} Ha ({:.2f} kJ/mol)",
-                   total_ce_embedded, total_ce_embedded * 2625.5);
-    occ::log::info("    ΣE_int (gas):        {:.8f} Ha ({:.2f} kJ/mol)",
-                   total_ce_gas, total_ce_gas * 2625.5);
-    occ::log::info("    Polarization gain:   {:.8f} Ha ({:.2f} kJ/mol) [{:.1f}%]",
-                   total_ce_embedded - total_ce_gas,
-                   (total_ce_embedded - total_ce_gas) * 2625.5,
-                   100.0 * (total_ce_embedded - total_ce_gas) / total_ce_gas);
-    occ::log::info("");
-    occ::log::info("  Classical reference:");
-    occ::log::info("    ΣE_Wolf (classical): {:.8f} Ha ({:.2f} kJ/mol)",
-                   total_wolf_classical, total_wolf_classical * 2625.5);
-    occ::log::info("");
-    occ::log::info("  External potential correction:");
-    occ::log::info("    V_ext (total):       {:.8f} Ha ({:.2f} kJ/mol)",
-                   external_potential_energies[i], external_potential_energies[i] * 2625.5);
-    occ::log::info("");
-    occ::log::info("  Non-additive effects:");
-    occ::log::info("    Total coupling:      {:.8f} Ha ({:.2f} kJ/mol)",
-                   coupling_result.total_coupling,
-                   coupling_result.total_coupling * 2625.5);
-    occ::log::info("");
-    occ::log::info("========================================");
-    occ::log::info("Lattice Energy Estimates:");
-    occ::log::info("========================================");
-    occ::log::info("");
-
-    // Method 1: Simple sum of gas-phase CE pairs
-    double lattice_energy_gas_simple = 0.5 * total_ce_gas;
-
-    // Method 2: Embedding energy + quantum correction for near neighbors
-    // E_latt = (E_embed - E_gas) + (1/2) Σ_near [E_int^gas - E_Wolf]
-    double quantum_correction = 0.5 * (total_ce_gas - total_wolf_classical);
-    double lattice_energy_corrected = embed_energy + quantum_correction;
-
-    // Print CE component breakdown table
-    occ::log::info("");
-    occ::log::info("========================================");
-    occ::log::info("CE Pairwise Energy Components");
-    occ::log::info("========================================");
-    occ::log::info("");
-    occ::log::info("  {:<25} {:>12} {:>12} {:>12}", "Component", "Gas", "Embedded", "Δ(Pol)");
-    occ::log::info("  {:<25} {:>12} {:>12} {:>12}", "", "(kJ/mol)", "(kJ/mol)", "(kJ/mol)");
-    occ::log::info("  {:<25} {:>12} {:>12} {:>12}", std::string(25, '-'), std::string(12, '-'), std::string(12, '-'), std::string(12, '-'));
-    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Coulomb",
-                   sum_ce_gas.coulomb_kjmol(), sum_ce_embedded.coulomb_kjmol(),
-                   (sum_ce_embedded.coulomb - sum_ce_gas.coulomb) * 2625.5);
-    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Exchange",
-                   sum_ce_gas.exchange_kjmol(), sum_ce_embedded.exchange_kjmol(),
-                   (sum_ce_embedded.exchange - sum_ce_gas.exchange) * 2625.5);
-    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Repulsion",
-                   sum_ce_gas.repulsion_kjmol(), sum_ce_embedded.repulsion_kjmol(),
-                   (sum_ce_embedded.repulsion - sum_ce_gas.repulsion) * 2625.5);
-    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Polarization",
-                   sum_ce_gas.polarization_kjmol(), sum_ce_embedded.polarization_kjmol(),
-                   (sum_ce_embedded.polarization - sum_ce_gas.polarization) * 2625.5);
-    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Dispersion",
-                   sum_ce_gas.dispersion_kjmol(), sum_ce_embedded.dispersion_kjmol(),
-                   (sum_ce_embedded.dispersion - sum_ce_gas.dispersion) * 2625.5);
-    occ::log::info("  {:<25} {:>12} {:>12} {:>12}", std::string(25, '-'), std::string(12, '-'), std::string(12, '-'), std::string(12, '-'));
-    occ::log::info("  {:<25} {:>12.2f} {:>12.2f} {:>12.2f}", "Total",
-                   sum_ce_gas.total_kjmol(), sum_ce_embedded.total_kjmol(),
-                   (sum_ce_embedded.total - sum_ce_gas.total) * 2625.5);
-    occ::log::info("");
-
-    // Decompose energies
-    double polarization_from_embed = embed_energy - external_potential_energies[i];
-    double polarization_from_ce = total_ce_embedded - total_ce_gas;
-
-    occ::log::info("");
-    occ::log::info("========================================");
-    occ::log::info("Energy Components Table");
-    occ::log::info("========================================");
-    occ::log::info("");
-    occ::log::info("  {:<40} {:>12} {:>12}", "Component", "Hartree", "kJ/mol");
-    occ::log::info("  {:<40} {:>12} {:>12}", std::string(40, '-'), std::string(12, '-'), std::string(12, '-'));
-    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "E_gas (monomer)", gas_phase_energies[i], gas_phase_energies[i] * 2625.5);
-    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "E_embedded (monomer)", wfn_a.energy.total, wfn_a.energy.total * 2625.5);
-    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΔE_embed = E_emb - E_gas", embed_energy, embed_energy * 2625.5);
-    occ::log::info("");
-    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "V_ext (total, all neighbors)", external_potential_energies[i], external_potential_energies[i] * 2625.5);
-    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "E_pol = ΔE_embed - V_ext", polarization_from_embed, polarization_from_embed * 2625.5);
-    occ::log::info("");
-    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΣE_CE(gas)", total_ce_gas, total_ce_gas * 2625.5);
-    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΣE_CE(embedded)", total_ce_embedded, total_ce_embedded * 2625.5);
-    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΔE_pol(CE) = ΣE_CE(emb) - ΣE_CE(gas)", polarization_from_ce, polarization_from_ce * 2625.5);
-    occ::log::info("");
-    occ::log::info("  {:<40} {:>12.6f} {:>12.2f}", "ΣE_Wolf(classical)", total_wolf_classical, total_wolf_classical * 2625.5);
-    occ::log::info("");
-
     // Get CE model scale factors
-    double coulomb_scale = ce_model_embedded.coulomb_scale_factor();
     double polarization_scale = ce_model_embedded.polarization_scale_factor();
 
-    occ::log::info("  CE Model Parameters:");
-    occ::log::info("    Coulomb scale factor:      {:.4f}", coulomb_scale);
-    occ::log::info("    Polarization scale factor: {:.4f}", polarization_scale);
-    occ::log::info("");
+    // Compute polarization correction statistics
+    double min_pol_correction = *std::min_element(polarization_corrections_per_pair.begin(),
+                                                   polarization_corrections_per_pair.end());
+    double max_pol_correction = *std::max_element(polarization_corrections_per_pair.begin(),
+                                                   polarization_corrections_per_pair.end());
+    double mean_pol_correction = total_polarization_correction / polarization_corrections_per_pair.size();
 
-    // Lattice energy estimates (factor of 0.5 for double counting in sums)
-    double latt_simple_gas = 0.5 * total_ce_gas;
-    double latt_simple_embedded = 0.5 * total_ce_embedded;
+    // Lattice energy calculation (factor of 0.5 for double counting in sums)
+    // Include the polarization field correction
     double latt_corrected = embed_energy + 0.5 * total_ce_embedded - external_potential_energies[i];
 
     // Remove CE polarization term since it's already included in the model
     double ce_pol_correction = 0.5 * polarization_scale * sum_ce_embedded.polarization;
-    double latt_no_ce_pol = latt_corrected - ce_pol_correction;
 
-    occ::log::info("========================================");
-    occ::log::info("Lattice Energy Estimates");
-    occ::log::info("========================================");
-    occ::log::info("");
-    occ::log::info("  {:<50} {:>12.6f} {:>12.2f}", "0.5 × ΣE_CE(gas)", latt_simple_gas, latt_simple_gas * 2625.5);
-    occ::log::info("  {:<50} {:>12.6f} {:>12.2f}", "0.5 × ΣE_CE(embedded)", latt_simple_embedded, latt_simple_embedded * 2625.5);
-    occ::log::info("  {:<50} {:>12.6f} {:>12.2f}", "ΔE_embed + 0.5×ΣE_CE(emb) - V_ext", latt_corrected, latt_corrected * 2625.5);
-    occ::log::info("");
-    occ::log::info("  Removing CE polarization term (already in model):");
-    occ::log::info("    0.5 × k_pol × ΣCE_pol(emb) = 0.5 × {:.4f} × {:.6f}", polarization_scale, sum_ce_embedded.polarization);
-    occ::log::info("                                = {:>12.6f} {:>12.2f}", ce_pol_correction, ce_pol_correction * 2625.5);
-    occ::log::info("");
-    occ::log::info("  {:<50} {:>12.6f} {:>12.2f}", "ΔE_embed + 0.5×ΣE_CE - V_ext - 0.5×k×ΣCEpol", latt_no_ce_pol, latt_no_ce_pol * 2625.5);
-    occ::log::info("");
+    // Add polarization field correction (factor of 0.5 for double counting)
+    double pol_field_correction = 0.5 * total_polarization_correction;
 
-    // Print significant coupling terms
-    occ::log::info("  Significant coupling terms (|C| > 0.0001 Ha):");
-    int printed = 0;
-    for (const auto &term : coupling_result.coupling_terms) {
-      if (std::abs(term.coupling_energy) > 0.0001 && printed < 10) {
-        occ::log::info("    Neighbors [{}, {}]: {:.6f} Ha ({:.2f} kJ/mol)",
-                       term.neighbor_a, term.neighbor_b,
-                       term.coupling_energy, term.coupling_energy * 2625.5);
-        printed++;
-      }
-    }
-    if (coupling_result.coupling_terms.size() > printed) {
-      occ::log::info("    ... and {} more coupling terms",
-                     coupling_result.coupling_terms.size() - printed);
-    }
+    double latt_final = latt_corrected - ce_pol_correction + pol_field_correction;
+
+    // Summary for this molecule
+    occ::log::info("");
+    occ::log::info("========================================");
+    occ::log::info("Molecule {} Lattice Energy Calculation", i);
+    occ::log::info("========================================");
+    occ::log::info("");
+    occ::log::info("  Configuration:");
+    occ::log::info("    Neighbors:           {} (r < {:.2f} Å)", total_neighbors, config.pair_energy_radius);
+    occ::log::info("    Wolf cutoff:         {:.2f} Bohr", config.wolf_cutoff);
+    occ::log::info("    Wolf alpha:          {:.4f} Bohr⁻¹", config.wolf_alpha);
+    occ::log::info("    k_pol:               {:.4f}", polarization_scale);
+    occ::log::info("");
+    occ::log::info("  CE Energy Components (summed over all pairs):");
+    occ::log::info("    {:<20} {:>15} {:>15} {:>15}", "Component", "Gas (kJ/mol)", "Embedded (kJ/mol)", "Δ (kJ/mol)");
+    occ::log::info("    {:<20} {:>15} {:>15} {:>15}", std::string(20, '-'), std::string(15, '-'), std::string(15, '-'), std::string(15, '-'));
+    occ::log::info("    {:<20} {:>15.2f} {:>15.2f} {:>15.2f}", "Coulomb",
+                   sum_ce_gas.coulomb_kjmol(), sum_ce_embedded.coulomb_kjmol(),
+                   (sum_ce_embedded.coulomb - sum_ce_gas.coulomb) * 2625.5);
+    occ::log::info("    {:<20} {:>15.2f} {:>15.2f} {:>15.2f}", "Exchange",
+                   sum_ce_gas.exchange_kjmol(), sum_ce_embedded.exchange_kjmol(),
+                   (sum_ce_embedded.exchange - sum_ce_gas.exchange) * 2625.5);
+    occ::log::info("    {:<20} {:>15.2f} {:>15.2f} {:>15.2f}", "Repulsion",
+                   sum_ce_gas.repulsion_kjmol(), sum_ce_embedded.repulsion_kjmol(),
+                   (sum_ce_embedded.repulsion - sum_ce_gas.repulsion) * 2625.5);
+    occ::log::info("    {:<20} {:>15.2f} {:>15.2f} {:>15.2f}", "Polarization",
+                   sum_ce_gas.polarization_kjmol(), sum_ce_embedded.polarization_kjmol(),
+                   (sum_ce_embedded.polarization - sum_ce_gas.polarization) * 2625.5);
+    occ::log::info("    {:<20} {:>15.2f} {:>15.2f} {:>15.2f}", "Dispersion",
+                   sum_ce_gas.dispersion_kjmol(), sum_ce_embedded.dispersion_kjmol(),
+                   (sum_ce_embedded.dispersion - sum_ce_gas.dispersion) * 2625.5);
+    occ::log::info("    {:<20} {:>15} {:>15} {:>15}", std::string(20, '-'), std::string(15, '-'), std::string(15, '-'), std::string(15, '-'));
+    occ::log::info("    {:<20} {:>15.2f} {:>15.2f} {:>15.2f}", "Total",
+                   sum_ce_gas.total_kjmol(), sum_ce_embedded.total_kjmol(),
+                   (sum_ce_embedded.total - sum_ce_gas.total) * 2625.5);
+    occ::log::info("");
+    occ::log::info("  Polarization Field Corrections:");
+    occ::log::info("    Total correction:    {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   total_polarization_correction, total_polarization_correction * 2625.5);
+    occ::log::info("    Per-pair statistics:");
+    occ::log::info("      Min:               {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   min_pol_correction, min_pol_correction * 2625.5);
+    occ::log::info("      Max:               {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   max_pol_correction, max_pol_correction * 2625.5);
+    occ::log::info("      Mean:              {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   mean_pol_correction, mean_pol_correction * 2625.5);
+    occ::log::info("    0.5 × Σ ΔE_pol:      {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   pol_field_correction, pol_field_correction * 2625.5);
+    occ::log::info("");
+    occ::log::info("  Input components:");
+    occ::log::info("    ΔE_embed             = {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   embed_energy, embed_energy * 2625.5);
+    occ::log::info("    0.5 × ΣE_CE(emb)     = {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   0.5 * total_ce_embedded, 0.5 * total_ce_embedded * 2625.5);
+    occ::log::info("    V_ext                = {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   external_potential_energies[i], external_potential_energies[i] * 2625.5);
+    occ::log::info("    0.5×k_pol×ΣCE_pol    = {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   ce_pol_correction, ce_pol_correction * 2625.5);
+    occ::log::info("    0.5 × Σ ΔE_pol       = {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   pol_field_correction, pol_field_correction * 2625.5);
+    occ::log::info("");
+    occ::log::info("  Formula: E_latt = ΔE_embed + 0.5×ΣE_CE(emb) - V_ext - 0.5×k_pol×ΣCE_pol(emb) + 0.5×ΣΔE_pol");
+    occ::log::info("");
+    occ::log::info("  LATTICE ENERGY       = {:>12.6f} Ha  ({:>10.2f} kJ/mol)",
+                   latt_final, latt_final * 2625.5);
+    occ::log::info("");
   }
 
   // Write output files

@@ -5,6 +5,10 @@
 #include <occ/interaction/pair_potential.h>
 #include <occ/interaction/wolf.h>
 #include <occ/interaction/polarization_partitioning.h>
+#include <occ/interaction/interaction_json.h>
+#include <occ/interaction/lattice_energy.h>
+#include <filesystem>
+#include <fstream>
 
 /* Dimer tests */
 using occ::crystal::AsymmetricUnit;
@@ -169,4 +173,71 @@ TEST_CASE("Gradient-based attribution matches Python reference", "[polarization]
     // The relationship should be exact (within numerical precision)
     REQUIRE(std::abs(manual_result - expected_attribution) < 1e-12);
   }
+}
+
+// Helper function to create test ElatResults
+occ::interaction::ElatResults create_test_elat_results() {
+  auto crystal = nacl_crystal();
+
+  // Create dimers with some energies
+  double radius = 8.0;
+  auto dimers = crystal.symmetry_unique_dimers(radius);
+
+  // Set some test energies
+  for (size_t i = 0; i < std::min(dimers.unique_dimers.size(), size_t(5)); i++) {
+    double test_energy = -10.0 * (i + 1);  // -10, -20, -30, etc.
+    dimers.unique_dimers[i].set_interaction_energy(test_energy);
+
+    // Set energy components
+    ankerl::unordered_dense::map<std::string, double> components;
+    components["Coulomb"] = test_energy * 0.6;
+    components["Exchange"] = test_energy * 0.2;
+    components["Repulsion"] = -test_energy * 0.3;
+    components["Dispersion"] = test_energy * 0.3;
+    components["Polarization"] = test_energy * 0.2;
+    components["Total"] = test_energy;
+    dimers.unique_dimers[i].set_interaction_energies(components);
+  }
+
+  occ::interaction::LatticeEnergyResult lattice_result;
+  lattice_result.dimers = std::move(dimers);
+
+  return occ::interaction::ElatResults{
+    crystal,
+    std::move(lattice_result),
+    "test_nacl",
+    "test-model"
+  };
+}
+
+TEST_CASE("Elat format write and read round-trip", "[interaction][json][elat]") {
+  auto results = create_test_elat_results();
+  std::string test_file = "/tmp/test_elat_roundtrip.json";
+
+  // Write legacy format
+  occ::interaction::write_elat_json(test_file, results);
+  REQUIRE(std::filesystem::exists(test_file));
+
+  // Read it back
+  auto read_results = occ::interaction::read_elat_json(test_file);
+
+  // Verify crystal data matches
+  REQUIRE(read_results.title == results.title);
+  REQUIRE(read_results.model == results.model);
+
+  // Verify energies match
+  const auto& orig_dimers = results.lattice_energy_result.dimers.unique_dimers;
+  const auto& read_dimers = read_results.lattice_energy_result.dimers.unique_dimers;
+
+  for (size_t i = 0; i < std::min(orig_dimers.size(), read_dimers.size()); i++) {
+    double orig_energy = orig_dimers[i].interaction_energy();
+    if (orig_energy != 0.0) {
+      double read_energy = read_dimers[i].interaction_energy();
+      INFO("Checking dimer " << i);
+      REQUIRE(read_energy == Catch::Approx(orig_energy).margin(1e-10));
+    }
+  }
+
+  // Clean up
+  std::filesystem::remove(test_file);
 }

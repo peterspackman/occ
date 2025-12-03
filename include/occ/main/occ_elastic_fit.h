@@ -36,6 +36,7 @@ struct EFSettings {
   occ::IVec3 shrinking_factors{1, 1, 1};
   std::vector<double> shift_raw{0.0};
   occ::Vec3 shift{0.0, 0.0, 0.0};
+  std::string export_pairs_file{""};  // Export minimal pairs JSON for testing
 };
 
 CLI::App *add_elastic_fit_subcommand(CLI::App &app);

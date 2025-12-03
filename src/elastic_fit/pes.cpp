@@ -297,6 +297,11 @@ occ::Mat PES::inv_mass_matrix() {
 
 occ::CMat PES::compute_fm_at_kpoint(const occ::Vec3 &kp) {
 
+  if (!has_crystal()) {
+    throw std::runtime_error(
+        "compute_fm_at_kpoint requires full Crystal object");
+  }
+
   size_t n_molecules = this->num_unique_molecules();
   size_t dim = 3 * n_molecules;
   const auto &recip = this->crystal().unit_cell().reciprocal();
@@ -374,6 +379,11 @@ PES::compute_phonons_at_kpoint(const occ::CMat &Dyn_ij) {
 void PES::animate_phonons(const occ::Vec &frequencies,
                           const occ::Mat &eigenvectors,
                           const occ::Vec3 &kpoint) {
+
+  if (!has_crystal()) {
+    throw std::runtime_error(
+        "animate_phonons requires full Crystal object");
+  }
 
   double amplitude = 0.5;
   size_t n_frames = 50;

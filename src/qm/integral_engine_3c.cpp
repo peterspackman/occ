@@ -37,13 +37,22 @@ Mat IntegralEngine::wolf_point_charge_potential(
     const std::vector<double> &atomic_partial_charges, double alpha,
     double cutoff) {
 
-  // TODO cutoff based on distance from centroid of molecule?
+  // Filter charges based on distance from any molecular atom
+  const auto &mol_atoms = m_aobasis.atoms();
   std::vector<PointCharge> charges;
-  for (const auto pc : external_charges) {
-    auto rij = pc.position().norm();
-    if (rij > cutoff)
-      continue;
-    charges.push_back(pc);
+  for (const auto &pc : external_charges) {
+    // Check if point charge is within cutoff of any atom
+    bool within_cutoff = false;
+    for (const auto &atom : mol_atoms) {
+      double rij = (pc.position() - atom.position()).norm();
+      if (rij <= cutoff) {
+        within_cutoff = true;
+        break;
+      }
+    }
+    if (within_cutoff) {
+      charges.push_back(pc);
+    }
   }
 
   // Gaussian charge distribution potential

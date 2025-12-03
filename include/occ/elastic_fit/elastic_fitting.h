@@ -7,6 +7,30 @@
 
 namespace occ::elastic_fit {
 
+struct MoleculeInput {
+  int id;
+  double mass;  // g/mol
+  occ::Vec3 center_of_mass;  // Angstrom
+};
+
+struct PairInput {
+  int molecule_a;
+  int molecule_b;
+  occ::Vec3 v_ab_com;  // COM-to-COM vector in Angstrom
+  double energy;  // kJ/mol
+};
+
+struct ElasticFitInput {
+  occ::Mat3 lattice_vectors;  // Column vectors in Angstrom
+  double volume;  // Angstrom^3
+  std::vector<MoleculeInput> molecules;
+  std::vector<PairInput> pairs;
+
+  // Optional metadata
+  std::string title;
+  std::string model;
+};
+
 struct FittingSettings {
   PotentialType potential_type = PotentialType::LJ;
   bool include_positive = false;
@@ -37,7 +61,10 @@ class ElasticFitter {
 public:
   explicit ElasticFitter(const FittingSettings &settings);
 
-  // Main fitting function
+  // Main fitting function - new minimal input interface
+  FittingResults fit_elastic_tensor(const ElasticFitInput &input);
+
+  // Main fitting function - backwards compatible ElatResults interface
   FittingResults
   fit_elastic_tensor(const occ::interaction::ElatResults &elat_data);
 
@@ -53,14 +80,23 @@ public:
   static void save_elastic_tensor(const occ::Mat6 &tensor,
                                   const std::string &filename);
 
+  // Conversion utility
+  static ElasticFitInput
+  convert_elat_to_input(const occ::interaction::ElatResults &elat_data);
+
 private:
   FittingSettings m_settings;
 
   // Core fitting methods
   PES build_pes_from_elat_data(const occ::interaction::ElatResults &elat_data);
+  PES build_pes_from_input(const ElasticFitInput &input);
   std::unique_ptr<PotentialBase>
   create_potential_from_dimer(const occ::core::Dimer &dimer,
                               double adjusted_energy) const;
+  std::unique_ptr<PotentialBase>
+  create_potential_from_pair(const PairInput &pair, const MoleculeInput &mol_a,
+                             const MoleculeInput &mol_b,
+                             double adjusted_energy) const;
 
   // GULP generation methods (standalone)
   std::vector<std::string> generate_gulp_crystal_strings(
