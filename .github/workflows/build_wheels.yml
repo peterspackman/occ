@@ -94,7 +94,6 @@ jobs:
         with:
           path: ./wheelhouse/*.whl
           name: occpy-${{ matrix.os }}-${{ matrix.pyver }}-${{ matrix.arch }}
-          overwrite: true
 
   build_pyodide_wheel:
     name: Build wheel for pyodide
@@ -125,29 +124,37 @@ jobs:
       id-token: write
     if: always() && (needs.build_wheels.result == 'success') && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_pypi))
     steps:
-    # Download regular wheels (always required)
+    # Download all wheel artifacts
     - uses: actions/download-artifact@v5
       with:
-        path: dist
+        path: artifacts
         pattern: 'occpy-*'
-        merge-multiple: true
 
     # Try to download Pyodide wheel if it succeeded (optional)
     - name: Download Pyodide wheel (if available)
       uses: actions/download-artifact@v5
       continue-on-error: true
       with:
-        path: dist
+        path: artifacts
         pattern: 'wasm-occpy-pyodide'
-        merge-multiple: true
+
+    # Flatten all wheels into dist/
+    - name: Collect wheels
+      run: |
+        mkdir -p dist
+        find artifacts -name "*.whl" -exec cp {} dist/ \;
 
     - name: List downloaded wheels
       run: |
         echo "Downloaded wheels:"
         ls -la dist/
         echo "Checking wheel integrity:"
-        python -m zipfile -t dist/*.whl || true
+        for f in dist/*.whl; do
+          echo "Checking $f..."
+          python -c "import zipfile; zf = zipfile.ZipFile('$f'); zf.testzip(); print('  OK')" || echo "  FAILED: $f"
+        done
 
-    - uses: pypa/gh-action-pypi-publish@release/v1
+    - uses: pypa/gh-action-pypi-publish@v1.12.4
       with:
         skip-existing: true
+        print-hash: true
