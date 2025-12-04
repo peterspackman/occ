@@ -69,7 +69,11 @@ TEST_CASE("MO integral transformation validation", "[mp2]") {
   occ::log::info("Maximum deviation from identity: {:.2e}", max_error);
 
   // Print a few diagonal and off-diagonal elements for debugging
+#ifdef _WIN32
+  for (size_t i = 0; i < std::min(3ull, static_cast<size_t>(S_MO.rows())); ++i) {
+#else
   for (size_t i = 0; i < std::min(3ul, static_cast<size_t>(S_MO.rows())); ++i) {
+#endif
     occ::log::info("S_MO({},{}) = {:.10f} (should be 1.0)", i, i, S_MO(i, i));
     if (i + 1 < S_MO.rows()) {
       occ::log::info("S_MO({},{}) = {:.10f} (should be 0.0)", i, i + 1,

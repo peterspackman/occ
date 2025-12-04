@@ -123,6 +123,10 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     endif()
 endif()
 
+if(WIN32)
+    add_compile_definitions(NOMINMAX)
+endif()
+
 if("${WITH_PYTHON_BINDINGS}")
     find_package(
         Python
