@@ -114,7 +114,7 @@ namespace libecpint {
 
 	// Perform the GC integration on the function f
 	std::pair<double, bool> GCQuadrature::integrate(
-	    std::function<double(double, const double*, int)> &f, const double *params,
+	    std::function<double(double, const std::vector<double>, int)> &f, const std::vector<double> params,
 	    const double tolerance, const int start, const int end) const {
 		bool converged = false; // 0 for converged, -1 for not converged
 
@@ -219,8 +219,8 @@ namespace libecpint {
 
 	// Worker function to do the additional sum terms when going from I_n to I_{2n+1}
 	double GCQuadrature::sumTerms(
-	    const std::function<double(double, const double*, int)> &f,
-	    const double *p, const int limit, const int start, const int end,
+	    const std::function<double(double, const std::vector<double>, int)> &f,
+            const std::vector<double>& p, const int limit, const int start, const int end,
 	    const int shift, const int skip) const {
 		assert(start >= 0 && start < maxN);
 		assert(end >= 0 && end < maxN);

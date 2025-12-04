@@ -1,4 +1,4 @@
-/* 
+/*
  *      Copyright (c) 2020 Robert Shaw
  *		This file was generated as a part of Libecpint.
  *
@@ -32,80 +32,80 @@
 #include <iostream>
 
 namespace libecpint {
-	
+
 	void RadialIntegral::compute_base_integrals(
       const int N_min, const int N_max, const double p, const double o_root_p, const double P1,
       const double P2, const double P1_2, const double P2_2, const double X1, const double X2,
       const double oP1, const double oP2, double* values) const {
-	
+
 		// Recursively construct the base integrals in order F2, G3, F4, G5, etc... as described in Shaw2017
-		
+
 		int imax = N_max / 2;
 		int imin = (N_min + 1) / 2;
 		int gmax = (N_max - 1) / 2;
 		int gmin = N_min / 2;
-	
+
 		double P1_2k = 1.0;
-		double P2_2k = 1.0; 
-	
+		double P2_2k = 1.0;
+
 		for (int k = 2; k < imin; k++) {
 			P1_2k *= P1_2;
 			P2_2k *= P2_2;
 		}
-	
-		double ck, dk, ek, val; 
+
+		double ck, dk, ek, val;
 		double C0 = o_root_p * ROOT_PI;
 		for (int n = imin; n <= imax; n++) {
-			ck = C0; 
+			ck = C0;
 			dk = P1_2k * X1;
-			ek = P2_2k * X2; 
-			val = ck * (dk - ek); 	
-		
+			ek = P2_2k * X2;
+			val = ck * (dk - ek);
+
 			for (int k = n - 1; k > 1; k--) {
 				ck *= 2*k*(2*k - 1)*(n-k-0.5) / ((2*n - 2*k) * (2*n - 2*k - 1) * p);
 				dk *= oP1;
-				ek *= oP2; 
+				ek *= oP2;
 				val += ck * (dk - ek);
 			}
-		
+
 			if (n > 1) {
 				ck *= 2*(n-1.5) / ((2*n - 2) * (2*n - 3) * p);
-				val += ck * (X1 - X2); 
+				val += ck * (X1 - X2);
 			}
-		
+
 			values[2*n - N_min] = val;
-		
+
 			P1_2k *= P1_2;
 			P2_2k *= P2_2;
 		}
-	
+
 		P1_2k = P1;
 		P2_2k = P2;
 		for (int k = 1; k < gmin; k++) {
 			P1_2k *= P1_2;
 			P2_2k *= P2_2;
-		} 
-	
-	
+		}
+
+
 		for (int n = gmin; n <= gmax; n++) {
-			ck = C0; 
+			ck = C0;
 			dk = P1_2k * X1;
-			ek = P2_2k * X2; 
+			ek = P2_2k * X2;
 			val = ck * (dk - ek);
-		
+
 			for (int k = n-1; k >0; k--) {
 				ck *= 2*k*(2*k+1)*(n-k-0.5) / ((2*n-2*k) * (2*n - 1 - 2*k) * p);
-				dk *= oP1; 
-				ek *= oP2; 
+				dk *= oP1;
+				ek *= oP2;
 				val += ck * (dk - ek);
 			}
-		
+
 			values[2*n + 1 - N_min] = val;
-		
+
 			P1_2k *= P1_2;
-			P2_2k *= P2_2; 
-		} 
-	
+			P2_2k *= P2_2;
+		}
+
 	}
 
 	std::pair<double, bool> RadialIntegral::integrate_small(
@@ -117,46 +117,46 @@ namespace libecpint {
 		auto transformedGrid = primGrid;
 		transformedGrid.transformRMinMax(zt, pt);
 		std::vector<double> &gridPoints = transformedGrid.getX();
-	
-		double Ftab[gridSize]; 
-	
+
+		std::vector<double> Ftab(gridSize);
+
 		double z, zA, zB, besselValue1, besselValue2;
 		double aA = 2.0 * a * A;
 		double bB = 2.0 * b * B;
-		
+
 		z = gridPoints[0];
 		zA = z-A; zB = z-B;
 		besselValue1 = bessie.calculate(aA * z, l1);
 		besselValue2 = bessie.calculate(bB * z, l2);
 		Ftab[0] = FAST_POW[N](z) * exp(-n * z * z - a * zA * zA - b * zB * zB) * besselValue1 * besselValue2;
-		
+
 		int i = 1;
 		double TOL = tolerance; ////(double(gridSize));
 		bool not_in_tail = true;
 		double delta=1.0;
 		while (not_in_tail && i < gridSize) {
 			z = gridPoints[i];
-			zA = z - A; 
-			zB = z - B; 
-			
+			zA = z - A;
+			zB = z - B;
+
 			besselValue1 = bessie.calculate(aA * z, l1);
-			besselValue2 = bessie.calculate(bB * z, l2);		
+			besselValue2 = bessie.calculate(bB * z, l2);
 			Ftab[i] = FAST_POW[N](z) * exp(-n * z * z - a * zA * zA - b * zB * zB) * besselValue1 * besselValue2;
 
 			delta = Ftab[i] - Ftab[i-1];
 			not_in_tail = (Ftab[i] > TOL) || (delta > 0);
-			i++; 
+			i++;
 		}
-		
+
 		for (int j = i; j < gridSize; j++)
 			Ftab[j] = 0.0;
-	
-		std::function<double(double, const double*, int)> intgd = RadialIntegral::integrand;
-		
-		// There should be no instances where this fails, so no backup plan to large grid, but return check just in case 
+
+		std::function<double(double, const std::vector<double>, int)> intgd = RadialIntegral::integrand;
+
+		// There should be no instances where this fails, so no backup plan to large grid, but return check just in case
 		return transformedGrid.integrate(intgd, Ftab, 1e-12, 0, primGrid.getN() - 1);
 	}
-	
+
 	void RadialIntegral::type2(
 	    const std::vector<Triple>& triples, const int nbase, const int lam,
 	    const ECP &U, const GaussianShell &shellA, const GaussianShell &shellB,
@@ -164,25 +164,25 @@ namespace libecpint {
 	{
 		int npA = shellA.nprimitive();
 		int npB = shellB.nprimitive();
-		
+
 		// Loop over primitives in ECP, only considering correct ang. momentum
-		for(const auto& u : U.gaussians) { 
+		for(const auto& u : U.gaussians) {
 			if (u.l == lam) {
-				
+
 				// Loop over primitives in orbital basis shellß
 				for(int na = 0; na < npA; na++) {
 					double a = shellA.exp(na);
-					double da = shellA.coef(na); 
-			
+					double da = shellA.coef(na);
+
 					for (int nb = 0; nb < npB; nb++) {
 						double b = shellB.exp(nb);
-						double db = shellB.coef(nb); 
-						
+						double db = shellB.coef(nb);
+
 						// Construct values that will be reused across all radial integrals
 						double p = u.a + a + b;
 						double x = a * A;
 						double y = b * B;
-	
+
 						double P1 = (x + y) / p;
 						double P2 = (y - x) / p;
 						double P1_2 = P1 * P1;
@@ -190,43 +190,43 @@ namespace libecpint {
 						double oP1 = 1.0 / P1_2;
 						double oP2 = std::abs(P2) < 1e-7 ? 0.0 : 1.0 / P2_2;
 						double root_p = sqrt(p);
-						double o_root_p = 1.0 / root_p; 
+						double o_root_p = 1.0 / root_p;
 						double aAbB = a*A*A + b*B*B;
-						double Kab = 1.0 / (16.0 * x * y); 
+						double Kab = 1.0 / (16.0 * x * y);
 						double X1 = exp(p * P1_2 - aAbB) * Kab;
 						double X2 = exp(p * P2_2 - aAbB) * Kab;
-	
+
 						double x2 = x * x;
-						double y2 = y * y; 
-						double p2 = p * p; 
-	
+						double y2 = y * y;
+						double p2 = p * p;
+
 						double result = 0.0;
-						
+
 						// G1A, G1B may not be required, but it seems to be quicker to calculate than to check if needed
 #ifdef USING_CERF
 						double daw1 = X1 * dawson(root_p * P1);
 						double daw2 = X2 * dawson(root_p * P2);
 #else
 						double daw1 = X1 * Faddeeva::Dawson(root_p * P1);
-						double daw2 = X2 * Faddeeva::Dawson(root_p * P2); 	
+						double daw2 = X2 * Faddeeva::Dawson(root_p * P2);
 #endif
 						double G1B = 2.0 * ROOT_PI * (daw1 - daw2);
 						double G1A = 2.0 * ROOT_PI * (daw1 + daw2);
-						double H2 =  ROOT_PI * ( X1 + X2 ) * o_root_p; 
+						double H2 =  ROOT_PI * ( X1 + X2 ) * o_root_p;
 
 						// Compute base integrals
-						double *values = new double[nbase+2]; 
-						compute_base_integrals(2, 3+nbase, p, o_root_p, P1, P2, P1_2, P2_2, X1, X2, oP1, oP2, values); 
-						
+						double *values = new double[nbase+2];
+						compute_base_integrals(2, 3+nbase, p, o_root_p, P1, P2, P1_2, P2_2, X1, X2, oP1, oP2, values);
+
 						// Loop over all radial integrals required, divert to generated code
 						for (const Triple& triple : triples ) {
 							int i = std::get<1>(triple);
 							int j = std::get<2>(triple);
-							int k = std::get<0>(triple) + u.n + 2; 
-							
-							int ijk = i*10000 + j*100 + k; 
+							int k = std::get<0>(triple) + u.n + 2;
+
+							int ijk = i*10000 + j*100 + k;
 							double result = 0.0;
-							if (a * b > MIN_EXP) {// && b > MIN_EXP) { 
+							if (a * b > MIN_EXP) {// && b > MIN_EXP) {
 								switch(ijk) {
 									case 2 : {
 										result = ( 1 ) * values[0];
@@ -735,25 +735,25 @@ namespace libecpint {
 									}
 
 									default: {
-										if (estimate_type2(k, i, j, u.a, a, b, A, B) > tolerance){ 
+										if (estimate_type2(k, i, j, u.a, a, b, A, B) > tolerance){
 											std::pair<double, bool> quadval = integrate_small(k, i, j, u.a, a, b, A, B);
-											result = quadval.first; 
-											if (!quadval.second) std::cout << "Quadrature failed" << std::endl; 
+											result = quadval.first;
+											if (!quadval.second) std::cout << "Quadrature failed" << std::endl;
 										}
 									}
 								}
 							} else {
-								if (estimate_type2(k, i, j, u.a, a, b, A, B) > tolerance){ 
+								if (estimate_type2(k, i, j, u.a, a, b, A, B) > tolerance){
 									std::pair<double, bool> quadval = integrate_small(k, i, j, u.a, a, b, A, B);
-									result = quadval.first; 
-									if (!quadval.second) std::cout << "Quadrature failed" << std::endl; 
+									result = quadval.first;
+									if (!quadval.second) std::cout << "Quadrature failed" << std::endl;
 								}
-							} 
-							
+							}
+
 							radials(k-2-u.n, i, j) += da * db * u.d * result;
 						}
-						
-						delete[] values; 
+
+						delete[] values;
 					}
 				}
 			}
