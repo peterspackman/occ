@@ -129,7 +129,7 @@ public:
     auto f = m_proc.compute_fock_gradient(mo, m_schwarz);
     auto hcore = en + kin;
 
-    auto Dweighted = mo.energy_weighted_density_matrix();
+    Mat Dweighted = mo.energy_weighted_density_matrix();
 
     for (size_t atom = 0; atom < atoms.size(); atom++) {
       auto grad_rinv = m_proc.compute_rinv_gradient_for_atom(atom);
@@ -180,7 +180,8 @@ public:
     // Add dispersion gradient if enabled
     if (m_dispersion_functional.has_value()) {
       const std::string &functional = m_dispersion_functional.value();
-      int charge = 0; // TODO: Get charge from proc if available
+      const auto &basis = m_proc.aobasis();
+      int charge = basis.effective_nuclear_charge() - static_cast<int>(mo.num_electrons());
 
       switch (m_dispersion_type) {
       case DispersionType::D4: {

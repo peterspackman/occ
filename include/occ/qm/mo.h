@@ -49,6 +49,23 @@ struct MolecularOrbitals {
     }
   }
 
+  /**
+   * @brief Get total number of electrons represented by these MOs
+   * @return Total electron count (accounting for spin convention)
+   */
+  inline size_t num_electrons() const {
+    switch (kind) {
+    case SpinorbitalKind::Restricted:
+      return 2 * n_alpha; // Paired electrons in same spatial orbitals
+    case SpinorbitalKind::Unrestricted:
+      return n_alpha + n_beta;
+    case SpinorbitalKind::General:
+      return n_alpha; // In general case, n_alpha stores total electron count
+    default:
+      return 2 * n_alpha;
+    }
+  }
+
   Mat energy_weighted_density_matrix() const;
   Mat density_matrix_single_mo(int mo_index) const;
 

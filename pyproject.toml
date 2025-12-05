@@ -14,6 +14,7 @@ authors = [
 
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
 ]
 # Optional: runtime dependency specification
 dependencies = ["numpy >1.24.4"]
