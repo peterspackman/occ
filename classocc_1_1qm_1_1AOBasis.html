@@ -183,6 +183,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af5141c31b3ed7fdeaac2c42347920b2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6815495e5f2d92259f59c21e4466e83f" id="r_a6815495e5f2d92259f59c21e4466e83f"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1AOBasis.html#a6815495e5f2d92259f59c21e4466e83f">total_ecp_electrons</a> () const</td></tr>
 <tr class="separator:a6815495e5f2d92259f59c21e4466e83f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af94cb9d139520c3e7b20b65e59144200" id="r_af94cb9d139520c3e7b20b65e59144200"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1AOBasis.html#af94cb9d139520c3e7b20b65e59144200">total_nuclear_charge</a> () const</td></tr>
+<tr class="memdesc:af94cb9d139520c3e7b20b65e59144200"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get total nuclear charge from all atoms.  <br /></td></tr>
+<tr class="separator:af94cb9d139520c3e7b20b65e59144200"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06f4cc7140696f3098f8d1a37469f973" id="r_a06f4cc7140696f3098f8d1a37469f973"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1AOBasis.html#a06f4cc7140696f3098f8d1a37469f973">effective_nuclear_charge</a> () const</td></tr>
+<tr class="memdesc:a06f4cc7140696f3098f8d1a37469f973"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get effective nuclear charge (accounting for ECP electrons)  <br /></td></tr>
+<tr class="separator:a06f4cc7140696f3098f8d1a37469f973"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2966972e37a24c6caef8fa348bbe39ad" id="r_a2966972e37a24c6caef8fa348bbe39ad"><td class="memItemLeft" align="right" valign="top">uint_fast8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1AOBasis.html#a2966972e37a24c6caef8fa348bbe39ad">l_max</a> () const</td></tr>
 <tr class="separator:a2966972e37a24c6caef8fa348bbe39ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f787e824056a8f99297c08967b4675f" id="r_a7f787e824056a8f99297c08967b4675f"><td class="memItemLeft" align="right" valign="top">uint_fast8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1AOBasis.html#a7f787e824056a8f99297c08967b4675f">ecp_l_max</a> () const</td></tr>
@@ -665,6 +671,34 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a06f4cc7140696f3098f8d1a37469f973" name="a06f4cc7140696f3098f8d1a37469f973"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06f4cc7140696f3098f8d1a37469f973">&#9670;&#160;</a></span>effective_nuclear_charge()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::qm::AOBasis::effective_nuclear_charge </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get effective nuclear charge (accounting for ECP electrons) </p>
+<dl class="section return"><dt>Returns</dt><dd>Total nuclear charge minus ECP electrons </dd></dl>
 
 </div>
 </div>
@@ -1339,6 +1373,34 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="af94cb9d139520c3e7b20b65e59144200" name="af94cb9d139520c3e7b20b65e59144200"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af94cb9d139520c3e7b20b65e59144200">&#9670;&#160;</a></span>total_nuclear_charge()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::qm::AOBasis::total_nuclear_charge </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get total nuclear charge from all atoms. </p>
+<dl class="section return"><dt>Returns</dt><dd>Sum of atomic numbers </dd></dl>
 
 </div>
 </div>

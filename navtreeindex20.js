@@ -1,5 +1,9 @@
 var NAVTREEINDEX20 =
 {
+"crystal__json_8h.html#abb6be90380608688a16b260359e80bb1":[5,0,1,0,12,6,6],
+"crystal__surface__energy_8h.html":[5,0,1,0,14,1],
+"crystal__surface__energy_8h.html#a282767a70848f993aa9b5ea8b03ccbc2":[5,0,1,0,14,1,2],
+"crystal__surface__energy_8h.html#aba21b5380482aa5b17c8fc7a3cb6ca93":[5,0,1,0,14,1,4],
 "crystal__surface__energy_8h.html#ae6a3ddcf8fae6544589ec5d41ef77449":[5,0,1,0,14,1,3],
 "crystalgrower_8h.html":[5,0,1,0,12,7],
 "cube_8h.html":[5,0,1,0,12,8],
@@ -201,8 +205,8 @@ var NAVTREEINDEX20 =
 "functions_type.html":[4,3,3],
 "functions_u.html":[4,3,0,21],
 "functions_v.html":[4,3,0,22],
-"functions_vars.html":[4,3,2,0],
 "functions_vars.html":[4,3,2],
+"functions_vars.html":[4,3,2,0],
 "functions_vars_a.html":[4,3,2,1],
 "functions_vars_b.html":[4,3,2,2],
 "functions_vars_c.html":[4,3,2,3],
@@ -245,9 +249,5 @@ var NAVTREEINDEX20 =
 "geometry__optimization_8h.html#a7c3d0f87ea6ffbf435a9a2a0fb1dd595":[5,0,1,0,7,2,0],
 "geometry__optimization_8h.html#ad489b251984fd33fdfbd881589d676a3":[5,0,1,0,7,2,1],
 "globals.html":[5,1,0],
-"globals_defs.html":[5,1,2],
-"globals_func.html":[5,1,1],
-"gmf_8h.html":[5,0,1,0,12,15],
-"gradients_8h.html":[5,0,1,0,16,6],
-"gradients_8h.html#a31916adeeed2bd8263d7e399ef3e6df3":[5,0,1,0,16,6,5]
+"globals_defs.html":[5,1,2]
 };

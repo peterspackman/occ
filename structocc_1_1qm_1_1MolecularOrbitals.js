@@ -8,6 +8,7 @@ var structocc_1_1qm_1_1MolecularOrbitals =
     [ "energy_weighted_density_matrix", "structocc_1_1qm_1_1MolecularOrbitals.html#a7cfccac3930555cf2e48f8312b879666", null ],
     [ "expectation_value", "structocc_1_1qm_1_1MolecularOrbitals.html#aceac60326b4eebca0dbe7a6b43a7766c", null ],
     [ "incorporate_norm", "structocc_1_1qm_1_1MolecularOrbitals.html#a1106c90f3735a7a3c257e59b6e6f9ce9", null ],
+    [ "num_electrons", "structocc_1_1qm_1_1MolecularOrbitals.html#a6c16adeb103a10347d876a6ce45f8fef", null ],
     [ "occ_alpha", "structocc_1_1qm_1_1MolecularOrbitals.html#a986ba6612cfa074a623515775f37b84d", null ],
     [ "occ_beta", "structocc_1_1qm_1_1MolecularOrbitals.html#add93919459e859112a7ee63fbddb9269", null ],
     [ "print", "structocc_1_1qm_1_1MolecularOrbitals.html#a5094978d6f838ecb6d1928556cf7bfed", null ],

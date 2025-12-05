@@ -19,6 +19,7 @@ var classocc_1_1qm_1_1AOBasis =
     [ "ecp_shell_to_atom", "classocc_1_1qm_1_1AOBasis.html#af13b6d9090abf4f43e05bd77f19b1031", null ],
     [ "ecp_shells", "classocc_1_1qm_1_1AOBasis.html#aec72d6a0e700644f698f92904afb6c16", null ],
     [ "ecp_size", "classocc_1_1qm_1_1AOBasis.html#a3ef23e576b282638242c56df78e8fa66", null ],
+    [ "effective_nuclear_charge", "classocc_1_1qm_1_1AOBasis.html#a06f4cc7140696f3098f8d1a37469f973", null ],
     [ "first_bf", "classocc_1_1qm_1_1AOBasis.html#a33cc29df65e947f3887edf49b59a4903", null ],
     [ "have_ecps", "classocc_1_1qm_1_1AOBasis.html#a2fe63928d95a5ff70dc48cca061bef59", null ],
     [ "is_cartesian", "classocc_1_1qm_1_1AOBasis.html#a4210ffa5c76b37cb1bb118056411b4db", null ],
@@ -43,5 +44,6 @@ var classocc_1_1qm_1_1AOBasis =
     [ "shells_share_origin", "classocc_1_1qm_1_1AOBasis.html#a865957e320cd13afadb8b66709f6e79b", null ],
     [ "size", "classocc_1_1qm_1_1AOBasis.html#a0dbc4f7e2549bd6c8b3a65c2dad203a8", null ],
     [ "total_ecp_electrons", "classocc_1_1qm_1_1AOBasis.html#a6815495e5f2d92259f59c21e4466e83f", null ],
+    [ "total_nuclear_charge", "classocc_1_1qm_1_1AOBasis.html#af94cb9d139520c3e7b20b65e59144200", null ],
     [ "translate", "classocc_1_1qm_1_1AOBasis.html#ac1da302ca50a830eba18a8dd82f98f84", null ]
 ];
