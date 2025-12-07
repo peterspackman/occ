@@ -1,17 +1,15 @@
 {
   "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
   "@type": "Code",
-  "author": [
-
-  ],
+  "author": [],
   "identifier": "https://doi.org/10.5281/zenodo.17393817",
   "codeRepository": "https://github.com/peterspackman/occ",
   "datePublished": "2025-10-21",
-  "dateModified": "2025-10-21",
+  "dateModified": "2025-12-07",
   "dateCreated": "2025-10-21",
   "description": "Open Computational Chemistry in C++ ",
   "keywords": "",
   "license": "GPL v3.0",
   "title": "OCC: Open Computational Chemistry",
-  "version": "v0.8.5"
+  "version": "v0.8.8"
 }
