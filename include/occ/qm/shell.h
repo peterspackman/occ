@@ -5,7 +5,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/point_charge.h>
 #include <occ/core/util.h>
-#include <vector>
+
 
 namespace occ::qm {
 

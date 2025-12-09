@@ -42,6 +42,9 @@ else()
 endif()
 
 
+#Debug flags 
+set(CMAKE_CXX_FLAGS_DEBUG "-g -ftime-trace")
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
     option(BUILD_FPIC "Build with position independent code" OFF)

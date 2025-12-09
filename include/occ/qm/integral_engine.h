@@ -1,6 +1,4 @@
 #pragma once
-#include <array>
-#include <occ/core/atom.h>
 #include <occ/core/log.h>
 #include <occ/core/multipole.h>
 #include <occ/core/parallel.h>
@@ -12,7 +10,7 @@
 #include <occ/qm/shellblock_norm.h>
 #include <optional>
 #include <unsupported/Eigen/CXX11/Tensor>
-#include <vector>
+
 
 #if HAVE_ECPINT
 #include <libecpint.hpp>

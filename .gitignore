@@ -17,6 +17,7 @@ occjs.js
 occjs.wasm
 wasm/
 examples/*
+CMakeFiles/
 
 # Node.js
 node_modules/
