@@ -1,22 +1,14 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <occ/core/eeq.h>
-#include <occ/core/log.h>
-#include <occ/core/units.h>
-#include <occ/crystal/crystal.h>
 #include <occ/io/adaptive_grid.h>
 #include <occ/io/cifparser.h>
-#include <occ/io/cube.h>
 #include <occ/io/load_geometry.h>
-#include <occ/io/periodic_grid.h>
 #include <occ/io/xyz.h>
 #include <occ/main/occ_cube.h>
-#include <occ/qm/wavefunction.h>
 #include <occ/isosurface/volume_calculator.h>
-#include <occ/isosurface/volume_data.h>
 #include <occ/isosurface/point_functors.h>
 #include <scn/scan.h>
-#include <memory>
 
 namespace fs = std::filesystem;
 using occ::IVec;

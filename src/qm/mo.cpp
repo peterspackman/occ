@@ -1,7 +1,4 @@
-#include <fmt/core.h>
 #include <occ/core/gensqrtinv.h>
-#include <occ/core/log.h>
-#include <occ/core/timings.h>
 #include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
 #include <occ/qm/expectation.h>
