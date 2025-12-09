@@ -146,17 +146,9 @@ public:
     }
   }
 
-  void set_common_origin(const std::array<double, 3> &origin) {
-    m_env_data[libcint::common_origin_offset] = origin[0];
-    m_env_data[libcint::common_origin_offset + 1] = origin[1];
-    m_env_data[libcint::common_origin_offset + 2] = origin[2];
-  }
+  void set_common_origin(const std::array<double, 3> &origin);
 
-  void set_rinv_origin(const std::array<double, 3> &origin) {
-    m_env_data[libcint::rinv_origin_offset] = origin[0];
-    m_env_data[libcint::rinv_origin_offset + 1] = origin[1];
-    m_env_data[libcint::rinv_origin_offset + 2] = origin[2];
-  }
+  void set_rinv_origin(const std::array<double, 3> &origin);
 
   void set_rinv_zeta(double zeta) {
     m_env_data[libcint::rinv_zeta_offset] = zeta;
@@ -556,25 +548,8 @@ public:
     m_env_data[libcint::range_omega_offset] = omega;
   }
 
-  inline void print() const {
-    fmt::print("Atom Info {}\n", m_atom_info.size());
-    for (const auto &atom : m_atom_info) {
-      fmt::print("{} {} {} {} {} {}\n", atom.data[0], atom.data[1],
-                 atom.data[2], atom.data[3], atom.data[4], atom.data[5]);
-    }
-    fmt::print("Basis Info {}\n", m_basis_info.size());
-    for (const auto &sh : m_basis_info) {
-      fmt::print("{} {} {} {} {} {}\n", sh.data[0], sh.data[1], sh.data[2],
-                 sh.data[3], sh.data[4], sh.data[5], sh.data[6], sh.data[7]);
-    }
-    fmt::print("Env Data {}\n", m_env_data.size());
-    for (size_t i = 0; i < m_env_data.size(); i++) {
-      fmt::print("{:12.6f} ", m_env_data[i]);
-      if (i > 0 && (i % 6 == 0))
-        fmt::print("\n");
-    }
-    fmt::print("\n");
-  }
+  void print() const ;
+
 
   inline size_t buffer_size_1e(const Operator op = Operator::overlap,
                                int grad = 0) const {
