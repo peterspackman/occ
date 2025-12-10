@@ -5,7 +5,7 @@
 #include <occ/crystal/crystal.h>
 #include <stdexcept>
 #include <string>
-#include <vector>
+
 
 namespace occ::elastic_fit {
 

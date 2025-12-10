@@ -1,5 +1,4 @@
 #include <occ/core/constants.h>
-#include <occ/core/units.h>
 #include <occ/elastic_fit/monkhorst_pack.h>
 #include <occ/elastic_fit/pes.h>
 
