@@ -1,5 +1,4 @@
 #pragma once
-#include <occ/core/linear_algebra.h>
 #include <occ/crystal/crystal.h>
 namespace occ::cg {
 

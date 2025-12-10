@@ -1,7 +1,6 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
 #include <occ/core/atom.h>
-#include <occ/core/linear_algebra.h>
 #include <string>
 #include <vector>
 

@@ -4,7 +4,6 @@
 #include <chrono>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <locale>
 #include <numeric>
 #include <occ/core/linear_algebra.h>
 #include <string>

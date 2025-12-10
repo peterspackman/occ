@@ -1,6 +1,5 @@
 #include <occ/core/element.h>
 #include <occ/core/kdtree.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/molecular_symmetry.h>
 #include <occ/core/units.h>

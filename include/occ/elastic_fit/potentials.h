@@ -1,10 +1,8 @@
 #pragma once
 #include <cmath>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
 #include <stdexcept>
-#include <string>
 
 
 namespace occ::elastic_fit {

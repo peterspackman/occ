@@ -7,7 +7,6 @@
 #include <occ/crystal/crystal.h>
 #include <occ/io/grid_settings.h>
 #include <occ/qm/spinorbital.h>
-#include <vector>
 
 namespace occ::io {
 using occ::core::Element;

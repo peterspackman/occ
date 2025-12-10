@@ -2,7 +2,6 @@
 #include <array>
 #include <occ/core/atom.h>
 #include <occ/core/element.h>
-#include <occ/core/linear_algebra.h>
 #include <tuple>
 
 namespace occ::core {
