@@ -4,13 +4,8 @@
 #include <CLI/Validators.hpp>
 #include <algorithm>
 #include <fmt/os.h>
-#include <fstream>
 #include <iterator>
-#include <nlohmann/json.hpp>
 #include <occ/core/constants.h>
-#include <occ/core/log.h>
-#include <occ/core/units.h>
-#include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/elastic_fit/elastic_fitting.h>
@@ -19,7 +14,6 @@
 #include <occ/io/crystal_json.h>
 #include <occ/main/occ_elastic_fit.h>
 
-#include <stdexcept>
 
 using occ::crystal::Crystal;
 using occ::main::EFSettings;
