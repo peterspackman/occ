@@ -3,6 +3,7 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
+#include <occ/gto/gto.h>
 #include <occ/io/moldenreader.h>
 #include <scn/scan.h>
 
