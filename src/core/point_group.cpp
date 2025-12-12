@@ -1,6 +1,4 @@
-#include <Eigen/Geometry>
 #include <ankerl/unordered_dense.h>
-#include <fmt/ostream.h>
 #include <occ/core/log.h>
 #include <occ/core/point_group.h>
 #include <occ/core/units.h>

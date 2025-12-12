@@ -1,5 +1,4 @@
 #include <occ/core/log.h>
-#include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/io/conversion.h>
 

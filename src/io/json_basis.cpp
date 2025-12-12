@@ -1,15 +1,11 @@
 #include <cctype>
-#include <fmt/core.h>
 #include <fstream>
-#include <map>
 #include <nlohmann/json.hpp>
-#include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/json_basis.h>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace occ::io {
 

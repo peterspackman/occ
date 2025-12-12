@@ -3,7 +3,6 @@
 #include <occ/core/log.h>
 #include <occ/core/molecular_symmetry.h>
 #include <occ/core/units.h>
-#include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/crystal/standard_bonds.h>
 #include <ankerl/unordered_dense.h>

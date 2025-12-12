@@ -1,4 +1,4 @@
-#include <occ/core/constants.h>
+
 #include <occ/core/log.h>
 #include <occ/gto/gto.h>
 

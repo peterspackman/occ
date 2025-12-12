@@ -1,15 +1,5 @@
-#include <ankerl/unordered_dense.h>
-#include <fmt/chrono.h>
-#include <fmt/os.h>
-#include <fmt/ostream.h>
-#include <nlohmann/json.hpp>
 #include <occ/core/log.h>
-#include <occ/core/molecule.h>
-#include <occ/core/progress.h>
-#include <occ/core/util.h>
-#include <occ/interaction/interaction_json.h>
 #include <occ/interaction/pair_energy.h>
-#include <occ/interaction/pair_potential.h>
 #include <occ/interaction/pairinteraction.h>
 
 namespace occ::interaction {

@@ -1,15 +1,11 @@
-#include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
-#include <occ/core/units.h>
 #include <occ/dft/molecular_grid.h>
 #include <occ/dma/gauss_hermite.h>
 #include <occ/dma/multipole_calculator.h>
 #include <occ/dma/multipole_shifter.h>
-#include <occ/gto/gto.h>
 #include <occ/gto/shell_order.h>
 #include <occ/qm/hf.h>
-#include <random>
 
 namespace occ::dma {
 

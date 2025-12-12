@@ -1,5 +1,3 @@
-#include <fmt/core.h>
-#include <iostream>
 #include <occ/core/log.h>
 #include <occ/geometry/icosphere_mesh.h>
 

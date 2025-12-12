@@ -1,5 +1,4 @@
 #include <occ/core/inertia_tensor.h>
-#include <occ/core/log.h>
 
 namespace occ::core {
 

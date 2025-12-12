@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>

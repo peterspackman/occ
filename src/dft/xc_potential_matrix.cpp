@@ -1,4 +1,4 @@
-#include <occ/core/timings.h>
+
 #include <occ/dft/xc_potential_matrix.h>
 
 namespace occ::dft {

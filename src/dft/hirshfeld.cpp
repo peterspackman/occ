@@ -1,9 +1,6 @@
-#include <fmt/core.h>
-#include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/multipole.h>
 #include <occ/core/parallel.h>
-#include <occ/core/timings.h>
 #include <occ/dft/hirshfeld.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>

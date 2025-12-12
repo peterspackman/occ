@@ -1,6 +1,5 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
-#include <occ/core/log.h>
 #include <occ/io/cube.h>
 #include <scn/scan.h>
 

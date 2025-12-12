@@ -6,7 +6,6 @@
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/shellblock_norm.h>
-#include <optional>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 

@@ -5,7 +5,6 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
-#include <cmath>
 
 namespace occ::io {
 

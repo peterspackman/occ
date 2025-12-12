@@ -1,4 +1,4 @@
-#include <exception>
+
 #include <fmt/core.h>
 #include <initializer_list>
 #include <occ/core/log.h>
