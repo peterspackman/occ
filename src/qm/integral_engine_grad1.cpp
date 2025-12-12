@@ -1,7 +1,6 @@
 #include "detail/gradient_kernels.h"
 #include "detail/jk_grad.h"
 #include "detail/kernel_traits.h"
-#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/integral_engine.h>

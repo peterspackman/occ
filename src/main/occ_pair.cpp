@@ -5,23 +5,15 @@
 #include <filesystem>
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
-#include <occ/core/element.h>
 #include <occ/core/log.h>
-#include <occ/core/timings.h>
-#include <occ/core/util.h>
-#include <occ/interaction/disp.h>
 #include <occ/interaction/interaction_json.h>
 #include <occ/interaction/pair_energy.h>
 #include <occ/interaction/pairinteraction.h>
-#include <occ/interaction/polarization.h>
 #include <occ/io/eigen_json.h>
-#include <occ/io/fchkreader.h>
-#include <occ/io/moldenreader.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/orca_json.h>
 #include <occ/io/wavefunction_json.h>
 #include <occ/main/occ_pair.h>
-#include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>
 
 namespace occ::interaction {

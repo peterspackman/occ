@@ -2,7 +2,6 @@
 #include <occ/disp/dftd4.h>
 #include <occ/xdm/xdm.h>
 #include <occ/xdm/xdm_parameters.h>
-#include <occ/core/molecule.h>
 
 namespace occ::qm {
 

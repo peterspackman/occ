@@ -1,7 +1,5 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
-#include <occ/core/eeq.h>
-#include <occ/io/adaptive_grid.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/load_geometry.h>
 #include <occ/io/xyz.h>

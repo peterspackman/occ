@@ -1,10 +1,6 @@
 #include <CLI/App.hpp>
-#include <CLI/Config.hpp>
-#include <CLI/Formatter.hpp>
 #include <filesystem>
-#include <fmt/os.h>
 #include <occ/core/log.h>
-#include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/core_json.h>

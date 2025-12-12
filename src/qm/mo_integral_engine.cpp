@@ -1,8 +1,5 @@
 #include <chrono>
-#include <fstream>
-#include <iomanip>
 #include <occ/core/log.h>
-#include <occ/core/parallel.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
 #include <occ/qm/mo_integral_engine.h>

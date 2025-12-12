@@ -1,4 +1,3 @@
-#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/isosurface/eeq_esp.h>
 

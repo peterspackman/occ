@@ -1,7 +1,5 @@
-#include <cmath>
 #include <filesystem>
 #include <fmt/core.h>
-#include <occ/core/log.h>
 #include <occ/io/fchkreader.h>
 #include <occ/io/moldenreader.h>
 #include <occ/qm/wavefunction.h>

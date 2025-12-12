@@ -9,7 +9,6 @@
 
 #include <occ/opt/bond_coordinate.h>
 #include <occ/core/units.h>
-#include <cmath>
 
 namespace occ::opt {
 

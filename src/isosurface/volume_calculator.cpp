@@ -1,13 +1,10 @@
 #include <occ/isosurface/volume_calculator.h>
 #include <occ/isosurface/point_functors.h>
 #include <occ/io/adaptive_grid.h>
-#include <occ/io/load_geometry.h>
-#include <occ/io/cifparser.h>
 #include <occ/core/units.h>
 #include <occ/core/log.h>
 #include <occ/crystal/hkl.h>
 #include <fmt/core.h>
-#include <fstream>
 #include <algorithm>
 
 namespace occ::isosurface {

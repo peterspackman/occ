@@ -1,6 +1,6 @@
 #include <occ/core/log.h>
 #include <occ/isosurface/stockholder_weight.h>
-#include <occ/slater/slaterbasis.h>
+
 
 namespace occ::isosurface {
 

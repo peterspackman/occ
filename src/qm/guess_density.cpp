@@ -1,7 +1,5 @@
-#include "Faddeeva.hpp"
 #include "detail/three_center_kernels.h"
 #include <occ/core/log.h>
-#include <occ/core/parallel.h>
 #include <occ/qm/guess_density.h>
 #include <occ/qm/integral_engine.h>
 // modified routines from libint2

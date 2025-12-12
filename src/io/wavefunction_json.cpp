@@ -1,4 +1,3 @@
-#include <cctype>
 #include <nlohmann/json.hpp>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
