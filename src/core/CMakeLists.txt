@@ -32,6 +32,12 @@ add_library(occ_core
     ${OCC_CORE_INCLUDE_FILES}
 )
 
+set_source_files_properties(
+    "${CMAKE_CURRENT_SOURCE_DIR}/molecular_axis.cpp"
+    PROPERTIES
+    SKIP_UNITY_BUILD_INCLUSION ON
+)
+
 if("${USE_SYSTEM_BLAS}")
     target_link_libraries(occ_core
 	PUBLIC

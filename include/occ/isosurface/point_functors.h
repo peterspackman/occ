@@ -62,8 +62,8 @@ struct PromolDensityFunctor {
   std::vector<pfimpl::AtomInterpolator> atom_interpolators;
 };
 
-struct ElectronDensityFunctor {
-  ElectronDensityFunctor(const Wavefunction &wfn,
+struct Point_ElectronDensityFunctor {
+  Point_ElectronDensityFunctor(const Wavefunction &wfn,
                          SpinConstraint spin = SpinConstraint::Total);
   void operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest);
 
@@ -72,13 +72,13 @@ struct ElectronDensityFunctor {
   int mo_index{-1};
 };
 
-struct DeformationDensityFunctor {
-  DeformationDensityFunctor(const Wavefunction &wfn,
+struct Point_DeformationDensityFunctor {
+  Point_DeformationDensityFunctor(const Wavefunction &wfn,
                             SpinConstraint = SpinConstraint::Total);
   void operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest);
 
   PromolDensityFunctor pro_func;
-  ElectronDensityFunctor rho_func;
+  Point_ElectronDensityFunctor rho_func;
 };
 
 struct XCDensityFunctor {

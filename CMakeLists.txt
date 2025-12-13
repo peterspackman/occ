@@ -45,6 +45,10 @@ endif()
 #Debug flags 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -ftime-trace")
 
+#Testing unity builds 
+set(CMAKE_UNITY_BUILD ON)
+set(PROPERTIES UNITY_BUILD_BATCH_SIZE 8)
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
     option(BUILD_FPIC "Build with position independent code" OFF)

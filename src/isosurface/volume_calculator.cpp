@@ -319,7 +319,7 @@ void VolumeCalculator::setup_grid_parameters(VolumeData& volume, const VolumeGen
             case VolumePropertyKind::ElectronDensityAlpha: 
             case VolumePropertyKind::ElectronDensityBeta: {
                 if (m_wavefunction.has_value()) {
-                    ElectronDensityFunctor func(m_wavefunction.value());
+                    Point_ElectronDensityFunctor func(m_wavefunction.value());
                     func.mo_index = params.mo_number;
                     if (params.property == VolumePropertyKind::ElectronDensityAlpha) {
                         func.spin = SpinConstraint::Alpha;
@@ -349,7 +349,7 @@ void VolumeCalculator::setup_grid_parameters(VolumeData& volume, const VolumeGen
             }
             case VolumePropertyKind::DeformationDensity: {
                 if (m_wavefunction.has_value()) {
-                    DeformationDensityFunctor func(m_wavefunction.value());
+                    Point_DeformationDensityFunctor func(m_wavefunction.value());
                     apply_adaptive_bounds(func, params, atoms, volume);
                 }
                 break;
@@ -445,20 +445,20 @@ void VolumeCalculator::fill_volume_data(VolumeData& volume, const VolumeGenerati
     
     switch (params.property) {
         case VolumePropertyKind::ElectronDensity: {
-            ElectronDensityFunctor func(m_wavefunction.value());
+            Point_ElectronDensityFunctor func(m_wavefunction.value());
             func.mo_index = params.mo_number;
             func(points, values);
             break;
         }
         case VolumePropertyKind::ElectronDensityAlpha: {
-            ElectronDensityFunctor func(m_wavefunction.value());
+            Point_ElectronDensityFunctor func(m_wavefunction.value());
             func.spin = SpinConstraint::Alpha;
             func.mo_index = params.mo_number;
             func(points, values);
             break;
         }
         case VolumePropertyKind::ElectronDensityBeta: {
-            ElectronDensityFunctor func(m_wavefunction.value());
+            Point_ElectronDensityFunctor func(m_wavefunction.value());
             func.spin = SpinConstraint::Beta;
             func.mo_index = params.mo_number;
             func(points, values);
@@ -481,7 +481,7 @@ void VolumeCalculator::fill_volume_data(VolumeData& volume, const VolumeGenerati
             break;
         }
         case VolumePropertyKind::DeformationDensity: {
-            DeformationDensityFunctor func(m_wavefunction.value());
+            Point_DeformationDensityFunctor func(m_wavefunction.value());
             func(points, values);
             break;
         }
@@ -550,20 +550,20 @@ Vec VolumeCalculator::evaluate_at_points(const Mat3N& points, const VolumeGenera
     
     switch (params.property) {
         case VolumePropertyKind::ElectronDensity: {
-            ElectronDensityFunctor func(m_wavefunction.value());
+            Point_ElectronDensityFunctor func(m_wavefunction.value());
             func.mo_index = params.mo_number;
             func(points, result);
             break;
         }
         case VolumePropertyKind::ElectronDensityAlpha: {
-            ElectronDensityFunctor func(m_wavefunction.value());
+            Point_ElectronDensityFunctor func(m_wavefunction.value());
             func.spin = SpinConstraint::Alpha;
             func.mo_index = params.mo_number;
             func(points, result);
             break;
         }
         case VolumePropertyKind::ElectronDensityBeta: {
-            ElectronDensityFunctor func(m_wavefunction.value());
+            Point_ElectronDensityFunctor func(m_wavefunction.value());
             func.spin = SpinConstraint::Beta;
             func.mo_index = params.mo_number;
             func(points, result);
@@ -586,7 +586,7 @@ Vec VolumeCalculator::evaluate_at_points(const Mat3N& points, const VolumeGenera
             break;
         }
         case VolumePropertyKind::DeformationDensity: {
-            DeformationDensityFunctor func(m_wavefunction.value());
+            Point_DeformationDensityFunctor func(m_wavefunction.value());
             func(points, result);
             break;
         }

@@ -108,11 +108,11 @@ void PromolDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
   }
 }
 
-ElectronDensityFunctor::ElectronDensityFunctor(const Wavefunction &w,
+Point_ElectronDensityFunctor::Point_ElectronDensityFunctor(const Wavefunction &w,
                                                SpinConstraint s)
     : wfn(w), spin(s) {}
 
-void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
+void Point_ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
                                         Eigen::Ref<Vec> dest) {
 
   constexpr auto R = qm::SpinorbitalKind::Restricted;
@@ -155,11 +155,11 @@ void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
   }
 }
 
-DeformationDensityFunctor::DeformationDensityFunctor(const Wavefunction &wfn,
+Point_DeformationDensityFunctor::Point_DeformationDensityFunctor(const Wavefunction &wfn,
                                                      SpinConstraint spin)
     : pro_func(wfn.atoms), rho_func(wfn, spin) {}
 
-void DeformationDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
+void Point_DeformationDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
                                            Eigen::Ref<Vec> dest) {
   Vec tmp = Vec::Zero(dest.rows(), dest.cols());
   rho_func(points, dest);

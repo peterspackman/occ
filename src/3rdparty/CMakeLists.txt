@@ -16,6 +16,9 @@ target_link_libraries(_subprocess
     Threads::Threads
 )
 
+# Disable Unity Build for ONLY this target
+set_target_properties(_subprocess PROPERTIES UNITY_BUILD OFF)
+
 target_compile_features(_subprocess PUBLIC cxx_std_20)
 
 set(OCC_3RDPARTY_SUBPROCESS_INCLUDE_DIR
