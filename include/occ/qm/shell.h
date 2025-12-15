@@ -134,6 +134,27 @@ public:
   inline auto total_ecp_electrons() const {
     return std::accumulate(m_ecp_electrons.begin(), m_ecp_electrons.end(), 0);
   }
+
+  /**
+   * @brief Get total nuclear charge from all atoms
+   * @return Sum of atomic numbers
+   */
+  inline int total_nuclear_charge() const {
+    int charge = 0;
+    for (const auto &atom : m_atoms) {
+      charge += atom.atomic_number;
+    }
+    return charge;
+  }
+
+  /**
+   * @brief Get effective nuclear charge (accounting for ECP electrons)
+   * @return Total nuclear charge minus ECP electrons
+   */
+  inline int effective_nuclear_charge() const {
+    return total_nuclear_charge() - total_ecp_electrons();
+  }
+
   uint_fast8_t l_max() const;
   uint_fast8_t ecp_l_max() const;
 

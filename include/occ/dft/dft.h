@@ -127,6 +127,24 @@ public:
     return m_hf.compute_point_charge_interaction_matrix(point_charges);
   }
 
+  double wolf_point_charge_interaction_energy(
+      const PointChargeList &point_charges,
+      const std::vector<double> &molecular_charges, double alpha,
+      double cutoff) const {
+    return m_hf.wolf_point_charge_interaction_energy(point_charges,
+                                                      molecular_charges, alpha,
+                                                      cutoff);
+  }
+
+  auto compute_wolf_interaction_matrix(
+      const PointChargeList &point_charges,
+      const std::vector<double> &molecular_charges, double alpha,
+      double cutoff) const {
+    return m_hf.compute_wolf_interaction_matrix(point_charges,
+                                                 molecular_charges, alpha,
+                                                 cutoff);
+  }
+
   auto compute_schwarz_ints() const { return m_hf.compute_schwarz_ints(); }
 
   template <unsigned int order = 1>

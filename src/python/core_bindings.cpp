@@ -104,6 +104,8 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def("center_of_mass", &Molecule::center_of_mass)
       .def("centroid", &Molecule::centroid)
       .def("unit_cell_molecule_idx", &Molecule::unit_cell_molecule_idx)
+      .def("asymmetric_molecule_idx", &Molecule::asymmetric_molecule_idx,
+           "Get index of this molecule's asymmetric unit molecule")
       .def("asymmetric_unit_idx", &Molecule::asymmetric_unit_idx)
       .def("is_equivalent_to", &Molecule::is_equivalent_to)
       .def("cell_shift", &Molecule::cell_shift)

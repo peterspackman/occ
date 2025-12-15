@@ -1062,3 +1062,109 @@ TEST_CASE("Four-center integrals tensor validation", "[integrals]") {
   REQUIRE(all_close(K_reference, K_manual, 1e-10, 1e-10));
 }
 
+TEST_CASE("MolecularOrbitals num_electrons", "[mo]") {
+  occ::qm::MolecularOrbitals mo;
+  mo.n_ao = 10;
+
+  SECTION("Restricted: 2 * n_alpha") {
+    mo.kind = SpinorbitalKind::Restricted;
+    mo.n_alpha = 5;
+    mo.n_beta = 5;
+    REQUIRE(mo.num_electrons() == 10);
+
+    mo.n_alpha = 3;
+    REQUIRE(mo.num_electrons() == 6);
+  }
+
+  SECTION("Unrestricted: n_alpha + n_beta") {
+    mo.kind = SpinorbitalKind::Unrestricted;
+    mo.n_alpha = 5;
+    mo.n_beta = 5;
+    REQUIRE(mo.num_electrons() == 10);
+
+    mo.n_alpha = 6;
+    mo.n_beta = 4;
+    REQUIRE(mo.num_electrons() == 10);
+
+    mo.n_alpha = 7;
+    mo.n_beta = 3;
+    REQUIRE(mo.num_electrons() == 10);
+  }
+
+  SECTION("General: n_alpha stores total") {
+    mo.kind = SpinorbitalKind::General;
+    mo.n_alpha = 10;
+    mo.n_beta = 0;
+    REQUIRE(mo.num_electrons() == 10);
+
+    mo.n_alpha = 5;
+    REQUIRE(mo.num_electrons() == 5);
+  }
+}
+
+TEST_CASE("AOBasis nuclear charge calculations", "[basis]") {
+  // Water molecule
+  std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.0},
+                                     {1, 0.0, 1.5, 0.0},
+                                     {1, 0.0, -1.5, 0.0}};
+
+  auto basis = occ::qm::AOBasis::load(atoms, "STO-3G");
+
+  SECTION("total_nuclear_charge sums atomic numbers") {
+    // O(8) + H(1) + H(1) = 10
+    REQUIRE(basis.total_nuclear_charge() == 10);
+  }
+
+  SECTION("effective_nuclear_charge without ECPs") {
+    // No ECPs, so effective = total
+    REQUIRE(basis.total_ecp_electrons() == 0);
+    REQUIRE(basis.effective_nuclear_charge() == 10);
+  }
+
+  SECTION("effective_nuclear_charge with ECPs") {
+    // Simulate ECP electrons (e.g., if O had a 2-electron core ECP)
+    std::vector<int> ecp_electrons = {2, 0, 0}; // 2 electrons from O core
+    basis.set_ecp_electrons(ecp_electrons);
+    REQUIRE(basis.total_ecp_electrons() == 2);
+    REQUIRE(basis.effective_nuclear_charge() == 8); // 10 - 2
+  }
+}
+
+TEST_CASE("Charge calculation from basis and MO", "[charge]") {
+  // Water molecule - neutral system
+  std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.0},
+                                     {1, 0.0, 1.5, 0.0},
+                                     {1, 0.0, -1.5, 0.0}};
+
+  auto basis = occ::qm::AOBasis::load(atoms, "STO-3G");
+
+  SECTION("Neutral water") {
+    occ::qm::MolecularOrbitals mo;
+    mo.kind = SpinorbitalKind::Restricted;
+    mo.n_alpha = 5; // 10 electrons total
+    mo.n_beta = 5;
+
+    int charge = basis.effective_nuclear_charge() - static_cast<int>(mo.num_electrons());
+    REQUIRE(charge == 0); // Neutral
+  }
+
+  SECTION("Water cation (+1)") {
+    occ::qm::MolecularOrbitals mo;
+    mo.kind = SpinorbitalKind::Unrestricted;
+    mo.n_alpha = 5;
+    mo.n_beta = 4; // 9 electrons
+
+    int charge = basis.effective_nuclear_charge() - static_cast<int>(mo.num_electrons());
+    REQUIRE(charge == 1); // +1 cation
+  }
+
+  SECTION("Water anion (-1)") {
+    occ::qm::MolecularOrbitals mo;
+    mo.kind = SpinorbitalKind::Restricted;
+    mo.n_alpha = 6; // 12 electrons (hypothetical)
+
+    int charge = basis.effective_nuclear_charge() - static_cast<int>(mo.num_electrons());
+    REQUIRE(charge == -2); // Dianion with 12 electrons
+  }
+}
+

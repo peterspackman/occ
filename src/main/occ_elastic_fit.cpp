@@ -9,6 +9,7 @@
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/elastic_fit/elastic_fitting.h>
+#include <occ/elastic_fit/elastic_fit_json.h>
 #include <occ/interaction/ce_energy_model.h>
 #include <occ/interaction/interaction_json.h>
 #include <occ/io/crystal_json.h>
@@ -229,11 +230,7 @@ inline occ::Vec3 determine_mp_shifts(const std::vector<double> &shifts_raw) {
 }
 
 inline void analyse_elat_results(const occ::main::EFSettings &settings) {
-  // Load data using unified approach
-  occ::interaction::ElatResults elat_data =
-      occ::interaction::read_elat_json(settings.json_filename);
-
-  // Set up fitting configuration
+  // Set up fitting configuration first
   occ::main::EFSettings updated_settings = settings;
   updated_settings.potential_type =
       determine_potential_type(settings.potential_type_str);
@@ -252,11 +249,46 @@ inline void analyse_elat_results(const occ::main::EFSettings &settings) {
           : "Lennard-Jones";
   occ::log::info("Using {} potential", type_name);
 
-  // Perform elastic fitting
   occ::elastic_fit::ElasticFitter fitter(fitting_settings);
-  occ::elastic_fit::FittingResults results =
-      fitter.fit_elastic_tensor(elat_data);
+  occ::elastic_fit::FittingResults results;
 
+  // Check if input is the new elastic_fit_pairs format
+  {
+    std::ifstream check_file(settings.json_filename);
+    nlohmann::json check_json;
+    check_file >> check_json;
+    if (check_json.contains("format_type") &&
+        check_json["format_type"] == "elastic_fit_pairs") {
+      occ::log::info("Detected elastic_fit_pairs format");
+      occ::elastic_fit::ElasticFitInput input =
+          occ::elastic_fit::read_elastic_fit_json(settings.json_filename);
+      occ::log::info("Loaded {} molecules and {} pairs",
+                     input.molecules.size(), input.pairs.size());
+      results = fitter.fit_elastic_tensor(input);
+      goto output_results;
+    }
+  }
+
+  {
+    // Load elat format data
+    occ::log::info("Detected elat format");
+    occ::interaction::ElatResults elat_data =
+        occ::interaction::read_elat_json(settings.json_filename);
+
+    // Export to new format if requested
+    if (!settings.export_pairs_file.empty()) {
+      occ::elastic_fit::ElasticFitInput input =
+          occ::elastic_fit::ElasticFitter::convert_elat_to_input(elat_data);
+      occ::elastic_fit::write_elastic_fit_json(settings.export_pairs_file, input);
+      occ::log::info("Exported {} molecules and {} pairs to '{}'",
+                     input.molecules.size(), input.pairs.size(),
+                     settings.export_pairs_file);
+    }
+
+    results = fitter.fit_elastic_tensor(elat_data);
+  }
+
+output_results:
   // Output results
   if (!settings.gulp_file.empty()) {
     occ::log::info("Writing coarse-grained crystal to GULP input '{}'",
@@ -288,13 +320,13 @@ namespace occ::main {
 
 CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
   CLI::App *elastic_fit = app.add_subcommand(
-      "elastic_fit", "fit elastic tensor from ELAT JSON results");
+      "elastic_fit", "fit elastic tensor from pairwise interaction energies");
   elastic_fit->fallthrough();
   auto config = std::make_shared<EFSettings>();
 
   elastic_fit
-
-      ->add_option("json_file", config->json_filename, "ELAT JSON results file")
+      ->add_option("json_file", config->json_filename,
+                   "Input JSON file (elat results or elastic_fit_pairs format)")
       ->required()
       ->check(CLI::ExistingFile);
 
@@ -351,6 +383,10 @@ CLI::App *add_elastic_fit_subcommand(CLI::App &app) {
           "--mp-shift", config->shift_raw,
           "Origin shift for Monkhorst-Pack for phonons (either 1 or 3 numbers)")
       ->expected(1, 3);
+
+  elastic_fit->add_option(
+      "--export-pairs", config->export_pairs_file,
+      "Export minimal pairs JSON (for testing/external use)");
 
   elastic_fit->callback([config]() { run_elastic_fit_subcommand(*config); });
 

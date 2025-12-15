@@ -17,6 +17,7 @@ jobs:
     name: Build wheels on ${{ matrix.os }}-py${{ matrix.pyver }}-${{ matrix.arch || 'default' }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           # Linux builds - single arch
@@ -32,6 +33,9 @@ jobs:
           - os: ubuntu-latest
             pyver: cp313
             arch: x86_64
+          - os: ubuntu-latest
+            pyver: cp314
+            arch: x86_64
           # macOS ARM64 builds
           - os: macos-latest
             pyver: cp310
@@ -44,6 +48,9 @@ jobs:
             arch: arm64
           - os: macos-latest
             pyver: cp313
+            arch: arm64
+          - os: macos-latest
+            pyver: cp314
             arch: arm64
           # macOS Universal2 builds
           - os: macos-latest
@@ -58,6 +65,9 @@ jobs:
           - os: macos-latest
             pyver: cp313
             arch: universal2
+          - os: macos-latest
+            pyver: cp314
+            arch: universal2
 
     steps:
       - name: Checkout repos
@@ -67,6 +77,9 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
+
+      - name: Clean wheelhouse
+        run: rm -rf wheelhouse
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.1.4
@@ -88,6 +101,8 @@ jobs:
     continue-on-error: true  # Allow this job to fail without failing the workflow
     steps:
       - uses: actions/checkout@v5
+      - name: Clean wheelhouse
+        run: rm -rf wheelhouse
       - uses: pypa/cibuildwheel@v3.1.4
         env:
            CIBW_PLATFORM: pyodide
@@ -97,6 +112,7 @@ jobs:
         with:
           path: ./wheelhouse/*.whl
           name: wasm-occpy-pyodide
+          overwrite: true
 
   upload_all:
     runs-on: ubuntu-latest
@@ -108,29 +124,37 @@ jobs:
       id-token: write
     if: always() && (needs.build_wheels.result == 'success') && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_pypi))
     steps:
-    # Download regular wheels (always required)
+    # Download all wheel artifacts
     - uses: actions/download-artifact@v5
       with:
-        path: dist
+        path: artifacts
         pattern: 'occpy-*'
-        merge-multiple: true
 
     # Try to download Pyodide wheel if it succeeded (optional)
     - name: Download Pyodide wheel (if available)
       uses: actions/download-artifact@v5
       continue-on-error: true
       with:
-        path: dist
+        path: artifacts
         pattern: 'wasm-occpy-pyodide'
-        merge-multiple: true
+
+    # Flatten all wheels into dist/
+    - name: Collect wheels
+      run: |
+        mkdir -p dist
+        find artifacts -name "*.whl" -exec cp {} dist/ \;
 
     - name: List downloaded wheels
       run: |
         echo "Downloaded wheels:"
         ls -la dist/
         echo "Checking wheel integrity:"
-        python -m zipfile -t dist/*.whl || true
+        for f in dist/*.whl; do
+          echo "Checking $f..."
+          python -c "import zipfile; zf = zipfile.ZipFile('$f'); zf.testzip(); print('  OK')" || echo "  FAILED: $f"
+        done
 
-    - uses: pypa/gh-action-pypi-publish@release/v1
+    - uses: pypa/gh-action-pypi-publish@v1.12.4
       with:
         skip-existing: true
+        print-hash: true

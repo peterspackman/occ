@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/elastic_fit/potentials.h>
+#include <optional>
 
 namespace occ::elastic_fit {
 
@@ -7,15 +8,24 @@ enum class LinearSolverType { LU, SVD, QR, LDLT };
 
 class PES {
 private:
-  crystal::Crystal m_crystal;
+  std::optional<crystal::Crystal> m_crystal;
   std::vector<std::unique_ptr<PotentialBase>> m_potentials;
   double m_scale_factor;
   double m_shift_factor;
   size_t m_n_molecules = 0;
   double m_temperature = 0.0;
 
+  // For minimal interface (without full Crystal)
+  double m_volume = 0.0;
+  occ::Mat3 m_lattice_vectors;
+
 public:
-  explicit PES(const crystal::Crystal &crystal) : m_crystal(crystal) {}
+  explicit PES(const crystal::Crystal &crystal)
+      : m_crystal(crystal) {}
+
+  // Minimal constructor for elastic fitting without full Crystal
+  PES(double volume, const occ::Mat3 &lattice_vectors)
+      : m_volume(volume), m_lattice_vectors(lattice_vectors) {}
 
   inline void add_potential(std::unique_ptr<PotentialBase> pot) {
     m_potentials.push_back(std::move(pot));
@@ -44,7 +54,17 @@ public:
 
   inline double shift() const { return m_shift_factor; }
 
-  inline const crystal::Crystal &crystal() const { return m_crystal; }
+  inline const crystal::Crystal &crystal() const { return *m_crystal; }
+
+  inline bool has_crystal() const { return m_crystal.has_value(); }
+
+  inline double volume() const {
+    return m_crystal.has_value() ? m_crystal->volume() : m_volume;
+  }
+
+  inline const occ::Mat3 &lattice_vectors() const {
+    return m_crystal.has_value() ? m_crystal->unit_cell().direct() : m_lattice_vectors;
+  }
 
   inline size_t num_unique_molecules() {
     if (m_n_molecules > 0) {

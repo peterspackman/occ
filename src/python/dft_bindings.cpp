@@ -2,10 +2,13 @@
 #include <fmt/core.h>
 #include <nanobind/eigen/dense.h>
 #include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
 #include <occ/dft/dft.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/hessians.h>
 #include <occ/qm/gradients.h>
+#include <occ/qm/external_potential.h>
+#include <occ/xdm/xdm.h>
 
 using namespace nb::literals;
 using occ::dft::DFT;
@@ -105,6 +108,123 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
       .def("__repr__", [](const occ::qm::HessianEvaluator<DFT> &hess) {
         return fmt::format("<HessianEvaluatorDFT step_size={:.4f} acoustic_sum_rule={}>",
                            hess.step_size(), hess.use_acoustic_sum_rule());
+      });
+
+  // Point charge corrected DFT procedures
+  using PointChargeList = std::vector<occ::core::PointCharge>;
+  using PointChargeDFT = occ::qm::PointChargeCorrectedProcedure<DFT>;
+  using SCF_PointChargeDFT = SCF<PointChargeDFT>;
+
+  nb::class_<PointChargeDFT>(m, "PointChargeDFT")
+      .def(nb::init<DFT &, const PointChargeList &>(),
+           "dft"_a, "point_charges"_a,
+           "Create DFT procedure with external point charge potential")
+      .def("nuclear_repulsion", &PointChargeDFT::nuclear_repulsion_energy)
+      .def("atoms", &PointChargeDFT::atoms)
+      .def("aobasis", &PointChargeDFT::aobasis)
+      .def("scf",
+           [](PointChargeDFT &proc,
+              SpinorbitalKind kind = SpinorbitalKind::Restricted) {
+             return SCF_PointChargeDFT(proc, kind);
+           },
+           "kind"_a = SpinorbitalKind::Restricted,
+           "Create SCF driver for point-charge-corrected DFT")
+      .def("__repr__", [](const PointChargeDFT &proc) {
+        return fmt::format("<PointChargeDFT ({}, {} atoms)>",
+                           proc.aobasis().name(), proc.atoms().size());
+      });
+
+  nb::class_<SCF_PointChargeDFT>(m, "SCF_PointChargeDFT")
+      .def(nb::init<PointChargeDFT &>())
+      .def(nb::init<PointChargeDFT &, SpinorbitalKind>())
+      .def_rw("convergence_settings", &SCF_PointChargeDFT::convergence_settings)
+      .def("set_charge_multiplicity", &SCF_PointChargeDFT::set_charge_multiplicity)
+      .def("set_initial_guess", &SCF_PointChargeDFT::set_initial_guess_from_wfn)
+      .def("scf_kind", &SCF_PointChargeDFT::scf_kind)
+      .def("run", &SCF_PointChargeDFT::compute_scf_energy)
+      .def("compute_scf_energy", &SCF_PointChargeDFT::compute_scf_energy)
+      .def("wavefunction", &SCF_PointChargeDFT::wavefunction)
+      .def("__repr__", [](const SCF_PointChargeDFT &scf) {
+        return fmt::format("<SCF(PointChargeDFT) ({}, {} atoms)>",
+                           scf.m_procedure.aobasis().name(),
+                           scf.m_procedure.atoms().size());
+      });
+
+  // Wolf sum corrected DFT procedures
+  using WolfDFT = occ::qm::WolfSumCorrectedProcedure<DFT>;
+  using SCF_WolfDFT = SCF<WolfDFT>;
+
+  nb::class_<WolfDFT>(m, "WolfDFT")
+      .def(nb::init<DFT &, const PointChargeList &,
+                    const std::vector<double> &, double, double>(),
+           "dft"_a, "point_charges"_a, "molecular_charges"_a, "alpha"_a,
+           "cutoff"_a,
+           "Create DFT procedure with Wolf sum external potential")
+      .def("nuclear_repulsion", &WolfDFT::nuclear_repulsion_energy)
+      .def("atoms", &WolfDFT::atoms)
+      .def("aobasis", &WolfDFT::aobasis)
+      .def("scf",
+           [](WolfDFT &proc, SpinorbitalKind kind = SpinorbitalKind::Restricted) {
+             return SCF_WolfDFT(proc, kind);
+           },
+           "kind"_a = SpinorbitalKind::Restricted,
+           "Create SCF driver for Wolf-corrected DFT")
+      .def("__repr__", [](const WolfDFT &proc) {
+        return fmt::format("<WolfDFT ({}, {} atoms)>", proc.aobasis().name(),
+                           proc.atoms().size());
+      });
+
+  nb::class_<SCF_WolfDFT>(m, "SCF_WolfDFT")
+      .def(nb::init<WolfDFT &>())
+      .def(nb::init<WolfDFT &, SpinorbitalKind>())
+      .def_rw("convergence_settings", &SCF_WolfDFT::convergence_settings)
+      .def("set_charge_multiplicity", &SCF_WolfDFT::set_charge_multiplicity)
+      .def("set_initial_guess", &SCF_WolfDFT::set_initial_guess_from_wfn)
+      .def("scf_kind", &SCF_WolfDFT::scf_kind)
+      .def("run", &SCF_WolfDFT::compute_scf_energy)
+      .def("compute_scf_energy", &SCF_WolfDFT::compute_scf_energy)
+      .def("wavefunction", &SCF_WolfDFT::wavefunction)
+      .def("__repr__", [](const SCF_WolfDFT &scf) {
+        return fmt::format("<SCF(WolfDFT) ({}, {} atoms)>",
+                           scf.m_procedure.aobasis().name(),
+                           scf.m_procedure.atoms().size());
+      });
+
+  // XDM - Exchange-hole dipole moment dispersion
+  nb::class_<occ::xdm::XDM::Parameters>(m, "XDMParameters")
+      .def(nb::init<>())
+      .def_rw("a1", &occ::xdm::XDM::Parameters::a1,
+              "XDM damping parameter a1")
+      .def_rw("a2", &occ::xdm::XDM::Parameters::a2,
+              "XDM damping parameter a2 (Angstroms)")
+      .def("__repr__", [](const occ::xdm::XDM::Parameters &p) {
+        return fmt::format("<XDMParameters a1={:.4f} a2={:.4f}>", p.a1, p.a2);
+      });
+
+  nb::class_<occ::xdm::XDM>(m, "XDM")
+      .def(nb::init<const occ::qm::AOBasis &, int,
+                    const occ::xdm::XDM::Parameters &>(),
+           "basis"_a, "charge"_a = 0, "params"_a = occ::xdm::XDM::Parameters{},
+           "Create XDM dispersion calculator")
+      .def("energy", &occ::xdm::XDM::energy, "mo"_a,
+           "Compute XDM dispersion energy for given molecular orbitals")
+      .def("forces", &occ::xdm::XDM::forces, "mo"_a,
+           "Compute XDM dispersion forces")
+      .def("moments", &occ::xdm::XDM::moments,
+           "Get atomic moments (M2 values)")
+      .def("hirshfeld_charges", &occ::xdm::XDM::hirshfeld_charges,
+           "Get Hirshfeld partial charges")
+      .def("atom_volume", &occ::xdm::XDM::atom_volume,
+           "Get atomic volumes")
+      .def("free_atom_volume", &occ::xdm::XDM::free_atom_volume,
+           "Get free atom volumes")
+      .def("polarizabilities", &occ::xdm::XDM::polarizabilities,
+           "Get atomic polarizabilities")
+      .def("parameters", &occ::xdm::XDM::parameters,
+           "Get XDM parameters")
+      .def("__repr__", [](const occ::xdm::XDM &xdm) {
+        const auto &p = xdm.parameters();
+        return fmt::format("<XDM a1={:.4f} a2={:.4f}>", p.a1, p.a2);
       });
 
   return m;
