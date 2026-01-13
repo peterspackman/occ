@@ -26,6 +26,8 @@ var namespaceocc_1_1isosurface =
     [ "MCElectronDensityFunctor", "classocc_1_1isosurface_1_1MCElectronDensityFunctor.html", "classocc_1_1isosurface_1_1MCElectronDensityFunctor" ],
     [ "MCPromoleculeDensityFunctor", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor.html", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor" ],
     [ "OrbitalIndex", "structocc_1_1isosurface_1_1OrbitalIndex.html", "structocc_1_1isosurface_1_1OrbitalIndex" ],
+    [ "Point_DeformationDensityFunctor", "structocc_1_1isosurface_1_1Point__DeformationDensityFunctor.html", "structocc_1_1isosurface_1_1Point__DeformationDensityFunctor" ],
+    [ "Point_ElectronDensityFunctor", "structocc_1_1isosurface_1_1Point__ElectronDensityFunctor.html", "structocc_1_1isosurface_1_1Point__ElectronDensityFunctor" ],
     [ "PromolDensityFunctor", "structocc_1_1isosurface_1_1PromolDensityFunctor.html", "structocc_1_1isosurface_1_1PromolDensityFunctor" ],
     [ "RadiusMetric", "classocc_1_1isosurface_1_1RadiusMetric.html", "classocc_1_1isosurface_1_1RadiusMetric" ],
     [ "RInvFunc", "structocc_1_1isosurface_1_1RInvFunc.html", "structocc_1_1isosurface_1_1RInvFunc" ],

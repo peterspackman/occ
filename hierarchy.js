@@ -301,6 +301,8 @@ var hierarchy =
     [ "tinyply::PlyElement", "structtinyply_1_1PlyElement.html", null ],
     [ "tinyply::PlyFile", "structtinyply_1_1PlyFile.html", null ],
     [ "tinyply::PlyProperty", "structtinyply_1_1PlyProperty.html", null ],
+    [ "occ::isosurface::Point_DeformationDensityFunctor", "structocc_1_1isosurface_1_1Point__DeformationDensityFunctor.html", null ],
+    [ "occ::isosurface::Point_ElectronDensityFunctor", "structocc_1_1isosurface_1_1Point__ElectronDensityFunctor.html", null ],
     [ "occ::core::PointCharge", "classocc_1_1core_1_1PointCharge.html", null ],
     [ "occ::qm::PointChargeCorrectedProcedure< Proc >", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html", null ],
     [ "occ::io::PointChargeFileReader", "structocc_1_1io_1_1PointChargeFileReader.html", null ],
