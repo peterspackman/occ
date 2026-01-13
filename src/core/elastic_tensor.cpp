@@ -1,5 +1,4 @@
 #include <occ/core/elastic_tensor.h>
-#include <occ/core/optimize.h>
 #include <occ/core/units.h>
 
 namespace occ::core {

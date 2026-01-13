@@ -1,6 +1,5 @@
 #pragma once
 #include <CLI/App.hpp>
-#include <occ/crystal/crystal.h>
 #include <occ/elastic_fit/monkhorst_pack.h>
 #include <occ/elastic_fit/pes.h>
 #include <occ/elastic_fit/potentials.h>

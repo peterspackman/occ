@@ -1,9 +1,6 @@
 #include <LBFGSB.h>
-#include <fmt/core.h>
-#include <fmt/ostream.h>
 #include <occ/qm/ediis.h>
 #include <occ/qm/expectation.h>
-#include <occ/qm/opmatrix.h>
 
 namespace occ::qm {
 

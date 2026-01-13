@@ -186,7 +186,7 @@ four_center_inner_loop(Func &store,
 }
 
 template <Op op, ShellKind kind, typename Lambda>
-void evaluate_four_center_tbb(Lambda &f, IntEnv &env, const AOBasis &basis,
+void gradient_evaluate_four_center_tbb(Lambda &f, IntEnv &env, const AOBasis &basis,
                               const ShellPairList &shellpairs,
                               const Mat &Dnorm = Mat(),
                               const Mat &Schwarz = Mat(),

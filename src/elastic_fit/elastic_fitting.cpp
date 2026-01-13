@@ -1,6 +1,4 @@
-#include <algorithm>
 #include <ankerl/unordered_dense.h>
-#include <cmath>
 #include <fmt/os.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>

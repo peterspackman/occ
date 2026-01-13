@@ -1,5 +1,4 @@
 #pragma once
-#include <occ/core/linear_algebra.h>
 #include <occ/qm/wavefunction.h>
 #include <string>
 #include <vector>

@@ -1,7 +1,6 @@
 #pragma once
 #include <array>
 #include <occ/core/atom.h>
-#include <occ/core/linear_algebra.h>
 
 namespace occ::core {
 

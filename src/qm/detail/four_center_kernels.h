@@ -2,7 +2,6 @@
 #include "kernel_traits.h"
 
 #include "jk.h"
-#include <mutex>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/qm/integral_engine.h>

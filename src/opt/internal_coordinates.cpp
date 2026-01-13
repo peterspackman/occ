@@ -9,16 +9,12 @@
 
 #include <ankerl/unordered_dense.h>
 #include <cmath>
-#include <fmt/core.h>
-#include <occ/core/bondgraph.h>
-#include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/opt/angle_coordinate.h>
 #include <occ/opt/bond_coordinate.h>
 #include <occ/opt/dihedral_coordinate.h>
 #include <occ/opt/internal_coordinates.h>
-#include <occ/opt/pseudoinverse.h>
 #include <occ/opt/species_data.h>
 #include <stack>
 #include <tuple>

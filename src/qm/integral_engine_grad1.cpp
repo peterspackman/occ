@@ -1,7 +1,6 @@
 #include "detail/gradient_kernels.h"
 #include "detail/jk_grad.h"
 #include "detail/kernel_traits.h"
-#include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/integral_engine.h>
@@ -233,7 +232,7 @@ coulomb_kernel_grad(cint::IntegralEnvironment &env, const AOBasis &basis,
   };
 
   occ::timing::start(occ::timing::category::fock);
-  detail::evaluate_four_center_tbb<op, kind>(
+  detail::gradient_evaluate_four_center_tbb<op, kind>(
       f, env, basis, shellpairs, Dnorm, Schwarz, precision);
   occ::timing::stop(occ::timing::category::fock);
 
@@ -338,7 +337,7 @@ JKTriple coulomb_exchange_kernel_grad(IntEnv &env, const AOBasis &basis,
   };
 
   occ::timing::start(occ::timing::category::fock);
-  detail::evaluate_four_center_tbb<op, kind>(
+  detail::gradient_evaluate_four_center_tbb<op, kind>(
       f, env, basis, shellpairs, Dnorm, Schwarz, precision);
   occ::timing::stop(occ::timing::category::fock);
 

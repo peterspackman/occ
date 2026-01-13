@@ -1,10 +1,6 @@
 #include <CLI/App.hpp>
-#include <CLI/Config.hpp>
-#include <CLI/Formatter.hpp>
 #include <filesystem>
-#include <fmt/os.h>
 #include <occ/core/log.h>
-#include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/core_json.h>
@@ -14,7 +10,7 @@
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;
 
-inline Crystal read_crystal(const std::string &filename) {
+inline Crystal dimer_read_crystal(const std::string &filename) {
   occ::io::CifParser parser;
   return parser.parse_crystal_from_file(filename).value();
 }
@@ -44,7 +40,7 @@ void run_dimers_subcommand(const DimerGenerationSettings &settings) {
   std::string filename = settings.crystal_filename;
   std::string basename = fs::path(filename).stem().string();
 
-  Crystal c = read_crystal(filename);
+  Crystal c = dimer_read_crystal(filename);
   occ::log::info("Loaded crystal from {}", filename);
   auto molecules = c.symmetry_unique_molecules();
   auto uc_molecules = c.unit_cell_molecules();

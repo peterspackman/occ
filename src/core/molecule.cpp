@@ -2,7 +2,6 @@
 #include <fmt/core.h>
 #include <occ/core/constants.h>
 #include <occ/core/inertia_tensor.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>

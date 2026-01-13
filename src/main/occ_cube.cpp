@@ -1,22 +1,12 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
-#include <occ/core/eeq.h>
-#include <occ/core/log.h>
-#include <occ/core/units.h>
-#include <occ/crystal/crystal.h>
-#include <occ/io/adaptive_grid.h>
 #include <occ/io/cifparser.h>
-#include <occ/io/cube.h>
 #include <occ/io/load_geometry.h>
-#include <occ/io/periodic_grid.h>
 #include <occ/io/xyz.h>
 #include <occ/main/occ_cube.h>
-#include <occ/qm/wavefunction.h>
 #include <occ/isosurface/volume_calculator.h>
-#include <occ/isosurface/volume_data.h>
 #include <occ/isosurface/point_functors.h>
 #include <scn/scan.h>
-#include <memory>
 
 namespace fs = std::filesystem;
 using occ::IVec;
@@ -27,11 +17,11 @@ using occ::core::Element;
 using occ::core::Molecule;
 using occ::io::Cube;
 using occ::qm::Wavefunction;
-using occ::isosurface::ElectronDensityFunctor;
+using occ::isosurface::Point_ElectronDensityFunctor;
 using occ::isosurface::EspFunctor;
 using occ::isosurface::EEQEspFunctor;
 using occ::isosurface::PromolDensityFunctor;
-using occ::isosurface::DeformationDensityFunctor;
+using occ::isosurface::Point_DeformationDensityFunctor;
 using occ::isosurface::XCDensityFunctor;
 using occ::isosurface::SpinConstraint;
 
@@ -226,24 +216,24 @@ void evaluate_custom_points(const Wavefunction &wfn, CubeConfig const &config,
     func(points, data);
   } else if (config.property == "deformation_density") {
     require_wfn(config, have_wfn);
-    DeformationDensityFunctor func(wfn);
+    Point_DeformationDensityFunctor func(wfn);
     func(points, data);
   } else if (config.property == "rho" ||
              config.property == "electron_density" ||
              config.property == "density") {
     require_wfn(config, have_wfn);
-    ElectronDensityFunctor func(wfn);
+    Point_ElectronDensityFunctor func(wfn);
     func.mo_index = config.mo_number;
     func(points, data);
   } else if (config.property == "rho_alpha") {
     require_wfn(config, have_wfn);
-    ElectronDensityFunctor func(wfn);
+    Point_ElectronDensityFunctor func(wfn);
     func.spin = SpinConstraint::Alpha;
     func.mo_index = config.mo_number;
     func(points, data);
   } else if (config.property == "rho_beta") {
     require_wfn(config, have_wfn);
-    ElectronDensityFunctor func(wfn);
+    Point_ElectronDensityFunctor func(wfn);
     func.spin = SpinConstraint::Beta;
     func.mo_index = config.mo_number;
     func(points, data);

@@ -1,7 +1,6 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/dft/dft.h>
-#include <occ/qm/gradients.h>
 
 namespace occ::dft {
 

@@ -19,3 +19,4 @@ target_include_directories(occ_elastic_fit PUBLIC
 )
 
 target_compile_features(occ_elastic_fit PUBLIC cxx_std_20)
+

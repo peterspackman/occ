@@ -1,6 +1,5 @@
 #include <occ/core/eeq.h>
 #include <occ/core/kdtree.h>
-#include <occ/core/parallel.h>
 #include <occ/geometry/marching_cubes.h>
 #include <occ/isosurface/curvature.h>
 #include <occ/isosurface/isosurface.h>

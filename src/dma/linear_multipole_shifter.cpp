@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cmath>
-#include <occ/core/log.h>
 #include <occ/dma/linear_multipole_shifter.h>
 
 namespace occ::dma {

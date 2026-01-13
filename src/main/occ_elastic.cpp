@@ -1,11 +1,7 @@
 #include <CLI/App.hpp>
-#include <CLI/Config.hpp>
-#include <CLI/Formatter.hpp>
 #include <fmt/os.h>
 #include <occ/core/elastic_tensor.h>
-#include <occ/core/element.h>
 #include <occ/core/log.h>
-#include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/surface.h>
 #include <occ/geometry/icosphere_mesh.h>

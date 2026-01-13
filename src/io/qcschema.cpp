@@ -4,7 +4,6 @@
 #include <occ/core/timings.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/qcschema.h>
-#include <vector>
 
 namespace occ::io {
 

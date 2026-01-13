@@ -1,8 +1,8 @@
+#pragma once
 #include <Eigen/Core>
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <vector>
 
 namespace occ::geometry {
 

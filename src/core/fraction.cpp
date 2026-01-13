@@ -2,7 +2,6 @@
 #include <math.h>
 #include <occ/core/fraction.h>
 #include <occ/core/util.h>
-#include <vector>
 
 namespace occ::core {
 

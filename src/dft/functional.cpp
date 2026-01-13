@@ -1,6 +1,4 @@
 #include <cstdlib>
-#include <occ/core/log.h>
-#include <occ/core/timings.h>
 #include <occ/dft/functional.h>
 
 namespace occ::dft {

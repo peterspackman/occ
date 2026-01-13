@@ -1,10 +1,10 @@
 #include <cmath>
 #include <occ/core/log.h>
-#include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/solvent/draco.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
+#include <occ/core/molecule.h>
 
 namespace occ::solvent::draco {
 

@@ -1,7 +1,6 @@
 #pragma once
 #include <occ/core/bondgraph.h>
 #include <occ/core/dimer.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
 #include <occ/crystal/asymmetric_unit.h>
 #include <occ/crystal/hkl.h>

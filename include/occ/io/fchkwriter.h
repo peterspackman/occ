@@ -1,13 +1,10 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
-#include <array>
 #include <fstream>
-#include <istream>
 #include <occ/core/linear_algebra.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <variant>
-#include <vector>
 
 namespace occ::io {
 

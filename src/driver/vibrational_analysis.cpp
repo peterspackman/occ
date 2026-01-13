@@ -2,16 +2,14 @@
 #include <occ/driver/method_parser.h>
 #include <occ/core/data_directory.h>
 #include <occ/core/log.h>
-#include <occ/core/units.h>
 #include <occ/dft/dft.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/hessians.h>
 #include <occ/qm/scf.h>
+#include <fstream>
 #include <occ/io/core_json.h>
 #include <occ/io/eigen_json.h>
 #include <nlohmann/json.hpp>
-#include <fmt/os.h>
-#include <fstream>
 
 using occ::core::Molecule;
 using occ::core::VibrationalModes;
