@@ -19,35 +19,42 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(SKBUILD)
-  set(WITH_PYTHON_BINDINGS ON)
+    set(WITH_PYTHON_BINDINGS ON)
 endif()
 
-#Use ccache to speed up rebuilds
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-    message(STATUS "Found ccache in ${CCACHE_PROGRAM}")
-    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+# Build acceleration options
+option(WITH_CCACHE "Use ccache for faster clean rebuilds (if available)" ON)
+option(WITH_UNITY_BUILD "Enable unity builds (faster clean builds, slower incremental)" OFF)
+
+# lld is faster on Linux but incompatible with Apple clang on macOS
+if(NOT APPLE)
+    option(WITH_LLD "Use lld linker for faster linking (if available)" ON)
 else()
-    message(WARNING "ccache not found, compiling without it")  
+    option(WITH_LLD "Use lld linker for faster linking (if available)" OFF)
 endif()
 
-#Use lld as faster alternative to ld
-find_program(LLD_PROGRAM lld)
-if(LLD_PROGRAM)
-    message(STATUS "Using lld linker at ${LLD_PROGRAM}")
-    set(CMAKE_LINKER "${LLD_PROGRAM}")
-else()
-    message(WARNING "lld linker not found, using default linker")
+if(WITH_CCACHE)
+    find_program(CCACHE_PROGRAM ccache)
+    if(CCACHE_PROGRAM)
+        message(STATUS "Using ccache: ${CCACHE_PROGRAM}")
+        set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    endif()
 endif()
 
+if(WITH_LLD)
+    find_program(LLD_PROGRAM lld)
+    if(LLD_PROGRAM)
+        message(STATUS "Using lld linker: ${LLD_PROGRAM}")
+        add_link_options("-fuse-ld=lld")
+    endif()
+endif()
 
-#Debug flags 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -ftime-trace")
-
-#Testing unity builds 
-set(CMAKE_UNITY_BUILD ON)
-set(PROPERTIES UNITY_BUILD_BATCH_SIZE 8)
+if(WITH_UNITY_BUILD)
+    message(STATUS "Unity builds enabled")
+    set(CMAKE_UNITY_BUILD ON)
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE 8)
+endif()
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
