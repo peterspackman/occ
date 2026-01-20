@@ -1,20 +1,11 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
-#include <occ/core/eeq.h>
-#include <occ/core/kdtree.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
-#include <occ/core/numpy.h>
-#include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
-#include <occ/geometry/marching_cubes.h>
 #include <occ/io/cifparser.h>
-#include <occ/io/obj.h>
 #include <occ/io/ply.h>
-#include <occ/io/tinyply.h>
 #include <occ/io/xyz.h>
-#include <occ/isosurface/curvature.h>
 #include <occ/isosurface/isosurface.h>
 #include <occ/main/occ_isosurface.h>
 

@@ -6,8 +6,6 @@
 #include <occ/driver/single_point.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/gradients.h>
-#include <occ/qm/integral_engine.h>
-#include <occ/qm/mo_integral_engine.h>
 #include <occ/qm/mp2.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>

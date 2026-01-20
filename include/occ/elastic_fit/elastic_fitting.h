@@ -2,8 +2,7 @@
 #include <occ/core/dimer.h>
 #include <occ/elastic_fit/pes.h>
 #include <occ/interaction/interaction_json.h>
-#include <string>
-#include <vector>
+
 
 namespace occ::elastic_fit {
 

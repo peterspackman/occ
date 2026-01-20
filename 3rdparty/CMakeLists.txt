@@ -1,3 +1,5 @@
+set(CMAKE_UNITY_BUILD OFF)
+
 CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY "fmtlib/fmt"

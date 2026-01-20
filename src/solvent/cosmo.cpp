@@ -1,7 +1,5 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
-#include <occ/core/diis.h>
-#include <occ/core/element.h>
 #include <occ/core/units.h>
 #include <occ/solvent/cosmo.h>
 

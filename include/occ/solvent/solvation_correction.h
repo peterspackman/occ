@@ -1,6 +1,4 @@
 #pragma once
-#include <array>
-#include <occ/core/atom.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>

@@ -1,6 +1,5 @@
 #include <cmath>
 #include <occ/core/linear_algebra.h>
-#include <occ/core/log.h>
 #include <occ/dma/quadrature.h>
 #include <stdexcept>
 

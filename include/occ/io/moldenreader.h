@@ -5,7 +5,6 @@
 #include <occ/qm/spinorbital.h>
 #include <optional>
 #include <string>
-#include <vector>
 
 namespace occ::io {
 

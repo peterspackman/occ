@@ -7,7 +7,6 @@
 #include <occ/isosurface/isosurface.h>
 #include <occ/isosurface/surface_types.h>
 #include <occ/qm/wavefunction.h>
-#include <sstream>
 
 using namespace emscripten;
 using namespace occ;

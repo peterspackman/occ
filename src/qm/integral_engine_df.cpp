@@ -1,9 +1,4 @@
 #include "detail/df_kernels.h"
-#include <occ/core/log.h>
-#include <occ/core/timings.h>
-#include <occ/qm/expectation.h>
-#include <occ/qm/integral_engine_df.h>
-#include <occ/qm/mp2_components.h>
 
 namespace occ::qm {
 

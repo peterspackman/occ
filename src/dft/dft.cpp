@@ -1,14 +1,7 @@
-#include <ankerl/unordered_dense.h>
-#include <fmt/core.h>
-#include <fmt/os.h>
-#include <fmt/ostream.h>
 #include <occ/core/atom.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
-#include <occ/core/util.h>
 #include <occ/dft/dft.h>
-#include <occ/gto/density.h>
-#include <occ/gto/gto.h>
 
 namespace occ::dft {
 

@@ -1,10 +1,7 @@
 #include <fmt/os.h>
 #include <occ/cg/cg_json.h>
 #include <occ/cg/smd_solvation.h>
-#include <occ/core/log.h>
 #include <occ/core/point_group.h>
-#include <occ/core/units.h>
-#include <occ/dft/dft.h>
 #include <occ/qm/scf.h>
 
 namespace occ::cg {

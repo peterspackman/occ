@@ -4,7 +4,6 @@
 #include <fstream>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
-#include <occ/dft/molecular_grid.h>
 #include <occ/main/properties.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/hf.h>

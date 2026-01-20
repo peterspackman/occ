@@ -1,3 +1,4 @@
+#pragma once
 #include <occ/core/linear_algebra.h>
 #include <occ/qm/shell.h>
 #include <vector>

@@ -1,10 +1,7 @@
-#include <cmath>
-#include <complex>
 
 #include <occ/core/meshgrid.h>
 #include <occ/sht/quadrature.h>
 #include <occ/sht/sht.h>
-#include <vector>
 
 namespace occ::sht {
 

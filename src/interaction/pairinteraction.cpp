@@ -1,11 +1,11 @@
 #include <nlohmann/json.hpp>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
-#include <occ/dft/dft.h>
+
 #include <occ/interaction/disp.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/qm/hf.h>
-#include <occ/qm/merge.h>
+
 #include <occ/qm/orb.h>
 #include <occ/xdm/xdm.h>
 

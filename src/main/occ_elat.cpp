@@ -1,22 +1,15 @@
 #include <CLI/App.hpp>
-#include <CLI/Config.hpp>
-#include <CLI/Formatter.hpp>
 #include <filesystem>
 #include <fmt/os.h>
 #include <fmt/format.h>
-#include <sstream>
-#include <occ/core/kabsch.h>
 #include <occ/core/log.h>
-#include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/interaction/ce_energy_model.h>
-#include <occ/interaction/disp.h>
 #include <occ/interaction/external_energy_model.h>
 #include <occ/interaction/lattice_energy.h>
 #include <occ/interaction/pairinteraction.h>
-#include <occ/interaction/polarization.h>
 #include <occ/interaction/interaction_json.h>
 #include <occ/interaction/xtb_energy_model.h>
 #include <occ/io/cifparser.h>
@@ -28,7 +21,6 @@
 #include <occ/main/occ_elat.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/elastic_fit/elastic_fitting.h>
-#include <occ/main/occ_elastic_fit.h>
 
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;

@@ -1,19 +1,16 @@
-#include <occ/core/element.h>
+#pragma once
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
-#include <occ/core/units.h>
 #include <occ/dft/molecular_grid.h>
 #include <occ/dma/gauss_hermite.h>
 #include <occ/dma/multipole_calculator.h>
 #include <occ/dma/multipole_shifter.h>
-#include <occ/gto/gto.h>
 #include <occ/gto/shell_order.h>
 #include <occ/qm/hf.h>
-#include <random>
 
 namespace occ::dma {
 
-inline double get_normalization_factor(int l, int m, int n) {
+inline double multipole_get_normalization_factor(int l, int m, int n) {
   int angular_momenta = l + m + n;
   if (angular_momenta == 2 && ((l == 1) || (m == 1) || (n == 1))) {
     return std::sqrt(3.0);
@@ -387,12 +384,12 @@ void MultipoleCalculator::setup_normalized_density_matrix() {
       int bf_i_idx = 0;
       gto::iterate_over_shell<true>(
           [&](int i1, int j1, int k1, int ll1) {
-            double norm_i = get_normalization_factor(i1, j1, k1);
+            double norm_i = multipole_get_normalization_factor(i1, j1, k1);
 
             int bf_j_idx = 0;
             gto::iterate_over_shell<true>(
                 [&](int i2, int j2, int k2, int ll2) {
-                  double norm_j = get_normalization_factor(i2, j2, k2);
+                  double norm_j = multipole_get_normalization_factor(i2, j2, k2);
 
                   m_normalized_density(first_bf[i_shell_idx] + bf_i_idx,
                                        first_bf[j_shell_idx] + bf_j_idx) *=

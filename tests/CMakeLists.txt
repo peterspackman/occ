@@ -4,6 +4,29 @@ CPMAddPackage(
     GIT_TAG v3.5.2
 )
 
+set(CMAKE_UNITY_BUILD OFF)
+
+
+#Use ccache to speed up rebuilds
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    message(STATUS "Found ccache in ${CCACHE_PROGRAM}")
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+else()
+    message(WARNING "ccache not found, compiling without it")  
+endif()
+
+#Use lld as faster alternative to ld
+find_program(LLD_PROGRAM lld)
+if(LLD_PROGRAM)
+    message(STATUS "Using lld linker at ${LLD_PROGRAM}")
+    set(CMAKE_LINKER "${LLD_PROGRAM}")
+else()
+    message(WARNING "lld linker not found, using default linker")
+endif()
+
+
 list(APPEND CMAKE_MODULE_PATH "${catch_SOURCE_DIR}/extras")
 include(CTest)
 include(Catch)

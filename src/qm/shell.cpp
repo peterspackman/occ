@@ -5,7 +5,6 @@
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/io/json_basis.h>
-#include <occ/qm/cint_interface.h>
 #include <occ/qm/shell.h>
 #include <occ/qm/sto3g_basis.h>
 

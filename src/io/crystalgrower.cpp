@@ -1,6 +1,5 @@
 #include <ankerl/unordered_dense.h>
 #include <fmt/ostream.h>
-#include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_labeller.h>

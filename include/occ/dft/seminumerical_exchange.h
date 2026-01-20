@@ -1,10 +1,8 @@
 #pragma once
 #include <occ/core/atom.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/dft/molecular_grid.h>
 #include <occ/qm/integral_engine.h>
-#include <occ/qm/mo.h>
-#include <vector>
+
 
 namespace occ::dft::cosx {
 

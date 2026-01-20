@@ -1,6 +1,5 @@
 #pragma once
 #include <occ/core/atom.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/solvent/parameters.h>
 #include <vector>
 

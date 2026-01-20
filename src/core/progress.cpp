@@ -1,12 +1,10 @@
 #include <occ/core/progress.h>
 #include <occ/core/util.h>
 
-#include <chrono>
 #include <fmt/chrono.h>
 #include <fmt/core.h>
 #include <iostream>
 #include <occ/core/log.h>
-#include <string>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <io.h>

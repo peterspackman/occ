@@ -1,8 +1,6 @@
 #include <algorithm>
-#include <occ/core/atom.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
-#include <occ/core/units.h>
 #include <occ/dft/grid_utils.h>
 #include <occ/dft/molecular_grid.h>
 

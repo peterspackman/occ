@@ -1,10 +1,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include <fmt/ostream.h>
-#include <occ/core/linear_algebra.h>
-#include <occ/core/util.h>
-#include <occ/crystal/crystal.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/crystalgrower.h>
@@ -19,7 +15,6 @@
 #include <occ/io/shelxfile.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/cifwriter.h>
-#include <gemmi/cif.hpp>
 
 using occ::format_matrix;
 using occ::util::all_close;

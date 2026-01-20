@@ -1,4 +1,3 @@
-#include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
@@ -8,7 +7,7 @@
 
 namespace occ::io {
 
-inline int fix_orca_phase_convention(int l, int m) {
+inline int orca_fix_orca_phase_convention(int l, int m) {
   if (l == 3 && std::abs(m) == 3) {
     // c0 c1 s1 c2 s2 c3 s3
     // +  +  +  +  +  -  -
@@ -52,7 +51,7 @@ Mat convert_mo_coefficients_from_orca_convention(const occ::qm::AOBasis &basis,
       auto func = [&](int am, int m) {
         int their_idx = occ::gto::shell_index_spherical<order>(am, m);
         int sign = 1;
-        sign = fix_orca_phase_convention(am, m);
+        sign = orca_fix_orca_phase_convention(am, m);
         result.row(bf_first + idx) = sign * mo.row(bf_first + their_idx);
         occ::log::debug("Swapping (l={}): {} <-> {}", l, idx, their_idx);
         idx++;

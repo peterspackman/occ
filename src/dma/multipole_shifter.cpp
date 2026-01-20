@@ -1,7 +1,6 @@
-#include <cmath>
+
 #include <limits>
 #include <occ/core/log.h>
-#include <occ/dma/add_qlm.h>
 #include <occ/dma/multipole_shifter.h>
 
 namespace occ::dma {

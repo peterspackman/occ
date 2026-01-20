@@ -1,12 +1,10 @@
 #include "volume_bindings.h"
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-#include <memory>
 #include <occ/isosurface/volume_calculator.h>
 #include <occ/isosurface/volume_data.h>
 #include <occ/core/molecule.h>
 #include <occ/qm/wavefunction.h>
-#include <sstream>
 
 using namespace emscripten;
 using namespace occ;

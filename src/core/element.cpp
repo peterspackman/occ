@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <occ/core/element.h>
 #include <occ/core/util.h>
-#include <sstream>
 
 namespace occ::core {
 

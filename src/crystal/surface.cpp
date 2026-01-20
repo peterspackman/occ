@@ -3,9 +3,7 @@
 #include <numeric>
 #include <occ/core/eem.h>
 #include <occ/core/log.h>
-#include <occ/crystal/crystal.h>
 #include <occ/crystal/surface.h>
-#include <vector>
 
 namespace occ::crystal {
 

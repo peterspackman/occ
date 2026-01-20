@@ -1,6 +1,5 @@
 #include <cmath>
 #include <occ/core/constants.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/parallel.h>
 #include <occ/dft/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>

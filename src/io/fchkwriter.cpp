@@ -1,5 +1,4 @@
 #include <fmt/ostream.h>
-#include <occ/core/util.h>
 #include <occ/io/fchkwriter.h>
 
 namespace occ::io {

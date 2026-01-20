@@ -1,22 +1,17 @@
 #pragma once
 #include <occ/core/conditioning_orthogonalizer.h>
 #include <occ/core/energy_components.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
-#include <occ/core/util.h>
 #include <occ/qm/cdiis.h>
 #include <occ/qm/ediis.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/guess_density.h>
-#include <occ/qm/mo.h>
 #include <occ/qm/opmatrix.h>
 #include <occ/qm/orthogonalizer.h>
 #include <occ/qm/scf_convergence_settings.h>
 #include <occ/qm/scf_method.h>
-#include <occ/qm/shell.h>
-#include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
 
 namespace occ::qm {

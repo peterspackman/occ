@@ -5,7 +5,6 @@
 #include <occ/cg/solvation_contribution.h>
 #include <occ/cg/solvent_surface.h>
 #include <occ/core/dimer.h>
-#include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/point_group.h>
 #include <occ/core/timings.h>
@@ -14,7 +13,6 @@
 #include <occ/interaction/pair_energy.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/io/wavefunction_json.h>
-#include <occ/qm/wavefunction.h>
 
 namespace occ::driver {
 

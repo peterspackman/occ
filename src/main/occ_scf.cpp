@@ -4,16 +4,12 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/log.h>
-#include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
-#include <occ/core/util.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/single_point.h>
-#include <occ/interaction/pair_energy.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/crystal_json.h>
-#include <occ/io/fchkwriter.h>
 #include <occ/io/gaussian_input_file.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/pc.h>
@@ -24,7 +20,6 @@
 #include <occ/main/occ_scf.h>
 #include <occ/main/properties.h>
 #include <occ/main/version.h>
-#include <xc.h>
 
 namespace occ::main {
 

@@ -1,5 +1,5 @@
 #include "dftd_damping.h"
-#include "dftd_parameters.h"
+
 #include <occ/disp/dftd4.h>
 #include <occ/core/log.h>
 

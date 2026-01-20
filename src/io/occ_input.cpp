@@ -1,5 +1,4 @@
-#include <occ/core/atom.h>
-#include <occ/core/units.h>
+
 #include <occ/io/occ_input.h>
 
 namespace occ::io {

@@ -2,7 +2,6 @@
 #include <emscripten/bind.h>
 #include <emscripten/em_js.h>
 #include <emscripten/val.h>
-#include <limits>
 #include <occ/core/atom.h>
 #include <occ/core/element.h>
 #include <occ/gto/density.h>
@@ -21,7 +20,6 @@
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/hessians.h>
 #include <occ/qm/gradients.h>
-#include <sstream>
 
 using namespace emscripten;
 using namespace occ::qm;

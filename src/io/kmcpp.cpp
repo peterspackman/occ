@@ -1,7 +1,5 @@
 #include <nlohmann/json.hpp>
-#include <occ/core/combinations.h>
 #include <occ/core/log.h>
-#include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/core_json.h>
 #include <occ/io/eigen_json.h>

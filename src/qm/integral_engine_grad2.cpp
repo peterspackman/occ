@@ -1,7 +1,7 @@
 #include "detail/hessian_kernels.h"
 #include "detail/jk_hess.h"
 #include "detail/kernel_traits.h"
-#include <occ/core/log.h>
+
 #include <occ/core/timings.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/integral_engine.h>

@@ -1,12 +1,9 @@
-#include <atomic>
-#include <mutex>
-#include <numeric>
+
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/qm/mp2.h>
 #include <occ/qm/mp2_components.h>
-#include <occ/qm/opmatrix.h>
 
 namespace occ::qm {
 

@@ -1,4 +1,3 @@
-#include <fmt/core.h>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>

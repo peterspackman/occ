@@ -1,7 +1,6 @@
 #include "cube_bindings.h"
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-#include <memory>
 #include <occ/core/atom.h>
 #include <occ/core/molecule.h>
 #include <occ/io/cube.h>
