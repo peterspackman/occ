@@ -1,5 +1,6 @@
 set(CMAKE_UNITY_BUILD OFF)
 
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY "fmtlib/fmt"
@@ -13,6 +14,8 @@ CPMAddPackage(
     OPTIONS "SPDLOG_FMT_EXTERNAL ON"
     VERSION "1.x"
 )
+
+endif ()
 
 if(NOT "${USE_SYSTEM_TBB}")
 
@@ -30,7 +33,7 @@ endif()
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     list(APPEND TBB_OPTIONS "CMAKE_CXX_FLAGS=-O2 -fno-stack-clash-protection -fno-fcf-protection")
 endif()
-
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME oneTBB
     GITHUB_REPOSITORY "uxlfoundation/oneTBB"
@@ -38,7 +41,9 @@ CPMAddPackage(
     OPTIONS ${TBB_OPTIONS}
 )
 endif()
+endif()
 
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME unordered_dense
     GITHUB_REPOSITORY "martinus/unordered_dense"
@@ -59,6 +64,7 @@ CPMAddPackage(
     VERSION "2.4.2"
 )
 
+endif()
 if("${USE_MLX}")
 CPMAddPackage(
     NAME mlx
@@ -66,12 +72,13 @@ CPMAddPackage(
     VERSION "0.6.0"
 )
 else()
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME "nlohmann_json"
     GITHUB_REPOSITORY "nlohmann/json"
     VERSION "3.11.3"
 )
-
+endif()
 endif()
 
 if(NOT "${USE_SYSTEM_EIGEN}")
@@ -88,7 +95,7 @@ if("${eigen3_ADDED}")
 endif()
 
 endif()
-
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME gemmi
     GITHUB_REPOSITORY project-gemmi/gemmi
@@ -122,7 +129,7 @@ if("${LBFGSpp_ADDED}")
     add_library(LBFGSpp::LBFGSpp INTERFACE IMPORTED GLOBAL)
     target_include_directories(LBFGSpp::LBFGSpp INTERFACE "${LBFGSpp_SOURCE_DIR}/include")
 endif()
-
+endif()
 if("${USE_QCINT}")
     set(LIBCINT_REPOSITORY "sunqm/qcint")
 else()

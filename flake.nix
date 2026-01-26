@@ -35,6 +35,8 @@
 
       });
       dftd4 = pkgs.callPackage ./3rdparty/nix/dftd4.nix { };
+
+      lbfgspp = pkgs.callPackage ./3rdparty/nix/lbfgspp.nix { };
       scnlib = pkgs.callPackage ./3rdparty/nix/scnlib.nix {
         fast-float = fast-float-6_1_6;
       };
@@ -74,7 +76,13 @@
             pkgs.nlohmann_json
             pkgs.eigen_3_4_0
             pkgs.libxc
+            pkgs.cli11
+            pkgs.gemmi
+            pkgs.zlib
             scnlib
+            dftd4
+            lbfgspp
+            fast-float-6_1_6
           ];
           nativeBuildInputs = [
             pkgs.cmake
@@ -84,20 +92,13 @@
           cmakeFlags = [
             "-GNinja"
             "-DCPM_DOWNLOAD_LOCATION=${pkgs.cpm-cmake}/share/cpm/CPM.cmake"
+            "-DUSE_SYSTEM_EIGEN=ON"
             "-DCPM_USE_LOCAL_PACKAGES=ON"
-            "-DCPM_spdlog_SOURCE=${pkgs.spdlog.src}"
-            "-DCPM_oneTBB_SOURCE=${pkgs.onetbb.src}"
-            "-DCPM_scnlib_SOURCE=${scnlib.src}"
-            "-DCPM_eigen3_SOURCE=${pkgs.eigen_3_4_0.src}"
             "-DCPM_gemmi_SOURCE=${gemmi.src}"
-            "-DCPM_CLI11_SOURCE=${cli11-src}"
-            "-DCPM_fmt_SOURCE=${pkgs.fmt.src}"
             "-DCPM_nlohmann_json_SOURCE=${pkgs.nlohmann_json.src}"
             "-DCPM_Libxc_SOURCE=${pkgs.libxc.src}"
             "-DCPM_libcint_SOURCE=${libcint_src}"
-            "-DCPM_unordered_dense_SOURCE=${pkgs.unordered_dense.src}"
             "-DCPM_tomlplusplus_SOURCE=${pkgs.tomlplusplus.src}"
-            "-DCPM_dftd4_cpp_SOURCE=${dftd4.src}"
             "-DCPM_LBFGSpp_SOURCE=${lbfgspp-src}"
             "-DFETCHCONTENT_SOURCE_DIR_FAST_FLOAT=${fast-float-6_1_6.src}"
             "-DNIX_BUILD=ON"
@@ -113,13 +114,13 @@
           cargo
           gcc
           clang-tools
+          spdlog
+          lbfgspp
           gdb
+          dftd4.dev
+          pkg-config
         ];
 
-        # Environment variables for the shell
-        shellHook = ''
-          exec zsh
-        '';
       };
     };
 }

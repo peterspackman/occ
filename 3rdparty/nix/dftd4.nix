@@ -63,10 +63,6 @@ stdenv.mkDerivation rec {
     "-DDFTD4_USE_EIGEN=ON"
     "-DBUILD_SHARED_LIBS=OFF"
   ];
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   doCheck = true;
 
@@ -79,7 +75,19 @@ stdenv.mkDerivation rec {
   preCheck = ''
     export OMP_NUM_THREADS=2
   '';
+  postInstall = ''
+    # 3. SIMPLIFIED: Everything is already in $out. 
+    # Just fix the missing Config file in place.
 
+    TARGET_DIR="$out/lib/cmake/dftd4"
+
+    # Ensure the directory exists (just in case)
+    mkdir -p "$TARGET_DIR"
+
+    cat > "$TARGET_DIR/dftd4Config.cmake" <<'EOF'
+      include(''${CMAKE_CURRENT_LIST_DIR}/dftd4Targets.cmake)
+    EOF
+  '';
   meta = {
     description = "Generally Applicable Atomic-Charge Dependent London Dispersion Correction";
     mainProgram = "dftd4";
