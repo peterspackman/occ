@@ -8,16 +8,16 @@
 #include <occ/core/element.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
-#include <occ/io/fchkreader.h>
-#include <occ/io/fchkwriter.h>
-#include <occ/io/moldenreader.h>
+#include <occ/qm/io/fchkreader.h>
+#include <occ/qm/io/fchkwriter.h>
+#include <occ/qm/io/moldenreader.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/scf.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/hessians.h>
 #include <occ/core/vibration.h>
@@ -26,6 +26,7 @@
 
 using namespace nb::literals;
 using occ::Mat;
+using occ::core::Atom;
 using namespace occ::qm;
 
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;

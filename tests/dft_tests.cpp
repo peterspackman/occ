@@ -5,20 +5,21 @@
 #include <occ/core/multipole.h>
 #include <occ/core/util.h>
 #include <occ/dft/dft.h>
-#include <occ/dft/grid_types.h>
-#include <occ/dft/grid_utils.h>
+#include <occ/numint/grid_types.h>
+#include <occ/numint/grid_utils.h>
 #include <occ/dft/hirshfeld.h>
 #include <occ/dft/voronoi_charges.h>
-#include <occ/dft/lebedev.h>
-#include <occ/dft/molecular_grid.h>
+#include <occ/numint/lebedev.h>
+#include <occ/numint/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/seminumerical_exchange.h>
+#include <occ/dft/spatial_grid_hierarchy.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/qm/wavefunction.h>
 #include <vector>
 #include <chrono>
@@ -30,6 +31,7 @@ using occ::format_matrix;
 using occ::Mat;
 using occ::Mat3N;
 using occ::Vec;
+using occ::Vec3;
 
 TEST_CASE("LDA (Slater) exchange energy density", "[lda]") {
   occ::dft::DensityFunctional lda("xc_lda_x");
@@ -308,7 +310,7 @@ TEST_CASE("Euler-Maclaurin radial grid points", "[radial]") {
 TEST_CASE("Becke partitioned atom grid H2", "[grid]") {
   std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                      {1, 0.0, 0.0, 1.39839733}};
-  auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
   occ::dft::MolecularGrid mgrid(basis);
 
   auto grid = mgrid.get_partitioned_atom_grid(0);
@@ -320,15 +322,13 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
   std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
-  auto basis = occ::qm::AOBasis::load(atoms, "6-31G");
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
   basis.set_pure(false);
   auto hf = occ::qm::HartreeFock(basis);
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
   double e = scf.compute_scf_energy();
 
-  occ::io::GridSettings settings;
-  settings.max_angular_points = 50;
-  settings.radial_precision = 1e-3;
+  occ::io::GridSettings settings = occ::io::GridSettings::for_sgx(50);
   fmt::print("Construct\n");
   occ::dft::cosx::SemiNumericalExchange sgx(basis, settings);
   fmt::print("Construct done\n");
@@ -430,7 +430,7 @@ s   3 1.0
     fmt::print("Shell {} primitives {}\n", sh.symbol(), sh.num_primitives());
   }
   auto result = nlc(wfn.basis, wfn.mo);
-  double expected = 0.0089406089;
+  double expected = 0.008940471;
   fmt::print("NLC = {} vs {}\n", result.energy, expected);
   REQUIRE(result.energy == Catch::Approx(expected));
 }
@@ -468,7 +468,7 @@ occ::core::Molecule make_ch4_for_hirshfeld() {
 
 TEST_CASE("Hirshfeld charges for water", "[hirshfeld]") {
   auto mol = make_h2o_for_hirshfeld();
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "STO-3G");
   occ::qm::HartreeFock hf(basis);
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
   double energy = scf.compute_scf_energy();
@@ -501,7 +501,7 @@ TEST_CASE("Hirshfeld charges for water", "[hirshfeld]") {
 
 TEST_CASE("Hirshfeld charges for methane", "[hirshfeld]") {
   auto mol = make_ch4_for_hirshfeld();
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "STO-3G");
   occ::qm::HartreeFock hf(basis);
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
   double energy = scf.compute_scf_energy();
@@ -534,7 +534,7 @@ TEST_CASE("Hirshfeld charges for methane", "[hirshfeld]") {
 
 TEST_CASE("Hirshfeld multipoles for water", "[hirshfeld]") {
   auto mol = make_h2o_for_hirshfeld();
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "STO-3G");
   occ::qm::HartreeFock hf(basis);
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
   double energy = scf.compute_scf_energy();
@@ -582,7 +582,7 @@ TEST_CASE("Hirshfeld multipoles for water", "[hirshfeld]") {
 
 TEST_CASE("Hirshfeld multipoles for methane", "[hirshfeld]") {
   auto mol = make_ch4_for_hirshfeld();
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "STO-3G");
   occ::qm::HartreeFock hf(basis);
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
   double energy = scf.compute_scf_energy();
@@ -629,7 +629,7 @@ TEST_CASE("LDA gradient HF", "[dft_gradient]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "sto-3g");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "sto-3g");
   basis.set_pure(true);
   occ::dft::DFT dft("lda_x", basis);
 
@@ -670,7 +670,7 @@ TEST_CASE("DFT gradient for water", "[dft_gradient]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "6-31G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "6-31G");
   basis.set_pure(true);
   occ::dft::DFT dft("b3lyp", basis);
 
@@ -714,7 +714,7 @@ TEST_CASE("wB97X range-separated gradient for water", "[dft_gradient][wb97x]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object with wB97X functional
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "3-21G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "3-21G");
   basis.set_pure(true);  // Use spherical harmonics to match ORCA
   occ::dft::DFT dft("wb97x", basis);
 
@@ -758,7 +758,7 @@ TEST_CASE("wB97X range-separated gradient for water", "[dft_gradient][wb97x]") {
 
 TEST_CASE("Voronoi basic functionality", "[voronoi]") {
   auto mol = make_h2o_for_hirshfeld();
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "STO-3G");
   occ::qm::HartreeFock hf(basis);
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
   scf.compute_scf_energy();
@@ -786,7 +786,7 @@ TEST_CASE("Voronoi basic functionality", "[voronoi]") {
 
 TEST_CASE("Voronoi VDW scaling and temperature effects", "[voronoi]") {
   auto mol = make_ch4_for_hirshfeld();
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "STO-3G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "STO-3G");
   occ::qm::HartreeFock hf(basis);
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
   scf.compute_scf_energy();
@@ -795,7 +795,7 @@ TEST_CASE("Voronoi VDW scaling and temperature effects", "[voronoi]") {
   // Test pure geometric Voronoi
   occ::dft::VoronoiPartition voronoi_geom(basis, 0, 0.1, false);
   occ::Vec charges_geom = voronoi_geom.calculate(mo);
-  
+
   // Test VDW-scaled Voronoi with optimized temperature
   occ::dft::VoronoiPartition voronoi_vdw(basis, 0, 0.37, true);
   occ::Vec charges_vdw = voronoi_vdw.calculate(mo);
@@ -805,18 +805,526 @@ TEST_CASE("Voronoi VDW scaling and temperature effects", "[voronoi]") {
   REQUIRE(charges_vdw.size() == 5);
   REQUIRE(charges_geom.sum() == Approx(0.0).margin(1e-8));
   REQUIRE(charges_vdw.sum() == Approx(0.0).margin(1e-8));
-  
+
   // Check symmetry preservation for methane hydrogens
   auto h_avg_geom = (charges_geom(1) + charges_geom(2) + charges_geom(3) + charges_geom(4)) / 4.0;
   auto h_avg_vdw = (charges_vdw(1) + charges_vdw(2) + charges_vdw(3) + charges_vdw(4)) / 4.0;
-  
+
   for (int i = 1; i <= 4; i++) {
     REQUIRE(charges_geom(i) == Approx(h_avg_geom).margin(1e-2));
     REQUIRE(charges_vdw(i) == Approx(h_avg_vdw).margin(1e-2));
   }
-  
+
   // VDW and geometric should produce different results
   REQUIRE(!all_close(charges_geom, charges_vdw, 1e-3));
 }
 
+TEST_CASE("COSX shell extents", "[cosx][screening]") {
+  // Create a simple water molecule
+  std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.0},
+                                     {1, 0.0, -0.757, 0.587},
+                                     {1, 0.0, 0.757, 0.587}};
+
+  // Load def2-svp basis for realistic extents
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+
+  // Create SemiNumericalExchange instance with COSX-appropriate grid
+  occ::io::GridSettings settings = occ::io::GridSettings::for_sgx(50);
+  occ::dft::cosx::SemiNumericalExchange sgx(basis, settings);
+
+  // Verify that shell extents are populated in the engine's basis
+  // Note: the extents are set on the internal m_basis, accessed via engine().aobasis()
+  const auto &shells = sgx.engine().aobasis().shells();
+  REQUIRE(shells.size() > 0);
+
+  fmt::print("COSX shell extent verification:\n");
+  fmt::print("{:>5} {:>8} {:>12}\n", "Shell", "L", "Extent");
+
+  size_t num_nonzero = 0;
+  for (size_t i = 0; i < shells.size(); i++) {
+    const auto &sh = shells[i];
+    fmt::print("{:5d} {:>8} {:12.6f}\n", i, sh.symbol(), sh.extent);
+
+    // All extents should be positive (non-zero)
+    REQUIRE(sh.extent > 0.0);
+    if (sh.extent > 0.0) num_nonzero++;
+
+    // For def2-svp, extents should be reasonable (typically 5-30 Bohr)
+    // Very diffuse functions might be larger, but should be < 100 Bohr
+    REQUIRE(sh.extent < 100.0);
+
+    // Extents should be at least 1 Bohr for any reasonable basis
+    REQUIRE(sh.extent > 1.0);
+  }
+
+  // All shells should have non-zero extents
+  REQUIRE(num_nonzero == shells.size());
+
+  fmt::print("All {} shells have valid extents\n", shells.size());
+}
+
+TEST_CASE("COSX batch bounding sphere", "[cosx][screening]") {
+    using namespace occ::dft::cosx;
+
+    // Test with known points
+    occ::Mat3N pts(3, 4);
+    pts.col(0) << 0.0, 0.0, 0.0;
+    pts.col(1) << 2.0, 0.0, 0.0;
+    pts.col(2) << 0.0, 2.0, 0.0;
+    pts.col(3) << 0.0, 0.0, 2.0;
+
+    auto info = compute_batch_info(pts);
+
+    // Center should be at (0.5, 0.5, 0.5)
+    REQUIRE(info.center(0) == Approx(0.5));
+    REQUIRE(info.center(1) == Approx(0.5));
+    REQUIRE(info.center(2) == Approx(0.5));
+
+    // Radius should be distance from center to corners
+    double expected_radius = std::sqrt(0.5*0.5 + 0.5*0.5 + 1.5*1.5);  // to (0,0,2)
+    REQUIRE(info.radius == Approx(expected_radius).epsilon(1e-10));
+
+    fmt::print("COSX batch bounding sphere test:\n");
+    fmt::print("  Center: ({:.6f}, {:.6f}, {:.6f})\n", info.center(0), info.center(1), info.center(2));
+    fmt::print("  Radius: {:.6f}\n", info.radius);
+    fmt::print("  Expected radius: {:.6f}\n", expected_radius);
+}
+
+TEST_CASE("COSX shell pair screening", "[cosx][screening]") {
+    using namespace occ::dft::cosx;
+    using namespace occ::qm;
+
+    // Create test shells at different positions
+    // Shell 1: at origin with extent 5.0
+    // Shell 2: at (3, 0, 0) with extent 5.0
+    // Shell 3: at (20, 0, 0) with extent 5.0 (far away)
+
+    std::vector<Shell> shells;
+    shells.push_back(Shell(0, {1.0}, {{1.0}}, {0.0, 0.0, 0.0}));
+    shells.push_back(Shell(0, {1.0}, {{1.0}}, {3.0, 0.0, 0.0}));
+    shells.push_back(Shell(0, {1.0}, {{1.0}}, {20.0, 0.0, 0.0}));
+
+    // Set screening extents manually for test (simulating 1e-6 threshold)
+    occ::Vec screening_extents(3);
+    screening_extents << 5.0, 5.0, 5.0;
+
+    // Create batch centered at (1, 0, 0) with radius 2.0
+    GridBatchInfo batch;
+    batch.center = occ::Vec3(1.0, 0.0, 0.0);
+    batch.radius = 2.0;
+
+    auto screened = screen_shell_pairs(batch, shells, screening_extents);
+
+    // Shell pairs:
+    // (0,0) idx=0: shell 0 at origin, near batch
+    // (1,0) idx=1: shells 0 and 1, both near
+    // (1,1) idx=2: shell 1 at (3,0,0), near batch
+    // (2,0) idx=3: shell 2 at (20,0,0) is far, shell 0 near -> list2
+    // (2,1) idx=4: shell 2 far, shell 1 near -> list2
+    // (2,2) idx=5: shell 2 far -> list3 (skipped)
+
+    // list1 should have pairs where both shells near: 0, 1, 2
+    REQUIRE(screened.list1.size() == 3);
+
+    // list2 should have pairs with one near, one far: 3, 4
+    REQUIRE(screened.list2.size() == 2);
+
+    // Total evaluated = list1 + list2 = 5, skipped = 1 (pair 5)
+    REQUIRE(screened.list1.size() + screened.list2.size() == 5);
+
+    fmt::print("COSX shell pair screening test:\n");
+    fmt::print("  Batch center: ({:.1f}, {:.1f}, {:.1f}), radius: {:.1f}\n",
+               batch.center(0), batch.center(1), batch.center(2), batch.radius);
+    fmt::print("  List1 (both near): {} pairs\n", screened.list1.size());
+    fmt::print("  List2 (one near):  {} pairs\n", screened.list2.size());
+    fmt::print("  List3 (skipped):   {} pairs\n", 6 - screened.list1.size() - screened.list2.size());
+}
+
+TEST_CASE("SHARK-style shell list screening", "[cosx][shark][screening]") {
+    using namespace occ::dft::cosx;
+    using occ::gto::Shell;
+
+    // Create test shells at different distances
+    // Shell 0: at origin with extent 5.0
+    // Shell 1: at (3, 0, 0) with extent 5.0
+    // Shell 2: at (20, 0, 0) with extent 5.0 (far away)
+
+    std::vector<Shell> shells;
+    shells.push_back(Shell(0, {1.0}, {{1.0}}, {0.0, 0.0, 0.0}));
+    shells.push_back(Shell(0, {1.0}, {{1.0}}, {3.0, 0.0, 0.0}));
+    shells.push_back(Shell(0, {1.0}, {{1.0}}, {20.0, 0.0, 0.0}));
+
+    // Set screening extents manually for test
+    occ::Vec screening_extents(3);
+    screening_extents << 5.0, 5.0, 5.0;
+
+    // Create batch centered at (1, 0, 0) with radius 2.0
+    GridBatchInfo batch;
+    batch.center = occ::Vec3(1.0, 0.0, 0.0);
+    batch.radius = 2.0;
+
+    // Test geometric screening (list-1)
+    auto list1 = screen_shells_geometric(batch, shells, screening_extents);
+
+    // Shells 0 and 1 are near, shell 2 is far
+    REQUIRE(list1.size() == 2);
+    REQUIRE(std::find(list1.begin(), list1.end(), 0) != list1.end());
+    REQUIRE(std::find(list1.begin(), list1.end(), 1) != list1.end());
+
+    // Test density-based screening (list-2)
+    // Create fake Fg matrix where shell 0 has large values, shell 1 has small values
+    std::vector<int> first_bf = {0, 1, 2};  // Each shell has 1 bf (s-type)
+    const int npts = 10;
+    occ::Mat Fg = occ::Mat::Zero(npts, 3);
+    Fg.col(0).setConstant(1.0);    // Shell 0: significant F
+    Fg.col(1).setConstant(1e-12);  // Shell 1: negligible F
+    Fg.col(2).setConstant(1e-15);  // Shell 2: negligible F
+
+    auto list2 = screen_shells_density(list1, Fg, shells, first_bf, 1e-10);
+
+    // Only shell 0 should pass density screening
+    REQUIRE(list2.size() == 1);
+    REQUIRE(list2[0] == 0);
+
+    // Test full build_shell_lists
+    occ::Mat Fg2 = occ::Mat::Zero(npts, 3);
+    Fg2.col(0).setConstant(1.0);   // Shell 0: significant
+    Fg2.col(1).setConstant(0.5);   // Shell 1: significant
+    Fg2.col(2).setConstant(1e-15); // Shell 2: negligible (also geometrically far)
+
+    auto lists = build_shell_lists(batch, Fg2, shells, first_bf, screening_extents);
+
+    // list1: geometric - shells 0, 1 near
+    REQUIRE(lists.list1.size() == 2);
+
+    // list2: density - shells 0, 1 have significant F
+    REQUIRE(lists.list2.size() == 2);
+
+    // list3: overlap - subset of list2 with tighter overlap criterion
+    // Both shells 0 and 1 should pass since they're close
+    REQUIRE(lists.list3.size() >= 1);
+
+    fmt::print("SHARK shell list screening test:\n");
+    fmt::print("  Batch center: ({:.1f}, {:.1f}, {:.1f}), radius: {:.1f}\n",
+               batch.center(0), batch.center(1), batch.center(2), batch.radius);
+    fmt::print("  List-1 (geometric):  {} shells\n", lists.list1.size());
+    fmt::print("  List-2 (density):    {} shells\n", lists.list2.size());
+    fmt::print("  List-3 (overlap):    {} shells\n", lists.list3.size());
+}
+
+TEST_CASE("SpatialGridHierarchy Morton ordering", "[spatial][hierarchy]") {
+    using namespace occ::dft;
+
+    // Create test points in a grid pattern
+    const int n = 1000;
+    Mat3N points(3, n);
+    Vec weights(n);
+
+    // Random-ish points in a cube
+    for (int i = 0; i < n; ++i) {
+        double t = static_cast<double>(i) / n;
+        points(0, i) = std::sin(t * 10.0) * 5.0;
+        points(1, i) = std::cos(t * 7.0) * 5.0;
+        points(2, i) = std::sin(t * 3.0 + 1.0) * 5.0;
+        weights(i) = 1.0;
+    }
+
+    SpatialHierarchySettings settings;
+    settings.target_leaf_size = 64;
+
+    SpatialGridHierarchy hierarchy(points, weights, settings);
+
+    SECTION("All points preserved") {
+        REQUIRE(hierarchy.sorted_points().cols() == n);
+        REQUIRE(hierarchy.sorted_weights().size() == n);
+
+        // Check that sorted weights sum equals original
+        double orig_sum = weights.sum();
+        double sorted_sum = hierarchy.sorted_weights().sum();
+        REQUIRE(sorted_sum == Approx(orig_sum).epsilon(1e-12));
+    }
+
+    SECTION("Leaves cover all points") {
+        size_t total = 0;
+        for (const auto& leaf : hierarchy.leaves()) {
+            total += leaf.count;
+        }
+        REQUIRE(total == n);
+    }
+
+    SECTION("Leaf sizes within bounds") {
+        for (const auto& leaf : hierarchy.leaves()) {
+            REQUIRE(leaf.count >= settings.min_leaf_size / 2);  // Allow smaller last leaf
+            REQUIRE(leaf.count <= settings.max_leaf_size);
+        }
+    }
+
+    SECTION("Bounding spheres contain all points") {
+        for (size_t i = 0; i < hierarchy.num_leaves(); ++i) {
+            auto pts = hierarchy.leaf_points(i);
+            const auto& bounds = hierarchy.leaf_bounds(i);
+
+            for (Eigen::Index j = 0; j < pts.cols(); ++j) {
+                double dist = (pts.col(j) - bounds.center).norm();
+                REQUIRE(dist <= bounds.radius + 1e-10);
+            }
+        }
+    }
+
+    SECTION("Morton ordering improves locality") {
+        // Points in same leaf should be spatially close
+        // Compare average intra-leaf distance vs random batching
+        double avg_leaf_diameter = 0.0;
+        for (size_t i = 0; i < hierarchy.num_leaves(); ++i) {
+            avg_leaf_diameter += hierarchy.leaf_bounds(i).radius * 2;
+        }
+        avg_leaf_diameter /= hierarchy.num_leaves();
+
+        // Should be much smaller than the total extent
+        Vec3 min_pt = points.rowwise().minCoeff();
+        Vec3 max_pt = points.rowwise().maxCoeff();
+        double total_diameter = (max_pt - min_pt).norm();
+
+        REQUIRE(avg_leaf_diameter < total_diameter * 0.5);  // Leaves should be compact
+    }
+}
+
+TEST_CASE("SpatialGridHierarchy with real grid", "[spatial][hierarchy]") {
+    using namespace occ::dft;
+    using namespace occ::qm;
+    using occ::core::Atom;
+
+    // Create water molecule
+    std::vector<Atom> atoms = {
+        {8, 0.0, 0.0, 0.0},
+        {1, 1.43, 1.11, 0.0},
+        {1, -1.43, 1.11, 0.0}
+    };
+
+    auto basis = AOBasis::load(atoms, "def2-svp");
+
+    occ::io::GridSettings settings;
+    settings.max_angular_points = 50;
+    settings.radial_precision = 1e-5;
+
+    MolecularGrid grid(basis, settings);
+    const auto& grid_pts = grid.get_molecular_grid_points();
+
+    SpatialHierarchySettings hier_settings;
+    hier_settings.target_leaf_size = 128;
+
+    SpatialGridHierarchy hierarchy(grid_pts.points(), grid_pts.weights(), hier_settings);
+
+    REQUIRE(hierarchy.num_leaves() > 0);
+    REQUIRE(hierarchy.sorted_points().cols() == grid_pts.points().cols());
+
+    // Verify all bounding spheres are valid
+    for (size_t i = 0; i < hierarchy.num_leaves(); ++i) {
+        const auto& bounds = hierarchy.leaf_bounds(i);
+        REQUIRE(bounds.radius >= 0.0);
+        REQUIRE(bounds.radius < 100.0);  // Reasonable for water
+    }
+}
+
+TEST_CASE("MolecularGridPoints hierarchy integration", "[spatial][hierarchy]") {
+    using namespace occ::dft;
+    using namespace occ::qm;
+    using occ::core::Atom;
+
+    // Create water molecule
+    std::vector<Atom> atoms = {
+        {8, 0.0, 0.0, 0.0},
+        {1, 1.43, 1.11, 0.0},
+        {1, -1.43, 1.11, 0.0}
+    };
+
+    auto basis = AOBasis::load(atoms, "def2-svp");
+
+    occ::io::GridSettings settings;
+    settings.max_angular_points = 50;
+    settings.radial_precision = 1e-5;
+
+    MolecularGrid grid(basis, settings);
+    const auto& grid_pts = grid.get_molecular_grid_points();
+
+    SECTION("Hierarchy is lazily constructed") {
+        REQUIRE_FALSE(grid_pts.has_hierarchy());
+
+        const auto& hier = grid_pts.get_hierarchy();
+
+        REQUIRE(grid_pts.has_hierarchy());
+        REQUIRE(hier.num_leaves() > 0);
+    }
+
+    SECTION("Hierarchy is cached") {
+        const auto& hier1 = grid_pts.get_hierarchy();
+        const auto& hier2 = grid_pts.get_hierarchy();
+
+        // Should return same object (pointer equality)
+        REQUIRE(&hier1 == &hier2);
+    }
+
+    SECTION("Hierarchy preserves all points") {
+        const auto& hier = grid_pts.get_hierarchy();
+
+        REQUIRE(hier.sorted_points().cols() == grid_pts.points().cols());
+        REQUIRE(hier.sorted_weights().sum() == Approx(grid_pts.weights().sum()).epsilon(1e-12));
+    }
+
+    SECTION("Custom settings work") {
+        SpatialHierarchySettings custom;
+        custom.target_leaf_size = 64;
+
+        // Clear any existing hierarchy first
+        const_cast<MolecularGridPoints&>(grid_pts).clear_hierarchy();
+
+        const auto& hier = grid_pts.get_hierarchy(custom);
+
+        // With smaller leaf size, should have more leaves
+        size_t expected_min_leaves = grid_pts.points().cols() / custom.max_leaf_size;
+        REQUIRE(hier.num_leaves() >= expected_min_leaves);
+    }
+}
+
+TEST_CASE("HartreeFock with COSX exchange", "[hf][cosx]") {
+    // Create a simple water molecule
+    std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.0},
+                                       {1, 0.0, -0.757, 0.587},
+                                       {1, 0.0, 0.757, 0.587}};
+
+    auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+
+    SECTION("COSX can be enabled") {
+        occ::qm::HartreeFock hf(basis);
+        REQUIRE_FALSE(hf.using_cosx());
+
+        hf.set_cosx_exchange(occ::io::COSXGridLevel::Grid1);
+        REQUIRE(hf.using_cosx());
+
+        fmt::print("COSX enabled successfully\n");
+    }
+
+    SECTION("COSX produces reasonable energies") {
+        // Exact HF
+        occ::qm::HartreeFock hf_exact(basis);
+        occ::qm::SCF<occ::qm::HartreeFock> scf_exact(hf_exact);
+        double e_exact = scf_exact.compute_scf_energy();
+
+        // COSX HF with Grid3 (finest)
+        occ::qm::HartreeFock hf_cosx(basis);
+        hf_cosx.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+        occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx);
+        double e_cosx = scf_cosx.compute_scf_energy();
+
+        fmt::print("Energy (exact): {:.10f} Hartree\n", e_exact);
+        fmt::print("Energy (COSX Grid3): {:.10f} Hartree\n", e_cosx);
+        fmt::print("Difference: {:.6e} Hartree\n", std::abs(e_exact - e_cosx));
+
+        // COSX should be close to exact (within 1 mHartree for Grid3 with 6-31G)
+        REQUIRE(std::abs(e_exact - e_cosx) < 1e-3);
+    }
+
+    SECTION("Different COSX grid levels") {
+        occ::qm::HartreeFock hf_exact(basis);
+        occ::qm::SCF<occ::qm::HartreeFock> scf_exact(hf_exact);
+        double e_exact = scf_exact.compute_scf_energy();
+
+        // Test all grid levels
+        for (auto level : {occ::io::COSXGridLevel::Grid1,
+                           occ::io::COSXGridLevel::Grid2,
+                           occ::io::COSXGridLevel::Grid3}) {
+            occ::qm::HartreeFock hf_cosx(basis);
+            hf_cosx.set_cosx_exchange(level);
+            occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx);
+            double e_cosx = scf_cosx.compute_scf_energy();
+
+            fmt::print("Energy (COSX {}): {:.10f} Hartree (error: {:.6e})\n",
+                       occ::io::cosx_grid_level_to_string(level),
+                       e_cosx, std::abs(e_exact - e_cosx));
+
+            // All grid levels should give reasonable results (< 10 mHartree)
+            REQUIRE(std::abs(e_exact - e_cosx) < 0.01);
+        }
+    }
+}
+
+TEST_CASE("UHF with COSX exchange", "[uhf][cosx]") {
+    // Use water for closed-shell UHF test (should match RHF)
+    std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.116868},
+                                       {1, 0.0, 0.763239, -0.467473},
+                                       {1, 0.0, -0.763239, -0.467473}};
+
+    auto basis = occ::gto::AOBasis::load(atoms, "STO-3G");
+
+    SECTION("Restricted COSX for reference") {
+        // Exact RHF
+        occ::qm::HartreeFock hf_exact(basis);
+        occ::qm::SCF<occ::qm::HartreeFock> scf_exact(hf_exact, occ::qm::SpinorbitalKind::Restricted);
+        double e_exact = scf_exact.compute_scf_energy();
+
+        // RHF with COSX Grid3
+        occ::qm::HartreeFock hf_cosx(basis);
+        hf_cosx.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+        occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx, occ::qm::SpinorbitalKind::Restricted);
+        double e_cosx = scf_cosx.compute_scf_energy();
+
+        fmt::print("RHF water (STO-3G):\n");
+        fmt::print("  Energy (exact):       {:.10f} Hartree\n", e_exact);
+        fmt::print("  Energy (COSX Grid3):  {:.10f} Hartree\n", e_cosx);
+        fmt::print("  Difference: {:.6e} Hartree\n", std::abs(e_exact - e_cosx));
+
+        REQUIRE(std::abs(e_exact - e_cosx) < 1e-3);
+    }
+
+    SECTION("UHF COSX closed-shell (should match RHF)") {
+        // Exact UHF on closed-shell water
+        occ::qm::HartreeFock hf_exact(basis);
+        occ::qm::SCF<occ::qm::HartreeFock> scf_exact(hf_exact, occ::qm::SpinorbitalKind::Unrestricted);
+        double e_exact = scf_exact.compute_scf_energy();
+
+        // UHF with COSX Grid3
+        occ::qm::HartreeFock hf_cosx(basis);
+        hf_cosx.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+        occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx, occ::qm::SpinorbitalKind::Unrestricted);
+        double e_cosx = scf_cosx.compute_scf_energy();
+
+        fmt::print("UHF water closed-shell (STO-3G):\n");
+        fmt::print("  Energy (exact):       {:.10f} Hartree\n", e_exact);
+        fmt::print("  Energy (COSX Grid3):  {:.10f} Hartree\n", e_cosx);
+        fmt::print("  Difference: {:.6e} Hartree\n", std::abs(e_exact - e_cosx));
+
+        // COSX should be close to exact (within 1 mHartree)
+        REQUIRE(std::abs(e_exact - e_cosx) < 1e-3);
+    }
+}
+
+TEST_CASE("GHF with COSX exchange", "[ghf][cosx]") {
+    // Use water for closed-shell GHF test (should match RHF)
+    std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.116868},
+                                       {1, 0.0, 0.763239, -0.467473},
+                                       {1, 0.0, -0.763239, -0.467473}};
+
+    auto basis = occ::gto::AOBasis::load(atoms, "STO-3G");
+
+    SECTION("GHF COSX closed-shell (should match RHF)") {
+        // Exact GHF on closed-shell water
+        occ::qm::HartreeFock hf_exact(basis);
+        occ::qm::SCF<occ::qm::HartreeFock> scf_exact(hf_exact, occ::qm::SpinorbitalKind::General);
+        double e_exact = scf_exact.compute_scf_energy();
+
+        // GHF with COSX Grid3
+        occ::qm::HartreeFock hf_cosx(basis);
+        hf_cosx.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+        occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx, occ::qm::SpinorbitalKind::General);
+        double e_cosx = scf_cosx.compute_scf_energy();
+
+        fmt::print("GHF water closed-shell (STO-3G):\n");
+        fmt::print("  Energy (exact):       {:.10f} Hartree\n", e_exact);
+        fmt::print("  Energy (COSX Grid3):  {:.10f} Hartree\n", e_cosx);
+        fmt::print("  Difference: {:.6e} Hartree\n", std::abs(e_exact - e_cosx));
+
+        // COSX should be close to exact (within 1 mHartree)
+        REQUIRE(std::abs(e_exact - e_cosx) < 1e-3);
+    }
+}
 

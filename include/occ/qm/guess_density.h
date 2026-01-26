@@ -1,10 +1,12 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <vector>
 
 namespace occ::qm::guess {
+
+using gto::AOBasis;
 
 int minimal_basis_nao(int Z, bool spherical);
 std::vector<double> minimal_basis_occupation_vector(size_t Z, bool spherical);

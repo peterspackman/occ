@@ -29,7 +29,7 @@ TEST_CASE("MO integral transformation validation", "[mp2]") {
       {1, 0.0, 0.0, 1.4 * occ::units::ANGSTROM_TO_BOHR} // H at 1.4 Angstrom
   };
 
-  auto basis = occ::qm::AOBasis::load(h2_atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(h2_atoms, "sto-3g");
   basis.set_pure(false);
 
   occ::qm::HartreeFock hf(basis);
@@ -92,7 +92,7 @@ TEST_CASE("MOIntegralEngine initialization", "[mp2]") {
        0.0052190 * occ::units::ANGSTROM_TO_BOHR} // H
   };
 
-  auto basis = occ::qm::AOBasis::load(water_atoms, "3-21G");
+  auto basis = occ::gto::AOBasis::load(water_atoms, "3-21G");
   basis.set_pure(false); // Use Cartesian GTOs like ORCA default
 
   occ::qm::HartreeFock hf(basis);
@@ -125,7 +125,7 @@ TEST_CASE("MP2 water 3-21G energy", "[mp2]") {
        0.0052190 * occ::units::ANGSTROM_TO_BOHR} // H
   };
 
-  auto basis = occ::qm::AOBasis::load(water_atoms, "3-21G");
+  auto basis = occ::gto::AOBasis::load(water_atoms, "3-21G");
   basis.set_pure(false); // Use Cartesian GTOs like ORCA default
 
   // Run HF calculation
@@ -156,7 +156,7 @@ TEST_CASE("MP2 H2 STO-3G energy", "[mp2]") {
   // Simple hydrogen molecule
   std::vector<occ::core::Atom> h2_atoms{{1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4}};
 
-  auto basis = occ::qm::AOBasis::load(h2_atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(h2_atoms, "sto-3g");
 
   // Run HF calculation
   occ::qm::HartreeFock hf(basis);
@@ -190,7 +190,7 @@ TEST_CASE("MO integral transformation", "[mo_transform]") {
   // H2 molecule for simple test
   std::vector<occ::core::Atom> h2_atoms{{1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4}};
 
-  auto basis = occ::qm::AOBasis::load(h2_atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(h2_atoms, "sto-3g");
 
   // Run HF calculation
   occ::qm::HartreeFock hf(basis);
@@ -320,7 +320,7 @@ TEST_CASE("MP2 results structure", "[mp2]") {
   // Simple hydrogen molecule for fast test
   std::vector<occ::core::Atom> h2_atoms{{1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4}};
 
-  auto basis = occ::qm::AOBasis::load(h2_atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(h2_atoms, "sto-3g");
 
   occ::qm::HartreeFock hf(basis);
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
@@ -354,7 +354,7 @@ TEST_CASE("MP2 H2 def2-SVP energy", "[mp2]") {
       {1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4} // Bohr
   };
 
-  auto basis = occ::qm::AOBasis::load(h2_atoms, "def2-svp");
+  auto basis = occ::gto::AOBasis::load(h2_atoms, "def2-svp");
   basis.set_pure(false); // Use Cartesian GTOs
 
   // Run HF calculation
@@ -394,8 +394,8 @@ TEST_CASE("DF tensor comparison", "[mp2][ri]") {
       {1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4} // Bohr
   };
 
-  auto basis = occ::qm::AOBasis::load(h2_atoms, "sto-3g");
-  auto aux_basis = occ::qm::AOBasis::load(h2_atoms, "def2-tzvp-rifit");
+  auto basis = occ::gto::AOBasis::load(h2_atoms, "sto-3g");
+  auto aux_basis = occ::gto::AOBasis::load(h2_atoms, "def2-tzvp-rifit");
   basis.set_pure(false); // Use cartesian for simplicity
 
   INFO("DF tensor comparison test");
@@ -513,8 +513,8 @@ TEST_CASE("RI-MP2 H2 STO-3G energy", "[mp2][ri]") {
       {1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4} // Bohr
   };
 
-  auto basis = occ::qm::AOBasis::load(h2_atoms, "sto-3g");
-  auto aux_basis = occ::qm::AOBasis::load(h2_atoms, "def2-tzvp-rifit");
+  auto basis = occ::gto::AOBasis::load(h2_atoms, "sto-3g");
+  auto aux_basis = occ::gto::AOBasis::load(h2_atoms, "def2-tzvp-rifit");
   basis.set_pure(false);
 
   // Run SCF calculation

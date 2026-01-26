@@ -471,8 +471,8 @@ inline auto jk_lambda_direct_polarized(
 
 template <ShellKind kind, typename Lambda>
 void three_center_aux_kernel(Lambda &f, cint::IntegralEnvironment &env,
-                             const qm::AOBasis &aobasis,
-                             const qm::AOBasis &auxbasis,
+                             const gto::AOBasis &aobasis,
+                             const gto::AOBasis &auxbasis,
                              const ShellPairList &shellpairs,
                              cint::Optimizer &opt,
                              int thread_id = 0) noexcept {
@@ -1431,19 +1431,35 @@ inline Mat stored_coulomb_kernel_r(const Mat &ints, const AOBasis &aobasis,
                                    const AOBasis &auxbasis,
                                    const MolecularOrbitals &mo,
                                    const Eigen::LLT<Mat> V_LLt) {
+  occ::log::debug("Computing coulomb");
   const auto nbf = aobasis.nbf();
   const auto ndf = auxbasis.nbf();
   Vec g(ndf);
-  for (int r = 0; r < ndf; r++) {
+  occ::parallel::parallel_for(size_t(0), size_t(ndf), [&](size_t r) {
     const auto tr = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
     g(r) = (mo.D.array() * tr.array()).sum();
-  }
+  });
+
   Vec d = V_LLt.solve(g);
-  Mat J = Mat::Zero(nbf, nbf);
-  for (int r = 0; r < ndf; r++) {
+
+  // Parallelize J matrix reconstruction using thread-local accumulators
+  occ::parallel::thread_local_storage<Mat> J_local([nbf]() {
+    return Mat::Zero(nbf, nbf);
+  });
+
+  occ::parallel::parallel_for(size_t(0), size_t(ndf), [&](size_t r) {
+    auto &J_tl = J_local.local();
     const auto tr = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
-    J += d(r) * tr;
+    J_tl.noalias() += d(r) * tr;
+  });
+
+  // Reduce thread-local results
+  Mat J = Mat::Zero(nbf, nbf);
+  for (const auto &J_thread : J_local) {
+    J.noalias() += J_thread;
   }
+
+  occ::log::debug("Done coulomb");
   return 2 * J;
 }
 
@@ -1455,19 +1471,35 @@ inline Mat stored_coulomb_kernel_u(const Mat &ints, const AOBasis &aobasis,
   const auto ndf = auxbasis.nbf();
   const auto [rows, cols] =
       occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::Unrestricted>(nbf);
+
+  // Parallelize g-vector computation
   Vec ga(ndf), gb(ndf);
-  for (int r = 0; r < ndf; r++) {
+  occ::parallel::parallel_for(size_t(0), size_t(ndf), [&](size_t r) {
     const auto tr = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
     ga(r) = (block::a(mo.D).array() * tr.array()).sum();
     gb(r) = (block::b(mo.D).array() * tr.array()).sum();
-  }
+  });
+
   Vec d_total = V_LLt.solve(ga + gb);
-  Mat J = Mat::Zero(rows, cols);
-  for (int r = 0; r < ndf; r++) {
+
+  // Parallelize J matrix reconstruction using thread-local accumulators
+  occ::parallel::thread_local_storage<Mat> J_local([rows, cols]() {
+    return Mat::Zero(rows, cols);
+  });
+
+  occ::parallel::parallel_for(size_t(0), size_t(ndf), [&](size_t r) {
+    auto &J_tl = J_local.local();
     const auto tr = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
-    block::a(J) += d_total(r) * tr;
-    block::b(J) += d_total(r) * tr;
+    block::a(J_tl).noalias() += d_total(r) * tr;
+    block::b(J_tl).noalias() += d_total(r) * tr;
+  });
+
+  // Reduce thread-local results
+  Mat J = Mat::Zero(rows, cols);
+  for (const auto &J_thread : J_local) {
+    J.noalias() += J_thread;
   }
+
   return 2 * J;
 }
 
@@ -1479,20 +1511,36 @@ inline Mat stored_coulomb_kernel_g(const Mat &ints, const AOBasis &aobasis,
   const auto ndf = auxbasis.nbf();
   const auto [rows, cols] =
       occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::General>(nbf);
+
+  // Parallelize g-vector computation
   // only alpha-alpha and beta-beta contributions to coulomb
   Vec gaa(ndf), gbb(ndf);
-  for (int r = 0; r < ndf; r++) {
+  occ::parallel::parallel_for(size_t(0), size_t(ndf), [&](size_t r) {
     const auto tr = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
     gaa(r) = 2 * (block::aa(mo.D).array() * tr.array()).sum();
     gbb(r) = 2 * (block::bb(mo.D).array() * tr.array()).sum();
-  }
+  });
+
   Vec daa = V_LLt.solve(gaa), dbb = V_LLt.solve(gbb);
-  Mat J = Mat::Zero(rows, cols);
-  for (int r = 0; r < ndf; r++) {
+
+  // Parallelize J matrix reconstruction using thread-local accumulators
+  occ::parallel::thread_local_storage<Mat> J_local([rows, cols]() {
+    return Mat::Zero(rows, cols);
+  });
+
+  occ::parallel::parallel_for(size_t(0), size_t(ndf), [&](size_t r) {
+    auto &J_tl = J_local.local();
     const auto tr = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
-    block::aa(J) += daa(r) * tr;
-    block::bb(J) += dbb(r) * tr;
+    block::aa(J_tl).noalias() += daa(r) * tr;
+    block::bb(J_tl).noalias() += dbb(r) * tr;
+  });
+
+  // Reduce thread-local results
+  Mat J = Mat::Zero(rows, cols);
+  for (const auto &J_thread : J_local) {
+    J.noalias() += J_thread;
   }
+
   return 2 * J;
 }
 
@@ -1502,19 +1550,41 @@ inline Mat stored_exchange_kernel_r(const Mat &ints, const AOBasis &aobasis,
                                     const Eigen::LLT<Mat> &V_LLt) {
   const auto nbf = aobasis.nbf();
   const auto ndf = auxbasis.nbf();
-  Mat K = Mat::Zero(nbf, nbf);
-  // temporaries
-  Mat iuP = Mat::Zero(nbf, ndf);
-  Mat X(nbf, ndf);
-  for (size_t i = 0; i < mo.Cocc.cols(); i++) {
+  const size_t nocc = mo.Cocc.cols();
+
+  // Thread-local accumulators
+  occ::parallel::thread_local_storage<Mat> K_local([nbf]() {
+    return Mat::Zero(nbf, nbf);
+  });
+  // Thread-local temporaries
+  occ::parallel::thread_local_storage<Mat> iuP_local([nbf, ndf]() {
+    return Mat::Zero(nbf, ndf);
+  });
+  occ::parallel::thread_local_storage<Mat> X_local([nbf, ndf]() {
+    return Mat(nbf, ndf);
+  });
+
+  // Parallelize over occupied orbitals
+  occ::parallel::parallel_for(size_t(0), nocc, [&](size_t i) {
+    auto &K_tl = K_local.local();
+    auto &iuP = iuP_local.local();
+    auto &X = X_local.local();
+
     auto c = mo.Cocc.col(i);
     for (size_t r = 0; r < ndf; r++) {
       const auto vu = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
-      iuP.col(r) = (vu * c);
+      iuP.col(r) = vu * c;
     }
     X = V_LLt.solve(iuP.transpose());
-    K.noalias() += iuP * X;
+    K_tl.noalias() += iuP * X;
+  });
+
+  // Reduce thread-local results
+  Mat K = Mat::Zero(nbf, nbf);
+  for (const auto &K_thread : K_local) {
+    K.noalias() += K_thread;
   }
+
   return K;
 }
 
@@ -1526,23 +1596,53 @@ inline Mat stored_exchange_kernel_u(const Mat &ints, const AOBasis &aobasis,
   const auto ndf = auxbasis.nbf();
   const auto [rows, cols] =
       occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::Unrestricted>(nbf);
-  Mat K = Mat::Zero(rows, cols);
-  // temporaries
-  Mat iuPa = Mat::Zero(nbf, ndf), iuPb = Mat::Zero(nbf, ndf);
-  Mat Xa(nbf, ndf), Xb(nbf, ndf);
-  for (size_t i = 0; i < mo.Cocc.cols(); i++) {
+  const size_t nocc = mo.Cocc.cols();
+
+  // Thread-local accumulators
+  occ::parallel::thread_local_storage<Mat> K_local([rows, cols]() {
+    return Mat::Zero(rows, cols);
+  });
+  // Thread-local temporaries
+  occ::parallel::thread_local_storage<Mat> iuPa_local([nbf, ndf]() {
+    return Mat::Zero(nbf, ndf);
+  });
+  occ::parallel::thread_local_storage<Mat> iuPb_local([nbf, ndf]() {
+    return Mat::Zero(nbf, ndf);
+  });
+  occ::parallel::thread_local_storage<Mat> Xa_local([nbf, ndf]() {
+    return Mat(nbf, ndf);
+  });
+  occ::parallel::thread_local_storage<Mat> Xb_local([nbf, ndf]() {
+    return Mat(nbf, ndf);
+  });
+
+  // Parallelize over occupied orbitals
+  occ::parallel::parallel_for(size_t(0), nocc, [&](size_t i) {
+    auto &K_tl = K_local.local();
+    auto &iuPa = iuPa_local.local();
+    auto &iuPb = iuPb_local.local();
+    auto &Xa = Xa_local.local();
+    auto &Xb = Xb_local.local();
+
     auto ca = block::a(mo.Cocc.col(i));
     auto cb = block::b(mo.Cocc.col(i));
     for (size_t r = 0; r < ndf; r++) {
       const auto vu = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
-      iuPa.col(r) = (vu * ca);
-      iuPb.col(r) = (vu * cb);
+      iuPa.col(r) = vu * ca;
+      iuPb.col(r) = vu * cb;
     }
     Xa = V_LLt.solve(iuPa.transpose());
     Xb = V_LLt.solve(iuPb.transpose());
-    block::a(K).noalias() += iuPa * Xa;
-    block::b(K).noalias() += iuPb * Xb;
+    block::a(K_tl).noalias() += iuPa * Xa;
+    block::b(K_tl).noalias() += iuPb * Xb;
+  });
+
+  // Reduce thread-local results
+  Mat K = Mat::Zero(rows, cols);
+  for (const auto &K_thread : K_local) {
+    K.noalias() += K_thread;
   }
+
   return K;
 }
 
@@ -1554,25 +1654,55 @@ inline Mat stored_exchange_kernel_g(const Mat &ints, const AOBasis &aobasis,
   const auto ndf = auxbasis.nbf();
   const auto [rows, cols] =
       occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::General>(nbf);
-  Mat K = Mat::Zero(rows, cols);
-  // temporaries
-  Mat iuPa = Mat::Zero(nbf, ndf), iuPb = Mat::Zero(nbf, ndf);
-  Mat Xa(nbf, ndf), Xb(nbf, ndf);
-  for (size_t i = 0; i < mo.Cocc.cols(); i++) {
+  const size_t nocc = mo.Cocc.cols();
+
+  // Thread-local accumulators
+  occ::parallel::thread_local_storage<Mat> K_local([rows, cols]() {
+    return Mat::Zero(rows, cols);
+  });
+  // Thread-local temporaries
+  occ::parallel::thread_local_storage<Mat> iuPa_local([nbf, ndf]() {
+    return Mat::Zero(nbf, ndf);
+  });
+  occ::parallel::thread_local_storage<Mat> iuPb_local([nbf, ndf]() {
+    return Mat::Zero(nbf, ndf);
+  });
+  occ::parallel::thread_local_storage<Mat> Xa_local([nbf, ndf]() {
+    return Mat(nbf, ndf);
+  });
+  occ::parallel::thread_local_storage<Mat> Xb_local([nbf, ndf]() {
+    return Mat(nbf, ndf);
+  });
+
+  // Parallelize over occupied orbitals
+  occ::parallel::parallel_for(size_t(0), nocc, [&](size_t i) {
+    auto &K_tl = K_local.local();
+    auto &iuPa = iuPa_local.local();
+    auto &iuPb = iuPb_local.local();
+    auto &Xa = Xa_local.local();
+    auto &Xb = Xb_local.local();
+
     auto ca = block::a(mo.Cocc.col(i));
     auto cb = block::b(mo.Cocc.col(i));
     for (size_t r = 0; r < ndf; r++) {
       const auto vu = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
-      iuPa.col(r) = (vu * ca);
-      iuPb.col(r) = (vu * cb);
+      iuPa.col(r) = vu * ca;
+      iuPb.col(r) = vu * cb;
     }
     Xa = V_LLt.solve(iuPa.transpose());
     Xb = V_LLt.solve(iuPb.transpose());
-    block::aa(K).noalias() += iuPa * Xa;
-    block::bb(K).noalias() += iuPb * Xb;
-    block::ab(K).noalias() += (iuPa * Xb) + (iuPb * Xa);
-    block::ba(K).noalias() += (iuPa * Xb) + (iuPb * Xa);
+    block::aa(K_tl).noalias() += iuPa * Xa;
+    block::bb(K_tl).noalias() += iuPb * Xb;
+    block::ab(K_tl).noalias() += (iuPa * Xb) + (iuPb * Xa);
+    block::ba(K_tl).noalias() += (iuPa * Xb) + (iuPb * Xa);
+  });
+
+  // Reduce thread-local results
+  Mat K = Mat::Zero(rows, cols);
+  for (const auto &K_thread : K_local) {
+    K.noalias() += K_thread;
   }
+
   return K;
 }
 

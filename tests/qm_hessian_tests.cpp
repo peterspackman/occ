@@ -5,7 +5,7 @@
 #include <occ/core/util.h>
 #include <occ/core/vibration.h>
 #include <occ/gto/gto.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/hessians.h>
 #include <occ/qm/hf.h>
@@ -31,7 +31,7 @@ TEST_CASE("Hessian evaluator nuclear repulsion", "[hessian][nuclear]") {
   std::vector<occ::core::Atom> atoms{
       {6, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 2.0}, {1, 0.0, 2.0, 0.0}};
 
-  auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
   HartreeFock hf(basis);
   
   HessianEvaluator<HartreeFock> hess_eval(hf);
@@ -55,7 +55,7 @@ TEST_CASE("Hessian finite differences vs analytical", "[hessian][finite_diff]") 
       {1, 0.0, 0.0, 1.8}, 
       {1, 1.2, 0.0, -0.6}};
 
-  auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
   HartreeFock hf(basis);
   
   // Run SCF to get molecular orbitals
@@ -114,7 +114,7 @@ TEST_CASE("Hessian symmetry properties", "[hessian][symmetry]") {
   std::vector<occ::core::Atom> atoms{
       {6, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 2.0}};
 
-  auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
   HartreeFock hf(basis);
   
   HessianEvaluator<HartreeFock> hess_eval(hf);
@@ -153,7 +153,7 @@ void test_hessian_properties(const HartreeFock& hf, const MolecularOrbitals& mo)
 TEST_CASE("Hessian validation suite", "[hessian][validation]") {
   SECTION("H2 molecule") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4}};
-    auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+    auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
     HartreeFock hf(basis);
     
     occ::qm::SCF<HartreeFock> scf(hf);
@@ -168,7 +168,7 @@ TEST_CASE("Hessian validation suite", "[hessian][validation]") {
         {8, 0.0, 0.0, 0.0}, 
         {1, 0.0, 0.0, 1.8}, 
         {1, 1.2, 0.0, -0.6}};
-    auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+    auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
     HartreeFock hf(basis);
     
     occ::qm::SCF<HartreeFock> scf(hf);
@@ -182,7 +182,7 @@ TEST_CASE("Hessian validation suite", "[hessian][validation]") {
 TEST_CASE("Hessian comparison: Analytical vs Finite Differences", "[hessian][comparison]") {
   SECTION("H2 molecule - Cartesian basis") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4}};
-    auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+    auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
     // Force Cartesian basis
     basis.set_pure(false);
     
@@ -212,7 +212,7 @@ TEST_CASE("Hessian comparison: Analytical vs Finite Differences", "[hessian][com
   
   SECTION("H2 molecule - Spherical basis") {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4}};
-    auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+    auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
     // Force Spherical basis (default)
     basis.set_pure(true);
     
@@ -245,7 +245,7 @@ TEST_CASE("Hessian comparison: Analytical vs Finite Differences", "[hessian][com
         {8, 0.0, 0.0, 0.0}, 
         {1, 0.0, 0.0, 1.8}, 
         {1, 1.2, 0.0, -0.6}};
-    auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+    auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
     basis.set_pure(true);
     
     HartreeFock hf(basis);
@@ -282,7 +282,7 @@ TEST_CASE("Water molecule - ORCA reference comparison (HF/3-21G)", "[hessian][or
       {1, 1.474863732488, 0.000000000000, -0.957206606042},
       {1, -1.474863732488, 0.000000000000, -0.957206606042}};
   
-  auto basis = occ::qm::AOBasis::load(atoms, "3-21g");
+  auto basis = occ::gto::AOBasis::load(atoms, "3-21g");
   basis.set_pure(true); // Spherical basis as in ORCA
   
   HartreeFock hf(basis);

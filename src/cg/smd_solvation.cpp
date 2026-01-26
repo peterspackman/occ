@@ -37,8 +37,8 @@ std::pair<SMDSolventSurfaces, occ::qm::Wavefunction>
 SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
                                    const occ::qm::Wavefunction &gas_wfn,
                                    size_t index) {
-  occ::qm::AOBasis basis =
-      occ::qm::AOBasis::load(gas_wfn.atoms, m_settings.basis);
+  occ::gto::AOBasis basis =
+      occ::gto::AOBasis::load(gas_wfn.atoms, m_settings.basis);
   double original_energy = gas_wfn.energy.total;
   occ::log::debug("Total energy (gas) {:.3f}", original_energy);
 

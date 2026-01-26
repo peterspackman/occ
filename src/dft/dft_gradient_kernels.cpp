@@ -5,7 +5,7 @@
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 using occ::gto::GTOValues;
-using occ::qm::AOBasis;
+using occ::gto::AOBasis;
 namespace block = occ::qm::block;
 
 namespace occ::dft::kernels {

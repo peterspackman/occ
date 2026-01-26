@@ -3,7 +3,7 @@
 #include <occ/driver/single_point.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/io/occ_input.h>
-#include <occ/io/wavefunction_json.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/main/monomer_wavefunctions.h>
 
 namespace fs = std::filesystem;

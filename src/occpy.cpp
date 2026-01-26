@@ -16,7 +16,7 @@
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/main/occ_cg.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)

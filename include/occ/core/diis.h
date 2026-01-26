@@ -5,12 +5,13 @@ namespace occ::core::diis {
 
 class DIIS {
 public:
-  DIIS(size_t start = 2, size_t diis_subspace = 20, double damping_factor = 0.0,
+  DIIS(size_t start = 5, size_t diis_subspace = 8, double damping_factor = 0.0,
        size_t ngroup = 1, size_t ngroup_diis = 1, double mixing_fraction = 0);
 
   void extrapolate(Mat &x, Mat &error, bool extrapolate_error = false);
   void set_error(double e);
   double error() const;
+  void reset();  // Clear DIIS history to restart extrapolation
 
 private:
   double m_error;

@@ -3,14 +3,42 @@
 #include <occ/core/molecule.h>
 #include <occ/core/parallel.h>
 #include <occ/core/units.h>
+#include <occ/core/util.h>
+#include <occ/qm/auto_aux_basis.h>
 #include <occ/qm/hf.h>
 
 namespace occ::qm {
 
 void HartreeFock::set_density_fitting_basis(
-    const std::string &density_fitting_basis) {
-  occ::qm::AOBasis dfbasis =
-      occ::qm::AOBasis::load(atoms(), density_fitting_basis);
+    const std::string &density_fitting_basis, double auto_aux_threshold) {
+  occ::gto::AOBasis dfbasis;
+
+  // Check for "auto" option (case-insensitive)
+  std::string name_lower = occ::util::to_lower_copy(density_fitting_basis);
+  if (name_lower == "auto") {
+    occ::log::info("Generating automatic auxiliary basis (threshold={:.1e})",
+                   auto_aux_threshold);
+    auto result = generate_auto_aux(m_engine.aobasis(), auto_aux_threshold);
+
+    // Log statistics before moving
+    size_t nshells = result.aux_basis.size();
+    size_t naux = result.aux_basis.nbf();
+    occ::log::info("Auto auxiliary basis: {} shells, {} functions generated in {:.2f}s",
+                   nshells, naux, result.time_seconds);
+
+    dfbasis = std::move(result.aux_basis);
+
+    // Warn if auxiliary basis is very large (likely to cause conditioning issues)
+    if (naux > 2000) {
+      occ::log::warn("Auto auxiliary basis has {} functions - this may cause "
+                     "ill-conditioning. Consider using a pre-defined auxiliary basis "
+                     "(e.g., def2-universal-jkfit) or a looser threshold (--df-auto-threshold=1e-2).",
+                     naux);
+    }
+  } else {
+    dfbasis = occ::gto::AOBasis::load(atoms(), density_fitting_basis);
+  }
+
   dfbasis.set_kind(m_engine.aobasis().kind());
   m_df_engine = std::make_unique<IntegralEngineDF>(
       atoms(), m_engine.aobasis().shells(), dfbasis.shells());
@@ -19,6 +47,29 @@ void HartreeFock::set_density_fitting_basis(
 void HartreeFock::set_density_fitting_policy(IntegralEngineDF::Policy policy) {
   if (m_df_engine) {
     m_df_engine->set_integral_policy(policy);
+  }
+}
+
+void HartreeFock::set_coulomb_method(CoulombMethod method) {
+  if (m_df_engine) {
+    m_df_engine->set_coulomb_method(method);
+    if (method == CoulombMethod::SplitRIJ) {
+      occ::log::info("Using Split-RI-J for Coulomb matrix (Neese 2003)");
+    }
+  }
+}
+
+void HartreeFock::set_cosx_exchange(occ::io::COSXGridLevel level) {
+  auto settings = occ::io::GridSettings::for_cosx(level);
+  m_cosx_engine = std::make_unique<occ::qm::cosx::SemiNumericalExchange>(
+      m_engine.aobasis(), settings);
+  m_cosx_engine->set_use_esp(true);  // Use ESP-based COSX
+  m_cosx_engine->set_use_spatial_hierarchy(true);  // Use TBB parallel path
+}
+
+void HartreeFock::set_cosx_settings(const occ::qm::cosx::Settings &settings) {
+  if (m_cosx_engine) {
+    m_cosx_engine->set_settings(settings);
   }
 }
 
@@ -125,8 +176,17 @@ double HartreeFock::wolf_point_charge_interaction_energy(
 
 Mat HartreeFock::compute_fock(const MolecularOrbitals &mo,
                               const Mat &Schwarz) const {
-  if (m_df_engine) {
+  if (m_df_engine && m_cosx_engine) {
+    // DF + COSX: use DF for J, COSX for K
+    // Both have same scale convention, so just J - K
+    auto jk = compute_JK(mo, Schwarz);
+    return jk.J - jk.K;
+  } else if (m_df_engine) {
     return m_df_engine->fock_operator(mo);
+  } else if (m_cosx_engine) {
+    // COSX-only: J from regular engine, K from COSX
+    auto jk = compute_JK(mo, Schwarz);
+    return jk.J - jk.K;
   } else {
     return m_engine.fock_operator(mo.kind, mo, Schwarz);
   }
@@ -142,7 +202,7 @@ Mat HartreeFock::compute_effective_core_potential_matrix() const {
 }
 
 Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
-                                          const qm::AOBasis &bs,
+                                          const gto::AOBasis &bs,
                                           bool is_shell_diagonal) {
   if (mo_minbs.kind == SpinorbitalKind::Restricted) {
     return m_engine.fock_operator_mixed_basis(mo_minbs.D, bs,
@@ -170,8 +230,20 @@ Mat HartreeFock::compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
 
 JKPair HartreeFock::compute_JK(const MolecularOrbitals &mo,
                                const Mat &Schwarz) const {
-  if (m_df_engine) {
+  if (m_df_engine && m_cosx_engine) {
+    // DF + COSX: use DF for J, COSX for K
+    JKPair result;
+    result.J = m_df_engine->coulomb(mo);
+    result.K = m_cosx_engine->compute_K(mo);
+    return result;
+  } else if (m_df_engine) {
     return m_df_engine->coulomb_and_exchange(mo);
+  } else if (m_cosx_engine) {
+    // COSX: compute J normally, K via seminumerical integration
+    JKPair result;
+    result.J = m_engine.coulomb(mo.kind, mo, Schwarz);
+    result.K = m_cosx_engine->compute_K(mo);
+    return result;
   } else {
     return m_engine.coulomb_and_exchange(mo.kind, mo, Schwarz);
   }
@@ -219,7 +291,7 @@ Mat HartreeFock::compute_overlap_matrix() const {
 }
 
 Mat HartreeFock::compute_overlap_matrix_for_basis(
-    const occ::qm::AOBasis &basis) const {
+    const occ::gto::AOBasis &basis) const {
   using Op = occ::qm::cint::Operator;
   occ::qm::IntegralEngine temporary_engine(basis);
   return temporary_engine.one_electron_operator(Op::overlap);
@@ -260,7 +332,7 @@ Mat3N HartreeFock::electronic_electric_field_contribution(
 
 Vec HartreeFock::electronic_electric_potential_contribution(
     const MolecularOrbitals &mo, const Mat3N &positions) const {
-  return m_engine.electric_potential(mo, positions);
+  return m_engine.electric_potential_mmd(mo, positions);
 }
 
 Mat HartreeFock::compute_schwarz_ints() const { return m_engine.schwarz(); }

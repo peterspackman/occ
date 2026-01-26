@@ -56,7 +56,7 @@ public:
   auto compute_overlap_matrix() const {
     return m_proc.compute_overlap_matrix();
   }
-  auto compute_overlap_matrix_for_basis(const occ::qm::AOBasis &bs) const {
+  auto compute_overlap_matrix_for_basis(const occ::gto::AOBasis &bs) const {
     return m_proc.compute_overlap_matrix_for_basis(bs);
   }
   auto compute_nuclear_attraction_matrix() const {
@@ -83,7 +83,7 @@ public:
   }
 
   Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
-                               const occ::qm::AOBasis &bs,
+                               const occ::gto::AOBasis &bs,
                                bool is_shell_diagonal) {
     return m_proc.compute_fock_mixed_basis(mo_bs, bs, is_shell_diagonal);
   }
@@ -204,7 +204,7 @@ public:
   auto compute_overlap_matrix() const {
     return m_proc.compute_overlap_matrix();
   }
-  auto compute_overlap_matrix_for_basis(const occ::qm::AOBasis &bs) const {
+  auto compute_overlap_matrix_for_basis(const occ::gto::AOBasis &bs) const {
     return m_proc.compute_overlap_matrix_for_basis(bs);
   }
   auto compute_nuclear_attraction_matrix() const {
@@ -231,7 +231,7 @@ public:
   }
 
   Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
-                               const occ::qm::AOBasis &bs,
+                               const occ::gto::AOBasis &bs,
                                bool is_shell_diagonal) {
     return m_proc.compute_fock_mixed_basis(mo_bs, bs, is_shell_diagonal);
   }

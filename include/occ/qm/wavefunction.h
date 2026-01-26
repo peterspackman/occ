@@ -1,12 +1,12 @@
 #pragma once
 #include <fmt/core.h>
 #include <occ/core/linear_algebra.h>
-#include <occ/io/fchkreader.h>
-#include <occ/io/fchkwriter.h>
-#include <occ/io/moldenreader.h>
-#include <occ/io/orca_json.h>
+#include <occ/qm/io/fchkreader.h>
+#include <occ/qm/io/fchkwriter.h>
+#include <occ/qm/io/moldenreader.h>
+#include <occ/qm/io/orca_json.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {

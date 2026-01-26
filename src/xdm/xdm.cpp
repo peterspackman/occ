@@ -279,7 +279,7 @@ struct XDMResult {
   double energy{0.0};
 };
 
-XDM::XDM(const occ::qm::AOBasis &basis, int charge,
+XDM::XDM(const occ::gto::AOBasis &basis, int charge,
          const XDM::Parameters &params)
     : m_basis(basis), m_grid(basis), m_charge(charge), m_params(params) {
   for (int i = 0; i < basis.atoms().size(); i++) {

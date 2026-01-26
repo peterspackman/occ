@@ -1,9 +1,11 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <vector>
 
 namespace occ::qm {
+
+using gto::AOBasis;
 
 using occ::Vec;
 

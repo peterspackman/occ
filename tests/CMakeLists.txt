@@ -79,7 +79,10 @@ add_executable(interaction_tests "${CMAKE_CURRENT_SOURCE_DIR}/interaction_tests.
 target_link_libraries(interaction_tests PRIVATE occ_interaction Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(interaction_tests)
 
-add_executable(qm_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_tests.cpp")
+add_executable(qm_tests
+    "${CMAKE_CURRENT_SOURCE_DIR}/qm_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/qm_benchmarks.cpp"
+)
 target_link_libraries(qm_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(qm_tests)
 
@@ -134,3 +137,7 @@ catch_discover_tests(volume_calculator_tests)
 add_executable(opt_tests "${CMAKE_CURRENT_SOURCE_DIR}/opt_tests.cpp")
 target_link_libraries(opt_tests PRIVATE occ_opt nlohmann_json::nlohmann_json Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(opt_tests)
+
+add_executable(ints_tests "${CMAKE_CURRENT_SOURCE_DIR}/ints_tests.cpp")
+target_link_libraries(ints_tests PRIVATE occ_ints occ_qm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(ints_tests)

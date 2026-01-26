@@ -29,6 +29,10 @@ void DIIS::init() {
   m_extrapolated.clear();
 }
 
+void DIIS::reset() {
+  init();
+}
+
 void DIIS::extrapolate(Mat &x, Mat &error, bool extrapolate_error) {
   occ::timing::start(occ::timing::category::diis);
   const double zero_determinant = std::numeric_limits<double>::epsilon();

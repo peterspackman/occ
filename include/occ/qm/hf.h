@@ -2,15 +2,17 @@
 #include <occ/core/energy_components.h>
 #include <occ/core/multipole.h>
 #include <occ/core/point_charge.h>
+#include <occ/io/grid_settings.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/scf_method.h>
+#include <occ/qm/seminumerical_exchange.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {
 
-using occ::qm::AOBasis;
+using occ::gto::AOBasis;
 using occ::qm::MolecularOrbitals;
 using PointChargeList = std::vector<occ::core::PointCharge>;
 class HartreeFock : public SCFMethodBase {
@@ -24,14 +26,19 @@ public:
                          bool incremental) const {
     return;
   }
-  bool supports_incremental_fock_build() const { return !m_df_engine; }
+  bool supports_incremental_fock_build() const { return !m_df_engine && !m_cosx_engine; }
 
   inline bool have_effective_core_potentials() const {
     return m_engine.have_effective_core_potentials();
   }
 
-  void set_density_fitting_basis(const std::string &);
+  void set_density_fitting_basis(const std::string &, double auto_aux_threshold = 1e-4);
   void set_density_fitting_policy(IntegralEngineDF::Policy policy);
+  void set_coulomb_method(CoulombMethod method);
+  void set_cosx_exchange(occ::io::COSXGridLevel level = occ::io::COSXGridLevel::Grid1);
+  void set_cosx_settings(const occ::qm::cosx::Settings &settings);
+
+  inline bool using_cosx() const { return m_cosx_engine != nullptr; }
   
   /**
    * @brief Create a new HartreeFock instance with the same settings but different basis
@@ -46,6 +53,7 @@ public:
     if (m_df_engine != nullptr) {
       m_df_engine->set_precision(precision);
     }
+    // Note: COSX doesn't have precision setting
   }
 
   inline double integral_precision() const {
@@ -68,7 +76,7 @@ public:
                                   const Mat &Schwarz = Mat()) const;
 
   Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
-                               const qm::AOBasis &bs, bool is_shell_diagonal);
+                               const gto::AOBasis &bs, bool is_shell_diagonal);
   JKPair compute_JK(const MolecularOrbitals &mo,
                     const Mat &Schwarz = Mat()) const;
   JKTriple compute_JK_gradient(const MolecularOrbitals &mo,
@@ -89,7 +97,7 @@ public:
   MatTriple compute_kinetic_gradient() const;
 
   Mat compute_overlap_matrix() const;
-  Mat compute_overlap_matrix_for_basis(const occ::qm::AOBasis &basis) const;
+  Mat compute_overlap_matrix_for_basis(const occ::gto::AOBasis &basis) const;
   MatTriple compute_overlap_gradient() const;
 
   Mat compute_nuclear_attraction_matrix() const;
@@ -158,6 +166,7 @@ public:
 
 private:
   mutable std::unique_ptr<IntegralEngineDF> m_df_engine{nullptr};
+  mutable std::unique_ptr<occ::qm::cosx::SemiNumericalExchange> m_cosx_engine{nullptr};
   mutable occ::qm::IntegralEngine m_engine;
   std::string m_method_name{"HF"};
 };

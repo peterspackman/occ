@@ -7,8 +7,8 @@
 #include <occ/dft/dft_kernels.h>
 #include <occ/dft/dft_method.h>
 #include <occ/dft/functional.h>
-#include <occ/dft/grid_types.h>
-#include <occ/dft/molecular_grid.h>
+#include <occ/numint/grid_types.h>
+#include <occ/numint/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/range_separated_parameters.h>
 #include <occ/dft/xc_potential_matrix.h>
@@ -34,20 +34,25 @@ using occ::Vec;
 class DFT : public qm::SCFMethodBase {
 
 public:
-  DFT(const std::string &, const qm::AOBasis &, const GridSettings & = {});
+  DFT(const std::string &, const gto::AOBasis &, const GridSettings & = {});
   inline const auto &aobasis() const { return m_hf.aobasis(); }
   inline auto nbf() const { return m_hf.nbf(); }
 
   void set_integration_grid(const GridSettings & = {});
-  void set_nlc_grid(const qm::AOBasis &basis, const GridSettings &settings = {110, 50, 50, 1e-7, false});
+  void set_nlc_grid(const gto::AOBasis &basis, const GridSettings &settings = {110, 50, 50, 1e-7, false});
 
   inline void
-  set_density_fitting_basis(const std::string &density_fitting_basis) {
-    m_hf.set_density_fitting_basis(density_fitting_basis);
+  set_density_fitting_basis(const std::string &density_fitting_basis,
+                            double auto_aux_threshold = 1e-4) {
+    m_hf.set_density_fitting_basis(density_fitting_basis, auto_aux_threshold);
   }
 
   inline void set_density_fitting_policy(qm::IntegralEngineDF::Policy policy) {
     m_hf.set_density_fitting_policy(policy);
+  }
+
+  inline void set_coulomb_method(qm::CoulombMethod method) {
+    m_hf.set_coulomb_method(method);
   }
 
   inline void set_precision(double precision) { m_hf.set_precision(precision); }
@@ -59,7 +64,7 @@ public:
    * @param new_basis The new basis set to use  
    * @return New DFT instance
    */
-  DFT with_new_basis(const qm::AOBasis &new_basis) const;
+  DFT with_new_basis(const gto::AOBasis &new_basis) const;
 
   double exchange_correlation_energy() const { return m_exc_dft; }
   double exchange_energy_total() const { return m_exchange_energy; }
@@ -110,7 +115,7 @@ public:
 
   auto compute_overlap_matrix() const { return m_hf.compute_overlap_matrix(); }
 
-  auto compute_overlap_matrix_for_basis(const occ::qm::AOBasis &bs) const {
+  auto compute_overlap_matrix_for_basis(const occ::gto::AOBasis &bs) const {
     return m_hf.compute_overlap_matrix_for_basis(bs);
   }
 
@@ -379,7 +384,7 @@ public:
   const auto &hf() const { return m_hf; }
 
   inline Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
-                                      const qm::AOBasis &bs,
+                                      const gto::AOBasis &bs,
                                       bool is_shell_diagonal) {
     return m_hf.compute_fock_mixed_basis(mo_bs, bs, is_shell_diagonal);
   }

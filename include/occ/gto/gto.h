@@ -7,7 +7,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/gto/shell_order.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <string>
 #include <vector>
 
@@ -152,17 +152,24 @@ inline std::vector<MomentaSpherical> spherical_subshell_ordering(int l) {
   return moments;
 }
 
-void evaluate_basis(const qm::AOBasis &basis, Mat3NConstRef grid_pts,
+void evaluate_basis(const gto::AOBasis &basis, Mat3NConstRef grid_pts,
                     GTOValues &gto_values, int max_derivative);
 
-inline GTOValues evaluate_basis(const qm::AOBasis &basis,
+inline GTOValues evaluate_basis(const gto::AOBasis &basis,
                                 Mat3NConstRef grid_pts, int max_derivative) {
   GTOValues gto_values;
   evaluate_basis(basis, grid_pts, gto_values, max_derivative);
   return gto_values;
 }
 
-Vec evaluate_decay_cutoff(const qm::AOBasis &basis, double threshold = 1e-12);
+/// Evaluate basis functions for a subset of shells only
+/// shell_indices: list of shell indices to evaluate
+/// Output gto_values will have full nbf columns but only the specified shells populated
+void evaluate_basis_for_shells(const gto::AOBasis &basis, Mat3NConstRef grid_pts,
+                               GTOValues &gto_values, int max_derivative,
+                               const std::vector<size_t> &shell_indices);
+
+Vec evaluate_decay_cutoff(const gto::AOBasis &basis, double threshold = 1e-12);
 
 template <int angular_momentum>
 std::vector<std::array<int, angular_momentum>>
@@ -192,9 +199,9 @@ cartesian_gaussian_power_index_arrays() {
 Mat cartesian_to_spherical_transformation_matrix(int l);
 Mat spherical_to_cartesian_transformation_matrix(int l);
 
-Mat transform_density_matrix_spherical_to_cartesian(const qm::AOBasis &basis_sph, 
+Mat transform_density_matrix_spherical_to_cartesian(const gto::AOBasis &basis_sph, 
                                                     const Mat &D_sph);
-Mat transform_density_matrix_cartesian_to_spherical(const qm::AOBasis &basis_cart, 
+Mat transform_density_matrix_cartesian_to_spherical(const gto::AOBasis &basis_cart, 
                                                     const Mat &D_cart);
 
 } // namespace occ::gto

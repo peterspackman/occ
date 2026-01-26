@@ -1,9 +1,9 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
-#include <occ/dft/molecular_grid.h>
+#include <occ/numint/molecular_grid.h>
 #include <occ/io/grid_settings.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/slater/slaterbasis.h>
 #include <vector>
 
@@ -35,7 +35,7 @@ public:
    * quality)
    */
   VoronoiPartition(
-      const occ::qm::AOBasis &basis, int charge = 0, double temperature = 0.1,
+      const occ::gto::AOBasis &basis, int charge = 0, double temperature = 0.1,
       bool use_vdw_radii = false,
       const occ::io::GridSettings &grid_settings =
           occ::io::GridSettings::from_grid_quality(GridQuality::Coarse));
@@ -97,7 +97,7 @@ private:
   Vec compute_voronoi_weights(const Vec3 &point, const Mat3N &atom_positions,
                               const Eigen::VectorXi &atomic_numbers) const;
 
-  occ::qm::AOBasis m_basis;
+  occ::gto::AOBasis m_basis;
   occ::dft::MolecularGrid m_grid;
   std::vector<occ::dft::AtomGrid> m_atom_grids;
   Mat m_density_matrix;
@@ -121,7 +121,7 @@ private:
  * @return Vec Vector of Voronoi charges for each atom
  */
 Vec calculate_voronoi_charges(
-    const occ::qm::AOBasis &basis, const occ::qm::MolecularOrbitals &mo,
+    const occ::gto::AOBasis &basis, const occ::qm::MolecularOrbitals &mo,
     int charge = 0, double temperature = 0.1, bool use_vdw_radii = false,
     const occ::io::GridSettings &grid_settings =
         occ::io::GridSettings::from_grid_quality(GridQuality::Coarse));

@@ -5,7 +5,7 @@
 
 namespace occ::dft {
 
-using occ::qm::AOBasis;
+using occ::gto::AOBasis;
 using occ::qm::SpinorbitalKind;
 
 int DFT::density_derivative() const {

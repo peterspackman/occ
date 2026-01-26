@@ -2,8 +2,18 @@
 #include <Eigen/IterativeLinearSolvers>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/mp2_components.h>
+#include <occ/qm/split_ri_j.h>
 
 namespace occ::qm {
+
+/// Method for computing Coulomb matrix in density fitting
+enum class CoulombMethod {
+    Traditional,  ///< libcint 3-center integrals (default)
+    SplitRIJ      ///< MMD kernels using Hermite basis (no atomics)
+};
+
+using gto::Shell;
+using gto::AOBasis;
 
 class IntegralEngineDF {
 public:
@@ -26,6 +36,11 @@ public:
 
   inline void set_integral_policy(Policy p) { m_policy = p; }
   inline Policy integral_policy() const { return m_policy; }
+
+  /// Set the method used for Coulomb matrix computation
+  void set_coulomb_method(CoulombMethod method);
+  /// Get the current Coulomb method
+  inline CoulombMethod coulomb_method() const { return m_coulomb_method; }
 
   void set_range_separated_omega(double omega);
   void set_precision(double precision);
@@ -80,6 +95,10 @@ private:
   Mat m_integral_store;
   Policy m_policy{Policy::Choose};
   size_t m_integral_store_memory_limit{512 * 1024 * 1024}; // 512 MiB
+
+  // Coulomb method selection
+  CoulombMethod m_coulomb_method{CoulombMethod::Traditional};
+  mutable std::unique_ptr<SplitRIJ> m_split_rij;  // Lazy-initialized
 };
 
 } // namespace occ::qm

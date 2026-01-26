@@ -1,6 +1,6 @@
 #pragma once
 #include <array>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <vector>
 
 namespace occ::qm::basis_sets {

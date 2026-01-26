@@ -3,11 +3,11 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <fmt/ostream.h>
 #include <occ/core/util.h>
-#include <occ/io/fchkreader.h>
-#include <occ/io/fchkwriter.h>
-#include <occ/io/gaussian_input_file.h>
-#include <occ/io/moldenreader.h>
-#include <occ/io/wavefunction_json.h>
+#include <occ/qm/io/fchkreader.h>
+#include <occ/qm/io/fchkwriter.h>
+#include <occ/qm/io/gaussian_input_file.h>
+#include <occ/qm/io/moldenreader.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <sstream>
@@ -1082,7 +1082,7 @@ TEST_CASE("Read/write pure spherical water 6-31G** fchk consistency",
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
 
-  auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
+  auto obs = occ::gto::AOBasis::load(atoms, "6-31G**");
   obs.set_pure(true);
   HartreeFock hf(obs);
   occ::qm::SCF<HartreeFock> scf(hf);
@@ -2618,7 +2618,7 @@ TEST_CASE("Read/Write Wavefunction JSON", "[JSON]") {
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
 
-  auto obs = occ::qm::AOBasis::load(atoms, "6-31G**");
+  auto obs = occ::gto::AOBasis::load(atoms, "6-31G**");
   obs.set_pure(true);
   HartreeFock hf(obs);
   occ::qm::SCF<HartreeFock> scf(hf);
@@ -2645,7 +2645,7 @@ TEST_CASE("Read/Write Wavefunction JSON with ECP", "[JSON]") {
   using occ::io::JsonWavefunctionWriter;
   std::vector<occ::core::Atom> atoms{{86, 0.0, 0.0, 0.0}};
 
-  auto obs = occ::qm::AOBasis::load(atoms, "def2-svp");
+  auto obs = occ::gto::AOBasis::load(atoms, "def2-svp");
   obs.set_pure(true);
   HartreeFock hf(obs);
   occ::qm::SCF<HartreeFock> scf(hf);

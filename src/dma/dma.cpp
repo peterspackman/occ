@@ -1,9 +1,12 @@
 #include <occ/core/log.h>
+#include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/dma/dma.h>
 #include <occ/dma/multipole_calculator.h>
 #include <occ/dma/multipole_shifter.h>
-
+#include <occ/gto/density.h>
+#include <occ/gto/gto.h>
+#include <occ/qm/io/conversion.h>
 
 namespace occ::dma {
 
