@@ -58,10 +58,10 @@
 <!-- Node3 -->
 <g id="Node000003" class="node">
 <title>Node3</title>
-<g id="a_Node000003"><a xlink:href="structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html" target="_top" xlink:title=" ">
+<g id="a_Node000003"><a xlink:href="structfmt_1_1formatter_3_01occ_1_1gto_1_1Shell_01_4.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="259,-30 145,-30 145,0 259,0 259,-30"/>
 <text text-anchor="start" x="153" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">fmt::formatter&lt; occ</text>
-<text text-anchor="middle" x="202" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">::qm::Shell &gt;</text>
+<text text-anchor="middle" x="202" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">::gto::Shell &gt;</text>
 </a>
 </g>
 </g>

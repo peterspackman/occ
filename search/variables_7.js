@@ -2,7 +2,7 @@ var searchData=
 [
   ['g_0',['g',['../structocc_1_1opt_1_1OptPoint.html#a2022f77f410ad41cc743c7969da36d2f',1,'occ::opt::OptPoint']]],
   ['g_5fcm3_5fto_5fkg_5fm3_1',['G_CM3_TO_KG_M3',['../namespaceocc_1_1units.html#a061dda57ae5c9464607558dbddd71218',1,'occ::units']]],
-  ['gamma_2',['gamma',['../structocc_1_1io_1_1CellData.html#ab6d1e9fabaaa499b49d84b2b7449166e',1,'occ::io::CellData::gamma'],['../structocc_1_1solvent_1_1SMDSolventParameters.html#a884e449aa53fd9aa97e2b2b08c536edc',1,'occ::solvent::SMDSolventParameters::gamma']]],
+  ['gamma_2',['gamma',['../structocc_1_1ints_1_1AuxPrimitiveData.html#ad1cd8edd58996e14a00c40d36e91fa15',1,'occ::ints::AuxPrimitiveData::gamma'],['../structocc_1_1solvent_1_1SMDSolventParameters.html#a884e449aa53fd9aa97e2b2b08c536edc',1,'occ::solvent::SMDSolventParameters::gamma'],['../structocc_1_1io_1_1CellData.html#ab6d1e9fabaaa499b49d84b2b7449166e',1,'occ::io::CellData::gamma']]],
   ['gamma_5fpoint_5fmolecules_3',['gamma_point_molecules',['../structocc_1_1main_1_1CGConfig.html#a39f4a3d506d2798231f20e3f5c4ab6ce',1,'occ::main::CGConfig']]],
   ['gas_5fphase_5fcontribution_4',['gas_phase_contribution',['../structocc_1_1cg_1_1SMDSolventSurfaces.html#ab023455e74672fb2d8f676ce885360e2',1,'occ::cg::SMDSolventSurfaces']]],
   ['gaussian_5',['gaussian',['../structocc_1_1isosurface_1_1SurfaceCurvature.html#ae05f6a9ce4acf0a1663bf9e99bbbf464',1,'occ::isosurface::SurfaceCurvature']]],

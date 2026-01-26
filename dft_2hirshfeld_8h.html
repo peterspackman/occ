@@ -106,15 +106,15 @@ $(document).ready(function(){initNavTree('dft_2hirshfeld_8h.html',''); initResiz
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="multipole_8h.html">occ/core/multipole.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="molecular__grid_8h.html">occ/dft/molecular_grid.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="numint_2molecular__grid_8h.html">occ/numint/molecular_grid.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="mo_8h.html">occ/qm/mo.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="shell_8h.html">occ/qm/shell.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="shell_8h.html">occ/gto/shell.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="slaterbasis_8h.html">occ/slater/slaterbasis.h</a>&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for hirshfeld.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="dft_2hirshfeld_8h__incl.svg" width="2227" height="520"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="dft_2hirshfeld_8h__incl.svg" width="2051" height="564"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -135,12 +135,12 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab389b094d08370dcd3dfcc71ea9e98f0" id="r_ab389b094d08370dcd3dfcc71ea9e98f0"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ab389b094d08370dcd3dfcc71ea9e98f0">occ::dft::calculate_hirshfeld_charges</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge=0)</td></tr>
-<tr class="memdesc:ab389b094d08370dcd3dfcc71ea9e98f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld charges for a molecule.  <br /></td></tr>
-<tr class="separator:ab389b094d08370dcd3dfcc71ea9e98f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a44d1117c9d772f1337c1aca7e9000fbf" id="r_a44d1117c9d772f1337c1aca7e9000fbf"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1core_1_1Multipole.html">occ::core::Multipole</a>&lt; 4 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a44d1117c9d772f1337c1aca7e9000fbf">occ::dft::calculate_hirshfeld_multipoles</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int max_multipole_order=4, int charge=0)</td></tr>
-<tr class="memdesc:a44d1117c9d772f1337c1aca7e9000fbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld multipoles for a molecule.  <br /></td></tr>
-<tr class="separator:a44d1117c9d772f1337c1aca7e9000fbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73599737489f46d634245c5985292f30" id="r_a73599737489f46d634245c5985292f30"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a73599737489f46d634245c5985292f30">occ::dft::calculate_hirshfeld_charges</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge=0)</td></tr>
+<tr class="memdesc:a73599737489f46d634245c5985292f30"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld charges for a molecule.  <br /></td></tr>
+<tr class="separator:a73599737489f46d634245c5985292f30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a179b373127772122365cdae68cf147ad" id="r_a179b373127772122365cdae68cf147ad"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1core_1_1Multipole.html">occ::core::Multipole</a>&lt; 4 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a179b373127772122365cdae68cf147ad">occ::dft::calculate_hirshfeld_multipoles</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int max_multipole_order=4, int charge=0)</td></tr>
+<tr class="memdesc:a179b373127772122365cdae68cf147ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld multipoles for a molecule.  <br /></td></tr>
+<tr class="separator:a179b373127772122365cdae68cf147ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

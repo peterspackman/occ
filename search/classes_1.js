@@ -8,6 +8,10 @@ var searchData=
   ['binomialcoefficients_5',['BinomialCoefficients',['../classocc_1_1dma_1_1BinomialCoefficients.html',1,'occ::dma']]],
   ['bondcoordinate_6',['BondCoordinate',['../classocc_1_1opt_1_1BondCoordinate.html',1,'occ::opt']]],
   ['border_7',['border',['../structocc_1_1io_1_1ColumnConfiguration_1_1Border.html',1,'occ::io::ColumnConfiguration::Border'],['../structocc_1_1io_1_1RowConfiguration_1_1Border.html',1,'occ::io::RowConfiguration::Border']]],
-  ['bracket1d_8',['Bracket1D',['../structocc_1_1core_1_1opt_1_1Bracket1D.html',1,'occ::core::opt']]],
-  ['buffer_9',['Buffer',['../classtinyply_1_1Buffer.html',1,'tinyply']]]
+  ['boys_8',['Boys',['../classocc_1_1ints_1_1Boys.html',1,'occ::ints']]],
+  ['boysconstants_9',['BoysConstants',['../structocc_1_1ints_1_1BoysConstants.html',1,'occ::ints']]],
+  ['boystablegenerator_10',['BoysTableGenerator',['../classocc_1_1ints_1_1BoysTableGenerator.html',1,'occ::ints']]],
+  ['boystableparams_11',['BoysTableParams',['../structocc_1_1ints_1_1BoysTableParams.html',1,'occ::ints']]],
+  ['bracket1d_12',['Bracket1D',['../structocc_1_1core_1_1opt_1_1Bracket1D.html',1,'occ::core::opt']]],
+  ['buffer_13',['Buffer',['../classtinyply_1_1Buffer.html',1,'tinyply']]]
 ];

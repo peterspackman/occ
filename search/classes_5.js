@@ -14,7 +14,7 @@ var searchData=
   ['fittingsettings_11',['FittingSettings',['../structocc_1_1elastic__fit_1_1FittingSettings.html',1,'occ::elastic_fit']]],
   ['formatter_3c_20occ_3a_3acrystal_3a_3adimerindex_20_3e_12',['formatter&lt; occ::crystal::DimerIndex &gt;',['../structfmt_1_1formatter_3_01occ_1_1crystal_1_1DimerIndex_01_4.html',1,'fmt']]],
   ['formatter_3c_20occ_3a_3acrystal_3a_3ahkl_20_3e_13',['formatter&lt; occ::crystal::HKL &gt;',['../structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4.html',1,'fmt']]],
-  ['formatter_3c_20occ_3a_3aqm_3a_3ashell_20_3e_14',['formatter&lt; occ::qm::Shell &gt;',['../structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html',1,'fmt']]],
+  ['formatter_3c_20occ_3a_3agto_3a_3ashell_20_3e_14',['formatter&lt; occ::gto::Shell &gt;',['../structfmt_1_1formatter_3_01occ_1_1gto_1_1Shell_01_4.html',1,'fmt']]],
   ['fraction_15',['Fraction',['../classocc_1_1core_1_1Fraction.html',1,'occ::core']]],
   ['funccomponent_16',['FuncComponent',['../structocc_1_1dft_1_1FuncComponent.html',1,'occ::dft']]]
 ];

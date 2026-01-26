@@ -5,5 +5,6 @@ var searchData=
   ['berny_5foptimizer_2eh_2',['berny_optimizer.h',['../berny__optimizer_8h.html',1,'']]],
   ['binomial_2eh_3',['binomial.h',['../binomial_8h.html',1,'']]],
   ['bond_5fcoordinate_2eh_4',['bond_coordinate.h',['../bond__coordinate_8h.html',1,'']]],
-  ['bondgraph_2eh_5',['bondgraph.h',['../bondgraph_8h.html',1,'']]]
+  ['bondgraph_2eh_5',['bondgraph.h',['../bondgraph_8h.html',1,'']]],
+  ['boys_2eh_6',['boys.h',['../boys_8h.html',1,'']]]
 ];

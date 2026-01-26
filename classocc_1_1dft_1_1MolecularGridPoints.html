@@ -147,6 +147,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7acd8f1e41205f998400908805700c53" id="r_a7acd8f1e41205f998400908805700c53"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a7acd8f1e41205f998400908805700c53">get_atom_grid</a> (size_t atom_idx, uint_fast8_t atomic_number) const</td></tr>
 <tr class="memdesc:a7acd8f1e41205f998400908805700c53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract an atom grid for a specific atom.  <br /></td></tr>
 <tr class="separator:a7acd8f1e41205f998400908805700c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bf552f073f2bc5bbaa760e210c821c9" id="r_a3bf552f073f2bc5bbaa760e210c821c9"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classocc_1_1qm_1_1SpatialGridHierarchy.html">SpatialGridHierarchy</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a3bf552f073f2bc5bbaa760e210c821c9">get_hierarchy</a> (const <a class="el" href="structocc_1_1qm_1_1SpatialHierarchySettings.html">SpatialHierarchySettings</a> &amp;settings={}) const</td></tr>
+<tr class="memdesc:a3bf552f073f2bc5bbaa760e210c821c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get spatial hierarchy for efficient batch processing.  <br /></td></tr>
+<tr class="separator:a3bf552f073f2bc5bbaa760e210c821c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c5e8c04a113e8c638f584e53c2f6032" id="r_a4c5e8c04a113e8c638f584e53c2f6032"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#a4c5e8c04a113e8c638f584e53c2f6032">has_hierarchy</a> () const</td></tr>
+<tr class="memdesc:a4c5e8c04a113e8c638f584e53c2f6032"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if hierarchy has been built.  <br /></td></tr>
+<tr class="separator:a4c5e8c04a113e8c638f584e53c2f6032"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae16dbdb6f68cd0a8a5cfd281ed84269e" id="r_ae16dbdb6f68cd0a8a5cfd281ed84269e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1dft_1_1MolecularGridPoints.html#ae16dbdb6f68cd0a8a5cfd281ed84269e">clear_hierarchy</a> ()</td></tr>
+<tr class="memdesc:ae16dbdb6f68cd0a8a5cfd281ed84269e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear cached hierarchy.  <br /></td></tr>
+<tr class="separator:ae16dbdb6f68cd0a8a5cfd281ed84269e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class for storing and managing molecular grid points. </p>
@@ -271,6 +280,34 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ae16dbdb6f68cd0a8a5cfd281ed84269e" name="ae16dbdb6f68cd0a8a5cfd281ed84269e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae16dbdb6f68cd0a8a5cfd281ed84269e">&#9670;&#160;</a></span>clear_hierarchy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::dft::MolecularGridPoints::clear_hierarchy </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Clear cached hierarchy. </p>
+<p>Call this if points are modified or you want to rebuild with different settings. </p>
+
+</div>
+</div>
 <a id="a7acd8f1e41205f998400908805700c53" name="a7acd8f1e41205f998400908805700c53"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7acd8f1e41205f998400908805700c53">&#9670;&#160;</a></span>get_atom_grid()</h2>
 
@@ -312,6 +349,62 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a3bf552f073f2bc5bbaa760e210c821c9" name="a3bf552f073f2bc5bbaa760e210c821c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3bf552f073f2bc5bbaa760e210c821c9">&#9670;&#160;</a></span>get_hierarchy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classocc_1_1qm_1_1SpatialGridHierarchy.html">SpatialGridHierarchy</a> &amp; occ::dft::MolecularGridPoints::get_hierarchy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1SpatialHierarchySettings.html">SpatialHierarchySettings</a> &amp;&#160;</td>
+          <td class="paramname"><em>settings</em> = <code>{}</code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get spatial hierarchy for efficient batch processing. </p>
+<p>Hierarchy is built lazily on first call and cached for subsequent calls. The hierarchy organizes grid points spatially using Morton ordering and provides batch access with precomputed bounding spheres.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">settings</td><td>Configuration for hierarchy construction </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>const SpatialGridHierarchy&amp; Reference to the cached hierarchy </dd></dl>
+
+</div>
+</div>
+<a id="a4c5e8c04a113e8c638f584e53c2f6032" name="a4c5e8c04a113e8c638f584e53c2f6032"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4c5e8c04a113e8c638f584e53c2f6032">&#9670;&#160;</a></span>has_hierarchy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::dft::MolecularGridPoints::has_hierarchy </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if hierarchy has been built. </p>
+<dl class="section return"><dt>Returns</dt><dd>bool True if hierarchy is cached </dd></dl>
 
 </div>
 </div>
@@ -488,7 +581,7 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>/home/runner/work/occ/occ/include/occ/dft/<a class="el" href="molecular__grid__points_8h.html">molecular_grid_points.h</a></li>
+<li>/home/runner/work/occ/occ/include/occ/numint/<a class="el" href="numint_2molecular__grid__points_8h.html">molecular_grid_points.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

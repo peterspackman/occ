@@ -1,8 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/scf_convergence_settings.h" name="/home/runner/work/occ/occ/include/occ/qm/scf_convergence_settings.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="25,5,208,60"/>
-<area shape="rect" id="Node000002" href="$hessians_8h.html" title=" " alt="" coords="5,196,228,236"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,73,81,109,77,128,81,147,91,172,104,194,100,197,86,175,75,149,72,128,75,107,90,71"/>
-<area shape="rect" id="Node000003" href="$scf_8h.html" title=" " alt="" coords="90,108,274,148"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="145,70,171,106,167,109,141,73"/>
-<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="161,161,133,197,129,194,157,157"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="189,5,371,60"/>
+<area shape="rect" id="Node000002" href="$convergence__accelerator_8h.html" title=" " alt="" coords="5,108,243,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="229,70,166,110,163,106,226,65"/>
+<area shape="rect" id="Node000003" href="$scf_8h.html" title=" " alt="" coords="109,211,293,251"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="280,74,272,118,257,164,241,190,222,212,218,209,237,187,252,162,267,117,274,73"/>
+<area shape="rect" id="Node000004" href="$hessians_8h.html" title=" " alt="" coords="154,299,377,339"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="296,73,306,111,313,156,315,204,308,251,297,277,283,300,278,297,292,275,303,250,310,204,308,156,301,112,291,74"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="157,172,188,209,184,212,153,175"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="226,260,253,297,249,300,222,264"/>
 </map>

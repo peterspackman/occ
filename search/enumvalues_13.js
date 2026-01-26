@@ -15,13 +15,14 @@ var searchData=
   ['solvent_12',['solvent',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16abaf639845bdbe70396a9bd527534f821',1,'occ::timing']]],
   ['sp_13',['SP',['../classocc_1_1io_1_1FchkWriter.html#adef69bf2291f5e23817021844e874db1a77601981eba1d4d65dd94153651b0f93',1,'occ::io::FchkWriter']]],
   ['spcontractioncoefficients_14',['SPContractionCoefficients',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a302823b6829e7873d3a77fc10817b7a3',1,'occ::io::FchkReader']]],
-  ['spherical_15',['spherical',['../structocc_1_1qm_1_1Shell.html#a937504c99e9ce9492392d26dac2b699dad2f2fc68c3ed408763fd65472f3d080f',1,'occ::qm::Shell::Spherical'],['../namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a148ea7093674697c378aa80037a48421',1,'occ::core::rotor::Spherical']]],
+  ['spherical_15',['spherical',['../structocc_1_1gto_1_1Shell.html#a6198e1cb0bfa5b74e6d9e5673cf662f6a75ff23f7ffccd004b63d1b0851e5b20d',1,'occ::gto::Shell::Spherical'],['../namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a148ea7093674697c378aa80037a48421',1,'occ::core::rotor::Spherical']]],
   ['spindensity_16',['spindensity',['../namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a6df9cbe42388c5c172a8191d81a210ce',1,'occ::isosurface::SpinDensity'],['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba6df9cbe42388c5c172a8191d81a210ce',1,'occ::isosurface::SpinDensity']]],
-  ['squareroot_17',['SquareRoot',['../namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35a70da9110621ed7cd7e701b83a93d129e',1,'occ::core']]],
-  ['stability_18',['STABILITY',['../classocc_1_1io_1_1FchkWriter.html#adef69bf2291f5e23817021844e874db1ac0ee4f662236410d78de56e32adf7a43',1,'occ::io::FchkWriter']]],
-  ['standard_19',['Standard',['../namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b',1,'occ::io']]],
-  ['steinhardt_20',['Steinhardt',['../structocc_1_1main_1_1DescribeConfig.html#ac91ac77089e90af7c50e74ac1a56bbfaa51f1f8de2cd3a22e548e17e9a419b0f8',1,'occ::main::DescribeConfig']]],
-  ['stored_21',['Stored',['../classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710da8ca3074133a77a7a6fb965a9b08ac3c2',1,'occ::qm::IntegralEngineDF']]],
-  ['stratmannscuseria_22',['StratmannScuseria',['../namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67',1,'occ::dft']]],
-  ['svd_23',['SVD',['../namespaceocc_1_1elastic__fit.html#ac3e8c91ec2f8e6a091ce339e4f700e97a595e2d2f1a68ede96e96f849a85370bc',1,'occ::elastic_fit']]]
+  ['splitrij_17',['SplitRIJ',['../namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caae8170441f7460d522a29a1988d225775',1,'occ::qm']]],
+  ['squareroot_18',['SquareRoot',['../namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35a70da9110621ed7cd7e701b83a93d129e',1,'occ::core']]],
+  ['stability_19',['STABILITY',['../classocc_1_1io_1_1FchkWriter.html#adef69bf2291f5e23817021844e874db1ac0ee4f662236410d78de56e32adf7a43',1,'occ::io::FchkWriter']]],
+  ['standard_20',['Standard',['../namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b',1,'occ::io']]],
+  ['steinhardt_21',['Steinhardt',['../structocc_1_1main_1_1DescribeConfig.html#ac91ac77089e90af7c50e74ac1a56bbfaa51f1f8de2cd3a22e548e17e9a419b0f8',1,'occ::main::DescribeConfig']]],
+  ['stored_22',['Stored',['../classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710da8ca3074133a77a7a6fb965a9b08ac3c2',1,'occ::qm::IntegralEngineDF']]],
+  ['stratmannscuseria_23',['StratmannScuseria',['../namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67',1,'occ::dft']]],
+  ['svd_24',['SVD',['../namespaceocc_1_1elastic__fit.html#ac3e8c91ec2f8e6a091ce339e4f700e97a595e2d2f1a68ede96e96f849a85370bc',1,'occ::elastic_fit']]]
 ];

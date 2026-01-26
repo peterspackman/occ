@@ -1,7 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/ediis.h" name="/home/runner/work/occ/occ/include/occ/qm/ediis.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="18,5,215,45"/>
-<area shape="rect" id="Node000002" href="$scf_8h.html" title=" " alt="" coords="25,93,209,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="119,59,119,93,114,93,114,59"/>
-<area shape="rect" id="Node000003" href="$hessians_8h.html" title=" " alt="" coords="5,181,228,221"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="119,147,119,181,114,181,114,147"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="25,5,223,45"/>
+<area shape="rect" id="Node000002" href="$convergence__accelerator_8h.html" title=" " alt="" coords="5,93,243,148"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="127,59,127,93,121,93,121,59"/>
+<area shape="rect" id="Node000003" href="$scf_8h.html" title=" " alt="" coords="32,196,216,236"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="127,162,127,196,121,196,121,162"/>
+<area shape="rect" id="Node000004" href="$hessians_8h.html" title=" " alt="" coords="13,284,235,324"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="127,250,127,284,121,284,121,250"/>
 </map>

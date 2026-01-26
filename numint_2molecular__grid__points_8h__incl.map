@@ -1,0 +1,36 @@
+<map id="/home/runner/work/occ/occ/include/occ/numint/molecular_grid_points.h" name="/home/runner/work/occ/occ/include/occ/numint/molecular_grid_points.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="475,5,658,60"/>
+<area shape="rect" id="Node000002" href="$numint_2grid__types_8h.html" title=" " alt="" coords="140,203,319,229"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="476,54,405,77,369,92,335,110,309,129,285,151,248,193,244,190,281,147,305,125,332,106,366,87,403,72,474,49"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="497,284,559,309"/>
+<area shape="poly" id="edge18_Node000001_Node000011" title=" " alt="" coords="565,60,557,108,534,271,529,270,552,108,560,60"/>
+<area shape="rect" id="Node000012" href="$dft_2spatial__grid__hierarchy_8h.html" title=" " alt="" coords="345,108,490,148"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="526,62,461,103,458,98,523,58"/>
+<area shape="rect" id="Node000014" title=" " alt="" coords="567,115,641,141"/>
+<area shape="poly" id="edge15_Node000001_Node000014" title=" " alt="" coords="580,59,597,101,592,103,575,61"/>
+<area shape="rect" id="Node000015" title=" " alt="" coords="666,115,753,141"/>
+<area shape="poly" id="edge16_Node000001_Node000015" title=" " alt="" coords="608,58,682,106,679,110,605,62"/>
+<area shape="rect" id="Node000016" title=" " alt="" coords="777,115,837,141"/>
+<area shape="poly" id="edge17_Node000001_Node000016" title=" " alt="" coords="641,58,766,106,770,107,768,112,764,110,639,63"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="196,284,263,309"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="232,229,232,270,227,270,227,229"/>
+<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="287,284,473,309"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="253,226,347,275,344,280,250,231"/>
+<area shape="rect" id="Node000008" href="$grid__settings_8h.html" title=" " alt="" coords="12,284,172,309"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="210,231,125,279,123,275,208,227"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="274,226,484,281,483,286,273,231"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="191,357,294,383"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="359,312,278,353,276,349,357,307"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="318,357,442,383"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="383,310,383,344,377,344,377,310"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="466,357,555,383"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="402,307,479,348,476,353,400,312"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="5,357,61,383"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="84,311,53,349,49,345,80,308"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="85,357,144,383"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="98,309,109,343,104,345,93,310"/>
+<area shape="rect" id="Node000013" href="$qm_2spatial__grid__hierarchy_8h.html" title=" " alt="" coords="343,196,492,236"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="420,148,420,182,415,182,415,148"/>
+<area shape="poly" id="edge13_Node000013_Node000004" title=" " alt="" coords="411,237,394,273,389,270,406,235"/>
+<area shape="poly" id="edge14_Node000013_Node000011" title=" " alt="" coords="446,234,502,274,499,278,443,238"/>
+</map>

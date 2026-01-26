@@ -122,12 +122,24 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ad1629f756b11f97ca33aa1fdf0b64f39"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a979222d60c32cfa18e2a7dfeb1cdb51d" id="r_a979222d60c32cfa18e2a7dfeb1cdb51d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#a979222d60c32cfa18e2a7dfeb1cdb51d">operator!=</a> (const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;rhs) const =default</td></tr>
 <tr class="separator:a979222d60c32cfa18e2a7dfeb1cdb51d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ca1e45140539c3c225f44b5bae78378" id="r_a1ca1e45140539c3c225f44b5bae78378"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#a1ca1e45140539c3c225f44b5bae78378">has_angular_regions</a> () const</td></tr>
+<tr class="memdesc:a1ca1e45140539c3c225f44b5bae78378"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if ORCA-style angular regions are enabled.  <br /></td></tr>
+<tr class="separator:a1ca1e45140539c3c225f44b5bae78378"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7e2228991179c023b8b891d144f5188" id="r_aa7e2228991179c023b8b891d144f5188"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#aa7e2228991179c023b8b891d144f5188">int_acc_string</a> () const</td></tr>
+<tr class="memdesc:aa7e2228991179c023b8b891d144f5188"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get IntAcc description string.  <br /></td></tr>
+<tr class="separator:aa7e2228991179c023b8b891d144f5188"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a8f0d3504eeed4bf1aba66cf44419a1dc" id="r_a8f0d3504eeed4bf1aba66cf44419a1dc"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#a8f0d3504eeed4bf1aba66cf44419a1dc">from_grid_quality</a> (<a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">GridQuality</a> quality)</td></tr>
 <tr class="memdesc:a8f0d3504eeed4bf1aba66cf44419a1dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create <a class="el" href="structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation.">GridSettings</a> from GridQuality enum.  <br /></td></tr>
 <tr class="separator:a8f0d3504eeed4bf1aba66cf44419a1dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d1937ff4df969dcd9b13534c39c162a" id="r_a5d1937ff4df969dcd9b13534c39c162a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#a5d1937ff4df969dcd9b13534c39c162a">for_sgx</a> (size_t angular_points=50)</td></tr>
+<tr class="memdesc:a5d1937ff4df969dcd9b13534c39c162a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create <a class="el" href="structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation.">GridSettings</a> for SGX/COSX seminumerical exchange.  <br /></td></tr>
+<tr class="separator:a5d1937ff4df969dcd9b13534c39c162a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a741e7965efb3dc01c564936f384aa531" id="r_a741e7965efb3dc01c564936f384aa531"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#a741e7965efb3dc01c564936f384aa531">for_cosx</a> (<a class="el" href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951">COSXGridLevel</a> level)</td></tr>
+<tr class="memdesc:a741e7965efb3dc01c564936f384aa531"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create <a class="el" href="structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation.">GridSettings</a> for COSX matching ORCA's GRIDX scheme.  <br /></td></tr>
+<tr class="separator:a741e7965efb3dc01c564936f384aa531"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -143,6 +155,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ab4156324fb12b5c435ab38474cd29ccd" id="r_ab4156324fb12b5c435ab38474cd29ccd"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#ab4156324fb12b5c435ab38474cd29ccd">radial_precision</a></td></tr>
 <tr class="memdesc:ab4156324fb12b5c435ab38474cd29ccd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Precision for radial grid (for LMG method)  <br /></td></tr>
 <tr class="separator:ab4156324fb12b5c435ab38474cd29ccd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adeb82c01c4dbbe1db7d21b3e272b81f1" id="r_adeb82c01c4dbbe1db7d21b3e272b81f1"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#adeb82c01c4dbbe1db7d21b3e272b81f1">int_acc</a> = 0.0</td></tr>
+<tr class="memdesc:adeb82c01c4dbbe1db7d21b3e272b81f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">ORCA-style IntAcc parameter (0 = not used)  <br /></td></tr>
+<tr class="separator:adeb82c01c4dbbe1db7d21b3e272b81f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0784de8ab9543473d566f29c53509aa" id="r_ae0784de8ab9543473d566f29c53509aa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#ae0784de8ab9543473d566f29c53509aa">reduced_first_row_element_grid</a></td></tr>
 <tr class="memdesc:ae0784de8ab9543473d566f29c53509aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to use reduced grid for H and He.  <br /></td></tr>
 <tr class="separator:ae0784de8ab9543473d566f29c53509aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -151,10 +166,94 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a43adfd375523983981a74c981f270f82" id="r_a43adfd375523983981a74c981f270f82"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868">PruningScheme</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#a43adfd375523983981a74c981f270f82">pruning_scheme</a></td></tr>
 <tr class="memdesc:a43adfd375523983981a74c981f270f82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pruning scheme to use.  <br /></td></tr>
 <tr class="separator:a43adfd375523983981a74c981f270f82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c91a49afbde53c980ac87f9ce1a144f" id="r_a2c91a49afbde53c980ac87f9ce1a144f"><td class="memItemLeft" align="right" valign="top">std::array&lt; size_t, 5 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GridSettings.html#a2c91a49afbde53c980ac87f9ce1a144f">angular_regions</a> = {0, 0, 0, 0, 0}</td></tr>
+<tr class="memdesc:a2c91a49afbde53c980ac87f9ce1a144f"><td class="mdescLeft">&#160;</td><td class="mdescRight">ORCA-style 5-region angular grid levels [region1..region5] If non-empty, overrides min/max_angular_points with per-region Lebedev counts.  <br /></td></tr>
+<tr class="separator:a2c91a49afbde53c980ac87f9ce1a144f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Extended settings for Becke grid generation. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a741e7965efb3dc01c564936f384aa531" name="a741e7965efb3dc01c564936f384aa531"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a741e7965efb3dc01c564936f384aa531">&#9670;&#160;</a></span>for_cosx()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> occ::io::GridSettings::for_cosx </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951">COSXGridLevel</a>&#160;</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create <a class="el" href="structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation.">GridSettings</a> for COSX matching ORCA's GRIDX scheme. </p>
+<p>Creates grids matching ORCA's COSX grid levels with:</p><ul>
+<li>IntAcc-based radial point count: nr = (15 * IntAcc - 40) + b * ROW</li>
+<li>5-region angular pruning with Lebedev grids</li>
+<li>Gauss-Chebyshev quadrature with M3 mapping</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">level</td><td>COSX grid level (Grid1, Grid2, or Grid3) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation.">GridSettings</a> configured for the specified COSX level </dd></dl>
+
+</div>
+</div>
+<a id="a5d1937ff4df969dcd9b13534c39c162a" name="a5d1937ff4df969dcd9b13534c39c162a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d1937ff4df969dcd9b13534c39c162a">&#9670;&#160;</a></span>for_sgx()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> occ::io::GridSettings::for_sgx </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>angular_points</em> = <code>50</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create <a class="el" href="structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation.">GridSettings</a> for SGX/COSX seminumerical exchange. </p>
+<p>Uses coarser grids appropriate for seminumerical exchange:</p><ul>
+<li>50 angular points (ORCA default for COSX)</li>
+<li>Lower radial precision (1e-5)</li>
+<li>No pruning for uniform coverage</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">angular_points</td><td>Number of angular Lebedev grid points (default 50) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation.">GridSettings</a> configured for SGX/COSX </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Use <a class="el" href="structocc_1_1io_1_1GridSettings.html#a741e7965efb3dc01c564936f384aa531" title="Create GridSettings for COSX matching ORCA&#39;s GRIDX scheme.">for_cosx(COSXGridLevel)</a> instead for ORCA-compatible grids </dd></dl>
+
+</div>
+</div>
 <a id="a8f0d3504eeed4bf1aba66cf44419a1dc" name="a8f0d3504eeed4bf1aba66cf44419a1dc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8f0d3504eeed4bf1aba66cf44419a1dc">&#9670;&#160;</a></span>from_grid_quality()</h2>
 
@@ -187,6 +286,52 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation.">GridSettings</a> configured for the specified quality </dd></dl>
+
+</div>
+</div>
+<a id="a1ca1e45140539c3c225f44b5bae78378" name="a1ca1e45140539c3c225f44b5bae78378"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ca1e45140539c3c225f44b5bae78378">&#9670;&#160;</a></span>has_angular_regions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::io::GridSettings::has_angular_regions </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if ORCA-style angular regions are enabled. </p>
+
+</div>
+</div>
+<a id="aa7e2228991179c023b8b891d144f5188" name="aa7e2228991179c023b8b891d144f5188"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7e2228991179c023b8b891d144f5188">&#9670;&#160;</a></span>int_acc_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::io::GridSettings::int_acc_string </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get IntAcc description string. </p>
 
 </div>
 </div>
@@ -243,6 +388,38 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a2c91a49afbde53c980ac87f9ce1a144f" name="a2c91a49afbde53c980ac87f9ce1a144f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c91a49afbde53c980ac87f9ce1a144f">&#9670;&#160;</a></span>angular_regions</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;size_t, 5&gt; occ::io::GridSettings::angular_regions = {0, 0, 0, 0, 0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ORCA-style 5-region angular grid levels [region1..region5] If non-empty, overrides min/max_angular_points with per-region Lebedev counts. </p>
+
+</div>
+</div>
+<a id="adeb82c01c4dbbe1db7d21b3e272b81f1" name="adeb82c01c4dbbe1db7d21b3e272b81f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adeb82c01c4dbbe1db7d21b3e272b81f1">&#9670;&#160;</a></span>int_acc</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::io::GridSettings::int_acc = 0.0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ORCA-style IntAcc parameter (0 = not used) </p>
+
+</div>
+</div>
 <a id="afe9e84413557f08fcd8a931628cb5d6e" name="afe9e84413557f08fcd8a931628cb5d6e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afe9e84413557f08fcd8a931628cb5d6e">&#9670;&#160;</a></span>max_angular_points</h2>
 

@@ -18,6 +18,7 @@ var namespaceocc_1_1qm =
       [ "bb", "namespaceocc_1_1qm_1_1block.html#a0bc0a924c072a5951d3fab6ee085b317", null ]
     ] ],
     [ "cint", "namespaceocc_1_1qm_1_1cint.html", "namespaceocc_1_1qm_1_1cint" ],
+    [ "cosx", "namespaceocc_1_1qm_1_1cosx.html", "namespaceocc_1_1qm_1_1cosx" ],
     [ "guess", "namespaceocc_1_1qm_1_1guess.html", [
       [ "compute_sap_matrix", "namespaceocc_1_1qm_1_1guess.html#ae393d4cd0e43b1f54b1747ec4698f19a", null ],
       [ "minimal_basis_nao", "namespaceocc_1_1qm_1_1guess.html#acb0a9b7918ce5f813b34eb9e6ac97ecb", null ],
@@ -40,12 +41,16 @@ var namespaceocc_1_1qm =
       [ "weighted_density_matrix_restricted", "namespaceocc_1_1qm_1_1orb.html#ab62c014f1e784f8a6fe7385bc9ab981c", null ],
       [ "weighted_density_matrix_unrestricted", "namespaceocc_1_1qm_1_1orb.html#ac8948cbaf474d356077e062efb6c6dd8", null ]
     ] ],
-    [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
+    [ "ADIIS", "classocc_1_1qm_1_1ADIIS.html", "classocc_1_1qm_1_1ADIIS" ],
+    [ "AutoAuxResult", "structocc_1_1qm_1_1AutoAuxResult.html", "structocc_1_1qm_1_1AutoAuxResult" ],
     [ "CanonicalOrthogonalizer", "classocc_1_1qm_1_1CanonicalOrthogonalizer.html", "classocc_1_1qm_1_1CanonicalOrthogonalizer" ],
     [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
+    [ "ConvergenceAccelerator", "classocc_1_1qm_1_1ConvergenceAccelerator.html", "classocc_1_1qm_1_1ConvergenceAccelerator" ],
     [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
     [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
     [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
+    [ "GridBatchLeaf", "structocc_1_1qm_1_1GridBatchLeaf.html", "structocc_1_1qm_1_1GridBatchLeaf" ],
+    [ "GridBoundingSphere", "structocc_1_1qm_1_1GridBoundingSphere.html", "structocc_1_1qm_1_1GridBoundingSphere" ],
     [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
     [ "HessianEvaluator", "classocc_1_1qm_1_1HessianEvaluator.html", "classocc_1_1qm_1_1HessianEvaluator" ],
     [ "IndexRange", "structocc_1_1qm_1_1IndexRange.html", "structocc_1_1qm_1_1IndexRange" ],
@@ -67,7 +72,9 @@ var namespaceocc_1_1qm =
     [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
     [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
     [ "SCFMethodBase", "classocc_1_1qm_1_1SCFMethodBase.html", "classocc_1_1qm_1_1SCFMethodBase" ],
-    [ "Shell", "structocc_1_1qm_1_1Shell.html", "structocc_1_1qm_1_1Shell" ],
+    [ "SpatialGridHierarchy", "classocc_1_1qm_1_1SpatialGridHierarchy.html", "classocc_1_1qm_1_1SpatialGridHierarchy" ],
+    [ "SpatialHierarchySettings", "structocc_1_1qm_1_1SpatialHierarchySettings.html", "structocc_1_1qm_1_1SpatialHierarchySettings" ],
+    [ "SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html", "classocc_1_1qm_1_1SplitRIJ" ],
     [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ],
     [ "WolfSumCorrectedProcedure", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html", "classocc_1_1qm_1_1WolfSumCorrectedProcedure" ],
     [ "SCFMethod", "conceptocc_1_1qm_1_1SCFMethod.html", null ],
@@ -75,7 +82,17 @@ var namespaceocc_1_1qm =
     [ "PointChargeMethod", "conceptocc_1_1qm_1_1PointChargeMethod.html", null ],
     [ "HessianMatrix", "namespaceocc_1_1qm.html#aa8bb245cfcce8ea42381f7dc22329952", null ],
     [ "PointChargeList", "namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb", null ],
+    [ "ShellPairList", "namespaceocc_1_1qm.html#a2ecc83c9e5a744d19b7987d0dc0e52f7", null ],
     [ "Tensor4D", "namespaceocc_1_1qm.html#aaede53ed6341f3101ea1f4c5cae9b4b9", null ],
+    [ "CoulombMethod", "namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4ca", [
+      [ "Traditional", "namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caa1bfbcce75c3c9a52a464d4cb0984488a", null ],
+      [ "SplitRIJ", "namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caae8170441f7460d522a29a1988d225775", null ]
+    ] ],
+    [ "DiisStrategy", "namespaceocc_1_1qm.html#aed277318daf206bcae7523f0c4f9cacc", [
+      [ "CDIIS", "namespaceocc_1_1qm.html#aed277318daf206bcae7523f0c4f9cacca07211349a1d2a7508564984b69ba75a6", null ],
+      [ "EDIIS_CDIIS", "namespaceocc_1_1qm.html#aed277318daf206bcae7523f0c4f9caccac0b5e171e0bafffca5721251753907ae", null ],
+      [ "ADIIS_CDIIS", "namespaceocc_1_1qm.html#aed277318daf206bcae7523f0c4f9caccac07f5498a51754a657bc3eff47cb222b", null ]
+    ] ],
     [ "DispersionType", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98db", [
       [ "None", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba6adf97f83acf6453d4a6a4b1070f3754", null ],
       [ "D4", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba2521dc256a4368da87585c936b451dd7", null ],
@@ -90,8 +107,8 @@ var namespaceocc_1_1qm =
     [ "expectation", "namespaceocc_1_1qm.html#a7f9747809d33a47c63c971414cfb7321", null ],
     [ "expectation", "namespaceocc_1_1qm.html#a2a982da10e9beee254cd5401c9e3028a", null ],
     [ "from_json", "namespaceocc_1_1qm.html#aea99ff092d8022a134859b02bc81a705", null ],
+    [ "generate_auto_aux", "namespaceocc_1_1qm.html#a25a9715eed17d1bec6120971166e7f53", null ],
     [ "get_spinorbital_kind_from_string", "namespaceocc_1_1qm.html#affbc8f01fc592caa8b8095e3357c8693", null ],
-    [ "gto_norm", "namespaceocc_1_1qm.html#ae0b480dbee1ea4975ed32811499c9234", null ],
     [ "matrix_dimensions", "namespaceocc_1_1qm.html#adb09bba283593dd336a2fbce44d4e2c2", null ],
     [ "matrix_dimensions", "namespaceocc_1_1qm.html#aeedc0a37f48c77f349319facd5aaff08", null ],
     [ "merge_atoms", "namespaceocc_1_1qm.html#a8d1edae606af42cd4f3f5bad5bb13bd4", null ],
@@ -102,7 +119,6 @@ var namespaceocc_1_1qm =
     [ "spinorbital_kind_to_string", "namespaceocc_1_1qm.html#acc9a0510ac1c6ace69ae9cf3da07c4a8", null ],
     [ "to_json", "namespaceocc_1_1qm.html#af56a1ad02bf6c763085926a57c0c60f4", null ],
     [ "is_scf_method_v", "namespaceocc_1_1qm.html#af7275368e99175434508cc27a5d3659c", null ],
-    [ "OCC_MINIMAL_BASIS", "namespaceocc_1_1qm.html#a63b52a23d7e4463ee5f726dfe9c93a16", null ],
     [ "supports_density_fitting_v", "namespaceocc_1_1qm.html#adaccff0ae547b4b5613387ec864850cf", null ],
     [ "supports_point_charges_v", "namespaceocc_1_1qm.html#acda93790f6f9b38ccc9e412012ac9fb9", null ]
 ];

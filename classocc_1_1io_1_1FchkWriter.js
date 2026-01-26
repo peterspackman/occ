@@ -19,7 +19,7 @@ var classocc_1_1io_1_1FchkWriter =
     ] ],
     [ "FchkWriter", "classocc_1_1io_1_1FchkWriter.html#a28cda1c600e63174df73a9167ad2473f", null ],
     [ "FchkWriter", "classocc_1_1io_1_1FchkWriter.html#aae36ceabc2af3692978e75fd95d1500b", null ],
-    [ "set_basis", "classocc_1_1io_1_1FchkWriter.html#acc4267ceee0d45ed6f4f88e5cd7eaf62", null ],
+    [ "set_basis", "classocc_1_1io_1_1FchkWriter.html#af397d7e28ec542ab53cdff20cbaf90aa", null ],
     [ "set_basis_name", "classocc_1_1io_1_1FchkWriter.html#aa7adb26d10d0dc5e47a1a47bb2cfc013", null ],
     [ "set_fchk_type", "classocc_1_1io_1_1FchkWriter.html#a1d0e6f0f6bd7c34b616b071d398f08fa", null ],
     [ "set_method", "classocc_1_1io_1_1FchkWriter.html#adecbc80b61600e3c08791f618dc6c66a", null ],

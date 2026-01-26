@@ -1,8 +1,14 @@
 var namespaceocc_1_1gto =
 [
+    [ "basis_sets", "namespaceocc_1_1gto_1_1basis__sets.html", [
+      [ "build_sto3g_shells", "namespaceocc_1_1gto_1_1basis__sets.html#a4d89e8670d842828f2c9bda7a9960fb3", null ]
+    ] ],
+    [ "io", "namespaceocc_1_1gto_1_1io.html", "namespaceocc_1_1gto_1_1io" ],
+    [ "AOBasis", "classocc_1_1gto_1_1AOBasis.html", "classocc_1_1gto_1_1AOBasis" ],
     [ "GTOValues", "structocc_1_1gto_1_1GTOValues.html", "structocc_1_1gto_1_1GTOValues" ],
     [ "Momenta", "structocc_1_1gto_1_1Momenta.html", "structocc_1_1gto_1_1Momenta" ],
     [ "MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", "structocc_1_1gto_1_1MomentaSpherical" ],
+    [ "Shell", "structocc_1_1gto_1_1Shell.html", "structocc_1_1gto_1_1Shell" ],
     [ "ShellOrder", "namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894", [
       [ "Default", "namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894ab06e5df293429275849103ebe2e53fea", null ],
       [ "Gaussian", "namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894adf2160db9f5d5a7d7b6c660268b53eea", null ],
@@ -14,9 +20,12 @@ var namespaceocc_1_1gto =
     [ "cartesian_subshell_ordering", "namespaceocc_1_1gto.html#a7c9915aae60f0ba43d290a88a9527a77", null ],
     [ "cartesian_to_spherical_transformation_matrix", "namespaceocc_1_1gto.html#ab69d436a61ddde3e394ea649a2f18991", null ],
     [ "component_label", "namespaceocc_1_1gto.html#a4768ef6e01b8fafebd65893c364067d8", null ],
-    [ "evaluate_basis", "namespaceocc_1_1gto.html#a0e2894f71da8c56b99c0c034a08b256b", null ],
-    [ "evaluate_basis", "namespaceocc_1_1gto.html#ad4f50c6d822bd559d14740a8088767de", null ],
-    [ "evaluate_decay_cutoff", "namespaceocc_1_1gto.html#ada1a8c40ed0770fef9ff7d274f7d0468", null ],
+    [ "evaluate_basis", "namespaceocc_1_1gto.html#a0fce5060a8f75d8a17961c290e4cbbe2", null ],
+    [ "evaluate_basis", "namespaceocc_1_1gto.html#ae429db3b396e75d3053bd91de61cae36", null ],
+    [ "evaluate_basis_for_shells", "namespaceocc_1_1gto.html#ac4b9e8f6f7804bcc83aff81e73776956", null ],
+    [ "evaluate_decay_cutoff", "namespaceocc_1_1gto.html#af2d65cc19680d96d4df02b1ba8c6c763", null ],
+    [ "from_json", "namespaceocc_1_1gto.html#a36433632f81c37b256a3b27c983b4ed1", null ],
+    [ "gto_norm", "namespaceocc_1_1gto.html#a3f271fab30b29e2ef076f40eaee0f663", null ],
     [ "iterate_over_shell", "namespaceocc_1_1gto.html#a9ea8be0c1f04965d56919cda12400520", null ],
     [ "iterate_over_shell_pair", "namespaceocc_1_1gto.html#ae2be263bd8cd95f3b917833c80726c7a", null ],
     [ "num_subshells", "namespaceocc_1_1gto.html#a724938450948b41d035c2112d20f0e88", null ],
@@ -31,7 +40,9 @@ var namespaceocc_1_1gto =
     [ "spherical_gaussian_rotation_matrices", "namespaceocc_1_1gto.html#ac91eb2f1d2bcd07b7baa701b8ac17215", null ],
     [ "spherical_subshell_ordering", "namespaceocc_1_1gto.html#ab96a977721a38f84b5ba6be10551012c", null ],
     [ "spherical_to_cartesian_transformation_matrix", "namespaceocc_1_1gto.html#a98e12baac9f4da4bf30071d6a36bfe56", null ],
-    [ "transform_density_matrix_cartesian_to_spherical", "namespaceocc_1_1gto.html#a5ed432407e6a7c6287cacd55ab4179cd", null ],
-    [ "transform_density_matrix_spherical_to_cartesian", "namespaceocc_1_1gto.html#a4e1cd59ef016c4de76bfe0341950de21", null ],
+    [ "to_json", "namespaceocc_1_1gto.html#ad28bf40458a351cd2398c7f554479ea8", null ],
+    [ "transform_density_matrix_cartesian_to_spherical", "namespaceocc_1_1gto.html#aaf611a0189a421ab86e1cb12214adb07", null ],
+    [ "transform_density_matrix_spherical_to_cartesian", "namespaceocc_1_1gto.html#accc61c5053553d366b4fa24d75224b20", null ],
+    [ "OCC_MINIMAL_BASIS", "namespaceocc_1_1gto.html#aaf234abe0536ecdc6d5801ed479aa2c1", null ],
     [ "shell_labels", "namespaceocc_1_1gto.html#a3e9459ef5bda25033e9c3fd20e143d15", null ]
 ];

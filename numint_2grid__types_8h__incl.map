@@ -1,0 +1,21 @@
+<map id="/home/runner/work/occ/occ/include/occ/numint/grid_types.h" name="/home/runner/work/occ/occ/include/occ/numint/grid_types.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="236,5,411,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="41,108,107,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="248,63,121,106,119,101,246,58"/>
+<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="132,108,317,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="295,62,250,101,247,97,291,58"/>
+<area shape="rect" id="Node000007" href="$grid__settings_8h.html" title=" " alt="" coords="342,108,502,133"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="355,58,400,97,396,101,352,62"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="527,108,589,133"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="396,58,515,101,513,106,394,63"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,181,108,207"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="199,136,98,178,96,173,197,131"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="132,181,256,207"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="222,135,207,170,202,168,217,133"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="280,181,369,207"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="242,131,299,171,296,175,239,136"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="394,181,450,207"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="425,134,425,168,419,168,419,134"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="474,181,533,207"/>
+<area shape="poly" id="edge8_Node000007_Node000009" title=" " alt="" coords="437,131,482,170,478,174,433,135"/>
+</map>

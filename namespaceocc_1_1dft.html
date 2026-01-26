@@ -200,6 +200,36 @@ Functions</h2></td></tr>
 <tr class="separator:a70f0a7522541ba34eecfed52b8460f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe5388e43d56ab12eb9c74a230b0a4fe" id="r_afe5388e43d56ab12eb9c74a230b0a4fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb">DensityFunctional::Identifier</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#afe5388e43d56ab12eb9c74a230b0a4fe">string_to_dfid</a> (const std::string &amp;name)</td></tr>
 <tr class="separator:afe5388e43d56ab12eb9c74a230b0a4fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73599737489f46d634245c5985292f30" id="r_a73599737489f46d634245c5985292f30"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a73599737489f46d634245c5985292f30">calculate_hirshfeld_charges</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge=0)</td></tr>
+<tr class="memdesc:a73599737489f46d634245c5985292f30"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld charges for a molecule.  <br /></td></tr>
+<tr class="separator:a73599737489f46d634245c5985292f30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a179b373127772122365cdae68cf147ad" id="r_a179b373127772122365cdae68cf147ad"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1core_1_1Multipole.html">occ::core::Multipole</a>&lt; 4 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a179b373127772122365cdae68cf147ad">calculate_hirshfeld_multipoles</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int max_multipole_order=4, int charge=0)</td></tr>
+<tr class="memdesc:a179b373127772122365cdae68cf147ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld multipoles for a molecule.  <br /></td></tr>
+<tr class="separator:a179b373127772122365cdae68cf147ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab25c3494c58366bbc9ccf6a5a387c6de" id="r_ab25c3494c58366bbc9ccf6a5a387c6de"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ab25c3494c58366bbc9ccf6a5a387c6de">calculate_voronoi_charges</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge=0, double temperature=0.1, bool use_vdw_radii=false, const <a class="el" href="structocc_1_1io_1_1GridSettings.html">occ::io::GridSettings</a> &amp;grid_settings=<a class="el" href="structocc_1_1io_1_1GridSettings.html#a8f0d3504eeed4bf1aba66cf44419a1dc">occ::io::GridSettings::from_grid_quality</a>(GridQuality::Coarse))</td></tr>
+<tr class="memdesc:ab25c3494c58366bbc9ccf6a5a387c6de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Voronoi charges for a molecule.  <br /></td></tr>
+<tr class="separator:ab25c3494c58366bbc9ccf6a5a387c6de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b07d66d6a706b5c97d4565076539e9c" id="r_a1b07d66d6a706b5c97d4565076539e9c"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">occ::qm::SpinorbitalKind</a> spinorbital_kind, int derivative_order&gt; </td></tr>
+<tr class="memitem:a1b07d66d6a706b5c97d4565076539e9c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a1b07d66d6a706b5c97d4565076539e9c">xc_potential_matrix</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)=delete</td></tr>
+<tr class="separator:a1b07d66d6a706b5c97d4565076539e9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52594b3c2950d444c5fe4edbf057bf64" id="r_a52594b3c2950d444c5fe4edbf057bf64"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
+<tr class="memitem:a52594b3c2950d444c5fe4edbf057bf64"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a52594b3c2950d444c5fe4edbf057bf64">xc_potential_matrix&lt; Restricted, 0 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
+<tr class="separator:a52594b3c2950d444c5fe4edbf057bf64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aacea87cd5102078f099cf1f715684651" id="r_aacea87cd5102078f099cf1f715684651"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
+<tr class="memitem:aacea87cd5102078f099cf1f715684651"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aacea87cd5102078f099cf1f715684651">xc_potential_matrix&lt; Restricted, 1 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
+<tr class="separator:aacea87cd5102078f099cf1f715684651"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a222b7ce9df98531eeeafb9ad1feeb3" id="r_a7a222b7ce9df98531eeeafb9ad1feeb3"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
+<tr class="memitem:a7a222b7ce9df98531eeeafb9ad1feeb3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a7a222b7ce9df98531eeeafb9ad1feeb3">xc_potential_matrix&lt; Restricted, 2 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
+<tr class="separator:a7a222b7ce9df98531eeeafb9ad1feeb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20654cb027dfc9b307f3c12c0a4b1a9f" id="r_a20654cb027dfc9b307f3c12c0a4b1a9f"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
+<tr class="memitem:a20654cb027dfc9b307f3c12c0a4b1a9f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a20654cb027dfc9b307f3c12c0a4b1a9f">xc_potential_matrix&lt; Unrestricted, 0 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
+<tr class="separator:a20654cb027dfc9b307f3c12c0a4b1a9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f9bc77776e89d8bf4ea65677f0639a5" id="r_a0f9bc77776e89d8bf4ea65677f0639a5"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
+<tr class="memitem:a0f9bc77776e89d8bf4ea65677f0639a5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a0f9bc77776e89d8bf4ea65677f0639a5">xc_potential_matrix&lt; Unrestricted, 1 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
+<tr class="separator:a0f9bc77776e89d8bf4ea65677f0639a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13f24b9204a53c944f36e5d0a2e759af" id="r_a13f24b9204a53c944f36e5d0a2e759af"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
+<tr class="memitem:a13f24b9204a53c944f36e5d0a2e759af"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a13f24b9204a53c944f36e5d0a2e759af">xc_potential_matrix&lt; Unrestricted, 2 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
+<tr class="separator:a13f24b9204a53c944f36e5d0a2e759af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c93f1dbd05800b2e7eba53c76b31c37" id="r_a3c93f1dbd05800b2e7eba53c76b31c37"><td class="memItemLeft" align="right" valign="top">uint_fast16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a3c93f1dbd05800b2e7eba53c76b31c37">nearest_grid_level_at_or_above</a> (uint_fast16_t n)</td></tr>
 <tr class="memdesc:a3c93f1dbd05800b2e7eba53c76b31c37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the nearest Lebedev grid level at or above the requested number of points.  <br /></td></tr>
 <tr class="separator:a3c93f1dbd05800b2e7eba53c76b31c37"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -230,6 +260,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ac74028a17834ef26b4b6d7f6ffc1ff8f" id="r_ac74028a17834ef26b4b6d7f6ffc1ff8f"><td class="memItemLeft" align="right" valign="top">IVec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ac74028a17834ef26b4b6d7f6ffc1ff8f">prune_numgrid_scheme</a> (size_t atomic_number, size_t max_angular, size_t min_angular, const Vec &amp;radii)</td></tr>
 <tr class="memdesc:ac74028a17834ef26b4b6d7f6ffc1ff8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the NumGrid pruning scheme to a radial grid.  <br /></td></tr>
 <tr class="separator:ac74028a17834ef26b4b6d7f6ffc1ff8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f76ff16ca079cb6b4ee0cdad89601a0" id="r_a5f76ff16ca079cb6b4ee0cdad89601a0"><td class="memItemLeft" align="right" valign="top">IVec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a5f76ff16ca079cb6b4ee0cdad89601a0">prune_orca_scheme</a> (size_t atomic_number, const std::array&lt; size_t, 5 &gt; &amp;region_grids, const Vec &amp;radii)</td></tr>
+<tr class="memdesc:a5f76ff16ca079cb6b4ee0cdad89601a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply ORCA-style 5-region angular pruning.  <br /></td></tr>
+<tr class="separator:a5f76ff16ca079cb6b4ee0cdad89601a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48abc2172605dbc65f9f0efb7d88b2c2" id="r_a48abc2172605dbc65f9f0efb7d88b2c2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a48abc2172605dbc65f9f0efb7d88b2c2">generate_becke_radial_grid</a> (size_t num_points, double rm=1.0)</td></tr>
 <tr class="memdesc:a48abc2172605dbc65f9f0efb7d88b2c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Becke radial grid.  <br /></td></tr>
 <tr class="separator:a48abc2172605dbc65f9f0efb7d88b2c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -242,6 +275,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ada7d5e515dc2a7751aa8476373e59d0d" id="r_ada7d5e515dc2a7751aa8476373e59d0d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ada7d5e515dc2a7751aa8476373e59d0d">generate_gauss_chebyshev_radial_grid</a> (size_t num_points)</td></tr>
 <tr class="memdesc:ada7d5e515dc2a7751aa8476373e59d0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Gauss-Chebyshev radial grid.  <br /></td></tr>
 <tr class="separator:ada7d5e515dc2a7751aa8476373e59d0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4fcfb2291c644aa0fc05d030e8714f4" id="r_ae4fcfb2291c644aa0fc05d030e8714f4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ae4fcfb2291c644aa0fc05d030e8714f4">generate_gauss_chebyshev_m3_radial_grid</a> (size_t num_points, size_t atomic_number)</td></tr>
+<tr class="memdesc:ae4fcfb2291c644aa0fc05d030e8714f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Gauss-Chebyshev radial grid with M3 mapping.  <br /></td></tr>
+<tr class="separator:ae4fcfb2291c644aa0fc05d030e8714f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e215f6f737ffaa6018143b0c5b902ff" id="r_a3e215f6f737ffaa6018143b0c5b902ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a3e215f6f737ffaa6018143b0c5b902ff">generate_euler_maclaurin_radial_grid</a> (size_t num_points, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>)</td></tr>
 <tr class="memdesc:a3e215f6f737ffaa6018143b0c5b902ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a Euler-Maclaurin radial grid.  <br /></td></tr>
 <tr class="separator:a3e215f6f737ffaa6018143b0c5b902ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -260,36 +296,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a1b1bb46fb5a7dc21d731ba273ef4cef5" id="r_a1b1bb46fb5a7dc21d731ba273ef4cef5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dft_1_1AtomGrid.html">AtomGrid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a1b1bb46fb5a7dc21d731ba273ef4cef5">generate_atom_grid</a> (size_t atomic_number, const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;settings, <a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b">RadialGridMethod</a> method=<a class="el" href="namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6">RadialGridMethod::LMG</a>, double alpha_max=0.0, int l_max=0, const Vec &amp;alpha_min=Vec())</td></tr>
 <tr class="memdesc:a1b1bb46fb5a7dc21d731ba273ef4cef5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate an atom-centered grid using the specified method.  <br /></td></tr>
 <tr class="separator:a1b1bb46fb5a7dc21d731ba273ef4cef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab389b094d08370dcd3dfcc71ea9e98f0" id="r_ab389b094d08370dcd3dfcc71ea9e98f0"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ab389b094d08370dcd3dfcc71ea9e98f0">calculate_hirshfeld_charges</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge=0)</td></tr>
-<tr class="memdesc:ab389b094d08370dcd3dfcc71ea9e98f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld charges for a molecule.  <br /></td></tr>
-<tr class="separator:ab389b094d08370dcd3dfcc71ea9e98f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a44d1117c9d772f1337c1aca7e9000fbf" id="r_a44d1117c9d772f1337c1aca7e9000fbf"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1core_1_1Multipole.html">occ::core::Multipole</a>&lt; 4 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a44d1117c9d772f1337c1aca7e9000fbf">calculate_hirshfeld_multipoles</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int max_multipole_order=4, int charge=0)</td></tr>
-<tr class="memdesc:a44d1117c9d772f1337c1aca7e9000fbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Hirshfeld multipoles for a molecule.  <br /></td></tr>
-<tr class="separator:a44d1117c9d772f1337c1aca7e9000fbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab307a36b1e74a692bcbb790c75dadba8" id="r_ab307a36b1e74a692bcbb790c75dadba8"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#ab307a36b1e74a692bcbb790c75dadba8">calculate_voronoi_charges</a> (const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge=0, double temperature=0.1, bool use_vdw_radii=false, const <a class="el" href="structocc_1_1io_1_1GridSettings.html">occ::io::GridSettings</a> &amp;grid_settings=<a class="el" href="structocc_1_1io_1_1GridSettings.html#a8f0d3504eeed4bf1aba66cf44419a1dc">occ::io::GridSettings::from_grid_quality</a>(GridQuality::Coarse))</td></tr>
-<tr class="memdesc:ab307a36b1e74a692bcbb790c75dadba8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate Voronoi charges for a molecule.  <br /></td></tr>
-<tr class="separator:ab307a36b1e74a692bcbb790c75dadba8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b07d66d6a706b5c97d4565076539e9c" id="r_a1b07d66d6a706b5c97d4565076539e9c"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">occ::qm::SpinorbitalKind</a> spinorbital_kind, int derivative_order&gt; </td></tr>
-<tr class="memitem:a1b07d66d6a706b5c97d4565076539e9c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a1b07d66d6a706b5c97d4565076539e9c">xc_potential_matrix</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)=delete</td></tr>
-<tr class="separator:a1b07d66d6a706b5c97d4565076539e9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52594b3c2950d444c5fe4edbf057bf64" id="r_a52594b3c2950d444c5fe4edbf057bf64"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
-<tr class="memitem:a52594b3c2950d444c5fe4edbf057bf64"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a52594b3c2950d444c5fe4edbf057bf64">xc_potential_matrix&lt; Restricted, 0 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
-<tr class="separator:a52594b3c2950d444c5fe4edbf057bf64"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aacea87cd5102078f099cf1f715684651" id="r_aacea87cd5102078f099cf1f715684651"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
-<tr class="memitem:aacea87cd5102078f099cf1f715684651"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#aacea87cd5102078f099cf1f715684651">xc_potential_matrix&lt; Restricted, 1 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
-<tr class="separator:aacea87cd5102078f099cf1f715684651"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a222b7ce9df98531eeeafb9ad1feeb3" id="r_a7a222b7ce9df98531eeeafb9ad1feeb3"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
-<tr class="memitem:a7a222b7ce9df98531eeeafb9ad1feeb3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a7a222b7ce9df98531eeeafb9ad1feeb3">xc_potential_matrix&lt; Restricted, 2 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
-<tr class="separator:a7a222b7ce9df98531eeeafb9ad1feeb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20654cb027dfc9b307f3c12c0a4b1a9f" id="r_a20654cb027dfc9b307f3c12c0a4b1a9f"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
-<tr class="memitem:a20654cb027dfc9b307f3c12c0a4b1a9f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a20654cb027dfc9b307f3c12c0a4b1a9f">xc_potential_matrix&lt; Unrestricted, 0 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
-<tr class="separator:a20654cb027dfc9b307f3c12c0a4b1a9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f9bc77776e89d8bf4ea65677f0639a5" id="r_a0f9bc77776e89d8bf4ea65677f0639a5"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
-<tr class="memitem:a0f9bc77776e89d8bf4ea65677f0639a5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a0f9bc77776e89d8bf4ea65677f0639a5">xc_potential_matrix&lt; Unrestricted, 1 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
-<tr class="separator:a0f9bc77776e89d8bf4ea65677f0639a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13f24b9204a53c944f36e5d0a2e759af" id="r_a13f24b9204a53c944f36e5d0a2e759af"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
-<tr class="memitem:a13f24b9204a53c944f36e5d0a2e759af"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1dft.html#a13f24b9204a53c944f36e5d0a2e759af">xc_potential_matrix&lt; Unrestricted, 2 &gt;</a> (const <a class="el" href="structocc_1_1dft_1_1DensityFunctional_1_1Result.html">DensityFunctional::Result</a> &amp;res, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> rho, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_vals, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> KK, double &amp;energy)</td></tr>
-<tr class="separator:a13f24b9204a53c944f36e5d0a2e759af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -511,8 +517,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ab389b094d08370dcd3dfcc71ea9e98f0" name="ab389b094d08370dcd3dfcc71ea9e98f0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab389b094d08370dcd3dfcc71ea9e98f0">&#9670;&#160;</a></span>calculate_hirshfeld_charges()</h2>
+<a id="a73599737489f46d634245c5985292f30" name="a73599737489f46d634245c5985292f30"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73599737489f46d634245c5985292f30">&#9670;&#160;</a></span>calculate_hirshfeld_charges()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -520,7 +526,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">Vec occ::dft::calculate_hirshfeld_charges </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;&#160;</td>
           <td class="paramname"><em>basis</em>, </td>
         </tr>
         <tr>
@@ -557,8 +563,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a44d1117c9d772f1337c1aca7e9000fbf" name="a44d1117c9d772f1337c1aca7e9000fbf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a44d1117c9d772f1337c1aca7e9000fbf">&#9670;&#160;</a></span>calculate_hirshfeld_multipoles()</h2>
+<a id="a179b373127772122365cdae68cf147ad" name="a179b373127772122365cdae68cf147ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a179b373127772122365cdae68cf147ad">&#9670;&#160;</a></span>calculate_hirshfeld_multipoles()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -566,7 +572,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">std::vector&lt; <a class="el" href="structocc_1_1core_1_1Multipole.html">occ::core::Multipole</a>&lt; 4 &gt; &gt; occ::dft::calculate_hirshfeld_multipoles </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;&#160;</td>
           <td class="paramname"><em>basis</em>, </td>
         </tr>
         <tr>
@@ -637,8 +643,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ab307a36b1e74a692bcbb790c75dadba8" name="ab307a36b1e74a692bcbb790c75dadba8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab307a36b1e74a692bcbb790c75dadba8">&#9670;&#160;</a></span>calculate_voronoi_charges()</h2>
+<a id="ab25c3494c58366bbc9ccf6a5a387c6de" name="ab25c3494c58366bbc9ccf6a5a387c6de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab25c3494c58366bbc9ccf6a5a387c6de">&#9670;&#160;</a></span>calculate_voronoi_charges()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -646,7 +652,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">Vec occ::dft::calculate_voronoi_charges </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1AOBasis.html">occ::qm::AOBasis</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;&#160;</td>
           <td class="paramname"><em>basis</em>, </td>
         </tr>
         <tr>
@@ -913,6 +919,46 @@ Variables</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">num_points</td><td>Number of radial points </td></tr>
     <tr><td class="paramname">alpha</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1dft_1_1RadialGrid.html" title="Structure to hold radial grid data.">RadialGrid</a> The generated radial grid </dd></dl>
+
+</div>
+</div>
+<a id="ae4fcfb2291c644aa0fc05d030e8714f4" name="ae4fcfb2291c644aa0fc05d030e8714f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4fcfb2291c644aa0fc05d030e8714f4">&#9670;&#160;</a></span>generate_gauss_chebyshev_m3_radial_grid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1dft_1_1RadialGrid.html">RadialGrid</a> occ::dft::generate_gauss_chebyshev_m3_radial_grid </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>num_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>atomic_number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generate a Gauss-Chebyshev radial grid with M3 mapping. </p>
+<p>Uses the Treutler-Alrichs M3 mapping for transforming the Gauss-Chebyshev quadrature to an infinite interval suitable for atomic integrals: r = (xi / ln2) * ln(2 / (1-x)) where xi is a scaling parameter based on the atomic radius.</p>
+<p>Reference: O. Treutler and R. Ahlrichs, J. Chem. Phys. 102, 346 (1995)</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num_points</td><td>Number of radial points </td></tr>
+    <tr><td class="paramname">atomic_number</td><td>Atomic number (used for xi scaling) </td></tr>
   </table>
   </dd>
 </dl>
@@ -1423,6 +1469,52 @@ Variables</h2></td></tr>
     <tr><td class="paramname">max_angular</td><td>Maximum number of angular points </td></tr>
     <tr><td class="paramname">num_radial</td><td>Number of radial points </td></tr>
     <tr><td class="paramname">radii</td><td>Radial grid points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>IVec Number of angular points for each radial point </dd></dl>
+
+</div>
+</div>
+<a id="a5f76ff16ca079cb6b4ee0cdad89601a0" name="a5f76ff16ca079cb6b4ee0cdad89601a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f76ff16ca079cb6b4ee0cdad89601a0">&#9670;&#160;</a></span>prune_orca_scheme()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">IVec occ::dft::prune_orca_scheme </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>atomic_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::array&lt; size_t, 5 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>region_grids</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Vec &amp;&#160;</td>
+          <td class="paramname"><em>radii</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply ORCA-style 5-region angular pruning. </p>
+<p>ORCA divides the radial grid into 5 regions, each with a different number of angular points. The region boundaries are scaled by the atomic radius and are optimized for each element.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">atomic_number</td><td>Atomic number </td></tr>
+    <tr><td class="paramname">region_grids</td><td>Array of 5 Lebedev grid sizes for each region </td></tr>
+    <tr><td class="paramname">radii</td><td>Radial grid points in Bohr </td></tr>
   </table>
   </dd>
 </dl>

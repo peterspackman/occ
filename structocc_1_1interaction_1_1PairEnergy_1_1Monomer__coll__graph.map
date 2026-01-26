@@ -2,7 +2,7 @@
 <area shape="rect" id="Node000001" title=" " alt="" coords="137,299,336,339"/>
 <area shape="rect" id="Node000002" href="$structocc_1_1qm_1_1Wavefunction.html" title=" " alt="" coords="151,211,322,236"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="239,250,239,298,234,298,234,250"/>
-<area shape="rect" id="Node000003" href="$classocc_1_1qm_1_1AOBasis.html" title=" " alt="" coords="5,123,140,148"/>
+<area shape="rect" id="Node000003" href="$classocc_1_1gto_1_1AOBasis.html" title=" " alt="" coords="5,123,140,148"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="95,156,133,184,191,208,189,213,130,189,92,160"/>
 <area shape="rect" id="Node000004" title=" " alt="" coords="159,5,219,31"/>
 <area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="191,44,194,93,203,147,217,182,232,209,227,212,212,184,198,149,188,93,186,45"/>

@@ -1,0 +1,7 @@
+<map id="occ::qm::GridBatchLeaf" name="occ::qm::GridBatchLeaf">
+<area shape="rect" id="Node000001" title="Leaf node containing grid point batch." alt="" coords="29,108,202,133"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,65,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="55,40,108,106,104,110,51,43"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1qm_1_1GridBoundingSphere.html" title="Bounding sphere for a group of grid points." alt="" coords="89,5,304,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="181,43,127,110,122,106,176,40"/>
+</map>

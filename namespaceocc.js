@@ -48,6 +48,7 @@ var namespaceocc =
     [ "geometry", "namespaceocc_1_1geometry.html", "namespaceocc_1_1geometry" ],
     [ "gto", "namespaceocc_1_1gto.html", "namespaceocc_1_1gto" ],
     [ "interaction", "namespaceocc_1_1interaction.html", "namespaceocc_1_1interaction" ],
+    [ "ints", "namespaceocc_1_1ints.html", "namespaceocc_1_1ints" ],
     [ "io", "namespaceocc_1_1io.html", "namespaceocc_1_1io" ],
     [ "isosurface", "namespaceocc_1_1isosurface.html", "namespaceocc_1_1isosurface" ],
     [ "log", "namespaceocc_1_1log.html", "namespaceocc_1_1log" ],

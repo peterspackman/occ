@@ -22,6 +22,7 @@ var classocc_1_1qm_1_1IntegralEngine =
     [ "coulomb_list", "classocc_1_1qm_1_1IntegralEngine.html#a8c544ed2ea25e443a72d56ae5e88bbb1", null ],
     [ "effective_core_potential", "classocc_1_1qm_1_1IntegralEngine.html#ac3f6fce0f8810455f291c9f7fd7ab06c", null ],
     [ "electric_potential", "classocc_1_1qm_1_1IntegralEngine.html#a85c99dd9716c4146e001603baccef706", null ],
+    [ "electric_potential_mmd", "classocc_1_1qm_1_1IntegralEngine.html#a694dc5a78a97a9baf67565a2d84b06af", null ],
     [ "env", "classocc_1_1qm_1_1IntegralEngine.html#adbd9102fffb3dceac5efb17b04b484e4", null ],
     [ "env", "classocc_1_1qm_1_1IntegralEngine.html#af6487b6fd4c2ed5df4c0b380070df64d", null ],
     [ "exchange_hess", "classocc_1_1qm_1_1IntegralEngine.html#a8df46aa51e4cd405c9deeae546d98a77", null ],

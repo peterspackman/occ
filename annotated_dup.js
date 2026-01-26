@@ -3,7 +3,7 @@ var annotated_dup =
     [ "fmt", null, [
       [ "formatter< occ::crystal::DimerIndex >", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1DimerIndex_01_4.html", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1DimerIndex_01_4" ],
       [ "formatter< occ::crystal::HKL >", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4.html", "structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4" ],
-      [ "formatter< occ::qm::Shell >", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4.html", "structfmt_1_1formatter_3_01occ_1_1qm_1_1Shell_01_4" ]
+      [ "formatter< occ::gto::Shell >", "structfmt_1_1formatter_3_01occ_1_1gto_1_1Shell_01_4.html", "structfmt_1_1formatter_3_01occ_1_1gto_1_1Shell_01_4" ]
     ] ],
     [ "nlohmann", "namespacenlohmann.html", [
       [ "adl_serializer< occ::core::Dimer >", "structnlohmann_1_1adl__serializer_3_01occ_1_1core_1_1Dimer_01_4.html", null ],
@@ -109,9 +109,6 @@ var annotated_dup =
         [ "Steinhardt", "classocc_1_1descriptors_1_1Steinhardt.html", "classocc_1_1descriptors_1_1Steinhardt" ]
       ] ],
       [ "dft", "namespaceocc_1_1dft.html", [
-        [ "cosx", "namespaceocc_1_1dft_1_1cosx.html", [
-          [ "SemiNumericalExchange", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange.html", "classocc_1_1dft_1_1cosx_1_1SemiNumericalExchange" ]
-        ] ],
         [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
         [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
         [ "DFT", "classocc_1_1dft_1_1DFT.html", "classocc_1_1dft_1_1DFT" ],
@@ -195,9 +192,19 @@ var annotated_dup =
         [ "WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ]
       ] ],
       [ "gto", "namespaceocc_1_1gto.html", [
+        [ "io", "namespaceocc_1_1gto_1_1io.html", [
+          [ "ECPShell", "structocc_1_1gto_1_1io_1_1ECPShell.html", "structocc_1_1gto_1_1io_1_1ECPShell" ],
+          [ "ElectronShell", "structocc_1_1gto_1_1io_1_1ElectronShell.html", "structocc_1_1gto_1_1io_1_1ElectronShell" ],
+          [ "ElementBasis", "structocc_1_1gto_1_1io_1_1ElementBasis.html", "structocc_1_1gto_1_1io_1_1ElementBasis" ],
+          [ "JsonBasis", "structocc_1_1gto_1_1io_1_1JsonBasis.html", "structocc_1_1gto_1_1io_1_1JsonBasis" ],
+          [ "JsonBasisReader", "structocc_1_1gto_1_1io_1_1JsonBasisReader.html", "structocc_1_1gto_1_1io_1_1JsonBasisReader" ],
+          [ "ReferenceData", "structocc_1_1gto_1_1io_1_1ReferenceData.html", "structocc_1_1gto_1_1io_1_1ReferenceData" ]
+        ] ],
+        [ "AOBasis", "classocc_1_1gto_1_1AOBasis.html", "classocc_1_1gto_1_1AOBasis" ],
         [ "GTOValues", "structocc_1_1gto_1_1GTOValues.html", "structocc_1_1gto_1_1GTOValues" ],
         [ "Momenta", "structocc_1_1gto_1_1Momenta.html", "structocc_1_1gto_1_1Momenta" ],
-        [ "MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", "structocc_1_1gto_1_1MomentaSpherical" ]
+        [ "MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", "structocc_1_1gto_1_1MomentaSpherical" ],
+        [ "Shell", "structocc_1_1gto_1_1Shell.html", "structocc_1_1gto_1_1Shell" ]
       ] ],
       [ "interaction", "namespaceocc_1_1interaction.html", [
         [ "polarization_partitioning", "namespaceocc_1_1interaction_1_1polarization__partitioning.html", [
@@ -233,6 +240,22 @@ var annotated_dup =
         [ "WolfSum", "classocc_1_1interaction_1_1WolfSum.html", "classocc_1_1interaction_1_1WolfSum" ],
         [ "XTBEnergyModel", "classocc_1_1interaction_1_1XTBEnergyModel.html", "classocc_1_1interaction_1_1XTBEnergyModel" ]
       ] ],
+      [ "ints", "namespaceocc_1_1ints.html", [
+        [ "AuxPrimitiveData", "structocc_1_1ints_1_1AuxPrimitiveData.html", "structocc_1_1ints_1_1AuxPrimitiveData" ],
+        [ "AuxShellData", "structocc_1_1ints_1_1AuxShellData.html", "structocc_1_1ints_1_1AuxShellData" ],
+        [ "Boys", "classocc_1_1ints_1_1Boys.html", "classocc_1_1ints_1_1Boys" ],
+        [ "BoysConstants", "structocc_1_1ints_1_1BoysConstants.html", null ],
+        [ "BoysTableGenerator", "classocc_1_1ints_1_1BoysTableGenerator.html", null ],
+        [ "BoysTableParams", "structocc_1_1ints_1_1BoysTableParams.html", null ],
+        [ "ECoeffs1D", "structocc_1_1ints_1_1ECoeffs1D.html", "structocc_1_1ints_1_1ECoeffs1D" ],
+        [ "ECoeffs1DDynamic", "structocc_1_1ints_1_1ECoeffs1DDynamic.html", "structocc_1_1ints_1_1ECoeffs1DDynamic" ],
+        [ "ECoeffs3D", "structocc_1_1ints_1_1ECoeffs3D.html", "structocc_1_1ints_1_1ECoeffs3D" ],
+        [ "ESPEvaluator", "classocc_1_1ints_1_1ESPEvaluator.html", "classocc_1_1ints_1_1ESPEvaluator" ],
+        [ "PrimitivePairData", "structocc_1_1ints_1_1PrimitivePairData.html", "structocc_1_1ints_1_1PrimitivePairData" ],
+        [ "RInts", "structocc_1_1ints_1_1RInts.html", "structocc_1_1ints_1_1RInts" ],
+        [ "RIntsDynamic", "structocc_1_1ints_1_1RIntsDynamic.html", "structocc_1_1ints_1_1RIntsDynamic" ],
+        [ "ShellPairData", "structocc_1_1ints_1_1ShellPairData.html", "structocc_1_1ints_1_1ShellPairData" ]
+      ] ],
       [ "io", "namespaceocc_1_1io.html", [
         [ "crystalgrower", "namespaceocc_1_1io_1_1crystalgrower.html", [
           [ "NetWriter", "classocc_1_1io_1_1crystalgrower_1_1NetWriter.html", "classocc_1_1io_1_1crystalgrower_1_1NetWriter" ],
@@ -254,15 +277,13 @@ var annotated_dup =
         [ "CifParser", "classocc_1_1io_1_1CifParser.html", "classocc_1_1io_1_1CifParser" ],
         [ "CifWriter", "classocc_1_1io_1_1CifWriter.html", "classocc_1_1io_1_1CifWriter" ],
         [ "ColumnConfiguration", "structocc_1_1io_1_1ColumnConfiguration.html", "structocc_1_1io_1_1ColumnConfiguration" ],
+        [ "COSXSettings", "structocc_1_1io_1_1COSXSettings.html", "structocc_1_1io_1_1COSXSettings" ],
         [ "CrystalInput", "structocc_1_1io_1_1CrystalInput.html", "structocc_1_1io_1_1CrystalInput" ],
         [ "Cube", "classocc_1_1io_1_1Cube.html", "classocc_1_1io_1_1Cube" ],
         [ "DftbGenFormat", "classocc_1_1io_1_1DftbGenFormat.html", "classocc_1_1io_1_1DftbGenFormat" ],
         [ "DispersionCorrectionInput", "structocc_1_1io_1_1DispersionCorrectionInput.html", "structocc_1_1io_1_1DispersionCorrectionInput" ],
         [ "DriverInput", "structocc_1_1io_1_1DriverInput.html", "structocc_1_1io_1_1DriverInput" ],
-        [ "ECPShell", "structocc_1_1io_1_1ECPShell.html", "structocc_1_1io_1_1ECPShell" ],
         [ "ElectronInput", "structocc_1_1io_1_1ElectronInput.html", "structocc_1_1io_1_1ElectronInput" ],
-        [ "ElectronShell", "structocc_1_1io_1_1ElectronShell.html", "structocc_1_1io_1_1ElectronShell" ],
-        [ "ElementBasis", "structocc_1_1io_1_1ElementBasis.html", "structocc_1_1io_1_1ElementBasis" ],
         [ "EngradReader", "classocc_1_1io_1_1EngradReader.html", "classocc_1_1io_1_1EngradReader" ],
         [ "FchkReader", "classocc_1_1io_1_1FchkReader.html", "classocc_1_1io_1_1FchkReader" ],
         [ "FchkWriter", "classocc_1_1io_1_1FchkWriter.html", "classocc_1_1io_1_1FchkWriter" ],
@@ -273,8 +294,6 @@ var annotated_dup =
         [ "GridSettings", "structocc_1_1io_1_1GridSettings.html", "structocc_1_1io_1_1GridSettings" ],
         [ "GridSymmetryInfo", "structocc_1_1io_1_1GridSymmetryInfo.html", "structocc_1_1io_1_1GridSymmetryInfo" ],
         [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
-        [ "JsonBasis", "structocc_1_1io_1_1JsonBasis.html", "structocc_1_1io_1_1JsonBasis" ],
-        [ "JsonBasisReader", "structocc_1_1io_1_1JsonBasisReader.html", "structocc_1_1io_1_1JsonBasisReader" ],
         [ "JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", "structocc_1_1io_1_1JsonWavefunctionReader" ],
         [ "JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", "structocc_1_1io_1_1JsonWavefunctionWriter" ],
         [ "MethodInput", "structocc_1_1io_1_1MethodInput.html", "structocc_1_1io_1_1MethodInput" ],
@@ -291,7 +310,6 @@ var annotated_dup =
         [ "QCSchemaModel", "structocc_1_1io_1_1QCSchemaModel.html", "structocc_1_1io_1_1QCSchemaModel" ],
         [ "QCSchemaReader", "classocc_1_1io_1_1QCSchemaReader.html", "classocc_1_1io_1_1QCSchemaReader" ],
         [ "QCSchemaTopology", "structocc_1_1io_1_1QCSchemaTopology.html", "structocc_1_1io_1_1QCSchemaTopology" ],
-        [ "ReferenceData", "structocc_1_1io_1_1ReferenceData.html", "structocc_1_1io_1_1ReferenceData" ],
         [ "RowConfiguration", "structocc_1_1io_1_1RowConfiguration.html", "structocc_1_1io_1_1RowConfiguration" ],
         [ "RuntimeInput", "structocc_1_1io_1_1RuntimeInput.html", "structocc_1_1io_1_1RuntimeInput" ],
         [ "ShelxFile", "classocc_1_1io_1_1ShelxFile.html", "classocc_1_1io_1_1ShelxFile" ],
@@ -388,12 +406,23 @@ var annotated_dup =
           [ "IntegralEnvironment", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment" ],
           [ "Optimizer", "classocc_1_1qm_1_1cint_1_1Optimizer.html", "classocc_1_1qm_1_1cint_1_1Optimizer" ]
         ] ],
-        [ "AOBasis", "classocc_1_1qm_1_1AOBasis.html", "classocc_1_1qm_1_1AOBasis" ],
+        [ "cosx", "namespaceocc_1_1qm_1_1cosx.html", [
+          [ "GridBatchInfo", "structocc_1_1qm_1_1cosx_1_1GridBatchInfo.html", "structocc_1_1qm_1_1cosx_1_1GridBatchInfo" ],
+          [ "ScreenedShellPairs", "structocc_1_1qm_1_1cosx_1_1ScreenedShellPairs.html", "structocc_1_1qm_1_1cosx_1_1ScreenedShellPairs" ],
+          [ "SemiNumericalExchange", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange" ],
+          [ "Settings", "structocc_1_1qm_1_1cosx_1_1Settings.html", "structocc_1_1qm_1_1cosx_1_1Settings" ],
+          [ "ShellLists", "structocc_1_1qm_1_1cosx_1_1ShellLists.html", "structocc_1_1qm_1_1cosx_1_1ShellLists" ]
+        ] ],
+        [ "ADIIS", "classocc_1_1qm_1_1ADIIS.html", "classocc_1_1qm_1_1ADIIS" ],
+        [ "AutoAuxResult", "structocc_1_1qm_1_1AutoAuxResult.html", "structocc_1_1qm_1_1AutoAuxResult" ],
         [ "CanonicalOrthogonalizer", "classocc_1_1qm_1_1CanonicalOrthogonalizer.html", "classocc_1_1qm_1_1CanonicalOrthogonalizer" ],
         [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
+        [ "ConvergenceAccelerator", "classocc_1_1qm_1_1ConvergenceAccelerator.html", "classocc_1_1qm_1_1ConvergenceAccelerator" ],
         [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
         [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
         [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
+        [ "GridBatchLeaf", "structocc_1_1qm_1_1GridBatchLeaf.html", "structocc_1_1qm_1_1GridBatchLeaf" ],
+        [ "GridBoundingSphere", "structocc_1_1qm_1_1GridBoundingSphere.html", "structocc_1_1qm_1_1GridBoundingSphere" ],
         [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
         [ "HessianEvaluator", "classocc_1_1qm_1_1HessianEvaluator.html", "classocc_1_1qm_1_1HessianEvaluator" ],
         [ "IndexRange", "structocc_1_1qm_1_1IndexRange.html", "structocc_1_1qm_1_1IndexRange" ],
@@ -415,7 +444,9 @@ var annotated_dup =
         [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
         [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
         [ "SCFMethodBase", "classocc_1_1qm_1_1SCFMethodBase.html", "classocc_1_1qm_1_1SCFMethodBase" ],
-        [ "Shell", "structocc_1_1qm_1_1Shell.html", "structocc_1_1qm_1_1Shell" ],
+        [ "SpatialGridHierarchy", "classocc_1_1qm_1_1SpatialGridHierarchy.html", "classocc_1_1qm_1_1SpatialGridHierarchy" ],
+        [ "SpatialHierarchySettings", "structocc_1_1qm_1_1SpatialHierarchySettings.html", "structocc_1_1qm_1_1SpatialHierarchySettings" ],
+        [ "SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html", "classocc_1_1qm_1_1SplitRIJ" ],
         [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ],
         [ "WolfSumCorrectedProcedure", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html", "classocc_1_1qm_1_1WolfSumCorrectedProcedure" ]
       ] ],

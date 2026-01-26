@@ -17,7 +17,7 @@ var searchData=
   ['occ_5fscf_2eh_14',['occ_scf.h',['../occ__scf_8h.html',1,'']]],
   ['occ_5fsurface_5fcuts_2eh_15',['occ_surface_cuts.h',['../occ__surface__cuts_8h.html',1,'']]],
   ['oniom_2eh_16',['oniom.h',['../oniom_8h.html',1,'']]],
-  ['opmatrix_2eh_17',['opmatrix.h',['../core_2opmatrix_8h.html',1,'(Global Namespace)'],['../qm_2opmatrix_8h.html',1,'(Global Namespace)']]],
+  ['opmatrix_2eh_17',['opmatrix.h',['../qm_2opmatrix_8h.html',1,'(Global Namespace)'],['../core_2opmatrix_8h.html',1,'(Global Namespace)']]],
   ['optimization_5fstate_2eh_18',['optimization_state.h',['../optimization__state_8h.html',1,'']]],
   ['optimize_2eh_19',['optimize.h',['../optimize_8h.html',1,'']]],
   ['orb_2eh_20',['orb.h',['../orb_8h.html',1,'']]],

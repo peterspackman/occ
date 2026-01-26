@@ -105,7 +105,8 @@ $(document).ready(function(){initNavTree('grid__settings_8h.html',''); initResiz
   <div class="headertitle"><div class="title">grid_settings.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;string&gt;</code><br />
+<div class="textblock"><code>#include &lt;array&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for grid_settings.h:</div>
 <div class="dyncontent">
@@ -114,7 +115,7 @@ Include dependency graph for grid_settings.h:</div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="grid__settings_8h__dep__incl.svg" width="3012" height="1195"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="grid__settings_8h__dep__incl.svg" width="3460" height="1298"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -146,6 +147,12 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a0049c665b8184e2a6ad982ac5db8d4bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard grid quality levels (similar to Q-Chem's SG system)  <a href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">More...</a><br /></td></tr>
 <tr class="separator:a0049c665b8184e2a6ad982ac5db8d4bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0a5a716d33b8f2c39dcc064068ed951" id="r_aa0a5a716d33b8f2c39dcc064068ed951"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951">occ::io::COSXGridLevel</a> { <a class="el" href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951a4fb9ddc1e682a98340c1b39ace107417">occ::io::Grid1</a>
+, <a class="el" href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951a6516c42909346ca784c30a013cbbfb04">occ::io::Grid2</a>
+, <a class="el" href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951a3d8bc33875a50f16aa9f74669cf261d7">occ::io::Grid3</a>
+ }</td></tr>
+<tr class="memdesc:aa0a5a716d33b8f2c39dcc064068ed951"><td class="mdescLeft">&#160;</td><td class="mdescRight">COSX/SGX grid levels matching ORCA's GRIDX scheme.  <a href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951">More...</a><br /></td></tr>
+<tr class="separator:aa0a5a716d33b8f2c39dcc064068ed951"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -158,6 +165,18 @@ Functions</h2></td></tr>
 <tr class="memitem:a1c59135b334b6f9fc88cb74e39d42e7c" id="r_a1c59135b334b6f9fc88cb74e39d42e7c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd">GridQuality</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a1c59135b334b6f9fc88cb74e39d42e7c">occ::io::grid_quality_from_string</a> (const std::string &amp;str)</td></tr>
 <tr class="memdesc:a1c59135b334b6f9fc88cb74e39d42e7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert string to GridQuality enum.  <br /></td></tr>
 <tr class="separator:a1c59135b334b6f9fc88cb74e39d42e7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26de6fbf1181af03e6b4ba5c108601bb" id="r_a26de6fbf1181af03e6b4ba5c108601bb"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a26de6fbf1181af03e6b4ba5c108601bb">occ::io::cosx_grid_level_to_string</a> (<a class="el" href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951">COSXGridLevel</a> level)</td></tr>
+<tr class="memdesc:a26de6fbf1181af03e6b4ba5c108601bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert COSXGridLevel enum to string.  <br /></td></tr>
+<tr class="separator:a26de6fbf1181af03e6b4ba5c108601bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b8157f6dd5904bf65275bb9f752d1ec" id="r_a8b8157f6dd5904bf65275bb9f752d1ec"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a8b8157f6dd5904bf65275bb9f752d1ec">occ::io::cosx_grid_int_acc</a> (<a class="el" href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951">COSXGridLevel</a> level)</td></tr>
+<tr class="memdesc:a8b8157f6dd5904bf65275bb9f752d1ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get IntAcc value for a COSX grid level.  <br /></td></tr>
+<tr class="separator:a8b8157f6dd5904bf65275bb9f752d1ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a330f6aeba4c4dfe310e9ebfd2e9d771a" id="r_a330f6aeba4c4dfe310e9ebfd2e9d771a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a330f6aeba4c4dfe310e9ebfd2e9d771a">occ::io::calculate_radial_points_orca</a> (double int_acc, size_t atomic_number, double b=5.0)</td></tr>
+<tr class="memdesc:a330f6aeba4c4dfe310e9ebfd2e9d771a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate number of radial points using ORCA's formula.  <br /></td></tr>
+<tr class="separator:a330f6aeba4c4dfe310e9ebfd2e9d771a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2addc4d7261ef4a5ce960e7170fc6752" id="r_a2addc4d7261ef4a5ce960e7170fc6752"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a2addc4d7261ef4a5ce960e7170fc6752">occ::io::print_cosx_grid_summary</a> (const <a class="el" href="structocc_1_1io_1_1GridSettings.html">GridSettings</a> &amp;settings, <a class="el" href="namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951">COSXGridLevel</a> level, size_t num_points, size_t num_batches, size_t num_atoms)</td></tr>
+<tr class="memdesc:a2addc4d7261ef4a5ce960e7170fc6752"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print ORCA-style grid generation summary.  <br /></td></tr>
+<tr class="separator:a2addc4d7261ef4a5ce960e7170fc6752"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

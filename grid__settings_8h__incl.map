@@ -1,5 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/io/grid_settings.h" name="/home/runner/work/occ/occ/include/occ/io/grid_settings.h">
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,5,176,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="61,108,120,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,60,93,94,88,94,88,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="23,108,79,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="81,61,64,97,59,94,76,59"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="103,108,161,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="106,59,123,94,118,97,101,61"/>
 </map>

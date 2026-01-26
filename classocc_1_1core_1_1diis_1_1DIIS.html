@@ -113,18 +113,20 @@ Inheritance diagram for occ::core::diis::DIIS:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a6d287fa8c5c8701af4f6c67ab5dab6e5" id="r_a6d287fa8c5c8701af4f6c67ab5dab6e5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1diis_1_1DIIS.html#a6d287fa8c5c8701af4f6c67ab5dab6e5">DIIS</a> (size_t start=2, size_t diis_subspace=20, double damping_factor=0.0, size_t ngroup=1, size_t ngroup_diis=1, double mixing_fraction=0)</td></tr>
-<tr class="separator:a6d287fa8c5c8701af4f6c67ab5dab6e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad6a04922532b9660bc22829ab4ebaef" id="r_aad6a04922532b9660bc22829ab4ebaef"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1diis_1_1DIIS.html#aad6a04922532b9660bc22829ab4ebaef">DIIS</a> (size_t start=5, size_t diis_subspace=8, double damping_factor=0.0, size_t ngroup=1, size_t ngroup_diis=1, double mixing_fraction=0)</td></tr>
+<tr class="separator:aad6a04922532b9660bc22829ab4ebaef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab48a7d86ab3ccf24ac9b07fcd3fd80cd" id="r_ab48a7d86ab3ccf24ac9b07fcd3fd80cd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1diis_1_1DIIS.html#ab48a7d86ab3ccf24ac9b07fcd3fd80cd">extrapolate</a> (<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;x, <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;<a class="el" href="classocc_1_1core_1_1diis_1_1DIIS.html#ad3d169a726e1ee05fa0462a4b31cab02">error</a>, bool extrapolate_error=false)</td></tr>
 <tr class="separator:ab48a7d86ab3ccf24ac9b07fcd3fd80cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf86dff545903e391189ec6eed181c5d" id="r_aaf86dff545903e391189ec6eed181c5d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1diis_1_1DIIS.html#aaf86dff545903e391189ec6eed181c5d">set_error</a> (double e)</td></tr>
 <tr class="separator:aaf86dff545903e391189ec6eed181c5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3d169a726e1ee05fa0462a4b31cab02" id="r_ad3d169a726e1ee05fa0462a4b31cab02"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1diis_1_1DIIS.html#ad3d169a726e1ee05fa0462a4b31cab02">error</a> () const</td></tr>
 <tr class="separator:ad3d169a726e1ee05fa0462a4b31cab02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97073e5ec48a772189edbf4b77c74bca" id="r_a97073e5ec48a772189edbf4b77c74bca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1diis_1_1DIIS.html#a97073e5ec48a772189edbf4b77c74bca">reset</a> ()</td></tr>
+<tr class="separator:a97073e5ec48a772189edbf4b77c74bca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a6d287fa8c5c8701af4f6c67ab5dab6e5" name="a6d287fa8c5c8701af4f6c67ab5dab6e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6d287fa8c5c8701af4f6c67ab5dab6e5">&#9670;&#160;</a></span>DIIS()</h2>
+<a id="aad6a04922532b9660bc22829ab4ebaef" name="aad6a04922532b9660bc22829ab4ebaef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad6a04922532b9660bc22829ab4ebaef">&#9670;&#160;</a></span>DIIS()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -133,13 +135,13 @@ Public Member Functions</h2></td></tr>
           <td class="memname">occ::core::diis::DIIS::DIIS </td>
           <td>(</td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>start</em> = <code>2</code>, </td>
+          <td class="paramname"><em>start</em> = <code>5</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>diis_subspace</em> = <code>20</code>, </td>
+          <td class="paramname"><em>diis_subspace</em> = <code>8</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -221,6 +223,23 @@ Public Member Functions</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a97073e5ec48a772189edbf4b77c74bca" name="a97073e5ec48a772189edbf4b77c74bca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97073e5ec48a772189edbf4b77c74bca">&#9670;&#160;</a></span>reset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::core::diis::DIIS::reset </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
