@@ -18,40 +18,11 @@
           hash = "sha256-MEJMPQZZZhOFiKlPAKIi0zVzaJBvjAlbSyg3wLOQ1fg=";
         };
       });
-      cli11-src = pkgs.fetchFromGitHub {
-        owner = "CLIUtils";
-        repo = "CLI11";
-        rev = "v2.4.2";
-        hash = "sha256-73dfpZDnKl0cADM4LTP3/eDFhwCdiHbEaGRF7ZyWsdQ=";
-      };
-      gemmi = pkgs.gemmi.overrideAttrs (old: rec {
-        version = "0.6.5";
-        src = pkgs.fetchFromGitHub {
-          owner = "project-gemmi";
-          repo = "gemmi";
-          tag = "v${version}";
-          hash = "sha256-JJ6YBsdL3J+d0ihuJ2Nowp40c7FkDdfTqBhDrxWgSFw=";
-        };
-
-      });
       dftd4 = pkgs.callPackage ./3rdparty/nix/dftd4.nix { };
-
       lbfgspp = pkgs.callPackage ./3rdparty/nix/lbfgspp.nix { };
+      libcint = pkgs.callPackage ./3rdparty/nix/libcint.nix { };
       scnlib = pkgs.callPackage ./3rdparty/nix/scnlib.nix {
         fast-float = fast-float-6_1_6;
-      };
-      #      libcint = pkgs.callPackage ./3rdparty/nix/libcint.nix { };
-      libcint_src = pkgs.fetchFromGitHub {
-        owner = "peterspackman";
-        repo = "libcint";
-        rev = "master";
-        hash = "sha256-JWk1B+Fz5nHxnGI5WlSynNqvkqIRvkbba8Nx3I5Tziw=";
-      };
-      lbfgspp-src = pkgs.fetchFromGitHub {
-        owner = "yixuan";
-        repo = "LBFGSpp";
-        rev = "master";
-        hash = "sha256-PUzZ2jUVgHq1LJDWIWW93KnV7vBBEdZlspOrE5TcYBc=";
       };
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -81,6 +52,7 @@
             pkgs.zlib
             scnlib
             dftd4
+            libcint
             lbfgspp
             fast-float-6_1_6
           ];
@@ -93,14 +65,8 @@
             "-GNinja"
             "-DCPM_DOWNLOAD_LOCATION=${pkgs.cpm-cmake}/share/cpm/CPM.cmake"
             "-DUSE_SYSTEM_EIGEN=ON"
+            "-DUSE_SYSTEM_LIBXC=ON"
             "-DCPM_USE_LOCAL_PACKAGES=ON"
-            "-DCPM_gemmi_SOURCE=${gemmi.src}"
-            "-DCPM_nlohmann_json_SOURCE=${pkgs.nlohmann_json.src}"
-            "-DCPM_Libxc_SOURCE=${pkgs.libxc.src}"
-            "-DCPM_libcint_SOURCE=${libcint_src}"
-            "-DCPM_tomlplusplus_SOURCE=${pkgs.tomlplusplus.src}"
-            "-DCPM_LBFGSpp_SOURCE=${lbfgspp-src}"
-            "-DFETCHCONTENT_SOURCE_DIR_FAST_FLOAT=${fast-float-6_1_6.src}"
             "-DNIX_BUILD=ON"
           ];
         };
@@ -117,7 +83,8 @@
           spdlog
           lbfgspp
           gdb
-          dftd4.dev
+          libcint
+          dftd4
           pkg-config
         ];
 

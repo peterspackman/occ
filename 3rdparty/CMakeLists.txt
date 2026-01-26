@@ -142,7 +142,7 @@ endif ()
 
 # Add compiler flags to fix the implicit function declaration error
 set(LIBCINT_C_FLAGS "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE")
-
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME libcint
     GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
@@ -159,6 +159,7 @@ CPMAddPackage(
         ${LIBCINT_BUILD_TYPE}
     VERSION "6.1.2"
 )
+endif()
 if (libcint_ADDED AND NOT NIX_BUILD)
     file(COPY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/FindQUADMATH.cmake ${libcint_SOURCE_DIR}/cmake/FindQUADMATH.cmake)
     message(WARNING "ADDED LIBCINT")
@@ -171,7 +172,7 @@ if(TARGET cint)
         -Wno-deprecated-non-prototype
     )
 endif()
-
+if (NOT NIX_BUILD)
 add_library(libcint::libcint INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(libcint::libcint INTERFACE cint)
 target_include_directories(
@@ -180,7 +181,7 @@ target_include_directories(
     "${libcint_SOURCE_DIR}/src"
     "${libcint_BINARY_DIR}/include"
 )
-
+endif()
 if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc
@@ -199,7 +200,6 @@ target_include_directories(
     "${Libxc_BINARY_DIR}/src"
     "${Libxc_BINARY_DIR}"
 )
-
 endif()
 
 
