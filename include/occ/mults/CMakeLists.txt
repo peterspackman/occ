@@ -1,0 +1,19 @@
+set(OCC_MULTS_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/coordinate_system.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/derivative_transform.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/esp.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_interactions.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/optimization_projection.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/orient_io.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/rigid_body_dynamics.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/rigid_body.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/rotation.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sfunction_evaluator.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sfunction_result.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sfunction_term_builder.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sfunction_term.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sfunctions.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/short_range.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/torque.h"
+    PARENT_SCOPE
+)
