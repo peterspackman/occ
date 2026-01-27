@@ -37,7 +37,7 @@ macOS, and Linux, provides interfaces for C++, Python, and JavaScript, and with
 the capability to even run entirely within web browsers through WebAssembly
 (WASM), making computational chemistry accessible without specialized hardware
 or software installation. OCC is already widely used as the primary
-computational backend of CrystalExplorer[@Spackman2021], a widely-used
+computational backend of CrystalExplorer [@Spackman2021], a widely-used
 graphical program for crystal structure analysis, providing capabilities such
 as automatic calculation of interaction energies between molecules in crystals,
 accurate determination of total crystal energies with automatic convergence
@@ -62,7 +62,9 @@ CrystalExplorer, a widely-adopted graphical tool for crystal structure
 analysis, and as a research platform for developing new computational methods.
 This distinguishes OCC from purely academic codes (often limited in scope,
 modifiability or performance) and purely commercial alternatives (which lack
-transparency and modifiability).
+transparency and modifiability). In a similar spirit to Psi4 [@psi4] and PySCF
+[@pyscf], OCC prioritises extensibility and openness, with a unique focus on
+the properties and interactions of molecular crystals.
 
 Key features enabling this versatility include:
 
@@ -94,19 +96,19 @@ for specific research needs.
 
 OCC implements Hartree-Fock and Density Functional Theory (DFT) with support
 for LDA, GGA, and meta-GGA functionals via libxc [@Lehtola2018], density
-fitting (RI-JK) methods for coulomb and exchange interactions, implicit
-solvation via COSMO[@Klamt1993] and SMD[@Marenich2009], and dispersion
-corrections (XDM[@Johnson2006;@Becke2007;@OterodelaRoza2012],
-DFTD4[@Caldeweyher2017;@Caldeweyher2019;@Caldeweyher2020]). For
+fitting (RI-JK) methods for Coulomb and exchange interactions, implicit
+solvation via COSMO [@Klamt1993] and SMD [@Marenich2009], and dispersion
+corrections (XDM [@Johnson2006;@Becke2007;@OterodelaRoza2012],
+DFTD4 [@Caldeweyher2017;@Caldeweyher2019;@Caldeweyher2020]). For
 crystallography, OCC provides CIF file processing via gemmi [@Wojdyr2022], fast
 periodic bond detection, symmetry-unique molecule generation, CrystalExplorer
 model energies [@Mackenzie2017; @Spackman2023CE], and automatic pair-based
 lattice energy summation for neutral molecular crystals with symmetry.
 
 Unique capabilities include crystal growth free energy
-predictions[@Spackman2023CC] combining lattice energies, interaction energy
+predictions [@Spackman2023CC] combining lattice energies, interaction energy
 decomposition, and vibrational/configurational entropy contributions. The
-distributed multipole analysis (DMA)[@Stone2005] implementation provides multipole
+distributed multipole analysis (DMA) [@Stone2005] implementation provides multipole
 expansions up to hexadecapole level with GDMA-compatible output. WebAssembly
 compilation via Emscripten [@Zakai2011] enables full-featured quantum
 chemistry calculations directly in web browsers, supporting interactive
@@ -150,7 +152,7 @@ adding GPU acceleration.
 
 # Acknowledgements
 
-OCC would not exist if it weren't for Tonto[@tonto] its predecessor library and
+OCC would not exist if it weren't for Tonto [@tonto] its predecessor library and
 program at the backend of CrystalExplorer.
 
 OCC builds upon a foundation of high-quality open-source libraries, and we
@@ -160,7 +162,7 @@ gratefully acknowledge the developers and maintainers of these projects:
 operations, libcint [@Sun2015] for Gaussian integral evaluation, libxc
 [@Lehtola2018] for exchange-correlation functionals,
 libecpint [@Shaw2021] for effective core potential
-integrals, and gau2grid [@gau2grid] for efficient grid evaluation of gaussians.
+integrals, and gau2grid [@gau2grid] for efficient grid evaluation of Gaussians.
 
 **Crystallographic and optimization tools**: gemmi [@Wojdyr2022] for CIF file
 handling and crystallographic operations, and LBFGS++ [@lbfgspp] for
