@@ -4,7 +4,8 @@
 [![Build & Test](https://github.com/peterspackman/occ/actions/workflows/build_test.yml/badge.svg)](https://github.com/peterspackman/occ/actions/workflows/build_test.yml)
 [![PyPI version](https://badge.fury.io/py/occpy.svg)](https://badge.fury.io/py/occpy)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/occpy)](https://pypi.org/project/occpy/)
-[![DOI](https://zenodo.org/badge/292276139.svg)](https://zenodo.org/doi/10.5281/zenodo.10703204)
+[![Zenodo DOI](https://zenodo.org/badge/292276139.svg)](https://zenodo.org/doi/10.5281/zenodo.10703204)
+[![Paper DOI](https://joss.theoj.org/papers/10.21105/joss.09609/status.svg)](https://doi.org/10.21105/joss.09609)
 
 A next-generation quantum chemistry and crystallography program and library, designed for modern computational workflows.
 
