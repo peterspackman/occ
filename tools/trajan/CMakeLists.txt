@@ -1,6 +1,0 @@
-add_subdirectory(3rdparty EXCLUDE_FROM_ALL)
-add_subdirectory(include)
-add_subdirectory(src)
-if (BUILD_TESTING) 
-    add_subdirectory(tests)
-endif()

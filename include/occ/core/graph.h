@@ -1,7 +1,9 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
 #include <queue>
+#include <set>
 #include <stack>
+#include <vector>
 
 namespace occ::core::graph {
 
@@ -10,6 +12,9 @@ template <typename VertexType, typename EdgeType> class Graph {
 public:
   using VertexDescriptor = std::size_t;
   using EdgeDescriptor = std::size_t;
+  using Path = std::vector<VertexDescriptor>;
+  using Cycle = std::set<VertexDescriptor>;
+  using CycleSet = std::set<Cycle>;
 
   using Edges = ankerl::unordered_dense::map<EdgeDescriptor, EdgeType>;
   using Vertices = ankerl::unordered_dense::map<VertexDescriptor, VertexType>;
@@ -31,6 +36,7 @@ public:
   VertexDescriptor add_vertex(VertexType &&vertex) {
     m_vertices.insert({m_current_vertex_descriptor, vertex});
     m_adjacency_list[m_current_vertex_descriptor] = {};
+    invalidate_cycle_cache();
     return m_current_vertex_descriptor++;
   }
 
@@ -49,6 +55,7 @@ public:
       t_neighbors.insert({source, m_current_edge_descriptor});
     }
     m_edges.insert({m_current_edge_descriptor, edge});
+    invalidate_cycle_cache();
     return m_current_edge_descriptor++;
   }
 
@@ -168,15 +175,114 @@ public:
     return components;
   }
 
+  // Find all cycles up to a maximum size, tracking paths (with caching)
+  void generate_cycles(size_t max_cycle_size = 8) {
+    if (m_cycles_cached && m_max_cycle_size == max_cycle_size) {
+      return;
+    }
+
+    m_cycles.clear();
+    m_max_cycle_size = max_cycle_size;
+
+    for (const auto &[vertex, _] : m_vertices) {
+      find_cycles_from_vertex(vertex, vertex, Path{vertex}, m_cycles,
+                              max_cycle_size);
+    }
+
+    m_cycles_cached = true;
+  }
+
+  // Invalidate cycle cache (call after adding/removing vertices or edges)
+  void invalidate_cycle_cache() {
+    m_cycles.clear();
+    m_cycles_cached = false;
+  }
+
+  // Find cycles starting from a specific vertex
+  const CycleSet find_cycles_from(VertexDescriptor start,
+                                  size_t max_cycle_size = 8) const {
+    CycleSet cycles;
+    find_cycles_from_vertex(start, start, Path{start}, cycles, max_cycle_size);
+    return cycles;
+  }
+
+  // Check if a vertex is part of any cycle
+  bool is_in_cycle(VertexDescriptor vertex, size_t max_cycle_size = 8) const {
+    for (const auto &cycle : m_cycles) {
+      if (cycle.contains(vertex)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Get all vertices that are part of any cycle
+  ankerl::unordered_dense::set<VertexDescriptor>
+  get_cycle_vertices(size_t max_cycle_size = 8) const {
+    ankerl::unordered_dense::set<VertexDescriptor> cycle_vertices;
+    for (const auto &cycle : m_cycles) {
+      for (const auto &vertex : cycle) {
+        cycle_vertices.insert(vertex);
+      }
+    }
+    return cycle_vertices;
+  }
+
+  // Get all cycles containing a specific vertex
+  const CycleSet get_cycles_containing(VertexDescriptor vertex,
+                                       size_t max_cycle_size = 8) const {
+    CycleSet cycles;
+    for (const auto &cycle : m_cycles) {
+      if (cycle.contains(vertex)) {
+        cycles.insert(cycle);
+      }
+    }
+    return cycles;
+  }
+
   size_t num_edges() const { return m_edges.size(); }
   size_t num_vertices() const { return m_vertices.size(); }
 
 private:
+  // Depth-first search that tracks the current path to detect cycles
+  void find_cycles_from_vertex(VertexDescriptor start, VertexDescriptor current,
+                               Path current_path, CycleSet &cycles,
+                               size_t max_cycle_size) const {
+    if (current_path.size() > max_cycle_size) {
+      return;
+    }
+
+    auto neighbors_it = m_adjacency_list.find(current);
+    if (neighbors_it == m_adjacency_list.end()) {
+      return;
+    }
+
+    for (const auto &[neighbor, _] : neighbors_it->second) {
+      if (neighbor == start && current_path.size() >= 3) {
+        // Found a cycle back to start
+        Cycle cycle(current_path.begin(), current_path.end());
+        cycles.insert(cycle);
+      } else if (std::find(current_path.begin(), current_path.end(),
+                           neighbor) == current_path.end()) {
+        // Neighbor not in current path, continue DFS
+        Path new_path = current_path;
+        new_path.push_back(neighbor);
+        find_cycles_from_vertex(start, neighbor, new_path, cycles,
+                                max_cycle_size);
+      }
+    }
+  }
+
   VertexDescriptor m_current_vertex_descriptor{0};
   EdgeDescriptor m_current_edge_descriptor{0};
   AdjacencyList m_adjacency_list;
   Vertices m_vertices;
   Edges m_edges;
+
+  // Cycle detection caching
+  mutable CycleSet m_cycles;
+  mutable bool m_cycles_cached{false};
+  mutable size_t m_max_cycle_size{8};
 };
 
 } // namespace occ::core::graph
