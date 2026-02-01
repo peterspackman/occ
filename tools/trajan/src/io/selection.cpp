@@ -46,6 +46,8 @@ SelectionParser::parse_selection(const std::string &input) {
       return SelectionCriteria{MoleculeIndexSelection{std::move(values)}};
     } else if constexpr (std::is_same_v<SelectionType, AtomTypeSelection>) {
       return SelectionCriteria{AtomTypeSelection{std::move(values)}};
+    } else if constexpr (std::is_same_v<SelectionType, MoleculeTypeSelection>) {
+      return SelectionCriteria{MoleculeTypeSelection{std::move(values)}};
     }
   } catch (...) {
     return std::nullopt;
@@ -54,21 +56,72 @@ SelectionParser::parse_selection(const std::string &input) {
   return std::nullopt;
 }
 
-std::optional<SelectionCriteria>
+std::optional<std::vector<SelectionCriteria>>
 SelectionParser::parse(const std::string &input) {
   if (input.empty())
     return std::nullopt;
 
-  switch (input[0]) {
-  case SelectionTraits<AtomIndexSelection>::prefix:
-    return parse_selection<AtomIndexSelection>(input.substr(1));
-  case SelectionTraits<AtomTypeSelection>::prefix:
-    return parse_selection<AtomTypeSelection>(input.substr(1));
-  case SelectionTraits<MoleculeIndexSelection>::prefix:
-    return parse_selection<MoleculeIndexSelection>(input.substr(1));
-  default:
-    return std::nullopt;
-  }
-}
+  std::vector<SelectionCriteria> results;
+  std::string current_token;
+  char current_prefix = '\0';
 
+  for (size_t i = 0; i < input.length(); i++) {
+    char c = input[i];
+
+    // Check if this is a prefix character
+    if ((c == SelectionTraits<AtomIndexSelection>::prefix ||
+         c == SelectionTraits<AtomTypeSelection>::prefix ||
+         c == SelectionTraits<MoleculeIndexSelection>::prefix ||
+         c == SelectionTraits<MoleculeTypeSelection>::prefix) &&
+        (i == 0 || input[i - 1] == ',')) {
+
+      // Process previous token if exists
+      if (!current_token.empty() && current_prefix != '\0') {
+        std::optional<SelectionCriteria> result;
+        switch (current_prefix) {
+        case SelectionTraits<AtomIndexSelection>::prefix:
+          result = parse_selection<AtomIndexSelection>(current_token);
+          break;
+        case SelectionTraits<AtomTypeSelection>::prefix:
+          result = parse_selection<AtomTypeSelection>(current_token);
+          break;
+        case SelectionTraits<MoleculeIndexSelection>::prefix:
+          result = parse_selection<MoleculeIndexSelection>(current_token);
+          break;
+        case SelectionTraits<MoleculeTypeSelection>::prefix:
+          result = parse_selection<MoleculeTypeSelection>(current_token);
+          break;
+        }
+        if (!result)
+          return std::nullopt;
+        results.push_back(*result);
+        current_token.clear();
+      }
+      current_prefix = c;
+    } else {
+      current_token += c;
+    }
+  }
+
+  // Process final token
+  if (!current_token.empty() && current_prefix != '\0') {
+    std::optional<SelectionCriteria> result;
+    switch (current_prefix) {
+    case SelectionTraits<AtomIndexSelection>::prefix:
+      result = parse_selection<AtomIndexSelection>(current_token);
+      break;
+    case SelectionTraits<AtomTypeSelection>::prefix:
+      result = parse_selection<AtomTypeSelection>(current_token);
+      break;
+    case SelectionTraits<MoleculeIndexSelection>::prefix:
+      result = parse_selection<MoleculeIndexSelection>(current_token);
+      break;
+    }
+    if (!result)
+      return std::nullopt;
+    results.push_back(*result);
+  }
+
+  return results.empty() ? std::nullopt : std::make_optional(results);
+}
 } // namespace trajan::io

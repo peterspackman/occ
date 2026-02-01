@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <trajan/core/atom.h>
 #include <trajan/core/log.h>
@@ -119,7 +120,8 @@ template <> struct SelectionTraits<MoleculeTypeSelection> {
 
 class SelectionParser {
 public:
-  static std::optional<SelectionCriteria> parse(const std::string &input);
+  static std::optional<std::vector<SelectionCriteria>>
+  parse(const std::string &input);
 
 private:
   template <typename SelectionType>
@@ -146,61 +148,132 @@ private:
 
 template <typename SelectionType>
 std::vector<core::EntityVariant>
-process_selection(const SelectionType &selection, std::vector<Atom> &atoms,
-                  std::vector<Molecule> &molecules,
+process_selection(const SelectionCriteria &selection,
+                  const std::vector<Atom> &atoms,
+                  const std::vector<Molecule> &molecules,
                   std::vector<core::EntityVariant> &entities) {
-  trajan::log::debug("Processing selection of type {}", selection.name());
-  if constexpr (std::is_same_v<SelectionType, io::AtomIndexSelection>) {
-    for (Atom &atom : atoms) {
-      for (const int &ai : selection) {
-        if (atom.index == ai) {
-          entities.push_back(atom);
-        }
-      }
-    }
-  } else if constexpr (std::is_same_v<SelectionType, io::AtomTypeSelection>) {
-    for (Atom &atom : atoms) {
-      for (const std::string &at : selection) {
-        if (atom.type == at) {
-          entities.push_back(atom);
-        }
-      }
-    }
-  } else if constexpr (std::is_same_v<SelectionType,
-                                      io::MoleculeIndexSelection>) {
 
-    for (Molecule &molecule : molecules) {
-      for (const int &mi : selection) {
-        if (molecule.index == mi) {
-          entities.push_back(molecule);
+  std::visit(
+      [&](const auto &sel) {
+        using SelType = std::decay_t<decltype(sel)>;
+        trajan::log::debug("Processing selection of type {}", sel.name());
+
+        if constexpr (std::is_same_v<SelType, io::AtomIndexSelection>) {
+          for (const Atom &atom : atoms) {
+            for (const int &ai : sel) {
+              if (atom.index == ai) {
+                entities.push_back(atom);
+              }
+            }
+          }
+        } else if constexpr (std::is_same_v<SelType, io::AtomTypeSelection>) {
+          for (const Atom &atom : atoms) {
+            for (const std::string &at : sel) {
+              if (atom.type == at) {
+                entities.push_back(atom);
+              }
+            }
+          }
+        } else if constexpr (std::is_same_v<SelType,
+                                            io::MoleculeIndexSelection>) {
+          for (const Molecule &molecule : molecules) {
+            for (const int &mi : sel) {
+              if (molecule.index == mi) {
+                entities.push_back(molecule);
+              }
+            }
+          }
+        } else if constexpr (std::is_same_v<SelType,
+                                            io::MoleculeTypeSelection>) {
+          for (const Molecule &molecule : molecules) {
+            for (const std::string &mt : sel) {
+              if (molecule.type == mt) {
+                entities.push_back(molecule);
+              }
+            }
+          }
         }
-      }
-    }
-  } else if constexpr (std::is_same_v<SelectionType,
-                                      io::MoleculeTypeSelection>) {
-    for (Molecule &molecule : molecules) {
-      for (const std::string &mt : selection) {
-        if (molecule.type == mt) {
-          entities.push_back(molecule);
-        }
-      }
-    }
-  } else {
-    throw std::runtime_error("Unknown type.");
+      },
+      selection);
+  return entities;
+};
+
+template <typename SelectionType>
+std::vector<core::EntityVariant>
+process_selection(const std::vector<SelectionCriteria> &selections,
+                  const std::vector<Atom> &atoms,
+                  const std::vector<Molecule> &molecules,
+                  std::vector<core::EntityVariant> &entities) {
+
+  for (const auto &selection : selections) {
+    process_selection<SelectionType>(selection, atoms, molecules, entities);
   }
+
+  // Remove duplicates based on entity type and index
+  std::sort(entities.begin(), entities.end(), [](const auto &a, const auto &b) {
+    auto get_sort_key = [](const auto &entity) {
+      return std::visit(
+          [](const auto &e) {
+            return std::make_pair(typeid(e).hash_code(), e.index);
+          },
+          entity);
+    };
+    return get_sort_key(a) < get_sort_key(b);
+  });
+
+  entities.erase(
+      std::unique(entities.begin(), entities.end(),
+                  [](const auto &a, const auto &b) {
+                    auto is_same_type_and_index = [](const auto &a_entity,
+                                                     const auto &b_entity) {
+                      return std::visit(
+                          [&](const auto &a_val, const auto &b_val) {
+                            using TypeA = std::decay_t<decltype(a_val)>;
+                            using TypeB = std::decay_t<decltype(b_val)>;
+                            if constexpr (std::is_same_v<TypeA, TypeB>) {
+                              return a_val.index == b_val.index;
+                            }
+                            return false;
+                          },
+                          a_entity, b_entity);
+                    };
+                    return is_same_type_and_index(a, b);
+                  }),
+      entities.end());
+
   return entities;
 }
 
-inline auto selection_validator =
-    [](std::optional<SelectionCriteria> &parsed_sel) {
-      return [parsed_sel = &parsed_sel](const std::string &input) {
-        auto result = SelectionParser::parse(input);
-        if (!result) {
-          return std::string("Invalid selection format");
+inline auto selection_validator(
+    std::vector<SelectionCriteria> &parsed_sel,
+    std::optional<std::vector<char>> restrictions = std::nullopt) {
+
+  return [parsed_sel = &parsed_sel, restrictions](const std::string &input) {
+    auto result = SelectionParser::parse(input);
+    if (!result) {
+      return std::string("Invalid selection format");
+    }
+    if (restrictions.has_value()) {
+      for (const auto &sel : result.value()) {
+        std::string error;
+        std::visit(
+            [restrictions = &restrictions.value(), &error](const auto &s) {
+              using SelType = std::decay_t<decltype(s)>;
+              const char p = SelectionTraits<SelType>::prefix;
+              if (std::find(restrictions->begin(), restrictions->end(), p) ==
+                  restrictions->end()) {
+                error = fmt::format("Selection prefix '{}' is not allowed.", p);
+              }
+            },
+            sel);
+        if (!error.empty()) {
+          return error;
         }
-        *parsed_sel = result;
-        return std::string();
-      };
-    };
+      }
+    }
+    *parsed_sel = result.value();
+    return std::string();
+  };
+};
 
 } // namespace trajan::io

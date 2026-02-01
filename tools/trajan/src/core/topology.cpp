@@ -1,5 +1,5 @@
-#include "trajan/core/atomgraph.h"
 #include <Eigen/Geometry>
+#include <trajan/core/atomgraph.h>
 #include <trajan/core/topology.h>
 
 namespace trajan::core {
@@ -284,6 +284,10 @@ void Topology::generate_improper_dihedrals_from_bonds() {
   }
 
   this->update_dihedral_structures();
+}
+
+void Topology::generate_cyclic_structures(int max_cycle_size) const {
+  m_atom_graph.generate_cycles(max_cycle_size);
 }
 
 void Topology::generate_all_from_bonds() {

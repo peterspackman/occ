@@ -1,14 +1,12 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
 #include <fmt/format.h>
+#include <occ/core/linear_algebra.h>
+#include <occ/crystal/unitcell.h>
 #include <stdexcept>
 #include <trajan/core/atom.h>
-// #include <trajan/core/linear_algebra.h>
-#include <occ/core/linear_algebra.h>
 #include <trajan/core/log.h>
 #include <trajan/core/molecule.h>
-// #include <trajan/core/unit_cell.h>
-#include <occ/crystal/unitcell.h>
 #include <variant>
 #include <vector>
 
@@ -76,6 +74,19 @@ struct EntityVariantEqual {
     }
   }
 };
+
+template <typename T>
+std::vector<T>
+get_entities_of_type(const std::vector<EntityVariant> &entities) {
+  std::vector<T> result;
+  result.reserve(entities.size());
+  for (const auto &e : entities) {
+    if (std::holds_alternative<T>(e)) {
+      result.push_back(e);
+    }
+  }
+  return result;
+}
 
 struct NeighbourListPacket {
   Mat3N cart_pos;

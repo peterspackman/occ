@@ -1,3 +1,8 @@
+#include "occ/core/bondgraph.h"
+#include "occ/core/units.h"
+#include <algorithm>
+#include <cmath>
+#include <mach/message.h>
 #include <occ/core/element.h>
 #include <occ/crystal/unitcell.h>
 #include <optional>
@@ -31,6 +36,7 @@ Trajectory::~Trajectory() {
 
 void Trajectory::load_files(const std::vector<fs::path> &files) {
   m_handlers = io::read_input_files(files);
+  m_files = files;
 
   if (m_handlers.empty()) {
     throw std::runtime_error("Could not load files.");
@@ -67,7 +73,7 @@ void Trajectory::set_output_file(const fs::path &file) {
   m_output_handler->initialise(io::FileHandler::Mode::Write);
 }
 
-bool Trajectory::next_frame() {
+bool Trajectory::_next_frame() {
   if (m_frames_in_memory) {
     if (m_current_frame_index >= m_frames.size()) {
       m_frame_loaded = false;
@@ -105,6 +111,19 @@ bool Trajectory::next_frame() {
   return false;
 }
 
+bool Trajectory::next_frame() {
+  bool next = this->_next_frame();
+  if (next) {
+    return next;
+  }
+  this->reset();
+  if (m_frames_in_memory) {
+    m_frame_loaded = true;
+  }
+  this->load_files(m_files);
+  return next;
+}
+
 void Trajectory::write_frame() {
   if (!m_output_handler) {
     // trajan::log::warn("Output file not set. Writing to {}", "PLACEHOLDER");
@@ -129,9 +148,9 @@ void Trajectory::reset() {
   m_frame_loaded = false;
 }
 
-std::vector<EntityVariant>
+const std::vector<EntityVariant>
 Trajectory::get_entities(const io::SelectionCriteria &selection) {
-  std::vector<Atom> atoms = this->atoms();
+  const std::vector<Atom> atoms = this->atoms();
   std::vector<Molecule> molecules;
   std::vector<EntityVariant> entities;
   entities.reserve(atoms.size());
@@ -141,7 +160,7 @@ Trajectory::get_entities(const io::SelectionCriteria &selection) {
   if (std::holds_alternative<io::MoleculeIndexSelection>(selection) ||
       std::holds_alternative<io::MoleculeTypeSelection>(selection)) {
     // build molecules
-    molecules = this->extract_molecules();
+    molecules = this->get_molecules();
   }
 
   entities = std::visit(
@@ -162,7 +181,7 @@ Trajectory::get_entities(const io::SelectionCriteria &selection) {
   return entities;
 }
 
-std::vector<EntityVariant>
+const std::vector<EntityVariant>
 Trajectory::get_entities(const std::vector<io::SelectionCriteria> &selections) {
   std::vector<EntityVariant> entities;
   for (const io::SelectionCriteria &sel : selections) {
@@ -173,22 +192,53 @@ Trajectory::get_entities(const std::vector<io::SelectionCriteria> &selections) {
   return entities;
 }
 
-const Topology &Trajectory::get_topology(std::optional<double> bond_tolerance) {
-  if (m_topology_needs_update) {
-    this->update_topology(bond_tolerance);
+const std::vector<Atom>
+Trajectory::get_atoms(const io::SelectionCriteria &selection) {
+  const std::vector<EntityVariant> entities = this->get_entities(selection);
+  return core::get_entities_of_type<Atom>(entities);
+}
+
+const std::vector<Atom>
+Trajectory::get_atoms(const std::vector<io::SelectionCriteria> &selections) {
+  const std::vector<EntityVariant> entities = this->get_entities(selections);
+  return core::get_entities_of_type<Atom>(entities);
+}
+
+const std::vector<Molecule>
+Trajectory::get_molecules(const io::SelectionCriteria &selection) {
+  const std::vector<EntityVariant> entities = this->get_entities(selection);
+  return core::get_entities_of_type<Molecule>(entities);
+}
+
+const std::vector<Molecule> Trajectory::get_molecules(
+    const std::vector<io::SelectionCriteria> &selections) {
+  const std::vector<EntityVariant> entities = this->get_entities(selections);
+  return core::get_entities_of_type<Molecule>(entities);
+}
+
+const Topology &Trajectory::get_topology(
+    const std::optional<TopologyUpdateSettings> &opt_settings) {
+  if (m_topology_needs_update ||
+      m_topology_update_frequency == m_current_frame_index) {
+    this->update_topology(opt_settings);
+    m_topology_needs_update = false;
   }
   return m_topology;
 }
 
-void Trajectory::update_topology(std::optional<double> bond_tolerance) {
+void Trajectory::update_topology(
+    const std::optional<TopologyUpdateSettings> &opt_settings) {
   const std::vector<Atom> &atoms = this->atoms();
-  trajan::log::debug("update_topology: Starting with {} atoms", atoms.size());
 
   if (atoms.empty()) {
     trajan::log::error("No atoms available for topology update");
-    m_topology_needs_update = false;
     return;
   }
+
+  TopologyUpdateSettings default_settings;
+  default_settings.bond_tolerance = occ::core::get_bond_tolerance();
+
+  auto final_settings = opt_settings.value_or(default_settings);
 
   trajan::log::debug("Creating atom graph");
   AtomGraph atom_graph;
@@ -196,32 +246,66 @@ void Trajectory::update_topology(std::optional<double> bond_tolerance) {
   for (int i = 0; i < atoms.size(); i++) {
     atom_graph.add_vertex(trajan::core::AtomVertex{i});
   }
-  trajan::log::debug("BondGraph created successfully");
-  double max_cov_cutoff = occ::core::max_covalent_radius();
-  trajan::log::debug("Creating NeighbourList with cutoff {:.3f}",
-                     max_cov_cutoff);
+  trajan::log::debug("Atom graph created successfully");
+  double max_cov_radii = occ::core::max_covalent_radius();
+  double max_cov_cutoff = max_cov_radii + final_settings.bond_tolerance;
+  trajan::log::debug(
+      "Creating NeighbourList with cutoff {:.3f} ({:.3f} + {:.3f}) Angstroms",
+      max_cov_cutoff, max_cov_radii, final_settings.bond_tolerance);
   NeighbourList nl(max_cov_cutoff);
   trajan::log::debug("NeighbourList created, updating with atoms");
 
   nl.update(atoms, this->unit_cell());
   trajan::log::debug("NeighbourList updated successfully");
 
-  double tol;
-  if (!bond_tolerance.has_value()) {
-    tol = occ::core::get_bond_tolerance();
-  } else {
-    tol = bond_tolerance.value();
-  }
-  trajan::log::debug("Bond tolerance for topology generation: {}", tol);
   size_t bond_count = 0;
 
   NeighbourCallback func = [&](const Entity &ent1, const Entity &ent2,
                                double rsq) {
     const Atom &atom1 = atoms[ent1.index];
     const Atom &atom2 = atoms[ent2.index];
-    std::optional<Bond> bond = atom1.is_bonded_with_rsq(atom2, rsq, tol);
+    if (std::binary_search(final_settings.no_bonds.begin(),
+                           final_settings.no_bonds.end(), atom1.index) ||
+        std::binary_search(final_settings.no_bonds.begin(),
+                           final_settings.no_bonds.end(), atom2.index)) {
+      trajan::log::debug("Atom pair {} {} skipped due to --no-bond flag",
+                         atom1.index, atom2.index); // TODO: elaborate output
+      return;
+    }
+    std::optional<Bond> bond =
+        atom1.is_bonded_with_rsq(atom2, rsq, final_settings.bond_tolerance);
     if (!bond.has_value()) {
       return;
+    }
+    for (const auto &bc : final_settings.bond_cutoffs) {
+      double bc_cutoffsq = bc.threshold * bc.threshold;
+      if (!(std::binary_search(bc.atom_indices1.begin(), bc.atom_indices1.end(),
+                               atom1.index) &&
+            std::binary_search(bc.atom_indices2.begin(), bc.atom_indices2.end(),
+                               atom2.index))) {
+        continue;
+      }
+      switch (bc.op) {
+      case BondCutoff::ComparisonOp::LessThan:
+        if (rsq > bc_cutoffsq) {
+          trajan::log::debug("Atom pair {} and {} with distance {:.3f} skipped "
+                             "due to --bond-critera.",
+                             atom1.index, atom2.index, std::sqrt(rsq));
+          return;
+        }
+        break;
+      case BondCutoff::ComparisonOp::GreaterThan:
+        if (rsq < bc_cutoffsq) {
+          trajan::log::debug("Atom pair {} and {} with distance {:.3f} skipped "
+                             "due to --bond-critera.",
+                             atom1.index, atom2.index, std::sqrt(rsq));
+          return;
+        }
+        break;
+      default:
+        throw std::runtime_error(
+            "Comparison operator needed. Should not have happened");
+      }
     }
     Bond bv = bond.value();
     bv.indices = {ent1.index, ent2.index};
@@ -236,7 +320,7 @@ void Trajectory::update_topology(std::optional<double> bond_tolerance) {
   m_topology = Topology(atoms, atom_graph);
 }
 
-const std::vector<Molecule> Trajectory::extract_molecules() {
+const std::vector<Molecule> Trajectory::get_molecules() {
   if (m_topology_needs_update) {
     this->update_topology();
   }

@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
 #include <occ/crystal/unitcell.h>
+#include <optional>
 #include <trajan/core/atom.h>
 #include <trajan/core/molecule.h>
 #include <trajan/core/neigh.h>
@@ -27,9 +28,12 @@ public:
 
   void update_atom_position(size_t idx, Vec3 &pos);
 
-  const Mat3N cart_pos() const;
+  const Mat3N cart_pos(std::optional<double> scale = std::nullopt) const;
+  const occ::Vec
+  cart_pos_flat(std::optional<double> scale = std::nullopt) const;
   inline const Mat3N &wrapped_cart_pos() const { return m_wrapped_cart_pos; }
   inline const Mat3N &frac_pos() const { return m_frac_pos; }
+  std::vector<int> atomic_numbers() const;
 
   inline void set_cart_pos(Mat3N &cart_pos) { m_cart_pos = cart_pos; }
   inline void set_frac_pos(Mat3N &frac_pos) { m_frac_pos = frac_pos; }
@@ -40,6 +44,10 @@ public:
   inline void set_index(size_t index) { m_index = index; }
   inline const double &timestep() const { return m_timestep; }
   inline void set_timestep(double timestep) { m_timestep = timestep; }
+  inline void set_charge(double charge) { m_charge = charge; }
+  inline void set_multiplicity(int mult) { m_multiplicity = mult; }
+  inline const double &get_charge() const { return m_charge; }
+  inline const int &get_multiplicity() const { return m_multiplicity; }
 
   Frame() = default;
 
@@ -62,6 +70,8 @@ private:
   Mat3N m_frac_pos;
   Mat3N m_wrapped_cart_pos;
   double m_timestep;
+  double m_charge = 0.0;
+  int m_multiplicity = 1;
 
   void update_positions();
 };

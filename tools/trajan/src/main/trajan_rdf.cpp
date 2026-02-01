@@ -28,7 +28,7 @@ void RDFResult::normalise_by_count(size_t count) {
   }
 }
 
-void run_rdf_subcommand(const RDFOpts &opts) {
+void run_rdf_subcommand(const RDFOpts &opts, Trajectory &traj) {
 
   RDFResult rdf(opts.nbins);
   double bin_width = opts.rcut / opts.nbins;
@@ -39,24 +39,18 @@ void run_rdf_subcommand(const RDFOpts &opts) {
     rdf.r[i] = ri;
   }
 
-  core::Trajectory trajectory;
-
-  // TODO: add flag to call load_files_into_memory() if desired
-  trajectory.load_files(opts.infiles);
-
   core::NeighbourList nl(opts.rcut);
 
   size_t frame_count = 0;
-  while (trajectory.next_frame()) {
-    core::UnitCell uc = trajectory.unit_cell();
-    // TODO: find a way to not create a new nl each time
+  while (traj.next_frame()) {
     std::vector<core::EntityVariant> selection1 =
-        trajectory.get_entities(*opts.parsed_sel1);
+        traj.get_entities(opts.parsed_sel1);
     std::vector<core::EntityVariant> selection2 =
-        trajectory.get_entities(*opts.parsed_sel2);
+        traj.get_entities(opts.parsed_sel2);
     // TODO: molecule origin input
 
-    nl.update({selection1, selection2}, trajectory.unit_cell());
+    auto uc = traj.unit_cell();
+    nl.update({selection1, selection2}, uc);
 
     std::fill(rdf.nofr.begin(), rdf.nofr.end(), 0.0);
 
@@ -67,7 +61,11 @@ void run_rdf_subcommand(const RDFOpts &opts) {
       rdf.nofr[bin_idx]++;
     };
     nl.iterate_neighbours(func);
-    double density_norm = selection1.size() * selection2.size() / uc.volume();
+    double volume = 1.0;
+    if (uc) {
+      volume = uc.value().volume();
+    }
+    double density_norm = selection1.size() * selection2.size() / volume;
     for (size_t i = 0; i < opts.nbins; i++) {
       double ri = rdf.r[i];
       double shell_volume = norm * (std::pow(ri + bin_width / 2, 3) -
@@ -89,11 +87,11 @@ void run_rdf_subcommand(const RDFOpts &opts) {
   outfile.close();
 }
 
-CLI::App *add_rdf_subcommand(CLI::App &app) {
+CLI::App *add_rdf_subcommand(CLI::App &app, Trajectory &traj) {
   CLI::App *rdf =
       app.add_subcommand("rdf", "Radial Pair Distribution Function");
   auto opts = std::make_shared<RDFOpts>();
-  rdf->add_option("--tr,--traj", opts->infiles, "Input trajectory file name")
+  rdf->add_option("-t,--tr,--traj", opts->infiles, "Input trajectory file name")
       ->required()
       ->check(CLI::ExistingFile);
   rdf->add_option("--o,--out", opts->outfile, "Output file for RDF data")
@@ -103,6 +101,7 @@ CLI::App *add_rdf_subcommand(CLI::App &app) {
   rdf->add_option("--nb,--nbins", opts->nbins, "Number of bins for RDF")
       ->capture_default_str();
   std::string sel1 = "--s1,--sel1";
+
   rdf->add_option(sel1, opts->raw_sel1,
                   "First selection (prefix: i=atom indices, a=atom types, "
                   "j=molecule indices, m=molecule types)\n"
@@ -119,9 +118,7 @@ CLI::App *add_rdf_subcommand(CLI::App &app) {
       ->required()
       ->check(io::selection_validator(opts->parsed_sel2));
 
-  // opts->num_threads = app.get_option("--threads")->as<size_t>();
-
-  rdf->callback([opts]() { run_rdf_subcommand(*opts); });
+  rdf->callback([opts, &traj]() { run_rdf_subcommand(*opts, traj); });
   return rdf;
 }
 

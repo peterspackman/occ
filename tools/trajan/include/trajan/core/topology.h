@@ -144,6 +144,8 @@ public:
   void generate_improper_dihedrals_from_bonds();
   void generate_all_from_bonds();
 
+  void generate_cyclic_structures(int max_cycle_size = 8) const;
+
   // graph-based queries - delegates to AtomGraph
   std::vector<size_t> get_bonded_atoms(size_t atom_idx) const;
   std::vector<size_t> get_atoms_at_distance(size_t atom_idx,
@@ -173,7 +175,7 @@ public:
 
 private:
   std::vector<Atom> m_atoms;
-  AtomGraph m_atom_graph;
+  mutable AtomGraph m_atom_graph;
   std::vector<Angle> m_angles;
   std::vector<Dihedral> m_dihedrals;
 

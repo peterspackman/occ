@@ -2,19 +2,21 @@
 
 #include <CLI/CLI.hpp>
 #include <string>
+#include <trajan/core/trajectory.h>
 #include <trajan/io/file_handler.h>
 #include <trajan/io/selection.h>
 
 namespace trajan::main {
 
 namespace io = trajan::io;
+using trajan::core::Trajectory;
 
-struct RDFOpts : trajan::util::Opts {
+struct RDFOpts {
   std::string outfile{"gofr.out"};
   double rcut = 6.0;
   int nbins = 100;
   std::string raw_sel1, raw_sel2;
-  std::optional<io::SelectionCriteria> parsed_sel1, parsed_sel2;
+  std::vector<io::SelectionCriteria> parsed_sel1, parsed_sel2;
 };
 
 struct RDFResult {
@@ -31,7 +33,7 @@ struct RDFResult {
   void normalise_by_count(size_t count);
 };
 
-void run_rdf_subcommand(RDFOpts const &opts);
-CLI::App *add_rdf_subcommand(CLI::App &app);
+void run_rdf_subcommand(RDFOpts const &opts, Trajectory &traj);
+CLI::App *add_rdf_subcommand(CLI::App &app, Trajectory &traj);
 
 } // namespace trajan::main

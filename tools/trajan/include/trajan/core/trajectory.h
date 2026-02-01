@@ -16,6 +16,21 @@ using occ::crystal::UnitCell;
 using Atom = trajan::core::EnhancedAtom;
 using Molecule = trajan::core::EnhancedMolecule;
 
+struct BondCutoff {
+  std::vector<int> atom_indices1;
+  std::vector<int> atom_indices2;
+  enum class ComparisonOp { LessThan, GreaterThan } op;
+  double threshold;
+};
+
+struct TopologyUpdateSettings {
+  bool top_auto{true};
+  int update_frequency{0};
+  std::vector<BondCutoff> bond_cutoffs{};
+  std::vector<int> no_bonds{};
+  double bond_tolerance;
+};
+
 class Trajectory {
 
 public:
@@ -45,27 +60,41 @@ public:
 
   inline Frame &frame() { return m_frame; }
 
-  inline const std::vector<Atom> &atoms() const { return m_frame.atoms(); }
-
   inline size_t num_atoms() const { return m_frame.num_atoms(); }
 
-  inline const UnitCell &unit_cell() const { return m_frame.unit_cell(); }
+  inline const std::optional<UnitCell> &unit_cell() const {
+    return m_frame.unit_cell();
+  }
 
-  const std::vector<Molecule> extract_molecules();
-
-  std::vector<EntityVariant>
+  const std::vector<EntityVariant>
   get_entities(const io::SelectionCriteria &selection);
-
-  std::vector<EntityVariant>
+  const std::vector<EntityVariant>
   get_entities(const std::vector<io::SelectionCriteria> &selections);
+  inline const std::vector<Atom> &atoms() const { return m_frame.atoms(); }
+  inline const std::vector<Atom> &get_atoms() const { return m_frame.atoms(); }
+  const std::vector<Atom> get_atoms(const io::SelectionCriteria &selection);
+  const std::vector<Atom>
+  get_atoms(const std::vector<io::SelectionCriteria> &selections);
+  const std::vector<Molecule> get_molecules();
+  const std::vector<Molecule>
+  get_molecules(const io::SelectionCriteria &selection);
+  const std::vector<Molecule>
+  get_molecules(const std::vector<io::SelectionCriteria> &selections);
 
-  const Topology &get_topology(std::optional<double> bond_tolerance = 0.4);
+  const Topology &get_topology(
+      const std::optional<TopologyUpdateSettings> &settings = std::nullopt);
+  void update_topology(
+      const std::optional<TopologyUpdateSettings> &settings = std::nullopt);
 
-  void update_topology(std::optional<double> bond_tolerance = 0.4);
+  inline void set_topology_update_frequency(int freq) {
+    m_topology_update_frequency = 0;
+  }
 
 private:
+  bool _next_frame();
   bool m_guess_connectivity{true};
 
+  std::vector<fs::path> m_files{};
   size_t m_current_handler_index{0};
   size_t m_current_frame_index{0};
   bool m_frame_loaded{false};
@@ -74,6 +103,7 @@ private:
   Frame m_frame;
   std::vector<Frame> m_frames;
   bool m_frames_in_memory{false};
+  int m_topology_update_frequency{0};
 
   mutable Topology m_topology;
   mutable std::vector<Molecule> m_molecules{};

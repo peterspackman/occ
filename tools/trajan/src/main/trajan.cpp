@@ -1,6 +1,10 @@
 #include <CLI/App.hpp>
 #include <trajan/core/log.h>
+#include <trajan/core/trajectory.h>
+// #include <trajan/main/trajan_opt.h>
+#include <trajan/main/trajan_load.h>
 #include <trajan/main/trajan_rdf.h>
+#include <trajan/main/trajan_topology.h>
 #include <trajan/main/version.h>
 
 int main(int argc, char *argv[]) {
@@ -20,12 +24,16 @@ int main(int argc, char *argv[]) {
   verbosity_option->force_callback();
 
   // default to available system cores
-  app.add_option("--threads,-t", "Number of threads to use for operations")
+  app.add_option("--threads", "Number of threads to use for operations")
       ->default_val(std::thread::hardware_concurrency());
 
+  trajan::core::Trajectory trajectory;
+
   // add all the subcommands here
-  // auto *inp = trajan::main::add_input_subcommand(app);
-  auto *rdf = trajan::main::add_rdf_subcommand(app);
+  auto *load = trajan::main::add_load_subcommand(app, trajectory);
+  auto *top = trajan::main::add_topology_subcommand(*load, trajectory);
+  auto *rdf = trajan::main::add_rdf_subcommand(*load, trajectory);
+  // auto *opt = trajan::main::add_opt_subcommand(app);
 
   // display default info
   trajan::main::print_header();

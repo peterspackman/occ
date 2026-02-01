@@ -381,7 +381,7 @@ TEST_CASE(
   Trajectory trajectory;
   Frame &frame = trajectory.frame();
   UnitCell unit_cell = occ::crystal::cubic_cell(box_size);
-  frame.set_uc(unit_cell);
+  frame.set_unit_cell(unit_cell);
 
   // create atoms with random positions
   std::vector<Atom> atoms;
@@ -445,7 +445,7 @@ TEST_CASE("CellList vs Double Loop Comparison inside Trajectory with selection",
   Trajectory trajectory;
   Frame &frame = trajectory.frame();
   UnitCell unit_cell = occ::crystal::cubic_cell(box_size);
-  frame.set_uc(unit_cell);
+  frame.set_unit_cell(unit_cell);
   std::vector<Atom> atoms;
   for (int i = 0; i < num_atoms; ++i) {
     Vec3 position(dis(gen), dis(gen), dis(gen));
@@ -463,11 +463,10 @@ TEST_CASE("CellList vs Double Loop Comparison inside Trajectory with selection",
   }
   frame.set_atoms(atoms);
   std::string sel = "aO2";
-  std::optional<SelectionCriteria> result = SelectionParser::parse(sel);
-  REQUIRE(result);
-  SelectionCriteria sc = *result;
+  auto result = SelectionParser::parse(sel);
+  REQUIRE(result.has_value());
   std::vector<trajan::core::EntityVariant> entities =
-      trajectory.get_entities(sc);
+      trajectory.get_entities(result.value());
   size_t entities_size = entities.size();
 
   SECTION("Comparing pair counting between methods") {
@@ -520,7 +519,7 @@ TEST_CASE(
   Trajectory trajectory;
   Frame &frame = trajectory.frame();
   UnitCell unit_cell = occ::crystal::cubic_cell(box_size);
-  frame.set_uc(unit_cell);
+  frame.set_unit_cell(unit_cell);
   std::vector<Atom> atoms;
 
   int points_per_dim = static_cast<int>(std::ceil(std::cbrt(num_atoms)));
@@ -548,14 +547,13 @@ TEST_CASE(
 
   frame.set_atoms(atoms);
   std::string sel = "aO2";
-  std::optional<SelectionCriteria> result1 = SelectionParser::parse(sel);
-  REQUIRE(result1);
-  SelectionCriteria sc1 = *result1;
-  std::optional<SelectionCriteria> result2 = SelectionParser::parse(sel);
-  REQUIRE(result2);
-  SelectionCriteria sc2 = *result2;
+  auto result1 = SelectionParser::parse(sel);
+  REQUIRE(result1.has_value());
+  auto result2 = SelectionParser::parse(sel);
+  REQUIRE(result2.has_value());
   std::vector<std::vector<trajan::core::EntityVariant>> all_entities = {
-      trajectory.get_entities(sc1), trajectory.get_entities(sc2)};
+      trajectory.get_entities(result1.value()),
+      trajectory.get_entities(result2.value())};
   size_t entities_size = all_entities[0].size();
 
   SECTION("Comparing pair counting between methods") {
@@ -628,7 +626,7 @@ TEST_CASE("Molecule construction from atoms", "[unit][molecule]") {
   }
 }
 
-TEST_CASE("MoleculeGraph bond detection", "[unit][molecule][graph]") {
+TEST_CASE("AtomGraph bond detection", "[unit][molecule][graph]") {
   SECTION("Bonded atoms") {
     // Typical C-O bond length
     Atom a1(Vec3{0.0, 0.0, 0.0}, Element("C", true), 0);
@@ -1184,41 +1182,53 @@ TEST_CASE("Selection Parser - Index Selection", "[unit][selection]") {
   SECTION("Single index") {
     auto result = SelectionParser::parse("i1");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<AtomIndexSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 1);
-    CHECK(selection->data[0] == 1);
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<AtomIndexSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 1);
+      CHECK(selection->data[0] == 1);
+    }
   }
 
   SECTION("Multiple indices") {
     auto result = SelectionParser::parse("i1,2,3");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<AtomIndexSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 3);
-    CHECK(selection->data == std::vector{1, 2, 3});
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<AtomIndexSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 3);
+      CHECK(selection->data == std::vector{1, 2, 3});
+    }
   }
 
   SECTION("Index range") {
     auto result = SelectionParser::parse("i1-3");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<AtomIndexSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 3);
-    CHECK(selection->data == std::vector{1, 2, 3});
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<AtomIndexSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 3);
+      CHECK(selection->data == std::vector{1, 2, 3});
+    }
   }
 
   SECTION("Mixed indices and ranges") {
     auto result = SelectionParser::parse("i1,2-4,6");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<AtomIndexSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 5);
-    CHECK(selection->data == std::vector{1, 2, 3, 4, 6});
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<AtomIndexSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 5);
+      CHECK(selection->data == std::vector{1, 2, 3, 4, 6});
+    }
   }
 }
 
@@ -1226,31 +1236,40 @@ TEST_CASE("Selection Parser - Atom Type Selection", "[unit][selection]") {
   SECTION("Single atom type") {
     auto result = SelectionParser::parse("aC");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<AtomTypeSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 1);
-    CHECK(selection->data[0] == "C");
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<AtomTypeSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 1);
+      CHECK(selection->data[0] == "C");
+    }
   }
 
   SECTION("Multiple atom types") {
     auto result = SelectionParser::parse("aC,N,O");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<AtomTypeSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 3);
-    CHECK(selection->data == std::vector<std::string>{"C", "N", "O"});
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<AtomTypeSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 3);
+      CHECK(selection->data == std::vector<std::string>{"C", "N", "O"});
+    }
   }
 
   SECTION("Atom types with underscores") {
     auto result = SelectionParser::parse("aCA_1,CB_2");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<AtomTypeSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 2);
-    CHECK(selection->data == std::vector<std::string>{"CA_1", "CB_2"});
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<AtomTypeSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 2);
+      CHECK(selection->data == std::vector<std::string>{"CA_1", "CB_2"});
+    }
   }
 }
 
@@ -1258,21 +1277,27 @@ TEST_CASE("Selection Parser - Molecule Index Selection", "[unit][selection]") {
   SECTION("Single molecule") {
     auto result = SelectionParser::parse("j1");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<MoleculeIndexSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 1);
-    CHECK(selection->data[0] == 1);
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<MoleculeIndexSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 1);
+      CHECK(selection->data[0] == 1);
+    }
   }
 
   SECTION("Molecule range") {
     auto result = SelectionParser::parse("j1-3");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<MoleculeIndexSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 3);
-    CHECK(selection->data == std::vector{1, 2, 3});
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<MoleculeIndexSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 3);
+      CHECK(selection->data == std::vector{1, 2, 3});
+    }
   }
 }
 
@@ -1296,21 +1321,27 @@ TEST_CASE("Selection Parser - Edge Cases", "[unit][selection]") {
   SECTION("Whitespace handling") {
     auto result = SelectionParser::parse("i1, 2,  3");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<AtomIndexSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 3);
-    CHECK(selection->data == std::vector{1, 2, 3});
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<AtomIndexSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 3);
+      CHECK(selection->data == std::vector{1, 2, 3});
+    }
   }
 
   SECTION("Duplicate values are removed") {
     auto result = SelectionParser::parse("i1,2,2,3,1");
     REQUIRE(result.has_value());
+    REQUIRE(result.value().size() == 1);
 
-    const auto *selection = std::get_if<AtomIndexSelection>(&*result);
-    REQUIRE(selection != nullptr);
-    REQUIRE(selection->data.size() == 3);
-    CHECK(selection->data == std::vector{1, 2, 3});
+    for (const auto &sel : result.value()) {
+      const auto *selection = std::get_if<AtomIndexSelection>(&sel);
+      REQUIRE(selection != nullptr);
+      REQUIRE(selection->data.size() == 3);
+      CHECK(selection->data == std::vector{1, 2, 3});
+    }
   }
 
   SECTION("Complex mixed cases") {
@@ -1329,6 +1360,7 @@ TEST_CASE("Selection Parser - Edge Cases", "[unit][selection]") {
     INFO("Testing input: " << test_case.input);
     auto result = SelectionParser::parse(test_case.input);
     REQUIRE(result.has_value());
+    REQUIRE(result->size() == 1);
 
     std::visit(
         [&test_case](const auto &selection) {
@@ -1341,7 +1373,7 @@ TEST_CASE("Selection Parser - Edge Cases", "[unit][selection]") {
             CHECK(selection.data.size() == test_case.expected_size);
           }
         },
-        *result);
+        result->front());
   }
 }
 
@@ -1417,8 +1449,8 @@ TEST_CASE_METHOD(TestFixture, "PDB Read/Write", "[file][io][pdb]") {
                  Catch::Matchers::WithinAbs(atoms_write[i].z, 1e-3));
   }
 
-  const auto &uc_read = traj_read_original.unit_cell();
-  const auto &uc_write = traj_write.unit_cell();
+  const auto &uc_read = traj_read_original.unit_cell().value();
+  const auto &uc_write = traj_write.unit_cell().value();
   REQUIRE_THAT(uc_read.a(), Catch::Matchers::WithinAbs(uc_write.a(), 1e-3));
   REQUIRE_THAT(uc_read.b(), Catch::Matchers::WithinAbs(uc_write.b(), 1e-3));
   REQUIRE_THAT(uc_read.c(), Catch::Matchers::WithinAbs(uc_write.c(), 1e-3));
@@ -1524,8 +1556,8 @@ TEST_CASE_METHOD(TestFixture, "PDB Read/Write into memory", "[file][io][pdb]") {
                  Catch::Matchers::WithinAbs(atoms_write[i].z, 1e-3));
   }
 
-  const auto &uc_read = traj_read_original.unit_cell();
-  const auto &uc_write = traj_write.unit_cell();
+  const auto &uc_read = traj_read_original.unit_cell().value();
+  const auto &uc_write = traj_write.unit_cell().value();
   REQUIRE_THAT(uc_read.a(), Catch::Matchers::WithinAbs(uc_write.a(), 1e-3));
   REQUIRE_THAT(uc_read.b(), Catch::Matchers::WithinAbs(uc_write.b(), 1e-3));
   REQUIRE_THAT(uc_read.c(), Catch::Matchers::WithinAbs(uc_write.c(), 1e-3));

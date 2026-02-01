@@ -1,4 +1,5 @@
 add_subdirectory(core)
+# add_subdirectory(energy)
 add_subdirectory(io)
 add_subdirectory(main)
 
