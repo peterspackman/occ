@@ -162,7 +162,6 @@ CPMAddPackage(
 endif()
 if (libcint_ADDED AND NOT NIX_BUILD)
     file(COPY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/FindQUADMATH.cmake ${libcint_SOURCE_DIR}/cmake/FindQUADMATH.cmake)
-    message(WARNING "ADDED LIBCINT")
 endif ()
 
 # Apply the flags to the target after it's created

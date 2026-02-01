@@ -76,16 +76,15 @@ stdenv.mkDerivation rec {
     export OMP_NUM_THREADS=2
   '';
   postInstall = ''
-    # 3. SIMPLIFIED: Everything is already in $out. 
-    # Just fix the missing Config file in place.
-
     TARGET_DIR="$out/lib/cmake/dftd4"
+        mkdir -p "$TARGET_DIR"
 
-    # Ensure the directory exists (just in case)
-    mkdir -p "$TARGET_DIR"
+        cat > "$TARGET_DIR/dftd4Config.cmake" <<EOF
+    include("\''${CMAKE_CURRENT_LIST_DIR}/dftd4Targets.cmake")
 
-    cat > "$TARGET_DIR/dftd4Config.cmake" <<'EOF'
-      include(''${CMAKE_CURRENT_LIST_DIR}/dftd4Targets.cmake)
+    set_target_properties(dftd4::dftd4 PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "\''${CMAKE_CURRENT_LIST_DIR}/../../../include/dftd4"
+    )
     EOF
   '';
   meta = {

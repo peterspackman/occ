@@ -24,6 +24,7 @@
       scnlib = pkgs.callPackage ./3rdparty/nix/scnlib.nix {
         fast-float = fast-float-6_1_6;
       };
+      gemmi = pkgs.callPackage ./3rdparty/nix/gemmi.nix { };
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
@@ -34,6 +35,9 @@
         default = pkgs.stdenv.mkDerivation {
           name = "occ";
           src = ./.;
+          postPatch = ''
+            rm cmake/FindLibxc.cmake
+          '';
           buildInputs = [
             pkgs.cmake
             # Project dependencies installed with cpm.cmake
@@ -46,9 +50,11 @@
             pkgs.fmt
             pkgs.nlohmann_json
             pkgs.eigen_3_4_0
-            pkgs.libxc
+            pkgs.libxc.dev
             pkgs.cli11
-            pkgs.gemmi
+            gemmi
+            pkgs.ccache
+            pkgs.gfortran.cc.lib
             pkgs.zlib
             scnlib
             dftd4
@@ -60,17 +66,27 @@
             pkgs.cmake
             pkgs.ninja
             pkgs.pkg-config
+            pkgs.ccache
           ];
+          env = {
+            CCACHE_DIR = "/var/cache/ccache";
+            CCACHE_BASEDIR = "$NIX_BUILD_TOP";
+            CCACHE_SLOPPINESS = "locale,time_macros";
+          };
           cmakeFlags = [
             "-GNinja"
             "-DCPM_DOWNLOAD_LOCATION=${pkgs.cpm-cmake}/share/cpm/CPM.cmake"
             "-DUSE_SYSTEM_EIGEN=ON"
             "-DUSE_SYSTEM_LIBXC=ON"
             "-DCPM_USE_LOCAL_PACKAGES=ON"
+            "-DCMAKE_C_COMPILER_LAUNCHER=${pkgs.ccache}/bin/ccache"
+            "-DCMAKE_CXX_COMPILER_LAUNCHER=${pkgs.ccache}/bin/ccache"
             "-DNIX_BUILD=ON"
           ];
+          NIX_LDFLAGS = "-lquadmath";
         };
-        dftd4 = dftd4;
+        gemmi = gemmi;
+        libxc = pkgs.libxc.dev;
       };
 
       # 2. The Development Environment (nix develop)
@@ -84,7 +100,6 @@
           lbfgspp
           gdb
           libcint
-          dftd4
           pkg-config
         ];
 
