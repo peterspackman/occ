@@ -11,6 +11,7 @@ on:
       - 'include/occ/slater/**'
       - 'src/occjs.cpp'
       - 'scripts/build_wasm.sh'
+      - 'share/**'
       - '.github/workflows/build_nodejs.yml'
   pull_request:
     branches: ["main", "develop"]
@@ -21,6 +22,7 @@ on:
       - 'include/occ/slater/**'
       - 'src/occjs.cpp'
       - 'scripts/build_wasm.sh'
+      - 'share/**'
       - '.github/workflows/build_nodejs.yml'
   workflow_dispatch:
     inputs:
@@ -41,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22]
+        node-version: [20, 22, 24]
       fail-fast: false
 
     steps:
@@ -65,7 +67,7 @@ jobs:
     - name: Setup Emscripten
       uses: mymindstorm/setup-emsdk@v14
       with:
-        version: '3.1.69'
+        version: '4.0.9'
         actions-cache-folder: 'emsdk-cache'
 
     - name: Cache CPM Dependencies
@@ -73,7 +75,7 @@ jobs:
       with:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
-        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh') }}
+        key: js-build-${{ runner.os }}-${{ hashFiles('**/CMakeLists.txt', 'scripts/build_wasm.sh', 'share/**/*.json') }}
         restore-keys: |
           js-build-${{ runner.os }}-
 
@@ -123,18 +125,15 @@ jobs:
       run: npm pack
 
     - name: Upload WASM build artifacts
-      if: matrix.node-version == 20 && (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')))
+      if: matrix.node-version == 20 && ((github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || github.event_name == 'workflow_dispatch')
       uses: actions/upload-artifact@v4
       with:
         name: wasm-build
-        path: |
-          packages/occjs/src/occ_js.js
-          packages/occjs/src/occ_js.wasm
-          packages/occjs/dist/
+        path: packages/occjs/dist/
         retention-days: 30
 
     - name: Upload package artifact
-      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+      if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) || github.event_name == 'workflow_dispatch'
       uses: actions/upload-artifact@v4
       with:
         name: occjs-package-node${{ matrix.node-version }}
@@ -146,7 +145,10 @@ jobs:
     needs: test-js
     runs-on: ubuntu-latest
     if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
-    
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v5
@@ -156,22 +158,18 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 24
         registry-url: 'https://registry.npmjs.org'
 
     - name: Download WASM build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: wasm-build
-        path: packages/occjs/
+        path: packages/occjs/dist/
 
     - name: Install dependencies
       working-directory: packages/occjs
       run: npm ci
-
-    - name: Build package (wrapper only)
-      working-directory: packages/occjs  
-      run: npm run build:wrapper
 
     - name: Check if version changed
       id: version
@@ -190,10 +188,8 @@ jobs:
     - name: Publish to npm
       if: steps.version.outputs.should_publish == 'true'
       working-directory: packages/occjs
-      run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  
+      run: npm publish --provenance --access public --ignore-scripts
+
   publish-github:
     name: Publish to GitHub Packages
     needs: test-js
@@ -202,7 +198,7 @@ jobs:
       contents: read
       packages: write
     if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_npm)
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v5
@@ -212,34 +208,22 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 24
         registry-url: 'https://npm.pkg.github.com'
         scope: '@peterspackman'
 
     - name: Download WASM build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: wasm-build
-        path: packages/occjs/
+        path: packages/occjs/dist/
 
     - name: Install dependencies
       working-directory: packages/occjs
       run: npm ci
 
-    - name: Build package (wrapper only)
-      working-directory: packages/occjs  
-      run: npm run build:wrapper
-
-    - name: Configure package for GitHub registry
-      working-directory: packages/occjs
-      run: |
-        # Update package.json to use GitHub scope
-        npm pkg set name="@peterspackman/occjs"
-        # Ensure publishConfig points to GitHub
-        npm pkg set publishConfig.registry="https://npm.pkg.github.com"
-
     - name: Publish to GitHub Packages
       working-directory: packages/occjs
-      run: npm publish
+      run: npm publish --ignore-scripts
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

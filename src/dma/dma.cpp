@@ -6,7 +6,7 @@
 #include <occ/dma/multipole_shifter.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
-#include <occ/io/conversion.h>
+#include <occ/qm/io/conversion.h>
 
 namespace occ::dma {
 

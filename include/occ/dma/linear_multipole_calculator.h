@@ -81,8 +81,8 @@ private:
    * @param atom_j Index of second atom
    * @param site_multipoles Vector to store multipole contributions
    */
-  void process_shell_pair(const occ::qm::Shell &shell_i,
-                          const occ::qm::Shell &shell_j, int i_shell_idx,
+  void process_shell_pair(const occ::gto::Shell &shell_i,
+                          const occ::gto::Shell &shell_j, int i_shell_idx,
                           int j_shell_idx, int atom_i, int atom_j,
                           std::vector<Mult> &site_multipoles);
 
@@ -98,8 +98,8 @@ private:
    * @param atom_j Index of second atom
    * @param site_multipoles Vector to store multipole contributions
    */
-  void process_primitive_pair(const occ::qm::Shell &shell_i,
-                              const occ::qm::Shell &shell_j, int i_prim,
+  void process_primitive_pair(const occ::gto::Shell &shell_i,
+                              const occ::gto::Shell &shell_j, int i_prim,
                               int j_prim, const Mat &d_block, int atom_i,
                               int atom_j, std::vector<Mult> &site_multipoles);
 

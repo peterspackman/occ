@@ -2,7 +2,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <occ/core/element.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
 #include <occ/core/util.h>
 #include <occ/xtb/xtb_wrapper.h>

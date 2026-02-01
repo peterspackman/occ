@@ -1,7 +1,6 @@
 #include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <fmt/ostream.h>
-#include <occ/core/linear_algebra.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/slater/slaterbasis.h>

@@ -73,4 +73,41 @@ TEST_CASE("dftd4 dispersion", "[disp]") {
     double e = disp.energy();
     REQUIRE(e == Approx(-1.522647086484191e-02));
   }
+
+  SECTION("water pbe gradient") {
+    Molecule m = water_molecule();
+    occ::disp::D4Dispersion disp(m);
+    auto [e, grad] = disp.energy_and_gradient();
+
+    // Check energy matches
+    REQUIRE(e == Approx(-1.960327305609344e-04));
+
+    // Check gradient dimensions
+    REQUIRE(grad.rows() == 3);
+    REQUIRE(grad.cols() == 3);
+
+    // Check gradients are finite and have reasonable magnitude
+    REQUIRE(std::isfinite(grad.sum()));
+    REQUIRE(grad.norm() > 1e-6);      // Non-zero
+    REQUIRE(grad.norm() < 1e-3);       // Reasonable magnitude for water
+  }
+
+  SECTION("benzene b3lyp gradient") {
+    Molecule m = benzene_molecule();
+    occ::disp::D4Dispersion disp(m);
+    disp.set_functional("b3lyp");
+    auto [e, grad] = disp.energy_and_gradient();
+
+    // Check energy matches
+    REQUIRE(e == Approx(-1.733939567219837e-02).margin(1e-8));
+
+    // Check gradient dimensions
+    REQUIRE(grad.rows() == 3);
+    REQUIRE(grad.cols() == 12);
+
+    // Check gradients are finite and have reasonable magnitude
+    REQUIRE(std::isfinite(grad.sum()));
+    REQUIRE(grad.norm() > 1e-5);       // Non-zero
+    REQUIRE(grad.norm() < 1e-2);       // Reasonable magnitude for benzene
+  }
 }

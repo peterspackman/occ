@@ -1,10 +1,7 @@
 #include <fmt/os.h>
 #include <occ/cg/cg_json.h>
 #include <occ/cg/smd_solvation.h>
-#include <occ/core/log.h>
 #include <occ/core/point_group.h>
-#include <occ/core/units.h>
-#include <occ/dft/dft.h>
 #include <occ/qm/scf.h>
 
 namespace occ::cg {
@@ -40,8 +37,8 @@ std::pair<SMDSolventSurfaces, occ::qm::Wavefunction>
 SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
                                    const occ::qm::Wavefunction &gas_wfn,
                                    size_t index) {
-  occ::qm::AOBasis basis =
-      occ::qm::AOBasis::load(gas_wfn.atoms, m_settings.basis);
+  occ::gto::AOBasis basis =
+      occ::gto::AOBasis::load(gas_wfn.atoms, m_settings.basis);
   double original_energy = gas_wfn.energy.total;
   occ::log::debug("Total energy (gas) {:.3f}", original_energy);
 

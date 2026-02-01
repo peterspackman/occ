@@ -1,13 +1,11 @@
 #pragma once
-#include <array>
-#include <occ/core/atom.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/solvent/cosmo.h>
 #include <occ/solvent/parameters.h>
 
@@ -214,7 +212,7 @@ public:
     return m_proc.compute_overlap_matrix();
   }
 
-  auto compute_overlap_matrix_for_basis(const occ::qm::AOBasis &bs) const {
+  auto compute_overlap_matrix_for_basis(const occ::gto::AOBasis &bs) const {
     return m_proc.compute_overlap_matrix_for_basis(bs);
   }
 

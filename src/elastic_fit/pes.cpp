@@ -1,7 +1,7 @@
 #include <occ/core/constants.h>
-#include <occ/core/units.h>
 #include <occ/elastic_fit/monkhorst_pack.h>
 #include <occ/elastic_fit/pes.h>
+#include <iomanip>
 
 namespace occ::elastic_fit {
 
@@ -71,6 +71,26 @@ inline void print_vector(const occ::Vec &vec, int per_line) {
       spdlog::info("{}", line);
       line.clear();
     }
+  }
+}
+
+occ::Mat PES::solve_linear_system(const occ::Mat &A, const occ::Mat &B,
+                                  LinearSolverType solver_type,
+                                  double svd_threshold) {
+  switch (solver_type) {
+  case LinearSolverType::LU:
+    return A.lu().solve(B);
+  case LinearSolverType::SVD: {
+    Eigen::JacobiSVD<occ::Mat> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    svd.setThreshold(svd_threshold); // Added to control svd_threshold  
+    return svd.solve(B);
+  }
+  case LinearSolverType::QR:
+    return A.householderQr().solve(B);
+  case LinearSolverType::LDLT:
+    return A.ldlt().solve(B);
+  default:
+    throw std::runtime_error("Unknown linear solver type");
   }
 }
 
@@ -297,6 +317,11 @@ occ::Mat PES::inv_mass_matrix() {
 
 occ::CMat PES::compute_fm_at_kpoint(const occ::Vec3 &kp) {
 
+  if (!has_crystal()) {
+    throw std::runtime_error(
+        "compute_fm_at_kpoint requires full Crystal object");
+  }
+
   size_t n_molecules = this->num_unique_molecules();
   size_t dim = 3 * n_molecules;
   const auto &recip = this->crystal().unit_cell().reciprocal();
@@ -374,6 +399,11 @@ PES::compute_phonons_at_kpoint(const occ::CMat &Dyn_ij) {
 void PES::animate_phonons(const occ::Vec &frequencies,
                           const occ::Mat &eigenvectors,
                           const occ::Vec3 &kpoint) {
+
+  if (!has_crystal()) {
+    throw std::runtime_error(
+        "animate_phonons requires full Crystal object");
+  }
 
   double amplitude = 0.5;
   size_t n_frames = 50;

@@ -1,4 +1,3 @@
-#include <fmt/os.h>
 #include <fstream>
 #include <occ/io/eigen_json.h>
 #include <occ/io/isosurface_json.h>

@@ -1,8 +1,6 @@
 #include <algorithm>
-#include <occ/core/atom.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
-#include <occ/core/units.h>
 #include <occ/dft/grid_utils.h>
 #include <occ/dft/molecular_grid.h>
 
@@ -141,7 +139,9 @@ const MolecularGridPoints &MolecularGrid::get_molecular_grid_points() const {
 
 void MolecularGrid::ensure_settings() {
   // Validate and adjust angular grid settings
-  if (m_settings.max_angular_points < m_settings.min_angular_points) {
+  // Skip this check if using ORCA-style angular regions (they have their own scheme)
+  if (!m_settings.has_angular_regions() &&
+      m_settings.max_angular_points < m_settings.min_angular_points) {
     m_settings.max_angular_points = m_settings.min_angular_points + 1;
     occ::log::warn(
         "Invalid maximum angular grid points < minimum angular grid points "

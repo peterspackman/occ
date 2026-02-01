@@ -4,6 +4,29 @@ CPMAddPackage(
     GIT_TAG v3.5.2
 )
 
+set(CMAKE_UNITY_BUILD OFF)
+
+
+#Use ccache to speed up rebuilds
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    message(STATUS "Found ccache in ${CCACHE_PROGRAM}")
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+else()
+    message(WARNING "ccache not found, compiling without it")  
+endif()
+
+#Use lld as faster alternative to ld
+find_program(LLD_PROGRAM lld)
+if(LLD_PROGRAM)
+    message(STATUS "Using lld linker at ${LLD_PROGRAM}")
+    set(CMAKE_LINKER "${LLD_PROGRAM}")
+else()
+    message(WARNING "lld linker not found, using default linker")
+endif()
+
+
 list(APPEND CMAKE_MODULE_PATH "${catch_SOURCE_DIR}/extras")
 include(CTest)
 include(Catch)
@@ -19,6 +42,14 @@ catch_discover_tests(crystal_tests)
 add_executable(dft_tests "${CMAKE_CURRENT_SOURCE_DIR}/dft_tests.cpp")
 target_link_libraries(dft_tests PRIVATE occ_dft occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(dft_tests)
+
+add_executable(dft_gradient_tests "${CMAKE_CURRENT_SOURCE_DIR}/dft_gradient_tests.cpp")
+target_link_libraries(dft_gradient_tests PRIVATE occ_dft occ_qm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(dft_gradient_tests)
+
+add_executable(isolated_xc_tests "${CMAKE_CURRENT_SOURCE_DIR}/isolated_xc_tests.cpp")
+target_link_libraries(isolated_xc_tests PRIVATE occ_dft occ_qm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(isolated_xc_tests)
 
 add_executable(disp_tests "${CMAKE_CURRENT_SOURCE_DIR}/disp_tests.cpp")
 target_link_libraries(disp_tests PRIVATE occ_disp Catch2::Catch2WithMain Threads::Threads)
@@ -48,9 +79,16 @@ add_executable(interaction_tests "${CMAKE_CURRENT_SOURCE_DIR}/interaction_tests.
 target_link_libraries(interaction_tests PRIVATE occ_interaction Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(interaction_tests)
 
-add_executable(qm_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_tests.cpp")
+add_executable(qm_tests
+    "${CMAKE_CURRENT_SOURCE_DIR}/qm_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/qm_benchmarks.cpp"
+)
 target_link_libraries(qm_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(qm_tests)
+
+add_executable(qm_gradient_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_gradient_tests.cpp")
+target_link_libraries(qm_gradient_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(qm_gradient_tests)
 
 add_executable(qm_hessian_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_hessian_tests.cpp")
 target_link_libraries(qm_hessian_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
@@ -100,3 +138,6 @@ add_executable(opt_tests "${CMAKE_CURRENT_SOURCE_DIR}/opt_tests.cpp")
 target_link_libraries(opt_tests PRIVATE occ_opt nlohmann_json::nlohmann_json Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(opt_tests)
 
+add_executable(ints_tests "${CMAKE_CURRENT_SOURCE_DIR}/ints_tests.cpp")
+target_link_libraries(ints_tests PRIVATE occ_ints occ_qm Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(ints_tests)

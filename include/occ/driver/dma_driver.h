@@ -1,5 +1,4 @@
 #pragma once
-#include <occ/core/log.h>
 #include <occ/dma/dma.h>
 #include <occ/qm/wavefunction.h>
 #include <ankerl/unordered_dense.h>

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
 
 set(PROJECT_VERSION_MAJOR "0")
 set(PROJECT_VERSION_MINOR "8")
-set(PROJECT_VERSION_PATCH "2")
+set(PROJECT_VERSION_PATCH "8")
 
 project(occ
     VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
@@ -19,15 +19,47 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(SKBUILD)
-  set(WITH_PYTHON_BINDINGS ON)
+    set(WITH_PYTHON_BINDINGS ON)
 endif()
 
+# Build acceleration options
+option(WITH_CCACHE "Use ccache for faster clean rebuilds (if available)" ON)
+option(WITH_UNITY_BUILD "Enable unity builds (faster clean builds, slower incremental)" OFF)
+
+# lld is faster on Linux but incompatible with Apple clang on macOS
+if(NOT APPLE)
+    option(WITH_LLD "Use lld linker for faster linking (if available)" ON)
+else()
+    option(WITH_LLD "Use lld linker for faster linking (if available)" OFF)
+endif()
+
+if(WITH_CCACHE)
+    find_program(CCACHE_PROGRAM ccache)
+    if(CCACHE_PROGRAM)
+        message(STATUS "Using ccache: ${CCACHE_PROGRAM}")
+        set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    endif()
+endif()
+
+if(WITH_LLD)
+    find_program(LLD_PROGRAM lld)
+    if(LLD_PROGRAM)
+        message(STATUS "Using lld linker: ${LLD_PROGRAM}")
+        add_link_options("-fuse-ld=lld")
+    endif()
+endif()
+
+if(WITH_UNITY_BUILD)
+    message(STATUS "Unity builds enabled")
+    set(CMAKE_UNITY_BUILD ON)
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE 8)
+endif()
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
     option(BUILD_FPIC "Build with position independent code" OFF)
     option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
-    option(WITH_BENCHMARKS "Enable benchmarking tests" OFF)
     option(WITH_CLANG_TIDY "Enable clang tidy" OFF)
     option(WITH_PYTHON_BINDINGS "Build python bindings" OFF)
     option(WITH_TBLITE "Include the tblite API in the build" OFF)

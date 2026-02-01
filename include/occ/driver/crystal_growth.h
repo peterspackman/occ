@@ -13,7 +13,7 @@
 #include <occ/driver/single_point.h>
 #include <occ/interaction/pair_energy.h>
 #include <occ/interaction/pairinteraction.h>
-#include <occ/io/wavefunction_json.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/wavefunction.h>
 
 namespace occ::driver {

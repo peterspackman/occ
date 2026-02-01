@@ -1,5 +1,4 @@
 #pragma once
-#include <occ/core/dimer.h>
 #include <occ/interaction/pair_energy.h>
 
 namespace occ::interaction {

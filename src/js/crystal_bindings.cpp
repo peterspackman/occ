@@ -2,7 +2,6 @@
 #include <ankerl/unordered_dense.h>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-#include <memory>
 #include <occ/crystal/asymmetric_unit.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/hkl.h>
@@ -10,7 +9,7 @@
 #include <occ/crystal/symmetryoperation.h>
 #include <occ/crystal/unitcell.h>
 #include <occ/io/cifparser.h>
-#include <sstream>
+
 
 using namespace emscripten;
 using namespace occ;

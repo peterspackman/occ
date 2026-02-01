@@ -1,11 +1,14 @@
 {
   "name": "@peterspackman/occjs",
-  "version": "0.8.2",
+  "version": "0.8.8",
   "description": "JavaScript/WebAssembly bindings for OCC - a quantum chemistry and crystallography library",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.mjs",
+  "bin": {
+    "occ": "./dist/occ.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -18,6 +21,15 @@
     },
     "./data": {
       "default": "./dist/occjs.data"
+    },
+    "./cli": {
+      "default": "./dist/occ.js"
+    },
+    "./cli-wasm": {
+      "default": "./dist/occ.wasm"
+    },
+    "./cli-data": {
+      "default": "./dist/occ.data"
     }
   },
   "files": [
@@ -32,11 +44,12 @@
     "build:wasm:clean": "cd ../.. && rm -rf wasm && ./scripts/build_wasm.sh",
     "build:wrapper": "node scripts/build.js",
     "build:bundle": "vite build --config vite.config.build.mjs",
-    "clean": "rm -rf dist src/occjs.js src/occjs.wasm",
+    "clean": "rm -rf dist src/occjs.js src/occjs.wasm src/occjs.data src/occ.js src/occ.wasm src/occ.data",
     "rebuild": "npm run clean && npm run build",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
+    "examples": "node examples/serve.js",
     "lint": "eslint src test --ext .js,.ts",
     "format": "prettier --write \"src/**/*.{js,ts}\" \"test/**/*.{js,ts}\"",
     "typecheck": "tsc --noEmit",
@@ -44,8 +57,7 @@
     "docs": "typedoc",
     "dev": "npm run build:wrapper && vitest watch",
     "check-wasm": "node -e \"const fs=require('fs'); if(!fs.existsSync('../../wasm/src/occjs.wasm')) {console.error('WASM not built. Run: npm run build:wasm'); process.exit(1);}\"",
-    "ci-check": "node scripts/ci-check.js",
-    "examples": "npm run build && npx http-server . -p 8080 -o /examples/dma_calculator.html"
+    "ci-check": "node scripts/ci-check.js"
   },
   "repository": {
     "type": "git",
@@ -63,7 +75,7 @@
     "scientific-computing"
   ],
   "author": "Peter Spackman",
-  "license": "GPL-3.0",
+  "license": "(GPL-3.0-or-later OR LGPL-3.0-or-later)",
   "bugs": {
     "url": "https://github.com/peterspackman/occ/issues"
   },

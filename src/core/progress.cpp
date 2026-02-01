@@ -1,12 +1,10 @@
 #include <occ/core/progress.h>
 #include <occ/core/util.h>
 
-#include <chrono>
 #include <fmt/chrono.h>
 #include <fmt/core.h>
 #include <iostream>
 #include <occ/core/log.h>
-#include <string>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <io.h>
@@ -43,7 +41,12 @@ TerminalSize TerminalSize::get_current_size() {
 }
 
 ProgressTracker::ProgressTracker(int total) : m_total(total) {
+#ifdef __EMSCRIPTEN__
+  // WASM doesn't support terminal control codes, always use simple line output
+  m_is_tty = false;
+#else
   m_is_tty = stdout_is_tty();
+#endif
   m_tsize = TerminalSize::get_current_size();
   m_time_points.push_back(std::chrono::high_resolution_clock::now());
 }

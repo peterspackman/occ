@@ -1,9 +1,6 @@
-#include <fmt/core.h>
-#include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/multipole.h>
 #include <occ/core/parallel.h>
-#include <occ/core/timings.h>
 #include <occ/dft/hirshfeld.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
@@ -196,7 +193,7 @@ void hirshfeld_multipole_kernel_unrestricted(
 
 } // namespace impl
 
-HirshfeldPartition::HirshfeldPartition(const occ::qm::AOBasis &basis,
+HirshfeldPartition::HirshfeldPartition(const occ::gto::AOBasis &basis,
                                        int max_multipole_order, int charge)
     : m_basis(basis), m_grid(basis), m_max_multipole_order(max_multipole_order),
       m_charge(charge) {
@@ -461,7 +458,7 @@ void HirshfeldPartition::compute_hirshfeld_weights(
   }
 }
 
-Vec calculate_hirshfeld_charges(const occ::qm::AOBasis &basis,
+Vec calculate_hirshfeld_charges(const occ::gto::AOBasis &basis,
                                 const occ::qm::MolecularOrbitals &mo,
                                 int charge) {
   HirshfeldPartition hirshfeld(basis, 0, charge);
@@ -469,7 +466,7 @@ Vec calculate_hirshfeld_charges(const occ::qm::AOBasis &basis,
 }
 
 std::vector<occ::core::Multipole<4>>
-calculate_hirshfeld_multipoles(const occ::qm::AOBasis &basis,
+calculate_hirshfeld_multipoles(const occ::gto::AOBasis &basis,
                                const occ::qm::MolecularOrbitals &mo,
                                int max_multipole_order, int charge) {
   HirshfeldPartition hirshfeld(basis, max_multipole_order, charge);

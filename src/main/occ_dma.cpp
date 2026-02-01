@@ -1,16 +1,10 @@
 #include <CLI/App.hpp>
-#include <CLI/Config.hpp>
-#include <CLI/Formatter.hpp>
-#include <fmt/os.h>
-#include <occ/core/timings.h>
 #include <occ/core/units.h>
-#include <occ/core/element.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/driver/dma_driver.h>
 #include <occ/main/occ_dma.h>
 #include <occ/main/version.h>
 #include <occ/qm/wavefunction.h>
-#include <fstream>
 
 namespace occ::main {
 

@@ -15,11 +15,11 @@
 #include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
 #include <occ/io/eigen_json.h>
-#include <occ/io/fchkreader.h>
-#include <occ/io/moldenreader.h>
+#include <occ/qm/io/fchkreader.h>
+#include <occ/qm/io/moldenreader.h>
 #include <occ/io/occ_input.h>
-#include <occ/io/orca_json.h>
-#include <occ/io/wavefunction_json.h>
+#include <occ/qm/io/orca_json.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/main/occ_pair.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>

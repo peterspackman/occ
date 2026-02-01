@@ -1,4 +1,4 @@
-#include <cmath>
+
 #include <occ/crystal/unitcell.h>
 
 namespace occ::crystal {

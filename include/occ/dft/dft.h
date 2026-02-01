@@ -7,8 +7,8 @@
 #include <occ/dft/dft_kernels.h>
 #include <occ/dft/dft_method.h>
 #include <occ/dft/functional.h>
-#include <occ/dft/grid_types.h>
-#include <occ/dft/molecular_grid.h>
+#include <occ/numint/grid_types.h>
+#include <occ/numint/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/range_separated_parameters.h>
 #include <occ/dft/xc_potential_matrix.h>
@@ -34,19 +34,25 @@ using occ::Vec;
 class DFT : public qm::SCFMethodBase {
 
 public:
-  DFT(const std::string &, const qm::AOBasis &, const GridSettings & = {});
+  DFT(const std::string &, const gto::AOBasis &, const GridSettings & = {});
   inline const auto &aobasis() const { return m_hf.aobasis(); }
   inline auto nbf() const { return m_hf.nbf(); }
 
   void set_integration_grid(const GridSettings & = {});
+  void set_nlc_grid(const gto::AOBasis &basis, const GridSettings &settings = {110, 50, 50, 1e-7, false});
 
   inline void
-  set_density_fitting_basis(const std::string &density_fitting_basis) {
-    m_hf.set_density_fitting_basis(density_fitting_basis);
+  set_density_fitting_basis(const std::string &density_fitting_basis,
+                            double auto_aux_threshold = 1e-4) {
+    m_hf.set_density_fitting_basis(density_fitting_basis, auto_aux_threshold);
   }
 
   inline void set_density_fitting_policy(qm::IntegralEngineDF::Policy policy) {
     m_hf.set_density_fitting_policy(policy);
+  }
+
+  inline void set_coulomb_method(qm::CoulombMethod method) {
+    m_hf.set_coulomb_method(method);
   }
 
   inline void set_precision(double precision) { m_hf.set_precision(precision); }
@@ -58,7 +64,7 @@ public:
    * @param new_basis The new basis set to use  
    * @return New DFT instance
    */
-  DFT with_new_basis(const qm::AOBasis &new_basis) const;
+  DFT with_new_basis(const gto::AOBasis &new_basis) const;
 
   double exchange_correlation_energy() const { return m_exc_dft; }
   double exchange_energy_total() const { return m_exchange_energy; }
@@ -109,7 +115,7 @@ public:
 
   auto compute_overlap_matrix() const { return m_hf.compute_overlap_matrix(); }
 
-  auto compute_overlap_matrix_for_basis(const occ::qm::AOBasis &bs) const {
+  auto compute_overlap_matrix_for_basis(const occ::gto::AOBasis &bs) const {
     return m_hf.compute_overlap_matrix_for_basis(bs);
   }
 
@@ -124,6 +130,24 @@ public:
   auto compute_point_charge_interaction_matrix(
       const PointChargeList &point_charges) const {
     return m_hf.compute_point_charge_interaction_matrix(point_charges);
+  }
+
+  double wolf_point_charge_interaction_energy(
+      const PointChargeList &point_charges,
+      const std::vector<double> &molecular_charges, double alpha,
+      double cutoff) const {
+    return m_hf.wolf_point_charge_interaction_energy(point_charges,
+                                                      molecular_charges, alpha,
+                                                      cutoff);
+  }
+
+  auto compute_wolf_interaction_matrix(
+      const PointChargeList &point_charges,
+      const std::vector<double> &molecular_charges, double alpha,
+      double cutoff) const {
+    return m_hf.compute_wolf_interaction_matrix(point_charges,
+                                                 molecular_charges, alpha,
+                                                 cutoff);
   }
 
   auto compute_schwarz_ints() const { return m_hf.compute_schwarz_ints(); }
@@ -360,7 +384,7 @@ public:
   const auto &hf() const { return m_hf; }
 
   inline Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
-                                      const qm::AOBasis &bs,
+                                      const gto::AOBasis &bs,
                                       bool is_shell_diagonal) {
     return m_hf.compute_fock_mixed_basis(mo_bs, bs, is_shell_diagonal);
   }
@@ -492,7 +516,12 @@ private:
             const auto &pts_block = all_points.middleCols(l, npt);
             const auto &weights_block = all_weights.segment(l, npt);
 
-            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, 1 + derivative_order);
+            // For gradients, we need derivatives of basis functions
+            // LDA (deriv=0): need 1st derivatives -> max_deriv = 1
+            // GGA (deriv=1): need 2nd derivatives -> max_deriv = 2
+            // MGGA (deriv=2): need 2nd derivatives -> max_deriv = 2
+            int max_deriv = (derivative_order == 0) ? 1 : 2;
+            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, max_deriv);
             auto &local_gradient = gradients_local.local();
 
             kernels::process_grid_block_gradient<derivative_order, spinorbital_kind>(

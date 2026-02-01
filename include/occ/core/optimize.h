@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 #include <occ/core/log.h>
 
 namespace occ::core::opt {

@@ -1,6 +1,7 @@
 add_library(occ_xdm
     "${CMAKE_CURRENT_SOURCE_DIR}/becke_hole.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/xdm_parameters.cpp"
     ${OCC_XDM_INCLUDE_FILES}
 )
 

@@ -16,6 +16,7 @@ struct EmbedConfig {
   std::vector<int> multiplicities; // multiplicity for each molecule/atom
   double wolf_alpha = 0.2;
   double wolf_cutoff = 16.0;
+  double pair_energy_radius = 3.8; // Radius for computing CE pair energies
   int max_embed_cycles = 10;
   double charge_convergence = 1e-4;
   double energy_convergence = 1e-6;

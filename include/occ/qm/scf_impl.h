@@ -2,6 +2,8 @@
 
 namespace occ::qm {
 
+using gto::OCC_MINIMAL_BASIS;
+
 template <SCFMethod P>
 SCF<P>::SCF(P &procedure, SpinorbitalKind sk) : m_procedure(procedure) {
   ctx.n_electrons = m_procedure.active_electrons();
@@ -360,7 +362,7 @@ template <SCFMethod P> void SCF<P>::compute_initial_guess() {
     log::debug("Projecting minimal basis guess into atomic orbital "
                "basis...");
     const auto tstart = std::chrono::high_resolution_clock::now();
-    auto minbs = occ::qm::AOBasis::load_minimal_basis(m_procedure.atoms());
+    auto minbs = occ::gto::AOBasis::load_minimal_basis(m_procedure.atoms());
     minbs.set_pure(m_procedure.aobasis().is_pure());
     D_minbs = compute_soad(m_procedure.compute_overlap_matrix_for_basis(
         minbs)); // compute guess in minimal basis
@@ -481,6 +483,11 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
   // count the number of electrons
   bool incremental{false};
   update_occupied_orbital_count();
+
+  // Initialize convergence accelerator with settings
+  convergence_accelerator.set_strategy(convergence_settings.diis_strategy);
+  convergence_accelerator.set_switch_threshold(convergence_settings.diis_switch_threshold);
+
   compute_initial_guess();
   ctx.K = m_procedure.compute_schwarz_ints();
   Mat D_diff = ctx.mo.D;
@@ -535,20 +542,10 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
     ediff_rel = std::abs((ctx.energy["electronic"] - ehf_last) /
                          ctx.energy["electronic"]);
 
-    Mat F_diis = diis.update(ctx.S, ctx.mo.D, ctx.F);
-    // double prev_error = diis_error;
-    diis_error = diis.max_error();
-    /*
-    bool use_ediis = (diis_error > 1e-1) || (prev_error /
-    diis.min_error() > 1.1);
-
-    Mat F_ediis = ediis.update(D, F, energy["electronic"]);
-    if(use_ediis) F_diis = F_ediis;
-    else if(diis_error > 1e-4) {
-        F_diis = (10 * diis_error) * F_ediis + (1 - 10 * diis_error)
-    * F_diis;
-    }
-    */
+    // Apply convergence acceleration (DIIS extrapolation)
+    Mat F_diis = convergence_accelerator.update(
+        ctx.mo.kind, ctx.S, ctx.mo.D, ctx.F, ctx.energy["electronic"]);
+    diis_error = convergence_accelerator.max_error();
 
     if (diis_error < next_reset_threshold || iter - last_reset_iteration >= 8)
       reset_incremental_fock_formation = true;

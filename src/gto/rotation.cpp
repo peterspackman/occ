@@ -1,9 +1,7 @@
 #include <cmath>
-#include <fmt/core.h>
-#include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
 #include <occ/gto/shell_order.h>
-
+#include <occ/gto/gto.h>
 namespace occ::gto {
 
 // The code for these matrices has been modified from

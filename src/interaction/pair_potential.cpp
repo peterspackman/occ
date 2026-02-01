@@ -1,5 +1,4 @@
 #include <cmath>
-#include <fmt/core.h>
 #include <occ/interaction/pair_potential.h>
 
 namespace occ::interaction {

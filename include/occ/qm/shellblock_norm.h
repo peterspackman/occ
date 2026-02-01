@@ -1,9 +1,12 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/core/timings.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {
+
+using gto::Shell;
+using gto::AOBasis;
 
 template <SpinorbitalKind sk, Shell::Kind kind>
 inline Mat shellblock_norm(const AOBasis &basis, const Mat &matrix) noexcept {

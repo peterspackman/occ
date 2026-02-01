@@ -1,6 +1,6 @@
 #pragma once
 #include <occ/qm/mo.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {

@@ -1,10 +1,11 @@
 #pragma once
+#include <occ/gto/shell.h>
 #include <occ/qm/orbital_smearing.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {
 
-class AOBasis;
+using gto::AOBasis;
 
 struct MolecularOrbitals {
   MolecularOrbitals(const MolecularOrbitals &) = default;
@@ -46,6 +47,23 @@ struct MolecularOrbitals {
     case SpinorbitalKind::General: // due to peculiarities of n_alpha/n_beta
                                    // in general case
       return Cocc.block(n_ao, 0, n_ao, n_alpha);
+    }
+  }
+
+  /**
+   * @brief Get total number of electrons represented by these MOs
+   * @return Total electron count (accounting for spin convention)
+   */
+  inline size_t num_electrons() const {
+    switch (kind) {
+    case SpinorbitalKind::Restricted:
+      return 2 * n_alpha; // Paired electrons in same spatial orbitals
+    case SpinorbitalKind::Unrestricted:
+      return n_alpha + n_beta;
+    case SpinorbitalKind::General:
+      return n_alpha; // In general case, n_alpha stores total electron count
+    default:
+      return 2 * n_alpha;
     }
   }
 

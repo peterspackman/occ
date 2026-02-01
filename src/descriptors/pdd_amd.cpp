@@ -1,7 +1,5 @@
 #include <occ/descriptors/pdd_amd.h>
 #include <occ/descriptors/fast_neighbors.h>
-#include <occ/core/log.h>
-#include <algorithm>
 #include <numeric>
 #include <unordered_set>
 

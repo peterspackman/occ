@@ -826,6 +826,108 @@ TEST_CASE("Elastic tensor - ELATE comparison", "[elastic_tensor]") {
   }
 }
 
+TEST_CASE("Elastic tensor rotation invariance", "[elastic_tensor][rotation]") {
+  using occ::core::ElasticTensor;
+
+  // Use the same test tensor as ELATE comparison
+  Eigen::Matrix<double, 6, 6> tensor;
+  tensor << 228.38, 85.741, 81.503, 0.000, -0.737, 0.000, 85.741, 217.47,
+      94.201, 0.000, -20.213, 0.000, 81.503, 94.201, 178.81, 0.000, -9.472,
+      0.000, 0.000, 0.000, 0.000, 35.094, 0.000, -17.851, -0.737, -20.213,
+      -9.472, 0.000, 37.778, 0.000, 0.000, 0.000, 0.000, -17.851, 0.000, 42.708;
+
+  ElasticTensor elastic(tensor);
+
+  // Get original properties that should be invariant
+  double original_bulk_voigt = elastic.average_bulk_modulus(ElasticTensor::AveragingScheme::Voigt);
+  double original_bulk_reuss = elastic.average_bulk_modulus(ElasticTensor::AveragingScheme::Reuss);
+  double original_shear_voigt = elastic.average_shear_modulus(ElasticTensor::AveragingScheme::Voigt);
+  double original_shear_reuss = elastic.average_shear_modulus(ElasticTensor::AveragingScheme::Reuss);
+  double original_youngs_voigt = elastic.average_youngs_modulus(ElasticTensor::AveragingScheme::Voigt);
+  double original_youngs_reuss = elastic.average_youngs_modulus(ElasticTensor::AveragingScheme::Reuss);
+
+  // Test some directional properties
+  occ::Vec3 test_dir(1.0, 0.0, 0.0);
+  double original_E_x = elastic.youngs_modulus(test_dir);
+  double original_lc_x = elastic.linear_compressibility(test_dir);
+
+  SECTION("Rotation around z-axis by 45 degrees") {
+    double angle = M_PI / 4.0;
+    Eigen::Matrix3d R = Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()).toRotationMatrix();
+
+    auto rotated_c = elastic.rotate_voigt_stiffness(R);
+    ElasticTensor rotated(rotated_c);
+
+    // Averaged properties should be invariant
+    REQUIRE(rotated.average_bulk_modulus(ElasticTensor::AveragingScheme::Voigt) ==
+            Approx(original_bulk_voigt).epsilon(1e-6));
+    REQUIRE(rotated.average_bulk_modulus(ElasticTensor::AveragingScheme::Reuss) ==
+            Approx(original_bulk_reuss).epsilon(1e-6));
+    REQUIRE(rotated.average_shear_modulus(ElasticTensor::AveragingScheme::Voigt) ==
+            Approx(original_shear_voigt).epsilon(1e-6));
+    REQUIRE(rotated.average_shear_modulus(ElasticTensor::AveragingScheme::Reuss) ==
+            Approx(original_shear_reuss).epsilon(1e-6));
+    REQUIRE(rotated.average_youngs_modulus(ElasticTensor::AveragingScheme::Voigt) ==
+            Approx(original_youngs_voigt).epsilon(1e-6));
+    REQUIRE(rotated.average_youngs_modulus(ElasticTensor::AveragingScheme::Reuss) ==
+            Approx(original_youngs_reuss).epsilon(1e-6));
+
+    // Test that directional properties transform correctly
+    // Direction (1,0,0) rotated by 45° around z becomes (cos(45°), sin(45°), 0)
+    occ::Vec3 rotated_dir = R * test_dir;
+    double rotated_E_x = rotated.youngs_modulus(test_dir);
+    double expected_E = elastic.youngs_modulus(rotated_dir);
+    REQUIRE(rotated_E_x == Approx(expected_E).epsilon(1e-8));
+  }
+
+  SECTION("Rotation around x-axis by 90 degrees") {
+    double angle = M_PI / 2.0;
+    Eigen::Matrix3d R = Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX()).toRotationMatrix();
+
+    auto rotated_c = elastic.rotate_voigt_stiffness(R);
+    ElasticTensor rotated(rotated_c);
+
+    REQUIRE(rotated.average_bulk_modulus(ElasticTensor::AveragingScheme::Voigt) ==
+            Approx(original_bulk_voigt).epsilon(1e-6));
+    REQUIRE(rotated.average_shear_modulus(ElasticTensor::AveragingScheme::Voigt) ==
+            Approx(original_shear_voigt).epsilon(1e-6));
+    REQUIRE(rotated.average_youngs_modulus(ElasticTensor::AveragingScheme::Voigt) ==
+            Approx(original_youngs_voigt).epsilon(1e-6));
+  }
+
+  SECTION("Arbitrary rotation") {
+    // Arbitrary axis rotation
+    Eigen::Vector3d axis(1.0, 2.0, 3.0);
+    axis.normalize();
+    double angle = 0.7;
+
+    Eigen::Matrix3d R = Eigen::AngleAxisd(angle, axis).toRotationMatrix();
+
+    auto rotated_c = elastic.rotate_voigt_stiffness(R);
+    ElasticTensor rotated(rotated_c);
+
+    // Averaged properties should be invariant
+    REQUIRE(rotated.average_bulk_modulus(ElasticTensor::AveragingScheme::Voigt) ==
+            Approx(original_bulk_voigt).epsilon(1e-8));
+    REQUIRE(rotated.average_shear_modulus(ElasticTensor::AveragingScheme::Voigt) ==
+            Approx(original_shear_voigt).epsilon(1e-8));
+    REQUIRE(rotated.average_youngs_modulus(ElasticTensor::AveragingScheme::Reuss) ==
+            Approx(original_youngs_reuss).epsilon(1e-8));
+  }
+
+  SECTION("Double rotation returns to original") {
+    double angle = M_PI / 3.0;
+    Eigen::Matrix3d R = Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()).toRotationMatrix();
+
+    // Rotate, then rotate back
+    auto rotated_c = elastic.rotate_voigt_stiffness(R);
+    auto double_rotated_c = ElasticTensor(rotated_c).rotate_voigt_stiffness(R.transpose());
+
+    // Should get back the original
+    REQUIRE(occ::util::all_close(double_rotated_c, elastic.voigt_c(), 1e-8, 1e-8));
+  }
+}
+
 TEST_CASE("Molecule label generation", "[molecule]") {
   SECTION("single molecule gets label 1A") {
     std::vector<occ::core::Molecule> molecules{water_molecule()};

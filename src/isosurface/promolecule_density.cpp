@@ -1,6 +1,5 @@
 #include <occ/core/log.h>
 #include <occ/isosurface/promolecule_density.h>
-#include <occ/slater/slaterbasis.h>
 
 namespace occ::isosurface {
 

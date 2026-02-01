@@ -1,13 +1,38 @@
 #pragma once
+#include <occ/core/atom.h>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
+#include <occ/xdm/xdm.h>
+#include <string>
+#include <optional>
 
 namespace occ::qm {
 
+enum class DispersionType {
+  None,
+  D4,
+  XDM
+};
+
 namespace impl {
+
+// Helper to compute D4 dispersion energy and gradient
+std::pair<double, Mat3N> compute_d4_dispersion(
+    const std::vector<core::Atom> &atoms,
+    int charge,
+    const std::string &functional);
+
+// Helper to compute XDM dispersion energy and gradient
+// If params is provided, uses those; otherwise looks up functional-specific params
+std::pair<double, Mat3N> compute_xdm_dispersion(
+    const AOBasis &basis,
+    const MolecularOrbitals &mo,
+    int charge,
+    const std::string &functional,
+    const std::optional<occ::xdm::XDM::Parameters> &params = std::nullopt);
 
 inline double accumulate1(SpinorbitalKind sk, int r, Mat op, Mat D) {
   double result = 0.0;
@@ -55,6 +80,27 @@ public:
   explicit GradientEvaluator(Proc &p)
       : m_proc(p), m_gradients(Mat3N::Zero(3, p.atoms().size())), m_schwarz_computed(false) {}
 
+  /**
+   * @brief Enable D4 dispersion correction
+   * @param functional DFT functional name for D4 parameters (e.g., "pbe", "b3lyp")
+   */
+  inline void set_dispersion_d4(const std::string &functional) {
+    m_dispersion_type = DispersionType::D4;
+    m_dispersion_functional = functional;
+  }
+
+  /**
+   * @brief Enable XDM dispersion correction
+   * @param functional DFT functional name for XDM parameters (e.g., "pbe", "b3lyp")
+   * @param params Optional XDM parameters to override functional defaults
+   */
+  inline void set_dispersion_xdm(const std::string &functional,
+                                  const std::optional<occ::xdm::XDM::Parameters> &params = std::nullopt) {
+    m_dispersion_type = DispersionType::XDM;
+    m_dispersion_functional = functional;
+    m_xdm_params = params;
+  }
+
   inline Mat3N nuclear_repulsion() const {
     Mat3N result = m_proc.nuclear_repulsion_gradient();
     return result;
@@ -83,7 +129,7 @@ public:
     auto f = m_proc.compute_fock_gradient(mo, m_schwarz);
     auto hcore = en + kin;
 
-    auto Dweighted = mo.energy_weighted_density_matrix();
+    Mat Dweighted = mo.energy_weighted_density_matrix();
 
     for (size_t atom = 0; atom < atoms.size(); atom++) {
       auto grad_rinv = m_proc.compute_rinv_gradient_for_atom(atom);
@@ -127,16 +173,44 @@ public:
   inline const Mat3N &operator()(const MolecularOrbitals &mo) {
 
     occ::timing::start(occ::timing::gradient);
-    
+
     m_gradients = nuclear_repulsion();
     m_gradients += electronic(mo);
-    
+
+    // Add dispersion gradient if enabled
+    if (m_dispersion_functional.has_value()) {
+      const std::string &functional = m_dispersion_functional.value();
+      const auto &basis = m_proc.aobasis();
+      int charge = basis.effective_nuclear_charge() - static_cast<int>(mo.num_electrons());
+
+      switch (m_dispersion_type) {
+      case DispersionType::D4: {
+        occ::log::debug("Computing D4 dispersion gradient");
+        const auto &atoms = m_proc.atoms();
+        auto [e_disp, grad_disp] = impl::compute_d4_dispersion(atoms, charge, functional);
+        occ::log::info("D4 dispersion energy: {:20.12f} Ha", e_disp);
+        m_gradients += grad_disp;
+        break;
+      }
+      case DispersionType::XDM: {
+        occ::log::debug("Computing XDM dispersion gradient");
+        const auto &basis = m_proc.aobasis();
+        auto [e_disp, grad_disp] = impl::compute_xdm_dispersion(basis, mo, charge, functional, m_xdm_params);
+        occ::log::info("XDM dispersion energy: {:20.12f} Ha", e_disp);
+        m_gradients += grad_disp;
+        break;
+      }
+      default:
+        break;
+      }
+    }
+
     occ::timing::stop(occ::timing::gradient);
-    
+
     // Log Cartesian gradients with atom labels
     const auto &atoms = m_proc.atoms();
     for (int atom = 0; atom < m_gradients.cols(); atom++) {
-      occ::log::info("{:2s}{:3d}: {:12.8f} {:12.8f} {:12.8f}", 
+      occ::log::info("{:2s}{:3d}: {:12.8f} {:12.8f} {:12.8f}",
                      core::Element(atoms[atom].atomic_number).symbol(), atom,
                      m_gradients(0, atom), m_gradients(1, atom),
                      m_gradients(2, atom));
@@ -149,6 +223,9 @@ private:
   Mat3N m_gradients;
   mutable Mat m_schwarz;
   mutable bool m_schwarz_computed;
+  DispersionType m_dispersion_type{DispersionType::None};
+  std::optional<std::string> m_dispersion_functional;
+  std::optional<occ::xdm::XDM::Parameters> m_xdm_params;
 };
 
 } // namespace occ::qm

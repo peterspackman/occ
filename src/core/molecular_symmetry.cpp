@@ -1,7 +1,5 @@
-#include <algorithm>
 #include <ankerl/unordered_dense.h>
 #include <cmath>
-#include <numeric>
 #include <occ/core/molecular_symmetry.h>
 
 namespace occ::core {

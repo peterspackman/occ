@@ -562,6 +562,20 @@ void register_core_bindings() {
       // Eigenvalues
       .function("eigenvalues", &ElasticTensor::eigenvalues)
 
+      // Rotation methods
+      .function("voigtRotationMatrix",
+                optional_override([](const ElasticTensor &et, const Mat3 &rotation) {
+                  return et.voigt_rotation_matrix(rotation);
+                }))
+      .function("rotateVoigtStiffness",
+                optional_override([](const ElasticTensor &et, const Mat3 &rotation) {
+                  return et.rotate_voigt_stiffness(rotation);
+                }))
+      .function("rotateVoigtCompliance",
+                optional_override([](const ElasticTensor &et, const Mat3 &rotation) {
+                  return et.rotate_voigt_compliance(rotation);
+                }))
+
       // Acoustic velocities
       .function("transverseAcousticVelocity",
                 optional_override([](const ElasticTensor &et, double bulk_modulus_gpa,

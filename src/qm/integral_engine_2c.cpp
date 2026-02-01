@@ -2,11 +2,10 @@
 #include "detail/multipole_kernel.h"
 #include "detail/schwarz_kernel.h"
 #include "detail/two_center_kernels.h"
-#include <chrono>
-#include <cmath>
-#include <occ/core/log.h>
-#include <occ/core/timings.h>
-#include <occ/qm/integral_engine.h>
+
+#if HAVE_ECPINT
+  #include <occ/core/log.h> 
+#endif
 
 namespace occ::qm {
 

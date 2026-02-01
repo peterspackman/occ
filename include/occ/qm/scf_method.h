@@ -7,7 +7,7 @@
 
 namespace occ::qm {
 
-using occ::qm::AOBasis;
+using occ::gto::AOBasis;
 using occ::qm::MolecularOrbitals;
 using PointChargeList = std::vector<occ::core::PointCharge>;
 

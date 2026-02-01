@@ -1,10 +1,9 @@
 #include <fmt/os.h>
-#include <fstream>
-#include <iomanip>
 #include <filesystem>
 #include <occ/core/data_directory.h>
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
+#include <occ/disp/dftd4.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/vibrational_analysis.h>
 #include <occ/driver/method_parser.h>
@@ -12,6 +11,7 @@
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
+#include <occ/xdm/xdm.h>
 
 using occ::core::Molecule;
 using occ::dft::DFT;
@@ -23,9 +23,9 @@ using occ::qm::Wavefunction;
 
 namespace occ::driver {
 
-occ::qm::AOBasis load_basis_set_opt(const Molecule &m, const std::string &name,
+occ::gto::AOBasis load_basis_set_opt(const Molecule &m, const std::string &name,
                                     bool spherical) {
-  auto basis = occ::qm::AOBasis::load(m.atoms(), name);
+  auto basis = occ::gto::AOBasis::load(m.atoms(), name);
   basis.set_pure(spherical);
   log::info("Loaded basis set: {}", spherical ? "spherical" : "cartesian");
   log::info("Number of shells:            {}", basis.size());
@@ -36,25 +36,30 @@ occ::qm::AOBasis load_basis_set_opt(const Molecule &m, const std::string &name,
 
 template <typename T, SpinorbitalKind SK>
 std::pair<Wavefunction, Mat3N>
-run_method_for_optimization(const Molecule &m, const occ::qm::AOBasis &basis,
+run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
                             const OccInput &config,
                             const Wavefunction *prev_wfn = nullptr,
                             double energy_change = 1.0) {
 
+  // Parse method name to extract dispersion correction
+  auto method_spec = parse_method_string(config.method.name);
+
   T proc = [&]() {
     if constexpr (std::is_same<T, DFT>::value)
-      return T(config.method.name, basis, config.method.dft_grid);
+      return T(method_spec.base_method, basis, config.method.dft_grid);
     else
       return T(basis);
   }();
 
   if (!config.basis.df_name.empty()) {
-    proc.set_density_fitting_basis(config.basis.df_name);
-    // Set DF policy based on input configuration
+    proc.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
+    // Only override DF policy if user explicitly requests direct
     if (config.method.use_direct_df_kernels) {
       proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-    } else {
-      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+    }
+    // Enable Split-RI-J if requested
+    if (config.method.use_split_ri_j) {
+      proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
     }
   }
 
@@ -117,13 +122,67 @@ run_method_for_optimization(const Molecule &m, const occ::qm::AOBasis &basis,
   }
 
   auto wfn = scf.wavefunction();
-  
+
+  // Add dispersion energy if specified via method string or --xdm flag
+  bool use_xdm = (method_spec.dispersion == "xdm") || config.dispersion.evaluate_correction;
+  bool use_d4 = (method_spec.dispersion == "d4");
+
+  if (use_d4 || use_xdm) {
+    if (use_d4) {
+      occ::disp::D4Dispersion disp(m.atoms());
+      disp.set_charge(config.electronic.charge);
+
+      bool success = disp.set_functional(method_spec.base_method);
+      if (!success) {
+        log::warn("D4 parameters not found for functional '{}', using default PBE parameters",
+                  method_spec.base_method);
+      }
+
+      double e_d4 = disp.energy();
+      log::info("D4 dispersion correction:        {: 20.12f}", e_d4);
+      wfn.energy.total += e_d4;
+      log::info("Dispersion-corrected energy:     {: 20.12f}", wfn.energy.total);
+    } else if (use_xdm) {
+      // Check if user specified custom XDM parameters via flags
+      std::optional<xdm::XDM::Parameters> xdm_params;
+      if (config.dispersion.xdm_a1 != 1.0 || config.dispersion.xdm_a2 != 1.0) {
+        xdm_params = xdm::XDM::Parameters{config.dispersion.xdm_a1, config.dispersion.xdm_a2};
+      }
+
+      auto [e_xdm, grad_xdm] = qm::impl::compute_xdm_dispersion(
+          wfn.basis, wfn.mo, config.electronic.charge, method_spec.base_method, xdm_params);
+
+      log::info("XDM dispersion correction:       {: 20.12f}", e_xdm);
+      wfn.energy.total += e_xdm;
+      log::info("Dispersion-corrected energy:     {: 20.12f}", wfn.energy.total);
+    }
+  }
+
   // Set gradient-specific precision if different from SCF precision
   if (gradient_precision != integral_precision) {
     proc.set_precision(gradient_precision);
   }
-  
+
   occ::qm::GradientEvaluator eval(scf.m_procedure);
+
+  // Enable dispersion gradient if specified via method string or --xdm flag
+  if (use_d4 || use_xdm) {
+    if (use_d4) {
+      eval.set_dispersion_d4(method_spec.base_method);
+      occ::log::info("D4 dispersion gradient enabled for functional: {}",
+                     method_spec.base_method);
+    } else if (use_xdm) {
+      // Pass custom XDM parameters to gradient evaluator if specified
+      std::optional<xdm::XDM::Parameters> xdm_params;
+      if (config.dispersion.xdm_a1 != 1.0 || config.dispersion.xdm_a2 != 1.0) {
+        xdm_params = xdm::XDM::Parameters{config.dispersion.xdm_a1, config.dispersion.xdm_a2};
+      }
+      eval.set_dispersion_xdm(method_spec.base_method, xdm_params);
+      occ::log::info("XDM dispersion gradient enabled for functional: {}",
+                     method_spec.base_method);
+    }
+  }
+
   Mat3N gradient = eval(wfn.mo);
   // Convert gradients from Hartree/Bohr to Hartree/Angstrom for optimizer
   gradient /= occ::units::ANGSTROM_TO_BOHR;

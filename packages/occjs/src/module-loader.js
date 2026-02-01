@@ -79,6 +79,12 @@ export async function loadOCC(options = {}) {
         Module.setLogLevel(Module.LogLevel.WARN || 3);
       }
 
+      // Set to single thread by default to avoid SharedArrayBuffer/CORS requirements in browser
+      // Users can call Module.setNumThreads(n) to enable multithreading when needed
+      if (Module.setNumThreads) {
+        Module.setNumThreads(1);
+      }
+
       // Set data directory to use preloaded files
       Module.setDataDirectory('/');
       console.log('OCC module loaded with data directory:', Module.getDataDirectory());

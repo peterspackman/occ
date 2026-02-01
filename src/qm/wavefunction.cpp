@@ -6,11 +6,11 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/gto/density.h>
-#include <occ/io/conversion.h>
-#include <occ/io/fchkreader.h>
-#include <occ/io/fchkwriter.h>
-#include <occ/io/moldenreader.h>
-#include <occ/io/wavefunction_json.h>
+#include <occ/qm/io/conversion.h>
+#include <occ/qm/io/fchkreader.h>
+#include <occ/qm/io/fchkwriter.h>
+#include <occ/qm/io/moldenreader.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/merge.h>
 #include <occ/qm/orb.h>

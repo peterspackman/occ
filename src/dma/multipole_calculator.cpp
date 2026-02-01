@@ -2,7 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/units.h>
-#include <occ/dft/molecular_grid.h>
+#include <occ/numint/molecular_grid.h>
 #include <occ/dma/gauss_hermite.h>
 #include <occ/dma/multipole_calculator.h>
 #include <occ/dma/multipole_shifter.h>
@@ -32,7 +32,7 @@ AnalyticalIntegrator::AnalyticalIntegrator(const DMASettings &settings)
     : m_settings(settings) {}
 
 void AnalyticalIntegrator::calculate_primitive_contribution(
-    const qm::Shell &shell_i, const qm::Shell &shell_j, int i_prim, int j_prim,
+    const gto::Shell &shell_i, const gto::Shell &shell_j, int i_prim, int j_prim,
     double fac, const Mat &d_block, const Vec3 &P, Mult &qt) const {
 
   const int l_i = shell_i.l;
@@ -154,8 +154,8 @@ GridIntegrator::GridIntegrator(const DMASettings &settings)
     : m_settings(settings) {}
 
 template <int BlockSize = 64>
-void add_primitive_to_grid_blocked(const qm::Shell &shell_i,
-                                   const qm::Shell &shell_j, int i_prim,
+void add_primitive_to_grid_blocked(const gto::Shell &shell_i,
+                                   const gto::Shell &shell_j, int i_prim,
                                    int j_prim, double fac, const Mat &d_block,
                                    const Vec3 &P, const Mat3N &grid_points,
                                    Vec &rho, double etol) {
@@ -291,8 +291,8 @@ void add_primitive_to_grid_blocked(const qm::Shell &shell_i,
   }
 }
 
-void GridIntegrator::add_primitive_to_grid(const qm::Shell &shell_i,
-                                           const qm::Shell &shell_j, int i_prim,
+void GridIntegrator::add_primitive_to_grid(const gto::Shell &shell_i,
+                                           const gto::Shell &shell_j, int i_prim,
                                            int j_prim, double fac,
                                            const Mat &d_block, const Vec3 &P,
                                            const Mat3N &grid_points, Vec &rho,
@@ -350,7 +350,7 @@ void GridIntegrator::process_grid_density(
 }
 
 // MultipoleCalculator implementation
-MultipoleCalculator::MultipoleCalculator(const qm::AOBasis &basis,
+MultipoleCalculator::MultipoleCalculator(const gto::AOBasis &basis,
                                          const qm::MolecularOrbitals &mo,
                                          const DMASites &sites,
                                          const DMASettings &settings)
