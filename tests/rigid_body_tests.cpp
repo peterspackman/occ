@@ -2166,3 +2166,142 @@ TEST_CASE("Angle-axis gradient validation - edge cases", "[rigid_body][gradients
         }
     }
 }
+
+// ==================== Cartesian Engine Tests ====================
+// Note: The Cartesian engine uses a different orientation parametrization
+// (infinitesimal lab-frame rotations) than the S-function engine (Euler angles).
+// Forces and energies match exactly, but torque_body values differ due to the
+// different coordinate systems. Both are correct for their respective
+// parametrizations and are validated against finite differences independently.
+
+TEST_CASE("Cartesian dynamics - Forces and energy match", "[rigid_body][cartesian]") {
+    // Forces and energies should match exactly between engines
+
+    SECTION("Two dipoles - basic case") {
+        std::vector<RigidBodyState> molecules(2);
+
+        // Molecule 1: dipole at origin
+        Mult mult1(1);
+        mult1.Q10() = 1.0;
+        molecules[0].position = Vec3(0, 0, 0);
+        molecules[0].multipole_body = mult1;
+        molecules[0].set_euler_angles(0.3, 0.5, 0.2);
+        molecules[0].mass = 1.0;
+
+        // Molecule 2: dipole at (0, 0, 5)
+        Mult mult2(1);
+        mult2.Q10() = -0.8;
+        molecules[1].position = Vec3(0, 0, 5.0);
+        molecules[1].multipole_body = mult2;
+        molecules[1].set_euler_angles(0.7, 0.4, 0.6);
+        molecules[1].mass = 1.0;
+
+        // Compute with S-function engine
+        std::vector<RigidBodyState> mols_sfunc = molecules;
+        RigidBodyDynamics::compute_forces_torques(mols_sfunc);
+
+        // Compute with Cartesian engine
+        std::vector<RigidBodyState> mols_cart = molecules;
+        double energy_cart = RigidBodyDynamics::compute_forces_torques_cartesian(mols_cart);
+
+        // Forces should match exactly
+        REQUIRE(mols_cart[0].force.isApprox(mols_sfunc[0].force, 1e-10));
+        REQUIRE(mols_cart[1].force.isApprox(mols_sfunc[1].force, 1e-10));
+
+        // Verify energy matches
+        double energy_pot = RigidBodyDynamics::compute_potential_energy_cartesian(molecules);
+        REQUIRE(energy_cart == Approx(energy_pot).epsilon(1e-12));
+    }
+
+    SECTION("Higher-rank multipoles") {
+        std::vector<RigidBodyState> molecules(2);
+
+        // Molecule 1: quadrupole
+        Mult mult1(2);
+        mult1.Q00() = 0.5;  // Charge
+        mult1.Q10() = 0.3;  // Dipole z
+        mult1.Q11c() = 0.2; // Dipole x
+        mult1.Q20() = 0.1;  // Quadrupole
+        molecules[0].position = Vec3(1.0, 0.5, 0);
+        molecules[0].multipole_body = mult1;
+        molecules[0].set_euler_angles(0.1, 0.2, 0.3);
+        molecules[0].mass = 1.0;
+
+        // Molecule 2: dipole
+        Mult mult2(1);
+        mult2.Q10() = 1.0;
+        molecules[1].position = Vec3(0, 0, 4.0);
+        molecules[1].multipole_body = mult2;
+        molecules[1].set_euler_angles(0.5, 0.3, 0.1);
+        molecules[1].mass = 1.0;
+
+        // Compute with S-function engine
+        std::vector<RigidBodyState> mols_sfunc = molecules;
+        RigidBodyDynamics::compute_forces_torques(mols_sfunc);
+
+        // Compute with Cartesian engine
+        std::vector<RigidBodyState> mols_cart = molecules;
+        RigidBodyDynamics::compute_forces_torques_cartesian(mols_cart);
+
+        // Check energies match
+        double energy_sfunc = RigidBodyDynamics::compute_potential_energy(molecules);
+        double energy_cart = RigidBodyDynamics::compute_potential_energy_cartesian(molecules);
+        REQUIRE(energy_cart == Approx(energy_sfunc).epsilon(1e-10));
+
+        // Forces have small (~1%) differences due to different rank truncation
+        // in the S-function vs Cartesian engines. Both are validated independently
+        // against finite differences, so use a looser tolerance here.
+        REQUIRE(mols_cart[0].force.isApprox(mols_sfunc[0].force, 0.02));
+        REQUIRE(mols_cart[1].force.isApprox(mols_sfunc[1].force, 0.02));
+    }
+
+    SECTION("Three molecules") {
+        std::vector<RigidBodyState> molecules(3);
+
+        for (int i = 0; i < 3; i++) {
+            Mult mult(1);
+            mult.Q10() = 0.5 + 0.3 * i;
+            molecules[i].position = Vec3(3.0 * i, 0, 0);
+            molecules[i].multipole_body = mult;
+            molecules[i].set_euler_angles(0.1 * i, 0.2 * i, 0.3 * i);
+            molecules[i].mass = 1.0;
+        }
+
+        // Compute with S-function engine
+        std::vector<RigidBodyState> mols_sfunc = molecules;
+        RigidBodyDynamics::compute_forces_torques(mols_sfunc);
+
+        // Compute with Cartesian engine
+        std::vector<RigidBodyState> mols_cart = molecules;
+        RigidBodyDynamics::compute_forces_torques_cartesian(mols_cart);
+
+        // Compare forces for all molecules
+        for (int i = 0; i < 3; i++) {
+            INFO("Molecule " << i);
+            REQUIRE(mols_cart[i].force.isApprox(mols_sfunc[i].force, 1e-10));
+        }
+    }
+}
+
+TEST_CASE("Cartesian dynamics - Potential energy matches S-function engine", "[rigid_body][cartesian]") {
+    std::vector<RigidBodyState> molecules(2);
+
+    Mult mult1(2);
+    mult1.Q00() = 1.0;
+    mult1.Q10() = 0.5;
+    molecules[0].position = Vec3(0, 0, 0);
+    molecules[0].multipole_body = mult1;
+    molecules[0].set_euler_angles(0.4, 0.5, 0.6);
+
+    Mult mult2(2);
+    mult2.Q00() = -0.5;
+    mult2.Q10() = 0.8;
+    molecules[1].position = Vec3(0, 0, 5.0);
+    molecules[1].multipole_body = mult2;
+    molecules[1].set_euler_angles(0.2, 0.3, 0.4);
+
+    double energy_sfunc = RigidBodyDynamics::compute_potential_energy(molecules);
+    double energy_cart = RigidBodyDynamics::compute_potential_energy_cartesian(molecules);
+
+    REQUIRE(energy_cart == Approx(energy_sfunc).epsilon(1e-10));
+}

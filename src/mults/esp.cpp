@@ -2,7 +2,6 @@
 #include <occ/mults/rotation.h>
 #include <stdexcept>
 #include <cmath>
-#include <fmt/core.h>
 
 namespace occ::mults {
 
@@ -137,30 +136,6 @@ double MultipoleESP::compute_interaction_energy(const occ::dma::Mult& mult1,
 
             // Add contribution: fac * q1 * q2 * S-function / r^power
             double contrib = fac * q1 * q2 * result.s0 / r_power;
-
-            // DEBUG: Print details for quadrupole-quadrupole
-            if (l1 == 2 && l2 == 2) {
-                fmt::print("OCC: t1={:2} t2={:2} j={} fac={:.1f} qq={:12.8f} s0={:12.8f} contrib={:14.10f}\n",
-                    t1, t2, j, fac, q1*q2, result.s0, contrib);
-            }
-
-            // DEBUG: Print details for octapole-dipole and dipole-octapole
-            if ((l1 == 3 && l2 == 1) || (l1 == 1 && l2 == 3)) {
-                fmt::print("OCC: t1={:2} t2={:2} j={} l1={} l2={} fac={:.1f} qq={:12.8f} s0={:12.8f} contrib={:14.10f}\n",
-                    t1, t2, j, l1, l2, fac, q1*q2, result.s0, contrib);
-            }
-
-            // DEBUG: Print details for octapole-quadrupole
-            if ((l1 == 3 && l2 == 2) || (l1 == 2 && l2 == 3)) {
-                fmt::print("OCC: t1={:2} t2={:2} j={} l1={} l2={} fac={:.1f} qq={:12.8f} s0={:12.8f} contrib={:14.10f}\n",
-                    t1, t2, j, l1, l2, fac, q1*q2, result.s0, contrib);
-            }
-
-            // DEBUG: Print details for hexadecapole-dipole and dipole-hexadecapole
-            if ((l1 == 4 && l2 == 1) || (l1 == 1 && l2 == 4)) {
-                fmt::print("OCC: t1={:2} t2={:2} j={} l1={} l2={} fac={:.1f} qq={:12.8f} s0={:12.8f} contrib={:14.10f}\n",
-                    t1, t2, j, l1, l2, fac, q1*q2, result.s0, contrib);
-            }
 
             energy += contrib;
         }

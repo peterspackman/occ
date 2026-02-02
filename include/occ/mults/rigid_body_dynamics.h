@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/mults/rigid_body.h>
+#include <occ/mults/multipole_source.h>
 #include <vector>
 
 namespace occ::mults {
@@ -46,14 +47,31 @@ public:
     static void velocity_verlet_step(std::vector<RigidBodyState>& molecules, double dt);
 
     /**
-     * @brief Compute forces and torques on all molecules
+     * @brief Compute forces and torques on all molecules (S-function engine)
      *
      * Calculates pairwise multipole interactions and updates force/torque
-     * on each molecule.
+     * on each molecule using the S-function/Euler-angle-based engine.
      *
      * @param molecules Vector of rigid body states
      */
     static void compute_forces_torques(std::vector<RigidBodyState>& molecules);
+
+    /**
+     * @brief Compute forces and torques using Cartesian T-tensor engine
+     *
+     * Calculates pairwise multipole interactions using the Cartesian engine,
+     * which computes energy, forces, and torques in a single pass per pair.
+     * Supports multi-site molecules.
+     *
+     * This is generally faster than compute_forces_torques() since:
+     * - One call per pair (not two)
+     * - No Euler angle conversion
+     * - SIMD-batched T-tensor computation
+     *
+     * @param molecules Vector of rigid body states
+     * @return Total potential energy
+     */
+    static double compute_forces_torques_cartesian(std::vector<RigidBodyState>& molecules);
 
     /**
      * @brief Update positions using current velocities (half-step)
@@ -111,12 +129,22 @@ public:
     static double compute_kinetic_energy(const std::vector<RigidBodyState>& molecules);
 
     /**
-     * @brief Compute total potential energy of system
+     * @brief Compute total potential energy of system (S-function engine)
      *
      * @param molecules Vector of rigid bodies
      * @return Total potential energy (sum of all pairwise interactions)
      */
     static double compute_potential_energy(const std::vector<RigidBodyState>& molecules);
+
+    /**
+     * @brief Compute total potential energy using Cartesian engine
+     *
+     * Faster than compute_potential_energy() for multi-site molecules.
+     *
+     * @param molecules Vector of rigid bodies
+     * @return Total potential energy (sum of all pairwise interactions)
+     */
+    static double compute_potential_energy_cartesian(const std::vector<RigidBodyState>& molecules);
 
     /**
      * @brief Compute total energy (kinetic + potential)

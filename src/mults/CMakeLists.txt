@@ -20,6 +20,10 @@ add_library(occ_mults
     rigid_body.cpp
     rigid_body_dynamics.cpp
     optimization_projection.cpp
+    cartesian_interaction.cpp
+    cartesian_molecule.cpp
+    cartesian_force.cpp
+    multipole_source.cpp
 )
 
 target_include_directories(occ_mults PUBLIC 
@@ -47,16 +51,3 @@ install(TARGETS occ_mults
     INCLUDES DESTINATION include
 )
 
-# Multipole interaction command-line program
-add_executable(interaction_main interaction_main.cpp)
-target_link_libraries(interaction_main
-    occ_mults
-    occ_core
-    occ_dma
-    nlohmann_json::nlohmann_json
-)
-target_compile_features(interaction_main PUBLIC cxx_std_20)
-
-install(TARGETS interaction_main
-    RUNTIME DESTINATION bin
-)

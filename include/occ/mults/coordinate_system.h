@@ -6,15 +6,23 @@ namespace occ::mults {
 
 /**
  * Lightweight POD struct for multipole coordinate system transformations
- * 
- * Implements Orient's exact coordinate convention:
+ *
+ * Coordinate definitions:
  * - Site A coordinates: ra (raw input coordinates)
- * - Site B coordinates: rb (raw input coordinates)  
+ * - Site B coordinates: rb (raw input coordinates)
  * - Inter-site vector: rab = rb - ra
  * - Distance: r = |rab|
- * - Unit vector: er = rab / r
- * - Orient variables: rax,ray,raz = +er (unit vector from A to B, in body frame)
- *                    rbx,rby,rbz = -er (unit vector from B to A, in body frame)
+ * - Unit vector: er = rab / r (points from A to B)
+ *
+ * OCC convention for unit vector accessors:
+ *   rax,ray,raz = +er (unit vector from A to B)
+ *   rbx,rby,rbz = -er (unit vector from B to A)
+ *
+ * Note: Orient uses the OPPOSITE sign convention:
+ *   Orient rax = -er, Orient rbx = +er
+ * The S-function kernel code compensates by swapping which accessor it
+ * calls (e.g., using rbx() where Orient uses rax), so the numerical
+ * results match Orient exactly despite the naming difference.
  */
 struct CoordinateSystem {
     // Raw input coordinates

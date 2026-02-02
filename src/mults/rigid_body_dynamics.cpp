@@ -1,6 +1,7 @@
 #include <occ/mults/rigid_body_dynamics.h>
 #include <occ/mults/torque.h>
 #include <occ/mults/multipole_interactions.h>
+#include <occ/mults/cartesian_force.h>
 #include <iostream>
 
 namespace occ::mults {
@@ -234,6 +235,89 @@ void RigidBodyDynamics::normalize_quaternions(std::vector<RigidBodyState>& molec
     for (auto& mol : molecules) {
         mol.quaternion.normalize();
     }
+}
+
+// ==================== Cartesian Engine Methods ====================
+
+double RigidBodyDynamics::compute_forces_torques_cartesian(
+    std::vector<RigidBodyState>& molecules) {
+
+    // Zero out forces and torques
+    for (auto& mol : molecules) {
+        mol.force.setZero();
+        mol.torque_body.setZero();
+        mol.torque_euler.setZero();
+    }
+
+    // Build MultipleSources from each RigidBodyState
+    std::vector<MultipoleSource> sources;
+    sources.reserve(molecules.size());
+    for (const auto& mol : molecules) {
+        sources.push_back(multipole_source_from_rigid_body(mol));
+    }
+
+    // Get CartesianMolecules (triggers lazy build with body-frame data)
+    std::vector<const CartesianMolecule*> cartesians;
+    cartesians.reserve(molecules.size());
+    for (const auto& src : sources) {
+        cartesians.push_back(&src.cartesian());
+    }
+
+    // Compute pairwise interactions
+    double total_energy = 0.0;
+    for (size_t i = 0; i < molecules.size(); i++) {
+        for (size_t j = i + 1; j < molecules.size(); j++) {
+            // One call per pair computes both molecules' forces and torques
+            FullRigidBodyResult result = compute_molecule_forces_torques(
+                *cartesians[i], *cartesians[j]);
+
+            total_energy += result.energy;
+
+            // Accumulate translational forces (Newton's third law built in)
+            molecules[i].force += result.force_A;
+            molecules[j].force += result.force_B;
+
+            // Use the pre-computed body-frame torques directly.
+            // These are validated against finite differences in cartesian_force_test.cpp.
+            // Note: The Cartesian engine uses a different orientation parametrization
+            // (infinitesimal lab-frame rotations) than the S-function engine (Euler angles),
+            // so torque_euler conversion is not straightforward. For quaternion-based
+            // dynamics, torque_body is what's needed.
+            molecules[i].torque_body += result.torque_A_body;
+            molecules[j].torque_body += result.torque_B_body;
+        }
+    }
+
+    return total_energy;
+}
+
+double RigidBodyDynamics::compute_potential_energy_cartesian(
+    const std::vector<RigidBodyState>& molecules) {
+
+    // Build MultipleSources from each RigidBodyState
+    std::vector<MultipoleSource> sources;
+    sources.reserve(molecules.size());
+    for (const auto& mol : molecules) {
+        sources.push_back(multipole_source_from_rigid_body(mol));
+    }
+
+    // Get CartesianMolecules
+    std::vector<const CartesianMolecule*> cartesians;
+    cartesians.reserve(molecules.size());
+    for (const auto& src : sources) {
+        cartesians.push_back(&src.cartesian());
+    }
+
+    // Compute pairwise interaction energies
+    double total_energy = 0.0;
+    for (size_t i = 0; i < molecules.size(); i++) {
+        for (size_t j = i + 1; j < molecules.size(); j++) {
+            total_energy += compute_molecule_interaction(
+                *cartesians[i], *cartesians[j]);
+        }
+    }
+
+    return total_energy;
 }
 
 } // namespace occ::mults

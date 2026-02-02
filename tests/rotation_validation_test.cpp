@@ -9,6 +9,8 @@
 #include <occ/dma/mult.h>
 #include <occ/mults/rotation.h>
 #include <occ/mults/esp.h>
+#include <occ/mults/cartesian_multipole.h>
+#include <occ/mults/cartesian_rotation.h>
 #include <fmt/core.h>
 
 using namespace occ;
@@ -79,7 +81,7 @@ TEST_CASE("Body-to-lab rotation: Interaction energy invariance", "[mults][rotati
         Vec3 pos1(0, 0, 0);
         Vec3 pos2(0, 5, 0);  // 5 bohr along y
 
-        MultipoleESP esp(1);
+        MultipoleESP esp(2);
         double energy_lab = esp.compute_interaction_energy(d1_lab, pos1, d2_lab, pos2);
 
         // Setup 2: Specify in body frame (z-axis) and rotate to lab frame
@@ -178,5 +180,224 @@ TEST_CASE("Body-to-lab rotation: Rotation composition", "[mults][rotation][valid
         REQUIRE(step2.Q10() == Approx(composed.Q10()).epsilon(1e-10));
         REQUIRE(step2.Q11c() == Approx(composed.Q11c()).epsilon(1e-10));
         REQUIRE(step2.Q11s() == Approx(composed.Q11s()).epsilon(1e-10));
+    }
+}
+
+// -------------------------------------------------------------------
+// Cartesian rotation validation: Wigner D vs Cartesian rotation kernel
+// -------------------------------------------------------------------
+
+TEST_CASE("Cartesian rotation vs Wigner D: all ranks",
+          "[mults][rotation][cartesian]") {
+
+    // Test strategy:
+    //   Path A: spherical → Wigner D rotate → spherical_to_cartesian
+    //   Path B: spherical → spherical_to_cartesian → rotate_cartesian_multipole
+    // Both should produce identical Cartesian multipoles.
+
+    // Multiple rotation matrices to test
+    struct RotCase {
+        const char *name;
+        double alpha, beta, gamma;
+    };
+    RotCase rotations[] = {
+        {"90 deg about z",     M_PI / 2,  0,        0},
+        {"90 deg about y",     0,         M_PI / 2, 0},
+        {"45 deg all axes",    M_PI / 4,  M_PI / 4, M_PI / 4},
+        {"arbitrary 1",        0.7,       0.4,      -0.3},
+        {"arbitrary 2",        -0.5,      0.8,      1.2},
+        {"near-gimbal",        1.0,       0.01,     2.0},
+        {"large angles",       2.5,       1.3,      -1.8},
+    };
+
+    SECTION("Rank 1: dipole") {
+        Mult body(4);
+        body.Q10() = 0.234;
+        body.Q11c() = -0.15;
+        body.Q11s() = 0.42;
+
+        for (auto &rc : rotations) {
+            CAPTURE(rc.name);
+            Mat3 R = rotation_utils::euler_to_rotation(rc.alpha, rc.beta, rc.gamma);
+
+            // Path A: Wigner D → Cartesian
+            Mult lab_sph = rotated_multipole(body, R);
+            CartesianMultipole<4> cart_wigner;
+            spherical_to_cartesian<4>(lab_sph, cart_wigner);
+
+            // Path B: Cartesian → rotate
+            CartesianMultipole<4> cart_body;
+            spherical_to_cartesian<4>(body, cart_body);
+            CartesianMultipole<4> cart_rotated;
+            rotate_cartesian_multipole<4>(cart_body, R, cart_rotated);
+
+            for (int i = 0; i < CartesianMultipole<4>::size; ++i) {
+                REQUIRE(cart_rotated.data[i] ==
+                        Approx(cart_wigner.data[i]).margin(1e-12));
+            }
+        }
+    }
+
+    SECTION("Rank 2: quadrupole") {
+        Mult body(4);
+        body.Q20() = -0.123;
+        body.Q21c() = 0.05;
+        body.Q21s() = -0.07;
+        body.Q22c() = 0.08;
+        body.Q22s() = 0.03;
+
+        for (auto &rc : rotations) {
+            CAPTURE(rc.name);
+            Mat3 R = rotation_utils::euler_to_rotation(rc.alpha, rc.beta, rc.gamma);
+
+            Mult lab_sph = rotated_multipole(body, R);
+            CartesianMultipole<4> cart_wigner;
+            spherical_to_cartesian<4>(lab_sph, cart_wigner);
+
+            CartesianMultipole<4> cart_body;
+            spherical_to_cartesian<4>(body, cart_body);
+            CartesianMultipole<4> cart_rotated;
+            rotate_cartesian_multipole<4>(cart_body, R, cart_rotated);
+
+            for (int i = 0; i < CartesianMultipole<4>::size; ++i) {
+                REQUIRE(cart_rotated.data[i] ==
+                        Approx(cart_wigner.data[i]).margin(1e-12));
+            }
+        }
+    }
+
+    SECTION("Rank 3: octupole") {
+        Mult body(4);
+        body.Q30() = 0.05;
+        body.Q31c() = -0.03;
+        body.Q31s() = 0.02;
+        body.Q32c() = 0.04;
+        body.Q32s() = -0.01;
+        body.Q33c() = 0.06;
+        body.Q33s() = -0.02;
+
+        for (auto &rc : rotations) {
+            CAPTURE(rc.name);
+            Mat3 R = rotation_utils::euler_to_rotation(rc.alpha, rc.beta, rc.gamma);
+
+            Mult lab_sph = rotated_multipole(body, R);
+            CartesianMultipole<4> cart_wigner;
+            spherical_to_cartesian<4>(lab_sph, cart_wigner);
+
+            CartesianMultipole<4> cart_body;
+            spherical_to_cartesian<4>(body, cart_body);
+            CartesianMultipole<4> cart_rotated;
+            rotate_cartesian_multipole<4>(cart_body, R, cart_rotated);
+
+            for (int i = 0; i < CartesianMultipole<4>::size; ++i) {
+                REQUIRE(cart_rotated.data[i] ==
+                        Approx(cart_wigner.data[i]).margin(1e-12));
+            }
+        }
+    }
+
+    SECTION("Rank 4: hexadecapole") {
+        Mult body(4);
+        body.Q40() = 0.01;
+        body.Q41c() = -0.02;
+        body.Q41s() = 0.015;
+        body.Q42c() = 0.03;
+        body.Q42s() = -0.005;
+        body.Q43c() = 0.008;
+        body.Q43s() = -0.012;
+        body.Q44c() = 0.004;
+        body.Q44s() = 0.006;
+
+        for (auto &rc : rotations) {
+            CAPTURE(rc.name);
+            Mat3 R = rotation_utils::euler_to_rotation(rc.alpha, rc.beta, rc.gamma);
+
+            Mult lab_sph = rotated_multipole(body, R);
+            CartesianMultipole<4> cart_wigner;
+            spherical_to_cartesian<4>(lab_sph, cart_wigner);
+
+            CartesianMultipole<4> cart_body;
+            spherical_to_cartesian<4>(body, cart_body);
+            CartesianMultipole<4> cart_rotated;
+            rotate_cartesian_multipole<4>(cart_body, R, cart_rotated);
+
+            for (int i = 0; i < CartesianMultipole<4>::size; ++i) {
+                REQUIRE(cart_rotated.data[i] ==
+                        Approx(cart_wigner.data[i]).margin(1e-12));
+            }
+        }
+    }
+
+    SECTION("All ranks combined") {
+        Mult body(4);
+        body.Q00() = -0.669;
+        body.Q10() = 0.234;
+        body.Q11c() = -0.15;
+        body.Q11s() = 0.42;
+        body.Q20() = -0.123;
+        body.Q21c() = 0.05;
+        body.Q22c() = 0.08;
+        body.Q30() = 0.05;
+        body.Q31c() = -0.03;
+        body.Q32c() = 0.04;
+        body.Q33c() = 0.06;
+        body.Q40() = 0.01;
+        body.Q41c() = -0.02;
+        body.Q42c() = 0.03;
+        body.Q43c() = 0.008;
+        body.Q44c() = 0.004;
+
+        for (auto &rc : rotations) {
+            CAPTURE(rc.name);
+            Mat3 R = rotation_utils::euler_to_rotation(rc.alpha, rc.beta, rc.gamma);
+
+            Mult lab_sph = rotated_multipole(body, R);
+            CartesianMultipole<4> cart_wigner;
+            spherical_to_cartesian<4>(lab_sph, cart_wigner);
+
+            CartesianMultipole<4> cart_body;
+            spherical_to_cartesian<4>(body, cart_body);
+            CartesianMultipole<4> cart_rotated;
+            rotate_cartesian_multipole<4>(cart_body, R, cart_rotated);
+
+            for (int i = 0; i < CartesianMultipole<4>::size; ++i) {
+                REQUIRE(cart_rotated.data[i] ==
+                        Approx(cart_wigner.data[i]).margin(1e-12));
+            }
+        }
+    }
+}
+
+TEST_CASE("Cartesian rotation roundtrip",
+          "[mults][rotation][cartesian]") {
+
+    // Rotate body → lab, then rotate lab → body (using R^T), should recover original
+    Mult body(4);
+    body.Q00() = -0.669;
+    body.Q10() = 0.234;
+    body.Q11c() = -0.15;
+    body.Q20() = -0.123;
+    body.Q22c() = 0.08;
+    body.Q30() = 0.05;
+    body.Q31c() = -0.03;
+    body.Q33c() = 0.06;
+    body.Q40() = 0.01;
+    body.Q42c() = 0.03;
+    body.Q44c() = 0.004;
+
+    CartesianMultipole<4> cart_body;
+    spherical_to_cartesian<4>(body, cart_body);
+
+    Mat3 R = rotation_utils::euler_to_rotation(0.7, 0.4, -0.3);
+
+    CartesianMultipole<4> cart_lab;
+    rotate_cartesian_multipole<4>(cart_body, R, cart_lab);
+
+    CartesianMultipole<4> cart_recovered;
+    rotate_cartesian_multipole<4>(cart_lab, R.transpose(), cart_recovered);
+
+    for (int i = 0; i < CartesianMultipole<4>::size; ++i) {
+        REQUIRE(cart_recovered.data[i] ==
+                Approx(cart_body.data[i]).margin(1e-12));
     }
 }

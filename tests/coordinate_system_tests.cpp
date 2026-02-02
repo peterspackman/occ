@@ -25,11 +25,11 @@ TEST_CASE("CoordinateSystem - basic functionality", "[mults][coordinates]") {
         REQUIRE(cs.er[1] == Approx(0.0));
         REQUIRE(cs.er[2] == Approx(0.0));
         
-        // Orient convention: rax = -er, rbx = +er
-        REQUIRE(cs.rax() == Approx(-1.0));
+        // OCC convention: rax = +er, rbx = -er
+        REQUIRE(cs.rax() == Approx(1.0));
         REQUIRE(cs.ray() == Approx(0.0));
         REQUIRE(cs.raz() == Approx(0.0));
-        REQUIRE(cs.rbx() == Approx(1.0));
+        REQUIRE(cs.rbx() == Approx(-1.0));
         REQUIRE(cs.rby() == Approx(0.0));
         REQUIRE(cs.rbz() == Approx(0.0));
         
@@ -53,13 +53,13 @@ TEST_CASE("CoordinateSystem - basic functionality", "[mults][coordinates]") {
         REQUIRE(cs.er[1] == Approx(expected_unit));
         REQUIRE(cs.er[2] == Approx(expected_unit));
         
-        // Orient coordinates should match our known values
-        REQUIRE(cs.rax() == Approx(-expected_unit));
-        REQUIRE(cs.ray() == Approx(-expected_unit));
-        REQUIRE(cs.raz() == Approx(-expected_unit));
-        REQUIRE(cs.rbx() == Approx(expected_unit));
-        REQUIRE(cs.rby() == Approx(expected_unit));
-        REQUIRE(cs.rbz() == Approx(expected_unit));
+        // OCC coordinates: rax = +er, rbx = -er
+        REQUIRE(cs.rax() == Approx(expected_unit));
+        REQUIRE(cs.ray() == Approx(expected_unit));
+        REQUIRE(cs.raz() == Approx(expected_unit));
+        REQUIRE(cs.rbx() == Approx(-expected_unit));
+        REQUIRE(cs.rby() == Approx(-expected_unit));
+        REQUIRE(cs.rbz() == Approx(-expected_unit));
         
         REQUIRE(cs.is_valid());
     }
@@ -79,12 +79,12 @@ TEST_CASE("CoordinateSystem - basic functionality", "[mults][coordinates]") {
         REQUIRE(cs.er[1] == Approx(expected_unit));
         REQUIRE(cs.er[2] == Approx(0.0));
         
-        // Orient coordinates
-        REQUIRE(cs.rax() == Approx(-expected_unit));
-        REQUIRE(cs.ray() == Approx(-expected_unit));
+        // OCC coordinates: rax = +er, rbx = -er
+        REQUIRE(cs.rax() == Approx(expected_unit));
+        REQUIRE(cs.ray() == Approx(expected_unit));
         REQUIRE(cs.raz() == Approx(0.0));
-        REQUIRE(cs.rbx() == Approx(expected_unit));
-        REQUIRE(cs.rby() == Approx(expected_unit));
+        REQUIRE(cs.rbx() == Approx(-expected_unit));
+        REQUIRE(cs.rby() == Approx(-expected_unit));
         REQUIRE(cs.rbz() == Approx(0.0));
         
         REQUIRE(cs.is_valid());
@@ -94,30 +94,31 @@ TEST_CASE("CoordinateSystem - basic functionality", "[mults][coordinates]") {
 TEST_CASE("CoordinateSystem - Orient validation", "[mults][coordinates]") {
     
     SECTION("Match Orient debug output - case 1") {
-        // From Orient debug: rax,ray,raz,rbx,rby,rbz,r= -0.57735027 -0.57735027 -0.57735027  0.57735027  0.57735027  0.57735027  3.46410162
-        // Actual Orient calculation: molecule at (0,0,0) to grid point at (2,2,2)
+        // Orient debug: rax=-0.577, rbx=+0.577 (Orient convention: rax=-er, rbx=+er)
+        // OCC convention: rax=+er, rbx=-er (opposite signs, same math via kernel swap)
         Vec3 ra(0.0, 0.0, 0.0);  // molecule position
         Vec3 rb(2.0, 2.0, 2.0);  // grid point
         auto cs = CoordinateSystem::from_points(ra, rb);
-        
+
         bool matches = cs.matches_orient_debug(
-            -0.57735027, -0.57735027, -0.57735027,  // rax, ray, raz
-             0.57735027,  0.57735027,  0.57735027,  // rbx, rby, rbz  
+             0.57735027,  0.57735027,  0.57735027,  // rax, ray, raz (OCC: +er)
+            -0.57735027, -0.57735027, -0.57735027,  // rbx, rby, rbz (OCC: -er)
              3.46410162                             // r
         );
         REQUIRE(matches);
     }
-    
+
     SECTION("Match Orient debug output - case 2") {
-        // From Orient debug: rax,ray,raz,rbx,rby,rbz,r= -0.70710678 -0.70710678  0.00000000  0.70710678  0.70710678  0.00000000  2.82842712
+        // Orient debug: rax=-0.707, rbx=+0.707 (Orient convention: rax=-er, rbx=+er)
+        // OCC convention: rax=+er, rbx=-er (opposite signs, same math via kernel swap)
         Vec3 ra(-1.0, -1.0, 0.0);
         Vec3 rb(1.0, 1.0, 0.0);
         auto cs = CoordinateSystem::from_points(ra, rb);
-        
+
         bool matches = cs.matches_orient_debug(
-            -0.70710678, -0.70710678,  0.00000000,  // rax, ray, raz
-             0.70710678,  0.70710678,  0.00000000,  // rbx, rby, rbz
-             2.82842712                             // r  
+             0.70710678,  0.70710678,  0.00000000,  // rax, ray, raz (OCC: +er)
+            -0.70710678, -0.70710678,  0.00000000,  // rbx, rby, rbz (OCC: -er)
+             2.82842712                             // r
         );
         REQUIRE(matches);
     }

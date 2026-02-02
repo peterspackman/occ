@@ -62,9 +62,18 @@ struct RigidBodyState {
     Mat3 inertia_inv_body;            // Inverse of inertia tensor (cached)
 
     // ========== Multipole Moments ==========
-    occ::dma::Mult multipole_body;    // Multipoles in body frame (permanent)
-    occ::dma::Mult multipole_lab;     // Multipoles in lab frame (cached)
+    occ::dma::Mult multipole_body;    // Multipoles in body frame (permanent, single-site legacy)
+    occ::dma::Mult multipole_lab;     // Multipoles in lab frame (cached, single-site legacy)
     bool multipole_lab_valid;         // Whether multipole_lab needs update
+
+    // ========== Multi-site Multipole Support ==========
+    /// Body-frame site: multipole expansion at an offset from the center of mass.
+    /// All sites share the same rotation (rigid body).
+    struct BodySite {
+        occ::dma::Mult multipole;
+        Vec3 offset = Vec3::Zero();  // Position relative to COM (body frame)
+    };
+    std::vector<BodySite> sites_body; // Multi-site body-frame data (empty = use multipole_body)
 
     // ========== Constructors ==========
 
@@ -190,6 +199,37 @@ struct RigidBodyState {
      * @brief Mark lab multipoles as invalid (call after orientation change)
      */
     void invalidate_lab_multipoles() { multipole_lab_valid = false; }
+
+    // ========== Multi-site Helpers ==========
+
+    /**
+     * @brief Check if this molecule uses multi-site representation
+     */
+    bool is_multi_site() const { return !sites_body.empty(); }
+
+    /**
+     * @brief Get number of multipole sites
+     */
+    int num_sites() const {
+        return sites_body.empty() ? 1 : static_cast<int>(sites_body.size());
+    }
+
+    /**
+     * @brief Set single-site multipole (clears any multi-site data)
+     */
+    void set_single_site(const occ::dma::Mult& mult) {
+        multipole_body = mult;
+        sites_body.clear();
+        multipole_lab_valid = false;
+    }
+
+    /**
+     * @brief Set multi-site data (replaces single-site multipole_body)
+     */
+    void set_sites(const std::vector<BodySite>& sites) {
+        sites_body = sites;
+        multipole_lab_valid = false;
+    }
 
     // ========== Inertia Tensor Management ==========
 

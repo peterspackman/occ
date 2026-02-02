@@ -142,26 +142,18 @@ add_executable(ints_tests "${CMAKE_CURRENT_SOURCE_DIR}/ints_tests.cpp")
 target_link_libraries(ints_tests PRIVATE occ_ints occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(ints_tests)
 
-add_executable(mults_tests "${CMAKE_CURRENT_SOURCE_DIR}/mults_tests.cpp")
+add_executable(mults_tests
+    "${CMAKE_CURRENT_SOURCE_DIR}/mults_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/derivative_transform_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/short_range_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/rigid_body_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/coordinate_system_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/rotation_validation_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/orient_reference_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartesian_interaction_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartesian_force_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/mults_benchmark.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_source_test.cpp"
+)
 target_link_libraries(mults_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(mults_tests)
-
-add_executable(derivative_transform_tests "${CMAKE_CURRENT_SOURCE_DIR}/derivative_transform_tests.cpp")
-target_link_libraries(derivative_transform_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
-catch_discover_tests(derivative_transform_tests)
-
-add_executable(short_range_tests "${CMAKE_CURRENT_SOURCE_DIR}/short_range_tests.cpp")
-target_link_libraries(short_range_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
-catch_discover_tests(short_range_tests)
-
-add_executable(rigid_body_tests "${CMAKE_CURRENT_SOURCE_DIR}/rigid_body_tests.cpp")
-target_link_libraries(rigid_body_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
-catch_discover_tests(rigid_body_tests)
-
-add_executable(coordinate_system_tests "${CMAKE_CURRENT_SOURCE_DIR}/coordinate_system_tests.cpp")
-target_link_libraries(coordinate_system_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
-catch_discover_tests(coordinate_system_tests)
-
-add_executable(rotation_validation_tests "${CMAKE_CURRENT_SOURCE_DIR}/rotation_validation_test.cpp")
-target_link_libraries(rotation_validation_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
-catch_discover_tests(rotation_validation_tests)
