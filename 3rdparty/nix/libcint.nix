@@ -4,20 +4,15 @@
   fetchFromGitHub,
   cmake,
   blas,
-  # Check Inputs
   python3,
+  src,
+  version,
 }:
 
 stdenv.mkDerivation rec {
   pname = "libcint";
-  version = "6.1.2";
-
-  src = fetchFromGitHub {
-    owner = "peterspackman";
-    repo = "libcint";
-    rev = "master";
-    hash = "sha256-JWk1B+Fz5nHxnGI5WlSynNqvkqIRvkbba8Nx3I5Tziw=";
-  };
+  inherit version;
+  inherit src;
 
   postPatch = ''
     sed -i 's/libcint.so/libcint${stdenv.hostPlatform.extensions.sharedLibrary}/g' testsuite/*.py

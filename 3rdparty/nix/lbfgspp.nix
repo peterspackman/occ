@@ -1,22 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   cmake,
   eigen,
+  version,
+  src,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation {
   pname = "lbfgspp";
-  version = "0.4.0"; # Check GitHub for the latest release
-
-  src = fetchFromGitHub {
-    owner = "yixuan";
-    repo = "LBFGSpp";
-    rev = "v${version}";
-    hash = "sha256-PUzZ2jUVgHq1LJDWIWW93KnV7vBBEdZlspOrE5TcYBc=";
-  };
-
+  inherit src;
+  inherit version;
   nativeBuildInputs = [ cmake ];
 
   propagatedBuildInputs = [ eigen ];

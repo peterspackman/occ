@@ -2,22 +2,13 @@
   stdenv,
   lib,
   fetchFromGitHub,
-  gfortran,
   buildType ? "cmake",
-  cmake,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-  blas,
-  lapack,
-  mctc-lib,
-  mstore,
-  multicharge,
-  eigen,
+  pkgs,
+  src,
+  version,
 }:
 
-assert !blas.isILP64 && !lapack.isILP64;
+assert !pkgs.blas.isILP64 && !pkgs.lapack.isILP64;
 assert (
   builtins.elem buildType [
     "meson"
@@ -25,34 +16,31 @@ assert (
   ]
 );
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation {
   pname = "dftd4";
-  version = "2.2.0";
-  src = fetchFromGitHub {
-    owner = "peterspackman";
-    repo = "cpp-d4";
-    rev = "main";
-    hash = "sha256-aBWw9DGt0s5nGvmHQZzuZDPTWRGCsaKCrp4NylHOzqw=";
-  };
+  inherit version;
+  inherit src;
 
-  nativeBuildInputs = [
-    gfortran
-    pkg-config
-    python3
-  ]
-  ++ lib.optionals (buildType == "meson") [
-    meson
-    ninja
-  ]
-  ++ lib.optional (buildType == "cmake") cmake;
+  nativeBuildInputs =
+    with pkgs;
+    [
+      gfortran
+      pkg-config
+      python3
+    ]
+    ++ lib.optionals (buildType == "meson") [
+      meson
+      ninja
+    ]
+    ++ lib.optional (buildType == "cmake") cmake;
 
-  buildInputs = [
+  buildInputs = with pkgs; [
     blas
     lapack
     eigen
   ];
 
-  propagatedBuildInputs = [
+  propagatedBuildInputs = with pkgs; [
     mctc-lib
     mstore
     multicharge

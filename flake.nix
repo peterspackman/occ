@@ -2,32 +2,63 @@
   description = "Open Computational Chemestry";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    fast-float-src = {
+      url = "github:fastfloat/fast_float?ref=v6.1.6";
+      flake = false;
+    };
+    dftd4-src = {
+      url = "github:peterspackman/cpp-d4?ref=main";
+      flake = false;
+    };
+    lbfgspp-src = {
+      url = "github:yixuan/LBFGSpp?ref=v0.4.0";
+      flake = false;
+    };
+    libcint-src = {
+      url = "github:peterspackman/libcint";
+      flake = false;
+    };
+    gemmi-src = {
+      url = "github:project-gemmi/gemmi?ref=v0.6.5";
+      flake = false;
+    };
   };
   outputs =
     {
       self,
       nixpkgs,
+      fast-float-src,
+      dftd4-src,
+      lbfgspp-src,
+      libcint-src,
+      gemmi-src,
     }:
     let
-      fast-float-6_1_6 = pkgs.fast-float.overrideAttrs (old: rec {
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+      fast-float-6_1_6 = pkgs.fast-float.overrideAttrs {
+        src = fast-float-src;
         version = "6.1.6";
-        src = pkgs.fetchFromGitHub {
-          owner = "fastfloat";
-          repo = "fast_float";
-          rev = "v${version}";
-          hash = "sha256-MEJMPQZZZhOFiKlPAKIi0zVzaJBvjAlbSyg3wLOQ1fg=";
-        };
-      });
-      dftd4 = pkgs.callPackage ./3rdparty/nix/dftd4.nix { };
-      lbfgspp = pkgs.callPackage ./3rdparty/nix/lbfgspp.nix { };
-      libcint = pkgs.callPackage ./3rdparty/nix/libcint.nix { };
+      };
       scnlib = pkgs.callPackage ./3rdparty/nix/scnlib.nix {
         fast-float = fast-float-6_1_6;
       };
-      gemmi = pkgs.callPackage ./3rdparty/nix/gemmi.nix { };
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-
+      dftd4 = pkgs.callPackage ./3rdparty/nix/dftd4.nix {
+        src = dftd4-src;
+        version = "main";
+      };
+      lbfgspp = pkgs.callPackage ./3rdparty/nix/lbfgspp.nix {
+        src = lbfgspp-src;
+        version = "0.4.0";
+      };
+      libcint = pkgs.callPackage ./3rdparty/nix/libcint.nix {
+        version = "6.1.2";
+        src = libcint-src;
+      };
+      gemmi = pkgs.callPackage ./3rdparty/nix/gemmi.nix {
+        version = "0.6.5";
+        src = gemmi-src;
+      };
     in
     {
       # 1. The Build Artifact (nix build)
@@ -102,7 +133,6 @@
           libcint
           pkg-config
         ];
-
       };
     };
 }
