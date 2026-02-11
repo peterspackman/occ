@@ -243,6 +243,13 @@ public:
   size_t num_edges() const { return m_edges.size(); }
   size_t num_vertices() const { return m_vertices.size(); }
 
+  explicit operator bool() const {
+    if (m_edges.empty() && m_vertices.empty()) {
+      return false;
+    }
+    return true;
+  }
+
 private:
   // Depth-first search that tracks the current path to detect cycles
   void find_cycles_from_vertex(VertexDescriptor start, VertexDescriptor current,
