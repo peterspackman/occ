@@ -7,6 +7,7 @@
 #include <occ/mults/cartesian_interaction.h>
 #include <occ/mults/multipole_interactions.h>
 #include <occ/mults/cartesian_molecule.h>
+#include <occ/core/units.h>
 #include <fmt/core.h>
 #include <cmath>
 #include <string>
@@ -421,15 +422,16 @@ TEST_CASE("Molecule batch API matches per-pair engine",
         Mult m1(4), m2(4);
         m1.Q00() = 1.0;
         m2.Q00() = 1.0;
+        constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
         Vec3 p1(0, 0, 0), p2(0, 0, 3);
 
-        auto molA = CartesianMolecule::from_lab_sites({{m1, p1}});
-        auto molB = CartesianMolecule::from_lab_sites({{m2, p2}});
+        auto molA = CartesianMolecule::from_lab_sites({{m1, p1 * B2A}});
+        auto molB = CartesianMolecule::from_lab_sites({{m2, p2 * B2A}});
 
         double batch_E = compute_molecule_interaction(molA, molB);
         double pair_E = engine.compute_interaction_energy(m1, p1, m2, p2);
 
-        REQUIRE(batch_E == Approx(pair_E).margin(1e-14));
+        REQUIRE(batch_E == Approx(pair_E * occ::units::AU_TO_KJ_PER_MOL).margin(1e-10));
     }
 
     SECTION("Single-site with full multipoles") {
@@ -440,15 +442,16 @@ TEST_CASE("Molecule batch API matches per-pair engine",
         m2.Q00() = 0.5;
         m2.Q11c() = 0.1;
         m2.Q22c() = 0.05;
+        constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
         Vec3 p1(0, 0, 0), p2(3, 2, 1);
 
-        auto molA = CartesianMolecule::from_lab_sites({{m1, p1}});
-        auto molB = CartesianMolecule::from_lab_sites({{m2, p2}});
+        auto molA = CartesianMolecule::from_lab_sites({{m1, p1 * B2A}});
+        auto molB = CartesianMolecule::from_lab_sites({{m2, p2 * B2A}});
 
         double batch_E = compute_molecule_interaction(molA, molB);
         double pair_E = engine.compute_interaction_energy(m1, p1, m2, p2);
 
-        REQUIRE(batch_E == Approx(pair_E).margin(1e-14));
+        REQUIRE(batch_E == Approx(pair_E * occ::units::AU_TO_KJ_PER_MOL).margin(1e-10));
     }
 
     SECTION("Multi-site water-like molecules") {
@@ -458,19 +461,20 @@ TEST_CASE("Molecule batch API matches per-pair engine",
         qO.Q10() = 0.234;
         qH.Q00() = 0.335;
 
+        constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
         Vec3 pO1(0, 0, 0), pH1a(1.8, 0, 0), pH1b(-0.6, 1.7, 0);
         Vec3 pO2(5, 0, 0), pH2a(6.8, 0, 0), pH2b(4.4, 1.7, 0);
 
         auto molA = CartesianMolecule::from_lab_sites({
-            {qO, pO1}, {qH, pH1a}, {qH, pH1b}
+            {qO, pO1 * B2A}, {qH, pH1a * B2A}, {qH, pH1b * B2A}
         });
         auto molB = CartesianMolecule::from_lab_sites({
-            {qO, pO2}, {qH, pH2a}, {qH, pH2b}
+            {qO, pO2 * B2A}, {qH, pH2a * B2A}, {qH, pH2b * B2A}
         });
 
         double batch_E = compute_molecule_interaction(molA, molB);
 
-        // Compute per-pair reference
+        // Compute per-pair reference (engine works in Bohr/Hartree)
         double ref_E = 0.0;
         std::vector<std::pair<Mult, Vec3>> sitesA = {{qO, pO1}, {qH, pH1a}, {qH, pH1b}};
         std::vector<std::pair<Mult, Vec3>> sitesB = {{qO, pO2}, {qH, pH2a}, {qH, pH2b}};
@@ -480,7 +484,7 @@ TEST_CASE("Molecule batch API matches per-pair engine",
             }
         }
 
-        REQUIRE(batch_E == Approx(ref_E).margin(1e-14));
+        REQUIRE(batch_E == Approx(ref_E * occ::units::AU_TO_KJ_PER_MOL).margin(1e-10));
     }
 
     SECTION("Body-frame construction matches lab-frame") {
@@ -489,6 +493,7 @@ TEST_CASE("Molecule batch API matches per-pair engine",
         m1.Q10() = 0.5;
         m2.Q00() = -0.5;
 
+        // Positions in Angstrom
         Vec3 body_pos(1.0, 0, 0);
         Mat3 rot = Mat3::Identity();
         Vec3 center(3, 0, 0);
@@ -536,14 +541,20 @@ TEST_CASE("Molecule batch API matches per-pair engine",
         m1.Q00() = 1.0;
         m1.Q10() = 0.3;
         m2.Q00() = 0.5;
+        constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
         Vec3 p1(0, 0, 0), p2(4, 0, 0);
 
-        auto molA = CartesianMolecule::from_lab_sites({{m1, p1}});
-        auto molB = CartesianMolecule::from_lab_sites({{m2, p2}});
+        // Molecule API expects Angstrom positions, returns kJ/mol
+        auto molA = CartesianMolecule::from_lab_sites({{m1, p1 * B2A}});
+        auto molB = CartesianMolecule::from_lab_sites({{m2, p2 * B2A}});
 
         double mol_E = compute_molecule_interaction(molA, molB);
-        double pair_E = compute_site_pair_energy(molA.sites[0], molB.sites[0]);
 
-        REQUIRE(mol_E == Approx(pair_E).margin(1e-14));
+        // Site pair energy with Bohr positions returns Hartree
+        auto molA_bohr = CartesianMolecule::from_lab_sites({{m1, p1}});
+        auto molB_bohr = CartesianMolecule::from_lab_sites({{m2, p2}});
+        double pair_E = compute_site_pair_energy(molA_bohr.sites[0], molB_bohr.sites[0]);
+
+        REQUIRE(mol_E == Approx(pair_E * occ::units::AU_TO_KJ_PER_MOL).margin(1e-10));
     }
 }

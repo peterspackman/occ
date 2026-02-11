@@ -2,6 +2,7 @@
 #include <occ/mults/cartesian_rotation.h>
 #include <occ/mults/interaction_tensor.h>
 #include <occ/mults/interaction_tensor_simd.h>
+#include <occ/core/units.h>
 #include <cmath>
 #include <array>
 #include <memory>
@@ -242,13 +243,14 @@ double compute_molecule_interaction(
         if (sA.rank < 0) continue;
         for (const auto &sB : molB.sites) {
             if (sB.rank < 0) continue;
-            Vec3 R = sB.position - sA.position;
+            // Positions are in Angstrom; interaction tensors expect Bohr
+            Vec3 R = (sB.position - sA.position) / occ::units::BOHR_TO_ANGSTROM;
             energy += dispatch_pair(sA.cart, sA.rank,
                                     sB.cart, sB.rank,
                                     R[0], R[1], R[2]);
         }
     }
-    return energy;
+    return energy * occ::units::AU_TO_KJ_PER_MOL;
 }
 
 double compute_molecule_interaction_simd(
@@ -302,7 +304,8 @@ double compute_molecule_interaction_simd(
             const auto &sB = molB.sites[j];
             if (sB.rank < 0) continue;
             int order = sA.rank + sB.rank;
-            Vec3 R = sB.position - sA.position;
+            // Positions are in Angstrom; interaction tensors expect Bohr
+            Vec3 R = (sB.position - sA.position) / occ::units::BOHR_TO_ANGSTROM;
             pairs[pos[order]++] = {&sA, &sB, R[0], R[1], R[2]};
         }
     }
@@ -313,7 +316,7 @@ double compute_molecule_interaction_simd(
         if (counts[order] == 0) continue;
         energy += dispatch_batch(order, &pairs[offsets[order]], counts[order]);
     }
-    return energy;
+    return energy * occ::units::AU_TO_KJ_PER_MOL;
 }
 
 } // namespace occ::mults

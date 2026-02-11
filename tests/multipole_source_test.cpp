@@ -7,6 +7,7 @@
 #include <occ/mults/cartesian_molecule.h>
 #include <occ/mults/cartesian_force.h>
 #include <occ/mults/rigid_body.h>
+#include <occ/core/units.h>
 #include <fmt/core.h>
 #include <cmath>
 
@@ -181,16 +182,21 @@ TEST_CASE("MultipoleSource field matches negative gradient",
     MultipoleSource source(m, Vec3(0.0, 0.0, 0.0));
     Vec3 point(3.0, 2.0, 1.0);
 
+    // compute_field uses raw coordinates (Bohr here)
     Vec3 field = source.compute_field(point);
 
-    // Manual: E = -gradient of site-probe energy
+    // compute_site_pair_energy_force expects Angstrom positions (converts to Bohr internally).
+    // Create Angstrom-positioned sites so it converts back to the same Bohr distances.
+    constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+    CartesianSite site_ang = source.cartesian().sites[0];
+    site_ang.position *= B2A;
+
     CartesianSite probe;
     probe.cart.data[0] = 1.0;
-    probe.position = point;
+    probe.position = point * B2A;
     probe.rank = 0;
 
-    auto ef = compute_site_pair_energy_force(
-        source.cartesian().sites[0], probe);
+    auto ef = compute_site_pair_energy_force(site_ang, probe);
     Vec3 expected = -ef.gradient;
 
     for (int d = 0; d < 3; ++d) {
@@ -453,13 +459,19 @@ TEST_CASE("MultipoleSource batch benchmark",
     SECTION("Field: 1000 grid points") {
         Mat3N batch_result = source.compute_field(grid_ref);
 
+        // compute_site_pair_energy_force expects Angstrom positions.
+        // Create Angstrom-positioned site so it converts back to Bohr internally.
+        constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+        CartesianSite site_ang = cart.sites[0];
+        site_ang.position *= B2A;
+
         Mat3N manual_result = Mat3N::Zero(3, N);
         CartesianSite probe;
         probe.cart.data[0] = 1.0;
         probe.rank = 0;
         for (int p = 0; p < N; ++p) {
-            probe.position = grid.col(p);
-            auto ef = compute_site_pair_energy_force(cart.sites[0], probe);
+            probe.position = grid.col(p) * B2A;
+            auto ef = compute_site_pair_energy_force(site_ang, probe);
             manual_result.col(p) = -ef.gradient;
         }
 
@@ -476,8 +488,8 @@ TEST_CASE("MultipoleSource batch benchmark",
             pr.cart.data[0] = 1.0;
             pr.rank = 0;
             for (int p = 0; p < N; ++p) {
-                pr.position = grid.col(p);
-                auto ef = compute_site_pair_energy_force(cart.sites[0], pr);
+                pr.position = grid.col(p) * B2A;
+                auto ef = compute_site_pair_energy_force(site_ang, pr);
                 result.col(p) = -ef.gradient;
             }
             return result;

@@ -515,4 +515,149 @@ Vec3 RigidBodyState::angular_momentum_space() const {
     return R * L_body;
 }
 
+/**
+ * @brief Compute second derivatives of rotation matrix w.r.t. angle-axis components
+ *
+ * This computes ∂²M/∂p_k∂p_l analytically by differentiating the Rodrigues formula
+ * derivatives. The formula for ∂M/∂p_k is:
+ *
+ *   ∂M/∂p_k = n_k·sin(ψ)·N₀² + (1-cos(ψ))·(N₁ᵏ·N₀ + N₀·N₁ᵏ)
+ *           + n_k·cos(ψ)·N₀ + sin(ψ)·N₁ᵏ
+ *
+ * Taking the derivative with respect to p_l:
+ *
+ *   ∂²M/∂p_k∂p_l = (derivatives of each term above)
+ *
+ * Key identities used:
+ *   ∂ψ/∂p_l = n_l
+ *   ∂n_k/∂p_l = (δ_kl - n_k·n_l) / ψ
+ *   ∂N₀/∂p_l = N₁ˡ
+ *   ∂N₀²/∂p_l = N₁ˡ·N₀ + N₀·N₁ˡ
+ *   ∂N₁ᵏ/∂p_l = N₂ᵏˡ (computed below)
+ *
+ * @return Array of 9 matrices, where result[3*k + l] = ∂²M/∂p_k∂p_l
+ */
+std::array<Mat3, 9> RigidBodyState::rotation_matrix_second_derivatives() const {
+    std::array<Mat3, 9> M2;
+
+    // Get angle-axis vector
+    Vec3 p = get_angle_axis();
+    double psi = p.norm();
+
+    // Small angle case: second derivatives are O(1) but small
+    // For very small rotations, use finite differences or zeros
+    if (psi < 1e-8) {
+        // For small rotations M ≈ I + [p]×
+        // ∂M/∂p_k ≈ [e_k]× (constant in p)
+        // ∂²M/∂p_k∂p_l ≈ 0
+        for (int i = 0; i < 9; ++i) {
+            M2[i] = Mat3::Zero();
+        }
+        return M2;
+    }
+
+    // General case
+    Vec3 n = p / psi;  // Unit rotation axis
+
+    // Precompute basic quantities
+    Mat3 N0 = skew_symmetric(n);
+    Mat3 N0_sq = N0 * N0;
+
+    double sin_psi = std::sin(psi);
+    double cos_psi = std::cos(psi);
+    double one_minus_cos = 1.0 - cos_psi;
+
+    // Compute N1[k] = [∂n/∂p_k]× for each k
+    std::array<Mat3, 3> N1;
+    for (int k = 0; k < 3; k++) {
+        Vec3 ek = Vec3::Zero();
+        ek(k) = 1.0;
+        Vec3 dn_dpk = (ek - n(k) * n) / psi;
+        N1[k] = skew_symmetric(dn_dpk);
+    }
+
+    // Compute second derivatives ∂²M/∂p_k∂p_l
+    for (int k = 0; k < 3; k++) {
+        for (int l = 0; l < 3; l++) {
+            // Compute various derivative terms
+
+            // ∂ψ/∂p_l = n_l
+            double dpsi_dpl = n(l);
+
+            // ∂n_k/∂p_l = (δ_kl - n_k·n_l) / ψ
+            double dnk_dpl = ((k == l ? 1.0 : 0.0) - n(k) * n(l)) / psi;
+
+            // ∂sin(ψ)/∂p_l = cos(ψ)·n_l
+            double dsin_dpl = cos_psi * n(l);
+
+            // ∂cos(ψ)/∂p_l = -sin(ψ)·n_l
+            double dcos_dpl = -sin_psi * n(l);
+
+            // ∂(1-cos(ψ))/∂p_l = sin(ψ)·n_l
+            double done_minus_cos_dpl = sin_psi * n(l);
+
+            // ∂N₀/∂p_l = N₁ˡ (already computed)
+            const Mat3& dN0_dpl = N1[l];
+
+            // ∂(N₀²)/∂p_l = N₁ˡ·N₀ + N₀·N₁ˡ
+            Mat3 dN0sq_dpl = N1[l] * N0 + N0 * N1[l];
+
+            // ∂N₁ᵏ/∂p_l = N₂ᵏˡ
+            // N₁ᵏ = [∂n/∂p_k]× where ∂n/∂p_k = (e_k - n_k·n) / ψ
+            // ∂N₁ᵏ/∂p_l = [∂²n/∂p_k∂p_l]×
+            //
+            // ∂(∂n/∂p_k)/∂p_l = ∂/∂p_l [(e_k - n_k·n) / ψ]
+            //                = -(e_k - n_k·n)·n_l / ψ²
+            //                  + (-∂n_k/∂p_l·n - n_k·∂n/∂p_l) / ψ
+            //
+            // Let's compute this term by term:
+            Vec3 ek = Vec3::Zero();
+            ek(k) = 1.0;
+            Vec3 el = Vec3::Zero();
+            el(l) = 1.0;
+
+            Vec3 dn_dpk = (ek - n(k) * n) / psi;
+            Vec3 dn_dpl = (el - n(l) * n) / psi;
+
+            // ∂²n/∂p_k∂p_l
+            // = -(e_k - n_k·n)·n_l / ψ²
+            //   + (-dnk/dpl·n - n_k·dn/dpl) / ψ
+            Vec3 d2n_dpk_dpl = -(ek - n(k) * n) * n(l) / (psi * psi)
+                              + (-dnk_dpl * n - n(k) * dn_dpl) / psi;
+
+            Mat3 dN1k_dpl = skew_symmetric(d2n_dpk_dpl);
+
+            // Now compute ∂²M/∂p_k∂p_l by differentiating each term:
+            //
+            // Term 1: ∂/∂p_l [n_k·sin(ψ)·N₀²]
+            //       = dnk_dpl·sin(ψ)·N₀² + n_k·dsin_dpl·N₀² + n_k·sin(ψ)·dN0sq_dpl
+            Mat3 term1 = dnk_dpl * sin_psi * N0_sq
+                       + n(k) * dsin_dpl * N0_sq
+                       + n(k) * sin_psi * dN0sq_dpl;
+
+            // Term 2: ∂/∂p_l [(1-cos(ψ))·(N₁ᵏ·N₀ + N₀·N₁ᵏ)]
+            //       = done_minus_cos_dpl·(N₁ᵏ·N₀ + N₀·N₁ᵏ)
+            //       + (1-cos(ψ))·(dN1k_dpl·N₀ + N₁ᵏ·dN0_dpl + dN0_dpl·N₁ᵏ + N₀·dN1k_dpl)
+            Mat3 term2 = done_minus_cos_dpl * (N1[k] * N0 + N0 * N1[k])
+                       + one_minus_cos * (dN1k_dpl * N0 + N1[k] * dN0_dpl
+                                        + dN0_dpl * N1[k] + N0 * dN1k_dpl);
+
+            // Term 3: ∂/∂p_l [n_k·cos(ψ)·N₀]
+            //       = dnk_dpl·cos(ψ)·N₀ + n_k·dcos_dpl·N₀ + n_k·cos(ψ)·dN0_dpl
+            Mat3 term3 = dnk_dpl * cos_psi * N0
+                       + n(k) * dcos_dpl * N0
+                       + n(k) * cos_psi * dN0_dpl;
+
+            // Term 4: ∂/∂p_l [sin(ψ)·N₁ᵏ]
+            //       = dsin_dpl·N₁ᵏ + sin(ψ)·dN1k_dpl
+            Mat3 term4 = dsin_dpl * N1[k]
+                       + sin_psi * dN1k_dpl;
+
+            M2[3 * k + l] = term1 + term2 + term3 + term4;
+        }
+    }
+
+    return M2;
+}
+
 } // namespace occ::mults

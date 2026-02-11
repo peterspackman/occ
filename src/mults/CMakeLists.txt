@@ -24,6 +24,12 @@ add_library(occ_mults
     cartesian_molecule.cpp
     cartesian_force.cpp
     multipole_source.cpp
+    lbfgs.cpp
+    trust_region.cpp
+    crystal_energy.cpp
+    crystal_optimizer.cpp
+    cartesian_hessian.cpp
+    dmacrys_input.cpp
 )
 
 target_include_directories(occ_mults PUBLIC 
@@ -31,10 +37,12 @@ target_include_directories(occ_mults PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(occ_mults PUBLIC 
+target_link_libraries(occ_mults PUBLIC
     occ_core
     occ_dma
     occ_sht
+    occ_crystal
+    nlohmann_json::nlohmann_json
 )
 
 target_compile_features(occ_mults PUBLIC cxx_std_20)

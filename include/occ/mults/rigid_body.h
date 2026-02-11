@@ -180,6 +180,19 @@ struct RigidBodyState {
      */
     std::array<Mat3, 3> rotation_matrix_derivatives() const;
 
+    /**
+     * @brief Compute second derivatives of rotation matrix w.r.t. angle-axis components
+     *
+     * Computes ∂²M/∂p_k∂p_l for k,l = 0,1,2 (9 matrices total).
+     * The result is stored in row-major order: result[3*k + l] = ∂²M/∂p_k∂p_l
+     *
+     * For small rotations (ψ < 1e-8), returns zeros (second-order term).
+     * For general rotations, computed analytically from Rodrigues formula.
+     *
+     * @return Array of 9 matrices, where result[3*k + l] = ∂²M/∂p_k∂p_l
+     */
+    std::array<Mat3, 9> rotation_matrix_second_derivatives() const;
+
     // ========== Multipole Management ==========
 
     /**

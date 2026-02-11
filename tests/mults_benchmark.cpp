@@ -9,6 +9,7 @@
 #include <occ/mults/multipole_interactions.h>
 #include <occ/mults/torque.h>
 #include <occ/mults/rotation.h>
+#include <occ/core/units.h>
 #include <fmt/core.h>
 #include <cmath>
 #include <string>
@@ -243,14 +244,19 @@ TEST_CASE("Cross-engine: rotated single-site energy",
     m2.Q21c() = -0.06;
     m2.Q22c() = 0.04;
 
-    Vec3 pos1(0, 0, 0);
-    Vec3 pos2(5.0, 2.0, -1.5);
+    // S-function engine uses Bohr positions; Cartesian engine uses Angstrom
+    constexpr double b2a = occ::units::BOHR_TO_ANGSTROM;
+    constexpr double au2kj = occ::units::AU_TO_KJ_PER_MOL;
+    Vec3 pos1_bohr(0, 0, 0);
+    Vec3 pos2_bohr(5.0, 2.0, -1.5);
+    Vec3 pos1_ang = pos1_bohr * b2a;
+    Vec3 pos2_ang = pos2_bohr * b2a;
 
     // Lab-frame energy (no rotation) — validates energy kernel agreement
     {
-        double E_sf_lab = sf_engine.compute_interaction_energy(m1, pos1, m2, pos2);
-        auto molA_lab = CartesianMolecule::from_lab_sites({{m1, pos1}});
-        auto molB_lab = CartesianMolecule::from_lab_sites({{m2, pos2}});
+        double E_sf_lab = sf_engine.compute_interaction_energy(m1, pos1_bohr, m2, pos2_bohr) * au2kj;
+        auto molA_lab = CartesianMolecule::from_lab_sites({{m1, pos1_ang}});
+        auto molB_lab = CartesianMolecule::from_lab_sites({{m2, pos2_ang}});
         double E_cart_lab = compute_molecule_interaction(molA_lab, molB_lab);
         fmt::print("  Lab-frame energy (no rotation):\n");
         fmt::print("    S-func: {:.12e}  Cart: {:.12e}  Diff: {:.2e}\n",
@@ -266,15 +272,15 @@ TEST_CASE("Cross-engine: rotated single-site energy",
 
     Mult m1_lab = rotated_multipole(m1, R1);
     Mult m2_lab = rotated_multipole(m2, R2);
-    double E_sf = sf_engine.compute_interaction_energy(m1_lab, pos1, m2_lab, pos2);
+    double E_sf = sf_engine.compute_interaction_energy(m1_lab, pos1_bohr, m2_lab, pos2_bohr) * au2kj;
 
-    auto molA = CartesianMolecule::from_body_frame_with_rotation({{m1, Vec3::Zero()}}, R1, pos1);
-    auto molB = CartesianMolecule::from_body_frame_with_rotation({{m2, Vec3::Zero()}}, R2, pos2);
+    auto molA = CartesianMolecule::from_body_frame_with_rotation({{m1, Vec3::Zero()}}, R1, pos1_ang);
+    auto molB = CartesianMolecule::from_body_frame_with_rotation({{m2, Vec3::Zero()}}, R2, pos2_ang);
     double E_cart = compute_molecule_interaction(molA, molB);
 
     // Cartesian energy with Wigner-D-rotated lab multipoles (bypass Cartesian rotation)
-    auto molA_sflab = CartesianMolecule::from_lab_sites({{m1_lab, pos1}});
-    auto molB_sflab = CartesianMolecule::from_lab_sites({{m2_lab, pos2}});
+    auto molA_sflab = CartesianMolecule::from_lab_sites({{m1_lab, pos1_ang}});
+    auto molB_sflab = CartesianMolecule::from_lab_sites({{m2_lab, pos2_ang}});
     double E_cart_sflab = compute_molecule_interaction(molA_sflab, molB_sflab);
 
     fmt::print("  Rotated energy:\n");
@@ -307,19 +313,23 @@ TEST_CASE("Cross-engine: rotated single-site force + torque",
     m2.Q11s() = 0.2;
     m2.Q20() = 0.15;
 
+    constexpr double b2a = occ::units::BOHR_TO_ANGSTROM;
     Vec3 euler1(0.7, 0.4, -0.3);
     Vec3 euler2(-0.5, 0.8, 1.2);
-    Vec3 pos1(0, 0, 0);
-    Vec3 pos2(5.0, 2.0, -1.5);
+    // S-function engine uses Bohr; Cartesian engine uses Angstrom
+    Vec3 pos1_bohr(0, 0, 0);
+    Vec3 pos2_bohr(5.0, 2.0, -1.5);
+    Vec3 pos1_ang = pos1_bohr * b2a;
+    Vec3 pos2_ang = pos2_bohr * b2a;
 
     Mat3 R1 = rotation_utils::euler_to_rotation(euler1[0], euler1[1], euler1[2]);
     Mat3 R2 = rotation_utils::euler_to_rotation(euler2[0], euler2[1], euler2[2]);
 
-    // Cartesian: analytical force + torque
+    // Cartesian: analytical force + torque (Angstrom positions, kJ/mol units)
     auto molA = CartesianMolecule::from_body_frame_with_rotation(
-        {{m1, Vec3::Zero()}}, R1, pos1);
+        {{m1, Vec3::Zero()}}, R1, pos1_ang);
     auto molB = CartesianMolecule::from_body_frame_with_rotation(
-        {{m2, Vec3::Zero()}}, R2, pos2);
+        {{m2, Vec3::Zero()}}, R2, pos2_ang);
     auto cart_result = compute_molecule_forces_torques(molA, molB);
 
     // --- Validate Cartesian force via FD ---
@@ -359,11 +369,11 @@ TEST_CASE("Cross-engine: rotated single-site force + torque",
             skew << 0, -dp[2], dp[1],  dp[2], 0, -dp[0],  -dp[1], dp[0], 0;
             Mat3 R1_p = (Mat3::Identity() + skew) * R1;
             auto molA_p = CartesianMolecule::from_body_frame_with_rotation(
-                {{m1, Vec3::Zero()}}, R1_p, pos1);
+                {{m1, Vec3::Zero()}}, R1_p, pos1_ang);
 
             Mat3 R1_m = (Mat3::Identity() - skew) * R1;
             auto molA_m = CartesianMolecule::from_body_frame_with_rotation(
-                {{m1, Vec3::Zero()}}, R1_m, pos1);
+                {{m1, Vec3::Zero()}}, R1_m, pos1_ang);
 
             double Ep = compute_molecule_interaction(molA_p, molB);
             double Em = compute_molecule_interaction(molA_m, molB);
@@ -391,10 +401,10 @@ TEST_CASE("Cross-engine: rotated single-site force + torque",
 
             Mat3 R2_p = (Mat3::Identity() + skew) * R2;
             auto molB_p = CartesianMolecule::from_body_frame_with_rotation(
-                {{m2, Vec3::Zero()}}, R2_p, pos2);
+                {{m2, Vec3::Zero()}}, R2_p, pos2_ang);
             Mat3 R2_m = (Mat3::Identity() - skew) * R2;
             auto molB_m = CartesianMolecule::from_body_frame_with_rotation(
-                {{m2, Vec3::Zero()}}, R2_m, pos2);
+                {{m2, Vec3::Zero()}}, R2_m, pos2_ang);
 
             double Ep = compute_molecule_interaction(molA, molB_p);
             double Em = compute_molecule_interaction(molA, molB_m);
@@ -415,9 +425,9 @@ TEST_CASE("Cross-engine: rotated single-site force + torque",
     // NOTE: S-function analytical force/torque has known ~5e-6 accuracy issue
     // compared to its own FD. The Cartesian engine matches its FD to ~1e-10.
     auto sf_result1 = TorqueCalculation::compute_torque_analytical(
-        m1, pos1, euler1, m2, pos2, euler2, 1);
+        m1, pos1_bohr, euler1, m2, pos2_bohr, euler2, 1);
     auto sf_result2 = TorqueCalculation::compute_torque_analytical(
-        m1, pos1, euler1, m2, pos2, euler2, 2);
+        m1, pos1_bohr, euler1, m2, pos2_bohr, euler2, 2);
 
     fmt::print("\n  === Cross-engine comparison (informational) ===\n");
     fmt::print("  Force A: Cart=({:.6e},{:.6e},{:.6e}) SF=({:.6e},{:.6e},{:.6e})\n",
@@ -455,8 +465,13 @@ TEST_CASE("Cross-engine: rotated water dimer energy",
     qH.Q00() = 0.335;
     qH.Q10() = 0.05;
 
-    // Body-frame site offsets
-    Vec3 bodyO(0, 0, 0), bodyH1(1.8, 0, 0), bodyH2(-0.6, 1.7, 0);
+    // Body-frame site offsets (Bohr for S-function, Angstrom for Cartesian)
+    constexpr double b2a = occ::units::BOHR_TO_ANGSTROM;
+    constexpr double au2kj = occ::units::AU_TO_KJ_PER_MOL;
+    Vec3 bodyO_bohr(0, 0, 0), bodyH1_bohr(1.8, 0, 0), bodyH2_bohr(-0.6, 1.7, 0);
+    Vec3 bodyO_ang = bodyO_bohr * b2a;
+    Vec3 bodyH1_ang = bodyH1_bohr * b2a;
+    Vec3 bodyH2_ang = bodyH2_bohr * b2a;
 
     // Non-trivial orientations
     Vec3 euler_A(0.3, 0.7, -0.5);
@@ -464,22 +479,24 @@ TEST_CASE("Cross-engine: rotated water dimer energy",
     Mat3 R_A = rotation_utils::euler_to_rotation(euler_A[0], euler_A[1], euler_A[2]);
     Mat3 R_B = rotation_utils::euler_to_rotation(euler_B[0], euler_B[1], euler_B[2]);
 
-    Vec3 center_A(0, 0, 0);
-    Vec3 center_B(6, 2, -1);
+    Vec3 center_A_bohr(0, 0, 0);
+    Vec3 center_B_bohr(6, 2, -1);
+    Vec3 center_A_ang = center_A_bohr * b2a;
+    Vec3 center_B_ang = center_B_bohr * b2a;
 
-    // --- S-function energy: rotate multipoles to lab, sum over site pairs ---
+    // --- S-function energy (Bohr/Hartree): rotate multipoles to lab, sum over site pairs ---
     Mult qO_labA = rotated_multipole(qO, R_A);
     Mult qH_labA = rotated_multipole(qH, R_A);
     Mult qO_labB = rotated_multipole(qO, R_B);
     Mult qH_labB = rotated_multipole(qH, R_B);
 
-    // Lab-frame positions
-    Vec3 pO_A = center_A + R_A * bodyO;
-    Vec3 pH1_A = center_A + R_A * bodyH1;
-    Vec3 pH2_A = center_A + R_A * bodyH2;
-    Vec3 pO_B = center_B + R_B * bodyO;
-    Vec3 pH1_B = center_B + R_B * bodyH1;
-    Vec3 pH2_B = center_B + R_B * bodyH2;
+    // Lab-frame positions in Bohr (for S-function)
+    Vec3 pO_A = center_A_bohr + R_A * bodyO_bohr;
+    Vec3 pH1_A = center_A_bohr + R_A * bodyH1_bohr;
+    Vec3 pH2_A = center_A_bohr + R_A * bodyH2_bohr;
+    Vec3 pO_B = center_B_bohr + R_B * bodyO_bohr;
+    Vec3 pH1_B = center_B_bohr + R_B * bodyH1_bohr;
+    Vec3 pH2_B = center_B_bohr + R_B * bodyH2_bohr;
 
     std::vector<std::pair<Mult, Vec3>> labA = {
         {qO_labA, pO_A}, {qH_labA, pH1_A}, {qH_labA, pH2_A}
@@ -494,17 +511,18 @@ TEST_CASE("Cross-engine: rotated water dimer energy",
             E_sf += sf_engine.compute_interaction_energy(mA, pA, mB, pB);
         }
     }
+    E_sf *= au2kj;  // Convert to kJ/mol for comparison
 
-    // --- Cartesian energy ---
+    // --- Cartesian energy (Angstrom/kJ/mol) ---
     std::vector<std::pair<Mult, Vec3>> body_sites_A = {
-        {qO, bodyO}, {qH, bodyH1}, {qH, bodyH2}
+        {qO, bodyO_ang}, {qH, bodyH1_ang}, {qH, bodyH2_ang}
     };
     std::vector<std::pair<Mult, Vec3>> body_sites_B = {
-        {qO, bodyO}, {qH, bodyH1}, {qH, bodyH2}
+        {qO, bodyO_ang}, {qH, bodyH1_ang}, {qH, bodyH2_ang}
     };
 
-    auto molA = CartesianMolecule::from_body_frame_with_rotation(body_sites_A, R_A, center_A);
-    auto molB = CartesianMolecule::from_body_frame_with_rotation(body_sites_B, R_B, center_B);
+    auto molA = CartesianMolecule::from_body_frame_with_rotation(body_sites_A, R_A, center_A_ang);
+    auto molB = CartesianMolecule::from_body_frame_with_rotation(body_sites_B, R_B, center_B_ang);
     double E_cart = compute_molecule_interaction(molA, molB);
 
     // --- Cartesian force + torque ---
@@ -542,13 +560,16 @@ TEST_CASE("Rotated molecule benchmarks", "[mults][benchmark][rotated]") {
     Vec3 euler2(-0.5, 0.8, 1.2);
     Mat3 R1 = rotation_utils::euler_to_rotation(euler1[0], euler1[1], euler1[2]);
     Mat3 R2 = rotation_utils::euler_to_rotation(euler2[0], euler2[1], euler2[2]);
-    Vec3 pos1(0, 0, 0), pos2(5.0, 2.0, -1.5);
+    constexpr double b2a = occ::units::BOHR_TO_ANGSTROM;
+    // S-function uses Bohr; Cartesian uses Angstrom
+    Vec3 pos1_bohr(0, 0, 0), pos2_bohr(5.0, 2.0, -1.5);
+    Vec3 pos1_ang = pos1_bohr * b2a, pos2_ang = pos2_bohr * b2a;
 
-    // Pre-build molecules for Cartesian batch API
+    // Pre-build molecules for Cartesian batch API (Angstrom)
     auto molA = CartesianMolecule::from_body_frame_with_rotation(
-        {{m1, Vec3::Zero()}}, R1, pos1);
+        {{m1, Vec3::Zero()}}, R1, pos1_ang);
     auto molB = CartesianMolecule::from_body_frame_with_rotation(
-        {{m2, Vec3::Zero()}}, R2, pos2);
+        {{m2, Vec3::Zero()}}, R2, pos2_ang);
 
     // Pre-rotate for S-function lab-frame energy
     Mult m1_lab = rotated_multipole(m1, R1);
@@ -556,7 +577,7 @@ TEST_CASE("Rotated molecule benchmarks", "[mults][benchmark][rotated]") {
 
     SECTION("Single-site energy") {
         BENCHMARK("S-function: energy (lab-frame)") {
-            return sf_engine.compute_interaction_energy(m1_lab, pos1, m2_lab, pos2);
+            return sf_engine.compute_interaction_energy(m1_lab, pos1_bohr, m2_lab, pos2_bohr);
         };
 
         BENCHMARK("Cartesian:  energy (body-frame)") {
@@ -567,7 +588,7 @@ TEST_CASE("Rotated molecule benchmarks", "[mults][benchmark][rotated]") {
     SECTION("Single-site force + torque") {
         BENCHMARK("S-function: analytical force+torque (mol 1)") {
             return TorqueCalculation::compute_torque_analytical(
-                m1, pos1, euler1, m2, pos2, euler2, 1);
+                m1, pos1_bohr, euler1, m2, pos2_bohr, euler2, 1);
         };
 
         BENCHMARK("Cartesian:  force+torque (both mols)") {
@@ -580,29 +601,30 @@ TEST_CASE("Rotated molecule benchmarks", "[mults][benchmark][rotated]") {
         qO.Q00() = -0.669; qO.Q10() = 0.234; qO.Q20() = -0.123; qO.Q22c() = 0.08;
         qH.Q00() = 0.335; qH.Q10() = 0.05;
 
-        Vec3 bodyO(0, 0, 0), bodyH1(1.8, 0, 0), bodyH2(-0.6, 1.7, 0);
+        Vec3 bodyO_b(0, 0, 0), bodyH1_b(1.8, 0, 0), bodyH2_b(-0.6, 1.7, 0);
+        Vec3 bodyO_a = bodyO_b * b2a, bodyH1_a = bodyH1_b * b2a, bodyH2_a = bodyH2_b * b2a;
 
-        // Cartesian: pre-built rotated molecules
+        // Cartesian: pre-built rotated molecules (Angstrom)
         auto wA = CartesianMolecule::from_body_frame_with_rotation(
-            {{qO, bodyO}, {qH, bodyH1}, {qH, bodyH2}}, R1, pos1);
+            {{qO, bodyO_a}, {qH, bodyH1_a}, {qH, bodyH2_a}}, R1, pos1_ang);
         auto wB = CartesianMolecule::from_body_frame_with_rotation(
-            {{qO, bodyO}, {qH, bodyH1}, {qH, bodyH2}}, R2, pos2);
+            {{qO, bodyO_a}, {qH, bodyH1_a}, {qH, bodyH2_a}}, R2, pos2_ang);
 
-        // S-function: pre-rotated lab multipoles and positions
+        // S-function: pre-rotated lab multipoles and positions (Bohr)
         Mult qO_labA = rotated_multipole(qO, R1);
         Mult qH_labA = rotated_multipole(qH, R1);
         Mult qO_labB = rotated_multipole(qO, R2);
         Mult qH_labB = rotated_multipole(qH, R2);
 
         std::vector<std::pair<Mult, Vec3>> labA = {
-            {qO_labA, pos1 + R1 * bodyO},
-            {qH_labA, pos1 + R1 * bodyH1},
-            {qH_labA, pos1 + R1 * bodyH2}
+            {qO_labA, pos1_bohr + R1 * bodyO_b},
+            {qH_labA, pos1_bohr + R1 * bodyH1_b},
+            {qH_labA, pos1_bohr + R1 * bodyH2_b}
         };
         std::vector<std::pair<Mult, Vec3>> labB = {
-            {qO_labB, pos2 + R2 * bodyO},
-            {qH_labB, pos2 + R2 * bodyH1},
-            {qH_labB, pos2 + R2 * bodyH2}
+            {qO_labB, pos2_bohr + R2 * bodyO_b},
+            {qH_labB, pos2_bohr + R2 * bodyH1_b},
+            {qH_labB, pos2_bohr + R2 * bodyH2_b}
         };
 
         BENCHMARK("S-function:     water dimer 3x3 rotated") {

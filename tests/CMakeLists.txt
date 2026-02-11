@@ -154,6 +154,10 @@ add_executable(mults_tests
     "${CMAKE_CURRENT_SOURCE_DIR}/cartesian_force_test.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/mults_benchmark.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_source_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/crystal_optimizer_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_hessian_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dmacrys_benchmark_test.cpp"
 )
 target_link_libraries(mults_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(mults_tests PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 catch_discover_tests(mults_tests)

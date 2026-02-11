@@ -121,8 +121,10 @@ RigidBodyForceResult aggregate_rigid_body_forces(
 
 /// Full force/torque including multipole rotation contribution.
 /// Requires body-frame data in both molecules.
+/// If site_cutoff > 0, skip site pairs with distance > site_cutoff (Angstrom).
 FullRigidBodyResult compute_molecule_forces_torques(
     const CartesianMolecule &molA,
-    const CartesianMolecule &molB);
+    const CartesianMolecule &molB,
+    double site_cutoff = 0.0);
 
 } // namespace occ::mults

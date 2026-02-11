@@ -5,6 +5,7 @@
 #include <occ/mults/cartesian_force.h>
 #include <occ/mults/cartesian_rotation.h>
 #include <occ/mults/cartesian_molecule.h>
+#include <occ/core/units.h>
 #include <fmt/core.h>
 #include <cmath>
 #include <vector>
@@ -115,21 +116,22 @@ TEST_CASE("Charge-charge pair force matches analytical", "[force][analytical]") 
     m1.Q00() = 2.0;
     m2.Q00() = 3.0;
 
-    Vec3 p1(0, 0, 0), p2(0, 0, 4.0);
+    // Positions in Angstrom (converted from 4 Bohr)
+    constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+    Vec3 p1(0, 0, 0), p2(0, 0, 4.0 * B2A);
     auto molA = single_site_mol(m1, p1);
     auto molB = single_site_mol(m2, p2);
 
     auto ef = compute_site_pair_energy_force(molA.sites[0], molB.sites[0]);
 
-    // E = q1*q2/R = 6/4 = 1.5
+    // compute_site_pair_energy_force converts Ang->Bohr internally,
+    // returns energy in Hartree and gradient in Hartree/Bohr.
+    // E = q1*q2/R = 6/4 = 1.5 Hartree (R=4 Bohr)
     double R = 4.0;
     double expected_E = 2.0 * 3.0 / R;
     REQUIRE(ef.energy == Approx(expected_E));
 
-    // dE/dR_z = d/dR_z (q1*q2 / |R|) = q1*q2 * (-R_z/|R|^3)
-    // But our T-tensor gives dE/dR where R = posB - posA, so:
-    // gradient = (dE/dRx, dE/dRy, dE/dRz) where R = (0,0,4)
-    // dE/dRz = q1*q2 * T_001 = -q1*q2*Rz/R^3
+    // dE/dRz = -q1*q2*Rz/R^3 in Hartree/Bohr
     double R3 = R * R * R;
     Vec3 expected_grad(0.0, 0.0, -2.0 * 3.0 * 4.0 / R3);
     REQUIRE(ef.gradient[0] == Approx(expected_grad[0]).margin(1e-14));
@@ -148,23 +150,28 @@ TEST_CASE("Dipole-dipole force matches finite difference", "[force][fd]") {
     m2.Q10() = -0.3;
     m2.Q11s() = 0.7;
 
-    Vec3 p1(0, 0, 0), p2(3.5, 1.2, -2.1);
+    // Positions in Angstrom (converted from Bohr)
+    constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+    Vec3 p1(0, 0, 0), p2(3.5 * B2A, 1.2 * B2A, -2.1 * B2A);
     auto molA = single_site_mol(m1, p1);
     auto molB = single_site_mol(m2, p2);
 
     auto ef = compute_site_pair_energy_force(molA.sites[0], molB.sites[0]);
 
-    // Finite-difference gradient (perturbing B's position)
+    // FD gradient via compute_molecule_interaction returns kJ/mol/Angstrom.
+    // compute_site_pair_energy_force returns gradient in Hartree/Bohr.
+    // Convert analytical gradient to kJ/mol/Angstrom for comparison.
+    constexpr double grad_conv = occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM;
     Vec3 fd_grad = finite_diff_gradient(molA, molB, 1, 1e-6);
 
     INFO(fmt::format("Analytical grad: ({:.10e}, {:.10e}, {:.10e})",
-                     ef.gradient[0], ef.gradient[1], ef.gradient[2]));
+                     ef.gradient[0] * grad_conv, ef.gradient[1] * grad_conv, ef.gradient[2] * grad_conv));
     INFO(fmt::format("FD grad:         ({:.10e}, {:.10e}, {:.10e})",
                      fd_grad[0], fd_grad[1], fd_grad[2]));
 
-    REQUIRE(ef.gradient[0] == Approx(fd_grad[0]).epsilon(1e-8));
-    REQUIRE(ef.gradient[1] == Approx(fd_grad[1]).epsilon(1e-8));
-    REQUIRE(ef.gradient[2] == Approx(fd_grad[2]).epsilon(1e-8));
+    REQUIRE(ef.gradient[0] * grad_conv == Approx(fd_grad[0]).epsilon(1e-8));
+    REQUIRE(ef.gradient[1] * grad_conv == Approx(fd_grad[1]).epsilon(1e-8));
+    REQUIRE(ef.gradient[2] * grad_conv == Approx(fd_grad[2]).epsilon(1e-8));
 }
 
 // -------------------------------------------------------------------
@@ -184,18 +191,24 @@ TEST_CASE("Full-rank pair force matches finite difference", "[force][fd][fullran
     m2.Q33c() = 0.02;
     m2.Q44c() = 0.005;
 
-    Vec3 p1(0, 0, 0), p2(4.5, -1.3, 2.7);
+    // Positions in Angstrom (converted from Bohr)
+    constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+    Vec3 p1(0, 0, 0), p2(4.5 * B2A, -1.3 * B2A, 2.7 * B2A);
     auto molA = single_site_mol(m1, p1);
     auto molB = single_site_mol(m2, p2);
 
     auto ef = compute_site_pair_energy_force(molA.sites[0], molB.sites[0]);
+
+    // FD gradient from compute_molecule_interaction is in kJ/mol/Angstrom.
+    // Analytical gradient from compute_site_pair_energy_force is in Hartree/Bohr.
+    constexpr double grad_conv = occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM;
     Vec3 fd_grad = finite_diff_gradient(molA, molB, 1, 1e-5);
 
     for (int d = 0; d < 3; ++d) {
         INFO(fmt::format("Component {}: analytical={:.10e} fd={:.10e} diff={:.2e}",
-                         d, ef.gradient[d], fd_grad[d],
-                         std::abs(ef.gradient[d] - fd_grad[d])));
-        REQUIRE(ef.gradient[d] == Approx(fd_grad[d]).epsilon(1e-7));
+                         d, ef.gradient[d] * grad_conv, fd_grad[d],
+                         std::abs(ef.gradient[d] * grad_conv - fd_grad[d])));
+        REQUIRE(ef.gradient[d] * grad_conv == Approx(fd_grad[d]).epsilon(1e-7));
     }
 }
 
@@ -483,14 +496,18 @@ TEST_CASE("Force function returns same energy as energy-only", "[force][consiste
     m2.Q11c() = 0.1;
     m2.Q22c() = 0.05;
 
-    Vec3 p1(0, 0, 0), p2(4.5, -1.3, 2.7);
+    // Positions in Angstrom (converted from Bohr)
+    constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+    Vec3 p1(0, 0, 0), p2(4.5 * B2A, -1.3 * B2A, 2.7 * B2A);
     auto molA = single_site_mol(m1, p1);
     auto molB = single_site_mol(m2, p2);
 
+    // compute_molecule_interaction returns kJ/mol
     double energy_only = compute_molecule_interaction(molA, molB);
+    // compute_site_pair_energy_force returns Hartree
     auto ef = compute_site_pair_energy_force(molA.sites[0], molB.sites[0]);
 
-    REQUIRE(ef.energy == Approx(energy_only).margin(1e-14));
+    REQUIRE(ef.energy * occ::units::AU_TO_KJ_PER_MOL == Approx(energy_only).margin(1e-10));
 }
 
 // -------------------------------------------------------------------

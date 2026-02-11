@@ -1,5 +1,6 @@
 #include <occ/mults/cartesian_force.h>
 #include <occ/mults/interaction_tensor.h>
+#include <occ/core/units.h>
 #include <cmath>
 
 namespace occ::mults {
@@ -82,7 +83,9 @@ CartesianForceResult compute_site_pair_energy_force(
     const CartesianSite &siteB) {
     if (siteA.rank < 0 || siteB.rank < 0)
         return {};
-    Vec3 R = siteB.position - siteA.position;
+    // Positions are stored in Angstrom; interaction tensors assume Bohr.
+    Vec3 R_ang = siteB.position - siteA.position;
+    Vec3 R = R_ang / occ::units::BOHR_TO_ANGSTROM;
     auto eg = dispatch_pair_ef(siteA.cart, siteA.rank,
                                siteB.cart, siteB.rank,
                                R[0], R[1], R[2]);
@@ -106,12 +109,15 @@ MoleculeForceResult compute_molecule_forces(
         for (size_t j = 0; j < molB.sites.size(); ++j) {
             const auto &sB = molB.sites[j];
             if (sB.rank < 0) continue;
-            Vec3 R = sB.position - sA.position;
+            Vec3 R_ang = sB.position - sA.position;
+            Vec3 R = R_ang / occ::units::BOHR_TO_ANGSTROM;
             auto eg = dispatch_pair_ef(sA.cart, sA.rank,
                                        sB.cart, sB.rank,
                                        R[0], R[1], R[2]);
-            Vec3 grad(eg.grad[0], eg.grad[1], eg.grad[2]);
-            result.energy += eg.energy;
+            // Convert from Hartree/Bohr to kJ/mol/Angstrom
+            Vec3 grad_bohr(eg.grad[0], eg.grad[1], eg.grad[2]);
+            Vec3 grad = grad_bohr * (occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM);
+            result.energy += eg.energy * occ::units::AU_TO_KJ_PER_MOL;
             result.forces_A[i] += grad;   // F_A = +dE/dR
             result.forces_B[j] -= grad;   // F_B = -dE/dR (Newton's 3rd law)
         }
@@ -141,7 +147,8 @@ RigidBodyForceResult aggregate_rigid_body_forces(
 
 FullRigidBodyResult compute_molecule_forces_torques(
     const CartesianMolecule &molA,
-    const CartesianMolecule &molB) {
+    const CartesianMolecule &molB,
+    double site_cutoff) {
     FullRigidBodyResult result;
 
     const size_t nA = molA.sites.size();
@@ -154,6 +161,8 @@ FullRigidBodyResult compute_molecule_forces_torques(
     std::vector<CartesianMultipole<4>> fields_A(nA);
     std::vector<CartesianMultipole<4>> fields_B(nB);
 
+    const bool use_site_cutoff = (site_cutoff > 0.0);
+
     // Single pass: compute energy, per-site forces, and interaction fields
     for (size_t i = 0; i < nA; ++i) {
         const auto &sA = molA.sites[i];
@@ -161,15 +170,18 @@ FullRigidBodyResult compute_molecule_forces_torques(
         for (size_t j = 0; j < nB; ++j) {
             const auto &sB = molB.sites[j];
             if (sB.rank < 0) continue;
-            Vec3 R = sB.position - sA.position;
+            Vec3 R_ang = sB.position - sA.position;
+            if (use_site_cutoff && R_ang.norm() > site_cutoff) continue;
+            Vec3 R = R_ang / occ::units::BOHR_TO_ANGSTROM;
             double Rx = R[0], Ry = R[1], Rz = R[2];
 
             // Energy and force
             auto eg = dispatch_pair_ef(sA.cart, sA.rank,
                                        sB.cart, sB.rank,
                                        Rx, Ry, Rz);
-            Vec3 grad(eg.grad[0], eg.grad[1], eg.grad[2]);
-            result.energy += eg.energy;
+            Vec3 grad_bohr(eg.grad[0], eg.grad[1], eg.grad[2]);
+            Vec3 grad = grad_bohr * (occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM);
+            result.energy += eg.energy * occ::units::AU_TO_KJ_PER_MOL;
             forces_A[i] += grad;
             forces_B[j] -= grad;
 
@@ -222,7 +234,7 @@ FullRigidBodyResult compute_molecule_forces_torques(
                              * fields_A[i].data[c];
                 }
             }
-            torque_multipole_A[k] = tau_k;
+            torque_multipole_A[k] = tau_k * occ::units::AU_TO_KJ_PER_MOL;
         }
 
         // dE/dp = -(lever torque) + (multipole torque)
@@ -252,7 +264,7 @@ FullRigidBodyResult compute_molecule_forces_torques(
                              * fields_B[j].data[c];
                 }
             }
-            torque_multipole_B[k] = tau_k;
+            torque_multipole_B[k] = tau_k * occ::units::AU_TO_KJ_PER_MOL;
         }
 
         result.grad_angle_axis_B = -torque_lab_B + torque_multipole_B;

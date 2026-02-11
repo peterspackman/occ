@@ -11,6 +11,7 @@
 #include <occ/mults/sfunction_term.h>
 #include <occ/mults/sfunction_term_builder.h>
 #include <occ/mults/coordinate_system.h>
+#include <occ/core/units.h>
 #include <fmt/core.h>
 #include <cmath>
 
@@ -2178,6 +2179,10 @@ TEST_CASE("Cartesian dynamics - Forces and energy match", "[rigid_body][cartesia
     // Forces and energies should match exactly between engines
 
     SECTION("Two dipoles - basic case") {
+        constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+        constexpr double au2kj = occ::units::AU_TO_KJ_PER_MOL;
+        constexpr double force_conv = au2kj / B2A; // Hartree/Bohr -> kJ/mol/Angstrom
+
         std::vector<RigidBodyState> molecules(2);
 
         // Molecule 1: dipole at origin
@@ -2188,7 +2193,7 @@ TEST_CASE("Cartesian dynamics - Forces and energy match", "[rigid_body][cartesia
         molecules[0].set_euler_angles(0.3, 0.5, 0.2);
         molecules[0].mass = 1.0;
 
-        // Molecule 2: dipole at (0, 0, 5)
+        // Molecule 2: dipole at (0, 0, 5) Bohr
         Mult mult2(1);
         mult2.Q10() = -0.8;
         molecules[1].position = Vec3(0, 0, 5.0);
@@ -2196,24 +2201,31 @@ TEST_CASE("Cartesian dynamics - Forces and energy match", "[rigid_body][cartesia
         molecules[1].set_euler_angles(0.7, 0.4, 0.6);
         molecules[1].mass = 1.0;
 
-        // Compute with S-function engine
+        // Compute with S-function engine (Bohr/Hartree)
         std::vector<RigidBodyState> mols_sfunc = molecules;
         RigidBodyDynamics::compute_forces_torques(mols_sfunc);
 
-        // Compute with Cartesian engine
+        // Compute with Cartesian engine (positions in Angstrom, returns kJ/mol)
         std::vector<RigidBodyState> mols_cart = molecules;
+        for (auto &m : mols_cart) m.position *= B2A;
         double energy_cart = RigidBodyDynamics::compute_forces_torques_cartesian(mols_cart);
 
-        // Forces should match exactly
-        REQUIRE(mols_cart[0].force.isApprox(mols_sfunc[0].force, 1e-10));
-        REQUIRE(mols_cart[1].force.isApprox(mols_sfunc[1].force, 1e-10));
+        // Forces: Cartesian returns kJ/mol/Angstrom, S-function returns Hartree/Bohr
+        REQUIRE(mols_cart[0].force.isApprox(mols_sfunc[0].force * force_conv, 1e-10));
+        REQUIRE(mols_cart[1].force.isApprox(mols_sfunc[1].force * force_conv, 1e-10));
 
-        // Verify energy matches
-        double energy_pot = RigidBodyDynamics::compute_potential_energy_cartesian(molecules);
+        // Verify energy matches between force and energy-only Cartesian calls
+        std::vector<RigidBodyState> mols_pot = molecules;
+        for (auto &m : mols_pot) m.position *= B2A;
+        double energy_pot = RigidBodyDynamics::compute_potential_energy_cartesian(mols_pot);
         REQUIRE(energy_cart == Approx(energy_pot).epsilon(1e-12));
     }
 
     SECTION("Higher-rank multipoles") {
+        constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+        constexpr double au2kj = occ::units::AU_TO_KJ_PER_MOL;
+        constexpr double force_conv = au2kj / B2A;
+
         std::vector<RigidBodyState> molecules(2);
 
         // Molecule 1: quadrupole
@@ -2235,27 +2247,34 @@ TEST_CASE("Cartesian dynamics - Forces and energy match", "[rigid_body][cartesia
         molecules[1].set_euler_angles(0.5, 0.3, 0.1);
         molecules[1].mass = 1.0;
 
-        // Compute with S-function engine
+        // Compute with S-function engine (Bohr/Hartree)
         std::vector<RigidBodyState> mols_sfunc = molecules;
         RigidBodyDynamics::compute_forces_torques(mols_sfunc);
 
-        // Compute with Cartesian engine
+        // Compute with Cartesian engine (Angstrom/kJ/mol)
         std::vector<RigidBodyState> mols_cart = molecules;
+        for (auto &m : mols_cart) m.position *= B2A;
         RigidBodyDynamics::compute_forces_torques_cartesian(mols_cart);
 
-        // Check energies match
+        // Check energies match (convert S-function Hartree to kJ/mol)
         double energy_sfunc = RigidBodyDynamics::compute_potential_energy(molecules);
-        double energy_cart = RigidBodyDynamics::compute_potential_energy_cartesian(molecules);
-        REQUIRE(energy_cart == Approx(energy_sfunc).epsilon(1e-10));
+        std::vector<RigidBodyState> mols_cart_e = molecules;
+        for (auto &m : mols_cart_e) m.position *= B2A;
+        double energy_cart = RigidBodyDynamics::compute_potential_energy_cartesian(mols_cart_e);
+        REQUIRE(energy_cart == Approx(energy_sfunc * au2kj).epsilon(1e-10));
 
         // Forces have small (~1%) differences due to different rank truncation
         // in the S-function vs Cartesian engines. Both are validated independently
         // against finite differences, so use a looser tolerance here.
-        REQUIRE(mols_cart[0].force.isApprox(mols_sfunc[0].force, 0.02));
-        REQUIRE(mols_cart[1].force.isApprox(mols_sfunc[1].force, 0.02));
+        // Convert S-function forces from Hartree/Bohr to kJ/mol/Angstrom.
+        REQUIRE(mols_cart[0].force.isApprox(mols_sfunc[0].force * force_conv, 0.02 * force_conv));
+        REQUIRE(mols_cart[1].force.isApprox(mols_sfunc[1].force * force_conv, 0.02 * force_conv));
     }
 
     SECTION("Three molecules") {
+        constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+        constexpr double force_conv = occ::units::AU_TO_KJ_PER_MOL / B2A;
+
         std::vector<RigidBodyState> molecules(3);
 
         for (int i = 0; i < 3; i++) {
@@ -2267,23 +2286,27 @@ TEST_CASE("Cartesian dynamics - Forces and energy match", "[rigid_body][cartesia
             molecules[i].mass = 1.0;
         }
 
-        // Compute with S-function engine
+        // Compute with S-function engine (Bohr/Hartree)
         std::vector<RigidBodyState> mols_sfunc = molecules;
         RigidBodyDynamics::compute_forces_torques(mols_sfunc);
 
-        // Compute with Cartesian engine
+        // Compute with Cartesian engine (Angstrom/kJ/mol)
         std::vector<RigidBodyState> mols_cart = molecules;
+        for (auto &m : mols_cart) m.position *= B2A;
         RigidBodyDynamics::compute_forces_torques_cartesian(mols_cart);
 
-        // Compare forces for all molecules
+        // Compare forces (convert S-function Hartree/Bohr to kJ/mol/Angstrom)
         for (int i = 0; i < 3; i++) {
             INFO("Molecule " << i);
-            REQUIRE(mols_cart[i].force.isApprox(mols_sfunc[i].force, 1e-10));
+            REQUIRE(mols_cart[i].force.isApprox(mols_sfunc[i].force * force_conv, 1e-10));
         }
     }
 }
 
 TEST_CASE("Cartesian dynamics - Potential energy matches S-function engine", "[rigid_body][cartesian]") {
+    constexpr double B2A = occ::units::BOHR_TO_ANGSTROM;
+    constexpr double au2kj = occ::units::AU_TO_KJ_PER_MOL;
+
     std::vector<RigidBodyState> molecules(2);
 
     Mult mult1(2);
@@ -2300,8 +2323,13 @@ TEST_CASE("Cartesian dynamics - Potential energy matches S-function engine", "[r
     molecules[1].multipole_body = mult2;
     molecules[1].set_euler_angles(0.2, 0.3, 0.4);
 
+    // S-function engine: Bohr positions, Hartree energy
     double energy_sfunc = RigidBodyDynamics::compute_potential_energy(molecules);
-    double energy_cart = RigidBodyDynamics::compute_potential_energy_cartesian(molecules);
 
-    REQUIRE(energy_cart == Approx(energy_sfunc).epsilon(1e-10));
+    // Cartesian engine: Angstrom positions, kJ/mol energy
+    std::vector<RigidBodyState> mols_cart = molecules;
+    for (auto &m : mols_cart) m.position *= B2A;
+    double energy_cart = RigidBodyDynamics::compute_potential_energy_cartesian(mols_cart);
+
+    REQUIRE(energy_cart == Approx(energy_sfunc * au2kj).epsilon(1e-10));
 }
