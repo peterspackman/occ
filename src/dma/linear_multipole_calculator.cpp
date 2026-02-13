@@ -194,7 +194,7 @@ void LinearMultipoleCalculator::process_electronic_contributions(
 }
 
 void LinearMultipoleCalculator::process_shell_pair(
-    const occ::qm::Shell &shell_i, const occ::qm::Shell &shell_j,
+    const occ::gto::Shell &shell_i, const occ::gto::Shell &shell_j,
     int i_shell_idx, int j_shell_idx, int atom_i, int atom_j,
     std::vector<Mult> &site_multipoles) {
   const auto &basis = m_wfn.basis;
@@ -249,7 +249,7 @@ void LinearMultipoleCalculator::process_shell_pair(
 }
 
 void LinearMultipoleCalculator::process_primitive_pair(
-    const occ::qm::Shell &shell_i, const occ::qm::Shell &shell_j, int i_prim,
+    const occ::gto::Shell &shell_i, const occ::gto::Shell &shell_j, int i_prim,
     int j_prim, const Mat &d_block, int atom_i, int atom_j,
     std::vector<Mult> &site_multipoles) {
   const auto &positions = m_wfn.positions();

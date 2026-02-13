@@ -1,17 +1,21 @@
 #pragma once
 #include <occ/core/conditioning_orthogonalizer.h>
 #include <occ/core/energy_components.h>
+#include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
-#include <occ/qm/cdiis.h>
-#include <occ/qm/ediis.h>
+#include <occ/core/util.h>
+#include <occ/qm/convergence_accelerator.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/guess_density.h>
+#include <occ/qm/mo.h>
 #include <occ/qm/opmatrix.h>
 #include <occ/qm/orthogonalizer.h>
 #include <occ/qm/scf_convergence_settings.h>
 #include <occ/qm/scf_method.h>
+#include <occ/gto/shell.h>
+#include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
 
 namespace occ::qm {
@@ -77,8 +81,7 @@ template <SCFMethod Procedure> struct SCF {
   double diis_error{1.0};
   double ediff_rel = 0.0;
   double total_time{0.0};
-  occ::qm::CDIIS diis; // start DIIS on second iteration
-  occ::qm::EDIIS ediis;
+  occ::qm::ConvergenceAccelerator convergence_accelerator;
   bool reset_incremental_fock_formation{false};
   bool incremental_Fbuild_started{false};
   double next_reset_threshold{0.0};

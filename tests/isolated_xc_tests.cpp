@@ -15,7 +15,7 @@ using occ::IVec;
 // Global state to hold HF results (computed once, shared across all tests)
 struct WaterHFData {
     occ::core::Molecule mol;
-    occ::qm::AOBasis basis;
+    occ::gto::AOBasis basis;
     occ::qm::MolecularOrbitals mo;
     double hf_energy;
     bool initialized = false;
@@ -37,7 +37,7 @@ struct WaterHFData {
             instance.mol = occ::core::Molecule(atomic_numbers, pos);
 
             // Small basis for fast testing
-            instance.basis = occ::qm::AOBasis::load(instance.mol.atoms(), "3-21G");
+            instance.basis = occ::gto::AOBasis::load(instance.mol.atoms(), "3-21G");
             instance.basis.set_pure(true);
 
             // Run HF once
@@ -62,7 +62,7 @@ struct WaterHFFixture {
 
     WaterHFData& data;
     const occ::core::Molecule& mol = data.mol;
-    const occ::qm::AOBasis& basis = data.basis;
+    const occ::gto::AOBasis& basis = data.basis;
     const occ::qm::MolecularOrbitals& mo = data.mo;
     const double& hf_energy = data.hf_energy;
 };

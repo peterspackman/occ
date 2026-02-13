@@ -1,7 +1,7 @@
 #pragma once
-#include <occ/dft/molecular_grid.h>
+#include <occ/numint/molecular_grid.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/slater/slaterbasis.h>
 #include <vector>
 
@@ -22,7 +22,7 @@ public:
     double a2{1.4}; // angstroms
   };
 
-  XDM(const occ::qm::AOBasis &basis, int charge = 0,
+  XDM(const occ::gto::AOBasis &basis, int charge = 0,
       const Parameters &params = {0.7, 1.4});
 
   double energy(const occ::qm::MolecularOrbitals &mo);
@@ -44,7 +44,7 @@ private:
   void populate_moments_impl(const occ::qm::MolecularOrbitals &mo);
   void populate_polarizabilities();
 
-  occ::qm::AOBasis m_basis;
+  occ::gto::AOBasis m_basis;
   occ::dft::MolecularGrid m_grid;
   std::vector<occ::dft::AtomGrid> m_atom_grids;
   std::vector<occ::slater::Basis> m_slater_basis;

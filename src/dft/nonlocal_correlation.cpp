@@ -1,7 +1,7 @@
 #include <cmath>
 #include <occ/core/constants.h>
 #include <occ/core/parallel.h>
-#include <occ/dft/molecular_grid.h>
+#include <occ/numint/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/gto/density.h>
 
@@ -15,7 +15,7 @@ using PointsRef = Eigen::Ref<const Mat3N>;
 NonLocalCorrelationFunctional::NonLocalCorrelationFunctional() {}
 
 void NonLocalCorrelationFunctional::set_integration_grid(
-    const qm::AOBasis &basis, const GridSettings &settings) {
+    const gto::AOBasis &basis, const GridSettings &settings) {
   m_nlc_atom_grids.clear();
   MolecularGrid nlc_grid(basis, settings);
 
@@ -328,7 +328,7 @@ Mat3N compute_vv10_grid_displacement_gradient(
 }
 
 NonLocalCorrelationFunctional::Result
-NonLocalCorrelationFunctional::vv10(const qm::AOBasis &basis,
+NonLocalCorrelationFunctional::vv10(const gto::AOBasis &basis,
                                     const qm::MolecularOrbitals &mo) {
   if (mo.kind != SpinorbitalKind::Restricted)
     throw std::runtime_error(
@@ -390,7 +390,7 @@ NonLocalCorrelationFunctional::vv10(const qm::AOBasis &basis,
 }
 
 NonLocalCorrelationFunctional::GradientResult
-NonLocalCorrelationFunctional::vv10_gradient(const qm::AOBasis &basis,
+NonLocalCorrelationFunctional::vv10_gradient(const gto::AOBasis &basis,
                                             const qm::MolecularOrbitals &mo) const {
   // WARNING: This gradient implementation is experimental and not fully tested.
   // It assumes post-SCF VV10 correction and does not include SCF response.
@@ -522,13 +522,13 @@ NonLocalCorrelationFunctional::vv10_gradient(const qm::AOBasis &basis,
 }
 
 NonLocalCorrelationFunctional::Result
-NonLocalCorrelationFunctional::operator()(const qm::AOBasis &basis,
+NonLocalCorrelationFunctional::operator()(const gto::AOBasis &basis,
                                           const qm::MolecularOrbitals &mo) {
   return vv10(basis, mo);
 }
 
 NonLocalCorrelationFunctional::GradientResult
-NonLocalCorrelationFunctional::compute_gradient(const qm::AOBasis &basis,
+NonLocalCorrelationFunctional::compute_gradient(const gto::AOBasis &basis,
                                                const qm::MolecularOrbitals &mo) const {
   return vv10_gradient(basis, mo);
 }

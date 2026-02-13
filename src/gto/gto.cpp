@@ -15,8 +15,8 @@ double common_fac(int l, bool spherical) {
   }
 }
 
-Vec evaluate_decay_cutoff(const qm::AOBasis &basis, double threshold) {
-  occ::log::trace("Evaluating decay cutoff (threshold = 1e-12) for AOBasis");
+Vec evaluate_decay_cutoff(const gto::AOBasis &basis, double threshold) {
+  occ::log::trace("Evaluating decay cutoff (threshold = {:.0e}) for AOBasis", threshold);
   occ::timing::start(occ::timing::category::gto);
   size_t natoms = basis.atoms().size();
   auto shell2bf = basis.first_bf();
@@ -24,7 +24,8 @@ Vec evaluate_decay_cutoff(const qm::AOBasis &basis, double threshold) {
   size_t max_shell_size = basis.max_shell_size();
   const double max_radius = 30.0;
   const double increment = 0.1;
-  const double min_radius = 5.0;
+  // Start from 0.5 Bohr to allow tighter extents for screening
+  const double min_radius = 0.5;
   const int npts = static_cast<int>((max_radius - min_radius) / increment) + 1;
   Mat3N pts = Mat3N::Zero(3, npts);
   pts.row(0).array() = 1.0;
@@ -43,7 +44,7 @@ Vec evaluate_decay_cutoff(const qm::AOBasis &basis, double threshold) {
       const double *alpha = sh.exponents.data();
       const double *center = sh.origin.data();
       int L = sh.l;
-      bool spherical = (sh.kind == qm::Shell::Kind::Spherical);
+      bool spherical = (sh.kind == gto::Shell::Kind::Spherical);
       double fac = common_fac(L, spherical);
       int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
       gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs,
@@ -65,7 +66,7 @@ Vec evaluate_decay_cutoff(const qm::AOBasis &basis, double threshold) {
   return result;
 }
 
-void evaluate_basis(const qm::AOBasis &basis, Mat3NConstRef grid_pts,
+void evaluate_basis(const gto::AOBasis &basis, Mat3NConstRef grid_pts,
                     GTOValues &gto_values, int max_derivative) {
   occ::timing::start(occ::timing::category::gto);
   size_t nbf = basis.nbf();
@@ -76,7 +77,7 @@ void evaluate_basis(const qm::AOBasis &basis, Mat3NConstRef grid_pts,
   auto shell2bf = basis.first_bf();
   auto atom2shell = basis.atom_to_shell();
   // change this if we allow mixed integral kinds
-  bool spherical = (basis.kind() == qm::Shell::Kind::Spherical);
+  bool spherical = (basis.kind() == gto::Shell::Kind::Spherical);
   int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
   for (size_t i = 0; i < natoms; i++) {
     for (const auto &shell_idx : atom2shell[i]) {
@@ -134,6 +135,76 @@ void evaluate_basis(const qm::AOBasis &basis, Mat3NConstRef grid_pts,
       }
       occ::timing::stop(occ::timing::category::gto_shell);
     }
+  }
+  occ::timing::stop(occ::timing::category::gto);
+}
+
+void evaluate_basis_for_shells(const gto::AOBasis &basis, Mat3NConstRef grid_pts,
+                               GTOValues &gto_values, int max_derivative,
+                               const std::vector<size_t> &shell_indices) {
+  occ::timing::start(occ::timing::category::gto);
+  size_t nbf = basis.nbf();
+  size_t npts = grid_pts.cols();
+  gto_values.reserve(nbf, npts, max_derivative);
+  gto_values.set_zero();
+  auto shell2bf = basis.first_bf();
+  bool spherical = (basis.kind() == gto::Shell::Kind::Spherical);
+  int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
+
+  for (size_t shell_idx : shell_indices) {
+    occ::timing::start(occ::timing::category::gto_shell);
+    size_t bf = shell2bf[shell_idx];
+    double *output = gto_values.phi.col(bf).data();
+    const double *xyz = grid_pts.data();
+    long int xyz_stride = 3;
+    const auto &sh = basis[shell_idx];
+    const double *coeffs = sh.contraction_coefficients.data();
+    const double *alpha = sh.exponents.data();
+    const double *center = sh.origin.data();
+    int L = sh.l;
+    double fac = common_fac(L, spherical);
+
+    if (max_derivative == 0) {
+      gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs,
+                     alpha, center, order, output);
+      gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
+    } else if (max_derivative == 1) {
+      double *x_out = gto_values.phi_x.col(bf).data();
+      double *y_out = gto_values.phi_y.col(bf).data();
+      double *z_out = gto_values.phi_z.col(bf).data();
+      gg_collocation_deriv1(L, npts, xyz, xyz_stride, sh.num_primitives(),
+                            coeffs, alpha, center, order, output, x_out,
+                            y_out, z_out);
+      gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_x.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_y.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_z.block(0, bf, npts, sh.size()) *= fac;
+    } else if (max_derivative == 2) {
+      double *x_out = gto_values.phi_x.col(bf).data();
+      double *y_out = gto_values.phi_y.col(bf).data();
+      double *z_out = gto_values.phi_z.col(bf).data();
+      double *xx_out = gto_values.phi_xx.col(bf).data();
+      double *xy_out = gto_values.phi_xy.col(bf).data();
+      double *xz_out = gto_values.phi_xz.col(bf).data();
+      double *yy_out = gto_values.phi_yy.col(bf).data();
+      double *yz_out = gto_values.phi_yz.col(bf).data();
+      double *zz_out = gto_values.phi_zz.col(bf).data();
+      gg_collocation_deriv2(L, npts, xyz, xyz_stride, sh.num_primitives(),
+                            coeffs, alpha, center, order, output, x_out,
+                            y_out, z_out, xx_out, xy_out, xz_out, yy_out,
+                            yz_out, zz_out);
+      gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_x.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_y.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_z.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_xx.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_xy.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_xz.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_yy.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_yz.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_zz.block(0, bf, npts, sh.size()) *= fac;
+    }
+    occ::timing::stop(occ::timing::category::gto_shell);
   }
   occ::timing::stop(occ::timing::category::gto);
 }
@@ -471,7 +542,7 @@ Mat spherical_to_cartesian_transformation_matrix(int l) {
   return c2s.transpose();
 }
 
-Mat transform_density_matrix_spherical_to_cartesian(const qm::AOBasis &basis_sph, 
+Mat transform_density_matrix_spherical_to_cartesian(const gto::AOBasis &basis_sph, 
                                                     const Mat &D_sph) {
   // Check if already cartesian
   if (!basis_sph.is_pure()) {
@@ -479,7 +550,7 @@ Mat transform_density_matrix_spherical_to_cartesian(const qm::AOBasis &basis_sph
   }
   
   // Create cartesian version of the basis
-  qm::AOBasis basis_cart = basis_sph;
+  gto::AOBasis basis_cart = basis_sph;
   basis_cart.set_pure(false);
   
   const auto shell2bf_sph = basis_sph.first_bf();
@@ -516,7 +587,7 @@ Mat transform_density_matrix_spherical_to_cartesian(const qm::AOBasis &basis_sph
   return D_cart;
 }
 
-Mat transform_density_matrix_cartesian_to_spherical(const qm::AOBasis &basis_cart, 
+Mat transform_density_matrix_cartesian_to_spherical(const gto::AOBasis &basis_cart, 
                                                     const Mat &D_cart) {
   // Check if already spherical
   if (basis_cart.is_pure()) {
@@ -524,7 +595,7 @@ Mat transform_density_matrix_cartesian_to_spherical(const qm::AOBasis &basis_car
   }
   
   // Create spherical version of the basis
-  qm::AOBasis basis_sph = basis_cart;
+  gto::AOBasis basis_sph = basis_cart;
   basis_sph.set_pure(true);
   
   const auto shell2bf_cart = basis_cart.first_bf();

@@ -1,10 +1,13 @@
 #pragma once
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 
 
 namespace occ::qm::detail {
+
+using gto::Shell;
+using gto::AOBasis;
 
 using ShellList = std::vector<Shell>;
 using AtomList = std::vector<occ::core::Atom>;

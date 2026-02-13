@@ -24,7 +24,7 @@ TEST_CASE("LDA gradient HF", "[dft][lda][gradient]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "sto-3g");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "sto-3g");
   basis.set_pure(true);
   occ::dft::DFT dft("lda_x", basis);
 
@@ -65,7 +65,7 @@ TEST_CASE("B3LYP gradient water", "[dft][b3lyp][gradient]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "6-31G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "6-31G");
   basis.set_pure(true);
   occ::dft::DFT dft("b3lyp", basis);
 
@@ -109,7 +109,7 @@ TEST_CASE("wB97X gradient water", "[dft][wb97x][gradient]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object with wB97X functional
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "3-21G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "3-21G");
   basis.set_pure(true);  // Use spherical harmonics to match ORCA
   occ::dft::DFT dft("wb97x", basis);
 
@@ -165,7 +165,7 @@ TEST_CASE("UDFT B3LYP gradient water closed-shell", "[udft][b3lyp][gradient]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "6-31G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "6-31G");
   basis.set_pure(true);
   occ::dft::DFT dft("b3lyp", basis);
 
@@ -202,7 +202,7 @@ TEST_CASE("UDFT B3LYP gradient OH radical", "[udft][b3lyp][gradient]") {
       {1, 0.0, 0.0, 1.8324}    // H
   };
 
-  auto basis = occ::qm::AOBasis::load(atoms, "6-31G");
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
   basis.set_pure(true);
   occ::dft::DFT dft("b3lyp", basis);
 
@@ -239,7 +239,7 @@ TEST_CASE("UDFT wB97X gradient OH radical", "[udft][wb97x][gradient]") {
       {1, 0.0, 0.0, 1.8324}    // H
   };
 
-  auto basis = occ::qm::AOBasis::load(atoms, "3-21G");
+  auto basis = occ::gto::AOBasis::load(atoms, "3-21G");
   basis.set_pure(true);
   occ::dft::DFT dft("wb97x", basis);
 
@@ -291,7 +291,7 @@ TEST_CASE("TPSS gradient water", "[dft][mgga][tpss][gradient]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object with TPSS functional
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "6-31G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "6-31G");
   basis.set_pure(true);
   occ::dft::DFT dft("tpss", basis);
 
@@ -332,7 +332,7 @@ TEST_CASE("r2SCAN gradient water", "[dft][mgga][r2scan][gradient]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object with r2SCAN functional
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "3-21G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "3-21G");
   basis.set_pure(true);
   occ::dft::DFT dft("r2scan", basis);
 
@@ -370,7 +370,7 @@ TEST_CASE("UTPSS gradient OH radical", "[udft][mgga][tpss][gradient]") {
       {1, 0.0, 0.0, 1.8324}    // H
   };
 
-  auto basis = occ::qm::AOBasis::load(atoms, "6-31G");
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
   basis.set_pure(true);
   occ::dft::DFT dft("tpss", basis);
 
@@ -407,7 +407,7 @@ TEST_CASE("Ur2SCAN gradient OH radical", "[udft][mgga][r2scan][gradient]") {
       {1, 0.0, 0.0, 1.8324}    // H
   };
 
-  auto basis = occ::qm::AOBasis::load(atoms, "3-21G");
+  auto basis = occ::gto::AOBasis::load(atoms, "3-21G");
   basis.set_pure(true);
   occ::dft::DFT dft("r2scan", basis);
 
@@ -453,7 +453,7 @@ TEST_CASE("wB97X-V gradient water (VV10)", "[dft][vv10][wb97xv][gradient]") {
   occ::core::Molecule mol(atomic_numbers, pos);
 
   // Create basis and DFT object with wB97X-V functional (includes VV10)
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(mol.atoms(), "3-21G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "3-21G");
   basis.set_pure(true);
   occ::dft::DFT dft("wb97x-v", basis);
 

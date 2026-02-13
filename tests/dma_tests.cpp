@@ -4,7 +4,7 @@
 #include <occ/core/molecule.h>
 #include <occ/dma/dma.h>
 #include <occ/dma/linear_multipole_calculator.h>
-#include <occ/io/fchkreader.h>
+#include <occ/qm/io/fchkreader.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>

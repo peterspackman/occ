@@ -19,7 +19,7 @@ TEST_CASE("RHF integral gradients", "[rhf][gradient][integrals]") {
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
 
-  auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
+  auto obs = occ::gto::AOBasis::load(atoms, "STO-3G");
 
   occ::Vec e(obs.nbf()), occ(obs.nbf());
   e << -20.2434, -1.2673, -0.6143, -0.4545, -0.3916, 0.6029, 0.7350;
@@ -146,7 +146,7 @@ TEST_CASE("UHF gradient water closed-shell STO-3G", "[uhf][gradient]") {
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
 
-  auto basis = occ::qm::AOBasis::load(atoms, "STO-3G");
+  auto basis = occ::gto::AOBasis::load(atoms, "STO-3G");
   occ::qm::HartreeFock hf(basis);
 
   // Run UHF SCF
@@ -182,7 +182,7 @@ TEST_CASE("UHF gradient OH radical STO-3G", "[uhf][gradient]") {
       {1, 0.0, 0.0, 1.8324}    // H (O-H distance ~0.97 Å)
   };
 
-  auto basis = occ::qm::AOBasis::load(atoms, "STO-3G");
+  auto basis = occ::gto::AOBasis::load(atoms, "STO-3G");
   occ::qm::HartreeFock hf(basis);
 
   // Run UHF SCF
@@ -219,7 +219,7 @@ TEST_CASE("UHF gradient CH3 radical 3-21G", "[uhf][gradient]") {
       {1, -0.9365524973, -0.5407382072,  0.0000000000}   // H
   };
 
-  auto basis = occ::qm::AOBasis::load(atoms, "3-21G");
+  auto basis = occ::gto::AOBasis::load(atoms, "3-21G");
   occ::qm::HartreeFock hf(basis);
 
   // Run UHF SCF

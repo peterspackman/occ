@@ -61,6 +61,7 @@ enum category {
   mp2_tensor_transform,
   mp2_energy,
   global,
+  cosx,
   _group_count
 };
 

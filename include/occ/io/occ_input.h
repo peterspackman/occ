@@ -38,12 +38,22 @@ struct DriverInput {
   std::string driver{"energy"};
 };
 
+struct COSXSettings {
+  double screen_threshold{1e-4};      // Shell extent screening threshold (looser = smaller extents = more screening)
+  double margin{1.0};                 // Geometric margin (Bohr)
+  double f_threshold{1e-10};          // F-intermediate threshold
+};
+
 struct MethodInput {
   std::string name{"rhf"};
   GridSettings dft_grid;
   double integral_precision{1e-12};
   double orbital_smearing_sigma{0.0};
   bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
+  bool use_split_ri_j{false}; // Use Split-RI-J for Coulomb matrix (Neese 2003)
+  bool use_cosx{false}; // Use COSX seminumerical exchange
+  COSXGridLevel cosx_grid_level{COSXGridLevel::Grid1}; // COSX grid quality
+  COSXSettings cosx; // COSX settings
 };
 
 struct BasisSetInput {
@@ -51,6 +61,7 @@ struct BasisSetInput {
   std::string df_name{""};
   std::string ri_basis{""};
   std::string basis_set_directory{""};
+  double df_auto_threshold{1e-4};  ///< Cholesky threshold for auto aux basis
   bool spherical{false};
 };
 

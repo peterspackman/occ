@@ -25,7 +25,7 @@ using occ::Mat;
 TEST_CASE("GTO values derivatives & 2nd derivatives H2/STO-3G") {
   std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                      {1, 0.0, 0.0, 1.398397}};
-  occ::qm::AOBasis aobasis = occ::qm::AOBasis::load(atoms, "sto-3g");
+  occ::gto::AOBasis aobasis = occ::gto::AOBasis::load(atoms, "sto-3g");
   Mat grid_pts = Mat::Identity(3, 4);
   auto gto_values = occ::gto::evaluate_basis(aobasis, grid_pts, 2);
   fmt::print("Gto values\nphi:\n{}\n", format_matrix(gto_values.phi));
@@ -48,7 +48,7 @@ TEST_CASE("GTO values derivatives & 2nd derivatives H2/STO-3G") {
 TEST_CASE("GTO values derivatives & density H2/3-21G") {
   std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                      {1, 0.0, 0.0, 1.398397}};
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "3-21G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(atoms, "3-21G");
   auto grid_pts = Mat::Identity(3, 4);
   auto gto_values = occ::gto::evaluate_basis(basis, grid_pts, 1);
   fmt::print("Gto values\nphi:\n{}\n", format_matrix(gto_values.phi));
@@ -69,7 +69,7 @@ TEST_CASE("GTO values derivatives & density H2/3-21G") {
 TEST_CASE("GTO values derivatives & density H2/STO-3G Unrestricted") {
   std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                      {1, 0.0, 0.0, 1.398397}};
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(atoms, "sto-3g");
   auto grid_pts = Mat::Identity(3, 4);
   auto gto_values = occ::gto::evaluate_basis(basis, grid_pts, 1);
   fmt::print("Gto values\nphi:\n{}\n", format_matrix(gto_values.phi));
@@ -267,7 +267,7 @@ TEST_CASE("Density matrix transformation preserves population", "[gto][density][
   std::vector<occ::core::Atom> atoms{{6, 0.0, 0.0, 0.0}};  // Carbon atom
   
   // Use a basis set with d functions (spherical)
-  occ::qm::AOBasis basis_sph = occ::qm::AOBasis::load(atoms, "cc-pvtz");
+  occ::gto::AOBasis basis_sph = occ::gto::AOBasis::load(atoms, "cc-pvtz");
   basis_sph.set_pure(true);  // Ensure spherical
   
   // Create a simple density matrix (just identity for testing)
@@ -285,7 +285,7 @@ TEST_CASE("Density matrix transformation preserves population", "[gto][density][
   Mat D_cart = occ::gto::transform_density_matrix_spherical_to_cartesian(basis_sph, D_sph);
   
   // Create cartesian basis and its overlap matrix
-  occ::qm::AOBasis basis_cart = basis_sph;
+  occ::gto::AOBasis basis_cart = basis_sph;
   basis_cart.set_pure(false);
   occ::qm::IntegralEngine eng_cart(basis_cart);
   Mat S_cart = eng_cart.one_electron_operator(occ::qm::IntegralEngine::Op::overlap);

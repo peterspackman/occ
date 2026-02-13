@@ -4,22 +4,27 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/log.h>
+#include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
+#include <occ/core/util.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/single_point.h>
+#include <occ/interaction/pair_energy.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/crystal_json.h>
-#include <occ/io/gaussian_input_file.h>
+#include <occ/qm/io/fchkwriter.h>
+#include <occ/qm/io/gaussian_input_file.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/pc.h>
-#include <occ/io/qcschema.h>
-#include <occ/io/wavefunction_json.h>
+#include <occ/qm/io/qcschema.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/io/xyz.h>
 #include <occ/main/cli_validators.h>
 #include <occ/main/occ_scf.h>
 #include <occ/main/properties.h>
 #include <occ/main/version.h>
+#include <xc.h>
 
 namespace occ::main {
 
@@ -117,9 +122,37 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   scf->add_option("--integral-precision,--integral_precision",
                   config->method.integral_precision,
                   "cutoff for integral screening");
-  scf->add_flag("--use-direct-df-kernels,--use_direct_df_kernels",
+  scf->add_flag("--direct-df,--use-direct-df-kernels,--use_direct_df_kernels",
                 config->method.use_direct_df_kernels,
-                "use direct density fitting kernels instead of stored integrals");
+                "use direct density fitting kernels (recompute integrals each iteration)");
+  scf->add_flag("--split-ri-j,--split_ri_j",
+                config->method.use_split_ri_j,
+                "use Split-RI-J for Coulomb matrix (Neese 2003, faster for large systems)");
+
+  // COSX seminumerical exchange
+  scf->add_flag("--cosx", config->method.use_cosx,
+                "use COSX seminumerical exchange (faster for large systems)");
+  scf->add_option("--cosx-grid", config->method.cosx_grid_level,
+                  "COSX grid level: 0=Grid1 (fast), 1=Grid2, 2=Grid3 (accurate)")
+      ->transform(CLI::CheckedTransformer(
+          std::map<std::string, occ::io::COSXGridLevel>{
+              {"1", occ::io::COSXGridLevel::Grid1},
+              {"2", occ::io::COSXGridLevel::Grid2},
+              {"3", occ::io::COSXGridLevel::Grid3},
+              {"grid1", occ::io::COSXGridLevel::Grid1},
+              {"grid2", occ::io::COSXGridLevel::Grid2},
+              {"grid3", occ::io::COSXGridLevel::Grid3},
+          },
+          CLI::ignore_case));
+
+  // COSX settings
+  scf->add_option("--cosx-screen-threshold", config->method.cosx.screen_threshold,
+                  "COSX shell screening threshold (default 1e-4, looser = more screening)");
+  scf->add_option("--cosx-margin", config->method.cosx.margin,
+                  "COSX geometric margin in Bohr (default 1.0)");
+  scf->add_option("--cosx-f-threshold", config->method.cosx.f_threshold,
+                  "COSX F-intermediate threshold (default 1e-10)");
+
   // dft grid
   scf->add_option("--dft-grid-max-angular,--dft_grid_max_angular",
                   config->method.dft_grid.max_angular_points,
@@ -137,7 +170,10 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
 
   // basis set
   scf->add_option("-d,--df-basis,--density_fitting_basis",
-                  config->basis.df_name, "basis set");
+                  config->basis.df_name,
+                  "auxiliary basis set name (or 'auto' for automatic generation)");
+  scf->add_option("--df-auto-threshold", config->basis.df_auto_threshold,
+                  "Cholesky threshold for auto auxiliary basis (default: 1e-4)");
   scf->add_option("--ri-basis", config->basis.ri_basis,
                   "RI basis set for MP2 calculations");
   scf->add_flag("--spherical", config->basis.spherical,

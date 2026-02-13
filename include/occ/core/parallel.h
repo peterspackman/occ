@@ -42,18 +42,9 @@ template <typename Lambda>
 void parallel_for(size_t begin, size_t end, Lambda &&lambda,
                   size_t grainsize = 0) {
   if (grainsize == 0) {
-    // Improved grain size calculation for better load balancing
-    const size_t range_size = end - begin;
-    if (range_size <= nthreads) {
-      // Small range: execute serially
-      grainsize = range_size;
-    } else {
-      // Use work-stealing friendly grain size: more chunks than threads
-      // but not too small to avoid overhead
-      const size_t min_grain = 100;  // Minimum work per chunk
-      const size_t max_chunks = nthreads * 8;  // Allow work stealing
-      grainsize = std::max(min_grain, range_size / max_chunks);
-    }
+    // Use grainsize=1 to let TBB's work stealing handle load balancing
+    // TBB is smart about chunking internally
+    grainsize = 1;
   }
   tbb::parallel_for(tbb::blocked_range<size_t>(begin, end, grainsize),
                     [&lambda](const tbb::blocked_range<size_t> &range) {

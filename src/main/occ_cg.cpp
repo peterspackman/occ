@@ -20,7 +20,7 @@
 #include <occ/io/load_geometry.h>
 #include <occ/io/occ_input.h>
 #include <occ/io/ply.h>
-#include <occ/io/wavefunction_json.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/io/xyz.h>
 #include <occ/main/crystal_surface_energy.h>
 #include <occ/main/occ_cg.h>

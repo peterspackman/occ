@@ -26,9 +26,9 @@ namespace occ::driver {
 /**
  * @brief Load basis set for vibrational analysis
  */
-occ::qm::AOBasis load_basis_set_vib(const Molecule &m, const std::string &name,
+occ::gto::AOBasis load_basis_set_vib(const Molecule &m, const std::string &name,
                                     bool spherical) {
-  auto basis = occ::qm::AOBasis::load(m.atoms(), name);
+  auto basis = occ::gto::AOBasis::load(m.atoms(), name);
   basis.set_pure(spherical);
   occ::log::debug("Loaded basis set: {}", spherical ? "spherical" : "cartesian");
   occ::log::debug("Number of shells:            {}", basis.size());
@@ -41,7 +41,7 @@ occ::qm::AOBasis load_basis_set_vib(const Molecule &m, const std::string &name,
  * @brief Template function to compute Hessian for a given method
  */
 template <typename T, SpinorbitalKind SK>
-Mat compute_hessian_for_method(const Molecule &m, const occ::qm::AOBasis &basis,
+Mat compute_hessian_for_method(const Molecule &m, const occ::gto::AOBasis &basis,
                               const OccInput &config, const Wavefunction &wfn,
                               const VibrationalAnalysisConfig &vib_config) {
 
@@ -53,12 +53,14 @@ Mat compute_hessian_for_method(const Molecule &m, const occ::qm::AOBasis &basis,
   }();
 
   if (!config.basis.df_name.empty()) {
-    proc.set_density_fitting_basis(config.basis.df_name);
-    // Set DF policy based on input configuration
+    proc.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
+    // Only override DF policy if user explicitly requests direct
     if (config.method.use_direct_df_kernels) {
       proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-    } else {
-      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+    }
+    // Enable Split-RI-J if requested
+    if (config.method.use_split_ri_j) {
+      proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
     }
   }
 

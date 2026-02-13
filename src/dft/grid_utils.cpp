@@ -291,12 +291,87 @@ IVec prune_numgrid_scheme(size_t atomic_number, size_t max_angular,
   return result;
 }
 
+IVec prune_orca_scheme(size_t atomic_number,
+                       const std::array<size_t, 5> &region_grids,
+                       const Vec &radii) {
+  // ORCA divides radial grids into 5 regions based on scaled atomic radius
+  // Region boundaries are approximately:
+  // Region 1: r < 0.25 * R_bragg (core)
+  // Region 2: 0.25 * R_bragg <= r < 0.50 * R_bragg (inner valence)
+  // Region 3: 0.50 * R_bragg <= r < 1.00 * R_bragg (valence)
+  // Region 4: 1.00 * R_bragg <= r < 2.50 * R_bragg (outer valence)
+  // Region 5: r >= 2.50 * R_bragg (diffuse)
+  //
+  // These are approximate values - ORCA uses element-specific optimized cutoffs
+
+  double R = get_atomic_radius(atomic_number);
+  double r1 = 0.25 * R;
+  double r2 = 0.50 * R;
+  double r3 = 1.00 * R;
+  double r4 = 2.50 * R;
+
+  IVec result(radii.rows());
+
+  for (int i = 0; i < radii.rows(); i++) {
+    double r = radii(i);
+    size_t region;
+    if (r < r1) {
+      region = 0; // Region 1
+    } else if (r < r2) {
+      region = 1; // Region 2
+    } else if (r < r3) {
+      region = 2; // Region 3
+    } else if (r < r4) {
+      region = 3; // Region 4
+    } else {
+      region = 4; // Region 5
+    }
+    result(i) = nearest_grid_level_at_or_above(region_grids[region]);
+  }
+
+  return result;
+}
+
 RadialGrid generate_gauss_chebyshev_radial_grid(size_t num_points) {
   RadialGrid result(num_points);
   result.points.setLinSpaced(num_points, 1, num_points * 2 - 1);
   result.points.array() *= M_PI / (2 * num_points);
   result.points.array() = result.points.array().cos();
   result.weights.setConstant(M_PI / num_points);
+  return result;
+}
+
+RadialGrid generate_gauss_chebyshev_m3_radial_grid(size_t num_points,
+                                                    size_t atomic_number) {
+  // Generate base Gauss-Chebyshev quadrature on [-1, 1]
+  RadialGrid result(num_points);
+
+  // Get scaling parameter (xi) based on atomic radius
+  // Treutler-Alrichs use xi = 0.5 * R_Bragg for the M3 mapping
+  double xi = 0.5 * get_atomic_radius(atomic_number);
+  const double ln2 = std::log(2.0);
+
+  // Generate Gauss-Chebyshev second kind points: x_k = cos(k*pi/(n+1))
+  // for k = 1, ..., n
+  for (size_t k = 1; k <= num_points; k++) {
+    double theta = M_PI * k / (num_points + 1);
+    double x = std::cos(theta);
+
+    // M3 mapping: r = (xi / ln2) * ln(2 / (1-x))
+    double r = (xi / ln2) * std::log(2.0 / (1.0 - x));
+
+    // Weight transformation: w(r) = w(x) * dr/dx
+    // For M3: dr/dx = xi / (ln2 * (1-x))
+    // Gauss-Chebyshev second kind weight: w_k = pi/(n+1) * sin^2(theta)
+    double sin_theta = std::sin(theta);
+    double gc_weight = M_PI / (num_points + 1) * sin_theta * sin_theta;
+    double drdx = xi / (ln2 * (1.0 - x));
+    double weight = gc_weight * drdx;
+
+    result.points(k - 1) = r;
+    result.weights(k - 1) = weight;
+  }
+
   return result;
 }
 
@@ -506,8 +581,33 @@ AtomGrid generate_atom_grid(size_t atomic_number, const GridSettings &settings,
   // Create the appropriate radial grid based on the method
   RadialGrid radial;
 
-  size_t n_radial = settings.radial_points > 0 ? settings.radial_points : 50;
-  switch (method) {
+  // Determine number of radial points
+  size_t n_radial;
+  if (settings.int_acc > 0) {
+    // ORCA-style IntAcc-based radial point count
+    n_radial = occ::io::calculate_radial_points_orca(settings.int_acc, atomic_number);
+    occ::log::debug("IntAcc {:.3f}: {} radial points for Z={}",
+                    settings.int_acc, n_radial, atomic_number);
+  } else {
+    n_radial = settings.radial_points > 0 ? settings.radial_points : 50;
+  }
+
+  // If using ORCA-style COSX grids, use Gauss-Chebyshev with M3 mapping
+  bool use_cosx_radial = settings.has_angular_regions();
+
+  if (use_cosx_radial) {
+    // ORCA COSX uses Treutler-Alrichs M3 mapping with Gauss-Chebyshev
+    // Use the existing implementation and apply atomic scaling
+    radial = generate_treutler_alrichs_radial_grid(n_radial);
+    // Scale by atomic radius (Bragg radius)
+    double rm = get_atomic_radius(atomic_number);
+    radial.points.array() *= rm;
+    radial.weights.array() *= rm;
+    // Apply r^2 factor for spherical integration
+    radial.weights.array() *= radial.points.array() * radial.points.array();
+  } else {
+    // Standard method selection
+    switch (method) {
   case RadialGridMethod::LMG: {
     // Use default values if basis information isn't provided
     if (alpha_max <= 0.0 || l_max <= 0 || alpha_min.size() == 0) {
@@ -570,7 +670,8 @@ AtomGrid generate_atom_grid(size_t atomic_number, const GridSettings &settings,
     return generate_atom_grid(atomic_number, settings, RadialGridMethod::LMG,
                               alpha_max, l_max, alpha_min);
   }
-  }
+    } // end switch
+  } // end else (non-COSX path)
 
   // Apply 4π factor to weights for angular integration
   radial.weights.array() *= 4 * M_PI;
@@ -585,21 +686,39 @@ AtomGrid generate_atom_grid(size_t atomic_number, const GridSettings &settings,
 
   // Apply pruning scheme to determine angular points for each radial shell
   IVec n_angular;
-  switch (settings.pruning_scheme) {
-  case PruningScheme::NWChem:
-    n_angular = prune_nwchem_scheme(atomic_number, max_angular,
-                                    radial.num_points(), radial.points);
-    break;
 
-  case PruningScheme::NumGrid:
-    n_angular = prune_numgrid_scheme(
-        atomic_number, max_angular, settings.min_angular_points, radial.points);
-    break;
+  // Check for ORCA-style angular regions first
+  if (settings.has_angular_regions()) {
+    // Use ORCA 5-region pruning with the provided angular grids
+    // Apply reduced grid for H/He by shifting to lower Lebedev levels
+    std::array<size_t, 5> regions = settings.angular_regions;
+    if (settings.reduced_first_row_element_grid && atomic_number < 3) {
+      for (auto &r : regions) {
+        r = nearest_grid_level_below(r);
+      }
+    }
+    n_angular = prune_orca_scheme(atomic_number, regions, radial.points);
+    occ::log::debug("ORCA pruning for Z={}: regions [{},{},{},{},{}]",
+                    atomic_number, regions[0], regions[1], regions[2],
+                    regions[3], regions[4]);
+  } else {
+    // Standard pruning schemes
+    switch (settings.pruning_scheme) {
+    case PruningScheme::NWChem:
+      n_angular = prune_nwchem_scheme(atomic_number, max_angular,
+                                      radial.num_points(), radial.points);
+      break;
 
-  case PruningScheme::None:
-  default:
-    n_angular = IVec::Constant(radial.num_points(), max_angular);
-    break;
+    case PruningScheme::NumGrid:
+      n_angular = prune_numgrid_scheme(
+          atomic_number, max_angular, settings.min_angular_points, radial.points);
+      break;
+
+    case PruningScheme::None:
+    default:
+      n_angular = IVec::Constant(radial.num_points(), max_angular);
+      break;
+    }
   }
 
   // Count total angular points

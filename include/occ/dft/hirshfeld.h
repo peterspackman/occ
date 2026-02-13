@@ -1,9 +1,9 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
 #include <occ/core/multipole.h>
-#include <occ/dft/molecular_grid.h>
+#include <occ/numint/molecular_grid.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/slater/slaterbasis.h>
 #include <vector>
 
@@ -30,7 +30,7 @@ public:
    * @param max_multipole_order Maximum order of multipoles to compute (0-4)
    * @param charge Total molecular charge
    */
-  HirshfeldPartition(const occ::qm::AOBasis &basis, int max_multipole_order = 0,
+  HirshfeldPartition(const occ::gto::AOBasis &basis, int max_multipole_order = 0,
                      int charge = 0);
 
   /**
@@ -93,7 +93,7 @@ private:
   void compute_hirshfeld_weights(const occ::qm::MolecularOrbitals &mo,
                                  bool calculate_higher_multipoles = false);
 
-  occ::qm::AOBasis m_basis;
+  occ::gto::AOBasis m_basis;
   occ::dft::MolecularGrid m_grid;
   std::vector<occ::dft::AtomGrid> m_atom_grids;
   std::vector<occ::slater::Basis> m_slater_basis;
@@ -117,7 +117,7 @@ private:
  * @param charge Total molecular charge
  * @return Vec Vector of Hirshfeld charges for each atom
  */
-Vec calculate_hirshfeld_charges(const occ::qm::AOBasis &basis,
+Vec calculate_hirshfeld_charges(const occ::gto::AOBasis &basis,
                                 const occ::qm::MolecularOrbitals &mo,
                                 int charge = 0);
 
@@ -134,7 +134,7 @@ Vec calculate_hirshfeld_charges(const occ::qm::AOBasis &basis,
  * for each atom
  */
 std::vector<occ::core::Multipole<4>>
-calculate_hirshfeld_multipoles(const occ::qm::AOBasis &basis,
+calculate_hirshfeld_multipoles(const occ::gto::AOBasis &basis,
                                const occ::qm::MolecularOrbitals &mo,
                                int max_multipole_order = 4, int charge = 0);
 

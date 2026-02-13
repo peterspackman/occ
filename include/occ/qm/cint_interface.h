@@ -1,9 +1,12 @@
 #pragma once
 #include <occ/core/multipole.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 
 #include <occ/3rdparty/cint_wrapper.h>
 namespace occ::qm::cint {
+
+using gto::Shell;
+using gto::AOBasis;
 
 using occ::core::Atom;
 

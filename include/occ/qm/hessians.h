@@ -6,7 +6,7 @@
 #include <occ/qm/mo.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/scf_convergence_settings.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/qm/wavefunction.h>
 
 namespace occ::qm {
@@ -289,7 +289,7 @@ private:
         atoms_forward[B].z += m_step_size;
 
       // Create new basis and HF object, run SCF, then compute gradient
-      auto basis_forward = occ::qm::AOBasis::load(atoms_forward, basis.name());
+      auto basis_forward = occ::gto::AOBasis::load(atoms_forward, basis.name());
       basis_forward.set_pure(
           basis.is_pure()); // Preserve spherical/Cartesian setting
       Proc hf_forward = m_proc.with_new_basis(basis_forward);
@@ -321,7 +321,7 @@ private:
 
       // Create new basis and HF object, run SCF, then compute gradient
       auto basis_backward =
-          occ::qm::AOBasis::load(atoms_backward, basis.name());
+          occ::gto::AOBasis::load(atoms_backward, basis.name());
       basis_backward.set_pure(
           basis.is_pure()); // Preserve spherical/Cartesian setting
       Proc hf_backward = m_proc.with_new_basis(basis_backward);

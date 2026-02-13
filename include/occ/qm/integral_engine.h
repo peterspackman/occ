@@ -2,6 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
+#include <occ/ints/esp.h>
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
@@ -14,6 +15,9 @@
 #endif
 
 namespace occ::qm {
+
+using gto::Shell;
+using gto::AOBasis;
 
 struct JKPair {
   Mat J, K;
@@ -190,6 +194,12 @@ public:
       double cutoff_radius);
   Vec electric_potential(const MolecularOrbitals &mo, const Mat3N &points);
 
+  /// Compute electric potential at grid points using fast MMD implementation
+  /// @param mo  Molecular orbitals (density matrix)
+  /// @param points  Grid points [3 x npts]
+  /// @return  Electric potential at each point [npts]
+  Vec electric_potential_mmd(const MolecularOrbitals &mo, const Mat3N &points) const;
+
   template <ShellKind kind>
   inline void compute_shellpairs(double threshold = 1e-12) {
     occ::log::debug("computing shellpairs (threshold = {}, kind = {}",
@@ -255,11 +265,18 @@ public:
   inline double precision() const { return m_precision; }
 
 private:
+  /// Initialize ESP evaluator with shell pairs (lazy initialization)
+  void ensure_esp_initialized() const;
+
   double m_precision{1e-12};
   AOBasis m_aobasis, m_auxbasis;
   ShellPairList m_shellpairs;
   // TODO remove mutable
   mutable IntEnv m_env;
+
+  // Lazy-initialized ESP evaluator for fast MMD-based potential evaluation
+  mutable std::unique_ptr<occ::ints::ESPEvaluator<double>> m_esp_evaluator;
+  mutable bool m_esp_initialized{false};
 
   bool m_have_ecp{false};
 #if HAVE_ECPINT

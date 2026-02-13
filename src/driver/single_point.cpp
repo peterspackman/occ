@@ -33,9 +33,9 @@ void print_vector(const Vec3 &m) {
   log::info("{: 12.6f} {: 12.6f} {: 12.6f}", m(0), m(1), m(2));
 }
 
-occ::qm::AOBasis load_basis_set(const Molecule &m, const std::string &name,
+occ::gto::AOBasis load_basis_set(const Molecule &m, const std::string &name,
                                 bool spherical) {
-  auto basis = occ::qm::AOBasis::load(m.atoms(), name);
+  auto basis = occ::gto::AOBasis::load(m.atoms(), name);
   basis.set_pure(spherical);
   log::info("Loaded basis set: {}", spherical ? "spherical" : "cartesian");
   log::info("Number of shells:            {}", basis.size());
@@ -86,7 +86,7 @@ void print_configuration(const Molecule &m, const OccInput &config) {
 }
 
 template <typename T, SpinorbitalKind SK>
-Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
+Wavefunction run_method(Molecule &m, const occ::gto::AOBasis &basis,
                         const OccInput &config) {
 
   // Parse method name to extract dispersion correction
@@ -100,12 +100,30 @@ Wavefunction run_method(Molecule &m, const occ::qm::AOBasis &basis,
   }();
 
   if (!config.basis.df_name.empty()) {
-    proc.set_density_fitting_basis(config.basis.df_name);
-    // Set DF policy based on input configuration
+    proc.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
+    // Only override DF policy if user explicitly requests direct
+    // Otherwise, leave at Policy::Choose which intelligently selects based on memory
     if (config.method.use_direct_df_kernels) {
       proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-    } else {
-      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+    }
+    // Enable Split-RI-J if requested
+    if (config.method.use_split_ri_j) {
+      proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
+    }
+  }
+
+  // Enable COSX seminumerical exchange if requested (HF only)
+  if constexpr (std::is_same<T, HartreeFock>::value) {
+    if (config.method.use_cosx) {
+      proc.set_cosx_exchange(config.method.cosx_grid_level);
+      // Set COSX settings
+      occ::qm::cosx::Settings cosx_settings;
+      cosx_settings.screen_threshold = config.method.cosx.screen_threshold;
+      cosx_settings.margin = config.method.cosx.margin;
+      cosx_settings.f_threshold = config.method.cosx.f_threshold;
+      proc.set_cosx_settings(cosx_settings);
+      occ::log::info("Using COSX seminumerical exchange ({})",
+                     occ::io::cosx_grid_level_to_string(config.method.cosx_grid_level));
     }
   }
 
@@ -200,12 +218,14 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
   if constexpr (std::is_same<T, DFT>::value) {
     DFT ks(config.method.name, wfn.basis, config.method.dft_grid);
     if (!config.basis.df_name.empty()) {
-      ks.set_density_fitting_basis(config.basis.df_name);
-      // Set DF policy based on input configuration
+      ks.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
+      // Only override DF policy if user explicitly requests direct
       if (config.method.use_direct_df_kernels) {
         ks.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-      } else {
-        ks.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+      }
+      // Enable Split-RI-J if requested
+      if (config.method.use_split_ri_j) {
+        ks.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
       }
     }
     ks.set_system_charge(config.electronic.charge);
@@ -224,12 +244,26 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
     T proc(wfn.basis);
     proc.set_system_charge(config.electronic.charge);
     if (!config.basis.df_name.empty()) {
-      proc.set_density_fitting_basis(config.basis.df_name);
-      // Set DF policy based on input configuration
+      proc.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
+      // Only override DF policy if user explicitly requests direct
       if (config.method.use_direct_df_kernels) {
         proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-      } else {
-        proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Stored);
+      }
+      // Enable Split-RI-J if requested
+      if (config.method.use_split_ri_j) {
+        proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
+      }
+    }
+    // Enable COSX seminumerical exchange if requested (HF only)
+    if constexpr (std::is_same<T, HartreeFock>::value) {
+      if (config.method.use_cosx) {
+        proc.set_cosx_exchange(config.method.cosx_grid_level);
+        // Set COSX settings
+        occ::qm::cosx::Settings cosx_settings;
+        cosx_settings.screen_threshold = config.method.cosx.screen_threshold;
+        cosx_settings.margin = config.method.cosx.margin;
+        cosx_settings.f_threshold = config.method.cosx.f_threshold;
+        proc.set_cosx_settings(cosx_settings);
       }
     }
     SolvationCorrectedProcedure<T> proc_solv(proc, config.solvent.solvent_name,

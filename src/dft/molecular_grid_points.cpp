@@ -111,4 +111,13 @@ AtomGrid MolecularGridPoints::get_atom_grid(size_t atom_idx,
   return grid;
 }
 
+const SpatialGridHierarchy& MolecularGridPoints::get_hierarchy(
+    const SpatialHierarchySettings& settings) const {
+
+  if (!m_hierarchy.has_value()) {
+    m_hierarchy.emplace(m_points, m_weights, settings);
+  }
+  return m_hierarchy.value();
+}
+
 } // namespace occ::dft

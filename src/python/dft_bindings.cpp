@@ -13,7 +13,7 @@
 using namespace nb::literals;
 using occ::dft::DFT;
 using occ::io::GridSettings;
-using occ::qm::AOBasis;
+using occ::gto::AOBasis;
 using occ::qm::MolecularOrbitals;
 using occ::qm::SCF;
 using occ::qm::SpinorbitalKind;
@@ -202,7 +202,7 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
       });
 
   nb::class_<occ::xdm::XDM>(m, "XDM")
-      .def(nb::init<const occ::qm::AOBasis &, int,
+      .def(nb::init<const occ::gto::AOBasis &, int,
                     const occ::xdm::XDM::Parameters &>(),
            "basis"_a, "charge"_a = 0, "params"_a = occ::xdm::XDM::Parameters{},
            "Create XDM dispersion calculator")

@@ -12,11 +12,13 @@
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/split_ri_j.h>
+#include <occ/qm/auto_aux_basis.h>
 #include <occ/qm/mo_integral_engine.h>
 #include <occ/qm/oniom.h>
 #include <occ/qm/partitioning.h>
 #include <occ/qm/scf.h>
-#include <occ/qm/shell.h>
+#include <occ/gto/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <vector>
 
@@ -35,7 +37,7 @@ TEST_CASE("AOBasis set pure spherical") {
   std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
-  auto basis = occ::qm::AOBasis::load(atoms, "6-31G");
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
   basis.set_pure(true);
   for (const auto &sh : basis.shells()) {
     fmt::print("{: 12.4f}\n", sh);
@@ -46,7 +48,7 @@ TEST_CASE("AOBasis load") {
   std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
-  occ::qm::AOBasis basis = occ::qm::AOBasis::load(atoms, "6-31G");
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(atoms, "6-31G");
   for (const auto &sh : basis.shells()) {
     fmt::print("{: 12.4f}\n", sh);
   }
@@ -57,7 +59,7 @@ TEST_CASE("AOBasis load") {
 TEST_CASE("Density Fitting H2O/6-31G J/K matrices") {
   std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                      {1, 0.0, 0.0, 1.39839733}};
-  auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
   basis.set_pure(false);
   auto hf = HartreeFock(basis);
   hf.set_density_fitting_basis("def2-universal-jkfit");
@@ -102,10 +104,284 @@ TEST_CASE("Density Fitting H2O/6-31G J/K matrices") {
   fmt::print("Kapprox\n{}\n", format_matrix(2 * jk_approx.K));
 }
 
+TEST_CASE("Split-RI-J H2/STO-3G", "[split-ri-j]") {
+  // Test Split-RI-J Coulomb matrix computation using MMD
+  std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
+                                     {1, 0.0, 0.0, 1.39839733}};
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
+  basis.set_pure(false);
+
+  // Load auxiliary basis
+  auto aux_basis = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux_basis.set_kind(basis.kind());
+
+  // Create IntegralEngine to get shellpairs and Schwarz matrix
+  occ::qm::IntegralEngine engine(basis);
+
+  // Create Split-RI-J engine with Schwarz screening
+  occ::qm::SplitRIJ split_rij(basis, aux_basis, engine.shellpairs(), engine.schwarz());
+
+  // Create a simple density matrix
+  occ::qm::MolecularOrbitals mo;
+  mo.kind = occ::qm::SpinorbitalKind::Restricted;
+  mo.C = occ::Mat(2, 2);
+  mo.C << 0.54884228, 1.21245192, 0.54884228, -1.21245192;
+  mo.Cocc = mo.C.leftCols(1);
+  mo.D = mo.Cocc * mo.Cocc.transpose();
+
+  // Compute J using Split-RI-J
+  occ::Mat J_split = split_rij.coulomb(mo);
+
+  // Expected J from exact or DF calculation
+  occ::Mat Jexact(2, 2);
+  Jexact << 1.34575531, 0.89426314, 0.89426314, 1.34575531;
+
+  fmt::print("Split-RI-J test:\n");
+  fmt::print("J expected:\n{}\n", format_matrix(Jexact));
+  fmt::print("J (Split-RI-J):\n{}\n", format_matrix(J_split));
+
+  // Show element-wise ratios
+  occ::Mat ratio = J_split.array() / Jexact.array();
+  fmt::print("Ratio (J_split / J_expected):\n{}\n", format_matrix(ratio));
+  fmt::print("Mean ratio: {:.6e}\n", ratio.mean());
+
+  // Check agreement with expected (within DF approximation error)
+  double max_diff = (J_split - Jexact).cwiseAbs().maxCoeff();
+  fmt::print("Max |J_split - J_expected|: {:.6e}\n", max_diff);
+  REQUIRE(max_diff < 1e-3);  // DF approximation tolerance
+}
+
+TEST_CASE("IntegralEngineDF CoulombMethod comparison", "[df][split-ri-j]") {
+  // Test that Traditional and SplitRIJ methods give the same result
+  std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
+                                     {1, 0.0, 0.0, 1.39839733}};
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
+  basis.set_pure(false);
+
+  // Load auxiliary basis
+  auto aux_basis = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux_basis.set_kind(basis.kind());
+
+  // Create IntegralEngineDF
+  occ::qm::IntegralEngineDF df_engine(atoms, basis.shells(), aux_basis.shells());
+
+  // Create MolecularOrbitals
+  occ::qm::MolecularOrbitals mo;
+  mo.kind = occ::qm::SpinorbitalKind::Restricted;
+  mo.C = occ::Mat(2, 2);
+  mo.C << 0.54884228, 1.21245192, 0.54884228, -1.21245192;
+  mo.Cocc = mo.C.leftCols(1);
+  mo.D = mo.Cocc * mo.Cocc.transpose();
+
+  // Compute J using Traditional method
+  df_engine.set_coulomb_method(occ::qm::CoulombMethod::Traditional);
+  occ::Mat J_traditional = df_engine.coulomb(mo);
+
+  // Compute J using SplitRIJ method
+  df_engine.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
+  occ::Mat J_split = df_engine.coulomb(mo);
+
+  fmt::print("\nIntegralEngineDF CoulombMethod comparison test:\n");
+  fmt::print("J (Traditional):\n{}\n", format_matrix(J_traditional));
+  fmt::print("J (SplitRIJ):\n{}\n", format_matrix(J_split));
+
+  // Show element-wise ratios
+  occ::Mat ratio = J_split.array() / J_traditional.array();
+  fmt::print("Ratio (SplitRIJ / Traditional):\n{}\n", format_matrix(ratio));
+  fmt::print("Mean ratio: {:.6e}\n", ratio.mean());
+
+  // Check agreement between methods
+  double max_diff = (J_split - J_traditional).cwiseAbs().maxCoeff();
+  fmt::print("Max |SplitRIJ - Traditional|: {:.6e}\n", max_diff);
+  REQUIRE(max_diff < 1e-6);  // Should match very closely
+}
+
+TEST_CASE("Split-RI-J spherical basis H2O/def2-SVP", "[split-ri-j][spherical]") {
+  // Test Split-RI-J with spherical (pure) AO and aux basis
+  std::vector<occ::core::Atom> atoms{
+      {8, 0.0000000, 0.0000000, 0.1173470},
+      {1, 0.0000000, 0.7572150, -0.4693880},
+      {1, 0.0000000, -0.7572150, -0.4693880}
+  };
+
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(true);  // Use spherical harmonics for AO basis
+
+  auto aux_basis = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux_basis.set_kind(basis.kind());  // Match aux basis to AO basis
+
+  const size_t nbf = basis.nbf();
+  fmt::print("\nSpherical basis test: H2O/def2-SVP\n");
+  fmt::print("  AO basis: {} functions (spherical)\n", nbf);
+  fmt::print("  Aux basis: {} functions\n", aux_basis.nbf());
+
+  // Create IntegralEngine for shellpairs and Schwarz
+  occ::qm::IntegralEngine engine(basis);
+
+  // Create Split-RI-J engine
+  occ::qm::SplitRIJ split_rij(basis, aux_basis, engine.shellpairs(), engine.schwarz());
+
+  // Create density matrix
+  occ::qm::MolecularOrbitals mo;
+  mo.kind = occ::qm::SpinorbitalKind::Restricted;
+  mo.D = occ::Mat::Identity(nbf, nbf) * 0.1;
+
+  // Compute J using Split-RI-J
+  occ::Mat J_split = split_rij.coulomb(mo);
+
+  // Compute J using traditional DF for comparison
+  occ::qm::IntegralEngineDF df_engine(atoms, basis.shells(), aux_basis.shells());
+  df_engine.set_coulomb_method(occ::qm::CoulombMethod::Traditional);
+  occ::Mat J_traditional = df_engine.coulomb(mo);
+
+  double max_diff = (J_split - J_traditional).cwiseAbs().maxCoeff();
+  fmt::print("  Max |Split-RI-J - Traditional|: {:.6e}\n", max_diff);
+
+  REQUIRE(max_diff < 1e-6);  // Should match closely
+}
+
+TEST_CASE("Split-RI-J Unrestricted Li/def2-SVP", "[split-ri-j][unrestricted]") {
+  // Test Split-RI-J with Unrestricted spinorbital kind
+  // Li atom: 3 electrons, 2 alpha, 1 beta (doublet)
+  std::vector<occ::core::Atom> atoms{{3, 0.0, 0.0, 0.0}};
+
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(true);
+
+  auto aux_basis = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux_basis.set_kind(basis.kind());
+
+  const size_t nbf = basis.nbf();
+  fmt::print("\nUnrestricted Split-RI-J test: Li/def2-SVP\n");
+  fmt::print("  AO basis: {} functions\n", nbf);
+  fmt::print("  Aux basis: {} functions\n", aux_basis.nbf());
+
+  // Create Unrestricted MolecularOrbitals
+  // For Unrestricted: D has shape (2*nbf, nbf) where top is D_alpha, bottom is D_beta
+  occ::qm::MolecularOrbitals mo;
+  mo.kind = occ::qm::SpinorbitalKind::Unrestricted;
+
+  // Create simple density matrices (identity-like for testing)
+  // D_alpha and D_beta should be different to test unrestricted path
+  Mat D_alpha = occ::Mat::Identity(nbf, nbf) * 0.15;
+  Mat D_beta = occ::Mat::Identity(nbf, nbf) * 0.05;
+
+  // Construct the combined D matrix for Unrestricted
+  mo.D = occ::Mat(2 * nbf, nbf);
+  occ::qm::block::a(mo.D) = D_alpha;
+  occ::qm::block::b(mo.D) = D_beta;
+
+  // Create IntegralEngineDF and test both methods
+  occ::qm::IntegralEngineDF df_engine(atoms, basis.shells(), aux_basis.shells());
+
+  // Compute J using Traditional method
+  df_engine.set_coulomb_method(occ::qm::CoulombMethod::Traditional);
+  occ::Mat J_traditional = df_engine.coulomb(mo);
+
+  // Compute J using Split-RI-J method
+  df_engine.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
+  occ::Mat J_split = df_engine.coulomb(mo);
+
+  fmt::print("  J_traditional shape: ({}, {})\n", J_traditional.rows(), J_traditional.cols());
+  fmt::print("  J_split shape: ({}, {})\n", J_split.rows(), J_split.cols());
+
+  // For Unrestricted, J should have shape (2*nbf, nbf)
+  REQUIRE(J_traditional.rows() == 2 * nbf);
+  REQUIRE(J_traditional.cols() == nbf);
+  REQUIRE(J_split.rows() == 2 * nbf);
+  REQUIRE(J_split.cols() == nbf);
+
+  // Both alpha and beta blocks should be the same J (since Coulomb depends on total density)
+  double max_diff = (J_split - J_traditional).cwiseAbs().maxCoeff();
+  fmt::print("  Max |Split-RI-J - Traditional|: {:.6e}\n", max_diff);
+
+  REQUIRE(max_diff < 1e-6);
+
+  // Verify alpha and beta blocks are equal (physics check)
+  occ::Mat J_alpha = occ::qm::block::a(J_split);
+  occ::Mat J_beta = occ::qm::block::b(J_split);
+  double alpha_beta_diff = (J_alpha - J_beta).cwiseAbs().maxCoeff();
+  fmt::print("  Max |J_alpha - J_beta|: {:.6e}\n", alpha_beta_diff);
+  REQUIRE(alpha_beta_diff < 1e-12);  // Should be exactly equal
+}
+
+TEST_CASE("Split-RI-J General H2/def2-SVP", "[split-ri-j][general]") {
+  // Test Split-RI-J with General (GHF) spinorbital kind
+  std::vector<occ::core::Atom> atoms{
+      {1, 0.0, 0.0, 0.0},
+      {1, 0.0, 0.0, 1.4}  // ~0.74 Angstrom bond
+  };
+
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(true);
+
+  auto aux_basis = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux_basis.set_kind(basis.kind());
+
+  const size_t nbf = basis.nbf();
+  fmt::print("\nGeneral Split-RI-J test: H2/def2-SVP\n");
+  fmt::print("  AO basis: {} functions\n", nbf);
+  fmt::print("  Aux basis: {} functions\n", aux_basis.nbf());
+
+  // Create General MolecularOrbitals
+  // For General: D has shape (2*nbf, 2*nbf)
+  // Layout: [aa ab; ba bb] but for Coulomb only aa+bb matters
+  occ::qm::MolecularOrbitals mo;
+  mo.kind = occ::qm::SpinorbitalKind::General;
+
+  // Create simple density matrix for testing
+  // D_aa and D_bb should contribute, D_ab and D_ba should be zero for physical density
+  mo.D = occ::Mat::Zero(2 * nbf, 2 * nbf);
+  occ::qm::block::aa(mo.D) = occ::Mat::Identity(nbf, nbf) * 0.1;
+  occ::qm::block::bb(mo.D) = occ::Mat::Identity(nbf, nbf) * 0.1;
+  // ab and ba blocks remain zero
+
+  // Create IntegralEngineDF and test both methods
+  occ::qm::IntegralEngineDF df_engine(atoms, basis.shells(), aux_basis.shells());
+
+  // Compute J using Traditional method
+  df_engine.set_coulomb_method(occ::qm::CoulombMethod::Traditional);
+  occ::Mat J_traditional = df_engine.coulomb(mo);
+
+  // Compute J using Split-RI-J method
+  df_engine.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
+  occ::Mat J_split = df_engine.coulomb(mo);
+
+  fmt::print("  J_traditional shape: ({}, {})\n", J_traditional.rows(), J_traditional.cols());
+  fmt::print("  J_split shape: ({}, {})\n", J_split.rows(), J_split.cols());
+
+  // For General, J should have shape (2*nbf, 2*nbf)
+  REQUIRE(J_traditional.rows() == 2 * nbf);
+  REQUIRE(J_traditional.cols() == 2 * nbf);
+  REQUIRE(J_split.rows() == 2 * nbf);
+  REQUIRE(J_split.cols() == 2 * nbf);
+
+  double max_diff = (J_split - J_traditional).cwiseAbs().maxCoeff();
+  fmt::print("  Max |Split-RI-J - Traditional|: {:.6e}\n", max_diff);
+
+  REQUIRE(max_diff < 1e-6);
+
+  // Verify aa and bb blocks are equal (physics check)
+  occ::Mat J_aa = occ::qm::block::aa(J_split);
+  occ::Mat J_bb = occ::qm::block::bb(J_split);
+  double aa_bb_diff = (J_aa - J_bb).cwiseAbs().maxCoeff();
+  fmt::print("  Max |J_aa - J_bb|: {:.6e}\n", aa_bb_diff);
+  REQUIRE(aa_bb_diff < 1e-12);  // Should be exactly equal
+
+  // Verify off-diagonal blocks are zero
+  occ::Mat J_ab = occ::qm::block::ab(J_split);
+  occ::Mat J_ba = occ::qm::block::ba(J_split);
+  double ab_norm = J_ab.norm();
+  double ba_norm = J_ba.norm();
+  fmt::print("  |J_ab|: {:.6e}, |J_ba|: {:.6e}\n", ab_norm, ba_norm);
+  REQUIRE(ab_norm < 1e-12);  // Should be zero
+  REQUIRE(ba_norm < 1e-12);  // Should be zero
+}
+
 TEST_CASE("Electric Field evaluation H2/STO-3G") {
   std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                      {1, 0.0, 0.0, 1.398397}};
-  auto basis = occ::qm::AOBasis::load(atoms, "sto-3g");
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
   Mat D(2, 2);
   D.setConstant(0.301228);
   auto grid_pts = occ::Mat3N(3, 4);
@@ -158,7 +434,7 @@ TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
   std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
-  auto basis = occ::qm::AOBasis::load(atoms, "3-21G");
+  auto basis = occ::gto::AOBasis::load(atoms, "3-21G");
   basis.set_pure(false);
   fmt::print("basis.size() {}\n", basis.size());
   Mat3 rotation =
@@ -169,7 +445,7 @@ TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
   occ::qm::SCF<HartreeFock> scf(hf);
   double e = scf.compute_scf_energy();
 
-  occ::qm::AOBasis rot_basis = basis;
+  occ::gto::AOBasis rot_basis = basis;
   rot_basis.rotate(rotation);
   auto rot_atoms = rot_basis.atoms();
   fmt::print("rot_basis.size() {}\n", rot_basis.size());
@@ -200,7 +476,7 @@ TEST_CASE("Water def2-tzvp MO rotation energy consistency", "[basis]") {
   std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
-  auto basis = occ::qm::AOBasis::load(atoms, "def2-tzvp");
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-tzvp");
   basis.set_pure(true);
   Eigen::Quaterniond r(Eigen::AngleAxisd(
       0.423, Eigen::Vector3d(0.234, -0.642, 0.829).normalized()));
@@ -248,7 +524,7 @@ TEST_CASE("Water RHF SCF energy", "[scf]") {
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
 
   SECTION("STO-3G") {
-    auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
+    auto obs = occ::gto::AOBasis::load(atoms, "STO-3G");
     HartreeFock hf(obs);
     occ::qm::SCF<HartreeFock> scf(hf);
     scf.convergence_settings.energy_threshold = 1e-8;
@@ -257,7 +533,7 @@ TEST_CASE("Water RHF SCF energy", "[scf]") {
   }
 
   SECTION("3-21G") {
-    auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
+    auto obs = occ::gto::AOBasis::load(atoms, "3-21G");
     HartreeFock hf(obs);
     occ::qm::SCF<HartreeFock> scf(hf);
     scf.convergence_settings.energy_threshold = 1e-8;
@@ -272,7 +548,7 @@ TEST_CASE("Water UHF SCF energy", "[scf]") {
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
 
   SECTION("STO-3G") {
-    auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
+    auto obs = occ::gto::AOBasis::load(atoms, "STO-3G");
     HartreeFock hf(obs);
     occ::qm::SCF<HartreeFock> scf(hf, SpinorbitalKind::Unrestricted);
     scf.convergence_settings.energy_threshold = 1e-8;
@@ -281,7 +557,7 @@ TEST_CASE("Water UHF SCF energy", "[scf]") {
   }
 
   SECTION("3-21G") {
-    auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
+    auto obs = occ::gto::AOBasis::load(atoms, "3-21G");
     HartreeFock hf(obs);
     occ::qm::SCF<HartreeFock> scf(hf, SpinorbitalKind::Unrestricted);
     scf.convergence_settings.energy_threshold = 1e-8;
@@ -296,7 +572,7 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
 
   SECTION("STO-3G") {
-    auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
+    auto obs = occ::gto::AOBasis::load(atoms, "STO-3G");
     HartreeFock hf(obs);
     occ::qm::SCF<HartreeFock> scf(hf, SpinorbitalKind::General);
     scf.convergence_settings.energy_threshold = 1e-8;
@@ -305,7 +581,7 @@ TEST_CASE("Water GHF SCF energy", "[scf]") {
   }
 
   SECTION("3-21G") {
-    auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
+    auto obs = occ::gto::AOBasis::load(atoms, "3-21G");
     HartreeFock hf(obs);
     occ::qm::SCF<HartreeFock> scf(hf, SpinorbitalKind::General);
     scf.convergence_settings.energy_threshold = 1e-8;
@@ -378,7 +654,7 @@ TEST_CASE("H2 smearing", "[smearing]") {
   for (int i = 0; i < separations.rows(); i++) {
     std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
                                        {1, separations(i), 0.0, 0.0}};
-    auto obs = occ::qm::AOBasis::load(atoms, "cc-pvdz");
+    auto obs = occ::gto::AOBasis::load(atoms, "cc-pvdz");
     obs.set_pure(true);
     HartreeFock hf(obs);
     occ::qm::SCF<HartreeFock> scf(hf);
@@ -400,7 +676,7 @@ TEST_CASE("Integral gradients", "[integrals]") {
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
 
-  auto obs = occ::qm::AOBasis::load(atoms, "STO-3G");
+  auto obs = occ::gto::AOBasis::load(atoms, "STO-3G");
 
   occ::Vec e(obs.nbf()), occ(obs.nbf());
   e << -20.2434, -1.2673, -0.6143, -0.4545, -0.3916, 0.6029, 0.7350;
@@ -541,12 +817,12 @@ TEST_CASE("Oniom ethane", "[oniom]") {
   std::vector<Atom> methane2{artificial_h1, atoms[4], atoms[5], atoms[6],
                              atoms[7]};
 
-  HartreeFock system_low(occ::qm::AOBasis::load(atoms, "STO-3G"));
-  HartreeFock methane1_low(occ::qm::AOBasis::load(methane1, "STO-3G"));
-  HartreeFock methane2_low(occ::qm::AOBasis::load(methane2, "STO-3G"));
+  HartreeFock system_low(occ::gto::AOBasis::load(atoms, "STO-3G"));
+  HartreeFock methane1_low(occ::gto::AOBasis::load(methane1, "STO-3G"));
+  HartreeFock methane2_low(occ::gto::AOBasis::load(methane2, "STO-3G"));
 
-  HartreeFock methane1_high(occ::qm::AOBasis::load(methane1, "def2-tzvp"));
-  HartreeFock methane2_high(occ::qm::AOBasis::load(methane2, "def2-tzvp"));
+  HartreeFock methane1_high(occ::gto::AOBasis::load(methane1, "def2-tzvp"));
+  HartreeFock methane2_high(occ::gto::AOBasis::load(methane2, "def2-tzvp"));
 
   using Proc = SCF<HartreeFock>;
   occ::qm::Oniom<Proc, Proc> oniom{{SCF(methane1_high), SCF(methane2_high)},
@@ -561,7 +837,7 @@ TEST_CASE("Mulliken partition", "[partitioning]") {
                                      {1, -1.93166418, 1.60017351, -0.02171049},
                                      {1, 0.48664409, 0.07959806, 0.00986248}};
 
-  auto obs = occ::qm::AOBasis::load(atoms, "3-21G");
+  auto obs = occ::gto::AOBasis::load(atoms, "3-21G");
 
   auto hf = HartreeFock(obs);
   occ::qm::SCF<HartreeFock> scf(hf);
@@ -583,8 +859,8 @@ TEST_CASE("Mulliken partition", "[partitioning]") {
 }
 
 TEST_CASE("Shell ordering", "[shell]") {
-  using occ::qm::AOBasis;
-  using occ::qm::Shell;
+  using occ::gto::AOBasis;
+  using occ::gto::Shell;
   std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.0}};
   std::vector<Shell> shells{
       Shell(0, {1.0}, {{1.0}}, {0.0, 0.0, 0.0}),
@@ -602,7 +878,7 @@ TEST_CASE("Shell ordering", "[shell]") {
 TEST_CASE("Wolf potential vs exact point charges", "[wolf]") {
   // Create a Na atom at origin
   std::vector<occ::core::Atom> atoms{{11, 0.0, 0.0, 0.0}};
-  auto basis = occ::qm::AOBasis::load(atoms, "def2-tzvp");
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-tzvp");
 
   HartreeFock hf(basis);
   occ::qm::SCF<HartreeFock> scf(hf);
@@ -684,8 +960,8 @@ TEST_CASE("DF Coulomb matrix consistency") {
   std::vector<occ::core::Atom> h2o_atoms{
       {8, 0.0, 0.0, 0.0}, {1, 0.0, 1.5, 0.5}, {1, 0.0, -1.5, 0.5}};
 
-  auto aobasis = occ::qm::AOBasis::load(h2o_atoms, "sto-3g");
-  auto auxbasis = occ::qm::AOBasis::load(h2o_atoms, "def2-universal-jkfit");
+  auto aobasis = occ::gto::AOBasis::load(h2o_atoms, "sto-3g");
+  auto auxbasis = occ::gto::AOBasis::load(h2o_atoms, "def2-universal-jkfit");
 
   SECTION("Restricted closed-shell water") {
     // Create restricted MO with 10 electrons in 5 doubly occupied orbitals
@@ -997,7 +1273,7 @@ TEST_CASE("Four-center integrals tensor validation", "[integrals]") {
       {1, 1.82309, -0.453385, 0.0} // H
   };
 
-  auto basis = occ::qm::AOBasis::load(atoms, "3-21G");
+  auto basis = occ::gto::AOBasis::load(atoms, "3-21G");
   occ::qm::IntegralEngine engine(basis);
 
   // Run HF to get converged density matrix
@@ -1108,7 +1384,7 @@ TEST_CASE("AOBasis nuclear charge calculations", "[basis]") {
                                      {1, 0.0, 1.5, 0.0},
                                      {1, 0.0, -1.5, 0.0}};
 
-  auto basis = occ::qm::AOBasis::load(atoms, "STO-3G");
+  auto basis = occ::gto::AOBasis::load(atoms, "STO-3G");
 
   SECTION("total_nuclear_charge sums atomic numbers") {
     // O(8) + H(1) + H(1) = 10
@@ -1136,7 +1412,7 @@ TEST_CASE("Charge calculation from basis and MO", "[charge]") {
                                      {1, 0.0, 1.5, 0.0},
                                      {1, 0.0, -1.5, 0.0}};
 
-  auto basis = occ::qm::AOBasis::load(atoms, "STO-3G");
+  auto basis = occ::gto::AOBasis::load(atoms, "STO-3G");
 
   SECTION("Neutral water") {
     occ::qm::MolecularOrbitals mo;
@@ -1165,6 +1441,169 @@ TEST_CASE("Charge calculation from basis and MO", "[charge]") {
 
     int charge = basis.effective_nuclear_charge() - static_cast<int>(mo.num_electrons());
     REQUIRE(charge == -2); // Dianion with 12 electrons
+  }
+}
+
+TEST_CASE("Electric potential MMD vs libcint", "[esp][mmd]") {
+  // Water molecule
+  std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.116868},
+                                     {1, 0.0, 0.763239, -0.467473},
+                                     {1, 0.0, -0.763239, -0.467473}};
+
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+
+  // Run SCF to get MO
+  HartreeFock hf(basis);
+  occ::qm::SCF<HartreeFock> scf(hf);
+  scf.convergence_settings.energy_threshold = 1e-8;
+  double e = scf.compute_scf_energy();
+  REQUIRE(e < -74.0);  // Sanity check - energy should be reasonable
+
+  const auto &mo = scf.ctx.mo;
+
+  // Generate test grid points around molecule
+  occ::Mat3N points(3, 20);
+  for (int i = 0; i < 20; i++) {
+    double theta = 2.0 * M_PI * i / 20.0;
+    double r = 3.0;  // 3 Bohr from origin
+    points(0, i) = r * std::cos(theta);
+    points(1, i) = r * std::sin(theta);
+    points(2, i) = 0.5 * std::sin(2 * theta);  // Some z variation
+  }
+
+  occ::qm::IntegralEngine engine(atoms, basis.shells());
+
+  SECTION("RHF ESP comparison") {
+    occ::Vec pot_libcint = engine.electric_potential(mo, points);
+    occ::Vec pot_mmd = engine.electric_potential_mmd(mo, points);
+
+    double max_diff = (pot_libcint - pot_mmd).cwiseAbs().maxCoeff();
+    fmt::print("ESP comparison (RHF):\n");
+    fmt::print("  Max difference: {:.6e}\n", max_diff);
+    fmt::print("  Sample values:\n");
+    for (int i = 0; i < 5; i++) {
+      fmt::print("    pt {}: libcint={:.10f}, mmd={:.10f}, diff={:.6e}\n",
+                 i, pot_libcint(i), pot_mmd(i), pot_libcint(i) - pot_mmd(i));
+    }
+
+    REQUIRE(max_diff < 1e-10);
+  }
+
+  SECTION("UHF ESP comparison") {
+    // Run UHF SCF
+    HartreeFock hf_uhf(basis);
+    occ::qm::SCF<HartreeFock> scf_uhf(hf_uhf, SpinorbitalKind::Unrestricted);
+    scf_uhf.convergence_settings.energy_threshold = 1e-8;
+    scf_uhf.compute_scf_energy();
+    const auto &mo_uhf = scf_uhf.ctx.mo;
+
+    occ::Vec pot_libcint = engine.electric_potential(mo_uhf, points);
+    occ::Vec pot_mmd = engine.electric_potential_mmd(mo_uhf, points);
+
+    double max_diff = (pot_libcint - pot_mmd).cwiseAbs().maxCoeff();
+    fmt::print("ESP comparison (UHF):\n");
+    fmt::print("  Max difference: {:.6e}\n", max_diff);
+
+    REQUIRE(max_diff < 1e-10);
+  }
+}
+
+TEST_CASE("Auto auxiliary basis generation", "[auto-aux]") {
+  // Water molecule
+  std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.116868},
+                                     {1, 0.0, 0.763239, -0.467473},
+                                     {1, 0.0, -0.763239, -0.467473}};
+
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(false);
+
+  SECTION("Basic generation") {
+    auto result = occ::qm::generate_auto_aux(basis, 1e-4);
+
+    fmt::print("\nAuto auxiliary basis generation test:\n");
+    fmt::print("  AO basis: def2-SVP ({} functions)\n", basis.nbf());
+    fmt::print("  Generated aux basis: {} functions\n", result.aux_basis.nbf());
+    fmt::print("  Time: {:.3f}s\n", result.time_seconds);
+
+    fmt::print("\n  Candidates by L:\n");
+    for (const auto& [L, n] : result.candidates_per_l) {
+      fmt::print("    L={}: {} candidates\n", L, n);
+    }
+
+    fmt::print("\n  Selected by L:\n");
+    for (const auto& [L, n] : result.selected_per_l) {
+      fmt::print("    L={}: {} selected\n", L, n);
+    }
+
+    // Basic sanity checks
+    REQUIRE(result.aux_basis.nbf() > 0);
+    REQUIRE(result.aux_basis.size() > 0);
+    REQUIRE(result.time_seconds > 0);
+  }
+
+  SECTION("Threshold affects size") {
+    auto result_tight = occ::qm::generate_auto_aux(basis, 1e-7);
+    auto result_loose = occ::qm::generate_auto_aux(basis, 1e-3);
+
+    fmt::print("\nThreshold comparison:\n");
+    fmt::print("  1e-7 threshold: {} aux functions\n", result_tight.aux_basis.nbf());
+    fmt::print("  1e-3 threshold: {} aux functions\n", result_loose.aux_basis.nbf());
+
+    // Tighter threshold should give at least as many functions
+    REQUIRE(result_tight.aux_basis.nbf() >= result_loose.aux_basis.nbf());
+  }
+
+  SECTION("Can use with DF-HF") {
+    auto result = occ::qm::generate_auto_aux(basis, 1e-4);
+
+    // Create DF engine with auto-generated aux basis
+    occ::qm::IntegralEngineDF df_engine(atoms, basis.shells(),
+                                         result.aux_basis.shells());
+
+    // Create MolecularOrbitals
+    occ::qm::MolecularOrbitals mo;
+    mo.kind = occ::qm::SpinorbitalKind::Restricted;
+    mo.n_ao = basis.nbf();
+    mo.n_alpha = 5;  // Water: 10 electrons, 5 doubly occupied
+    mo.n_beta = 5;
+    mo.C = occ::Mat::Identity(mo.n_ao, mo.n_ao);
+    mo.update_occupied_orbitals();
+    mo.update_density_matrix();
+
+    // Compute Coulomb matrix - should work without errors
+    auto J_auto = df_engine.coulomb(mo);
+
+    fmt::print("\nDF with auto aux basis:\n");
+    fmt::print("  J matrix norm: {:.6f}\n", J_auto.norm());
+    fmt::print("  J(0,0): {:.6f}\n", J_auto(0, 0));
+
+    REQUIRE(J_auto.norm() > 0);
+    REQUIRE(J_auto.rows() == static_cast<int>(basis.nbf()));
+  }
+
+  SECTION("HartreeFock with 'auto' string") {
+    // Test the set_density_fitting_basis("auto") API
+    HartreeFock hf(basis);
+    hf.set_density_fitting_basis("auto");
+
+    // Create MolecularOrbitals
+    occ::qm::MolecularOrbitals mo;
+    mo.kind = occ::qm::SpinorbitalKind::Restricted;
+    mo.n_ao = basis.nbf();
+    mo.n_alpha = 5;  // Water: 10 electrons, 5 doubly occupied
+    mo.n_beta = 5;
+    mo.C = occ::Mat::Identity(mo.n_ao, mo.n_ao);
+    mo.update_occupied_orbitals();
+    mo.update_density_matrix();
+
+    // Compute J - should work without errors
+    auto J = hf.compute_J(mo);
+
+    fmt::print("\nHartreeFock with 'auto' df-basis:\n");
+    fmt::print("  J matrix norm: {:.6f}\n", J.norm());
+
+    REQUIRE(J.norm() > 0);
+    REQUIRE(J.rows() == static_cast<int>(basis.nbf()));
   }
 }
 

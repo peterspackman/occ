@@ -3,9 +3,9 @@
 namespace occ::qm {
 
 using ShellPairList = std::vector<std::vector<size_t>>;
-using ShellList = std::vector<Shell>;
+using ShellList = std::vector<gto::Shell>;
 using AtomList = std::vector<occ::core::Atom>;
-using ShellKind = Shell::Kind;
+using ShellKind = gto::Shell::Kind;
 using Op = cint::Operator;
 using IntegralResult = IntegralEngine::IntegralResult<3>;
 
@@ -25,16 +25,46 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
   occ::log::debug("Computing LLt decomposition of V");
   V_LLt = Eigen::LLT<Mat>(V);
   if (V_LLt.info() != Eigen::Success) {
-    occ::log::warn(
-        "LLT decomposition of Coulomb metric in DF was not successful!");
+    // Gather diagnostic information
+    const size_t naux = V.rows();
+    const double min_diag = V.diagonal().minCoeff();
+    const double max_diag = V.diagonal().maxCoeff();
+    const double cond_approx = max_diag / std::max(min_diag, 1e-16);
+
+    occ::log::error(
+        "LLT decomposition of Coulomb metric failed!\n"
+        "  Auxiliary basis size: {} functions\n"
+        "  Diagonal range: [{:.2e}, {:.2e}]\n"
+        "  Approx condition number: {:.2e}",
+        naux, min_diag, max_diag, cond_approx);
+
+    if (min_diag < 0) {
+      occ::log::error("  Matrix has negative diagonal elements - basis may have linear dependencies");
+    } else if (cond_approx > 1e10) {
+      occ::log::error("  Matrix is ill-conditioned - auxiliary basis may be poorly suited");
+    }
+
+    occ::log::error("Suggestions:\n"
+                    "  - Try a different auxiliary basis (e.g., def2-universal-jkfit)\n"
+                    "  - If using --df-basis=auto, try a looser threshold (--df-auto-threshold=1e-3)\n"
+                    "  - Check for near-linear dependencies in the molecular geometry");
   }
   occ::timing::stop(occ::timing::category::la);
+}
+
+void IntegralEngineDF::set_coulomb_method(CoulombMethod method) {
+  m_coulomb_method = method;
+  // Reset SplitRIJ if switching away from it
+  if (method != CoulombMethod::SplitRIJ) {
+    m_split_rij.reset();
+  }
 }
 
 void IntegralEngineDF::compute_stored_integrals() {
   occ::timing::start(occ::timing::category::df);
   if (m_integral_store.rows() == 0) {
-    occ::log::info("Storing 3-center integrals");
+    occ::log::info("Storing 3-center integrals, computing with {} threads",
+                   occ::parallel::get_num_threads());
     size_t nbf = m_ao_engine.nbf();
     size_t ndf = m_aux_engine.nbf();
     m_integral_store = Mat::Zero(nbf * nbf, ndf);
@@ -116,6 +146,20 @@ Mat IntegralEngineDF::exchange(const MolecularOrbitals &mo) {
 }
 
 Mat IntegralEngineDF::coulomb(const MolecularOrbitals &mo) {
+  // Check for Split-RI-J method first
+  if (m_coulomb_method == CoulombMethod::SplitRIJ) {
+    // Lazy-initialize SplitRIJ engine
+    if (!m_split_rij) {
+      occ::log::debug("Initializing Split-RI-J engine");
+      m_split_rij = std::make_unique<SplitRIJ>(
+          m_ao_engine.aobasis(), m_ao_engine.auxbasis(),
+          m_ao_engine.shellpairs(), m_ao_engine.schwarz());
+    }
+    // Split-RI-J doesn't compute (μν|P) integrals - no stored/direct mode
+    return m_split_rij->coulomb(mo);
+  }
+
+  // Traditional RI-J path
   bool direct = !use_stored_integrals();
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;

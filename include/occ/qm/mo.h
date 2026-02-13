@@ -1,10 +1,11 @@
 #pragma once
+#include <occ/gto/shell.h>
 #include <occ/qm/orbital_smearing.h>
 #include <occ/qm/spinorbital.h>
 
 namespace occ::qm {
 
-class AOBasis;
+using gto::AOBasis;
 
 struct MolecularOrbitals {
   MolecularOrbitals(const MolecularOrbitals &) = default;
