@@ -83,6 +83,7 @@ struct NeighborPair {
     int mol_j;          ///< Index of second molecule
     IVec3 cell_shift;   ///< Lattice translation of mol_j
     double weight;      ///< Weight (0.5 for self-images, 1.0 otherwise)
+    double com_distance = 0.0; ///< COM-COM distance (Angstrom), for electrostatic COM gate
 };
 
 /**
@@ -164,7 +165,16 @@ public:
 
     /// Build neighbor list from explicit molecule COM positions.
     /// Bypasses Crystal's molecule detection (useful when loading external data).
-    void build_neighbor_list_from_positions(const std::vector<Vec3>& mol_coms);
+    /// When force_com_cutoff=true, uses COM distance for the molecule pair gate
+    /// even when atom geometry is available (matches DMACRYS TBLCNT behavior).
+    void build_neighbor_list_from_positions(const std::vector<Vec3>& mol_coms,
+                                            bool force_com_cutoff = false);
+
+    /// Set neighbor list directly (e.g. to reuse a list from another CrystalEnergy).
+    void set_neighbor_list(const std::vector<NeighborPair>& neighbors);
+
+    /// Get the neighbor list.
+    const std::vector<NeighborPair>& neighbor_list() const { return m_neighbors; }
 
     /// Set molecule geometry directly (bypasses Crystal's molecule detection).
     void set_molecule_geometry(std::vector<MoleculeGeometry> geometry);
@@ -175,6 +185,48 @@ public:
     /// Enable/disable dipole Ewald (charge-dipole + dipole-dipole).
     /// Default is true (DMACRYS computes Ewald for qq, qμ, and μμ).
     void set_ewald_dipole(bool enable) { m_ewald_dipole = enable; }
+
+    /// Set maximum interaction order for electrostatics (rankA + rankB <= max).
+    /// Default -1 means no truncation (compute all orders up to 2*max_rank).
+    /// Set to 4 to match DMACRYS truncation.
+    void set_max_interaction_order(int max_order) { m_max_interaction_order = max_order; }
+    int max_interaction_order() const { return m_max_interaction_order; }
+
+    /// Set per-site cutoff for electrostatic interactions (Angstrom).
+    /// Default 0.0 means no per-site cutoff (all site pairs within included
+    /// molecule pairs are computed).  DMACRYS applies RANG2 per-site cutoff
+    /// in its PAIR module for higher multipole terms.
+    void set_elec_site_cutoff(double cutoff) { m_elec_site_cutoff = cutoff; }
+    double elec_site_cutoff() const { return m_elec_site_cutoff; }
+
+    /// Enable COM-based gate for electrostatic interactions.
+    /// When enabled, only molecule pairs with COM distance <= cutoff_radius
+    /// contribute to electrostatics (matching DMACRYS TBLCNT behavior).
+    /// Buckingham is unaffected — uses full atom-based neighbor list.
+    /// Default is true for DMACRYS compatibility.
+    void set_use_com_elec_gate(bool enable) { m_use_com_elec_gate = enable; }
+    bool use_com_elec_gate() const { return m_use_com_elec_gate; }
+
+    /// Set a separate per-site cutoff for Buckingham (default: same as neighbor cutoff).
+    /// Use a larger value than the neighbor cutoff to avoid discontinuities
+    /// when computing strain derivatives by finite differences.
+    void set_buckingham_site_cutoff(double cutoff) { m_buck_site_cutoff = cutoff; }
+
+    /// Compute which atom-atom pairs are within the Buckingham cutoff for each
+    /// neighbor pair at the given molecular states.  Returns a per-neighbor-pair
+    /// boolean mask (row-major, nA*nB) indicating inclusion.
+    std::vector<std::vector<bool>> compute_buckingham_site_masks(
+        const std::vector<MoleculeState>& states) const;
+
+    /// Set frozen site-pair masks.  When non-empty, compute_short_range_pair
+    /// uses only the atom pairs marked true, bypassing the distance cutoff.
+    /// This ensures a smooth energy surface for finite-difference strain.
+    void set_fixed_site_masks(std::vector<std::vector<bool>> masks) {
+        m_fixed_site_masks = std::move(masks);
+    }
+
+    /// Clear frozen site-pair masks (revert to distance-based cutoff).
+    void clear_fixed_site_masks() { m_fixed_site_masks.clear(); }
 
     /// Get maximum multipole rank across all sites.
     int max_multipole_rank() const;
@@ -216,6 +268,14 @@ private:
     double m_cutoff_radius;
     ForceFieldType m_force_field;
     bool m_use_cartesian;
+    int m_max_interaction_order = -1; // -1 = no truncation
+    double m_elec_site_cutoff = 0.0;  // 0 = no per-site cutoff for electrostatics
+    bool m_use_com_elec_gate = true;  // Skip electrostatics for COM > cutoff
+    double m_buck_site_cutoff = -1.0; // -1 = use m_cutoff_radius
+
+    /// Per-neighbor-pair atom inclusion masks for frozen Buckingham cutoff.
+    /// m_fixed_site_masks[pair_idx] has size nA*nB (row-major), true = include.
+    std::vector<std::vector<bool>> m_fixed_site_masks;
 
     std::vector<NeighborPair> m_neighbors;
     std::map<std::pair<int,int>, BuckinghamParams> m_buckingham_params;
@@ -243,6 +303,8 @@ private:
         const std::vector<CartesianMolecule>& cart_mols) const;
 
     /// Compute short-range energy and forces for a molecule pair.
+    /// @param neighbor_idx Index into m_neighbors (used for fixed site masks).
+    ///        Pass -1 if no fixed masks should be applied.
     void compute_short_range_pair(
         int mol_i, int mol_j,
         const MoleculeState& state_i,
@@ -251,7 +313,8 @@ private:
         double weight,
         double& energy,
         Vec3& force_i, Vec3& force_j,
-        Vec3& torque_i, Vec3& torque_j) const;
+        Vec3& torque_i, Vec3& torque_j,
+        int neighbor_idx = -1) const;
 };
 
 } // namespace occ::mults

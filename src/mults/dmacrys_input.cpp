@@ -15,6 +15,22 @@ namespace occ::mults {
 
 using nlohmann::json;
 
+/// Compute mass-weighted center of mass for a set of positions.
+/// \param positions  3 x N matrix of Cartesian positions
+/// \param mol_data   molecule data (for atomic numbers → masses)
+static Vec3 mass_weighted_com(const Mat3N &positions,
+                              const DmacrysInput::MoleculeSites &mol_data) {
+    int n = static_cast<int>(positions.cols());
+    Vec3 com = Vec3::Zero();
+    double total_mass = 0.0;
+    for (int i = 0; i < n; ++i) {
+        double m = occ::core::Element(mol_data.sites[i].atomic_number).mass();
+        com += m * positions.col(i);
+        total_mass += m;
+    }
+    return com / total_mass;
+}
+
 // --- JSON reader ---
 
 static DmacrysInput::Reference parse_reference(const json &j) {
@@ -35,6 +51,36 @@ static DmacrysInput::Reference parse_reference(const json &j) {
         ref.dipole_dipole_eV = j.at("dipole_dipole_eV").get<double>();
     if (j.contains("higher_multipole_eV"))
         ref.higher_multipole_eV = j.at("higher_multipole_eV").get<double>();
+    if (j.contains("strain_derivatives_eV")) {
+        ref.strain_derivatives_eV =
+            j.at("strain_derivatives_eV").get<std::vector<double>>();
+        ref.has_strain_derivatives = (ref.strain_derivatives_eV.size() == 6);
+    }
+    if (j.contains("elastic_constants_GPa")) {
+        const auto &ec = j.at("elastic_constants_GPa");
+        ref.elastic_constants_GPa = Mat6::Zero();
+        // Read upper triangle in Voigt notation: C11..C66
+        const char* keys[] = {
+            "C11","C12","C13","C14","C15","C16",
+                  "C22","C23","C24","C25","C26",
+                        "C33","C34","C35","C36",
+                              "C44","C45","C46",
+                                    "C55","C56",
+                                          "C66"
+        };
+        int k = 0;
+        for (int i = 0; i < 6; ++i) {
+            for (int jj = i; jj < 6; ++jj) {
+                if (ec.contains(keys[k])) {
+                    double val = ec.at(keys[k]).get<double>();
+                    ref.elastic_constants_GPa(i, jj) = val;
+                    ref.elastic_constants_GPa(jj, i) = val;
+                }
+                ++k;
+            }
+        }
+        ref.has_elastic_constants = true;
+    }
     return ref;
 }
 
@@ -248,7 +294,7 @@ build_body_sites(const DmacrysInput::MoleculeSites &mol_data) {
         body_sites.push_back(std::move(bs));
     }
 
-    Vec3 body_com = body_pos_ang.rowwise().mean();
+    Vec3 body_com = mass_weighted_com(body_pos_ang, mol_data);
     for (int i = 0; i < n_sites; ++i) {
         body_sites[i].offset = body_pos_ang.col(i) - body_com;
     }
@@ -262,9 +308,9 @@ std::vector<MultipoleSource> build_multipole_sources(
     int n_sites = static_cast<int>(input.molecule.sites.size());
     auto [body_sites, body_pos_ang] = build_body_sites(input.molecule);
 
-    Vec3 body_com = body_pos_ang.rowwise().mean();
+    Vec3 body_com = mass_weighted_com(body_pos_ang, input.molecule);
 
-    // Center body-frame positions
+    // Center body-frame positions at mass-weighted COM
     Mat3N body_centered(3, n_sites);
     for (int i = 0; i < n_sites; ++i) {
         body_centered.col(i) = body_pos_ang.col(i) - body_com;
@@ -294,9 +340,9 @@ std::vector<MultipoleSource> build_multipole_sources(
 
         // Convert to Cartesian
         Mat3N cart_image = crystal.unit_cell().to_cartesian(frac_image);
-        Vec3 crystal_com = cart_image.rowwise().mean();
+        Vec3 crystal_com = mass_weighted_com(cart_image, input.molecule);
 
-        // Center crystal-frame positions
+        // Center crystal-frame positions at mass-weighted COM
         Mat3N crystal_centered(3, n_sites);
         for (int i = 0; i < n_sites; ++i) {
             crystal_centered.col(i) = cart_image.col(i) - crystal_com;
@@ -352,13 +398,21 @@ void setup_crystal_energy_from_dmacrys(
         Vec3 pos_ang = site.position_bohr * units::BOHR_TO_ANGSTROM;
         base_geom.atom_positions.push_back(pos_ang);
     }
-    // Center relative to COM
-    Vec3 body_com = Vec3::Zero();
-    for (const auto &p : base_geom.atom_positions)
-        body_com += p;
-    body_com /= n_sites;
-    for (auto &p : base_geom.atom_positions)
-        p -= body_com;
+    // Center relative to mass-weighted COM (consistent with build_multipole_sources
+    // and DMACRYS COFMAS convention)
+    {
+        Vec3 mw_com = Vec3::Zero();
+        double total_mass = 0.0;
+        for (int i = 0; i < n_sites; ++i) {
+            double m = occ::core::Element(
+                input.molecule.sites[i].atomic_number).mass();
+            mw_com += m * base_geom.atom_positions[i];
+            total_mass += m;
+        }
+        mw_com /= total_mass;
+        for (auto &p : base_geom.atom_positions)
+            p -= mw_com;
+    }
 
     // Build initial states and geometry for each molecule
     std::vector<MoleculeState> states;
@@ -378,7 +432,7 @@ void setup_crystal_energy_from_dmacrys(
         // Get crystal-frame COM for this molecule
         Mat3N frac_image = symops[m].apply(frac_asym);
         Mat3N cart_image = crystal.unit_cell().to_cartesian(frac_image);
-        Vec3 com = cart_image.rowwise().mean();
+        Vec3 com = mass_weighted_com(cart_image, input.molecule);
 
         CrystalEnergy::MoleculeGeometry mol_geom = base_geom;
         mol_geom.center_of_mass = com;
@@ -392,6 +446,9 @@ void setup_crystal_energy_from_dmacrys(
 
     calc.set_molecule_geometry(std::move(geom_vec));
     calc.set_initial_states(std::move(states));
+    // Build atom-based neighbor list (needed for Buckingham short-range).
+    // COM distances are stored per pair and used as a COM gate for
+    // electrostatics, matching DMACRYS TBLCNT behavior.
     calc.build_neighbor_list_from_positions(mol_coms);
 }
 

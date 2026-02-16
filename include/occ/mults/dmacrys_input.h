@@ -57,6 +57,10 @@ struct DmacrysInput {
         double charge_dipole_eV = 0.0;
         double dipole_dipole_eV = 0.0;
         double higher_multipole_eV = 0.0;
+        std::vector<double> strain_derivatives_eV;  // 6 Voigt components
+        Mat6 elastic_constants_GPa = Mat6::Zero();   // 6x6 Voigt stiffness
+        bool has_strain_derivatives = false;
+        bool has_elastic_constants = false;
     };
     Reference initial_ref, optimized_ref;
 };

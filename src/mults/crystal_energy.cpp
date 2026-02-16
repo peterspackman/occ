@@ -180,7 +180,8 @@ void CrystalEnergy::update_neighbors() {
     build_neighbor_list();
 }
 
-void CrystalEnergy::build_neighbor_list_from_positions(const std::vector<Vec3>& mol_coms) {
+void CrystalEnergy::build_neighbor_list_from_positions(
+        const std::vector<Vec3>& mol_coms, bool force_com_cutoff) {
     m_neighbors.clear();
     int n_mol = static_cast<int>(mol_coms.size());
 
@@ -188,8 +189,9 @@ void CrystalEnergy::build_neighbor_list_from_positions(const std::vector<Vec3>& 
     double min_len = std::min({uc.a(), uc.b(), uc.c()});
 
     // Use atom-based cutoff: include pair if any atom-atom distance < cutoff.
+    // When force_com_cutoff=true, use COM distance (matches DMACRYS TBLCNT).
     // Need extra margin for COM-to-atom extent when determining cell search range.
-    bool use_atom_cutoff = !m_geometry.empty();
+    bool use_atom_cutoff = !m_geometry.empty() && !force_com_cutoff;
     double max_atom_extent = 0.0;
     // Pre-compute crystal-frame atom positions for each molecule
     std::vector<std::vector<Vec3>> crystal_atoms(n_mol);
@@ -243,7 +245,8 @@ void CrystalEnergy::build_neighbor_list_from_positions(const std::vector<Vec3>& 
                         if (include) {
                             // Weight 0.5: lattice sum E = (1/2) sum_i sum_{j≠i}
                             // Our list includes both (i,j,shift) and (j,i,-shift)
-                            m_neighbors.push_back({i, j, shift, 0.5});
+                            double com_dist = (mol_coms[j] + trans - mol_coms[i]).norm();
+                            m_neighbors.push_back({i, j, shift, 0.5, com_dist});
                         }
                     }
                 }
@@ -253,6 +256,10 @@ void CrystalEnergy::build_neighbor_list_from_positions(const std::vector<Vec3>& 
 
     occ::log::info("Built neighbor list from positions: {} pairs for {} molecules (atom-based cutoff: {})",
                    m_neighbors.size(), n_mol, use_atom_cutoff);
+}
+
+void CrystalEnergy::set_neighbor_list(const std::vector<NeighborPair>& neighbors) {
+    m_neighbors = neighbors;
 }
 
 void CrystalEnergy::set_molecule_geometry(std::vector<MoleculeGeometry> geometry) {
@@ -338,6 +345,49 @@ std::vector<MoleculeState> CrystalEnergy::initial_states() const {
 }
 
 // ============================================================================
+// Buckingham Site-Pair Masks
+// ============================================================================
+
+std::vector<std::vector<bool>> CrystalEnergy::compute_buckingham_site_masks(
+    const std::vector<MoleculeState>& states) const {
+
+    const double buck_cutoff = (m_buck_site_cutoff > 0) ? m_buck_site_cutoff : m_cutoff_radius;
+
+    std::vector<std::vector<bool>> masks(m_neighbors.size());
+
+    for (size_t pair_idx = 0; pair_idx < m_neighbors.size(); ++pair_idx) {
+        const auto& pair = m_neighbors[pair_idx];
+        int mi = pair.mol_i;
+        int mj = pair.mol_j;
+        const auto& geom_i = m_geometry[mi];
+        const auto& geom_j = m_geometry[mj];
+        const size_t nA = geom_i.atom_positions.size();
+        const size_t nB = geom_j.atom_positions.size();
+
+        masks[pair_idx].resize(nA * nB, false);
+
+        Mat3 R_i = states[mi].rotation_matrix();
+        Mat3 R_j = states[mj].rotation_matrix();
+        Vec3 cell_translation = m_crystal.unit_cell().to_cartesian(
+            pair.cell_shift.cast<double>());
+
+        for (size_t a = 0; a < nA; ++a) {
+            Vec3 pos_a = states[mi].position + R_i * geom_i.atom_positions[a];
+            for (size_t b = 0; b < nB; ++b) {
+                Vec3 pos_b = states[mj].position + cell_translation +
+                             R_j * geom_j.atom_positions[b];
+                double r = (pos_b - pos_a).norm();
+                if (r <= buck_cutoff && r >= 0.1) {
+                    masks[pair_idx][a * nB + b] = true;
+                }
+            }
+        }
+    }
+
+    return masks;
+}
+
+// ============================================================================
 // Short-Range Pair Computation
 // ============================================================================
 
@@ -349,7 +399,8 @@ void CrystalEnergy::compute_short_range_pair(
     double weight,
     double& energy,
     Vec3& force_i, Vec3& force_j,
-    Vec3& torque_i, Vec3& torque_j) const {
+    Vec3& torque_i, Vec3& torque_j,
+    int neighbor_idx) const {
 
     if (m_force_field == ForceFieldType::None) {
         return;
@@ -357,6 +408,12 @@ void CrystalEnergy::compute_short_range_pair(
 
     const auto& geom_i = m_geometry[mol_i];
     const auto& geom_j = m_geometry[mol_j];
+    const size_t nB = geom_j.atom_positions.size();
+
+    // Check if we have frozen site masks for this neighbor pair
+    const bool use_frozen = (neighbor_idx >= 0 &&
+                             static_cast<size_t>(neighbor_idx) < m_fixed_site_masks.size() &&
+                             !m_fixed_site_masks[neighbor_idx].empty());
 
     Mat3 R_i = state_i.rotation_matrix();
     Mat3 R_j = state_j.rotation_matrix();
@@ -366,15 +423,25 @@ void CrystalEnergy::compute_short_range_pair(
         int Z_a = geom_i.atomic_numbers[a];
         Vec3 pos_a = state_i.position + R_i * geom_i.atom_positions[a];
 
-        for (size_t b = 0; b < geom_j.atom_positions.size(); ++b) {
+        for (size_t b = 0; b < nB; ++b) {
+            // Apply frozen mask or distance cutoff
+            if (use_frozen) {
+                if (!m_fixed_site_masks[neighbor_idx][a * nB + b]) {
+                    continue;
+                }
+            }
+
             int Z_b = geom_j.atomic_numbers[b];
             Vec3 pos_b = state_j.position + translation + R_j * geom_j.atom_positions[b];
 
             Vec3 r_ab = pos_b - pos_a;
             double r = r_ab.norm();
 
-            if (r > m_cutoff_radius || r < 0.1) {
-                continue;
+            if (!use_frozen) {
+                double buck_cutoff = (m_buck_site_cutoff > 0) ? m_buck_site_cutoff : m_cutoff_radius;
+                if (r > buck_cutoff || r < 0.1) {
+                    continue;
+                }
             }
 
             ShortRangeInteraction::EnergyAndDerivatives sr;
@@ -442,7 +509,8 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
     }
 
     // Loop over neighbor pairs
-    for (const auto& pair : m_neighbors) {
+    for (size_t pair_idx = 0; pair_idx < m_neighbors.size(); ++pair_idx) {
+        const auto& pair = m_neighbors[pair_idx];
         int i = pair.mol_i;
         int j = pair.mol_j;
 
@@ -456,14 +524,21 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
             site.position += cell_translation;
         }
 
-        // Electrostatic interaction (no per-site cutoff — the neighbor list
-        // already selects molecule pairs; applying an atom-pair cutoff would
-        // inconsistently truncate higher-order multipole contributions)
-        if (m_use_cartesian) {
+        // Electrostatic interaction.
+        // COM gate: skip electrostatics for pairs with COM distance > cutoff.
+        // This matches DMACRYS TBLCNT which selects molecule pairs by COM distance.
+        // Ewald correction compensates for qq+qμ+μμ regardless of pair selection.
+        bool include_elec = m_use_cartesian;
+        if (include_elec && m_use_com_elec_gate &&
+            pair.com_distance > m_cutoff_radius) {
+            include_elec = false;
+        }
+        if (include_elec) {
             auto elec_result = compute_molecule_forces_torques(
                 cart_mols[i],
                 mol_j_translated,
-                0.0);
+                m_elec_site_cutoff,
+                m_max_interaction_order);
 
             double e_elec = pair.weight * elec_result.energy;
             result.electrostatic_energy += e_elec;
@@ -490,7 +565,8 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
             pair.weight,
             sr_energy,
             sr_force_i, sr_force_j,
-            sr_torque_i, sr_torque_j);
+            sr_torque_i, sr_torque_j,
+            static_cast<int>(pair_idx));
 
         result.repulsion_dispersion += sr_energy;
         result.molecule_energies[i] += sr_energy * 0.5;
@@ -619,7 +695,8 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
         // Helper to compute short-range gradient only
         auto compute_sr_gradient = [&](const std::vector<MoleculeState>& states) -> Vec {
             Vec grad = Vec::Zero(ndof);
-            for (const auto& pair : m_neighbors) {
+            for (size_t pidx = 0; pidx < m_neighbors.size(); ++pidx) {
+                const auto& pair = m_neighbors[pidx];
                 int pi = pair.mol_i;
                 int pj = pair.mol_j;
                 Vec3 cell_translation = m_crystal.unit_cell().to_cartesian(
@@ -632,7 +709,8 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
                 compute_short_range_pair(pi, pj, states[pi], states[pj],
                                         cell_translation, pair.weight,
                                         sr_energy, sr_force_i, sr_force_j,
-                                        sr_torque_i, sr_torque_j);
+                                        sr_torque_i, sr_torque_j,
+                                        static_cast<int>(pidx));
 
                 grad.segment<3>(6 * pi) -= sr_force_i;
                 grad.segment<3>(6 * pj) -= sr_force_j;
@@ -989,9 +1067,14 @@ CrystalEnergy::EwaldCorrectionResult CrystalEnergy::compute_charge_ewald_correct
     };
 
     // 3. Real-space erf correction over neighbor pairs (inter-molecular)
-    // No per-site cutoff — must match the main electrostatic loop which
-    // includes all site pairs for included molecule pairs.
+    // Must match the main electrostatic loop's COM gate and per-site cutoff.
+    const bool use_erf_site_cutoff = (m_elec_site_cutoff > 0.0);
+    const double erf_site_cutoff_bohr = m_elec_site_cutoff * occ::units::ANGSTROM_TO_BOHR;
     for (const auto& pair : m_neighbors) {
+        // Apply same COM gate as main electrostatic loop
+        if (m_use_com_elec_gate && pair.com_distance > m_cutoff_radius)
+            continue;
+
         int mi = pair.mol_i;
         int mj = pair.mol_j;
 
@@ -1002,6 +1085,8 @@ CrystalEnergy::EwaldCorrectionResult CrystalEnergy::compute_charge_ewald_correct
             for (size_t bj : mol_site_indices[mj]) {
                 Vec3 R_vec = all_sites[bj].pos_bohr + cell_trans_bohr
                            - all_sites[ai].pos_bohr;
+                if (use_erf_site_cutoff && R_vec.norm() > erf_site_cutoff_bohr)
+                    continue;
                 energy_ha += erf_pair_correction(
                     all_sites[ai], all_sites[bj], R_vec, pair.weight,
                     site_forces[ai], site_forces[bj],

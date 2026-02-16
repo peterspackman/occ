@@ -485,7 +485,15 @@
       "repulsion_dispersion_eV": -2.0073845,
       "repulsion_dispersion_kJ": -24.210199,
       "total_eV_per_cell": -3.5783261,
-      "total_kJ_per_mol": -43.156649
+      "total_kJ_per_mol": -43.156649,
+      "strain_derivatives_eV": [
+        -0.0207,
+        0.0451,
+        -0.1011,
+        0.0,
+        0.0,
+        0.0
+      ]
     },
     "optimized": {
       "charge_charge_inter_eV": -1.2018217,
@@ -499,7 +507,30 @@
       "repulsion_dispersion_eV": -2.0138348,
       "repulsion_dispersion_kJ": -24.287993,
       "total_eV_per_cell": -3.5787623,
-      "total_kJ_per_mol": -43.16191
+      "total_kJ_per_mol": -43.16191,
+      "elastic_constants_GPa": {
+        "C11": 17.63,
+        "C12": 6.9,
+        "C13": 4.54,
+        "C14": 0.0,
+        "C15": 0.0,
+        "C16": 0.0,
+        "C22": 18.51,
+        "C23": 3.48,
+        "C24": 0.0,
+        "C25": 0.0,
+        "C26": 0.0,
+        "C33": 12.56,
+        "C34": 0.0,
+        "C35": 0.0,
+        "C36": 0.0,
+        "C44": 5.82,
+        "C45": 0.0,
+        "C46": 0.0,
+        "C55": 5.34,
+        "C56": 0.0,
+        "C66": 8.52
+      }
     }
   }
 }

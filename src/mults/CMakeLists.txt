@@ -30,6 +30,7 @@ add_library(occ_mults
     crystal_optimizer.cpp
     cartesian_hessian.cpp
     dmacrys_input.cpp
+    crystal_strain.cpp
 )
 
 target_include_directories(occ_mults PUBLIC 

@@ -145,10 +145,51 @@ RigidBodyForceResult aggregate_rigid_body_forces(
 // Stage 4: Full force/torque with multipole rotation contribution
 // -------------------------------------------------------------------
 
+/// Energy-only contraction with interaction-order filter.
+/// Computes E = sum_{lA+lB <= max_order} A[i] * T[i+j] * B[j]
+/// where lA = rank of component i, lB = rank of component j.
+static double contract_energy_order_filtered(
+    const CartesianMultipole<4> &A, int rankA,
+    const CartesianMultipole<4> &B, int rankB,
+    double Rx, double Ry, double Rz,
+    int max_order) {
+    using namespace kernel_detail;
+
+    // Compute T-tensor at the truncated order (not full rankA+rankB)
+    int eff_order = std::min(rankA + rankB, max_order);
+
+    // We need a T-tensor of order max_order+1 (for gradient) but here
+    // we only need energy, so order max_order suffices.
+    // Use order 8 T-tensor (the largest we support) and just don't
+    // access entries beyond max_order.
+    InteractionTensor<9> T;
+    compute_interaction_tensor<9>(Rx, Ry, Rz, T);
+
+    const int nA = nhermsum(rankA);
+    const int nB = nhermsum(rankB);
+
+    double energy = 0.0;
+    for (int i = 0; i < nA; ++i) {
+        auto [ta, ua, va] = tuv4.entries[i];
+        int lA = ta + ua + va;
+        double wA = weights4.sign_inv_fact[i] * A.data[i];
+        if (wA == 0.0) continue;
+        for (int j = 0; j < nB; ++j) {
+            auto [tb, ub, vb] = tuv4.entries[j];
+            int lB = tb + ub + vb;
+            if (lA + lB > max_order) continue;
+            double wB = weights4.inv_fact[j] * B.data[j];
+            energy += wA * T.data[hermite_index(ta+tb, ua+ub, va+vb)] * wB;
+        }
+    }
+    return energy;
+}
+
 FullRigidBodyResult compute_molecule_forces_torques(
     const CartesianMolecule &molA,
     const CartesianMolecule &molB,
-    double site_cutoff) {
+    double site_cutoff,
+    int max_interaction_order) {
     FullRigidBodyResult result;
 
     const size_t nA = molA.sites.size();
@@ -162,6 +203,7 @@ FullRigidBodyResult compute_molecule_forces_torques(
     std::vector<CartesianMultipole<4>> fields_B(nB);
 
     const bool use_site_cutoff = (site_cutoff > 0.0);
+    const bool use_order_cutoff = (max_interaction_order >= 0);
 
     // Single pass: compute energy, per-site forces, and interaction fields
     for (size_t i = 0; i < nA; ++i) {
@@ -176,6 +218,19 @@ FullRigidBodyResult compute_molecule_forces_torques(
             double Rx = R[0], Ry = R[1], Rz = R[2];
 
             // Energy and force
+            // When order-truncated, use filtered energy (no force/torque)
+            if (use_order_cutoff && (sA.rank + sB.rank) > max_interaction_order) {
+                // This pair has contributions at order > max, but may also
+                // have contributions at order <= max. Use filtered contraction.
+                double e = contract_energy_order_filtered(
+                    sA.cart, sA.rank, sB.cart, sB.rank,
+                    Rx, Ry, Rz, max_interaction_order);
+                result.energy += e * occ::units::AU_TO_KJ_PER_MOL;
+                // Skip force/torque for truncated pairs
+                // (strain derivatives only need energy)
+                continue;
+            }
+
             auto eg = dispatch_pair_ef(sA.cart, sA.rank,
                                        sB.cart, sB.rank,
                                        Rx, Ry, Rz);
