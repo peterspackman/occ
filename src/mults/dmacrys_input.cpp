@@ -379,7 +379,8 @@ void setup_crystal_energy_from_dmacrys(
     CrystalEnergy &calc,
     const DmacrysInput &input,
     const crystal::Crystal &crystal,
-    const std::vector<MultipoleSource> &multipoles) {
+    const std::vector<MultipoleSource> &multipoles,
+    bool build_neighbors) {
 
     int n_mol = static_cast<int>(multipoles.size());
     int n_sites = static_cast<int>(input.molecule.sites.size());
@@ -449,7 +450,10 @@ void setup_crystal_energy_from_dmacrys(
     // Build atom-based neighbor list (needed for Buckingham short-range).
     // COM distances are stored per pair and used as a COM gate for
     // electrostatics, matching DMACRYS TBLCNT behavior.
-    calc.build_neighbor_list_from_positions(mol_coms);
+    // Skip when caller will override via set_neighbor_list().
+    if (build_neighbors) {
+        calc.build_neighbor_list_from_positions(mol_coms);
+    }
 }
 
 // --- Buckingham converter ---

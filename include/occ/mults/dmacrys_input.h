@@ -84,10 +84,13 @@ convert_buckingham_params(const std::vector<DmacrysInput::BuckPair> &pairs);
 
 /// Prepare CrystalEnergy from DMACRYS input, bypassing Crystal's molecule
 /// detection.  Sets neighbor list, geometry and initial states directly.
+/// When build_neighbors=false, skips the neighbor list build (caller will
+/// set it via set_neighbor_list).
 void setup_crystal_energy_from_dmacrys(
     CrystalEnergy &calc,
     const DmacrysInput &input,
     const crystal::Crystal &crystal,
-    const std::vector<MultipoleSource> &multipoles);
+    const std::vector<MultipoleSource> &multipoles,
+    bool build_neighbors = true);
 
 } // namespace occ::mults

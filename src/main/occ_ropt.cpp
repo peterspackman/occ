@@ -390,9 +390,7 @@ void run_ropt_subcommand(const RoptSettings &settings) {
     }
 
     if (settings.debug_ewald) {
-        auto ewald = optimizer.energy_calculator().charge_ewald_breakdown(optimizer.states());
-        occ::log::info("Charge Ewald (alpha=0.35, kmax=6): real={:.6f} recip={:.6f} self={:.6f} total={:.6f} kJ/mol",
-                       ewald.real_space, ewald.reciprocal, ewald.self, ewald.total());
+        occ::log::info("Ewald diagnostics: use --log-level debug to see Ewald correction details");
     }
 
     // Run optimization

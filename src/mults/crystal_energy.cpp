@@ -1,10 +1,10 @@
 #include <occ/mults/crystal_energy.h>
+#include <occ/mults/ewald_sum.h>
 #include <occ/mults/cartesian_hessian.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <Eigen/Geometry>
 #include <cmath>
-#include <stdexcept>
 
 namespace occ::mults {
 
@@ -623,145 +623,69 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
     // Initialize Hessian
     result.hessian = Mat::Zero(ndof, ndof);
 
-    // Update multipole orientations
-    for (int i = 0; i < N; ++i) {
-        m_multipoles[i].set_orientation(
-            molecules[i].rotation_matrix(),
-            molecules[i].position);
-    }
-
-    // Pre-build CartesianMolecules
-    std::vector<CartesianMolecule> cart_mols;
-    cart_mols.reserve(N);
-    for (int i = 0; i < N; ++i) {
-        cart_mols.push_back(m_multipoles[i].cartesian());
-    }
-
     // ========================================================================
-    // Analytical Hessian for electrostatics (charge-charge and charge-dipole)
+    // Full numerical Hessian via central differences of the total gradient.
+    // This captures all contributions: pairwise electrostatics (all multipole
+    // ranks), Ewald correction (qq+qmu+mumu), and short-range (Buckingham/LJ).
+    //
+    // TODO: Replace with analytical Hessian as compute_molecule_hessian_truncated
+    // (in cartesian_hessian.h) is extended to cover all multipole ranks and
+    // rotation terms. The analytical code exists but currently only handles
+    // charge-charge and partial charge-dipole position terms.
     // ========================================================================
-    for (const auto& pair : m_neighbors) {
-        int i = pair.mol_i;
-        int j = pair.mol_j;
+    const double h = 1e-5;
 
-        // Translation for molecule j
-        Vec3 cell_translation = m_crystal.unit_cell().to_cartesian(
-            pair.cell_shift.cast<double>());
-
-        // Create translated copy
-        CartesianMolecule mol_j_translated = cart_mols[j];
-        for (auto& site : mol_j_translated.sites) {
-            site.position += cell_translation;
+    // Helper to compute total gradient for a given set of states.
+    // compute() returns forces (= -dE/dr) and torques (= dE/dtheta).
+    // The gradient vector is [-force, +torque] for each molecule.
+    auto compute_total_gradient = [&](const std::vector<MoleculeState>& states) -> Vec {
+        auto r = compute(states);
+        Vec grad(ndof);
+        for (int i = 0; i < N; ++i) {
+            grad.segment<3>(6 * i) = -r.forces[i];
+            grad.segment<3>(6 * i + 3) = r.torques[i];
         }
+        return grad;
+    };
 
-        // Compute analytical Hessian for this pair
-        auto pair_hess = compute_molecule_hessian_truncated(cart_mols[i], mol_j_translated);
+    for (int dof = 0; dof < ndof; ++dof) {
+        int mol_idx = dof / 6;
+        int comp = dof % 6;
+        bool is_trans = (comp < 3);
 
-        // Accumulate into full Hessian
-        // Layout: mol i uses DOF [6*i, 6*i+6), mol j uses DOF [6*j, 6*j+6)
-        // Position: [6*k, 6*k+3), Rotation: [6*k+3, 6*k+6)
+        std::vector<MoleculeState> states_plus = molecules;
+        std::vector<MoleculeState> states_minus = molecules;
 
-        double w = pair.weight;
-
-        // Position-Position blocks
-        result.hessian.block<3, 3>(6 * i, 6 * i) += w * pair_hess.H_posA_posA;
-        result.hessian.block<3, 3>(6 * i, 6 * j) += w * pair_hess.H_posA_posB;
-        result.hessian.block<3, 3>(6 * j, 6 * i) += w * pair_hess.H_posA_posB.transpose();
-        result.hessian.block<3, 3>(6 * j, 6 * j) += w * pair_hess.H_posB_posB;
-
-        // Position-Rotation cross blocks
-        result.hessian.block<3, 3>(6 * i, 6 * i + 3) += w * pair_hess.H_posA_rotA;
-        result.hessian.block<3, 3>(6 * i + 3, 6 * i) += w * pair_hess.H_posA_rotA.transpose();
-        result.hessian.block<3, 3>(6 * i, 6 * j + 3) += w * pair_hess.H_posA_rotB;
-        result.hessian.block<3, 3>(6 * j + 3, 6 * i) += w * pair_hess.H_posA_rotB.transpose();
-        result.hessian.block<3, 3>(6 * j, 6 * i + 3) += w * pair_hess.H_posB_rotA;
-        result.hessian.block<3, 3>(6 * i + 3, 6 * j) += w * pair_hess.H_posB_rotA.transpose();
-        result.hessian.block<3, 3>(6 * j, 6 * j + 3) += w * pair_hess.H_posB_rotB;
-        result.hessian.block<3, 3>(6 * j + 3, 6 * j) += w * pair_hess.H_posB_rotB.transpose();
-
-        // Rotation-Rotation blocks
-        result.hessian.block<3, 3>(6 * i + 3, 6 * i + 3) += w * pair_hess.H_rotA_rotA;
-        result.hessian.block<3, 3>(6 * i + 3, 6 * j + 3) += w * pair_hess.H_rotA_rotB;
-        result.hessian.block<3, 3>(6 * j + 3, 6 * i + 3) += w * pair_hess.H_rotA_rotB.transpose();
-        result.hessian.block<3, 3>(6 * j + 3, 6 * j + 3) += w * pair_hess.H_rotB_rotB;
-    }
-
-    // ========================================================================
-    // Numerical Hessian for short-range (Buckingham/LJ) contributions
-    // ========================================================================
-    if (m_force_field != ForceFieldType::None) {
-        const double h = 1e-5;
-
-        // Helper to compute short-range gradient only
-        auto compute_sr_gradient = [&](const std::vector<MoleculeState>& states) -> Vec {
-            Vec grad = Vec::Zero(ndof);
-            for (size_t pidx = 0; pidx < m_neighbors.size(); ++pidx) {
-                const auto& pair = m_neighbors[pidx];
-                int pi = pair.mol_i;
-                int pj = pair.mol_j;
-                Vec3 cell_translation = m_crystal.unit_cell().to_cartesian(
-                    pair.cell_shift.cast<double>());
-
-                double sr_energy = 0.0;
-                Vec3 sr_force_i = Vec3::Zero(), sr_force_j = Vec3::Zero();
-                Vec3 sr_torque_i = Vec3::Zero(), sr_torque_j = Vec3::Zero();
-
-                compute_short_range_pair(pi, pj, states[pi], states[pj],
-                                        cell_translation, pair.weight,
-                                        sr_energy, sr_force_i, sr_force_j,
-                                        sr_torque_i, sr_torque_j,
-                                        static_cast<int>(pidx));
-
-                grad.segment<3>(6 * pi) -= sr_force_i;
-                grad.segment<3>(6 * pj) -= sr_force_j;
-                grad.segment<3>(6 * pi + 3) += sr_torque_i;
-                grad.segment<3>(6 * pj + 3) += sr_torque_j;
-            }
-            return grad;
-        };
-
-        // Numerical differentiation of short-range gradient
-        for (int dof = 0; dof < ndof; ++dof) {
-            int mol_idx = dof / 6;
-            int comp = dof % 6;
-            bool is_trans = (comp < 3);
-
-            std::vector<MoleculeState> states_plus = molecules;
-            std::vector<MoleculeState> states_minus = molecules;
-
-            if (is_trans) {
-                states_plus[mol_idx].position[comp] += h;
-                states_minus[mol_idx].position[comp] -= h;
+        if (is_trans) {
+            states_plus[mol_idx].position[comp] += h;
+            states_minus[mol_idx].position[comp] -= h;
+        } else {
+            int rot_comp = comp - 3;
+            double c = std::cos(h), s = std::sin(h);
+            Mat3 dR_plus, dR_minus;
+            if (rot_comp == 0) {
+                dR_plus << 1, 0, 0, 0, c, -s, 0, s, c;
+                dR_minus << 1, 0, 0, 0, c, s, 0, -s, c;
+            } else if (rot_comp == 1) {
+                dR_plus << c, 0, s, 0, 1, 0, -s, 0, c;
+                dR_minus << c, 0, -s, 0, 1, 0, s, 0, c;
             } else {
-                int rot_comp = comp - 3;
-                Vec3 axis = Vec3::Zero();
-                axis[rot_comp] = 1.0;
-                double c = std::cos(h), s = std::sin(h);
-                Mat3 dR_plus, dR_minus;
-                if (rot_comp == 0) {
-                    dR_plus << 1, 0, 0, 0, c, -s, 0, s, c;
-                    dR_minus << 1, 0, 0, 0, c, s, 0, -s, c;
-                } else if (rot_comp == 1) {
-                    dR_plus << c, 0, s, 0, 1, 0, -s, 0, c;
-                    dR_minus << c, 0, -s, 0, 1, 0, s, 0, c;
-                } else {
-                    dR_plus << c, -s, 0, s, c, 0, 0, 0, 1;
-                    dR_minus << c, s, 0, -s, c, 0, 0, 0, 1;
-                }
-                Mat3 R_base = molecules[mol_idx].rotation_matrix();
-                Eigen::AngleAxisd aa_plus(dR_plus * R_base);
-                Eigen::AngleAxisd aa_minus(dR_minus * R_base);
-                states_plus[mol_idx].angle_axis = aa_plus.angle() * aa_plus.axis();
-                states_minus[mol_idx].angle_axis = aa_minus.angle() * aa_minus.axis();
+                dR_plus << c, -s, 0, s, c, 0, 0, 0, 1;
+                dR_minus << c, s, 0, -s, c, 0, 0, 0, 1;
             }
-
-            Vec g_plus = compute_sr_gradient(states_plus);
-            Vec g_minus = compute_sr_gradient(states_minus);
-            result.hessian.col(dof) += (g_plus - g_minus) / (2.0 * h);
+            Mat3 R_base = molecules[mol_idx].rotation_matrix();
+            Eigen::AngleAxisd aa_plus(dR_plus * R_base);
+            Eigen::AngleAxisd aa_minus(dR_minus * R_base);
+            states_plus[mol_idx].angle_axis = aa_plus.angle() * aa_plus.axis();
+            states_minus[mol_idx].angle_axis = aa_minus.angle() * aa_minus.axis();
         }
+
+        Vec g_plus = compute_total_gradient(states_plus);
+        Vec g_minus = compute_total_gradient(states_minus);
+        result.hessian.col(dof) = (g_plus - g_minus) / (2.0 * h);
     }
 
-    // Symmetrize Hessian (handles any numerical noise)
+    // Symmetrize Hessian (handles numerical noise)
     result.hessian = 0.5 * (result.hessian + result.hessian.transpose());
 
     return result;
@@ -841,15 +765,14 @@ size_t CrystalEnergy::num_sites() const {
     return total;
 }
 
-std::vector<PairEnergyDebug> CrystalEnergy::debug_pair_energies(const std::vector<MoleculeState>& molecules) const {
+std::vector<PairEnergyDebug> CrystalEnergy::debug_pair_energies(const std::vector<MoleculeState>& molecules) {
     const int N = static_cast<int>(molecules.size());
     std::vector<PairEnergyDebug> out;
     out.reserve(m_neighbors.size());
 
     // Update multipole orientations
-    std::vector<MultipoleSource> multipoles = m_multipoles;  // copy to keep const correctness
     for (int i = 0; i < N; ++i) {
-        multipoles[i].set_orientation(
+        m_multipoles[i].set_orientation(
             molecules[i].rotation_matrix(),
             molecules[i].position);
     }
@@ -858,7 +781,7 @@ std::vector<PairEnergyDebug> CrystalEnergy::debug_pair_energies(const std::vecto
     std::vector<CartesianMolecule> cart_mols;
     cart_mols.reserve(N);
     for (int i = 0; i < N; ++i) {
-        cart_mols.push_back(multipoles[i].cartesian());
+        cart_mols.push_back(m_multipoles[i].cartesian());
     }
 
     for (const auto& pair : m_neighbors) {
@@ -917,7 +840,7 @@ std::vector<int> CrystalEnergy::neighbor_shell_histogram() const {
 }
 
 // ============================================================================
-// Charge-Charge Ewald Correction
+// Charge-Charge Ewald Correction (thin wrapper around standalone engine)
 // ============================================================================
 
 CrystalEnergy::EwaldCorrectionResult CrystalEnergy::compute_charge_ewald_correction(
@@ -929,487 +852,54 @@ CrystalEnergy::EwaldCorrectionResult CrystalEnergy::compute_charge_ewald_correct
     ewald_result.forces.resize(N, Vec3::Zero());
     ewald_result.torques.resize(N, Vec3::Zero());
 
-    // 1. Gather charge+dipole sites (position in Bohr/Ang, charge/dipole in a.u.)
-    struct ChargeSite {
-        Vec3 pos_bohr;
-        Vec3 pos_ang;
-        double charge;     // Q00 (a.u.)
-        Vec3 dipole;       // (μx, μy, μz) in a.u. (e·Bohr)
-        int mol_index;
-    };
+    // Gather sites and indices from CartesianMolecules
+    auto ewald_sites = gather_ewald_sites(cart_mols, m_ewald_dipole);
+    auto mol_site_indices = build_mol_site_indices(cart_mols);
 
-    std::vector<ChargeSite> all_sites;
-    std::vector<std::vector<size_t>> mol_site_indices(N);
+    if (ewald_sites.empty()) return ewald_result;
 
-    for (int m = 0; m < N; ++m) {
-        const auto& cart = cart_mols[m];
-        for (size_t s = 0; s < cart.sites.size(); ++s) {
-            const auto& site = cart.sites[s];
-            if (site.rank < 0) continue;
-
-            ChargeSite cs;
-            cs.pos_ang = site.position;
-            cs.pos_bohr = site.position * occ::units::ANGSTROM_TO_BOHR;
-            cs.charge = site.cart.data[0];  // Q00
-            // Dipole: data[1]=μx, data[2]=μy, data[3]=μz (a.u.)
-            if (m_ewald_dipole && site.rank >= 1) {
-                cs.dipole = Vec3(site.cart.data[1], site.cart.data[2], site.cart.data[3]);
-            } else {
-                cs.dipole = Vec3::Zero();
-            }
-            cs.mol_index = m;
-            size_t idx = all_sites.size();
-            all_sites.push_back(cs);
-            mol_site_indices[m].push_back(idx);
-        }
-    }
-
-    if (all_sites.empty()) return ewald_result;
-
-    // 2. Select Ewald parameters
-    double alpha;  // in 1/Angstrom
-    int kmax;
-
+    // Select Ewald parameters
+    EwaldParams params;
     if (m_ewald_eta > 0) {
-        alpha = m_ewald_eta;
+        params.alpha = m_ewald_eta;
     } else {
-        // erfc(alpha * r_cut) ≈ accuracy
         double x = std::sqrt(-std::log(m_ewald_accuracy));
-        alpha = x / m_cutoff_radius;
+        params.alpha = x / m_cutoff_radius;
     }
 
-    const auto& uc = m_crystal.unit_cell();
     if (m_ewald_kmax > 0) {
-        kmax = m_ewald_kmax;
+        params.kmax = m_ewald_kmax;
     } else {
+        const auto& uc = m_crystal.unit_cell();
         double min_len = std::min({uc.a(), uc.b(), uc.c()});
-        double G_max = 2.0 * alpha * std::sqrt(-std::log(m_ewald_accuracy));
-        kmax = std::max(1, static_cast<int>(std::ceil(
+        double G_max = 2.0 * params.alpha * std::sqrt(-std::log(m_ewald_accuracy));
+        params.kmax = std::max(1, static_cast<int>(std::ceil(
             G_max * min_len / (2.0 * M_PI))));
     }
+    params.include_dipole = m_ewald_dipole;
 
-    double alpha_bohr = alpha * occ::units::BOHR_TO_ANGSTROM;
-    double two_alpha_over_sqrt_pi = 2.0 * alpha_bohr / std::sqrt(M_PI);
+    // Call standalone Ewald engine
+    auto raw = compute_ewald_correction(
+        ewald_sites, m_crystal.unit_cell(), m_neighbors,
+        mol_site_indices, m_cutoff_radius,
+        m_use_com_elec_gate, m_elec_site_cutoff, params);
 
-    occ::log::debug("Ewald correction: alpha = {:.4f} /Ang ({:.6f} /Bohr), kmax = {}",
-                    alpha, alpha_bohr, kmax);
+    ewald_result.energy = raw.energy;
 
-    // Per-site force accumulator (in Hartree/Bohr)
-    std::vector<Vec3> site_forces(all_sites.size(), Vec3::Zero());
-    double energy_ha = 0.0;  // in Hartree
-
-    // Diagnostic accumulators (in Hartree)
-    double diag_erf_inter_qq = 0.0, diag_erf_inter_qmu = 0.0, diag_erf_inter_mumu = 0.0;
-    double diag_erf_intra_qq = 0.0, diag_erf_intra_qmu = 0.0, diag_erf_intra_mumu = 0.0;
-    double diag_recip_qq = 0.0, diag_recip_qmu = 0.0, diag_recip_mumu = 0.0;
-    double diag_self_qq = 0.0, diag_self_mumu = 0.0;
-
-    // Helper: compute erf correction for a site pair (qq + qμ + μμ).
-    // R_vec = r_b - r_a (Bohr). Returns energy correction in Hartree.
-    // Also accumulates into diag_qq, diag_qmu, diag_mumu for diagnostics.
-    auto erf_pair_correction = [&](const ChargeSite& sa, const ChargeSite& sb,
-                                   const Vec3& R_vec, double w,
-                                   Vec3& f_a, Vec3& f_b,
-                                   double& diag_qq, double& diag_qmu, double& diag_mumu) {
-        double r = R_vec.norm();
-        if (r < 1e-10) return 0.0;
-
-        double ar = alpha_bohr * r;
-        double r2 = r * r;
-        double r3 = r2 * r;
-        double erf_val = std::erf(ar);
-        double exp_val = std::exp(-ar * ar);
-        double qa = sa.charge, qb = sb.charge;
-        const Vec3& da = sa.dipole;
-        const Vec3& db = sb.dipole;
-
-        // Charge-charge erf correction: -q_a * q_b * erf(αr) / r
-        double e_qq = -w * qa * qb * erf_val / r;
-
-        // Charge-charge force correction
-        double f_over_r = qa * qb *
-            (-erf_val / r2 + two_alpha_over_sqrt_pi * exp_val / r);
-        Vec3 f_corr = w * f_over_r * (R_vec / r);
-        f_a -= f_corr;
-        f_b += f_corr;
-
-        // Charge-dipole erf correction:
-        // The bare qμ energy from T-tensor contraction is:
-        //   E_qμ = A * [q_A(R·μ_B) - q_B(R·μ_A)]
-        // where A = ψ'(r)/r, ψ = erf(αr)/r
-        // (The sign comes from sign_inv_fact having (-1)^1 for the A-side dipole)
-        // Correction = -w * E_erf_qμ
-        double f1 = two_alpha_over_sqrt_pi * exp_val / r2 - erf_val / r3;
-        double muA_dot_R = da.dot(R_vec);
-        double muB_dot_R = db.dot(R_vec);
-        double e_qmu = -w * (qa * muB_dot_R - qb * muA_dot_R) * f1;
-
-        // Dipole-dipole erf correction:
-        // T_αβ^erf = δ_αβ A(r) + R_α R_β B(r)
-        // where A = ψ'(r)/r, B = ψ''(r)/r² - ψ'(r)/r³
-        // The bare μμ energy from T-tensor contraction is:
-        //   E_μμ = -[(μ_a·μ_b)A + (μ_a·R)(μ_b·R)B]
-        // (The minus comes from sign_inv_fact having (-1)^1 for the A-side dipole)
-        // Correction = -w * E_erf_μμ = w * [(μ_a·μ_b)A + (μ_a·R)(μ_b·R)B]
-        double r4 = r2 * r2;
-        double r5 = r4 * r;
-        double A = f1;
-        double Ap_over_r = -two_alpha_over_sqrt_pi * exp_val *
-            (2.0 * alpha_bohr * alpha_bohr / r2 + 3.0 / r4) +
-            3.0 * erf_val / r5;
-        double e_mumu = w * (da.dot(db) * A + muA_dot_R * muB_dot_R * Ap_over_r);
-
-        diag_qq += e_qq;
-        diag_qmu += e_qmu;
-        diag_mumu += e_mumu;
-
-        return e_qq + e_qmu + e_mumu;
-    };
-
-    // 3. Real-space erf correction over neighbor pairs (inter-molecular)
-    // Must match the main electrostatic loop's COM gate and per-site cutoff.
-    const bool use_erf_site_cutoff = (m_elec_site_cutoff > 0.0);
-    const double erf_site_cutoff_bohr = m_elec_site_cutoff * occ::units::ANGSTROM_TO_BOHR;
-    for (const auto& pair : m_neighbors) {
-        // Apply same COM gate as main electrostatic loop
-        if (m_use_com_elec_gate && pair.com_distance > m_cutoff_radius)
-            continue;
-
-        int mi = pair.mol_i;
-        int mj = pair.mol_j;
-
-        Vec3 cell_trans_bohr = uc.to_cartesian(
-            pair.cell_shift.cast<double>()) * occ::units::ANGSTROM_TO_BOHR;
-
-        for (size_t ai : mol_site_indices[mi]) {
-            for (size_t bj : mol_site_indices[mj]) {
-                Vec3 R_vec = all_sites[bj].pos_bohr + cell_trans_bohr
-                           - all_sites[ai].pos_bohr;
-                if (use_erf_site_cutoff && R_vec.norm() > erf_site_cutoff_bohr)
-                    continue;
-                energy_ha += erf_pair_correction(
-                    all_sites[ai], all_sites[bj], R_vec, pair.weight,
-                    site_forces[ai], site_forces[bj],
-                    diag_erf_inter_qq, diag_erf_inter_qmu, diag_erf_inter_mumu);
-            }
-        }
-    }
-
-    // 3b. Intra-molecular erf correction
-    // The reciprocal space includes all pairs (inter + intra).
-    // The erf correction must also cover intra-molecular pairs so they
-    // cancel, giving a net correction only for inter-molecular interactions.
-    for (int m = 0; m < N; ++m) {
-        const auto& indices = mol_site_indices[m];
-        for (size_t ii = 0; ii < indices.size(); ++ii) {
-            size_t ai = indices[ii];
-            for (size_t jj = ii + 1; jj < indices.size(); ++jj) {
-                size_t bi = indices[jj];
-                Vec3 R_vec = all_sites[bi].pos_bohr - all_sites[ai].pos_bohr;
-                // Unique pair (i<j), weight = 1.0
-                energy_ha += erf_pair_correction(
-                    all_sites[ai], all_sites[bi], R_vec, 1.0,
-                    site_forces[ai], site_forces[bi],
-                    diag_erf_intra_qq, diag_erf_intra_qmu, diag_erf_intra_mumu);
-            }
-        }
-    }
-
-    // 4. Reciprocal-space sum
-    Mat3 A_bohr = uc.direct() * occ::units::ANGSTROM_TO_BOHR;
-    double volume_bohr = uc.volume() *
-        std::pow(occ::units::ANGSTROM_TO_BOHR, 3);
-    Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
-
-    double four_pi_over_vol = 4.0 * M_PI / volume_bohr;
-    double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
-
-    for (int hx = -kmax; hx <= kmax; ++hx) {
-        for (int hy = -kmax; hy <= kmax; ++hy) {
-            for (int hz = -kmax; hz <= kmax; ++hz) {
-                if (hx == 0 && hy == 0 && hz == 0) continue;
-
-                Vec3 G = B_bohr * Vec3(hx, hy, hz);
-                double G2 = G.squaredNorm();
-                double coeff = std::exp(-G2 * inv_4alpha2) / G2;
-
-                // Charge structure factor: S_q(G) = Σ q_j exp(iG·r_j)
-                // Dipole structure factor: S_μ(G) = Σ (μ_j·G) exp(iG·r_j)
-                double Sq_re = 0.0, Sq_im = 0.0;
-                double Smu_re = 0.0, Smu_im = 0.0;
-                for (const auto& s : all_sites) {
-                    double phase = G.dot(s.pos_bohr);
-                    double cos_p = std::cos(phase);
-                    double sin_p = std::sin(phase);
-                    Sq_re += s.charge * cos_p;
-                    Sq_im += s.charge * sin_p;
-                    double mu_dot_G = s.dipole.dot(G);
-                    Smu_re += mu_dot_G * cos_p;
-                    Smu_im += mu_dot_G * sin_p;
-                }
-
-                // Combined reciprocal energy: (2π/V) * coeff * |S_q + i·S_μ|²
-                // = (2π/V) * coeff * [|S_q|² - 2·Im(S_q*·S_μ) + |S_μ|²]
-                // where Im(S_q*·S_μ) = Sq_re·Smu_im - Sq_im·Smu_re
-                double qq_recip = Sq_re * Sq_re + Sq_im * Sq_im;
-                double qmu_cross = -2.0 * (Sq_re * Smu_im - Sq_im * Smu_re);
-                double mumu_recip = Smu_re * Smu_re + Smu_im * Smu_im;
-                double prefactor = 0.5 * four_pi_over_vol * coeff;
-                energy_ha += prefactor * (qq_recip + qmu_cross + mumu_recip);
-                diag_recip_qq += prefactor * qq_recip;
-                diag_recip_qmu += prefactor * qmu_cross;
-                diag_recip_mumu += prefactor * mumu_recip;
-
-                // Force on site k from combined structure factor:
-                // F_k = (4π/V) f(G) G × [q_k(P sin_k - Q cos_k) + mk(P cos_k + Q sin_k)]
-                // where P = Sq_re - Smu_im, Q = Sq_im + Smu_re, mk = μ_k·G
-                double P = Sq_re - Smu_im;
-                double Q = Sq_im + Smu_re;
-                for (size_t k = 0; k < all_sites.size(); ++k) {
-                    double q_k = all_sites[k].charge;
-                    double mk = all_sites[k].dipole.dot(G);
-
-                    double phase_k = G.dot(all_sites[k].pos_bohr);
-                    double sin_k = std::sin(phase_k);
-                    double cos_k = std::cos(phase_k);
-
-                    double force_factor = q_k * (P * sin_k - Q * cos_k)
-                                        + mk * (P * cos_k + Q * sin_k);
-
-                    site_forces[k] += four_pi_over_vol * coeff * force_factor * G;
-                }
-            }
-        }
-    }
-
-    // 4b. Verify Ewald identity: reciprocal self-contribution should equal
-    //     (α/√π) Σ q² for qq and (2α³/(3√π)) Σ |μ|² for μμ
-    {
-        double recip_self_qq = 0.0, recip_self_mumu = 0.0;
-        for (int hx = -kmax; hx <= kmax; ++hx) {
-            for (int hy = -kmax; hy <= kmax; ++hy) {
-                for (int hz = -kmax; hz <= kmax; ++hz) {
-                    if (hx == 0 && hy == 0 && hz == 0) continue;
-                    Vec3 G = B_bohr * Vec3(hx, hy, hz);
-                    double G2 = G.squaredNorm();
-                    double coeff = std::exp(-G2 * inv_4alpha2) / G2;
-                    double prefactor = 0.5 * four_pi_over_vol * coeff;
-                    for (const auto& s : all_sites) {
-                        recip_self_qq += prefactor * s.charge * s.charge;
-                        double muG = s.dipole.dot(G);
-                        recip_self_mumu += prefactor * muG * muG;
-                    }
-                }
-            }
-        }
-        double sum_q2 = 0.0, sum_mu2 = 0.0;
-        for (const auto& s : all_sites) {
-            sum_q2 += s.charge * s.charge;
-            sum_mu2 += s.dipole.squaredNorm();
-        }
-        double alpha3_loc = alpha_bohr * alpha_bohr * alpha_bohr;
-        double expected_self_qq = (alpha_bohr / std::sqrt(M_PI)) * sum_q2;
-        double expected_self_mumu = (2.0 * alpha3_loc / (3.0 * std::sqrt(M_PI))) * sum_mu2;
-        occ::log::info("  Ewald identity check (Hartree):");
-        occ::log::info("    Recip self qq:  {:.6f}, Expected (α/√π)Σq²: {:.6f}, ratio: {:.6f}",
-                       recip_self_qq, expected_self_qq, recip_self_qq / expected_self_qq);
-        occ::log::info("    Recip self mumu: {:.6f}, Expected (2α³/(3√π))Σ|μ|²: {:.6f}, ratio: {:.6f}",
-                       recip_self_mumu, expected_self_mumu,
-                       expected_self_mumu > 1e-15 ? recip_self_mumu / expected_self_mumu : 0.0);
-        occ::log::info("    Σq²={:.6f}, Σ|μ|²={:.6f}", sum_q2, sum_mu2);
-        // Print first few site dipoles
-        for (size_t i = 0; i < std::min(all_sites.size(), size_t(5)); ++i) {
-            occ::log::info("    Site {} (mol {}): q={:.6f}, μ=({:.6f},{:.6f},{:.6f}), |μ|²={:.6f}",
-                          i, all_sites[i].mol_index, all_sites[i].charge,
-                          all_sites[i].dipole[0], all_sites[i].dipole[1], all_sites[i].dipole[2],
-                          all_sites[i].dipole.squaredNorm());
-        }
-
-        // Cross-check: compute erf-screened + bare intra mumu for comparison
-        double test_erf_intra_mumu = 0.0, test_bare_intra_mumu = 0.0;
-        for (int m = 0; m < N; ++m) {
-            const auto& indices = mol_site_indices[m];
-            for (size_t ii = 0; ii < indices.size(); ++ii) {
-                size_t ai = indices[ii];
-                for (size_t jj = ii + 1; jj < indices.size(); ++jj) {
-                    size_t bi = indices[jj];
-                    Vec3 R_vec = all_sites[bi].pos_bohr - all_sites[ai].pos_bohr;
-                    double r = R_vec.norm();
-                    if (r < 1e-10) continue;
-                    double r2 = r*r, r3 = r2*r, r4 = r2*r2, r5 = r4*r;
-                    double ar = alpha_bohr * r;
-                    double erf_v = std::erf(ar), exp_v = std::exp(-ar*ar);
-                    double f1_v = two_alpha_over_sqrt_pi * exp_v / r2 - erf_v / r3;
-                    double ap_v = -two_alpha_over_sqrt_pi * exp_v * (2.0*alpha_bohr*alpha_bohr/r2 + 3.0/r4) + 3.0*erf_v/r5;
-                    const Vec3& da = all_sites[ai].dipole;
-                    const Vec3& db = all_sites[bi].dipole;
-                    double muA_R = da.dot(R_vec), muB_R = db.dot(R_vec);
-                    test_erf_intra_mumu += da.dot(db) * f1_v + muA_R * muB_R * ap_v;
-                    // Bare T-tensor: T_ab = -delta/r³ + 3 RaRb/r⁵
-                    test_bare_intra_mumu += -da.dot(db)/r3 + 3.0*muA_R*muB_R/r5;
-                }
-            }
-        }
-        occ::log::info("    Intra mumu erf-screened: {:.6f} Ha = {:.4f} kJ/mol",
-                       test_erf_intra_mumu, test_erf_intra_mumu * occ::units::AU_TO_KJ_PER_MOL);
-        occ::log::info("    Intra mumu bare:         {:.6f} Ha = {:.4f} kJ/mol",
-                       test_bare_intra_mumu, test_bare_intra_mumu * occ::units::AU_TO_KJ_PER_MOL);
-    }
-
-    // 5. Self correction
-    double alpha3 = alpha_bohr * alpha_bohr * alpha_bohr;
-    for (const auto& s : all_sites) {
-        // Charge-charge: -(α/√π) * q²
-        double self_qq = (alpha_bohr / std::sqrt(M_PI)) * s.charge * s.charge;
-        energy_ha -= self_qq;
-        diag_self_qq -= self_qq;
-        // Dipole-dipole: -(2α³/(3√π)) * |μ|²
-        double self_mumu = (2.0 * alpha3 / (3.0 * std::sqrt(M_PI))) *
-            s.dipole.squaredNorm();
-        energy_ha -= self_mumu;
-        diag_self_mumu -= self_mumu;
-    }
-
-    // 6. Convert to kJ/mol and map to rigid-body forces/torques
-    ewald_result.energy = energy_ha * occ::units::AU_TO_KJ_PER_MOL;
-
-    double force_conv = occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM;
-
-    for (size_t k = 0; k < all_sites.size(); ++k) {
-        int m = all_sites[k].mol_index;
-        Vec3 f_kJ = site_forces[k] * force_conv;
+    // Map per-site forces to rigid-body forces and torques
+    for (size_t k = 0; k < ewald_sites.size(); ++k) {
+        int m = ewald_sites[k].mol_index;
+        const Vec3& f_kJ = raw.site_forces[k];
 
         ewald_result.forces[m] += f_kJ;
 
-        // Torque from lever arm (charge-charge has no multipole rotation torque)
-        Vec3 lever = all_sites[k].pos_ang - molecules[m].position;
+        // Torque from lever arm
+        Vec3 lever = ewald_sites[k].position - molecules[m].position;
         Vec3 torque_lab = lever.cross(f_kJ);
         ewald_result.torques[m] -= torque_lab;
     }
 
-    double au2kj = occ::units::AU_TO_KJ_PER_MOL;
-    occ::log::info("Ewald correction (qq+qmu+mumu): {:.4f} kJ/mol", ewald_result.energy);
-    occ::log::info("  Recip:  qq={:.4f}  qmu={:.4f}  mumu={:.4f}  total={:.4f} kJ/mol",
-                   diag_recip_qq * au2kj, diag_recip_qmu * au2kj,
-                   diag_recip_mumu * au2kj,
-                   (diag_recip_qq + diag_recip_qmu + diag_recip_mumu) * au2kj);
-    occ::log::info("  Self:   qq={:.4f}  mumu={:.4f}  total={:.4f} kJ/mol",
-                   diag_self_qq * au2kj, diag_self_mumu * au2kj,
-                   (diag_self_qq + diag_self_mumu) * au2kj);
-    occ::log::info("  Erf-inter: qq={:.4f}  qmu={:.4f}  mumu={:.4f}  total={:.4f} kJ/mol",
-                   diag_erf_inter_qq * au2kj, diag_erf_inter_qmu * au2kj,
-                   diag_erf_inter_mumu * au2kj,
-                   (diag_erf_inter_qq + diag_erf_inter_qmu + diag_erf_inter_mumu) * au2kj);
-    occ::log::info("  Erf-intra: qq={:.4f}  qmu={:.4f}  mumu={:.4f}  total={:.4f} kJ/mol",
-                   diag_erf_intra_qq * au2kj, diag_erf_intra_qmu * au2kj,
-                   diag_erf_intra_mumu * au2kj,
-                   (diag_erf_intra_qq + diag_erf_intra_qmu + diag_erf_intra_mumu) * au2kj);
-    occ::log::info("  Net qq:   {:.4f} kJ/mol",
-                   (diag_recip_qq + diag_self_qq + diag_erf_inter_qq + diag_erf_intra_qq) * au2kj);
-    occ::log::info("  Net qmu:  {:.4f} kJ/mol",
-                   (diag_recip_qmu + diag_erf_inter_qmu + diag_erf_intra_qmu) * au2kj);
-    occ::log::info("  Net mumu: {:.4f} kJ/mol",
-                   (diag_recip_mumu + diag_self_mumu + diag_erf_inter_mumu + diag_erf_intra_mumu) * au2kj);
-    occ::log::info("  {} sites, {} neighbor pairs", all_sites.size(), m_neighbors.size());
-
     return ewald_result;
-}
-
-CrystalEnergy::EwaldBreakdown CrystalEnergy::charge_ewald_breakdown(
-    const std::vector<MoleculeState>& molecules,
-    double alpha, int kmax) const {
-
-    // Gather all charge sites (rank 0 terms) for each molecule
-    struct Site { Vec3 pos_bohr; double q; };
-    std::vector<Site> sites;
-    sites.reserve(num_sites());
-
-    std::vector<MultipoleSource> multipoles = m_multipoles; // copy for const correctness
-    for (size_t i = 0; i < molecules.size(); ++i) {
-        multipoles[i].set_orientation(molecules[i].rotation_matrix(), molecules[i].position);
-        const auto cart = multipoles[i].cartesian();
-        for (const auto& s : cart.sites) {
-            double q = (s.rank >= 0) ? s.cart.data[0] : 0.0;  // first coefficient is charge (a.u.)
-            if (std::abs(q) < 1e-12) continue;
-            sites.push_back({s.position * occ::units::ANGSTROM_TO_BOHR, q});
-        }
-    }
-
-    EwaldBreakdown out;
-    if (sites.empty()) return out;
-
-    const auto& uc = m_crystal.unit_cell();
-    Mat3 A_ang = uc.direct();
-    Mat3 A = A_ang * occ::units::ANGSTROM_TO_BOHR;  // bohr
-    double volume = uc.volume() * std::pow(occ::units::ANGSTROM_TO_BOHR, 3);  // bohr^3
-    Mat3 B = 2.0 * M_PI * A.inverse().transpose();  // reciprocal lattice vectors (columns, 1/bohr)
-
-    double alpha_bohr = alpha * occ::units::BOHR_TO_ANGSTROM;
-
-    // Real-space sum over lattice vectors within cutoff (use existing neighbor cutoff)
-    double rcut = m_cutoff_radius * occ::units::ANGSTROM_TO_BOHR;
-    // naive double loop over translations near origin
-    double min_len = std::min({uc.a(), uc.b(), uc.c()}) * occ::units::ANGSTROM_TO_BOHR;
-    int tmax = static_cast<int>(std::ceil(rcut / min_len)) + 1;
-    for (int nx = -tmax; nx <= tmax; ++nx) {
-        for (int ny = -tmax; ny <= tmax; ++ny) {
-            for (int nz = -tmax; nz <= tmax; ++nz) {
-                Vec3 nvec = A * Vec3(nx, ny, nz);  // bohr
-                bool self_image = (nx == 0 && ny == 0 && nz == 0);
-                for (size_t i = 0; i < sites.size(); ++i) {
-                    for (size_t j = self_image ? i + 1 : 0; j < sites.size(); ++j) {
-                        Vec3 rvec = sites[j].pos_bohr + nvec - sites[i].pos_bohr;
-                        double r = rvec.norm();
-                        if (r < 1e-10 || r > rcut) continue;
-                        double erfc_term = std::erfc(alpha_bohr * r) / r;
-                        out.real_space += sites[i].q * sites[j].q * erfc_term;
-                    }
-                }
-            }
-        }
-    }
-    out.real_space *= 0.5;  // double-count correction
-
-    // Reciprocal-space sum
-    for (int hx = -kmax; hx <= kmax; ++hx) {
-        for (int hy = -kmax; hy <= kmax; ++hy) {
-            for (int hz = -kmax; hz <= kmax; ++hz) {
-                if (hx == 0 && hy == 0 && hz == 0) continue;
-                Vec3 h = B * Vec3(hx, hy, hz);  // 1/bohr
-                double h2 = h.squaredNorm();
-                double coeff = std::exp(-h2 / (4.0 * alpha_bohr * alpha_bohr)) / h2;
-
-                // Structure factor
-                std::complex<double> S(0.0, 0.0);
-                for (const auto& s : sites) {
-                    double phase = h.dot(s.pos_bohr);
-                    S += std::complex<double>(std::cos(phase), std::sin(phase)) * s.q;
-                }
-                double S2 = std::norm(S);
-                out.reciprocal += coeff * S2;
-            }
-        }
-    }
-    out.reciprocal *= (2.0 * M_PI) / volume;
-
-    // Self term
-    double qsum = 0.0;
-    for (const auto& s : sites) {
-        out.self -= (alpha_bohr / std::sqrt(M_PI)) * s.q * s.q;
-        qsum += s.q;
-    }
-
-    // Net charge correction (background)
-    if (std::abs(qsum) > 1e-10) {
-        out.self += -M_PI * qsum * qsum / (alpha_bohr * alpha_bohr * volume);
-    }
-
-    // Convert to kJ/mol
-    out.real_space *= occ::units::AU_TO_KJ_PER_MOL;
-    out.reciprocal *= occ::units::AU_TO_KJ_PER_MOL;
-    out.self *= occ::units::AU_TO_KJ_PER_MOL;
-
-    return out;
 }
 
 } // namespace occ::mults

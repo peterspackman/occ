@@ -235,22 +235,10 @@ public:
     size_t num_neighbor_pairs() const { return m_neighbors.size(); }
 
     /// Compute per-pair debug breakdown at current states.
-    std::vector<PairEnergyDebug> debug_pair_energies(const std::vector<MoleculeState>& molecules) const;
+    std::vector<PairEnergyDebug> debug_pair_energies(const std::vector<MoleculeState>& molecules);
 
     /// Neighbor shell histogram for quick sanity checks.
     std::vector<int> neighbor_shell_histogram() const;  // bins: [0-3), [3-6), [6-10), [10-15), [15+]
-
-    struct EwaldBreakdown {
-        double real_space = 0.0;
-        double reciprocal = 0.0;
-        double self = 0.0;
-        double total() const { return real_space + reciprocal + self; }
-    };
-
-    /// Charge-only Ewald energy breakdown (energy only, no forces; for debugging).
-    EwaldBreakdown charge_ewald_breakdown(const std::vector<MoleculeState>& molecules,
-                                          double alpha = 0.35,
-                                          int kmax = 6) const;
 
     /// Get total number of multipole sites.
     size_t num_sites() const;
@@ -289,15 +277,14 @@ private:
 
     std::vector<MoleculeState> m_initial_states;  // optional override
 
-    /// Result from charge-charge Ewald correction computation.
+    /// Result from Ewald correction mapped to rigid-body DOF.
     struct EwaldCorrectionResult {
         double energy = 0.0;           ///< Energy correction (kJ/mol)
-        std::vector<Vec3> forces;      ///< Force correction per molecule (kJ/mol/Å)
+        std::vector<Vec3> forces;      ///< Force correction per molecule (kJ/mol/Ang)
         std::vector<Vec3> torques;     ///< Torque correction per molecule
     };
 
-    /// Compute charge-charge Ewald correction (energy + forces + torques).
-    /// Returns the difference between Ewald charge-charge and truncated charge-charge.
+    /// Compute Ewald correction and map site forces to rigid-body forces/torques.
     EwaldCorrectionResult compute_charge_ewald_correction(
         const std::vector<MoleculeState>& molecules,
         const std::vector<CartesianMolecule>& cart_mols) const;

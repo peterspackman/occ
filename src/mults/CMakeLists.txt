@@ -31,6 +31,7 @@ add_library(occ_mults
     cartesian_hessian.cpp
     dmacrys_input.cpp
     crystal_strain.cpp
+    ewald_sum.cpp
 )
 
 target_include_directories(occ_mults PUBLIC 
