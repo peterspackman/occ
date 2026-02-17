@@ -37,38 +37,23 @@ kernel_detail::EnergyGradient dispatch_pair_ef(
     }
 }
 
-/// Dispatch for interaction field computation, templatized on signedness.
-/// Signed=false: field at A from B (B uses inv_fact, no sign).
-/// Signed=true:  field at B from A (A uses sign_inv_fact, with (-1)^l sign).
-template <int Order, bool Signed>
-void compute_pair_field_impl(
-    int rankLocal,
-    const CartesianMultipole<4> &other, int rankOther,
-    double Rx, double Ry, double Rz,
-    CartesianMultipole<4> &field) {
-    InteractionTensor<Order> T;
-    compute_interaction_tensor<Order>(Rx, Ry, Rz, T);
-    compute_interaction_field<Order, Signed>(rankLocal, T, other, rankOther, field);
-}
-
-template <bool Signed>
-void dispatch_pair_field_impl(
-    int rankLocal,
-    const CartesianMultipole<4> &other, int rankOther,
-    double Rx, double Ry, double Rz,
-    CartesianMultipole<4> &field) {
-    int order = rankLocal + rankOther;
+/// Dispatch combined energy+force+fields computation (single T-tensor).
+EnergyForceFields dispatch_pair_ef_and_fields(
+    const CartesianMultipole<4> &cartA, int rankA,
+    const CartesianMultipole<4> &cartB, int rankB,
+    double Rx, double Ry, double Rz) {
+    int order = rankA + rankB;
     switch (order) {
-        case 0: compute_pair_field_impl<0, Signed>(rankLocal, other, rankOther, Rx, Ry, Rz, field); break;
-        case 1: compute_pair_field_impl<1, Signed>(rankLocal, other, rankOther, Rx, Ry, Rz, field); break;
-        case 2: compute_pair_field_impl<2, Signed>(rankLocal, other, rankOther, Rx, Ry, Rz, field); break;
-        case 3: compute_pair_field_impl<3, Signed>(rankLocal, other, rankOther, Rx, Ry, Rz, field); break;
-        case 4: compute_pair_field_impl<4, Signed>(rankLocal, other, rankOther, Rx, Ry, Rz, field); break;
-        case 5: compute_pair_field_impl<5, Signed>(rankLocal, other, rankOther, Rx, Ry, Rz, field); break;
-        case 6: compute_pair_field_impl<6, Signed>(rankLocal, other, rankOther, Rx, Ry, Rz, field); break;
-        case 7: compute_pair_field_impl<7, Signed>(rankLocal, other, rankOther, Rx, Ry, Rz, field); break;
-        case 8: compute_pair_field_impl<8, Signed>(rankLocal, other, rankOther, Rx, Ry, Rz, field); break;
-        default: break;
+        case 0: return compute_pair_ef_and_fields<0>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 1: return compute_pair_ef_and_fields<1>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 2: return compute_pair_ef_and_fields<2>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 3: return compute_pair_ef_and_fields<3>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 4: return compute_pair_ef_and_fields<4>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 5: return compute_pair_ef_and_fields<5>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 6: return compute_pair_ef_and_fields<6>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 7: return compute_pair_ef_and_fields<7>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 8: return compute_pair_ef_and_fields<8>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        default: return {};
     }
 }
 
@@ -145,51 +130,136 @@ RigidBodyForceResult aggregate_rigid_body_forces(
 // Stage 4: Full force/torque with multipole rotation contribution
 // -------------------------------------------------------------------
 
-/// Energy-only contraction with interaction-order filter.
-/// Computes E = sum_{lA+lB <= max_order} A[i] * T[i+j] * B[j]
-/// where lA = rank of component i, lB = rank of component j.
-static double contract_energy_order_filtered(
-    const CartesianMultipole<4> &A, int rankA,
-    const CartesianMultipole<4> &B, int rankB,
-    double Rx, double Ry, double Rz,
-    int max_order) {
+/// Fused energy+force+fields kernel with pre-weighted multipoles and lookup tables.
+///
+/// Computes energy, force gradient, field at A from B, and field at B from A
+/// in a single pass over (i,j) pairs. Only includes terms where lA + lB <= MaxOrder.
+///
+/// Key optimizations vs the previous 3-loop version:
+/// 1. Precomputed hermite_index lookup tables (add_table4) replace ~10 int ops per call
+/// 2. fieldA is a free byproduct of the energy inner sum (no separate loop)
+/// 3. fieldB is accumulated with 1 extra FMA per inner iteration (no separate loop)
+/// 4. Pre-weighted multipole arrays avoid redundant per-pair weighting
+template <int MaxOrder>
+static EnergyForceFields compute_pair_fused(
+    const double *wA, int rankA,
+    const double *wB, int rankB,
+    double Rx, double Ry, double Rz) {
     using namespace kernel_detail;
 
-    // Compute T-tensor at the truncated order (not full rankA+rankB)
-    int eff_order = std::min(rankA + rankB, max_order);
+    EnergyForceFields result;
 
-    // We need a T-tensor of order max_order+1 (for gradient) but here
-    // we only need energy, so order max_order suffices.
-    // Use order 8 T-tensor (the largest we support) and just don't
-    // access entries beyond max_order.
-    InteractionTensor<9> T;
-    compute_interaction_tensor<9>(Rx, Ry, Rz, T);
+    InteractionTensor<MaxOrder + 1> T;
+    compute_interaction_tensor<MaxOrder + 1>(Rx, Ry, Rz, T);
+
+    const int nA_eff = nhermsum(std::min(rankA, MaxOrder));
+    const int nB_max = nhermsum(std::min(rankB, MaxOrder));
+
+    double energy = 0.0, gx = 0.0, gy = 0.0, gz = 0.0;
+    alignas(64) double fB[nhermsum(4)] = {};
+
+    for (int i = 0; i < nA_eff; ++i) {
+        auto [ta, ua, va] = tuv4.entries[i];
+        int lA = ta + ua + va;
+        int nB_eff = nhermsum(std::min(rankB, MaxOrder - lA));
+        double wAi = wA[i];
+        double eA = 0.0, gxA = 0.0, gyA = 0.0, gzA = 0.0;
+        for (int j = 0; j < nB_eff; ++j) {
+            double T_e = T.data[add_table4.energy[i][j]];
+            double wBj = wB[j];
+            eA  += T_e * wBj;
+            gxA += T.data[add_table4.force_x[i][j]] * wBj;
+            gyA += T.data[add_table4.force_y[i][j]] * wBj;
+            gzA += T.data[add_table4.force_z[i][j]] * wBj;
+            fB[j] += T_e * wAi;
+        }
+        result.fieldA.data[i] = eA;
+        energy += wAi * eA;
+        gx += wAi * gxA;
+        gy += wAi * gyA;
+        gz += wAi * gzA;
+    }
+    result.eg = {energy, {gx, gy, gz}};
+    for (int j = 0; j < nB_max; ++j)
+        result.fieldB.data[j] = fB[j];
+
+    return result;
+}
+
+/// Dispatch fused kernel by max_order (runtime → compile-time).
+static EnergyForceFields dispatch_pair_fused(
+    const double *wA, int rankA,
+    const double *wB, int rankB,
+    double Rx, double Ry, double Rz,
+    int max_order) {
+    switch (max_order) {
+        case 0: return compute_pair_fused<0>(wA, rankA, wB, rankB, Rx, Ry, Rz);
+        case 1: return compute_pair_fused<1>(wA, rankA, wB, rankB, Rx, Ry, Rz);
+        case 2: return compute_pair_fused<2>(wA, rankA, wB, rankB, Rx, Ry, Rz);
+        case 3: return compute_pair_fused<3>(wA, rankA, wB, rankB, Rx, Ry, Rz);
+        case 4: return compute_pair_fused<4>(wA, rankA, wB, rankB, Rx, Ry, Rz);
+        case 5: return compute_pair_fused<5>(wA, rankA, wB, rankB, Rx, Ry, Rz);
+        case 6: return compute_pair_fused<6>(wA, rankA, wB, rankB, Rx, Ry, Rz);
+        case 7: return compute_pair_fused<7>(wA, rankA, wB, rankB, Rx, Ry, Rz);
+        case 8: return compute_pair_fused<8>(wA, rankA, wB, rankB, Rx, Ry, Rz);
+        default: return {};
+    }
+}
+
+/// Combined energy+force+fields contraction with interaction-order filter.
+/// Non-preweighted version for the non-hot-path (full-order) case.
+template <int MaxOrder>
+static EnergyForceFields compute_pair_ef_and_fields_filtered(
+    const CartesianMultipole<4> &cartA, int rankA,
+    const CartesianMultipole<4> &cartB, int rankB,
+    double Rx, double Ry, double Rz) {
+    using namespace kernel_detail;
 
     const int nA = nhermsum(rankA);
     const int nB = nhermsum(rankB);
 
-    double energy = 0.0;
-    for (int i = 0; i < nA; ++i) {
-        auto [ta, ua, va] = tuv4.entries[i];
-        int lA = ta + ua + va;
-        double wA = weights4.sign_inv_fact[i] * A.data[i];
-        if (wA == 0.0) continue;
-        for (int j = 0; j < nB; ++j) {
-            auto [tb, ub, vb] = tuv4.entries[j];
-            int lB = tb + ub + vb;
-            if (lA + lB > max_order) continue;
-            double wB = weights4.inv_fact[j] * B.data[j];
-            energy += wA * T.data[hermite_index(ta+tb, ua+ub, va+vb)] * wB;
-        }
-    }
-    return energy;
+    alignas(64) double wA[nhermsum(4)];
+    alignas(64) double wB[nhermsum(4)];
+    for (int i = 0; i < nA; ++i)
+        wA[i] = weights4.sign_inv_fact[i] * cartA.data[i];
+    for (int j = 0; j < nB; ++j)
+        wB[j] = weights4.inv_fact[j] * cartB.data[j];
+
+    return compute_pair_fused<MaxOrder>(wA, rankA, wB, rankB, Rx, Ry, Rz);
 }
+
+/// Dispatch filtered ef+fields by max_order (runtime → compile-time).
+EnergyForceFields dispatch_pair_ef_and_fields_filtered(
+    const CartesianMultipole<4> &cartA, int rankA,
+    const CartesianMultipole<4> &cartB, int rankB,
+    double Rx, double Ry, double Rz,
+    int max_order) {
+    switch (max_order) {
+        case 0: return compute_pair_ef_and_fields_filtered<0>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 1: return compute_pair_ef_and_fields_filtered<1>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 2: return compute_pair_ef_and_fields_filtered<2>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 3: return compute_pair_ef_and_fields_filtered<3>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 4: return compute_pair_ef_and_fields_filtered<4>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 5: return compute_pair_ef_and_fields_filtered<5>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 6: return compute_pair_ef_and_fields_filtered<6>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 7: return compute_pair_ef_and_fields_filtered<7>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        case 8: return compute_pair_ef_and_fields_filtered<8>(cartA, rankA, cartB, rankB, Rx, Ry, Rz);
+        default: return {};
+    }
+}
+
+/// Pre-weighted multipole data for a single site.
+struct PreweightedSite {
+    alignas(64) double w[nhermsum(4)];
+};
 
 FullRigidBodyResult compute_molecule_forces_torques(
     const CartesianMolecule &molA,
     const CartesianMolecule &molB,
     double site_cutoff,
-    int max_interaction_order) {
+    int max_interaction_order,
+    const Vec3 &offset_B) {
+    using namespace kernel_detail;
     FullRigidBodyResult result;
 
     const size_t nA = molA.sites.size();
@@ -205,56 +275,69 @@ FullRigidBodyResult compute_molecule_forces_torques(
     const bool use_site_cutoff = (site_cutoff > 0.0);
     const bool use_order_cutoff = (max_interaction_order >= 0);
 
-    // Single pass: compute energy, per-site forces, and interaction fields
+    // Precompute weighted multipoles once per molecule pair (Stage 3).
+    // molA sites use sign_inv_fact weighting (A-side).
+    // molB sites use inv_fact weighting (B-side).
+    static constexpr size_t MAX_SITES_STACK = 16;
+    PreweightedSite pw_stack_A[MAX_SITES_STACK], pw_stack_B[MAX_SITES_STACK];
+    std::unique_ptr<PreweightedSite[]> pw_heap_A, pw_heap_B;
+    PreweightedSite *pwA = nA <= MAX_SITES_STACK
+        ? pw_stack_A
+        : (pw_heap_A.reset(new PreweightedSite[nA]), pw_heap_A.get());
+    PreweightedSite *pwB = nB <= MAX_SITES_STACK
+        ? pw_stack_B
+        : (pw_heap_B.reset(new PreweightedSite[nB]), pw_heap_B.get());
+
+    for (size_t i = 0; i < nA; ++i) {
+        const auto &s = molA.sites[i];
+        if (s.rank < 0) continue;
+        int nc = nhermsum(s.rank);
+        for (int c = 0; c < nc; ++c)
+            pwA[i].w[c] = weights4.sign_inv_fact[c] * s.cart.data[c];
+    }
+    for (size_t j = 0; j < nB; ++j) {
+        const auto &s = molB.sites[j];
+        if (s.rank < 0) continue;
+        int nc = nhermsum(s.rank);
+        for (int c = 0; c < nc; ++c)
+            pwB[j].w[c] = weights4.inv_fact[c] * s.cart.data[c];
+    }
+
+    // Site-pair loop: compute energy, per-site forces, and interaction fields
     for (size_t i = 0; i < nA; ++i) {
         const auto &sA = molA.sites[i];
         if (sA.rank < 0) continue;
         for (size_t j = 0; j < nB; ++j) {
             const auto &sB = molB.sites[j];
             if (sB.rank < 0) continue;
-            Vec3 R_ang = sB.position - sA.position;
+            Vec3 R_ang = (sB.position + offset_B) - sA.position;
             if (use_site_cutoff && R_ang.norm() > site_cutoff) continue;
             Vec3 R = R_ang / occ::units::BOHR_TO_ANGSTROM;
             double Rx = R[0], Ry = R[1], Rz = R[2];
 
-            // Energy and force
-            // When order-truncated, use filtered energy (no force/torque)
-            if (use_order_cutoff && (sA.rank + sB.rank) > max_interaction_order) {
-                // This pair has contributions at order > max, but may also
-                // have contributions at order <= max. Use filtered contraction.
-                double e = contract_energy_order_filtered(
-                    sA.cart, sA.rank, sB.cart, sB.rank,
+            EnergyForceFields eff;
+            if (use_order_cutoff) {
+                // Fused kernel with pre-weighted multipoles and lookup tables
+                eff = dispatch_pair_fused(
+                    pwA[i].w, sA.rank, pwB[j].w, sB.rank,
                     Rx, Ry, Rz, max_interaction_order);
-                result.energy += e * occ::units::AU_TO_KJ_PER_MOL;
-                // Skip force/torque for truncated pairs
-                // (strain derivatives only need energy)
-                continue;
+            } else {
+                // Full order: T-tensor at rankA+rankB+1
+                eff = dispatch_pair_ef_and_fields(sA.cart, sA.rank,
+                                                  sB.cart, sB.rank,
+                                                  Rx, Ry, Rz);
             }
-
-            auto eg = dispatch_pair_ef(sA.cart, sA.rank,
-                                       sB.cart, sB.rank,
-                                       Rx, Ry, Rz);
-            Vec3 grad_bohr(eg.grad[0], eg.grad[1], eg.grad[2]);
+            Vec3 grad_bohr(eff.eg.grad[0], eff.eg.grad[1], eff.eg.grad[2]);
             Vec3 grad = grad_bohr * (occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM);
-            result.energy += eg.energy * occ::units::AU_TO_KJ_PER_MOL;
+            result.energy += eff.eg.energy * occ::units::AU_TO_KJ_PER_MOL;
             forces_A[i] += grad;
             forces_B[j] -= grad;
 
-            // Interaction field at site A from site B (for A's torque)
-            CartesianMultipole<4> fieldA_ij;
-            dispatch_pair_field_impl<false>(sA.rank, sB.cart, sB.rank,
-                                            Rx, Ry, Rz, fieldA_ij);
-            for (int k = 0; k < CartesianMultipole<4>::size; ++k)
-                fields_A[i].data[k] += fieldA_ij.data[k];
-
-            // Interaction field at site B from site A (for B's torque)
-            // field_B[j] = Σ_i sign_inv_fact[i] * A[i] * T(R; ti+tj, ...)
-            // Uses +R (same direction) and signed weights for A
-            CartesianMultipole<4> fieldB_ji;
-            dispatch_pair_field_impl<true>(sB.rank, sA.cart, sA.rank,
-                                           Rx, Ry, Rz, fieldB_ji);
-            for (int k = 0; k < CartesianMultipole<4>::size; ++k)
-                fields_B[j].data[k] += fieldB_ji.data[k];
+            // Accumulate interaction fields for torque computation
+            for (int k = 0; k < CartesianMultipole<4>::size; ++k) {
+                fields_A[i].data[k] += eff.fieldA.data[k];
+                fields_B[j].data[k] += eff.fieldB.data[k];
+            }
         }
     }
 
@@ -282,7 +365,6 @@ FullRigidBodyResult compute_molecule_forces_torques(
             for (size_t i = 0; i < nA; ++i) {
                 if (molA.sites[i].rank <= 0) continue;
                 const auto &d_cart = bd.d_multipoles[k][i];
-                using namespace kernel_detail;
                 int nComp = nhermsum(molA.sites[i].rank);
                 for (int c = 0; c < nComp; ++c) {
                     tau_k += weights4.sign_inv_fact[c] * d_cart.data[c]
@@ -312,7 +394,6 @@ FullRigidBodyResult compute_molecule_forces_torques(
                 if (molB.sites[j].rank <= 0) continue;
                 const auto &d_cart = bd.d_multipoles[k][j];
                 // B-side uses inv_fact (no (-1)^l sign) for contraction
-                using namespace kernel_detail;
                 int nComp = nhermsum(molB.sites[j].rank);
                 for (int c = 0; c < nComp; ++c) {
                     tau_k += weights4.inv_fact[c] * d_cart.data[c]

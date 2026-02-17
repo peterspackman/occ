@@ -3,6 +3,7 @@
 #include <occ/mults/cartesian_hessian.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
+#include <occ/core/timings.h>
 #include <Eigen/Geometry>
 #include <cmath>
 
@@ -117,6 +118,10 @@ CrystalEnergy::CrystalEnergy(const crystal::Crystal& crystal,
     initialize_force_field();
 }
 
+CrystalEnergy::~CrystalEnergy() = default;
+CrystalEnergy::CrystalEnergy(CrystalEnergy&&) noexcept = default;
+CrystalEnergy& CrystalEnergy::operator=(CrystalEnergy&&) noexcept = default;
+
 // ============================================================================
 // Neighbor List Construction
 // ============================================================================
@@ -178,6 +183,13 @@ void CrystalEnergy::build_neighbor_list() {
 
 void CrystalEnergy::update_neighbors() {
     build_neighbor_list();
+}
+
+void CrystalEnergy::update_lattice(const crystal::Crystal& strained_crystal,
+                                    std::vector<MoleculeState> new_states) {
+    m_crystal = strained_crystal;
+    m_initial_states = std::move(new_states);
+    m_ewald_lattice_cache.reset();  // Invalidate: lattice changed
 }
 
 void CrystalEnergy::build_neighbor_list_from_positions(
@@ -400,7 +412,9 @@ void CrystalEnergy::compute_short_range_pair(
     double& energy,
     Vec3& force_i, Vec3& force_j,
     Vec3& torque_i, Vec3& torque_j,
-    int neighbor_idx) const {
+    int neighbor_idx,
+    const MoleculeCache* cache_i,
+    const MoleculeCache* cache_j) const {
 
     if (m_force_field == ForceFieldType::None) {
         return;
@@ -408,6 +422,7 @@ void CrystalEnergy::compute_short_range_pair(
 
     const auto& geom_i = m_geometry[mol_i];
     const auto& geom_j = m_geometry[mol_j];
+    const size_t nA = geom_i.atom_positions.size();
     const size_t nB = geom_j.atom_positions.size();
 
     // Check if we have frozen site masks for this neighbor pair
@@ -415,13 +430,16 @@ void CrystalEnergy::compute_short_range_pair(
                              static_cast<size_t>(neighbor_idx) < m_fixed_site_masks.size() &&
                              !m_fixed_site_masks[neighbor_idx].empty());
 
-    Mat3 R_i = state_i.rotation_matrix();
-    Mat3 R_j = state_j.rotation_matrix();
+    // Use cached rotation matrices or compute them
+    Mat3 R_i_storage, R_j_storage;
+    const Mat3& R_i = cache_i ? cache_i->rotation : (R_i_storage = state_i.rotation_matrix());
+    const Mat3& R_j = cache_j ? cache_j->rotation : (R_j_storage = state_j.rotation_matrix());
 
     // Loop over atom pairs
-    for (size_t a = 0; a < geom_i.atom_positions.size(); ++a) {
+    for (size_t a = 0; a < nA; ++a) {
         int Z_a = geom_i.atomic_numbers[a];
-        Vec3 pos_a = state_i.position + R_i * geom_i.atom_positions[a];
+        Vec3 pos_a = cache_i ? cache_i->lab_atom_positions[a]
+                             : (state_i.position + R_i * geom_i.atom_positions[a]);
 
         for (size_t b = 0; b < nB; ++b) {
             // Apply frozen mask or distance cutoff
@@ -432,7 +450,12 @@ void CrystalEnergy::compute_short_range_pair(
             }
 
             int Z_b = geom_j.atomic_numbers[b];
-            Vec3 pos_b = state_j.position + translation + R_j * geom_j.atom_positions[b];
+            Vec3 pos_b;
+            if (cache_j) {
+                pos_b = cache_j->lab_atom_positions[b] + translation;
+            } else {
+                pos_b = state_j.position + translation + R_j * geom_j.atom_positions[b];
+            }
 
             Vec3 r_ab = pos_b - pos_a;
             double r = r_ab.norm();
@@ -488,25 +511,48 @@ void CrystalEnergy::compute_short_range_pair(
 // ============================================================================
 
 CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& molecules) {
+    occ::timing::StopWatch<6> sw;
+    // 0: cache, 1: set_orientation, 2: cartesian(), 3: elec pairs, 4: SR pairs, 5: ewald
+
     const int N = static_cast<int>(molecules.size());
     CrystalEnergyResult result;
     result.forces.resize(N, Vec3::Zero());
     result.torques.resize(N, Vec3::Zero());
     result.molecule_energies.resize(N, 0.0);
 
+    sw.start(0);
+    // Precompute rotation matrices and lab-frame atom positions once
+    std::vector<MoleculeCache> mol_cache(N);
+    for (int i = 0; i < N; ++i) {
+        mol_cache[i].rotation = molecules[i].rotation_matrix();
+        if (!m_geometry.empty() && i < static_cast<int>(m_geometry.size())) {
+            const auto& geom = m_geometry[i];
+            mol_cache[i].lab_atom_positions.resize(geom.atom_positions.size());
+            for (size_t a = 0; a < geom.atom_positions.size(); ++a) {
+                mol_cache[i].lab_atom_positions[a] =
+                    molecules[i].position + mol_cache[i].rotation * geom.atom_positions[a];
+            }
+        }
+    }
+    sw.stop(0);
+
+    sw.start(1);
     // Update multipole orientations (modifies m_multipoles in place)
     for (int i = 0; i < N; ++i) {
         m_multipoles[i].set_orientation(
-            molecules[i].rotation_matrix(),
+            mol_cache[i].rotation,
             molecules[i].position);
     }
+    sw.stop(1);
 
+    sw.start(2);
     // Pre-build all CartesianMolecules ONCE (expensive conversion happens here)
     std::vector<CartesianMolecule> cart_mols;
     cart_mols.reserve(N);
     for (int i = 0; i < N; ++i) {
         cart_mols.push_back(m_multipoles[i].cartesian());
     }
+    sw.stop(2);
 
     // Loop over neighbor pairs
     for (size_t pair_idx = 0; pair_idx < m_neighbors.size(); ++pair_idx) {
@@ -518,12 +564,6 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
         Vec3 cell_translation = m_crystal.unit_cell().to_cartesian(
             pair.cell_shift.cast<double>());
 
-        // Create translated copy - just shift positions, don't rebuild multipoles
-        CartesianMolecule mol_j_translated = cart_mols[j];
-        for (auto& site : mol_j_translated.sites) {
-            site.position += cell_translation;
-        }
-
         // Electrostatic interaction.
         // COM gate: skip electrostatics for pairs with COM distance > cutoff.
         // This matches DMACRYS TBLCNT which selects molecule pairs by COM distance.
@@ -534,11 +574,15 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
             include_elec = false;
         }
         if (include_elec) {
+            sw.start(3);
+            // Pass cell_translation as offset_B to avoid copying CartesianMolecule
             auto elec_result = compute_molecule_forces_torques(
                 cart_mols[i],
-                mol_j_translated,
+                cart_mols[j],
                 m_elec_site_cutoff,
-                m_max_interaction_order);
+                m_max_interaction_order,
+                cell_translation);
+            sw.stop(3);
 
             double e_elec = pair.weight * elec_result.energy;
             result.electrostatic_energy += e_elec;
@@ -558,6 +602,7 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
         Vec3 sr_torque_i = Vec3::Zero();
         Vec3 sr_torque_j = Vec3::Zero();
 
+        sw.start(4);
         compute_short_range_pair(
             i, j,
             molecules[i], molecules[j],
@@ -566,7 +611,9 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
             sr_energy,
             sr_force_i, sr_force_j,
             sr_torque_i, sr_torque_j,
-            static_cast<int>(pair_idx));
+            static_cast<int>(pair_idx),
+            &mol_cache[i], &mol_cache[j]);
+        sw.stop(4);
 
         result.repulsion_dispersion += sr_energy;
         result.molecule_energies[i] += sr_energy * 0.5;
@@ -580,7 +627,9 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
 
     // Ewald correction for charge-charge electrostatics
     if (m_use_ewald) {
+        sw.start(5);
         auto ewald = compute_charge_ewald_correction(molecules, cart_mols);
+        sw.stop(5);
         result.electrostatic_energy += ewald.energy;
         for (int i = 0; i < N; ++i) {
             result.forces[i] += ewald.forces[i];
@@ -589,6 +638,12 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
     }
 
     result.total_energy = result.electrostatic_energy + result.repulsion_dispersion;
+
+    occ::log::debug("compute() timing: cache={:.3f}ms orient={:.3f}ms "
+                     "cartesian={:.3f}ms elec={:.3f}ms SR={:.3f}ms ewald={:.3f}ms",
+                     sw.read(0)*1e3, sw.read(1)*1e3, sw.read(2)*1e3,
+                     sw.read(3)*1e3, sw.read(4)*1e3, sw.read(5)*1e3);
+
     return result;
 }
 
@@ -791,11 +846,6 @@ std::vector<PairEnergyDebug> CrystalEnergy::debug_pair_energies(const std::vecto
         Vec3 cell_translation = m_crystal.unit_cell().to_cartesian(
             pair.cell_shift.cast<double>());
 
-        CartesianMolecule mol_j_translated = cart_mols[j];
-        for (auto& site : mol_j_translated.sites) {
-            site.position += cell_translation;
-        }
-
         PairEnergyDebug dbg;
         dbg.mol_i = i;
         dbg.mol_j = j;
@@ -807,7 +857,8 @@ std::vector<PairEnergyDebug> CrystalEnergy::debug_pair_energies(const std::vecto
         dbg.com_distance = (com_j - com_i).norm();
 
         if (m_use_cartesian) {
-            auto elec = compute_molecule_forces_torques(cart_mols[i], mol_j_translated, 0.0);
+            auto elec = compute_molecule_forces_torques(
+                cart_mols[i], cart_mols[j], 0.0, -1, cell_translation);
             dbg.electrostatic = pair.weight * elec.energy;
             dbg.total += dbg.electrostatic;
         }
@@ -878,11 +929,19 @@ CrystalEnergy::EwaldCorrectionResult CrystalEnergy::compute_charge_ewald_correct
     }
     params.include_dipole = m_ewald_dipole;
 
-    // Call standalone Ewald engine
+    // Lazy-build lattice cache on first call (reused across evaluations
+    // while the unit cell and Ewald params don't change).
+    if (!m_ewald_lattice_cache) {
+        m_ewald_lattice_cache = std::make_unique<EwaldLatticeCache>(
+            build_ewald_lattice_cache(m_crystal.unit_cell(), params));
+    }
+
+    // Call standalone Ewald engine with cached lattice
     auto raw = compute_ewald_correction(
         ewald_sites, m_crystal.unit_cell(), m_neighbors,
         mol_site_indices, m_cutoff_radius,
-        m_use_com_elec_gate, m_elec_site_cutoff, params);
+        m_use_com_elec_gate, m_elec_site_cutoff, params,
+        m_ewald_lattice_cache.get());
 
     ewald_result.energy = raw.energy;
 

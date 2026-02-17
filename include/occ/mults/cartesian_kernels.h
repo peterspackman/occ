@@ -68,6 +68,43 @@ struct WeightTable {
 
 inline constexpr WeightTable<4> weights4{};
 
+/// Precomputed hermite_index addition tables for contraction hot paths.
+///
+/// For each pair of hermite indices (i, j), stores the combined index
+/// hermite_index(ta+tb, ua+ub, va+vb) and the three shifted-index variants
+/// for force gradients. Replaces ~10 integer ops per hermite_index call
+/// with a single array lookup.
+///
+/// Table size: N×N × 4 × 4 bytes. For MaxL=4: 35×35×16 = ~19KB (fits in L1).
+template <int MaxL>
+struct HermiteAddTable {
+    static constexpr int N = nhermsum(MaxL);
+    int energy[N][N];    // hermite_index(ta+tb, ua+ub, va+vb)
+    int force_x[N][N];   // hermite_index(ta+tb+1, ua+ub, va+vb)
+    int force_y[N][N];   // hermite_index(ta+tb, ua+ub+1, va+vb)
+    int force_z[N][N];   // hermite_index(ta+tb, ua+ub, va+vb+1)
+
+    constexpr HermiteAddTable() : energy{}, force_x{}, force_y{}, force_z{} {
+        constexpr TUVTable<MaxL> tuv{};
+        for (int i = 0; i < N; ++i) {
+            int ta = tuv.entries[i].t;
+            int ua = tuv.entries[i].u;
+            int va = tuv.entries[i].v;
+            for (int j = 0; j < N; ++j) {
+                int tb = tuv.entries[j].t;
+                int ub = tuv.entries[j].u;
+                int vb = tuv.entries[j].v;
+                energy[i][j]  = hermite_index(ta+tb, ua+ub, va+vb);
+                force_x[i][j] = hermite_index(ta+tb+1, ua+ub, va+vb);
+                force_y[i][j] = hermite_index(ta+tb, ua+ub+1, va+vb);
+                force_z[i][j] = hermite_index(ta+tb, ua+ub, va+vb+1);
+            }
+        }
+    }
+};
+
+inline constexpr HermiteAddTable<4> add_table4{};
+
 /// Lightweight energy + gradient result (no Eigen dependency).
 struct EnergyGradient {
     double energy;
@@ -107,11 +144,9 @@ double contract_ranked(const CartesianMultipole<4> &A, int rankA,
 
     for (int i = 0; i < nA; ++i) {
         if (wA[i] == 0.0) continue;
-        auto [ta, ua, va] = tuv4.entries[i];
         double eA = 0.0;
         for (int j = 0; j < nB; ++j) {
-            auto [tb, ub, vb] = tuv4.entries[j];
-            eA += T.data[hermite_index(ta + tb, ua + ub, va + vb)] * wB[j];
+            eA += T.data[add_table4.energy[i][j]] * wB[j];
         }
         energy += wA[i] * eA;
     }
@@ -152,18 +187,13 @@ kernel_detail::EnergyGradient contract_ranked_with_force(
 
     for (int i = 0; i < nA; ++i) {
         if (wA[i] == 0.0) continue;
-        auto [ta, ua, va] = tuv4.entries[i];
         double eA = 0.0, gxA = 0.0, gyA = 0.0, gzA = 0.0;
         for (int j = 0; j < nB; ++j) {
-            auto [tb, ub, vb] = tuv4.entries[j];
-            int tt = ta + tb, uu = ua + ub, vv = va + vb;
-            double Tval = T.data[hermite_index(tt, uu, vv)];
             double wBj = wB[j];
-            eA += Tval * wBj;
-            // Shifted-index T-tensor values for gradient
-            gxA += T.data[hermite_index(tt + 1, uu, vv)] * wBj;
-            gyA += T.data[hermite_index(tt, uu + 1, vv)] * wBj;
-            gzA += T.data[hermite_index(tt, uu, vv + 1)] * wBj;
+            eA  += T.data[add_table4.energy[i][j]] * wBj;
+            gxA += T.data[add_table4.force_x[i][j]] * wBj;
+            gyA += T.data[add_table4.force_y[i][j]] * wBj;
+            gzA += T.data[add_table4.force_z[i][j]] * wBj;
         }
         energy += wA[i] * eA;
         gx += wA[i] * gxA;
@@ -203,14 +233,84 @@ void compute_interaction_field(
     }
 
     for (int i = 0; i < nLocal; ++i) {
-        auto [ta, ua, va] = tuv4.entries[i];
         double f = 0.0;
         for (int j = 0; j < nOther; ++j) {
-            auto [tb, ub, vb] = tuv4.entries[j];
-            f += T.data[hermite_index(ta + tb, ua + ub, va + vb)] * wOther[j];
+            f += T.data[add_table4.energy[i][j]] * wOther[j];
         }
         field.data[i] = f;
     }
+}
+
+/// Compute interaction field from a pre-computed T-tensor of higher order.
+///
+/// Same as compute_interaction_field, but accepts InteractionTensor<HigherOrder>
+/// and only accesses elements up to rankLocal + rankOther. This avoids
+/// recomputing the T-tensor when we already have one at sufficient order.
+template <int HigherOrder, bool OtherSigned = false>
+void compute_interaction_field_from_tensor(
+    int rankLocal,
+    const InteractionTensor<HigherOrder> &T,
+    const CartesianMultipole<4> &other, int rankOther,
+    CartesianMultipole<4> &field) {
+    using namespace kernel_detail;
+
+    const int nLocal = nhermsum(rankLocal);
+    const int nOther = nhermsum(rankOther);
+
+    alignas(64) double wOther[nhermsum(4)];
+    for (int j = 0; j < nOther; ++j) {
+        if constexpr (OtherSigned)
+            wOther[j] = weights4.sign_inv_fact[j] * other.data[j];
+        else
+            wOther[j] = weights4.inv_fact[j] * other.data[j];
+    }
+
+    for (int i = 0; i < nLocal; ++i) {
+        double f = 0.0;
+        for (int j = 0; j < nOther; ++j) {
+            f += T.data[add_table4.energy[i][j]] * wOther[j];
+        }
+        field.data[i] = f;
+    }
+}
+
+/// Combined energy+force+fields kernel.
+///
+/// Computes InteractionTensor<Order+1> once and extracts:
+/// 1. Energy and force gradient (from contract_ranked_with_force)
+/// 2. Interaction field at A from B (OtherSigned=false)
+/// 3. Interaction field at B from A (OtherSigned=true)
+///
+/// This replaces 3 separate T-tensor computations with 1.
+struct EnergyForceFields {
+    kernel_detail::EnergyGradient eg;
+    CartesianMultipole<4> fieldA;
+    CartesianMultipole<4> fieldB;
+};
+
+template <int Order>
+EnergyForceFields compute_pair_ef_and_fields(
+    const CartesianMultipole<4> &cartA, int rankA,
+    const CartesianMultipole<4> &cartB, int rankB,
+    double Rx, double Ry, double Rz) {
+    EnergyForceFields result;
+
+    // Compute T-tensor at Order+1 (needed for force gradient)
+    InteractionTensor<Order + 1> T;
+    compute_interaction_tensor<Order + 1>(Rx, Ry, Rz, T);
+
+    // Energy and force from the Order+1 tensor
+    result.eg = contract_ranked_with_force<Order>(cartA, rankA, T, cartB, rankB);
+
+    // Field at A from B: uses T elements up to Order (subset of Order+1)
+    compute_interaction_field_from_tensor<Order + 1, false>(
+        rankA, T, cartB, rankB, result.fieldA);
+
+    // Field at B from A: uses T elements up to Order (subset of Order+1)
+    compute_interaction_field_from_tensor<Order + 1, true>(
+        rankB, T, cartA, rankA, result.fieldB);
+
+    return result;
 }
 
 } // namespace occ::mults

@@ -125,7 +125,7 @@ void CartesianMolecule::update_orientation(
         sites[i].position = new_center + new_rotation * bd.body_offsets[i];
         rotate_cartesian_multipole<4>(bd.body_multipoles[i], new_rotation,
                                       sites[i].cart);
-        sites[i].rank = sites[i].cart.effective_rank();
+        // Rank is rotation-invariant; no need to recompute via effective_rank()
     }
     compute_rotation_derivatives(bd, sites);
 }

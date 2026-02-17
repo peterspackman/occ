@@ -93,4 +93,11 @@ void setup_crystal_energy_from_dmacrys(
     const std::vector<MultipoleSource> &multipoles,
     bool build_neighbors = true);
 
+/// Compute molecule states (COM positions + rotations) for a crystal.
+/// Useful for strained evaluations where geometry/neighbors don't change.
+std::vector<MoleculeState> compute_molecule_states(
+    const DmacrysInput &input,
+    const crystal::Crystal &crystal,
+    const std::vector<MultipoleSource> &multipoles);
+
 } // namespace occ::mults

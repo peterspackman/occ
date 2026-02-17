@@ -44,6 +44,41 @@ std::vector<std::vector<size_t>> build_mol_site_indices(
     return indices;
 }
 
+EwaldLatticeCache build_ewald_lattice_cache(
+    const crystal::UnitCell& unit_cell,
+    const EwaldParams& params) {
+    EwaldLatticeCache cache;
+
+    double alpha_bohr = params.alpha * occ::units::BOHR_TO_ANGSTROM;
+    cache.alpha_bohr = alpha_bohr;
+    cache.two_alpha_over_sqrt_pi = 2.0 * alpha_bohr / std::sqrt(M_PI);
+
+    Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
+    double volume_bohr = unit_cell.volume() *
+        std::pow(occ::units::ANGSTROM_TO_BOHR, 3);
+    Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
+    cache.four_pi_over_vol = 4.0 * M_PI / volume_bohr;
+
+    double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
+    int kmax = params.kmax;
+
+    cache.g_vectors.reserve((2*kmax+1)*(2*kmax+1)*(2*kmax+1) - 1);
+    for (int hx = -kmax; hx <= kmax; ++hx) {
+        for (int hy = -kmax; hy <= kmax; ++hy) {
+            for (int hz = -kmax; hz <= kmax; ++hz) {
+                if (hx == 0 && hy == 0 && hz == 0) continue;
+                Vec3 G = B_bohr * Vec3(hx, hy, hz);
+                double G2 = G.squaredNorm();
+                double coeff = std::exp(-G2 * inv_4alpha2) / G2;
+                if (coeff < 1e-12) continue;
+                cache.g_vectors.push_back({G, coeff});
+            }
+        }
+    }
+
+    return cache;
+}
+
 EwaldResult compute_ewald_correction(
     const std::vector<EwaldSite>& sites,
     const crystal::UnitCell& unit_cell,
@@ -52,7 +87,8 @@ EwaldResult compute_ewald_correction(
     double cutoff_radius,
     bool use_com_gate,
     double elec_site_cutoff,
-    const EwaldParams& params) {
+    const EwaldParams& params,
+    const EwaldLatticeCache* lattice_cache) {
 
     const int N = static_cast<int>(mol_site_indices.size());
     EwaldResult result;
@@ -63,8 +99,10 @@ EwaldResult compute_ewald_correction(
     double alpha = params.alpha;
     int kmax = params.kmax;
 
-    double alpha_bohr = alpha * occ::units::BOHR_TO_ANGSTROM;
-    double two_alpha_over_sqrt_pi = 2.0 * alpha_bohr / std::sqrt(M_PI);
+    double alpha_bohr = lattice_cache ? lattice_cache->alpha_bohr
+                                      : alpha * occ::units::BOHR_TO_ANGSTROM;
+    double two_alpha_over_sqrt_pi = lattice_cache ? lattice_cache->two_alpha_over_sqrt_pi
+                                                  : 2.0 * alpha_bohr / std::sqrt(M_PI);
 
     occ::log::debug("Ewald correction: alpha = {:.4f} /Ang ({:.6f} /Bohr), kmax = {}",
                     alpha, alpha_bohr, kmax);
@@ -178,64 +216,87 @@ EwaldResult compute_ewald_correction(
     }
 
     // Reciprocal-space sum
-    Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
-    double volume_bohr = unit_cell.volume() *
-        std::pow(occ::units::ANGSTROM_TO_BOHR, 3);
-    Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
+    // Use cached G-vectors when available; otherwise compute on the fly
+    double four_pi_over_vol;
+    if (lattice_cache) {
+        four_pi_over_vol = lattice_cache->four_pi_over_vol;
+    } else {
+        Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
+        double volume_bohr = unit_cell.volume() *
+            std::pow(occ::units::ANGSTROM_TO_BOHR, 3);
+        four_pi_over_vol = 4.0 * M_PI / volume_bohr;
+    }
 
-    double four_pi_over_vol = 4.0 * M_PI / volume_bohr;
-    double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
+    // Pre-allocate per-site sin/cos arrays to avoid recomputation in force loop
+    const size_t n_sites = isites.size();
+    std::vector<double> cos_phase(n_sites), sin_phase(n_sites);
 
-    for (int hx = -kmax; hx <= kmax; ++hx) {
-        for (int hy = -kmax; hy <= kmax; ++hy) {
-            for (int hz = -kmax; hz <= kmax; ++hz) {
-                if (hx == 0 && hy == 0 && hz == 0) continue;
+    // Lambda to process a single G-vector + coefficient pair
+    auto process_g_vector = [&](const Vec3& G, double coeff) {
+        // Structure factors — store sin/cos for reuse in force loop
+        double Sq_re = 0.0, Sq_im = 0.0;
+        double Smu_re = 0.0, Smu_im = 0.0;
+        for (size_t k = 0; k < n_sites; ++k) {
+            double phase = G.dot(isites[k].pos_bohr);
+#if defined(__APPLE__) && defined(__arm64__)
+            __sincos(phase, &sin_phase[k], &cos_phase[k]);
+#else
+            sin_phase[k] = std::sin(phase);
+            cos_phase[k] = std::cos(phase);
+#endif
+            Sq_re += isites[k].charge * cos_phase[k];
+            Sq_im += isites[k].charge * sin_phase[k];
+            if (params.include_dipole) {
+                double mu_dot_G = isites[k].dipole.dot(G);
+                Smu_re += mu_dot_G * cos_phase[k];
+                Smu_im += mu_dot_G * sin_phase[k];
+            }
+        }
 
-                Vec3 G = B_bohr * Vec3(hx, hy, hz);
-                double G2 = G.squaredNorm();
-                double coeff = std::exp(-G2 * inv_4alpha2) / G2;
+        // Energy: (2pi/V) * coeff * |S_q + i*S_mu|^2
+        double qq_recip = Sq_re * Sq_re + Sq_im * Sq_im;
+        double qmu_cross = params.include_dipole ?
+            -2.0 * (Sq_re * Smu_im - Sq_im * Smu_re) : 0.0;
+        double mumu_recip = params.include_dipole ?
+            Smu_re * Smu_re + Smu_im * Smu_im : 0.0;
+        double prefactor = 0.5 * four_pi_over_vol * coeff;
+        energy_ha += prefactor * (qq_recip + qmu_cross + mumu_recip);
 
-                // Structure factors
-                double Sq_re = 0.0, Sq_im = 0.0;
-                double Smu_re = 0.0, Smu_im = 0.0;
-                for (const auto& s : isites) {
-                    double phase = G.dot(s.pos_bohr);
-                    double cos_p = std::cos(phase);
-                    double sin_p = std::sin(phase);
-                    Sq_re += s.charge * cos_p;
-                    Sq_im += s.charge * sin_p;
-                    if (params.include_dipole) {
-                        double mu_dot_G = s.dipole.dot(G);
-                        Smu_re += mu_dot_G * cos_p;
-                        Smu_im += mu_dot_G * sin_p;
-                    }
-                }
+        // Forces — reuse cached sin/cos from structure factor pass
+        double P = Sq_re - Smu_im;
+        double Q = Sq_im + Smu_re;
+        for (size_t k = 0; k < n_sites; ++k) {
+            double q_k = isites[k].charge;
+            double mk = params.include_dipole ?
+                isites[k].dipole.dot(G) : 0.0;
 
-                // Energy: (2pi/V) * coeff * |S_q + i*S_mu|^2
-                double qq_recip = Sq_re * Sq_re + Sq_im * Sq_im;
-                double qmu_cross = params.include_dipole ?
-                    -2.0 * (Sq_re * Smu_im - Sq_im * Smu_re) : 0.0;
-                double mumu_recip = params.include_dipole ?
-                    Smu_re * Smu_re + Smu_im * Smu_im : 0.0;
-                double prefactor = 0.5 * four_pi_over_vol * coeff;
-                energy_ha += prefactor * (qq_recip + qmu_cross + mumu_recip);
+            double force_factor = q_k * (P * sin_phase[k] - Q * cos_phase[k])
+                                + mk * (P * cos_phase[k] + Q * sin_phase[k]);
 
-                // Forces
-                double P = Sq_re - Smu_im;
-                double Q = Sq_im + Smu_re;
-                for (size_t k = 0; k < isites.size(); ++k) {
-                    double q_k = isites[k].charge;
-                    double mk = params.include_dipole ?
-                        isites[k].dipole.dot(G) : 0.0;
+            forces_ha_bohr[k] += four_pi_over_vol * coeff * force_factor * G;
+        }
+    };
 
-                    double phase_k = G.dot(isites[k].pos_bohr);
-                    double sin_k = std::sin(phase_k);
-                    double cos_k = std::cos(phase_k);
+    if (lattice_cache) {
+        // Use pre-computed G-vectors and coefficients
+        for (const auto& gv : lattice_cache->g_vectors) {
+            process_g_vector(gv.G, gv.coeff);
+        }
+    } else {
+        // Compute on the fly
+        Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
+        Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
+        double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
 
-                    double force_factor = q_k * (P * sin_k - Q * cos_k)
-                                        + mk * (P * cos_k + Q * sin_k);
-
-                    forces_ha_bohr[k] += four_pi_over_vol * coeff * force_factor * G;
+        for (int hx = -kmax; hx <= kmax; ++hx) {
+            for (int hy = -kmax; hy <= kmax; ++hy) {
+                for (int hz = -kmax; hz <= kmax; ++hz) {
+                    if (hx == 0 && hy == 0 && hz == 0) continue;
+                    Vec3 G = B_bohr * Vec3(hx, hy, hz);
+                    double G2 = G.squaredNorm();
+                    double coeff = std::exp(-G2 * inv_4alpha2) / G2;
+                    if (coeff < 1e-12) continue;
+                    process_g_vector(G, coeff);
                 }
             }
         }

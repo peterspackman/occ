@@ -36,6 +36,9 @@ struct CrystalOptimizerSettings {
     int hessian_update_interval = 5;   ///< Recompute Hessian every N iterations (1=always, >1 uses SR1)
     std::string trajectory_file;       ///< If non-empty, write XYZ trajectory to this file
 
+    // Electrostatics
+    int max_interaction_order = 4;     ///< Max multipole interaction order (lA+lB); -1 = no truncation
+
     // Ewald electrostatics
     bool use_ewald = true;             ///< Enable Ewald-split electrostatics
     double ewald_accuracy = 1e-6;      ///< Target accuracy for eta/kmax auto choice

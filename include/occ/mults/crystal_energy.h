@@ -5,9 +5,12 @@
 #include <occ/crystal/crystal.h>
 #include <occ/core/linear_algebra.h>
 #include <map>
+#include <memory>
 #include <vector>
 
 namespace occ::mults {
+
+struct EwaldLatticeCache;  // Forward declaration (defined in ewald_sum.h)
 
 /**
  * @brief Force field type for repulsion-dispersion interactions.
@@ -131,6 +134,13 @@ public:
                   double ewald_eta = 0.0,
                   int ewald_kmax = 0);
 
+    /// Destructor (defined in .cpp for unique_ptr with forward-declared type).
+    ~CrystalEnergy();
+
+    /// Move operations (defined in .cpp where EwaldLatticeCache is complete).
+    CrystalEnergy(CrystalEnergy&&) noexcept;
+    CrystalEnergy& operator=(CrystalEnergy&&) noexcept;
+
     /// Compute energy and gradient for given molecular states.
     CrystalEnergyResult compute(const std::vector<MoleculeState>& molecules);
 
@@ -143,6 +153,12 @@ public:
 
     /// Get initial states from crystal geometry.
     std::vector<MoleculeState> initial_states() const;
+
+    /// Update the crystal lattice for strained evaluation.
+    /// Keeps: neighbors, force field, geometry (body-frame), multipoles.
+    /// Updates: crystal (for cell translations + Ewald), initial states.
+    void update_lattice(const crystal::Crystal& strained_crystal,
+                        std::vector<MoleculeState> new_states);
 
     /// Number of molecules in asymmetric unit.
     int num_molecules() const { return static_cast<int>(m_multipoles.size()); }
@@ -243,6 +259,12 @@ public:
     /// Get total number of multipole sites.
     size_t num_sites() const;
 
+    /// Cached per-molecule data to avoid redundant recomputation.
+    struct MoleculeCache {
+        Mat3 rotation;
+        std::vector<Vec3> lab_atom_positions; // state.position + R * body_pos
+    };
+
 private:
     // Ewald settings
     bool m_use_ewald = true;
@@ -277,6 +299,10 @@ private:
 
     std::vector<MoleculeState> m_initial_states;  // optional override
 
+    /// Cached Ewald lattice (G-vectors + coefficients). Lazy-built on first
+    /// Ewald call and reused while the unit cell and Ewald params are unchanged.
+    mutable std::unique_ptr<EwaldLatticeCache> m_ewald_lattice_cache;
+
     /// Result from Ewald correction mapped to rigid-body DOF.
     struct EwaldCorrectionResult {
         double energy = 0.0;           ///< Energy correction (kJ/mol)
@@ -292,6 +318,8 @@ private:
     /// Compute short-range energy and forces for a molecule pair.
     /// @param neighbor_idx Index into m_neighbors (used for fixed site masks).
     ///        Pass -1 if no fixed masks should be applied.
+    /// @param cache_i Precomputed rotation and lab-frame atom positions for mol_i (or nullptr).
+    /// @param cache_j Precomputed rotation and lab-frame atom positions for mol_j (or nullptr).
     void compute_short_range_pair(
         int mol_i, int mol_j,
         const MoleculeState& state_i,
@@ -301,7 +329,9 @@ private:
         double& energy,
         Vec3& force_i, Vec3& force_j,
         Vec3& torque_i, Vec3& torque_j,
-        int neighbor_idx = -1) const;
+        int neighbor_idx = -1,
+        const MoleculeCache* cache_i = nullptr,
+        const MoleculeCache* cache_j = nullptr) const;
 };
 
 } // namespace occ::mults

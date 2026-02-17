@@ -456,6 +456,35 @@ void setup_crystal_energy_from_dmacrys(
     }
 }
 
+std::vector<MoleculeState> compute_molecule_states(
+    const DmacrysInput &input,
+    const crystal::Crystal &crystal,
+    const std::vector<MultipoleSource> &multipoles) {
+
+    int n_mol = static_cast<int>(multipoles.size());
+    int n_sites = static_cast<int>(input.molecule.sites.size());
+
+    const auto &symops = crystal.space_group().symmetry_operations();
+
+    // Build fractional coordinates for asymmetric unit
+    Mat3N frac_asym(3, n_sites);
+    for (int i = 0; i < n_sites; ++i) {
+        frac_asym.col(i) = input.crystal.atoms[i].frac_xyz;
+    }
+
+    std::vector<MoleculeState> states;
+    states.reserve(n_mol);
+
+    for (int m = 0; m < n_mol; ++m) {
+        Mat3N frac_image = symops[m].apply(frac_asym);
+        Mat3N cart_image = crystal.unit_cell().to_cartesian(frac_image);
+        Vec3 com = mass_weighted_com(cart_image, input.molecule);
+        states.push_back(MoleculeState::from_rotation(com, multipoles[m].rotation()));
+    }
+
+    return states;
+}
+
 // --- Buckingham converter ---
 
 static constexpr double EV_TO_KJ_PER_MOL = 96.4853329;

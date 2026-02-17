@@ -55,10 +55,6 @@ void compute_interaction_tensor(double Rx, double Ry, double Rz,
     constexpr int num_aux = MaxL + 2;
     double R_all[num_aux * nsz];
 
-    for (int i = 0; i < num_aux * nsz; ++i) {
-        R_all[i] = 0.0;
-    }
-
     auto R_m = [&](int m, int t, int u, int v) -> double & {
         return R_all[m * nsz + hermite_index(t, u, v)];
     };

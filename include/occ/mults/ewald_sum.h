@@ -27,6 +27,25 @@ struct EwaldResult {
     std::vector<Vec3> site_forces; ///< Force correction per site (kJ/mol/Ang)
 };
 
+/// Pre-computed reciprocal lattice vectors and coefficients for Ewald.
+/// The lattice is fixed during strain FD loops, so G-vectors and
+/// exp(-G²/4α²)/G² can be cached and reused across evaluations.
+struct EwaldLatticeCache {
+    struct GVector {
+        Vec3 G;        ///< Reciprocal lattice vector (Bohr)
+        double coeff;  ///< exp(-G²/4α²) / G²
+    };
+    std::vector<GVector> g_vectors;
+    double four_pi_over_vol = 0.0;
+    double alpha_bohr = 0.0;
+    double two_alpha_over_sqrt_pi = 0.0;
+};
+
+/// Build an EwaldLatticeCache from unit cell and parameters.
+EwaldLatticeCache build_ewald_lattice_cache(
+    const crystal::UnitCell& unit_cell,
+    const EwaldParams& params);
+
 /// Compute Ewald correction: (Ewald total) - (truncated real-space sum).
 ///
 /// The correction is: reciprocal + self - erf(inter) - erf(intra),
@@ -48,7 +67,8 @@ EwaldResult compute_ewald_correction(
     double cutoff_radius,
     bool use_com_gate,
     double elec_site_cutoff,
-    const EwaldParams& params);
+    const EwaldParams& params,
+    const EwaldLatticeCache* lattice_cache = nullptr);
 
 /// Gather EwaldSites from CartesianMolecules (pure data extraction).
 std::vector<EwaldSite> gather_ewald_sites(

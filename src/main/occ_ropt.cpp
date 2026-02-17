@@ -192,6 +192,9 @@ CLI::App *add_ropt_subcommand(CLI::App &app) {
                    "print per-molecule net charge and site charges after DMA");
     ropt->add_option("--multipole-json", config->multipole_json,
                      "load multipoles and potentials from DMACRYS JSON file");
+    ropt->add_option("--max-order", config->max_interaction_order,
+                     "max multipole interaction order lA+lB (default: 4, -1=no truncation)");
+
     ropt->add_flag("--no-ewald", [config](int64_t){ config->use_ewald = false; },
                    "disable Ewald electrostatics (use truncated real space)");
     ropt->add_option("--ewald-acc", config->ewald_accuracy,
@@ -315,6 +318,7 @@ void run_ropt_subcommand(const RoptSettings &settings) {
                                    ? ForceFieldType::Custom
                                    : ForceFieldType::BuckinghamDE;
     opt_settings.use_cartesian_engine = settings.use_cartesian_engine;
+    opt_settings.max_interaction_order = settings.max_interaction_order;
     opt_settings.fix_first_translation = settings.fix_first_molecule;
     opt_settings.fix_first_rotation = false;  // Always allow rotation
     opt_settings.use_ewald = settings.use_ewald;
@@ -337,6 +341,13 @@ void run_ropt_subcommand(const RoptSettings &settings) {
     occ::log::info("  Fix first rotation: {}", opt_settings.fix_first_rotation);
     occ::log::info("  Engine: {}",
                    opt_settings.use_cartesian_engine ? "Cartesian T-tensor" : "S-functions");
+    if (opt_settings.max_interaction_order >= 0) {
+        occ::log::info("  Max interaction order: {} (lA+lB <= {})",
+                       opt_settings.max_interaction_order,
+                       opt_settings.max_interaction_order);
+    } else {
+        occ::log::info("  Max interaction order: unlimited");
+    }
 
     // Keep a copy of multipoles for DMACRYS setup (before move)
     auto multipoles_copy = prepared.multipoles;

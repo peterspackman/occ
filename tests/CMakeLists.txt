@@ -161,3 +161,7 @@ add_executable(mults_tests
 target_link_libraries(mults_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(mults_tests PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 catch_discover_tests(mults_tests)
+
+add_executable(bench_crystal "${CMAKE_CURRENT_SOURCE_DIR}/bench_crystal.cpp")
+target_link_libraries(bench_crystal PRIVATE occ_mults Threads::Threads)
+target_compile_definitions(bench_crystal PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")

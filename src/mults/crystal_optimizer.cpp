@@ -21,6 +21,7 @@ CrystalOptimizer::CrystalOptimizer(const crystal::Crystal& crystal,
                settings.force_field,
                settings.use_cartesian_engine) {
 
+    m_energy.set_max_interaction_order(settings.max_interaction_order);
     m_num_molecules = m_energy.num_molecules();
 
     if (m_num_molecules == 0) {

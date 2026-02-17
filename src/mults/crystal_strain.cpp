@@ -62,34 +62,27 @@ static ReferenceNeighborData build_reference_neighbor_data(
     return ref;
 }
 
-// Helper: build a CrystalEnergy for a (possibly strained) crystal, avoiding
-// wasted neighbor list construction when we'll override it immediately.
-static CrystalEnergy build_strained_calc(
+// Helper: build a reusable CrystalEnergy from reference data.
+static CrystalEnergy build_reusable_calc(
     const DmacrysInput& input,
-    const crystal::Crystal& strained_crystal,
+    const crystal::Crystal& crystal,
     const std::vector<MultipoleSource>& multipoles,
     const std::map<std::pair<int, int>, BuckinghamParams>& buck_params,
     double cutoff,
     bool use_ewald, double alpha, int kmax,
     int max_interaction_order,
-    const std::vector<NeighborPair>* fixed_neighbors,
-    const std::vector<std::vector<bool>>* fixed_site_masks) {
+    const std::vector<NeighborPair>& neighbors,
+    const std::vector<std::vector<bool>>& site_masks) {
 
-    CrystalEnergy calc(strained_crystal, multipoles, cutoff,
+    CrystalEnergy calc(crystal, multipoles, cutoff,
                        ForceFieldType::Custom, true, use_ewald,
                        1e-8, alpha, kmax);
 
-    // Skip building a neighbor list if we'll override immediately
-    bool skip_neighbors = (fixed_neighbors != nullptr);
-    setup_crystal_energy_from_dmacrys(calc, input, strained_crystal,
-                                       multipoles, skip_neighbors);
+    // Skip building neighbor list since we set it directly
+    setup_crystal_energy_from_dmacrys(calc, input, crystal, multipoles, false);
+    calc.set_neighbor_list(neighbors);
+    calc.set_fixed_site_masks(site_masks);
 
-    if (fixed_neighbors) {
-        calc.set_neighbor_list(*fixed_neighbors);
-    }
-    if (fixed_site_masks) {
-        calc.set_fixed_site_masks(*fixed_site_masks);
-    }
     if (max_interaction_order >= 0) {
         calc.set_max_interaction_order(max_interaction_order);
     }
@@ -98,7 +91,34 @@ static CrystalEnergy build_strained_calc(
         calc.set_buckingham_params(key.first, key.second, p);
     }
 
-    return calc;
+    return std::move(calc);
+}
+
+/// Evaluate a strained crystal by updating a reusable CrystalEnergy in place.
+/// Returns the CrystalEnergyResult directly.
+static CrystalEnergyResult evaluate_strained(
+    CrystalEnergy& calc,
+    const DmacrysInput& input,
+    const crystal::Crystal& ref_crystal,
+    const std::vector<MultipoleSource>& multipoles,
+    const Mat3& strain) {
+
+    const auto& uc = ref_crystal.unit_cell();
+    Mat3 direct = uc.direct();
+
+    // Deform: direct' = (I + eps) * direct
+    Mat3 deformation = Mat3::Identity() + strain;
+    Mat3 strained_direct = deformation * direct;
+
+    crystal::UnitCell strained_uc(strained_direct);
+    crystal::Crystal strained_crystal(
+        ref_crystal.asymmetric_unit(),
+        ref_crystal.space_group(),
+        strained_uc);
+
+    auto states = compute_molecule_states(input, strained_crystal, multipoles);
+    calc.update_lattice(strained_crystal, states);
+    return calc.compute(states);
 }
 
 StrainedResult compute_strained(
@@ -113,10 +133,29 @@ StrainedResult compute_strained(
     const std::vector<NeighborPair>* fixed_neighbors,
     const std::vector<std::vector<bool>>* fixed_site_masks) {
 
+    // When called with fixed neighbors, build a reusable calc
+    if (fixed_neighbors && fixed_site_masks) {
+        auto calc = build_reusable_calc(
+            input, crystal, multipoles, buck_params,
+            cutoff, use_ewald, alpha, kmax,
+            max_interaction_order, *fixed_neighbors, *fixed_site_masks);
+
+        auto result = evaluate_strained(calc, input, crystal, multipoles, strain);
+
+        StrainedResult out;
+        out.energy = result.total_energy;
+        const int N = static_cast<int>(result.forces.size());
+        out.gradient.resize(6 * N);
+        for (int i = 0; i < N; ++i) {
+            out.gradient.segment<3>(6 * i) = -result.forces[i];
+            out.gradient.segment<3>(6 * i + 3) = result.torques[i];
+        }
+        return out;
+    }
+
+    // Fallback: build fresh CrystalEnergy for the strained geometry
     const auto& uc = crystal.unit_cell();
     Mat3 direct = uc.direct();
-
-    // Deform: direct' = (I + eps) * direct
     Mat3 deformation = Mat3::Identity() + strain;
     Mat3 strained_direct = deformation * direct;
 
@@ -126,25 +165,29 @@ StrainedResult compute_strained(
         crystal.space_group(),
         strained_uc);
 
-    auto calc = build_strained_calc(
-        input, strained_crystal, multipoles, buck_params,
-        cutoff, use_ewald, alpha, kmax,
-        max_interaction_order, fixed_neighbors, fixed_site_masks);
+    CrystalEnergy calc(strained_crystal, multipoles, cutoff,
+                       ForceFieldType::Custom, true, use_ewald,
+                       1e-8, alpha, kmax);
+    setup_crystal_energy_from_dmacrys(calc, input, strained_crystal, multipoles);
+
+    if (max_interaction_order >= 0) {
+        calc.set_max_interaction_order(max_interaction_order);
+    }
+    for (const auto& [key, p] : buck_params) {
+        calc.set_buckingham_params(key.first, key.second, p);
+    }
 
     auto states = calc.initial_states();
     auto result = calc.compute(states);
 
     StrainedResult out;
     out.energy = result.total_energy;
-
-    // Pack as energy gradient: [-force, +torque]
     const int N = static_cast<int>(result.forces.size());
     out.gradient.resize(6 * N);
     for (int i = 0; i < N; ++i) {
         out.gradient.segment<3>(6 * i) = -result.forces[i];
         out.gradient.segment<3>(6 * i + 3) = result.torques[i];
     }
-
     return out;
 }
 
@@ -161,27 +204,27 @@ Vec6 compute_strain_derivatives_fd(
     auto ref = build_reference_neighbor_data(
         input, crystal, multipoles, cutoff, use_ewald, alpha, kmax);
 
+    // Build one CrystalEnergy and reuse for all evaluations
+    auto calc = build_reusable_calc(
+        input, crystal, multipoles, buck_params,
+        cutoff, use_ewald, alpha, kmax,
+        max_interaction_order, ref.neighbors, ref.site_masks);
+
     Vec6 dU_dE;
 
     for (int i = 0; i < 6; ++i) {
         Mat3 eps_plus = voigt_strain_tensor(i, +delta);
-        double E_plus = compute_strained_energy(
-            input, crystal, multipoles, buck_params,
-            eps_plus, cutoff, use_ewald, alpha, kmax,
-            max_interaction_order, &ref.neighbors, &ref.site_masks);
+        auto res_plus = evaluate_strained(calc, input, crystal, multipoles, eps_plus);
 
         Mat3 eps_minus = voigt_strain_tensor(i, -delta);
-        double E_minus = compute_strained_energy(
-            input, crystal, multipoles, buck_params,
-            eps_minus, cutoff, use_ewald, alpha, kmax,
-            max_interaction_order, &ref.neighbors, &ref.site_masks);
+        auto res_minus = evaluate_strained(calc, input, crystal, multipoles, eps_minus);
 
-        double dU_kJ = (E_plus - E_minus) / (2.0 * delta);
+        double dU_kJ = (res_plus.total_energy - res_minus.total_energy) / (2.0 * delta);
         dU_dE(i) = dU_kJ / units::EV_TO_KJ_PER_MOL;
 
         occ::log::info("Strain derivative E_{}: E(+d)={:.10f} E(-d)={:.10f} "
                         "dU/dE={:.6f} eV",
-                        i + 1, E_plus, E_minus, dU_dE(i));
+                        i + 1, res_plus.total_energy, res_minus.total_energy, dU_dE(i));
     }
 
     return dU_dE;
@@ -200,11 +243,14 @@ Mat6 compute_elastic_constants_fd(
     auto ref = build_reference_neighbor_data(
         input, crystal, multipoles, cutoff, use_ewald, alpha, kmax);
 
-    Mat3 zero_strain = Mat3::Zero();
-    double E0 = compute_strained_energy(
+    auto calc = build_reusable_calc(
         input, crystal, multipoles, buck_params,
-        zero_strain, cutoff, use_ewald, alpha, kmax,
-        max_interaction_order, &ref.neighbors, &ref.site_masks);
+        cutoff, use_ewald, alpha, kmax,
+        max_interaction_order, ref.neighbors, ref.site_masks);
+
+    Mat3 zero_strain = Mat3::Zero();
+    auto res0 = evaluate_strained(calc, input, crystal, multipoles, zero_strain);
+    double E0 = res0.total_energy;
 
     double V = crystal.unit_cell().volume();
 
@@ -216,14 +262,8 @@ Mat6 compute_elastic_constants_fd(
         Mat3 eps_p = voigt_strain_tensor(i, +delta);
         Mat3 eps_m = voigt_strain_tensor(i, -delta);
 
-        E_plus[i] = compute_strained_energy(
-            input, crystal, multipoles, buck_params,
-            eps_p, cutoff, use_ewald, alpha, kmax,
-            max_interaction_order, &ref.neighbors, &ref.site_masks);
-        E_minus[i] = compute_strained_energy(
-            input, crystal, multipoles, buck_params,
-            eps_m, cutoff, use_ewald, alpha, kmax,
-            max_interaction_order, &ref.neighbors, &ref.site_masks);
+        E_plus[i] = evaluate_strained(calc, input, crystal, multipoles, eps_p).total_energy;
+        E_minus[i] = evaluate_strained(calc, input, crystal, multipoles, eps_m).total_energy;
 
         double d2U = (E_plus[i] - 2.0 * E0 + E_minus[i]) / (delta * delta);
         Cij(i, i) = (d2U / V) * units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
@@ -245,22 +285,10 @@ Mat6 compute_elastic_constants_fd(
             Mat3 eps_mm = voigt_strain_tensor(i, -delta) +
                           voigt_strain_tensor(j, -delta);
 
-            double E_pp = compute_strained_energy(
-                input, crystal, multipoles, buck_params,
-                eps_pp, cutoff, use_ewald, alpha, kmax,
-                max_interaction_order, &ref.neighbors, &ref.site_masks);
-            double E_pm = compute_strained_energy(
-                input, crystal, multipoles, buck_params,
-                eps_pm, cutoff, use_ewald, alpha, kmax,
-                max_interaction_order, &ref.neighbors, &ref.site_masks);
-            double E_mp = compute_strained_energy(
-                input, crystal, multipoles, buck_params,
-                eps_mp, cutoff, use_ewald, alpha, kmax,
-                max_interaction_order, &ref.neighbors, &ref.site_masks);
-            double E_mm = compute_strained_energy(
-                input, crystal, multipoles, buck_params,
-                eps_mm, cutoff, use_ewald, alpha, kmax,
-                max_interaction_order, &ref.neighbors, &ref.site_masks);
+            double E_pp = evaluate_strained(calc, input, crystal, multipoles, eps_pp).total_energy;
+            double E_pm = evaluate_strained(calc, input, crystal, multipoles, eps_pm).total_energy;
+            double E_mp = evaluate_strained(calc, input, crystal, multipoles, eps_mp).total_energy;
+            double E_mm = evaluate_strained(calc, input, crystal, multipoles, eps_mm).total_energy;
 
             double d2U = (E_pp - E_pm - E_mp + E_mm) / (4.0 * delta * delta);
             double c_val = (d2U / V) * units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
@@ -288,27 +316,24 @@ Mat6 compute_relaxed_elastic_constants_fd(
     int max_interaction_order) {
 
     // ========================================================================
-    // Step 1: Build reference data
+    // Step 1: Build reference data and reusable CrystalEnergy
     // ========================================================================
     auto ref = build_reference_neighbor_data(
         input, crystal, multipoles, cutoff, use_ewald, alpha, kmax);
 
-    auto ref_calc = build_strained_calc(
+    auto calc = build_reusable_calc(
         input, crystal, multipoles, buck_params,
         cutoff, use_ewald, alpha, kmax,
-        max_interaction_order, &ref.neighbors, &ref.site_masks);
+        max_interaction_order, ref.neighbors, ref.site_masks);
 
-    auto states = ref_calc.initial_states();
+    auto states = calc.initial_states();
     const int N = static_cast<int>(states.size());
 
     // ========================================================================
     // Step 2: Compute W_ee (6x6) -- strain-strain second derivatives in kJ/mol
     // ========================================================================
     Mat3 zero_strain = Mat3::Zero();
-    double E0 = compute_strained_energy(
-        input, crystal, multipoles, buck_params,
-        zero_strain, cutoff, use_ewald, alpha, kmax,
-        max_interaction_order, &ref.neighbors, &ref.site_masks);
+    double E0 = evaluate_strained(calc, input, crystal, multipoles, zero_strain).total_energy;
 
     Mat6 W_ee = Mat6::Zero();
 
@@ -317,14 +342,8 @@ Mat6 compute_relaxed_elastic_constants_fd(
         Mat3 eps_p = voigt_strain_tensor(i, +delta);
         Mat3 eps_m = voigt_strain_tensor(i, -delta);
 
-        E_plus[i] = compute_strained_energy(
-            input, crystal, multipoles, buck_params,
-            eps_p, cutoff, use_ewald, alpha, kmax,
-            max_interaction_order, &ref.neighbors, &ref.site_masks);
-        E_minus[i] = compute_strained_energy(
-            input, crystal, multipoles, buck_params,
-            eps_m, cutoff, use_ewald, alpha, kmax,
-            max_interaction_order, &ref.neighbors, &ref.site_masks);
+        E_plus[i] = evaluate_strained(calc, input, crystal, multipoles, eps_p).total_energy;
+        E_minus[i] = evaluate_strained(calc, input, crystal, multipoles, eps_m).total_energy;
 
         W_ee(i, i) = (E_plus[i] - 2.0 * E0 + E_minus[i]) / (delta * delta);
     }
@@ -340,22 +359,10 @@ Mat6 compute_relaxed_elastic_constants_fd(
             Mat3 eps_mm = voigt_strain_tensor(i, -delta) +
                           voigt_strain_tensor(j, -delta);
 
-            double E_pp = compute_strained_energy(
-                input, crystal, multipoles, buck_params,
-                eps_pp, cutoff, use_ewald, alpha, kmax,
-                max_interaction_order, &ref.neighbors, &ref.site_masks);
-            double E_pm = compute_strained_energy(
-                input, crystal, multipoles, buck_params,
-                eps_pm, cutoff, use_ewald, alpha, kmax,
-                max_interaction_order, &ref.neighbors, &ref.site_masks);
-            double E_mp = compute_strained_energy(
-                input, crystal, multipoles, buck_params,
-                eps_mp, cutoff, use_ewald, alpha, kmax,
-                max_interaction_order, &ref.neighbors, &ref.site_masks);
-            double E_mm = compute_strained_energy(
-                input, crystal, multipoles, buck_params,
-                eps_mm, cutoff, use_ewald, alpha, kmax,
-                max_interaction_order, &ref.neighbors, &ref.site_masks);
+            double E_pp = evaluate_strained(calc, input, crystal, multipoles, eps_pp).total_energy;
+            double E_pm = evaluate_strained(calc, input, crystal, multipoles, eps_pm).total_energy;
+            double E_mp = evaluate_strained(calc, input, crystal, multipoles, eps_mp).total_energy;
+            double E_mm = evaluate_strained(calc, input, crystal, multipoles, eps_mm).total_energy;
 
             double d2U = (E_pp - E_pm - E_mp + E_mm) / (4.0 * delta * delta);
             W_ee(i, j) = d2U;
@@ -373,7 +380,10 @@ Mat6 compute_relaxed_elastic_constants_fd(
     // ========================================================================
     // Step 3: Compute W_ii -- internal DOF Hessian
     // ========================================================================
-    auto hess_result = ref_calc.compute_with_hessian(states);
+    // Restore unstrained lattice for Hessian computation
+    auto unstrained_states = compute_molecule_states(input, crystal, multipoles);
+    calc.update_lattice(crystal, unstrained_states);
+    auto hess_result = calc.compute_with_hessian(unstrained_states);
 
     // Remove 3 translational DOF of molecule 0 (zero modes)
     Mat W_ii = hess_result.pack_hessian(true, false);
@@ -411,15 +421,18 @@ Mat6 compute_relaxed_elastic_constants_fd(
         Mat3 eps_plus = voigt_strain_tensor(i, +delta);
         Mat3 eps_minus = voigt_strain_tensor(i, -delta);
 
-        Vec g_plus = compute_strained_gradient(
-            input, crystal, multipoles, buck_params,
-            eps_plus, cutoff, use_ewald, alpha, kmax,
-            max_interaction_order, &ref.neighbors, &ref.site_masks);
+        auto res_plus = evaluate_strained(calc, input, crystal, multipoles, eps_plus);
+        auto res_minus = evaluate_strained(calc, input, crystal, multipoles, eps_minus);
 
-        Vec g_minus = compute_strained_gradient(
-            input, crystal, multipoles, buck_params,
-            eps_minus, cutoff, use_ewald, alpha, kmax,
-            max_interaction_order, &ref.neighbors, &ref.site_masks);
+        // Pack as gradient: [-force, +torque]
+        int nf = static_cast<int>(res_plus.forces.size());
+        Vec g_plus(6 * nf), g_minus(6 * nf);
+        for (int k = 0; k < nf; ++k) {
+            g_plus.segment<3>(6 * k) = -res_plus.forces[k];
+            g_plus.segment<3>(6 * k + 3) = res_plus.torques[k];
+            g_minus.segment<3>(6 * k) = -res_minus.forces[k];
+            g_minus.segment<3>(6 * k + 3) = res_minus.torques[k];
+        }
 
         Vec dg = (g_plus - g_minus) / (2.0 * delta);
 

@@ -24,6 +24,7 @@ struct RoptSettings {
     bool debug_ewald = false;       // charge-only Ewald breakdown (energy-only)
     bool debug_charges = false;     // print per-molecule charge totals and site charges
     std::string multipole_json;     // load multipoles/potentials from DMACRYS JSON
+    int max_interaction_order = 4;  // max multipole interaction order (lA+lB); -1 = no truncation
     bool use_ewald = true;          // enable Ewald-split electrostatics
     double ewald_accuracy = 1e-6;   // target accuracy for eta/cut selection
     double ewald_eta = 0.0;         // override Gaussian split (Angstrom^-1); 0 => auto
