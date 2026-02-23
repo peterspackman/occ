@@ -160,10 +160,6 @@ CPMAddPackage(
     VERSION "6.1.2"
 )
 endif()
-if (libcint_ADDED AND NOT NIX_BUILD)
-    file(COPY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/FindQUADMATH.cmake ${libcint_SOURCE_DIR}/cmake/FindQUADMATH.cmake)
-endif ()
-
 # Apply the flags to the target after it's created
 if(TARGET cint)
     target_compile_options(cint PRIVATE 
