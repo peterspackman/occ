@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/mults/cartesian_molecule.h>
+#include <occ/mults/cutoff_spline.h>
 #include <occ/core/linear_algebra.h>
 #include <Eigen/Geometry>
 #include <vector>
@@ -124,11 +125,14 @@ RigidBodyForceResult aggregate_rigid_body_forces(
 /// If site_cutoff > 0, skip site pairs with distance > site_cutoff (Angstrom).
 /// If max_interaction_order >= 0, skip site pairs where rankA + rankB > max_interaction_order.
 /// offset_B: translation applied to all B-site positions (avoids copying molB for cell shifts).
+/// If taper is provided and enabled, pair energy is multiplied by f(r),
+/// with force and torque terms including df/dr consistently.
 FullRigidBodyResult compute_molecule_forces_torques(
     const CartesianMolecule &molA,
     const CartesianMolecule &molB,
     double site_cutoff = 0.0,
     int max_interaction_order = -1,
-    const Vec3 &offset_B = Vec3::Zero());
+    const Vec3 &offset_B = Vec3::Zero(),
+    const CutoffSpline* taper = nullptr);
 
 } // namespace occ::mults

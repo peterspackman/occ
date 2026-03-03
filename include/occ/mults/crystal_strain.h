@@ -104,7 +104,7 @@ Vec6 compute_strain_derivatives_fd(
     int max_interaction_order = -1);
 
 /**
- * @brief Compute the 6x6 elastic stiffness tensor C_ij by FD.
+ * @brief Compute the 6x6 clamped elastic stiffness tensor C_ij analytically.
  *
  * @return 6x6 stiffness tensor in GPa
  */
@@ -122,6 +122,10 @@ Mat6 compute_elastic_constants_fd(
  * @brief Compute relaxed-ion elastic constants via Schur complement.
  *
  * C_relaxed = W_ee - W_ei * W_ii^{-1} * W_ie
+ *
+ * When the configured model lacks some second derivatives (currently Ewald
+ * and/or electrostatic taper terms), this returns the corresponding
+ * approximation and logs a warning.
  *
  * @return 6x6 stiffness tensor in GPa (relaxed-ion)
  */

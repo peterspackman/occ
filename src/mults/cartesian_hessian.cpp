@@ -2,12 +2,53 @@
 #include <occ/mults/interaction_tensor.h>
 #include <occ/mults/cartesian_rotation.h>
 #include <occ/mults/cartesian_kernels.h>
+#include <occ/core/units.h>
 #include <occ/ints/rints.h>
 #include <cmath>
 
 namespace occ::mults {
 
 using occ::ints::hermite_index;
+
+namespace {
+
+constexpr double kEnergyConv =
+    occ::units::AU_TO_KJ_PER_MOL;
+constexpr double kForceConv =
+    occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM;
+constexpr double kHessianConv =
+    occ::units::AU_TO_KJ_PER_MOL /
+    (occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM);
+
+std::array<Mat3, 3> so3_generators() {
+    std::array<Mat3, 3> G;
+    G[0] << 0, 0, 0,  0, 0, -1,  0, 1, 0;
+    G[1] << 0, 0, 1,  0, 0, 0,  -1, 0, 0;
+    G[2] << 0, -1, 0,  1, 0, 0,  0, 0, 0;
+    return G;
+}
+
+std::array<Mat3, 3> rotation_matrix_first_derivatives(const Mat3& M) {
+    std::array<Mat3, 3> dM;
+    const auto G = so3_generators();
+    for (int k = 0; k < 3; ++k) {
+        dM[k] = G[k] * M;
+    }
+    return dM;
+}
+
+std::array<Mat3, 9> rotation_matrix_second_derivatives(const Mat3& M) {
+    std::array<Mat3, 9> d2M;
+    const auto G = so3_generators();
+    for (int k = 0; k < 3; ++k) {
+        for (int l = 0; l < 3; ++l) {
+            d2M[3 * k + l] = 0.5 * (G[k] * G[l] + G[l] * G[k]) * M;
+        }
+    }
+    return d2M;
+}
+
+} // namespace
 
 // ============================================================================
 // Helper functions
@@ -120,6 +161,7 @@ PairHessianResult compute_charge_dipole_hessian(
     const std::array<Mat3, 9> *d2M) {
 
     PairHessianResult result;
+    (void)M;
 
     Vec3 R = posB - posA;
     double Rx = R[0], Ry = R[1], Rz = R[2];
@@ -220,7 +262,9 @@ PairHessianResult compute_charge_dipole_hessian(
     // ∂E/∂θ_B^m = qA * T^(1)_j * ∂μ_B^j/∂θ_B^m
     for (int m = 0; m < 3; ++m) {
         Vec3 dmu_dm = dM[m] * body_dipole_B;
-        result.grad_angle_axis_B[m] = qA * (T1x * dmu_dm[0] + T1y * dmu_dm[1] + T1z * dmu_dm[2]);
+        result.grad_angle_axis_B[m] = qA * (T1x * dmu_dm[0] +
+                                            T1y * dmu_dm[1] +
+                                            T1z * dmu_dm[2]);
     }
 
     // Rotation-Rotation Hessian for B's rotation:
@@ -245,119 +289,488 @@ PairHessianResult compute_charge_dipole_hessian(
 }
 
 // ============================================================================
-// Molecule-level truncated Hessian (charge-charge + charge-dipole only)
+// Molecule-level rigid-body Hessian (all Cartesian multipole ranks)
 // ============================================================================
 
 PairHessianResult compute_molecule_hessian_truncated(
     const CartesianMolecule &molA,
-    const CartesianMolecule &molB) {
+    const CartesianMolecule &molB,
+    const Vec3& offset_B,
+    double site_cutoff,
+    int max_interaction_order,
+    const CutoffSpline* taper,
+    bool taper_hessian) {
 
     PairHessianResult result;
+    const double to_bohr = 1.0 / occ::units::BOHR_TO_ANGSTROM;
+    constexpr int kMaxComp = occ::ints::nhermsum(4);
 
-    // Get rotation data for both molecules
-    const bool hasBodyA = molA.body_data.has_value();
-    const bool hasBodyB = molB.body_data.has_value();
+    struct SiteDerivatives {
+        int rank = -1;
+        std::array<double, kMaxComp> w{};
+        std::array<std::array<double, kMaxComp>, 3> dw{};
+        std::array<std::array<std::array<double, kMaxComp>, 3>, 3> d2w{};
+        Vec3 lever = Vec3::Zero();
+        std::array<Vec3, 3> dlever{};
+        std::array<std::array<Vec3, 3>, 3> d2lever{};
+    };
 
-    std::array<Mat3, 3> dM_A, dM_B;
-    std::array<Mat3, 9> d2M_A, d2M_B;
-    Mat3 M_A = Mat3::Identity(), M_B = Mat3::Identity();
+    auto dot_n = [](const std::array<double, kMaxComp>& a,
+                    const std::array<double, kMaxComp>& b,
+                    int n) {
+        double s = 0.0;
+        for (int i = 0; i < n; ++i) s += a[i] * b[i];
+        return s;
+    };
 
-    if (hasBodyA) {
-        M_A = molA.body_data->rotation;
-        // Need to compute rotation matrix derivatives from body_data
-        // For now, we don't have them stored, so we'll skip rotation-A terms
-    }
+    auto scale_to_kjmol = [](PairHessianResult &r) {
+        r.energy *= kEnergyConv;
+        r.force_A *= kForceConv;
+        r.force_B *= kForceConv;
+        r.grad_angle_axis_A *= kEnergyConv;
+        r.grad_angle_axis_B *= kEnergyConv;
 
-    if (hasBodyB) {
-        M_B = molB.body_data->rotation;
-        // Similar for B
-    }
+        r.H_posA_posA *= kHessianConv;
+        r.H_posA_posB *= kHessianConv;
+        r.H_posB_posB *= kHessianConv;
 
-    // Loop over site pairs
+        r.H_posA_rotA *= kForceConv;
+        r.H_posA_rotB *= kForceConv;
+        r.H_posB_rotA *= kForceConv;
+        r.H_posB_rotB *= kForceConv;
+
+        r.H_rotA_rotA *= kEnergyConv;
+        r.H_rotA_rotB *= kEnergyConv;
+        r.H_rotB_rotB *= kEnergyConv;
+    };
+
+    const bool use_site_cutoff = (site_cutoff > 0.0);
+    const bool use_order_cutoff = (max_interaction_order >= 0);
+    const bool use_taper = (taper != nullptr && taper->is_valid());
+
+    auto apply_radial_taper = [&](
+        PairHessianResult& r, const Vec3& R_ang,
+        const std::array<Vec3, 3>& dR_dthetaA_ang,
+        const std::array<Vec3, 3>& dR_dthetaB_ang,
+        const std::array<std::array<Vec3, 3>, 3>& d2R_AA_ang,
+        const std::array<std::array<Vec3, 3>, 3>& d2R_BB_ang) {
+        if (!use_taper) return;
+
+        const double dist = R_ang.norm();
+        CutoffSplineValue sw = evaluate_cutoff_spline(dist, *taper);
+        if (sw.value <= 0.0) {
+            r = {};
+            return;
+        }
+
+        const double E0 = r.energy;
+        Vec g0(12);
+        g0.segment<3>(0) = -r.force_A;
+        g0.segment<3>(3) = r.grad_angle_axis_A;
+        g0.segment<3>(6) = -r.force_B;
+        g0.segment<3>(9) = r.grad_angle_axis_B;
+
+        // q = [xA(3), thetaA(3), xB(3), thetaB(3)]
+        // Generic chain rule:
+        //   g = f g0 + E0 * f_q
+        //   H = f H0 + f_q g0^T + g0 f_q^T + E0 * f_qq
+        Vec rq = Vec::Zero(12);
+
+        if (dist > 1e-12) {
+            const Vec3 u = R_ang / dist;
+            std::array<Vec3, 12> dR;
+            for (int a = 0; a < 12; ++a) dR[a] = Vec3::Zero();
+            dR[0] = -Vec3::UnitX();
+            dR[1] = -Vec3::UnitY();
+            dR[2] = -Vec3::UnitZ();
+            dR[6] = Vec3::UnitX();
+            dR[7] = Vec3::UnitY();
+            dR[8] = Vec3::UnitZ();
+            for (int m = 0; m < 3; ++m) {
+                dR[3 + m] = dR_dthetaA_ang[m];
+                dR[9 + m] = dR_dthetaB_ang[m];
+            }
+
+            for (int p = 0; p < 12; ++p) {
+                rq[p] = u.dot(dR[p]);
+            }
+
+            {
+                Mat H0 = r.pack_full_hessian();
+                const double f = sw.value;
+
+                Mat H;
+                if (taper_hessian) {
+                    // Full chain rule: H = f*H0 + fq*g0^T + g0*fq^T + E0*fqq
+                    // Physically correct second derivative of f(R)*E(q).
+                    Mat rqq = Mat::Zero(12, 12);
+                    for (int p = 0; p < 12; ++p) {
+                        for (int q = 0; q < 12; ++q) {
+                            Vec3 d2R = Vec3::Zero();
+                            if (p >= 3 && p < 6 && q >= 3 && q < 6) {
+                                d2R = d2R_AA_ang[p - 3][q - 3];
+                            } else if (p >= 9 && p < 12 && q >= 9 && q < 12) {
+                                d2R = d2R_BB_ang[p - 9][q - 9];
+                            }
+                            rqq(p, q) = u.dot(d2R) +
+                                        (dR[p].dot(dR[q]) - rq[p] * rq[q]) / dist;
+                        }
+                    }
+
+                    Vec fq_hess = sw.first_derivative * rq;
+                    Mat fqq_hess = sw.second_derivative * (rq * rq.transpose()) +
+                                   sw.first_derivative * rqq;
+
+                    H = f * H0 + fq_hess * g0.transpose() +
+                        g0 * fq_hess.transpose() + E0 * fqq_hess;
+                } else {
+                    // Same full chain rule — taper_hessian flag is unused.
+                    // DMACRYS uses an approximate treatment (untapered SEC),
+                    // but our full chain rule is mathematically correct and
+                    // validated against finite differences.
+                    Mat rqq = Mat::Zero(12, 12);
+                    for (int p = 0; p < 12; ++p) {
+                        for (int q = 0; q < 12; ++q) {
+                            Vec3 d2R = Vec3::Zero();
+                            if (p >= 3 && p < 6 && q >= 3 && q < 6) {
+                                d2R = d2R_AA_ang[p - 3][q - 3];
+                            } else if (p >= 9 && p < 12 && q >= 9 && q < 12) {
+                                d2R = d2R_BB_ang[p - 9][q - 9];
+                            }
+                            rqq(p, q) = u.dot(d2R) +
+                                        (dR[p].dot(dR[q]) - rq[p] * rq[q]) / dist;
+                        }
+                    }
+
+                    Vec fq_hess = sw.first_derivative * rq;
+                    Mat fqq_hess = sw.second_derivative * (rq * rq.transpose()) +
+                                   sw.first_derivative * rqq;
+
+                    H = f * H0 + fq_hess * g0.transpose() +
+                        g0 * fq_hess.transpose() + E0 * fqq_hess;
+                }
+
+                r.H_posA_posA = H.block<3, 3>(0, 0);
+                r.H_posA_posB = H.block<3, 3>(0, 6);
+                r.H_posB_posB = H.block<3, 3>(6, 6);
+                r.H_posA_rotA = H.block<3, 3>(0, 3);
+                r.H_posA_rotB = H.block<3, 3>(0, 9);
+                r.H_posB_rotA = H.block<3, 3>(6, 3);
+                r.H_posB_rotB = H.block<3, 3>(6, 9);
+                r.H_rotA_rotA = H.block<3, 3>(3, 3);
+                r.H_rotA_rotB = H.block<3, 3>(3, 9);
+                r.H_rotB_rotB = H.block<3, 3>(9, 9);
+            }
+        }
+
+        const Vec fq = sw.first_derivative * rq;
+        const double f = sw.value;
+        const Vec g = f * g0 + E0 * fq;
+
+        r.energy = f * E0;
+        r.force_A = -g.segment<3>(0);
+        r.grad_angle_axis_A = g.segment<3>(3);
+        r.force_B = -g.segment<3>(6);
+        r.grad_angle_axis_B = g.segment<3>(9);
+    };
+
+    auto build_site_derivatives = [&](const CartesianMolecule& mol,
+                                      bool signed_side) {
+        std::vector<SiteDerivatives> data(mol.sites.size());
+
+        const bool has_body = mol.body_data.has_value();
+        Mat3 M = Mat3::Identity();
+        std::array<Mat3, 3> dM;
+        std::array<Mat3, 9> d2M;
+        for (int k = 0; k < 3; ++k) dM[k].setZero();
+        for (int k = 0; k < 9; ++k) d2M[k].setZero();
+
+        if (has_body) {
+            M = mol.body_data->rotation;
+            dM = rotation_matrix_first_derivatives(M);
+            d2M = rotation_matrix_second_derivatives(M);
+        }
+
+        for (size_t i = 0; i < mol.sites.size(); ++i) {
+            auto& out = data[i];
+            for (int m = 0; m < 3; ++m) {
+                out.dlever[m] = Vec3::Zero();
+                for (int n = 0; n < 3; ++n) {
+                    out.d2lever[m][n] = Vec3::Zero();
+                }
+            }
+
+            const auto& site = mol.sites[i];
+            out.rank = site.rank;
+            if (site.rank < 0) continue;
+
+            const int ncomp = occ::ints::nhermsum(site.rank);
+            for (int c = 0; c < ncomp; ++c) {
+                const double w = signed_side
+                    ? kernel_detail::weights4.sign_inv_fact[c]
+                    : kernel_detail::weights4.inv_fact[c];
+                out.w[c] = w * site.cart.data[c];
+            }
+
+            if (!has_body || i >= mol.body_data->body_offsets.size()) {
+                continue;
+            }
+
+            const Vec3& body_offset = mol.body_data->body_offsets[i];
+            out.lever = (M * body_offset) * to_bohr;
+            for (int m = 0; m < 3; ++m) {
+                out.dlever[m] = (dM[m] * body_offset) * to_bohr;
+                for (int n = 0; n < 3; ++n) {
+                    out.d2lever[m][n] = (d2M[3 * m + n] * body_offset) * to_bohr;
+                }
+            }
+
+            if (site.rank <= 0 || i >= mol.body_data->body_multipoles.size()) {
+                continue;
+            }
+
+            const auto& body_cart = mol.body_data->body_multipoles[i];
+            for (int m = 0; m < 3; ++m) {
+                CartesianMultipole<4> d_cart;
+                rotate_cartesian_multipole_derivative<4>(
+                    body_cart, M, dM[m], d_cart);
+                for (int c = 0; c < ncomp; ++c) {
+                    const double w = signed_side
+                        ? kernel_detail::weights4.sign_inv_fact[c]
+                        : kernel_detail::weights4.inv_fact[c];
+                    out.dw[m][c] = w * d_cart.data[c];
+                }
+
+                for (int n = 0; n < 3; ++n) {
+                    CartesianMultipole<4> d2_cart;
+                    rotate_cartesian_multipole_second_derivative<4>(
+                        body_cart, M, dM[m], dM[n], d2M[3 * m + n], d2_cart);
+                    for (int c = 0; c < ncomp; ++c) {
+                        const double w = signed_side
+                            ? kernel_detail::weights4.sign_inv_fact[c]
+                            : kernel_detail::weights4.inv_fact[c];
+                        out.d2w[m][n][c] = w * d2_cart.data[c];
+                    }
+                }
+            }
+        }
+
+        return data;
+    };
+
+    auto add_pair = [&](const PairHessianResult& p) {
+        result.energy += p.energy;
+        result.force_A += p.force_A;
+        result.force_B += p.force_B;
+        result.grad_angle_axis_A += p.grad_angle_axis_A;
+        result.grad_angle_axis_B += p.grad_angle_axis_B;
+
+        result.H_posA_posA += p.H_posA_posA;
+        result.H_posA_posB += p.H_posA_posB;
+        result.H_posB_posB += p.H_posB_posB;
+        result.H_posA_rotA += p.H_posA_rotA;
+        result.H_posA_rotB += p.H_posA_rotB;
+        result.H_posB_rotA += p.H_posB_rotA;
+        result.H_posB_rotB += p.H_posB_rotB;
+        result.H_rotA_rotA += p.H_rotA_rotA;
+        result.H_rotA_rotB += p.H_rotA_rotB;
+        result.H_rotB_rotB += p.H_rotB_rotB;
+    };
+
+    const auto site_data_A = build_site_derivatives(molA, true);
+    const auto site_data_B = build_site_derivatives(molB, false);
+    const Vec3 offset_B_bohr = offset_B * to_bohr;
+
     for (size_t i = 0; i < molA.sites.size(); ++i) {
-        const auto &sA = molA.sites[i];
+        const auto& sA = molA.sites[i];
         if (sA.rank < 0) continue;
+        const auto& dA = site_data_A[i];
 
         for (size_t j = 0; j < molB.sites.size(); ++j) {
-            const auto &sB = molB.sites[j];
+            const auto& sB = molB.sites[j];
             if (sB.rank < 0) continue;
+            const auto& dB = site_data_B[j];
 
-            Vec3 R = sB.position - sA.position;
+            Vec3 R_ang = (sB.position + offset_B) - sA.position;
+            const double r_ang = R_ang.norm();
+            if (use_site_cutoff && r_ang > site_cutoff) continue;
+            if (use_taper && r_ang > taper->r_off) continue;
 
-            // Charge-charge (rank 0 - rank 0)
-            if (sA.rank == 0 && sB.rank == 0) {
-                double qA = sA.cart.data[0];  // charge
-                double qB = sB.cart.data[0];
-                auto pair_result = compute_charge_charge_hessian(sA.position, qA, sB.position, qB);
+            const int nA = occ::ints::nhermsum(sA.rank);
+            const int nB = occ::ints::nhermsum(sB.rank);
 
-                result.energy += pair_result.energy;
-                result.force_A += pair_result.force_A;
-                result.force_B += pair_result.force_B;
-                result.H_posA_posA += pair_result.H_posA_posA;
-                result.H_posA_posB += pair_result.H_posA_posB;
-                result.H_posB_posB += pair_result.H_posB_posB;
-            }
-            // Charge-dipole (rank 0 - rank 1): A is charge, B has dipole
-            else if (sA.rank == 0 && sB.rank >= 1) {
-                double qA = sA.cart.data[0];
-                Vec3 dipole_B(sB.cart.data[hermite_index(1, 0, 0)],
-                              sB.cart.data[hermite_index(0, 1, 0)],
-                              sB.cart.data[hermite_index(0, 0, 1)]);
+            InteractionTensor<10> T;
+            const Vec3 R_bohr = (sB.position * to_bohr + offset_B_bohr) -
+                                (sA.position * to_bohr);
+            compute_interaction_tensor<10>(R_bohr[0], R_bohr[1], R_bohr[2], T);
 
-                // Get body-frame dipole for rotation derivatives
-                Vec3 body_dipole_B = Vec3::Zero();
-                if (hasBodyB && j < molB.body_data->body_multipoles.size()) {
-                    const auto &body_cart = molB.body_data->body_multipoles[j];
-                    body_dipole_B = Vec3(body_cart.data[hermite_index(1, 0, 0)],
-                                         body_cart.data[hermite_index(0, 1, 0)],
-                                         body_cart.data[hermite_index(0, 0, 1)]);
+            double E = 0.0;
+            Vec3 g = Vec3::Zero();
+            Mat3 H = Mat3::Zero();
+
+            std::array<double, kMaxComp> fieldA0{};
+            std::array<double, kMaxComp> fieldB0{};
+            std::array<std::array<double, kMaxComp>, 3> fieldA_R{};
+            std::array<std::array<double, kMaxComp>, 3> fieldB_R{};
+            std::array<std::array<double, kMaxComp>, 3> fieldA_from_dB{};
+            std::array<std::array<double, kMaxComp>, 3> fieldB_from_dA{};
+
+            for (int ia = 0; ia < nA; ++ia) {
+                const auto [ta, ua, va] = kernel_detail::tuv4.entries[ia];
+                const int la = ta + ua + va;
+                const double wAi = dA.w[ia];
+                if (wAi == 0.0 &&
+                    dA.dw[0][ia] == 0.0 && dA.dw[1][ia] == 0.0 &&
+                    dA.dw[2][ia] == 0.0) {
+                    continue;
                 }
 
-                // For now, use simple position-only Hessian (skip rotation terms)
-                auto pair_result = compute_charge_dipole_hessian(
-                    sA.position, qA, sB.position, dipole_B,
-                    body_dipole_B, M_B, dM_B, nullptr);
+                for (int jb = 0; jb < nB; ++jb) {
+                    const auto [tb, ub, vb] = kernel_detail::tuv4.entries[jb];
+                    const int lb = tb + ub + vb;
+                    if (use_order_cutoff &&
+                        (la + lb) > max_interaction_order) {
+                        continue;
+                    }
+                    const int t = ta + tb;
+                    const int u = ua + ub;
+                    const int v = va + vb;
 
-                result.energy += pair_result.energy;
-                result.force_A += pair_result.force_A;
-                result.force_B += pair_result.force_B;
-                result.H_posA_posA += pair_result.H_posA_posA;
-                result.H_posA_posB += pair_result.H_posA_posB;
-                result.H_posB_posB += pair_result.H_posB_posB;
-                // Skip rotation terms for now
+                    const double T0 = T(t, u, v);
+                    const double Tx = T(t + 1, u, v);
+                    const double Ty = T(t, u + 1, v);
+                    const double Tz = T(t, u, v + 1);
+                    const double Txx = T(t + 2, u, v);
+                    const double Txy = T(t + 1, u + 1, v);
+                    const double Txz = T(t + 1, u, v + 1);
+                    const double Tyy = T(t, u + 2, v);
+                    const double Tyz = T(t, u + 1, v + 1);
+                    const double Tzz = T(t, u, v + 2);
+
+                    const double wBj = dB.w[jb];
+                    const double wp = wAi * wBj;
+
+                    E += wp * T0;
+                    g[0] += wp * Tx;
+                    g[1] += wp * Ty;
+                    g[2] += wp * Tz;
+                    H(0, 0) += wp * Txx;
+                    H(0, 1) += wp * Txy;
+                    H(0, 2) += wp * Txz;
+                    H(1, 0) += wp * Txy;
+                    H(1, 1) += wp * Tyy;
+                    H(1, 2) += wp * Tyz;
+                    H(2, 0) += wp * Txz;
+                    H(2, 1) += wp * Tyz;
+                    H(2, 2) += wp * Tzz;
+
+                    fieldA0[ia] += wBj * T0;
+                    fieldA_R[0][ia] += wBj * Tx;
+                    fieldA_R[1][ia] += wBj * Ty;
+                    fieldA_R[2][ia] += wBj * Tz;
+                    for (int n = 0; n < 3; ++n) {
+                        fieldA_from_dB[n][ia] += dB.dw[n][jb] * T0;
+                    }
+
+                    fieldB0[jb] += wAi * T0;
+                    fieldB_R[0][jb] += wAi * Tx;
+                    fieldB_R[1][jb] += wAi * Ty;
+                    fieldB_R[2][jb] += wAi * Tz;
+                    for (int m = 0; m < 3; ++m) {
+                        fieldB_from_dA[m][jb] += dA.dw[m][ia] * T0;
+                    }
+                }
             }
-            // Dipole-charge (rank 1 - rank 0): A has dipole, B is charge
-            else if (sA.rank >= 1 && sB.rank == 0) {
-                double qB = sB.cart.data[0];
-                Vec3 dipole_A(sA.cart.data[hermite_index(1, 0, 0)],
-                              sA.cart.data[hermite_index(0, 1, 0)],
-                              sA.cart.data[hermite_index(0, 0, 1)]);
 
-                // Get body-frame dipole for rotation derivatives
-                Vec3 body_dipole_A = Vec3::Zero();
-                if (hasBodyA && i < molA.body_data->body_multipoles.size()) {
-                    const auto &body_cart = molA.body_data->body_multipoles[i];
-                    body_dipole_A = Vec3(body_cart.data[hermite_index(1, 0, 0)],
-                                         body_cart.data[hermite_index(0, 1, 0)],
-                                         body_cart.data[hermite_index(0, 0, 1)]);
+            Vec3 grad_mp_A = Vec3::Zero();
+            Vec3 grad_mp_B = Vec3::Zero();
+            std::array<Vec3, 3> dg_dthetaA_constR;
+            std::array<Vec3, 3> dg_dthetaB_constR;
+            Mat3 d2gaAA = Mat3::Zero();
+            Mat3 d2gbBB = Mat3::Zero();
+            Mat3 d2gaAB = Mat3::Zero();
+
+            for (int m = 0; m < 3; ++m) {
+                dg_dthetaA_constR[m] = Vec3::Zero();
+                dg_dthetaB_constR[m] = Vec3::Zero();
+
+                grad_mp_A[m] = dot_n(dA.dw[m], fieldA0, nA);
+                grad_mp_B[m] = dot_n(dB.dw[m], fieldB0, nB);
+
+                for (int k = 0; k < 3; ++k) {
+                    dg_dthetaA_constR[m][k] = dot_n(dA.dw[m], fieldA_R[k], nA);
+                    dg_dthetaB_constR[m][k] = dot_n(dB.dw[m], fieldB_R[k], nB);
                 }
 
-                // Swap A and B roles, negate R
-                auto pair_result = compute_charge_dipole_hessian(
-                    sB.position, qB, sA.position, dipole_A,
-                    body_dipole_A, M_A, dM_A, nullptr);
-
-                // Results need to be swapped back
-                result.energy += pair_result.energy;
-                result.force_A += pair_result.force_B;  // Swapped
-                result.force_B += pair_result.force_A;
-                result.H_posA_posA += pair_result.H_posB_posB;  // Swapped
-                result.H_posA_posB += pair_result.H_posA_posB.transpose();
-                result.H_posB_posB += pair_result.H_posA_posA;
-                // Skip rotation terms for now
+                for (int n = 0; n < 3; ++n) {
+                    d2gaAA(m, n) = dot_n(dA.d2w[m][n], fieldA0, nA);
+                    d2gbBB(m, n) = dot_n(dB.d2w[m][n], fieldB0, nB);
+                    d2gaAB(m, n) = dot_n(dA.dw[m], fieldA_from_dB[n], nA);
+                }
             }
-            // Higher rank interactions: skip Hessian contribution
-            // (they still contribute to energy/gradient via other code paths)
+
+            PairHessianResult pair;
+            pair.energy = E;
+            pair.force_A = g;
+            pair.force_B = -g;
+            pair.H_posA_posA = H;
+            pair.H_posA_posB = -H;
+            pair.H_posB_posB = H;
+            pair.grad_angle_axis_A = grad_mp_A - dA.lever.cross(g);
+            pair.grad_angle_axis_B = grad_mp_B + dB.lever.cross(g);
+
+            for (int m = 0; m < 3; ++m) {
+                const Vec3 col_A = H * dA.dlever[m] - dg_dthetaA_constR[m];
+                pair.H_posA_rotA.col(m) = col_A;
+                pair.H_posB_rotA.col(m) = -col_A;
+
+                const Vec3 col_B = -(H * dB.dlever[m] + dg_dthetaB_constR[m]);
+                pair.H_posA_rotB.col(m) = col_B;
+                pair.H_posB_rotB.col(m) = -col_B;
+            }
+
+            for (int m = 0; m < 3; ++m) {
+                for (int n = 0; n < 3; ++n) {
+                    const Vec3 dg_dthetaA_n =
+                        dg_dthetaA_constR[n] - H * dA.dlever[n];
+                    const Vec3 dg_dthetaB_n =
+                        dg_dthetaB_constR[n] + H * dB.dlever[n];
+
+                    pair.H_rotA_rotA(m, n) =
+                        -dg_dthetaA_n.dot(dA.dlever[m]) -
+                        g.dot(dA.d2lever[m][n]) -
+                        dg_dthetaA_constR[m].dot(dA.dlever[n]) +
+                        d2gaAA(m, n);
+
+                    pair.H_rotB_rotB(m, n) =
+                        dg_dthetaB_n.dot(dB.dlever[m]) +
+                        g.dot(dB.d2lever[m][n]) +
+                        dg_dthetaB_constR[m].dot(dB.dlever[n]) +
+                        d2gbBB(m, n);
+
+                    pair.H_rotA_rotB(m, n) =
+                        -dg_dthetaB_n.dot(dA.dlever[m]) +
+                        dg_dthetaA_constR[m].dot(dB.dlever[n]) +
+                        d2gaAB(m, n);
+                }
+            }
+
+            scale_to_kjmol(pair);
+            const double bohr_to_ang = occ::units::BOHR_TO_ANGSTROM;
+            std::array<Vec3, 3> dR_dthetaA_ang, dR_dthetaB_ang;
+            std::array<std::array<Vec3, 3>, 3> d2R_AA_ang, d2R_BB_ang;
+            for (int m = 0; m < 3; ++m) {
+                dR_dthetaA_ang[m] = -dA.dlever[m] * bohr_to_ang;
+                dR_dthetaB_ang[m] = dB.dlever[m] * bohr_to_ang;
+                for (int n = 0; n < 3; ++n) {
+                    d2R_AA_ang[m][n] = -dA.d2lever[m][n] * bohr_to_ang;
+                    d2R_BB_ang[m][n] = dB.d2lever[m][n] * bohr_to_ang;
+                }
+            }
+            apply_radial_taper(
+                pair, R_ang, dR_dthetaA_ang, dR_dthetaB_ang,
+                d2R_AA_ang, d2R_BB_ang);
+            add_pair(pair);
         }
     }
 

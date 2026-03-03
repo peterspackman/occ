@@ -493,3 +493,193 @@ TEST_CASE("Edge cases - different coordinate systems", "[short_range][edge_cases
         REQUIRE(forces2.force_A.dot(forces3.force_A) == Approx(0.0).margin(1e-14));
     }
 }
+
+// ==================== Anisotropic Repulsion Tests ====================
+
+TEST_CASE("Anisotropic repulsion: isotropic limit", "[short_range][aniso]") {
+    // When rho_20 = rho_02 = 0, the potential reduces to exp(alpha*(rho_00 - R))
+    AnisotropicRepulsionParams params;
+    params.alpha = 1.0 / 0.3;  // ~3.33 Å⁻¹
+    params.rho_00 = 2.5;
+    params.rho_20 = 0.0;
+    params.rho_02 = 0.0;
+
+    Vec3 pos_a(0, 0, 0);
+    Vec3 pos_b(4.0, 0, 0);
+    Vec3 axis_a(0, 0, 1);
+    Vec3 axis_b(0, 0, 1);
+
+    auto result = ShortRangeInteraction::anisotropic_repulsion(
+        pos_a, pos_b, axis_a, axis_b, params);
+
+    double R = 4.0;
+    double expected_E = std::exp(params.alpha * (params.rho_00 - R));
+    REQUIRE(result.energy == Approx(expected_E).epsilon(1e-12));
+
+    // Axis torques should be zero (no anisotropy)
+    REQUIRE(result.torque_axis_A.norm() == Approx(0.0).margin(1e-14));
+    REQUIRE(result.torque_axis_B.norm() == Approx(0.0).margin(1e-14));
+
+    // Forces should satisfy Newton's 3rd law
+    REQUIRE((result.force_A + result.force_B).norm() == Approx(0.0).margin(1e-14));
+}
+
+TEST_CASE("Anisotropic repulsion: P2 angular dependence", "[short_range][aniso]") {
+    AnisotropicRepulsionParams params;
+    params.alpha = 1.0 / 0.3;
+    params.rho_00 = 2.5;
+    params.rho_20 = -0.1;  // Only site 1 anisotropy
+    params.rho_02 = 0.0;
+
+    Vec3 pos_a(0, 0, 0);
+    Vec3 pos_b(4.0, 0, 0);
+
+    // When axis_a is aligned with inter-site vector, cosθ₁ = 1, P₂(1) = 1
+    Vec3 axis_parallel(1, 0, 0);
+    auto res_par = ShortRangeInteraction::anisotropic_repulsion(
+        pos_a, pos_b, axis_parallel, Vec3::Zero(), params);
+
+    double rho_par = params.rho_00 + params.rho_20 * 1.0;  // P₂(1) = 1
+    double E_par = std::exp(params.alpha * (rho_par - 4.0));
+    REQUIRE(res_par.energy == Approx(E_par).epsilon(1e-12));
+
+    // When axis_a is perpendicular to inter-site vector, cosθ₁ = 0, P₂(0) = -0.5
+    Vec3 axis_perp(0, 1, 0);
+    auto res_perp = ShortRangeInteraction::anisotropic_repulsion(
+        pos_a, pos_b, axis_perp, Vec3::Zero(), params);
+
+    double rho_perp = params.rho_00 + params.rho_20 * (-0.5);  // P₂(0) = -0.5
+    double E_perp = std::exp(params.alpha * (rho_perp - 4.0));
+    REQUIRE(res_perp.energy == Approx(E_perp).epsilon(1e-12));
+}
+
+TEST_CASE("Anisotropic repulsion: force FD validation", "[short_range][aniso]") {
+    AnisotropicRepulsionParams params;
+    params.alpha = 1.0 / 0.299;
+    params.rho_00 = 2.6;
+    params.rho_20 = -0.094;
+    params.rho_02 = -0.094;
+
+    Vec3 pos_a(0.1, -0.2, 0.3);
+    Vec3 pos_b(3.5, 0.7, -0.4);
+    Vec3 axis_a = Vec3(1, 1, 0).normalized();
+    Vec3 axis_b = Vec3(0, 1, 1).normalized();
+
+    auto ref = ShortRangeInteraction::anisotropic_repulsion(
+        pos_a, pos_b, axis_a, axis_b, params);
+
+    // FD force on A
+    const double h = 1e-6;
+    for (int d = 0; d < 3; ++d) {
+        Vec3 pa_p = pos_a, pa_m = pos_a;
+        pa_p(d) += h;
+        pa_m(d) -= h;
+        double ep = ShortRangeInteraction::anisotropic_repulsion(
+            pa_p, pos_b, axis_a, axis_b, params).energy;
+        double em = ShortRangeInteraction::anisotropic_repulsion(
+            pa_m, pos_b, axis_a, axis_b, params).energy;
+        double fd_force = -(ep - em) / (2.0 * h);
+        REQUIRE(ref.force_A(d) == Approx(fd_force).epsilon(1e-6));
+    }
+
+    // FD force on B
+    for (int d = 0; d < 3; ++d) {
+        Vec3 pb_p = pos_b, pb_m = pos_b;
+        pb_p(d) += h;
+        pb_m(d) -= h;
+        double ep = ShortRangeInteraction::anisotropic_repulsion(
+            pos_a, pb_p, axis_a, axis_b, params).energy;
+        double em = ShortRangeInteraction::anisotropic_repulsion(
+            pos_a, pb_m, axis_a, axis_b, params).energy;
+        double fd_force = -(ep - em) / (2.0 * h);
+        REQUIRE(ref.force_B(d) == Approx(fd_force).epsilon(1e-6));
+    }
+}
+
+TEST_CASE("Anisotropic repulsion: axis torque FD validation", "[short_range][aniso]") {
+    AnisotropicRepulsionParams params;
+    params.alpha = 1.0 / 0.299;
+    params.rho_00 = 2.6;
+    params.rho_20 = -0.094;
+    params.rho_02 = -0.094;
+
+    Vec3 pos_a(0.1, -0.2, 0.3);
+    Vec3 pos_b(3.5, 0.7, -0.4);
+    Vec3 axis_a = Vec3(1, 1, 0).normalized();
+    Vec3 axis_b = Vec3(0, 1, 1).normalized();
+
+    auto ref = ShortRangeInteraction::anisotropic_repulsion(
+        pos_a, pos_b, axis_a, axis_b, params);
+
+    // FD torque on axis A: dE/dψ where ψ rotates axis_a
+    const double h = 1e-6;
+    for (int d = 0; d < 3; ++d) {
+        Vec3 omega = Vec3::Zero();
+        omega(d) = h;
+
+        // Rodrigues rotation of axis_a by small angle omega
+        auto rotate_axis = [](const Vec3& axis, const Vec3& omega) -> Vec3 {
+            double angle = omega.norm();
+            if (angle < 1e-15) return axis;
+            Vec3 n = omega / angle;
+            Vec3 result = std::cos(angle) * axis +
+                          std::sin(angle) * n.cross(axis) +
+                          (1.0 - std::cos(angle)) * n.dot(axis) * n;
+            return result;
+        };
+
+        Vec3 axis_a_p = rotate_axis(axis_a, omega);
+        Vec3 axis_a_m = rotate_axis(axis_a, -omega);
+
+        double ep = ShortRangeInteraction::anisotropic_repulsion(
+            pos_a, pos_b, axis_a_p, axis_b, params).energy;
+        double em = ShortRangeInteraction::anisotropic_repulsion(
+            pos_a, pos_b, axis_a_m, axis_b, params).energy;
+        double fd_torque = (ep - em) / (2.0 * h);
+        REQUIRE(ref.torque_axis_A(d) == Approx(fd_torque).epsilon(1e-5));
+    }
+
+    // FD torque on axis B
+    for (int d = 0; d < 3; ++d) {
+        Vec3 omega = Vec3::Zero();
+        omega(d) = h;
+
+        auto rotate_axis = [](const Vec3& axis, const Vec3& omega) -> Vec3 {
+            double angle = omega.norm();
+            if (angle < 1e-15) return axis;
+            Vec3 n = omega / angle;
+            Vec3 result = std::cos(angle) * axis +
+                          std::sin(angle) * n.cross(axis) +
+                          (1.0 - std::cos(angle)) * n.dot(axis) * n;
+            return result;
+        };
+
+        Vec3 axis_b_p = rotate_axis(axis_b, omega);
+        Vec3 axis_b_m = rotate_axis(axis_b, -omega);
+
+        double ep = ShortRangeInteraction::anisotropic_repulsion(
+            pos_a, pos_b, axis_a, axis_b_p, params).energy;
+        double em = ShortRangeInteraction::anisotropic_repulsion(
+            pos_a, pos_b, axis_a, axis_b_m, params).energy;
+        double fd_torque = (ep - em) / (2.0 * h);
+        REQUIRE(ref.torque_axis_B(d) == Approx(fd_torque).epsilon(1e-5));
+    }
+}
+
+TEST_CASE("Anisotropic repulsion: zero axis treated as isotropic", "[short_range][aniso]") {
+    AnisotropicRepulsionParams params;
+    params.alpha = 1.0 / 0.3;
+    params.rho_00 = 2.5;
+    params.rho_20 = -0.1;
+    params.rho_02 = 0.0;
+
+    Vec3 pos_a(0, 0, 0);
+    Vec3 pos_b(4.0, 0, 0);
+
+    // Zero axis means the P₂ term for that site is zero
+    auto result = ShortRangeInteraction::anisotropic_repulsion(
+        pos_a, pos_b, Vec3::Zero(), Vec3::Zero(), params);
+
+    double expected_E = std::exp(params.alpha * (params.rho_00 - 4.0));
+    REQUIRE(result.energy == Approx(expected_E).epsilon(1e-12));
+}

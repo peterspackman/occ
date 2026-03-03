@@ -54,6 +54,26 @@ struct BuckinghamParams {
 };
 
 /**
+ * @brief Parameters for anisotropic Born-Mayer repulsion potential.
+ *
+ * The potential is:
+ *   V(R) = exp(-α·R) × exp(α·ρ)
+ *   ρ = ρ₀₀ + ρ₂₀·P₂(cosθ₁) + ρ₀₂·P₂(cosθ₂)
+ *
+ * where P₂(x) = (3x² - 1)/2, θ₁ is the angle between site 1's
+ * anisotropy z-axis and the inter-site unit vector, θ₂ is the angle
+ * between site 2's anisotropy z-axis and the inter-site unit vector.
+ *
+ * This is an additive term on top of the isotropic Buckingham potential.
+ */
+struct AnisotropicRepulsionParams {
+    double alpha;   ///< Exponential decay parameter (Å⁻¹), typically 1/rho_iso
+    double rho_00;  ///< Isotropic ρ (Å)
+    double rho_20;  ///< P₂ anisotropy coefficient for site 1 (Å)
+    double rho_02;  ///< P₂ anisotropy coefficient for site 2 (Å)
+};
+
+/**
  * @brief Class for computing short-range pairwise interactions.
  *
  * Provides implementations of Lennard-Jones and Buckingham potentials with
@@ -107,6 +127,32 @@ public:
         Mat3 hessian_AB; ///< Hessian d²V/dx_A dx_B
         Mat3 hessian_BB; ///< Hessian d²V/dx_B dx_B
     };
+
+    /**
+     * @brief Result from anisotropic repulsion computation.
+     */
+    struct AnisotropicResult {
+        double energy;        ///< Potential energy
+        Vec3 force_A;         ///< Force on site A (Cartesian, energy/length)
+        Vec3 force_B;         ///< Force on site B (Cartesian, energy/length)
+        Vec3 torque_axis_A;   ///< dE/dψ for rotation of axis A (lab frame)
+        Vec3 torque_axis_B;   ///< dE/dψ for rotation of axis B (lab frame)
+    };
+
+    /**
+     * @brief Compute anisotropic Born-Mayer repulsion energy, forces, and axis torques.
+     *
+     * @param pos_a Position of site A
+     * @param pos_b Position of site B
+     * @param axis_a Unit z-axis of site A in lab frame (zero = isotropic for this site)
+     * @param axis_b Unit z-axis of site B in lab frame (zero = isotropic for this site)
+     * @param params Anisotropic repulsion parameters
+     * @return AnisotropicResult with energy, forces, and axis torques
+     */
+    static AnisotropicResult anisotropic_repulsion(
+        const Vec3& pos_a, const Vec3& pos_b,
+        const Vec3& axis_a, const Vec3& axis_b,
+        const AnisotropicRepulsionParams& params);
 
     // ==================== Lennard-Jones Potential ====================
 

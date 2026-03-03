@@ -70,7 +70,10 @@ EwaldLatticeCache build_ewald_lattice_cache(
                 Vec3 G = B_bohr * Vec3(hx, hy, hz);
                 double G2 = G.squaredNorm();
                 double coeff = std::exp(-G2 * inv_4alpha2) / G2;
-                if (coeff < 1e-12) continue;
+                // Keep very small reciprocal terms so kmax behaves as requested
+                // and high-accuracy parity runs (e.g. DMACRYS benchmarks) can
+                // converge cleanly.
+                if (coeff < 1e-20) continue;
                 cache.g_vectors.push_back({G, coeff});
             }
         }
@@ -88,156 +91,339 @@ EwaldResult compute_ewald_correction(
     bool use_com_gate,
     double elec_site_cutoff,
     const EwaldParams& params,
+    const CutoffSpline* taper,
+    const EwaldLatticeCache* lattice_cache) {
+    auto full = compute_ewald_correction_with_hessian(
+        sites, unit_cell, neighbors, mol_site_indices,
+        cutoff_radius, use_com_gate, elec_site_cutoff,
+        params, taper, lattice_cache);
+    EwaldResult out;
+    out.energy = full.energy;
+    out.site_forces = std::move(full.site_forces);
+    return out;
+}
+
+EwaldResultWithHessian compute_ewald_correction_with_hessian(
+    const std::vector<EwaldSite>& sites,
+    const crystal::UnitCell& unit_cell,
+    const std::vector<NeighborPair>& neighbors,
+    const std::vector<std::vector<size_t>>& mol_site_indices,
+    double cutoff_radius,
+    bool use_com_gate,
+    double elec_site_cutoff,
+    const EwaldParams& params,
+    const CutoffSpline* taper,
     const EwaldLatticeCache* lattice_cache) {
 
     const int N = static_cast<int>(mol_site_indices.size());
-    EwaldResult result;
-    result.site_forces.resize(sites.size(), Vec3::Zero());
+    const size_t n_sites = sites.size();
+
+    EwaldResultWithHessian result;
+    result.site_forces.resize(n_sites, Vec3::Zero());
+    result.site_hessian = Mat::Zero(3 * static_cast<int>(n_sites),
+                                    3 * static_cast<int>(n_sites));
 
     if (sites.empty()) return result;
 
-    double alpha = params.alpha;
-    int kmax = params.kmax;
+    const double alpha = params.alpha;
+    const int kmax = params.kmax;
 
-    double alpha_bohr = lattice_cache ? lattice_cache->alpha_bohr
-                                      : alpha * occ::units::BOHR_TO_ANGSTROM;
-    double two_alpha_over_sqrt_pi = lattice_cache ? lattice_cache->two_alpha_over_sqrt_pi
-                                                  : 2.0 * alpha_bohr / std::sqrt(M_PI);
+    const double alpha_bohr = lattice_cache ? lattice_cache->alpha_bohr
+                                            : alpha * occ::units::BOHR_TO_ANGSTROM;
+    const double two_alpha_over_sqrt_pi = lattice_cache
+        ? lattice_cache->two_alpha_over_sqrt_pi
+        : 2.0 * alpha_bohr / std::sqrt(M_PI);
 
     occ::log::debug("Ewald correction: alpha = {:.4f} /Ang ({:.6f} /Bohr), kmax = {}",
                     alpha, alpha_bohr, kmax);
 
-    // Convert site positions to Bohr for internal computation
     struct InternalSite {
         Vec3 pos_bohr;
         double charge;
         Vec3 dipole;
-        int mol_index;
     };
-    std::vector<InternalSite> isites(sites.size());
-    for (size_t i = 0; i < sites.size(); ++i) {
+    std::vector<InternalSite> isites(n_sites);
+    for (size_t i = 0; i < n_sites; ++i) {
         isites[i].pos_bohr = sites[i].position * occ::units::ANGSTROM_TO_BOHR;
         isites[i].charge = sites[i].charge;
         isites[i].dipole = sites[i].dipole;
-        isites[i].mol_index = sites[i].mol_index;
     }
 
-    // Per-site force accumulator (Hartree/Bohr)
-    std::vector<Vec3> forces_ha_bohr(sites.size(), Vec3::Zero());
+    std::vector<Vec3> forces_ha_bohr(n_sites, Vec3::Zero());
+    Mat hess_ha_bohr2 = Mat::Zero(3 * static_cast<int>(n_sites),
+                                  3 * static_cast<int>(n_sites));
     double energy_ha = 0.0;
 
-    // Helper: compute erf correction for a site pair (qq + qmu + mumu).
-    // R_vec = r_b - r_a (Bohr). Returns energy correction in Hartree.
+    auto add_hessian_block = [&](size_t i, size_t j, const Mat3& block) {
+        hess_ha_bohr2.block<3, 3>(3 * static_cast<int>(i),
+                                  3 * static_cast<int>(j)) += block;
+    };
     auto erf_pair_correction = [&](const InternalSite& sa, const InternalSite& sb,
-                                   const Vec3& R_vec, double w,
-                                   Vec3& f_a, Vec3& f_b) {
-        double r = R_vec.norm();
-        if (r < 1e-10) return 0.0;
+                                   const Vec3& R_vec,
+                                   Vec3& f_a, Vec3& f_b,
+                                   Mat3& H_aa) {
+        struct Jet2 {
+            double v = 0.0;
+            Vec3 g = Vec3::Zero();
+            Mat3 h = Mat3::Zero();
+        };
 
-        double ar = alpha_bohr * r;
-        double r2 = r * r;
-        double r3 = r2 * r;
-        double erf_val = std::erf(ar);
-        double exp_val = std::exp(-ar * ar);
-        double qa = sa.charge, qb = sb.charge;
-        const Vec3& da = sa.dipole;
-        const Vec3& db = sb.dipole;
+        const auto make_const = [](double c) {
+            Jet2 out;
+            out.v = c;
+            return out;
+        };
+        const auto make_var = [](double x, int idx) {
+            Jet2 out;
+            out.v = x;
+            out.g[idx] = 1.0;
+            return out;
+        };
+        const auto outer = [](const Vec3& a, const Vec3& b) {
+            return a * b.transpose();
+        };
+        const auto add = [&](const Jet2& a, const Jet2& b) {
+            Jet2 out;
+            out.v = a.v + b.v;
+            out.g = a.g + b.g;
+            out.h = a.h + b.h;
+            return out;
+        };
+        const auto sub = [&](const Jet2& a, const Jet2& b) {
+            Jet2 out;
+            out.v = a.v - b.v;
+            out.g = a.g - b.g;
+            out.h = a.h - b.h;
+            return out;
+        };
+        const auto mul = [&](const Jet2& a, const Jet2& b) {
+            Jet2 out;
+            out.v = a.v * b.v;
+            out.g = a.g * b.v + b.g * a.v;
+            out.h = a.h * b.v + b.h * a.v + outer(a.g, b.g) + outer(b.g, a.g);
+            return out;
+        };
+        const auto muls = [&](const Jet2& a, double s) {
+            Jet2 out;
+            out.v = a.v * s;
+            out.g = a.g * s;
+            out.h = a.h * s;
+            return out;
+        };
+        const auto inv = [&](const Jet2& a) {
+            Jet2 out;
+            const double inv_v = 1.0 / a.v;
+            const double inv_v2 = inv_v * inv_v;
+            out.v = inv_v;
+            out.g = -a.g * inv_v2;
+            out.h = 2.0 * outer(a.g, a.g) * (inv_v2 * inv_v) - a.h * inv_v2;
+            return out;
+        };
+        const auto div = [&](const Jet2& a, const Jet2& b) {
+            return mul(a, inv(b));
+        };
+        const auto sqrtj = [&](const Jet2& a) {
+            Jet2 out;
+            const double s = std::sqrt(a.v);
+            const double fp = 0.5 / s;
+            const double fpp = -0.25 / (a.v * s);
+            out.v = s;
+            out.g = fp * a.g;
+            out.h = fpp * outer(a.g, a.g) + fp * a.h;
+            return out;
+        };
+        const auto expj = [&](const Jet2& a) {
+            Jet2 out;
+            const double e = std::exp(a.v);
+            out.v = e;
+            out.g = e * a.g;
+            out.h = e * (a.h + outer(a.g, a.g));
+            return out;
+        };
+        const auto erfj = [&](const Jet2& a) {
+            Jet2 out;
+            const double ev = std::erf(a.v);
+            const double fp = 2.0 / std::sqrt(M_PI) * std::exp(-a.v * a.v);
+            const double fpp = -2.0 * a.v * fp;
+            out.v = ev;
+            out.g = fp * a.g;
+            out.h = fpp * outer(a.g, a.g) + fp * a.h;
+            return out;
+        };
 
-        // Charge-charge erf correction: -q_a * q_b * erf(alpha*r) / r
-        double e_qq = -w * qa * qb * erf_val / r;
+        if (R_vec.norm() < 1e-10) return 0.0;
 
-        // Charge-charge force correction
-        double f_over_r = qa * qb *
-            (-erf_val / r2 + two_alpha_over_sqrt_pi * exp_val / r);
-        Vec3 f_corr = w * f_over_r * (R_vec / r);
-        f_a -= f_corr;
-        f_b += f_corr;
+        const Jet2 X = make_var(R_vec[0], 0);
+        const Jet2 Y = make_var(R_vec[1], 1);
+        const Jet2 Z = make_var(R_vec[2], 2);
 
-        double e_qmu = 0.0, e_mumu = 0.0;
+        const Jet2 r2 = add(add(mul(X, X), mul(Y, Y)), mul(Z, Z));
+        const Jet2 r = sqrtj(r2);
+        const Jet2 inv_r = inv(r);
+        const Jet2 inv_r2 = inv(r2);
+        const Jet2 inv_r3 = mul(inv_r2, inv_r);
+        const Jet2 inv_r4 = mul(inv_r2, inv_r2);
+        const Jet2 inv_r5 = mul(inv_r4, inv_r);
+
+        const Jet2 ar = muls(r, alpha_bohr);
+        const Jet2 erf_ar = erfj(ar);
+        const Jet2 ar2 = mul(ar, ar);
+        const Jet2 exp_minus_ar2 = expj(muls(ar2, -1.0));
+
+        const double qa = sa.charge;
+        const double qb = sb.charge;
+
+        Jet2 E = muls(mul(erf_ar, inv_r), -qa * qb);
 
         if (params.include_dipole) {
-            // Charge-dipole erf correction
-            double f1 = two_alpha_over_sqrt_pi * exp_val / r2 - erf_val / r3;
-            double muA_dot_R = da.dot(R_vec);
-            double muB_dot_R = db.dot(R_vec);
-            e_qmu = -w * (qa * muB_dot_R - qb * muA_dot_R) * f1;
+            const Vec3& da = sa.dipole;
+            const Vec3& db = sb.dipole;
+            const Jet2 muA_dot_R = add(add(muls(X, da[0]), muls(Y, da[1])),
+                                       muls(Z, da[2]));
+            const Jet2 muB_dot_R = add(add(muls(X, db[0]), muls(Y, db[1])),
+                                       muls(Z, db[2]));
 
-            // Dipole-dipole erf correction
-            double r4 = r2 * r2;
-            double r5 = r4 * r;
-            double Ap_over_r = -two_alpha_over_sqrt_pi * exp_val *
-                (2.0 * alpha_bohr * alpha_bohr / r2 + 3.0 / r4) +
-                3.0 * erf_val / r5;
-            e_mumu = w * (da.dot(db) * f1 + muA_dot_R * muB_dot_R * Ap_over_r);
+            const Jet2 f1 = sub(
+                muls(mul(exp_minus_ar2, inv_r2), two_alpha_over_sqrt_pi),
+                mul(erf_ar, inv_r3));
+            const Jet2 qmu_lin = sub(muls(muB_dot_R, qa), muls(muA_dot_R, qb));
+            const Jet2 E_qmu = muls(mul(qmu_lin, f1), -1.0);
+
+            const double a2 = alpha_bohr * alpha_bohr;
+            const Jet2 t_inner = add(muls(inv_r2, 2.0 * a2), muls(inv_r4, 3.0));
+            const Jet2 Ap_over_r = add(
+                muls(mul(exp_minus_ar2, t_inner), -two_alpha_over_sqrt_pi),
+                muls(mul(erf_ar, inv_r5), 3.0));
+            const Jet2 E_mumu = add(
+                muls(f1, da.dot(db)),
+                mul(mul(muA_dot_R, muB_dot_R), Ap_over_r));
+
+            E = add(E, add(E_qmu, E_mumu));
         }
 
-        return e_qq + e_qmu + e_mumu;
+        f_a += E.g;
+        f_b -= E.g;
+        H_aa += 0.5 * (E.h + E.h.transpose());
+        return E.v;
     };
 
-    // Real-space erf correction over neighbor pairs (inter-molecular)
+    const bool use_taper = (taper != nullptr && taper->is_valid());
     const bool use_erf_site_cutoff = (elec_site_cutoff > 0.0);
-    const double erf_site_cutoff_bohr = elec_site_cutoff * occ::units::ANGSTROM_TO_BOHR;
+    const double erf_site_cutoff_bohr =
+        elec_site_cutoff * occ::units::ANGSTROM_TO_BOHR;
+
+    auto accumulate_real_pair = [&](size_t ai, size_t bj,
+                                    const Vec3& R_vec,
+                                    double weight) {
+        const double r_bohr = R_vec.norm();
+        if (r_bohr < 1e-12) return;
+        if (use_erf_site_cutoff && r_bohr > erf_site_cutoff_bohr) return;
+
+        Vec3 f_a = Vec3::Zero();
+        Vec3 f_b = Vec3::Zero();
+        Mat3 H_aa = Mat3::Zero();
+        const double e0 = erf_pair_correction(
+            isites[ai], isites[bj], R_vec, f_a, f_b, H_aa);
+
+        Vec3 F_a = f_a;
+        Vec3 F_b = f_b;
+        Mat3 J = H_aa;
+        double e_scale = 1.0;
+
+        if (use_taper) {
+            const double r_ang = r_bohr * occ::units::BOHR_TO_ANGSTROM;
+            const CutoffSplineValue sw = evaluate_cutoff_spline(r_ang, *taper);
+            if (sw.value <= 0.0) return;
+
+            e_scale = sw.value;
+            F_a = sw.value * f_a;
+            F_b = sw.value * f_b;
+            J = sw.value * H_aa;
+
+            if (std::abs(sw.first_derivative) > 0.0) {
+                const double dwdR_bohr =
+                    sw.first_derivative * occ::units::BOHR_TO_ANGSTROM;
+                const double d2wdR2_bohr2 =
+                    sw.second_derivative *
+                    occ::units::BOHR_TO_ANGSTROM *
+                    occ::units::BOHR_TO_ANGSTROM;
+                const Vec3 u = R_vec / r_bohr;
+                const Mat3 uuT = u * u.transpose();
+                const Mat3 I = Mat3::Identity();
+
+                const Vec3 extra = e0 * dwdR_bohr * u;
+                F_a += extra;
+                F_b -= extra;
+
+                J += dwdR_bohr *
+                     (u * f_a.transpose() + f_a * u.transpose());
+                J += e0 *
+                     (d2wdR2_bohr2 * uuT +
+                      (dwdR_bohr / r_bohr) * (I - uuT));
+            }
+        }
+
+        energy_ha += weight * e_scale * e0;
+        forces_ha_bohr[ai] += weight * F_a;
+        forces_ha_bohr[bj] += weight * F_b;
+
+        add_hessian_block(ai, ai, weight * J);
+        add_hessian_block(ai, bj, -weight * J);
+        add_hessian_block(bj, ai, -weight * J);
+        add_hessian_block(bj, bj, weight * J);
+
+    };
+
     for (const auto& pair : neighbors) {
-        if (use_com_gate && pair.com_distance > cutoff_radius)
-            continue;
+        if (use_com_gate && pair.com_distance > cutoff_radius) continue;
 
-        int mi = pair.mol_i;
-        int mj = pair.mol_j;
-
-        Vec3 cell_trans_bohr = unit_cell.to_cartesian(
+        const int mi = pair.mol_i;
+        const int mj = pair.mol_j;
+        const Vec3 cell_trans_bohr = unit_cell.to_cartesian(
             pair.cell_shift.cast<double>()) * occ::units::ANGSTROM_TO_BOHR;
 
         for (size_t ai : mol_site_indices[mi]) {
             for (size_t bj : mol_site_indices[mj]) {
-                Vec3 R_vec = isites[bj].pos_bohr + cell_trans_bohr
-                           - isites[ai].pos_bohr;
-                if (use_erf_site_cutoff && R_vec.norm() > erf_site_cutoff_bohr)
-                    continue;
-                energy_ha += erf_pair_correction(
-                    isites[ai], isites[bj], R_vec, pair.weight,
-                    forces_ha_bohr[ai], forces_ha_bohr[bj]);
+                const Vec3 R_vec = isites[bj].pos_bohr + cell_trans_bohr -
+                                   isites[ai].pos_bohr;
+                accumulate_real_pair(ai, bj, R_vec, pair.weight);
             }
         }
     }
 
-    // Intra-molecular erf correction
     for (int m = 0; m < N; ++m) {
         const auto& indices = mol_site_indices[m];
         for (size_t ii = 0; ii < indices.size(); ++ii) {
-            size_t ai = indices[ii];
+            const size_t ai = indices[ii];
             for (size_t jj = ii + 1; jj < indices.size(); ++jj) {
-                size_t bi = indices[jj];
-                Vec3 R_vec = isites[bi].pos_bohr - isites[ai].pos_bohr;
-                energy_ha += erf_pair_correction(
-                    isites[ai], isites[bi], R_vec, 1.0,
-                    forces_ha_bohr[ai], forces_ha_bohr[bi]);
+                const size_t bj = indices[jj];
+                const Vec3 R_vec = isites[bj].pos_bohr - isites[ai].pos_bohr;
+                accumulate_real_pair(ai, bj, R_vec, 1.0);
             }
         }
     }
 
-    // Reciprocal-space sum
-    // Use cached G-vectors when available; otherwise compute on the fly
     double four_pi_over_vol;
     if (lattice_cache) {
         four_pi_over_vol = lattice_cache->four_pi_over_vol;
     } else {
         Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
-        double volume_bohr = unit_cell.volume() *
+        const double volume_bohr = unit_cell.volume() *
             std::pow(occ::units::ANGSTROM_TO_BOHR, 3);
         four_pi_over_vol = 4.0 * M_PI / volume_bohr;
     }
 
-    // Pre-allocate per-site sin/cos arrays to avoid recomputation in force loop
-    const size_t n_sites = isites.size();
-    std::vector<double> cos_phase(n_sites), sin_phase(n_sites);
+    std::vector<double> cos_phase(n_sites), sin_phase(n_sites), mu_dot_G(n_sites);
+    std::vector<double> dP_dphi(n_sites), dQ_dphi(n_sites);
 
-    // Lambda to process a single G-vector + coefficient pair
     auto process_g_vector = [&](const Vec3& G, double coeff) {
-        // Structure factors — store sin/cos for reuse in force loop
-        double Sq_re = 0.0, Sq_im = 0.0;
-        double Smu_re = 0.0, Smu_im = 0.0;
+        double Sq_re = 0.0;
+        double Sq_im = 0.0;
+        double Smu_re = 0.0;
+        double Smu_im = 0.0;
+
         for (size_t k = 0; k < n_sites; ++k) {
-            double phase = G.dot(isites[k].pos_bohr);
+            const double phase = G.dot(isites[k].pos_bohr);
 #if defined(__APPLE__) && defined(__arm64__)
             __sincos(phase, &sin_phase[k], &cos_phase[k]);
 #else
@@ -246,55 +432,77 @@ EwaldResult compute_ewald_correction(
 #endif
             Sq_re += isites[k].charge * cos_phase[k];
             Sq_im += isites[k].charge * sin_phase[k];
+            mu_dot_G[k] = params.include_dipole ? isites[k].dipole.dot(G) : 0.0;
             if (params.include_dipole) {
-                double mu_dot_G = isites[k].dipole.dot(G);
-                Smu_re += mu_dot_G * cos_phase[k];
-                Smu_im += mu_dot_G * sin_phase[k];
+                Smu_re += mu_dot_G[k] * cos_phase[k];
+                Smu_im += mu_dot_G[k] * sin_phase[k];
             }
         }
 
-        // Energy: (2pi/V) * coeff * |S_q + i*S_mu|^2
-        double qq_recip = Sq_re * Sq_re + Sq_im * Sq_im;
-        double qmu_cross = params.include_dipole ?
-            -2.0 * (Sq_re * Smu_im - Sq_im * Smu_re) : 0.0;
-        double mumu_recip = params.include_dipole ?
-            Smu_re * Smu_re + Smu_im * Smu_im : 0.0;
-        double prefactor = 0.5 * four_pi_over_vol * coeff;
-        energy_ha += prefactor * (qq_recip + qmu_cross + mumu_recip);
+        const double qq_recip = Sq_re * Sq_re + Sq_im * Sq_im;
+        const double qmu_cross = params.include_dipole
+            ? -2.0 * (Sq_re * Smu_im - Sq_im * Smu_re)
+            : 0.0;
+        const double mumu_recip = params.include_dipole
+            ? Smu_re * Smu_re + Smu_im * Smu_im
+            : 0.0;
+        const double pref_energy = 0.5 * four_pi_over_vol * coeff;
+        energy_ha += pref_energy * (qq_recip + qmu_cross + mumu_recip);
 
-        // Forces — reuse cached sin/cos from structure factor pass
-        double P = Sq_re - Smu_im;
-        double Q = Sq_im + Smu_re;
-        for (size_t k = 0; k < n_sites; ++k) {
-            double q_k = isites[k].charge;
-            double mk = params.include_dipole ?
-                isites[k].dipole.dot(G) : 0.0;
+        const double P = Sq_re - Smu_im;
+        const double Q = Sq_im + Smu_re;
+        const double pref_force = four_pi_over_vol * coeff;
+        const Mat3 GGT = G * G.transpose();
 
-            double force_factor = q_k * (P * sin_phase[k] - Q * cos_phase[k])
-                                + mk * (P * cos_phase[k] + Q * sin_phase[k]);
+        for (size_t j = 0; j < n_sites; ++j) {
+            const double qj = isites[j].charge;
+            const double mj = mu_dot_G[j];
+            dP_dphi[j] = -qj * sin_phase[j] - mj * cos_phase[j];
+            dQ_dphi[j] =  qj * cos_phase[j] - mj * sin_phase[j];
+        }
 
-            forces_ha_bohr[k] += four_pi_over_vol * coeff * force_factor * G;
+        for (size_t i = 0; i < n_sites; ++i) {
+            const double qi = isites[i].charge;
+            const double mi = mu_dot_G[i];
+            const double si = sin_phase[i];
+            const double ci = cos_phase[i];
+
+            const double A = qi * (P * si - Q * ci) +
+                             mi * (P * ci + Q * si);
+            forces_ha_bohr[i] += pref_force * A * G;
+
+            for (size_t j = 0; j < n_sites; ++j) {
+                const bool delta = (i == j);
+                const double dB = dP_dphi[j] * si +
+                                  (delta ? P * ci : 0.0) -
+                                  dQ_dphi[j] * ci +
+                                  (delta ? Q * si : 0.0);
+                const double dC = dP_dphi[j] * ci -
+                                  (delta ? P * si : 0.0) +
+                                  dQ_dphi[j] * si +
+                                  (delta ? Q * ci : 0.0);
+                const double dA = qi * dB + mi * dC;
+                const Mat3 Hij = -pref_force * dA * GGT;
+                add_hessian_block(i, j, Hij);
+            }
         }
     };
 
     if (lattice_cache) {
-        // Use pre-computed G-vectors and coefficients
         for (const auto& gv : lattice_cache->g_vectors) {
             process_g_vector(gv.G, gv.coeff);
         }
     } else {
-        // Compute on the fly
         Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
         Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
-        double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
-
+        const double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
         for (int hx = -kmax; hx <= kmax; ++hx) {
             for (int hy = -kmax; hy <= kmax; ++hy) {
                 for (int hz = -kmax; hz <= kmax; ++hz) {
                     if (hx == 0 && hy == 0 && hz == 0) continue;
-                    Vec3 G = B_bohr * Vec3(hx, hy, hz);
-                    double G2 = G.squaredNorm();
-                    double coeff = std::exp(-G2 * inv_4alpha2) / G2;
+                    const Vec3 G = B_bohr * Vec3(hx, hy, hz);
+                    const double G2 = G.squaredNorm();
+                    const double coeff = std::exp(-G2 * inv_4alpha2) / G2;
                     if (coeff < 1e-12) continue;
                     process_g_vector(G, coeff);
                 }
@@ -302,25 +510,26 @@ EwaldResult compute_ewald_correction(
         }
     }
 
-    // Self correction
-    double alpha3 = alpha_bohr * alpha_bohr * alpha_bohr;
+    const double alpha3 = alpha_bohr * alpha_bohr * alpha_bohr;
     for (const auto& s : isites) {
-        // Charge-charge self: -(alpha/sqrt(pi)) * q^2
         energy_ha -= (alpha_bohr / std::sqrt(M_PI)) * s.charge * s.charge;
-        // Dipole-dipole self: -(2*alpha^3/(3*sqrt(pi))) * |mu|^2
         if (params.include_dipole) {
             energy_ha -= (2.0 * alpha3 / (3.0 * std::sqrt(M_PI))) *
                 s.dipole.squaredNorm();
         }
     }
 
-    // Convert to kJ/mol and Angstrom
     result.energy = energy_ha * occ::units::AU_TO_KJ_PER_MOL;
+    const double force_conv =
+        occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM;
+    const double hessian_conv =
+        occ::units::AU_TO_KJ_PER_MOL /
+        (occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM);
 
-    double force_conv = occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM;
-    for (size_t k = 0; k < sites.size(); ++k) {
+    for (size_t k = 0; k < n_sites; ++k) {
         result.site_forces[k] = forces_ha_bohr[k] * force_conv;
     }
+    result.site_hessian = hess_ha_bohr2 * hessian_conv;
 
     occ::log::debug("Ewald correction: {:.4f} kJ/mol ({} sites, {} neighbor pairs)",
                     result.energy, sites.size(), neighbors.size());

@@ -55,6 +55,58 @@ Vec3 finite_diff_gradient(const CartesianMolecule &molA,
     return grad;
 }
 
+double molecule_pair_energy_with_options(const CartesianMolecule &molA,
+                                         const CartesianMolecule &molB,
+                                         double site_cutoff,
+                                         int max_interaction_order,
+                                         const Vec3 &offset_B,
+                                         const CutoffSpline *taper) {
+    return compute_molecule_forces_torques(
+               molA, molB, site_cutoff, max_interaction_order, offset_B, taper)
+        .energy;
+}
+
+Vec3 finite_diff_force_A_with_options(const CartesianMolecule &molA,
+                                      const CartesianMolecule &molB,
+                                      double site_cutoff,
+                                      int max_interaction_order,
+                                      const Vec3 &offset_B,
+                                      const CutoffSpline *taper,
+                                      double delta = 1e-6) {
+    Vec3 force = Vec3::Zero();
+    for (int d = 0; d < 3; ++d) {
+        CartesianMolecule mol_plus = molA;
+        CartesianMolecule mol_minus = molA;
+        for (auto &s : mol_plus.sites) s.position[d] += delta;
+        for (auto &s : mol_minus.sites) s.position[d] -= delta;
+
+        const double Ep = molecule_pair_energy_with_options(
+            mol_plus, molB, site_cutoff, max_interaction_order, offset_B, taper);
+        const double Em = molecule_pair_energy_with_options(
+            mol_minus, molB, site_cutoff, max_interaction_order, offset_B, taper);
+        const double dE_dx = (Ep - Em) / (2.0 * delta);
+        force[d] = -dE_dx; // physical force = -dE/dx
+    }
+    return force;
+}
+
+std::array<Mat3, 6> voigt_basis_for_tests() {
+    std::array<Mat3, 6> B{};
+    B[0].setZero();
+    B[0](0, 0) = 1.0;
+    B[1].setZero();
+    B[1](1, 1) = 1.0;
+    B[2].setZero();
+    B[2](2, 2) = 1.0;
+    B[3].setZero();
+    B[3](1, 2) = B[3](2, 1) = 0.5; // E4 = 2*eps_yz
+    B[4].setZero();
+    B[4](0, 2) = B[4](2, 0) = 0.5; // E5 = 2*eps_xz
+    B[5].setZero();
+    B[5](0, 1) = B[5](1, 0) = 0.5; // E6 = 2*eps_xy
+    return B;
+}
+
 /// Build a rotation matrix from axis-angle (Rodrigues).
 Mat3 axis_angle_rotation(const Vec3 &axis, double angle) {
     Vec3 n = axis.normalized();
@@ -99,6 +151,48 @@ Vec3 finite_diff_torque(
         } else {
             E_plus = compute_molecule_interaction(other_mol, mol_plus);
             E_minus = compute_molecule_interaction(other_mol, mol_minus);
+        }
+        grad[k] = (E_plus - E_minus) / (2.0 * delta);
+    }
+    return grad;
+}
+
+Vec3 finite_diff_torque_with_options(
+    const std::vector<std::pair<Mult, Vec3>> &body_sites,
+    const Mat3 &rotation, const Vec3 &center,
+    const CartesianMolecule &other_mol,
+    bool is_mol_A,
+    double site_cutoff,
+    int max_interaction_order,
+    const Vec3 &offset_B,
+    const CutoffSpline *taper,
+    double delta = 1e-6) {
+    Vec3 grad = Vec3::Zero();
+    for (int k = 0; k < 3; ++k) {
+        Vec3 axis = Vec3::Zero();
+        axis[k] = 1.0;
+
+        Mat3 dR_plus = axis_angle_rotation(axis, delta);
+        Mat3 dR_minus = axis_angle_rotation(axis, -delta);
+        Mat3 R_plus = dR_plus * rotation;
+        Mat3 R_minus = dR_minus * rotation;
+
+        auto mol_plus = CartesianMolecule::from_body_frame_with_rotation(
+            body_sites, R_plus, center);
+        auto mol_minus = CartesianMolecule::from_body_frame_with_rotation(
+            body_sites, R_minus, center);
+
+        double E_plus = 0.0, E_minus = 0.0;
+        if (is_mol_A) {
+            E_plus = molecule_pair_energy_with_options(
+                mol_plus, other_mol, site_cutoff, max_interaction_order, offset_B, taper);
+            E_minus = molecule_pair_energy_with_options(
+                mol_minus, other_mol, site_cutoff, max_interaction_order, offset_B, taper);
+        } else {
+            E_plus = molecule_pair_energy_with_options(
+                other_mol, mol_plus, site_cutoff, max_interaction_order, offset_B, taper);
+            E_minus = molecule_pair_energy_with_options(
+                other_mol, mol_minus, site_cutoff, max_interaction_order, offset_B, taper);
         }
         grad[k] = (E_plus - E_minus) / (2.0 * delta);
     }
@@ -209,6 +303,243 @@ TEST_CASE("Full-rank pair force matches finite difference", "[force][fd][fullran
                          d, ef.gradient[d] * grad_conv, fd_grad[d],
                          std::abs(ef.gradient[d] * grad_conv - fd_grad[d])));
         REQUIRE(ef.gradient[d] * grad_conv == Approx(fd_grad[d]).epsilon(1e-7));
+    }
+}
+
+TEST_CASE("Truncated+taper force matches finite difference",
+          "[force][fd][trunc][taper]") {
+    Mult m1(4), m2(4);
+    m1.Q00() = -0.669;
+    m1.Q10() = 0.234;
+    m1.Q20() = -0.123;
+    m1.Q30() = 0.05;
+    m1.Q40() = 0.01;
+    m2.Q00() = 0.5;
+    m2.Q11c() = 0.1;
+    m2.Q22c() = 0.05;
+    m2.Q33c() = 0.02;
+    m2.Q44c() = 0.005;
+
+    auto molA = single_site_mol(m1, Vec3(0.0, 0.0, 0.0));
+    auto molB = single_site_mol(m2, Vec3(6.2, 1.1, -0.8));
+
+    CutoffSpline taper;
+    taper.enabled = true;
+    taper.r_on = 5.5;
+    taper.r_off = 7.0;
+    taper.order = 3;
+
+    const Vec3 offset_B(0.3, -0.2, 0.4);
+    const double site_cutoff = 8.0;
+    const int max_order = 4;
+
+    auto result = compute_molecule_forces_torques(
+        molA, molB, site_cutoff, max_order, offset_B, &taper);
+    Vec3 fd_force_A = finite_diff_force_A_with_options(
+        molA, molB, site_cutoff, max_order, offset_B, &taper, 1e-6);
+
+    for (int d = 0; d < 3; ++d) {
+        INFO(fmt::format("Component {}: analytic={:.10e} fd={:.10e}",
+                         d, result.force_A[d], fd_force_A[d]));
+        REQUIRE(result.force_A[d] == Approx(fd_force_A[d]).epsilon(2e-6));
+    }
+}
+
+TEST_CASE("Truncated+taper multi-site force matches finite difference",
+          "[force][fd][trunc][taper][multisite]") {
+    Mult qO(4), qH(4);
+    qO.Q00() = -0.669;
+    qO.Q10() = 0.234;
+    qO.Q20() = -0.123;
+    qO.Q30() = 0.05;
+    qH.Q00() = 0.335;
+    qH.Q11c() = 0.03;
+
+    auto molA = CartesianMolecule::from_lab_sites({
+        {qO, Vec3(0.0, 0.0, 0.0)},
+        {qH, Vec3(1.8, 0.0, 0.0)},
+        {qH, Vec3(-0.6, 1.7, 0.0)}
+    });
+    auto molB = CartesianMolecule::from_lab_sites({
+        {qO, Vec3(5.9, 0.4, 0.2)},
+        {qH, Vec3(7.6, 0.6, 0.1)},
+        {qH, Vec3(5.1, 2.0, -0.2)}
+    });
+
+    CutoffSpline taper;
+    taper.enabled = true;
+    taper.r_on = 5.0;
+    taper.r_off = 7.0;
+    taper.order = 3;
+
+    const Vec3 offset_B(0.2, -0.1, 0.25);
+    const double site_cutoff = 8.0;
+    const int max_order = 4;
+
+    auto result = compute_molecule_forces_torques(
+        molA, molB, site_cutoff, max_order, offset_B, &taper);
+    Vec3 fd_force_A = finite_diff_force_A_with_options(
+        molA, molB, site_cutoff, max_order, offset_B, &taper, 1e-6);
+
+    for (int d = 0; d < 3; ++d) {
+        INFO(fmt::format("Component {}: analytic={:.10e} fd={:.10e}",
+                         d, result.force_A[d], fd_force_A[d]));
+        REQUIRE(result.force_A[d] == Approx(fd_force_A[d]).epsilon(2e-6));
+    }
+}
+
+TEST_CASE("Truncated+taper torque matches finite difference",
+          "[force][fd][trunc][taper][torque]") {
+    Mult qA(4), qB(4);
+    qA.Q00() = 0.75;
+    qB.Q00() = -0.60;
+
+    const std::vector<std::pair<Mult, Vec3>> bodyA{
+        {qA, Vec3(0.6, -0.2, 0.1)},
+        {qA, Vec3(-0.4, 0.5, -0.3)}
+    };
+    const std::vector<std::pair<Mult, Vec3>> bodyB{
+        {qB, Vec3(0.2, 0.1, -0.4)},
+        {qB, Vec3(-0.5, -0.3, 0.2)}
+    };
+
+    const Mat3 rotA = axis_angle_rotation(Vec3(0.7, -0.2, 0.4).normalized(), 0.31);
+    const Mat3 rotB = axis_angle_rotation(Vec3(-0.3, 0.9, 0.1).normalized(), -0.28);
+    const Vec3 comA(0.1, -0.3, 0.2);
+    const Vec3 comB(6.4, 0.7, -0.8);
+
+    auto molA = CartesianMolecule::from_body_frame_with_rotation(bodyA, rotA, comA);
+    auto molB = CartesianMolecule::from_body_frame_with_rotation(bodyB, rotB, comB);
+
+    CutoffSpline taper;
+    taper.enabled = true;
+    taper.r_on = 5.0;
+    taper.r_off = 7.0;
+    taper.order = 3;
+
+    const Vec3 offset_B(0.35, -0.15, 0.25);
+    const double site_cutoff = 8.5;
+    const int max_order = 0; // charge-only to isolate taper/geometry terms
+
+    const auto result = compute_molecule_forces_torques(
+        molA, molB, site_cutoff, max_order, offset_B, &taper);
+
+    const Vec3 fd_tau_A = finite_diff_torque_with_options(
+        bodyA, rotA, comA, molB, true,
+        site_cutoff, max_order, offset_B, &taper, 1e-6);
+    const Vec3 fd_tau_B = finite_diff_torque_with_options(
+        bodyB, rotB, comB, molA, false,
+        site_cutoff, max_order, offset_B, &taper, 1e-6);
+
+    for (int k = 0; k < 3; ++k) {
+        INFO(fmt::format("A component {}: analytic={:.10e} fd={:.10e}",
+                         k, result.grad_angle_axis_A[k], fd_tau_A[k]));
+        REQUIRE(result.grad_angle_axis_A[k] == Approx(fd_tau_A[k]).epsilon(1e-5));
+        INFO(fmt::format("B component {}: analytic={:.10e} fd={:.10e}",
+                         k, result.grad_angle_axis_B[k], fd_tau_B[k]));
+        REQUIRE(result.grad_angle_axis_B[k] == Approx(fd_tau_B[k]).epsilon(1e-5));
+    }
+}
+
+TEST_CASE("Truncated+taper pair virial matches strain finite difference",
+          "[force][fd][strain][trunc][taper][virial]") {
+    Mult mA1(4), mA2(4), mB1(4), mB2(4);
+    mA1.Q00() = -0.55;
+    mA1.Q10() = 0.14;
+    mA1.Q20() = -0.08;
+    mA2.Q00() = 0.22;
+    mA2.Q11c() = 0.05;
+    mA2.Q22s() = -0.02;
+
+    mB1.Q00() = 0.41;
+    mB1.Q10() = -0.09;
+    mB1.Q21c() = 0.03;
+    mB2.Q00() = -0.19;
+    mB2.Q11s() = 0.06;
+    mB2.Q30() = -0.015;
+
+    const std::vector<std::pair<Mult, Vec3>> bodyA{
+        {mA1, Vec3(0.0, 0.0, 0.0)},
+        {mA2, Vec3(1.2, -0.4, 0.3)},
+    };
+    const std::vector<std::pair<Mult, Vec3>> bodyB{
+        {mB1, Vec3(0.0, 0.0, 0.0)},
+        {mB2, Vec3(-0.7, 1.1, -0.2)},
+    };
+
+    const Mat3 rotA = axis_angle_rotation(Vec3(1.0, 2.0, -1.0).normalized(), 0.37);
+    // Improper orientation (det=-1): inversion * proper rotation.
+    const Mat3 rotB = -axis_angle_rotation(Vec3(-1.0, 0.5, 2.0).normalized(), 0.51);
+
+    const Vec3 comA(0.6, -0.7, 0.2);
+    const Vec3 comB(4.1, 1.8, -1.3);
+    const Vec3 offset_B(2.3, -1.1, 0.9);
+
+    CutoffSpline taper;
+    taper.enabled = true;
+    taper.r_on = 5.0;
+    taper.r_off = 7.5;
+    taper.order = 3;
+
+    const double site_cutoff = 8.0;
+    const int max_order = 4;
+    const auto B = voigt_basis_for_tests();
+
+    auto energy_at_strain = [&](const Mat3 &eps) {
+        const Mat3 F = Mat3::Identity() + eps;
+        const auto molA = CartesianMolecule::from_body_frame_with_rotation(
+            bodyA, rotA, F * comA);
+        const auto molB = CartesianMolecule::from_body_frame_with_rotation(
+            bodyB, rotB, F * comB);
+        const Vec3 shift = F * offset_B;
+        return compute_molecule_forces_torques(
+            molA, molB, site_cutoff, max_order, shift, &taper).energy;
+    };
+
+    const auto molA0 = CartesianMolecule::from_body_frame_with_rotation(bodyA, rotA, comA);
+    const auto molB0 = CartesianMolecule::from_body_frame_with_rotation(bodyB, rotB, comB);
+    const auto r0 = compute_molecule_forces_torques(
+        molA0, molB0, site_cutoff, max_order, offset_B, &taper);
+
+    const Vec3 disp = comB + offset_B - comA;
+    Vec6 g_analytic = Vec6::Zero();
+    for (int a = 0; a < 6; ++a) {
+        g_analytic[a] = r0.force_A.dot(B[a] * disp);
+    }
+
+    const double d = 1e-6;
+    Vec6 g_fd = Vec6::Zero();
+    for (int a = 0; a < 6; ++a) {
+        Mat3 ep = Mat3::Zero();
+        Mat3 em = Mat3::Zero();
+        if (a == 0) {
+            ep(0, 0) = d;
+            em(0, 0) = -d;
+        } else if (a == 1) {
+            ep(1, 1) = d;
+            em(1, 1) = -d;
+        } else if (a == 2) {
+            ep(2, 2) = d;
+            em(2, 2) = -d;
+        } else if (a == 3) {
+            ep(1, 2) = ep(2, 1) = 0.5 * d;
+            em(1, 2) = em(2, 1) = -0.5 * d;
+        } else if (a == 4) {
+            ep(0, 2) = ep(2, 0) = 0.5 * d;
+            em(0, 2) = em(2, 0) = -0.5 * d;
+        } else {
+            ep(0, 1) = ep(1, 0) = 0.5 * d;
+            em(0, 1) = em(1, 0) = -0.5 * d;
+        }
+        const double Ep = energy_at_strain(ep);
+        const double Em = energy_at_strain(em);
+        g_fd[a] = (Ep - Em) / (2.0 * d);
+    }
+
+    for (int a = 0; a < 6; ++a) {
+        INFO(fmt::format("Voigt {}: analytic={:.10e} fd={:.10e}",
+                         a + 1, g_analytic[a], g_fd[a]));
+        REQUIRE(g_analytic[a] == Approx(g_fd[a]).epsilon(2e-5));
     }
 }
 

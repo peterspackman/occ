@@ -2,10 +2,13 @@
 #include <occ/mults/multipole_source.h>
 #include <occ/mults/short_range.h>
 #include <occ/mults/cartesian_force.h>
+#include <occ/mults/cutoff_spline.h>
 #include <occ/crystal/crystal.h>
 #include <occ/core/linear_algebra.h>
 #include <map>
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 namespace occ::mults {
@@ -27,12 +30,16 @@ enum class ForceFieldType {
  */
 struct MoleculeState {
     Vec3 position = Vec3::Zero();    ///< COM position (Angstrom)
-    Vec3 angle_axis = Vec3::Zero();  ///< Rotation as angle-axis (radians)
+    Vec3 angle_axis = Vec3::Zero();  ///< Proper rotation part as angle-axis (radians)
+    int parity = 1;                  ///< Orientation parity (+1 proper, -1 improper)
 
-    /// Compute rotation matrix from angle-axis representation.
+    /// Compute full orientation matrix in O(3) (det = parity).
     Mat3 rotation_matrix() const;
 
-    /// Create from rotation matrix (extracts angle-axis).
+    /// Compute proper SO(3) component (det = +1) from angle-axis.
+    Mat3 proper_rotation_matrix() const;
+
+    /// Create from rotation matrix (extracts parity + proper angle-axis part).
     static MoleculeState from_rotation(const Vec3& pos, const Mat3& R);
 };
 
@@ -45,7 +52,11 @@ struct CrystalEnergyResult {
     double repulsion_dispersion = 0.0;   ///< Short-range component
 
     std::vector<Vec3> forces;            ///< Force on each molecule (kJ/mol/Ang)
-    std::vector<Vec3> torques;           ///< Angle-axis gradient on each molecule
+    std::vector<Vec3> torques;           ///< Lab-frame rotational gradient dE/dψ on each molecule
+
+    /// Affine cell-strain gradient dE/dE_i (Voigt E1..E6, kJ/mol per unit cell).
+    /// Computed from pair virial terms; Ewald contribution is force-mapped only.
+    Vec6 strain_gradient = Vec6::Zero();
 
     /// Pack into single gradient vector (6 components per molecule).
     Vec pack_gradient() const;
@@ -62,6 +73,19 @@ struct CrystalEnergyResultWithHessian : CrystalEnergyResult {
     /// Layout: [x1, y1, z1, θx1, θy1, θz1, x2, ...]
     Mat hessian;
 
+    /// True only when the Hessian matches the full current energy model.
+    bool exact_for_model = false;
+
+    /// True when Ewald second-derivative terms are included.
+    bool includes_ewald_terms = false;
+
+    /// Clamped affine cell-strain Hessian d^2E/dE_i dE_j (Voigt, kJ/mol per unit cell).
+    Mat6 strain_hessian = Mat6::Zero();
+
+    /// Strain-state coupling d^2E/dE_i dq_j (6 x 6N, kJ/mol).
+    /// q layout matches `hessian`: [x1,y1,z1,θx1,θy1,θz1,...].
+    Mat strain_state_hessian;
+
     /// Pack Hessian with only the optimizable DOF
     /// (excluding fixed molecule translations/rotations)
     Mat pack_hessian(bool fix_first_translation, bool fix_first_rotation) const;
@@ -74,6 +98,7 @@ struct PairEnergyDebug {
     double com_distance = 0.0;
     double electrostatic = 0.0;
     double short_range = 0.0;
+    int short_range_site_pairs = 0;
     double total = 0.0;
     double weight = 1.0;
 };
@@ -85,7 +110,7 @@ struct NeighborPair {
     int mol_i;          ///< Index of first molecule
     int mol_j;          ///< Index of second molecule
     IVec3 cell_shift;   ///< Lattice translation of mol_j
-    double weight;      ///< Weight (0.5 for self-images, 1.0 otherwise)
+    double weight;      ///< Pair weight (typically 1.0 for canonical unique pairs)
     double com_distance = 0.0; ///< COM-COM distance (Angstrom), for electrostatic COM gate
 };
 
@@ -111,7 +136,11 @@ public:
     /// Cached molecule geometry (atom positions in body frame).
     struct MoleculeGeometry {
         std::vector<int> atomic_numbers;
+        /// Optional short-range atom types (e.g. DMACRYS/NEIGHCRYS codes).
+        /// 0 means untyped/unknown and falls back to element-based parameters.
+        std::vector<int> short_range_type_codes;
         std::vector<Vec3> atom_positions;  // Body-frame
+        std::vector<Vec3> aniso_body_axes; // Body-frame aniso z-axis per atom (zero if not aniso)
         Vec3 center_of_mass;
     };
 
@@ -145,8 +174,16 @@ public:
     CrystalEnergyResult compute(const std::vector<MoleculeState>& molecules);
 
     /// Compute energy, gradient, and Hessian for given molecular states.
+    /// Hessian is assembled analytically from pair terms (short-range full rigid-body
+    /// and full Cartesian multipole electrostatics). Ewald site-position Hessian
+    /// terms are included when enabled; exactness for the full model is reported by
+    /// `exact_for_model`.
     CrystalEnergyResultWithHessian compute_with_hessian(
         const std::vector<MoleculeState>& molecules);
+
+    /// Returns true when compute_with_hessian provides an exact Hessian for
+    /// the current configured energy model.
+    bool can_compute_exact_hessian() const;
 
     /// Compute energy only (faster, for line search).
     double compute_energy(const std::vector<MoleculeState>& molecules);
@@ -163,28 +200,65 @@ public:
     /// Number of molecules in asymmetric unit.
     int num_molecules() const { return static_cast<int>(m_multipoles.size()); }
 
+    /// Access molecule geometry (body-frame atom positions).
+    const std::vector<MoleculeGeometry>& molecule_geometry() const { return m_geometry; }
+
     /// Get neighbor list.
     const std::vector<NeighborPair>& neighbor_pairs() const { return m_neighbors; }
 
+    /// Set/query anisotropic repulsion parameters (typed).
+    void set_typed_aniso_params(
+        const std::map<std::pair<int,int>, AnisotropicRepulsionParams>& params);
+    bool has_aniso_params(int type1, int type2) const;
+    AnisotropicRepulsionParams get_aniso_params(int type1, int type2) const;
+    bool has_any_aniso_params() const { return !m_typed_aniso_params.empty(); }
+
     /// Get/set Buckingham parameters for atom pair.
     void set_buckingham_params(int Z1, int Z2, const BuckinghamParams& params);
+    void set_typed_buckingham_params(int type1, int type2,
+                                     const BuckinghamParams& params);
+    void set_typed_buckingham_params(
+        const std::map<std::pair<int,int>, BuckinghamParams>& params);
+    void clear_typed_buckingham_params();
+    void set_short_range_type_labels(
+        const std::map<int, std::string>& labels);
     BuckinghamParams get_buckingham_params(int Z1, int Z2) const;
+    bool has_buckingham_params(int Z1, int Z2) const;
+    bool uses_williams_atom_typing() const { return m_use_williams_atom_typing; }
+    bool uses_short_range_typing() const { return m_use_short_range_typing; }
+    bool has_typed_buckingham_params(int type1, int type2) const;
+    BuckinghamParams get_buckingham_params_for_types(int type1, int type2) const;
+    std::string short_range_type_name(int type_code) const;
+
+    /// Convert a Williams/NEIGHCRYS type code to a short label (e.g. 512 -> C_W3).
+    static const char* short_range_type_label(int type_code);
+
+    /// Map a Williams/NEIGHCRYS type code to element Z, or 0 if unknown.
+    static int short_range_type_atomic_number(int type_code);
 
     /// Williams DE Buckingham parameters (built-in).
     static std::map<std::pair<int,int>, BuckinghamParams> williams_de_params();
 
     /// Get the underlying crystal.
     const crystal::Crystal& crystal() const { return m_crystal; }
+    double cutoff_radius() const { return m_cutoff_radius; }
+    void set_cutoff_radius(double cutoff);
 
     /// Update neighbor list (called if molecules move significantly).
     void update_neighbors();
+
+    /// Update neighbor list using current molecule states.
+    /// For explicit neighbor mode (all UC molecules), this rebuilds the list
+    /// from current COM positions and orientations.
+    void update_neighbors(const std::vector<MoleculeState>& states);
 
     /// Build neighbor list from explicit molecule COM positions.
     /// Bypasses Crystal's molecule detection (useful when loading external data).
     /// When force_com_cutoff=true, uses COM distance for the molecule pair gate
     /// even when atom geometry is available (matches DMACRYS TBLCNT behavior).
     void build_neighbor_list_from_positions(const std::vector<Vec3>& mol_coms,
-                                            bool force_com_cutoff = false);
+                                            bool force_com_cutoff = false,
+                                            const std::vector<MoleculeState>* orientation_states = nullptr);
 
     /// Set neighbor list directly (e.g. to reuse a list from another CrystalEnergy).
     void set_neighbor_list(const std::vector<NeighborPair>& neighbors);
@@ -201,6 +275,7 @@ public:
     /// Enable/disable dipole Ewald (charge-dipole + dipole-dipole).
     /// Default is true (DMACRYS computes Ewald for qq, qμ, and μμ).
     void set_ewald_dipole(bool enable) { m_ewald_dipole = enable; }
+    bool use_ewald() const { return m_use_ewald; }
 
     /// Set maximum interaction order for electrostatics (rankA + rankB <= max).
     /// Default -1 means no truncation (compute all orders up to 2*max_rank).
@@ -212,7 +287,10 @@ public:
     /// Default 0.0 means no per-site cutoff (all site pairs within included
     /// molecule pairs are computed).  DMACRYS applies RANG2 per-site cutoff
     /// in its PAIR module for higher multipole terms.
-    void set_elec_site_cutoff(double cutoff) { m_elec_site_cutoff = cutoff; }
+    void set_elec_site_cutoff(double cutoff) {
+        m_elec_site_cutoff = cutoff;
+        invalidate_ewald_params();
+    }
     double elec_site_cutoff() const { return m_elec_site_cutoff; }
 
     /// Enable COM-based gate for electrostatic interactions.
@@ -220,13 +298,44 @@ public:
     /// contribute to electrostatics (matching DMACRYS TBLCNT behavior).
     /// Buckingham is unaffected — uses full atom-based neighbor list.
     /// Default is true for DMACRYS compatibility.
-    void set_use_com_elec_gate(bool enable) { m_use_com_elec_gate = enable; }
+    void set_use_com_elec_gate(bool enable) {
+        m_use_com_elec_gate = enable;
+        invalidate_ewald_params();
+    }
     bool use_com_elec_gate() const { return m_use_com_elec_gate; }
 
     /// Set a separate per-site cutoff for Buckingham (default: same as neighbor cutoff).
-    /// Use a larger value than the neighbor cutoff to avoid discontinuities
-    /// when computing strain derivatives by finite differences.
-    void set_buckingham_site_cutoff(double cutoff) { m_buck_site_cutoff = cutoff; }
+    /// Use a larger value than the neighbor cutoff to reduce derivative
+    /// discontinuities near the neighbor boundary.
+    void set_buckingham_site_cutoff(double cutoff) {
+        m_buck_site_cutoff = cutoff;
+        invalidate_ewald_params();
+    }
+    double buckingham_site_cutoff() const { return m_buck_site_cutoff; }
+
+    /// Set DMACRYS-style electrostatic spline taper.
+    /// f=1 for r<=r_on, spline to 0 over (r_on,r_off], zero beyond r_off.
+    /// Order must be 3 (cubic) or 5 (quintic).
+    void set_electrostatic_taper(double r_on, double r_off, int order = 3);
+    void clear_electrostatic_taper() {
+        m_electrostatic_taper = {};
+        invalidate_ewald_params();
+    }
+    const CutoffSpline& electrostatic_taper() const { return m_electrostatic_taper; }
+
+    /// When false, the electrostatic taper is applied to energy and gradient
+    /// but NOT to the pair Hessian.  This matches DMACRYS behaviour where
+    /// the multipole SEC array does not include spline chain-rule terms.
+    void set_electrostatic_taper_in_hessian(bool enable) { m_elec_taper_hessian = enable; }
+    bool electrostatic_taper_in_hessian() const { return m_elec_taper_hessian; }
+
+    /// Set DMACRYS-style short-range spline taper.
+    void set_short_range_taper(double r_on, double r_off, int order = 3);
+    void clear_short_range_taper() {
+        m_short_range_taper = {};
+        invalidate_ewald_params();
+    }
+    const CutoffSpline& short_range_taper() const { return m_short_range_taper; }
 
     /// Compute which atom-atom pairs are within the Buckingham cutoff for each
     /// neighbor pair at the given molecular states.  Returns a per-neighbor-pair
@@ -236,7 +345,7 @@ public:
 
     /// Set frozen site-pair masks.  When non-empty, compute_short_range_pair
     /// uses only the atom pairs marked true, bypassing the distance cutoff.
-    /// This ensures a smooth energy surface for finite-difference strain.
+    /// This ensures a smoother energy surface under cell/molecular perturbations.
     void set_fixed_site_masks(std::vector<std::vector<bool>> masks) {
         m_fixed_site_masks = std::move(masks);
     }
@@ -272,6 +381,9 @@ private:
     double m_ewald_accuracy = 1e-6;
     double m_ewald_eta = 0.0;
     int m_ewald_kmax = 0;
+    mutable bool m_ewald_params_initialized = false;
+    mutable double m_ewald_alpha_fixed = 0.0;
+    mutable int m_ewald_kmax_fixed = 0;
 
     crystal::Crystal m_crystal;
     std::vector<MultipoleSource> m_multipoles;
@@ -282,6 +394,10 @@ private:
     double m_elec_site_cutoff = 0.0;  // 0 = no per-site cutoff for electrostatics
     bool m_use_com_elec_gate = true;  // Skip electrostatics for COM > cutoff
     double m_buck_site_cutoff = -1.0; // -1 = use m_cutoff_radius
+    CutoffSpline m_electrostatic_taper; // optional radial taper for electrostatics
+    CutoffSpline m_short_range_taper;   // optional radial taper for short-range
+    bool m_elec_taper_hessian = false;  // false = match DMACRYS (no taper in elec Hessian)
+    bool m_explicit_neighbors = false; // true when neighbor list was set externally
 
     /// Per-neighbor-pair atom inclusion masks for frozen Buckingham cutoff.
     /// m_fixed_site_masks[pair_idx] has size nA*nB (row-major), true = include.
@@ -289,13 +405,28 @@ private:
 
     std::vector<NeighborPair> m_neighbors;
     std::map<std::pair<int,int>, BuckinghamParams> m_buckingham_params;
+    std::map<std::pair<int,int>, BuckinghamParams> m_typed_buckingham_params;
+    std::map<int, std::string> m_short_range_type_labels;
+    mutable std::set<std::pair<int,int>> m_missing_buckingham_warned;
+    mutable std::set<std::pair<int,int>> m_missing_typed_buckingham_warned;
     std::map<std::pair<int,int>, LennardJonesParams> m_lj_params;
+    std::map<std::pair<int,int>, AnisotropicRepulsionParams> m_typed_aniso_params;
+    bool m_use_williams_atom_typing = false;
+    bool m_use_short_range_typing = false;
 
     std::vector<MoleculeGeometry> m_geometry;
 
     void build_neighbor_list();
+    void invalidate_ewald_params();
+    void ensure_ewald_params_initialized() const;
+    double effective_neighbor_pair_cutoff() const;
+    double effective_electrostatic_com_cutoff() const;
+    double effective_electrostatic_site_cutoff() const;
+    double effective_buckingham_site_cutoff() const;
     void build_molecule_geometry();
+    void assign_williams_atom_types();
     void initialize_force_field();
+    static std::map<std::pair<int,int>, BuckinghamParams> williams_typed_params();
 
     std::vector<MoleculeState> m_initial_states;  // optional override
 
@@ -331,7 +462,10 @@ private:
         Vec3& torque_i, Vec3& torque_j,
         int neighbor_idx = -1,
         const MoleculeCache* cache_i = nullptr,
-        const MoleculeCache* cache_j = nullptr) const;
+        const MoleculeCache* cache_j = nullptr,
+        int* short_range_site_pairs = nullptr) const;
 };
+
+const std::array<Mat3, 6>& voigt_basis_matrices();
 
 } // namespace occ::mults

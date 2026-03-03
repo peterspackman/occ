@@ -1,16 +1,22 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <occ/mults/lbfgs.h>
+#include <occ/mults/mstmin.h>
 #include <occ/mults/trust_region.h>
 #include <occ/mults/crystal_energy.h>
 #include <occ/mults/crystal_optimizer.h>
+#include <occ/mults/dmacrys_input.h>
 #include <occ/dma/mult.h>
+#include <occ/core/log.h>
+#include <occ/core/units.h>
 #include <cmath>
 
 using namespace occ;
 using namespace occ::mults;
 using Catch::Matchers::WithinAbs;
 using Catch::Matchers::WithinRel;
+
+static const std::string AXOSOW_JSON = CMAKE_SOURCE_DIR "/tests/data/dmacrys/AXOSOW.json";
 
 // ============================================================================
 // L-BFGS Tests
@@ -88,6 +94,65 @@ TEST_CASE("LBFGS: 6D optimization (translation + rotation)", "[crystal_optimizer
     for (int i = 0; i < 6; ++i) {
         CHECK_THAT(result.x[i], WithinAbs(target[i], 1e-5));
     }
+}
+
+// ============================================================================
+// MSTMIN Tests
+// ============================================================================
+
+TEST_CASE("MSTMIN: Rosenbrock function minimization", "[crystal_optimizer][mstmin]") {
+    auto rosenbrock = [](const Vec& x, Vec& g) -> double {
+        double a = 1.0 - x[0];
+        double b = x[1] - x[0] * x[0];
+        g[0] = -2.0 * a - 400.0 * x[0] * b;
+        g[1] = 200.0 * b;
+        return a * a + 100.0 * b * b;
+    };
+
+    MSTMINSettings settings;
+    settings.gradient_tol = 1e-6;
+    settings.step_tol = 1e-6;
+    settings.max_displacement = 0.25;
+    settings.energy_tol = 1e-12;
+    MSTMIN optimizer(settings);
+
+    Vec x0(2);
+    x0 << -1.0, 1.0;
+
+    auto result = optimizer.minimize(rosenbrock, x0, 500);
+
+    REQUIRE(result.converged);
+    CHECK_THAT(result.x[0], WithinAbs(1.0, 1e-4));
+    CHECK_THAT(result.x[1], WithinAbs(1.0, 1e-4));
+    CHECK_THAT(result.final_energy, WithinAbs(0.0, 1e-7));
+}
+
+TEST_CASE("MSTMIN: Quadratic function", "[crystal_optimizer][mstmin]") {
+    Vec target(3);
+    target << 2.0, -1.0, 0.5;
+    Vec diag(3);
+    diag << 1.0, 2.0, 3.0;
+
+    auto quadratic = [&](const Vec& x, Vec& g) -> double {
+        Vec diff = x - target;
+        g = 2.0 * diag.asDiagonal() * diff;
+        return diff.dot(diag.asDiagonal() * diff);
+    };
+
+    MSTMINSettings settings;
+    settings.gradient_tol = 1e-9;
+    settings.step_tol = 1e-9;
+    settings.max_displacement = 0.5;
+    settings.energy_tol = 1e-14;
+    MSTMIN optimizer(settings);
+
+    Vec x0 = Vec::Zero(3);
+    auto result = optimizer.minimize(quadratic, x0, 100);
+
+    REQUIRE(result.converged);
+    CHECK_THAT(result.x[0], WithinAbs(target[0], 1e-6));
+    CHECK_THAT(result.x[1], WithinAbs(target[1], 1e-6));
+    CHECK_THAT(result.x[2], WithinAbs(target[2], 1e-6));
 }
 
 // ============================================================================
@@ -388,4 +453,501 @@ TEST_CASE("LBFGS: Early stop via callback", "[crystal_optimizer][lbfgs]") {
     if (!result.converged) {
         CHECK(result.termination_reason == "Stopped by callback");
     }
+}
+
+// ============================================================================
+// Symmetry Mapping Tests
+// ============================================================================
+
+TEST_CASE("SymmetryMapping: AXOSOW Z'=1 Pbca", "[crystal_optimizer][symmetry]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+
+    auto mapping = build_symmetry_mapping(crystal);
+
+    // Pbca: Z=8, Z'=1
+    CHECK(mapping.num_independent == 1);
+    CHECK(mapping.num_uc_molecules == 8);
+
+    // All 8 UC molecules should map to independent molecule 0
+    for (int j = 0; j < mapping.num_uc_molecules; ++j) {
+        CHECK(mapping.uc_molecules[j].independent_idx == 0);
+    }
+
+    // Independent molecule 0 should have 8 UC images
+    REQUIRE(mapping.independent[0].uc_indices.size() == 8);
+
+    // Z'=1 at general position: full 6 DOF (3 trans + 3 rot)
+    CHECK(mapping.independent[0].trans_dof == 3);
+    CHECK(mapping.independent[0].rot_dof == 3);
+    CHECK(mapping.total_dof() == 6);
+}
+
+TEST_CASE("SymmetryMapping: generate and round-trip UC states", "[crystal_optimizer][symmetry]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+    auto multipoles = build_multipole_sources(input, crystal);
+
+    auto mapping = build_symmetry_mapping(crystal);
+
+    // Create CrystalEnergy to get initial states
+    CrystalEnergy calc(crystal, multipoles, input.cutoff_radius,
+                       ForceFieldType::Custom, true, false);
+    setup_crystal_energy_from_dmacrys(calc, input, crystal, multipoles);
+
+    auto uc_states = calc.initial_states();
+
+    // Extract independent state from the first UC image
+    int ref_uc = mapping.independent[0].uc_indices[0];
+    const auto& uc_info = mapping.uc_molecules[ref_uc];
+
+    MoleculeState indep_state;
+    indep_state.position =
+        uc_info.R_cart.transpose() * (uc_states[ref_uc].position - uc_info.t_cart);
+    Mat3 R_uc = uc_states[ref_uc].rotation_matrix();
+    Mat3 R_indep = uc_info.R_cart.transpose() * R_uc;
+    indep_state = MoleculeState::from_rotation(indep_state.position, R_indep);
+
+    // Generate UC states from independent state
+    std::vector<MoleculeState> indep_states = {indep_state};
+    auto generated = generate_uc_states(indep_states, mapping);
+
+    REQUIRE(generated.size() == 8);
+
+    // Check that generated positions are close to original UC positions
+    for (int j = 0; j < 8; ++j) {
+        double pos_diff = (generated[j].position - uc_states[j].position).norm();
+        INFO("UC mol " << j << ": pos diff = " << pos_diff);
+        CHECK(pos_diff < 0.01);  // Should be very close (within rounding)
+
+        Mat3 R_ref = uc_states[j].rotation_matrix();
+        Mat3 R_gen = generated[j].rotation_matrix();
+        CHECK_THAT((R_ref - R_gen).norm(), WithinAbs(0.0, 1e-6));
+    }
+}
+
+TEST_CASE("MoleculeState preserves improper orientations", "[crystal_optimizer][symmetry]") {
+    Mat3 Q = Mat3::Identity();
+    Q(0, 0) = -1.0; // Reflection in yz plane (det = -1)
+
+    MoleculeState state = MoleculeState::from_rotation(Vec3::Zero(), Q);
+    CHECK(state.parity == -1);
+
+    Mat3 recon = state.rotation_matrix();
+    CHECK_THAT((Q - recon).norm(), WithinAbs(0.0, 1e-10));
+    CHECK_THAT(recon.determinant(), WithinAbs(-1.0, 1e-10));
+}
+
+TEST_CASE("CrystalOptimizer: symmetry DOF count", "[crystal_optimizer][symmetry]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+    auto multipoles = build_multipole_sources(input, crystal);
+
+    // Symmetry mode keeps full independent DOF; fix_first_* applies only in legacy mode.
+    CrystalOptimizerSettings settings;
+    settings.use_symmetry = true;
+    settings.fix_first_translation = true;
+    settings.fix_first_rotation = false;
+    settings.force_field = ForceFieldType::Custom;
+    settings.use_ewald = false;
+
+    CrystalOptimizer optimizer(crystal, multipoles, settings);
+
+    // Z'=1 at general position: full 6 DOF
+    CHECK(optimizer.num_parameters() == 6);
+    CHECK_FALSE(optimizer.settings().fix_first_translation);
+    CHECK_FALSE(optimizer.settings().fix_first_rotation);
+}
+
+TEST_CASE("CrystalOptimizer: symmetry vs legacy energy match", "[crystal_optimizer][symmetry]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+    auto multipoles = build_multipole_sources(input, crystal);
+    auto buck_params = convert_buckingham_params(input.potentials);
+
+    // Setup with symmetry
+    CrystalOptimizerSettings sym_settings;
+    sym_settings.use_symmetry = true;
+    sym_settings.fix_first_translation = true;
+    sym_settings.fix_first_rotation = false;
+    sym_settings.force_field = ForceFieldType::Custom;
+    sym_settings.use_cartesian_engine = true;
+    sym_settings.use_ewald = false;
+
+    CrystalOptimizer sym_opt(crystal, multipoles, sym_settings);
+    setup_crystal_energy_from_dmacrys(sym_opt.energy_calculator(), input, crystal, multipoles);
+    for (const auto& [key, p] : buck_params)
+        sym_opt.energy_calculator().set_buckingham_params(key.first, key.second, p);
+    sym_opt.reinitialize_states();
+
+    // Setup without symmetry
+    CrystalOptimizerSettings legacy_settings = sym_settings;
+    legacy_settings.use_symmetry = false;
+
+    CrystalOptimizer legacy_opt(crystal, multipoles, legacy_settings);
+    setup_crystal_energy_from_dmacrys(legacy_opt.energy_calculator(), input, crystal, multipoles);
+    for (const auto& [key, p] : buck_params)
+        legacy_opt.energy_calculator().set_buckingham_params(key.first, key.second, p);
+    legacy_opt.reinitialize_states();
+
+    // Compute energies
+    auto sym_result = sym_opt.compute_energy_gradient();
+    auto legacy_result = legacy_opt.compute_energy_gradient();
+
+    INFO("Symmetric energy: " << sym_result.total_energy);
+    INFO("Legacy energy: " << legacy_result.total_energy);
+
+    // Energies should match since both use the same UC states
+    CHECK_THAT(sym_result.total_energy,
+               WithinAbs(legacy_result.total_energy, 0.01));
+}
+
+TEST_CASE("CrystalOptimizer: symmetry gradient check", "[crystal_optimizer][symmetry]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+    auto multipoles = build_multipole_sources(input, crystal);
+    auto buck_params = convert_buckingham_params(input.potentials);
+
+    CrystalOptimizerSettings settings;
+    settings.use_symmetry = true;
+    settings.fix_first_translation = true;
+    settings.fix_first_rotation = false;
+    settings.force_field = ForceFieldType::Custom;
+    settings.use_cartesian_engine = true;
+    settings.use_ewald = false;
+    settings.max_interaction_order = 4;
+
+    CrystalOptimizer optimizer(crystal, multipoles, settings);
+    setup_crystal_energy_from_dmacrys(optimizer.energy_calculator(), input, crystal, multipoles);
+    for (const auto& [key, p] : buck_params)
+        optimizer.energy_calculator().set_buckingham_params(key.first, key.second, p);
+    optimizer.reinitialize_states();
+
+    // Get current parameters
+    Vec params = optimizer.get_parameters();
+    REQUIRE(params.size() == 6);  // 3 translation + 3 rotation DOF
+
+    // Compute reference energy
+    optimizer.set_parameters(params);
+    double energy = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+
+    // 4-point finite-difference gradient (O(h^4) accuracy)
+    const double h = 1e-4;  // Larger step for better signal-to-noise
+    Vec fd_grad(params.size());
+
+    for (int i = 0; i < params.size(); ++i) {
+        Vec pp = params, pm = params, p2p = params, p2m = params;
+        pp[i] += h;
+        pm[i] -= h;
+        p2p[i] += 2.0 * h;
+        p2m[i] -= 2.0 * h;
+
+        optimizer.set_parameters(pp);
+        double ep = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+        optimizer.set_parameters(pm);
+        double em = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+        optimizer.set_parameters(p2p);
+        double e2p = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+        optimizer.set_parameters(p2m);
+        double e2m = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+
+        fd_grad[i] = (-e2p + 8.0 * ep - 8.0 * em + e2m) / (12.0 * h);
+        INFO("DOF " << i << ": fd_grad=" << fd_grad[i]);
+    }
+
+    // Verify: moving along negative gradient direction decreases energy
+    double step = 1e-5;
+    Vec params_down = params - step * fd_grad;
+    optimizer.set_parameters(params_down);
+    double e_down = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+
+    INFO("Energy: " << energy << " -> " << e_down << " (delta=" << (e_down - energy) << ")");
+    CHECK(e_down < energy);  // Energy should decrease along negative gradient
+
+    // Cross-check: FD at two step sizes should agree (relative tolerance)
+    const double h2 = h / 2.0;
+    for (int i = 0; i < params.size(); ++i) {
+        Vec pp2 = params, pm2 = params, p2p2 = params, p2m2 = params;
+        pp2[i] += h2;
+        pm2[i] -= h2;
+        p2p2[i] += 2.0 * h2;
+        p2m2[i] -= 2.0 * h2;
+
+        optimizer.set_parameters(pp2);
+        double ep2 = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+        optimizer.set_parameters(pm2);
+        double em2 = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+        optimizer.set_parameters(p2p2);
+        double e2p2 = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+        optimizer.set_parameters(p2m2);
+        double e2m2 = optimizer.energy_calculator().compute(optimizer.states()).total_energy;
+
+        double fd2 = (-e2p2 + 8.0 * ep2 - 8.0 * em2 + e2m2) / (12.0 * h2);
+
+        double rel_diff = std::abs(fd_grad[i] - fd2) / (std::abs(fd_grad[i]) + 1e-10);
+        double abs_diff = std::abs(fd_grad[i] - fd2);
+        INFO("DOF " << i << ": fd(h)=" << fd_grad[i] << " fd(h/2)=" << fd2
+             << " rel_diff=" << rel_diff << " abs_diff=" << abs_diff);
+        // 4-pt FD at h and h/2 should agree reasonably.
+        // Small gradients in high-curvature regions may show larger relative error.
+        CHECK((rel_diff < 0.01 || abs_diff < 2.0));
+    }
+
+    // Reset
+    optimizer.set_parameters(params);
+}
+
+TEST_CASE("SymmetryMapping: accumulate_gradients consistency", "[crystal_optimizer][symmetry]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+    auto mapping = build_symmetry_mapping(crystal);
+
+    // Create mock UC-level forces/torques
+    std::vector<Vec3> uc_forces(8), uc_torques(8);
+    for (int j = 0; j < 8; ++j) {
+        uc_forces[j] = Vec3(1.0, 2.0, 3.0) * (j + 1);  // Distinct per molecule
+        uc_torques[j] = Vec3(0.1, 0.2, 0.3) * (j + 1);
+    }
+
+    std::vector<Vec3> indep_forces, indep_torques;
+    accumulate_gradients(uc_forces, uc_torques, mapping, indep_forces, indep_torques);
+
+    // Should have 1 independent molecule
+    REQUIRE(indep_forces.size() == 1);
+    REQUIRE(indep_torques.size() == 1);
+
+    // The accumulated force should be non-zero (sum of back-rotated forces)
+    CHECK(indep_forces[0].norm() > 0.0);
+    CHECK(indep_torques[0].norm() > 0.0);
+}
+
+TEST_CASE("CrystalOptimizer: cell mode guardrails", "[crystal_optimizer][cell]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+    auto multipoles = build_multipole_sources(input, crystal);
+
+    CrystalOptimizerSettings settings;
+    settings.use_symmetry = true;
+    settings.optimize_cell = true;
+    settings.method = OptimizationMethod::TrustRegion;
+    settings.fix_first_translation = true;
+    settings.fix_first_rotation = false;
+
+    CrystalOptimizer optimizer(crystal, multipoles, settings);
+
+    CHECK(optimizer.settings().use_symmetry);
+    CHECK(optimizer.settings().method == OptimizationMethod::MSTMIN);
+    CHECK(optimizer.num_parameters() == 9);  // 6 molecular + 3 active cell DOF (orthorhombic)
+}
+
+TEST_CASE("CrystalOptimizer: TrustRegion exact-Hessian gating",
+          "[crystal_optimizer][hessian]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+    auto multipoles = build_multipole_sources(input, crystal);
+
+    SECTION("Keep TrustRegion when exact Ewald Hessian is available") {
+        CrystalOptimizerSettings settings;
+        settings.method = OptimizationMethod::TrustRegion;
+        settings.use_symmetry = false;
+        settings.use_cartesian_engine = true;  // includes multipole electrostatics
+        settings.use_ewald = true;
+        settings.require_exact_hessian = true;
+        settings.force_field = ForceFieldType::Custom;
+
+        CrystalOptimizer optimizer(crystal, multipoles, settings);
+        CHECK(optimizer.settings().method == OptimizationMethod::TrustRegion);
+
+        auto h = optimizer.energy_calculator().compute_with_hessian(optimizer.states());
+        CHECK(h.exact_for_model);
+        CHECK(h.includes_ewald_terms);
+    }
+
+    SECTION("Keep exact-Hessian status with electrostatic taper enabled") {
+        CrystalOptimizerSettings settings;
+        settings.method = OptimizationMethod::TrustRegion;
+        settings.use_symmetry = false;
+        settings.use_cartesian_engine = true;
+        settings.use_ewald = true;
+        settings.require_exact_hessian = true;
+        settings.force_field = ForceFieldType::Custom;
+
+        CrystalOptimizer optimizer(crystal, multipoles, settings);
+        optimizer.energy_calculator().set_electrostatic_taper(10.0, 12.0, 3);
+        CHECK(optimizer.settings().method == OptimizationMethod::TrustRegion);
+        CHECK(optimizer.energy_calculator().can_compute_exact_hessian());
+
+        auto h = optimizer.energy_calculator().compute_with_hessian(optimizer.states());
+        CHECK(h.exact_for_model);
+    }
+
+    SECTION("Keep TrustRegion when exact Hessian is available") {
+        CrystalOptimizerSettings settings;
+        settings.method = OptimizationMethod::TrustRegion;
+        settings.use_symmetry = false;
+        settings.use_cartesian_engine = false; // short-range only model
+        settings.use_ewald = false;
+        settings.require_exact_hessian = true;
+        settings.force_field = ForceFieldType::Custom;
+
+        CrystalOptimizer optimizer(crystal, multipoles, settings);
+        CHECK(optimizer.settings().method == OptimizationMethod::TrustRegion);
+
+        auto h = optimizer.energy_calculator().compute_with_hessian(optimizer.states());
+        CHECK(h.exact_for_model);
+    }
+
+    SECTION("Keep TrustRegion for non-Ewald Cartesian multipoles") {
+        CrystalOptimizerSettings settings;
+        settings.method = OptimizationMethod::TrustRegion;
+        settings.use_symmetry = false;
+        settings.use_cartesian_engine = true;  // full multipole electrostatics
+        settings.use_ewald = false;            // required for exact Hessian
+        settings.require_exact_hessian = true;
+        settings.force_field = ForceFieldType::Custom;
+
+        CrystalOptimizer optimizer(crystal, multipoles, settings);
+        CHECK(optimizer.settings().method == OptimizationMethod::TrustRegion);
+
+        auto h = optimizer.energy_calculator().compute_with_hessian(optimizer.states());
+        CHECK(h.exact_for_model);
+        CHECK_FALSE(h.includes_ewald_terms);
+    }
+}
+
+TEST_CASE("CrystalOptimizer: symmetry+cell strain constraints",
+          "[crystal_optimizer][cell][symmetry]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+    auto multipoles = build_multipole_sources(input, crystal);
+
+    SECTION("Orthorhombic default: shear strains are constrained") {
+        CrystalOptimizerSettings settings;
+        settings.method = OptimizationMethod::LBFGS;
+        settings.use_symmetry = true;
+        settings.optimize_cell = true;
+        settings.force_field = ForceFieldType::Custom;
+        settings.use_ewald = false;
+        settings.constrain_cell_strain_by_lattice = true;
+
+        CrystalOptimizer optimizer(crystal, multipoles, settings);
+        Vec p0 = optimizer.get_parameters();
+        REQUIRE(p0.size() == optimizer.num_parameters());
+        REQUIRE(p0.size() == 9); // 6 molecular + [E1,E2,E3]
+
+        Vec p1 = p0;
+        const int cell_offset = static_cast<int>(p1.size()) - 3;
+        p1[cell_offset + 0] = 6e-4;   // E1 (active)
+        p1[cell_offset + 1] = -4e-4;  // E2 (active)
+        p1[cell_offset + 2] = 2e-4;   // E3 (active)
+
+        optimizer.set_parameters(p1);
+        Vec p2 = optimizer.get_parameters();
+
+        CHECK_THAT(p2[cell_offset + 0], WithinAbs(p1[cell_offset + 0], 1e-12));
+        CHECK_THAT(p2[cell_offset + 1], WithinAbs(p1[cell_offset + 1], 1e-12));
+        CHECK_THAT(p2[cell_offset + 2], WithinAbs(p1[cell_offset + 2], 1e-12));
+    }
+
+    SECTION("Monoclinic default: only one shear component is active") {
+        auto uc = crystal.unit_cell();
+        occ::crystal::UnitCell mono_uc(
+            uc.a(), uc.b(), uc.c(),
+            occ::units::PI * 0.5, occ::units::radians(110.0), occ::units::PI * 0.5);
+        occ::crystal::Crystal mono_crystal(
+            crystal.asymmetric_unit(), crystal.space_group(), mono_uc);
+
+        CrystalOptimizerSettings settings;
+        settings.method = OptimizationMethod::LBFGS;
+        settings.use_symmetry = true;
+        settings.optimize_cell = true;
+        settings.force_field = ForceFieldType::Custom;
+        settings.use_ewald = false;
+        settings.constrain_cell_strain_by_lattice = true;
+
+        CrystalOptimizer optimizer(mono_crystal, multipoles, settings);
+        Vec p = optimizer.get_parameters();
+        REQUIRE(p.size() == 10); // 6 molecular + [E1,E2,E3,E5]
+        const int cell_offset = static_cast<int>(p.size()) - 4;
+        p[cell_offset + 0] = 2e-4;    // E1
+        p[cell_offset + 1] = -3e-4;   // E2
+        p[cell_offset + 2] = 4e-4;    // E3
+        p[cell_offset + 3] = -2e-3;   // E5 (beta shear, active)
+
+        optimizer.set_parameters(p);
+        Vec p2 = optimizer.get_parameters();
+        CHECK_THAT(p2[cell_offset + 0], WithinAbs(p[cell_offset + 0], 1e-12));
+        CHECK_THAT(p2[cell_offset + 1], WithinAbs(p[cell_offset + 1], 1e-12));
+        CHECK_THAT(p2[cell_offset + 2], WithinAbs(p[cell_offset + 2], 1e-12));
+        CHECK_THAT(p2[cell_offset + 3], WithinAbs(p[cell_offset + 3], 1e-12));
+    }
+
+    SECTION("Constraints can be disabled explicitly") {
+        CrystalOptimizerSettings settings;
+        settings.method = OptimizationMethod::LBFGS;
+        settings.use_symmetry = true;
+        settings.optimize_cell = true;
+        settings.force_field = ForceFieldType::Custom;
+        settings.use_ewald = false;
+        settings.constrain_cell_strain_by_lattice = false;
+
+        CrystalOptimizer optimizer(crystal, multipoles, settings);
+        Vec p0 = optimizer.get_parameters();
+        REQUIRE(p0.size() == 12); // 6 molecular + full 6 cell DOF
+        Vec p1 = p0;
+        const int cell_offset = static_cast<int>(p1.size()) - 6;
+        p1[cell_offset + 3] = 3e-4; // E4
+        p1[cell_offset + 4] = -2e-4; // E5
+
+        optimizer.set_parameters(p1);
+        Vec p2 = optimizer.get_parameters();
+        CHECK_THAT(p2[cell_offset + 3], WithinAbs(p1[cell_offset + 3], 1e-12));
+        CHECK_THAT(p2[cell_offset + 4], WithinAbs(p1[cell_offset + 4], 1e-12));
+    }
+}
+
+TEST_CASE("CrystalOptimizer: cell strain preserves fractional COM",
+          "[crystal_optimizer][cell]") {
+    auto input = read_dmacrys_json(AXOSOW_JSON);
+    auto crystal = build_crystal(input.crystal);
+    auto multipoles = build_multipole_sources(input, crystal);
+    auto buck_params = convert_buckingham_params(input.potentials);
+
+    CrystalOptimizerSettings settings;
+    settings.use_symmetry = false;
+    settings.optimize_cell = true;
+    settings.force_field = ForceFieldType::Custom;
+    settings.use_ewald = false;
+
+    CrystalOptimizer optimizer(crystal, multipoles, settings);
+    setup_crystal_energy_from_dmacrys(optimizer.energy_calculator(), input, crystal, multipoles);
+    for (const auto& [key, p] : buck_params) {
+        optimizer.energy_calculator().set_buckingham_params(key.first, key.second, p);
+    }
+    optimizer.reinitialize_states();
+
+    Vec params = optimizer.get_parameters();
+    int cell_offset = params.size() - 6;
+
+    const auto& crystal0 = optimizer.energy_calculator().crystal();
+    Vec3 frac0 = crystal0.to_fractional(optimizer.states()[1].position);
+    Mat3 direct0 = crystal0.unit_cell().direct();
+
+    params[cell_offset + 0] = 8e-4;
+    params[cell_offset + 1] = -6e-4;
+    params[cell_offset + 2] = 5e-4;
+    params[cell_offset + 5] = 2e-4;
+    optimizer.set_parameters(params);
+
+    const auto& crystal1 = optimizer.energy_calculator().crystal();
+    Vec3 frac1 = crystal1.to_fractional(optimizer.states()[1].position);
+    Mat3 direct1 = crystal1.unit_cell().direct();
+
+    CHECK_FALSE(direct0.isApprox(direct1, 1e-12));
+    Vec3 frac_diff = frac1 - frac0;
+    frac_diff -= frac_diff.array().round().matrix();
+    INFO("frac0 = " << frac0.transpose());
+    INFO("frac1 = " << frac1.transpose());
+    INFO("frac_diff = " << frac_diff.transpose());
+    CHECK(frac_diff.norm() < 2e-4);
 }

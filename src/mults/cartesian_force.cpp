@@ -258,7 +258,8 @@ FullRigidBodyResult compute_molecule_forces_torques(
     const CartesianMolecule &molB,
     double site_cutoff,
     int max_interaction_order,
-    const Vec3 &offset_B) {
+    const Vec3 &offset_B,
+    const CutoffSpline* taper) {
     using namespace kernel_detail;
     FullRigidBodyResult result;
 
@@ -274,6 +275,10 @@ FullRigidBodyResult compute_molecule_forces_torques(
 
     const bool use_site_cutoff = (site_cutoff > 0.0);
     const bool use_order_cutoff = (max_interaction_order >= 0);
+    const bool use_taper = (taper != nullptr && taper->is_valid());
+    constexpr double energy_conv = occ::units::AU_TO_KJ_PER_MOL;
+    constexpr double force_conv =
+        occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM;
 
     // Precompute weighted multipoles once per molecule pair (Stage 3).
     // molA sites use sign_inv_fact weighting (A-side).
@@ -311,7 +316,18 @@ FullRigidBodyResult compute_molecule_forces_torques(
             const auto &sB = molB.sites[j];
             if (sB.rank < 0) continue;
             Vec3 R_ang = (sB.position + offset_B) - sA.position;
-            if (use_site_cutoff && R_ang.norm() > site_cutoff) continue;
+            double r_ang = 0.0;
+            if (use_site_cutoff || use_taper) {
+                r_ang = R_ang.norm();
+                if (use_site_cutoff && r_ang > site_cutoff) continue;
+            }
+
+            CutoffSplineValue sw;
+            if (use_taper) {
+                sw = evaluate_cutoff_spline(r_ang, *taper);
+                if (sw.value <= 0.0) continue;
+            }
+
             Vec3 R = R_ang / occ::units::BOHR_TO_ANGSTROM;
             double Rx = R[0], Ry = R[1], Rz = R[2];
 
@@ -328,15 +344,33 @@ FullRigidBodyResult compute_molecule_forces_torques(
                                                   Rx, Ry, Rz);
             }
             Vec3 grad_bohr(eff.eg.grad[0], eff.eg.grad[1], eff.eg.grad[2]);
-            Vec3 grad = grad_bohr * (occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM);
-            result.energy += eff.eg.energy * occ::units::AU_TO_KJ_PER_MOL;
+            Vec3 grad = grad_bohr * force_conv;
+            double pair_energy = eff.eg.energy * energy_conv;
+
+            if (use_taper) {
+                grad *= sw.value;
+                pair_energy *= sw.value;
+
+                // Product-rule force term from taper derivative: d(fE)/dR.
+                if (r_ang > 1e-12 && std::abs(sw.first_derivative) > 0.0) {
+                    grad += (eff.eg.energy * energy_conv * sw.first_derivative) *
+                            (R_ang / r_ang);
+                }
+            }
+
+            result.energy += pair_energy;
             forces_A[i] += grad;
             forces_B[j] -= grad;
 
             // Accumulate interaction fields for torque computation
             for (int k = 0; k < CartesianMultipole<4>::size; ++k) {
-                fields_A[i].data[k] += eff.fieldA.data[k];
-                fields_B[j].data[k] += eff.fieldB.data[k];
+                if (use_taper) {
+                    fields_A[i].data[k] += sw.value * eff.fieldA.data[k];
+                    fields_B[j].data[k] += sw.value * eff.fieldB.data[k];
+                } else {
+                    fields_A[i].data[k] += eff.fieldA.data[k];
+                    fields_B[j].data[k] += eff.fieldB.data[k];
+                }
             }
         }
     }

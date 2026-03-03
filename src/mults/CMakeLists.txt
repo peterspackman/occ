@@ -25,10 +25,12 @@ add_library(occ_mults
     cartesian_force.cpp
     multipole_source.cpp
     lbfgs.cpp
+    mstmin.cpp
     trust_region.cpp
     crystal_energy.cpp
     crystal_optimizer.cpp
     cartesian_hessian.cpp
+    multipole_coarsening.cpp
     dmacrys_input.cpp
     crystal_strain.cpp
     ewald_sum.cpp
@@ -60,4 +62,3 @@ install(TARGETS occ_mults
     RUNTIME DESTINATION bin
     INCLUDES DESTINATION include
 )
-

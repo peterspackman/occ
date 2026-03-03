@@ -145,6 +145,97 @@ ShortRangeInteraction::buckingham_all(double r, const BuckinghamParams& params) 
     return result;
 }
 
+// ==================== Anisotropic Repulsion ====================
+
+ShortRangeInteraction::AnisotropicResult
+ShortRangeInteraction::anisotropic_repulsion(
+    const Vec3& pos_a, const Vec3& pos_b,
+    const Vec3& axis_a, const Vec3& axis_b,
+    const AnisotropicRepulsionParams& params) {
+
+    AnisotropicResult result;
+    result.energy = 0.0;
+    result.force_A = Vec3::Zero();
+    result.force_B = Vec3::Zero();
+    result.torque_axis_A = Vec3::Zero();
+    result.torque_axis_B = Vec3::Zero();
+
+    const Vec3 r_ab = pos_b - pos_a;
+    const double R = r_ab.norm();
+    if (R < MIN_DISTANCE) {
+        return result;
+    }
+
+    const double R_inv = 1.0 / R;
+    const Vec3 u = r_ab * R_inv;  // unit vector from A to B
+
+    // Compute cosθ for each axis (zero axis = no anisotropy for that site)
+    const bool has_axis_a = axis_a.squaredNorm() > 0.5;
+    const bool has_axis_b = axis_b.squaredNorm() > 0.5;
+
+    const double cos_a = has_axis_a ? axis_a.dot(u) : 0.0;
+    const double cos_b = has_axis_b ? axis_b.dot(u) : 0.0;
+
+    // P₂(x) = (3x² - 1)/2, dP₂/dx = 3x
+    // When an axis is zero (not aniso), its P₂ contribution is zero.
+    const double P2_a = has_axis_a ? 0.5 * (3.0 * cos_a * cos_a - 1.0) : 0.0;
+    const double P2_b = has_axis_b ? 0.5 * (3.0 * cos_b * cos_b - 1.0) : 0.0;
+
+    const double rho = params.rho_00 + params.rho_20 * P2_a + params.rho_02 * P2_b;
+
+    // E = exp(-α·R + α·ρ) = exp(α·(ρ - R))
+    const double alpha = params.alpha;
+    const double E = std::exp(alpha * (rho - R));
+
+    result.energy = E;
+
+    // Derivatives: E = exp(α(ρ - R))
+    // dE/d(pos_a) = E·α·[dρ/d(pos_a) - dR/d(pos_a)]
+    //             = E·α·[dρ/d(pos_a) + u]   since dR/d(pos_a) = -u
+    // dE/d(pos_b) = E·α·[dρ/d(pos_b) - u]   since dR/d(pos_b) = +u
+
+    // d(cosθ₁)/d(pos_a) = -(1/R)(axis_a - cosθ₁·u)
+    // d(cosθ₁)/d(pos_b) = +(1/R)(axis_a - cosθ₁·u)
+    // dρ/d(pos_a) = ρ₂₀·3cosθ₁·d(cosθ₁)/d(pos_a) + ρ₀₂·3cosθ₂·d(cosθ₂)/d(pos_a)
+
+    // Perpendicular projections of axes onto plane normal to u
+    Vec3 perp_a = Vec3::Zero();
+    Vec3 perp_b = Vec3::Zero();
+    if (has_axis_a) perp_a = axis_a - cos_a * u;
+    if (has_axis_b) perp_b = axis_b - cos_b * u;
+
+    // dρ/d(pos) contributions (factor of 1/R from d(cosθ)/d(pos))
+    // dρ/d(pos_a) = -(1/R) * [ρ₂₀·3cosθ_a·perp_a + ρ₀₂·3cosθ_b·perp_b]
+    // dρ/d(pos_b) = +(1/R) * [ρ₂₀·3cosθ_a·perp_a + ρ₀₂·3cosθ_b·perp_b]
+    const Vec3 drho_angular = 3.0 * (params.rho_20 * cos_a * perp_a +
+                                      params.rho_02 * cos_b * perp_b);
+
+    const Vec3 drho_dposA = -R_inv * drho_angular;
+    const Vec3 drho_dposB =  R_inv * drho_angular;
+
+    // Forces: F_A = -dE/d(pos_a), F_B = -dE/d(pos_b)
+    const Vec3 grad_posA = E * alpha * (drho_dposA + u);
+    const Vec3 grad_posB = E * alpha * (drho_dposB - u);
+
+    result.force_A = -grad_posA;
+    result.force_B = -grad_posB;
+
+    // Axis rotation torques:
+    // For an infinitesimal rotation ψ of axis_a: δ(axis_a) = ψ × axis_a
+    // d(cosθ₁)/d(axis_a) = u (but restricted to rotation)
+    // dE/dψ_a = E·α·ρ₂₀·3cosθ₁ · (axis_a × u)
+    if (has_axis_a && std::abs(params.rho_20) > 1e-20) {
+        result.torque_axis_A = E * alpha * params.rho_20 * 3.0 * cos_a *
+                               axis_a.cross(u);
+    }
+    if (has_axis_b && std::abs(params.rho_02) > 1e-20) {
+        result.torque_axis_B = E * alpha * params.rho_02 * 3.0 * cos_b *
+                               axis_b.cross(u);
+    }
+
+    return result;
+}
+
 // ==================== Force and Hessian Transformations ====================
 
 Vec3 ShortRangeInteraction::derivative_to_force(double dE_dr, const Vec3& r_vec) {

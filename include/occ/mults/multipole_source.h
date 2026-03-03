@@ -14,6 +14,9 @@ public:
     struct BodySite {
         occ::dma::Mult multipole;
         Vec3 offset = Vec3::Zero(); // position relative to center (body frame)
+        int atomic_number = 0;      // optional element identity for site matching
+        int short_range_type_code = 0; // optional typed short-range code
+        Vec3 aniso_axis = Vec3::Zero(); // body-frame aniso z-axis (zero = not aniso)
     };
 
     // --- Construction ---

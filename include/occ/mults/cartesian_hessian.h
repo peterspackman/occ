@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/mults/cartesian_multipole.h>
 #include <occ/mults/cartesian_molecule.h>
+#include <occ/mults/cutoff_spline.h>
 #include <occ/core/linear_algebra.h>
 
 namespace occ::mults {
@@ -105,20 +106,25 @@ PairHessianResult compute_charge_dipole_hessian(
     const std::array<Mat3, 3> &dM,
     const std::array<Mat3, 9> *d2M = nullptr);
 
-/// Compute analytical Hessian for molecule pair (charge-charge + charge-dipole only).
+/// Compute analytical rigid-body Hessian for a molecule pair.
 ///
-/// This is a truncated Hessian that includes:
-/// - All charge-charge interactions (rank 0 - rank 0)
-/// - All charge-dipole interactions (rank 0 - rank 1 and rank 1 - rank 0)
+/// Includes all Cartesian multipole interaction terms present in the
+/// two molecules (up to rank 4 in current CartesianMolecule data),
+/// including translation/rotation coupling and rotation-rotation blocks.
 ///
-/// Higher multipole contributions are excluded from the Hessian but
-/// still contribute to energy and gradient.
+/// NOTE: The function name is historical; this implementation is no longer
+/// "truncated" to charge-only/charge-dipole terms.
 ///
 /// @param molA Molecule A with body frame data
 /// @param molB Molecule B with body frame data
 /// @return PairHessianResult with combined Hessian
 PairHessianResult compute_molecule_hessian_truncated(
     const CartesianMolecule &molA,
-    const CartesianMolecule &molB);
+    const CartesianMolecule &molB,
+    const Vec3& offset_B = Vec3::Zero(),
+    double site_cutoff = 0.0,
+    int max_interaction_order = -1,
+    const CutoffSpline* taper = nullptr,
+    bool taper_hessian = true);
 
 } // namespace occ::mults

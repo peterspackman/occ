@@ -68,6 +68,42 @@ static Vec3 compute_grad_angle_A(
     return result.grad_angle_axis_A;
 }
 
+/// Compute the full pair gradient [xA, thetaA, xB, thetaB] (12 components).
+static Vec compute_full_pair_gradient(
+    const std::vector<std::pair<Mult, Vec3>>& body_A,
+    const std::vector<std::pair<Mult, Vec3>>& body_B,
+    const Mat3& rot_A, const Vec3& center_A,
+    const Mat3& rot_B, const Vec3& center_B) {
+    auto molA = build_molecule(body_A, rot_A, center_A);
+    auto molB = build_molecule(body_B, rot_B, center_B);
+    auto result = compute_molecule_forces_torques(molA, molB);
+    Vec g(12);
+    g.segment<3>(0) = -result.force_A;
+    g.segment<3>(3) = result.grad_angle_axis_A;
+    g.segment<3>(6) = -result.force_B;
+    g.segment<3>(9) = result.grad_angle_axis_B;
+    return g;
+}
+
+static Vec compute_full_pair_gradient_with_options(
+    const std::vector<std::pair<Mult, Vec3>>& body_A,
+    const std::vector<std::pair<Mult, Vec3>>& body_B,
+    const Mat3& rot_A, const Vec3& center_A,
+    const Mat3& rot_B, const Vec3& center_B,
+    double site_cutoff, int max_interaction_order,
+    const Vec3& offset_B, const CutoffSpline* taper) {
+    auto molA = build_molecule(body_A, rot_A, center_A);
+    auto molB = build_molecule(body_B, rot_B, center_B);
+    auto result = compute_molecule_forces_torques(
+        molA, molB, site_cutoff, max_interaction_order, offset_B, taper);
+    Vec g(12);
+    g.segment<3>(0) = -result.force_A;
+    g.segment<3>(3) = result.grad_angle_axis_A;
+    g.segment<3>(6) = -result.force_B;
+    g.segment<3>(9) = result.grad_angle_axis_B;
+    return g;
+}
+
 // ============================================================================
 // Test: Numerical Hessian from gradient finite differences
 // ============================================================================
@@ -278,6 +314,151 @@ TEST_CASE("Mixed translation-rotation Hessian", "[hessian][mixed]") {
             }
         }
     }
+}
+
+TEST_CASE("Full multipole rigid-body Hessian matches numerical FD",
+          "[hessian][analytical][multipole_full]") {
+    // Multi-site, off-center, mixed-rank setup to exercise:
+    // - higher multipole translational Hessian
+    // - lever-arm rotational coupling
+    // - multipole-rotation second derivatives
+    Mult a0(3), a1(2), b0(3), b1(2);
+    a0.Q00() = -0.60; a0.Q10() = 0.35; a0.Q11c() = -0.12; a0.Q20() = 0.08; a0.Q21s() = 0.03;
+    a1.Q00() = 0.25;  a1.Q10() = -0.20; a1.Q11s() = 0.09; a1.Q22c() = -0.04;
+    b0.Q00() = 0.55;  b0.Q10() = -0.28; b0.Q11s() = 0.15; b0.Q20() = -0.06; b0.Q21c() = 0.02;
+    b1.Q00() = -0.22; b1.Q10() = 0.18;  b1.Q11c() = -0.07; b1.Q22s() = 0.05;
+
+    std::vector<std::pair<Mult, Vec3>> body_A = {
+        {a0, Vec3(0.35, -0.22, 0.14)},
+        {a1, Vec3(-0.28, 0.19, -0.11)}
+    };
+    std::vector<std::pair<Mult, Vec3>> body_B = {
+        {b0, Vec3(-0.31, 0.17, 0.09)},
+        {b1, Vec3(0.26, -0.21, -0.16)}
+    };
+
+    Mat3 rot_A = axis_angle_rotation(Vec3(0.4, 0.7, -0.2).normalized(), 0.37);
+    Mat3 rot_B = axis_angle_rotation(Vec3(-0.5, 0.1, 0.8).normalized(), -0.29);
+    Vec3 center_A(-0.4, 0.2, -0.1);
+    Vec3 center_B(4.8, -1.3, 1.7);
+
+    auto molA = build_molecule(body_A, rot_A, center_A);
+    auto molB = build_molecule(body_B, rot_B, center_B);
+    auto analytical = compute_molecule_hessian_truncated(molA, molB);
+    Mat H_ana = analytical.pack_full_hessian();
+
+    const double h = 2e-5;
+    Mat H_num = Mat::Zero(12, 12);
+
+    auto gradient_at = [&](const Vec& x) {
+        Vec3 cA = center_A;
+        Vec3 cB = center_B;
+        Mat3 rA = rot_A;
+        Mat3 rB = rot_B;
+
+        cA += x.segment<3>(0);
+        cB += x.segment<3>(6);
+
+        for (int k = 0; k < 3; ++k) {
+            Vec3 axis = Vec3::Zero();
+            axis[k] = 1.0;
+            rA = axis_angle_rotation(axis, x[3 + k]) * rA;
+            rB = axis_angle_rotation(axis, x[9 + k]) * rB;
+        }
+        return compute_full_pair_gradient(body_A, body_B, rA, cA, rB, cB);
+    };
+
+    for (int j = 0; j < 12; ++j) {
+        Vec xp = Vec::Zero(12), xm = Vec::Zero(12);
+        xp[j] = h;
+        xm[j] = -h;
+        Vec gp = gradient_at(xp);
+        Vec gm = gradient_at(xm);
+        H_num.col(j) = (gp - gm) / (2.0 * h);
+    }
+    Mat H_num_sym = 0.5 * (H_num + H_num.transpose());
+
+    SECTION("Full Hessian agrees with FD (global relative norm)") {
+        double denom = std::max(1e-10, H_num_sym.norm());
+        double rel = (H_ana - H_num_sym).norm() / denom;
+        INFO(fmt::format("||H_ana - H_fd||/||H_fd|| = {:.6e}", rel));
+        REQUIRE(rel < 2e-2);
+    }
+
+    SECTION("Critical blocks agree") {
+        CHECK((H_ana.block<3,3>(0,0) - H_num_sym.block<3,3>(0,0)).norm() < 2e-2);
+        CHECK((H_ana.block<3,3>(0,3) - H_num_sym.block<3,3>(0,3)).norm() < 2e-2);
+        CHECK((H_ana.block<3,3>(3,3) - H_num_sym.block<3,3>(3,3)).norm() < 2e-2);
+        CHECK((H_ana.block<3,3>(3,9) - H_num_sym.block<3,3>(3,9)).norm() < 2e-2);
+    }
+}
+
+TEST_CASE("Charge-only tapered rigid-body Hessian matches numerical FD",
+          "[hessian][analytical][taper][charge]") {
+    Mult qA(0), qB(0);
+    qA.Q00() = 0.75;
+    qB.Q00() = -0.62;
+
+    std::vector<std::pair<Mult, Vec3>> body_A = {
+        {qA, Vec3(0.45, -0.30, 0.12)},
+        {qA, Vec3(-0.35, 0.28, -0.22)}
+    };
+    std::vector<std::pair<Mult, Vec3>> body_B = {
+        {qB, Vec3(0.18, 0.15, -0.38)},
+        {qB, Vec3(-0.42, -0.27, 0.24)}
+    };
+
+    const Mat3 rot_A = axis_angle_rotation(Vec3(0.6, -0.1, 0.3).normalized(), 0.29);
+    const Mat3 rot_B = -axis_angle_rotation(Vec3(-0.2, 0.8, 0.5).normalized(), -0.24);
+    const Vec3 center_A(0.15, -0.25, 0.18);
+    const Vec3 center_B(6.10, 0.92, -0.74);
+    const Vec3 offset_B(0.30, -0.18, 0.26);
+
+    CutoffSpline taper;
+    taper.enabled = true;
+    taper.r_on = 5.0;
+    taper.r_off = 7.0;
+    taper.order = 3;
+
+    const double site_cutoff = 9.0;
+    const int max_order = 0;
+
+    auto molA = build_molecule(body_A, rot_A, center_A);
+    auto molB = build_molecule(body_B, rot_B, center_B);
+    auto analytical = compute_molecule_hessian_truncated(
+        molA, molB, offset_B, site_cutoff, max_order, &taper);
+    Mat H_ana = analytical.pack_full_hessian();
+
+    const double h = 2e-5;
+    Mat H_num = Mat::Zero(12, 12);
+    auto gradient_at = [&](const Vec& x) {
+        Vec3 cA = center_A + x.segment<3>(0);
+        Vec3 cB = center_B + x.segment<3>(6);
+        Mat3 rA = rot_A;
+        Mat3 rB = rot_B;
+        for (int k = 0; k < 3; ++k) {
+            Vec3 axis = Vec3::Zero();
+            axis[k] = 1.0;
+            rA = axis_angle_rotation(axis, x[3 + k]) * rA;
+            rB = axis_angle_rotation(axis, x[9 + k]) * rB;
+        }
+        return compute_full_pair_gradient_with_options(
+            body_A, body_B, rA, cA, rB, cB,
+            site_cutoff, max_order, offset_B, &taper);
+    };
+
+    for (int j = 0; j < 12; ++j) {
+        Vec xp = Vec::Zero(12), xm = Vec::Zero(12);
+        xp[j] = h;
+        xm[j] = -h;
+        H_num.col(j) = (gradient_at(xp) - gradient_at(xm)) / (2.0 * h);
+    }
+    Mat H_num_sym = 0.5 * (H_num + H_num.transpose());
+
+    const double rel = (H_ana - H_num_sym).norm() /
+                       std::max(1e-12, H_num_sym.norm());
+    INFO(fmt::format("tapered charge-only Hessian relative error: {:.6e}", rel));
+    CHECK(rel < 2e-4);
 }
 
 TEST_CASE("Hessian eigenvalues are real", "[hessian][eigenvalues]") {

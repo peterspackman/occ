@@ -18,14 +18,26 @@ UnitCell::UnitCell(double a, double b, double c, double alpha, double beta,
   update_cell_matrices();
 }
 
-UnitCell::UnitCell(const Mat3 &vectors) : m_lengths(vectors.colwise().norm()) {
+UnitCell::UnitCell(const Mat3 &vectors)
+    : m_lengths(vectors.colwise().norm()) {
   Vec3 u_a = vectors.col(0) / m_lengths(0);
   Vec3 u_b = vectors.col(1) / m_lengths(1);
   Vec3 u_c = vectors.col(2) / m_lengths(2);
   m_angles(0) = std::acos(std::clamp(u_b.dot(u_c), -1.0, 1.0));
   m_angles(1) = std::acos(std::clamp(u_c.dot(u_a), -1.0, 1.0));
   m_angles(2) = std::acos(std::clamp(u_a.dot(u_b), -1.0, 1.0));
-  update_cell_matrices();
+  for (int i = 0; i < 3; ++i) {
+    m_sin[i] = std::sin(m_angles[i]);
+    m_cos[i] = std::cos(m_angles[i]);
+  }
+
+  // Preserve the input direct lattice matrix exactly.
+  // Do not canonicalize through (a,b,c,alpha,beta,gamma) reconstruction,
+  // which rotates/shears the basis and breaks derivatives under affine strain.
+  m_direct = vectors;
+  m_inverse = m_direct.inverse();
+  m_reciprocal = m_inverse.transpose();
+  m_volume = std::abs(m_direct.determinant());
 }
 
 void UnitCell::set_a(double a) {

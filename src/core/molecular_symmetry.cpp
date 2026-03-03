@@ -1,8 +1,77 @@
 #include <ankerl/unordered_dense.h>
+#include <algorithm>
 #include <cmath>
+#include <limits>
 #include <occ/core/molecular_symmetry.h>
 
 namespace occ::core {
+
+namespace {
+
+// Solve square linear assignment (min-cost) with O(n^3) Hungarian algorithm.
+// Returns assignment a_to_b where a_to_b[i] = j.
+std::vector<int> hungarian_min_assignment(const std::vector<std::vector<double>> &cost) {
+  const int n = static_cast<int>(cost.size());
+  if (n == 0) return {};
+  for (const auto &row : cost) {
+    if (static_cast<int>(row.size()) != n) {
+      throw std::runtime_error("hungarian_min_assignment requires square cost matrix");
+    }
+  }
+
+  std::vector<double> u(n + 1, 0.0), v(n + 1, 0.0);
+  std::vector<int> p(n + 1, 0), way(n + 1, 0);
+
+  for (int i = 1; i <= n; ++i) {
+    p[0] = i;
+    int j0 = 0;
+    std::vector<double> minv(n + 1, std::numeric_limits<double>::infinity());
+    std::vector<char> used(n + 1, false);
+    do {
+      used[j0] = true;
+      const int i0 = p[j0];
+      double delta = std::numeric_limits<double>::infinity();
+      int j1 = 0;
+      for (int j = 1; j <= n; ++j) {
+        if (used[j]) continue;
+        const double cur = cost[i0 - 1][j - 1] - u[i0] - v[j];
+        if (cur < minv[j]) {
+          minv[j] = cur;
+          way[j] = j0;
+        }
+        if (minv[j] < delta) {
+          delta = minv[j];
+          j1 = j;
+        }
+      }
+      for (int j = 0; j <= n; ++j) {
+        if (used[j]) {
+          u[p[j]] += delta;
+          v[j] -= delta;
+        } else {
+          minv[j] -= delta;
+        }
+      }
+      j0 = j1;
+    } while (p[j0] != 0);
+
+    do {
+      const int j1 = way[j0];
+      p[j0] = p[j1];
+      j0 = j1;
+    } while (j0 != 0);
+  }
+
+  std::vector<int> a_to_b(n, -1);
+  for (int j = 1; j <= n; ++j) {
+    if (p[j] > 0) {
+      a_to_b[p[j] - 1] = j - 1;
+    }
+  }
+  return a_to_b;
+}
+
+} // namespace
 
 SymmetryMappingResult try_transformation_with_grouped_permutations(
     const IVec &labels_A, const Mat3N &positions_A, const IVec &labels_B,
@@ -59,40 +128,32 @@ SymmetryMappingResult try_transformation_with_grouped_permutations(
       group_transformed_B.col(i) = transformed_positions.col(indices_B[i]);
     }
 
-    // Use nearest neighbor matching instead of trying all permutations
-    std::vector<int> group_mapping(indices_A.size(), -1);
-    std::vector<bool> used_B(indices_B.size(), false);
-    double group_diff_norm_sq = 0.0;
-
-    // For each point in reference group A, find nearest unused point in
-    // transformed group B
-    for (size_t i = 0; i < indices_A.size(); i++) {
-      double min_dist_sq = std::numeric_limits<double>::infinity();
-      int best_j = -1;
-
-      for (size_t j = 0; j < indices_B.size(); j++) {
-        if (used_B[j])
-          continue;
-
-        double dist_sq = (group_positions_A.col(i) - group_transformed_B.col(j))
-                             .squaredNorm();
-        if (dist_sq < min_dist_sq) {
-          min_dist_sq = dist_sq;
-          best_j = j;
-        }
-      }
-
-      if (best_j >= 0) {
-        group_mapping[i] = best_j;
-        used_B[best_j] = true;
-        group_diff_norm_sq += min_dist_sq;
+    std::vector<std::vector<double>> cost(indices_A.size(),
+                                          std::vector<double>(indices_B.size(), 0.0));
+    for (size_t i = 0; i < indices_A.size(); ++i) {
+      for (size_t j = 0; j < indices_B.size(); ++j) {
+        cost[i][j] =
+            (group_positions_A.col(i) - group_transformed_B.col(j)).squaredNorm();
       }
     }
+    const std::vector<int> group_mapping = hungarian_min_assignment(cost);
 
-    double best_group_rmsd = std::sqrt(group_diff_norm_sq);
+    double group_diff_norm_sq = 0.0;
+    for (size_t i = 0; i < indices_A.size(); ++i) {
+      const int j = group_mapping[i];
+      if (j < 0 || j >= static_cast<int>(indices_B.size())) {
+        all_groups_matched = false;
+        break;
+      }
+      group_diff_norm_sq += cost[i][j];
+    }
+    if (!all_groups_matched) break;
 
-    // Check if this group has a good match (scale threshold by group size)
-    if (best_group_rmsd > rmsd_threshold * indices_A.size()) {
+    const double group_rmsd =
+        std::sqrt(group_diff_norm_sq / std::max<size_t>(1, indices_A.size()));
+
+    // Check this label-group match quality against per-atom RMSD threshold.
+    if (group_rmsd > rmsd_threshold) {
       all_groups_matched = false;
       break;
     }
@@ -111,7 +172,7 @@ SymmetryMappingResult try_transformation_with_grouped_permutations(
       result_permutation[transformed_pos] = ref_pos;
     }
 
-    total_rmsd += best_group_rmsd * best_group_rmsd;
+    total_rmsd += group_rmsd * group_rmsd;
   }
 
   if (!all_groups_matched) {
