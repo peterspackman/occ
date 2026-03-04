@@ -27,10 +27,13 @@ add_library(occ_mults
     lbfgs.cpp
     mstmin.cpp
     trust_region.cpp
+    force_field_params.cpp
+    strain_ad.cpp
     crystal_energy.cpp
     crystal_optimizer.cpp
     cartesian_hessian.cpp
     multipole_coarsening.cpp
+    dmacrys_type_codes.cpp
     dmacrys_input.cpp
     crystal_strain.cpp
     ewald_sum.cpp

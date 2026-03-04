@@ -17,7 +17,8 @@ namespace occ::mults {
 enum class OptimizationMethod {
     MSTMIN,         ///< DMACRYS-style quasi-Newton (full inverse-Hessian updates)
     LBFGS,          ///< L-BFGS quasi-Newton (first-order)
-    TrustRegion     ///< Trust Region Newton (second-order with Hessian)
+    TrustRegion,    ///< Trust Region Newton (second-order with Hessian)
+    TrustRegionBFGS ///< Trust Region with BFGS Hessian (gradient-only, no analytic Hessian)
 };
 
 /**
@@ -309,6 +310,9 @@ private:
 
     /// Run Trust Region Newton optimization.
     CrystalOptimizerResult optimize_trust_region(IterationCallback callback);
+
+    /// Run Trust Region BFGS optimization (gradient-only, no analytic Hessian).
+    CrystalOptimizerResult optimize_trust_bfgs(IterationCallback callback);
 
     /// Finite difference gradient check (for debugging).
     bool check_gradient(const Vec& params, double tol = 1e-4);

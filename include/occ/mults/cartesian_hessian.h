@@ -106,6 +106,30 @@ PairHessianResult compute_charge_dipole_hessian(
     const std::array<Mat3, 3> &dM,
     const std::array<Mat3, 9> *d2M = nullptr);
 
+/// Precomputed per-site rotation derivatives for Hessian computation.
+/// Build once per molecule, reuse across all pairs involving that molecule.
+struct SiteHessianDerivatives {
+    static constexpr int kMaxComp = 35; // nhermsum(4)
+    int rank = -1;
+    std::array<double, kMaxComp> w{};
+    std::array<std::array<double, kMaxComp>, 3> dw{};
+    std::array<std::array<std::array<double, kMaxComp>, 3>, 3> d2w{};
+    Vec3 lever = Vec3::Zero();
+    std::array<Vec3, 3> dlever{};
+    std::array<std::array<Vec3, 3>, 3> d2lever{};
+};
+
+/// Precomputed data for one molecule in the Hessian computation.
+struct MoleculeHessianData {
+    std::vector<SiteHessianDerivatives> sites;
+};
+
+/// Build per-molecule Hessian data (rotation derivatives of multipoles).
+/// @param mol CartesianMolecule with body frame data
+/// @param signed_side true for A-side (sign_inv_fact), false for B-side (inv_fact)
+MoleculeHessianData build_molecule_hessian_data(
+    const CartesianMolecule& mol, bool signed_side);
+
 /// Compute analytical rigid-body Hessian for a molecule pair.
 ///
 /// Includes all Cartesian multipole interaction terms present in the
@@ -121,6 +145,20 @@ PairHessianResult compute_charge_dipole_hessian(
 PairHessianResult compute_molecule_hessian_truncated(
     const CartesianMolecule &molA,
     const CartesianMolecule &molB,
+    const Vec3& offset_B = Vec3::Zero(),
+    double site_cutoff = 0.0,
+    int max_interaction_order = -1,
+    const CutoffSpline* taper = nullptr,
+    bool taper_hessian = true);
+
+/// Overload using precomputed molecule Hessian data (avoids recomputing
+/// rotation derivatives per pair — call build_molecule_hessian_data once
+/// per molecule, then pass to all pairs involving that molecule).
+PairHessianResult compute_molecule_hessian_truncated(
+    const CartesianMolecule &molA,
+    const CartesianMolecule &molB,
+    const MoleculeHessianData& dataA,
+    const MoleculeHessianData& dataB,
     const Vec3& offset_B = Vec3::Zero(),
     double site_cutoff = 0.0,
     int max_interaction_order = -1,

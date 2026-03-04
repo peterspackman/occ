@@ -20,6 +20,7 @@ struct RoptSettings {
     bool spherical_basis = false;
     bool use_trust_region = false; // Use Trust Region Newton instead of default MSTMIN
     bool use_lbfgs = false;        // Use L-BFGS instead of default MSTMIN
+    bool use_trust_bfgs = false;   // Use Trust Region BFGS instead of default MSTMIN
     double mst_max_displacement = 0.05; // MSTMIN max component displacement per cycle
     double mst_step_tolerance = 1e-6;   // MSTMIN convergence on max |step component|
     double mst_rotation_scale = 0.2;    // MSTMIN internal scaling for rotational DOF

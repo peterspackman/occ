@@ -1,4 +1,5 @@
 #include <occ/mults/crystal_energy.h>
+#include <occ/mults/strain_ad.h>
 #include <occ/mults/ewald_sum.h>
 #include <occ/mults/cartesian_hessian.h>
 #include <occ/core/log.h>
@@ -13,8 +14,6 @@
 namespace occ::mults {
 
 namespace {
-
-constexpr double kBondToleranceAngstrom = 0.4;
 
 Mat3 skew_symmetric(const Vec3& v) {
     Mat3 S;
@@ -35,923 +34,11 @@ const std::array<Mat3, 3>& so3_generators() {
     return G;
 }
 
-std::pair<int, int> canonical_pair(int a, int b) {
-    return (a <= b) ? std::make_pair(a, b) : std::make_pair(b, a);
-}
+// AD6/AD6R3 dual-number types and compute_ewald_explicit_strain_terms
+// moved to strain_ad.h/cpp.
+// TypedSelfBuckingham, williams_typed_self_params, bonded_neighbors,
+// classify_williams_type moved to force_field_params.cpp.
 
-struct TypedSelfBuckingham {
-    int code = 0;
-    double A = 0.0;
-    double rho = 0.0;
-    double C = 0.0;
-};
-
-struct AD6 {
-    double v = 0.0;
-    Vec6 g = Vec6::Zero();
-    Mat6 h = Mat6::Zero();
-};
-
-struct AD6R3 {
-    AD6 v;
-    std::array<AD6, 3> d;
-};
-
-AD6 ad6_constant(double c) {
-    AD6 out;
-    out.v = c;
-    return out;
-}
-
-AD6 ad6_add(const AD6& a, const AD6& b) {
-    AD6 out;
-    out.v = a.v + b.v;
-    out.g = a.g + b.g;
-    out.h = a.h + b.h;
-    return out;
-}
-
-AD6 ad6_sub(const AD6& a, const AD6& b) {
-    AD6 out;
-    out.v = a.v - b.v;
-    out.g = a.g - b.g;
-    out.h = a.h - b.h;
-    return out;
-}
-
-AD6 ad6_mul(const AD6& a, const AD6& b) {
-    AD6 out;
-    out.v = a.v * b.v;
-    out.g = a.g * b.v + b.g * a.v;
-    out.h = a.h * b.v + b.h * a.v +
-            a.g * b.g.transpose() + b.g * a.g.transpose();
-    return out;
-}
-
-AD6 ad6_mul_scalar(const AD6& a, double s) {
-    AD6 out;
-    out.v = a.v * s;
-    out.g = a.g * s;
-    out.h = a.h * s;
-    return out;
-}
-
-AD6 ad6_inv(const AD6& a) {
-    AD6 out;
-    const double inv_v = 1.0 / a.v;
-    const double inv_v2 = inv_v * inv_v;
-    out.v = inv_v;
-    out.g = -a.g * inv_v2;
-    out.h = 2.0 * (a.g * a.g.transpose()) * (inv_v2 * inv_v) - a.h * inv_v2;
-    return out;
-}
-
-AD6 ad6_div(const AD6& a, const AD6& b) {
-    return ad6_mul(a, ad6_inv(b));
-}
-
-AD6 ad6_sqrt(const AD6& a) {
-    AD6 out;
-    const double s = std::sqrt(a.v);
-    const double fp = 0.5 / s;
-    const double fpp = -0.25 / (a.v * s);
-    out.v = s;
-    out.g = fp * a.g;
-    out.h = fpp * (a.g * a.g.transpose()) + fp * a.h;
-    return out;
-}
-
-AD6 ad6_exp(const AD6& a) {
-    AD6 out;
-    const double ev = std::exp(a.v);
-    out.v = ev;
-    out.g = ev * a.g;
-    out.h = ev * (a.h + a.g * a.g.transpose());
-    return out;
-}
-
-AD6 ad6_erf(const AD6& a) {
-    AD6 out;
-    const double ev = std::erf(a.v);
-    const double fp = 2.0 / std::sqrt(M_PI) * std::exp(-a.v * a.v);
-    const double fpp = -2.0 * a.v * fp;
-    out.v = ev;
-    out.g = fp * a.g;
-    out.h = fpp * (a.g * a.g.transpose()) + fp * a.h;
-    return out;
-}
-
-AD6 ad6_sin(const AD6& a) {
-    AD6 out;
-    const double s = std::sin(a.v);
-    const double c = std::cos(a.v);
-    out.v = s;
-    out.g = c * a.g;
-    out.h = -s * (a.g * a.g.transpose()) + c * a.h;
-    return out;
-}
-
-AD6 ad6_cos(const AD6& a) {
-    AD6 out;
-    const double s = std::sin(a.v);
-    const double c = std::cos(a.v);
-    out.v = c;
-    out.g = -s * a.g;
-    out.h = -c * (a.g * a.g.transpose()) - s * a.h;
-    return out;
-}
-
-AD6 ad6_cutoff_spline(const AD6& r_ang, const CutoffSpline& spl) {
-    if (!spl.is_valid()) return ad6_constant(1.0);
-    if (r_ang.v <= spl.r_on) return ad6_constant(1.0);
-    if (r_ang.v > spl.r_off) return ad6_constant(0.0);
-
-    const double vdr = 1.0 / (spl.r_on - spl.r_off);
-    const AD6 dr = ad6_sub(r_ang, ad6_constant(spl.r_off));
-    const AD6 dr2 = ad6_mul(dr, dr);
-    const AD6 dr3 = ad6_mul(dr2, dr);
-
-    if (spl.order == 3) {
-        const double c2 = 3.0 * vdr * vdr;
-        const double c3 = -2.0 * vdr * vdr * vdr;
-        return ad6_add(ad6_mul_scalar(dr2, c2), ad6_mul_scalar(dr3, c3));
-    }
-
-    const AD6 dr4 = ad6_mul(dr3, dr);
-    const AD6 dr5 = ad6_mul(dr4, dr);
-    const double vdr2 = vdr * vdr;
-    const double vdr3 = vdr2 * vdr;
-    const double vdr4 = vdr3 * vdr;
-    const double vdr5 = vdr4 * vdr;
-    const double c3 = -8.0 * vdr3;
-    const double c4 = 21.0 * vdr4;
-    const double c5 = -12.0 * vdr5;
-    return ad6_add(
-        ad6_add(ad6_mul_scalar(dr3, c3), ad6_mul_scalar(dr4, c4)),
-        ad6_mul_scalar(dr5, c5));
-}
-
-AD6R3 ad6r3_constant(double c) {
-    AD6R3 out;
-    out.v = ad6_constant(c);
-    out.d = {ad6_constant(0.0), ad6_constant(0.0), ad6_constant(0.0)};
-    return out;
-}
-
-AD6R3 ad6r3_variable(const AD6& value, int coord) {
-    AD6R3 out = ad6r3_constant(0.0);
-    out.v = value;
-    out.d[coord] = ad6_constant(1.0);
-    return out;
-}
-
-AD6R3 ad6r3_add(const AD6R3& a, const AD6R3& b) {
-    AD6R3 out;
-    out.v = ad6_add(a.v, b.v);
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_add(a.d[k], b.d[k]);
-    }
-    return out;
-}
-
-AD6R3 ad6r3_sub(const AD6R3& a, const AD6R3& b) {
-    AD6R3 out;
-    out.v = ad6_sub(a.v, b.v);
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_sub(a.d[k], b.d[k]);
-    }
-    return out;
-}
-
-AD6R3 ad6r3_mul(const AD6R3& a, const AD6R3& b) {
-    AD6R3 out;
-    out.v = ad6_mul(a.v, b.v);
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_add(ad6_mul(a.d[k], b.v), ad6_mul(a.v, b.d[k]));
-    }
-    return out;
-}
-
-AD6R3 ad6r3_mul_scalar(const AD6R3& a, double s) {
-    AD6R3 out;
-    out.v = ad6_mul_scalar(a.v, s);
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_mul_scalar(a.d[k], s);
-    }
-    return out;
-}
-
-AD6R3 ad6r3_inv(const AD6R3& a) {
-    AD6R3 out;
-    const AD6 inv_v = ad6_inv(a.v);
-    out.v = inv_v;
-    const AD6 fprime = ad6_mul_scalar(ad6_mul(inv_v, inv_v), -1.0);
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_mul(fprime, a.d[k]);
-    }
-    return out;
-}
-
-AD6R3 ad6r3_div(const AD6R3& a, const AD6R3& b) {
-    return ad6r3_mul(a, ad6r3_inv(b));
-}
-
-AD6R3 ad6r3_sqrt(const AD6R3& a) {
-    AD6R3 out;
-    out.v = ad6_sqrt(a.v);
-    const AD6 fprime = ad6_mul_scalar(ad6_inv(out.v), 0.5);
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_mul(fprime, a.d[k]);
-    }
-    return out;
-}
-
-AD6R3 ad6r3_exp(const AD6R3& a) {
-    AD6R3 out;
-    out.v = ad6_exp(a.v);
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_mul(out.v, a.d[k]);
-    }
-    return out;
-}
-
-AD6R3 ad6r3_erf(const AD6R3& a) {
-    AD6R3 out;
-    out.v = ad6_erf(a.v);
-    const AD6 fprime = ad6_mul_scalar(
-        ad6_exp(ad6_mul_scalar(ad6_mul(a.v, a.v), -1.0)),
-        2.0 / std::sqrt(M_PI));
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_mul(fprime, a.d[k]);
-    }
-    return out;
-}
-
-AD6R3 ad6r3_sin(const AD6R3& a) {
-    AD6R3 out;
-    out.v = ad6_sin(a.v);
-    const AD6 fprime = ad6_cos(a.v);
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_mul(fprime, a.d[k]);
-    }
-    return out;
-}
-
-AD6R3 ad6r3_cos(const AD6R3& a) {
-    AD6R3 out;
-    out.v = ad6_cos(a.v);
-    const AD6 fprime = ad6_mul_scalar(ad6_sin(a.v), -1.0);
-    for (int k = 0; k < 3; ++k) {
-        out.d[k] = ad6_mul(fprime, a.d[k]);
-    }
-    return out;
-}
-
-AD6R3 ad6r3_cutoff_spline(const AD6R3& r_ang, const CutoffSpline& spl) {
-    if (!spl.is_valid()) return ad6r3_constant(1.0);
-    if (r_ang.v.v <= spl.r_on) return ad6r3_constant(1.0);
-    if (r_ang.v.v > spl.r_off) return ad6r3_constant(0.0);
-
-    const double vdr = 1.0 / (spl.r_on - spl.r_off);
-    const AD6R3 dr = ad6r3_sub(r_ang, ad6r3_constant(spl.r_off));
-    const AD6R3 dr2 = ad6r3_mul(dr, dr);
-    const AD6R3 dr3 = ad6r3_mul(dr2, dr);
-
-    if (spl.order == 3) {
-        const double c2 = 3.0 * vdr * vdr;
-        const double c3 = -2.0 * vdr * vdr * vdr;
-        return ad6r3_add(ad6r3_mul_scalar(dr2, c2), ad6r3_mul_scalar(dr3, c3));
-    }
-
-    const AD6R3 dr4 = ad6r3_mul(dr3, dr);
-    const AD6R3 dr5 = ad6r3_mul(dr4, dr);
-    const double vdr2 = vdr * vdr;
-    const double vdr3 = vdr2 * vdr;
-    const double vdr4 = vdr3 * vdr;
-    const double vdr5 = vdr4 * vdr;
-    const double c3 = -8.0 * vdr3;
-    const double c4 = 21.0 * vdr4;
-    const double c5 = -12.0 * vdr5;
-    return ad6r3_add(
-        ad6r3_add(ad6r3_mul_scalar(dr3, c3), ad6r3_mul_scalar(dr4, c4)),
-        ad6r3_mul_scalar(dr5, c5));
-}
-
-struct EwaldExplicitStrainTerms {
-    Vec6 grad = Vec6::Zero();
-    Mat6 hess = Mat6::Zero();
-    Mat strain_site_mixed;
-};
-
-EwaldExplicitStrainTerms compute_ewald_explicit_strain_terms(
-    const std::vector<EwaldSite>& sites,
-    const crystal::UnitCell& unit_cell,
-    const std::vector<NeighborPair>& neighbors,
-    const std::vector<std::vector<size_t>>& mol_site_indices,
-    double cutoff_radius,
-    bool use_com_gate,
-    double elec_site_cutoff,
-    const EwaldParams& params,
-    const CutoffSpline* taper,
-    const EwaldLatticeCache* lattice_cache,
-    bool include_strain_state = false) {
-
-    EwaldExplicitStrainTerms out;
-    if (sites.empty()) return out;
-    if (include_strain_state) {
-        out.strain_site_mixed = Mat::Zero(6, 3 * static_cast<int>(sites.size()));
-    }
-
-    struct InternalSite {
-        Vec3 pos_bohr;
-        double charge = 0.0;
-        Vec3 dipole = Vec3::Zero();
-    };
-    std::vector<InternalSite> isites(sites.size());
-    for (size_t i = 0; i < sites.size(); ++i) {
-        isites[i].pos_bohr = sites[i].position * occ::units::ANGSTROM_TO_BOHR;
-        isites[i].charge = sites[i].charge;
-        isites[i].dipole = sites[i].dipole;
-    }
-
-    const auto& B = voigt_basis_matrices();
-
-    std::vector<std::array<AD6, 3>> site_pos_ad(sites.size());
-    for (size_t i = 0; i < sites.size(); ++i) {
-        for (int c = 0; c < 3; ++c) {
-            site_pos_ad[i][c].v = isites[i].pos_bohr[c];
-        }
-    }
-
-    const double alpha_bohr = lattice_cache ? lattice_cache->alpha_bohr
-                                            : params.alpha * occ::units::BOHR_TO_ANGSTROM;
-    const double two_alpha_over_sqrt_pi = lattice_cache
-        ? lattice_cache->two_alpha_over_sqrt_pi
-        : 2.0 * alpha_bohr / std::sqrt(M_PI);
-
-    AD6 E_total = ad6_constant(0.0);
-    const bool use_taper = (taper != nullptr && taper->is_valid());
-    const bool use_erf_site_cutoff = (elec_site_cutoff > 0.0);
-    const double erf_site_cutoff_bohr =
-        elec_site_cutoff * occ::units::ANGSTROM_TO_BOHR;
-
-    // Real-space explicit lattice term: image translation T changes under strain.
-    auto accumulate_real_pair_ad = [&](size_t ai, size_t bj,
-                                       const AD6& Rx, const AD6& Ry, const AD6& Rz,
-                                       double weight) {
-        AD6 r2 = ad6_add(ad6_add(ad6_mul(Rx, Rx), ad6_mul(Ry, Ry)), ad6_mul(Rz, Rz));
-        AD6 r = ad6_sqrt(r2);
-        if (r.v < 1e-10) return;
-        if (use_erf_site_cutoff && r.v > erf_site_cutoff_bohr) return;
-
-        AD6 inv_r = ad6_inv(r);
-        AD6 inv_r2 = ad6_inv(r2);
-        AD6 inv_r3 = ad6_mul(inv_r2, inv_r);
-        AD6 inv_r4 = ad6_mul(inv_r2, inv_r2);
-        AD6 inv_r5 = ad6_mul(inv_r4, inv_r);
-        AD6 ar = ad6_mul_scalar(r, alpha_bohr);
-        AD6 erf_ar = ad6_erf(ar);
-        AD6 exp_m_ar2 = ad6_exp(ad6_mul_scalar(ad6_mul(ar, ar), -1.0));
-
-        const double qa = isites[ai].charge;
-        const double qb = isites[bj].charge;
-        AD6 e_pair = ad6_mul_scalar(ad6_mul(erf_ar, inv_r), -qa * qb);
-
-        if (params.include_dipole) {
-            const Vec3& da = isites[ai].dipole;
-            const Vec3& db = isites[bj].dipole;
-            AD6 muA_dot_R = ad6_add(
-                ad6_add(ad6_mul_scalar(Rx, da[0]), ad6_mul_scalar(Ry, da[1])),
-                ad6_mul_scalar(Rz, da[2]));
-            AD6 muB_dot_R = ad6_add(
-                ad6_add(ad6_mul_scalar(Rx, db[0]), ad6_mul_scalar(Ry, db[1])),
-                ad6_mul_scalar(Rz, db[2]));
-            AD6 f1 = ad6_sub(
-                ad6_mul_scalar(ad6_mul(exp_m_ar2, inv_r2), two_alpha_over_sqrt_pi),
-                ad6_mul(erf_ar, inv_r3));
-            AD6 qmu_lin = ad6_sub(ad6_mul_scalar(muB_dot_R, qa),
-                                  ad6_mul_scalar(muA_dot_R, qb));
-            AD6 e_qmu = ad6_mul_scalar(ad6_mul(qmu_lin, f1), -1.0);
-
-            const double a2 = alpha_bohr * alpha_bohr;
-            AD6 t_inner = ad6_add(
-                ad6_mul_scalar(inv_r2, 2.0 * a2),
-                ad6_mul_scalar(inv_r4, 3.0));
-            AD6 Ap_over_r = ad6_add(
-                ad6_mul_scalar(ad6_mul(exp_m_ar2, t_inner), -two_alpha_over_sqrt_pi),
-                ad6_mul_scalar(ad6_mul(erf_ar, inv_r5), 3.0));
-            AD6 e_mumu = ad6_add(
-                ad6_mul_scalar(f1, da.dot(db)),
-                ad6_mul(ad6_mul(muA_dot_R, muB_dot_R), Ap_over_r));
-            e_pair = ad6_add(e_pair, ad6_add(e_qmu, e_mumu));
-        }
-
-        if (use_taper) {
-            AD6 r_ang = ad6_mul_scalar(r, occ::units::BOHR_TO_ANGSTROM);
-            AD6 sw = ad6_cutoff_spline(r_ang, *taper);
-            if (sw.v <= 0.0) return;
-            e_pair = ad6_mul(sw, e_pair);
-        }
-
-        E_total = ad6_add(E_total, ad6_mul_scalar(e_pair, weight));
-    };
-
-    for (const auto& pair : neighbors) {
-        if (use_com_gate && pair.com_distance > cutoff_radius) continue;
-
-        const int mi = pair.mol_i;
-        const int mj = pair.mol_j;
-        const Vec3 T0 = unit_cell.to_cartesian(pair.cell_shift.cast<double>()) *
-                        occ::units::ANGSTROM_TO_BOHR;
-
-        std::array<AD6, 3> T;
-        for (int c = 0; c < 3; ++c) {
-            T[c].v = T0[c];
-        }
-        for (int a = 0; a < 6; ++a) {
-            const Vec3 dT = B[a] * T0;
-            for (int c = 0; c < 3; ++c) {
-                T[c].g[a] = dT[c];
-            }
-        }
-
-        for (size_t ai : mol_site_indices[mi]) {
-            for (size_t bj : mol_site_indices[mj]) {
-                AD6 Rx = ad6_add(ad6_sub(site_pos_ad[bj][0], site_pos_ad[ai][0]), T[0]);
-                AD6 Ry = ad6_add(ad6_sub(site_pos_ad[bj][1], site_pos_ad[ai][1]), T[1]);
-                AD6 Rz = ad6_add(ad6_sub(site_pos_ad[bj][2], site_pos_ad[ai][2]), T[2]);
-                accumulate_real_pair_ad(ai, bj, Rx, Ry, Rz, pair.weight);
-            }
-        }
-    }
-
-    // Intra-molecular real-space correction (same as compute_ewald_correction):
-    // needed when COM-chain strain derivatives are requested.
-    for (size_t m = 0; m < mol_site_indices.size(); ++m) {
-        const auto& idxs = mol_site_indices[m];
-        for (size_t ii = 0; ii < idxs.size(); ++ii) {
-            const size_t ai = idxs[ii];
-            for (size_t jj = ii + 1; jj < idxs.size(); ++jj) {
-                const size_t bj = idxs[jj];
-                AD6 Rx = ad6_sub(site_pos_ad[bj][0], site_pos_ad[ai][0]);
-                AD6 Ry = ad6_sub(site_pos_ad[bj][1], site_pos_ad[ai][1]);
-                AD6 Rz = ad6_sub(site_pos_ad[bj][2], site_pos_ad[ai][2]);
-                accumulate_real_pair_ad(ai, bj, Rx, Ry, Rz, 1.0);
-            }
-        }
-    }
-
-    // Reciprocal-space explicit lattice term at fixed Cartesian coordinates.
-    AD6 invV;
-    const double V_bohr = unit_cell.volume() *
-        std::pow(occ::units::ANGSTROM_TO_BOHR, 3);
-    invV.v = 1.0 / V_bohr;
-    std::array<double, 6> trB{};
-    Mat6 trBB = Mat6::Zero();
-    for (int a = 0; a < 6; ++a) {
-        trB[a] = B[a].trace();
-        invV.g[a] = -trB[a] * invV.v;
-        for (int b = 0; b < 6; ++b) {
-            trBB(a, b) = (B[a] * B[b]).trace();
-            invV.h(a, b) = (trB[a] * trB[b] + trBB(a, b)) * invV.v;
-        }
-    }
-
-    auto reciprocal_term = [&](const Vec3& G0) {
-        std::array<AD6, 3> G;
-        for (int c = 0; c < 3; ++c) G[c].v = G0[c];
-        for (int a = 0; a < 6; ++a) {
-            const Vec3 dG = -(B[a] * G0);
-            for (int c = 0; c < 3; ++c) G[c].g[a] = dG[c];
-        }
-        for (int a = 0; a < 6; ++a) {
-            for (int b = 0; b < 6; ++b) {
-                const Vec3 d2G = B[a] * B[b] * G0 + B[b] * B[a] * G0;
-                for (int c = 0; c < 3; ++c) {
-                    G[c].h(a, b) = d2G[c];
-                }
-            }
-        }
-
-        AD6 G2 = ad6_add(ad6_add(ad6_mul(G[0], G[0]), ad6_mul(G[1], G[1])),
-                         ad6_mul(G[2], G[2]));
-        const double beta = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
-        AD6 coeff = ad6_div(ad6_exp(ad6_mul_scalar(G2, -beta)), G2);
-        AD6 pref = ad6_mul_scalar(ad6_mul(invV, coeff), 2.0 * M_PI);
-
-        AD6 Sq_re = ad6_constant(0.0), Sq_im = ad6_constant(0.0);
-        AD6 Smu_re = ad6_constant(0.0), Smu_im = ad6_constant(0.0);
-
-        for (size_t idx = 0; idx < isites.size(); ++idx) {
-            const auto& s = isites[idx];
-            AD6 phase = ad6_add(
-                ad6_add(ad6_mul(G[0], site_pos_ad[idx][0]),
-                        ad6_mul(G[1], site_pos_ad[idx][1])),
-                ad6_mul(G[2], site_pos_ad[idx][2]));
-            AD6 cph = ad6_cos(phase);
-            AD6 sph = ad6_sin(phase);
-
-            Sq_re = ad6_add(Sq_re, ad6_mul_scalar(cph, s.charge));
-            Sq_im = ad6_add(Sq_im, ad6_mul_scalar(sph, s.charge));
-
-            if (params.include_dipole) {
-                AD6 m_dot_G = ad6_add(
-                    ad6_add(ad6_mul_scalar(G[0], s.dipole[0]),
-                            ad6_mul_scalar(G[1], s.dipole[1])),
-                    ad6_mul_scalar(G[2], s.dipole[2]));
-                Smu_re = ad6_add(Smu_re, ad6_mul(m_dot_G, cph));
-                Smu_im = ad6_add(Smu_im, ad6_mul(m_dot_G, sph));
-            }
-        }
-
-        AD6 qq = ad6_add(ad6_mul(Sq_re, Sq_re), ad6_mul(Sq_im, Sq_im));
-        AD6 qmu = ad6_constant(0.0);
-        AD6 mumu = ad6_constant(0.0);
-        if (params.include_dipole) {
-            qmu = ad6_mul_scalar(
-                ad6_sub(ad6_mul(Sq_re, Smu_im), ad6_mul(Sq_im, Smu_re)), -2.0);
-            mumu = ad6_add(ad6_mul(Smu_re, Smu_re), ad6_mul(Smu_im, Smu_im));
-        }
-        AD6 term = ad6_mul(pref, ad6_add(ad6_add(qq, qmu), mumu));
-        E_total = ad6_add(E_total, term);
-    };
-
-    if (lattice_cache) {
-        for (const auto& gv : lattice_cache->g_vectors) {
-            reciprocal_term(gv.G);
-        }
-    } else {
-        Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
-        Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
-        double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
-        for (int hx = -params.kmax; hx <= params.kmax; ++hx) {
-            for (int hy = -params.kmax; hy <= params.kmax; ++hy) {
-                for (int hz = -params.kmax; hz <= params.kmax; ++hz) {
-                    if (hx == 0 && hy == 0 && hz == 0) continue;
-                    Vec3 G0 = B_bohr * Vec3(hx, hy, hz);
-                    double G2 = G0.squaredNorm();
-                    double coeff = std::exp(-G2 * inv_4alpha2) / G2;
-                    if (coeff < 1e-12) continue;
-                    reciprocal_term(G0);
-                }
-            }
-        }
-    }
-
-    if (include_strain_state) {
-        // Mixed explicit Ewald terms: d/dE (dE/dx_site) at fixed Cartesian sites.
-        // Stored as d^2E / dE_a dx_{site,c} in out.strain_site_mixed[a, 3*site+c].
-
-        for (const auto& pair : neighbors) {
-            if (use_com_gate && pair.com_distance > cutoff_radius) continue;
-
-            const int mi = pair.mol_i;
-            const int mj = pair.mol_j;
-            const Vec3 T0 = unit_cell.to_cartesian(pair.cell_shift.cast<double>()) *
-                            occ::units::ANGSTROM_TO_BOHR;
-
-            std::array<AD6, 3> T;
-            for (int c = 0; c < 3; ++c) {
-                T[c].v = T0[c];
-            }
-            for (int a = 0; a < 6; ++a) {
-                const Vec3 dT = B[a] * T0;
-                for (int c = 0; c < 3; ++c) {
-                    T[c].g[a] = dT[c];
-                }
-            }
-
-            for (size_t ai : mol_site_indices[mi]) {
-                for (size_t bj : mol_site_indices[mj]) {
-                    const AD6 Rx0 = ad6_add(
-                        ad6_constant(isites[bj].pos_bohr[0] - isites[ai].pos_bohr[0]), T[0]);
-                    const AD6 Ry0 = ad6_add(
-                        ad6_constant(isites[bj].pos_bohr[1] - isites[ai].pos_bohr[1]), T[1]);
-                    const AD6 Rz0 = ad6_add(
-                        ad6_constant(isites[bj].pos_bohr[2] - isites[ai].pos_bohr[2]), T[2]);
-
-                    AD6R3 Rx = ad6r3_variable(Rx0, 0);
-                    AD6R3 Ry = ad6r3_variable(Ry0, 1);
-                    AD6R3 Rz = ad6r3_variable(Rz0, 2);
-
-                    AD6R3 r2 = ad6r3_add(
-                        ad6r3_add(ad6r3_mul(Rx, Rx), ad6r3_mul(Ry, Ry)),
-                        ad6r3_mul(Rz, Rz));
-                    AD6R3 r = ad6r3_sqrt(r2);
-                    if (r.v.v < 1e-10) continue;
-                    if (use_erf_site_cutoff && r.v.v > erf_site_cutoff_bohr) continue;
-
-                    AD6R3 inv_r = ad6r3_inv(r);
-                    AD6R3 inv_r2 = ad6r3_inv(r2);
-                    AD6R3 inv_r3 = ad6r3_mul(inv_r2, inv_r);
-                    AD6R3 inv_r4 = ad6r3_mul(inv_r2, inv_r2);
-                    AD6R3 inv_r5 = ad6r3_mul(inv_r4, inv_r);
-                    AD6R3 ar = ad6r3_mul_scalar(r, alpha_bohr);
-                    AD6R3 erf_ar = ad6r3_erf(ar);
-                    AD6R3 exp_m_ar2 = ad6r3_exp(ad6r3_mul_scalar(ad6r3_mul(ar, ar), -1.0));
-
-                    const double qa = isites[ai].charge;
-                    const double qb = isites[bj].charge;
-                    AD6R3 e_pair = ad6r3_mul_scalar(ad6r3_mul(erf_ar, inv_r), -qa * qb);
-
-                    if (params.include_dipole) {
-                        const Vec3& da = isites[ai].dipole;
-                        const Vec3& db = isites[bj].dipole;
-                        AD6R3 muA_dot_R = ad6r3_add(
-                            ad6r3_add(ad6r3_mul_scalar(Rx, da[0]), ad6r3_mul_scalar(Ry, da[1])),
-                            ad6r3_mul_scalar(Rz, da[2]));
-                        AD6R3 muB_dot_R = ad6r3_add(
-                            ad6r3_add(ad6r3_mul_scalar(Rx, db[0]), ad6r3_mul_scalar(Ry, db[1])),
-                            ad6r3_mul_scalar(Rz, db[2]));
-                        AD6R3 f1 = ad6r3_sub(
-                            ad6r3_mul_scalar(ad6r3_mul(exp_m_ar2, inv_r2),
-                                             two_alpha_over_sqrt_pi),
-                            ad6r3_mul(erf_ar, inv_r3));
-                        AD6R3 qmu_lin = ad6r3_sub(ad6r3_mul_scalar(muB_dot_R, qa),
-                                                  ad6r3_mul_scalar(muA_dot_R, qb));
-                        AD6R3 e_qmu = ad6r3_mul_scalar(ad6r3_mul(qmu_lin, f1), -1.0);
-
-                        const double a2 = alpha_bohr * alpha_bohr;
-                        AD6R3 t_inner =
-                            ad6r3_add(ad6r3_mul_scalar(inv_r2, 2.0 * a2),
-                                      ad6r3_mul_scalar(inv_r4, 3.0));
-                        AD6R3 Ap_over_r = ad6r3_add(
-                            ad6r3_mul_scalar(ad6r3_mul(exp_m_ar2, t_inner),
-                                             -two_alpha_over_sqrt_pi),
-                            ad6r3_mul_scalar(ad6r3_mul(erf_ar, inv_r5), 3.0));
-                        AD6R3 e_mumu = ad6r3_add(
-                            ad6r3_mul_scalar(f1, da.dot(db)),
-                            ad6r3_mul(ad6r3_mul(muA_dot_R, muB_dot_R), Ap_over_r));
-                        e_pair = ad6r3_add(e_pair, ad6r3_add(e_qmu, e_mumu));
-                    }
-
-                    if (use_taper) {
-                        AD6R3 r_ang = ad6r3_mul_scalar(r, occ::units::BOHR_TO_ANGSTROM);
-                        AD6R3 sw = ad6r3_cutoff_spline(r_ang, *taper);
-                        if (sw.v.v <= 0.0) continue;
-                        e_pair = ad6r3_mul(sw, e_pair);
-                    }
-
-                    for (int c = 0; c < 3; ++c) {
-                        const Vec6 dF_dE = pair.weight * e_pair.d[c].g;
-                        for (int a = 0; a < 6; ++a) {
-                            // g_site = dE/dx_site = -force_site
-                            out.strain_site_mixed(a, 3 * static_cast<int>(ai) + c) -= dF_dE[a];
-                            out.strain_site_mixed(a, 3 * static_cast<int>(bj) + c) += dF_dE[a];
-                        }
-                    }
-                }
-            }
-        }
-
-        auto reciprocal_mixed_term = [&](const Vec3& G0) {
-            std::array<AD6, 3> G;
-            for (int c = 0; c < 3; ++c) G[c].v = G0[c];
-            for (int a = 0; a < 6; ++a) {
-                const Vec3 dG = -(B[a] * G0);
-                for (int c = 0; c < 3; ++c) G[c].g[a] = dG[c];
-            }
-
-            AD6 G2 = ad6_add(ad6_add(ad6_mul(G[0], G[0]), ad6_mul(G[1], G[1])),
-                             ad6_mul(G[2], G[2]));
-            const double beta = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
-            AD6 coeff = ad6_div(ad6_exp(ad6_mul_scalar(G2, -beta)), G2);
-            AD6 pref_force = ad6_mul_scalar(ad6_mul(invV, coeff), 4.0 * M_PI);
-
-            const size_t n_sites = isites.size();
-            std::vector<AD6> cos_phase(n_sites), sin_phase(n_sites), mu_dot_G(n_sites);
-            AD6 Sq_re = ad6_constant(0.0), Sq_im = ad6_constant(0.0);
-            AD6 Smu_re = ad6_constant(0.0), Smu_im = ad6_constant(0.0);
-
-            for (size_t k = 0; k < n_sites; ++k) {
-                AD6 phase = ad6_add(
-                    ad6_add(ad6_mul_scalar(G[0], isites[k].pos_bohr[0]),
-                            ad6_mul_scalar(G[1], isites[k].pos_bohr[1])),
-                    ad6_mul_scalar(G[2], isites[k].pos_bohr[2]));
-                cos_phase[k] = ad6_cos(phase);
-                sin_phase[k] = ad6_sin(phase);
-                Sq_re = ad6_add(Sq_re, ad6_mul_scalar(cos_phase[k], isites[k].charge));
-                Sq_im = ad6_add(Sq_im, ad6_mul_scalar(sin_phase[k], isites[k].charge));
-                if (params.include_dipole) {
-                    mu_dot_G[k] = ad6_add(
-                        ad6_add(ad6_mul_scalar(G[0], isites[k].dipole[0]),
-                                ad6_mul_scalar(G[1], isites[k].dipole[1])),
-                        ad6_mul_scalar(G[2], isites[k].dipole[2]));
-                    Smu_re = ad6_add(Smu_re, ad6_mul(mu_dot_G[k], cos_phase[k]));
-                    Smu_im = ad6_add(Smu_im, ad6_mul(mu_dot_G[k], sin_phase[k]));
-                } else {
-                    mu_dot_G[k] = ad6_constant(0.0);
-                }
-            }
-
-            const AD6 P = ad6_sub(Sq_re, Smu_im);
-            const AD6 Q = ad6_add(Sq_im, Smu_re);
-
-            for (size_t i = 0; i < n_sites; ++i) {
-                const double qi = isites[i].charge;
-                const AD6& si = sin_phase[i];
-                const AD6& ci = cos_phase[i];
-                const AD6& mi = mu_dot_G[i];
-
-                const AD6 q_part = ad6_mul_scalar(
-                    ad6_sub(ad6_mul(P, si), ad6_mul(Q, ci)), qi);
-                AD6 A = q_part;
-                if (params.include_dipole) {
-                    const AD6 mu_part =
-                        ad6_mul(mi, ad6_add(ad6_mul(P, ci), ad6_mul(Q, si)));
-                    A = ad6_add(A, mu_part);
-                }
-
-                for (int c = 0; c < 3; ++c) {
-                    const AD6 F_ic = ad6_mul(pref_force, ad6_mul(A, G[c]));
-                    for (int a = 0; a < 6; ++a) {
-                        out.strain_site_mixed(a, 3 * static_cast<int>(i) + c) -= F_ic.g[a];
-                    }
-                }
-            }
-        };
-
-        if (lattice_cache) {
-            for (const auto& gv : lattice_cache->g_vectors) {
-                reciprocal_mixed_term(gv.G);
-            }
-        } else {
-            Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
-            Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
-            const double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
-            for (int hx = -params.kmax; hx <= params.kmax; ++hx) {
-                for (int hy = -params.kmax; hy <= params.kmax; ++hy) {
-                    for (int hz = -params.kmax; hz <= params.kmax; ++hz) {
-                        if (hx == 0 && hy == 0 && hz == 0) continue;
-                        const Vec3 G0 = B_bohr * Vec3(hx, hy, hz);
-                        const double G2 = G0.squaredNorm();
-                        const double coeff = std::exp(-G2 * inv_4alpha2) / G2;
-                        if (coeff < 1e-12) continue;
-                        reciprocal_mixed_term(G0);
-                    }
-                }
-            }
-        }
-    }
-
-    const double econv = occ::units::AU_TO_KJ_PER_MOL;
-    out.grad = E_total.g * econv;
-    out.hess = E_total.h * econv;
-    out.hess = 0.5 * (out.hess + out.hess.transpose());
-    if (include_strain_state) {
-        const double force_conv =
-            occ::units::AU_TO_KJ_PER_MOL / occ::units::BOHR_TO_ANGSTROM;
-        out.strain_site_mixed *= force_conv;
-    }
-    return out;
-}
-
-std::vector<TypedSelfBuckingham> williams_typed_self_params() {
-    // Self terms from DMACRYS/NEIGHCRYS Williams defaults (pote.dat),
-    // in DMACRYS units: A (eV), rho (Angstrom), C (eV*Angstrom^6).
-    std::vector<TypedSelfBuckingham> self{
-        {513, 1069.960000, 0.277778, 14.874827}, // C_W2
-        {512, 2802.120000, 0.277778, 17.638572}, // C_W3
-        {511, 1363.640000, 0.277778, 10.140782}, // C_W4
-        {501,  131.420000, 0.280899,  2.885328}, // H_W1
-        {502,    3.740000, 0.280899,  0.000000}, // H_W2
-        {503,    1.200000, 0.280899,  0.000000}, // H_W3
-        {504,    7.930000, 0.280899,  0.000000}, // H_W4
-        {521,  998.590000, 0.287356, 14.589580}, // N_W1
-        {522, 1060.980000, 0.287356, 14.491940}, // N_W2
-        {523, 1989.270000, 0.287356, 24.633137}, // N_W3
-        {524, 4201.060000, 0.287356, 58.353550}, // N_W4
-        {531, 2498.220000, 0.252525, 13.067571}, // O_W1
-        {532, 2949.910000, 0.252525, 13.328149}, // O_W2
-        {540, 3761.006673, 0.240385,  7.144500}, // F_01
-        {541, 5903.747391, 0.299155, 86.716330}, // Cl01
-        {544,12272.878680, 0.303030,168.478200}, // Br01
-        {545,13072.690000, 0.318249,172.380900}, // I_01
-    };
-
-    // Water aliases are not present explicitly in the W table; use nearest type.
-    self.push_back({505, 3.740000, 0.280899, 0.000000}); // H_Wa -> H_W2
-    self.push_back({533, 2949.910000, 0.252525, 13.328149}); // O_Wa -> O_W2
-    return self;
-}
-
-std::vector<std::vector<int>> bonded_neighbors(
-    const std::vector<int>& atomic_numbers,
-    const std::vector<Vec3>& positions) {
-
-    const int n = static_cast<int>(atomic_numbers.size());
-    std::vector<std::vector<int>> neighbors(n);
-
-    for (int i = 0; i < n; ++i) {
-        const occ::core::Element ei(atomic_numbers[i]);
-        const double ri = ei.covalent_radius();
-        if (ri <= 0.0) continue;
-
-        for (int j = i + 1; j < n; ++j) {
-            const occ::core::Element ej(atomic_numbers[j]);
-            const double rj = ej.covalent_radius();
-            if (rj <= 0.0) continue;
-
-            const double cutoff = ri + rj + kBondToleranceAngstrom;
-            const double dist = (positions[j] - positions[i]).norm();
-            if (dist >= 0.1 && dist <= cutoff) {
-                neighbors[i].push_back(j);
-                neighbors[j].push_back(i);
-            }
-        }
-    }
-    return neighbors;
-}
-
-int classify_williams_type(
-    int idx,
-    const std::vector<std::vector<int>>& neighbors,
-    const std::vector<int>& atomic_numbers) {
-
-    const int z = atomic_numbers[idx];
-    const int nnb = static_cast<int>(neighbors[idx].size());
-
-    // Hydrogen
-    if (z == 1) {
-        if (nnb != 1) return 0;
-        const int n1 = neighbors[idx][0];
-        const int z1 = atomic_numbers[n1];
-        if (z1 == 6) return 501; // H_W1
-        if (z1 == 7) return 504; // H_W4
-        if (z1 == 8) {
-            int code = 502; // H_W2 default for O-H
-            const auto& o_neigh = neighbors[n1];
-            if (static_cast<int>(o_neigh.size()) == 2) {
-                bool all_h = true;
-                for (int k : o_neigh) {
-                    if (atomic_numbers[k] != 1) {
-                        all_h = false;
-                        break;
-                    }
-                }
-                if (all_h) return 505; // H_Wa
-            }
-
-            for (int c : o_neigh) {
-                if (c == idx || atomic_numbers[c] != 6) continue;
-                for (int o2 : neighbors[c]) {
-                    if (o2 == n1) continue;
-                    if (atomic_numbers[o2] == 8 &&
-                        static_cast<int>(neighbors[o2].size()) == 1) {
-                        code = 503; // H_W3, carboxylic OH
-                        break;
-                    }
-                }
-                if (code == 503) break;
-            }
-            return code;
-        }
-        return 0;
-    }
-
-    // Carbon
-    if (z == 6) {
-        if (nnb == 4) return 511; // C_W4
-        if (nnb == 3) return 512; // C_W3
-        if (nnb == 2) return 513; // C_W2
-        return 0;
-    }
-
-    // Nitrogen
-    if (z == 7) {
-        if (nnb == 1) return 521; // N_W1
-        int h_count = 0;
-        for (int n : neighbors[idx]) {
-            if (atomic_numbers[n] == 1) ++h_count;
-        }
-        if (h_count == 0) return 522; // N_W2
-        if (h_count == 1) return 523; // N_W3
-        return 524;                   // N_W4
-    }
-
-    // Oxygen
-    if (z == 8) {
-        if (nnb == 1) return 531; // O_W1
-        if (nnb == 2) {
-            int h_count = 0;
-            for (int n : neighbors[idx]) {
-                if (atomic_numbers[n] == 1) ++h_count;
-            }
-            if (h_count == 2) return 533; // O_Wa
-            return 532;                   // O_W2
-        }
-        return 0;
-    }
-
-    if (z == 9) return 540;   // F_01
-    if (z == 17) return 541;  // Cl01
-    if (z == 16) return 542;  // S_01
-    if (z == 19) return 543;  // K_01
-    if (z == 35) return 544;  // Br01
-    if (z == 53) return 545;  // I_01
-
-    return 0;
-}
 
 void add_pair_strain_gradient(Vec6& strain_grad,
                               const Vec3& force_on_i,
@@ -1210,143 +297,8 @@ Vec CrystalEnergyResult::pack_gradient() const {
     return grad;
 }
 
-// ============================================================================
-// Williams DE Buckingham Parameters (kJ/mol, Angstrom)
-// ============================================================================
-
-std::map<std::pair<int,int>, BuckinghamParams> CrystalEnergy::williams_de_params() {
-    // Reference: Williams & Cox, Acta Cryst. B40 (1984)
-    // Parameters in kJ/mol and Angstrom
-    std::map<std::pair<int,int>, BuckinghamParams> params;
-
-    // H-H
-    params[{1, 1}] = {2650.8, 3.74, 27.3};
-    // C-C
-    params[{6, 6}] = {369742.2, 3.60, 2439.8};
-    // N-N
-    params[{7, 7}] = {254501.2, 3.78, 1378.4};
-    // O-O
-    params[{8, 8}] = {230064.3, 3.96, 1123.6};
-
-    // Cross-terms (geometric mean mixing for A and C, arithmetic for B)
-    // H-C
-    params[{1, 6}] = {31368.8, 3.67, 258.0};
-    params[{6, 1}] = params[{1, 6}];
-    // H-N
-    params[{1, 7}] = {25988.3, 3.76, 194.0};
-    params[{7, 1}] = params[{1, 7}];
-    // H-O
-    params[{1, 8}] = {24716.7, 3.85, 175.2};
-    params[{8, 1}] = params[{1, 8}];
-    // C-N
-    params[{6, 7}] = {306739.8, 3.69, 1834.1};
-    params[{7, 6}] = params[{6, 7}];
-    // C-O
-    params[{6, 8}] = {291770.4, 3.78, 1655.4};
-    params[{8, 6}] = params[{6, 8}];
-    // N-O
-    params[{7, 8}] = {242022.9, 3.87, 1244.5};
-    params[{8, 7}] = params[{7, 8}];
-
-    return params;
-}
-
-std::map<std::pair<int,int>, BuckinghamParams> CrystalEnergy::williams_typed_params() {
-    std::map<std::pair<int, int>, BuckinghamParams> params;
-    const auto self = williams_typed_self_params();
-    const double eV_to_kJ = occ::units::EV_TO_KJ_PER_MOL;
-
-    for (size_t i = 0; i < self.size(); ++i) {
-        for (size_t j = i; j < self.size(); ++j) {
-            const auto& a = self[i];
-            const auto& b = self[j];
-            if (a.code <= 0 || b.code <= 0) continue;
-            if (a.rho <= 0.0 || b.rho <= 0.0) continue;
-
-            BuckinghamParams p;
-            p.A = std::sqrt(a.A * b.A) * eV_to_kJ;
-            // DMACRYS/NEIGHCRYS Williams mixing uses arithmetic mean in B-space.
-            // With rho = 1/B in the source table:
-            // B_ij = 0.5 * (1/rho_i + 1/rho_j).
-            p.B = 0.5 * ((1.0 / a.rho) + (1.0 / b.rho));
-            p.C = std::sqrt(std::max(0.0, a.C) * std::max(0.0, b.C)) * eV_to_kJ;
-            params[{a.code, b.code}] = p;
-            params[{b.code, a.code}] = p;
-        }
-    }
-    return params;
-}
-
-const char* CrystalEnergy::short_range_type_label(int type_code) {
-    switch (type_code) {
-    case 501: return "H_W1";
-    case 502: return "H_W2";
-    case 503: return "H_W3";
-    case 504: return "H_W4";
-    case 505: return "H_Wa";
-    case 511: return "C_W4";
-    case 512: return "C_W3";
-    case 513: return "C_W2";
-    case 521: return "N_W1";
-    case 522: return "N_W2";
-    case 523: return "N_W3";
-    case 524: return "N_W4";
-    case 531: return "O_W1";
-    case 532: return "O_W2";
-    case 533: return "O_Wa";
-    case 540: return "F_01";
-    case 541: return "Cl01";
-    case 542: return "S_01";
-    case 543: return "K_01";
-    case 544: return "Br01";
-    case 545: return "I_01";
-    default:  return "UNKN";
-    }
-}
-
-int CrystalEnergy::short_range_type_atomic_number(int type_code) {
-    switch (type_code) {
-    case 501:
-    case 502:
-    case 503:
-    case 504:
-    case 505:
-        return 1;
-    case 511:
-    case 512:
-    case 513:
-        return 6;
-    case 521:
-    case 522:
-    case 523:
-    case 524:
-        return 7;
-    case 531:
-    case 532:
-    case 533:
-        return 8;
-    case 540:
-        return 9;
-    case 541:
-        return 17;
-    case 542:
-        return 16;
-    case 543:
-        return 19;
-    case 544:
-        return 35;
-    case 545:
-        return 53;
-    default:
-        if (type_code >= 10000) {
-            const int z = (type_code - 10000) / 100;
-            if (z > 0 && z <= 118) {
-                return z;
-            }
-        }
-        return 0;
-    }
-}
+// Williams DE params, typed params, type labels, and type atomic numbers
+// now in ForceFieldParams (force_field_params.cpp)
 
 // ============================================================================
 // CrystalEnergy Constructor
@@ -1725,14 +677,15 @@ void CrystalEnergy::build_molecule_geometry() {
 
 void CrystalEnergy::assign_williams_atom_types() {
     for (auto& geom : m_geometry) {
-        const auto neighbors = bonded_neighbors(geom.atomic_numbers, geom.atom_positions);
+        const auto neighbors = ForceFieldParams::bonded_neighbors(
+            geom.atomic_numbers, geom.atom_positions);
         geom.short_range_type_codes.resize(geom.atomic_numbers.size(), 0);
         for (size_t i = 0; i < geom.atomic_numbers.size(); ++i) {
-            geom.short_range_type_codes[i] = classify_williams_type(
+            geom.short_range_type_codes[i] = ForceFieldParams::classify_williams_type(
                 static_cast<int>(i), neighbors, geom.atomic_numbers);
         }
     }
-    m_use_short_range_typing = true;
+    m_ff.set_use_short_range_typing(true);
 }
 
 // ============================================================================
@@ -1741,125 +694,20 @@ void CrystalEnergy::assign_williams_atom_types() {
 
 void CrystalEnergy::initialize_force_field() {
     if (m_force_field == ForceFieldType::BuckinghamDE) {
-        m_buckingham_params = williams_de_params();
-        m_typed_buckingham_params = williams_typed_params();
+        // Element-based params (used as fallback when typed params are missing)
+        for (const auto& [key, p] : ForceFieldParams::williams_de_params()) {
+            m_ff.set_buckingham(key.first, key.second, p);
+        }
+        // Type-code-based params (Williams atom typing)
+        m_ff.set_typed_buckingham(ForceFieldParams::williams_typed_params());
         assign_williams_atom_types();
-        m_use_williams_atom_typing = true;
-        m_use_short_range_typing = true;
+        m_ff.set_use_williams_atom_typing(true);
+        m_ff.set_use_short_range_typing(true);
     }
 }
 
-void CrystalEnergy::set_buckingham_params(int Z1, int Z2, const BuckinghamParams& params) {
-    m_buckingham_params[{Z1, Z2}] = params;
-    m_buckingham_params[{Z2, Z1}] = params;
-}
-
-void CrystalEnergy::set_typed_buckingham_params(
-    int type1, int type2, const BuckinghamParams& params) {
-    m_typed_buckingham_params[{type1, type2}] = params;
-    m_typed_buckingham_params[{type2, type1}] = params;
-    m_use_short_range_typing = true;
-}
-
-void CrystalEnergy::set_typed_buckingham_params(
-    const std::map<std::pair<int,int>, BuckinghamParams>& params) {
-    m_typed_buckingham_params = params;
-    if (!m_typed_buckingham_params.empty()) {
-        m_use_short_range_typing = true;
-    }
-}
-
-void CrystalEnergy::clear_typed_buckingham_params() {
-    m_typed_buckingham_params.clear();
-    m_missing_typed_buckingham_warned.clear();
-    m_use_short_range_typing = m_use_williams_atom_typing;
-}
-
-void CrystalEnergy::set_short_range_type_labels(
-    const std::map<int, std::string>& labels) {
-    m_short_range_type_labels = labels;
-    if (!m_short_range_type_labels.empty()) {
-        m_use_short_range_typing = true;
-    }
-}
-
-void CrystalEnergy::set_typed_aniso_params(
-    const std::map<std::pair<int,int>, AnisotropicRepulsionParams>& params) {
-    m_typed_aniso_params = params;
-}
-
-bool CrystalEnergy::has_aniso_params(int type1, int type2) const {
-    return m_typed_aniso_params.count({type1, type2}) > 0;
-}
-
-AnisotropicRepulsionParams CrystalEnergy::get_aniso_params(int type1, int type2) const {
-    auto it = m_typed_aniso_params.find({type1, type2});
-    if (it != m_typed_aniso_params.end()) {
-        return it->second;
-    }
-    return {};
-}
-
-bool CrystalEnergy::has_buckingham_params(int Z1, int Z2) const {
-    return m_buckingham_params.find({Z1, Z2}) != m_buckingham_params.end();
-}
-
-bool CrystalEnergy::has_typed_buckingham_params(int type1, int type2) const {
-    return m_typed_buckingham_params.find({type1, type2}) !=
-           m_typed_buckingham_params.end();
-}
-
-BuckinghamParams CrystalEnergy::get_buckingham_params_for_types(
-    int type1, int type2) const {
-
-    auto it = m_typed_buckingham_params.find({type1, type2});
-    if (it != m_typed_buckingham_params.end()) {
-        return it->second;
-    }
-
-    const auto key = canonical_pair(type1, type2);
-    if (m_use_short_range_typing &&
-        type1 > 0 && type2 > 0 &&
-        m_missing_typed_buckingham_warned.insert(key).second) {
-        occ::log::warn(
-            "Missing typed Buckingham parameters for {}-{}; falling back to element pair",
-            short_range_type_name(type1), short_range_type_name(type2));
-    }
-
-    const int z1 = short_range_type_atomic_number(type1);
-    const int z2 = short_range_type_atomic_number(type2);
-    if (z1 > 0 && z2 > 0) {
-        return get_buckingham_params(z1, z2);
-    }
-    return {1000.0, 3.5, 10.0};
-}
-
-std::string CrystalEnergy::short_range_type_name(int type_code) const {
-    auto it = m_short_range_type_labels.find(type_code);
-    if (it != m_short_range_type_labels.end() && !it->second.empty()) {
-        return it->second;
-    }
-    const char* label = short_range_type_label(type_code);
-    if (label && std::string(label) != "UNKN") {
-        return label;
-    }
-    return std::string("type") + std::to_string(type_code);
-}
-
-BuckinghamParams CrystalEnergy::get_buckingham_params(int Z1, int Z2) const {
-    auto it = m_buckingham_params.find({Z1, Z2});
-    if (it != m_buckingham_params.end()) {
-        return it->second;
-    }
-    const auto key = std::make_pair(std::min(Z1, Z2), std::max(Z1, Z2));
-    if (m_missing_buckingham_warned.insert(key).second) {
-        occ::log::warn(
-            "Missing Buckingham parameters for Z{}-Z{}; using fallback A=1000, B=3.5, C=10",
-            key.first, key.second);
-    }
-    // Default: small repulsion to avoid overlaps
-    return {1000.0, 3.5, 10.0};
-}
+// Force field parameter methods moved to force_field_params.cpp;
+// CrystalEnergy methods are now inline wrappers in crystal_energy.h.
 
 // ============================================================================
 // Initial States
@@ -1999,7 +847,7 @@ void CrystalEnergy::compute_short_range_pair(
             ShortRangeInteraction::EnergyAndDerivatives sr;
 
             const bool has_type_codes =
-                m_use_short_range_typing &&
+                m_ff.use_short_range_typing() &&
                 a < geom_i.short_range_type_codes.size() &&
                 b < geom_j.short_range_type_codes.size() &&
                 geom_i.short_range_type_codes[a] > 0 &&
@@ -2021,8 +869,8 @@ void CrystalEnergy::compute_short_range_pair(
                 }
                 sr = ShortRangeInteraction::buckingham_all(r, params);
             } else if (m_force_field == ForceFieldType::LennardJones) {
-                auto it = m_lj_params.find({Z_a, Z_b});
-                if (it == m_lj_params.end()) {
+                auto it = m_ff.lj_params().find({Z_a, Z_b});
+                if (it == m_ff.lj_params().end()) {
                     continue;
                 }
                 sr = ShortRangeInteraction::lennard_jones_all(r, it->second);
@@ -2072,7 +920,7 @@ void CrystalEnergy::compute_short_range_pair(
             torque_j -= torque_lab_b;
 
             // Anisotropic repulsion (additive to isotropic Buckingham)
-            if (!m_typed_aniso_params.empty() && has_type_codes) {
+            if (m_ff.has_any_aniso() && has_type_codes) {
                 const int t1 = geom_i.short_range_type_codes[a];
                 const int t2 = geom_j.short_range_type_codes[b];
                 if (has_aniso_params(t1, t2)) {
@@ -2340,20 +1188,17 @@ double CrystalEnergy::compute_energy(const std::vector<MoleculeState>& molecules
 CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
     const std::vector<MoleculeState>& molecules) {
 
+    occ::timing::StopWatch<6> sw;
+    // 0: cache/orient, 1: elec hessian pairs, 2: SR hessian pairs, 3: ewald, 4: ewald strain, 5: total
+
+    sw.start(5);
     const int N = static_cast<int>(molecules.size());
     const int ndof = 6 * N;  // 3 translation + 3 rotation per molecule
 
     CrystalEnergyResultWithHessian result;
-
-    // First compute energy and gradient at current point
-    auto base_result = compute(molecules);
-    result.total_energy = base_result.total_energy;
-    result.electrostatic_energy = base_result.electrostatic_energy;
-    result.repulsion_dispersion = base_result.repulsion_dispersion;
-    result.forces = base_result.forces;
-    result.torques = base_result.torques;
-    result.strain_gradient = base_result.strain_gradient;
-    result.molecule_energies = base_result.molecule_energies;
+    result.forces.resize(N, Vec3::Zero());
+    result.torques.resize(N, Vec3::Zero());
+    result.molecule_energies.resize(N, 0.0);
     result.includes_ewald_terms = false;
 
     // Initialize Hessian (6 DOF per molecule: pos + lab-frame rotation increment)
@@ -2362,6 +1207,7 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
     result.strain_state_hessian = Mat::Zero(6, ndof);
 
     // Precompute rotation matrices and lab-frame atom positions
+    sw.start(0);
     std::vector<MoleculeCache> mol_cache(N);
     for (int i = 0; i < N; ++i) {
         mol_cache[i].rotation = molecules[i].rotation_matrix();
@@ -2385,6 +1231,15 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
         cart_mols.push_back(m_multipoles[i].cartesian());
     }
 
+    // Precompute per-molecule Hessian data (rotation derivatives)
+    // once per molecule instead of once per pair.
+    std::vector<MoleculeHessianData> hess_data_A(N), hess_data_B(N);
+    for (int i = 0; i < N; ++i) {
+        hess_data_A[i] = build_molecule_hessian_data(cart_mols[i], true);
+        hess_data_B[i] = build_molecule_hessian_data(cart_mols[i], false);
+    }
+    sw.stop(0);
+
     const double elec_com_cutoff = effective_electrostatic_com_cutoff();
     const double elec_site_cutoff = effective_electrostatic_site_cutoff();
     const CutoffSpline* elec_taper =
@@ -2406,8 +1261,10 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
             include_elec = false;
         }
         if (include_elec) {
+            sw.start(1);
             auto epair = compute_molecule_hessian_truncated(
                 cart_mols[i], cart_mols[j],
+                hess_data_A[i], hess_data_B[j],
                 cell_translation,
                 elec_site_cutoff,
                 m_max_interaction_order,
@@ -2418,6 +1275,20 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
             accumulate_pair_strain_hessian_blocks(
                 result.strain_hessian, result.strain_state_hessian,
                 i, j, epair, pair.weight, pos_i, pos_j_image);
+
+            // Accumulate energy and gradient from Hessian result
+            double e_elec = pair.weight * epair.energy;
+            result.electrostatic_energy += e_elec;
+            result.molecule_energies[i] += e_elec * 0.5;
+            result.molecule_energies[j] += e_elec * 0.5;
+            result.forces[i] += pair.weight * epair.force_A;
+            result.forces[j] += pair.weight * epair.force_B;
+            result.torques[i] += pair.weight * epair.grad_angle_axis_A;
+            result.torques[j] += pair.weight * epair.grad_angle_axis_B;
+            const Vec3 disp_ij = pos_j_image - pos_i;
+            add_pair_strain_gradient(
+                result.strain_gradient, epair.force_A, disp_ij, pair.weight);
+            sw.stop(1);
         }
 
         // Short-range Hessian (full rigid-body mapping for central site potentials).
@@ -2425,6 +1296,7 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
             continue;
         }
 
+        sw.start(2);
         const auto& geom_i = m_geometry[i];
         const auto& geom_j = m_geometry[j];
         const size_t nA = geom_i.atom_positions.size();
@@ -2461,7 +1333,7 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
                     m_force_field == ForceFieldType::Custom) {
                     BuckinghamParams params;
                     const bool has_type_codes =
-                        m_use_short_range_typing &&
+                        m_ff.use_short_range_typing() &&
                         a < geom_i.short_range_type_codes.size() &&
                         b < geom_j.short_range_type_codes.size() &&
                         geom_i.short_range_type_codes[a] > 0 &&
@@ -2479,8 +1351,8 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
                     }
                     sr = ShortRangeInteraction::buckingham_all(r, params);
                 } else if (m_force_field == ForceFieldType::LennardJones) {
-                    auto it = m_lj_params.find({Z_a, Z_b});
-                    if (it == m_lj_params.end()) {
+                    auto it = m_ff.lj_params().find({Z_a, Z_b});
+                    if (it == m_ff.lj_params().end()) {
                         continue;
                     }
                     sr = ShortRangeInteraction::lennard_jones_all(r, it->second);
@@ -2501,6 +1373,28 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
                                            e0 * sw.second_derivative;
                 }
 
+                // Accumulate SR energy and gradient
+                {
+                    result.repulsion_dispersion += pair.weight * sr.energy;
+                    result.molecule_energies[i] += pair.weight * sr.energy * 0.5;
+                    result.molecule_energies[j] += pair.weight * sr.energy * 0.5;
+
+                    Vec3 force_on_a = ShortRangeInteraction::derivative_to_force(
+                        sr.first_derivative, r_ab);
+                    Vec3 wf = pair.weight * force_on_a;
+                    result.forces[i] += wf;
+                    result.forces[j] -= wf;
+
+                    Vec3 lever_a = R_i * geom_i.atom_positions[a];
+                    Vec3 lever_b = R_j * geom_j.atom_positions[b];
+                    result.torques[i] -= pair.weight * lever_a.cross(force_on_a);
+                    result.torques[j] -= pair.weight * lever_b.cross(-force_on_a);
+
+                    const Vec3 disp_ij = pos_j_image - pos_i;
+                    add_pair_strain_gradient(
+                        result.strain_gradient, wf, disp_ij, 1.0);
+                }
+
                 auto spair = short_range_site_pair_hessian(
                     R_i, R_j,
                     geom_i.atom_positions[a], geom_j.atom_positions[b],
@@ -2514,9 +1408,9 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
                     i, j, spair, pair.weight, pos_i, pos_j_image);
 
                 // Anisotropic repulsion Hessian (FD of energy for initial impl)
-                if (!m_typed_aniso_params.empty()) {
+                if (m_ff.has_any_aniso()) {
                     const bool htc =
-                        m_use_short_range_typing &&
+                        m_ff.use_short_range_typing() &&
                         a < geom_i.short_range_type_codes.size() &&
                         b < geom_j.short_range_type_codes.size() &&
                         geom_i.short_range_type_codes[a] > 0 &&
@@ -2598,15 +1492,59 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
                             auto aniso_ref = ShortRangeInteraction::anisotropic_repulsion(
                                 pos_a, pos_b, ax_a_lab, ax_b_lab, ap);
                             double e_aniso = aniso_ref.energy;
+
+                            // Accumulate aniso energy and gradient
+                            {
+                                const Vec3 lever_a_an = R_i * geom_i.atom_positions[a];
+                                const Vec3 lever_b_an = R_j * geom_j.atom_positions[b];
+                                if (m_short_range_taper.is_valid()) {
+                                    auto sw = evaluate_cutoff_spline(r, m_short_range_taper);
+                                    if (sw.value > 0.0) {
+                                        const double r_inv = 1.0 / r;
+                                        const Vec3 taper_force_correction =
+                                            sw.first_derivative * aniso_ref.energy * r_inv * r_ab;
+                                        result.repulsion_dispersion += pair.weight * sw.value * aniso_ref.energy;
+                                        result.molecule_energies[i] += pair.weight * sw.value * aniso_ref.energy * 0.5;
+                                        result.molecule_energies[j] += pair.weight * sw.value * aniso_ref.energy * 0.5;
+
+                                        Vec3 aniso_fa = sw.value * aniso_ref.force_A - taper_force_correction;
+                                        Vec3 aniso_fb = sw.value * aniso_ref.force_B + taper_force_correction;
+                                        result.forces[i] += pair.weight * aniso_fa;
+                                        result.forces[j] += pair.weight * aniso_fb;
+                                        result.torques[i] -= pair.weight * lever_a_an.cross(aniso_fa);
+                                        result.torques[j] -= pair.weight * lever_b_an.cross(aniso_fb);
+                                        result.torques[i] += pair.weight * sw.value * aniso_ref.torque_axis_A;
+                                        result.torques[j] += pair.weight * sw.value * aniso_ref.torque_axis_B;
+
+                                        const Vec3 disp_ij = pos_j_image - pos_i;
+                                        add_pair_strain_gradient(
+                                            result.strain_gradient,
+                                            pair.weight * aniso_fa, disp_ij, 1.0);
+                                    }
+                                } else {
+                                    result.repulsion_dispersion += pair.weight * aniso_ref.energy;
+                                    result.molecule_energies[i] += pair.weight * aniso_ref.energy * 0.5;
+                                    result.molecule_energies[j] += pair.weight * aniso_ref.energy * 0.5;
+                                    result.forces[i] += pair.weight * aniso_ref.force_A;
+                                    result.forces[j] += pair.weight * aniso_ref.force_B;
+                                    result.torques[i] -= pair.weight * lever_a_an.cross(aniso_ref.force_A);
+                                    result.torques[j] -= pair.weight * lever_b_an.cross(aniso_ref.force_B);
+                                    result.torques[i] += pair.weight * aniso_ref.torque_axis_A;
+                                    result.torques[j] += pair.weight * aniso_ref.torque_axis_B;
+
+                                    const Vec3 disp_ij = pos_j_image - pos_i;
+                                    add_pair_strain_gradient(
+                                        result.strain_gradient,
+                                        pair.weight * aniso_ref.force_A, disp_ij, 1.0);
+                                }
+                            }
+
                             if (m_short_range_taper.is_valid()) {
                                 auto sw = evaluate_cutoff_spline(r, m_short_range_taper);
                                 e_aniso *= sw.value;
                             }
                             const Vec3 gA = -aniso_ref.force_A;  // gradient
                             const Vec3 gB = -aniso_ref.force_B;
-                            if (m_short_range_taper.is_valid()) {
-                                // approximate: just use lever-arm
-                            }
                             const auto& Ggen = so3_generators();
                             for (int k = 0; k < 3; ++k) {
                                 for (int l = 0; l < 3; ++l) {
@@ -2630,9 +1568,11 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
                 }
             }
         }
+        sw.stop(2);
     }
 
     if (m_use_ewald) {
+        sw.start(3);
         auto ewald_sites = gather_ewald_sites(cart_mols, m_ewald_dipole);
         auto mol_site_indices = build_mol_site_indices(cart_mols);
 
@@ -2655,7 +1595,38 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
                 m_electrostatic_taper.is_valid() ? &m_electrostatic_taper : nullptr,
                 m_ewald_lattice_cache.get());
 
+            // Accumulate Ewald energy and gradient (replaces compute() Ewald section)
             const int ns = static_cast<int>(ewald_sites.size());
+            result.electrostatic_energy += ewald.energy;
+            for (int s = 0; s < ns; ++s) {
+                const int m = ewald_sites[s].mol_index;
+                const Vec3& f_kJ = ewald.site_forces[s];
+                result.forces[m] += f_kJ;
+                Vec3 lever = ewald_sites[s].position - molecules[m].position;
+                Vec3 torque_lab = lever.cross(f_kJ);
+                result.torques[m] -= torque_lab;
+            }
+            // Ewald strain: site-position dependence through COM strain
+            {
+                const auto& B_mats = voigt_basis_matrices();
+                for (int s = 0; s < ns; ++s) {
+                    const int m = ewald_sites[s].mol_index;
+                    for (int a = 0; a < 6; ++a) {
+                        result.strain_gradient[a] +=
+                            (-ewald.site_forces[s]).dot(B_mats[a] * molecules[m].position);
+                    }
+                }
+            }
+            // Explicit Ewald lattice/cell strain gradient
+            auto ewald_strain_grad = compute_ewald_explicit_strain_terms(
+                ewald_sites, m_crystal.unit_cell(), m_neighbors, mol_site_indices,
+                effective_electrostatic_com_cutoff(), m_use_com_elec_gate,
+                elec_site_cutoff,
+                params,
+                m_electrostatic_taper.is_valid() ? &m_electrostatic_taper : nullptr,
+                m_ewald_lattice_cache.get(),
+                false);
+            result.strain_gradient += ewald_strain_grad.grad;
             Mat J_state = Mat::Zero(3 * ns, ndof);
             Mat J_strain = Mat::Zero(3 * ns, 6);
             const auto& B = voigt_basis_matrices();
@@ -2722,14 +1693,24 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
 
             result.includes_ewald_terms = true;
         }
+        sw.stop(3);
     }
 
+    result.total_energy = result.electrostatic_energy + result.repulsion_dispersion;
     result.exact_for_model = can_compute_exact_hessian();
 
     // Symmetrize Hessian (handles numerical noise)
     result.hessian = 0.5 * (result.hessian + result.hessian.transpose());
     result.strain_hessian =
         0.5 * (result.strain_hessian + result.strain_hessian.transpose());
+
+    sw.stop(5);
+    occ::log::info("compute_with_hessian() timing: "
+                   "cache={:.1f}ms elec_hess={:.1f}ms SR_hess={:.1f}ms "
+                   "ewald={:.1f}ms total={:.1f}ms  ({} pairs)",
+                   sw.read(0)*1e3, sw.read(1)*1e3, sw.read(2)*1e3,
+                   sw.read(3)*1e3, sw.read(5)*1e3,
+                   m_neighbors.size());
 
     return result;
 }

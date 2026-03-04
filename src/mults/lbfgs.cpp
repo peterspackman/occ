@@ -77,12 +77,41 @@ LBFGSResult LBFGS::minimize(Objective f, const Vec& x0, Callback callback, int m
         result.function_evaluations += ls_evals;
 
         if (alpha <= 0) {
-            // Line search failed
-            result.final_energy = fx;
-            result.final_gradient = g;
-            result.x = x;
-            result.termination_reason = "Line search failed";
-            return result;
+            // Line search failed with current direction — reset history and
+            // retry with steepest descent + backtracking before giving up.
+            if (!m_s.empty()) {
+                m_s.clear();
+                m_y.clear();
+                m_rho.clear();
+                d = -g;
+                // Backtracking fallback for the steepest descent step
+                double bt_alpha = std::min(1.0, 1.0 / g.norm());
+                bool found = false;
+                for (int bt = 0; bt < m_settings.max_linesearch; ++bt) {
+                    x_new = x + bt_alpha * d;
+                    fx_new = f(x_new, g_new);
+                    result.function_evaluations++;
+                    if (fx_new <= fx + m_settings.ftol * bt_alpha * d.dot(g)) {
+                        alpha = bt_alpha;
+                        found = true;
+                        break;
+                    }
+                    bt_alpha *= 0.5;
+                }
+                if (!found) {
+                    result.final_energy = fx;
+                    result.final_gradient = g;
+                    result.x = x;
+                    result.termination_reason = "Line search failed";
+                    return result;
+                }
+            } else {
+                result.final_energy = fx;
+                result.final_gradient = g;
+                result.x = x;
+                result.termination_reason = "Line search failed";
+                return result;
+            }
         }
 
         // Store correction pair
@@ -201,7 +230,11 @@ double LBFGS::line_search(Objective& f, const Vec& x, const Vec& g, const Vec& d
     }
 
     num_evals = 0;
-    double alpha = m_settings.initial_step;
+    // For L-BFGS, the two-loop recursion produces an already-scaled direction
+    // (incorporating the inverse Hessian approximation), so the natural step
+    // length is alpha=1.  Use initial_step only when there's no LBFGS history
+    // (i.e. the direction is just -g and needs external scaling).
+    double alpha = m_s.empty() ? m_settings.initial_step : 1.0;
 
     // Simple backtracking line search (Armijo only)
     if (m_settings.backtracking_only) {

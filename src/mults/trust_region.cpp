@@ -293,6 +293,145 @@ TrustRegionResult TrustRegion::minimize_hvp(Objective objective,
     return result;
 }
 
+TrustRegionResult TrustRegion::minimize_bfgs(GradObjective f, const Vec& x0,
+                                              Callback callback) {
+    TrustRegionResult result;
+    result.function_evaluations = 0;
+    result.hessian_evaluations = 0;
+
+    const int n = x0.size();
+    Vec x = x0;
+    Vec g(n);
+    double fx = f(x, g);
+    result.function_evaluations++;
+
+    double gnorm = g.norm();
+    if (callback && !callback(0, x, fx, g)) {
+        result.x = x;
+        result.final_value = fx;
+        result.final_gradient_norm = gnorm;
+        result.iterations = 0;
+        result.converged = false;
+        result.termination_reason = "Stopped by callback";
+        return result;
+    }
+
+    if (gnorm < m_settings.gradient_tol) {
+        result.x = x;
+        result.final_value = fx;
+        result.final_gradient_norm = gnorm;
+        result.iterations = 0;
+        result.converged = true;
+        result.termination_reason = "Initial gradient below tolerance";
+        return result;
+    }
+
+    // Start with identity Hessian (like MSTMIN)
+    Mat H = Mat::Identity(n, n);
+    double delta = m_settings.initial_radius;
+
+    for (int iter = 1; iter <= m_settings.max_iterations; ++iter) {
+        // Solve trust region subproblem: min g'p + 0.5 p'Hp  s.t. ||p|| <= delta
+        Vec D = Vec::Ones(n);
+        if (m_settings.use_diagonal_scaling) {
+            for (int i = 0; i < n; ++i) {
+                double hii = std::abs(H(i, i));
+                D[i] = (hii > 1e-8) ? 1.0 / std::sqrt(hii) : 1.0;
+            }
+        }
+        Vec p = solve_subproblem(g, H, delta, D);
+
+        // Trial point
+        Vec x_new(n);
+        Vec g_new(n);
+        double fx_new = f(x + p, g_new);
+        x_new = x + p;
+        result.function_evaluations++;
+
+        double actual_reduction = fx - fx_new;
+        double predicted = predicted_reduction(g, H, p);
+        double rho = (std::abs(predicted) > 1e-15) ? actual_reduction / predicted : 0.0;
+
+        if (rho < m_settings.eta1) {
+            // Reject step, shrink trust region
+            delta = m_settings.gamma1 * p.norm();
+            delta = std::max(delta, 1e-10);
+        } else {
+            // Accept step — apply BFGS update to Hessian
+            Vec s = p;
+            Vec y = g_new - g;
+            double ys = y.dot(s);
+
+            if (ys > 1e-15) {
+                // BFGS: H += yy'/ys - Hss'H/(s'Hs)
+                Vec Hs = H * s;
+                double sHs = s.dot(Hs);
+                if (std::abs(sHs) > 1e-15) {
+                    H += (y * y.transpose()) / ys - (Hs * Hs.transpose()) / sHs;
+                }
+            }
+
+            x = x_new;
+            fx = fx_new;
+            g = g_new;
+            gnorm = g.norm();
+
+            if (rho > m_settings.eta2 && p.norm() > 0.9 * delta) {
+                delta = std::min(m_settings.gamma2 * delta, m_settings.max_radius);
+            }
+
+            if (callback && !callback(iter, x, fx, g)) {
+                result.x = x;
+                result.final_value = fx;
+                result.final_gradient_norm = gnorm;
+                result.iterations = iter;
+                result.converged = false;
+                result.termination_reason = "Stopped by callback";
+                return result;
+            }
+        }
+
+        // Convergence checks
+        if (gnorm < m_settings.gradient_tol) {
+            result.x = x;
+            result.final_value = fx;
+            result.final_gradient_norm = gnorm;
+            result.iterations = iter;
+            result.converged = true;
+            result.termination_reason = "Gradient norm below tolerance";
+            return result;
+        }
+
+        if (p.norm() < m_settings.step_tol * (1.0 + x.norm())) {
+            result.x = x;
+            result.final_value = fx;
+            result.final_gradient_norm = gnorm;
+            result.iterations = iter;
+            result.converged = true;
+            result.termination_reason = "Step size below tolerance";
+            return result;
+        }
+
+        if (std::abs(actual_reduction) < m_settings.energy_tol * (1.0 + std::abs(fx))) {
+            result.x = x;
+            result.final_value = fx;
+            result.final_gradient_norm = gnorm;
+            result.iterations = iter;
+            result.converged = true;
+            result.termination_reason = "Energy change below tolerance";
+            return result;
+        }
+    }
+
+    result.x = x;
+    result.final_value = fx;
+    result.final_gradient_norm = gnorm;
+    result.iterations = m_settings.max_iterations;
+    result.converged = false;
+    result.termination_reason = "Maximum iterations reached";
+    return result;
+}
+
 Vec TrustRegion::solve_subproblem(const Vec& g, const Mat& H, double delta,
                                    const Vec& D) {
     // Steihaug-CG: Truncated conjugate gradient for trust region

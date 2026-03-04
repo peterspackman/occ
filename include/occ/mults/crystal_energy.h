@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/mults/multipole_source.h>
 #include <occ/mults/short_range.h>
+#include <occ/mults/force_field_params.h>
 #include <occ/mults/cartesian_force.h>
 #include <occ/mults/cutoff_spline.h>
 #include <occ/crystal/crystal.h>
@@ -206,38 +207,44 @@ public:
     /// Get neighbor list.
     const std::vector<NeighborPair>& neighbor_pairs() const { return m_neighbors; }
 
+    /// Access force field parameters.
+    ForceFieldParams& force_field() { return m_ff; }
+    const ForceFieldParams& force_field() const { return m_ff; }
+
     /// Set/query anisotropic repulsion parameters (typed).
     void set_typed_aniso_params(
-        const std::map<std::pair<int,int>, AnisotropicRepulsionParams>& params);
-    bool has_aniso_params(int type1, int type2) const;
-    AnisotropicRepulsionParams get_aniso_params(int type1, int type2) const;
-    bool has_any_aniso_params() const { return !m_typed_aniso_params.empty(); }
+        const std::map<std::pair<int,int>, AnisotropicRepulsionParams>& params) {
+        m_ff.set_typed_aniso(params);
+    }
+    bool has_aniso_params(int type1, int type2) const { return m_ff.has_aniso(type1, type2); }
+    AnisotropicRepulsionParams get_aniso_params(int type1, int type2) const { return m_ff.get_aniso(type1, type2); }
+    bool has_any_aniso_params() const { return m_ff.has_any_aniso(); }
 
     /// Get/set Buckingham parameters for atom pair.
-    void set_buckingham_params(int Z1, int Z2, const BuckinghamParams& params);
+    void set_buckingham_params(int Z1, int Z2, const BuckinghamParams& params) { m_ff.set_buckingham(Z1, Z2, params); }
     void set_typed_buckingham_params(int type1, int type2,
-                                     const BuckinghamParams& params);
+                                     const BuckinghamParams& params) { m_ff.set_typed_buckingham(type1, type2, params); }
     void set_typed_buckingham_params(
-        const std::map<std::pair<int,int>, BuckinghamParams>& params);
-    void clear_typed_buckingham_params();
+        const std::map<std::pair<int,int>, BuckinghamParams>& params) { m_ff.set_typed_buckingham(params); }
+    void clear_typed_buckingham_params() { m_ff.clear_typed_buckingham(); }
     void set_short_range_type_labels(
-        const std::map<int, std::string>& labels);
-    BuckinghamParams get_buckingham_params(int Z1, int Z2) const;
-    bool has_buckingham_params(int Z1, int Z2) const;
-    bool uses_williams_atom_typing() const { return m_use_williams_atom_typing; }
-    bool uses_short_range_typing() const { return m_use_short_range_typing; }
-    bool has_typed_buckingham_params(int type1, int type2) const;
-    BuckinghamParams get_buckingham_params_for_types(int type1, int type2) const;
-    std::string short_range_type_name(int type_code) const;
+        const std::map<int, std::string>& labels) { m_ff.set_type_labels(labels); }
+    BuckinghamParams get_buckingham_params(int Z1, int Z2) const { return m_ff.get_buckingham(Z1, Z2); }
+    bool has_buckingham_params(int Z1, int Z2) const { return m_ff.has_buckingham(Z1, Z2); }
+    bool uses_williams_atom_typing() const { return m_ff.use_williams_atom_typing(); }
+    bool uses_short_range_typing() const { return m_ff.use_short_range_typing(); }
+    bool has_typed_buckingham_params(int type1, int type2) const { return m_ff.has_typed_buckingham(type1, type2); }
+    BuckinghamParams get_buckingham_params_for_types(int type1, int type2) const { return m_ff.get_buckingham_for_types(type1, type2); }
+    std::string short_range_type_name(int type_code) const { return m_ff.type_name(type_code); }
 
     /// Convert a Williams/NEIGHCRYS type code to a short label (e.g. 512 -> C_W3).
-    static const char* short_range_type_label(int type_code);
+    static const char* short_range_type_label(int type_code) { return ForceFieldParams::short_range_type_label(type_code); }
 
     /// Map a Williams/NEIGHCRYS type code to element Z, or 0 if unknown.
-    static int short_range_type_atomic_number(int type_code);
+    static int short_range_type_atomic_number(int type_code) { return ForceFieldParams::short_range_type_atomic_number(type_code); }
 
     /// Williams DE Buckingham parameters (built-in).
-    static std::map<std::pair<int,int>, BuckinghamParams> williams_de_params();
+    static std::map<std::pair<int,int>, BuckinghamParams> williams_de_params() { return ForceFieldParams::williams_de_params(); }
 
     /// Get the underlying crystal.
     const crystal::Crystal& crystal() const { return m_crystal; }
@@ -404,15 +411,7 @@ private:
     std::vector<std::vector<bool>> m_fixed_site_masks;
 
     std::vector<NeighborPair> m_neighbors;
-    std::map<std::pair<int,int>, BuckinghamParams> m_buckingham_params;
-    std::map<std::pair<int,int>, BuckinghamParams> m_typed_buckingham_params;
-    std::map<int, std::string> m_short_range_type_labels;
-    mutable std::set<std::pair<int,int>> m_missing_buckingham_warned;
-    mutable std::set<std::pair<int,int>> m_missing_typed_buckingham_warned;
-    std::map<std::pair<int,int>, LennardJonesParams> m_lj_params;
-    std::map<std::pair<int,int>, AnisotropicRepulsionParams> m_typed_aniso_params;
-    bool m_use_williams_atom_typing = false;
-    bool m_use_short_range_typing = false;
+    ForceFieldParams m_ff;
 
     std::vector<MoleculeGeometry> m_geometry;
 
@@ -426,7 +425,6 @@ private:
     void build_molecule_geometry();
     void assign_williams_atom_types();
     void initialize_force_field();
-    static std::map<std::pair<int,int>, BuckinghamParams> williams_typed_params();
 
     std::vector<MoleculeState> m_initial_states;  // optional override
 

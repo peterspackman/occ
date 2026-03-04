@@ -289,12 +289,245 @@ PairHessianResult compute_charge_dipole_hessian(
 }
 
 // ============================================================================
+// T-tensor dispatch for Hessian (order = max_interaction_order + 2)
+// ============================================================================
+
+/// Compute interaction tensor and contract with multipole weights/derivatives.
+/// Returns accumulated E, g, H and field arrays for the rotation Hessian.
+struct SitePairContractionResult {
+    static constexpr int kMaxComp = occ::ints::nhermsum(4);
+    double E = 0.0;
+    Vec3 g = Vec3::Zero();
+    Mat3 H = Mat3::Zero();
+    std::array<double, kMaxComp> fieldA0{};
+    std::array<double, kMaxComp> fieldB0{};
+    std::array<std::array<double, kMaxComp>, 3> fieldA_R{};
+    std::array<std::array<double, kMaxComp>, 3> fieldB_R{};
+    std::array<std::array<double, kMaxComp>, 3> fieldA_from_dB{};
+    std::array<std::array<double, kMaxComp>, 3> fieldB_from_dA{};
+};
+
+template<int TOrder>
+static SitePairContractionResult compute_site_pair_contraction(
+    const double* wA, const std::array<std::array<double, occ::ints::nhermsum(4)>, 3>& dwA,
+    const double* wB, const std::array<std::array<double, occ::ints::nhermsum(4)>, 3>& dwB,
+    int nA, int nB,
+    const Vec3& R_bohr,
+    bool use_order_cutoff, int max_interaction_order) {
+
+    SitePairContractionResult r;
+
+    InteractionTensor<TOrder> T;
+    compute_interaction_tensor<TOrder>(R_bohr[0], R_bohr[1], R_bohr[2], T);
+
+    for (int ia = 0; ia < nA; ++ia) {
+        const auto [ta, ua, va] = kernel_detail::tuv4.entries[ia];
+        const int la = ta + ua + va;
+        const double wAi = wA[ia];
+        if (wAi == 0.0 &&
+            dwA[0][ia] == 0.0 && dwA[1][ia] == 0.0 &&
+            dwA[2][ia] == 0.0) {
+            continue;
+        }
+
+        for (int jb = 0; jb < nB; ++jb) {
+            const auto [tb, ub, vb] = kernel_detail::tuv4.entries[jb];
+            const int lb = tb + ub + vb;
+            if (use_order_cutoff &&
+                (la + lb) > max_interaction_order) {
+                continue;
+            }
+            const int t = ta + tb;
+            const int u = ua + ub;
+            const int v = va + vb;
+
+            const double T0 = T(t, u, v);
+            const double Tx = T(t + 1, u, v);
+            const double Ty = T(t, u + 1, v);
+            const double Tz = T(t, u, v + 1);
+            const double Txx = T(t + 2, u, v);
+            const double Txy = T(t + 1, u + 1, v);
+            const double Txz = T(t + 1, u, v + 1);
+            const double Tyy = T(t, u + 2, v);
+            const double Tyz = T(t, u + 1, v + 1);
+            const double Tzz = T(t, u, v + 2);
+
+            const double wBj = wB[jb];
+            const double wp = wAi * wBj;
+
+            r.E += wp * T0;
+            r.g[0] += wp * Tx;
+            r.g[1] += wp * Ty;
+            r.g[2] += wp * Tz;
+            r.H(0, 0) += wp * Txx;
+            r.H(0, 1) += wp * Txy;
+            r.H(0, 2) += wp * Txz;
+            r.H(1, 0) += wp * Txy;
+            r.H(1, 1) += wp * Tyy;
+            r.H(1, 2) += wp * Tyz;
+            r.H(2, 0) += wp * Txz;
+            r.H(2, 1) += wp * Tyz;
+            r.H(2, 2) += wp * Tzz;
+
+            r.fieldA0[ia] += wBj * T0;
+            r.fieldA_R[0][ia] += wBj * Tx;
+            r.fieldA_R[1][ia] += wBj * Ty;
+            r.fieldA_R[2][ia] += wBj * Tz;
+            for (int n = 0; n < 3; ++n) {
+                r.fieldA_from_dB[n][ia] += dwB[n][jb] * T0;
+            }
+
+            r.fieldB0[jb] += wAi * T0;
+            r.fieldB_R[0][jb] += wAi * Tx;
+            r.fieldB_R[1][jb] += wAi * Ty;
+            r.fieldB_R[2][jb] += wAi * Tz;
+            for (int m = 0; m < 3; ++m) {
+                r.fieldB_from_dA[m][jb] += dwA[m][ia] * T0;
+            }
+        }
+    }
+    return r;
+}
+
+/// Runtime dispatch for site pair contraction based on max interaction order.
+static SitePairContractionResult dispatch_site_pair_contraction(
+    const double* wA, const std::array<std::array<double, occ::ints::nhermsum(4)>, 3>& dwA,
+    const double* wB, const std::array<std::array<double, occ::ints::nhermsum(4)>, 3>& dwB,
+    int nA, int nB,
+    const Vec3& R_bohr,
+    bool use_order_cutoff, int max_interaction_order) {
+
+    if (!use_order_cutoff) {
+        return compute_site_pair_contraction<10>(
+            wA, dwA, wB, dwB, nA, nB, R_bohr, false, -1);
+    }
+    // T-tensor order = max_interaction_order + 2 (for Hessian)
+    switch (max_interaction_order) {
+    case 0: return compute_site_pair_contraction<2>(
+        wA, dwA, wB, dwB, nA, nB, R_bohr, true, 0);
+    case 1: return compute_site_pair_contraction<3>(
+        wA, dwA, wB, dwB, nA, nB, R_bohr, true, 1);
+    case 2: return compute_site_pair_contraction<4>(
+        wA, dwA, wB, dwB, nA, nB, R_bohr, true, 2);
+    case 3: return compute_site_pair_contraction<5>(
+        wA, dwA, wB, dwB, nA, nB, R_bohr, true, 3);
+    case 4: return compute_site_pair_contraction<6>(
+        wA, dwA, wB, dwB, nA, nB, R_bohr, true, 4);
+    case 5: return compute_site_pair_contraction<7>(
+        wA, dwA, wB, dwB, nA, nB, R_bohr, true, 5);
+    case 6: return compute_site_pair_contraction<8>(
+        wA, dwA, wB, dwB, nA, nB, R_bohr, true, 6);
+    case 7: return compute_site_pair_contraction<9>(
+        wA, dwA, wB, dwB, nA, nB, R_bohr, true, 7);
+    default: return compute_site_pair_contraction<10>(
+        wA, dwA, wB, dwB, nA, nB, R_bohr, true, max_interaction_order);
+    }
+}
+
+// ============================================================================
 // Molecule-level rigid-body Hessian (all Cartesian multipole ranks)
 // ============================================================================
 
-PairHessianResult compute_molecule_hessian_truncated(
+// ============================================================================
+// Public: build per-molecule Hessian data (rotation derivatives)
+// ============================================================================
+
+MoleculeHessianData build_molecule_hessian_data(
+    const CartesianMolecule& mol, bool signed_side) {
+
+    const double to_bohr = 1.0 / occ::units::BOHR_TO_ANGSTROM;
+    MoleculeHessianData result;
+    result.sites.resize(mol.sites.size());
+
+    const bool has_body = mol.body_data.has_value();
+    Mat3 M = Mat3::Identity();
+    std::array<Mat3, 3> dM;
+    std::array<Mat3, 9> d2M;
+    for (int k = 0; k < 3; ++k) dM[k].setZero();
+    for (int k = 0; k < 9; ++k) d2M[k].setZero();
+
+    if (has_body) {
+        M = mol.body_data->rotation;
+        dM = rotation_matrix_first_derivatives(M);
+        d2M = rotation_matrix_second_derivatives(M);
+    }
+
+    for (size_t i = 0; i < mol.sites.size(); ++i) {
+        auto& out = result.sites[i];
+        for (int m = 0; m < 3; ++m) {
+            out.dlever[m] = Vec3::Zero();
+            for (int n = 0; n < 3; ++n) {
+                out.d2lever[m][n] = Vec3::Zero();
+            }
+        }
+
+        const auto& site = mol.sites[i];
+        out.rank = site.rank;
+        if (site.rank < 0) continue;
+
+        const int ncomp = occ::ints::nhermsum(site.rank);
+        for (int c = 0; c < ncomp; ++c) {
+            const double w = signed_side
+                ? kernel_detail::weights4.sign_inv_fact[c]
+                : kernel_detail::weights4.inv_fact[c];
+            out.w[c] = w * site.cart.data[c];
+        }
+
+        if (!has_body || i >= mol.body_data->body_offsets.size()) {
+            continue;
+        }
+
+        const Vec3& body_offset = mol.body_data->body_offsets[i];
+        out.lever = (M * body_offset) * to_bohr;
+        for (int m = 0; m < 3; ++m) {
+            out.dlever[m] = (dM[m] * body_offset) * to_bohr;
+            for (int n = 0; n < 3; ++n) {
+                out.d2lever[m][n] = (d2M[3 * m + n] * body_offset) * to_bohr;
+            }
+        }
+
+        if (site.rank <= 0 || i >= mol.body_data->body_multipoles.size()) {
+            continue;
+        }
+
+        const auto& body_cart = mol.body_data->body_multipoles[i];
+        for (int m = 0; m < 3; ++m) {
+            CartesianMultipole<4> d_cart;
+            rotate_cartesian_multipole_derivative<4>(
+                body_cart, M, dM[m], d_cart);
+            for (int c = 0; c < ncomp; ++c) {
+                const double w = signed_side
+                    ? kernel_detail::weights4.sign_inv_fact[c]
+                    : kernel_detail::weights4.inv_fact[c];
+                out.dw[m][c] = w * d_cart.data[c];
+            }
+
+            for (int n = 0; n < 3; ++n) {
+                CartesianMultipole<4> d2_cart;
+                rotate_cartesian_multipole_second_derivative<4>(
+                    body_cart, M, dM[m], dM[n], d2M[3 * m + n], d2_cart);
+                for (int c = 0; c < ncomp; ++c) {
+                    const double w = signed_side
+                        ? kernel_detail::weights4.sign_inv_fact[c]
+                        : kernel_detail::weights4.inv_fact[c];
+                    out.d2w[m][n][c] = w * d2_cart.data[c];
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+// ============================================================================
+// Internal implementation using precomputed site derivatives
+// ============================================================================
+
+static PairHessianResult compute_molecule_hessian_impl(
     const CartesianMolecule &molA,
     const CartesianMolecule &molB,
+    const std::vector<SiteHessianDerivatives>& site_data_A,
+    const std::vector<SiteHessianDerivatives>& site_data_B,
     const Vec3& offset_B,
     double site_cutoff,
     int max_interaction_order,
@@ -305,15 +538,7 @@ PairHessianResult compute_molecule_hessian_truncated(
     const double to_bohr = 1.0 / occ::units::BOHR_TO_ANGSTROM;
     constexpr int kMaxComp = occ::ints::nhermsum(4);
 
-    struct SiteDerivatives {
-        int rank = -1;
-        std::array<double, kMaxComp> w{};
-        std::array<std::array<double, kMaxComp>, 3> dw{};
-        std::array<std::array<std::array<double, kMaxComp>, 3>, 3> d2w{};
-        Vec3 lever = Vec3::Zero();
-        std::array<Vec3, 3> dlever{};
-        std::array<std::array<Vec3, 3>, 3> d2lever{};
-    };
+    using SiteDerivatives = SiteHessianDerivatives;
 
     auto dot_n = [](const std::array<double, kMaxComp>& a,
                     const std::array<double, kMaxComp>& b,
@@ -474,90 +699,6 @@ PairHessianResult compute_molecule_hessian_truncated(
         r.grad_angle_axis_B = g.segment<3>(9);
     };
 
-    auto build_site_derivatives = [&](const CartesianMolecule& mol,
-                                      bool signed_side) {
-        std::vector<SiteDerivatives> data(mol.sites.size());
-
-        const bool has_body = mol.body_data.has_value();
-        Mat3 M = Mat3::Identity();
-        std::array<Mat3, 3> dM;
-        std::array<Mat3, 9> d2M;
-        for (int k = 0; k < 3; ++k) dM[k].setZero();
-        for (int k = 0; k < 9; ++k) d2M[k].setZero();
-
-        if (has_body) {
-            M = mol.body_data->rotation;
-            dM = rotation_matrix_first_derivatives(M);
-            d2M = rotation_matrix_second_derivatives(M);
-        }
-
-        for (size_t i = 0; i < mol.sites.size(); ++i) {
-            auto& out = data[i];
-            for (int m = 0; m < 3; ++m) {
-                out.dlever[m] = Vec3::Zero();
-                for (int n = 0; n < 3; ++n) {
-                    out.d2lever[m][n] = Vec3::Zero();
-                }
-            }
-
-            const auto& site = mol.sites[i];
-            out.rank = site.rank;
-            if (site.rank < 0) continue;
-
-            const int ncomp = occ::ints::nhermsum(site.rank);
-            for (int c = 0; c < ncomp; ++c) {
-                const double w = signed_side
-                    ? kernel_detail::weights4.sign_inv_fact[c]
-                    : kernel_detail::weights4.inv_fact[c];
-                out.w[c] = w * site.cart.data[c];
-            }
-
-            if (!has_body || i >= mol.body_data->body_offsets.size()) {
-                continue;
-            }
-
-            const Vec3& body_offset = mol.body_data->body_offsets[i];
-            out.lever = (M * body_offset) * to_bohr;
-            for (int m = 0; m < 3; ++m) {
-                out.dlever[m] = (dM[m] * body_offset) * to_bohr;
-                for (int n = 0; n < 3; ++n) {
-                    out.d2lever[m][n] = (d2M[3 * m + n] * body_offset) * to_bohr;
-                }
-            }
-
-            if (site.rank <= 0 || i >= mol.body_data->body_multipoles.size()) {
-                continue;
-            }
-
-            const auto& body_cart = mol.body_data->body_multipoles[i];
-            for (int m = 0; m < 3; ++m) {
-                CartesianMultipole<4> d_cart;
-                rotate_cartesian_multipole_derivative<4>(
-                    body_cart, M, dM[m], d_cart);
-                for (int c = 0; c < ncomp; ++c) {
-                    const double w = signed_side
-                        ? kernel_detail::weights4.sign_inv_fact[c]
-                        : kernel_detail::weights4.inv_fact[c];
-                    out.dw[m][c] = w * d_cart.data[c];
-                }
-
-                for (int n = 0; n < 3; ++n) {
-                    CartesianMultipole<4> d2_cart;
-                    rotate_cartesian_multipole_second_derivative<4>(
-                        body_cart, M, dM[m], dM[n], d2M[3 * m + n], d2_cart);
-                    for (int c = 0; c < ncomp; ++c) {
-                        const double w = signed_side
-                            ? kernel_detail::weights4.sign_inv_fact[c]
-                            : kernel_detail::weights4.inv_fact[c];
-                        out.d2w[m][n][c] = w * d2_cart.data[c];
-                    }
-                }
-            }
-        }
-
-        return data;
-    };
-
     auto add_pair = [&](const PairHessianResult& p) {
         result.energy += p.energy;
         result.force_A += p.force_A;
@@ -577,8 +718,6 @@ PairHessianResult compute_molecule_hessian_truncated(
         result.H_rotB_rotB += p.H_rotB_rotB;
     };
 
-    const auto site_data_A = build_site_derivatives(molA, true);
-    const auto site_data_B = build_site_derivatives(molB, false);
     const Vec3 offset_B_bohr = offset_B * to_bohr;
 
     for (size_t i = 0; i < molA.sites.size(); ++i) {
@@ -599,88 +738,22 @@ PairHessianResult compute_molecule_hessian_truncated(
             const int nA = occ::ints::nhermsum(sA.rank);
             const int nB = occ::ints::nhermsum(sB.rank);
 
-            InteractionTensor<10> T;
             const Vec3 R_bohr = (sB.position * to_bohr + offset_B_bohr) -
                                 (sA.position * to_bohr);
-            compute_interaction_tensor<10>(R_bohr[0], R_bohr[1], R_bohr[2], T);
 
-            double E = 0.0;
-            Vec3 g = Vec3::Zero();
-            Mat3 H = Mat3::Zero();
+            auto spf = dispatch_site_pair_contraction(
+                dA.w.data(), dA.dw, dB.w.data(), dB.dw,
+                nA, nB, R_bohr,
+                use_order_cutoff, max_interaction_order);
 
-            std::array<double, kMaxComp> fieldA0{};
-            std::array<double, kMaxComp> fieldB0{};
-            std::array<std::array<double, kMaxComp>, 3> fieldA_R{};
-            std::array<std::array<double, kMaxComp>, 3> fieldB_R{};
-            std::array<std::array<double, kMaxComp>, 3> fieldA_from_dB{};
-            std::array<std::array<double, kMaxComp>, 3> fieldB_from_dA{};
-
-            for (int ia = 0; ia < nA; ++ia) {
-                const auto [ta, ua, va] = kernel_detail::tuv4.entries[ia];
-                const int la = ta + ua + va;
-                const double wAi = dA.w[ia];
-                if (wAi == 0.0 &&
-                    dA.dw[0][ia] == 0.0 && dA.dw[1][ia] == 0.0 &&
-                    dA.dw[2][ia] == 0.0) {
-                    continue;
-                }
-
-                for (int jb = 0; jb < nB; ++jb) {
-                    const auto [tb, ub, vb] = kernel_detail::tuv4.entries[jb];
-                    const int lb = tb + ub + vb;
-                    if (use_order_cutoff &&
-                        (la + lb) > max_interaction_order) {
-                        continue;
-                    }
-                    const int t = ta + tb;
-                    const int u = ua + ub;
-                    const int v = va + vb;
-
-                    const double T0 = T(t, u, v);
-                    const double Tx = T(t + 1, u, v);
-                    const double Ty = T(t, u + 1, v);
-                    const double Tz = T(t, u, v + 1);
-                    const double Txx = T(t + 2, u, v);
-                    const double Txy = T(t + 1, u + 1, v);
-                    const double Txz = T(t + 1, u, v + 1);
-                    const double Tyy = T(t, u + 2, v);
-                    const double Tyz = T(t, u + 1, v + 1);
-                    const double Tzz = T(t, u, v + 2);
-
-                    const double wBj = dB.w[jb];
-                    const double wp = wAi * wBj;
-
-                    E += wp * T0;
-                    g[0] += wp * Tx;
-                    g[1] += wp * Ty;
-                    g[2] += wp * Tz;
-                    H(0, 0) += wp * Txx;
-                    H(0, 1) += wp * Txy;
-                    H(0, 2) += wp * Txz;
-                    H(1, 0) += wp * Txy;
-                    H(1, 1) += wp * Tyy;
-                    H(1, 2) += wp * Tyz;
-                    H(2, 0) += wp * Txz;
-                    H(2, 1) += wp * Tyz;
-                    H(2, 2) += wp * Tzz;
-
-                    fieldA0[ia] += wBj * T0;
-                    fieldA_R[0][ia] += wBj * Tx;
-                    fieldA_R[1][ia] += wBj * Ty;
-                    fieldA_R[2][ia] += wBj * Tz;
-                    for (int n = 0; n < 3; ++n) {
-                        fieldA_from_dB[n][ia] += dB.dw[n][jb] * T0;
-                    }
-
-                    fieldB0[jb] += wAi * T0;
-                    fieldB_R[0][jb] += wAi * Tx;
-                    fieldB_R[1][jb] += wAi * Ty;
-                    fieldB_R[2][jb] += wAi * Tz;
-                    for (int m = 0; m < 3; ++m) {
-                        fieldB_from_dA[m][jb] += dA.dw[m][ia] * T0;
-                    }
-                }
-            }
+            const double E = spf.E;
+            const Vec3& g = spf.g;
+            const Mat3& H = spf.H;
+            const auto& fieldA0 = spf.fieldA0;
+            const auto& fieldB0 = spf.fieldB0;
+            const auto& fieldA_R = spf.fieldA_R;
+            const auto& fieldB_R = spf.fieldB_R;
+            const auto& fieldA_from_dB = spf.fieldA_from_dB;
 
             Vec3 grad_mp_A = Vec3::Zero();
             Vec3 grad_mp_B = Vec3::Zero();
@@ -775,6 +848,42 @@ PairHessianResult compute_molecule_hessian_truncated(
     }
 
     return result;
+}
+
+// ============================================================================
+// Public wrappers
+// ============================================================================
+
+PairHessianResult compute_molecule_hessian_truncated(
+    const CartesianMolecule &molA,
+    const CartesianMolecule &molB,
+    const Vec3& offset_B,
+    double site_cutoff,
+    int max_interaction_order,
+    const CutoffSpline* taper,
+    bool taper_hessian) {
+
+    auto dataA = build_molecule_hessian_data(molA, true);
+    auto dataB = build_molecule_hessian_data(molB, false);
+    return compute_molecule_hessian_impl(
+        molA, molB, dataA.sites, dataB.sites,
+        offset_B, site_cutoff, max_interaction_order, taper, taper_hessian);
+}
+
+PairHessianResult compute_molecule_hessian_truncated(
+    const CartesianMolecule &molA,
+    const CartesianMolecule &molB,
+    const MoleculeHessianData& dataA,
+    const MoleculeHessianData& dataB,
+    const Vec3& offset_B,
+    double site_cutoff,
+    int max_interaction_order,
+    const CutoffSpline* taper,
+    bool taper_hessian) {
+
+    return compute_molecule_hessian_impl(
+        molA, molB, dataA.sites, dataB.sites,
+        offset_B, site_cutoff, max_interaction_order, taper, taper_hessian);
 }
 
 } // namespace occ::mults

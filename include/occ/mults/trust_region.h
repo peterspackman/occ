@@ -102,6 +102,23 @@ public:
                                    HessianVectorProduct hvp,
                                    const Vec& x0);
 
+    /// Gradient-only objective: f(x, grad) -> energy (same signature as LBFGS/MSTMIN)
+    using GradObjective = std::function<double(const Vec&, Vec&)>;
+
+    /**
+     * @brief Minimize using BFGS Hessian approximation (gradient-only).
+     *
+     * Starts from identity Hessian, applies BFGS rank-2 updates each
+     * accepted step.  No analytic Hessian needed — same interface as LBFGS.
+     *
+     * @param f Gradient-only objective: f(x, grad) -> energy
+     * @param x0 Initial parameters
+     * @param callback Optional iteration callback
+     * @return Optimization result
+     */
+    TrustRegionResult minimize_bfgs(GradObjective f, const Vec& x0,
+                                    Callback callback = nullptr);
+
 private:
     TrustRegionSettings m_settings;
 

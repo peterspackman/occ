@@ -10,6 +10,7 @@
 #include <fmt/format.h>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
+#include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/driver/dma_driver.h>
@@ -223,8 +224,14 @@ ElasticTensorSummary compute_elastic_tensor_summary(
     const std::vector<MoleculeState>& states,
     bool converged) {
 
+    occ::timing::StopWatch<3> et_sw;
+    // 0: compute_with_hessian, 1: pack+project, 2: total
+    et_sw.start(2);
+
     auto& energy = optimizer.energy_calculator();
+    et_sw.start(0);
     auto eh = energy.compute_with_hessian(states);
+    et_sw.stop(0);
     const double V = energy.crystal().unit_cell().volume();
     if (V <= 1e-12) {
         throw std::runtime_error("Invalid unit-cell volume for elastic tensor");
@@ -296,6 +303,14 @@ ElasticTensorSummary compute_elastic_tensor_summary(
     out.relaxed_raw_gpa =
         (W_relaxed / V) * occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
     out.relaxed_gpa = *out.relaxed_raw_gpa + stress_correction_gpa;
+
+    et_sw.stop(2);
+    occ::log::info("Elastic tensor timing: hessian={:.1f}ms "
+                   "pack+project={:.1f}ms total={:.1f}ms",
+                   et_sw.read(0)*1e3,
+                   (et_sw.read(2) - et_sw.read(0))*1e3,
+                   et_sw.read(2)*1e3);
+
     return out;
 }
 
@@ -351,6 +366,8 @@ const char* method_name(OptimizationMethod method) {
         return "L-BFGS (quasi-Newton)";
     case OptimizationMethod::TrustRegion:
         return "Trust Region Newton (2nd order)";
+    case OptimizationMethod::TrustRegionBFGS:
+        return "Trust Region BFGS (quasi-Newton)";
     default:
         return "Unknown";
     }
@@ -814,7 +831,13 @@ CLI::App *add_ropt_subcommand(CLI::App &app) {
     ropt->add_flag("--trust-region", [config](int64_t) {
         config->use_trust_region = true;
         config->use_lbfgs = false;
+        config->use_trust_bfgs = false;
     }, "use Trust Region Newton optimizer (default is MSTMIN)");
+    ropt->add_flag("--trust-bfgs", [config](int64_t) {
+        config->use_trust_bfgs = true;
+        config->use_trust_region = false;
+        config->use_lbfgs = false;
+    }, "use Trust Region BFGS optimizer (gradient-only, no analytic Hessian)");
     ropt->add_flag("--allow-approx-hessian", config->allow_approx_hessian,
                    "allow Trust Region with approximate Hessians when exact Hessian is unavailable");
     ropt->add_option("--mst-max-disp", config->mst_max_displacement,
@@ -963,7 +986,9 @@ void run_ropt_subcommand(const RoptSettings &settings) {
 
     // Setup optimizer
     CrystalOptimizerSettings opt_settings;
-    if (settings.use_trust_region) {
+    if (settings.use_trust_bfgs) {
+        opt_settings.method = OptimizationMethod::TrustRegionBFGS;
+    } else if (settings.use_trust_region) {
         opt_settings.method = OptimizationMethod::TrustRegion;
     } else if (settings.use_lbfgs) {
         opt_settings.method = OptimizationMethod::LBFGS;

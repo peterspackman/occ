@@ -1521,6 +1521,8 @@ CrystalOptimizerResult CrystalOptimizer::optimize() {
 CrystalOptimizerResult CrystalOptimizer::optimize(IterationCallback callback) {
     if (m_settings.method == OptimizationMethod::TrustRegion) {
         return optimize_trust_region(callback);
+    } else if (m_settings.method == OptimizationMethod::TrustRegionBFGS) {
+        return optimize_trust_bfgs(callback);
     } else if (m_settings.method == OptimizationMethod::LBFGS) {
         return optimize_lbfgs(callback);
     } else {
@@ -1696,6 +1698,162 @@ CrystalOptimizerResult CrystalOptimizer::optimize_trust_region(IterationCallback
                    tr_result.iterations, eval_count, hess_count, opt_time);
 
     // Close trajectory file
+    if (m_trajectory_stream.is_open()) {
+        m_trajectory_stream.close();
+    }
+
+    return result;
+}
+
+CrystalOptimizerResult CrystalOptimizer::optimize_trust_bfgs(IterationCallback callback) {
+    CrystalOptimizerResult result;
+
+    if (m_num_parameters == 0) {
+        occ::log::warn("No parameters to optimize (all DOF fixed)");
+        auto energy_result = m_energy.compute(m_states);
+        const double pv =
+            (m_settings.external_pressure_gpa /
+             occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA) *
+            m_energy.crystal().unit_cell().volume();
+        result.pressure_volume_energy = pv / m_num_molecules;
+        result.initial_energy =
+            energy_result.total_energy / m_num_molecules + result.pressure_volume_energy;
+        result.final_energy = result.initial_energy;
+        result.electrostatic_energy = energy_result.electrostatic_energy / m_num_molecules;
+        result.repulsion_dispersion_energy = energy_result.repulsion_dispersion / m_num_molecules;
+        result.iterations = 0;
+        result.function_evaluations = 1;
+        result.converged = true;
+        result.termination_reason = "No parameters to optimize";
+        result.final_states = m_states;
+        result.optimized_crystal = build_optimized_crystal();
+        return result;
+    }
+
+    Vec params = get_parameters();
+    Vec grad(m_num_parameters);
+
+    occ::timing::StopWatch<> sw;
+    sw.start();
+    result.initial_energy = objective(params, grad);
+    double init_time = sw.stop().count();
+
+    const double grad_tol =
+        m_settings.gradient_tolerance * std::sqrt(static_cast<double>(m_num_parameters));
+
+    const double gnorm0 = grad.norm();
+    const double grms0 = gnorm0 / std::sqrt(static_cast<double>(std::max(1, m_num_parameters)));
+    const double ginf0 = grad.cwiseAbs().maxCoeff();
+    if (m_settings.optimize_cell) {
+        occ::log::info(
+            "Initial:    E = {:14.6f} kJ/mol   |g| = {:.3e}  (rms {:.3e}, max {:.3e}; max|F| {:.3e}, max|tau| {:.3e}, max|stress| {:.3e} GPa)  ({:.3f} s)",
+            result.initial_energy / m_num_molecules, gnorm0, grms0, ginf0,
+            m_last_eval_max_force, m_last_eval_max_torque, m_last_eval_max_stress, init_time);
+    } else {
+        occ::log::info(
+            "Initial:    E = {:14.6f} kJ/mol   |g| = {:.3e}  (rms {:.3e}, max {:.3e}; max|F| {:.3e}, max|tau| {:.3e})  ({:.3f} s)",
+            result.initial_energy / m_num_molecules, gnorm0, grms0, ginf0,
+            m_last_eval_max_force, m_last_eval_max_torque, init_time);
+    }
+    std::fflush(stdout);
+
+    bool write_trajectory = !m_settings.trajectory_file.empty();
+    if (write_trajectory) {
+        m_trajectory_stream.open(m_settings.trajectory_file);
+        if (m_trajectory_stream) {
+            occ::log::info("Writing trajectory to {}", m_settings.trajectory_file);
+        } else {
+            occ::log::warn("Could not open trajectory file: {}", m_settings.trajectory_file);
+            write_trajectory = false;
+        }
+    }
+
+    // Setup trust region with BFGS
+    TrustRegionSettings tr_settings;
+    tr_settings.initial_radius = m_settings.max_displacement;
+    tr_settings.max_radius = 10.0 * m_settings.max_displacement;
+    tr_settings.gradient_tol = grad_tol;
+    tr_settings.energy_tol =
+        m_settings.energy_tolerance * static_cast<double>(m_num_molecules);
+    tr_settings.max_iterations = m_settings.max_iterations;
+    tr_settings.use_diagonal_scaling = true;
+    tr_settings.verbose = false;
+
+    TrustRegion optimizer(tr_settings);
+
+    int eval_count = 1;
+    occ::timing::StopWatch<> iter_sw;
+    iter_sw.start();
+
+    auto tr_callback = [this, &callback, &eval_count, &iter_sw, write_trajectory](
+        int iter, const Vec& x, double f, const Vec& g) -> bool {
+
+        double iter_time = iter_sw.stop().count();
+        iter_sw.start();
+
+        const_cast<CrystalOptimizer*>(this)->set_parameters(x);
+
+        double gnorm = g.norm();
+        const double grms = gnorm / std::sqrt(static_cast<double>(std::max(1, m_num_parameters)));
+        const double ginf = g.cwiseAbs().maxCoeff();
+        double e_per_mol = f / m_num_molecules;
+        if (m_settings.optimize_cell &&
+            g.size() >= (m_num_molecular_parameters + m_num_cell_parameters)) {
+            const double gmol = g.head(m_num_molecular_parameters).norm();
+            const double gcell = g.tail(m_num_cell_parameters).norm();
+            occ::log::info(
+                "Iter {:4d}:  E = {:14.6f} kJ/mol   |g| = {:.3e}  (rms {:.3e}, max {:.3e}; mol {:.3e}, cell {:.3e}; max|F| {:.3e}, max|tau| {:.3e}, max|stress| {:.3e} GPa)  ({:.3f} s, {} evals)",
+                iter, e_per_mol, gnorm, grms, ginf, gmol, gcell,
+                m_last_eval_max_force, m_last_eval_max_torque, m_last_eval_max_stress,
+                iter_time, eval_count);
+        } else {
+            occ::log::info(
+                "Iter {:4d}:  E = {:14.6f} kJ/mol   |g| = {:.3e}  (rms {:.3e}, max {:.3e}; max|F| {:.3e}, max|tau| {:.3e}, max|stress| {:.3e} GPa)  ({:.3f} s, {} evals)",
+                iter, e_per_mol, gnorm, grms, ginf,
+                m_last_eval_max_force, m_last_eval_max_torque, m_last_eval_max_stress,
+                iter_time, eval_count);
+        }
+        std::fflush(stdout);
+
+        if (write_trajectory && m_trajectory_stream) {
+            write_trajectory_frame(m_trajectory_stream, iter, f);
+        }
+
+        if (callback) {
+            return callback(iter, f, gnorm);
+        }
+        return true;
+    };
+
+    auto tr_objective = [this, &eval_count](const Vec& x, Vec& g) -> double {
+        eval_count++;
+        return objective(x, g);
+    };
+
+    TrustRegionResult tr_result = optimizer.minimize_bfgs(
+        tr_objective, params, tr_callback);
+
+    set_parameters(tr_result.x);
+
+    auto final_result = m_energy.compute(m_states);
+    const double pv =
+        (m_settings.external_pressure_gpa /
+         occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA) *
+        m_energy.crystal().unit_cell().volume();
+
+    result.pressure_volume_energy = pv / m_num_molecules;
+    result.final_energy =
+        final_result.total_energy / m_num_molecules + result.pressure_volume_energy;
+    result.electrostatic_energy = final_result.electrostatic_energy / m_num_molecules;
+    result.repulsion_dispersion_energy = final_result.repulsion_dispersion / m_num_molecules;
+    result.iterations = tr_result.iterations;
+    result.function_evaluations = eval_count;
+    result.converged = tr_result.converged;
+    result.termination_reason = tr_result.termination_reason;
+    result.final_states = m_states;
+    result.optimized_crystal = build_optimized_crystal();
+    result.initial_energy /= m_num_molecules;
+
     if (m_trajectory_stream.is_open()) {
         m_trajectory_stream.close();
     }
@@ -2079,16 +2237,15 @@ CrystalOptimizerResult CrystalOptimizer::optimize_lbfgs(IterationCallback callba
         }
     }
 
-    // Setup L-BFGS with simple backtracking line search
+    // Setup L-BFGS with strong Wolfe line search
     LBFGSSettings lbfgs_settings;
     lbfgs_settings.memory = m_settings.lbfgs_memory;
     lbfgs_settings.gradient_tol = grad_tol;
     lbfgs_settings.energy_tol = m_settings.energy_tolerance * static_cast<double>(m_num_molecules);
-    // Use simple backtracking (Armijo only) for fewer evaluations
-    lbfgs_settings.backtracking_only = true;
-    lbfgs_settings.backtrack_factor = 0.5;
+    // Wolfe line search: ensures good curvature pairs for L-BFGS Hessian
+    lbfgs_settings.backtracking_only = false;
     lbfgs_settings.max_linesearch = 20;
-    // Initial step scaled by inverse gradient norm
+    // Initial step scaled by inverse gradient norm (only used for first iteration)
     lbfgs_settings.initial_step = std::min(1.0, 1.0 / grad.norm());
 
     LBFGS optimizer(lbfgs_settings);
