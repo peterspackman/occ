@@ -35,8 +35,8 @@ TEST_CASE("SiteMultipoles flat round-trip", "[structure_format]") {
 TEST_CASE("StructureInput JSON round-trip", "[structure_format]") {
     occ::io::StructureInput si;
     si.title = "TEST";
-    si.a = 5.0; si.b = 6.0; si.c = 7.0;
-    si.alpha = 90.0; si.beta = 90.0; si.gamma = 90.0;
+    si.crystal.a = 5.0; si.crystal.b = 6.0; si.crystal.c = 7.0;
+    si.crystal.alpha = 90.0; si.crystal.beta = 90.0; si.crystal.gamma = 90.0;
 
     occ::io::MoleculeType mt;
     mt.name = "test_mol";
@@ -48,18 +48,13 @@ TEST_CASE("StructureInput JSON round-trip", "[structure_format]") {
     site.multipoles.charge = 0.5;
     site.multipoles.dipole = {0.1, 0.2, 0.3};
     mt.sites.push_back(site);
-    si.molecule_types.push_back(mt);
-
-    occ::io::SymmetryEntry se;
-    se.op = "x, y, z";
-    se.molecule = 0;
-    si.symmetry.push_back(se);
+    si.basis.molecule_types.push_back(mt);
 
     occ::io::IndependentMolecule im;
     im.type = "test_mol";
     im.translation = {0.5, 0.5, 0.5};
     im.orientation = {0.0, 0.0, 0.0};
-    si.molecules.push_back(im);
+    si.crystal.molecules.push_back(im);
 
     occ::io::BuckinghamPair bp;
     bp.types = {"C_W3", "C_W3"};
@@ -67,8 +62,8 @@ TEST_CASE("StructureInput JSON round-trip", "[structure_format]") {
     bp.A = 2802.33;
     bp.rho = 0.2778;
     bp.C6 = 17.639;
-    si.potentials.buckingham.push_back(bp);
-    si.potentials.cutoff = 15.0;
+    si.basis.potentials.buckingham.push_back(bp);
+    si.basis.potentials.cutoff = 15.0;
 
     si.reference.total = -90.218;
     si.reference.components["buckingham"] = -16.937;
@@ -78,25 +73,51 @@ TEST_CASE("StructureInput JSON round-trip", "[structure_format]") {
     auto si2 = j.get<occ::io::StructureInput>();
 
     REQUIRE(si2.title == "TEST");
-    REQUIRE(si2.a == Approx(5.0));
-    REQUIRE(si2.b == Approx(6.0));
-    REQUIRE(si2.c == Approx(7.0));
-    REQUIRE(si2.molecule_types.size() == 1);
-    REQUIRE(si2.molecule_types[0].name == "test_mol");
-    REQUIRE(si2.molecule_types[0].sites.size() == 1);
-    REQUIRE(si2.molecule_types[0].sites[0].element == "C");
-    REQUIRE(si2.molecule_types[0].sites[0].type == "C_W3");
-    REQUIRE(si2.molecule_types[0].sites[0].multipoles.charge == Approx(0.5));
-    REQUIRE(si2.molecule_types[0].sites[0].multipoles.dipole.size() == 3);
-    REQUIRE(si2.symmetry.size() == 1);
-    REQUIRE(si2.symmetry[0].op == "x, y, z");
-    REQUIRE(si2.molecules.size() == 1);
-    REQUIRE(si2.molecules[0].type == "test_mol");
-    REQUIRE(si2.molecules[0].translation[0] == Approx(0.5));
-    REQUIRE(si2.potentials.buckingham.size() == 1);
-    REQUIRE(si2.potentials.buckingham[0].A == Approx(2802.33));
-    REQUIRE(si2.potentials.buckingham[0].elements[0] == "C");
-    REQUIRE(si2.potentials.buckingham[0].elements[1] == "C");
+    REQUIRE(si2.crystal.a == Approx(5.0));
+    REQUIRE(si2.crystal.b == Approx(6.0));
+    REQUIRE(si2.crystal.c == Approx(7.0));
+    REQUIRE(si2.molecule_types().size() == 1);
+    REQUIRE(si2.molecule_types()[0].name == "test_mol");
+    REQUIRE(si2.molecule_types()[0].sites.size() == 1);
+    REQUIRE(si2.molecule_types()[0].sites[0].element == "C");
+    REQUIRE(si2.molecule_types()[0].sites[0].type == "C_W3");
+    REQUIRE(si2.molecule_types()[0].sites[0].multipoles.charge == Approx(0.5));
+    REQUIRE(si2.molecule_types()[0].sites[0].multipoles.dipole.size() == 3);
+    REQUIRE(si2.crystal.molecules.size() == 1);
+    REQUIRE(si2.crystal.molecules[0].type == "test_mol");
+    REQUIRE(si2.crystal.molecules[0].translation[0] == Approx(0.5));
+    REQUIRE(si2.potentials().buckingham.size() == 1);
+    REQUIRE(si2.potentials().buckingham[0].A == Approx(2802.33));
+    REQUIRE(si2.potentials().buckingham[0].elements[0] == "C");
+    REQUIRE(si2.potentials().buckingham[0].elements[1] == "C");
     REQUIRE(si2.reference.total == Approx(-90.218));
     REQUIRE(si2.reference.components.at("buckingham") == Approx(-16.937));
+
+    // Verify nested JSON structure
+    REQUIRE(j.contains("basis"));
+    REQUIRE(j.at("basis").contains("molecule_types"));
+    REQUIRE(j.contains("crystal"));
+    REQUIRE(j.at("crystal").contains("cell"));
+    REQUIRE(j.at("crystal").contains("molecules"));
+}
+
+TEST_CASE("Basis-only JSON (no crystal)", "[structure_format]") {
+    occ::io::Basis basis;
+    occ::io::MoleculeType mt;
+    mt.name = "water";
+    occ::io::MoleculeSite o;
+    o.element = "O"; o.label = "O1"; o.position = {0, 0, 0};
+    o.multipoles.charge = -0.67;
+    mt.sites.push_back(o);
+    basis.molecule_types.push_back(mt);
+
+    // Serialize basis only
+    nlohmann::json j;
+    j["basis"] = basis;
+
+    // Read as StructureInput — crystal should be empty
+    auto si = j.get<occ::io::StructureInput>();
+    REQUIRE(si.molecule_types().size() == 1);
+    REQUIRE(si.molecule_types()[0].name == "water");
+    REQUIRE_FALSE(si.has_crystal());
 }

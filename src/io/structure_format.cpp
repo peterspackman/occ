@@ -118,16 +118,6 @@ void from_json(const json &j, MoleculeType &mt) {
     mt.sites = j.at("sites").get<std::vector<MoleculeSite>>();
 }
 
-void to_json(json &j, const SymmetryEntry &se) {
-    j["op"] = se.op;
-    j["molecule"] = se.molecule;
-}
-
-void from_json(const json &j, SymmetryEntry &se) {
-    se.op = j.at("op").get<std::string>();
-    se.molecule = j.value("molecule", 0);
-}
-
 void to_json(json &j, const IndependentMolecule &im) {
     j["type"] = im.type;
     j["translation"] = im.translation;
@@ -221,32 +211,63 @@ void from_json(const json &j, ReferenceEnergies &r) {
         r.components = j.at("components").get<std::map<std::string, double>>();
 }
 
+// --- Basis ---
+
+void to_json(json &j, const Basis &b) {
+    j["molecule_types"] = b.molecule_types;
+    if (!b.potentials.buckingham.empty()) {
+        j["potentials"] = b.potentials;
+    }
+    j["settings"] = b.settings;
+}
+
+void from_json(const json &j, Basis &b) {
+    if (j.contains("molecule_types"))
+        b.molecule_types =
+            j.at("molecule_types").get<std::vector<MoleculeType>>();
+    if (j.contains("potentials"))
+        b.potentials = j.at("potentials").get<Potentials>();
+    if (j.contains("settings"))
+        b.settings = j.at("settings").get<Settings>();
+}
+
+// --- CrystalData ---
+
+void to_json(json &j, const CrystalData &c) {
+    j["cell"] = {{"a", c.a},     {"b", c.b},    {"c", c.c},
+                 {"alpha", c.alpha}, {"beta", c.beta}, {"gamma", c.gamma}};
+    if (!c.space_group.empty()) {
+        j["space_group"] = c.space_group;
+    }
+    j["molecules"] = c.molecules;
+}
+
+void from_json(const json &j, CrystalData &c) {
+    if (j.contains("cell")) {
+        const auto &cell = j.at("cell");
+        c.a = cell.at("a").get<double>();
+        c.b = cell.at("b").get<double>();
+        c.c = cell.at("c").get<double>();
+        c.alpha = cell.value("alpha", 90.0);
+        c.beta = cell.value("beta", 90.0);
+        c.gamma = cell.value("gamma", 90.0);
+    }
+    c.space_group = j.value("space_group", "");
+    if (j.contains("molecules"))
+        c.molecules =
+            j.at("molecules").get<std::vector<IndependentMolecule>>();
+}
+
+// --- StructureInput ---
+
 void to_json(json &j, const StructureInput &si) {
     j["title"] = si.title;
-
-    j["cell"] = {
-        {"a", si.a}, {"b", si.b}, {"c", si.c},
-        {"alpha", si.alpha}, {"beta", si.beta}, {"gamma", si.gamma}
-    };
-
-    j["molecule_types"] = si.molecule_types;
-
-    if (!si.symmetry.empty()) {
-        j["symmetry"] = si.symmetry;
-    } else if (!si.space_group.empty()) {
-        j["space_group"] = si.space_group;
+    j["basis"] = si.basis;
+    if (si.has_crystal()) {
+        j["crystal"] = si.crystal;
     }
-
-    j["molecules"] = si.molecules;
-
-    if (!si.potentials.buckingham.empty()) {
-        j["potentials"] = si.potentials;
-    }
-
-    // Only write settings if non-default
-    j["settings"] = si.settings;
-
-    if (std::abs(si.reference.total) > 0.0 || !si.reference.components.empty()) {
+    if (std::abs(si.reference.total) > 0.0 ||
+        !si.reference.components.empty()) {
         j["reference"] = si.reference;
     }
 }
@@ -254,32 +275,32 @@ void to_json(json &j, const StructureInput &si) {
 void from_json(const json &j, StructureInput &si) {
     si.title = j.value("title", "");
 
-    if (j.contains("cell")) {
-        const auto &cell = j.at("cell");
-        si.a = cell.at("a").get<double>();
-        si.b = cell.at("b").get<double>();
-        si.c = cell.at("c").get<double>();
-        si.alpha = cell.value("alpha", 90.0);
-        si.beta = cell.value("beta", 90.0);
-        si.gamma = cell.value("gamma", 90.0);
+    if (j.contains("basis")) {
+        // New nested format
+        si.basis = j.at("basis").get<Basis>();
+    } else if (j.contains("molecule_types")) {
+        // Legacy flat format — migrate
+        si.basis = j.get<Basis>();
     }
 
-    if (j.contains("molecule_types"))
-        si.molecule_types = j.at("molecule_types").get<std::vector<MoleculeType>>();
-
-    if (j.contains("symmetry"))
-        si.symmetry = j.at("symmetry").get<std::vector<SymmetryEntry>>();
-
-    si.space_group = j.value("space_group", "");
-
-    if (j.contains("molecules"))
-        si.molecules = j.at("molecules").get<std::vector<IndependentMolecule>>();
-
-    if (j.contains("potentials"))
-        si.potentials = j.at("potentials").get<Potentials>();
-
-    if (j.contains("settings"))
-        si.settings = j.at("settings").get<Settings>();
+    if (j.contains("crystal")) {
+        si.crystal = j.at("crystal").get<CrystalData>();
+    } else {
+        // Legacy flat format — migrate cell + molecules
+        if (j.contains("cell")) {
+            const auto &cell = j.at("cell");
+            si.crystal.a = cell.at("a").get<double>();
+            si.crystal.b = cell.at("b").get<double>();
+            si.crystal.c = cell.at("c").get<double>();
+            si.crystal.alpha = cell.value("alpha", 90.0);
+            si.crystal.beta = cell.value("beta", 90.0);
+            si.crystal.gamma = cell.value("gamma", 90.0);
+        }
+        si.crystal.space_group = j.value("space_group", "");
+        if (j.contains("molecules"))
+            si.crystal.molecules =
+                j.at("molecules").get<std::vector<IndependentMolecule>>();
+    }
 
     if (j.contains("reference"))
         si.reference = j.at("reference").get<ReferenceEnergies>();
@@ -306,6 +327,18 @@ void write_structure_json(const std::string &path, const StructureInput &input) 
     file << j.dump(2) << "\n";
 }
 
+void write_basis_json(const std::string &path, const Basis &basis,
+                      const std::string &title) {
+    json j;
+    if (!title.empty()) j["title"] = title;
+    j["basis"] = basis;
+    std::ofstream file(path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Cannot open file for writing: " + path);
+    }
+    file << j.dump(2) << "\n";
+}
+
 // --- Format detection ---
 
 bool is_structure_format(const std::string &json_path) {
@@ -313,7 +346,8 @@ bool is_structure_format(const std::string &json_path) {
     if (!file.is_open()) return false;
     json j;
     file >> j;
-    return j.contains("molecule_types");
+    // New nested format or legacy flat format
+    return j.contains("basis") || j.contains("molecule_types");
 }
 
 } // namespace occ::io

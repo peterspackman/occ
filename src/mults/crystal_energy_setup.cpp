@@ -35,24 +35,28 @@ from_structure_input(const occ::io::StructureInput &si) {
 
     CrystalEnergySetup setup;
     setup.force_field = ForceFieldType::Custom;
-    setup.unit_cell = crystal::UnitCell(si.a, si.b, si.c, radians(si.alpha),
-                                        radians(si.beta), radians(si.gamma));
+
+    const auto &cryst = si.crystal;
+    setup.unit_cell = crystal::UnitCell(cryst.a, cryst.b, cryst.c,
+                                        radians(cryst.alpha),
+                                        radians(cryst.beta),
+                                        radians(cryst.gamma));
 
     // Build type name -> index map
     std::map<std::string, int> type_map;
-    for (int i = 0; i < static_cast<int>(si.molecule_types.size()); ++i) {
-        type_map[si.molecule_types[i].name] = i;
+    for (int i = 0; i < static_cast<int>(si.molecule_types().size()); ++i) {
+        type_map[si.molecule_types()[i].name] = i;
     }
 
     Mat3 cell_mat = setup.unit_cell.direct();
 
     // Build molecules
-    for (const auto &mol : si.molecules) {
+    for (const auto &mol : cryst.molecules) {
         auto it = type_map.find(mol.type);
         if (it == type_map.end()) {
             throw std::runtime_error("Unknown molecule type: " + mol.type);
         }
-        const auto &mt = si.molecule_types[it->second];
+        const auto &mt = si.molecule_types()[it->second];
 
         RigidMolecule rm;
 
@@ -137,13 +141,13 @@ from_structure_input(const occ::io::StructureInput &si) {
     // Re-iterate molecules to assign type codes from the MoleculeType sites
     {
         std::map<std::string, int> type_map;
-        for (int i = 0; i < static_cast<int>(si.molecule_types.size()); ++i) {
-            type_map[si.molecule_types[i].name] = i;
+        for (int i = 0; i < static_cast<int>(si.molecule_types().size()); ++i) {
+            type_map[si.molecule_types()[i].name] = i;
         }
-        for (int mi = 0; mi < static_cast<int>(si.molecules.size()); ++mi) {
-            auto it = type_map.find(si.molecules[mi].type);
+        for (int mi = 0; mi < static_cast<int>(cryst.molecules.size()); ++mi) {
+            auto it = type_map.find(cryst.molecules[mi].type);
             if (it == type_map.end()) continue;
-            const auto &mt = si.molecule_types[it->second];
+            const auto &mt = si.molecule_types()[it->second];
             auto &rm = setup.molecules[mi];
             for (int si_idx = 0;
                  si_idx < static_cast<int>(mt.sites.size()) &&
@@ -163,7 +167,7 @@ from_structure_input(const occ::io::StructureInput &si) {
     // Buckingham parameters (eV -> kJ/mol)
     // Check if pairs have type names — if so, store as typed Buckingham.
     bool has_typed_pairs = false;
-    for (const auto &bp : si.potentials.buckingham) {
+    for (const auto &bp : si.potentials().buckingham) {
         if (!bp.types[0].empty() && !bp.types[1].empty() &&
             type_name_to_code.count(bp.types[0]) &&
             type_name_to_code.count(bp.types[1])) {
@@ -172,7 +176,7 @@ from_structure_input(const occ::io::StructureInput &si) {
         }
     }
 
-    for (const auto &bp : si.potentials.buckingham) {
+    for (const auto &bp : si.potentials().buckingham) {
         BuckinghamParams params;
         params.A = bp.A * EV_TO_KJ_PER_MOL;
         params.B = 1.0 / bp.rho;
@@ -206,22 +210,22 @@ from_structure_input(const occ::io::StructureInput &si) {
     }
 
     // Settings
-    setup.cutoff_radius = si.potentials.cutoff;
-    setup.use_ewald = si.settings.use_ewald;
-    setup.ewald_accuracy = si.settings.ewald_accuracy;
-    setup.max_interaction_order = si.settings.max_interaction_order;
+    setup.cutoff_radius = si.potentials().cutoff;
+    setup.use_ewald = si.settings().use_ewald;
+    setup.ewald_accuracy = si.settings().ewald_accuracy;
+    setup.max_interaction_order = si.settings().max_interaction_order;
 
     // Tapering
-    if (si.settings.spline_min > 0.0) {
-        setup.taper_on = si.potentials.cutoff;
-        setup.taper_off = si.potentials.cutoff + si.settings.spline_min;
-        setup.taper_order = si.settings.spline_order;
-        if (si.settings.spline_max > 0.0) {
+    if (si.settings().spline_min > 0.0) {
+        setup.taper_on = si.potentials().cutoff;
+        setup.taper_off = si.potentials().cutoff + si.settings().spline_min;
+        setup.taper_order = si.settings().spline_order;
+        if (si.settings().spline_max > 0.0) {
             setup.cutoff_radius =
-                si.potentials.cutoff + si.settings.spline_max;
+                si.potentials().cutoff + si.settings().spline_max;
         } else {
             setup.cutoff_radius =
-                si.potentials.cutoff + si.settings.spline_min;
+                si.potentials().cutoff + si.settings().spline_min;
         }
     }
 
@@ -369,12 +373,12 @@ to_structure_input(const CrystalEnergySetup &setup,
 
     // Cell
     const auto &uc = setup.unit_cell;
-    si.a = uc.a();
-    si.b = uc.b();
-    si.c = uc.c();
-    si.alpha = degrees(uc.alpha());
-    si.beta = degrees(uc.beta());
-    si.gamma = degrees(uc.gamma());
+    si.crystal.a = uc.a();
+    si.crystal.b = uc.b();
+    si.crystal.c = uc.c();
+    si.crystal.alpha = degrees(uc.alpha());
+    si.crystal.beta = degrees(uc.beta());
+    si.crystal.gamma = degrees(uc.gamma());
 
     Mat3 inv_cell = uc.direct().inverse();
 
@@ -447,7 +451,7 @@ to_structure_input(const CrystalEnergySetup &setup,
                 ms.multipoles = SiteMultipoles::from_flat(flat);
                 mt.sites.push_back(std::move(ms));
             }
-            si.molecule_types.push_back(std::move(mt));
+            si.basis.molecule_types.push_back(std::move(mt));
         }
         mol_to_type.push_back(type_idx);
     }
@@ -456,13 +460,13 @@ to_structure_input(const CrystalEnergySetup &setup,
     for (int m = 0; m < static_cast<int>(setup.molecules.size()); ++m) {
         const auto &mol = setup.molecules[m];
         IndependentMolecule im;
-        im.type = si.molecule_types[mol_to_type[m]].name;
+        im.type = si.basis.molecule_types[mol_to_type[m]].name;
         Vec3 frac = inv_cell * mol.com;
         im.translation = {frac(0), frac(1), frac(2)};
         im.orientation = {mol.angle_axis(0), mol.angle_axis(1),
                           mol.angle_axis(2)};
         im.parity = mol.parity;
-        si.molecules.push_back(std::move(im));
+        si.crystal.molecules.push_back(std::move(im));
     }
 
     // Buckingham params — prefer typed if available, else element-based.
@@ -487,7 +491,7 @@ to_structure_input(const CrystalEnergySetup &setup,
             bp.A = params.A * KJ_PER_MOL_TO_EV;
             bp.rho = 1.0 / params.B;
             bp.C6 = params.C * KJ_PER_MOL_TO_EV;
-            si.potentials.buckingham.push_back(std::move(bp));
+            si.basis.potentials.buckingham.push_back(std::move(bp));
         }
     } else {
         for (const auto &[key, params] : setup.buckingham_params) {
@@ -498,20 +502,20 @@ to_structure_input(const CrystalEnergySetup &setup,
             bp.A = params.A * KJ_PER_MOL_TO_EV;
             bp.rho = 1.0 / params.B;
             bp.C6 = params.C * KJ_PER_MOL_TO_EV;
-            si.potentials.buckingham.push_back(std::move(bp));
+            si.basis.potentials.buckingham.push_back(std::move(bp));
         }
     }
 
-    si.potentials.cutoff = setup.cutoff_radius;
-    si.settings.use_ewald = setup.use_ewald;
-    si.settings.ewald_accuracy = setup.ewald_accuracy;
-    si.settings.max_interaction_order = setup.max_interaction_order;
+    si.basis.potentials.cutoff = setup.cutoff_radius;
+    si.basis.settings.use_ewald = setup.use_ewald;
+    si.basis.settings.ewald_accuracy = setup.ewald_accuracy;
+    si.basis.settings.max_interaction_order = setup.max_interaction_order;
 
     if (setup.taper_on > 0.0 && setup.taper_off > setup.taper_on) {
-        si.settings.spline_min = setup.taper_off - setup.taper_on;
-        si.settings.spline_max =
+        si.basis.settings.spline_min = setup.taper_off - setup.taper_on;
+        si.basis.settings.spline_max =
             setup.cutoff_radius - setup.taper_on;
-        si.settings.spline_order = setup.taper_order;
+        si.basis.settings.spline_order = setup.taper_order;
     }
 
     return si;

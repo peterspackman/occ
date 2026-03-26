@@ -831,16 +831,16 @@ PreparedInputs prepare_from_json(const std::string &json_path) {
 
     occ::log::info("  Title: {}", si.title);
     occ::log::info("  {} molecule types, {} independent molecules",
-                   si.molecule_types.size(), si.molecules.size());
-    occ::log::info("  {} Buckingham pairs", si.potentials.buckingham.size());
+                   si.molecule_types().size(), si.crystal.molecules.size());
+    occ::log::info("  {} Buckingham pairs", si.potentials().buckingham.size());
 
     if (si.reference.total != 0.0) {
         occ::log::info("  Reference energy: {:.6f} kJ/mol", si.reference.total);
     }
-    if (si.settings.spline_min > 0.0) {
+    if (si.settings().spline_min > 0.0) {
         occ::log::info("  SPLI settings: min={:.3f} max={:.3f} order={}",
-                       si.settings.spline_min, si.settings.spline_max,
-                       si.settings.spline_order);
+                       si.settings().spline_min, si.settings().spline_max,
+                       si.settings().spline_order);
     }
 
     auto setup = mults::from_structure_input(si);
@@ -912,9 +912,9 @@ void run_ropt_subcommand(const RoptSettings &settings) {
     if (settings.has_external_pressure) {
         opt_settings.external_pressure_gpa = settings.external_pressure_gpa;
     } else if (prepared.structure_input &&
-               std::abs(prepared.structure_input->settings.pressure_gpa) > 1e-16) {
+               std::abs(prepared.structure_input->settings().pressure_gpa) > 1e-16) {
         opt_settings.external_pressure_gpa =
-            prepared.structure_input->settings.pressure_gpa;
+            prepared.structure_input->settings().pressure_gpa;
     }
     if (settings.write_trajectory) {
         opt_settings.trajectory_file = basename + "_traj.xyz";
@@ -1149,7 +1149,7 @@ void run_ropt_subcommand(const RoptSettings &settings) {
 
         auto si = mults::to_structure_input(final_setup, basename);
         if (settings.has_external_pressure) {
-            si.settings.pressure_gpa = settings.external_pressure_gpa;
+            si.basis.settings.pressure_gpa = settings.external_pressure_gpa;
         }
         si.reference.total = result.final_energy;
         si.reference.components["electrostatic"] = result.electrostatic_energy;
