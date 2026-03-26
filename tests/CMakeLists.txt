@@ -165,9 +165,3 @@ add_executable(mults_tests
 target_link_libraries(mults_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(mults_tests PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 catch_discover_tests(mults_tests)
-
-# Structure energy validation tests
-add_executable(structure_energy_test "${CMAKE_CURRENT_SOURCE_DIR}/structure_energy_validation_test.cpp")
-target_link_libraries(structure_energy_test PRIVATE occ_mults occ_io Catch2::Catch2WithMain Threads::Threads)
-target_compile_definitions(structure_energy_test PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
-catch_discover_tests(structure_energy_test)

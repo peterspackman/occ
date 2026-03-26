@@ -635,10 +635,9 @@ CrystalOptimizer::CrystalOptimizer(const crystal::Crystal& crystal,
 
     if (m_settings.use_symmetry) {
         // Build symmetry mapping to check if symmetry mode is applicable.
-        // Symmetry mode requires the energy calculator to have all Z UC molecules
-        // (e.g., from DMACRYS setup). When the energy calculator works with Z'
-        // molecules (CIF path), it already handles symmetry internally via
-        // symmetry_unique_dimers, so we fall back to legacy mode.
+        // Symmetry mode requires the energy calculator to have all Z UC molecules.
+        // When the energy calculator works with Z' molecules, it already handles
+        // symmetry internally via symmetry_unique_dimers, so we fall back to legacy mode.
         auto mapping = build_symmetry_mapping(crystal);
 
         if (m_num_molecules != mapping.num_uc_molecules) {

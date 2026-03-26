@@ -35,7 +35,6 @@ add_library(occ_mults
     multipole_coarsening.cpp
     rigid_molecule.cpp
     crystal_energy_setup.cpp
-    structure_setup.cpp
     crystal_strain.cpp
     ewald_sum.cpp
 )

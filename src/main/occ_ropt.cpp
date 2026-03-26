@@ -321,14 +321,14 @@ void print_elastic_tensor_summary(const ElasticTensorSummary& summary,
                    summary.residual_stress_gpa[0], summary.residual_stress_gpa[1],
                    summary.residual_stress_gpa[2], summary.residual_stress_gpa[3],
                    summary.residual_stress_gpa[4], summary.residual_stress_gpa[5]);
-    occ::log::info("  Clamped elastic constants C_ij (raw, DMACRYS-comparable):");
+    occ::log::info("  Clamped elastic constants C_ij (raw, without stress correction):");
     print_mat6(summary.clamped_raw_gpa);
     occ::log::info("  Clamped elastic constants C_ij (stress-corrected):");
     print_mat6(summary.clamped_gpa);
 
     if (summary.relaxed_gpa.has_value()) {
         if (summary.relaxed_raw_gpa.has_value()) {
-            occ::log::info("  Relaxed elastic constants C_ij (raw, DMACRYS-comparable):");
+            occ::log::info("  Relaxed elastic constants C_ij (raw, without stress correction):");
             print_mat6(*summary.relaxed_raw_gpa);
         }
         occ::log::info("  Relaxed elastic constants C_ij (stress-corrected):");
