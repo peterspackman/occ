@@ -199,6 +199,11 @@ public:
      * @param multipoles Body-frame multipoles for each unique molecule
      * @param settings Optimization settings
      */
+    /// Construct from explicit molecule data. Preferred constructor.
+    CrystalOptimizer(CrystalEnergySetup setup,
+                     const CrystalOptimizerSettings& settings = {});
+
+    /// Legacy constructor from Crystal + MultipleSources.
     CrystalOptimizer(const crystal::Crystal& crystal,
                      std::vector<MultipoleSource> multipoles,
                      const CrystalOptimizerSettings& settings = {});
@@ -238,7 +243,7 @@ public:
 
     /// Re-sync optimizer's states from the energy calculator.
     /// Call this after modifying the energy calculator externally
-    /// (e.g., via setup_crystal_energy_from_dmacrys).
+    /// (e.g., via CrystalEnergySetup).
     void reinitialize_states();
 
     /// Access underlying energy calculator.

@@ -304,6 +304,127 @@ Vec CrystalEnergyResult::pack_gradient() const {
 // CrystalEnergy Constructor
 // ============================================================================
 
+// ============================================================================
+// New constructor from CrystalEnergySetup
+// ============================================================================
+
+CrystalEnergy::CrystalEnergy(CrystalEnergySetup setup)
+    : m_crystal(crystal::AsymmetricUnit{}, crystal::SpaceGroup("P1"),
+                setup.unit_cell)
+    , m_cutoff_radius(setup.cutoff_radius)
+    , m_force_field(setup.force_field)
+    , m_use_cartesian(true)
+    , m_use_ewald(setup.use_ewald)
+    , m_ewald_accuracy(setup.ewald_accuracy)
+    , m_ewald_eta(setup.ewald_eta)
+    , m_ewald_kmax(setup.ewald_kmax)
+    , m_max_interaction_order(setup.max_interaction_order) {
+
+    const int n_mol = static_cast<int>(setup.molecules.size());
+    if (n_mol == 0) {
+        throw std::invalid_argument("CrystalEnergySetup: no molecules");
+    }
+
+    // Build MultipleSources and MoleculeGeometry from RigidMolecules
+    m_multipoles.reserve(n_mol);
+    m_geometry.reserve(n_mol);
+    m_initial_states.reserve(n_mol);
+    std::vector<Vec3> mol_coms;
+    mol_coms.reserve(n_mol);
+
+    for (int m = 0; m < n_mol; ++m) {
+        const auto &rm = setup.molecules[m];
+
+        // Build MultipoleSource from RigidMolecule sites
+        std::vector<MultipoleSource::BodySite> body_sites;
+        body_sites.reserve(rm.sites.size());
+        for (const auto &s : rm.sites) {
+            MultipoleSource::BodySite bs;
+            bs.multipole = s.multipole;
+            bs.offset = s.position;
+            bs.atomic_number =
+                (s.atom_index >= 0 &&
+                 s.atom_index < static_cast<int>(rm.atoms.size()))
+                    ? rm.atoms[s.atom_index].atomic_number
+                    : 0;
+            bs.short_range_type_code = s.short_range_type;
+            bs.aniso_axis = s.aniso_axis;
+            body_sites.push_back(std::move(bs));
+        }
+        m_multipoles.emplace_back(std::move(body_sites));
+        m_multipoles.back().set_orientation(rm.rotation_matrix(), rm.com);
+
+        // Build MoleculeGeometry from RigidMolecule atoms
+        MoleculeGeometry geom;
+        geom.center_of_mass = rm.com;
+        for (const auto &atom : rm.atoms) {
+            geom.atomic_numbers.push_back(atom.atomic_number);
+            geom.atom_positions.push_back(atom.position);
+            geom.aniso_body_axes.emplace_back(Vec3::Zero());
+        }
+        // Propagate aniso axes from sites to their linked atoms
+        for (const auto &s : rm.sites) {
+            if (s.atom_index >= 0 &&
+                s.atom_index < static_cast<int>(geom.aniso_body_axes.size())) {
+                geom.aniso_body_axes[s.atom_index] = s.aniso_axis;
+            }
+        }
+        // Short-range type codes per atom
+        geom.short_range_type_codes.assign(rm.atoms.size(), 0);
+        for (const auto &s : rm.sites) {
+            if (s.atom_index >= 0 &&
+                s.atom_index < static_cast<int>(geom.short_range_type_codes.size())) {
+                geom.short_range_type_codes[s.atom_index] = s.short_range_type;
+            }
+        }
+        m_geometry.push_back(std::move(geom));
+
+        // Build MoleculeState
+        MoleculeState state;
+        state.position = rm.com;
+        state.angle_axis = rm.angle_axis;
+        state.parity = rm.parity;
+        m_initial_states.push_back(state);
+
+        mol_coms.push_back(rm.com);
+    }
+
+    // Set force field parameters
+    for (const auto &[key, params] : setup.buckingham_params) {
+        m_ff.set_buckingham(key.first, key.second, params);
+    }
+    if (!setup.typed_buckingham.empty()) {
+        m_ff.set_typed_buckingham(setup.typed_buckingham);
+    }
+    if (!setup.type_labels.empty()) {
+        m_ff.set_type_labels(setup.type_labels);
+    }
+    if (!setup.aniso_params.empty()) {
+        m_ff.set_typed_aniso(setup.aniso_params);
+    }
+
+    // Tapering
+    if (setup.taper_off > setup.taper_on && setup.taper_on > 0.0) {
+        m_electrostatic_taper =
+            CutoffSpline(setup.taper_on, setup.taper_off, setup.taper_order);
+        m_short_range_taper =
+            CutoffSpline(setup.taper_on, setup.taper_off, setup.taper_order);
+        m_elec_site_cutoff = setup.taper_off;
+        m_buck_site_cutoff = setup.taper_off;
+        m_use_com_elec_gate = false;
+    }
+
+    // Initialize force field (loads Williams DE params for BuckinghamDE)
+    initialize_force_field();
+
+    // Build neighbor list from explicit COM positions
+    build_neighbor_list_from_positions(mol_coms);
+}
+
+// ============================================================================
+// Legacy constructor
+// ============================================================================
+
 CrystalEnergy::CrystalEnergy(const crystal::Crystal& crystal,
                              std::vector<MultipoleSource> multipoles,
                              double cutoff_radius,
@@ -312,7 +433,8 @@ CrystalEnergy::CrystalEnergy(const crystal::Crystal& crystal,
                              bool use_ewald,
                              double ewald_accuracy,
                              double ewald_eta,
-                             int ewald_kmax)
+                             int ewald_kmax,
+                             bool defer_setup)
     : m_crystal(crystal)
     , m_multipoles(std::move(multipoles))
     , m_cutoff_radius(cutoff_radius)
@@ -327,9 +449,11 @@ CrystalEnergy::CrystalEnergy(const crystal::Crystal& crystal,
         throw std::invalid_argument("CrystalEnergy: no multipoles provided");
     }
 
-    build_neighbor_list();
-    build_molecule_geometry();
-    initialize_force_field();
+    if (!defer_setup) {
+        build_neighbor_list();
+        build_molecule_geometry();
+        initialize_force_field();
+    }
 }
 
 CrystalEnergy::~CrystalEnergy() = default;
@@ -987,6 +1111,7 @@ void CrystalEnergy::compute_short_range_pair(
 // ============================================================================
 
 CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& molecules) {
+    occ::timing::start(occ::timing::crystal_energy);
     occ::timing::StopWatch<6> sw;
     // 0: cache, 1: set_orientation, 2: cartesian(), 3: elec pairs, 4: SR pairs, 5: ewald
 
@@ -1171,6 +1296,7 @@ CrystalEnergyResult CrystalEnergy::compute(const std::vector<MoleculeState>& mol
                      sw.read(0)*1e3, sw.read(1)*1e3, sw.read(2)*1e3,
                      sw.read(3)*1e3, sw.read(4)*1e3, sw.read(5)*1e3);
 
+    occ::timing::stop(occ::timing::crystal_energy);
     return result;
 }
 
@@ -1187,6 +1313,7 @@ double CrystalEnergy::compute_energy(const std::vector<MoleculeState>& molecules
 
 CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
     const std::vector<MoleculeState>& molecules) {
+    occ::timing::start(occ::timing::crystal_energy);
 
     occ::timing::StopWatch<6> sw;
     // 0: cache/orient, 1: elec hessian pairs, 2: SR hessian pairs, 3: ewald, 4: ewald strain, 5: total
@@ -1705,13 +1832,14 @@ CrystalEnergyResultWithHessian CrystalEnergy::compute_with_hessian(
         0.5 * (result.strain_hessian + result.strain_hessian.transpose());
 
     sw.stop(5);
-    occ::log::info("compute_with_hessian() timing: "
-                   "cache={:.1f}ms elec_hess={:.1f}ms SR_hess={:.1f}ms "
-                   "ewald={:.1f}ms total={:.1f}ms  ({} pairs)",
-                   sw.read(0)*1e3, sw.read(1)*1e3, sw.read(2)*1e3,
-                   sw.read(3)*1e3, sw.read(5)*1e3,
-                   m_neighbors.size());
+    occ::log::debug("compute_with_hessian() timing: "
+                    "cache={:.1f}ms elec_hess={:.1f}ms SR_hess={:.1f}ms "
+                    "ewald={:.1f}ms total={:.1f}ms  ({} pairs)",
+                    sw.read(0)*1e3, sw.read(1)*1e3, sw.read(2)*1e3,
+                    sw.read(3)*1e3, sw.read(5)*1e3,
+                    m_neighbors.size());
 
+    occ::timing::stop(occ::timing::crystal_energy);
     return result;
 }
 
@@ -1935,6 +2063,50 @@ CrystalEnergy::EwaldCorrectionResult CrystalEnergy::compute_charge_ewald_correct
         Vec3 lever = ewald_sites[k].position - molecules[m].position;
         Vec3 torque_lab = lever.cross(f_kJ);
         ewald_result.torques[m] -= torque_lab;
+    }
+
+    // Add multipole rotation torque from Ewald dipole gradient.
+    // When a molecule rotates, dipoles rotate too, changing the Ewald energy.
+    // This contribution is contracted with the precomputed multipole rotation
+    // derivatives from BodyFrameData, matching the direct multipole torque in
+    // cartesian_force.cpp.
+    if (params.include_dipole && raw.site_dipole_gradients.rows() > 0) {
+        // Map site indices back to per-molecule site indices for BodyFrameData
+        for (int m = 0; m < N; ++m) {
+            if (m >= static_cast<int>(cart_mols.size())) continue;
+            if (!cart_mols[m].body_data) continue;
+            const auto& bd = *cart_mols[m].body_data;
+            const auto& site_indices = mol_site_indices[m];
+
+            for (int axis = 0; axis < 3; ++axis) {
+                double tau = 0.0;
+                for (size_t local = 0; local < site_indices.size(); ++local) {
+                    size_t global_k = site_indices[local];
+                    if (cart_mols[m].sites[local].rank < 1) continue;
+
+                    // dE/d(mu_i) from Ewald (kJ/mol per e*Bohr)
+                    Vec3 dE_dmu = raw.site_dipole_gradients.row(
+                        static_cast<int>(global_k)).transpose();
+
+                    // d(mu_lab)/d(rot_axis) from BodyFrameData
+                    // Dipole is at Cartesian indices 1,2,3 in the multipole
+                    const auto& d_cart = bd.d_multipoles[axis][local];
+
+                    // Contraction: tau += sign_inv_fact[c] * d_cart[c] * field[c]
+                    // For dipole (rank 1): sign_inv_fact = -1, and
+                    // field[c] = dE/d(wA[c]) where wA[c] = sign_inv_fact[c]*cart[c]
+                    // So dE/d(cart[c]) = sign_inv_fact[c] * field[c]
+                    // The Ewald dipole gradient is dE/d(mu_d) = dE/d(cart[1+d])
+                    // (since cart[1+d] IS the dipole component).
+                    // The torque contribution is:
+                    // sum_d dE/d(mu_d) * d(mu_d)/d(rot_axis)
+                    for (int d = 0; d < 3; ++d) {
+                        tau += dE_dmu[d] * d_cart.data[1 + d];
+                    }
+                }
+                ewald_result.torques[m][axis] += tau;
+            }
+        }
     }
 
     return ewald_result;

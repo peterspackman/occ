@@ -67,6 +67,10 @@ add_executable(io_tests "${CMAKE_CURRENT_SOURCE_DIR}/io_tests.cpp")
 target_link_libraries(io_tests PRIVATE occ_io Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(io_tests)
 
+add_executable(structure_format_test "${CMAKE_CURRENT_SOURCE_DIR}/structure_format_test.cpp")
+target_link_libraries(structure_format_test PRIVATE occ_io Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(structure_format_test)
+
 add_executable(io_periodic_grid_tests "${CMAKE_CURRENT_SOURCE_DIR}/io_periodic_grid_tests.cpp")
 target_link_libraries(io_periodic_grid_tests PRIVATE occ_io occ_dft Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(io_periodic_grid_tests)
@@ -155,16 +159,15 @@ add_executable(mults_tests
     "${CMAKE_CURRENT_SOURCE_DIR}/cutoff_spline_test.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/mults_benchmark.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_source_test.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/crystal_optimizer_test.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_hessian_test.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_coarsening_test.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/dmacrys_benchmark_test.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/williams_typing_test.cpp"
 )
 target_link_libraries(mults_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(mults_tests PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 catch_discover_tests(mults_tests)
 
-add_executable(bench_crystal "${CMAKE_CURRENT_SOURCE_DIR}/bench_crystal.cpp")
-target_link_libraries(bench_crystal PRIVATE occ_mults Threads::Threads)
-target_compile_definitions(bench_crystal PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+# Structure energy validation tests
+add_executable(structure_energy_test "${CMAKE_CURRENT_SOURCE_DIR}/structure_energy_validation_test.cpp")
+target_link_libraries(structure_energy_test PRIVATE occ_mults occ_io Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(structure_energy_test PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+catch_discover_tests(structure_energy_test)

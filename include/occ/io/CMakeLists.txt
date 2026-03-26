@@ -23,6 +23,7 @@ set(OCC_IO_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/ply.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/qcschema.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvent_json.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/structure_format.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/tinyply.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_json.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/xyz.h"

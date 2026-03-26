@@ -21,6 +21,7 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/ply.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/shelxfile.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvent_json.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/structure_format.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/tinyply.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xyz.cpp"
     ${OCC_IO_INCLUDE_FILES}

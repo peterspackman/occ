@@ -547,6 +547,66 @@ void accumulate_gradients(
 // Constructor
 // ============================================================================
 
+// ============================================================================
+// New constructor from CrystalEnergySetup
+// ============================================================================
+
+CrystalOptimizer::CrystalOptimizer(CrystalEnergySetup setup,
+                                   const CrystalOptimizerSettings& settings)
+    : m_settings(settings)
+    , m_reference_crystal(crystal::AsymmetricUnit{},
+                          crystal::SpaceGroup("P1"),
+                          setup.unit_cell)
+    , m_energy(std::move(setup)) {
+
+    m_energy.set_max_interaction_order(settings.max_interaction_order);
+    m_num_molecules = m_energy.num_molecules();
+
+    if (m_num_molecules == 0) {
+        throw std::invalid_argument("CrystalOptimizer: no molecules");
+    }
+
+    m_states = m_energy.initial_states();
+    m_initial_states = m_states;
+    update_neighbor_reference(m_states, Vec6::Zero());
+
+    // Symmetry mode is not supported for the setup path yet.
+    m_settings.use_symmetry = false;
+
+    // Compute DOF: all molecules independent
+    int mol0_dof = 0;
+    if (!m_settings.fix_first_translation) mol0_dof += 3;
+    if (!m_settings.fix_first_rotation) mol0_dof += 3;
+    m_num_parameters = mol0_dof + 6 * (m_num_molecules - 1);
+    m_num_molecular_parameters = m_num_parameters;
+
+    if (m_settings.optimize_cell) {
+        initialize_cell_strain_mask();
+        m_active_cell_components.clear();
+        for (int j = 0; j < 6; ++j) {
+            if (m_cell_strain_mask[j] > 0.5) {
+                m_active_cell_components.push_back(j);
+            }
+        }
+        m_num_cell_parameters = static_cast<int>(m_active_cell_components.size());
+        m_num_parameters = m_num_molecular_parameters + m_num_cell_parameters;
+    }
+
+    if (m_settings.method == OptimizationMethod::TrustRegion &&
+        m_settings.require_exact_hessian &&
+        !m_energy.can_compute_exact_hessian()) {
+        occ::log::warn("CrystalOptimizer: exact Hessian unavailable; using MSTMIN");
+        m_settings.method = OptimizationMethod::MSTMIN;
+    }
+
+    occ::log::info("CrystalOptimizer: {} molecules, {} parameters",
+                   m_num_molecules, m_num_parameters);
+}
+
+// ============================================================================
+// Legacy constructor
+// ============================================================================
+
 CrystalOptimizer::CrystalOptimizer(const crystal::Crystal& crystal,
                                    std::vector<MultipoleSource> multipoles,
                                    const CrystalOptimizerSettings& settings)
@@ -2344,6 +2404,15 @@ CrystalOptimizerResult CrystalOptimizer::optimize_lbfgs(IterationCallback callba
 crystal::Crystal CrystalOptimizer::build_optimized_crystal() const {
     const auto& current = m_energy.crystal();
     const auto& ref = m_reference_crystal;
+
+    // If the reference crystal has no atoms (e.g. built from CrystalEnergySetup),
+    // return a minimal crystal with the current unit cell.
+    if (ref.asymmetric_unit().positions.cols() == 0) {
+        return crystal::Crystal(crystal::AsymmetricUnit{},
+                                crystal::SpaceGroup("P1"),
+                                current.unit_cell());
+    }
+
     const auto& unique_mols = ref.symmetry_unique_molecules();
 
     // Copy the asymmetric unit and modify positions

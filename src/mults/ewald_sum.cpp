@@ -122,6 +122,9 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
     result.site_forces.resize(n_sites, Vec3::Zero());
     result.site_hessian = Mat::Zero(3 * static_cast<int>(n_sites),
                                     3 * static_cast<int>(n_sites));
+    if (params.include_dipole) {
+        result.site_dipole_gradients = Mat::Zero(static_cast<int>(n_sites), 3);
+    }
 
     if (sites.empty()) return result;
 
@@ -150,6 +153,8 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
     }
 
     std::vector<Vec3> forces_ha_bohr(n_sites, Vec3::Zero());
+    Mat dipole_grad_ha(static_cast<int>(n_sites), 3);
+    dipole_grad_ha.setZero();
     Mat hess_ha_bohr2 = Mat::Zero(3 * static_cast<int>(n_sites),
                                   3 * static_cast<int>(n_sites));
     double energy_ha = 0.0;
@@ -307,6 +312,52 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
         return E.v;
     };
 
+    // Analytical dipole gradient for the erf pair correction.
+    // dE_erf/d(mu_a) and dE_erf/d(mu_b) from the screened kernel.
+    auto erf_pair_dipole_grad = [&](const InternalSite& sa, const InternalSite& sb,
+                                     const Vec3& R_vec,
+                                     Vec3& dE_dmu_a, Vec3& dE_dmu_b) {
+        if (!params.include_dipole) return;
+        const double r2 = R_vec.squaredNorm();
+        if (r2 < 1e-20) return;
+        const double r = std::sqrt(r2);
+        const double kr = alpha_bohr * r;
+        const double erf_kr = std::erf(kr);
+        const double exp_kr2 = std::exp(-kr * kr);
+        const double inv_r = 1.0 / r;
+        const double inv_r2 = inv_r * inv_r;
+        const double inv_r3 = inv_r2 * inv_r;
+        const double inv_r4 = inv_r2 * inv_r2;
+        const double inv_r5 = inv_r4 * inv_r;
+
+        // b = phi'(r)/r where phi(r) = erf(kr)/r
+        const double b = two_alpha_over_sqrt_pi * exp_kr2 * inv_r2
+                       - erf_kr * inv_r3;
+        // c = Hessian radial coefficient
+        const double c = -4.0 * alpha_bohr * alpha_bohr * alpha_bohr
+                            / std::sqrt(M_PI) * exp_kr2 * inv_r2
+                       - 6.0 * alpha_bohr / std::sqrt(M_PI) * exp_kr2 * inv_r4
+                       + 3.0 * erf_kr * inv_r5;
+
+        const double qa = sa.charge, qb = sb.charge;
+        const Vec3& da = sa.dipole;
+        const Vec3& db = sb.dipole;
+        const double miR = da.dot(R_vec);
+        const double mjR = db.dot(R_vec);
+
+        // From E_qd = b*(qa*mjR - qb*miR):
+        //   dE/d(mu_a) = -b*qb*R
+        //   dE/d(mu_b) = b*qa*R
+        // From E_dd = -(c*miR*mjR + b*da.db):
+        //   dE/d(mu_a) = -(c*R*mjR + b*db)
+        //   dE/d(mu_b) = -(c*miR*R + b*da)
+        // Note: erf kernel has NEGATIVE sign convention vs erfc kernel
+        // E_erf = -E_erfc_equivalent, so signs flip from the erfc formula.
+        // The b,c above use erf convention directly.
+        dE_dmu_a += -b * qb * R_vec - (c * mjR * R_vec + b * db);
+        dE_dmu_b += b * qa * R_vec - (c * miR * R_vec + b * da);
+    };
+
     const bool use_taper = (taper != nullptr && taper->is_valid());
     const bool use_erf_site_cutoff = (elec_site_cutoff > 0.0);
     const double erf_site_cutoff_bohr =
@@ -372,6 +423,17 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
         add_hessian_block(bj, ai, -weight * J);
         add_hessian_block(bj, bj, weight * J);
 
+        // Dipole gradient for this pair (analytical, no taper derivative needed
+        // because taper depends on distance not dipoles)
+        if (params.include_dipole) {
+            Vec3 dE_dmu_a = Vec3::Zero(), dE_dmu_b = Vec3::Zero();
+            erf_pair_dipole_grad(isites[ai], isites[bj], R_vec,
+                                  dE_dmu_a, dE_dmu_b);
+            dipole_grad_ha.row(static_cast<int>(ai)) +=
+                (weight * e_scale * dE_dmu_a).transpose();
+            dipole_grad_ha.row(static_cast<int>(bj)) +=
+                (weight * e_scale * dE_dmu_b).transpose();
+        }
     };
 
     for (const auto& pair : neighbors) {
@@ -471,6 +533,14 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
                              mi * (P * ci + Q * si);
             forces_ha_bohr[i] += pref_force * A * G;
 
+            // Reciprocal dipole gradient:
+            // dE/d(mu_i_d) = pref_force * G_d * (Q*cos - P*sin)
+            if (params.include_dipole) {
+                const double dmu_coeff = pref_force * (Q * ci - P * si);
+                dipole_grad_ha.row(static_cast<int>(i)) +=
+                    (dmu_coeff * G).transpose();
+            }
+
             for (size_t j = 0; j < n_sites; ++j) {
                 const bool delta = (i == j);
                 const double dB = dP_dphi[j] * si +
@@ -511,11 +581,15 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
     }
 
     const double alpha3 = alpha_bohr * alpha_bohr * alpha_bohr;
-    for (const auto& s : isites) {
-        energy_ha -= (alpha_bohr / std::sqrt(M_PI)) * s.charge * s.charge;
+    const double self_dipole_coeff = 2.0 * alpha3 / (3.0 * std::sqrt(M_PI));
+    for (size_t k = 0; k < n_sites; ++k) {
+        energy_ha -= (alpha_bohr / std::sqrt(M_PI)) *
+            isites[k].charge * isites[k].charge;
         if (params.include_dipole) {
-            energy_ha -= (2.0 * alpha3 / (3.0 * std::sqrt(M_PI))) *
-                s.dipole.squaredNorm();
+            energy_ha -= self_dipole_coeff * isites[k].dipole.squaredNorm();
+            // Self dipole gradient: dE_self/d(mu_i) = -2*coeff*mu_i
+            dipole_grad_ha.row(static_cast<int>(k)) -=
+                (2.0 * self_dipole_coeff * isites[k].dipole).transpose();
         }
     }
 
@@ -530,6 +604,11 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
         result.site_forces[k] = forces_ha_bohr[k] * force_conv;
     }
     result.site_hessian = hess_ha_bohr2 * hessian_conv;
+
+    // Dipole gradient: convert from Hartree/(e*Bohr) to kJ/mol/(e*Bohr)
+    if (params.include_dipole) {
+        result.site_dipole_gradients = dipole_grad_ha * occ::units::AU_TO_KJ_PER_MOL;
+    }
 
     occ::log::debug("Ewald correction: {:.4f} kJ/mol ({} sites, {} neighbor pairs)",
                     result.energy, sites.size(), neighbors.size());

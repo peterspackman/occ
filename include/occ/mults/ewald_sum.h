@@ -26,6 +26,10 @@ struct EwaldSite {
 struct EwaldResult {
     double energy = 0.0;           ///< Energy correction (kJ/mol)
     std::vector<Vec3> site_forces; ///< Force correction per site (kJ/mol/Ang)
+    /// Gradient of Ewald energy w.r.t. lab-frame dipole moments per site.
+    /// Layout: (n_sites, 3) column-major Eigen matrix, row i = dE/d(mu_i).
+    /// Units: kJ/mol per (e*Bohr). Only populated when include_dipole is true.
+    Mat site_dipole_gradients;
 };
 
 /// Ewald correction with analytical site-position Hessian.

@@ -6,8 +6,10 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <fstream>
 #include <fmt/os.h>
 #include <fmt/format.h>
+#include <nlohmann/json.hpp>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
@@ -17,10 +19,11 @@
 #include <occ/dma/mult.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/cifwriter.h>
+#include <occ/io/structure_format.h>
 #include <occ/main/monomer_wavefunctions.h>
 #include <occ/main/occ_ropt.h>
 #include <occ/mults/crystal_optimizer.h>
-#include <occ/mults/dmacrys_input.h>
+#include <occ/mults/crystal_energy_setup.h>
 #include <occ/mults/multipole_source.h>
 
 namespace fs = std::filesystem;
@@ -224,14 +227,8 @@ ElasticTensorSummary compute_elastic_tensor_summary(
     const std::vector<MoleculeState>& states,
     bool converged) {
 
-    occ::timing::StopWatch<3> et_sw;
-    // 0: compute_with_hessian, 1: pack+project, 2: total
-    et_sw.start(2);
-
     auto& energy = optimizer.energy_calculator();
-    et_sw.start(0);
     auto eh = energy.compute_with_hessian(states);
-    et_sw.stop(0);
     const double V = energy.crystal().unit_cell().volume();
     if (V <= 1e-12) {
         throw std::runtime_error("Invalid unit-cell volume for elastic tensor");
@@ -304,13 +301,6 @@ ElasticTensorSummary compute_elastic_tensor_summary(
         (W_relaxed / V) * occ::units::KJ_PER_MOL_PER_ANGSTROM3_TO_GPA;
     out.relaxed_gpa = *out.relaxed_raw_gpa + stress_correction_gpa;
 
-    et_sw.stop(2);
-    occ::log::info("Elastic tensor timing: hessian={:.1f}ms "
-                   "pack+project={:.1f}ms total={:.1f}ms",
-                   et_sw.read(0)*1e3,
-                   (et_sw.read(2) - et_sw.read(0))*1e3,
-                   et_sw.read(2)*1e3);
-
     return out;
 }
 
@@ -355,6 +345,48 @@ void print_elastic_tensor_summary(const ElasticTensorSummary& summary,
         } else {
             occ::log::warn("  Relaxed elastic tensor unavailable");
         }
+    }
+}
+
+void write_elastic_tensor(const std::string &filepath,
+                          const ElasticTensorSummary &summary) {
+    auto ext = fs::path(filepath).extension().string();
+
+    if (ext == ".json") {
+        nlohmann::json j;
+        auto mat_to_json = [](const occ::Mat6 &C) {
+            nlohmann::json rows = nlohmann::json::array();
+            for (int i = 0; i < 6; ++i) {
+                nlohmann::json row = nlohmann::json::array();
+                for (int k = 0; k < 6; ++k)
+                    row.push_back(C(i, k));
+                rows.push_back(row);
+            }
+            return rows;
+        };
+        j["clamped_gpa"] = mat_to_json(summary.clamped_gpa);
+        j["clamped_raw_gpa"] = mat_to_json(summary.clamped_raw_gpa);
+        if (summary.relaxed_gpa.has_value()) {
+            j["relaxed_gpa"] = mat_to_json(*summary.relaxed_gpa);
+        }
+        if (summary.relaxed_raw_gpa.has_value()) {
+            j["relaxed_raw_gpa"] = mat_to_json(*summary.relaxed_raw_gpa);
+        }
+        std::ofstream out(filepath);
+        out << j.dump(2) << "\n";
+        occ::log::info("Wrote elastic tensor (JSON) to {}", filepath);
+    } else {
+        // Plain text: print clamped then relaxed as 6x6 matrices
+        std::ofstream out(filepath);
+        out << "# Clamped elastic constants (GPa)\n";
+        out << summary.clamped_gpa.format(
+            Eigen::IOFormat(6, 0, "  ", "\n")) << "\n";
+        if (summary.relaxed_gpa.has_value()) {
+            out << "\n# Relaxed elastic constants (GPa)\n";
+            out << summary.relaxed_gpa->format(
+                Eigen::IOFormat(6, 0, "  ", "\n")) << "\n";
+        }
+        occ::log::info("Wrote elastic tensor to {}", filepath);
     }
 }
 
@@ -727,141 +759,59 @@ CLI::App *add_ropt_subcommand(CLI::App &app) {
 
     auto config = std::make_shared<RoptSettings>();
 
+    // Input/output
     ropt->add_option("crystal", config->crystal_filename,
-                     "input crystal structure (CIF)")
+                     "input crystal structure (CIF or structure JSON)")
         ->required();
-
     ropt->add_option("-o,--output", config->output_filename,
                      "output CIF filename (default: <input>_opt.cif)");
-
-    ropt->add_option("-m,--model", config->model_name,
-                     "Energy model for DMA calculation (default: ce-b3lyp)");
-
-    ropt->add_option("-r,--radius", config->neighbor_radius,
-                     "neighbor radius in Angstroms (default: 20.0)");
-
-    ropt->add_option("--gtol", config->gradient_tolerance,
-                     "gradient convergence tolerance (default: 1e-4)");
-
-    ropt->add_option("--etol", config->energy_tolerance,
-                     "energy convergence tolerance (default: 1e-7)");
-
-    ropt->add_option("--max-iter", config->max_iterations,
-                     "maximum iterations (default: 200)");
-
-    ropt->add_option("--charges", config->charge_string,
-                     "molecular charges (comma-separated)");
-
-    ropt->add_option("--multiplicities", config->multiplicity_string,
-                     "spin multiplicities (comma-separated)");
-
-    ropt->add_flag("--spherical", config->spherical_basis,
-                   "use pure spherical basis sets");
-
-    ropt->add_flag("--normalize-hbonds", config->normalize_hydrogens,
-                   "normalize hydrogen bond lengths before optimization");
-
-    ropt->add_flag("--s-functions", [config](int64_t) {
-        config->use_cartesian_engine = false;
-    }, "use S-function engine instead of Cartesian T-tensors");
-
-    ropt->add_flag("--optimize-all", [config](int64_t) {
-        config->fix_first_molecule = false;
-    }, "optimize all molecules (don't fix first molecule)");
-
-    ropt->add_flag("--optimize-cell", config->optimize_cell,
-                   "optimize cell strain (Voigt E1..E6); constrained by lattice symmetry by default");
-    ropt->add_flag("--free-cell-strain", config->free_cell_strain,
-                   "disable lattice-symmetry constraints and optimize all 6 strain components");
-    ropt->add_option_function<double>(
-        "--pressure",
-        [config](double p_gpa) {
-            config->has_external_pressure = true;
-            config->external_pressure_gpa = p_gpa;
-        },
-        "external pressure in GPa (enthalpy objective E+pV); overrides DMACRYS PRES");
-    ropt->add_flag("--no-elastic", [config](int64_t) {
-        config->compute_elastic_tensor = false;
-    }, "skip elastic tensor evaluation/printing at the end of a cell optimization");
-
+    ropt->add_option("--write-structure", config->structure_json,
+                     "write structure JSON after optimization");
+    ropt->add_option("--write-elastic", config->elastic_tensor_file,
+                     "write elastic tensor to file (.json or .txt)");
     ropt->add_flag("--trajectory", config->write_trajectory,
                    "write trajectory to XYZ file");
 
-    ropt->add_flag("--debug-pairs", config->debug_pair_summary,
-                   "print top attractive/repulsive pairs at start");
-    ropt->add_flag("--debug-shells", config->debug_shell_histogram,
-                   "print neighbor shell histogram at start");
-    ropt->add_flag("--debug-ewald", config->debug_ewald,
-                   "print charge-only Ewald energy breakdown at start");
-    ropt->add_flag("--debug-charges", config->debug_charges,
-                   "print per-molecule net charge and site charges after DMA");
-    ropt->add_option("--multipole-json", config->multipole_json,
-                     "load multipoles and potentials from DMACRYS JSON file");
+    // DMA model (CIF path only)
+    ropt->add_option("-m,--model", config->model_name,
+                     "energy model for DMA calculation (default: ce-b3lyp)");
+    ropt->add_option("--charges", config->charge_string,
+                     "molecular charges (comma-separated)");
+    ropt->add_option("--multiplicities", config->multiplicity_string,
+                     "spin multiplicities (comma-separated)");
+
+    // Optimization
+    ropt->add_option("--optimizer", config->optimizer,
+                     "optimization method: mstmin (default), lbfgs, trust-region");
+    ropt->add_option("-r,--radius", config->neighbor_radius,
+                     "neighbor cutoff in Angstrom (default: 20.0)");
+    ropt->add_option("--gtol", config->gradient_tolerance,
+                     "gradient convergence tolerance (default: 1e-3)");
+    ropt->add_option("--etol", config->energy_tolerance,
+                     "energy convergence tolerance (default: 1e-5)");
+    ropt->add_option("--max-iter", config->max_iterations,
+                     "maximum iterations (default: 200)");
     ropt->add_option("--max-order", config->max_interaction_order,
-                     "max multipole interaction order lA+lB (default: 4, -1=no truncation)");
+                     "max multipole interaction order lA+lB (default: 4)");
 
-    ropt->add_flag("--no-ewald", [config](int64_t){ config->use_ewald = false; },
-                   "disable Ewald electrostatics (use truncated real space)");
+    // Cell optimization
+    ropt->add_flag("--optimize-cell", config->optimize_cell,
+                   "optimize unit cell (constrained by lattice symmetry)");
     ropt->add_option_function<double>(
-        "--ewald-acc",
-        [config](double acc) {
-            config->ewald_accuracy = acc;
-            config->has_ewald_accuracy = true;
+        "--pressure",
+        [config](double p) {
+            config->has_external_pressure = true;
+            config->external_pressure_gpa = p;
         },
-        "target accuracy for automatic Ewald eta/cutoffs (default 1e-6)");
-    ropt->add_option_function<double>(
-        "--ewald-eta",
-        [config](double eta) {
-            config->ewald_eta = eta;
-            config->has_ewald_eta = true;
-        },
-        "override Ewald Gaussian split eta in Angstrom^-1 (0=auto)");
-    ropt->add_option_function<int>(
-        "--ewald-kmax",
-        [config](int kmax) {
-            config->ewald_kmax = kmax;
-            config->has_ewald_kmax = true;
-        },
-        "override reciprocal cutoff integer extent (0=auto)");
+        "external pressure in GPa (enthalpy objective)");
+    ropt->add_flag("--no-elastic", [config](int64_t) {
+        config->compute_elastic_tensor = false;
+    }, "skip elastic tensor after cell optimization");
 
-    ropt->add_flag("--lbfgs", [config](int64_t) {
-        config->use_lbfgs = true;
-        config->use_trust_region = false;
-    }, "use L-BFGS optimizer");
-    ropt->add_flag("--trust-region", [config](int64_t) {
-        config->use_trust_region = true;
-        config->use_lbfgs = false;
-        config->use_trust_bfgs = false;
-    }, "use Trust Region Newton optimizer (default is MSTMIN)");
-    ropt->add_flag("--trust-bfgs", [config](int64_t) {
-        config->use_trust_bfgs = true;
-        config->use_trust_region = false;
-        config->use_lbfgs = false;
-    }, "use Trust Region BFGS optimizer (gradient-only, no analytic Hessian)");
-    ropt->add_flag("--allow-approx-hessian", config->allow_approx_hessian,
-                   "allow Trust Region with approximate Hessians when exact Hessian is unavailable");
-    ropt->add_option("--mst-max-disp", config->mst_max_displacement,
-                     "MSTMIN max component displacement per cycle (default: 0.05)");
-    ropt->add_option("--mst-step-tol", config->mst_step_tolerance,
-                     "MSTMIN step convergence tolerance on max |component| (default: 1e-6)");
-    ropt->add_option("--mst-rot-scale", config->mst_rotation_scale,
-                     "MSTMIN internal scale factor for rotational DOF (default: 0.2)");
-    ropt->add_option("--mst-cell-scale", config->mst_cell_scale,
-                     "MSTMIN internal scale factor for cell DOF (default: 0.1)");
-    ropt->add_option("--mst-max-linesearch", config->mst_max_line_search,
-                     "MSTMIN max line-search trial steps per cycle (default: 40)");
-    ropt->add_option("--mst-max-ls-restarts", config->mst_max_line_search_restarts,
-                     "MSTMIN max line-search restarts after failure (default: 2)");
-    ropt->add_option("--mst-max-evals", config->mst_max_evaluations,
-                     "MSTMIN global objective-evaluation cap (default: 4000)");
-    ropt->add_option("--mst-ls-report", config->mst_line_search_report_interval,
-                     "Report line-search stalls every N trial evals (default: 100, 0=off)");
-    ropt->add_option("--spli-min", config->spli_min,
-                     "SPLI taper width in Angstrom: taper from cutoff to cutoff+spli-min");
-    ropt->add_option("--spli-max", config->spli_max,
-                     "SPLI neighbor shell in Angstrom: build neighbor list to cutoff+spli-max");
-    ropt->add_option("--spli-order", config->spli_order,
-                     "SPLI taper polynomial order (3=cubic, 5=quintic, default: 3)");
+    // Electrostatics
+    ropt->add_flag("--no-ewald", [config](int64_t) {
+        config->use_ewald = false;
+    }, "disable Ewald electrostatics");
 
     ropt->fallthrough();
     ropt->callback([config]() { run_ropt_subcommand(*config); });
@@ -869,63 +819,32 @@ CLI::App *add_ropt_subcommand(CLI::App &app) {
     return ropt;
 }
 
-/// Prepare inputs from DMACRYS JSON benchmark file.
+/// Prepared data for crystal optimization.
 struct PreparedInputs {
-    Crystal crystal;
-    std::vector<MultipoleSource> multipoles;
-    std::map<std::pair<int,int>, mults::BuckinghamParams> custom_buck_params;
-    bool use_custom_ff = false;
-    std::unique_ptr<mults::DmacrysInput> dmacrys_input;  // for direct setup
+    mults::CrystalEnergySetup setup;
+    std::optional<occ::io::StructureInput> structure_input;
 };
 
 PreparedInputs prepare_from_json(const std::string &json_path) {
-    occ::log::info("Loading DMACRYS benchmark from {}", json_path);
-    auto input = mults::read_dmacrys_json(json_path);
+    occ::log::info("Loading structure JSON from {}", json_path);
+    auto si = occ::io::read_structure_json(json_path);
 
-    occ::log::info("  Title: {} (source: {})", input.title, input.source);
-    occ::log::info("  Space group: {}, Z = {}", input.crystal.space_group,
-                   input.crystal.Z);
-    occ::log::info("  {} multipole sites, rank up to {}",
-                   input.molecule.sites.size(),
-                   input.molecule.sites.empty()
-                       ? 0
-                       : input.molecule.sites[0].rank);
-    occ::log::info("  {} Buckingham pairs", input.potentials.size());
-    if (input.has_spline) {
-        occ::log::info("  SPLI taper: min={:.3f} max={:.3f} Angstrom",
-                       input.spline_min, input.spline_max);
+    occ::log::info("  Title: {}", si.title);
+    occ::log::info("  {} molecule types, {} independent molecules",
+                   si.molecule_types.size(), si.molecules.size());
+    occ::log::info("  {} Buckingham pairs", si.potentials.buckingham.size());
+
+    if (si.reference.total != 0.0) {
+        occ::log::info("  Reference energy: {:.6f} kJ/mol", si.reference.total);
     }
-    if (input.has_ewald_accuracy || input.has_ewald_eta || input.has_ewald_kmax) {
-        occ::log::info("  JSON Ewald overrides:{}{}{}",
-                       input.has_ewald_accuracy
-                           ? fmt::format(" acc={:.1e}", input.ewald_accuracy)
-                           : "",
-                       input.has_ewald_eta
-                           ? fmt::format(" eta={:.6f} /Ang", input.ewald_eta)
-                           : "",
-                       input.has_ewald_kmax
-                           ? fmt::format(" kmax={}", input.ewald_kmax)
-                           : "");
-    }
-    if (input.has_pressure) {
-        occ::log::info("  Pressure (PRES): {:.6f} GPa", input.pressure_pa * 1.0e-9);
+    if (si.settings.spline_min > 0.0) {
+        occ::log::info("  SPLI settings: min={:.3f} max={:.3f} order={}",
+                       si.settings.spline_min, si.settings.spline_max,
+                       si.settings.spline_order);
     }
 
-    Crystal cryst = mults::build_crystal(input.crystal);
-    auto multipoles = mults::build_multipole_sources(input, cryst);
-    auto buck = mults::convert_buckingham_params(input.potentials);
-
-    if (input.initial_ref.total_kJ_per_mol != 0.0) {
-        occ::log::info("  DMACRYS reference (initial): {:.6f} kJ/mol",
-                       input.initial_ref.total_kJ_per_mol);
-        occ::log::info("    Rep-disp: {:.6f} eV/cell",
-                       input.initial_ref.repulsion_dispersion_eV);
-    }
-
-    PreparedInputs result{std::move(cryst), multipoles,
-                          std::move(buck), true};
-    result.dmacrys_input = std::make_unique<mults::DmacrysInput>(std::move(input));
-    return result;
+    auto setup = mults::from_structure_input(si);
+    return PreparedInputs{std::move(setup), std::move(si)};
 }
 
 PreparedInputs prepare_from_dma(const RoptSettings &settings,
@@ -933,13 +852,6 @@ PreparedInputs prepare_from_dma(const RoptSettings &settings,
                                 const std::string &basename) {
     occ::log::info("Loading crystal from {}", filename);
     Crystal cryst = read_crystal(filename);
-
-    if (settings.normalize_hydrogens) {
-        occ::log::info("Normalizing hydrogen bond lengths...");
-        ankerl::unordered_dense::map<int, double> empty_map;
-        int normalized = cryst.normalize_hydrogen_bondlengths(empty_map);
-        occ::log::info("Normalized {} hydrogen bonds", normalized);
-    }
 
     auto molecules = cryst.symmetry_unique_molecules();
     occ::log::info("Crystal has {} symmetry-unique molecules",
@@ -951,470 +863,94 @@ PreparedInputs prepare_from_dma(const RoptSettings &settings,
     occ::log::info("Computing distributed multipoles using {} model",
                    settings.model_name);
     auto unique_multipoles = compute_multipoles_for_crystal(
-        basename, cryst, settings.model_name, settings.spherical_basis);
+        basename, cryst, settings.model_name, false);
 
-    // Expand Z' multipole sources to Z UC molecules so the energy calculator
-    // has explicit per-molecule orientations (needed for correct pair energies).
     auto multipoles = expand_to_unit_cell(unique_multipoles, cryst);
 
-    return PreparedInputs{std::move(cryst), std::move(multipoles), {}, false};
+    auto setup = mults::from_crystal_and_multipoles(cryst, multipoles);
+    return PreparedInputs{std::move(setup), std::nullopt};
 }
 
 void run_ropt_subcommand(const RoptSettings &settings) {
     std::string filename = settings.crystal_filename;
     std::string basename = fs::path(filename).stem().string();
 
-    auto prepared = !settings.multipole_json.empty()
-                        ? prepare_from_json(settings.multipole_json)
-                        : prepare_from_dma(settings, filename, basename);
-
-    if (settings.debug_charges) {
-        for (size_t i = 0; i < prepared.multipoles.size(); ++i) {
-            const auto cart = prepared.multipoles[i].cartesian();
-            double total_q = 0.0;
-            for (const auto& s : cart.sites) {
-                double q = (s.rank >= 0) ? s.cart.data[0] : 0.0;
-                total_q += q;
-            }
-            occ::log::info("Mol {} net charge (a.u.): {:.6f}", i, total_q);
-            for (size_t si = 0; si < cart.sites.size(); ++si) {
-                double q = (cart.sites[si].rank >= 0) ? cart.sites[si].cart.data[0] : 0.0;
-                occ::log::info("  Site {:2d}: q={:+.6f}  rank={}", static_cast<int>(si), q, cart.sites[si].rank);
-            }
+    // Determine input source: structure JSON or CIF+DMA
+    bool is_json = false;
+    if (!filename.empty()) {
+        auto ext = fs::path(filename).extension().string();
+        if (ext == ".json") {
+            try { is_json = occ::io::is_structure_format(filename); }
+            catch (...) {}
         }
     }
+    auto prepared = is_json
+                        ? prepare_from_json(filename)
+                        : prepare_from_dma(settings, filename, basename);
 
-    // Setup optimizer
+    // Build optimizer settings
     CrystalOptimizerSettings opt_settings;
-    if (settings.use_trust_bfgs) {
-        opt_settings.method = OptimizationMethod::TrustRegionBFGS;
-    } else if (settings.use_trust_region) {
-        opt_settings.method = OptimizationMethod::TrustRegion;
-    } else if (settings.use_lbfgs) {
+    if (settings.optimizer == "lbfgs") {
         opt_settings.method = OptimizationMethod::LBFGS;
+    } else if (settings.optimizer == "trust-region") {
+        opt_settings.method = OptimizationMethod::TrustRegion;
     } else {
         opt_settings.method = OptimizationMethod::MSTMIN;
     }
     opt_settings.gradient_tolerance = settings.gradient_tolerance;
     opt_settings.energy_tolerance = settings.energy_tolerance;
     opt_settings.max_iterations = settings.max_iterations;
-    opt_settings.neighbor_radius = settings.neighbor_radius;
-    opt_settings.force_field = prepared.use_custom_ff
-                                   ? ForceFieldType::Custom
-                                   : ForceFieldType::BuckinghamDE;
-    opt_settings.use_cartesian_engine = settings.use_cartesian_engine;
+    opt_settings.neighbor_radius = std::max(settings.neighbor_radius,
+                                            prepared.setup.cutoff_radius);
+    opt_settings.force_field = prepared.setup.force_field;
     opt_settings.max_interaction_order = settings.max_interaction_order;
-    opt_settings.fix_first_translation = settings.fix_first_molecule;
-    opt_settings.fix_first_rotation = false;  // Always allow rotation
-    opt_settings.max_displacement = settings.mst_max_displacement;
-    opt_settings.mst_step_tolerance = settings.mst_step_tolerance;
-    opt_settings.mst_rotation_scale = settings.mst_rotation_scale;
-    opt_settings.mst_cell_scale = settings.mst_cell_scale;
-    opt_settings.mst_max_line_search = settings.mst_max_line_search;
-    opt_settings.mst_max_line_search_restarts = settings.mst_max_line_search_restarts;
-    opt_settings.mst_max_function_evaluations = settings.mst_max_evaluations;
-    opt_settings.mst_line_search_report_interval = settings.mst_line_search_report_interval;
-    opt_settings.require_exact_hessian = !settings.allow_approx_hessian;
     opt_settings.optimize_cell = settings.optimize_cell;
-    opt_settings.constrain_cell_strain_by_lattice = !settings.free_cell_strain;
     opt_settings.use_ewald = settings.use_ewald;
-    opt_settings.ewald_accuracy = settings.ewald_accuracy;
-    opt_settings.ewald_eta = settings.ewald_eta;
-    opt_settings.ewald_kmax = settings.ewald_kmax;
-
-    bool ewald_acc_from_json = false;
-    bool ewald_eta_from_json = false;
-    bool ewald_kmax_from_json = false;
-    if (prepared.dmacrys_input) {
-        const auto& di = *prepared.dmacrys_input;
-
-        if (di.has_ewald_accuracy) {
-            if (settings.has_ewald_accuracy &&
-                std::abs(settings.ewald_accuracy - di.ewald_accuracy) > 1e-16) {
-                occ::log::warn(
-                    "Overriding DMACRYS Ewald accuracy ({:.6e}) with CLI --ewald-acc ({:.6e})",
-                    di.ewald_accuracy, settings.ewald_accuracy);
-            } else if (!settings.has_ewald_accuracy) {
-                opt_settings.ewald_accuracy = di.ewald_accuracy;
-                ewald_acc_from_json = true;
-            }
-        }
-        if (di.has_ewald_eta) {
-            if (settings.has_ewald_eta &&
-                std::abs(settings.ewald_eta - di.ewald_eta) > 1e-16) {
-                occ::log::warn(
-                    "Overriding DMACRYS Ewald eta ({:.6f} Ang^-1) with CLI --ewald-eta ({:.6f} Ang^-1)",
-                    di.ewald_eta, settings.ewald_eta);
-            } else if (!settings.has_ewald_eta) {
-                opt_settings.ewald_eta = di.ewald_eta;
-                ewald_eta_from_json = true;
-            }
-        }
-        if (di.has_ewald_kmax) {
-            if (settings.has_ewald_kmax &&
-                settings.ewald_kmax != di.ewald_kmax) {
-                occ::log::warn(
-                    "Overriding DMACRYS Ewald kmax ({}) with CLI --ewald-kmax ({})",
-                    di.ewald_kmax, settings.ewald_kmax);
-            } else if (!settings.has_ewald_kmax) {
-                opt_settings.ewald_kmax = di.ewald_kmax;
-                ewald_kmax_from_json = true;
-            }
-        }
-    }
-
-    bool pressure_from_json = false;
-    if (prepared.dmacrys_input && prepared.dmacrys_input->has_pressure) {
-        opt_settings.external_pressure_gpa =
-            prepared.dmacrys_input->pressure_pa * 1.0e-9;
-        pressure_from_json = true;
-    }
+    opt_settings.ewald_accuracy = prepared.setup.ewald_accuracy;
+    opt_settings.ewald_eta = prepared.setup.ewald_eta;
+    opt_settings.ewald_kmax = prepared.setup.ewald_kmax;
     if (settings.has_external_pressure) {
-        if (pressure_from_json &&
-            std::abs(opt_settings.external_pressure_gpa -
-                     settings.external_pressure_gpa) > 1e-16) {
-            occ::log::warn(
-                "Overriding DMACRYS PRES ({:.6f} GPa) with CLI --pressure ({:.6f} GPa)",
-                opt_settings.external_pressure_gpa,
-                settings.external_pressure_gpa);
-        }
         opt_settings.external_pressure_gpa = settings.external_pressure_gpa;
+    } else if (prepared.structure_input &&
+               std::abs(prepared.structure_input->settings.pressure_gpa) > 1e-16) {
+        opt_settings.external_pressure_gpa =
+            prepared.structure_input->settings.pressure_gpa;
     }
     if (settings.write_trajectory) {
         opt_settings.trajectory_file = basename + "_traj.xyz";
     }
 
+    // Apply CLI settings to energy setup (CLI overrides JSON settings)
+    prepared.setup.use_ewald = settings.use_ewald;
+    prepared.setup.max_interaction_order = settings.max_interaction_order;
+    prepared.setup.cutoff_radius = opt_settings.neighbor_radius;
+
     occ::log::info("Setting up crystal optimizer...");
-    occ::log::info("  Optimizer: {}", method_name(opt_settings.method));
-    occ::log::info("  Neighbor radius: {:.1f} Angstrom", opt_settings.neighbor_radius);
-    occ::log::info("  Gradient tolerance: {:.1e}", opt_settings.gradient_tolerance);
-    occ::log::info("  Energy tolerance: {:.1e}", opt_settings.energy_tolerance);
-    occ::log::info("  Max iterations: {}", opt_settings.max_iterations);
-    if (opt_settings.method == OptimizationMethod::MSTMIN) {
-        occ::log::info("  MSTMIN max displacement: {:.3f}", opt_settings.max_displacement);
-        occ::log::info("  MSTMIN step tolerance: {:.1e}", opt_settings.mst_step_tolerance);
-        occ::log::info("  MSTMIN rot scale: {:.3f}", opt_settings.mst_rotation_scale);
-        occ::log::info("  MSTMIN max line search: {}", opt_settings.mst_max_line_search);
-        occ::log::info("  MSTMIN max LS restarts: {}", opt_settings.mst_max_line_search_restarts);
-        occ::log::info("  MSTMIN max evaluations: {}", opt_settings.mst_max_function_evaluations);
-        occ::log::info("  MSTMIN LS report interval: {}", opt_settings.mst_line_search_report_interval);
-        if (opt_settings.optimize_cell) {
-            occ::log::info("  MSTMIN cell scale: {:.3f}", opt_settings.mst_cell_scale);
-        }
-    }
-    if (settings.spli_min > 0.0 || settings.spli_max > 0.0) {
-        const double spli_min = settings.spli_min;
-        const double spli_max = (settings.spli_max > 0.0) ? settings.spli_max : spli_min;
-        if (spli_min <= 0.0) {
-            throw std::runtime_error("--spli-max requires --spli-min > 0");
-        }
-        if (spli_max < spli_min) {
-            throw std::runtime_error("--spli-max must be >= --spli-min");
-        }
-        if (settings.spli_order != 3 && settings.spli_order != 5) {
-            throw std::runtime_error("--spli-order must be 3 or 5");
-        }
-        occ::log::info("  SPLI override: min={:.3f} max={:.3f} Angstrom (order={})",
-                       spli_min, spli_max, settings.spli_order);
-    }
-    occ::log::info("  Fix first translation: {}", opt_settings.fix_first_translation);
-    occ::log::info("  Fix first rotation: {}", opt_settings.fix_first_rotation);
-    occ::log::info("  Require exact Hessian: {}", opt_settings.require_exact_hessian);
-    occ::log::info("  Optimize cell: {}", opt_settings.optimize_cell);
-    if (opt_settings.optimize_cell) {
-        occ::log::info("  Constrain cell strain by lattice: {}",
-                       opt_settings.constrain_cell_strain_by_lattice);
-    }
-    occ::log::info("  Freeze neighbors during line search: {}",
-                   opt_settings.freeze_neighbors_during_linesearch);
-    if (std::abs(opt_settings.external_pressure_gpa) > 1e-16) {
-        occ::log::info("  External pressure (enthalpy objective): {:.6f} GPa",
-                       opt_settings.external_pressure_gpa);
-    }
-    occ::log::info("  Engine: {}",
-                   opt_settings.use_cartesian_engine ? "Cartesian T-tensor" : "S-functions");
-    if (!prepared.use_custom_ff) {
-        occ::log::warn("  Short-range model: generic Williams DE (bonded NEIGHCRYS-style atom typing)");
-    }
-    if (opt_settings.max_interaction_order >= 0) {
-        occ::log::info("  Max interaction order: {} (lA+lB <= {})",
-                       opt_settings.max_interaction_order,
-                       opt_settings.max_interaction_order);
-    } else {
-        occ::log::info("  Max interaction order: unlimited");
-    }
-    if (opt_settings.use_ewald) {
-        occ::log::info("  Ewald accuracy: {:.1e}{}",
-                       opt_settings.ewald_accuracy,
-                       ewald_acc_from_json ? " (from JSON)" : "");
-        if (opt_settings.ewald_eta > 0.0) {
-            occ::log::info("  Ewald eta override: {:.6f} Angstrom^-1{}",
-                           opt_settings.ewald_eta,
-                           ewald_eta_from_json ? " (from JSON)" : "");
-        }
-        if (opt_settings.ewald_kmax > 0) {
-            occ::log::info("  Ewald kmax override: {}{}",
-                           opt_settings.ewald_kmax,
-                           ewald_kmax_from_json ? " (from JSON)" : "");
-        }
+    occ::log::info("  {} molecules, cutoff {:.1f} A, Ewald: {}",
+                   prepared.setup.molecules.size(),
+                   prepared.setup.cutoff_radius,
+                   settings.use_ewald ? "on" : "off");
+
+    // Keep a copy for structure JSON output (setup is moved into optimizer)
+    auto saved_setup = prepared.setup;
+    CrystalOptimizer optimizer(std::move(prepared.setup), opt_settings);
+
+    if (optimizer.settings().method != opt_settings.method) {
+        occ::log::warn("Optimizer method adjusted to {}",
+                       method_name(optimizer.settings().method));
     }
 
-    // Keep a copy of multipoles for DMACRYS setup (before move)
-    auto multipoles_copy = prepared.multipoles;
-
-    CrystalOptimizer optimizer(prepared.crystal, std::move(prepared.multipoles),
-                               opt_settings);
-
-    const auto effective_method = optimizer.settings().method;
-    if (effective_method != opt_settings.method) {
-        occ::log::warn("Requested optimizer method was adjusted to {}",
-                       method_name(effective_method));
-    }
-    if (optimizer.settings().use_symmetry != opt_settings.use_symmetry) {
-        occ::log::warn("Requested symmetry mode was adjusted to {}",
-                       optimizer.settings().use_symmetry ? "enabled" : "disabled");
-    }
-
-    // Apply custom Buckingham params if loading from JSON
-    if (prepared.use_custom_ff) {
-        for (const auto& [key, params] : prepared.custom_buck_params) {
-            optimizer.energy_calculator().set_buckingham_params(
-                key.first, key.second, params);
-        }
-    }
-
-    // For DMACRYS JSON: bypass Crystal's molecule detection and set
-    // geometry, states, and neighbor list directly.
-    if (prepared.dmacrys_input) {
-        mults::setup_crystal_energy_from_dmacrys(
-            optimizer.energy_calculator(),
-            *prepared.dmacrys_input,
-            prepared.crystal,
-            multipoles_copy);
-        optimizer.reinitialize_states();
-    } else {
-        // CIF path with expanded multipoles: set up geometry, initial states,
-        // and neighbor list for Z UC molecules (bypassing symmetry_unique_dimers
-        // which only works for Z' molecules).
-        const auto &uc_mols = prepared.crystal.unit_cell_molecules();
-        const auto &asym_mols = prepared.crystal.symmetry_unique_molecules();
-        int Z = static_cast<int>(uc_mols.size());
-        int Z_prime = static_cast<int>(asym_mols.size());
-
-        if (Z > Z_prime) {
-            // Build body-frame geometry from the unique molecule(s)
-            std::vector<CrystalEnergy::MoleculeGeometry> geom_vec;
-            geom_vec.reserve(Z);
-
-            std::vector<MoleculeState> states;
-            std::vector<occ::Vec3> mol_coms;
-            states.reserve(Z);
-            mol_coms.reserve(Z);
-
-            for (int m = 0; m < Z; ++m) {
-                const auto &uc_mol = uc_mols[m];
-                int asym_idx = uc_mol.asymmetric_molecule_idx();
-                if (asym_idx < 0 || asym_idx >= Z_prime) asym_idx = 0;
-
-                const auto &asym_mol = asym_mols[asym_idx];
-                occ::Vec3 asym_com = asym_mol.center_of_mass();
-
-                CrystalEnergy::MoleculeGeometry geom;
-                geom.center_of_mass = uc_mol.center_of_mass();
-                for (int a = 0; a < asym_mol.size(); ++a) {
-                    geom.atomic_numbers.push_back(asym_mol.atomic_numbers()(a));
-                    geom.atom_positions.push_back(
-                        asym_mol.positions().col(a) - asym_com);
-                }
-                geom_vec.push_back(std::move(geom));
-
-                occ::Vec3 com = uc_mol.center_of_mass();
-                const auto &src = multipoles_copy[m];
-                states.push_back(MoleculeState::from_rotation(com, src.rotation()));
-                mol_coms.push_back(com);
-            }
-
-            optimizer.energy_calculator().set_molecule_geometry(std::move(geom_vec));
-            optimizer.energy_calculator().set_initial_states(std::move(states));
-            optimizer.energy_calculator().build_neighbor_list_from_positions(mol_coms);
-            optimizer.reinitialize_states();
-        }
-    }
-
-    // Optional SPLI override for any input mode (CIF/DMACRYS).
-    if (settings.spli_min > 0.0 || settings.spli_max > 0.0) {
-        const double spli_min = settings.spli_min;
-        const double spli_max = (settings.spli_max > 0.0) ? settings.spli_max : spli_min;
-        const double taper_on = opt_settings.neighbor_radius;
-        const double taper_off = taper_on + spli_min;
-        const double table_cutoff = taper_on + spli_max;
-        const int taper_order = settings.spli_order;
-
-        auto& energy = optimizer.energy_calculator();
-        energy.set_electrostatic_taper(taper_on, taper_off, taper_order);
-        energy.set_short_range_taper(taper_on, taper_off, taper_order);
-        energy.set_elec_site_cutoff(taper_off);
-        energy.set_buckingham_site_cutoff(taper_off);
-        energy.set_cutoff_radius(table_cutoff);
-        energy.set_use_com_elec_gate(false);
-        energy.update_neighbors(optimizer.states());
-
-        occ::log::info("Applied SPLI override: on={:.3f} off={:.3f}, table_cutoff={:.3f}, "
-                       "elec_site_cutoff={:.3f}, order={}",
-                       taper_on, taper_off, table_cutoff, taper_off, taper_order);
-        if (taper_order == 3) {
-            occ::log::warn("SPLI order=3 is C1 but not C2 at cutoff boundaries; "
-                           "second-derivative quantities (relaxed elastic tensor/Hessian exactness) "
-                           "can be non-robust near r_on/r_off");
-        }
-    }
-
-    // Print actual short-range parameters used in the current crystal.
-    {
-        auto& energy = optimizer.energy_calculator();
-        if (energy.uses_short_range_typing()) {
-            std::map<int, int> type_counts;
-            for (const auto& geom : energy.molecule_geometry()) {
-                for (int code : geom.short_range_type_codes) {
-                    if (code > 0) {
-                        type_counts[code] += 1;
-                    }
-                }
-            }
-
-            if (!type_counts.empty()) {
-                if (energy.uses_williams_atom_typing()) {
-                    occ::log::info("  Short-range atom typing: Williams bonded (NEIGHCRYS-style)");
-                } else {
-                    occ::log::info("  Short-range atom typing: explicit typed pair mapping");
-                }
-                for (const auto& [code, count] : type_counts) {
-                    occ::log::info("    {} ({}): {} atoms",
-                                   energy.short_range_type_name(code), code, count);
-                }
-                occ::log::info("  Short-range Buckingham parameters in use (typed pairs in crystal):");
-
-                std::vector<int> types;
-                types.reserve(type_counts.size());
-                for (const auto& [code, _] : type_counts) {
-                    types.push_back(code);
-                }
-
-                for (size_t i = 0; i < types.size(); ++i) {
-                    for (size_t j = i; j < types.size(); ++j) {
-                        const int t1 = types[i];
-                        const int t2 = types[j];
-                        const int z1 = CrystalEnergy::short_range_type_atomic_number(t1);
-                        const int z2 = CrystalEnergy::short_range_type_atomic_number(t2);
-                        const bool explicit_params = energy.has_typed_buckingham_params(t1, t2);
-                        const auto params = explicit_params
-                                                ? energy.get_buckingham_params_for_types(t1, t2)
-                                                : energy.get_buckingham_params(z1, z2);
-                        occ::log::info(
-                            "    {}-{} (Z{}-Z{}): A={:.6g} B={:.6g} C={:.6g}{}",
-                            energy.short_range_type_name(t1),
-                            energy.short_range_type_name(t2),
-                            z1, z2, params.A, params.B, params.C,
-                            explicit_params ? "" : "  [fallback element]");
-                    }
-                }
-            }
-        } else {
-            std::set<int> element_numbers;
-            const auto &uc_mols = prepared.crystal.unit_cell_molecules();
-            for (const auto &mol : uc_mols) {
-                const auto &nums = mol.atomic_numbers();
-                for (int i = 0; i < nums.size(); ++i) {
-                    element_numbers.insert(nums(i));
-                }
-            }
-
-            if (!element_numbers.empty()) {
-                std::vector<int> elements(element_numbers.begin(), element_numbers.end());
-                occ::log::info("  Short-range Buckingham parameters in use (element pairs in crystal):");
-                for (size_t i = 0; i < elements.size(); ++i) {
-                    for (size_t j = i; j < elements.size(); ++j) {
-                        int Z1 = elements[i];
-                        int Z2 = elements[j];
-                        const auto params = energy.get_buckingham_params(Z1, Z2);
-                        const bool explicit_params = energy.has_buckingham_params(Z1, Z2);
-                        occ::log::info(
-                            "    {}-{} (Z{}-Z{}): A={:.6g} B={:.6g} C={:.6g}{}",
-                            occ::core::Element(Z1).symbol(), occ::core::Element(Z2).symbol(),
-                            Z1, Z2, params.A, params.B, params.C,
-                            explicit_params ? "" : "  [fallback]");
-                    }
-                }
-            }
-        }
-    }
-
-    if (settings.debug_shell_histogram) {
-        auto bins = optimizer.energy_calculator().neighbor_shell_histogram();
-        occ::log::info("Neighbor shell counts (<3,<6,<10,<15,>=15 Å): {} {} {} {} {}",
-                       bins[0], bins[1], bins[2], bins[3], bins[4]);
-    }
-
-    if (settings.debug_pair_summary) {
-        auto dbg = optimizer.energy_calculator().debug_pair_energies(optimizer.states());
-        std::sort(dbg.begin(), dbg.end(), [](const auto& a, const auto& b){ return a.total < b.total;});
-        int n = static_cast<int>(dbg.size());
-        int report = std::min(5, n);
-        occ::log::info("Most attractive pairs (energy kJ/mol):");
-        for (int i = 0; i < report; ++i) {
-            const auto& p = dbg[i];
-            occ::log::info("  {:3d} {:3d} shift [{:2d} {:2d} {:2d}] w={:.2f} d={:.2f}  elec={:8.4f}  sr={:8.4f}  tot={:8.4f}",
-                           p.mol_i, p.mol_j, p.cell_shift[0], p.cell_shift[1], p.cell_shift[2],
-                           p.weight, p.com_distance, p.electrostatic, p.short_range, p.total);
-        }
-        occ::log::info("Most repulsive pairs (energy kJ/mol):");
-        for (int i = 0; i < report; ++i) {
-            const auto& p = dbg[n - 1 - i];
-            occ::log::info("  {:3d} {:3d} shift [{:2d} {:2d} {:2d}] w={:.2f} d={:.2f}  elec={:8.4f}  sr={:8.4f}  tot={:8.4f}",
-                           p.mol_i, p.mol_j, p.cell_shift[0], p.cell_shift[1], p.cell_shift[2],
-                           p.weight, p.com_distance, p.electrostatic, p.short_range, p.total);
-        }
-    }
-
-    if (settings.debug_ewald) {
-        occ::log::info("Ewald diagnostics: use --log-level debug to see Ewald correction details");
-    }
-
-    // Print multipole summary for each unique molecule type
-    {
-        int n_mol = optimizer.energy_calculator().num_molecules();
-        // Identify unique molecule types (by asymmetric molecule index)
-        std::set<int> printed_types;
-        for (int m = 0; m < n_mol && m < static_cast<int>(multipoles_copy.size()); ++m) {
-            int asym_idx = 0;
-            const auto &uc_mols = prepared.crystal.unit_cell_molecules();
-            if (m < static_cast<int>(uc_mols.size())) {
-                asym_idx = uc_mols[m].asymmetric_molecule_idx();
-            }
-            if (printed_types.count(asym_idx)) continue;
-            printed_types.insert(asym_idx);
-
-            const auto &cart = multipoles_copy[m].cartesian();
-            double total_q = 0.0;
-            for (const auto &s : cart.sites) {
-                double q = (s.rank >= 0) ? s.cart.data[0] : 0.0;
-                total_q += q;
-            }
-            occ::log::info("Multipoles for molecule type {} ({} sites, net charge {:.4f} e):",
-                           asym_idx, cart.sites.size(), total_q);
-            for (size_t si = 0; si < cart.sites.size(); ++si) {
-                const auto &s = cart.sites[si];
-                double q = (s.rank >= 0) ? s.cart.data[0] : 0.0;
-                occ::log::info("  Site {:2d}: q={:+8.4f}  rank={}  pos=({:8.4f}, {:8.4f}, {:8.4f})",
-                               static_cast<int>(si), q, s.rank,
-                               s.position[0], s.position[1], s.position[2]);
-            }
-        }
-    }
+    occ::log::info("  Neighbor pairs: {}",
+                   optimizer.energy_calculator().neighbor_pairs().size());
+    occ::log::info("  Multipoles: {} sites, lmax = {}",
+                   optimizer.energy_calculator().num_sites(),
+                   opt_settings.max_interaction_order);
 
     // Run optimization
     occ::log::info("\nStarting optimization...\n");
+    occ::timing::start(occ::timing::optimization);
     auto result = optimizer.optimize();
+    occ::timing::stop(occ::timing::optimization);
 
     // Report results
     occ::log::info("\n{:=<60s}", "");
@@ -1512,7 +1048,7 @@ void run_ropt_subcommand(const RoptSettings &settings) {
         if (!result.optimized_crystal.has_value()) {
             occ::log::warn("  Unavailable (optimized crystal reconstruction failed)");
         } else {
-            const auto& uc0 = prepared.crystal.unit_cell();
+            const auto& uc0 = optimizer.energy_calculator().crystal().unit_cell();
             const auto& uc1 = result.optimized_crystal->unit_cell();
 
             auto print_scalar_change = [](const char* label, double v0, double v1,
@@ -1559,14 +1095,21 @@ void run_ropt_subcommand(const RoptSettings &settings) {
 
     if (settings.optimize_cell) {
         if (!settings.compute_elastic_tensor) {
-            occ::log::info("");
             occ::log::info("Elastic tensor: skipped (--no-elastic)");
         } else {
             try {
+                occ::timing::start(occ::timing::elastic_tensor);
                 const auto elastic =
                     compute_elastic_tensor_summary(optimizer, result.final_states,
                                                    result.converged);
+                occ::timing::stop(occ::timing::elastic_tensor);
                 print_elastic_tensor_summary(elastic, result.converged);
+
+                // Write elastic tensor to file if requested
+                if (!settings.elastic_tensor_file.empty() &&
+                    elastic.clamped_gpa.norm() > 0) {
+                    write_elastic_tensor(settings.elastic_tensor_file, elastic);
+                }
             } catch (const std::exception& e) {
                 occ::log::warn("Elastic tensor evaluation failed: {}", e.what());
             }
@@ -1588,6 +1131,35 @@ void run_ropt_subcommand(const RoptSettings &settings) {
                      basename + "_optimized");
     } else {
         occ::log::warn("Could not reconstruct optimized crystal structure");
+    }
+
+    // Write structure JSON if requested
+    if (!settings.structure_json.empty()) {
+        std::string struct_file = settings.structure_json;
+        occ::log::info("Writing structure JSON to {}", struct_file);
+
+        // Build a CrystalEnergySetup with final states
+        auto final_setup = saved_setup;
+        for (int m = 0; m < static_cast<int>(result.final_states.size()) &&
+                        m < static_cast<int>(final_setup.molecules.size()); ++m) {
+            final_setup.molecules[m].com = result.final_states[m].position;
+            final_setup.molecules[m].angle_axis = result.final_states[m].angle_axis;
+            final_setup.molecules[m].parity = result.final_states[m].parity;
+        }
+
+        auto si = mults::to_structure_input(final_setup, basename);
+        if (settings.has_external_pressure) {
+            si.settings.pressure_gpa = settings.external_pressure_gpa;
+        }
+        si.reference.total = result.final_energy;
+        si.reference.components["electrostatic"] = result.electrostatic_energy;
+        si.reference.components["buckingham"] = result.repulsion_dispersion_energy;
+
+        try {
+            occ::io::write_structure_json(struct_file, si);
+        } catch (const std::exception &e) {
+            occ::log::warn("Failed to write structure JSON: {}", e.what());
+        }
     }
 
     occ::log::info("\nDone.");

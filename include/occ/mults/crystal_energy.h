@@ -4,6 +4,7 @@
 #include <occ/mults/force_field_params.h>
 #include <occ/mults/cartesian_force.h>
 #include <occ/mults/cutoff_spline.h>
+#include <occ/mults/crystal_energy_setup.h>
 #include <occ/crystal/crystal.h>
 #include <occ/core/linear_algebra.h>
 #include <map>
@@ -15,16 +16,6 @@
 namespace occ::mults {
 
 struct EwaldLatticeCache;  // Forward declaration (defined in ewald_sum.h)
-
-/**
- * @brief Force field type for repulsion-dispersion interactions.
- */
-enum class ForceFieldType {
-    None,           ///< No short-range interactions
-    LennardJones,   ///< LJ 12-6 potential
-    BuckinghamDE,   ///< Williams DE Buckingham parameters
-    Custom          ///< User-provided parameters
-};
 
 /**
  * @brief State of a rigid molecule (COM position + orientation).
@@ -154,6 +145,11 @@ public:
      * @param ff Force field for short-range (default BuckinghamDE)
      * @param use_cartesian Use Cartesian T-tensor engine (default true)
      */
+    /// Construct from explicit molecule data. No Crystal molecule assembly.
+    /// This is the preferred constructor.
+    explicit CrystalEnergy(CrystalEnergySetup setup);
+
+    /// Legacy constructor from Crystal + MultipleSources.
     CrystalEnergy(const crystal::Crystal& crystal,
                   std::vector<MultipoleSource> multipoles,
                   double cutoff_radius = 20.0,
@@ -162,7 +158,8 @@ public:
                   bool use_ewald = true,
                   double ewald_accuracy = 1e-6,
                   double ewald_eta = 0.0,
-                  int ewald_kmax = 0);
+                  int ewald_kmax = 0,
+                  bool defer_setup = false);
 
     /// Destructor (defined in .cpp for unique_ptr with forward-declared type).
     ~CrystalEnergy();

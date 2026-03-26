@@ -18,6 +18,7 @@ constexpr double AU_TO_EV = 27.211386245988;
 constexpr double AU_TO_KELVIN = AU_TO_JOULE / constants::boltzmann<double>;
 constexpr double EV_TO_JOULE = 1.602176634e-19;
 constexpr double EV_TO_KJ_PER_MOL = EV_TO_JOULE * constants::avogadro<double> / 1000.0;
+constexpr double KJ_PER_MOL_TO_EV = 1.0 / EV_TO_KJ_PER_MOL;
 constexpr double KJ_TO_KCAL = 1.0 / 4.184;
 
 // Frequency/wavenumber conversions

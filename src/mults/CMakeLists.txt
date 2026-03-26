@@ -33,8 +33,9 @@ add_library(occ_mults
     crystal_optimizer.cpp
     cartesian_hessian.cpp
     multipole_coarsening.cpp
-    dmacrys_type_codes.cpp
-    dmacrys_input.cpp
+    rigid_molecule.cpp
+    crystal_energy_setup.cpp
+    structure_setup.cpp
     crystal_strain.cpp
     ewald_sum.cpp
 )

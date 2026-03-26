@@ -8,8 +8,13 @@
 
 namespace occ::mults {
 
-/// Forward declaration of ForceFieldType (defined in crystal_energy.h for now).
-enum class ForceFieldType;
+/// Force field type for repulsion-dispersion interactions.
+enum class ForceFieldType {
+    None,           ///< No short-range interactions
+    LennardJones,   ///< LJ 12-6 potential
+    BuckinghamDE,   ///< Williams DE Buckingham parameters
+    Custom          ///< User-provided parameters
+};
 
 /**
  * @brief Manages force field parameters for short-range interactions.
