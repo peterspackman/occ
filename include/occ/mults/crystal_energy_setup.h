@@ -60,12 +60,25 @@ struct CrystalEnergySetup {
 CrystalEnergySetup
 from_structure_input(const occ::io::StructureInput &si);
 
-/// Build CrystalEnergySetup from a Crystal + MultipleSources (CIF path).
+/// Build CrystalEnergySetup from a Crystal + MultipleSources.
 /// Uses Crystal's unit_cell_molecules() to extract orientations.
-/// This is safe because Crystal built the molecules itself from the CIF.
 CrystalEnergySetup
 from_crystal_and_multipoles(const occ::crystal::Crystal &crystal,
                             const std::vector<MultipoleSource> &multipoles);
+
+/// Configuration for multipole computation from a crystal structure.
+struct MultipoleConfig {
+    std::string method = "b3lyp";          ///< DFT method
+    std::string basis_set = "6-311G**";    ///< Basis set
+    std::string basename = "mol";          ///< Basename for cache files
+    int max_rank = 4;                      ///< Maximum multipole rank
+};
+
+/// Build CrystalEnergySetup from a Crystal by computing DMA multipoles.
+/// Full pipeline: Crystal → SCF → DMA → Williams typing → setup.
+CrystalEnergySetup
+from_crystal(occ::crystal::Crystal &crystal,
+             const MultipoleConfig &config = {});
 
 /// Convert a CrystalEnergySetup to a StructureInput for serialization.
 /// Uses the current molecule placements (COM, angle_axis, parity).

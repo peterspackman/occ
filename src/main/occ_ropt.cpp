@@ -15,12 +15,9 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
-#include <occ/driver/dma_driver.h>
-#include <occ/dma/mult.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/cifwriter.h>
 #include <occ/io/structure_format.h>
-#include <occ/main/monomer_wavefunctions.h>
 #include <occ/main/occ_ropt.h>
 #include <occ/mults/crystal_optimizer.h>
 #include <occ/mults/crystal_energy_setup.h>
@@ -449,108 +446,6 @@ void set_charges_and_multiplicities(const std::string &charge_string,
     }
 }
 
-std::vector<MultipoleSource> compute_multipoles_for_crystal(
-    const std::string &basename,
-    Crystal &crystal,
-    const std::string &model_name,
-    bool spherical_basis) {
-
-    auto molecules = crystal.symmetry_unique_molecules();
-    occ::log::info("Computing multipoles for {} unique molecules", molecules.size());
-
-    // Compute wavefunctions
-    auto wavefunctions = occ::main::calculate_wavefunctions(
-        basename, molecules, model_name, spherical_basis);
-
-    std::vector<MultipoleSource> sources;
-    sources.reserve(molecules.size());
-
-    for (size_t i = 0; i < molecules.size(); ++i) {
-        occ::log::info("Computing DMA for molecule {}", i);
-
-        // Setup DMA config
-        occ::driver::DMAConfig dma_config;
-        dma_config.settings.max_rank = 4;  // Up to hexadecapole
-        dma_config.settings.big_exponent = 4.0;
-
-        // Run DMA directly on wavefunction
-        occ::driver::DMADriver driver(dma_config);
-        auto output = driver.run(wavefunctions[i]);
-
-        // Convert DMA result to MultipoleSource
-        // Each DMA site becomes a body-frame site
-        std::vector<MultipoleSource::BodySite> body_sites;
-
-        const auto &mol = molecules[i];
-        occ::Vec3 com = mol.center_of_mass();
-
-        for (size_t site_idx = 0; site_idx < output.result.multipoles.size(); ++site_idx) {
-            MultipoleSource::BodySite site;
-            site.multipole = output.result.multipoles[site_idx];
-
-            // Position relative to COM (convert from bohr to angstrom)
-            occ::Vec3 pos = output.sites.positions.col(site_idx) * occ::units::BOHR_TO_ANGSTROM;
-            site.offset = pos - com;
-
-            body_sites.push_back(site);
-        }
-
-        sources.emplace_back(std::move(body_sites));
-
-        // Set initial orientation from crystal
-        sources.back().set_orientation(occ::Mat3::Identity(), com);
-    }
-
-    return sources;
-}
-
-/// Expand Z' multipole sources to Z by applying symmetry operations.
-/// Each UC molecule gets a copy of its corresponding unique molecule's
-/// body-frame multipoles, oriented by the crystallographic symmetry operation.
-std::vector<MultipoleSource> expand_to_unit_cell(
-    const std::vector<MultipoleSource> &unique_sources,
-    Crystal &crystal) {
-
-    const auto &uc_mols = crystal.unit_cell_molecules();
-    int Z = static_cast<int>(uc_mols.size());
-    int Z_prime = static_cast<int>(unique_sources.size());
-
-    if (Z == Z_prime) {
-        return unique_sources;  // Already expanded (P1 or manually expanded)
-    }
-
-    std::vector<MultipoleSource> expanded;
-    expanded.reserve(Z);
-
-    for (int m = 0; m < Z; ++m) {
-        const auto &uc_mol = uc_mols[m];
-        int asym_idx = uc_mol.asymmetric_molecule_idx();
-        if (asym_idx < 0 || asym_idx >= Z_prime) {
-            occ::log::warn("UC molecule {} has invalid asymmetric_molecule_idx {}", m, asym_idx);
-            asym_idx = 0;
-        }
-
-        // Copy body sites from the unique molecule
-        const auto &body_sites = unique_sources[asym_idx].body_sites();
-
-        // Get the full crystallographic orientation (proper or improper).
-        auto [R_sym, t_sym] = uc_mol.asymmetric_unit_transformation();
-        const double det = R_sym.determinant();
-        occ::Vec3 com_m = uc_mol.center_of_mass();
-
-        expanded.emplace_back(body_sites);
-        expanded.back().set_orientation(R_sym, com_m);
-
-        occ::log::debug("UC mol {}: asym_idx={}, det(R)={:.0f}, COM=({:.4f}, {:.4f}, {:.4f})",
-                        m, asym_idx, det,
-                        com_m[0], com_m[1], com_m[2]);
-    }
-
-    occ::log::info("Expanded {} unique multipole sources to {} UC molecules",
-                   Z_prime, Z);
-    return expanded;
-}
-
 struct NeighborInteractionRow {
     int center = -1;
     int neighbor = -1;
@@ -853,21 +748,11 @@ PreparedInputs prepare_from_dma(const RoptSettings &settings,
     occ::log::info("Loading crystal from {}", filename);
     Crystal cryst = read_crystal(filename);
 
-    auto molecules = cryst.symmetry_unique_molecules();
-    occ::log::info("Crystal has {} symmetry-unique molecules",
-                   molecules.size());
+    mults::MultipoleConfig mp_config;
+    mp_config.method = settings.model_name;
+    mp_config.basename = basename;
 
-    set_charges_and_multiplicities(settings.charge_string,
-                                   settings.multiplicity_string, molecules);
-
-    occ::log::info("Computing distributed multipoles using {} model",
-                   settings.model_name);
-    auto unique_multipoles = compute_multipoles_for_crystal(
-        basename, cryst, settings.model_name, false);
-
-    auto multipoles = expand_to_unit_cell(unique_multipoles, cryst);
-
-    auto setup = mults::from_crystal_and_multipoles(cryst, multipoles);
+    auto setup = mults::from_crystal(cryst, mp_config);
     return PreparedInputs{std::move(setup), std::nullopt};
 }
 

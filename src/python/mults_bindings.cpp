@@ -7,9 +7,15 @@
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
+#include <occ/core/element.h>
+#include <occ/core/units.h>
+#include <occ/crystal/crystal.h>
+#include <occ/dma/mult.h>
+#include <occ/dma/dma.h>
 #include <occ/io/structure_format.h>
 #include <occ/mults/crystal_energy.h>
 #include <occ/mults/crystal_energy_setup.h>
+#include <occ/mults/multipole_source.h>
 #include <occ/mults/rigid_molecule.h>
 
 using namespace nb::literals;
@@ -207,6 +213,29 @@ nb::module_ register_mults_bindings(nb::module_ &m) {
 
     // ========================================================================
     // Convenience: load JSON -> compute energy in one call
+    // ========================================================================
+
+    // ========================================================================
+    // MultipoleConfig + from_crystal (full CIF pipeline)
+    // ========================================================================
+
+    nb::class_<MultipoleConfig>(m, "MultipoleConfig")
+        .def(nb::init<>())
+        .def_rw("method", &MultipoleConfig::method)
+        .def_rw("basis_set", &MultipoleConfig::basis_set)
+        .def_rw("basename", &MultipoleConfig::basename)
+        .def_rw("max_rank", &MultipoleConfig::max_rank)
+        .def("__repr__", [](const MultipoleConfig &c) {
+            return fmt::format("<MultipoleConfig method='{}' basis='{}' rank={}>",
+                               c.method, c.basis_set, c.max_rank);
+        });
+
+    m.def("from_crystal", &from_crystal,
+          "crystal"_a, "config"_a = MultipoleConfig{},
+          "Build CrystalEnergySetup from Crystal (runs SCF + DMA)");
+
+    // ========================================================================
+    // Convenience functions
     // ========================================================================
 
     m.def("compute_crystal_energy",
