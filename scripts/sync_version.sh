@@ -33,4 +33,11 @@ if [ -f "src/occpy.cpp" ]; then
     rm src/occpy.cpp.bak
 fi
 
+# Update occjs.cpp version constant
+if [ -f "src/occjs.cpp" ]; then
+    sed -i.bak 's/constant("version", std::string("[^"]*"))/constant("version", std::string("'"$VERSION"'"))/' src/occjs.cpp
+    echo "✓ Updated src/occjs.cpp version"
+    rm src/occjs.cpp.bak
+fi
+
 echo "Version sync complete: $VERSION"
