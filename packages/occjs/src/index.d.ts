@@ -451,3 +451,137 @@ export {
   calculateDMA,
   generatePunchFile
 } from './dma.d.ts';
+
+// ============================================================================
+// Crystal energy (mults module)
+// ============================================================================
+
+export interface SiteMultipoles {
+  charge: number;
+  maxRank(): number;
+  toFlat(): number[];
+}
+
+export interface MoleculeSite {
+  label: string;
+  element: string;
+  type: string;
+  position(): number[];
+  multipoles: SiteMultipoles;
+}
+
+export interface MoleculeType {
+  name: string;
+  sites: MoleculeSite[];
+}
+
+export interface BuckinghamPair {
+  A: number;
+  rho: number;
+  C6: number;
+}
+
+export interface Potentials {
+  cutoff: number;
+}
+
+export interface Settings {
+  ewald_accuracy: number;
+  use_ewald: boolean;
+  pressure_gpa: number;
+}
+
+export interface IndependentMolecule {
+  type: string;
+  parity: number;
+  translation(): number[];
+  orientation(): number[];
+}
+
+export interface Basis {
+  potentials: Potentials;
+  settings: Settings;
+}
+
+export interface CrystalData {
+  a: number;
+  b: number;
+  c: number;
+  alpha: number;
+  beta: number;
+  gamma: number;
+  space_group: string;
+}
+
+export interface ReferenceEnergies {
+  total: number;
+}
+
+export interface StructureInput {
+  title: string;
+  basis: Basis;
+  crystal: CrystalData;
+  reference: ReferenceEnergies;
+  hasCrystal(): boolean;
+}
+
+export interface MoleculeState {
+  parity: number;
+  position(): number[];
+  angleAxis(): number[];
+}
+
+export interface CrystalEnergyResult {
+  totalEnergy: number;
+  electrostaticEnergy: number;
+  repulsionDispersion: number;
+}
+
+export interface CrystalEnergySetup {
+  cutoffRadius: number;
+  useEwald: boolean;
+  ewaldAccuracy: number;
+  maxInteractionOrder: number;
+}
+
+export interface CrystalEnergy {
+  compute(states: MoleculeState[]): CrystalEnergyResult;
+  computeEnergy(states: MoleculeState[]): number;
+  initialStates(): MoleculeState[];
+  numMolecules(): number;
+  numSites(): number;
+}
+
+export interface CrystalOptimizerSettings {
+  method: number;
+  gradientTolerance: number;
+  energyTolerance: number;
+  maxIterations: number;
+  forceField: number;
+  optimizeCell: boolean;
+  useEwald: boolean;
+  externalPressureGpa: number;
+}
+
+export interface CrystalOptimizerResult {
+  finalEnergy: number;
+  electrostaticEnergy: number;
+  repulsionDispersionEnergy: number;
+  initialEnergy: number;
+  iterations: number;
+  converged: boolean;
+  terminationReason: string;
+  finalStates: MoleculeState[];
+}
+
+export interface CrystalOptimizer {
+  optimize(): CrystalOptimizerResult;
+  numParameters(): number;
+}
+
+// Module-level functions
+export function readStructureJson(path: string): StructureInput;
+export function writeStructureJson(path: string, input: StructureInput): void;
+export function isStructureFormat(path: string): boolean;
+export function fromStructureInput(si: StructureInput): CrystalEnergySetup;
+export function computeCrystalEnergy(jsonPath: string): CrystalEnergyResult;
