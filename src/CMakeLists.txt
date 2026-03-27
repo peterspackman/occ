@@ -86,6 +86,7 @@ set(JS_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/js/descriptors_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/dma_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/volume_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/mults_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
 )
 
