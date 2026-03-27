@@ -15,6 +15,7 @@
 #include <occ/io/structure_format.h>
 #include <occ/mults/crystal_energy.h>
 #include <occ/mults/crystal_energy_setup.h>
+#include <occ/mults/crystal_optimizer.h>
 #include <occ/mults/multipole_source.h>
 #include <occ/mults/rigid_molecule.h>
 
@@ -214,6 +215,110 @@ nb::module_ register_mults_bindings(nb::module_ &m) {
     // ========================================================================
     // Convenience: load JSON -> compute energy in one call
     // ========================================================================
+
+    // ========================================================================
+    // ForceFieldType enum
+    // ========================================================================
+
+    nb::enum_<ForceFieldType>(m, "ForceFieldType")
+        .value("None", ForceFieldType::None)
+        .value("LennardJones", ForceFieldType::LennardJones)
+        .value("BuckinghamDE", ForceFieldType::BuckinghamDE)
+        .value("Custom", ForceFieldType::Custom);
+
+    // ========================================================================
+    // RigidMolecule
+    // ========================================================================
+
+    nb::class_<RigidMolecule::Site>(m, "RigidMoleculeSite")
+        .def(nb::init<>())
+        .def_rw("position", &RigidMolecule::Site::position)
+        .def_rw("multipole", &RigidMolecule::Site::multipole)
+        .def_rw("atom_index", &RigidMolecule::Site::atom_index)
+        .def_rw("short_range_type", &RigidMolecule::Site::short_range_type);
+
+    nb::class_<RigidMolecule::Atom>(m, "RigidMoleculeAtom")
+        .def(nb::init<>())
+        .def_rw("atomic_number", &RigidMolecule::Atom::atomic_number)
+        .def_rw("position", &RigidMolecule::Atom::position);
+
+    nb::class_<RigidMolecule>(m, "RigidMolecule")
+        .def(nb::init<>())
+        .def_rw("sites", &RigidMolecule::sites)
+        .def_rw("atoms", &RigidMolecule::atoms)
+        .def_rw("com", &RigidMolecule::com)
+        .def_rw("angle_axis", &RigidMolecule::angle_axis)
+        .def_rw("parity", &RigidMolecule::parity)
+        .def("rotation_matrix", &RigidMolecule::rotation_matrix)
+        .def("__repr__", [](const RigidMolecule &rm) {
+            return fmt::format("<RigidMolecule sites={} atoms={} com=({:.3f},{:.3f},{:.3f})>",
+                               rm.sites.size(), rm.atoms.size(),
+                               rm.com.x(), rm.com.y(), rm.com.z());
+        });
+
+    // ========================================================================
+    // CrystalOptimizer
+    // ========================================================================
+
+    nb::enum_<OptimizationMethod>(m, "OptimizationMethod")
+        .value("MSTMIN", OptimizationMethod::MSTMIN)
+        .value("LBFGS", OptimizationMethod::LBFGS)
+        .value("TrustRegion", OptimizationMethod::TrustRegion);
+
+    nb::class_<CrystalOptimizerSettings>(m, "CrystalOptimizerSettings")
+        .def(nb::init<>())
+        .def_rw("method", &CrystalOptimizerSettings::method)
+        .def_rw("gradient_tolerance", &CrystalOptimizerSettings::gradient_tolerance)
+        .def_rw("energy_tolerance", &CrystalOptimizerSettings::energy_tolerance)
+        .def_rw("max_iterations", &CrystalOptimizerSettings::max_iterations)
+        .def_rw("neighbor_radius", &CrystalOptimizerSettings::neighbor_radius)
+        .def_rw("force_field", &CrystalOptimizerSettings::force_field)
+        .def_rw("optimize_cell", &CrystalOptimizerSettings::optimize_cell)
+        .def_rw("use_ewald", &CrystalOptimizerSettings::use_ewald)
+        .def_rw("max_interaction_order", &CrystalOptimizerSettings::max_interaction_order)
+        .def_rw("external_pressure_gpa", &CrystalOptimizerSettings::external_pressure_gpa)
+        .def("__repr__", [](const CrystalOptimizerSettings &s) {
+            return fmt::format("<CrystalOptimizerSettings method={} gtol={:.1e} max_iter={}>",
+                               static_cast<int>(s.method), s.gradient_tolerance,
+                               s.max_iterations);
+        });
+
+    nb::class_<CrystalOptimizerResult>(m, "CrystalOptimizerResult")
+        .def_ro("final_energy", &CrystalOptimizerResult::final_energy)
+        .def_ro("electrostatic_energy", &CrystalOptimizerResult::electrostatic_energy)
+        .def_ro("repulsion_dispersion_energy", &CrystalOptimizerResult::repulsion_dispersion_energy)
+        .def_ro("initial_energy", &CrystalOptimizerResult::initial_energy)
+        .def_ro("iterations", &CrystalOptimizerResult::iterations)
+        .def_ro("function_evaluations", &CrystalOptimizerResult::function_evaluations)
+        .def_ro("converged", &CrystalOptimizerResult::converged)
+        .def_ro("termination_reason", &CrystalOptimizerResult::termination_reason)
+        .def_ro("final_states", &CrystalOptimizerResult::final_states)
+        .def("__repr__", [](const CrystalOptimizerResult &r) {
+            return fmt::format("<CrystalOptimizerResult E={:.4f} converged={} iter={}>",
+                               r.final_energy, r.converged, r.iterations);
+        });
+
+    nb::class_<CrystalOptimizer>(m, "CrystalOptimizer")
+        .def(nb::init<CrystalEnergySetup, const CrystalOptimizerSettings &>(),
+             "setup"_a, "settings"_a = CrystalOptimizerSettings{})
+        .def("optimize", nb::overload_cast<>(&CrystalOptimizer::optimize),
+             "Run crystal structure optimization")
+        .def("energy_calculator",
+             [](CrystalOptimizer &o) -> CrystalEnergy& { return o.energy_calculator(); },
+             nb::rv_policy::reference_internal,
+             "Access the energy calculator")
+        .def("states", &CrystalOptimizer::states,
+             "Get current molecular states")
+        .def("settings",
+             [](const CrystalOptimizer &o) -> const CrystalOptimizerSettings& {
+                 return o.settings();
+             },
+             nb::rv_policy::reference_internal)
+        .def("__repr__", [](const CrystalOptimizer &o) {
+            return fmt::format("<CrystalOptimizer mols={} params={}>",
+                               o.energy_calculator().num_molecules(),
+                               o.num_parameters());
+        });
 
     // ========================================================================
     // MultipoleConfig + from_crystal (full CIF pipeline)
