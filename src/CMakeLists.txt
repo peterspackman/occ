@@ -42,6 +42,7 @@ set(PYTHON_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/python/interaction_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/opt_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/qm_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/mults_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occpy.cpp"
 )
 
