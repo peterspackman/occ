@@ -214,6 +214,7 @@ void from_json(const json &j, ReferenceEnergies &r) {
 // --- Basis ---
 
 void to_json(json &j, const Basis &b) {
+    j["multipole_convention"] = "spherical_gdma";
     j["molecule_types"] = b.molecule_types;
     if (!b.potentials.buckingham.empty()) {
         j["potentials"] = b.potentials;
@@ -222,6 +223,15 @@ void to_json(json &j, const Basis &b) {
 }
 
 void from_json(const json &j, Basis &b) {
+    // Read and validate multipole convention if present
+    if (j.contains("multipole_convention")) {
+        std::string convention = j.at("multipole_convention").get<std::string>();
+        if (convention != "spherical_gdma") {
+            throw std::runtime_error(
+                "Unsupported multipole convention: '" + convention +
+                "' (expected 'spherical_gdma')");
+        }
+    }
     if (j.contains("molecule_types"))
         b.molecule_types =
             j.at("molecule_types").get<std::vector<MoleculeType>>();
