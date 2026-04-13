@@ -73,10 +73,40 @@ std::vector<int> hungarian_min_assignment(const std::vector<std::vector<double>>
 
 } // namespace
 
+namespace {
+
+// Greedy nearest-unused-neighbor matching. O(n^2) per group. Can produce a
+// suboptimal assignment when two atoms compete for the same nearest partner.
+std::vector<int> greedy_nn_min_assignment(
+    const std::vector<std::vector<double>> &cost) {
+  const size_t n_rows = cost.size();
+  const size_t n_cols = n_rows == 0 ? 0 : cost.front().size();
+  std::vector<int> mapping(n_rows, -1);
+  std::vector<char> used(n_cols, false);
+  for (size_t i = 0; i < n_rows; ++i) {
+    double best = std::numeric_limits<double>::infinity();
+    int best_j = -1;
+    for (size_t j = 0; j < n_cols; ++j) {
+      if (used[j]) continue;
+      if (cost[i][j] < best) {
+        best = cost[i][j];
+        best_j = static_cast<int>(j);
+      }
+    }
+    if (best_j >= 0) {
+      mapping[i] = best_j;
+      used[best_j] = true;
+    }
+  }
+  return mapping;
+}
+
+} // namespace
+
 SymmetryMappingResult try_transformation_with_grouped_permutations(
     const IVec &labels_A, const Mat3N &positions_A, const IVec &labels_B,
     const Mat3N &positions_B, const Mat3 &transformation,
-    double rmsd_threshold) {
+    double rmsd_threshold, AtomMatchingMethod method) {
 
   // Apply transformation to positions B
   Mat3N transformed_positions = transformation * positions_B;
@@ -136,7 +166,10 @@ SymmetryMappingResult try_transformation_with_grouped_permutations(
             (group_positions_A.col(i) - group_transformed_B.col(j)).squaredNorm();
       }
     }
-    const std::vector<int> group_mapping = hungarian_min_assignment(cost);
+    const std::vector<int> group_mapping =
+        (method == AtomMatchingMethod::Hungarian)
+            ? hungarian_min_assignment(cost)
+            : greedy_nn_min_assignment(cost);
 
     double group_diff_norm_sq = 0.0;
     for (size_t i = 0; i < indices_A.size(); ++i) {

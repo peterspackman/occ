@@ -24,7 +24,18 @@ public:
   UnitCell(double a, double b, double c, double alpha, double beta,
            double gamma);
   UnitCell(const Vec3 &lengths, const Vec3 &angles);
+
+  /// Construct from a matrix of lattice vectors (columns = a, b, c).
+  /// The matrix is canonicalized: only (a, b, c, α, β, γ) are extracted and
+  /// the direct matrix is rebuilt in the conventional orientation (a along x,
+  /// b in the xy plane). This loses the original basis orientation.
   UnitCell(const Mat3 &vectors);
+
+  /// Construct from a matrix of lattice vectors (columns = a, b, c) while
+  /// preserving the input direct matrix exactly. Use this when the basis
+  /// orientation matters (e.g. derivatives under affine strain) and must not
+  /// be silently rotated via (a, b, c, α, β, γ) reconstruction.
+  static UnitCell from_lattice_vectors(const Mat3 &vectors);
 
   /// the length of the a-axis in Angstroms
   inline double a() const { return m_lengths(0); }

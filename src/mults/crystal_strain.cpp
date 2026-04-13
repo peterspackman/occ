@@ -69,7 +69,7 @@ apply_strain(const CrystalEnergySetup &setup, const Mat3 &strain) {
     Mat3 strained_direct = deformation * setup.unit_cell.direct();
 
     CrystalEnergySetup strained = setup;
-    strained.unit_cell = crystal::UnitCell(strained_direct);
+    strained.unit_cell = crystal::UnitCell::from_lattice_vectors(strained_direct);
     for (auto &mol : strained.molecules) {
         mol.com = deformation * mol.com;
     }
@@ -86,7 +86,7 @@ evaluate_strained(CrystalEnergy &calc,
     Mat3 deformation = Mat3::Identity() + strain;
     Mat3 strained_direct = deformation * ref_setup.unit_cell.direct();
 
-    crystal::UnitCell strained_uc(strained_direct);
+    crystal::UnitCell strained_uc = crystal::UnitCell::from_lattice_vectors(strained_direct);
     // Build a minimal Crystal for update_lattice (only UnitCell is used)
     crystal::Crystal strained_crystal(crystal::AsymmetricUnit{},
                                       crystal::SpaceGroup("P1"),
