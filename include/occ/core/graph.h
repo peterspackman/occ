@@ -1,5 +1,6 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
+#include <algorithm>
 #include <queue>
 #include <set>
 #include <stack>
