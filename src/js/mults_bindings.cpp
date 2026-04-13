@@ -1,6 +1,7 @@
 #include "mults_bindings.h"
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
+#include <occ/crystal/crystal.h>
 #include <occ/io/structure_format.h>
 #include <occ/mults/crystal_energy.h>
 #include <occ/mults/crystal_energy_setup.h>
@@ -121,6 +122,11 @@ void register_mults_bindings() {
     // File I/O
     function("readStructureJson", &occ::io::read_structure_json);
     function("writeStructureJson", &occ::io::write_structure_json);
+    function("writeForceFieldJson", optional_override(
+        [](const std::string &path, const occ::io::Basis &basis,
+           const std::string &title) {
+            occ::io::write_force_field_json(path, basis, title);
+        }));
     function("isStructureFormat", &occ::io::is_structure_format);
 
     // ========================================================================
@@ -215,7 +221,71 @@ void register_mults_bindings() {
         .constructor<CrystalEnergySetup, CrystalOptimizerSettings>()
         .function("optimize", select_overload<CrystalOptimizerResult()>(
             &CrystalOptimizer::optimize))
-        .function("numParameters", &CrystalOptimizer::num_parameters);
+        .function("numParameters", &CrystalOptimizer::num_parameters)
+        .function("states", optional_override(
+            [](const CrystalOptimizer &o) { return o.states(); }))
+        .function("initialStates", optional_override(
+            [](const CrystalOptimizer &o) { return o.initial_states(); }))
+        .function("settings", optional_override(
+            [](const CrystalOptimizer &o) { return o.settings(); }))
+        .function("energyCalculator", optional_override(
+            [](CrystalOptimizer &o) { return &o.energy_calculator(); }),
+            allow_raw_pointers());
+
+    // ========================================================================
+    // RigidMolecule
+    // ========================================================================
+
+    register_vector<RigidMolecule::Site>("VectorRigidMoleculeSite");
+    register_vector<RigidMolecule::Atom>("VectorRigidMoleculeAtom");
+    register_vector<RigidMolecule>("VectorRigidMolecule");
+
+    class_<RigidMolecule::Site>("RigidMoleculeSite")
+        .constructor<>()
+        .function("position", optional_override(
+            [](const RigidMolecule::Site &s) { return vec3_to_array(s.position); }))
+        .property("multipole", &RigidMolecule::Site::multipole)
+        .property("atomIndex", &RigidMolecule::Site::atom_index)
+        .property("shortRangeType", &RigidMolecule::Site::short_range_type);
+
+    class_<RigidMolecule::Atom>("RigidMoleculeAtom")
+        .constructor<>()
+        .property("atomicNumber", &RigidMolecule::Atom::atomic_number)
+        .function("position", optional_override(
+            [](const RigidMolecule::Atom &a) { return vec3_to_array(a.position); }));
+
+    class_<RigidMolecule>("RigidMolecule")
+        .constructor<>()
+        .property("parity", &RigidMolecule::parity)
+        .function("com", optional_override(
+            [](const RigidMolecule &m) { return vec3_to_array(m.com); }))
+        .function("angleAxis", optional_override(
+            [](const RigidMolecule &m) { return vec3_to_array(m.angle_axis); }))
+        .function("sites", optional_override(
+            [](const RigidMolecule &m) { return m.sites; }))
+        .function("atoms", optional_override(
+            [](const RigidMolecule &m) { return m.atoms; }));
+
+    // ========================================================================
+    // MultipoleConfig + from_crystal (SCF + DMA pipeline)
+    // ========================================================================
+
+    class_<MultipoleConfig>("MultipoleConfig")
+        .constructor<>()
+        .property("method", &MultipoleConfig::method)
+        .property("basisSet", &MultipoleConfig::basis_set)
+        .property("basename", &MultipoleConfig::basename)
+        .property("maxRank", &MultipoleConfig::max_rank);
+
+    function("fromCrystal", optional_override(
+        [](occ::crystal::Crystal &crystal, const MultipoleConfig &config) {
+            return from_crystal(crystal, config);
+        }));
+
+    function("toStructureInput", optional_override(
+        [](const CrystalEnergySetup &setup, const std::string &title) {
+            return to_structure_input(setup, title);
+        }));
 
     // ========================================================================
     // Convenience

@@ -112,6 +112,7 @@ target_link_libraries(occjs PUBLIC
     occ_isosurface
     occ_opt
     occ_mults
+    occ_main
     occ_descriptors
 )
 
