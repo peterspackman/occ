@@ -337,8 +337,8 @@ void write_structure_json(const std::string &path, const StructureInput &input) 
     file << j.dump(2) << "\n";
 }
 
-void write_basis_json(const std::string &path, const Basis &basis,
-                      const std::string &title) {
+void write_force_field_json(const std::string &path, const Basis &basis,
+                            const std::string &title) {
     json j;
     if (!title.empty()) j["title"] = title;
     j["basis"] = basis;

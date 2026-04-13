@@ -130,9 +130,10 @@ nb::module_ register_mults_bindings(nb::module_ &m) {
     m.def("write_structure_json", &occ::io::write_structure_json,
           "path"_a, "input"_a,
           "Write a StructureInput to a JSON file");
-    m.def("write_basis_json", &occ::io::write_basis_json,
+    m.def("write_force_field_json", &occ::io::write_force_field_json,
           "path"_a, "basis"_a, "title"_a = "",
-          "Write a Basis to a JSON file (no crystal data)");
+          "Write a force-field definition (molecule types, multipoles, pair "
+          "potentials, settings) to a JSON file. No crystal data.");
     m.def("is_structure_format", &occ::io::is_structure_format, "path"_a,
           "Check if a JSON file is a structure format file");
 

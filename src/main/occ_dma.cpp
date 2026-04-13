@@ -88,7 +88,7 @@ CLI::App *add_dma_subcommand(CLI::App &app) {
                 "write neighcrys-compatible molecular axis file");
   
   dma->add_option("--write-csp-input", config->csp_input_filename,
-                  "write basis JSON file (molecules + multipoles + potentials) for CSP programs");
+                  "write force-field JSON (molecules + multipoles + pair potentials + settings) for CSP programs");
 
   // TOML configuration support
   dma->set_config("--config", "dma.toml", "Read TOML configuration", false);
@@ -269,7 +269,7 @@ void run_dma_subcommand(const DMAConfig &config) {
       basis.potentials.buckingham.push_back(std::move(bp));
     }
 
-    occ::io::write_basis_json(config.csp_input_filename, basis, "mol");
+    occ::io::write_force_field_json(config.csp_input_filename, basis, "mol");
     occ::log::info("Wrote CSP input (basis JSON) to {}",
                    config.csp_input_filename);
   }

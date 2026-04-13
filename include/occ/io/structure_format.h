@@ -161,9 +161,12 @@ void from_json(const nlohmann::json &j, StructureInput &si);
 StructureInput read_structure_json(const std::string &path);
 void write_structure_json(const std::string &path, const StructureInput &input);
 
-/// Write only the basis section to a JSON file.
-void write_basis_json(const std::string &path, const Basis &basis,
-                      const std::string &title = "");
+/// Write only the force-field section (molecule definitions, multipoles, pair
+/// potentials, and model settings) to a standalone JSON file. Despite the
+/// serialized key being "basis" for historical reasons, this is distinct from
+/// the GTO basis set used elsewhere in OCC.
+void write_force_field_json(const std::string &path, const Basis &basis,
+                            const std::string &title = "");
 
 /// Detect whether a JSON file uses the structure format.
 bool is_structure_format(const std::string &json_path);
