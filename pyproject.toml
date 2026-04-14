@@ -52,4 +52,11 @@ MACOSX_DEPLOYMENT_TARGET = "10.15"
 
 # Pyodide doesn't support C++ exceptions - disable them and abort on throw
 [tool.cibuildwheel.pyodide.environment]
-CMAKE_ARGS = "-DCMAKE_CXX_FLAGS=-fno-exceptions"
+CMAKE_ARGS = "-DCMAKE_CXX_FLAGS=-fno-exceptions -DWITH_PYTHON_BINDINGS=ON"
+
+[tool.uv.workspace]
+members = [
+    "tests-py",
+    ".",
+    ".",
+]

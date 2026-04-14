@@ -24,7 +24,7 @@
 
 namespace nb = nanobind;
 
-NB_MODULE(_occpy, m) {
+__attribute__ ((visibility ("default"))) NB_MODULE(_occpy, m) {
   // Register core submodule
   auto core = register_core_bindings(m);
   auto cg = register_cg_bindings(m);

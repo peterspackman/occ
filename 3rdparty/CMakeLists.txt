@@ -1,5 +1,6 @@
 set(CMAKE_UNITY_BUILD OFF)
 
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY "fmtlib/fmt"
@@ -13,6 +14,8 @@ CPMAddPackage(
     OPTIONS "SPDLOG_FMT_EXTERNAL ON"
     VERSION "1.x"
 )
+
+endif ()
 
 if(NOT "${USE_SYSTEM_TBB}")
 
@@ -30,7 +33,7 @@ endif()
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     list(APPEND TBB_OPTIONS "CMAKE_CXX_FLAGS=-O2 -fno-stack-clash-protection -fno-fcf-protection")
 endif()
-
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME oneTBB
     GITHUB_REPOSITORY "uxlfoundation/oneTBB"
@@ -38,7 +41,9 @@ CPMAddPackage(
     OPTIONS ${TBB_OPTIONS}
 )
 endif()
+endif()
 
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME unordered_dense
     GITHUB_REPOSITORY "martinus/unordered_dense"
@@ -59,6 +64,7 @@ CPMAddPackage(
     VERSION "2.4.2"
 )
 
+endif()
 if("${USE_MLX}")
 CPMAddPackage(
     NAME mlx
@@ -66,12 +72,13 @@ CPMAddPackage(
     VERSION "0.6.0"
 )
 else()
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME "nlohmann_json"
     GITHUB_REPOSITORY "nlohmann/json"
     VERSION "3.11.3"
 )
-
+endif()
 endif()
 
 if(NOT "${USE_SYSTEM_EIGEN}")
@@ -88,7 +95,7 @@ if("${eigen3_ADDED}")
 endif()
 
 endif()
-
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME gemmi
     GITHUB_REPOSITORY project-gemmi/gemmi
@@ -122,7 +129,7 @@ if("${LBFGSpp_ADDED}")
     add_library(LBFGSpp::LBFGSpp INTERFACE IMPORTED GLOBAL)
     target_include_directories(LBFGSpp::LBFGSpp INTERFACE "${LBFGSpp_SOURCE_DIR}/include")
 endif()
-
+endif()
 if("${USE_QCINT}")
     set(LIBCINT_REPOSITORY "sunqm/qcint")
 else()
@@ -135,7 +142,7 @@ endif ()
 
 # Add compiler flags to fix the implicit function declaration error
 set(LIBCINT_C_FLAGS "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE")
-
+if (NOT NIX_BUILD)
 CPMAddPackage(
     NAME libcint
     GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
@@ -152,7 +159,7 @@ CPMAddPackage(
         ${LIBCINT_BUILD_TYPE}
     VERSION "6.1.2"
 )
-
+endif()
 # Apply the flags to the target after it's created
 if(TARGET cint)
     target_compile_options(cint PRIVATE 
@@ -160,7 +167,7 @@ if(TARGET cint)
         -Wno-deprecated-non-prototype
     )
 endif()
-
+if (NOT NIX_BUILD)
 add_library(libcint::libcint INTERFACE IMPORTED GLOBAL) 
 target_link_libraries(libcint::libcint INTERFACE cint)
 target_include_directories(
@@ -169,7 +176,7 @@ target_include_directories(
     "${libcint_SOURCE_DIR}/src"
     "${libcint_BINARY_DIR}/include"
 )
-
+endif()
 if(NOT "${USE_SYSTEM_LIBXC}")
 CPMAddPackage(
     NAME Libxc
@@ -188,11 +195,10 @@ target_include_directories(
     "${Libxc_BINARY_DIR}/src"
     "${Libxc_BINARY_DIR}"
 )
-
 endif()
 
 
-if("${WITH_PYTHON_BINDINGS}")
+if("${WITH_PYTHON_BINDINGS}" AND NOT NIX_BUILD)
 CPMAddPackage(
     NAME nanobind
     GITHUB_REPOSITORY "wjakob/nanobind"

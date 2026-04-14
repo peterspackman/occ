@@ -121,6 +121,7 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
                     const UnitCell &>())
       .def("symmetry_unique_molecules", &Crystal::symmetry_unique_molecules)
       .def("symmetry_unique_dimers", &Crystal::symmetry_unique_dimers)
+      .def("symmetry_operations", &Crystal::symmetry_operations)
       .def("unit_cell", &Crystal::unit_cell)
       .def("unit_cell_molecules", &Crystal::unit_cell_molecules)
       .def("unit_cell_atoms", &Crystal::unit_cell_atoms)
