@@ -15,6 +15,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elastic_fit.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_embed.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_ropt.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_surface_cuts.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
@@ -22,7 +23,7 @@ add_library(occ_main
 )
 
 target_link_libraries(occ_main
-    PUBLIC 
+    PUBLIC
     occ_core
     occ_xtb
     occ_qm
@@ -41,6 +42,7 @@ target_link_libraries(occ_main
     occ_descriptors
     occ_cg
     occ_elastic_fit
+    occ_mults
     CLI11::CLI11
 )
 target_include_directories(occ_main PUBLIC 

@@ -6,6 +6,7 @@
 #include "python/dma_bindings.h"
 #include "python/interaction_bindings.h"
 #include "python/isosurface_bindings.h"
+#include "python/mults_bindings.h"
 #include "python/opt_bindings.h"
 #include "python/qm_bindings.h"
 #include <nanobind/nanobind.h>
@@ -34,6 +35,7 @@ NB_MODULE(_occpy, m) {
   auto dma = register_dma_bindings(m);
   auto iso = register_isosurface_bindings(m);
   auto intr = register_interaction_bindings(m);
+  auto mults = register_mults_bindings(m);
   auto opt = register_opt_bindings(m);
 
   // LogLevel enum is already registered in core_bindings.cpp
@@ -57,6 +59,6 @@ NB_MODULE(_occpy, m) {
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.8.8";
+  m.attr("__version__") = "0.9.0";
 #endif
 }

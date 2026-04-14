@@ -62,6 +62,9 @@ enum category {
   mp2_energy,
   global,
   cosx,
+  crystal_energy,
+  optimization,
+  elastic_tensor,
   _group_count
 };
 

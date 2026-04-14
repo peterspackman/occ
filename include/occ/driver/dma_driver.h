@@ -29,6 +29,7 @@ struct DMAConfig {
     bool write_punch{true};
     bool write_oriented_xyz{false};
     bool write_axis_file{false};
+    std::string csp_input_filename;  // write basis JSON for CSP programs
 };
 
 class DMADriver {

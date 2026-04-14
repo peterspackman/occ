@@ -656,9 +656,14 @@ void Crystal::update_symmetry_unique_molecules() const {
 
   occ::core::label_molecules_by_chemical_formula(m_symmetry_unique_molecules);
   for (auto &mol : m_unit_cell_molecules) {
-    // TODO set symop that generates it
-    mol.set_name(
-        m_symmetry_unique_molecules[mol.asymmetric_molecule_idx()].name());
+    int idx = mol.asymmetric_molecule_idx();
+    if (idx >= 0 && idx < static_cast<int>(m_symmetry_unique_molecules.size())) {
+      mol.set_name(m_symmetry_unique_molecules[idx].name());
+    } else {
+      occ::log::warn("Unit-cell molecule {} has no valid symmetry mapping; assigning fallback name",
+                     mol.unit_cell_molecule_idx());
+      mol.set_name("UNMAPPED");
+    }
   }
   m_symmetry_unique_molecules_needs_update = false;
 
@@ -719,6 +724,13 @@ void Crystal::ensure_uc_asym_molecule_mapping() const {
               "Applied permutation to UC molecule {}: RMSD = {:.6e}", uc_idx,
               result.rmsd);
         }
+
+        // Store the crystallographic transformation: uc_pos = R * asym_pos + t
+        const auto &current_uc_mol = m_unit_cell_molecules[uc_idx];
+        Vec3 translation =
+            current_uc_mol.centroid() - rotation * asym_mol.centroid();
+        m_unit_cell_molecules[uc_idx].set_asymmetric_unit_transformation(
+            rotation, translation);
 
         found_mapping = true;
         break;

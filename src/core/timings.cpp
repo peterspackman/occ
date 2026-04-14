@@ -121,6 +121,12 @@ const char *category_name(category cat) {
     return "Post-HF methods";
   case cosx:
     return "COSX seminumerical exchange";
+  case crystal_energy:
+    return "Crystal energy evaluation";
+  case optimization:
+    return "Optimization";
+  case elastic_tensor:
+    return "Elastic tensor";
   default:
     return "other";
   }
@@ -167,6 +173,9 @@ void print_timings() {
       dma_total,
       post_hf,
       cosx,
+      crystal_energy,
+      optimization,
+      elastic_tensor,
       global,
   };
   log::info("Wall clock time by category (s)");

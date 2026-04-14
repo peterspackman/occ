@@ -28,6 +28,29 @@ UnitCell::UnitCell(const Mat3 &vectors) : m_lengths(vectors.colwise().norm()) {
   update_cell_matrices();
 }
 
+UnitCell UnitCell::from_lattice_vectors(const Mat3 &vectors) {
+  UnitCell uc;
+  uc.m_lengths = vectors.colwise().norm();
+  Vec3 u_a = vectors.col(0) / uc.m_lengths(0);
+  Vec3 u_b = vectors.col(1) / uc.m_lengths(1);
+  Vec3 u_c = vectors.col(2) / uc.m_lengths(2);
+  uc.m_angles(0) = std::acos(std::clamp(u_b.dot(u_c), -1.0, 1.0));
+  uc.m_angles(1) = std::acos(std::clamp(u_c.dot(u_a), -1.0, 1.0));
+  uc.m_angles(2) = std::acos(std::clamp(u_a.dot(u_b), -1.0, 1.0));
+  for (int i = 0; i < 3; ++i) {
+    uc.m_sin[i] = std::sin(uc.m_angles[i]);
+    uc.m_cos[i] = std::cos(uc.m_angles[i]);
+  }
+  // Preserve the input direct lattice matrix exactly; do NOT canonicalize
+  // through (a,b,c,α,β,γ) reconstruction (which rotates/shears the basis and
+  // breaks derivatives under affine strain).
+  uc.m_direct = vectors;
+  uc.m_inverse = uc.m_direct.inverse();
+  uc.m_reciprocal = uc.m_inverse.transpose();
+  uc.m_volume = std::abs(uc.m_direct.determinant());
+  return uc;
+}
+
 void UnitCell::set_a(double a) {
   if (a >= 0.0) {
     m_lengths(0) = a;

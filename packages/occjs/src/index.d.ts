@@ -451,3 +451,180 @@ export {
   calculateDMA,
   generatePunchFile
 } from './dma.d.ts';
+
+// ============================================================================
+// Crystal energy (mults module)
+// ============================================================================
+
+export interface SiteMultipoles {
+  charge: number;
+  maxRank(): number;
+  toFlat(): number[];
+}
+
+export interface MoleculeSite {
+  label: string;
+  element: string;
+  type: string;
+  position(): number[];
+  multipoles: SiteMultipoles;
+}
+
+export interface MoleculeType {
+  name: string;
+  sites: MoleculeSite[];
+}
+
+export interface BuckinghamPair {
+  A: number;
+  rho: number;
+  C6: number;
+}
+
+export interface Potentials {
+  cutoff: number;
+}
+
+export interface Settings {
+  ewald_accuracy: number;
+  use_ewald: boolean;
+  pressure_gpa: number;
+}
+
+export interface IndependentMolecule {
+  type: string;
+  parity: number;
+  translation(): number[];
+  orientation(): number[];
+}
+
+export interface Basis {
+  potentials: Potentials;
+  settings: Settings;
+}
+
+export interface CrystalData {
+  a: number;
+  b: number;
+  c: number;
+  alpha: number;
+  beta: number;
+  gamma: number;
+  space_group: string;
+}
+
+export interface ReferenceEnergies {
+  total: number;
+}
+
+export interface StructureInput {
+  title: string;
+  basis: Basis;
+  crystal: CrystalData;
+  reference: ReferenceEnergies;
+  hasCrystal(): boolean;
+}
+
+export interface MoleculeState {
+  parity: number;
+  position(): number[];
+  angleAxis(): number[];
+}
+
+export interface CrystalEnergyResult {
+  totalEnergy: number;
+  electrostaticEnergy: number;
+  repulsionDispersion: number;
+}
+
+export interface CrystalEnergySetup {
+  cutoffRadius: number;
+  useEwald: boolean;
+  ewaldAccuracy: number;
+  maxInteractionOrder: number;
+}
+
+export interface CrystalEnergy {
+  compute(states: MoleculeState[]): CrystalEnergyResult;
+  computeEnergy(states: MoleculeState[]): number;
+  initialStates(): MoleculeState[];
+  numMolecules(): number;
+  numSites(): number;
+}
+
+export interface CrystalOptimizerSettings {
+  method: number;
+  gradientTolerance: number;
+  energyTolerance: number;
+  maxIterations: number;
+  forceField: number;
+  optimizeCell: boolean;
+  useEwald: boolean;
+  externalPressureGpa: number;
+}
+
+export interface CrystalOptimizerResult {
+  finalEnergy: number;
+  electrostaticEnergy: number;
+  repulsionDispersionEnergy: number;
+  initialEnergy: number;
+  iterations: number;
+  converged: boolean;
+  terminationReason: string;
+  finalStates: MoleculeState[];
+}
+
+export interface CrystalOptimizer {
+  optimize(): CrystalOptimizerResult;
+  numParameters(): number;
+  states(): MoleculeState[];
+  initialStates(): MoleculeState[];
+  settings(): CrystalOptimizerSettings;
+  energyCalculator(): CrystalEnergy;
+}
+
+// Body-frame rigid molecule (multipole sites + atoms + placement)
+export interface RigidMoleculeSite {
+  position(): number[];
+  multipole: import('./dma.d.ts').Mult;
+  atomIndex: number;
+  shortRangeType: number;
+}
+
+export interface RigidMoleculeAtom {
+  atomicNumber: number;
+  position(): number[];
+}
+
+export interface RigidMolecule {
+  parity: number;
+  com(): number[];
+  angleAxis(): number[];
+  sites(): RigidMoleculeSite[];
+  atoms(): RigidMoleculeAtom[];
+}
+
+// Options for multipole computation from a Crystal (runs SCF + DMA).
+export interface MultipoleConfig {
+  method: string;
+  basisSet: string;
+  basename: string;
+  maxRank: number;
+}
+
+// Module-level functions
+export function readStructureJson(path: string): StructureInput;
+export function writeStructureJson(path: string, input: StructureInput): void;
+// Write molecule types + multipoles + pair potentials + settings to JSON (no
+// crystal block). Name is chosen to avoid confusion with GTO basis sets.
+export function writeForceFieldJson(path: string, basis: Basis, title?: string): void;
+export function isStructureFormat(path: string): boolean;
+export function fromStructureInput(si: StructureInput): CrystalEnergySetup;
+export function toStructureInput(setup: CrystalEnergySetup, title?: string): StructureInput;
+// Opaque handle for the native Crystal class. The Crystal bindings live in a
+// separate module and are not typed here yet — treat this as a nominal alias.
+export type Crystal = unknown;
+
+// Full pipeline: Crystal -> SCF -> DMA -> CrystalEnergySetup.
+export function fromCrystal(crystal: Crystal, config?: MultipoleConfig): CrystalEnergySetup;
+export function computeCrystalEnergy(jsonPath: string): CrystalEnergyResult;

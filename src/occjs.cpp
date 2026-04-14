@@ -7,6 +7,7 @@
 #include "js/crystal_bindings.h"
 #include "js/descriptors_bindings.h"
 #include "js/dma_bindings.h"
+#include "js/mults_bindings.h"
 #include "js/volume_bindings.h"
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
@@ -27,6 +28,7 @@ EMSCRIPTEN_BINDINGS(occ) {
     register_crystal_bindings();
     register_descriptors_bindings();
     register_dma_bindings();
+    register_mults_bindings();
     register_volume_bindings();
 
     // Global utility functions
@@ -34,5 +36,5 @@ EMSCRIPTEN_BINDINGS(occ) {
     function("setLogFile", &occ::log::set_log_file);
 
     // Version information
-    constant("version", std::string("0.7.6"));
+    constant("version", std::string("0.9.0"));
 }

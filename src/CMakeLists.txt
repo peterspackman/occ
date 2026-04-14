@@ -4,6 +4,7 @@ add_subdirectory(core)
 add_subdirectory(disp)
 add_subdirectory(crystal)
 add_subdirectory(dma)
+add_subdirectory(mults)
 add_subdirectory(interaction)
 add_subdirectory(geometry)
 add_subdirectory(gto)
@@ -41,6 +42,7 @@ set(PYTHON_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/python/interaction_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/opt_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/qm_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/mults_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occpy.cpp"
 )
 
@@ -84,6 +86,7 @@ set(JS_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/js/descriptors_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/dma_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/volume_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/mults_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
 )
 
@@ -108,6 +111,8 @@ target_link_libraries(occjs PUBLIC
     occ_driver
     occ_isosurface
     occ_opt
+    occ_mults
+    occ_main
     occ_descriptors
 )
 

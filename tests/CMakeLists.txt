@@ -67,6 +67,10 @@ add_executable(io_tests "${CMAKE_CURRENT_SOURCE_DIR}/io_tests.cpp")
 target_link_libraries(io_tests PRIVATE occ_io Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(io_tests)
 
+add_executable(structure_format_test "${CMAKE_CURRENT_SOURCE_DIR}/structure_format_test.cpp")
+target_link_libraries(structure_format_test PRIVATE occ_io Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(structure_format_test)
+
 add_executable(io_periodic_grid_tests "${CMAKE_CURRENT_SOURCE_DIR}/io_periodic_grid_tests.cpp")
 target_link_libraries(io_periodic_grid_tests PRIVATE occ_io occ_dft Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(io_periodic_grid_tests)
@@ -141,3 +145,23 @@ catch_discover_tests(opt_tests)
 add_executable(ints_tests "${CMAKE_CURRENT_SOURCE_DIR}/ints_tests.cpp")
 target_link_libraries(ints_tests PRIVATE occ_ints occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(ints_tests)
+
+add_executable(mults_tests
+    "${CMAKE_CURRENT_SOURCE_DIR}/mults_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/derivative_transform_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/short_range_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/rigid_body_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/coordinate_system_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/rotation_validation_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/orient_reference_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartesian_interaction_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartesian_force_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cutoff_spline_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/mults_benchmark.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_source_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_hessian_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_coarsening_test.cpp"
+)
+target_link_libraries(mults_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(mults_tests PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+catch_discover_tests(mults_tests)
