@@ -11,5 +11,6 @@ var searchData=
   ['orbitalindex_8',['OrbitalIndex',['../structocc_1_1isosurface_1_1OrbitalIndex.html',1,'occ::isosurface']]],
   ['orbitalsmearing_9',['OrbitalSmearing',['../structocc_1_1qm_1_1OrbitalSmearing.html',1,'occ::qm']]],
   ['orcajsonreader_10',['OrcaJSONReader',['../classocc_1_1io_1_1OrcaJSONReader.html',1,'occ::io']]],
-  ['outputinput_11',['OutputInput',['../structocc_1_1io_1_1OutputInput.html',1,'occ::io']]]
+  ['orientsite_11',['OrientSite',['../structocc_1_1mults_1_1OrientSite.html',1,'occ::mults']]],
+  ['outputinput_12',['OutputInput',['../structocc_1_1io_1_1OutputInput.html',1,'occ::io']]]
 ];

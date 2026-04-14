@@ -153,6 +153,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1PromolDensityFunctor.html">PromolDensityFunctor</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1RoptSettings.html">RoptSettings</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1SpinorbitalKindValidator.html">SpinorbitalKindValidator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1SurfaceCutsConfig.html">SurfaceCutsConfig</a></td></tr>
@@ -239,6 +241,10 @@ Functions</h2></td></tr>
 <tr class="separator:af5a4342ceed7b784901aaecce3714710"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a608fdd74696cf1352fcd7d9ec6879158" id="r_a608fdd74696cf1352fcd7d9ec6879158"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a608fdd74696cf1352fcd7d9ec6879158">run_pair_subcommand</a> (<a class="el" href="structocc_1_1main_1_1OccPairInput.html">OccPairInput</a> const &amp;)</td></tr>
 <tr class="separator:a608fdd74696cf1352fcd7d9ec6879158"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c16c474be6d3ee56262cac8ca28cc76" id="r_a5c16c474be6d3ee56262cac8ca28cc76"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a5c16c474be6d3ee56262cac8ca28cc76">add_ropt_subcommand</a> (CLI::App &amp;app)</td></tr>
+<tr class="separator:a5c16c474be6d3ee56262cac8ca28cc76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03d7c48ecc2387cccce5f52aedb13802" id="r_a03d7c48ecc2387cccce5f52aedb13802"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a03d7c48ecc2387cccce5f52aedb13802">run_ropt_subcommand</a> (const <a class="el" href="structocc_1_1main_1_1RoptSettings.html">RoptSettings</a> &amp;settings)</td></tr>
+<tr class="separator:a03d7c48ecc2387cccce5f52aedb13802"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae511686fd65aa890b10a84b0e8b04aa7" id="r_ae511686fd65aa890b10a84b0e8b04aa7"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#ae511686fd65aa890b10a84b0e8b04aa7">add_scf_subcommand</a> (CLI::App &amp;app)</td></tr>
 <tr class="separator:ae511686fd65aa890b10a84b0e8b04aa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6e0de5b65ad14e7e280e4005f7291ce" id="r_aa6e0de5b65ad14e7e280e4005f7291ce"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#aa6e0de5b65ad14e7e280e4005f7291ce">run_scf_subcommand</a> (<a class="el" href="structocc_1_1io_1_1OccInput.html">occ::io::OccInput</a> config)</td></tr>
@@ -516,6 +522,24 @@ Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">CLI::App * occ::main::add_pair_subcommand </td>
+          <td>(</td>
+          <td class="paramtype">CLI::App &amp;&#160;</td>
+          <td class="paramname"><em>app</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5c16c474be6d3ee56262cac8ca28cc76" name="a5c16c474be6d3ee56262cac8ca28cc76"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c16c474be6d3ee56262cac8ca28cc76">&#9670;&#160;</a></span>add_ropt_subcommand()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CLI::App * occ::main::add_ropt_subcommand </td>
           <td>(</td>
           <td class="paramtype">CLI::App &amp;&#160;</td>
           <td class="paramname"><em>app</em></td><td>)</td>
@@ -1038,6 +1062,24 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structocc_1_1main_1_1OccPairInput.html">OccPairInput</a> const &amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a03d7c48ecc2387cccce5f52aedb13802" name="a03d7c48ecc2387cccce5f52aedb13802"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03d7c48ecc2387cccce5f52aedb13802">&#9670;&#160;</a></span>run_ropt_subcommand()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::main::run_ropt_subcommand </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1main_1_1RoptSettings.html">RoptSettings</a> &amp;&#160;</td>
+          <td class="paramname"><em>settings</em></td><td>)</td>
           <td></td>
         </tr>
       </table>

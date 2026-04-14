@@ -1,0 +1,5 @@
+<map id="occ::mults::RigidBodyState::BodySite" name="occ::mults::RigidBodyState::BodySite">
+<area shape="rect" id="Node000001" title="Body&#45;frame site: multipole expansion at an offset from the center of mass." alt="" coords="5,93,203,133"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1dma_1_1Mult.html" title=" " alt="" coords="45,5,163,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,44,107,93,101,93,101,44"/>
+</map>

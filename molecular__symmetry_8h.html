@@ -100,6 +100,7 @@ $(document).ready(function(){initNavTree('molecular__symmetry_8h.html',''); init
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">molecular_symmetry.h File Reference</div></div>
 </div><!--header-->
@@ -126,11 +127,19 @@ Namespaces</h2></td></tr>
 <tr class="memdesc:namespaceocc_1_1core"><td class="mdescLeft">&#160;</td><td class="mdescRight">fundamental functionality for linear algebra, utilities, molecules and more <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a900c4b0c0e817535925d528082d3af3b" id="r_a900c4b0c0e817535925d528082d3af3b"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b">occ::core::AtomMatchingMethod</a> { <a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3bac999d3de5a76b7cd208f0a63e2a784ca">occ::core::NearestNeighborGreedy</a>
+, <a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3ba7b86112ec6401fd8f06ab5251d1a68fe">occ::core::Hungarian</a>
+ }</td></tr>
+<tr class="memdesc:a900c4b0c0e817535925d528082d3af3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atom-to-atom matching strategy used within each label group.  <a href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b">More...</a><br /></td></tr>
+<tr class="separator:a900c4b0c0e817535925d528082d3af3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:abcf2553ba43ff999b49849a7fdcd1ff2" id="r_abcf2553ba43ff999b49849a7fdcd1ff2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1SymmetryMappingResult.html">SymmetryMappingResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#abcf2553ba43ff999b49849a7fdcd1ff2">occ::core::try_transformation_with_grouped_permutations</a> (const IVec &amp;labels_A, const Mat3N &amp;positions_A, const IVec &amp;labels_B, const Mat3N &amp;positions_B, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;transformation, double rmsd_threshold=1e-3)</td></tr>
-<tr class="memdesc:abcf2553ba43ff999b49849a7fdcd1ff2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to find a transformation mapping from one set of atoms to another using grouped permutations based on provided labels.  <br /></td></tr>
-<tr class="separator:abcf2553ba43ff999b49849a7fdcd1ff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab12b7da8178f1cbb8c077cfb9592c4c5" id="r_ab12b7da8178f1cbb8c077cfb9592c4c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1SymmetryMappingResult.html">SymmetryMappingResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#ab12b7da8178f1cbb8c077cfb9592c4c5">occ::core::try_transformation_with_grouped_permutations</a> (const IVec &amp;labels_A, const Mat3N &amp;positions_A, const IVec &amp;labels_B, const Mat3N &amp;positions_B, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;transformation, double rmsd_threshold=1e-3, <a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b">AtomMatchingMethod</a> method=<a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3bac999d3de5a76b7cd208f0a63e2a784ca">AtomMatchingMethod::NearestNeighborGreedy</a>)</td></tr>
+<tr class="memdesc:ab12b7da8178f1cbb8c077cfb9592c4c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to find a transformation mapping from one set of atoms to another using grouped permutations based on provided labels.  <br /></td></tr>
+<tr class="separator:ab12b7da8178f1cbb8c077cfb9592c4c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

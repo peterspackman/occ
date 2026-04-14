@@ -58,6 +58,9 @@ var namespaceocc_1_1timing =
       [ "mp2_energy", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16af1a1b34d144c7d086fa8a321513d279d", null ],
       [ "global", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aa593d8f8f4e0489f836e07e4f4220cbf", null ],
       [ "cosx", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16ae7d921da2fa916a673933d901b154335", null ],
+      [ "crystal_energy", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a4ec7cd9b89c418498b1ee7e3e51c21ea", null ],
+      [ "optimization", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16afd8ac4bee6482575ead22d58e286bb63", null ],
+      [ "elastic_tensor", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a7c520ccf93b769847fba9eca14117bfe", null ],
       [ "_group_count", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a6f051406d3501a7e49a73b8fa2aef406", null ]
     ] ],
     [ "category_name", "namespaceocc_1_1timing.html#a138eb8fe95976467e1d833f39d8cc3c8", null ],

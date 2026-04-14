@@ -47,6 +47,10 @@ var namespaceocc_1_1core =
     [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
     [ "VibrationalModes", "structocc_1_1core_1_1VibrationalModes.html", "structocc_1_1core_1_1VibrationalModes" ],
     [ "KDTree", "namespaceocc_1_1core.html#acfa0e22cd0e47292fb5034e99d2432cb", null ],
+    [ "AtomMatchingMethod", "namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b", [
+      [ "NearestNeighborGreedy", "namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3bac999d3de5a76b7cd208f0a63e2a784ca", null ],
+      [ "Hungarian", "namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3ba7b86112ec6401fd8f06ab5251d1a68fe", null ]
+    ] ],
     [ "AxisMethod", "namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2f", [
       [ "None", "namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2fa6adf97f83acf6453d4a6a4b1070f3754", null ],
       [ "Neighcrys", "namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2fa13de7ccdd0b93262dd2948ef6b79b898", null ],
@@ -156,7 +160,7 @@ var namespaceocc_1_1core =
     [ "total_atomic_mass", "namespaceocc_1_1core.html#aa7cc2ff83621321d05ab7bd860a2bb81", null ],
     [ "total_num_multipole_components", "namespaceocc_1_1core.html#a4c43c80b170febf6fb0c2e6fbaa82d9a", null ],
     [ "translate_atoms", "namespaceocc_1_1core.html#a03ad31d684771525fec5bd1c8d0524a8", null ],
-    [ "try_transformation_with_grouped_permutations", "namespaceocc_1_1core.html#abcf2553ba43ff999b49849a7fdcd1ff2", null ],
+    [ "try_transformation_with_grouped_permutations", "namespaceocc_1_1core.html#ab12b7da8178f1cbb8c077cfb9592c4c5", null ],
     [ "covalent_bond_tolerance", "namespaceocc_1_1core.html#a5ab8e34cdda6bb4f9065e51d0a930d2b", null ],
     [ "max_leaf", "namespaceocc_1_1core.html#a19df90100f5a4ddba86433c350fa160a", null ],
     [ "multipole_component_names", "namespaceocc_1_1core.html#a2c13a8ff8a8712711388809ff8ca9aec", null ]

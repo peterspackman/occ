@@ -25,6 +25,7 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "ply.h", "ply_8h.html", "ply_8h" ],
     [ "shelxfile.h", "shelxfile_8h.html", "shelxfile_8h" ],
     [ "solvent_json.h", "solvent__json_8h.html", "solvent__json_8h" ],
+    [ "structure_format.h", "structure__format_8h.html", "structure__format_8h" ],
     [ "tinyply.h", "tinyply_8h.html", "tinyply_8h" ],
     [ "xyz.h", "xyz_8h.html", "xyz_8h" ]
 ];

@@ -4,5 +4,7 @@ var searchData=
   ['tblite_5fwrapper_2eh_1',['tblite_wrapper.h',['../tblite__wrapper_8h.html',1,'']]],
   ['thakkar_5fbasis_2eh_2',['thakkar_basis.h',['../thakkar__basis_8h.html',1,'']]],
   ['timings_2eh_3',['timings.h',['../timings_8h.html',1,'']]],
-  ['tinyply_2eh_4',['tinyply.h',['../tinyply_8h.html',1,'']]]
+  ['tinyply_2eh_4',['tinyply.h',['../tinyply_8h.html',1,'']]],
+  ['torque_2eh_5',['torque.h',['../torque_8h.html',1,'']]],
+  ['trust_5fregion_2eh_6',['trust_region.h',['../trust__region_8h.html',1,'']]]
 ];

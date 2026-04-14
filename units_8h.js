@@ -22,6 +22,7 @@ var units_8h =
     [ "JOULE_TO_AU", "units_8h.html#a52be1ed8034257706224f36dcf200e2f", null ],
     [ "KG_M3_TO_G_CM3", "units_8h.html#ab7483d8c17cadc69ef808c88f6c728ea", null ],
     [ "KJ_PER_MOL_PER_ANGSTROM3_TO_GPA", "units_8h.html#ad22b5bda4602a584d0512abba0ec4ee2", null ],
+    [ "KJ_PER_MOL_TO_EV", "units_8h.html#aad8b821d18b8320c3e7116f0d64aaabd", null ],
     [ "KJ_TO_KCAL", "units_8h.html#a225cac13d440178e598a1854c51a13c1", null ],
     [ "METER_TO_BOHR", "units_8h.html#a65d46405c5610263beaeb4d12b5a1505", null ],
     [ "PA_TO_GPA", "units_8h.html#abb13a2190f2c77a4f2cbc3f02d7f8c47", null ],

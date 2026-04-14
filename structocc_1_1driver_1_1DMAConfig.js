@@ -5,6 +5,7 @@ var structocc_1_1driver_1_1DMAConfig =
     [ "axis_atoms", "structocc_1_1driver_1_1DMAConfig.html#aa09aa90de15d41c7ba52cc25488b2b90", null ],
     [ "axis_filename", "structocc_1_1driver_1_1DMAConfig.html#a571063f8c0fd5897f0cec75d76335df1", null ],
     [ "axis_method", "structocc_1_1driver_1_1DMAConfig.html#af66e7a9fd4044c848f0d148128899d1e", null ],
+    [ "csp_input_filename", "structocc_1_1driver_1_1DMAConfig.html#a34911c8a933c5d5b6b374629abf1076c", null ],
     [ "oriented_xyz_filename", "structocc_1_1driver_1_1DMAConfig.html#aa0380c837d76b3ca71a842573337e3fd", null ],
     [ "punch_filename", "structocc_1_1driver_1_1DMAConfig.html#a6fc852c005fc557854da3c93c09a549b", null ],
     [ "settings", "structocc_1_1driver_1_1DMAConfig.html#ab86ea403d64ce92803d2574454862d3b", null ],

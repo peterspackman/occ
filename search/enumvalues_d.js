@@ -80,5 +80,6 @@ var searchData=
   ['mp2_5ftensor_5ftransform_77',['mp2_tensor_transform',['../namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16aca954717ba7e27d4fb936c67f8d89739',1,'occ::timing']]],
   ['mp2density_78',['MP2Density',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a624ee8b61ada97bc5f765ec432f450fb',1,'occ::io::FchkReader']]],
   ['msgpack_79',['MSGPACK',['../namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94',1,'occ::io']]],
-  ['muraknowles_80',['MuraKnowles',['../namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba8cee0af70e8d2d88ac69efe492c97e87',1,'occ::dft']]]
+  ['mstmin_80',['MSTMIN',['../namespaceocc_1_1mults.html#a198c950304fb59ccda34dec880870d63a5a1d2a6e7bddc87b27dd7662d0087c8f',1,'occ::mults']]],
+  ['muraknowles_81',['MuraKnowles',['../namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba8cee0af70e8d2d88ac69efe492c97e87',1,'occ::dft']]]
 ];

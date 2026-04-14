@@ -215,6 +215,11 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a36515067f147def3d0afc6c9ffb41b2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of molecular axis calculation methods.  <a href="namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2f">More...</a><br /></td></tr>
 <tr class="separator:a36515067f147def3d0afc6c9ffb41b2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a900c4b0c0e817535925d528082d3af3b" id="r_a900c4b0c0e817535925d528082d3af3b"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b">AtomMatchingMethod</a> { <a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3bac999d3de5a76b7cd208f0a63e2a784ca">NearestNeighborGreedy</a>
+, <a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3ba7b86112ec6401fd8f06ab5251d1a68fe">Hungarian</a>
+ }</td></tr>
+<tr class="memdesc:a900c4b0c0e817535925d528082d3af3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atom-to-atom matching strategy used within each label group.  <a href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b">More...</a><br /></td></tr>
+<tr class="separator:a900c4b0c0e817535925d528082d3af3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a116490d5f388f6e526b65a85d1c7e8a5" id="r_a116490d5f388f6e526b65a85d1c7e8a5"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5">PointGroup</a> { <br />
 &#160;&#160;<a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a1a2ddc2db4693cfd16d534cde5572cc1">C1</a>
 , <a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a6fd5bce0a0270467f657066323880d96">Ci</a>
@@ -324,9 +329,9 @@ Functions</h2></td></tr>
 <tr class="separator:aec7ecfa2dc83b10e2e48637fdb4726e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4cc97fbc54a1356d04d6d643516f1c03" id="r_a4cc97fbc54a1356d04d6d643516f1c03"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>, <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a4cc97fbc54a1356d04d6d643516f1c03">meshgrid</a> (const Vec &amp;, const Vec &amp;)</td></tr>
 <tr class="separator:a4cc97fbc54a1356d04d6d643516f1c03"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abcf2553ba43ff999b49849a7fdcd1ff2" id="r_abcf2553ba43ff999b49849a7fdcd1ff2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1SymmetryMappingResult.html">SymmetryMappingResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#abcf2553ba43ff999b49849a7fdcd1ff2">try_transformation_with_grouped_permutations</a> (const IVec &amp;labels_A, const Mat3N &amp;positions_A, const IVec &amp;labels_B, const Mat3N &amp;positions_B, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;transformation, double rmsd_threshold=1e-3)</td></tr>
-<tr class="memdesc:abcf2553ba43ff999b49849a7fdcd1ff2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to find a transformation mapping from one set of atoms to another using grouped permutations based on provided labels.  <br /></td></tr>
-<tr class="separator:abcf2553ba43ff999b49849a7fdcd1ff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab12b7da8178f1cbb8c077cfb9592c4c5" id="r_ab12b7da8178f1cbb8c077cfb9592c4c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1SymmetryMappingResult.html">SymmetryMappingResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#ab12b7da8178f1cbb8c077cfb9592c4c5">try_transformation_with_grouped_permutations</a> (const IVec &amp;labels_A, const Mat3N &amp;positions_A, const IVec &amp;labels_B, const Mat3N &amp;positions_B, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;transformation, double rmsd_threshold=1e-3, <a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b">AtomMatchingMethod</a> method=<a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3bac999d3de5a76b7cd208f0a63e2a784ca">AtomMatchingMethod::NearestNeighborGreedy</a>)</td></tr>
+<tr class="memdesc:ab12b7da8178f1cbb8c077cfb9592c4c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to find a transformation mapping from one set of atoms to another using grouped permutations based on provided labels.  <br /></td></tr>
+<tr class="separator:ab12b7da8178f1cbb8c077cfb9592c4c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06bd80d9c43fa53a3494e04f9bbb79c6" id="r_a06bd80d9c43fa53a3494e04f9bbb79c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a06bd80d9c43fa53a3494e04f9bbb79c6">label_molecules_by_chemical_formula</a> (std::vector&lt; <a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a> &gt; &amp;molecules)</td></tr>
 <tr class="separator:a06bd80d9c43fa53a3494e04f9bbb79c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9090dcf8213bf9e23ac3851ed4f5e52" id="r_aa9090dcf8213bf9e23ac3851ed4f5e52"><td class="memItemLeft" align="right" valign="top">constexpr unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#aa9090dcf8213bf9e23ac3851ed4f5e52">num_unique_multipole_components</a> (int L)</td></tr>
@@ -426,6 +431,38 @@ template&lt;typename NumericType &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a900c4b0c0e817535925d528082d3af3b" name="a900c4b0c0e817535925d528082d3af3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a900c4b0c0e817535925d528082d3af3b">&#9670;&#160;</a></span>AtomMatchingMethod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b">occ::core::AtomMatchingMethod</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Atom-to-atom matching strategy used within each label group. </p>
+<ul>
+<li>NearestNeighborGreedy: <a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5af186217753c37b9b9f958d906208506e">O(n^2)</a> greedy nearest-unused-neighbor matching. Fast and historically the only behavior; can produce suboptimal assignments when multiple atoms compete for the same partner.</li>
+<li>Hungarian: <a class="el" href="namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5af186217753c37b9b9f958d906208506e">O(n^3)</a> optimal minimum-cost assignment. Slower but guaranteed to minimize the sum of squared distances within a group. </li>
+</ul>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a900c4b0c0e817535925d528082d3af3bac999d3de5a76b7cd208f0a63e2a784ca" name="a900c4b0c0e817535925d528082d3af3bac999d3de5a76b7cd208f0a63e2a784ca"></a>NearestNeighborGreedy&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a900c4b0c0e817535925d528082d3af3ba7b86112ec6401fd8f06ab5251d1a68fe" name="a900c4b0c0e817535925d528082d3af3ba7b86112ec6401fd8f06ab5251d1a68fe"></a>Hungarian&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
 <a id="a36515067f147def3d0afc6c9ffb41b2f" name="a36515067f147def3d0afc6c9ffb41b2f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a36515067f147def3d0afc6c9ffb41b2f">&#9670;&#160;</a></span>AxisMethod</h2>
 
@@ -1846,8 +1883,8 @@ template&lt;typename AtomIterator &gt; </div>
 
 </div>
 </div>
-<a id="abcf2553ba43ff999b49849a7fdcd1ff2" name="abcf2553ba43ff999b49849a7fdcd1ff2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abcf2553ba43ff999b49849a7fdcd1ff2">&#9670;&#160;</a></span>try_transformation_with_grouped_permutations()</h2>
+<a id="ab12b7da8178f1cbb8c077cfb9592c4c5" name="ab12b7da8178f1cbb8c077cfb9592c4c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab12b7da8178f1cbb8c077cfb9592c4c5">&#9670;&#160;</a></span>try_transformation_with_grouped_permutations()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1886,7 +1923,13 @@ template&lt;typename AtomIterator &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>rmsd_threshold</em> = <code>1e-3</code>&#160;</td>
+          <td class="paramname"><em>rmsd_threshold</em> = <code>1e-3</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b">AtomMatchingMethod</a>&#160;</td>
+          <td class="paramname"><em>method</em> = <code><a class="el" href="namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3bac999d3de5a76b7cd208f0a63e2a784ca">AtomMatchingMethod::NearestNeighborGreedy</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1906,6 +1949,7 @@ template&lt;typename AtomIterator &gt; </div>
     <tr><td class="paramname">positions_B</td><td>The positions (B) to transform and permute </td></tr>
     <tr><td class="paramname">transformation</td><td>The transformation matrix to apply to positions_B </td></tr>
     <tr><td class="paramname">rmsd_threshold</td><td>The RMSD threshold for considering a match (default: 1e-3) </td></tr>
+    <tr><td class="paramname">method</td><td>The intra-group matching strategy (default: greedy NN for backward compatibility) </td></tr>
   </table>
   </dd>
 </dl>

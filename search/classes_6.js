@@ -16,5 +16,6 @@ var searchData=
   ['gridintegrator_13',['GridIntegrator',['../classocc_1_1dma_1_1GridIntegrator.html',1,'occ::dma']]],
   ['gridsettings_14',['GridSettings',['../structocc_1_1io_1_1GridSettings.html',1,'occ::io']]],
   ['gridsymmetryinfo_15',['GridSymmetryInfo',['../structocc_1_1io_1_1GridSymmetryInfo.html',1,'occ::io']]],
-  ['gtovalues_16',['GTOValues',['../structocc_1_1gto_1_1GTOValues.html',1,'occ::gto']]]
+  ['gtovalues_16',['GTOValues',['../structocc_1_1gto_1_1GTOValues.html',1,'occ::gto']]],
+  ['gvector_17',['GVector',['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html',1,'occ::mults::EwaldLatticeCache']]]
 ];

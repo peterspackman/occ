@@ -99,6 +99,7 @@ $(document).ready(function(){initNavTree('classocc_1_1crystal_1_1UnitCell.html',
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classocc_1_1crystal_1_1UnitCell-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">occ::crystal::UnitCell Class Reference</div></div>
 </div><!--header-->
@@ -118,6 +119,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8fc3943c296df948c1b2cf9afb51ae1b" id="r_a8fc3943c296df948c1b2cf9afb51ae1b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a8fc3943c296df948c1b2cf9afb51ae1b">UnitCell</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;<a class="el" href="classocc_1_1crystal_1_1UnitCell.html#aa36fe401d0a3330f60cb798f151acb02">lengths</a>, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;<a class="el" href="classocc_1_1crystal_1_1UnitCell.html#ab5b0d1df01c693eb08b9618e24375976">angles</a>)</td></tr>
 <tr class="separator:a8fc3943c296df948c1b2cf9afb51ae1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26907895b2c56ac1db8cac5c4951d5b8" id="r_a26907895b2c56ac1db8cac5c4951d5b8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a26907895b2c56ac1db8cac5c4951d5b8">UnitCell</a> (const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;vectors)</td></tr>
+<tr class="memdesc:a26907895b2c56ac1db8cac5c4951d5b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct from a matrix of lattice vectors (columns = a, b, c).  <br /></td></tr>
 <tr class="separator:a26907895b2c56ac1db8cac5c4951d5b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02bc62be5b7171cf0dd95d837bf7032d" id="r_a02bc62be5b7171cf0dd95d837bf7032d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a02bc62be5b7171cf0dd95d837bf7032d">a</a> () const</td></tr>
 <tr class="memdesc:a02bc62be5b7171cf0dd95d837bf7032d"><td class="mdescLeft">&#160;</td><td class="mdescRight">the length of the a-axis in Angstroms  <br /></td></tr>
@@ -246,6 +248,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6b71f586738bdf310efd631074bb3680" id="r_a6b71f586738bdf310efd631074bb3680"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a6b71f586738bdf310efd631074bb3680">hkl_limits</a> (double d_min) const</td></tr>
 <tr class="memdesc:a6b71f586738bdf310efd631074bb3680"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the maximum fractional coordinates \((h,k,l)\) needed to enclose a sphere of size d_min.  <br /></td></tr>
 <tr class="separator:a6b71f586738bdf310efd631074bb3680"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a5b04c26c6bbfdb9f0f2309da68a8691d" id="r_a5b04c26c6bbfdb9f0f2309da68a8691d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html#a5b04c26c6bbfdb9f0f2309da68a8691d">from_lattice_vectors</a> (const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;vectors)</td></tr>
+<tr class="memdesc:a5b04c26c6bbfdb9f0f2309da68a8691d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct from a matrix of lattice vectors (columns = a, b, c) while preserving the input direct matrix exactly.  <br /></td></tr>
+<tr class="separator:a5b04c26c6bbfdb9f0f2309da68a8691d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This class represents a unit cell of a crystal lattice. </p>
@@ -363,6 +371,9 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Construct from a matrix of lattice vectors (columns = a, b, c). </p>
+<p>The matrix is canonicalized: only (a, b, c, α, β, γ) are extracted and the direct matrix is rebuilt in the conventional orientation (a along x, b in the xy plane). This loses the original basis orientation. </p>
 
 </div>
 </div>
@@ -776,6 +787,35 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The direct matrix of this unit cell (columns are lattice vectors) </p>
+
+</div>
+</div>
+<a id="a5b04c26c6bbfdb9f0f2309da68a8691d" name="a5b04c26c6bbfdb9f0f2309da68a8691d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b04c26c6bbfdb9f0f2309da68a8691d">&#9670;&#160;</a></span>from_lattice_vectors()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a> occ::crystal::UnitCell::from_lattice_vectors </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;&#160;</td>
+          <td class="paramname"><em>vectors</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct from a matrix of lattice vectors (columns = a, b, c) while preserving the input direct matrix exactly. </p>
+<p>Use this when the basis orientation matters (e.g. derivatives under affine strain) and must not be silently rotated via (a, b, c, α, β, γ) reconstruction. </p>
 
 </div>
 </div>
