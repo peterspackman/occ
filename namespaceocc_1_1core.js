@@ -24,6 +24,7 @@ var namespaceocc_1_1core =
       [ "to_string", "namespaceocc_1_1core_1_1rotor.html#a83d27cb1f9a59dbb3740a5e6d4375530", null ]
     ] ],
     [ "Atom", "structocc_1_1core_1_1Atom.html", "structocc_1_1core_1_1Atom" ],
+    [ "AtomCellList", "classocc_1_1core_1_1AtomCellList.html", "classocc_1_1core_1_1AtomCellList" ],
     [ "Combinations", "classocc_1_1core_1_1Combinations.html", "classocc_1_1core_1_1Combinations" ],
     [ "ConditioningOrthogonalizerResult", "structocc_1_1core_1_1ConditioningOrthogonalizerResult.html", "structocc_1_1core_1_1ConditioningOrthogonalizerResult" ],
     [ "Dimer", "classocc_1_1core_1_1Dimer.html", "classocc_1_1core_1_1Dimer" ],

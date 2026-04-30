@@ -1,3 +1,3 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structocc_1_1mults_1_1kernel__detail_1_1TUV.html" title="(t, u, v) tuple stored for each hermite index." alt="" coords="5,5,143,45"/>
+<area shape="rect" id="Node000000" href="$structocc_1_1mults_1_1InteractionTensorBatch.html" title="SOA interaction tensor batch: BatchSize tensors stored interleaved." alt="" coords="5,5,215,45"/>
 </map>

@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['v_0',['v',['../structocc_1_1qm_1_1SCFContext.html#aea443467fb513876543fc272f28055ee',1,'occ::qm::SCFContext::V'],['../structocc_1_1qm_1_1Wavefunction.html#a97b5d5261d3b6147fc30b77e5e22eceb',1,'occ::qm::Wavefunction::V'],['../structocc_1_1mults_1_1kernel__detail_1_1TUV.html#a68df2b9673d320959a481d52ef5badd1',1,'occ::mults::kernel_detail::TUV::v']]],
+  ['v_0',['v',['../structocc_1_1qm_1_1Wavefunction.html#a97b5d5261d3b6147fc30b77e5e22eceb',1,'occ::qm::Wavefunction::V'],['../structocc_1_1qm_1_1SCFContext.html#aea443467fb513876543fc272f28055ee',1,'occ::qm::SCFContext::V'],['../structocc_1_1mults_1_1kernel__detail_1_1TUV.html#a68df2b9673d320959a481d52ef5badd1',1,'occ::mults::kernel_detail::TUV::v']]],
   ['v_5fab_5fcom_1',['v_ab_com',['../structocc_1_1elastic__fit_1_1PairInput.html#a28e7d475f2cb233280f3e79bd8b690bb',1,'occ::elastic_fit::PairInput']]],
   ['v_5fext_2',['V_ext',['../structocc_1_1qm_1_1SCFContext.html#a5a9984c92fe2c2e80718bbd9ee651d92',1,'occ::qm::SCFContext']]],
   ['value_3',['value',['../structocc_1_1mults_1_1CutoffSplineValue.html#a430b388b68ba1639bbdbabbae24ac0c3',1,'occ::mults::CutoffSplineValue']]],
@@ -12,14 +12,15 @@ var searchData=
   ['verbose_9',['verbose',['../structocc_1_1mults_1_1TrustRegionSettings.html#a137e84214a8656ba50cdcb2ee327c182',1,'occ::mults::TrustRegionSettings']]],
   ['verbosity_10',['verbosity',['../structocc_1_1io_1_1OccInput.html#aca74211f47f069313d03c54deef8152b',1,'occ::io::OccInput']]],
   ['version_11',['version',['../structocc_1_1gto_1_1io_1_1JsonBasis.html#aebb29281368f358b3f1519ab26139280',1,'occ::gto::io::JsonBasis::version'],['../structocc_1_1io_1_1GridFileHeader.html#ab13b4188f9b7aa5affd1727e26833059',1,'occ::io::GridFileHeader::version']]],
-  ['vertices_12',['vertices',['../structocc_1_1isosurface_1_1Isosurface.html#ae1727fb5b66c8a74c51f7b9635dbc823',1,'occ::isosurface::Isosurface::vertices'],['../structocc_1_1solvent_1_1surface_1_1Surface.html#ac6e8d5b47c8086a330927a8ead975a14',1,'occ::solvent::surface::Surface::vertices']]],
-  ['vlaplacian_13',['vlaplacian',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a95fb5fdb34c777019ec6d1665ae56e9e',1,'occ::dft::DensityFunctional::Result']]],
-  ['volume_14',['volume',['../structocc_1_1elastic__fit_1_1ElasticFitInput.html#a6ea1e43cacfbab8470f57bcbf41c07dd',1,'occ::elastic_fit::ElasticFitInput::volume'],['../structocc_1_1xdm_1_1XDMAtomList.html#a3aac4da929f48e22952558eb5b46edb3',1,'occ::xdm::XDMAtomList::volume']]],
-  ['volume_5ffree_15',['volume_free',['../structocc_1_1xdm_1_1XDMAtomList.html#afbd660a6a10b29cb7cf471d1586a2dbf',1,'occ::xdm::XDMAtomList']]],
-  ['vrho_16',['vrho',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a6b51518e57c1eb49d81a96f2ca7c10a5',1,'occ::dft::DensityFunctional::Result']]],
-  ['vsigma_17',['vsigma',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a68b7e62e47d58a6398c5fca0bd53195e',1,'occ::dft::DensityFunctional::Result']]],
-  ['vtau_18',['vtau',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a96eb40c588a3e7284a7995e903a89a8b',1,'occ::dft::DensityFunctional::Result']]],
-  ['vv10_5fb_19',['vv10_b',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html#a44a8b6272f8badc82d97237e21f18c47',1,'occ::dft::NonLocalCorrelationFunctional::Parameters']]],
-  ['vv10_5fc_20',['vv10_C',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html#ad42a134595a7ffff24c624c5305e0d08',1,'occ::dft::NonLocalCorrelationFunctional::Parameters']]],
-  ['vxc_21',['vxc',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html#ac6c7904be7f47c3596341683cf6235df',1,'occ::dft::NonLocalCorrelationFunctional::Result::Vxc'],['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1GradientResult.html#ac7c0009a653995a9125f44713d641116',1,'occ::dft::NonLocalCorrelationFunctional::GradientResult::Vxc']]]
+  ['vertex_5fclass_12',['vertex_class',['../structocc_1_1isosurface_1_1CellCapClassification.html#a595a9573029c5f5c96134de754f31675',1,'occ::isosurface::CellCapClassification']]],
+  ['vertices_13',['vertices',['../structocc_1_1isosurface_1_1Isosurface.html#ae1727fb5b66c8a74c51f7b9635dbc823',1,'occ::isosurface::Isosurface::vertices'],['../structocc_1_1solvent_1_1surface_1_1Surface.html#ac6e8d5b47c8086a330927a8ead975a14',1,'occ::solvent::surface::Surface::vertices']]],
+  ['vlaplacian_14',['vlaplacian',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a95fb5fdb34c777019ec6d1665ae56e9e',1,'occ::dft::DensityFunctional::Result']]],
+  ['volume_15',['volume',['../structocc_1_1elastic__fit_1_1ElasticFitInput.html#a6ea1e43cacfbab8470f57bcbf41c07dd',1,'occ::elastic_fit::ElasticFitInput::volume'],['../structocc_1_1xdm_1_1XDMAtomList.html#a3aac4da929f48e22952558eb5b46edb3',1,'occ::xdm::XDMAtomList::volume']]],
+  ['volume_5ffree_16',['volume_free',['../structocc_1_1xdm_1_1XDMAtomList.html#afbd660a6a10b29cb7cf471d1586a2dbf',1,'occ::xdm::XDMAtomList']]],
+  ['vrho_17',['vrho',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a6b51518e57c1eb49d81a96f2ca7c10a5',1,'occ::dft::DensityFunctional::Result']]],
+  ['vsigma_18',['vsigma',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a68b7e62e47d58a6398c5fca0bd53195e',1,'occ::dft::DensityFunctional::Result']]],
+  ['vtau_19',['vtau',['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html#a96eb40c588a3e7284a7995e903a89a8b',1,'occ::dft::DensityFunctional::Result']]],
+  ['vv10_5fb_20',['vv10_b',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html#a44a8b6272f8badc82d97237e21f18c47',1,'occ::dft::NonLocalCorrelationFunctional::Parameters']]],
+  ['vv10_5fc_21',['vv10_C',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html#ad42a134595a7ffff24c624c5305e0d08',1,'occ::dft::NonLocalCorrelationFunctional::Parameters']]],
+  ['vxc_22',['vxc',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html#ac6c7904be7f47c3596341683cf6235df',1,'occ::dft::NonLocalCorrelationFunctional::Result::Vxc'],['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1GradientResult.html#ac7c0009a653995a9125f44713d641116',1,'occ::dft::NonLocalCorrelationFunctional::GradientResult::Vxc']]]
 ];

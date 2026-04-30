@@ -1,5 +1,11 @@
 var namespaceocc_1_1isosurface =
 [
+    [ "cell_caps_impl", "namespaceocc_1_1isosurface_1_1cell__caps__impl.html", [
+      [ "build_void_polys", "namespaceocc_1_1isosurface_1_1cell__caps__impl.html#a7d4b6740a72e39214f16217fa72c69d6", null ],
+      [ "faces_at", "namespaceocc_1_1isosurface_1_1cell__caps__impl.html#abda6b2fda4f547f269a02b567311db81", null ],
+      [ "iso_offset", "namespaceocc_1_1isosurface_1_1cell__caps__impl.html#aebc2a3eb77e6c1671df003b3bf25e28c", null ],
+      [ "pack_vkey", "namespaceocc_1_1isosurface_1_1cell__caps__impl.html#acc2494776e9d839337ecf9a5ca0cface", null ]
+    ] ],
     [ "impl", "namespaceocc_1_1isosurface_1_1impl.html", [
       [ "remap_vertices", "namespaceocc_1_1isosurface_1_1impl.html#a380a10dfef8ea64e1e86698d1886fd52", null ]
     ] ],
@@ -7,6 +13,7 @@ var namespaceocc_1_1isosurface =
     [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
     [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
     [ "BatchFunctor", "classocc_1_1isosurface_1_1BatchFunctor.html", "classocc_1_1isosurface_1_1BatchFunctor" ],
+    [ "CellCapClassification", "structocc_1_1isosurface_1_1CellCapClassification.html", "structocc_1_1isosurface_1_1CellCapClassification" ],
     [ "DeformationDensityFunctor", "classocc_1_1isosurface_1_1DeformationDensityFunctor.html", "classocc_1_1isosurface_1_1DeformationDensityFunctor" ],
     [ "EEQEspFunctor", "structocc_1_1isosurface_1_1EEQEspFunctor.html", "structocc_1_1isosurface_1_1EEQEspFunctor" ],
     [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],
@@ -39,6 +46,7 @@ var namespaceocc_1_1isosurface =
     [ "VolumeGenerationParameters", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html", "structocc_1_1isosurface_1_1VolumeGenerationParameters" ],
     [ "VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", "classocc_1_1isosurface_1_1VolumeGridFunctor" ],
     [ "XCDensityFunctor", "structocc_1_1isosurface_1_1XCDensityFunctor.html", "structocc_1_1isosurface_1_1XCDensityFunctor" ],
+    [ "AtomCellList", "namespaceocc_1_1isosurface.html#a327773b30f9835a87f700775bdf98bd8", null ],
     [ "AtomList", "namespaceocc_1_1isosurface.html#ae204e804e4727bc8cb19890ab2e38950", null ],
     [ "LinearInterpolatorFloat", "namespaceocc_1_1isosurface.html#a5c2777640a8f63915e0d79fdcc302f6c", null ],
     [ "Property", "namespaceocc_1_1isosurface.html#ad0741cfba8f9bd491d0c150e4b6dba3d", null ],
@@ -106,6 +114,7 @@ var namespaceocc_1_1isosurface =
       [ "XCDensity", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a663338112696cbace1bdf50d77c7285d", null ],
       [ "CrystalVoid", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a952816358b862ae659756eaacb56a8cb", null ]
     ] ],
+    [ "add_cell_caps", "namespaceocc_1_1isosurface.html#ab6f9d036fd8d470b6edb1a555e4d6248", null ],
     [ "available_surface_types", "namespaceocc_1_1isosurface.html#a245fa3a4f90b584784c01f35b671d15d", null ],
     [ "BatchFunctor", "namespaceocc_1_1isosurface.html#a76c5699ee000bfa8743cee506ac0a640", null ],
     [ "calculate_curvature", "namespaceocc_1_1isosurface.html#a97c3d0a1a1f5ef1230dd6db686b24200", null ],

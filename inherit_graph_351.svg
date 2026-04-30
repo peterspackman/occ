@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1CrystalEnergySetup.html" target="_top" xlink:title="Complete specification of a crystal energy calculation.">
+<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1CrystalEnergy_1_1MoleculeCache.html" target="_top" xlink:title="Cached per&#45;molecule data to avoid redundant recomputation.">
 <polygon fill="white" stroke="#666666" points="141,-30 0,-30 0,0 141,0 141,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::mults::CrystalEnergy</text>
-<text text-anchor="middle" x="70.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Setup</text>
+<text text-anchor="middle" x="70.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">::MoleculeCache</text>
 </a>
 </g>
 </g>

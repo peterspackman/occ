@@ -50,6 +50,7 @@ var annotated_dup =
           [ "LineSearch", "classocc_1_1core_1_1opt_1_1LineSearch.html", "classocc_1_1core_1_1opt_1_1LineSearch" ]
         ] ],
         [ "Atom", "structocc_1_1core_1_1Atom.html", "structocc_1_1core_1_1Atom" ],
+        [ "AtomCellList", "classocc_1_1core_1_1AtomCellList.html", "classocc_1_1core_1_1AtomCellList" ],
         [ "Combinations", "classocc_1_1core_1_1Combinations.html", "classocc_1_1core_1_1Combinations" ],
         [ "ConditioningOrthogonalizerResult", "structocc_1_1core_1_1ConditioningOrthogonalizerResult.html", "structocc_1_1core_1_1ConditioningOrthogonalizerResult" ],
         [ "Dimer", "classocc_1_1core_1_1Dimer.html", "classocc_1_1core_1_1Dimer" ],
@@ -176,6 +177,8 @@ var annotated_dup =
           [ "impl", "namespaceocc_1_1geometry_1_1mc_1_1impl.html", [
             [ "Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge" ],
             [ "EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash" ],
+            [ "has_basis_transform", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html", null ],
+            [ "has_basis_transform< T, std::void_t< decltype(std::declval< T >().basis_transform())> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform_3_01T_00_01std_1_1void__t_3_01declt2cec5ff47cede2234f4d8b7c5c4da8f3.html", null ],
             [ "has_batch_evaluate", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ],
             [ "has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ]
           ] ],
@@ -337,6 +340,7 @@ var annotated_dup =
         [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
         [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
         [ "BatchFunctor", "classocc_1_1isosurface_1_1BatchFunctor.html", "classocc_1_1isosurface_1_1BatchFunctor" ],
+        [ "CellCapClassification", "structocc_1_1isosurface_1_1CellCapClassification.html", "structocc_1_1isosurface_1_1CellCapClassification" ],
         [ "DeformationDensityFunctor", "classocc_1_1isosurface_1_1DeformationDensityFunctor.html", "classocc_1_1isosurface_1_1DeformationDensityFunctor" ],
         [ "EEQEspFunctor", "structocc_1_1isosurface_1_1EEQEspFunctor.html", "structocc_1_1isosurface_1_1EEQEspFunctor" ],
         [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],

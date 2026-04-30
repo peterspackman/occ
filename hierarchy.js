@@ -18,6 +18,7 @@ var hierarchy =
     [ "occ::crystal::AsymmetricUnit", "structocc_1_1crystal_1_1AsymmetricUnit.html", null ],
     [ "occ::core::Atom", "structocc_1_1core_1_1Atom.html", null ],
     [ "occ::mults::RigidMolecule::Atom", "structocc_1_1mults_1_1RigidMolecule_1_1Atom.html", null ],
+    [ "occ::core::AtomCellList", "classocc_1_1core_1_1AtomCellList.html", null ],
     [ "occ::interaction::polarization_partitioning::AtomContribution", "structocc_1_1interaction_1_1polarization__partitioning_1_1AtomContribution.html", null ],
     [ "occ::io::AtomData", "structocc_1_1io_1_1AtomData.html", null ],
     [ "occ::dft::AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", null ],
@@ -60,6 +61,7 @@ var hierarchy =
     [ "occ::mults::CartesianMultipole< 4 >", "structocc_1_1mults_1_1CartesianMultipole.html", null ],
     [ "occ::mults::CartesianSite", "structocc_1_1mults_1_1CartesianSite.html", null ],
     [ "occ::interaction::CEEnergyComponents", "structocc_1_1interaction_1_1CEEnergyComponents.html", null ],
+    [ "occ::isosurface::CellCapClassification", "structocc_1_1isosurface_1_1CellCapClassification.html", null ],
     [ "occ::io::CellData", "structocc_1_1io_1_1CellData.html", null ],
     [ "occ::interaction::CEModelInteraction", "structocc_1_1interaction_1_1CEModelInteraction.html", null ],
     [ "occ::interaction::CEMonomerCalculationParameters", "structocc_1_1interaction_1_1CEMonomerCalculationParameters.html", null ],
@@ -176,6 +178,7 @@ var hierarchy =
     ] ],
     [ "occ::cg::EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", null ],
     [ "occ::io::EngradReader", "classocc_1_1io_1_1EngradReader.html", null ],
+    [ "occ::core::AtomCellList::Entry", "structocc_1_1core_1_1AtomCellList_1_1Entry.html", null ],
     [ "occ::ints::ESPEvaluator< T >", "classocc_1_1ints_1_1ESPEvaluator.html", null ],
     [ "occ::isosurface::EspFunctor", "structocc_1_1isosurface_1_1EspFunctor.html", null ],
     [ "occ::main::EspFunctor", "structocc_1_1main_1_1EspFunctor.html", null ],
@@ -196,6 +199,7 @@ var hierarchy =
     [ "occ::main::FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", null ],
     [ "std::false_type", null, [
       [ "occ::core::numpy::impl::is_complex< T >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex.html", null ],
+      [ "occ::geometry::mc::impl::has_basis_transform< T, typename >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html", null ],
       [ "occ::geometry::mc::impl::has_batch_evaluate< T, typename >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ]
     ] ],
     [ "occ::descriptors::FastNeighborFinder< MaxK >", "classocc_1_1descriptors_1_1FastNeighborFinder.html", null ],
@@ -527,6 +531,7 @@ var hierarchy =
     [ "occ::interaction::transform::TransformResult", "structocc_1_1interaction_1_1transform_1_1TransformResult.html", null ],
     [ "std::true_type", null, [
       [ "occ::core::numpy::impl::is_complex< std::complex< T > >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html", null ],
+      [ "occ::geometry::mc::impl::has_basis_transform< T, std::void_t< decltype(std::declval< T >().basis_transform())> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform_3_01T_00_01std_1_1void__t_3_01declt2cec5ff47cede2234f4d8b7c5c4da8f3.html", null ],
       [ "occ::geometry::mc::impl::has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ]
     ] ],
     [ "occ::mults::TrustRegion", "classocc_1_1mults_1_1TrustRegion.html", null ],

@@ -5,6 +5,8 @@ var structocc_1_1geometry_1_1mc_1_1MarchingCubes =
     [ "extract", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#a3c291aec1e449506aa208f79234f1e45", null ],
     [ "extract_with_curvature", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#abb5d5e1cd812ed8dea7c362c6ddd2479", null ],
     [ "extract_with_normals", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#aa42b9306dce604e705b09db398c927cc", null ],
+    [ "populate_layer_positions", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#aa906b3853fcfcf354405f64b19fccf40", null ],
+    [ "set_origin_and_lengths_inclusive", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#a601bab9ea9871df770cd03049c36c9fa", null ],
     [ "set_origin_and_side_lengths", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#ad2dd328c670f6a0f91223f36923a2026", null ],
     [ "flip_normals", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#a6c9a6d44678d6c456ffe161235fac275", null ],
     [ "isovalue", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html#af68df9995efc2b28ddb588b54a459946", null ],
