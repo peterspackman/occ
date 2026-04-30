@@ -10,6 +10,9 @@ VoidSurfaceFunctor::VoidSurfaceFunctor(const occ::crystal::Crystal &crystal,
     : m_crystal(crystal), m_interpolator_params(params),
       m_target_separation(sep) {
 
+  // Build a slab around the unit cell with at least m_buffer angstroms of
+  // padding on each side; this slab carries enough periodic images that
+  // density evaluation at any frac in [0, 1] is effectively periodic.
   double radius = m_buffer;
   const auto &uc_atoms = m_crystal.unit_cell_atoms();
   crystal::HKL upper = crystal::HKL::minimum();
@@ -39,9 +42,6 @@ VoidSurfaceFunctor::VoidSurfaceFunctor(const occ::crystal::Crystal &crystal,
 
   m_molecule = occ::core::Molecule(elements, slab.cart_pos);
 
-  m_minimum_atom_pos = coordinates.rowwise().minCoeff().cast<float>();
-  m_maximum_atom_pos = coordinates.rowwise().maxCoeff().cast<float>();
-
   auto basis = occ::slater::load_slaterbasis("thakkar");
   ankerl::unordered_dense::map<int, std::vector<int>> tmp_map;
   for (size_t i = 0; i < elements.rows(); i++) {
@@ -65,19 +65,42 @@ VoidSurfaceFunctor::VoidSurfaceFunctor(const occ::crystal::Crystal &crystal,
         m_atom_interpolators.back().interpolator.find_threshold(1e-8);
   }
 
+  m_cell_list.build(m_atom_interpolators);
+  occ::log::info("Void cell list: {} atoms in {} x {} x {} bins (size {:.2f} bohr)",
+                 m_cell_list.num_atoms(), m_cell_list.dims()(0),
+                 m_cell_list.dims()(1), m_cell_list.dims()(2),
+                 m_cell_list.bin_size());
+
   update_region();
 }
 
 void VoidSurfaceFunctor::update_region() {
+  // MC operates in fractional coordinates over [0, 1]^3.
+  m_origin.setZero();
+  m_side_length.setOnes();
 
-  m_origin.setConstant(0);
-  Eigen::Vector3f max_pos =
-      m_crystal.unit_cell().direct().rowwise().maxCoeff().cast<float>();
-  m_cube_side_length = max_pos * occ::units::ANGSTROM_TO_BOHR;
+  // Cache lattice transforms in bohr units. m_direct_bohr maps fractional ->
+  // cartesian(bohr); the inverse-transpose maps fractional-space gradients to
+  // cartesian-space gradients (used by MC's curvature path).
+  m_direct_bohr =
+      (m_crystal.unit_cell().direct() * occ::units::ANGSTROM_TO_BOHR)
+          .cast<float>();
+  m_normal_transform = m_direct_bohr.inverse().transpose();
 
-  occ::log::info("Cube side lengths: [{:.3f} {:.3f} {:.3f}] bohr",
-                 m_cube_side_length(0), m_cube_side_length(1),
-                 m_cube_side_length(2));
+  // Per-axis sample counts: target spacing along each lattice axis ~ sep
+  // (in bohr). +1 because endpoint-inclusive sampling needs N+1 samples to
+  // span N voxels exactly across [0, 1].
+  Vec3 lengths_bohr =
+      m_crystal.unit_cell().lengths() * occ::units::ANGSTROM_TO_BOHR;
+  for (int i = 0; i < 3; i++) {
+    int n = static_cast<int>(std::ceil(lengths_bohr(i) / m_target_separation));
+    m_sample_counts(i) = std::max(2, n + 1);
+  }
+
+  occ::log::info("Void MC grid: {} x {} x {} samples (frac coords)",
+                 m_sample_counts(0), m_sample_counts(1), m_sample_counts(2));
+  occ::log::info("Lattice lengths (bohr): [{:.3f} {:.3f} {:.3f}]",
+                 lengths_bohr(0), lengths_bohr(1), lengths_bohr(2));
   occ::log::info("Target separation: {:.3f} bohr", m_target_separation);
 }
 

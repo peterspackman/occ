@@ -39,7 +39,11 @@ struct VolumeGenerationParameters {
     // Crystal parameters
     std::string crystal_filename{""};
     bool unit_cell_only{false};
-    double crystal_buffer{6.0};     // Angstrom
+    // Buffer (Angstroms) for the slab of periodic-image atoms used in
+    // crystal void density evaluation. Must match VoidSurfaceFunctor's
+    // internal buffer so cube/grid output and isosurface mesh see the same
+    // scalar field.
+    double crystal_buffer{8.0};
     
     // Output format
     OutputFormat format{OutputFormat::Cube};

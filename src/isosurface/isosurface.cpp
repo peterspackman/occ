@@ -1,6 +1,7 @@
 #include <occ/core/eeq.h>
 #include <occ/core/kdtree.h>
 #include <occ/geometry/marching_cubes.h>
+#include <occ/isosurface/cell_caps.h>
 #include <occ/isosurface/curvature.h>
 #include <occ/isosurface/isosurface.h>
 
@@ -8,12 +9,20 @@ namespace occ::isosurface {
 
 namespace {
 
+template <typename T, typename = void>
+struct has_inclusive_endpoints : std::false_type {};
+
+template <typename T>
+struct has_inclusive_endpoints<
+    T, std::void_t<decltype(std::declval<T>().inclusive_endpoints())>>
+    : std::true_type {};
+
 template <typename F>
-Isosurface convert_to_isosurface(const F &func,
-                                 const std::vector<float> &vertices,
-                                 const std::vector<uint32_t> &indices,
-                                 const std::vector<float> &normals,
-                                 const std::vector<float> &curvature) {
+Isosurface convert_to_isosurface(
+    const F &func, const std::vector<float> &vertices,
+    const std::vector<uint32_t> &indices, const std::vector<float> &normals,
+    const std::vector<float> &curvature,
+    const CellCapClassification *cap_info = nullptr) {
 
   // Calculate sizes
   const size_t num_vertices = vertices.size() / 3;
@@ -37,17 +46,30 @@ Isosurface convert_to_isosurface(const F &func,
   result.mean_curvature = curvature_map.row(0).transpose();
   result.gaussian_curvature = curvature_map.row(1).transpose();
 
+  if (cap_info != nullptr) {
+    result.properties.add("vertex_class", cap_info->vertex_class);
+    result.properties.add("face_class", cap_info->face_class);
+  }
+
   return result;
 }
 
-template <typename F>
+template <bool AddCaps = false, typename F>
 Isosurface extract_surface(F &func, float isovalue, bool flip = false) {
   occ::timing::StopWatch sw;
   auto cubes = func.cubes_per_side();
   occ::log::info("Begin marching cubes with dimensions: {}x{}x{}", cubes(0),
                  cubes(1), cubes(2));
   auto mc = occ::geometry::mc::MarchingCubes(cubes(0), cubes(1), cubes(2));
-  mc.set_origin_and_side_lengths(func.origin(), func.side_length());
+  if constexpr (has_inclusive_endpoints<F>::value) {
+    if (func.inclusive_endpoints()) {
+      mc.set_origin_and_lengths_inclusive(func.origin(), func.side_length());
+    } else {
+      mc.set_origin_and_side_lengths(func.origin(), func.side_length());
+    }
+  } else {
+    mc.set_origin_and_side_lengths(func.origin(), func.side_length());
+  }
   mc.isovalue = isovalue;
   mc.flip_normals = (isovalue < 0.0) || flip;
   if (mc.flip_normals)
@@ -69,7 +91,20 @@ Isosurface extract_surface(F &func, float isovalue, bool flip = false) {
     throw std::runtime_error(
         "Invalid isosurface encountered, not enough vertices?");
   }
-  return convert_to_isosurface(func, vertices, faces, normals, curvature);
+
+  // Cap generation works in MC's local (here, fractional) coordinates. The
+  // caller opts in via the AddCaps template parameter (currently void
+  // surfaces only). Indices are appended in place; vertex/face classification
+  // is attached to the returned Isosurface as properties.
+  std::optional<CellCapClassification> caps;
+  if constexpr (AddCaps) {
+    caps = add_cell_caps(func, isovalue, vertices, normals, curvature, faces);
+    occ::log::info("After capping: {} vertices, {} faces",
+                   vertices.size() / 3, faces.size() / 3);
+  }
+
+  return convert_to_isosurface(func, vertices, faces, normals, curvature,
+                               caps ? &*caps : nullptr);
 }
 } // namespace
 
@@ -364,7 +399,11 @@ void IsosurfaceCalculator::compute_isosurface() {
     if (m_environment.size() == 0) {
       m_environment = func.molecule();
     }
-    m_isosurface = extract_surface(func, isovalue, true);
+    // Void normals point INTO the void interior (away from atoms), so the
+    // surface is viewed from the empty side — opposite convention to a
+    // promolecule surface. Triangle winding is unchanged, so volumes and
+    // cap orientation are unaffected.
+    m_isosurface = extract_surface<true>(func, isovalue, /*flip=*/false);
     m_isosurface.description = "Void";
     break;
   }

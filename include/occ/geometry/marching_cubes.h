@@ -19,6 +19,18 @@ struct has_batch_evaluate<T, std::void_t<decltype(std::declval<T>().batch(
                                  std::declval<Eigen::Ref<FVec>>()))>>
     : std::true_type {};
 
+// Detects an optional FMat3 basis_transform() method on the functor. When
+// present, the functor is sampled in a non-cartesian basis (e.g. fractional
+// for crystal voids) and the returned matrix is the inverse-transpose of the
+// local-to-world Jacobian, used to map gradients/Hessians to cartesian.
+template <typename T, typename = void>
+struct has_basis_transform : std::false_type {};
+
+template <typename T>
+struct has_basis_transform<
+    T, std::void_t<decltype(std::declval<T>().basis_transform())>>
+    : std::true_type {};
+
 } // namespace impl
 
 namespace tables {
@@ -82,7 +94,22 @@ struct MarchingCubes {
     scale(0) = lengths(0) / (size_x);
     scale(1) = lengths(1) / (size_y);
     scale(2) = lengths(2) / (size_z);
+    populate_layer_positions();
+  }
 
+  // Sample size_x points spanning [origin, origin+lengths] inclusive of both
+  // endpoints; suitable for grids that must align with cell faces (e.g. void
+  // surfaces in fractional coordinates so adjacent cells stitch).
+  inline void set_origin_and_lengths_inclusive(const FVec3 &o, const FVec3 &l) {
+    origin = o;
+    lengths = l;
+    scale(0) = lengths(0) / float(size_x - 1);
+    scale(1) = lengths(1) / float(size_y - 1);
+    scale(2) = lengths(2) / float(size_z - 1);
+    populate_layer_positions();
+  }
+
+  inline void populate_layer_positions() {
     layer_positions = FMat3N(3, size_x * size_y);
     for (size_t y = 0, idx = 0; y < size_y; y++) {
       for (size_t x = 0; x < size_x; x++, idx++) {
@@ -150,15 +177,24 @@ struct MarchingCubes {
                               std::vector<float> &normals,
                               std::vector<float> &curvatures) {
     int sign = flip_normals ? 1 : -1;
-    auto fn = [sign, &vertices, &normals, &curvatures](const FVec3 &vertex,
-                                                       const FVec3 &gradient,
-                                                       const FMat3 &hessian) {
+
+    // For affine sampling (e.g. fractional grids on a non-orthogonal lattice),
+    // the gradient/Hessian computed in MC's local basis must be transformed
+    // to cartesian before normals/curvatures are derived.
+    FMat3 J_inv_T = FMat3::Identity();
+    if constexpr (impl::has_basis_transform<S>::value) {
+      J_inv_T = source.basis_transform();
+    }
+
+    auto fn = [sign, J_inv_T, &vertices, &normals, &curvatures](
+                  const FVec3 &vertex, const FVec3 &gradient,
+                  const FMat3 &hessian) {
       vertices.push_back(vertex(0));
       vertices.push_back(vertex(1));
       vertices.push_back(vertex(2));
 
-      FVec3 g = gradient;
-      FMat3 h = hessian;
+      FVec3 g = J_inv_T * gradient;
+      FMat3 h = J_inv_T * hessian * J_inv_T.transpose();
       // Normalize the gradient and use it as the normal
       float l = g.norm();
       FVec3 normal = g / l;

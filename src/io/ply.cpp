@@ -27,14 +27,20 @@ inline void validate_mesh_data(const Isosurface &isosurface) {
   }
 
   const size_t vertex_count = isosurface.vertices.cols();
+  const size_t face_count = isosurface.faces.cols();
   for (const auto &[name, prop] : isosurface.properties.properties) {
     const auto name_copy = name;
     std::visit(
-        [name_copy, vertex_count](const auto &values) {
-          if (values.size() != vertex_count) {
+        [name_copy, vertex_count, face_count](const auto &values) {
+          // Properties may be per-vertex (most) or per-face (e.g. face_class
+          // emitted by void cap generation). Anything not matching either is
+          // an error.
+          if (values.size() != vertex_count &&
+              values.size() != face_count) {
             throw std::invalid_argument(fmt::format(
-                "Property '{}' size ({}) doesn't match vertex count ({})",
-                name_copy, values.size(), vertex_count));
+                "Property '{}' size ({}) doesn't match vertex count ({}) or "
+                "face count ({})",
+                name_copy, values.size(), vertex_count, face_count));
           }
         },
         prop);
@@ -99,24 +105,29 @@ void write_ply_mesh(const std::string &filename, const Isosurface &isosurface,
 
   occ::log::debug("Need to write {} properties", isosurface.properties.count());
 
-  // Add variant properties
+  // Add variant properties (per-vertex or per-face based on size).
   for (const auto &[name, prop] : isosurface.properties.properties) {
     const auto name_copy = name;
     std::visit(
-        [name_copy, &ply_file](const auto &values) {
+        [name_copy, &ply_file, vertex_count, face_count](const auto &values) {
           using ValueType = std::decay_t<decltype(values)>;
+          const char *element = (values.size() == face_count && face_count != vertex_count)
+                                    ? "face"
+                                    : "vertex";
           if constexpr (std::is_same_v<ValueType, FVec>) {
             ply_file.add_properties_to_element(
-                "vertex", {name_copy}, tinyply::Type::FLOAT32, values.size(),
+                element, {name_copy}, tinyply::Type::FLOAT32, values.size(),
                 reinterpret_cast<const uint8_t *>(values.data()),
                 tinyply::Type::INVALID, 0);
-            occ::log::debug("Writing float property: {}", name_copy);
+            occ::log::debug("Writing float property: {} on {}", name_copy,
+                            element);
           } else if constexpr (std::is_same_v<ValueType, IVec>) {
             ply_file.add_properties_to_element(
-                "vertex", {name_copy}, tinyply::Type::INT32, values.size(),
+                element, {name_copy}, tinyply::Type::INT32, values.size(),
                 reinterpret_cast<const uint8_t *>(values.data()),
                 tinyply::Type::INVALID, 0);
-            occ::log::debug("Writing integer property: {}", name_copy);
+            occ::log::debug("Writing integer property: {} on {}", name_copy,
+                            element);
           } else {
             occ::log::warn("Skipping writing surface property: {}", name_copy);
           }

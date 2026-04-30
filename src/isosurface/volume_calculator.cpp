@@ -386,6 +386,24 @@ void VolumeCalculator::setup_grid_parameters(VolumeData& volume, const VolumeGen
         } else {
             // Regular molecular calculation - use diagonal basis
             volume.basis.diagonal().array() = 0.2; // Default 0.2 Bohr spacing
+
+            // Apply user-specified direction vectors (Bohr units, per-step translation).
+            // Accepts either a single scalar (isotropic spacing) or a 3-vector per axis.
+            auto set_axis = [&](const std::vector<double> &d, int axis) {
+                if (d.empty()) return;
+                Vec3 v = Vec3::Zero();
+                if (d.size() == 1) {
+                    v(axis) = d[0];
+                } else {
+                    for (int i = 0; i < std::min(3, static_cast<int>(d.size())); i++) {
+                        v(i) = d[i];
+                    }
+                }
+                volume.basis.col(axis) = v;
+            };
+            set_axis(params.da, 0);
+            set_axis(params.db, 1);
+            set_axis(params.dc, 2);
         }
     }
     
