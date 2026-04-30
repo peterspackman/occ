@@ -526,10 +526,14 @@ TEST_CASE("Hirshfeld charges for methane", "[hirshfeld]") {
 
   fmt::print("Methane Hirshfeld charges:\n{}\n", format_matrix(charges));
 
-  // Test the convenience function
+  // Test the convenience function. Tolerance is loosened from the default
+  // because HirshfeldPartition::calculate uses a parallel grid sum whose
+  // thread-local reduction order is nondeterministic, so two invocations on
+  // the same wavefunction can differ by O(1e-12). The values are still
+  // meaningful to far better than chemical accuracy.
   occ::Vec charges2 = occ::dft::calculate_hirshfeld_charges(basis, mo);
   REQUIRE(charges2.size() == 5);
-  REQUIRE(all_close(charges, charges2));
+  REQUIRE(all_close(charges, charges2, 1e-10, 1e-10));
 }
 
 TEST_CASE("Hirshfeld multipoles for water", "[hirshfeld]") {
