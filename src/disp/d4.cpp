@@ -1,8 +1,15 @@
 #include "d4_data.h"
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <occ/core/data_directory.h>
+#include <occ/core/eeq.h>
 #include <occ/core/log.h>
 #include <occ/disp/d4.h>
 #include <stdexcept>
+#include <unordered_map>
+
 
 namespace occ::disp {
 
@@ -176,32 +183,28 @@ inline double zeta(double a, double c, double qref, double qmod) {
 using AlphaTable = std::vector<std::array<std::array<double, N_FREQ>, MAX_REF>>;
 
 AlphaTable build_reference_alpha(const std::vector<core::Atom> &atoms,
-                                 const D4Scaling &sc) {
+                                 const D4Scaling &sc, RefqMode mode) {
   const auto &rd = reference_data();
+  const auto &secq_active =
+      (mode == RefqMode::GFN2) ? rd.secq_gfn2 : rd.secq_dft;
   const int n = static_cast<int>(atoms.size());
   AlphaTable out(n);
   for (int i = 0; i < n; ++i) {
     const int Z = atoms[i].atomic_number;
     const auto &ref = rd.elements[Z];
+    const auto &refh = (mode == RefqMode::GFN2) ? ref.refh_gfn2 : ref.refh_dft;
     for (int iref = 0; iref < ref.refn; ++iref) {
       const int is = ref.refsys[iref];
-      const double iz = (is > 0 && is <= N_SECONDARY) ? rd.zeff[
-          // The `iz` xtb uses here is `zeff(is)` — but `is` is a secondary
-          // atom *type* (H, C, …), not an element Z. Looking at xtb's
-          // implementation, the secondary "atomic number" is just `is` itself
-          // (1, 2, … 17 corresponds to specific atomic species). However in
-          // the xtb code `iz = zeff(is)` is `zeff` indexed by `is` which is
-          // 1..17 — i.e. the zeff entry of element with atomic number `is`.
-          is] : 0.0;
-      // Pre-compute the secondary-atom contribution to reference α.
-      double sec_factor = 0.0;
-      if (is > 0 && is <= N_SECONDARY) {
-        sec_factor = ref.hcount[iref] * rd.sscale[is];
-      }
+      // xtb uses `iz = zeff(is)` where `is` is the secondary-atom index (1..17).
+      // The secondary atoms happen to be H, He, …, Cl (index = atomic number).
+      const double iz = (is > 0 && is <= N_SECONDARY) ? rd.zeff[is] : 0.0;
+      const double sec_factor = (is > 0 && is <= N_SECONDARY)
+                                    ? ref.hcount[iref] * rd.sscale[is]
+                                    : 0.0;
       const double zarg =
           (is > 0 && is <= N_SECONDARY)
-              ? zeta(sc.ga, rd.gam[is] * sc.gc,
-                     rd.secq[is] + iz, ref.refh[iref] + iz)
+              ? zeta(sc.ga, rd.gam[is] * sc.gc, secq_active[is] + iz,
+                     refh[iref] + iz)
               : 0.0;
       for (int k = 0; k < N_FREQ; ++k) {
         const double sec_aiw =
@@ -221,8 +224,8 @@ AlphaTable build_reference_alpha(const std::vector<core::Atom> &atoms,
 // ============================================================================
 
 Mat compute_reference_weights(const std::vector<core::Atom> &atoms,
-                              const D4Scaling &sc, const Vec &cn,
-                              const Vec &q_atomic) {
+                              const D4Scaling &sc, RefqMode mode,
+                              const Vec &cn, const Vec &q_atomic) {
   const auto &rd = reference_data();
   const int n = static_cast<int>(atoms.size());
   Mat gw = Mat::Zero(MAX_REF, n);
@@ -230,6 +233,7 @@ Mat compute_reference_weights(const std::vector<core::Atom> &atoms,
     const int Z = atoms[i].atomic_number;
     const auto &ref = rd.elements[Z];
     if (ref.refn == 0) continue;
+    const auto &refq = (mode == RefqMode::GFN2) ? ref.refq_gfn2 : ref.refq_dft;
     // Un-normalized exp(-wf · ΔCN^2) per reference.
     double sum = 0.0;
     for (int iref = 0; iref < ref.refn; ++iref) {
@@ -243,14 +247,12 @@ Mat compute_reference_weights(const std::vector<core::Atom> &atoms,
     const double iz = rd.zeff[Z];
     for (int iref = 0; iref < ref.refn; ++iref) {
       double weight = gw(iref, i) * inv_sum;
-      // Guard against numerical pathologies (per cpp-d4, mark exceptional).
       if (!std::isfinite(weight)) {
-        // Fallback: assign full weight to lowest-CN reference if all weights
-        // collapsed (rare for normal geometries).
+        // Fallback: full weight to the lowest-CN reference if all collapsed.
         weight = (iref == 0) ? 1.0 : 0.0;
       }
-      const double z = zeta(sc.ga, rd.gam[Z] * sc.gc,
-                             ref.refq[iref] + iz, q_atomic(i) + iz);
+      const double z = zeta(sc.ga, rd.gam[Z] * sc.gc, refq[iref] + iz,
+                             q_atomic(i) + iz);
       gw(iref, i) = weight * z;
     }
   }
@@ -422,11 +424,76 @@ double dispersion_3body(const std::vector<core::Atom> &atoms,
 // Public API
 // ============================================================================
 
-Dispersion::Dispersion(std::vector<core::Atom> atoms)
-    : m_atoms(std::move(atoms)) {
+Dispersion::Dispersion(std::vector<core::Atom> atoms, RefqMode mode)
+    : m_atoms(std::move(atoms)), m_refq_mode(mode) {
   m_q = Vec::Zero(static_cast<int>(m_atoms.size()));
   // Touch the reference data to surface any load errors early.
   (void)d4_data::reference_data();
+}
+
+void Dispersion::set_charges_eeq(double net_charge) {
+  // EEQ wants atomic_numbers (IVec) and positions (3×N in Å).
+  const int n = static_cast<int>(m_atoms.size());
+  IVec atnums(n);
+  Mat3N positions_ang(3, n);
+  constexpr double bohr_to_angstrom = 0.5291772108086;
+  for (int i = 0; i < n; ++i) {
+    atnums(i) = m_atoms[i].atomic_number;
+    positions_ang(0, i) = m_atoms[i].x * bohr_to_angstrom;
+    positions_ang(1, i) = m_atoms[i].y * bohr_to_angstrom;
+    positions_ang(2, i) = m_atoms[i].z * bohr_to_angstrom;
+  }
+  m_q = occ::core::charges::eeq_partial_charges(atnums, positions_ang,
+                                                net_charge);
+}
+
+namespace {
+
+// Cached lookup of functional damping parameters from the JSON database.
+const std::unordered_map<std::string, D4Damping> &functional_table() {
+  using nlohmann::json;
+  static const auto table = [] {
+    std::unordered_map<std::string, D4Damping> m;
+    namespace fs = std::filesystem;
+    auto find_path = []() -> std::string {
+      const char *base = occ::get_data_directory();
+      if (base) {
+        fs::path p = fs::path(base) / "dftd4" / "functionals.json";
+        if (fs::exists(p)) return p.string();
+      }
+      if (fs::exists("dftd4/functionals.json")) return "dftd4/functionals.json";
+      if (fs::exists("functionals.json")) return "functionals.json";
+      throw std::runtime_error(
+          "Cannot locate DFT-D4 functional parameter file (looked at "
+          "share/dftd4/functionals.json, dftd4/functionals.json, "
+          "functionals.json). Set OCC_DATA_PATH or run from a directory "
+          "containing dftd4/functionals.json.");
+    };
+    std::ifstream in(find_path());
+    json j;
+    in >> j;
+    for (const auto &[name, p] : j.at("functionals").items()) {
+      D4Damping d{
+          p.value("s6", 1.0), p.value("s8", 0.0), p.value("s9", 1.0),
+          p.value("a1", 0.0), p.value("a2", 0.0), p.value("alp", 16),
+      };
+      m.emplace(name, d);
+    }
+    return m;
+  }();
+  return table;
+}
+
+} // namespace
+
+void Dispersion::set_functional(const std::string &functional) {
+  const auto &table = functional_table();
+  auto it = table.find(functional);
+  if (it == table.end()) {
+    throw std::runtime_error("Unknown DFT-D4 functional: '" + functional +
+                             "' (check share/dftd4/functionals.json)");
+  }
+  m_damping = it->second;
 }
 
 void Dispersion::update_positions(const std::vector<core::Atom> &atoms) {
@@ -451,8 +518,9 @@ Vec Dispersion::covalent_coordination_numbers() const {
 
 double Dispersion::energy() const {
   const auto cn = covalent_coordination_numbers();
-  const auto ref_alpha = build_reference_alpha(m_atoms, m_scaling);
-  const Mat gw = compute_reference_weights(m_atoms, m_scaling, cn, m_q);
+  const auto ref_alpha = build_reference_alpha(m_atoms, m_scaling, m_refq_mode);
+  const Mat gw = compute_reference_weights(m_atoms, m_scaling, m_refq_mode, cn,
+                                           m_q);
   const Mat c6 = compute_c6_matrix(m_atoms, gw, ref_alpha);
   const double e2 = dispersion_2body(m_atoms, m_damping, c6, m_cutoff_disp2);
   const double e3 = dispersion_3body(m_atoms, m_damping, c6, m_cutoff_disp3);

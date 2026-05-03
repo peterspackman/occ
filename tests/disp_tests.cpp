@@ -4,6 +4,7 @@
 #include <fmt/ostream.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
+#include <occ/disp/d4.h>
 #include <occ/disp/dftd4.h>
 
 /* Dimer tests */
@@ -109,5 +110,42 @@ TEST_CASE("dftd4 dispersion", "[disp]") {
     REQUIRE(std::isfinite(grad.sum()));
     REQUIRE(grad.norm() > 1e-5);       // Non-zero
     REQUIRE(grad.norm() < 1e-2);       // Reasonable magnitude for benzene
+  }
+}
+
+TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
+  using namespace occ::disp;
+
+  SECTION("water pbe matches cpp-d4 to <1 µHa") {
+    Molecule m = water_molecule();
+    Dispersion d4(m.atoms(), RefqMode::DFT);
+    d4.set_functional("pbe");
+    d4.set_charges_eeq(0.0);
+    REQUIRE(d4.energy() == Approx(-1.960327305609419e-04).margin(1e-6));
+  }
+
+  SECTION("water blyp matches cpp-d4 to <1 µHa") {
+    Molecule m = water_molecule();
+    Dispersion d4(m.atoms(), RefqMode::DFT);
+    d4.set_functional("blyp");
+    d4.set_charges_eeq(0.0);
+    REQUIRE(d4.energy() == Approx(-4.734890496748087e-04).margin(1e-6));
+  }
+
+  SECTION("benzene wb97x matches cpp-d4 to <10 µHa") {
+    Molecule m = benzene_molecule();
+    Dispersion d4(m.atoms(), RefqMode::DFT);
+    d4.set_functional("wb97x");
+    d4.set_charges_eeq(0.0);
+    REQUIRE(d4.energy() == Approx(-1.355940054241274e-03).margin(1e-5));
+  }
+
+  SECTION("benzene b3lyp +1 charge") {
+    Molecule m = benzene_molecule();
+    m.set_charge(1);
+    Dispersion d4(m.atoms(), RefqMode::DFT);
+    d4.set_functional("b3lyp");
+    d4.set_charges_eeq(1.0);
+    REQUIRE(d4.energy() == Approx(-1.522647086484191e-02).margin(1e-4));
   }
 }

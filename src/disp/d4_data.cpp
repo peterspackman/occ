@@ -52,17 +52,20 @@ ReferenceData load_from_json(const std::string &path) {
 
   // Secondary atoms (entries 1..17 in xtb; we store at indices 1..17).
   const auto &sec = j.at("secondary");
-  const auto &secq = sec.at("secq");
+  const auto &secq_gfn2 = sec.at("secq_gfn2");
+  const auto &secq_dft = sec.at("secq_dft");
   const auto &sscale = sec.at("sscale");
   const auto &secaiw = sec.at("secaiw");
-  if (secq.size() != static_cast<std::size_t>(N_SECONDARY) ||
+  if (secq_gfn2.size() != static_cast<std::size_t>(N_SECONDARY) ||
+      secq_dft.size() != static_cast<std::size_t>(N_SECONDARY) ||
       sscale.size() != static_cast<std::size_t>(N_SECONDARY) ||
       secaiw.size() != static_cast<std::size_t>(N_SECONDARY)) {
     throw std::runtime_error("D4 refdata: secondary tables must have " +
                              std::to_string(N_SECONDARY) + " entries");
   }
   for (int i = 0; i < N_SECONDARY; ++i) {
-    out.secq[i + 1] = secq[i];
+    out.secq_gfn2[i + 1] = secq_gfn2[i];
+    out.secq_dft[i + 1] = secq_dft[i];
     out.sscale[i + 1] = sscale[i];
     const auto &aiw = secaiw[i];
     if (aiw.size() != static_cast<std::size_t>(N_FREQ)) {
@@ -101,8 +104,10 @@ ReferenceData load_from_json(const std::string &path) {
     };
     fill_int("refsys", ref.refsys);
     fill_dbl("refcovcn", ref.refcovcn);
-    fill_dbl("refq", ref.refq);
-    fill_dbl("refh", ref.refh);
+    fill_dbl("refq_gfn2", ref.refq_gfn2);
+    fill_dbl("refh_gfn2", ref.refh_gfn2);
+    fill_dbl("refq_dft", ref.refq_dft);
+    fill_dbl("refh_dft", ref.refh_dft);
     fill_dbl("ascale", ref.ascale);
     fill_dbl("hcount", ref.hcount);
     const auto &aiw_all = e.at("alphaiw");

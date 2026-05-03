@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
+#include <string>
 #include <vector>
 
 namespace occ::disp {
@@ -30,19 +31,50 @@ struct D4Scaling {
 // Convenience: GFN2-xTB damping parameters (s6=1, s8=2.7, s9=5, a1=0.52, a2=5).
 inline constexpr D4Damping gfn2_damping{1.0, 2.7, 5.0, 0.52, 5.0, 16};
 
+// Reference-charge dataset selector — see d4_data.h for details.
+enum class RefqMode { GFN2, DFT };
+
 // Native DFT-D4 evaluator. Construct with a list of atoms (positions in Bohr,
 // elements via core::Atom::atomic_number), set damping/charges, compute energy
-// or energy + gradient. Reference data is loaded once from share/dftd4/refdata.json
-// and cached.
+// or energy + gradient. Reference data is loaded once from
+// share/dftd4/refdata.json and cached; per-functional damping params come from
+// share/dftd4/functionals.json.
+//
+// Two main usage patterns:
+//   1. GFN2-xTB SCC-coupled D4 (default RefqMode::GFN2):
+//        Dispersion d(atoms);
+//        d.set_damping(gfn2_damping);
+//        d.set_charges(mulliken_atomic);
+//        e = d.energy();
+//   2. DFT-D4 with a functional (RefqMode::DFT, EEQ atomic charges):
+//        Dispersion d(atoms, RefqMode::DFT);
+//        d.set_functional("pbe");
+//        d.set_charges_eeq(net_charge);
+//        e = d.energy();
 class Dispersion {
 public:
-  explicit Dispersion(std::vector<core::Atom> atoms);
+  explicit Dispersion(std::vector<core::Atom> atoms,
+                      RefqMode mode = RefqMode::GFN2);
 
   void set_damping(const D4Damping &d) { m_damping = d; }
   void set_scaling(const D4Scaling &s) { m_scaling = s; }
+  void set_refq_mode(RefqMode m) { m_refq_mode = m; }
+  RefqMode refq_mode() const { return m_refq_mode; }
+
+  // Set damping parameters from the bundled functional database.
+  // Throws if the functional name is unknown. Common aliases (pbe, b3lyp,
+  // wb97x, blyp, b97-3c, …) are supported.
+  void set_functional(const std::string &functional);
+
   // Per-atom partial charges (positive = electron-deficient). Required for the
   // charge-aware reference projection.
   void set_charges(const Vec &q_atomic) { m_q = q_atomic; }
+
+  // Compute and store EEQ partial charges for the current geometry. Use this
+  // for DFT-D4 where SCF Mulliken charges aren't available. `net_charge` is
+  // the system total charge (default 0).
+  void set_charges_eeq(double net_charge = 0.0);
+
   // Cutoffs in Bohr for the 2-body, 3-body, and CN sums.
   void set_cutoffs(double disp2 = 60.0, double disp3 = 40.0, double cn = 30.0) {
     m_cutoff_disp2 = disp2;
@@ -64,9 +96,10 @@ public:
 
 private:
   std::vector<core::Atom> m_atoms;
-  Vec m_q;                  // atomic partial charges; defaults to zero
+  Vec m_q;                       // atomic partial charges; defaults to zero
   D4Damping m_damping{};
   D4Scaling m_scaling{};
+  RefqMode m_refq_mode{RefqMode::GFN2};
   double m_cutoff_disp2{60.0};
   double m_cutoff_disp3{40.0};
   double m_cutoff_cn{30.0};
