@@ -45,3 +45,10 @@ coverage/
 *.cube
 *.pgrid
 *.ply
+
+# xtb scratch outputs (when running xtb side-by-side for validation)
+.EDISP
+charges
+wbo
+xtbrestart
+xtbtopo.mol
