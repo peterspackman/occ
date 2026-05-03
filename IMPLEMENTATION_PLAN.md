@@ -83,27 +83,33 @@ Validates by setting cell large enough that result equals molecular.
 ## Phase 6 — Native dispersion (in progress)
 
 Replace the cpp-d4 dependency with an in-tree DFT-D4 (and D3) implementation
-under `src/disp/`. Reference data lives in `share/dftd4/refdata.json`.
+under `src/disp/`. Reference data lives in `share/dftd4/`.
 
 ### Done
 - **6a** Native D4 for GFN2-xTB: `occ::disp::Dispersion` reads the GFN2-xTB
-  reference data extracted from xtb's `param_ref.fh` (refq, refh, alphaiw,
-  ascale, hcount, refcovcn, refsys, secaiw, secq, sscale; plus per-element
-  zeff, gam, sqrt_zr4r2). Energy validates against xtb to **0.28 µHa on water,
-  0.15 mHa on rubrene**. The previous cpp-d4 path (which used Hirshfeld-derived
-  refq instead of GFN2-derived) was off by ~5 mHa on rubrene.
+  reference data extracted from xtb's `param_ref.fh`. Energy matches xtb to
+  **0.28 µHa on water, 94 µHa on rubrene** (after multi-Gaussian ref weights
+  and ATM sign fixes).
+- **6b** Hirshfeld refq variant for DFT-D4 (`RefqMode::DFT`). Refq + refh
+  tables come from cpp-d4's `refq_eeq` / `refsq` (the modern dftd4 fortran
+  port's data). Per-functional damping presets in
+  `share/dftd4/functionals.json` (152 functionals, e.g. pbe, b3lyp, wb97x,
+  blyp, b97-3c). `set_charges_eeq()` populates atomic charges from EEQ.
+  Existing tests for water+pbe/blyp, benzene+wb97x/b3lyp+1 all pass.
+- **6c** Numerical gradient via `energy_and_gradient()` (5-point central
+  diff). Slow but correct. Analytical version is **6f**.
+- **6d** Migrated all D4 use sites to native (`qm/gradients.cpp`,
+  `driver/single_point.cpp`, `driver/geometry_optimization.cpp`).
+- **6e** Dropped cpp-d4 CMake dependency entirely.
 
 ### Pending
-- **6b** Hirshfeld refq variant for DFT-D4 (PBE/B3LYP/wB97X/…). Add a
-  `RefqMode` enum and a parallel refq table; load DFT functional damping
-  parameters from `share/dftd4/functionals.json`. Once done, replace
-  `occ::disp::D4Dispersion` use sites in `driver/single_point.cpp`,
-  `driver/geometry_optimization.cpp`, `qm/gradients.cpp`, `tests/disp_tests.cpp`.
-- **6c** Analytical 2-body + ATM gradient (CN + charge chain rule). Required
-  before we can drop cpp-d4 from `qm::GradientEvaluator`.
-- **6d** Native D3-BJ. Different reference C6 table (~32k floats), different
-  CN parameters. Same parameter-file layout.
-- **6e** Drop cpp-d4 dependency from CMake.
+- **6f** Analytical D4 gradient (2-body BJ derivative + ATM angular derivative
+  + ∂C6/∂CN chain rule). Optional EEQ chain rule `∂q_EEQ/∂R` for full DFT-D4
+  forces (small effect at typical geometries; numerical FD is acceptable
+  meanwhile).
+- **6g** Native D3-BJ. Reference C6 table (~23k lines in xtb's
+  `dftd3_parameters.f90`) + simpler erf CN function (no EN factor) + BJ damping
+  identical to D4. New JSON file in `share/dftd3/`.
 
 ## Phase 5 — Gradients + frequencies (in progress)
 
