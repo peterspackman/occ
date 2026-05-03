@@ -1,7 +1,9 @@
 #include <Eigen/Eigenvalues>
 #include <cmath>
+#include <occ/core/diis.h>
 #include <occ/core/log.h>
-#include <occ/disp/dftd4.h>
+#include <occ/disp/d4.h>
+#include <optional>
 #include <occ/xtb/anisotropic.h>
 #include <occ/xtb/basis.h>
 #include <occ/xtb/camm.h>
@@ -13,13 +15,6 @@
 #include <memory>
 #include <stdexcept>
 
-// dftd4 lower-level pieces (used for the SCC-coupled D4 path).
-#include "dftd_cutoff.h"
-#include "dftd_dispersion.h"
-#include "dftd_geometry.h"
-#include "dftd_model.h"
-#include "dftd_ncoord.h"
-#include "damping/dftd_rational.h"
 
 namespace occ::xtb {
 
@@ -73,143 +68,6 @@ void Gfn2Calculator::recompute_geometry_caches() {
 
 namespace {
 
-// EEQ-charge D4: uses dftd4's get_dispersion path which calls EEQ internally.
-// Geometry-only result for the given functional/method parameters.
-double compute_d4_energy_eeq(const std::vector<core::Atom> &atoms,
-                             const GlobalParam &g, double total_charge) {
-  occ::disp::D4Dispersion d4(atoms);
-  dftd4::dparam dp{g.s6, g.s8, /*s10=*/0.0, g.s9, g.a1, g.a2, /*alp=*/16};
-  d4.set_parameters(dp);
-  d4.set_charge(static_cast<int>(std::round(total_charge)));
-  return d4.energy();
-}
-
-// Persistent state for SCC-coupled D4 — computed once per geometry, reused
-// across SCC iterations. dftd4's TMatrix has no proper move/copy semantics
-// (it owns a raw pointer), so this struct must be heap-allocated and never
-// copied.
-struct D4SccState {
-  dftd4::TMolecule mol;
-  dftd4::TIVector real_idx;
-  dftd4::TCutoff cutoff;
-  dftd4::TD4Model d4{};
-  dftd4::TMatrix<double> dist;
-  dftd4::TVector<double> cn;
-  dftd4::TMatrix<double> refq;
-  int mref{0};
-  int nat{0};
-
-  D4SccState() = default;
-  D4SccState(const D4SccState &) = delete;
-  D4SccState &operator=(const D4SccState &) = delete;
-  D4SccState(D4SccState &&) = delete;
-  D4SccState &operator=(D4SccState &&) = delete;
-};
-
-void build_d4_scc_state(D4SccState &s,
-                        const std::vector<core::Atom> &atoms) {
-  s.nat = static_cast<int>(atoms.size());
-  s.mol.GetMemory(s.nat);
-  for (int i = 0; i < s.nat; ++i) {
-    s.mol.CC(i, 0) = atoms[i].x;
-    s.mol.CC(i, 1) = atoms[i].y;
-    s.mol.CC(i, 2) = atoms[i].z;
-    s.mol.ATNO(i) = atoms[i].atomic_number;
-  }
-  dftd4::initializeRealIdx(s.nat, s.real_idx);
-
-  s.dist.NewMatrix(s.nat, s.nat);
-  dftd4::calc_distances(s.mol, s.real_idx, s.dist);
-
-  s.cn.NewVector(s.nat);
-  dftd4::TMatrix<double> dcndr; // unused, gradient-off
-  dftd4::get_ncoord_d4(s.mol, s.real_idx, s.dist, s.cutoff.cn, s.cn, dcndr,
-                       false);
-
-  dftd4::get_max_ref(s.mol, s.mref);
-  s.refq.NewMat(s.mref, s.nat);
-  s.d4.set_refq_eeq(s.mol, s.real_idx, s.refq);
-}
-
-struct D4ScfResult {
-  double energy;
-  Mat3N gradient;
-};
-
-// SCC-charge D4 with optional analytical gradient.
-// `q_atomic` follows xtb's convention (positive when electron-deficient).
-D4ScfResult compute_d4_energy_and_gradient_scc(const D4SccState &s,
-                                               const GlobalParam &g,
-                                               const Vec &q_atomic,
-                                               bool with_gradient) {
-  dftd4::TVector<double> q;
-  q.NewVector(s.nat);
-  for (int i = 0; i < s.nat; ++i)
-    q(i) = q_atomic(i);
-
-  dftd4::TMatrix<double> gwvec, dgwdcn, dgwdq;
-  gwvec.NewMatrix(s.mref, s.nat);
-  dgwdcn.NewMatrix(s.mref, s.nat);
-  dgwdq.NewMatrix(s.mref, s.nat);
-  s.d4.weight_references(s.mol, s.real_idx, s.cn, q, s.refq, gwvec, dgwdcn,
-                         dgwdq, with_gradient);
-
-  dftd4::TMatrix<double> c6, dc6dcn, dc6dq;
-  c6.NewMatrix(s.nat, s.nat);
-  dc6dcn.NewMatrix(s.nat, s.nat);
-  dc6dq.NewMatrix(s.nat, s.nat);
-  s.d4.get_atomic_c6(s.mol, s.real_idx, gwvec, dgwdcn, dgwdq, c6, dc6dcn,
-                     dc6dq, with_gradient);
-
-  dftd4::dparam par{g.s6, g.s8, /*s10=*/0.0, g.s9, g.a1, g.a2, /*alp=*/16};
-
-  dftd4::TVector<double> e2body, dEdcn, dEdq, gradient;
-  e2body.NewVector(s.nat);
-  dEdcn.NewVector(s.nat);
-  dEdq.NewVector(s.nat);
-  if (with_gradient)
-    gradient.NewVector(3 * s.nat);
-  dftd4::get_dispersion2(s.mol, s.real_idx, s.dist, s.cutoff.disp2, par, c6,
-                         dc6dcn, dc6dq, e2body, dEdcn, dEdq, gradient,
-                         with_gradient);
-
-  dftd4::TVector<double> e3body;
-  e3body.NewVector(s.nat);
-  if (par.s9 != 0.0) {
-    dftd4::get_dispersion3(s.mol, s.real_idx, s.dist, s.cutoff.disp3, par, c6,
-                           dc6dcn, dc6dq, e3body, dEdcn, dEdq, gradient,
-                           with_gradient);
-  }
-
-  D4ScfResult out;
-  out.energy = 0.0;
-  for (int i = 0; i < s.nat; ++i)
-    out.energy += e2body(i) + e3body(i);
-
-  if (with_gradient) {
-    out.gradient = Mat3N::Zero(3, s.nat);
-    for (int i = 0; i < s.nat; ++i) {
-      out.gradient(0, i) = gradient(3 * i + 0);
-      out.gradient(1, i) = gradient(3 * i + 1);
-      out.gradient(2, i) = gradient(3 * i + 2);
-    }
-    // dftd4's gradient skips the explicit chain rule through CN and q
-    // (`dEdcn`, `dEdq` are returned separately). For a full gradient we
-    // would add `Σ_i dEdcn[i] · ∂CN_i/∂R + dEdq[i] · ∂q_i/∂R`. The
-    // ∂CN/∂R term is straightforward; ∂q/∂R requires the SCF response
-    // (CPSCF). Phase 5c covers this; for now the partial gradient is
-    // already much closer to the analytical value than EEQ-D4.
-  } else {
-    out.gradient.resize(0, 0);
-  }
-  return out;
-}
-
-double compute_d4_energy_scc(const D4SccState &s, const GlobalParam &g,
-                             const Vec &q_atomic) {
-  return compute_d4_energy_and_gradient_scc(s, g, q_atomic, false).energy;
-}
-
 // Mulliken populations per shell from PS = P · S.
 Vec shell_populations(const Mat &PS, const std::vector<int> &bf_to_shell,
                       int n_shells) {
@@ -256,10 +114,12 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
   // self-consistent D4 to within a few µHa). D4SccState owns dftd4's
   // TMatrix instances which lack proper copy/move, so we hold it via
   // unique_ptr to keep it pinned in memory.
-  std::unique_ptr<D4SccState> d4_state;
+  std::optional<occ::disp::Dispersion> native_d4;
   if (opts.include_dispersion) {
-    d4_state = std::make_unique<D4SccState>();
-    build_d4_scc_state(*d4_state, m_atoms);
+    native_d4.emplace(m_atoms);
+    const auto &g = m_params.globals();
+    native_d4->set_damping(
+        occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
   }
   double e_disp = 0.0;
 
@@ -267,6 +127,13 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
   double prev_energy = 0.0;
   Vec orbital_energies, orbital_occupations;
   Mat C, P;
+
+  // Pulay-style charge DIIS: extrapolate qsh_new from history of
+  // (qsh_new_i, residual_i = qsh_new_i − qsh_in_i). Linear damping warms it
+  // up for the first `diis_start` iterations.
+  const std::size_t diis_start = 3;
+  const std::size_t diis_subspace = 8;
+  occ::core::diis::DIIS diis(diis_start, diis_subspace);
 
   occ::log::info("{:=^72s}", "  GFN2-xTB self-consistent charges  ");
   occ::log::info("nbf = {}   n_shells = {}   n_electrons = {}   multipoles = {}",
@@ -323,12 +190,14 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
     Vec pop = shell_populations(PS, m_bf_to_shell, m_n_shells);
     Vec qsh_new = m_z_sh - pop;
 
-    // Compute SCC-coupled D4 with the current Mulliken charges.
-    if (d4_state) {
+    // Compute SCC-coupled D4 with the current Mulliken charges via the
+    // native occ::disp::Dispersion (uses GFN2-xTB reference data).
+    if (native_d4) {
       Vec atom_q_new = Vec::Zero(m_atoms.size());
       for (int s = 0; s < m_n_shells; ++s)
         atom_q_new(m_shells.atom[s]) += qsh_new(s);
-      e_disp = compute_d4_energy_scc(*d4_state, m_params.globals(), atom_q_new);
+      native_d4->set_charges(atom_q_new);
+      e_disp = native_d4->energy();
     }
 
     double e_es = 0.5 * qsh_new.dot(m_J * qsh_new);
@@ -372,7 +241,17 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
       return r;
     }
 
-    qsh = (1.0 - opts.damping_factor) * qsh_new + opts.damping_factor * qsh;
+    // Push (qsh_new, residual) into DIIS. For iter ≤ diis_start the call is
+    // a no-op (just builds history) and we fall back to linear damping; once
+    // there is enough history DIIS overwrites x with the extrapolated qsh.
+    Mat x = qsh_new;
+    Mat err = qsh_new - qsh;
+    diis.extrapolate(x, err);
+    if (static_cast<std::size_t>(iter) > diis_start) {
+      qsh = x.col(0);
+    } else {
+      qsh = (1.0 - opts.damping_factor) * qsh_new + opts.damping_factor * qsh;
+    }
     prev_energy = total_energy;
   }
 

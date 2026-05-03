@@ -101,13 +101,13 @@ Mat3N klopman_ohno_gamma_energy_gradient(
     const std::vector<core::Atom> &atoms, const ShellTable &shells,
     const Gfn2Parameters &params, const Mat & /*gamma_matrix*/,
     const Vec &qsh) {
-  // d/dR_C ( ½ Σ_ij q_i q_j γ_ij ).
-  // For shells i on atom A, j on atom B, A ≠ B:
-  //   γ_ij(R) = (R^α + g_ij^{-α})^{-1/α}
-  //   dγ/dR  = -R^(α-1) · γ^(α+1)
-  //   dγ/dr_A,k = (dγ/dR)·(r_A − r_B)_k / R = -R^(α-2) · γ^(α+1) · (r_A − r_B)_k
-  // The sum below counts each (i,j) ordering once; the ½ in ½ q^T γ q is
-  // exactly cancelled by the double-summation, so we omit it here.
+  // d/dR_A ( ½ Σ_ij q_i q_j γ_ij ).
+  // Only off-atom (Ai ≠ Aj) entries are R-dependent; same-atom γ is constant.
+  // After expanding the i↔j symmetry, the ½ in ½ q^T γ q cancels with the
+  // factor-2 from summing both orderings of each unordered pair, giving:
+  //   dE/dR_A = Σ_{i on A, j off A} q_i q_j · (dγ/dR)·(r_A − r_{A_j})/R
+  // The double `for` loop below visits each ordered (i, j) once and assigns
+  // the contribution to grad(A_i). The (j, i) visit handles A_j by symmetry.
   const double g_exp = params.globals().alphaj;
 
   const int n_atoms = static_cast<int>(atoms.size());
@@ -133,7 +133,7 @@ Mat3N klopman_ohno_gamma_energy_gradient(
       // dγ/dR = -R^(α-1) · γ^(α+1)
       const double dgamma_dR = -std::pow(R, g_exp - 1.0) *
                                 std::pow(g_val, g_exp + 1.0);
-      const double scal = 0.5 * qsh(i) * qsh(j) * dgamma_dR / R;
+      const double scal = qsh(i) * qsh(j) * dgamma_dR / R;
       grad(0, Ai) += scal * dx;
       grad(1, Ai) += scal * dy;
       grad(2, Ai) += scal * dz;

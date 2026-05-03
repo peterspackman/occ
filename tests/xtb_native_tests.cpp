@@ -508,6 +508,80 @@ TEST_CASE("Periodic AO matrices: large-cell limit equals molecular",
   REQUIRE(S_k.imag().cwiseAbs().maxCoeff() < 1e-10);
 }
 
+TEST_CASE("Pulay-only assembly: Σ Z · ∂S/∂R analytical vs FD",
+          "[xtb][gradient][analytical][pulay]") {
+  // Isolate the per-atom Σ_μν Z_μν · ∂S_μν/∂R assembly used by
+  // h0_scc_gradient. With Z held fixed (not derived from any density), this
+  // tests JUST the integral-derivative side of the Pulay term.
+  using occ::core::Atom;
+  // H2O: O has multi-shell (s + p), so this also tests the same-atom block
+  // cancellation property of the row-dot identity.
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4855061, 0.0817459, 0.0091517},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  auto basis = occ::xtb::build_aobasis(atoms, p);
+  occ::qm::IntegralEngine engine(basis);
+
+  const int nbf = static_cast<int>(basis.nbf());
+
+  // Build an arbitrary symmetric Z (deterministic, non-trivial).
+  occ::Mat Z(nbf, nbf);
+  for (int i = 0; i < nbf; ++i)
+    for (int j = 0; j < nbf; ++j)
+      Z(i, j) = std::sin(0.7 * i + 1.3 * j) + std::cos(0.5 * i * j);
+  Z = (0.5 * (Z + Z.transpose())).eval(); // symmetrize (avoid aliasing)
+
+  // Analytical assembly using the same per-atom pattern as h0_scc_gradient.
+  occ::MatTriple ovlp_grad =
+      engine.one_electron_operator_grad(occ::qm::IntegralEngine::Op::overlap);
+  const auto &atom_to_shell = basis.atom_to_shell();
+  const auto &first_bf = basis.first_bf();
+  occ::Mat3N grad_an = occ::Mat3N::Zero(3, atoms.size());
+  for (size_t A = 0; A < atoms.size(); ++A) {
+    for (int s : atom_to_shell[A]) {
+      const auto &sh = basis[s];
+      const int bf0 = first_bf[s];
+      const int sz = static_cast<int>(sh.size());
+      for (int mu = bf0; mu < bf0 + sz; ++mu) {
+        // Σ Z · ∂S/∂R_A = -2 Σ_{μ∈A, ν∉A} Z[μν]·ovlp[μν]
+        // For symmetric Z and antisym ovlp the same-atom block cancels itself,
+        // so we can sum over all ν via row-dot.
+        grad_an(0, A) -= 2.0 * ovlp_grad.x.row(mu).dot(Z.row(mu));
+        grad_an(1, A) -= 2.0 * ovlp_grad.y.row(mu).dot(Z.row(mu));
+        grad_an(2, A) -= 2.0 * ovlp_grad.z.row(mu).dot(Z.row(mu));
+      }
+    }
+  }
+
+  // FD reference: d(Σ Z_μν · S_μν(R))/dR_C with Z held fixed.
+  const double h = 1e-4;
+  occ::Mat3N grad_fd = occ::Mat3N::Zero(3, atoms.size());
+  for (size_t a = 0; a < atoms.size(); ++a) {
+    for (int k = 0; k < 3; ++k) {
+      auto E_at = [&](double dh) {
+        auto a2 = atoms;
+        if (k == 0) a2[a].x += dh;
+        if (k == 1) a2[a].y += dh;
+        if (k == 2) a2[a].z += dh;
+        auto basis2 = occ::xtb::build_aobasis(a2, p);
+        occ::qm::IntegralEngine eng2(basis2);
+        occ::Mat S2 = eng2.one_electron_operator(
+            occ::qm::IntegralEngine::Op::overlap);
+        return Z.cwiseProduct(S2).sum();
+      };
+      grad_fd(k, a) =
+          (-E_at(2 * h) + 8 * E_at(h) - 8 * E_at(-h) + E_at(-2 * h)) /
+          (12 * h);
+    }
+  }
+  INFO("analytical:\n" << grad_an);
+  INFO("numerical: \n" << grad_fd);
+  REQUIRE((grad_an - grad_fd).cwiseAbs().maxCoeff() < 1e-7);
+}
+
 TEST_CASE("Klopman-Ohno γ gradient: analytical vs finite difference",
           "[xtb][gradient][analytical]") {
   using occ::core::Atom;
@@ -550,26 +624,8 @@ TEST_CASE("Klopman-Ohno γ gradient: analytical vs finite difference",
   REQUIRE((grad - fd).cwiseAbs().maxCoeff() < 1e-9);
 }
 
-// PHASE 5c WIP: the H0+Pulay assembly compiles and the magnitudes are in
-// the right ballpark but the integration test below does NOT yet match the
-// finite-difference reference to the desired tolerance. The error pattern
-// suggests one of:
-//   - a subtle sign/factor in the per-atom Σ Z·∂S/∂R assembly,
-//   - the chain through ∂CN/∂R for the off-diagonal (h_A+h_B) term, or
-//   - the ∂Π(R_AB)/∂R contribution for the distance polynomial.
-// The recommended fix-up path is bottom-up decomposition (see
-// IMPLEMENTATION_PLAN.md "Phase 5c finishing strategy"):
-//   1. Test JUST `Σ Z·∂S/∂R` against d(-Σ W S)/dR with synthetic W.
-//   2. Test JUST the ∂Π/∂R contribution against an artificial energy linear
-//      in Π with shell-block constants.
-//   3. Test JUST the dE/dCN chain against an artificial energy linear in CN.
-// Once all three pieces pass independently, the integration test will too.
-//
-// This test is currently INFO-level (not REQUIRE) so it ships with the
-// commit but doesn't break CI. Flip back to REQUIRE once the underlying
-// bug is fixed.
 TEST_CASE("H0 + Pulay gradient + γ + repulsion vs full numerical SCC gradient",
-          "[xtb][gradient][analytical][!mayfail]") {
+          "[xtb][gradient][analytical]") {
   using occ::core::Atom;
   using occ::core::Molecule;
   // A non-equilibrium water — guarantees a non-trivial gradient.
@@ -612,11 +668,20 @@ TEST_CASE("H0 + Pulay gradient + γ + repulsion vs full numerical SCC gradient",
   auto shells = occ::xtb::build_shell_table(atoms, p);
   occ::qm::IntegralEngine engine(basis);
 
+  // SCC shell shift potential at convergence: V_s = (J·q)_s + Γ_s·q_s²
+  // (Coulomb shift + third-order). Matches the V used to build the Fock
+  // matrix in run_charge_only.
+  occ::Mat J = occ::xtb::klopman_ohno_gamma(atoms, shells, p);
+  occ::Vec V_shell = J * r.shell_charges;
+  for (Eigen::Index s = 0; s < V_shell.size(); ++s) {
+    V_shell(s) += shells.third_order(s) * r.shell_charges(s) *
+                  r.shell_charges(s);
+  }
+
   // Analytical pieces.
   occ::Mat3N grad_h0 = occ::xtb::h0_scc_gradient(
       atoms, p, shells, basis, engine, r.overlap_matrix, r.density_matrix, W,
-      cn_g.cn, cn_g.dcn);
-  occ::Mat J = occ::xtb::klopman_ohno_gamma(atoms, shells, p);
+      V_shell, cn_g.cn, cn_g.dcn);
   occ::Mat3N grad_es = occ::xtb::klopman_ohno_gamma_energy_gradient(
       atoms, shells, p, J, r.shell_charges);
   auto rep_eg = occ::xtb::repulsion_energy_and_gradient(atoms, p);
@@ -653,9 +718,8 @@ TEST_CASE("H0 + Pulay gradient + γ + repulsion vs full numerical SCC gradient",
   INFO("analytical (rep):\n" << rep_eg.gradient);
   INFO("analytical (sum):\n" << grad_total_analytical);
   INFO("numerical (full SCC):\n" << grad_total_numerical);
-  // KNOWN-FAILING — see file-level comment above.
-  CHECK((grad_total_analytical - grad_total_numerical).cwiseAbs().maxCoeff() <
-        1e-6);
+  REQUIRE((grad_total_analytical - grad_total_numerical).cwiseAbs().maxCoeff() <
+          1e-6);
 }
 
 TEST_CASE("Repulsion gradient: analytical vs finite difference",

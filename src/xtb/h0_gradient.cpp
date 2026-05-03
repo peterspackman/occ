@@ -102,7 +102,8 @@ PolyFactor shell_poly_with_grad(double i_poly, double j_poly, double i_rad,
 Mat3N h0_scc_gradient(const std::vector<core::Atom> &atoms,
                       const Gfn2Parameters &params, const ShellTable &shells,
                       const gto::AOBasis &basis, qm::IntegralEngine &engine,
-                      const Mat &S, const Mat &P, const Mat &W, const Vec &cn,
+                      const Mat &S, const Mat &P, const Mat &W,
+                      const Vec &V_shell, const Vec &cn,
                       const std::vector<Mat3N> &dcn) {
   const auto &g = params.globals();
   const Eigen::Matrix4d K = build_kscale(g);
@@ -245,9 +246,30 @@ Mat3N h0_scc_gradient(const std::vector<core::Atom> &atoms,
     grad += dE_dCN(B) * dcn[B];
   }
 
-  // (a) Combined S-derivative term. Z = P .* X − W, then per-atom assembly
-  // mirrors the pattern in occ::qm::GradientEvaluator::electronic.
+  // (a) Combined S-derivative term. The "via S" assembly bundles three
+  // R-dependent contributions through ∂S/∂R:
+  //
+  //     Z[μν] = P[μν]·X[μν]              ← H0_off-diag-via-S
+  //           − W[μν]                    ← Pulay
+  //           − ½·P[μν]·(V_{s(μ)}+V_{s(ν)})  ← Tr(P · ∂V_q/∂R) via S
+  //
+  // V_q is the SCC Coulomb shift potential V_q[μν] = ½·S[μν]·(V_s+V_t).
+  // Differentiating with V (= J·q) held fixed pulls a factor of dS/dR out.
+  if (V_shell.size() != static_cast<Eigen::Index>(shells.atom.size())) {
+    throw std::runtime_error("h0_scc_gradient: V_shell size mismatch");
+  }
+  Vec V_per_bf(nbf);
+  for (int mu = 0; mu < nbf; ++mu) {
+    V_per_bf(mu) = V_shell(bf_to_shell[mu]);
+  }
   Mat Z = (P.array() * X.array()).matrix() - W;
+  // -½ P .* (V_μ + V_ν) elementwise: V_μ + V_ν = V·1ᵀ + 1·Vᵀ (rank-2).
+  Z.noalias() -=
+      0.5 * (P.array() *
+             (V_per_bf * Vec::Ones(nbf).transpose() +
+              Vec::Ones(nbf) * V_per_bf.transpose())
+                .array())
+                .matrix();
 
   occ::qm::IntegralEngine::Op op_overlap =
       occ::qm::IntegralEngine::Op::overlap;
