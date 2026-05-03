@@ -44,6 +44,21 @@ public:
   Mat bond_orders() const;
   inline int num_atoms() const { return m_atomic_numbers.rows(); }
 
+  // Enable storage of integrals (overlap, Hamiltonian) before running the
+  // SCF. Must be called prior to `single_point_energy()` for `overlap()` /
+  // `hamiltonian()` to return valid matrices.
+  void save_integrals(bool enable = true);
+
+  // Number of orbitals (basis functions) in the tblite-internal basis.
+  int num_orbitals() const;
+
+  // Overlap matrix in tblite's internal basis ordering. Requires
+  // `save_integrals(true)` and a completed `single_point_energy()`.
+  Mat overlap() const;
+
+  // Core Hamiltonian (zeroth-order) matrix in tblite's basis ordering.
+  Mat hamiltonian() const;
+
   void update_structure(const Mat3N &positions);
   void update_structure(const Mat3N &positions, const Mat3 &lattice);
 

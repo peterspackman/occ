@@ -1,4 +1,18 @@
 set(OCC_XTB_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/xtb_wrapper.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_parameters.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sto_ng.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/basis.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/coordination.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/repulsion.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gamma.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/h0.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/scc.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_ints.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/camm.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_damping.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/anisotropic.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_calculator.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/native_calculator.h"
     PARENT_SCOPE
 )

@@ -1,0 +1,4010 @@
+{
+  "method": "GFN2-xTB",
+  "doi": "10.1021/acs.jctc.8b01176",
+  "version": 1,
+  "max_z": 86,
+  "globals": {
+    "ks": 1.85,
+    "kp": 2.23,
+    "kd": 2.23,
+    "ksd": 2.0,
+    "kpd": 2.0,
+    "kdiff": 2.0,
+    "enscale": 2.0,
+    "ipeashift_au": 0.17806900000000003,
+    "aesshift": 1.2,
+    "aesexp": 4.0,
+    "aesrmax": 5.0,
+    "alphaj": 2.0,
+    "a1": 0.52,
+    "a2": 5.0,
+    "s8": 2.7,
+    "s9": 5.0,
+    "aesdmp3": 3.0,
+    "aesdmp5": 4.0,
+    "kexp": 1.5,
+    "kexplight": 1.0,
+    "gam3shell": [
+      [
+        1.0,
+        1.0
+      ],
+      [
+        0.5,
+        0.5
+      ],
+      [
+        0.25,
+        0.25
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ]
+  },
+  "elements": [
+    {
+      "z": 1,
+      "ao": "1s",
+      "pauling_en": 2.2,
+      "atomic_hardness": 0.405771,
+      "third_order_atom_au": 0.08000000000000002,
+      "rep_alpha": 2.213717,
+      "rep_zeff": 1.105388,
+      "dip_kernel": 0.055638889999999996,
+      "quad_kernel": 0.00027431,
+      "shells": [
+        {
+          "n": 1,
+          "l": 0,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -10.707211,
+          "slater_exponent": 1.23,
+          "kcn_au": -0.05,
+          "shell_poly": -0.953618,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        }
+      ]
+    },
+    {
+      "z": 2,
+      "ao": "1s2p",
+      "pauling_en": 3.0,
+      "atomic_hardness": 0.642029,
+      "third_order_atom_au": 0.2,
+      "rep_alpha": 3.60467,
+      "rep_zeff": 1.094283,
+      "dip_kernel": -0.01,
+      "quad_kernel": -0.00337528,
+      "shells": [
+        {
+          "n": 1,
+          "l": 0,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -23.716445,
+          "slater_exponent": 1.669667,
+          "kcn_au": 0.20742750000000001,
+          "shell_poly": -4.386816,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 2,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -1.822307,
+          "slater_exponent": 1.5,
+          "kcn_au": 0.0,
+          "shell_poly": 0.710647,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.0
+        }
+      ]
+    },
+    {
+      "z": 3,
+      "ao": "2s2p",
+      "pauling_en": 0.98,
+      "atomic_hardness": 0.245006,
+      "third_order_atom_au": 0.1303821,
+      "rep_alpha": 0.475307,
+      "rep_zeff": 1.289367,
+      "dip_kernel": -0.005,
+      "quad_kernel": 0.0002,
+      "shells": [
+        {
+          "n": 2,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -4.9,
+          "slater_exponent": 0.75006,
+          "kcn_au": 0.1620836,
+          "shell_poly": -4.750398,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 2,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -2.217789,
+          "slater_exponent": 0.557848,
+          "kcn_au": -0.0623876,
+          "shell_poly": 20.42492,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.19726120000000003
+        }
+      ]
+    },
+    {
+      "z": 4,
+      "ao": "2s2p",
+      "pauling_en": 1.57,
+      "atomic_hardness": 0.684789,
+      "third_order_atom_au": 0.05742390000000001,
+      "rep_alpha": 0.939696,
+      "rep_zeff": 4.221216,
+      "dip_kernel": -0.006133410000000001,
+      "quad_kernel": -0.00058586,
+      "shells": [
+        {
+          "n": 2,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -7.743081,
+          "slater_exponent": 1.03472,
+          "kcn_au": 0.1187759,
+          "shell_poly": -7.910394,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 2,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -3.133433,
+          "slater_exponent": 0.949332,
+          "kcn_au": 0.055052800000000006,
+          "shell_poly": -0.476438,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.9658467000000001
+        }
+      ]
+    },
+    {
+      "z": 5,
+      "ao": "2s2p",
+      "pauling_en": 2.04,
+      "atomic_hardness": 0.513556,
+      "third_order_atom_au": 0.0946104,
+      "rep_alpha": 1.373856,
+      "rep_zeff": 7.192431,
+      "dip_kernel": -0.00481186,
+      "quad_kernel": -0.00058228,
+      "shells": [
+        {
+          "n": 2,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -9.224376,
+          "slater_exponent": 1.479444,
+          "kcn_au": 0.0120462,
+          "shell_poly": -5.18315,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 2,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -7.419002,
+          "slater_exponent": 1.479805,
+          "kcn_au": -0.014108599999999999,
+          "shell_poly": -2.453322,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.399408
+        }
+      ]
+    },
+    {
+      "z": 6,
+      "ao": "2s2p",
+      "pauling_en": 2.55,
+      "atomic_hardness": 0.538015,
+      "third_order_atom_au": 0.15000000000000002,
+      "rep_alpha": 1.247655,
+      "rep_zeff": 4.231078,
+      "dip_kernel": -0.00411674,
+      "quad_kernel": 0.00213583,
+      "shells": [
+        {
+          "n": 2,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -13.970922,
+          "slater_exponent": 2.096432,
+          "kcn_au": -0.0102144,
+          "shell_poly": -2.294321,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 2,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -10.063292,
+          "slater_exponent": 1.8,
+          "kcn_au": 0.0161657,
+          "shell_poly": -0.271102,
+          "ref_occ": 3.0,
+          "shell_hardness_au": 0.1056358
+        }
+      ]
+    },
+    {
+      "z": 7,
+      "ao": "2s2p",
+      "pauling_en": 3.04,
+      "atomic_hardness": 0.461493,
+      "third_order_atom_au": -0.06397800000000001,
+      "rep_alpha": 1.682689,
+      "rep_zeff": 5.242592,
+      "dip_kernel": 0.03521273,
+      "quad_kernel": 0.02026786,
+      "shells": [
+        {
+          "n": 2,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -16.686243,
+          "slater_exponent": 2.339881,
+          "kcn_au": -0.1955336,
+          "shell_poly": -8.506003,
+          "ref_occ": 1.5,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 2,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -12.523956,
+          "slater_exponent": 2.014332,
+          "kcn_au": 0.05610760000000001,
+          "shell_poly": -2.504201,
+          "ref_occ": 3.5,
+          "shell_hardness_au": 0.11648920000000001
+        }
+      ]
+    },
+    {
+      "z": 8,
+      "ao": "2s2p",
+      "pauling_en": 3.44,
+      "atomic_hardness": 0.451896,
+      "third_order_atom_au": -0.0517134,
+      "rep_alpha": 2.165712,
+      "rep_zeff": 5.784415,
+      "dip_kernel": -0.0493567,
+      "quad_kernel": -0.00310828,
+      "shells": [
+        {
+          "n": 2,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -20.229985,
+          "slater_exponent": 2.439742,
+          "kcn_au": 0.0117826,
+          "shell_poly": -14.955291,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 2,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -15.503117,
+          "slater_exponent": 2.137023,
+          "kcn_au": -0.014510200000000001,
+          "shell_poly": -3.350819,
+          "ref_occ": 4.0,
+          "shell_hardness_au": 0.149702
+        }
+      ]
+    },
+    {
+      "z": 9,
+      "ao": "2s2p",
+      "pauling_en": 3.98,
+      "atomic_hardness": 0.531518,
+      "third_order_atom_au": 0.1426212,
+      "rep_alpha": 2.421394,
+      "rep_zeff": 7.021486,
+      "dip_kernel": -0.08339183,
+      "quad_kernel": -0.00245955,
+      "shells": [
+        {
+          "n": 2,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -23.458179,
+          "slater_exponent": 2.416361,
+          "kcn_au": 0.039436200000000005,
+          "shell_poly": -13.011924,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 2,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -15.746583,
+          "slater_exponent": 2.308399,
+          "kcn_au": -0.053837300000000005,
+          "shell_poly": -12.300828,
+          "ref_occ": 5.0,
+          "shell_hardness_au": 0.16773760000000001
+        }
+      ]
+    },
+    {
+      "z": 10,
+      "ao": "2s2p3d",
+      "pauling_en": 4.5,
+      "atomic_hardness": 0.85,
+      "third_order_atom_au": 0.05,
+      "rep_alpha": 3.318479,
+      "rep_zeff": 11.041068,
+      "dip_kernel": 0.1,
+      "quad_kernel": -0.005,
+      "shells": [
+        {
+          "n": 2,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -24.5,
+          "slater_exponent": 3.084104,
+          "kcn_au": -0.0014933000000000001,
+          "shell_poly": -16.377759,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 2,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -18.737298,
+          "slater_exponent": 2.312051,
+          "kcn_au": 0.023209300000000002,
+          "shell_poly": -4.860545,
+          "ref_occ": 6.0,
+          "shell_hardness_au": 0.11905760000000001
+        },
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -5.517827,
+          "slater_exponent": 2.815609,
+          "kcn_au": 0.1096714,
+          "shell_poly": -16.922333,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.32000000000000006
+        }
+      ]
+    },
+    {
+      "z": 11,
+      "ao": "3s3p",
+      "pauling_en": 0.93,
+      "atomic_hardness": 0.271056,
+      "third_order_atom_au": 0.1798727,
+      "rep_alpha": 0.572728,
+      "rep_zeff": 5.244917,
+      "dip_kernel": 0.0,
+      "quad_kernel": 0.0002,
+      "shells": [
+        {
+          "n": 3,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -4.546934,
+          "slater_exponent": 0.763787,
+          "kcn_au": -0.0042211,
+          "shell_poly": -4.033495,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 3,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -1.332719,
+          "slater_exponent": 0.573553,
+          "kcn_au": -0.014432300000000002,
+          "shell_poly": 20.873908,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.1018894
+        }
+      ]
+    },
+    {
+      "z": 12,
+      "ao": "3s3p3d",
+      "pauling_en": 1.31,
+      "atomic_hardness": 0.344822,
+      "third_order_atom_au": 0.23491640000000003,
+      "rep_alpha": 0.917975,
+      "rep_zeff": 18.083164,
+      "dip_kernel": -0.00082005,
+      "quad_kernel": -5.516e-05,
+      "shells": [
+        {
+          "n": 3,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -6.339908,
+          "slater_exponent": 1.184203,
+          "kcn_au": 0.1164444,
+          "shell_poly": -11.167374,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 3,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -0.697688,
+          "slater_exponent": 0.717769,
+          "kcn_au": -0.0079924,
+          "shell_poly": 39.076962,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 1.4000000000000001
+        },
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -1.458197,
+          "slater_exponent": 1.3,
+          "kcn_au": 0.11924090000000001,
+          "shell_poly": 12.691061,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.05
+        }
+      ]
+    },
+    {
+      "z": 13,
+      "ao": "3s3p3d",
+      "pauling_en": 1.61,
+      "atomic_hardness": 0.364801,
+      "third_order_atom_au": 0.13999999999999999,
+      "rep_alpha": 0.876623,
+      "rep_zeff": 17.867328,
+      "dip_kernel": 0.02633341,
+      "quad_kernel": -0.00021887,
+      "shells": [
+        {
+          "n": 3,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -9.329017,
+          "slater_exponent": 1.352531,
+          "kcn_au": 0.0715422,
+          "shell_poly": -10.678141,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 3,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -5.927846,
+          "slater_exponent": 1.391201,
+          "kcn_au": -0.0244485,
+          "shell_poly": -12.442837,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.060369900000000004
+        },
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -3.042325,
+          "slater_exponent": 1.0,
+          "kcn_au": 0.0406173,
+          "shell_poly": 16.311089,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.2
+        }
+      ]
+    },
+    {
+      "z": 14,
+      "ao": "3s3p3d",
+      "pauling_en": 1.9,
+      "atomic_hardness": 0.72,
+      "third_order_atom_au": 0.1936289,
+      "rep_alpha": 1.187323,
+      "rep_zeff": 40.001111,
+      "dip_kernel": -0.00025749999999999997,
+      "quad_kernel": -0.0008,
+      "shells": [
+        {
+          "n": 3,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -14.360932,
+          "slater_exponent": 1.773917,
+          "kcn_au": 0.1858479,
+          "shell_poly": 2.358522,
+          "ref_occ": 1.5,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 3,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -6.915131,
+          "slater_exponent": 1.718996,
+          "kcn_au": -0.1383073,
+          "shell_poly": -7.900406,
+          "ref_occ": 2.5,
+          "shell_hardness_au": -0.5580042
+        },
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -1.825036,
+          "slater_exponent": 1.25,
+          "kcn_au": -0.1935494,
+          "shell_poly": 11.366185,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.22999999999999998
+        }
+      ]
+    },
+    {
+      "z": 15,
+      "ao": "3s3p3d",
+      "pauling_en": 2.19,
+      "atomic_hardness": 0.297739,
+      "third_order_atom_au": 0.0711291,
+      "rep_alpha": 1.143343,
+      "rep_zeff": 19.683502,
+      "dip_kernel": 0.02110225,
+      "quad_kernel": 0.00028679,
+      "shells": [
+        {
+          "n": 3,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -17.518756,
+          "slater_exponent": 1.816945,
+          "kcn_au": 0.054761000000000004,
+          "shell_poly": -19.831771,
+          "ref_occ": 1.5,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 3,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -9.842286,
+          "slater_exponent": 1.903247,
+          "kcn_au": -0.048993,
+          "shell_poly": -5.515577,
+          "ref_occ": 3.5,
+          "shell_hardness_au": -0.155806
+        },
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.444893,
+          "slater_exponent": 1.167533,
+          "kcn_au": 0.24295070000000002,
+          "shell_poly": 26.397535,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.35000000000000003
+        }
+      ]
+    },
+    {
+      "z": 16,
+      "ao": "3s3p3d",
+      "pauling_en": 2.58,
+      "atomic_hardness": 0.339971,
+      "third_order_atom_au": -0.0501722,
+      "rep_alpha": 1.214553,
+      "rep_zeff": 14.99509,
+      "dip_kernel": -0.00151117,
+      "quad_kernel": 0.0044285900000000005,
+      "shells": [
+        {
+          "n": 3,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -20.029654,
+          "slater_exponent": 1.981333,
+          "kcn_au": -0.0256951,
+          "shell_poly": -25.85552,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 3,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -11.377694,
+          "slater_exponent": 2.025643,
+          "kcn_au": -0.009846500000000001,
+          "shell_poly": -8.048064,
+          "ref_occ": 4.0,
+          "shell_hardness_au": -0.1085866
+        },
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.420282,
+          "slater_exponent": 1.702555,
+          "kcn_au": 0.20076900000000003,
+          "shell_poly": 25.993857,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.25
+        }
+      ]
+    },
+    {
+      "z": 17,
+      "ao": "3s3p3d",
+      "pauling_en": 3.16,
+      "atomic_hardness": 0.248514,
+      "third_order_atom_au": 0.1495483,
+      "rep_alpha": 1.577144,
+      "rep_zeff": 17.353134,
+      "dip_kernel": -0.02536958,
+      "quad_kernel": 0.00122783,
+      "shells": [
+        {
+          "n": 3,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -29.278781,
+          "slater_exponent": 2.485265,
+          "kcn_au": 0.0617972,
+          "shell_poly": -16.562004,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 3,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -12.673758,
+          "slater_exponent": 2.19965,
+          "kcn_au": -0.018161800000000002,
+          "shell_poly": -6.98643,
+          "ref_occ": 5.0,
+          "shell_hardness_au": 0.49894
+        },
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.240338,
+          "slater_exponent": 2.476089,
+          "kcn_au": 0.1672768,
+          "shell_poly": 38.045622,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.5
+        }
+      ]
+    },
+    {
+      "z": 18,
+      "ao": "3s3p3d",
+      "pauling_en": 3.5,
+      "atomic_hardness": 0.502376,
+      "third_order_atom_au": -0.0315455,
+      "rep_alpha": 0.896198,
+      "rep_zeff": 7.266606,
+      "dip_kernel": -0.020773290000000003,
+      "quad_kernel": -0.010834040000000001,
+      "shells": [
+        {
+          "n": 3,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -16.48773,
+          "slater_exponent": 2.329679,
+          "kcn_au": 5.5400000000000005e-05,
+          "shell_poly": -23.893924,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 3,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -13.910539,
+          "slater_exponent": 2.149419,
+          "kcn_au": 0.0065921,
+          "shell_poly": -3.727322,
+          "ref_occ": 6.0,
+          "shell_hardness_au": -0.0461133
+        },
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -1.167213,
+          "slater_exponent": 1.950531,
+          "kcn_au": -0.27321650000000003,
+          "shell_poly": 26.812872,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.010000000000000002
+        }
+      ]
+    },
+    {
+      "z": 19,
+      "ao": "4s4p",
+      "pauling_en": 0.82,
+      "atomic_hardness": 0.247602,
+      "third_order_atom_au": 0.2033085,
+      "rep_alpha": 0.482206,
+      "rep_zeff": 10.439482,
+      "dip_kernel": -0.0010338300000000001,
+      "quad_kernel": 0.00025,
+      "shells": [
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -4.510348,
+          "slater_exponent": 0.875961,
+          "kcn_au": -0.0339245,
+          "shell_poly": -6.07606,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -0.934377,
+          "slater_exponent": 0.631694,
+          "kcn_au": 0.0174542,
+          "shell_poly": 21.187329,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.34836550000000005
+        }
+      ]
+    },
+    {
+      "z": 20,
+      "ao": "4s4p3d",
+      "pauling_en": 1.0,
+      "atomic_hardness": 0.320378,
+      "third_order_atom_au": 0.20068980000000003,
+      "rep_alpha": 0.683051,
+      "rep_zeff": 14.786701,
+      "dip_kernel": -0.00236675,
+      "quad_kernel": 0.0001,
+      "shells": [
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -5.056506,
+          "slater_exponent": 1.26713,
+          "kcn_au": 0.057093000000000005,
+          "shell_poly": -9.718719,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -1.150304,
+          "slater_exponent": 0.786247,
+          "kcn_au": -0.007492600000000001,
+          "shell_poly": 31.973372,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 1.5
+        },
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.776883,
+          "slater_exponent": 1.38,
+          "kcn_au": 0.1013752,
+          "shell_poly": 9.528649,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.25
+        }
+      ]
+    },
+    {
+      "z": 21,
+      "ao": "3d4s4p",
+      "pauling_en": 1.36,
+      "atomic_hardness": 0.472633,
+      "third_order_atom_au": 0.05,
+      "rep_alpha": 0.574299,
+      "rep_zeff": 8.004267,
+      "dip_kernel": -0.00515177,
+      "quad_kernel": -0.00042004,
+      "shells": [
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -5.196187,
+          "slater_exponent": 2.44,
+          "kcn_au": 0.20267770000000002,
+          "shell_poly": -34.502301,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.2046716
+        },
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -8.87794,
+          "slater_exponent": 1.358701,
+          "kcn_au": 0.0991293,
+          "shell_poly": 0.686569,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -2.008206,
+          "slater_exponent": 1.019252,
+          "kcn_au": -0.028124100000000003,
+          "shell_poly": 38.044933,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.08000000000000002
+        }
+      ]
+    },
+    {
+      "z": 22,
+      "ao": "3d4s4p",
+      "pauling_en": 1.54,
+      "atomic_hardness": 0.513586,
+      "third_order_atom_au": 0.17672680000000002,
+      "rep_alpha": 0.723104,
+      "rep_zeff": 12.036336,
+      "dip_kernel": -0.00434506,
+      "quad_kernel": 0.0005966,
+      "shells": [
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -7.234331,
+          "slater_exponent": 1.849994,
+          "kcn_au": 0.10281880000000002,
+          "shell_poly": -27.724389,
+          "ref_occ": 2.0,
+          "shell_hardness_au": -0.49211140000000003
+        },
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -10.9,
+          "slater_exponent": 1.469983,
+          "kcn_au": 0.1007021,
+          "shell_poly": 4.561234,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -1.928783,
+          "slater_exponent": 0.95741,
+          "kcn_au": -0.023707400000000003,
+          "shell_poly": 51.801626,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.38
+        }
+      ]
+    },
+    {
+      "z": 23,
+      "ao": "3d4s4p",
+      "pauling_en": 1.63,
+      "atomic_hardness": 0.589187,
+      "third_order_atom_au": 0.09000000000000001,
+      "rep_alpha": 0.928532,
+      "rep_zeff": 15.677873,
+      "dip_kernel": -0.0034999999999999996,
+      "quad_kernel": 9.764000000000001e-05,
+      "shells": [
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -9.015342,
+          "slater_exponent": 1.673577,
+          "kcn_au": 0.016447600000000003,
+          "shell_poly": -29.827563,
+          "ref_occ": 3.0,
+          "shell_hardness_au": -0.0379088
+        },
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -9.573347,
+          "slater_exponent": 1.383176,
+          "kcn_au": 0.0235696,
+          "shell_poly": 9.702482,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -0.706647,
+          "slater_exponent": 0.938025,
+          "kcn_au": -0.0108232,
+          "shell_poly": 51.178301,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.45
+        }
+      ]
+    },
+    {
+      "z": 24,
+      "ao": "3d4s4p",
+      "pauling_en": 1.66,
+      "atomic_hardness": 0.396299,
+      "third_order_atom_au": 0.03,
+      "rep_alpha": 0.966993,
+      "rep_zeff": 19.517914,
+      "dip_kernel": 0.00149669,
+      "quad_kernel": 0.0013774400000000002,
+      "shells": [
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -7.209794,
+          "slater_exponent": 1.568211,
+          "kcn_au": 0.028929100000000003,
+          "shell_poly": -27.971622,
+          "ref_occ": 4.0,
+          "shell_hardness_au": 0.7405872
+        },
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -9.201304,
+          "slater_exponent": 1.395427,
+          "kcn_au": -0.0232087,
+          "shell_poly": 13.376234,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -0.696957,
+          "slater_exponent": 1.08027,
+          "kcn_au": -0.018891900000000003,
+          "shell_poly": 48.092152,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.47000000000000003
+        }
+      ]
+    },
+    {
+      "z": 25,
+      "ao": "3d4s4p",
+      "pauling_en": 1.55,
+      "atomic_hardness": 0.346651,
+      "third_order_atom_au": 0.06,
+      "rep_alpha": 1.0711,
+      "rep_zeff": 18.760605,
+      "dip_kernel": -0.00759168,
+      "quad_kernel": 0.00229903,
+      "shells": [
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -10.120933,
+          "slater_exponent": 1.83925,
+          "kcn_au": -0.0195827,
+          "shell_poly": -31.255885,
+          "ref_occ": 5.0,
+          "shell_hardness_au": 0.05458110000000001
+        },
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -5.617346,
+          "slater_exponent": 1.22219,
+          "kcn_au": -0.027500000000000004,
+          "shell_poly": 28.519691,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -4.198724,
+          "slater_exponent": 1.240215,
+          "kcn_au": -0.0015839,
+          "shell_poly": 26.346555,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.6000000000000001
+        }
+      ]
+    },
+    {
+      "z": 26,
+      "ao": "3d4s4p",
+      "pauling_en": 1.83,
+      "atomic_hardness": 0.271594,
+      "third_order_atom_au": -0.05,
+      "rep_alpha": 1.113422,
+      "rep_zeff": 20.360089,
+      "dip_kernel": 0.00412929,
+      "quad_kernel": 0.0026773400000000003,
+      "shells": [
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -10.035473,
+          "slater_exponent": 1.911049,
+          "kcn_au": -0.0274654,
+          "shell_poly": -28.614961,
+          "ref_occ": 6.0,
+          "shell_hardness_au": 0.4046615
+        },
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -5.402911,
+          "slater_exponent": 1.022393,
+          "kcn_au": -0.40498760000000006,
+          "shell_poly": 11.527794,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -3.308988,
+          "slater_exponent": 1.294467,
+          "kcn_au": -0.075648,
+          "shell_poly": 39.45989,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.65
+        }
+      ]
+    },
+    {
+      "z": 27,
+      "ao": "3d4s4p",
+      "pauling_en": 1.88,
+      "atomic_hardness": 0.47776,
+      "third_order_atom_au": 0.03,
+      "rep_alpha": 1.241717,
+      "rep_zeff": 27.127744,
+      "dip_kernel": -0.0024793799999999998,
+      "quad_kernel": 0.00048237000000000003,
+      "shells": [
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -10.58043,
+          "slater_exponent": 2.326507,
+          "kcn_au": 0.012198,
+          "shell_poly": -22.355636,
+          "ref_occ": 7.0,
+          "shell_hardness_au": -0.2418493
+        },
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -8.596723,
+          "slater_exponent": 1.464221,
+          "kcn_au": -0.0227872,
+          "shell_poly": 9.16846,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -2.585753,
+          "slater_exponent": 1.298678,
+          "kcn_au": 0.0076513,
+          "shell_poly": 25.424719,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.65
+        }
+      ]
+    },
+    {
+      "z": 28,
+      "ao": "3d4s4p",
+      "pauling_en": 1.91,
+      "atomic_hardness": 0.34497,
+      "third_order_atom_au": -0.020000000000000004,
+      "rep_alpha": 1.077516,
+      "rep_zeff": 10.533269,
+      "dip_kernel": -0.01261887,
+      "quad_kernel": -0.0008,
+      "shells": [
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -12.712236,
+          "slater_exponent": 2.430756,
+          "kcn_au": -0.0066417,
+          "shell_poly": -25.38564,
+          "ref_occ": 8.0,
+          "shell_hardness_au": -0.0611188
+        },
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -8.524281,
+          "slater_exponent": 1.469945,
+          "kcn_au": 0.0310301,
+          "shell_poly": 20.83955,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -2.878873,
+          "slater_exponent": 1.317046,
+          "kcn_au": 0.0226796,
+          "shell_poly": 30.886445,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.6000000000000001
+        }
+      ]
+    },
+    {
+      "z": 29,
+      "ao": "3d4s4p",
+      "pauling_en": 1.9,
+      "atomic_hardness": 0.202969,
+      "third_order_atom_au": 0.05,
+      "rep_alpha": 0.998768,
+      "rep_zeff": 9.913846,
+      "dip_kernel": -0.006999999999999999,
+      "quad_kernel": -0.00345631,
+      "shells": [
+        {
+          "n": 3,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -9.506548,
+          "slater_exponent": 2.375425,
+          "kcn_au": -0.017368400000000003,
+          "shell_poly": -26.508943,
+          "ref_occ": 10.0,
+          "shell_hardness_au": 1.3333066000000002
+        },
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -6.922958,
+          "slater_exponent": 1.550837,
+          "kcn_au": 0.33490470000000006,
+          "shell_poly": 17.798264,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -2.267723,
+          "slater_exponent": 1.984703,
+          "kcn_au": -0.2619446,
+          "shell_poly": 14.977818,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.06999999999999999
+        }
+      ]
+    },
+    {
+      "z": 30,
+      "ao": "4s4p",
+      "pauling_en": 1.65,
+      "atomic_hardness": 0.564152,
+      "third_order_atom_au": 0.23128959999999998,
+      "rep_alpha": 1.160262,
+      "rep_zeff": 22.099503,
+      "dip_kernel": -0.001,
+      "quad_kernel": 7.658e-05,
+      "shells": [
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -7.177294,
+          "slater_exponent": 1.664847,
+          "kcn_au": 0.201191,
+          "shell_poly": -9.240315,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -0.991895,
+          "slater_exponent": 1.176434,
+          "kcn_au": -0.005513500000000001,
+          "shell_poly": 22.271839,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.0684343
+        }
+      ]
+    },
+    {
+      "z": 31,
+      "ao": "4s4p4d",
+      "pauling_en": 1.81,
+      "atomic_hardness": 0.432236,
+      "third_order_atom_au": 0.2334269,
+      "rep_alpha": 1.122923,
+      "rep_zeff": 31.14675,
+      "dip_kernel": 0.00267219,
+      "quad_kernel": -3.616e-05,
+      "shells": [
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -12.449656,
+          "slater_exponent": 1.720919,
+          "kcn_au": -0.023462700000000003,
+          "shell_poly": -19.018211,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -4.469873,
+          "slater_exponent": 1.59157,
+          "kcn_au": 0.1305831,
+          "shell_poly": -1.13779,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5416555
+        },
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.582255,
+          "slater_exponent": 1.05,
+          "kcn_au": 0.0165604,
+          "shell_poly": 35.401863,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.30000000000000004
+        }
+      ]
+    },
+    {
+      "z": 32,
+      "ao": "4s4p4d",
+      "pauling_en": 2.01,
+      "atomic_hardness": 0.802051,
+      "third_order_atom_au": -0.006477500000000001,
+      "rep_alpha": 1.222349,
+      "rep_zeff": 42.100144,
+      "dip_kernel": 0.0010846,
+      "quad_kernel": -3.5890000000000004e-05,
+      "shells": [
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -16.369792,
+          "slater_exponent": 1.990429,
+          "kcn_au": 0.0361068,
+          "shell_poly": -21.333673,
+          "ref_occ": 1.5,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -8.207673,
+          "slater_exponent": 1.83034,
+          "kcn_au": -0.0014474000000000002,
+          "shell_poly": -9.749043,
+          "ref_occ": 2.5,
+          "shell_hardness_au": -0.38090890000000005
+        },
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.994226,
+          "slater_exponent": 1.1,
+          "kcn_au": -0.10425590000000001,
+          "shell_poly": 28.634699,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.15000000000000002
+        }
+      ]
+    },
+    {
+      "z": 33,
+      "ao": "4s4p4d",
+      "pauling_en": 2.18,
+      "atomic_hardness": 0.571748,
+      "third_order_atom_au": 0.11060410000000001,
+      "rep_alpha": 1.249372,
+      "rep_zeff": 39.147587,
+      "dip_kernel": -0.00201294,
+      "quad_kernel": 0.00014149,
+      "shells": [
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -16.421504,
+          "slater_exponent": 2.026128,
+          "kcn_au": -0.012964000000000002,
+          "shell_poly": -23.820664,
+          "ref_occ": 1.5,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -9.311147,
+          "slater_exponent": 1.949257,
+          "kcn_au": -0.023647,
+          "shell_poly": -10.644177,
+          "ref_occ": 3.5,
+          "shell_hardness_au": -0.4104743
+        },
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.27683,
+          "slater_exponent": 1.040181,
+          "kcn_au": 0.23301440000000004,
+          "shell_poly": 30.71113,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.5
+        }
+      ]
+    },
+    {
+      "z": 34,
+      "ao": "4s4p4d",
+      "pauling_en": 2.55,
+      "atomic_hardness": 0.235052,
+      "third_order_atom_au": 0.09137250000000001,
+      "rep_alpha": 1.230284,
+      "rep_zeff": 27.426779,
+      "dip_kernel": -0.0028864800000000003,
+      "quad_kernel": 0.00085728,
+      "shells": [
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -20.584732,
+          "slater_exponent": 2.230969,
+          "kcn_au": -0.006165400000000001,
+          "shell_poly": -24.506414,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -10.910799,
+          "slater_exponent": 2.150656,
+          "kcn_au": -0.04350180000000001,
+          "shell_poly": -13.76575,
+          "ref_occ": 4.0,
+          "shell_hardness_au": 0.1192113
+        },
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.110636,
+          "slater_exponent": 1.317549,
+          "kcn_au": 0.27685590000000004,
+          "shell_poly": 29.611132,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.25
+        }
+      ]
+    },
+    {
+      "z": 35,
+      "ao": "4s4p4d",
+      "pauling_en": 2.96,
+      "atomic_hardness": 0.261253,
+      "third_order_atom_au": 0.13,
+      "rep_alpha": 1.296174,
+      "rep_zeff": 32.845361,
+      "dip_kernel": -0.01088586,
+      "quad_kernel": 0.00216935,
+      "shells": [
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -23.583718,
+          "slater_exponent": 2.077587,
+          "kcn_au": 0.0006150000000000001,
+          "shell_poly": -25.005079,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -12.588824,
+          "slater_exponent": 2.26312,
+          "kcn_au": -0.005834700000000001,
+          "shell_poly": -14.520078,
+          "ref_occ": 5.0,
+          "shell_hardness_au": 0.5203002
+        },
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": 0.04798,
+          "slater_exponent": 1.845038,
+          "kcn_au": 0.225018,
+          "shell_poly": 36.614038,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.4
+        }
+      ]
+    },
+    {
+      "z": 36,
+      "ao": "4s4p4d",
+      "pauling_en": 3.0,
+      "atomic_hardness": 0.424373,
+      "third_order_atom_au": 0.023981500000000003,
+      "rep_alpha": 0.908074,
+      "rep_zeff": 17.363803,
+      "dip_kernel": -0.00889357,
+      "quad_kernel": -0.00415024,
+      "shells": [
+        {
+          "n": 4,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -17.221422,
+          "slater_exponent": 2.44568,
+          "kcn_au": -0.007030500000000001,
+          "shell_poly": -32.658744,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 4,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -13.633377,
+          "slater_exponent": 2.210494,
+          "kcn_au": 0.007602299999999999,
+          "shell_poly": -13.600093,
+          "ref_occ": 6.0,
+          "shell_hardness_au": -0.25032230000000005
+        },
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.940657,
+          "slater_exponent": 1.884991,
+          "kcn_au": 0.0349523,
+          "shell_poly": 23.204749,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.06999999999999999
+        }
+      ]
+    },
+    {
+      "z": 37,
+      "ao": "5s5p",
+      "pauling_en": 0.82,
+      "atomic_hardness": 0.210481,
+      "third_order_atom_au": 0.2916203,
+      "rep_alpha": 0.574054,
+      "rep_zeff": 44.338211,
+      "dip_kernel": -0.00093328,
+      "quad_kernel": 0.00015,
+      "shells": [
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -4.353793,
+          "slater_exponent": 1.017267,
+          "kcn_au": -0.1516926,
+          "shell_poly": 4.325404,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -1.392938,
+          "slater_exponent": 0.87013,
+          "kcn_au": 0.020343700000000003,
+          "shell_poly": 23.255114,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.9386493
+        }
+      ]
+    },
+    {
+      "z": 38,
+      "ao": "5s5p4d",
+      "pauling_en": 0.95,
+      "atomic_hardness": 0.34,
+      "third_order_atom_au": 0.18000000000000002,
+      "rep_alpha": 0.697345,
+      "rep_zeff": 34.365525,
+      "dip_kernel": -0.00459925,
+      "quad_kernel": 0.00015,
+      "shells": [
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -6.291692,
+          "slater_exponent": 1.419028,
+          "kcn_au": 0.040902,
+          "shell_poly": -14.506782,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -1.872475,
+          "slater_exponent": 0.928932,
+          "kcn_au": -0.04187250000000001,
+          "shell_poly": 20.213982,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 1.5
+        },
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.890492,
+          "slater_exponent": 1.5,
+          "kcn_au": 0.0401255,
+          "shell_poly": 10.816244,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.25
+        }
+      ]
+    },
+    {
+      "z": 39,
+      "ao": "4d5s5p",
+      "pauling_en": 1.22,
+      "atomic_hardness": 0.711958,
+      "third_order_atom_au": 0.010000000000000002,
+      "rep_alpha": 0.706172,
+      "rep_zeff": 17.326237,
+      "dip_kernel": -0.006372910000000001,
+      "quad_kernel": 0.00010460000000000001,
+      "shells": [
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -8.015206,
+          "slater_exponent": 2.670141,
+          "kcn_au": -0.1270337,
+          "shell_poly": -39.529477,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.3349288
+        },
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -12.194181,
+          "slater_exponent": 1.633876,
+          "kcn_au": 0.19375160000000002,
+          "shell_poly": -2.125866,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -0.966195,
+          "slater_exponent": 1.165412,
+          "kcn_au": -0.0641897,
+          "shell_poly": 52.161869,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.45
+        }
+      ]
+    },
+    {
+      "z": 40,
+      "ao": "4d5s5p",
+      "pauling_en": 1.33,
+      "atomic_hardness": 0.46144,
+      "third_order_atom_au": 0.06999999999999999,
+      "rep_alpha": 0.681106,
+      "rep_zeff": 24.263093,
+      "dip_kernel": -0.0059961500000000004,
+      "quad_kernel": -0.00012944,
+      "shells": [
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -7.409832,
+          "slater_exponent": 2.238668,
+          "kcn_au": -0.0566943,
+          "shell_poly": -28.358876,
+          "ref_occ": 2.0,
+          "shell_hardness_au": -0.442263
+        },
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -10.199105,
+          "slater_exponent": 1.70248,
+          "kcn_au": 0.1266548,
+          "shell_poly": 7.538902,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -1.066939,
+          "slater_exponent": 1.12959,
+          "kcn_au": 0.0279435,
+          "shell_poly": 58.914069,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.11000000000000001
+        }
+      ]
+    },
+    {
+      "z": 41,
+      "ao": "4d5s5p",
+      "pauling_en": 1.6,
+      "atomic_hardness": 0.952957,
+      "third_order_atom_au": 0.05,
+      "rep_alpha": 0.865552,
+      "rep_zeff": 30.562732,
+      "dip_kernel": -0.0028872900000000003,
+      "quad_kernel": 0.00041491,
+      "shells": [
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -8.440821,
+          "slater_exponent": 1.706832,
+          "kcn_au": -0.1356485,
+          "shell_poly": -27.963746,
+          "ref_occ": 3.0,
+          "shell_hardness_au": -0.35629500000000003
+        },
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -11.384021,
+          "slater_exponent": 1.666463,
+          "kcn_au": 0.2555962,
+          "shell_poly": -5.14108,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -0.10376,
+          "slater_exponent": 1.132172,
+          "kcn_au": -0.00023410000000000003,
+          "shell_poly": 55.654247,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.05
+        }
+      ]
+    },
+    {
+      "z": 42,
+      "ao": "4d5s5p",
+      "pauling_en": 2.16,
+      "atomic_hardness": 0.586134,
+      "third_order_atom_au": 0.0919928,
+      "rep_alpha": 1.034519,
+      "rep_zeff": 48.312796,
+      "dip_kernel": 0.00346327,
+      "quad_kernel": 0.0031254900000000003,
+      "shells": [
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -7.995133,
+          "slater_exponent": 1.777658,
+          "kcn_au": 0.062017199999999995,
+          "shell_poly": -22.573688,
+          "ref_occ": 4.0,
+          "shell_hardness_au": -0.4301371
+        },
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -7.336245,
+          "slater_exponent": 1.639917,
+          "kcn_au": 0.30084110000000003,
+          "shell_poly": -0.583137,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -3.686225,
+          "slater_exponent": 1.159781,
+          "kcn_au": -0.10403480000000001,
+          "shell_poly": 29.19958,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.30000000000000004
+        }
+      ]
+    },
+    {
+      "z": 43,
+      "ao": "4d5s5p",
+      "pauling_en": 1.9,
+      "atomic_hardness": 0.368054,
+      "third_order_atom_au": 0.06,
+      "rep_alpha": 1.019565,
+      "rep_zeff": 44.779882,
+      "dip_kernel": -0.00458416,
+      "quad_kernel": 0.0015524199999999999,
+      "shells": [
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -9.587897,
+          "slater_exponent": 1.918066,
+          "kcn_au": -0.006652600000000001,
+          "shell_poly": -27.342552,
+          "ref_occ": 5.0,
+          "shell_hardness_au": 0.39568190000000003
+        },
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -6.792444,
+          "slater_exponent": 1.918167,
+          "kcn_au": -0.0586205,
+          "shell_poly": 36.096045,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -3.325525,
+          "slater_exponent": 1.346082,
+          "kcn_au": -0.008731899999999999,
+          "shell_poly": 25.095742,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.6000000000000001
+        }
+      ]
+    },
+    {
+      "z": 44,
+      "ao": "4d5s5p",
+      "pauling_en": 2.2,
+      "atomic_hardness": 0.711205,
+      "third_order_atom_au": -0.05,
+      "rep_alpha": 1.031669,
+      "rep_zeff": 28.070247,
+      "dip_kernel": -0.00081922,
+      "quad_kernel": 0.0035922799999999998,
+      "shells": [
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -10.285405,
+          "slater_exponent": 2.102697,
+          "kcn_au": -0.0263914,
+          "shell_poly": -27.583213,
+          "ref_occ": 6.0,
+          "shell_hardness_au": -0.3052305
+        },
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -5.332608,
+          "slater_exponent": 1.749643,
+          "kcn_au": 0.44711619999999996,
+          "shell_poly": 10.10627,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -3.307153,
+          "slater_exponent": 1.348322,
+          "kcn_au": -0.0034722999999999998,
+          "shell_poly": 34.028722,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.65
+        }
+      ]
+    },
+    {
+      "z": 45,
+      "ao": "4d5s5p",
+      "pauling_en": 2.28,
+      "atomic_hardness": 0.509183,
+      "third_order_atom_au": 0.03,
+      "rep_alpha": 1.094599,
+      "rep_zeff": 38.035941,
+      "dip_kernel": 7.015999999999999e-05,
+      "quad_kernel": 8.57e-05,
+      "shells": [
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -11.756644,
+          "slater_exponent": 2.458187,
+          "kcn_au": 0.010436800000000001,
+          "shell_poly": -19.656064,
+          "ref_occ": 7.0,
+          "shell_hardness_au": -0.18817740000000002
+        },
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -7.850495,
+          "slater_exponent": 1.811796,
+          "kcn_au": 0.0066741,
+          "shell_poly": 15.413317,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -3.007906,
+          "slater_exponent": 1.398452,
+          "kcn_au": -0.0213308,
+          "shell_poly": 31.070684,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.65
+        }
+      ]
+    },
+    {
+      "z": 46,
+      "ao": "4d5s5p",
+      "pauling_en": 2.2,
+      "atomic_hardness": 0.27331,
+      "third_order_atom_au": 0.08000000000000002,
+      "rep_alpha": 1.092745,
+      "rep_zeff": 28.6747,
+      "dip_kernel": -0.00310361,
+      "quad_kernel": -0.00040485,
+      "shells": [
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -11.963518,
+          "slater_exponent": 2.353691,
+          "kcn_au": 0.0060285,
+          "shell_poly": -27.173113,
+          "ref_occ": 8.0,
+          "shell_hardness_au": 0.0931707
+        },
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -9.714059,
+          "slater_exponent": 1.828354,
+          "kcn_au": 0.026682,
+          "shell_poly": 6.200145,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -2.035281,
+          "slater_exponent": 1.333352,
+          "kcn_au": 0.050307500000000005,
+          "shell_poly": 45.341322,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.6000000000000001
+        }
+      ]
+    },
+    {
+      "z": 47,
+      "ao": "4d5s5p",
+      "pauling_en": 1.93,
+      "atomic_hardness": 0.26374,
+      "third_order_atom_au": 0.020000000000000004,
+      "rep_alpha": 0.678344,
+      "rep_zeff": 6.493286,
+      "dip_kernel": -0.00800314,
+      "quad_kernel": -0.0002081,
+      "shells": [
+        {
+          "n": 4,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -9.591083,
+          "slater_exponent": 2.843549,
+          "kcn_au": -0.0062719,
+          "shell_poly": -16.490742,
+          "ref_occ": 10.0,
+          "shell_hardness_au": 0.8024848000000001
+        },
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -8.08396,
+          "slater_exponent": 1.798462,
+          "kcn_au": -0.006579400000000001,
+          "shell_poly": 1.09149,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -2.934333,
+          "slater_exponent": 1.266649,
+          "kcn_au": 0.1677171,
+          "shell_poly": 11.561444,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.03
+        }
+      ]
+    },
+    {
+      "z": 48,
+      "ao": "5s5p",
+      "pauling_en": 1.69,
+      "atomic_hardness": 0.392012,
+      "third_order_atom_au": 0.20732170000000003,
+      "rep_alpha": 0.936236,
+      "rep_zeff": 26.226628,
+      "dip_kernel": -0.00105364,
+      "quad_kernel": 0.0001225,
+      "shells": [
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -7.252341,
+          "slater_exponent": 1.846689,
+          "kcn_au": 0.1418145,
+          "shell_poly": -6.076865,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -0.744865,
+          "slater_exponent": 1.141823,
+          "kcn_au": -0.0309814,
+          "shell_poly": 37.671924,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.23886690000000002
+        }
+      ]
+    },
+    {
+      "z": 49,
+      "ao": "5s5p5d",
+      "pauling_en": 1.78,
+      "atomic_hardness": 0.461812,
+      "third_order_atom_au": 0.19,
+      "rep_alpha": 1.024007,
+      "rep_zeff": 63.85424,
+      "dip_kernel": 0.00951079,
+      "quad_kernel": -2.0309999999999997e-05,
+      "shells": [
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -13.040909,
+          "slater_exponent": 1.963283,
+          "kcn_au": -0.0098312,
+          "shell_poly": -21.938535,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -4.507143,
+          "slater_exponent": 1.685138,
+          "kcn_au": 0.09946880000000001,
+          "shell_poly": -1.949646,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5867460000000001
+        },
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.805666,
+          "slater_exponent": 1.05,
+          "kcn_au": 0.0168649,
+          "shell_poly": 31.3545,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.27999999999999997
+        }
+      ]
+    },
+    {
+      "z": 50,
+      "ao": "5s5p5d",
+      "pauling_en": 1.96,
+      "atomic_hardness": 0.9,
+      "third_order_atom_au": -0.0178396,
+      "rep_alpha": 1.139959,
+      "rep_zeff": 80.053438,
+      "dip_kernel": 0.00085029,
+      "quad_kernel": -8.243000000000001e-05,
+      "shells": [
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -19.970428,
+          "slater_exponent": 2.55151,
+          "kcn_au": -0.0454629,
+          "shell_poly": -17.518223,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -7.367059,
+          "slater_exponent": 1.893784,
+          "kcn_au": -0.032065100000000006,
+          "shell_poly": -7.80287,
+          "ref_occ": 2.0,
+          "shell_hardness_au": -0.5090746
+        },
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -2.077548,
+          "slater_exponent": 1.1,
+          "kcn_au": -0.1459407,
+          "shell_poly": 12.611148,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.06
+        }
+      ]
+    },
+    {
+      "z": 51,
+      "ao": "5s5p5d",
+      "pauling_en": 2.05,
+      "atomic_hardness": 0.942294,
+      "third_order_atom_au": 0.11000000000000001,
+      "rep_alpha": 1.122937,
+      "rep_zeff": 77.05756,
+      "dip_kernel": -0.00015519,
+      "quad_kernel": -0.0002063,
+      "shells": [
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -18.371244,
+          "slater_exponent": 2.307407,
+          "kcn_au": -0.0147626,
+          "shell_poly": -17.543533,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -7.350148,
+          "slater_exponent": 2.179752,
+          "kcn_au": -0.0091175,
+          "shell_poly": -12.494609,
+          "ref_occ": 3.0,
+          "shell_hardness_au": -0.6278501000000001
+        },
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": 0.909033,
+          "slater_exponent": 1.256087,
+          "kcn_au": 0.16028720000000002,
+          "shell_poly": 30.872654,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.55
+        }
+      ]
+    },
+    {
+      "z": 52,
+      "ao": "5s5p5d",
+      "pauling_en": 2.1,
+      "atomic_hardness": 0.75,
+      "third_order_atom_au": 0.0953683,
+      "rep_alpha": 1.000712,
+      "rep_zeff": 48.614745,
+      "dip_kernel": -0.0026341399999999997,
+      "quad_kernel": -0.00026864,
+      "shells": [
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -21.930653,
+          "slater_exponent": 2.434144,
+          "kcn_au": 0.011538900000000001,
+          "shell_poly": -24.893875,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -9.480374,
+          "slater_exponent": 2.182459,
+          "kcn_au": -0.0082051,
+          "shell_poly": -11.231996,
+          "ref_occ": 4.0,
+          "shell_hardness_au": -0.15553340000000002
+        },
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": 0.978922,
+          "slater_exponent": 1.373076,
+          "kcn_au": 0.3013228,
+          "shell_poly": 31.843215,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.06
+        }
+      ]
+    },
+    {
+      "z": 53,
+      "ao": "5s5p5d",
+      "pauling_en": 2.66,
+      "atomic_hardness": 0.383124,
+      "third_order_atom_au": 0.12,
+      "rep_alpha": 1.017946,
+      "rep_zeff": 63.319176,
+      "dip_kernel": -0.0060364799999999995,
+      "quad_kernel": 0.0006966,
+      "shells": [
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -20.949407,
+          "slater_exponent": 2.1595,
+          "kcn_au": -0.050615,
+          "shell_poly": -26.957547,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -12.180159,
+          "slater_exponent": 2.308379,
+          "kcn_au": 0.008476599999999999,
+          "shell_poly": -14.183312,
+          "ref_occ": 5.0,
+          "shell_hardness_au": -0.0338735
+        },
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.266596,
+          "slater_exponent": 1.691185,
+          "kcn_au": 0.3077127,
+          "shell_poly": 28.211905,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.30000000000000004
+        }
+      ]
+    },
+    {
+      "z": 54,
+      "ao": "5s5p5d",
+      "pauling_en": 2.6,
+      "atomic_hardness": 0.424164,
+      "third_order_atom_au": -0.0118925,
+      "rep_alpha": 1.012036,
+      "rep_zeff": 51.188398,
+      "dip_kernel": -0.00214447,
+      "quad_kernel": -0.001562,
+      "shells": [
+        {
+          "n": 5,
+          "l": 0,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -19.090498,
+          "slater_exponent": 2.71514,
+          "kcn_au": -0.0020195,
+          "shell_poly": -31.096492,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 5,
+          "l": 1,
+          "n_prim": 4,
+          "is_valence": true,
+          "self_energy_ev": -11.249471,
+          "slater_exponent": 2.31251,
+          "kcn_au": 0.0017246000000000002,
+          "shell_poly": -16.197851,
+          "ref_occ": 6.0,
+          "shell_hardness_au": -0.23026670000000002
+        },
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.497097,
+          "slater_exponent": 1.855707,
+          "kcn_au": 0.0327039,
+          "shell_poly": 19.048983,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.22999999999999998
+        }
+      ]
+    },
+    {
+      "z": 55,
+      "ao": "6s6p",
+      "pauling_en": 0.79,
+      "atomic_hardness": 0.236569,
+      "third_order_atom_au": 0.2404185,
+      "rep_alpha": 0.585257,
+      "rep_zeff": 67.249039,
+      "dip_kernel": -0.0008,
+      "quad_kernel": 8e-05,
+      "shells": [
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -4.041706,
+          "slater_exponent": 1.225688,
+          "kcn_au": -0.13126040000000003,
+          "shell_poly": -0.713637,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -1.394193,
+          "slater_exponent": 0.823818,
+          "kcn_au": -0.010000000000000002,
+          "shell_poly": 20.636967,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.24943050000000003
+        }
+      ]
+    },
+    {
+      "z": 56,
+      "ao": "6s6p5d",
+      "pauling_en": 0.89,
+      "atomic_hardness": 0.245937,
+      "third_order_atom_au": 0.20690970000000003,
+      "rep_alpha": 0.716259,
+      "rep_zeff": 46.984607,
+      "dip_kernel": -0.0026000000000000003,
+      "quad_kernel": 0.00015,
+      "shells": [
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -5.9,
+          "slater_exponent": 1.528102,
+          "kcn_au": 0.035200100000000005,
+          "shell_poly": -14.036589,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -2.133395,
+          "slater_exponent": 0.991572,
+          "kcn_au": -0.0926576,
+          "shell_poly": 18.774072,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 2.2247532
+        },
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -1.5149,
+          "slater_exponent": 1.5,
+          "kcn_au": 0.0147995,
+          "shell_poly": 11.389672,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.22999999999999998
+        }
+      ]
+    },
+    {
+      "z": 57,
+      "ao": "5d6s6p",
+      "pauling_en": 1.1,
+      "atomic_hardness": 0.597716,
+      "third_order_atom_au": 0.0012793000000000001,
+      "rep_alpha": 0.737643,
+      "rep_zeff": 50.927529,
+      "dip_kernel": -0.00395198,
+      "quad_kernel": -0.0003,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -8.958783,
+          "slater_exponent": 2.875048,
+          "kcn_au": -0.0777542,
+          "shell_poly": -37.820063,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.4699666
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -11.87741,
+          "slater_exponent": 1.73139,
+          "kcn_au": 0.10716840000000001,
+          "shell_poly": -6.732008,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -0.601717,
+          "slater_exponent": 1.30359,
+          "kcn_au": -0.023996700000000003,
+          "shell_poly": 54.136379,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.30000000000000004
+        }
+      ]
+    },
+    {
+      "z": 58,
+      "ao": "5d6s6p",
+      "pauling_en": 1.12,
+      "atomic_hardness": 0.662889,
+      "third_order_atom_au": -0.010000000000000002,
+      "rep_alpha": 0.72995,
+      "rep_zeff": 48.676714,
+      "dip_kernel": -0.007238059999999999,
+      "quad_kernel": -0.00025,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -7.381991,
+          "slater_exponent": 2.87,
+          "kcn_au": -0.0638958,
+          "shell_poly": -41.989203,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5539659
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.537781,
+          "slater_exponent": 1.725197,
+          "kcn_au": 0.13351480000000002,
+          "shell_poly": -6.107742,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -3.017508,
+          "slater_exponent": 1.309804,
+          "kcn_au": -0.019832000000000002,
+          "shell_poly": 37.663425,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.30000000000000004
+        }
+      ]
+    },
+    {
+      "z": 59,
+      "ao": "5d6s6p",
+      "pauling_en": 1.13,
+      "atomic_hardness": 0.66071,
+      "third_order_atom_au": -0.0100002,
+      "rep_alpha": 0.734624,
+      "rep_zeff": 47.669448,
+      "dip_kernel": -0.00704819,
+      "quad_kernel": -0.00024615,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -7.280875,
+          "slater_exponent": 2.872308,
+          "kcn_au": -0.0543909,
+          "shell_poly": -41.286513,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5462784
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.504806,
+          "slater_exponent": 1.729767,
+          "kcn_au": 0.13494409999999998,
+          "shell_poly": -6.040165,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -2.873159,
+          "slater_exponent": 1.315495,
+          "kcn_au": -0.0198184,
+          "shell_poly": 38.194756,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.276923
+        }
+      ]
+    },
+    {
+      "z": 60,
+      "ao": "5d6s6p",
+      "pauling_en": 1.14,
+      "atomic_hardness": 0.658531,
+      "third_order_atom_au": -0.0100004,
+      "rep_alpha": 0.739299,
+      "rep_zeff": 46.662183,
+      "dip_kernel": -0.00685832,
+      "quad_kernel": -0.00024231,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -7.17976,
+          "slater_exponent": 2.874615,
+          "kcn_au": -0.044886100000000005,
+          "shell_poly": -40.583824,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5385909
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.47183,
+          "slater_exponent": 1.734337,
+          "kcn_au": 0.1363734,
+          "shell_poly": -5.972588,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -2.728809,
+          "slater_exponent": 1.321186,
+          "kcn_au": -0.0198048,
+          "shell_poly": 38.726087,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.253846
+        }
+      ]
+    },
+    {
+      "z": 61,
+      "ao": "5d6s6p",
+      "pauling_en": 1.15,
+      "atomic_hardness": 0.656352,
+      "third_order_atom_au": -0.0100006,
+      "rep_alpha": 0.743973,
+      "rep_zeff": 45.654917,
+      "dip_kernel": -0.00666845,
+      "quad_kernel": -0.00023846,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -7.078644,
+          "slater_exponent": 2.876923,
+          "kcn_au": -0.0353812,
+          "shell_poly": -39.881134,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5309034
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.438855,
+          "slater_exponent": 1.738907,
+          "kcn_au": 0.1378028,
+          "shell_poly": -5.90501,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -2.58446,
+          "slater_exponent": 1.326877,
+          "kcn_au": -0.019791200000000002,
+          "shell_poly": 39.257419,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.23076910000000003
+        }
+      ]
+    },
+    {
+      "z": 62,
+      "ao": "5d6s6p",
+      "pauling_en": 1.17,
+      "atomic_hardness": 0.654173,
+      "third_order_atom_au": -0.0100008,
+      "rep_alpha": 0.748648,
+      "rep_zeff": 44.647651,
+      "dip_kernel": -0.00647858,
+      "quad_kernel": -0.00023462,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.977529,
+          "slater_exponent": 2.879231,
+          "kcn_au": -0.0258764,
+          "shell_poly": -39.178445,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5232158
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.405879,
+          "slater_exponent": 1.743478,
+          "kcn_au": 0.1392321,
+          "shell_poly": -5.837433,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -2.44011,
+          "slater_exponent": 1.332567,
+          "kcn_au": -0.019777600000000003,
+          "shell_poly": 39.78875,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.20769210000000002
+        }
+      ]
+    },
+    {
+      "z": 63,
+      "ao": "5d6s6p",
+      "pauling_en": 1.18,
+      "atomic_hardness": 0.651994,
+      "third_order_atom_au": -0.010001000000000001,
+      "rep_alpha": 0.753322,
+      "rep_zeff": 43.640385,
+      "dip_kernel": -0.0062887099999999994,
+      "quad_kernel": -0.00023077000000000001,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.876413,
+          "slater_exponent": 2.881538,
+          "kcn_au": -0.0163715,
+          "shell_poly": -38.475755,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5155283
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.372904,
+          "slater_exponent": 1.748048,
+          "kcn_au": 0.14066140000000002,
+          "shell_poly": -5.769856,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -2.295761,
+          "slater_exponent": 1.338258,
+          "kcn_au": -0.019764000000000004,
+          "shell_poly": 40.320081,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.18461510000000003
+        }
+      ]
+    },
+    {
+      "z": 64,
+      "ao": "5d6s6p",
+      "pauling_en": 1.2,
+      "atomic_hardness": 0.649815,
+      "third_order_atom_au": -0.010001200000000002,
+      "rep_alpha": 0.757996,
+      "rep_zeff": 42.63312,
+      "dip_kernel": -0.00609884,
+      "quad_kernel": -0.00022692,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.775298,
+          "slater_exponent": 2.883846,
+          "kcn_au": -0.006866700000000001,
+          "shell_poly": -37.773066,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5078408
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.339929,
+          "slater_exponent": 1.752618,
+          "kcn_au": 0.1420907,
+          "shell_poly": -5.702279,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -2.151411,
+          "slater_exponent": 1.343949,
+          "kcn_au": -0.0197504,
+          "shell_poly": 40.851412,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.16153810000000002
+        }
+      ]
+    },
+    {
+      "z": 65,
+      "ao": "5d6s6p",
+      "pauling_en": 1.21,
+      "atomic_hardness": 0.647635,
+      "third_order_atom_au": -0.010001300000000001,
+      "rep_alpha": 0.762671,
+      "rep_zeff": 41.625854,
+      "dip_kernel": -0.00590897,
+      "quad_kernel": -0.00022308,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.674182,
+          "slater_exponent": 2.886154,
+          "kcn_au": 0.0026382000000000003,
+          "shell_poly": -37.070376,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.5001533
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.306953,
+          "slater_exponent": 1.757188,
+          "kcn_au": 0.14352,
+          "shell_poly": -5.634701,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -2.007062,
+          "slater_exponent": 1.34964,
+          "kcn_au": -0.0197369,
+          "shell_poly": 41.382743,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.1384612
+        }
+      ]
+    },
+    {
+      "z": 66,
+      "ao": "5d6s6p",
+      "pauling_en": 1.22,
+      "atomic_hardness": 0.645456,
+      "third_order_atom_au": -0.010001500000000002,
+      "rep_alpha": 0.767345,
+      "rep_zeff": 40.618588,
+      "dip_kernel": -0.0057191,
+      "quad_kernel": -0.00021923000000000003,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.573067,
+          "slater_exponent": 2.888462,
+          "kcn_au": 0.012143000000000001,
+          "shell_poly": -36.367686,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.4924658
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.273978,
+          "slater_exponent": 1.761758,
+          "kcn_au": 0.1449494,
+          "shell_poly": -5.567124,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -1.862712,
+          "slater_exponent": 1.355331,
+          "kcn_au": -0.0197233,
+          "shell_poly": 41.914074,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.1153842
+        }
+      ]
+    },
+    {
+      "z": 67,
+      "ao": "5d6s6p",
+      "pauling_en": 1.23,
+      "atomic_hardness": 0.643277,
+      "third_order_atom_au": -0.0100017,
+      "rep_alpha": 0.77202,
+      "rep_zeff": 39.611322,
+      "dip_kernel": -0.00552923,
+      "quad_kernel": -0.00021538000000000001,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.471951,
+          "slater_exponent": 2.890769,
+          "kcn_au": 0.0216479,
+          "shell_poly": -35.664997,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.4847782
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.241003,
+          "slater_exponent": 1.766328,
+          "kcn_au": 0.1463787,
+          "shell_poly": -5.499547,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -1.718363,
+          "slater_exponent": 1.361022,
+          "kcn_au": -0.0197097,
+          "shell_poly": 42.445406,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.0923072
+        }
+      ]
+    },
+    {
+      "z": 68,
+      "ao": "5d6s6p",
+      "pauling_en": 1.24,
+      "atomic_hardness": 0.641098,
+      "third_order_atom_au": -0.010001900000000001,
+      "rep_alpha": 0.776694,
+      "rep_zeff": 38.604057,
+      "dip_kernel": -0.00533936,
+      "quad_kernel": -0.00021154,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.370836,
+          "slater_exponent": 2.893077,
+          "kcn_au": 0.031152700000000002,
+          "shell_poly": -34.962307,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.47709070000000003
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.208027,
+          "slater_exponent": 1.770899,
+          "kcn_au": 0.14780800000000002,
+          "shell_poly": -5.43197,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -1.574013,
+          "slater_exponent": 1.366713,
+          "kcn_au": -0.0196961,
+          "shell_poly": 42.976737,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.0692302
+        }
+      ]
+    },
+    {
+      "z": 69,
+      "ao": "5d6s6p",
+      "pauling_en": 1.25,
+      "atomic_hardness": 0.638919,
+      "third_order_atom_au": -0.0100021,
+      "rep_alpha": 0.781368,
+      "rep_zeff": 37.596791,
+      "dip_kernel": -0.00514949,
+      "quad_kernel": -0.00020768999999999999,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.26972,
+          "slater_exponent": 2.895385,
+          "kcn_au": 0.0406576,
+          "shell_poly": -34.259618,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.4694032
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.175052,
+          "slater_exponent": 1.775469,
+          "kcn_au": 0.1492373,
+          "shell_poly": -5.364392,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -1.429664,
+          "slater_exponent": 1.372403,
+          "kcn_au": -0.019682500000000002,
+          "shell_poly": 43.508068,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.04615330000000001
+        }
+      ]
+    },
+    {
+      "z": 70,
+      "ao": "5d6s6p",
+      "pauling_en": 1.26,
+      "atomic_hardness": 0.63674,
+      "third_order_atom_au": -0.0100023,
+      "rep_alpha": 0.786043,
+      "rep_zeff": 36.589525,
+      "dip_kernel": -0.00495961,
+      "quad_kernel": -0.00020385,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.168604,
+          "slater_exponent": 2.897692,
+          "kcn_au": 0.050162399999999996,
+          "shell_poly": -33.556928,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.4617157
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.142076,
+          "slater_exponent": 1.780039,
+          "kcn_au": 0.1506666,
+          "shell_poly": -5.296815,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -1.285314,
+          "slater_exponent": 1.378094,
+          "kcn_au": -0.019668900000000003,
+          "shell_poly": 44.039399,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.0230763
+        }
+      ]
+    },
+    {
+      "z": 71,
+      "ao": "5d6s6p",
+      "pauling_en": 1.27,
+      "atomic_hardness": 0.634561,
+      "third_order_atom_au": -0.010002500000000001,
+      "rep_alpha": 0.790717,
+      "rep_zeff": 35.582259,
+      "dip_kernel": -0.004769740000000001,
+      "quad_kernel": -0.0002,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -6.067489,
+          "slater_exponent": 2.9,
+          "kcn_au": 0.059667300000000006,
+          "shell_poly": -32.854239,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.45402820000000005
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.109101,
+          "slater_exponent": 1.784609,
+          "kcn_au": 0.1520959,
+          "shell_poly": -5.229238,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -1.140965,
+          "slater_exponent": 1.383785,
+          "kcn_au": -0.0196553,
+          "shell_poly": 44.57073,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 7.000000000000001e-07
+        }
+      ]
+    },
+    {
+      "z": 72,
+      "ao": "5d6s6p",
+      "pauling_en": 1.3,
+      "atomic_hardness": 0.662597,
+      "third_order_atom_au": -0.010000000000000002,
+      "rep_alpha": 0.852852,
+      "rep_zeff": 40.186772,
+      "dip_kernel": -0.00537685,
+      "quad_kernel": -0.00016478,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -7.181755,
+          "slater_exponent": 2.638729,
+          "kcn_au": 0.017655,
+          "shell_poly": -34.095699,
+          "ref_occ": 2.0,
+          "shell_hardness_au": -0.4486165
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -10.626891,
+          "slater_exponent": 2.194333,
+          "kcn_au": 0.2271496,
+          "shell_poly": -2.73193,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -1.60343,
+          "slater_exponent": 1.427467,
+          "kcn_au": -0.0069771,
+          "shell_poly": 33.515028,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.1
+        }
+      ]
+    },
+    {
+      "z": 73,
+      "ao": "5d6s6p",
+      "pauling_en": 1.5,
+      "atomic_hardness": 0.449812,
+      "third_order_atom_au": 0.020000000000000004,
+      "rep_alpha": 0.990234,
+      "rep_zeff": 54.666156,
+      "dip_kernel": -0.00200343,
+      "quad_kernel": 0.00039599000000000004,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -8.481353,
+          "slater_exponent": 2.018969,
+          "kcn_au": -0.0620136,
+          "shell_poly": -30.396333,
+          "ref_occ": 3.0,
+          "shell_hardness_au": -0.339438
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -13.073088,
+          "slater_exponent": 1.996498,
+          "kcn_au": 0.0988501,
+          "shell_poly": -15.707734,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": 0.655254,
+          "slater_exponent": 1.407714,
+          "kcn_au": -0.047254000000000004,
+          "shell_poly": 60.186026,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.05
+        }
+      ]
+    },
+    {
+      "z": 74,
+      "ao": "5d6s6p",
+      "pauling_en": 2.36,
+      "atomic_hardness": 0.685426,
+      "third_order_atom_au": -0.020000000000000004,
+      "rep_alpha": 1.018805,
+      "rep_zeff": 55.899801,
+      "dip_kernel": 0.00065886,
+      "quad_kernel": 0.010633090000000001,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -9.501505,
+          "slater_exponent": 2.155885,
+          "kcn_au": -0.0192494,
+          "shell_poly": -25.67708,
+          "ref_occ": 4.0,
+          "shell_hardness_au": -0.3419199
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -11.093016,
+          "slater_exponent": 1.892022,
+          "kcn_au": 0.25436390000000003,
+          "shell_poly": 6.208982,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -1.420389,
+          "slater_exponent": 1.458186,
+          "kcn_au": 0.0236479,
+          "shell_poly": 49.27377,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.37000000000000005
+        }
+      ]
+    },
+    {
+      "z": 75,
+      "ao": "5d6s6p",
+      "pauling_en": 1.9,
+      "atomic_hardness": 0.224623,
+      "third_order_atom_au": 0.08000000000000002,
+      "rep_alpha": 1.170412,
+      "rep_zeff": 80.410086,
+      "dip_kernel": -0.005876360000000001,
+      "quad_kernel": 0.0030686999999999997,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -11.189119,
+          "slater_exponent": 2.262783,
+          "kcn_au": -0.032213900000000004,
+          "shell_poly": -31.723059,
+          "ref_occ": 5.0,
+          "shell_hardness_au": 0.6586864000000001
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -12.685198,
+          "slater_exponent": 2.187549,
+          "kcn_au": 0.1117569,
+          "shell_poly": 13.890139,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -3.851981,
+          "slater_exponent": 1.636996,
+          "kcn_au": -0.1335155,
+          "shell_poly": 33.973283,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.6000000000000001
+        }
+      ]
+    },
+    {
+      "z": 76,
+      "ao": "5d6s6p",
+      "pauling_en": 2.2,
+      "atomic_hardness": 0.364388,
+      "third_order_atom_au": 0.08000000000000002,
+      "rep_alpha": 1.221937,
+      "rep_zeff": 62.809871,
+      "dip_kernel": -0.0051009,
+      "quad_kernel": 0.00759049,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -10.382841,
+          "slater_exponent": 2.509631,
+          "kcn_au": -0.0095346,
+          "shell_poly": -28.461111,
+          "ref_occ": 6.0,
+          "shell_hardness_au": 0.1350223
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.73146,
+          "slater_exponent": 2.173991,
+          "kcn_au": 0.034618300000000005,
+          "shell_poly": 21.316847,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -3.546379,
+          "slater_exponent": 1.597888,
+          "kcn_au": -0.0208758,
+          "shell_poly": 28.097231,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.65
+        }
+      ]
+    },
+    {
+      "z": 77,
+      "ao": "5d6s6p",
+      "pauling_en": 2.2,
+      "atomic_hardness": 0.548507,
+      "third_order_atom_au": -0.010000000000000002,
+      "rep_alpha": 1.197148,
+      "rep_zeff": 56.045639,
+      "dip_kernel": -0.0067382200000000005,
+      "quad_kernel": 0.00322935,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -11.018475,
+          "slater_exponent": 2.756134,
+          "kcn_au": 0.0051977,
+          "shell_poly": -24.693443,
+          "ref_occ": 7.0,
+          "shell_hardness_au": -0.0977957
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -9.349164,
+          "slater_exponent": 2.117548,
+          "kcn_au": -0.012367200000000002,
+          "shell_poly": 20.733836,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -3.603762,
+          "slater_exponent": 1.680343,
+          "kcn_au": -0.007986400000000001,
+          "shell_poly": 18.30321,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.65
+        }
+      ]
+    },
+    {
+      "z": 78,
+      "ao": "5d6s6p",
+      "pauling_en": 2.28,
+      "atomic_hardness": 0.353574,
+      "third_order_atom_au": 0.06,
+      "rep_alpha": 1.204081,
+      "rep_zeff": 53.881425,
+      "dip_kernel": -0.00423684,
+      "quad_kernel": 0.00098019,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -12.047728,
+          "slater_exponent": 2.704492,
+          "kcn_au": -0.020482800000000002,
+          "shell_poly": -27.243898,
+          "ref_occ": 8.0,
+          "shell_hardness_au": -0.0203212
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -10.482306,
+          "slater_exponent": 2.329136,
+          "kcn_au": 0.113953,
+          "shell_poly": 6.737556,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -3.778297,
+          "slater_exponent": 1.623286,
+          "kcn_au": 0.1408029,
+          "shell_poly": 19.259455,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.6000000000000001
+        }
+      ]
+    },
+    {
+      "z": 79,
+      "ao": "5d6s6p",
+      "pauling_en": 2.54,
+      "atomic_hardness": 0.438997,
+      "third_order_atom_au": 0.085,
+      "rep_alpha": 0.91921,
+      "rep_zeff": 14.711475,
+      "dip_kernel": 0.00393418,
+      "quad_kernel": -0.0002032,
+      "shells": [
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -9.578599,
+          "slater_exponent": 3.241287,
+          "kcn_au": -0.0154462,
+          "shell_poly": -6.410815,
+          "ref_occ": 10.0,
+          "shell_hardness_au": 0.0614126
+        },
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -7.688552,
+          "slater_exponent": 2.183171,
+          "kcn_au": 0.1479337,
+          "shell_poly": 4.691539,
+          "ref_occ": 1.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": 0.883399,
+          "slater_exponent": 2.084484,
+          "kcn_au": 0.10480650000000001,
+          "shell_poly": 25.250274,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.6000000000000001
+        }
+      ]
+    },
+    {
+      "z": 80,
+      "ao": "6s6p",
+      "pauling_en": 2.0,
+      "atomic_hardness": 0.457611,
+      "third_order_atom_au": -0.011631200000000001,
+      "rep_alpha": 1.13736,
+      "rep_zeff": 51.577544,
+      "dip_kernel": -0.0025,
+      "quad_kernel": -0.00032901,
+      "shells": [
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -11.538066,
+          "slater_exponent": 2.244504,
+          "kcn_au": -0.035225200000000005,
+          "shell_poly": -9.833449,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -2.532581,
+          "slater_exponent": 1.470848,
+          "kcn_au": 0.020540100000000002,
+          "shell_poly": 15.628858,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.5375121
+        }
+      ]
+    },
+    {
+      "z": 81,
+      "ao": "6s6p",
+      "pauling_en": 1.62,
+      "atomic_hardness": 0.418841,
+      "third_order_atom_au": -0.053393300000000005,
+      "rep_alpha": 1.399312,
+      "rep_zeff": 58.801614,
+      "dip_kernel": 0.00374018,
+      "quad_kernel": -8.506e-05,
+      "shells": [
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -17.319333,
+          "slater_exponent": 2.294231,
+          "kcn_au": -0.025597500000000002,
+          "shell_poly": -22.942207,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -4.460584,
+          "slater_exponent": 1.731592,
+          "kcn_au": 0.0901364,
+          "shell_poly": 13.109821,
+          "ref_occ": 1.0,
+          "shell_hardness_au": -0.7133401
+        }
+      ]
+    },
+    {
+      "z": 82,
+      "ao": "6s6p",
+      "pauling_en": 2.33,
+      "atomic_hardness": 0.168152,
+      "third_order_atom_au": 0.020000000000000004,
+      "rep_alpha": 1.179922,
+      "rep_zeff": 102.368258,
+      "dip_kernel": 0.01007016,
+      "quad_kernel": -1.67e-05,
+      "shells": [
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -24.055207,
+          "slater_exponent": 2.960592,
+          "kcn_au": -0.3893459,
+          "shell_poly": -22.955084,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -5.893816,
+          "slater_exponent": 1.95313,
+          "kcn_au": 0.34371170000000006,
+          "shell_poly": -8.805272,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.7838251
+        }
+      ]
+    },
+    {
+      "z": 83,
+      "ao": "6s6p",
+      "pauling_en": 2.02,
+      "atomic_hardness": 0.9,
+      "third_order_atom_au": -0.0337508,
+      "rep_alpha": 1.13086,
+      "rep_zeff": 132.896832,
+      "dip_kernel": -0.0073725200000000005,
+      "quad_kernel": 0.0016252900000000002,
+      "shells": [
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -19.84384,
+          "slater_exponent": 2.788267,
+          "kcn_au": 0.0160425,
+          "shell_poly": -21.750059,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -7.297456,
+          "slater_exponent": 2.277039,
+          "kcn_au": 0.0248659,
+          "shell_poly": -10.77393,
+          "ref_occ": 3.0,
+          "shell_hardness_au": -0.6000000000000001
+        }
+      ]
+    },
+    {
+      "z": 84,
+      "ao": "6s6p",
+      "pauling_en": 2.0,
+      "atomic_hardness": 1.023267,
+      "third_order_atom_au": 0.18779780000000001,
+      "rep_alpha": 0.957939,
+      "rep_zeff": 52.301232,
+      "dip_kernel": -0.01344854,
+      "quad_kernel": 0.00013818,
+      "shells": [
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -20.20538,
+          "slater_exponent": 3.31481,
+          "kcn_au": -0.0046813,
+          "shell_poly": -20.92329,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -8.476927,
+          "slater_exponent": 2.389456,
+          "kcn_au": -0.010043700000000001,
+          "shell_poly": -18.426448,
+          "ref_occ": 4.0,
+          "shell_hardness_au": -0.8109155
+        }
+      ]
+    },
+    {
+      "z": 85,
+      "ao": "6s6p5d",
+      "pauling_en": 2.2,
+      "atomic_hardness": 0.288848,
+      "third_order_atom_au": 0.1846485,
+      "rep_alpha": 0.963878,
+      "rep_zeff": 81.771063,
+      "dip_kernel": -0.00348123,
+      "quad_kernel": 0.00021624,
+      "shells": [
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -17.050229,
+          "slater_exponent": 2.220421,
+          "kcn_au": -0.0287369,
+          "shell_poly": -30.549981,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -9.499822,
+          "slater_exponent": 2.408112,
+          "kcn_au": -0.0007993000000000001,
+          "shell_poly": -17.10849,
+          "ref_occ": 5.0,
+          "shell_hardness_au": -0.2532073
+        },
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -0.096063,
+          "slater_exponent": 1.5,
+          "kcn_au": 0.2805808,
+          "shell_poly": 23.824993,
+          "ref_occ": 0.0,
+          "shell_hardness_au": 0.25
+        }
+      ]
+    },
+    {
+      "z": 86,
+      "ao": "6s6p5d",
+      "pauling_en": 2.2,
+      "atomic_hardness": 0.3034,
+      "third_order_atom_au": 0.009783400000000001,
+      "rep_alpha": 0.965577,
+      "rep_zeff": 128.13358,
+      "dip_kernel": -0.00167597,
+      "quad_kernel": -0.00111556,
+      "shells": [
+        {
+          "n": 6,
+          "l": 0,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -21.0,
+          "slater_exponent": 3.109394,
+          "kcn_au": -0.00017120000000000001,
+          "shell_poly": -35.245372,
+          "ref_occ": 2.0,
+          "shell_hardness_au": 0.0
+        },
+        {
+          "n": 6,
+          "l": 1,
+          "n_prim": 6,
+          "is_valence": true,
+          "self_energy_ev": -10.496406,
+          "slater_exponent": 2.541934,
+          "kcn_au": -0.000528,
+          "shell_poly": -11.989735,
+          "ref_occ": 6.0,
+          "shell_hardness_au": -0.0302388
+        },
+        {
+          "n": 5,
+          "l": 2,
+          "n_prim": 3,
+          "is_valence": true,
+          "self_energy_ev": -1.415056,
+          "slater_exponent": 1.79,
+          "kcn_au": -0.32060200000000005,
+          "shell_poly": 21.167024,
+          "ref_occ": 0.0,
+          "shell_hardness_au": -0.22999999999999998
+        }
+      ]
+    }
+  ]
+}
