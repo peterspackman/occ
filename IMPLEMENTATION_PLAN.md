@@ -106,12 +106,14 @@ under `src/disp/`. Reference data lives in `share/dftd4/`.
   `share/dftd3/refdata.json` (94 elements, 5×5 ref C6 blocks per pair) and
   per-functional damping in `share/dftd3/functionals.json` (94 functionals,
   BJ variant). Validates against s-dftd3 to <1 µHa for water+pbe.
+- **6f** Analytical D4 + D3 gradients (2-body BJ + ATM angular + ∂C6/∂CN
+  chain). Plus EEQ derivative (`occ::core::charges::eeq_partial_charges_and_gradient`)
+  → ∂q/∂R chain in D4 for full DFT-D4 forces. All gradient tests match FD
+  to 1e-9 Ha/Bohr; full DFT-D4 force matches re-equilibrated-EEQ FD to
+  1e-8 Ha/Bohr.
 
 ### Pending
-- **6f** Analytical D4 + D3 gradients (2-body BJ derivative + ATM angular
-  derivative + ∂C6/∂CN chain rule). Optional EEQ chain rule `∂q_EEQ/∂R` for
-  full DFT-D4 forces (small effect at typical geometries; numerical FD is
-  acceptable meanwhile).
+(none — phase 6 complete)
 
 ## Phase 5 — Gradients + frequencies (in progress)
 

@@ -825,8 +825,10 @@ void Dispersion::set_charges_eeq(double net_charge) {
     positions_ang(1, i) = m_atoms[i].y * bohr_to_angstrom;
     positions_ang(2, i) = m_atoms[i].z * bohr_to_angstrom;
   }
-  m_q = occ::core::charges::eeq_partial_charges(atnums, positions_ang,
-                                                net_charge);
+  auto eeq = occ::core::charges::eeq_partial_charges_and_gradient(
+      atnums, positions_ang, net_charge);
+  m_q = std::move(eeq.charges);
+  m_dq_dR = std::move(eeq.dcharges_dR);
 }
 
 namespace {
@@ -892,6 +894,9 @@ void Dispersion::update_positions(const std::vector<core::Atom> &atoms) {
     m_atoms[i].y = atoms[i].y;
     m_atoms[i].z = atoms[i].z;
   }
+  // EEQ derivatives become stale on geometry change — caller must re-invoke
+  // set_charges_eeq() if they want them refreshed.
+  m_dq_dR.clear();
 }
 
 Vec Dispersion::covalent_coordination_numbers() const {
@@ -910,12 +915,12 @@ double Dispersion::energy() const {
 }
 
 std::pair<double, Mat3N> Dispersion::energy_and_gradient() const {
-  // Analytical gradient: position part + CN chain rule.
-  // The charge chain rule (∂q/∂R via EEQ) is NOT yet included for DFT mode,
-  // so DFT-D4 forces are accurate to within the q-derivative term. This is
-  // the same convention xtb uses for SCC-coupled D4 (variational q ⇒ chain
-  // rule contribution vanishes by Hellmann-Feynman); for DFT-D4 with EEQ
-  // charges it introduces a small error at the few-µHa/Bohr level.
+  // Analytical gradient. Three chain-rule contributions:
+  //   1. Direct position dependence (BJ damping + ATM angular).
+  //   2. CN chain — ∂C6/∂CN_i propagates ∂CN_i/∂R into the gradient.
+  //   3. Charge chain — ∂C6/∂q_i propagates ∂q_i/∂R when EEQ charges were
+  //      used (set_charges_eeq populates m_dq_dR). For SCC-coupled mode
+  //      (m_dq_dR empty), q is treated as variational (Hellmann-Feynman).
   const auto cn_with_grad =
       d4_coordination_numbers(m_atoms, m_cutoff_cn, /*with_grad=*/true);
   const auto ref_alpha = build_reference_alpha(m_atoms, m_scaling, m_refq_mode);
@@ -930,11 +935,13 @@ std::pair<double, Mat3N> Dispersion::energy_and_gradient() const {
       m_cutoff_disp3);
   const int n = static_cast<int>(m_atoms.size());
   Mat3N grad = g2.position + g3.position;
-  // CN chain rule: total_grad += Σ_a (dE2_dcn[a] + dE3_dcn[a]) · ∂CN_a/∂R
   for (int a = 0; a < n; ++a) {
-    const double w = g2.dE_dcn(a) + g3.dE_dcn(a);
-    if (w == 0.0) continue;
-    grad.noalias() += w * cn_with_grad.dcn[a];
+    const double w_cn = g2.dE_dcn(a) + g3.dE_dcn(a);
+    if (w_cn != 0.0) grad.noalias() += w_cn * cn_with_grad.dcn[a];
+    if (!m_dq_dR.empty()) {
+      const double w_q = g2.dE_dq(a) + g3.dE_dq(a);
+      if (w_q != 0.0) grad.noalias() += w_q * m_dq_dR[a];
+    }
   }
   return {g2.energy + g3.energy, grad};
 }

@@ -652,6 +652,48 @@ TEST_CASE("EEQ water", "[charge]") {
   REQUIRE(occ::util::all_close(expected_q, q, 1e-5, 1e-5));
 }
 
+TEST_CASE("EEQ analytical derivatives vs FD (water)", "[charge]") {
+  occ::Mat3N pos_ang(3, 3);
+  occ::IVec nums(3);
+  nums << 8, 1, 1;
+  pos_ang << -0.7021961, -1.0221932, 0.2575211,
+             -0.0560603, 0.8467758, 0.0421215,
+              0.0099423, -0.0114887, 0.0052190;
+
+  auto egrad = occ::core::charges::eeq_partial_charges_and_gradient(
+      nums, pos_ang, 0.0);
+  REQUIRE(egrad.charges.size() == 3);
+  REQUIRE(egrad.dcharges_dR.size() == 3);
+
+  // Finite-difference oracle in the SAME units (Bohr) as the analytical
+  // derivative. Step size in Å (since the function takes Å positions); the
+  // analytical derivative is per-Bohr so we account for the conversion.
+  constexpr double bohr_to_ang = 0.5291772108086;
+  const double h_bohr = 1e-4;
+  const double h_ang = h_bohr * bohr_to_ang;
+  std::vector<occ::Mat3N> fd(3, occ::Mat3N::Zero(3, 3));
+  for (int j = 0; j < 3; ++j) {     // varied atom
+    for (int k = 0; k < 3; ++k) {   // direction
+      auto eval = [&](double dh_ang) {
+        auto p2 = pos_ang;
+        p2(k, j) += dh_ang;
+        return occ::core::charges::eeq_partial_charges(nums, p2, 0.0);
+      };
+      const auto qp2 = eval(2 * h_ang);
+      const auto qp1 = eval(h_ang);
+      const auto qm1 = eval(-h_ang);
+      const auto qm2 = eval(-2 * h_ang);
+      const occ::Vec dq = (-qp2 + 8 * qp1 - 8 * qm1 + qm2) / (12 * h_bohr);
+      for (int i = 0; i < 3; ++i) fd[i](k, j) = dq(i);
+    }
+  }
+  for (int i = 0; i < 3; ++i) {
+    INFO("atom " << i << " analytical:\n" << egrad.dcharges_dR[i]);
+    INFO("atom " << i << " FD:\n" << fd[i]);
+    REQUIRE((egrad.dcharges_dR[i] - fd[i]).cwiseAbs().maxCoeff() < 1e-7);
+  }
+}
+
 TEST_CASE("Elastic tensor", "[elastic_tensor]") {
   using occ::core::ElasticTensor;
 

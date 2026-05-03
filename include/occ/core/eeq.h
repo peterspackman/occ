@@ -32,4 +32,27 @@ Vec eeq_coordination_numbers(const occ::IVec &atomic_numbers,
 Vec eeq_partial_charges(const occ::IVec &atomic_numbers,
                         const occ::Mat3N &positions, double charge = 0.0);
 
+/**
+ * EEQ partial charges + their derivative wrt nuclear positions.
+ *
+ * Returns:
+ *   .charges       Vec of length N — same as eeq_partial_charges
+ *   .dcharges_dR   std::vector<Mat3N> of length N. dcharges_dR[i](α, j) is
+ *                  ∂q_i/∂R_j^α (Bohr⁻¹). Note R_j here is in Bohr — the
+ *                  derivative respects the Bohr convention used inside the
+ *                  Coulomb-like A matrix, not the input Angstrom positions.
+ *
+ * Implementation: given A·q = -χ + (constraint), differentiate to get
+ *   A · ∂q/∂R = -∂χ/∂R - ∂A/∂R · q
+ * and solve once with the LU factorisation of A.
+ */
+struct EeqWithGradient {
+  Vec charges;
+  std::vector<Mat3N> dcharges_dR;
+};
+
+EeqWithGradient eeq_partial_charges_and_gradient(
+    const occ::IVec &atomic_numbers, const occ::Mat3N &positions_angstrom,
+    double charge = 0.0);
+
 } // namespace occ::core::charges

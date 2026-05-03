@@ -67,12 +67,19 @@ public:
   void set_functional(const std::string &functional);
 
   // Per-atom partial charges (positive = electron-deficient). Required for the
-  // charge-aware reference projection.
-  void set_charges(const Vec &q_atomic) { m_q = q_atomic; }
+  // charge-aware reference projection. The supplied charges are treated as
+  // independent of geometry — for DFT-D4 with EEQ charges that respond to
+  // displacement, prefer set_charges_eeq() so the gradient picks up the
+  // ∂q/∂R chain rule.
+  void set_charges(const Vec &q_atomic) {
+    m_q = q_atomic;
+    m_dq_dR.clear(); // explicit charges are taken as fixed
+  }
 
-  // Compute and store EEQ partial charges for the current geometry. Use this
-  // for DFT-D4 where SCF Mulliken charges aren't available. `net_charge` is
-  // the system total charge (default 0).
+  // Compute and store EEQ partial charges + their position derivatives for
+  // the current geometry. Use this for DFT-D4 where SCF Mulliken charges
+  // aren't available; the analytical gradient will then include the EEQ
+  // chain rule for full forces. `net_charge` is the system total charge.
   void set_charges_eeq(double net_charge = 0.0);
 
   // Cutoffs in Bohr for the 2-body, 3-body, and CN sums.
@@ -97,6 +104,10 @@ public:
 private:
   std::vector<core::Atom> m_atoms;
   Vec m_q;                       // atomic partial charges; defaults to zero
+  // ∂q/∂R from EEQ — populated by set_charges_eeq(), empty otherwise.
+  // dq_dR[i](α, j) = ∂q_i/∂R_j^α (per-Bohr). When empty the gradient treats
+  // m_q as fixed (Hellmann-Feynman / SCC convention).
+  std::vector<Mat3N> m_dq_dR;
   D4Damping m_damping{};
   D4Scaling m_scaling{};
   RefqMode m_refq_mode{RefqMode::GFN2};

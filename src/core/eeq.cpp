@@ -184,4 +184,147 @@ Vec eeq_partial_charges(const IVec &atomic_numbers, const Mat3N &positions,
   return A.householderQr().solve(X).topRows(N);
 }
 
+EeqWithGradient eeq_partial_charges_and_gradient(
+    const IVec &atomic_numbers, const Mat3N &positions_angstrom,
+    double charge) {
+  using occ::units::ANGSTROM_TO_BOHR;
+  const int N = atomic_numbers.rows();
+  EeqWithGradient out;
+
+  // ------ Coordination number + dCN/dR (in Bohr) ------
+  // The base eeq_coordination_numbers uses Å for the (r - rc) erf argument
+  // (rc is in Å too via the Pyykko table). We follow the same convention
+  // here so cn matches; gradients are converted to per-Bohr at the end.
+  Vec cn = Vec::Zero(N);
+  std::vector<Mat3N> dcn(N, Mat3N::Zero(3, N));
+  constexpr double kcn = 7.5;
+  constexpr double D3_SCALE = 4.0 / 3.0;
+  constexpr double cutoff = 25.0;
+  constexpr double cutoff2 = cutoff * cutoff;
+  constexpr double inv_sqrt_pi = 0.5641895835477563;
+  for (int i = 0; i < N; ++i) {
+    const int ni = atomic_numbers(i);
+    for (int j = 0; j < i; ++j) {
+      const int nj = atomic_numbers(j);
+      const Vec3 rij = positions_angstrom.col(i) - positions_angstrom.col(j);
+      const double r2 = rij.squaredNorm();
+      if (r2 > cutoff2) continue;
+      const double r = std::sqrt(r2);
+      const double rc = (impl::covalent[ni] + impl::covalent[nj]) * D3_SCALE;
+      const double t = -kcn * (r - rc) / rc;
+      const double count = 0.5 * (1.0 + std::erf(t));
+      cn(i) += count;
+      cn(j) += count;
+      // dcount/dr = 0.5 · (2/√π) · e^{−t²} · dt/dr = -k/rc · e^{−t²} / √π
+      const double dcount_dr = -kcn / rc * std::exp(-t * t) * inv_sqrt_pi;
+      const Vec3 dcount_dRi = dcount_dr * rij / r; // dr/dRi = (Ri-Rj)/r
+      dcn[i].col(i) += dcount_dRi;
+      dcn[i].col(j) -= dcount_dRi;
+      dcn[j].col(i) += dcount_dRi;
+      dcn[j].col(j) -= dcount_dRi;
+    }
+  }
+  // dCN derivatives are wrt Å positions; convert to Bohr by dividing by
+  // ANGSTROM_TO_BOHR (since dR_Å = dR_Bohr / ANGSTROM_TO_BOHR).
+  for (auto &m : dcn) m *= (1.0 / ANGSTROM_TO_BOHR);
+
+  // ------ Build A matrix (Bohr inside, as the existing impl does) ------
+  Mat A = build_A_matrix(atomic_numbers, positions_angstrom);
+
+  // ------ Build X vector (CN-modulated electronegativity) ------
+  Vec X = build_X_vector(atomic_numbers, cn, charge);
+
+  // ------ Solve A · q_full = X (q_full has the Lagrange multiplier appended) ------
+  Eigen::PartialPivLU<Mat> lu(A);
+  Vec q_full = lu.solve(X);
+  out.charges = q_full.topRows(N);
+
+  // ------ ∂q/∂R via the implicit-derivative system ------
+  //   A · (∂q/∂R) = ∂X/∂R - (∂A/∂R) · q
+  // Each (∂X/∂R)_i and (∂A/∂R)_{ij} only depends on a few atoms, so we
+  // assemble the RHS sparsely. We solve all 3N right-hand sides with one LU
+  // (already factorised above).
+  //
+  // ∂X_i/∂R_a: only via cn(i). dX_i/dCN_i = (-0.5 · kcn(ni) / sqrt(cn+ε)).
+  // (Wait: X_i = -chi(ni) + kcn(ni)/sqrt(cn+ε) · cn = -chi(ni) + kcn(ni) ·
+  // sqrt(cn+ε); for cn ≪ ε this is fine. Actually X_i = -chi + kcn·cn/√(cn+ε).
+  // dX_i/dcn = kcn · [√(cn+ε) − cn/(2√(cn+ε))] / (cn+ε)
+  //         = kcn · [(cn+ε) − cn/2] / (cn+ε)^(3/2)
+  //         = kcn · [(cn/2 + ε)] / (cn+ε)^(3/2)
+  //         ≈ kcn / (2 √(cn+ε))   for ε → 0).
+  constexpr double eps = 1e-14;
+  // Build RHS = (∂X/∂R - ∂A/∂R · q) as (N+1, 3N) matrix.
+  Mat rhs = Mat::Zero(N + 1, 3 * N);
+  // ∂X/∂R contribution: dX_i/dR_a^α = (dX_i/dcn_i) · dcn_i/dR_a^α
+  for (int i = 0; i < N; ++i) {
+    const int ni = atomic_numbers(i);
+    const double cn_eps = cn(i) + eps;
+    const double dXi_dcn =
+        impl::kcn[ni] * (cn(i) / 2.0 + eps) / std::pow(cn_eps, 1.5);
+    if (dXi_dcn == 0.0) continue;
+    for (int j = 0; j < N; ++j) {
+      for (int k = 0; k < 3; ++k) {
+        rhs(i, 3 * j + k) += dXi_dcn * dcn[i](k, j);
+      }
+    }
+  }
+  // ∂A/∂R · q contribution. A_{ij} = erf(√(γ_ij·r²)) / r  for i ≠ j (in
+  // Bohr). ∂A_{ij}/∂R_a^α nonzero only for a ∈ {i, j}. Diagonal A_{ii} is
+  // R-independent.
+  // Let g_ij = γ_ij = 1 / (w_i² + w_j²). Define u = r·√γ.
+  //   d(erf(u))/dr  = (2/√π) e^{-u²} · √γ
+  //   A_{ij} = erf(u) / r
+  //   dA_{ij}/dr = [d(erf(u))/dr · r − erf(u)] / r²
+  //             = [(2/√π) e^{-u²} √γ - A_{ij}] / r
+  // Then dA_{ij}/dR_i^α = dA_{ij}/dr · (R_i^α − R_j^α)/r  (for the i atom).
+  // Subtract dA · q from RHS for each gradient component.
+  for (int i = 0; i < N; ++i) {
+    const int ni = atomic_numbers(i);
+    const double wi = impl::width[ni];
+    const Vec3 ri_bohr = positions_angstrom.col(i) * ANGSTROM_TO_BOHR;
+    for (int j = 0; j < i; ++j) {
+      const int nj = atomic_numbers(j);
+      const double wj = impl::width[nj];
+      const Vec3 rj_bohr = positions_angstrom.col(j) * ANGSTROM_TO_BOHR;
+      const Vec3 rij = ri_bohr - rj_bohr;
+      const double r2 = rij.squaredNorm();
+      if (r2 < 1e-12) continue;
+      const double r = std::sqrt(r2);
+      const double gamma = 1.0 / (wi * wi + wj * wj);
+      const double sqrt_g = std::sqrt(gamma);
+      const double u = r * sqrt_g;
+      const double erf_u = std::erf(u);
+      const double Aij = erf_u / r;
+      const double dAij_dr =
+          (2.0 * inv_sqrt_pi * std::exp(-u * u) * sqrt_g - Aij) / r;
+      // dA_{ij}/dR_i^α = dA_{ij}/dr · (R_i^α - R_j^α) / r
+      const Vec3 dAij_dRi = (dAij_dr / r) * rij;
+      // Contribution to rhs(*, 3*i + α) and rhs(*, 3*j + α):
+      // rhs_k -= ∂A_{kl}/∂R_a · q_l for all (k, l) with derivative nonzero.
+      // The pair (i, j) contributes:
+      //   dA_{ij}/dR_a · q_j  goes into rhs(i, ·)
+      //   dA_{ji}/dR_a · q_i  goes into rhs(j, ·)
+      // (A is symmetric ⇒ dA_{ij} = dA_{ji}; sign flips for j atom.)
+      for (int k = 0; k < 3; ++k) {
+        rhs(i, 3 * i + k) -= dAij_dRi(k) * q_full(j);
+        rhs(j, 3 * i + k) -= dAij_dRi(k) * q_full(i);
+        rhs(i, 3 * j + k) += dAij_dRi(k) * q_full(j); // ∂A/∂R_j = -∂A/∂R_i
+        rhs(j, 3 * j + k) += dAij_dRi(k) * q_full(i);
+      }
+    }
+  }
+  // Solve A · dq_full = rhs.
+  Mat dq_full = lu.solve(rhs);
+  // Pack into per-atom Mat3N tensors.
+  out.dcharges_dR.assign(N, Mat3N::Zero(3, N));
+  for (int i = 0; i < N; ++i) {
+    for (int j = 0; j < N; ++j) {
+      for (int k = 0; k < 3; ++k) {
+        out.dcharges_dR[i](k, j) = dq_full(i, 3 * j + k);
+      }
+    }
+  }
+  return out;
+}
+
 } // namespace occ::core::charges

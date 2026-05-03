@@ -138,7 +138,7 @@ TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
     REQUIRE((grad - fd).cwiseAbs().maxCoeff() < 1e-9);
   }
 
-  SECTION("water (DFT-D4 + EEQ, no q-chain)") {
+  SECTION("water (DFT-D4 + EEQ, full force with q-chain)") {
     Molecule m = water_molecule();
     auto atoms = m.atoms();
     Dispersion d4(atoms, RefqMode::DFT);
@@ -146,32 +146,13 @@ TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
     d4.set_charges_eeq(0.0);
     auto [e, grad] = d4.energy_and_gradient();
 
-    // FD with EEQ charges held fixed at the original geometry — matches the
-    // analytical gradient's "no q-chain" convention.
-    auto fixed_q = occ::Vec(grad.cols());
-    {
-      // grab the fixed q the analytical used
-      Dispersion probe(atoms, RefqMode::DFT);
-      probe.set_functional("pbe");
-      probe.set_charges_eeq(0.0);
-      // No public q-getter; recompute via charges::eeq_partial_charges.
-      occ::IVec atnums(atoms.size());
-      occ::Mat3N pos_ang(3, atoms.size());
-      for (std::size_t i = 0; i < atoms.size(); ++i) {
-        atnums(i) = atoms[i].atomic_number;
-        pos_ang(0, i) = atoms[i].x * 0.5291772108086;
-        pos_ang(1, i) = atoms[i].y * 0.5291772108086;
-        pos_ang(2, i) = atoms[i].z * 0.5291772108086;
-      }
-      fixed_q = occ::core::charges::eeq_partial_charges(atnums, pos_ang, 0.0);
-      (void)probe; // suppress unused warning
-    }
-
+    // Full FD: at each displaced geometry, RECOMPUTE EEQ charges. Since the
+    // analytical gradient now includes the ∂q/∂R chain (m_dq_dR populated by
+    // set_charges_eeq), this is the correct comparison.
     occ::Mat3N fd = occ::Mat3N::Zero(3, atoms.size());
     constexpr double h = 1e-4;
     Dispersion fd_disp(atoms, RefqMode::DFT);
     fd_disp.set_functional("pbe");
-    fd_disp.set_charges(fixed_q); // FROZEN q (matches analytical's assumption)
     for (std::size_t a = 0; a < atoms.size(); ++a) {
       for (int k = 0; k < 3; ++k) {
         auto eval = [&](double dh) {
@@ -179,6 +160,7 @@ TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
           if (k == 0) a2[a].x += dh; else if (k == 1) a2[a].y += dh;
           else a2[a].z += dh;
           fd_disp.update_positions(a2);
+          fd_disp.set_charges_eeq(0.0); // re-equilibrate at displaced geom
           return fd_disp.energy();
         };
         const double e_p2 = eval(2 * h);
@@ -189,8 +171,8 @@ TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
       }
     }
     INFO("analytical:\n" << grad);
-    INFO("finite-diff (q frozen):\n" << fd);
-    REQUIRE((grad - fd).cwiseAbs().maxCoeff() < 1e-9);
+    INFO("finite-diff (full):\n" << fd);
+    REQUIRE((grad - fd).cwiseAbs().maxCoeff() < 1e-8);
   }
 
   SECTION("benzene b3lyp") {
