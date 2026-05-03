@@ -4,6 +4,7 @@
 #include <fmt/ostream.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
+#include <occ/core/eeq.h>
 #include <occ/disp/d3.h>
 #include <occ/disp/d4.h>
 
@@ -86,6 +87,124 @@ TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
     REQUIRE(std::isfinite(grad.sum()));
     REQUIRE(grad.norm() > 1e-6);
     REQUIRE(grad.norm() < 1e-3);
+  }
+}
+
+TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
+  using namespace occ::disp;
+  // Re-implement a self-contained 5-point central-difference oracle (the
+  // public energy_and_gradient now returns the analytical gradient, so we
+  // can't compare it against itself).
+  auto fd_gradient = [&](Dispersion &d, double h = 1e-4) {
+    auto atoms = std::vector<occ::core::Atom>{};
+    // Capture current atoms by re-reading via a probe (we'll mutate via
+    // update_positions and restore).
+    // Simpler: take a copy and use it.
+    return std::pair<double, occ::Mat3N>{};
+  };
+
+  SECTION("water (GFN2-xTB SCC-coupled style)") {
+    Molecule m = water_molecule();
+    auto atoms = m.atoms();
+    Dispersion d4(atoms);
+    d4.set_damping(gfn2_damping);
+    occ::Vec q(3);
+    q << -0.5627, 0.2815, 0.2812;
+    d4.set_charges(q);
+
+    auto [e, grad] = d4.energy_and_gradient();
+
+    // 5-point central differences of energy().
+    occ::Mat3N fd = occ::Mat3N::Zero(3, atoms.size());
+    constexpr double h = 1e-4;
+    for (std::size_t a = 0; a < atoms.size(); ++a) {
+      for (int k = 0; k < 3; ++k) {
+        auto eval = [&](double dh) {
+          auto a2 = atoms;
+          if (k == 0) a2[a].x += dh; else if (k == 1) a2[a].y += dh;
+          else a2[a].z += dh;
+          d4.update_positions(a2);
+          return d4.energy();
+        };
+        const double e_p2 = eval(2 * h);
+        const double e_p1 = eval(h);
+        const double e_m1 = eval(-h);
+        const double e_m2 = eval(-2 * h);
+        fd(k, a) = (-e_p2 + 8 * e_p1 - 8 * e_m1 + e_m2) / (12 * h);
+      }
+    }
+    INFO("analytical:\n" << grad);
+    INFO("finite-diff:\n" << fd);
+    REQUIRE((grad - fd).cwiseAbs().maxCoeff() < 1e-9);
+  }
+
+  SECTION("water (DFT-D4 + EEQ, no q-chain)") {
+    Molecule m = water_molecule();
+    auto atoms = m.atoms();
+    Dispersion d4(atoms, RefqMode::DFT);
+    d4.set_functional("pbe");
+    d4.set_charges_eeq(0.0);
+    auto [e, grad] = d4.energy_and_gradient();
+
+    // FD with EEQ charges held fixed at the original geometry — matches the
+    // analytical gradient's "no q-chain" convention.
+    auto fixed_q = occ::Vec(grad.cols());
+    {
+      // grab the fixed q the analytical used
+      Dispersion probe(atoms, RefqMode::DFT);
+      probe.set_functional("pbe");
+      probe.set_charges_eeq(0.0);
+      // No public q-getter; recompute via charges::eeq_partial_charges.
+      occ::IVec atnums(atoms.size());
+      occ::Mat3N pos_ang(3, atoms.size());
+      for (std::size_t i = 0; i < atoms.size(); ++i) {
+        atnums(i) = atoms[i].atomic_number;
+        pos_ang(0, i) = atoms[i].x * 0.5291772108086;
+        pos_ang(1, i) = atoms[i].y * 0.5291772108086;
+        pos_ang(2, i) = atoms[i].z * 0.5291772108086;
+      }
+      fixed_q = occ::core::charges::eeq_partial_charges(atnums, pos_ang, 0.0);
+      (void)probe; // suppress unused warning
+    }
+
+    occ::Mat3N fd = occ::Mat3N::Zero(3, atoms.size());
+    constexpr double h = 1e-4;
+    Dispersion fd_disp(atoms, RefqMode::DFT);
+    fd_disp.set_functional("pbe");
+    fd_disp.set_charges(fixed_q); // FROZEN q (matches analytical's assumption)
+    for (std::size_t a = 0; a < atoms.size(); ++a) {
+      for (int k = 0; k < 3; ++k) {
+        auto eval = [&](double dh) {
+          auto a2 = atoms;
+          if (k == 0) a2[a].x += dh; else if (k == 1) a2[a].y += dh;
+          else a2[a].z += dh;
+          fd_disp.update_positions(a2);
+          return fd_disp.energy();
+        };
+        const double e_p2 = eval(2 * h);
+        const double e_p1 = eval(h);
+        const double e_m1 = eval(-h);
+        const double e_m2 = eval(-2 * h);
+        fd(k, a) = (-e_p2 + 8 * e_p1 - 8 * e_m1 + e_m2) / (12 * h);
+      }
+    }
+    INFO("analytical:\n" << grad);
+    INFO("finite-diff (q frozen):\n" << fd);
+    REQUIRE((grad - fd).cwiseAbs().maxCoeff() < 1e-9);
+  }
+
+  SECTION("benzene b3lyp") {
+    Molecule m = benzene_molecule();
+    auto atoms = m.atoms();
+    Dispersion d4(atoms, RefqMode::DFT);
+    d4.set_functional("b3lyp");
+    d4.set_charges_eeq(0.0);
+    auto [e, grad] = d4.energy_and_gradient();
+    REQUIRE(grad.rows() == 3);
+    REQUIRE(grad.cols() == 12);
+    REQUIRE(std::isfinite(grad.sum()));
+    // Translation invariance (sum of forces ≈ 0).
+    REQUIRE(grad.rowwise().sum().norm() < 1e-10);
   }
 }
 

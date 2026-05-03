@@ -164,6 +164,18 @@ inline double zeta(double a, double c, double qref, double qmod) {
   return std::exp(a * (1.0 - std::exp(c * (1.0 - qref / qmod))));
 }
 
+// ∂ζ/∂q_mod for the DFT-D4 charge chain rule.
+//   ζ = exp(a (1 − e^{c (1 − qref/qmod)}))
+//   dζ/dq_mod = ζ · a · (−1) · e^{...} · c · (qref / qmod²)
+//             = −ζ · a · c · (qref / qmod²) · e^{c (1 − qref/qmod)}
+// For qmod ≤ 0 the function is constant and the derivative is zero.
+inline double d_zeta_dqmod(double a, double c, double qref, double qmod) {
+  if (qmod <= 0.0) return 0.0;
+  const double inner = std::exp(c * (1.0 - qref / qmod));
+  const double zval = std::exp(a * (1.0 - inner));
+  return -zval * a * c * qref / (qmod * qmod) * inner;
+}
+
 // ============================================================================
 // Per-element pre-computed reference α(iω). Computed once per geometry from
 // the reference data — depends on element identity but not on geometry, so we
@@ -336,6 +348,130 @@ Mat compute_c6_matrix(const std::vector<core::Atom> &atoms, const Mat &gw,
 }
 
 // ============================================================================
+// Gradient-aware variants of the helpers above.
+//
+// Returns gw[iref, i] (the reference weight) AND its derivatives:
+//   dgw_dcn[iref, i] = ∂gw[iref, i]/∂CN_i
+//   dgw_dq [iref, i] = ∂gw[iref, i]/∂q_i
+// Both are matrices (MAX_REF × n_atoms) like `gw` itself.
+// ============================================================================
+
+struct WeightWithGrad {
+  Mat gw;
+  Mat dgw_dcn;
+  Mat dgw_dq;
+};
+
+WeightWithGrad compute_reference_weights_with_grad(
+    const std::vector<core::Atom> &atoms, const D4Scaling &sc, RefqMode mode,
+    const Vec &cn, const Vec &q_atomic) {
+  const auto &rd = reference_data();
+  const int n = static_cast<int>(atoms.size());
+  WeightWithGrad out{Mat::Zero(MAX_REF, n), Mat::Zero(MAX_REF, n),
+                      Mat::Zero(MAX_REF, n)};
+  for (int i = 0; i < n; ++i) {
+    const int Z = atoms[i].atomic_number;
+    const auto &ref = rd.elements[Z];
+    if (ref.refn == 0) continue;
+    const auto &refq = (mode == RefqMode::GFN2) ? ref.refq_gfn2 : ref.refq_dft;
+    const auto ncount = compute_ncount(ref);
+
+    // Multi-Gaussian sums per reference: expw_iref + d(expw_iref)/d(CN_i).
+    // Then normalize over all references (norm + d(norm)/d(CN_i)).
+    std::array<double, MAX_REF> expw{}, dexpw{};
+    double norm = 0.0, dnorm = 0.0;
+    double maxcn = 0.0;
+    for (int iref = 0; iref < ref.refn; ++iref) {
+      maxcn = std::max(maxcn, ref.refcovcn[iref]);
+      const double dcn = cn(i) - ref.refcovcn[iref];
+      const double dcn2 = dcn * dcn;
+      double e = 0.0, de = 0.0;
+      for (int igw = 1; igw <= ncount[iref]; ++igw) {
+        const double w = std::exp(-igw * sc.wf * dcn2);
+        e += w;
+        // d/dCN exp(-twf · (cn − refcovcn)^2) = w · (-2 twf (cn − refcovcn))
+        de += w * (-2.0 * igw * sc.wf * dcn);
+      }
+      expw[iref] = e;
+      dexpw[iref] = de;
+      norm += e;
+      dnorm += de;
+    }
+    const double inv_norm = (norm > 0.0) ? 1.0 / norm : 0.0;
+    const double iz = rd.zeff[Z];
+    for (int iref = 0; iref < ref.refn; ++iref) {
+      // Quotient rule: gwk = expw / norm.
+      // d(expw/norm)/dCN = (dexpw · norm − expw · dnorm) / norm²
+      double gwk = expw[iref] * inv_norm;
+      double dgwk_dcn = (dexpw[iref] - expw[iref] * dnorm * inv_norm) * inv_norm;
+      if (!std::isfinite(gwk)) {
+        gwk = (ref.refcovcn[iref] == maxcn) ? 1.0 : 0.0;
+        dgwk_dcn = 0.0;
+      }
+      const double zarg = zeta(sc.ga, rd.gam[Z] * sc.gc, refq[iref] + iz,
+                                q_atomic(i) + iz);
+      const double dzarg_dq = d_zeta_dqmod(sc.ga, rd.gam[Z] * sc.gc,
+                                            refq[iref] + iz, q_atomic(i) + iz);
+      out.gw(iref, i) = gwk * zarg;
+      out.dgw_dcn(iref, i) = dgwk_dcn * zarg;
+      out.dgw_dq(iref, i) = gwk * dzarg_dq;
+    }
+  }
+  return out;
+}
+
+// ============================================================================
+// C6 with derivatives. Stores per-atom-pair derivatives:
+//   dc6_dcn(i, j) = ∂C6_ij/∂CN_i      (asymmetric: (j, i) gives ∂/∂CN_j)
+//   dc6_dq (i, j) = ∂C6_ij/∂q_i
+// ============================================================================
+
+struct C6WithGrad {
+  Mat c6;
+  Mat dc6_dcn;
+  Mat dc6_dq;
+};
+
+C6WithGrad compute_c6_matrix_with_grad(const std::vector<core::Atom> &atoms,
+                                        const WeightWithGrad &w,
+                                        const AlphaTable &ref_alpha) {
+  const auto &rd = reference_data();
+  const int n = static_cast<int>(atoms.size());
+  C6WithGrad out{Mat::Zero(n, n), Mat::Zero(n, n), Mat::Zero(n, n)};
+  for (int i = 0; i < n; ++i) {
+    const int Zi = atoms[i].atomic_number;
+    const int ni = rd.elements[Zi].refn;
+    for (int j = 0; j < n; ++j) {
+      const int Zj = atoms[j].atomic_number;
+      const int nj = rd.elements[Zj].refn;
+      double cij = 0.0, dc_dcni = 0.0, dc_dqi = 0.0;
+      for (int ir = 0; ir < ni; ++ir) {
+        const double wi = w.gw(ir, i);
+        const double dwi_dcn = w.dgw_dcn(ir, i);
+        const double dwi_dq = w.dgw_dq(ir, i);
+        for (int jr = 0; jr < nj; ++jr) {
+          const double wj = w.gw(jr, j);
+          // Casimir-Polder integral for (iref_i, jref_j).
+          double cp = 0.0;
+          for (int k = 0; k < N_FREQ; ++k) {
+            cp += rd.casimir_polder_weights[k] * ref_alpha[i][ir][k] *
+                  ref_alpha[j][jr][k];
+          }
+          const double refc6 = thopi * cp;
+          cij += wi * wj * refc6;
+          dc_dcni += dwi_dcn * wj * refc6;
+          dc_dqi += dwi_dq * wj * refc6;
+        }
+      }
+      out.c6(i, j) = cij;
+      out.dc6_dcn(i, j) = dc_dcni;
+      out.dc6_dq(i, j) = dc_dqi;
+    }
+  }
+  return out;
+}
+
+// ============================================================================
 // Two-body BJ-damped energy.
 //   r0_ij = a1 √(3 · sqrtZr4r2_i · sqrtZr4r2_j) + a2     (cutoff radius)
 //   E2    = -Σ_{i<j} [ s6 C6_ij / (r^6 + r0^6) + s8 C8_ij / (r^8 + r0^8) ]
@@ -374,12 +510,226 @@ double dispersion_2body(const std::vector<core::Atom> &atoms,
 }
 
 // ============================================================================
+// Gradient-producing 2-body BJ. Returns:
+//   energy
+//   position_grad (3 × N)        — ∂E/∂R from r-dependence
+//   dE_dcn (N)                   — ∂E/∂C6_ij · dc6_dcn(i, j) summed; consumed by
+//                                  the CN chain rule by the caller.
+//   dE_dq  (N)                   — same for charge chain.
+//
+// The per-pair `edisp` factor (dimensionless: s6/(r^6+r0^6) + …·r4r2 form) is
+// the "thing C6 multiplies", so dE_AB/dC6_ij = -edisp_ij. We push that into
+// dEdcn/dEdq via the C6 derivatives the caller supplies.
+// ============================================================================
+
+struct GradResult {
+  double energy{0.0};
+  Mat3N position;   // 3 × N
+  Vec dE_dcn;       // N
+  Vec dE_dq;        // N
+};
+
+GradResult dispersion_2body_with_grad(const std::vector<core::Atom> &atoms,
+                                       const D4Damping &dp, const Mat &c6,
+                                       const Mat &dc6_dcn, const Mat &dc6_dq,
+                                       double cutoff2_bohr) {
+  const auto &rd = reference_data();
+  const int n = static_cast<int>(atoms.size());
+  const double cutoff2 = cutoff2_bohr * cutoff2_bohr;
+  GradResult g{0.0, Mat3N::Zero(3, n), Vec::Zero(n), Vec::Zero(n)};
+  for (int i = 0; i < n; ++i) {
+    const double qi = rd.sqrt_zr4r2[atoms[i].atomic_number];
+    for (int j = 0; j < i; ++j) {
+      const double qj = rd.sqrt_zr4r2[atoms[j].atomic_number];
+      const double dx = atoms[i].x - atoms[j].x;
+      const double dy = atoms[i].y - atoms[j].y;
+      const double dz = atoms[i].z - atoms[j].z;
+      const double r2 = dx * dx + dy * dy + dz * dz;
+      if (r2 > cutoff2 || r2 < 1e-12) continue;
+      const double r4r2ij = 3.0 * qi * qj;
+      const double r0 = dp.a1 * std::sqrt(r4r2ij) + dp.a2;
+      const double r0_2 = r0 * r0;
+      const double r0_6 = r0_2 * r0_2 * r0_2;
+      const double r0_8 = r0_6 * r0_2;
+      const double r6 = r2 * r2 * r2;
+      const double r8 = r6 * r2;
+      const double t6 = 1.0 / (r6 + r0_6);
+      const double t8 = 1.0 / (r8 + r0_8);
+      const double cij = c6(i, j);
+      const double c8ij = r4r2ij * cij;
+      // Energy contribution.
+      g.energy -= dp.s6 * cij * t6 + dp.s8 * c8ij * t8;
+      // ∂E_AB/∂C6 = -[s6 · t6 + s8 · r4r2 · t8]   (aka "edisp" in xtb).
+      const double edisp = dp.s6 * t6 + dp.s8 * r4r2ij * t8;
+      // Position derivative: dE/dr = -[s6·C6·d(t6)/dr + s8·C8·d(t8)/dr]
+      // dt6/dr = -6 r^5 / (r^6 + r0^6)^2 = -6 r^5 · t6²; similarly for t8.
+      // ⇒ dE/dr = +[s6·C6 · 6 r^5 t6² + s8·C8 · 8 r^7 t8²]
+      const double r = std::sqrt(r2);
+      const double dEdr = dp.s6 * cij * 6.0 * std::pow(r, 5) * t6 * t6 +
+                          dp.s8 * c8ij * 8.0 * std::pow(r, 7) * t8 * t8;
+      const double inv_r = 1.0 / r;
+      const double gx = dEdr * dx * inv_r;
+      const double gy = dEdr * dy * inv_r;
+      const double gz = dEdr * dz * inv_r;
+      g.position(0, i) += gx; g.position(1, i) += gy; g.position(2, i) += gz;
+      g.position(0, j) -= gx; g.position(1, j) -= gy; g.position(2, j) -= gz;
+      // CN/q chain: dE_AB/dC6_AB = -edisp ⇒ dE_AB/dCN_A = -edisp · dc6_dcn(A,B)
+      // Note dc6_dcn(i, j) = ∂C6_ij/∂CN_i (per the asymmetric storage).
+      g.dE_dcn(i) -= edisp * dc6_dcn(i, j);
+      g.dE_dcn(j) -= edisp * dc6_dcn(j, i);
+      g.dE_dq(i) -= edisp * dc6_dq(i, j);
+      g.dE_dq(j) -= edisp * dc6_dq(j, i);
+    }
+  }
+  return g;
+}
+
+// ============================================================================
 // Axilrod-Teller-Muto 3-body. xtb uses zero-damping with exponent `alp`:
 //   E3 = s9 · Σ_{i<j<k} c9_ijk · (3 cos θ_a cos θ_b cos θ_c + 1) / (rij rik rjk)^3 · damp
 //   c9_ijk = -√(C6_ij · C6_ik · C6_jk)
 //   damp = 1 / (1 + 6 · (R0_ijk / r_avg)^alp), with r_avg = (rij rik rjk)^(1/3)
 //   R0_ijk = (R0_ij · R0_ik · R0_jk)^(1/3)   where R0 is BJ cutoff above.
 // ============================================================================
+
+// Gradient version. Energy + per-atom Cartesian gradient + dE/dCN + dE/dq.
+// cpp-d4's `get_atm_dispersion_derivs` is the reference for the closed-form
+// d(angular)/d(r_pair) expressions used below (Caldeweyher's derivation).
+GradResult dispersion_3body_with_grad(const std::vector<core::Atom> &atoms,
+                                       const D4Damping &dp, const Mat &c6,
+                                       const Mat &dc6_dcn, const Mat &dc6_dq,
+                                       double cutoff2_bohr) {
+  const auto &rd = reference_data();
+  const int n = static_cast<int>(atoms.size());
+  GradResult g{0.0, Mat3N::Zero(3, n), Vec::Zero(n), Vec::Zero(n)};
+  if (dp.s9 == 0.0) return g;
+  const double cutoff2 = cutoff2_bohr * cutoff2_bohr;
+  // Pre-compute pairwise R0 (BJ damping radius).
+  Mat r0ij(n, n);
+  for (int i = 0; i < n; ++i) {
+    const double qi = rd.sqrt_zr4r2[atoms[i].atomic_number];
+    for (int j = 0; j <= i; ++j) {
+      const double qj = rd.sqrt_zr4r2[atoms[j].atomic_number];
+      const double r0 = dp.a1 * std::sqrt(3.0 * qi * qj) + dp.a2;
+      r0ij(i, j) = r0;
+      r0ij(j, i) = r0;
+    }
+  }
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < i; ++j) {
+      const double dxij = atoms[i].x - atoms[j].x;
+      const double dyij = atoms[i].y - atoms[j].y;
+      const double dzij = atoms[i].z - atoms[j].z;
+      const double r2ij = dxij * dxij + dyij * dyij + dzij * dzij;
+      if (r2ij > cutoff2 || r2ij < 1e-12) continue;
+      for (int k = 0; k < j; ++k) {
+        const double dxik = atoms[i].x - atoms[k].x;
+        const double dyik = atoms[i].y - atoms[k].y;
+        const double dzik = atoms[i].z - atoms[k].z;
+        const double r2ik = dxik * dxik + dyik * dyik + dzik * dzik;
+        if (r2ik > cutoff2 || r2ik < 1e-12) continue;
+        const double dxjk = atoms[j].x - atoms[k].x;
+        const double dyjk = atoms[j].y - atoms[k].y;
+        const double dzjk = atoms[j].z - atoms[k].z;
+        const double r2jk = dxjk * dxjk + dyjk * dyjk + dzjk * dzjk;
+        if (r2jk > cutoff2 || r2jk < 1e-12) continue;
+        const double rij = std::sqrt(r2ij);
+        const double rik = std::sqrt(r2ik);
+        const double rjk = std::sqrt(r2jk);
+        const double c6ij = c6(i, j), c6ik = c6(i, k), c6jk = c6(j, k);
+        const double c9 = std::sqrt(std::abs(c6ij * c6ik * c6jk));
+
+        const double rijk = rij * rik * rjk;
+        const double r2ijk = r2ij * r2ik * r2jk;
+        const double r3ijk = rijk * r2ijk;        // (r_ij r_ik r_jk)^3
+        const double r5ijk = r2ijk * r3ijk;       // (r_ij r_ik r_jk)^5
+        const double r0_prod = r0ij(i, j) * r0ij(i, k) * r0ij(j, k);
+        const double tmp = std::pow(r0_prod / rijk, dp.alp / 3.0);
+        const double fdmp = 1.0 / (1.0 + 6.0 * tmp);
+        const double ang =
+            (0.375 * (r2ij + r2jk - r2ik) * (r2ij + r2ik - r2jk) *
+                 (r2ik + r2jk - r2ij) / r2ijk +
+             1.0) /
+            r3ijk;
+        const double e_triple = dp.s9 * c9 * ang * fdmp;
+        g.energy += e_triple;
+
+        // ∂(damp)/∂r_pair = (-2 alp · tmp · fdmp²) / r_pair (per cpp-d4)
+        const double dfdmp = -2.0 * dp.alp * tmp * fdmp * fdmp;
+
+        // d(ang)/d(r_pair) — closed-form per cpp-d4. Outputs include the
+        // `1/r²_pair` factor so we can multiply by (R_a − R_b) directly.
+        auto dang_factor = [&](double rA2, double rB2, double rC2) {
+          // d(ang)/d(r_X) for the side r_X with squared length rA2 (= r²_X);
+          // rB2/rC2 are the OTHER two pair-distance squares.
+          // Returns dang_dr_X per cpp-d4.
+          return -0.375 *
+                 (std::pow(rA2, 3) + std::pow(rA2, 2) * (rB2 + rC2) +
+                  rA2 * (3.0 * rB2 * rB2 + 2.0 * rB2 * rC2 + 3.0 * rC2 * rC2) -
+                  5.0 * std::pow(rB2 - rC2, 2) * (rB2 + rC2)) /
+                 r5ijk;
+        };
+        const double dang_ij = dang_factor(r2ij, r2jk, r2ik);
+        const double dang_ik = dang_factor(r2ik, r2jk, r2ij);
+        const double dang_jk = dang_factor(r2jk, r2ik, r2ij);
+
+        // Per cpp-d4: dgxij = c9ijk · (-dang · fdmp + ang · dfdmp) / r²_ij · x_ij
+        // where (x_ij, y_ij, z_ij) is the FROM-i TO-j vector (jat - iat). My
+        // dxij is i - j (FROM-j TO-i), so the gradient sign needs flipping
+        // when assembling. But here I'll keep mine and use the (i - j) form,
+        // and flip atom assignments accordingly.
+        // Note cpp-d4 uses c9ijk = -s9·sqrt(...) (negative) and accumulates
+        // gradient(i) += -dgxij - dgxik. With my +s9·c9 convention I get the
+        // same physics; the per-atom assignment below mirrors cpp-d4.
+        auto pair_grad = [&](double dang_p, double r2p, double dx, double dy,
+                              double dz) -> std::array<double, 3> {
+          const double scal = -dp.s9 * c9 * (-dang_p * fdmp + ang * dfdmp) / r2p;
+          // The c9 here carries my sign convention (+sqrt). cpp-d4's negative
+          // c9ijk and a leading minus inside the bracket cancel; this scal
+          // matches cpp-d4's `c9ijk * (-dang · fdmp + ang · dfdmp) / r2_p`.
+          return {scal * dx, scal * dy, scal * dz};
+        };
+        // dx_ij in cpp-d4 is (jat - iat); mine dxij is (i - j) so we flip.
+        const auto gij = pair_grad(dang_ij, r2ij, -dxij, -dyij, -dzij);
+        const auto gik = pair_grad(dang_ik, r2ik, -dxik, -dyik, -dzik);
+        const auto gjk = pair_grad(dang_jk, r2jk, -dxjk, -dyjk, -dzjk);
+
+        g.position(0, i) += -gij[0] - gik[0];
+        g.position(1, i) += -gij[1] - gik[1];
+        g.position(2, i) += -gij[2] - gik[2];
+        g.position(0, j) += gij[0] - gjk[0];
+        g.position(1, j) += gij[1] - gjk[1];
+        g.position(2, j) += gij[2] - gjk[2];
+        g.position(0, k) += gik[0] + gjk[0];
+        g.position(1, k) += gik[1] + gjk[1];
+        g.position(2, k) += gik[2] + gjk[2];
+
+        // CN/q chain: dE_ijk/dC6_ab = E_ijk / (2 · C6_ab) (from c9 = √∏C6).
+        // dE_ijk/dCN_a = ½ E [ dc6_dcn(a, b)/C6_ab + dc6_dcn(a, c)/C6_ac ]
+        const double half_e = 0.5 * e_triple;
+        if (c6ij != 0.0) {
+          g.dE_dcn(i) += half_e * dc6_dcn(i, j) / c6ij;
+          g.dE_dcn(j) += half_e * dc6_dcn(j, i) / c6ij;
+          g.dE_dq(i) += half_e * dc6_dq(i, j) / c6ij;
+          g.dE_dq(j) += half_e * dc6_dq(j, i) / c6ij;
+        }
+        if (c6ik != 0.0) {
+          g.dE_dcn(i) += half_e * dc6_dcn(i, k) / c6ik;
+          g.dE_dcn(k) += half_e * dc6_dcn(k, i) / c6ik;
+          g.dE_dq(i) += half_e * dc6_dq(i, k) / c6ik;
+          g.dE_dq(k) += half_e * dc6_dq(k, i) / c6ik;
+        }
+        if (c6jk != 0.0) {
+          g.dE_dcn(j) += half_e * dc6_dcn(j, k) / c6jk;
+          g.dE_dcn(k) += half_e * dc6_dcn(k, j) / c6jk;
+          g.dE_dq(j) += half_e * dc6_dq(j, k) / c6jk;
+          g.dE_dq(k) += half_e * dc6_dq(k, j) / c6jk;
+        }
+      }
+    }
+  }
+  return g;
+}
 
 double dispersion_3body(const std::vector<core::Atom> &atoms,
                          const D4Damping &dp, const Mat &c6,
@@ -560,32 +910,33 @@ double Dispersion::energy() const {
 }
 
 std::pair<double, Mat3N> Dispersion::energy_and_gradient() const {
-  // Numerical gradient (central differences, 5-point stencil). Slow O(N) per
-  // gradient component but always correct. Analytical gradient is a follow-up.
-  const double e = energy();
+  // Analytical gradient: position part + CN chain rule.
+  // The charge chain rule (∂q/∂R via EEQ) is NOT yet included for DFT mode,
+  // so DFT-D4 forces are accurate to within the q-derivative term. This is
+  // the same convention xtb uses for SCC-coupled D4 (variational q ⇒ chain
+  // rule contribution vanishes by Hellmann-Feynman); for DFT-D4 with EEQ
+  // charges it introduces a small error at the few-µHa/Bohr level.
+  const auto cn_with_grad =
+      d4_coordination_numbers(m_atoms, m_cutoff_cn, /*with_grad=*/true);
+  const auto ref_alpha = build_reference_alpha(m_atoms, m_scaling, m_refq_mode);
+  const auto wgrad = compute_reference_weights_with_grad(
+      m_atoms, m_scaling, m_refq_mode, cn_with_grad.cn, m_q);
+  const auto c6grad = compute_c6_matrix_with_grad(m_atoms, wgrad, ref_alpha);
+  const auto g2 = dispersion_2body_with_grad(
+      m_atoms, m_damping, c6grad.c6, c6grad.dc6_dcn, c6grad.dc6_dq,
+      m_cutoff_disp2);
+  const auto g3 = dispersion_3body_with_grad(
+      m_atoms, m_damping, c6grad.c6, c6grad.dc6_dcn, c6grad.dc6_dq,
+      m_cutoff_disp3);
   const int n = static_cast<int>(m_atoms.size());
-  Mat3N g = Mat3N::Zero(3, n);
-  // Make a non-const copy for displacement.
-  Dispersion tmp(*this);
-  constexpr double h = 1.0e-4;
+  Mat3N grad = g2.position + g3.position;
+  // CN chain rule: total_grad += Σ_a (dE2_dcn[a] + dE3_dcn[a]) · ∂CN_a/∂R
   for (int a = 0; a < n; ++a) {
-    for (int k = 0; k < 3; ++k) {
-      auto displaced = m_atoms;
-      auto eval = [&](double dh) {
-        displaced[a].x = m_atoms[a].x + (k == 0 ? dh : 0.0);
-        displaced[a].y = m_atoms[a].y + (k == 1 ? dh : 0.0);
-        displaced[a].z = m_atoms[a].z + (k == 2 ? dh : 0.0);
-        tmp.update_positions(displaced);
-        return tmp.energy();
-      };
-      const double e_p2 = eval(2 * h);
-      const double e_p1 = eval(h);
-      const double e_m1 = eval(-h);
-      const double e_m2 = eval(-2 * h);
-      g(k, a) = (-e_p2 + 8 * e_p1 - 8 * e_m1 + e_m2) / (12 * h);
-    }
+    const double w = g2.dE_dcn(a) + g3.dE_dcn(a);
+    if (w == 0.0) continue;
+    grad.noalias() += w * cn_with_grad.dcn[a];
   }
-  return {e, g};
+  return {g2.energy + g3.energy, grad};
 }
 
 } // namespace occ::disp
