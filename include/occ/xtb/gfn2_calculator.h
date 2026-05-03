@@ -51,6 +51,9 @@ public:
   inline const Vec &coordination_numbers() const { return m_cn; }
   inline double repulsion_energy() const { return m_e_rep; }
   inline const std::vector<int> &bf_to_atom() const { return m_bf_to_atom; }
+  // Mutable access to the integral engine — needed by the analytical gradient
+  // path which calls `one_electron_operator_grad(overlap)`.
+  inline qm::IntegralEngine &engine() { return m_engine; }
 
 private:
   void recompute_geometry_caches();

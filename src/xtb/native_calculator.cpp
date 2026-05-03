@@ -1,7 +1,12 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
+#include <occ/disp/d4.h>
+#include <occ/xtb/coordination.h>
+#include <occ/xtb/gamma.h>
 #include <occ/xtb/gfn2_calculator.h>
+#include <occ/xtb/h0_gradient.h>
 #include <occ/xtb/native_calculator.h>
+#include <occ/xtb/repulsion.h>
 #include <stdexcept>
 
 namespace occ::xtb {
@@ -138,9 +143,97 @@ Mat3N NativeCalculator::compute_gradient_numerical(double step) {
   return grad;
 }
 
+Mat3N NativeCalculator::compute_gradient_analytical() {
+  // Run a charge-only SCC to get a converged density consistent with the
+  // pieces we differentiate analytically. Multipole anisotropic terms are
+  // NOT in this energy expression — see header docstring.
+  m_opts.total_charge = m_charge;
+  SccOptions opts = m_opts;
+  // Dispersion is included in the analytical pipeline via native D4 below;
+  // disable it inside the SCC so we don't double-count the energy and so we
+  // get the *raw* SCC charges for the dispersion piece.
+  const bool wanted_disp = opts.include_dispersion;
+  opts.include_dispersion = false;
+  m_last_result = m_calc->run_charge_only(opts);
+  if (!m_last_result.converged) {
+    throw std::runtime_error(
+        "NativeCalculator::compute_gradient_analytical: charge-only SCC did "
+        "not converge");
+  }
+
+  // Build the energy-weighted density W = 2 Σ_i^occ ε_i C_i C_i^T
+  // (closed shell — sum over both spins folded in via the factor 2).
+  const auto &C = m_last_result.orbital_coefficients;
+  const auto &eps = m_last_result.orbital_energies;
+  const int n_occ = static_cast<int>(eps.size()) / 2; // closed-shell SCC
+  Mat W = Mat::Zero(C.rows(), C.rows());
+  for (int i = 0; i < n_occ; ++i) {
+    W.noalias() += 2.0 * eps(i) * C.col(i) * C.col(i).transpose();
+  }
+
+  // Coordination numbers + ∂CN/∂R for the H0+self-energy chain.
+  auto cn_g = gfn_coordination_numbers_with_gradient(m_calc->atoms());
+
+  // Shell shift potential V = J·qsh + Γ_3 q² (matches the SCC's F = H0 - V).
+  Vec V_shell = m_calc->gamma() * m_last_result.shell_charges;
+  const auto &shells = m_calc->shell_table();
+  for (Eigen::Index s = 0; s < V_shell.size(); ++s) {
+    V_shell(s) +=
+        shells.third_order(s) * m_last_result.shell_charges(s) *
+        m_last_result.shell_charges(s);
+  }
+
+  // (1) H0 + Pulay + V_q-via-S + ∂Π/∂R + dE/dCN chain through self-energy.
+  Mat3N grad = h0_scc_gradient(
+      m_calc->atoms(), m_calc->parameters(), shells, m_calc->basis(),
+      m_calc->engine(), m_last_result.overlap_matrix,
+      m_last_result.density_matrix, W, V_shell, cn_g.cn, cn_g.dcn);
+
+  // (2) ½ q^T (∂γ/∂R) q  (analytical Klopman-Ohno γ derivative).
+  grad += klopman_ohno_gamma_energy_gradient(
+      m_calc->atoms(), shells, m_calc->parameters(), m_calc->gamma(),
+      m_last_result.shell_charges);
+
+  // (3) Repulsion derivative (closed form).
+  auto rep = repulsion_energy_and_gradient(m_calc->atoms(), m_calc->parameters());
+  grad += rep.gradient;
+
+  // (4) Native D4 dispersion. SCC-coupled (atomic Mulliken charges as fixed
+  // input — variational q ⇒ ∂q/∂R chain vanishes by Hellmann-Feynman; this
+  // matches xtb's d4_gradient convention).
+  double e_disp = 0.0;
+  if (wanted_disp) {
+    const auto &g = m_calc->parameters().globals();
+    occ::disp::Dispersion d4(m_calc->atoms());
+    d4.set_damping(occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
+    Vec atom_q = Vec::Zero(m_calc->atoms().size());
+    for (Eigen::Index s = 0; s < m_last_result.shell_charges.size(); ++s) {
+      atom_q(shells.atom[s]) += m_last_result.shell_charges(s);
+    }
+    d4.set_charges(atom_q);
+    auto [ed, gd] = d4.energy_and_gradient();
+    e_disp = ed;
+    grad += gd;
+  }
+
+  // Update last_result so callers see the energy that matches the gradient
+  // (charge-only SCC + native dispersion).
+  m_last_result.dispersion_energy = e_disp;
+  m_last_result.total_energy = m_last_result.scc_energy +
+                                m_last_result.repulsion_energy + e_disp;
+  occ::log::debug("analytical gradient: scc={:.10f} rep={:.10f} disp={:.10f} total={:.10f}",
+                   m_last_result.scc_energy, m_last_result.repulsion_energy,
+                   e_disp, m_last_result.total_energy);
+  return grad;
+}
+
 std::pair<double, Mat3N>
-NativeCalculator::compute_energy_and_gradient(double step) {
-  Mat3N g = compute_gradient_numerical(step);
+NativeCalculator::compute_energy_and_gradient(bool numerical, double step) {
+  if (numerical) {
+    Mat3N g = compute_gradient_numerical(step);
+    return {m_last_result.total_energy, g};
+  }
+  Mat3N g = compute_gradient_analytical();
   return {m_last_result.total_energy, g};
 }
 

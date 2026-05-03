@@ -131,43 +131,69 @@ User requested **analytical** gradients (not numerical). Numerical kept only as 
   SCC iteration switched to charge DIIS (water: 16→11 iters; rubrene: was
   diverging → 19 iters).
 
-### Pending — concrete plan for next session (Phase 5)
+### Done (continued)
 
-The SCF gradient backbone. For an SCC at convergence:
+- **5d-partial — γ matrix gradient.** `klopman_ohno_gamma_energy_gradient`
+  in `src/xtb/gamma.cpp` covers the explicit ∂(½ q^T γ q)/∂R term and is
+  validated against FD to 1e-9. CAMM and anisotropic gradient pieces are
+  still pending — see "Pending" below.
 
-    dE/dR = Σ_μν P_μν · (dH0_μν/dR)        (one-electron, density-weighted)
-          - Σ_μν W_μν · (dS_μν/dR)         (Pulay term)
-          + ½ q^T (dγ/dR) q                (electrostatic explicit deriv — Phase 5d)
-          + d(third-order)/dR              (zero — Γ are geometry-independent)
-          + d(aniso multipole)/dR          (Phase 5d)
-          + d(repulsion)/dR + d(disp)/dR   (Phase 5b — done)
+- **NativeCalculator::compute_gradient_analytical()** assembles the
+  analytical pieces into a 3×N gradient. Runs charge-only SCC (multipoles
+  off) + native D4 dispersion. Returns the energy that matches the
+  gradient (charge-only SCC + repulsion + dispersion) so opt uses a
+  consistent (E, ∂E) pair. Self-consistency vs FD: ≤ 5×10⁻⁵ Ha/Bohr; gap
+  is the missing CPSCF response of D4 through the SCC charges (xtb has the
+  same gap and accepts it as part of the SCC-coupled-D4 convention).
 
-W = mo.energy_weighted_density_matrix() is already in occ::qm::MolecularOrbitals.
+- **GFN2 wired into `optimization_step_driver`.** `MethodKind::GFN2`
+  branch in `src/driver/geometry_optimization.cpp` calls
+  NativeCalculator's analytical gradient and converts to Hartree/Å.
+  `occ scf --driver opt water.xyz gfn2` runs end-to-end and converges in
+  4 steps (water from a slightly displaced geometry).
 
-For dH0_μν/dR specifically, three contributions chain in:
-  (a) Direct ∂H0/∂R via ∂S/∂R (libcint provides via `IntegralEngine::one_electron_operator_grad(Op::overlap)` → `MatTriple`).
-  (b) ∂H0/∂R via the distance polynomial Π(R_AB) — analytic, depends on shellPoly coefficients and atomicRad.
-  (c) ∂H0/∂R via ∂(self_energy_with_CN_shift)/∂R = -kCN · ∂CN/∂R  (use 5b's `dcn`).
+### Pending — Phase 5
 
-Files to create/modify:
-  - `include/occ/xtb/h0_gradient.h` / `src/xtb/h0_gradient.cpp`
-  - Test: drive a numerical-vs-analytical comparison on water (3-atom case) using compute_gradient_numerical as oracle.
-
-**5d — γ matrix + CAMM + anisotropic gradients** (~700 lines, 2-3 days)
-- ∂γ_ij/∂R for the Klopman-Ohno function (closed form): `γ = (R^α + 1/η^α)^(-1/α)`; chain-rule with α = globals.alphaj.
-- ∂(CAMM dipole)/∂R: needs `IntegralEngine::one_electron_operator_grad(Op::dipole)` returning ∂dipole_int/∂R, plus ∂S/∂R chain.
+**5d-rest — CAMM + anisotropic multipole gradients** (~700 lines)
+Needed for full multipoles-on analytical gradient (currently the analytical
+path uses charge-only SCC for consistency, ~1 mHa energy gap vs full GFN2
+on water). Components:
+- ∂(CAMM dipole)/∂R: needs `IntegralEngine::one_electron_operator_grad(Op::dipole)`
+  returning ∂dipole_int/∂R, plus ∂S/∂R chain.
 - ∂(CAMM quadrupole)/∂R: same with `Op::quadrupole`.
-- ∂(aniso ES)/∂R: chain through ∂(gab3, gab5)/∂R → ∂(radcn)/∂R → ∂CN/∂R, plus the explicit ∂(dipole·dipole interaction)/∂R kernels.
+- ∂(aniso ES + polariz)/∂R: chain through ∂(gab3, gab5)/∂R → ∂(radcn)/∂R
+  → ∂CN/∂R, plus the explicit ∂(dipole·dipole interaction)/∂R kernels.
 
-**5e — Hessian + frequencies** (~200 lines, 1 day)
-Once 5b–5d are wrapped: plug NativeCalculator into `HessianEvaluator<Proc>` template (finite-diff of analytical gradient, 0.005 Bohr step + acoustic sum rule). Then mass-weighted diagonalization → frequencies via `core::VibrationalModes`. Wire into `occ freq -m gfn2`.
+**5e — Hessian + frequencies** (~200 lines)
+Plug NativeCalculator into `HessianEvaluator<Proc>` template (finite-diff
+of analytical gradient, 0.005 Bohr step + acoustic sum rule). Then
+mass-weighted diagonalization → frequencies via `core::VibrationalModes`.
+Wire into `occ freq -m gfn2`.
 
-Once 5c is done, also:
-- Wire GFN2 case into `optimization_step_driver` so `occ opt -m gfn2 input.xyz` works.
-- Convert returned Mat3N from Ha/Bohr → Ha/Angstrom for `BernyOptimizer::update`.
+### Known limitations / follow-ups
 
-### Estimated effort
-~1500-2000 new lines, 5-7 days of focused work. Validation at each phase via finite-difference of total energy.
+- **CPSCF for D4 through Mulliken charges**: The analytical gradient skips
+  the ∂E_disp/∂q · ∂q_SCC/∂R chain — for SCC-coupled D4 this term needs
+  the coupled-perturbed SCF response, same gap as xtb. ~5–10 µHa/Bohr on
+  water. Negligible at typical opt tolerances but worth doing if we add
+  CPSCF for other pieces.
+
+- **xyz-file unit detection**: OCC reads .xyz strictly as Å, while xtb
+  auto-detects Bohr when values are large (e.g. urea was distributed in
+  Bohr; OCC's opt then fails with `trust radius too small` because the
+  geometry is unphysical when interpreted as Å). Either add Bohr detection
+  to `occ::io::xyz` (e.g. by atomic-distance heuristic) or document that
+  inputs must be in Å.
+
+- **Opt slowness**: A full opt step does (charge-only SCC) × (~10 iters) +
+  one analytical gradient. Each SCC iteration rebuilds H + diagonalises;
+  the integral matrices are cached. The dominant per-step cost is SCC
+  iteration count × O(nbf³) eigensolve. For a tight loop over many opt
+  steps the obvious wins are: (a) reuse the previous step's qsh as the
+  initial guess (currently we restart from zero charges), (b) cache the
+  D4 reference α-tables across calls (currently rebuilt every gradient),
+  (c) avoid reconstructing the integral engine in `Gfn2Calculator::
+  update_positions` — recompute only the integral matrices.
 
 ---
 Out of scope for v1: GFN1/GFN0 (parameter file is structured to allow GFN1 later), solvation.

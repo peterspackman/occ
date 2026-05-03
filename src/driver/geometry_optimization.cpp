@@ -12,6 +12,7 @@
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/xdm/xdm.h>
+#include <occ/xtb/native_calculator.h>
 
 using occ::core::Molecule;
 using occ::dft::DFT;
@@ -191,6 +192,27 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
   return {wfn, gradient};
 }
 
+// Single GFN2-xTB optimization step. Mirrors the run_method_for_optimization
+// shape: returns (Wavefunction, gradient in Hartree/Angstrom). The
+// Wavefunction is a thin wrapper built from NativeCalculator's converged
+// state — enough to feed back into BernyOptimizer and to produce the same
+// post-step printout as the SCF case.
+std::pair<Wavefunction, Mat3N>
+run_gfn2_for_optimization(const Molecule &m, const OccInput &config) {
+  occ::xtb::NativeCalculator calc(m);
+  calc.set_charge(config.electronic.charge);
+  // single_point_energy() will be implicitly called by the gradient method;
+  // use the analytical path for the gradient.
+  auto [e, g] = calc.compute_energy_and_gradient(/*numerical=*/false);
+  log::info("GFN2-xTB energy:                {: 20.12f} Ha", e);
+  log::info("GFN2-xTB gradient norm:         {: 20.12f} Ha/Bohr", g.norm());
+
+  Wavefunction wfn = calc.to_wavefunction();
+  // Convert to Hartree/Angstrom for the optimizer.
+  g /= occ::units::ANGSTROM_TO_BOHR;
+  return {wfn, g};
+}
+
 std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
                                                         const Molecule &m,
                                                         const Wavefunction *prev_wfn = nullptr,
@@ -236,6 +258,9 @@ std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
       throw std::runtime_error(
           "Not implemented: MP2 gradients for geometry optimization");
       break;
+    }
+    case MethodKind::GFN2: {
+      return run_gfn2_for_optimization(m, config);
     }
     }
   } else {
