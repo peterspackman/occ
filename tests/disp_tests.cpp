@@ -241,5 +241,37 @@ TEST_CASE("native d3-bj dispersion", "[disp][native][d3]") {
     REQUIRE(grad.rows() == 3);
     REQUIRE(grad.cols() == 12);
     REQUIRE(std::isfinite(grad.sum()));
+    // Translation invariance.
+    REQUIRE(grad.rowwise().sum().norm() < 1e-10);
+  }
+
+  SECTION("water pbe analytical gradient vs FD") {
+    Molecule m = water_molecule();
+    auto atoms = m.atoms();
+    DispersionD3 d3(atoms);
+    d3.set_functional("pbe");
+    auto [e, grad] = d3.energy_and_gradient();
+
+    occ::Mat3N fd = occ::Mat3N::Zero(3, atoms.size());
+    constexpr double h = 1e-4;
+    for (std::size_t a = 0; a < atoms.size(); ++a) {
+      for (int k = 0; k < 3; ++k) {
+        auto eval = [&](double dh) {
+          auto a2 = atoms;
+          if (k == 0) a2[a].x += dh; else if (k == 1) a2[a].y += dh;
+          else a2[a].z += dh;
+          d3.update_positions(a2);
+          return d3.energy();
+        };
+        const double e_p2 = eval(2 * h);
+        const double e_p1 = eval(h);
+        const double e_m1 = eval(-h);
+        const double e_m2 = eval(-2 * h);
+        fd(k, a) = (-e_p2 + 8 * e_p1 - 8 * e_m1 + e_m2) / (12 * h);
+      }
+    }
+    INFO("analytical:\n" << grad);
+    INFO("finite-diff:\n" << fd);
+    REQUIRE((grad - fd).cwiseAbs().maxCoeff() < 1e-9);
   }
 }
