@@ -35,4 +35,10 @@ Mat klopman_ohno_gamma(const std::vector<core::Atom> &atoms,
                        const ShellTable &shells,
                        const Gfn2Parameters &params);
 
+// Analytical gradient of ½ q^T γ q with respect to nuclear positions.
+// Only cross-atom γ entries contribute (same-atom γ has no R-dependence).
+Mat3N klopman_ohno_gamma_energy_gradient(
+    const std::vector<core::Atom> &atoms, const ShellTable &shells,
+    const Gfn2Parameters &params, const Mat &gamma_matrix, const Vec &qsh);
+
 } // namespace occ::xtb

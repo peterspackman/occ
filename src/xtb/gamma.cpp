@@ -97,4 +97,51 @@ Mat klopman_ohno_gamma(const std::vector<core::Atom> &atoms,
   return J;
 }
 
+Mat3N klopman_ohno_gamma_energy_gradient(
+    const std::vector<core::Atom> &atoms, const ShellTable &shells,
+    const Gfn2Parameters &params, const Mat & /*gamma_matrix*/,
+    const Vec &qsh) {
+  // d/dR_C ( ½ Σ_ij q_i q_j γ_ij ).
+  // For shells i on atom A, j on atom B, A ≠ B:
+  //   γ_ij(R) = (R^α + g_ij^{-α})^{-1/α}
+  //   dγ/dR  = -R^(α-1) · γ^(α+1)
+  //   dγ/dr_A,k = (dγ/dR)·(r_A − r_B)_k / R = -R^(α-2) · γ^(α+1) · (r_A − r_B)_k
+  // The sum below counts each (i,j) ordering once; the ½ in ½ q^T γ q is
+  // exactly cancelled by the double-summation, so we omit it here.
+  const double g_exp = params.globals().alphaj;
+
+  const int n_atoms = static_cast<int>(atoms.size());
+  const int n_shells = static_cast<int>(shells.atom.size());
+  Mat3N grad = Mat3N::Zero(3, n_atoms);
+
+  for (int i = 0; i < n_shells; ++i) {
+    const int Ai = shells.atom[i];
+    for (int j = 0; j < n_shells; ++j) {
+      const int Aj = shells.atom[j];
+      if (Ai == Aj) continue;
+      const double dx = atoms[Ai].x - atoms[Aj].x;
+      const double dy = atoms[Ai].y - atoms[Aj].y;
+      const double dz = atoms[Ai].z - atoms[Aj].z;
+      const double R2 = dx * dx + dy * dy + dz * dz;
+      const double R = std::sqrt(R2);
+      // Recompute γ to avoid relying on `gamma_matrix`'s internal layout
+      // matching what we expect; cheap.
+      const double gij = 0.5 * (shells.hardness(i) + shells.hardness(j));
+      const double r_to_g = std::pow(R, g_exp);
+      const double inv_g_to_g = std::pow(1.0 / gij, g_exp);
+      const double g_val = std::pow(r_to_g + inv_g_to_g, -1.0 / g_exp);
+      // dγ/dR = -R^(α-1) · γ^(α+1)
+      const double dgamma_dR = -std::pow(R, g_exp - 1.0) *
+                                std::pow(g_val, g_exp + 1.0);
+      const double scal = 0.5 * qsh(i) * qsh(j) * dgamma_dR / R;
+      grad(0, Ai) += scal * dx;
+      grad(1, Ai) += scal * dy;
+      grad(2, Ai) += scal * dz;
+      // The (j,i) iteration covers atom Aj with the opposite sign, so we
+      // do not need to push to Aj here.
+    }
+  }
+  return grad;
+}
+
 } // namespace occ::xtb

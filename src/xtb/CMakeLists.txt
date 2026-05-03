@@ -8,6 +8,7 @@ add_library(occ_xtb
     "${CMAKE_CURRENT_SOURCE_DIR}/repulsion.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gamma.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/h0.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/h0_gradient.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scc.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_ints.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/camm.cpp"
