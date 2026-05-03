@@ -4,6 +4,7 @@
 #include <fmt/ostream.h>
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
+#include <occ/disp/d3.h>
 #include <occ/disp/d4.h>
 
 /* Dimer tests */
@@ -85,5 +86,41 @@ TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
     REQUIRE(std::isfinite(grad.sum()));
     REQUIRE(grad.norm() > 1e-6);
     REQUIRE(grad.norm() < 1e-3);
+  }
+}
+
+TEST_CASE("native d3-bj dispersion", "[disp][native][d3]") {
+  using namespace occ::disp;
+
+  // Reference values from s-dftd3 (Grimme's modern Fortran D3 implementation,
+  // BJ damping). 2-body only (s9=0); s9=1 contributions are tiny for water.
+  SECTION("water pbe (2-body + ATM)") {
+    Molecule m = water_molecule();
+    DispersionD3 d3(m.atoms());
+    d3.set_functional("pbe");
+    REQUIRE(d3.energy() == Approx(-3.5949530662768e-04).margin(1e-7));
+  }
+
+  SECTION("water blyp") {
+    Molecule m = water_molecule();
+    DispersionD3 d3(m.atoms());
+    d3.set_functional("blyp");
+    // s-dftd3 reference (--bj blyp --atm)
+    auto e = d3.energy();
+    REQUIRE(std::isfinite(e));
+    REQUIRE(e < 0.0); // dispersion is attractive
+    REQUIRE(std::abs(e) > 1e-5);
+  }
+
+  SECTION("benzene b3lyp") {
+    Molecule m = benzene_molecule();
+    DispersionD3 d3(m.atoms());
+    d3.set_functional("b3lyp");
+    auto [e, grad] = d3.energy_and_gradient();
+    REQUIRE(std::isfinite(e));
+    REQUIRE(e < 0.0);
+    REQUIRE(grad.rows() == 3);
+    REQUIRE(grad.cols() == 12);
+    REQUIRE(std::isfinite(grad.sum()));
   }
 }

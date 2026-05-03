@@ -1,4 +1,6 @@
 add_library(occ_disp
+    "${CMAKE_CURRENT_SOURCE_DIR}/d3.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/d3_data.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/d4.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/d4_data.cpp"
     ${OCC_DISP_INCLUDE_FILES}
