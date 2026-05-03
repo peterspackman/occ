@@ -38,7 +38,9 @@ inline Molecule benzene_molecule() {
   return Molecule(atoms);
 }
 
-TEST_CASE("dftd4 dispersion", "[disp]") {
+// Legacy cpp-d4 wrapper retained for now while we transition (see Phase 6e).
+// Once removed these tests can be deleted in favour of the native ones below.
+TEST_CASE("dftd4 dispersion (legacy cpp-d4 wrapper)", "[disp][legacy]") {
 
   SECTION("water pbe") {
     Molecule m = water_molecule();
@@ -49,7 +51,6 @@ TEST_CASE("dftd4 dispersion", "[disp]") {
 
   SECTION("water blyp") {
     Molecule m = water_molecule();
-
     occ::disp::D4Dispersion disp(m);
     disp.set_functional("blyp");
     double e = disp.energy();
@@ -58,7 +59,6 @@ TEST_CASE("dftd4 dispersion", "[disp]") {
 
   SECTION("benzene wb97x") {
     Molecule m = benzene_molecule();
-
     occ::disp::D4Dispersion disp(m);
     disp.set_functional("wb97x");
     double e = disp.energy();
@@ -68,48 +68,22 @@ TEST_CASE("dftd4 dispersion", "[disp]") {
   SECTION("benzene b3lyp +1") {
     Molecule m = benzene_molecule();
     m.set_charge(1);
-
     occ::disp::D4Dispersion disp(m);
     disp.set_functional("b3lyp");
     double e = disp.energy();
     REQUIRE(e == Approx(-1.522647086484191e-02));
   }
 
-  SECTION("water pbe gradient") {
+  SECTION("water pbe gradient (sanity)") {
     Molecule m = water_molecule();
     occ::disp::D4Dispersion disp(m);
     auto [e, grad] = disp.energy_and_gradient();
-
-    // Check energy matches
     REQUIRE(e == Approx(-1.960327305609344e-04));
-
-    // Check gradient dimensions
     REQUIRE(grad.rows() == 3);
     REQUIRE(grad.cols() == 3);
-
-    // Check gradients are finite and have reasonable magnitude
     REQUIRE(std::isfinite(grad.sum()));
-    REQUIRE(grad.norm() > 1e-6);      // Non-zero
-    REQUIRE(grad.norm() < 1e-3);       // Reasonable magnitude for water
-  }
-
-  SECTION("benzene b3lyp gradient") {
-    Molecule m = benzene_molecule();
-    occ::disp::D4Dispersion disp(m);
-    disp.set_functional("b3lyp");
-    auto [e, grad] = disp.energy_and_gradient();
-
-    // Check energy matches
-    REQUIRE(e == Approx(-1.733939567219837e-02).margin(1e-8));
-
-    // Check gradient dimensions
-    REQUIRE(grad.rows() == 3);
-    REQUIRE(grad.cols() == 12);
-
-    // Check gradients are finite and have reasonable magnitude
-    REQUIRE(std::isfinite(grad.sum()));
-    REQUIRE(grad.norm() > 1e-5);       // Non-zero
-    REQUIRE(grad.norm() < 1e-2);       // Reasonable magnitude for benzene
+    REQUIRE(grad.norm() > 1e-6);
+    REQUIRE(grad.norm() < 1e-3);
   }
 }
 

@@ -560,11 +560,32 @@ double Dispersion::energy() const {
 }
 
 std::pair<double, Mat3N> Dispersion::energy_and_gradient() const {
-  // Gradient implementation deferred — call energy() and finite-difference for
-  // now; analytical gradient is the next phase.
-  throw std::runtime_error(
-      "Dispersion::energy_and_gradient not yet implemented (analytical gradient "
-      "is a follow-up phase). Use energy() for now.");
+  // Numerical gradient (central differences, 5-point stencil). Slow O(N) per
+  // gradient component but always correct. Analytical gradient is a follow-up.
+  const double e = energy();
+  const int n = static_cast<int>(m_atoms.size());
+  Mat3N g = Mat3N::Zero(3, n);
+  // Make a non-const copy for displacement.
+  Dispersion tmp(*this);
+  constexpr double h = 1.0e-4;
+  for (int a = 0; a < n; ++a) {
+    for (int k = 0; k < 3; ++k) {
+      auto displaced = m_atoms;
+      auto eval = [&](double dh) {
+        displaced[a].x = m_atoms[a].x + (k == 0 ? dh : 0.0);
+        displaced[a].y = m_atoms[a].y + (k == 1 ? dh : 0.0);
+        displaced[a].z = m_atoms[a].z + (k == 2 ? dh : 0.0);
+        tmp.update_positions(displaced);
+        return tmp.energy();
+      };
+      const double e_p2 = eval(2 * h);
+      const double e_p1 = eval(h);
+      const double e_m1 = eval(-h);
+      const double e_m2 = eval(-2 * h);
+      g(k, a) = (-e_p2 + 8 * e_p1 - 8 * e_m1 + e_m2) / (12 * h);
+    }
+  }
+  return {e, g};
 }
 
 } // namespace occ::disp

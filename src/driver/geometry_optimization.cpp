@@ -3,7 +3,7 @@
 #include <occ/core/data_directory.h>
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
-#include <occ/disp/dftd4.h>
+#include <occ/disp/d4.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/vibrational_analysis.h>
 #include <occ/driver/method_parser.h>
@@ -129,14 +129,16 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
 
   if (use_d4 || use_xdm) {
     if (use_d4) {
-      occ::disp::D4Dispersion disp(m.atoms());
-      disp.set_charge(config.electronic.charge);
-
-      bool success = disp.set_functional(method_spec.base_method);
-      if (!success) {
-        log::warn("D4 parameters not found for functional '{}', using default PBE parameters",
-                  method_spec.base_method);
+      occ::disp::Dispersion disp(m.atoms(), occ::disp::RefqMode::DFT);
+      try {
+        disp.set_functional(method_spec.base_method);
+      } catch (const std::exception &ex) {
+        log::warn("D4 parameters not found for functional '{}' ({}), "
+                  "using default PBE parameters",
+                  method_spec.base_method, ex.what());
+        disp.set_functional("pbe");
       }
+      disp.set_charges_eeq(static_cast<double>(config.electronic.charge));
 
       double e_d4 = disp.energy();
       log::info("D4 dispersion correction:        {: 20.12f}", e_d4);
