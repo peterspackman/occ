@@ -103,6 +103,7 @@ ReferenceData load_from_json(const std::string &path) {
         dst[i] = arr[i];
     };
     fill_int("refsys", ref.refsys);
+    fill_dbl("refcn", ref.refcn);
     fill_dbl("refcovcn", ref.refcovcn);
     fill_dbl("refq_gfn2", ref.refq_gfn2);
     fill_dbl("refh_gfn2", ref.refh_gfn2);

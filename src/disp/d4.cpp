@@ -223,6 +223,28 @@ AlphaTable build_reference_alpha(const std::vector<core::Atom> &atoms,
 // references, multiplied by ζ(refq, q_atomic).
 // ============================================================================
 
+// Compute the per-element `ncount` table — how many Gaussian widths to sum
+// for each reference. xtb (and cpp-d4 via `refc`) bin references by their
+// integer-rounded refcn; if `k` references share the same bin, each one
+// contributes ncount = k(k+1)/2 Gaussians, with widths wf, 2·wf, …, ncount·wf.
+// This multi-width form smoothly interpolates the C6 between the discrete
+// reference CN values.
+std::array<int, MAX_REF> compute_ncount(const ElementRefs &ref) {
+  std::array<int, 32> cncount{}; // CN bin counts
+  cncount[0] = 1;                // xtb's seed value for the "no neighbour" bin
+  for (int iref = 0; iref < ref.refn; ++iref) {
+    const int bin = static_cast<int>(std::round(ref.refcn[iref]));
+    if (bin >= 0 && bin < (int)cncount.size()) ++cncount[bin];
+  }
+  std::array<int, MAX_REF> nc{};
+  for (int iref = 0; iref < ref.refn; ++iref) {
+    const int bin = static_cast<int>(std::round(ref.refcn[iref]));
+    const int k = (bin >= 0 && bin < (int)cncount.size()) ? cncount[bin] : 1;
+    nc[iref] = k * (k + 1) / 2;
+  }
+  return nc;
+}
+
 Mat compute_reference_weights(const std::vector<core::Atom> &atoms,
                               const D4Scaling &sc, RefqMode mode,
                               const Vec &cn, const Vec &q_atomic) {
@@ -234,26 +256,36 @@ Mat compute_reference_weights(const std::vector<core::Atom> &atoms,
     const auto &ref = rd.elements[Z];
     if (ref.refn == 0) continue;
     const auto &refq = (mode == RefqMode::GFN2) ? ref.refq_gfn2 : ref.refq_dft;
-    // Un-normalized exp(-wf · ΔCN^2) per reference.
-    double sum = 0.0;
+    const auto ncount = compute_ncount(ref);
+
+    // Multi-Gaussian sum per reference (widths twf = igw · wf, igw = 1..ncount).
+    double norm = 0.0;
+    double maxcn = 0.0;
     for (int iref = 0; iref < ref.refn; ++iref) {
+      maxcn = std::max(maxcn, ref.refcovcn[iref]);
       const double dcn = cn(i) - ref.refcovcn[iref];
-      const double w = std::exp(-sc.wf * dcn * dcn);
-      gw(iref, i) = w;
-      sum += w;
+      const double dcn2 = dcn * dcn;
+      for (int igw = 1; igw <= ncount[iref]; ++igw) {
+        norm += std::exp(-igw * sc.wf * dcn2);
+      }
     }
-    // Normalize and apply ζ(charge) factor.
-    const double inv_sum = (sum > 0.0) ? 1.0 / sum : 0.0;
+    const double inv_norm = (norm > 0.0) ? 1.0 / norm : 0.0;
     const double iz = rd.zeff[Z];
     for (int iref = 0; iref < ref.refn; ++iref) {
-      double weight = gw(iref, i) * inv_sum;
-      if (!std::isfinite(weight)) {
-        // Fallback: full weight to the lowest-CN reference if all collapsed.
-        weight = (iref == 0) ? 1.0 : 0.0;
+      const double dcn = cn(i) - ref.refcovcn[iref];
+      const double dcn2 = dcn * dcn;
+      double expw = 0.0;
+      for (int igw = 1; igw <= ncount[iref]; ++igw) {
+        expw += std::exp(-igw * sc.wf * dcn2);
+      }
+      double gwk = expw * inv_norm;
+      if (!std::isfinite(gwk)) {
+        // Saturated case — assign full weight to highest-CN reference.
+        gwk = (ref.refcovcn[iref] == maxcn) ? 1.0 : 0.0;
       }
       const double z = zeta(sc.ga, rd.gam[Z] * sc.gc, refq[iref] + iz,
                              q_atomic(i) + iz);
-      gw(iref, i) = weight * z;
+      gw(iref, i) = gwk * z;
     }
   }
   return gw;

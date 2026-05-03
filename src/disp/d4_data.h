@@ -18,7 +18,8 @@ using ::occ::disp::RefqMode; // re-export for use by ElementRefs/ReferenceData
 struct ElementRefs {
   int refn{0};
   std::array<int, MAX_REF> refsys{};        // secondary atom index (1..17)
-  std::array<double, MAX_REF> refcovcn{};   // reference covalent CN
+  std::array<double, MAX_REF> refcn{};      // reference total CN (binning)
+  std::array<double, MAX_REF> refcovcn{};   // reference covalent CN (Gaussian)
   std::array<double, MAX_REF> refq_gfn2{};  // GFN2-xTB reference charges
   std::array<double, MAX_REF> refh_gfn2{};  // GFN2-xTB Hubbard offsets
   std::array<double, MAX_REF> refq_dft{};   // PBE0/def2-TZVP Hirshfeld charges
