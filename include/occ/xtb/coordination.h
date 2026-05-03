@@ -12,6 +12,14 @@ namespace occ::xtb {
 // Pyykko-D3 covalent radii are used internally, pre-scaled by 4/3 ·  a₀/Å.
 Vec gfn_coordination_numbers(const std::vector<core::Atom> &atoms);
 
+// Periodic variant: sums over all lattice translations (excluding the
+// (T=0, i=j) self-pair). `lattice_translations` provides the T-vectors in
+// Bohr; the (0,0,0) entry must be present.
+struct LatticeImage;
+Vec gfn_coordination_numbers_periodic(
+    const std::vector<core::Atom> &atoms,
+    const std::vector<LatticeImage> &lattice_translations);
+
 // Pauling-EN-weighted variant ("cov" flavor) — included for completeness;
 // not used by H0 in GFN2 but useful for repulsion / multipole damping.
 //   count_ij' = ε_AB · count_ij,  ε_AB = k4 · exp(-(|EN_A - EN_B| - k5)^2 / k6²)

@@ -1,5 +1,6 @@
 #include <cmath>
 #include <occ/xtb/gfn2_parameters.h>
+#include <occ/xtb/periodic.h>
 #include <occ/xtb/repulsion.h>
 #include <stdexcept>
 
@@ -43,6 +44,50 @@ double repulsion_energy(const std::vector<core::Atom> &atoms,
     }
   }
   return E;
+}
+
+double repulsion_energy_periodic(
+    const std::vector<core::Atom> &atoms, const Gfn2Parameters &params,
+    const std::vector<LatticeImage> &translations) {
+  const auto &g = params.globals();
+  const double r_exp = 1.0;
+  constexpr double cutoff2 = 40.0 * 40.0;
+
+  // E_per_cell = ½ Σ_T Σ_{i,j} V(r_i - r_j - T), excluding (T=0, i=j).
+  double E = 0.0;
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    const auto *ei = params.element(atoms[i].atomic_number);
+    if (!ei)
+      throw std::runtime_error("repulsion_energy_periodic: missing Z=" +
+                               std::to_string(atoms[i].atomic_number));
+    const bool light_i = atoms[i].atomic_number <= 2;
+    for (size_t j = 0; j < atoms.size(); ++j) {
+      const auto *ej = params.element(atoms[j].atomic_number);
+      if (!ej)
+        throw std::runtime_error("repulsion_energy_periodic: missing Z=" +
+                                 std::to_string(atoms[j].atomic_number));
+      const double alpha = std::sqrt(ei->rep_alpha * ej->rep_alpha);
+      const double zeff = ei->rep_zeff * ej->rep_zeff;
+      const bool light_j = atoms[j].atomic_number <= 2;
+      const double k_exp = (light_i && light_j) ? g.kexplight : g.kexp;
+      for (const auto &im : translations) {
+        const bool central =
+            im.hkl(0) == 0 && im.hkl(1) == 0 && im.hkl(2) == 0;
+        if (central && i == j) continue;
+        const double dx = atoms[i].x - (atoms[j].x + im.t_bohr.x());
+        const double dy = atoms[i].y - (atoms[j].y + im.t_bohr.y());
+        const double dz = atoms[i].z - (atoms[j].z + im.t_bohr.z());
+        const double r2 = dx * dx + dy * dy + dz * dz;
+        if (r2 > cutoff2 || r2 < 1e-8) continue;
+        const double r = std::sqrt(r2);
+        const double t16 = std::pow(r, k_exp);
+        const double t26 = std::exp(-alpha * t16);
+        const double t27 = std::pow(r, r_exp);
+        E += zeff * t26 / t27;
+      }
+    }
+  }
+  return 0.5 * E;
 }
 
 } // namespace occ::xtb

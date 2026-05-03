@@ -12,4 +12,11 @@ class Gfn2Parameters;
 double repulsion_energy(const std::vector<core::Atom> &atoms,
                         const Gfn2Parameters &params);
 
+// Periodic variant: E = ½ Σ_T Σ_{i,j} V(r_i - r_j - T) excluding the
+// (T=0, i=j) self-pair. Each translation is from `translations`.
+struct LatticeImage;
+double repulsion_energy_periodic(
+    const std::vector<core::Atom> &atoms, const Gfn2Parameters &params,
+    const std::vector<LatticeImage> &translations);
+
 } // namespace occ::xtb

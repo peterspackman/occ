@@ -2,6 +2,7 @@
 #include <cmath>
 #include <occ/core/units.h>
 #include <occ/xtb/coordination.h>
+#include <occ/xtb/periodic.h>
 #include <stdexcept>
 
 namespace occ::xtb {
@@ -89,6 +90,38 @@ Vec gfn_coordination_numbers(const std::vector<core::Atom> &atoms) {
       const double c = gfn_count(r, r0);
       cn(i) += c;
       cn(j) += c;
+    }
+  }
+  return cn;
+}
+
+Vec gfn_coordination_numbers_periodic(
+    const std::vector<core::Atom> &atoms,
+    const std::vector<LatticeImage> &translations) {
+  const int n = static_cast<int>(atoms.size());
+  Vec cn = Vec::Zero(n);
+  constexpr double cutoff = 40.0;
+  constexpr double cutoff2 = cutoff * cutoff;
+
+  for (int i = 0; i < n; ++i) {
+    const double xi = atoms[i].x, yi = atoms[i].y, zi = atoms[i].z;
+    const double rc_i = cov_rad(atoms[i].atomic_number);
+    for (int j = 0; j < n; ++j) {
+      const double rxj = atoms[j].x, ryj = atoms[j].y, rzj = atoms[j].z;
+      const double rc_j = cov_rad(atoms[j].atomic_number);
+      const double r0 = rc_i + rc_j;
+      for (const auto &im : translations) {
+        // Skip the (T=0, i=j) self-pair.
+        const bool central = im.hkl(0) == 0 && im.hkl(1) == 0 && im.hkl(2) == 0;
+        if (central && j == i) continue;
+        const double dx = xi - (rxj + im.t_bohr.x());
+        const double dy = yi - (ryj + im.t_bohr.y());
+        const double dz = zi - (rzj + im.t_bohr.z());
+        const double r2 = dx * dx + dy * dy + dz * dz;
+        if (r2 > cutoff2) continue;
+        const double r = std::sqrt(r2);
+        cn(i) += gfn_count(r, r0);
+      }
     }
   }
   return cn;

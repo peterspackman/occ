@@ -14,5 +14,7 @@ set(OCC_XTB_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/anisotropic.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_calculator.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/native_calculator.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/periodic.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/periodic_integrals.h"
     PARENT_SCOPE
 )

@@ -11,8 +11,11 @@
 #include <occ/xtb/multipole_damping.h>
 #include <occ/xtb/gamma.h>
 #include <occ/xtb/gfn2_parameters.h>
+#include <occ/xtb/h0.h>
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/native_calculator.h>
+#include <occ/xtb/periodic.h>
+#include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/repulsion.h>
 #include <occ/xtb/scc.h>
 #include <occ/xtb/sto_ng.h>
@@ -393,6 +396,114 @@ TEST_CASE("Full GFN2 SCC vs xtb (methane, no dispersion)",
     REQUIRE(r.atomic_charges(i) ==
             Approx(r.atomic_charges(1)).margin(1e-3));
   }
+}
+
+TEST_CASE("Lattice translations: cubic cell properties", "[xtb][periodic]") {
+  // 5 Bohr cubic cell, cutoff 12 Bohr → 3 cells in each direction.
+  occ::Mat3 lattice = occ::Mat3::Identity() * 5.0;
+  auto images = occ::xtb::build_lattice_images(lattice, 12.0);
+
+  REQUIRE(!images.empty());
+  // First image is (0,0,0).
+  REQUIRE(images[0].hkl == occ::IVec3(0, 0, 0));
+  REQUIRE(images[0].norm == Approx(0.0));
+
+  // Sorted by |T| ascending.
+  for (size_t i = 1; i < images.size(); ++i) {
+    REQUIRE(images[i].norm >= images[i - 1].norm - 1e-12);
+  }
+
+  // Inversion symmetry: every (h,k,l) has its negative present too.
+  for (const auto &im : images) {
+    occ::IVec3 neg = -im.hkl;
+    bool found = false;
+    for (const auto &im2 : images) {
+      if (im2.hkl == neg) {
+        found = true;
+        break;
+      }
+    }
+    REQUIRE(found);
+  }
+
+  // T-vector consistency: t_bohr should equal n_i · a_i.
+  for (const auto &im : images) {
+    occ::Vec3 expected = im.hkl(0) * lattice.col(0) +
+                         im.hkl(1) * lattice.col(1) +
+                         im.hkl(2) * lattice.col(2);
+    REQUIRE((im.t_bohr - expected).norm() < 1e-12);
+  }
+}
+
+TEST_CASE("Periodic CN/repulsion fall back to molecular at large cell",
+          "[xtb][periodic]") {
+  using occ::core::Atom;
+  // Water in a 50 Bohr cubic cell — far enough that only T=0 contributes.
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  occ::Mat3 lattice = occ::Mat3::Identity() * 50.0;
+  auto images = occ::xtb::build_lattice_images(lattice, 12.0);
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+
+  occ::Vec cn_mol = occ::xtb::gfn_coordination_numbers(atoms);
+  occ::Vec cn_pbc =
+      occ::xtb::gfn_coordination_numbers_periodic(atoms, images);
+  REQUIRE(cn_pbc.size() == cn_mol.size());
+  for (Eigen::Index i = 0; i < cn_mol.size(); ++i) {
+    REQUIRE(cn_pbc(i) == Approx(cn_mol(i)).margin(1e-12));
+  }
+
+  double e_mol = occ::xtb::repulsion_energy(atoms, p);
+  double e_pbc = occ::xtb::repulsion_energy_periodic(atoms, p, images);
+  REQUIRE(e_pbc == Approx(e_mol).margin(1e-12));
+}
+
+TEST_CASE("Periodic AO matrices: large-cell limit equals molecular",
+          "[xtb][periodic]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+
+  // 50 Bohr cubic cell so only T=0 contributes for typical cutoffs.
+  occ::Mat3 lattice = occ::Mat3::Identity() * 50.0;
+  auto images = occ::xtb::build_lattice_images(lattice, 12.0);
+  occ::xtb::PeriodicSystem sys{atoms, lattice};
+  occ::Vec cn = occ::xtb::gfn_coordination_numbers_periodic(atoms, images);
+
+  auto S_per_T = occ::xtb::periodic_overlap_blocks(sys, p, images);
+  auto H0_per_T = occ::xtb::periodic_h0_blocks(sys, p, images, S_per_T, cn);
+  REQUIRE(S_per_T.size() == images.size());
+  REQUIRE(H0_per_T.size() == images.size());
+
+  // Reference: molecular S, H0 for the same atoms.
+  auto basis = occ::xtb::build_aobasis(atoms, p);
+  auto shells = occ::xtb::build_shell_table(atoms, p);
+  occ::qm::IntegralEngine engine(basis);
+  occ::Mat S_mol =
+      engine.one_electron_operator(occ::qm::IntegralEngine::Op::overlap);
+  occ::Mat H0_mol =
+      occ::xtb::build_h0(atoms, p, shells, basis, S_mol, cn);
+
+  // Bloch sum at Γ should equal the molecular matrix (since non-T=0 blocks
+  // are essentially zero at this cell size).
+  occ::Mat S_gamma = occ::xtb::bloch_sum_gamma(S_per_T);
+  occ::Mat H0_gamma = occ::xtb::bloch_sum_gamma(H0_per_T);
+  REQUIRE((S_gamma - S_mol).cwiseAbs().maxCoeff() < 1e-10);
+  REQUIRE((H0_gamma - H0_mol).cwiseAbs().maxCoeff() < 1e-10);
+
+  // Bloch sum at a non-zero k point should also equal molecular here
+  // (because non-central blocks are negligible).
+  occ::Vec3 k(0.1, 0.0, 0.0);
+  occ::CMat S_k = occ::xtb::bloch_sum(S_per_T, images, k);
+  REQUIRE((S_k.real() - S_mol).cwiseAbs().maxCoeff() < 1e-10);
+  REQUIRE(S_k.imag().cwiseAbs().maxCoeff() < 1e-10);
 }
 
 TEST_CASE("NativeCalculator: water Molecule round-trip",

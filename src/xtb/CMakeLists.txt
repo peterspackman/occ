@@ -15,6 +15,8 @@ add_library(occ_xtb
     "${CMAKE_CURRENT_SOURCE_DIR}/anisotropic.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_calculator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/native_calculator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/periodic.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/periodic_integrals.cpp"
     ${OCC_XTB_INCLUDE_FILES}
 )
 
