@@ -102,14 +102,16 @@ under `src/disp/`. Reference data lives in `share/dftd4/`.
   `driver/single_point.cpp`, `driver/geometry_optimization.cpp`).
 - **6e** Dropped cpp-d4 CMake dependency entirely.
 
+- **6g** Native D3-BJ. `occ::disp::DispersionD3` with refdata in
+  `share/dftd3/refdata.json` (94 elements, 5×5 ref C6 blocks per pair) and
+  per-functional damping in `share/dftd3/functionals.json` (94 functionals,
+  BJ variant). Validates against s-dftd3 to <1 µHa for water+pbe.
+
 ### Pending
-- **6f** Analytical D4 gradient (2-body BJ derivative + ATM angular derivative
-  + ∂C6/∂CN chain rule). Optional EEQ chain rule `∂q_EEQ/∂R` for full DFT-D4
-  forces (small effect at typical geometries; numerical FD is acceptable
-  meanwhile).
-- **6g** Native D3-BJ. Reference C6 table (~23k lines in xtb's
-  `dftd3_parameters.f90`) + simpler erf CN function (no EN factor) + BJ damping
-  identical to D4. New JSON file in `share/dftd3/`.
+- **6f** Analytical D4 + D3 gradients (2-body BJ derivative + ATM angular
+  derivative + ∂C6/∂CN chain rule). Optional EEQ chain rule `∂q_EEQ/∂R` for
+  full DFT-D4 forces (small effect at typical geometries; numerical FD is
+  acceptable meanwhile).
 
 ## Phase 5 — Gradients + frequencies (in progress)
 
