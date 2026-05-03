@@ -5,7 +5,6 @@
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/disp/d4.h>
-#include <occ/disp/dftd4.h>
 
 /* Dimer tests */
 using occ::core::Molecule;
@@ -36,55 +35,6 @@ inline Molecule benzene_molecule() {
       {1, 17.397687977273, -1.390275289336, 9.985086075359},
       {1, 15.425815458015, -4.453857708595, 13.027318368863}};
   return Molecule(atoms);
-}
-
-// Legacy cpp-d4 wrapper retained for now while we transition (see Phase 6e).
-// Once removed these tests can be deleted in favour of the native ones below.
-TEST_CASE("dftd4 dispersion (legacy cpp-d4 wrapper)", "[disp][legacy]") {
-
-  SECTION("water pbe") {
-    Molecule m = water_molecule();
-    occ::disp::D4Dispersion disp(m);
-    double e = disp.energy();
-    REQUIRE(e == Approx(-1.960327305609419e-04));
-  }
-
-  SECTION("water blyp") {
-    Molecule m = water_molecule();
-    occ::disp::D4Dispersion disp(m);
-    disp.set_functional("blyp");
-    double e = disp.energy();
-    REQUIRE(e == Approx(-4.734890496748087e-04));
-  }
-
-  SECTION("benzene wb97x") {
-    Molecule m = benzene_molecule();
-    occ::disp::D4Dispersion disp(m);
-    disp.set_functional("wb97x");
-    double e = disp.energy();
-    REQUIRE(e == Approx(-1.355940054241274e-03));
-  }
-
-  SECTION("benzene b3lyp +1") {
-    Molecule m = benzene_molecule();
-    m.set_charge(1);
-    occ::disp::D4Dispersion disp(m);
-    disp.set_functional("b3lyp");
-    double e = disp.energy();
-    REQUIRE(e == Approx(-1.522647086484191e-02));
-  }
-
-  SECTION("water pbe gradient (sanity)") {
-    Molecule m = water_molecule();
-    occ::disp::D4Dispersion disp(m);
-    auto [e, grad] = disp.energy_and_gradient();
-    REQUIRE(e == Approx(-1.960327305609344e-04));
-    REQUIRE(grad.rows() == 3);
-    REQUIRE(grad.cols() == 3);
-    REQUIRE(std::isfinite(grad.sum()));
-    REQUIRE(grad.norm() > 1e-6);
-    REQUIRE(grad.norm() < 1e-3);
-  }
 }
 
 TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
@@ -121,5 +71,19 @@ TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
     d4.set_functional("b3lyp");
     d4.set_charges_eeq(1.0);
     REQUIRE(d4.energy() == Approx(-1.522647086484191e-02).margin(1e-4));
+  }
+
+  SECTION("water pbe gradient (sanity)") {
+    Molecule m = water_molecule();
+    Dispersion d4(m.atoms(), RefqMode::DFT);
+    d4.set_functional("pbe");
+    d4.set_charges_eeq(0.0);
+    auto [e, grad] = d4.energy_and_gradient();
+    REQUIRE(e == Approx(-1.960327305609419e-04).margin(1e-6));
+    REQUIRE(grad.rows() == 3);
+    REQUIRE(grad.cols() == 3);
+    REQUIRE(std::isfinite(grad.sum()));
+    REQUIRE(grad.norm() > 1e-6);
+    REQUIRE(grad.norm() < 1e-3);
   }
 }

@@ -1,5 +1,4 @@
 add_library(occ_disp
-    "${CMAKE_CURRENT_SOURCE_DIR}/dftd4.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/d4.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/d4_data.cpp"
     ${OCC_DISP_INCLUDE_FILES}
@@ -8,7 +7,6 @@ add_library(occ_disp
 target_link_libraries(occ_disp
     PUBLIC
     occ_core
-    dftd4::dftd4
     nlohmann_json::nlohmann_json
 )
 
