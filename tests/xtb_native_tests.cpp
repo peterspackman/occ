@@ -506,6 +506,107 @@ TEST_CASE("Periodic AO matrices: large-cell limit equals molecular",
   REQUIRE(S_k.imag().cwiseAbs().maxCoeff() < 1e-10);
 }
 
+TEST_CASE("Repulsion gradient: analytical vs finite difference",
+          "[xtb][gradient][analytical]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+
+  auto eg = occ::xtb::repulsion_energy_and_gradient(atoms, p);
+  REQUIRE(eg.energy ==
+          Approx(occ::xtb::repulsion_energy(atoms, p)).margin(1e-12));
+
+  // Finite-difference reference (5-point stencil for tighter accuracy).
+  const double h = 1e-4;
+  occ::Mat3N grad_fd = occ::Mat3N::Zero(3, atoms.size());
+  for (size_t a = 0; a < atoms.size(); ++a) {
+    for (int k = 0; k < 3; ++k) {
+      auto perturb = [&](double dh) {
+        auto a2 = atoms;
+        if (k == 0) a2[a].x += dh;
+        if (k == 1) a2[a].y += dh;
+        if (k == 2) a2[a].z += dh;
+        return occ::xtb::repulsion_energy(a2, p);
+      };
+      grad_fd(k, a) =
+          (-perturb(2 * h) + 8 * perturb(h) - 8 * perturb(-h) + perturb(-2 * h)) /
+          (12 * h);
+    }
+  }
+  INFO("analytical:\n" << eg.gradient);
+  INFO("numerical: \n" << grad_fd);
+  REQUIRE((eg.gradient - grad_fd).cwiseAbs().maxCoeff() < 1e-9);
+}
+
+TEST_CASE("CN gradient: analytical vs finite difference",
+          "[xtb][gradient][analytical]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+
+  auto cn_g = occ::xtb::gfn_coordination_numbers_with_gradient(atoms);
+  occ::Vec cn_ref = occ::xtb::gfn_coordination_numbers(atoms);
+  REQUIRE((cn_g.cn - cn_ref).cwiseAbs().maxCoeff() < 1e-12);
+
+  const double h = 1e-4;
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    occ::Mat3N dcn_fd = occ::Mat3N::Zero(3, atoms.size());
+    for (size_t a = 0; a < atoms.size(); ++a) {
+      for (int k = 0; k < 3; ++k) {
+        auto perturb = [&](double dh) {
+          auto a2 = atoms;
+          if (k == 0) a2[a].x += dh;
+          if (k == 1) a2[a].y += dh;
+          if (k == 2) a2[a].z += dh;
+          return occ::xtb::gfn_coordination_numbers(a2)(i);
+        };
+        dcn_fd(k, a) =
+            (-perturb(2 * h) + 8 * perturb(h) - 8 * perturb(-h) +
+             perturb(-2 * h)) /
+            (12 * h);
+      }
+    }
+    INFO("atom " << i << " analytical:\n" << cn_g.dcn[i]);
+    INFO("atom " << i << " numerical: \n" << dcn_fd);
+    REQUIRE((cn_g.dcn[i] - dcn_fd).cwiseAbs().maxCoeff() < 1e-8);
+  }
+}
+
+TEST_CASE("NativeCalculator: numerical gradient sanity",
+          "[xtb][native][gradient]") {
+  using occ::core::Atom;
+  using occ::core::Molecule;
+  // Slightly distorted water — non-equilibrium so the gradient is nonzero.
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  Molecule mol(atoms);
+  occ::xtb::NativeCalculator calc(mol);
+  auto [e, grad] = calc.compute_energy_and_gradient();
+
+  // Energy still recovers the equilibrium SCC value at the original geom.
+  REQUIRE(e == Approx(-5.0702559).margin(2e-4));
+
+  // Gradient shape and translational invariance (sum over atoms ≈ 0).
+  REQUIRE(grad.rows() == 3);
+  REQUIRE(grad.cols() == 3);
+  occ::Vec3 net_force = grad.rowwise().sum();
+  INFO("Net force = " << net_force.transpose());
+  REQUIRE(net_force.norm() < 1e-5);
+
+  // For this near-equilibrium geometry the gradient norm should be modest.
+  REQUIRE(grad.norm() < 0.05); // Ha/Bohr — typical for near-equilibrium water
+}
+
 TEST_CASE("NativeCalculator: water Molecule round-trip",
           "[xtb][native]") {
   // Build a Molecule with positions in Angstrom (occ::Molecule convention),

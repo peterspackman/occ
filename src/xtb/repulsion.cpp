@@ -46,6 +46,59 @@ double repulsion_energy(const std::vector<core::Atom> &atoms,
   return E;
 }
 
+RepulsionEnergyGradient
+repulsion_energy_and_gradient(const std::vector<core::Atom> &atoms,
+                              const Gfn2Parameters &params) {
+  // dE_pair/dr = -(α · k_exp · r^k_exp + r_exp) · E_pair · (r_i − r_j)/r²
+  // (matches xtb's `dG = -(alpha*t16*kExp + repData%rExp) * dE * rij/r2`).
+  const auto &g = params.globals();
+  const double r_exp = 1.0;
+  constexpr double cutoff2 = 40.0 * 40.0;
+
+  RepulsionEnergyGradient out;
+  out.energy = 0.0;
+  out.gradient = Mat3N::Zero(3, atoms.size());
+
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    const auto *ei = params.element(atoms[i].atomic_number);
+    if (!ei)
+      throw std::runtime_error("repulsion_energy_and_gradient: missing Z=" +
+                               std::to_string(atoms[i].atomic_number));
+    for (size_t j = 0; j < i; ++j) {
+      const auto *ej = params.element(atoms[j].atomic_number);
+      if (!ej)
+        throw std::runtime_error("repulsion_energy_and_gradient: missing Z=" +
+                                 std::to_string(atoms[j].atomic_number));
+      const double dx = atoms[i].x - atoms[j].x;
+      const double dy = atoms[i].y - atoms[j].y;
+      const double dz = atoms[i].z - atoms[j].z;
+      const double r2 = dx * dx + dy * dy + dz * dz;
+      if (r2 > cutoff2 || r2 < 1e-8) continue;
+      const double r = std::sqrt(r2);
+      const double alpha = std::sqrt(ei->rep_alpha * ej->rep_alpha);
+      const double zeff = ei->rep_zeff * ej->rep_zeff;
+      const bool light_pair = (atoms[i].atomic_number <= 2) &&
+                              (atoms[j].atomic_number <= 2);
+      const double k_exp = light_pair ? g.kexplight : g.kexp;
+      const double t16 = std::pow(r, k_exp);
+      const double t26 = std::exp(-alpha * t16);
+      const double t27 = std::pow(r, r_exp);
+      const double e_pair = zeff * t26 / t27;
+      out.energy += e_pair;
+      // dE/dr scalar: factor multiplying (r_i - r_j)/r².
+      const double dscal = -(alpha * t16 * k_exp + r_exp) * e_pair / r2;
+      // Atom i: +dscal · (r_i − r_j); Atom j: −dscal · (r_i − r_j).
+      out.gradient(0, i) += dscal * dx;
+      out.gradient(1, i) += dscal * dy;
+      out.gradient(2, i) += dscal * dz;
+      out.gradient(0, j) -= dscal * dx;
+      out.gradient(1, j) -= dscal * dy;
+      out.gradient(2, j) -= dscal * dz;
+    }
+  }
+  return out;
+}
+
 double repulsion_energy_periodic(
     const std::vector<core::Atom> &atoms, const Gfn2Parameters &params,
     const std::vector<LatticeImage> &translations) {

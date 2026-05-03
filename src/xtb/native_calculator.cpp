@@ -102,6 +102,48 @@ core::Molecule NativeCalculator::to_molecule() const {
                         m_positions_bohr / occ::units::BOHR_TO_ANGSTROM);
 }
 
+Mat3N NativeCalculator::compute_gradient_numerical(double step) {
+  const int n = num_atoms();
+  Mat3N grad = Mat3N::Zero(3, n);
+
+  // Snapshot the original geometry so we can restore exactly.
+  Mat3N original = m_positions_bohr;
+
+  // Suppress per-iteration SCC chatter and crank max iterations to be safe
+  // for displaced geometries that may converge slower.
+  auto prev_max_iter = m_opts.max_iterations;
+  m_opts.max_iterations = std::max(prev_max_iter, 250);
+
+  for (int a = 0; a < n; ++a) {
+    for (int k = 0; k < 3; ++k) {
+      Mat3N pos_p = original;
+      pos_p(k, a) += step;
+      update_structure(pos_p);
+      const double e_plus = single_point_energy();
+
+      Mat3N pos_m = original;
+      pos_m(k, a) -= step;
+      update_structure(pos_m);
+      const double e_minus = single_point_energy();
+
+      grad(k, a) = (e_plus - e_minus) / (2.0 * step);
+    }
+  }
+
+  // Restore the original geometry and recompute so subsequent queries
+  // (charges(), bond_orders(), to_wavefunction()) reflect the input point.
+  update_structure(original);
+  (void)single_point_energy();
+  m_opts.max_iterations = prev_max_iter;
+  return grad;
+}
+
+std::pair<double, Mat3N>
+NativeCalculator::compute_energy_and_gradient(double step) {
+  Mat3N g = compute_gradient_numerical(step);
+  return {m_last_result.total_energy, g};
+}
+
 void NativeCalculator::print_summary() const {
   if (m_last_result.density_matrix.size() == 0) {
     occ::log::warn("NativeCalculator::print_summary: nothing to print "

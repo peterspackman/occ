@@ -131,10 +131,17 @@ void build_d4_scc_state(D4SccState &s,
   s.d4.set_refq_eeq(s.mol, s.real_idx, s.refq);
 }
 
-// SCC-charge D4: drives weight_references with the supplied SCC charges.
+struct D4ScfResult {
+  double energy;
+  Mat3N gradient;
+};
+
+// SCC-charge D4 with optional analytical gradient.
 // `q_atomic` follows xtb's convention (positive when electron-deficient).
-double compute_d4_energy_scc(const D4SccState &s, const GlobalParam &g,
-                             const Vec &q_atomic) {
+D4ScfResult compute_d4_energy_and_gradient_scc(const D4SccState &s,
+                                               const GlobalParam &g,
+                                               const Vec &q_atomic,
+                                               bool with_gradient) {
   dftd4::TVector<double> q;
   q.NewVector(s.nat);
   for (int i = 0; i < s.nat; ++i)
@@ -142,19 +149,17 @@ double compute_d4_energy_scc(const D4SccState &s, const GlobalParam &g,
 
   dftd4::TMatrix<double> gwvec, dgwdcn, dgwdq;
   gwvec.NewMatrix(s.mref, s.nat);
-  // Allocate dgwdcn/dgwdq defensively even though lgrad=false; some dftd4
-  // builds touch them unconditionally.
   dgwdcn.NewMatrix(s.mref, s.nat);
   dgwdq.NewMatrix(s.mref, s.nat);
   s.d4.weight_references(s.mol, s.real_idx, s.cn, q, s.refq, gwvec, dgwdcn,
-                         dgwdq, false);
+                         dgwdq, with_gradient);
 
   dftd4::TMatrix<double> c6, dc6dcn, dc6dq;
   c6.NewMatrix(s.nat, s.nat);
   dc6dcn.NewMatrix(s.nat, s.nat);
   dc6dq.NewMatrix(s.nat, s.nat);
   s.d4.get_atomic_c6(s.mol, s.real_idx, gwvec, dgwdcn, dgwdq, c6, dc6dcn,
-                     dc6dq, false);
+                     dc6dq, with_gradient);
 
   dftd4::dparam par{g.s6, g.s8, /*s10=*/0.0, g.s9, g.a1, g.a2, /*alp=*/16};
 
@@ -162,21 +167,47 @@ double compute_d4_energy_scc(const D4SccState &s, const GlobalParam &g,
   e2body.NewVector(s.nat);
   dEdcn.NewVector(s.nat);
   dEdq.NewVector(s.nat);
-  gradient.NewVector(3 * s.nat);
+  if (with_gradient)
+    gradient.NewVector(3 * s.nat);
   dftd4::get_dispersion2(s.mol, s.real_idx, s.dist, s.cutoff.disp2, par, c6,
-                         dc6dcn, dc6dq, e2body, dEdcn, dEdq, gradient, false);
+                         dc6dcn, dc6dq, e2body, dEdcn, dEdq, gradient,
+                         with_gradient);
 
   dftd4::TVector<double> e3body;
   e3body.NewVector(s.nat);
   if (par.s9 != 0.0) {
     dftd4::get_dispersion3(s.mol, s.real_idx, s.dist, s.cutoff.disp3, par, c6,
-                           dc6dcn, dc6dq, e3body, dEdcn, dEdq, gradient, false);
+                           dc6dcn, dc6dq, e3body, dEdcn, dEdq, gradient,
+                           with_gradient);
   }
 
-  double total = 0.0;
+  D4ScfResult out;
+  out.energy = 0.0;
   for (int i = 0; i < s.nat; ++i)
-    total += e2body(i) + e3body(i);
-  return total;
+    out.energy += e2body(i) + e3body(i);
+
+  if (with_gradient) {
+    out.gradient = Mat3N::Zero(3, s.nat);
+    for (int i = 0; i < s.nat; ++i) {
+      out.gradient(0, i) = gradient(3 * i + 0);
+      out.gradient(1, i) = gradient(3 * i + 1);
+      out.gradient(2, i) = gradient(3 * i + 2);
+    }
+    // dftd4's gradient skips the explicit chain rule through CN and q
+    // (`dEdcn`, `dEdq` are returned separately). For a full gradient we
+    // would add `Σ_i dEdcn[i] · ∂CN_i/∂R + dEdq[i] · ∂q_i/∂R`. The
+    // ∂CN/∂R term is straightforward; ∂q/∂R requires the SCF response
+    // (CPSCF). Phase 5c covers this; for now the partial gradient is
+    // already much closer to the analytical value than EEQ-D4.
+  } else {
+    out.gradient.resize(0, 0);
+  }
+  return out;
+}
+
+double compute_d4_energy_scc(const D4SccState &s, const GlobalParam &g,
+                             const Vec &q_atomic) {
+  return compute_d4_energy_and_gradient_scc(s, g, q_atomic, false).energy;
 }
 
 // Mulliken populations per shell from PS = P · S.

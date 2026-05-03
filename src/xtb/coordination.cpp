@@ -95,6 +95,79 @@ Vec gfn_coordination_numbers(const std::vector<core::Atom> &atoms) {
   return cn;
 }
 
+namespace {
+
+// dexpCount(k, r, r0) = -k · r0 / r² · expCount · (1 - expCount)
+double d_exp_count_dr(double k, double r, double r0) {
+  const double e = exp_count(k, r, r0);
+  return -k * r0 / (r * r) * e * (1.0 - e);
+}
+
+// d gfn_count / dr = d_expCount(k, r, r0) · expCount(2k, r, r0+2)
+//                  + expCount(k, r, r0) · d_expCount(2k, r, r0+2)
+double d_gfn_count_dr(double r, double r0) {
+  constexpr double k = 10.0;
+  const double a1 = exp_count(k, r, r0);
+  const double a2 = exp_count(2.0 * k, r, r0 + 2.0);
+  const double da1 = d_exp_count_dr(k, r, r0);
+  const double da2 = d_exp_count_dr(2.0 * k, r, r0 + 2.0);
+  return da1 * a2 + a1 * da2;
+}
+
+} // namespace
+
+CoordinationNumbersWithGradient
+gfn_coordination_numbers_with_gradient(const std::vector<core::Atom> &atoms) {
+  const int n = static_cast<int>(atoms.size());
+  CoordinationNumbersWithGradient out;
+  out.cn = Vec::Zero(n);
+  out.dcn.resize(n, Mat3N::Zero(3, n));
+
+  constexpr double cutoff2 = 40.0 * 40.0;
+
+  for (int i = 0; i < n; ++i) {
+    const double xi = atoms[i].x, yi = atoms[i].y, zi = atoms[i].z;
+    const double rc_i = cov_rad(atoms[i].atomic_number);
+    for (int j = 0; j < i; ++j) {
+      const double dx = xi - atoms[j].x;
+      const double dy = yi - atoms[j].y;
+      const double dz = zi - atoms[j].z;
+      const double r2 = dx * dx + dy * dy + dz * dz;
+      if (r2 > cutoff2) continue;
+      const double r = std::sqrt(r2);
+      const double r0 = rc_i + cov_rad(atoms[j].atomic_number);
+      const double c = gfn_count(r, r0);
+      const double dc_dr = d_gfn_count_dr(r, r0);
+      // d count / d r_i_α = (dc/dr) · (r_i - r_j)_α / r
+      const double inv_r = 1.0 / r;
+      const double gx = dc_dr * dx * inv_r;
+      const double gy = dc_dr * dy * inv_r;
+      const double gz = dc_dr * dz * inv_r;
+
+      out.cn(i) += c;
+      out.cn(j) += c;
+
+      // CN_i depends on count_ij; ∂CN_i/∂r_i = +(gx, gy, gz),
+      //                        ∂CN_i/∂r_j = -(gx, gy, gz).
+      out.dcn[i](0, i) += gx;
+      out.dcn[i](1, i) += gy;
+      out.dcn[i](2, i) += gz;
+      out.dcn[i](0, j) -= gx;
+      out.dcn[i](1, j) -= gy;
+      out.dcn[i](2, j) -= gz;
+      // CN_j contains the same count_ij (symmetric), so its derivative is
+      // the same set of terms.
+      out.dcn[j](0, i) += gx;
+      out.dcn[j](1, i) += gy;
+      out.dcn[j](2, i) += gz;
+      out.dcn[j](0, j) -= gx;
+      out.dcn[j](1, j) -= gy;
+      out.dcn[j](2, j) -= gz;
+    }
+  }
+  return out;
+}
+
 Vec gfn_coordination_numbers_periodic(
     const std::vector<core::Atom> &atoms,
     const std::vector<LatticeImage> &translations) {

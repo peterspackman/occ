@@ -20,6 +20,17 @@ Vec gfn_coordination_numbers_periodic(
     const std::vector<core::Atom> &atoms,
     const std::vector<LatticeImage> &lattice_translations);
 
+// CN with analytical Jacobian. Returns a vector of N CN values plus a
+// 3 × N × N tensor packed as `dcn[i]` = ∂CN_i / ∂R (a Mat3N), so that
+// `dcn[i](k, j)` is ∂CN_i / ∂R_k^j.
+struct CoordinationNumbersWithGradient {
+  Vec cn;
+  std::vector<Mat3N> dcn; // dcn[i] is 3 × N
+};
+
+CoordinationNumbersWithGradient
+gfn_coordination_numbers_with_gradient(const std::vector<core::Atom> &atoms);
+
 // Pauling-EN-weighted variant ("cov" flavor) — included for completeness;
 // not used by H0 in GFN2 but useful for repulsion / multipole damping.
 //   count_ij' = ε_AB · count_ij,  ε_AB = k4 · exp(-(|EN_A - EN_B| - k5)^2 / k6²)

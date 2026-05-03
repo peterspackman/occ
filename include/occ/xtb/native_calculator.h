@@ -62,6 +62,17 @@ public:
   // properties printer is not the right thing.
   void print_summary() const;
 
+  // Numerical nuclear gradient via central differences in Bohr. Returns a
+  // 3 × N matrix in Hartree/Bohr. Each call costs `6N` SCC evaluations,
+  // so this is fine for tens of atoms but not hundreds. `step_bohr`
+  // controls the displacement (default 1e-3 Bohr).
+  Mat3N compute_gradient_numerical(double step_bohr = 1e-3);
+
+  // Energy + gradient pair, suitable for plugging into `BernyOptimizer`
+  // or any other optimizer that wants both at once.
+  std::pair<double, Mat3N>
+  compute_energy_and_gradient(double step_bohr = 1e-3);
+
 private:
   void initialize_calculator();
 

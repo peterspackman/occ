@@ -19,4 +19,15 @@ double repulsion_energy_periodic(
     const std::vector<core::Atom> &atoms, const Gfn2Parameters &params,
     const std::vector<LatticeImage> &translations);
 
+// Analytical gradient of the repulsion energy. Returns (E, dE/dR) where
+// dE/dR is a 3 × N matrix in Hartree/Bohr.
+struct RepulsionEnergyGradient {
+  double energy;
+  Mat3N gradient;
+};
+
+RepulsionEnergyGradient
+repulsion_energy_and_gradient(const std::vector<core::Atom> &atoms,
+                              const Gfn2Parameters &params);
+
 } // namespace occ::xtb
