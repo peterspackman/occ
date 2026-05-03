@@ -10,6 +10,7 @@ enum class MethodKind {
   HF,
   DFT,
   MP2,
+  GFN2,
 };
 
 struct MethodSpec {
@@ -93,6 +94,9 @@ inline MethodKind method_kind_from_string(const std::string &name) {
   if (lc == "mp2" || lc == "rmp2" || lc == "ump2" || lc == "moller-plesset" ||
       lc == "moller plesset") {
     return MethodKind::MP2;
+  }
+  if (lc == "gfn2" || lc == "gfn2-xtb" || lc == "gfn2_xtb") {
+    return MethodKind::GFN2;
   }
   return MethodKind::DFT;
 };

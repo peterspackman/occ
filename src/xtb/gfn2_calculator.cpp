@@ -237,8 +237,11 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
   Vec orbital_energies, orbital_occupations;
   Mat C, P;
 
-  occ::log::debug("GFN2 calculator: nbf={}, n_shells={}, n_elec={}, multipoles={}",
-                  m_nbf, m_n_shells, n_elec, include_multipoles);
+  occ::log::info("{:=^72s}", "  GFN2-xTB self-consistent charges  ");
+  occ::log::info("nbf = {}   n_shells = {}   n_electrons = {}   multipoles = {}",
+                 m_nbf, m_n_shells, n_elec, include_multipoles ? "on" : "off");
+  occ::log::info("{:>4s}  {:>20s}  {:>12s}  {:>12s}", "iter", "E (Hartree)",
+                 "|ΔE|", "max|Δq|");
 
   bool converged = false;
   int iter = 0;
@@ -310,9 +313,8 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
 
     double dq_max = (qsh_new - qsh).cwiseAbs().maxCoeff();
     double de = std::abs(total_energy - prev_energy);
-    occ::log::debug(
-        "  iter={:3d}  E={:.10f}  ΔE={:.2e}  max|Δq|={:.2e}",
-        iter, total_energy, de, dq_max);
+    occ::log::info("{:>4d}  {:>20.12f}  {:>12.2e}  {:>12.2e}", iter,
+                   total_energy, de, dq_max);
 
     bool e_ok = (iter > 1) && de < opts.energy_threshold;
     bool q_ok = dq_max < opts.charge_threshold;
@@ -335,6 +337,7 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
       r.orbital_coefficients = C;
       r.n_iterations = iter;
       r.converged = true;
+      occ::log::info("Converged in {} iterations.", iter);
       return r;
     }
 
@@ -342,6 +345,8 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
     prev_energy = total_energy;
   }
 
+  occ::log::warn("GFN2 SCC did not converge in {} iterations",
+                 opts.max_iterations);
   // Unconverged — return last iterate.
   SccResult r;
   r.scc_energy = prev_energy - m_e_rep - e_disp;

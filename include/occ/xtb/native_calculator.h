@@ -2,6 +2,7 @@
 #include <memory>
 #include <occ/core/dimer.h>
 #include <occ/core/molecule.h>
+#include <occ/qm/wavefunction.h>
 #include <occ/xtb/scc.h>
 
 namespace occ::xtb {
@@ -49,6 +50,17 @@ public:
   inline const SccResult &last_result() const { return m_last_result; }
 
   occ::core::Molecule to_molecule() const;
+
+  // Convert the converged SCC state into a `qm::Wavefunction` so that the
+  // rest of occ (FCHK output, Mulliken/Hirshfeld analysis, ESP, etc.) can
+  // consume the GFN2 result. Requires `single_point_energy()` to have run.
+  occ::qm::Wavefunction to_wavefunction() const;
+
+  // Print a GFN2-native results summary (energy decomposition, atomic
+  // charges, HOMO/LUMO/gap) at INFO log level. Useful as the post-SCF
+  // print step in `occ scf -m gfn2 ...`, where the standard wavefunction
+  // properties printer is not the right thing.
+  void print_summary() const;
 
 private:
   void initialize_calculator();

@@ -3,6 +3,7 @@
 #include <occ/dft/dft.h>
 #include <occ/disp/dftd4.h>
 #include <occ/driver/method_parser.h>
+#include <occ/xtb/native_calculator.h>
 #include <occ/driver/single_point.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/gradients.h>
@@ -348,8 +349,25 @@ single_point_driver(const OccInput &config,
                    config.basis.basis_set_directory);
     occ::set_data_directory(config.basis.basis_set_directory);
   }
-  auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
+
   auto method_kind = method_kind_from_string(config.method.name);
+
+  // Methods with their own internal basis (GFN2-xTB) skip the AO basis load.
+  if (method_kind == MethodKind::GFN2) {
+    if (!config.solvent.solvent_name.empty()) {
+      throw std::runtime_error("GFN2-xTB solvation is not yet wired into the "
+                               "native backend; build with WITH_TBLITE=ON to "
+                               "use the tblite path with solvation.");
+    }
+    occ::xtb::NativeCalculator calc(m);
+    if (config.electronic.charge != 0.0)
+      calc.set_charge(config.electronic.charge);
+    (void)calc.single_point_energy();
+    calc.print_summary();
+    return calc.to_wavefunction();
+  }
+
+  auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
   auto guess_sk = determine_spinorbital_kind(
       config.method.name, config.electronic.multiplicity, method_kind);
   auto conf_sk = config.electronic.spinorbital_kind;
