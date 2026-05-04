@@ -41,4 +41,13 @@ Mat3N klopman_ohno_gamma_energy_gradient(
     const std::vector<core::Atom> &atoms, const ShellTable &shells,
     const Gfn2Parameters &params, const Mat &gamma_matrix, const Vec &qsh);
 
+// Initial shell-resolved charges from EEQ atomic charges (xtb convention).
+// EEQ is computed on the molecular geometry and each atom's charge is
+// distributed across its shells weighted by ref_occ; for shells with
+// ref_occ = 0 the contribution is zero. Useful as an SCC initial guess.
+//   atoms: Bohr coordinates
+//   total_charge: net molecular charge (electrons removed)
+Vec eeq_initial_shell_charges(const std::vector<core::Atom> &atoms,
+                              const ShellTable &shells, double total_charge);
+
 } // namespace occ::xtb

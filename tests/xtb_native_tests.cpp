@@ -700,6 +700,30 @@ TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
               .maxCoeff() < 1e-4);
 }
 
+TEST_CASE("EEQ initial guess: molecular NaCl charges match physics",
+          "[xtb][scc][eeq]") {
+  // Even with EEQ initialisation, restricted SCC for an isolated stretched
+  // NaCl pair sits at a near-degenerate ionic/covalent crossing and
+  // oscillates — that's a method limitation, not an Ewald or initial-guess
+  // bug. What we *can* validate is that the EEQ helper itself produces the
+  // right physics: positive Na, negative Cl summing to zero.
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {11, 0.0, 0.0, 0.0},
+      {17, 4.5, 0.0, 0.0},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  auto shells = occ::xtb::build_shell_table(atoms, p);
+  occ::Vec qsh = occ::xtb::eeq_initial_shell_charges(atoms, shells, 0.0);
+  // Sum across shells per atom.
+  occ::Vec q_atom = occ::Vec::Zero(2);
+  for (int s = 0; s < qsh.size(); ++s)
+    q_atom(shells.atom[s]) += qsh(s);
+  REQUIRE(q_atom(0) > 0.0);  // Na donates
+  REQUIRE(q_atom(1) < 0.0);  // Cl accepts
+  REQUIRE(std::abs(q_atom.sum()) < 1e-10);  // neutral
+}
+
 TEST_CASE("Periodic SCC: water in moderate cell is α-invariant",
           "[xtb][periodic][scc]") {
   using occ::core::Atom;

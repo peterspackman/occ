@@ -67,7 +67,13 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   }
   const int n_occ = n_elec / 2;
 
-  Vec qsh = Vec::Zero(n_shells);
+  // EEQ-based initial guess on the central-cell atoms (no PBC for the guess).
+  Vec qsh;
+  try {
+    qsh = eeq_initial_shell_charges(sys.atoms, shells, opts.total_charge);
+  } catch (const std::exception &) {
+    qsh = Vec::Zero(n_shells);
+  }
   double prev_energy = 0.0;
   Vec orbital_energies, orbital_occupations;
   Mat C, P;

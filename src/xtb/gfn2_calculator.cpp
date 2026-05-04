@@ -123,7 +123,14 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
   }
   double e_disp = 0.0;
 
-  Vec qsh = Vec::Zero(m_n_shells);
+  // EEQ-based initial guess (xtb convention). Falls back to zeros if EEQ
+  // doesn't have parameters for one of the elements.
+  Vec qsh;
+  try {
+    qsh = eeq_initial_shell_charges(m_atoms, m_shells, opts.total_charge);
+  } catch (const std::exception &) {
+    qsh = Vec::Zero(m_n_shells);
+  }
   double prev_energy = 0.0;
   Vec orbital_energies, orbital_occupations;
   Mat C, P;

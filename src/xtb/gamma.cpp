@@ -1,4 +1,6 @@
 #include <cmath>
+#include <occ/core/eeq.h>
+#include <occ/core/units.h>
 #include <occ/xtb/gamma.h>
 #include <occ/xtb/gfn2_parameters.h>
 #include <stdexcept>
@@ -95,6 +97,38 @@ Mat klopman_ohno_gamma(const std::vector<core::Atom> &atoms,
     }
   }
   return J;
+}
+
+Vec eeq_initial_shell_charges(const std::vector<core::Atom> &atoms,
+                              const ShellTable &shells, double total_charge) {
+  // EEQ is defined on Angstrom positions; convert from our Bohr atoms.
+  const int n_atoms = static_cast<int>(atoms.size());
+  IVec Z(n_atoms);
+  Mat3N R_ang(3, n_atoms);
+  const double b2a = occ::units::BOHR_TO_ANGSTROM;
+  for (int A = 0; A < n_atoms; ++A) {
+    Z(A) = atoms[A].atomic_number;
+    R_ang(0, A) = atoms[A].x * b2a;
+    R_ang(1, A) = atoms[A].y * b2a;
+    R_ang(2, A) = atoms[A].z * b2a;
+  }
+  Vec q_atom = occ::core::charges::eeq_partial_charges(Z, R_ang, total_charge);
+
+  // Distribute each atom's charge across its shells weighted by ref_occ.
+  // Shells with ref_occ = 0 (empty in the GFN2 reference state) get zero.
+  const int n_shells = static_cast<int>(shells.atom.size());
+  std::vector<double> sum_refocc(n_atoms, 0.0);
+  for (int s = 0; s < n_shells; ++s) {
+    sum_refocc[shells.atom[s]] += shells.ref_occ(s);
+  }
+  Vec qsh = Vec::Zero(n_shells);
+  for (int s = 0; s < n_shells; ++s) {
+    const int A = shells.atom[s];
+    if (sum_refocc[A] > 1e-12) {
+      qsh(s) = q_atom(A) * shells.ref_occ(s) / sum_refocc[A];
+    }
+  }
+  return qsh;
 }
 
 Mat3N klopman_ohno_gamma_energy_gradient(
