@@ -17,6 +17,7 @@
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/native_calculator.h>
 #include <occ/crystal/crystal.h>
+#include <occ/disp/d4.h>
 #include <occ/xtb/gfn2_periodic_calculator.h>
 #include <occ/xtb/kpoint_grid.h>
 #include <occ/xtb/periodic.h>
@@ -736,6 +737,7 @@ TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
   occ::xtb::PeriodicSccOptions per_opts;
   per_opts.real_cutoff = 18.0;
   per_opts.include_multipoles = false;  // match molecular charge-only.
+  per_opts.include_dispersion = false;  // molecular charge-only doesn't add D4 here either.
   auto r_per = occ::xtb::run_charge_only_periodic_scc(sys, p, per_opts);
   REQUIRE(r_per.converged);
 
@@ -835,6 +837,32 @@ TEST_CASE("Complex generalized eigensolve: known eigenvalues",
   REQUIRE((ortho - occ::CMat::Identity(3, 3)).cwiseAbs().maxCoeff() < 1e-12);
 }
 
+TEST_CASE("Periodic D4: large-cell limit matches molecular",
+          "[xtb][periodic][disp]") {
+  // For a vacuum-padded cell, periodic D4 should reduce to molecular D4
+  // (image contributions decay as 1/R^6 — negligible at 100+ Bohr).
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, 0.0, 0.0, 0.0},
+      {1, 1.5, 0.5, 0.0},
+      {1, -1.5, 0.5, 0.0},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::disp::Dispersion d4(atoms);
+  const auto &g = p.globals();
+  d4.set_damping(occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
+  const double e_mol = d4.energy();
+
+  // Periodic at 100 Bohr cell, cutoff 60 Bohr.
+  occ::Mat3 lat = occ::Mat3::Identity() * 100.0;
+  auto images = occ::xtb::build_lattice_images(lat, 60.0);
+  std::vector<occ::Vec3> trans;
+  for (const auto &im : images) trans.push_back(im.t_bohr);
+  const double e_per = d4.energy_periodic(trans);
+  INFO("D4 mol=" << e_mol << " per=" << e_per);
+  REQUIRE(e_per == Approx(e_mol).margin(1e-9));
+}
+
 TEST_CASE("NativeCalculator(Crystal): water 8 Bohr cubic vs tblite",
           "[xtb][periodic][native][tblite]") {
   // Reference from `~/git/tblite/build/app/tblite run --method gfn2` on a
@@ -871,6 +899,10 @@ TEST_CASE("NativeCalculator(Crystal): water 8 Bohr cubic vs tblite",
   calc.set_include_multipoles(true);
   double e = calc.single_point_energy();
   REQUIRE(calc.last_result().converged);
+  INFO("OCC: scc=" << calc.scc_energy()
+       << " rep=" << calc.repulsion_energy()
+       << " disp=" << calc.dispersion_energy()
+       << " total=" << e);
   // tblite SCC+repulsion (subtracting D4 ~6e-7) ≈ -5.0705877 Ha; multipole
   // image contributions and damped Coulomb cutoff add a few µHa to mHa. With
   // a 20 Bohr real_cutoff (default) and our real-space-only multipole sum
@@ -905,6 +937,7 @@ TEST_CASE("Periodic SCC with multipoles: large cell matches molecular full",
   occ::xtb::PeriodicSccOptions per_opts;
   per_opts.real_cutoff = 18.0;
   per_opts.include_multipoles = true;
+  per_opts.include_dispersion = false;  // match molecular reference (no D4).
   auto r_per = occ::xtb::run_charge_only_periodic_scc(sys, p, per_opts);
   REQUIRE(r_per.converged);
 

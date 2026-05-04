@@ -22,6 +22,13 @@ struct PeriodicSccOptions {
   // dipole/quadrupole couplings are dropped (typical molecular-crystal
   // approximation; matches tblite).
   bool include_multipoles{true};
+  // Include native DFT-D4 dispersion (lattice-summed BJ damping over the
+  // translations within `disp_cutoff`).
+  bool include_dispersion{true};
+  // Real-space cutoff (Bohr) for the lattice-summed D4 BJ pair sum. 60 Bohr
+  // gives ~ µHa precision for typical molecular crystals; tighter cutoffs are
+  // fine for production speed.
+  double disp_cutoff{60.0};
   // Real-space cutoff (Bohr) for periodic CN, repulsion, and per-T AO matrix
   // blocks. The Ewald γ uses its own (separate) cutoffs.
   double real_cutoff{20.0};
@@ -34,7 +41,8 @@ struct PeriodicSccOptions {
 struct PeriodicSccResult {
   double scc_energy{0.0};      // electronic + isotropic Coulomb (Hartree)
   double repulsion_energy{0.0};
-  double total_energy{0.0};    // scc + repulsion (no dispersion in v1)
+  double dispersion_energy{0.0};
+  double total_energy{0.0};    // scc + repulsion + dispersion
   Vec shell_charges;           // per-shell, central cell
   Vec atomic_charges;          // per-atom, central cell
   Vec orbital_energies;        // ε at Γ (Hartree)

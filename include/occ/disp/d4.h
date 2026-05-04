@@ -98,6 +98,16 @@ public:
   // (energy, gradient) where gradient is 3 × N_atoms in Hartree/Bohr.
   std::pair<double, Mat3N> energy_and_gradient() const;
 
+  // Periodic 2-body dispersion energy: lattice-summed BJ damping over
+  // translations T (each T = (n1, n2, n3) · lattice in Bohr). The 1/R^6 +
+  // 1/R^8 form converges absolutely in 3D, so a real-space cutoff suffices.
+  // Convention matches the molecular case: T=0 enumerates each pair once
+  // (i<j); T!=0 enumerates all (i,j) including i==j with weight 1/2.
+  // Three-body ATM is not lattice-summed in this v1 (set s9=0 if you want a
+  // strictly 2-body comparison; otherwise the central-cell ATM term still
+  // contributes).
+  double energy_periodic(const std::vector<Vec3> &translations_bohr) const;
+
   // The D4 covalent coordination numbers (erf-counted, EN-weighted).
   Vec covalent_coordination_numbers() const;
 

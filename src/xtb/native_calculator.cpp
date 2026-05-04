@@ -115,7 +115,7 @@ double NativeCalculator::single_point_energy() {
     // bond_orders) keep working on the central-cell density.
     m_last_result.scc_energy = m_periodic_result.scc_energy;
     m_last_result.repulsion_energy = m_periodic_result.repulsion_energy;
-    m_last_result.dispersion_energy = 0.0;
+    m_last_result.dispersion_energy = m_periodic_result.dispersion_energy;
     m_last_result.total_energy = m_periodic_result.total_energy;
     m_last_result.shell_charges = m_periodic_result.shell_charges;
     m_last_result.atomic_charges = m_periodic_result.atomic_charges;

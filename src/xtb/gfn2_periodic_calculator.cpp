@@ -1,19 +1,22 @@
 #include <Eigen/Eigenvalues>
+#include <algorithm>
 #include <cmath>
 #include <occ/core/diis.h>
 #include <occ/core/log.h>
+#include <occ/disp/d4.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/xtb/anisotropic.h>
 #include <occ/xtb/basis.h>
 #include <occ/xtb/camm.h>
 #include <occ/xtb/coordination.h>
-#include <algorithm>
 #include <occ/xtb/gfn2_periodic_calculator.h>
+#include <occ/xtb/gfn2_parameters.h>
 #include <occ/xtb/kpoint_grid.h>
 #include <occ/xtb/multipole_damping.h>
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/repulsion.h>
+#include <optional>
 #include <stdexcept>
 
 namespace occ::xtb {
@@ -69,6 +72,21 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
     Q_ao = quadrupole_ao_matrices(engine);
     mp_radii = multipole_radii(sys.atoms, cn, params);
   }
+
+  // Native D4 lattice translation list (independent of SCC iteration).
+  std::optional<occ::disp::Dispersion> native_d4;
+  std::vector<Vec3> disp_trans;
+  if (opts.include_dispersion) {
+    native_d4.emplace(sys.atoms);
+    const auto &g = params.globals();
+    native_d4->set_damping(
+        occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
+    auto disp_images =
+        build_lattice_images(sys.lattice_bohr, opts.disp_cutoff);
+    disp_trans.reserve(disp_images.size());
+    for (const auto &im : disp_images) disp_trans.push_back(im.t_bohr);
+  }
+  double e_disp = 0.0;
 
   // Closed-shell electron count (per primitive cell).
   double n_elec_total = 0.0;
@@ -158,6 +176,14 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
     Vec pop = shell_populations(PS, bf_to_shell, n_shells);
     Vec qsh_new = z_sh - pop;
 
+    if (native_d4) {
+      Vec atom_q_new = Vec::Zero(sys.atoms.size());
+      for (int s = 0; s < n_shells; ++s)
+        atom_q_new(shells.atom[s]) += qsh_new(s);
+      native_d4->set_charges(atom_q_new);
+      e_disp = native_d4->energy_periodic(disp_trans);
+    }
+
     double e_es = 0.5 * qsh_new.dot(J * qsh_new);
     double e_third = 0.0;
     for (Eigen::Index s = 0; s < qsh_new.size(); ++s) {
@@ -166,7 +192,7 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
     }
     double e_h0 = (P.cwiseProduct(H0)).sum();
     double scc_energy = e_h0 + e_es + e_third + e_aniso.aes + e_aniso.polariz;
-    double total_energy = scc_energy + e_rep;
+    double total_energy = scc_energy + e_rep + e_disp;
 
     double dq_max = (qsh_new - qsh).cwiseAbs().maxCoeff();
     double de = std::abs(total_energy - prev_energy);
@@ -183,6 +209,7 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       PeriodicSccResult r;
       r.scc_energy = scc_energy;
       r.repulsion_energy = e_rep;
+      r.dispersion_energy = e_disp;
       r.total_energy = total_energy;
       r.shell_charges = qsh_new;
       r.atomic_charges = atom_charges;
@@ -254,6 +281,20 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
   auto ewald = build_ewald_data(sys, /*tol=*/1e-10, opts.ewald_alpha,
                                  opts.ewald_residual_cutoff);
   Mat J = periodic_klopman_ohno_gamma(sys, shells, params, ewald);
+
+  std::optional<occ::disp::Dispersion> native_d4;
+  std::vector<Vec3> disp_trans;
+  if (opts.include_dispersion) {
+    native_d4.emplace(sys.atoms);
+    const auto &g = params.globals();
+    native_d4->set_damping(
+        occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
+    auto disp_images =
+        build_lattice_images(sys.lattice_bohr, opts.disp_cutoff);
+    disp_trans.reserve(disp_images.size());
+    for (const auto &im : disp_images) disp_trans.push_back(im.t_bohr);
+  }
+  double e_disp = 0.0;
 
   // Pre-compute Bloch-summed S(k), H0(k) for each k (geometry-cached).
   const int n_k = static_cast<int>(kpoints.size());
@@ -381,6 +422,14 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
 
     Vec qsh_new = z_sh - pop;
 
+    if (native_d4) {
+      Vec atom_q_new = Vec::Zero(sys.atoms.size());
+      for (int s = 0; s < n_shells; ++s)
+        atom_q_new(shells.atom[s]) += qsh_new(s);
+      native_d4->set_charges(atom_q_new);
+      e_disp = native_d4->energy_periodic(disp_trans);
+    }
+
     double e_es = 0.5 * qsh_new.dot(J * qsh_new);
     double e_third = 0.0;
     for (Eigen::Index s = 0; s < qsh_new.size(); ++s) {
@@ -388,7 +437,7 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
       e_third += shells.third_order(s) * q * q * q / 3.0;
     }
     double scc_energy = e_h0 + e_es + e_third;
-    double total_energy = scc_energy + e_rep;
+    double total_energy = scc_energy + e_rep + e_disp;
 
     double dq_max = (qsh_new - qsh).cwiseAbs().maxCoeff();
     double de = std::abs(total_energy - prev_energy);
@@ -405,6 +454,7 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
       PeriodicSccResult r;
       r.scc_energy = scc_energy;
       r.repulsion_energy = e_rep;
+      r.dispersion_energy = e_disp;
       r.total_energy = total_energy;
       r.shell_charges = qsh_new;
       r.atomic_charges = atom_charges;

@@ -914,6 +914,85 @@ double Dispersion::energy() const {
   return e2 + e3;
 }
 
+namespace {
+
+// Lattice-summed BJ-damped 2-body dispersion. See dispersion_2body for the
+// per-pair formula. Convention:
+//   T = (0,0,0): each pair counted once via i<j (matches molecular).
+//   T != 0:    all (i,j) including i==j, weighted by 1/2 (because (i,j,T)
+//              and (j,i,-T) both appear in the full enumeration).
+double dispersion_2body_periodic(const std::vector<core::Atom> &atoms,
+                                  const std::vector<Vec3> &translations,
+                                  const D4Damping &dp, const Mat &c6,
+                                  double cutoff2_bohr) {
+  const auto &rd = reference_data();
+  const int n = static_cast<int>(atoms.size());
+  const double cutoff2 = cutoff2_bohr * cutoff2_bohr;
+  double e = 0.0;
+  for (const auto &T : translations) {
+    const bool is_T0 = (T.norm() < 1e-12);
+    const double w = is_T0 ? 1.0 : 0.5;
+    for (int i = 0; i < n; ++i) {
+      const double qi = rd.sqrt_zr4r2[atoms[i].atomic_number];
+      const int j_max = is_T0 ? i : n;
+      for (int j = 0; j < j_max; ++j) {
+        const double qj = rd.sqrt_zr4r2[atoms[j].atomic_number];
+        const double dx = atoms[i].x - atoms[j].x - T.x();
+        const double dy = atoms[i].y - atoms[j].y - T.y();
+        const double dz = atoms[i].z - atoms[j].z - T.z();
+        const double r2 = dx * dx + dy * dy + dz * dz;
+        if (r2 > cutoff2 || r2 < 1e-12) continue;
+        const double r4r2ij = 3.0 * qi * qj;
+        const double r0 = dp.a1 * std::sqrt(r4r2ij) + dp.a2;
+        const double r0_2 = r0 * r0;
+        const double r0_6 = r0_2 * r0_2 * r0_2;
+        const double r0_8 = r0_6 * r0_2;
+        const double r6 = r2 * r2 * r2;
+        const double r8 = r6 * r2;
+        const double cij = c6(i, j);
+        const double c8ij = r4r2ij * cij;
+        e -= w * (dp.s6 * cij / (r6 + r0_6) + dp.s8 * c8ij / (r8 + r0_8));
+      }
+      if (!is_T0) {
+        // Self-image i=i.
+        const double r2 = T.squaredNorm();
+        if (r2 > cutoff2 || r2 < 1e-12) continue;
+        const double r4r2ii = 3.0 * qi * qi;
+        const double r0 = dp.a1 * std::sqrt(r4r2ii) + dp.a2;
+        const double r0_2 = r0 * r0;
+        const double r0_6 = r0_2 * r0_2 * r0_2;
+        const double r0_8 = r0_6 * r0_2;
+        const double r6 = r2 * r2 * r2;
+        const double r8 = r6 * r2;
+        const double cii = c6(i, i);
+        const double c8ii = r4r2ii * cii;
+        e -= w * (dp.s6 * cii / (r6 + r0_6) + dp.s8 * c8ii / (r8 + r0_8));
+      }
+    }
+  }
+  return e;
+}
+
+} // namespace
+
+double
+Dispersion::energy_periodic(const std::vector<Vec3> &translations_bohr) const {
+  const auto cn = covalent_coordination_numbers();
+  const auto ref_alpha = build_reference_alpha(m_atoms, m_scaling, m_refq_mode);
+  const Mat gw = compute_reference_weights(m_atoms, m_scaling, m_refq_mode, cn,
+                                            m_q);
+  const Mat c6 = compute_c6_matrix(m_atoms, gw, ref_alpha);
+  // 2-body lattice sum.
+  const double e2 = dispersion_2body_periodic(m_atoms, translations_bohr,
+                                                m_damping, c6,
+                                                m_cutoff_disp2);
+  // 3-body — central-cell only for now (full ATM lattice sum is more
+  // involved; the central-cell ATM is a small correction for typical
+  // molecular crystals).
+  const double e3 = dispersion_3body(m_atoms, m_damping, c6, m_cutoff_disp3);
+  return e2 + e3;
+}
+
 std::pair<double, Mat3N> Dispersion::energy_and_gradient() const {
   // Analytical gradient. Three chain-rule contributions:
   //   1. Direct position dependence (BJ damping + ATM angular).
