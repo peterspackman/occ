@@ -1,10 +1,12 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
+#include <occ/crystal/crystal.h>
 #include <occ/disp/d4.h>
 #include <occ/xtb/coordination.h>
 #include <occ/xtb/gamma.h>
 #include <occ/xtb/gfn2_calculator.h>
 #include <occ/xtb/h0_gradient.h>
+#include <occ/xtb/kpoint_grid.h>
 #include <occ/xtb/native_calculator.h>
 #include <occ/xtb/repulsion.h>
 #include <stdexcept>
@@ -56,7 +58,37 @@ NativeCalculator::NativeCalculator(const core::Dimer &dimer)
   initialize_calculator();
 }
 
+NativeCalculator::NativeCalculator(const crystal::Crystal &crystal) {
+  m_periodic = true;
+  m_periodic_sys = PeriodicSystem::from_crystal(crystal);
+  // Mirror molecular positions / atomic numbers so positions(), num_atoms(),
+  // and to_wavefunction() can act on the central-cell atoms.
+  const int n = m_periodic_sys.num_atoms();
+  m_positions_bohr.resize(3, n);
+  m_atomic_numbers.resize(n);
+  for (int i = 0; i < n; ++i) {
+    m_positions_bohr(0, i) = m_periodic_sys.atoms[i].x;
+    m_positions_bohr(1, i) = m_periodic_sys.atoms[i].y;
+    m_positions_bohr(2, i) = m_periodic_sys.atoms[i].z;
+    m_atomic_numbers(i) = m_periodic_sys.atoms[i].atomic_number;
+  }
+  m_params = std::make_shared<Gfn2Parameters>(Gfn2Parameters::load_default());
+  m_periodic_opts.total_charge = m_charge;
+}
+
 NativeCalculator::~NativeCalculator() = default;
+
+void NativeCalculator::set_kpoints(int n1, int n2, int n3) {
+  m_kpoints[0] = n1;
+  m_kpoints[1] = n2;
+  m_kpoints[2] = n3;
+}
+
+void NativeCalculator::set_include_multipoles(bool on) {
+  m_periodic_opts.include_multipoles = on;
+  // The molecular path always honors multipoles via single_point(opts, true).
+  // We stash the flag for periodic dispatch; molecular ignores this setter.
+}
 
 void NativeCalculator::initialize_calculator() {
   m_params = std::make_shared<Gfn2Parameters>(Gfn2Parameters::load_default());
@@ -66,6 +98,37 @@ void NativeCalculator::initialize_calculator() {
 }
 
 double NativeCalculator::single_point_energy() {
+  if (m_periodic) {
+    m_periodic_opts.total_charge = m_charge;
+    if (m_kpoints[0] == 1 && m_kpoints[1] == 1 && m_kpoints[2] == 1) {
+      m_periodic_result = run_charge_only_periodic_scc(
+          m_periodic_sys, *m_params, m_periodic_opts);
+    } else {
+      auto kpts = monkhorst_pack_grid(m_periodic_sys.reciprocal_bohr(),
+                                      m_kpoints[0], m_kpoints[1],
+                                      m_kpoints[2]);
+      m_periodic_result =
+          run_periodic_scc_kpoints(m_periodic_sys, *m_params, kpts,
+                                    m_periodic_opts);
+    }
+    // Mirror into m_last_result so the molecular accessors (charges,
+    // bond_orders) keep working on the central-cell density.
+    m_last_result.scc_energy = m_periodic_result.scc_energy;
+    m_last_result.repulsion_energy = m_periodic_result.repulsion_energy;
+    m_last_result.dispersion_energy = 0.0;
+    m_last_result.total_energy = m_periodic_result.total_energy;
+    m_last_result.shell_charges = m_periodic_result.shell_charges;
+    m_last_result.atomic_charges = m_periodic_result.atomic_charges;
+    m_last_result.orbital_energies = m_periodic_result.orbital_energies;
+    m_last_result.orbital_occupations = m_periodic_result.orbital_occupations;
+    m_last_result.density_matrix = m_periodic_result.density_matrix;
+    m_last_result.overlap_matrix = m_periodic_result.overlap_matrix;
+    m_last_result.orbital_coefficients =
+        m_periodic_result.orbital_coefficients;
+    m_last_result.n_iterations = m_periodic_result.n_iterations;
+    m_last_result.converged = m_periodic_result.converged;
+    return m_periodic_result.total_energy;
+  }
   m_opts.total_charge = m_charge;
   m_last_result = m_calc->single_point(m_opts, /*include_multipoles=*/true);
   return m_last_result.total_energy;

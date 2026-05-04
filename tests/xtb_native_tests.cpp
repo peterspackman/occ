@@ -16,6 +16,7 @@
 #include <occ/xtb/h0_gradient.h>
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/native_calculator.h>
+#include <occ/crystal/crystal.h>
 #include <occ/xtb/gfn2_periodic_calculator.h>
 #include <occ/xtb/kpoint_grid.h>
 #include <occ/xtb/periodic.h>
@@ -832,6 +833,55 @@ TEST_CASE("Complex generalized eigensolve: known eigenvalues",
   // C^H · S · C = I.
   occ::CMat ortho = sol.eigenvectors.adjoint() * S * sol.eigenvectors;
   REQUIRE((ortho - occ::CMat::Identity(3, 3)).cwiseAbs().maxCoeff() < 1e-12);
+}
+
+TEST_CASE("NativeCalculator(Crystal): water 8 Bohr cubic vs tblite",
+          "[xtb][periodic][native][tblite]") {
+  // Reference from `~/git/tblite/build/app/tblite run --method gfn2` on a
+  // gen-format cell with the same geometry (positions in Å, 8 Å cubic cell);
+  // shifted by +1 Å in each direction to keep all atoms inside the cell.
+  //   Atom 1 (O) at (1.00, 1.00, 1.00)
+  //   Atom 2 (H) at (1.96, 1.00, 1.00)
+  //   Atom 3 (H) at (0.76, 1.93, 1.00)
+  // tblite total energy = -5.0705883841738 Ha (full GFN2 + D4 dispersion).
+  // Subtracting tblite's reported D4 = 6.16e-7 Ha, the SCC+repulsion piece
+  // is -5.0705877 Ha (we don't include D4 in the periodic path yet).
+  //
+  // tblite repulsion = 0.034134532 Ha. Our charge-only path matches molecular
+  // GFN2 within charge-only's missing-multipole gap (~1 mHa); with multipoles
+  // on we reproduce the full GFN2.
+  using occ::crystal::AsymmetricUnit;
+  using occ::crystal::Crystal;
+  using occ::crystal::SpaceGroup;
+  using occ::crystal::UnitCell;
+  occ::Mat3N positions_ang(3, 3);
+  positions_ang.col(0) = occ::Vec3(1.0, 1.0, 1.0);
+  positions_ang.col(1) = occ::Vec3(1.96, 1.0, 1.0);
+  positions_ang.col(2) = occ::Vec3(0.76, 1.93, 1.0);
+  occ::IVec Z(3);
+  Z << 8, 1, 1;
+  // Convert Cartesian Å positions to fractional.
+  UnitCell cell = occ::crystal::cubic_cell(8.0);
+  occ::Mat3N positions_frac = cell.to_fractional(positions_ang);
+  AsymmetricUnit asym(positions_frac, Z);
+  SpaceGroup sg(1); // P1
+  Crystal crystal(asym, sg, cell);
+
+  occ::xtb::NativeCalculator calc(crystal);
+  calc.set_include_multipoles(true);
+  double e = calc.single_point_energy();
+  REQUIRE(calc.last_result().converged);
+  // tblite SCC+repulsion (subtracting D4 ~6e-7) ≈ -5.0705877 Ha; multipole
+  // image contributions and damped Coulomb cutoff add a few µHa to mHa. With
+  // a 20 Bohr real_cutoff (default) and our real-space-only multipole sum
+  // we expect ~1 mHa accuracy on this small cell.
+  REQUIRE(e == Approx(-5.0705877).margin(2e-3));
+  // Repulsion should be very close (no Coulomb subtleties).
+  REQUIRE(calc.repulsion_energy() == Approx(0.034134532).margin(1e-5));
+  // Charges should be water-like: O ~ -0.5, H ~ +0.25.
+  REQUIRE(calc.charges()(0) < -0.3);
+  REQUIRE(calc.charges()(1) > 0.1);
+  REQUIRE(calc.charges()(2) > 0.1);
 }
 
 TEST_CASE("Periodic SCC with multipoles: large cell matches molecular full",

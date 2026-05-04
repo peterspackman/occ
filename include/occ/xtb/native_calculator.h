@@ -3,7 +3,13 @@
 #include <occ/core/dimer.h>
 #include <occ/core/molecule.h>
 #include <occ/qm/wavefunction.h>
+#include <occ/xtb/gfn2_periodic_calculator.h>
+#include <occ/xtb/periodic.h>
 #include <occ/xtb/scc.h>
+
+namespace occ::crystal {
+class Crystal;
+}
 
 namespace occ::xtb {
 
@@ -11,15 +17,29 @@ class Gfn2Calculator;
 class Gfn2Parameters;
 
 // Native in-tree GFN2-xTB backend. Mirrors the public surface of
-// `TbliteCalculator` so callers can swap. Supports only molecular systems
-// (no PBC) for now — Phase 4d will add Crystal.
+// `TbliteCalculator` so callers can swap. Supports both isolated molecular
+// systems and 3D periodic crystals (constructed from `crystal::Crystal`).
 class NativeCalculator {
 public:
   enum class Method { GFN2 };
 
   explicit NativeCalculator(const occ::core::Molecule &mol);
   explicit NativeCalculator(const occ::core::Dimer &dimer);
+  // Crystal constructor — Γ-only by default; call set_kpoints to enable
+  // k-point sampling.
+  explicit NativeCalculator(const occ::crystal::Crystal &crystal);
   ~NativeCalculator();
+
+  // Configure the periodic SCC. Only meaningful when constructed from a
+  // Crystal. Defaults to {1,1,1} (Γ only). Larger meshes use the complex
+  // eigensolve path.
+  void set_kpoints(int n1, int n2, int n3);
+  // Toggle the multipole AES + on-site polarization. For periodic, only
+  // honored at the (1,1,1) Γ-only path (k-sampled multipoles deferred).
+  void set_include_multipoles(bool on);
+
+  // Whether this calculator was built for a periodic system.
+  inline bool is_periodic() const { return m_periodic; }
 
   double single_point_energy();
 
@@ -101,6 +121,13 @@ private:
   std::shared_ptr<Gfn2Parameters> m_params;
   std::unique_ptr<Gfn2Calculator> m_calc;
   SccResult m_last_result;
+
+  // Periodic state — only populated when built from a Crystal.
+  bool m_periodic{false};
+  PeriodicSystem m_periodic_sys;
+  PeriodicSccOptions m_periodic_opts;
+  int m_kpoints[3]{1, 1, 1};
+  PeriodicSccResult m_periodic_result;
 };
 
 } // namespace occ::xtb
