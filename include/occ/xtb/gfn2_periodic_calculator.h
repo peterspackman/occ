@@ -16,6 +16,12 @@ struct PeriodicSccOptions {
   double energy_threshold{1e-7};
   double damping_factor{0.4};
   double total_charge{0.0};       // net charge per primitive cell
+  // Include the CAMM anisotropic electrostatics + on-site polarization terms
+  // (xtb's "AES"). True for full GFN2; false for the charge-only fast path.
+  // Multipole interactions are restricted to the central cell — image-image
+  // dipole/quadrupole couplings are dropped (typical molecular-crystal
+  // approximation; matches tblite).
+  bool include_multipoles{true};
   // Real-space cutoff (Bohr) for periodic CN, repulsion, and per-T AO matrix
   // blocks. The Ewald γ uses its own (separate) cutoffs.
   double real_cutoff{20.0};

@@ -661,6 +661,56 @@ TEST_CASE("Periodic γ: neutral charge density energy invariant under α",
   REQUIRE(E1 == Approx(E2).margin(1e-10));
 }
 
+TEST_CASE("Periodic anisotropic: large cell == molecular AES",
+          "[xtb][periodic][aes]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, 0.0, 0.0, 0.0},
+      {1, 1.5, 0.5, 0.0},
+      {1, -1.5, 0.5, 0.0},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::xtb::Gfn2Calculator calc(atoms, p);
+  // Run molecular full SCC to get a converged density.
+  occ::xtb::SccOptions mol_opts;
+  mol_opts.include_dispersion = false;
+  auto r = calc.run_full(mol_opts);
+  REQUIRE(r.converged);
+
+  // Reproduce the multipole inputs for a direct test of the periodic AES
+  // helpers vs the molecular ones.
+  occ::Vec cn = occ::xtb::gfn_coordination_numbers(atoms);
+  auto basis = occ::xtb::build_aobasis(atoms, p);
+  occ::qm::IntegralEngine eng(basis);
+  auto D = occ::xtb::dipole_ao_matrices(eng);
+  auto Q = occ::xtb::quadrupole_ao_matrices(eng);
+  auto bf2at = basis.bf_to_atom();
+  auto mom = occ::xtb::compute_camm_moments(atoms, bf2at, r.density_matrix,
+                                              r.overlap_matrix, D, Q);
+  occ::Vec mp_radii = occ::xtb::multipole_radii(atoms, cn, p);
+  auto damped = occ::xtb::damped_multipole_coulomb(atoms, mp_radii, p);
+  auto e_mol = occ::xtb::anisotropic_energy(atoms, r.atomic_charges, mom,
+                                              damped, p);
+  auto pot_mol = occ::xtb::anisotropic_potentials(atoms, r.atomic_charges,
+                                                    mom, damped, p);
+
+  // Periodic at 50 Bohr cell, real-space cutoff 20 Bohr — image contributions
+  // ~ 1e-5 per pair so should match molecular to ~1e-4.
+  occ::Mat3 lat = occ::Mat3::Identity() * 50.0;
+  auto images = occ::xtb::build_lattice_images(lat, 20.0);
+  auto e_per = occ::xtb::anisotropic_energy_periodic(atoms, images,
+                                                      r.atomic_charges,
+                                                      mp_radii, mom, p);
+  auto pot_per = occ::xtb::anisotropic_potentials_periodic(
+      atoms, images, r.atomic_charges, mp_radii, mom, p);
+
+  REQUIRE(e_per.aes == Approx(e_mol.aes).margin(1e-7));
+  REQUIRE(e_per.polariz == Approx(e_mol.polariz).margin(1e-12));
+  REQUIRE((pot_per.vs - pot_mol.vs).cwiseAbs().maxCoeff() < 1e-6);
+  REQUIRE((pot_per.vd - pot_mol.vd).cwiseAbs().maxCoeff() < 1e-6);
+  REQUIRE((pot_per.vq - pot_mol.vq).cwiseAbs().maxCoeff() < 1e-6);
+}
+
 TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
           "[xtb][periodic][scc]") {
   using occ::core::Atom;
@@ -683,6 +733,7 @@ TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
   occ::xtb::PeriodicSystem sys{atoms, lattice};
   occ::xtb::PeriodicSccOptions per_opts;
   per_opts.real_cutoff = 18.0;
+  per_opts.include_multipoles = false;  // match molecular charge-only.
   auto r_per = occ::xtb::run_charge_only_periodic_scc(sys, p, per_opts);
   REQUIRE(r_per.converged);
 
@@ -693,8 +744,37 @@ TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
   // shift in γ — which cancels in q^T γ q since Σq = 0.
   REQUIRE(r_per.total_energy ==
           Approx(r_mol.total_energy).margin(1e-5));
-  // Charges respond to the small image-lattice perturbation in γ; for a
-  // 50 Bohr cell with atoms ~3 Bohr apart this is ~1e-4.
+  REQUIRE((r_per.atomic_charges - r_mol.atomic_charges)
+              .cwiseAbs()
+              .maxCoeff() < 1e-4);
+}
+
+TEST_CASE("Periodic SCC with multipoles: large cell matches molecular full",
+          "[xtb][periodic][scc][aes]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+
+  occ::xtb::SccOptions mol_opts;
+  mol_opts.include_dispersion = false;
+  occ::xtb::Gfn2Calculator calc_mol(atoms, p);
+  auto r_mol = calc_mol.run_full(mol_opts);
+  REQUIRE(r_mol.converged);
+
+  occ::Mat3 lat = occ::Mat3::Identity() * 50.0;
+  occ::xtb::PeriodicSystem sys{atoms, lat};
+  occ::xtb::PeriodicSccOptions per_opts;
+  per_opts.real_cutoff = 18.0;
+  per_opts.include_multipoles = true;
+  auto r_per = occ::xtb::run_charge_only_periodic_scc(sys, p, per_opts);
+  REQUIRE(r_per.converged);
+
+  REQUIRE(r_per.total_energy ==
+          Approx(r_mol.total_energy).margin(1e-5));
   REQUIRE((r_per.atomic_charges - r_mol.atomic_charges)
               .cwiseAbs()
               .maxCoeff() < 1e-4);

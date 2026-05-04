@@ -2,9 +2,14 @@
 #include <cmath>
 #include <occ/core/diis.h>
 #include <occ/core/log.h>
+#include <occ/qm/integral_engine.h>
+#include <occ/xtb/anisotropic.h>
 #include <occ/xtb/basis.h>
+#include <occ/xtb/camm.h>
 #include <occ/xtb/coordination.h>
 #include <occ/xtb/gfn2_periodic_calculator.h>
+#include <occ/xtb/multipole_damping.h>
+#include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/repulsion.h>
 #include <stdexcept>
@@ -51,6 +56,18 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
                                  opts.ewald_residual_cutoff);
   Mat J = periodic_klopman_ohno_gamma(sys, shells, params, ewald);
 
+  // Multipole AO matrices (built lazily — central-cell ints; image
+  // contributions to the AO multipole projection are dropped).
+  qm::IntegralEngine engine(basis);
+  MatTriple D_ao;
+  std::array<Mat, 6> Q_ao;
+  Vec mp_radii;
+  if (opts.include_multipoles) {
+    D_ao = dipole_ao_matrices(engine);
+    Q_ao = quadrupole_ao_matrices(engine);
+    mp_radii = multipole_radii(sys.atoms, cn, params);
+  }
+
   // Closed-shell electron count (per primitive cell).
   double n_elec_total = 0.0;
   for (Eigen::Index i = 0; i < z_sh.size(); ++i) n_elec_total += z_sh(i);
@@ -82,10 +99,9 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   const std::size_t diis_subspace = 8;
   occ::core::diis::DIIS diis(diis_start, diis_subspace);
 
-  occ::log::info("{:=^72s}",
-                  "  GFN2-xTB periodic SCC (Γ-only, charge-only)  ");
-  occ::log::info("nbf = {}   n_shells = {}   n_electrons = {}", nbf, n_shells,
-                  n_elec);
+  occ::log::info("{:=^72s}", "  GFN2-xTB periodic SCC (Γ-only)  ");
+  occ::log::info("nbf = {}   n_shells = {}   n_electrons = {}   multipoles = {}",
+                  nbf, n_shells, n_elec, opts.include_multipoles ? "on" : "off");
   occ::log::info("real_cutoff = {:.1f} Bohr   ewald α = {:.4f}   #G = {}",
                   opts.real_cutoff, ewald.alpha, ewald.g_vectors.size());
   occ::log::info("{:>4s}  {:>20s}  {:>12s}  {:>12s}", "iter", "E (Hartree)",
@@ -107,6 +123,19 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
         const int sh_nu = bf_to_shell[nu];
         H(mu, nu) -= 0.5 * S(mu, nu) * (V(sh_mu) + V(sh_nu));
       }
+    }
+
+    AnisotropicEnergy e_aniso{0.0, 0.0};
+    if (opts.include_multipoles && iter > 1) {
+      auto mom = compute_camm_moments(sys.atoms, bf_to_atom, P, S, D_ao, Q_ao);
+      Vec atom_q = Vec::Zero(sys.atoms.size());
+      for (int s = 0; s < n_shells; ++s)
+        atom_q(shells.atom[s]) += qsh(s);
+      auto pot = anisotropic_potentials_periodic(sys.atoms, images, atom_q,
+                                                  mp_radii, mom, params);
+      apply_anisotropic_h1(H, S, D_ao, Q_ao, bf_to_atom, pot);
+      e_aniso = anisotropic_energy_periodic(sys.atoms, images, atom_q,
+                                             mp_radii, mom, params);
     }
 
     Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(H, S);
@@ -134,7 +163,7 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       e_third += shells.third_order(s) * q * q * q / 3.0;
     }
     double e_h0 = (P.cwiseProduct(H0)).sum();
-    double scc_energy = e_h0 + e_es + e_third;
+    double scc_energy = e_h0 + e_es + e_third + e_aniso.aes + e_aniso.polariz;
     double total_energy = scc_energy + e_rep;
 
     double dq_max = (qsh_new - qsh).cwiseAbs().maxCoeff();

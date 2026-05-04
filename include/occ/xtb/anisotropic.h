@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/xtb/periodic.h>
 
 namespace occ::xtb {
 
@@ -46,5 +47,29 @@ void apply_anisotropic_h1(Mat &H, const Mat &S, const MatTriple &D,
                           const std::array<Mat, 6> &Q,
                           const std::vector<int> &bf_to_atom,
                           const AnisotropicPotentials &pot);
+
+// Periodic variants of the above. The atom-pair loops sum over lattice
+// translations (T from `images`); for each (i, j, T) the damped multipole
+// kernels gab3/gab5 are evaluated inline.
+//
+// Convention for the lattice sum (matches the existing molecular formulas):
+//   E_per = Σ_{i<j} f(i, j, T=0) + ½ Σ_{T≠0} Σ_{i,j} f(i, j, T)
+//
+// Real-space cutoff only (no Ewald) — gab5 (1/R^5) converges absolutely;
+// gab3 (1/R^3) converges in 3D for typical molecular-crystal lattice
+// constants when summed to 20+ Bohr. For tight convergence on highly polar
+// or ionic crystals, a future Ewald-split variant (mirroring tblite's
+// get_amat_sdq_dir_3d / get_amat_sdq_rec_3d) will be needed.
+AnisotropicEnergy anisotropic_energy_periodic(
+    const std::vector<core::Atom> &atoms,
+    const std::vector<LatticeImage> &images, const Vec &q,
+    const Vec &mp_radii, const CammMoments &m,
+    const Gfn2Parameters &params);
+
+AnisotropicPotentials anisotropic_potentials_periodic(
+    const std::vector<core::Atom> &atoms,
+    const std::vector<LatticeImage> &images, const Vec &q,
+    const Vec &mp_radii, const CammMoments &m,
+    const Gfn2Parameters &params);
 
 } // namespace occ::xtb
