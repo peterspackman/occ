@@ -16,6 +16,7 @@
 #include <occ/xtb/h0_gradient.h>
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/native_calculator.h>
+#include <occ/xtb/gfn2_periodic_calculator.h>
 #include <occ/xtb/periodic.h>
 #include <occ/xtb/periodic_gamma.h>
 #include <occ/xtb/periodic_integrals.h>
@@ -658,6 +659,74 @@ TEST_CASE("Periodic γ: neutral charge density energy invariant under α",
   const double E1 = 0.5 * qsh.dot(J1 * qsh);
   const double E2 = 0.5 * qsh.dot(J2 * qsh);
   REQUIRE(E1 == Approx(E2).margin(1e-10));
+}
+
+TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
+          "[xtb][periodic][scc]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+
+  // Molecular charge-only SCC for reference.
+  occ::xtb::SccOptions mol_opts;
+  mol_opts.include_dispersion = false;
+  occ::xtb::Gfn2Calculator calc_mol(atoms, p);
+  auto r_mol = calc_mol.run_charge_only(mol_opts);
+  REQUIRE(r_mol.converged);
+
+  // Periodic SCC in a 50 Bohr cubic cell.
+  occ::Mat3 lattice = occ::Mat3::Identity() * 50.0;
+  occ::xtb::PeriodicSystem sys{atoms, lattice};
+  occ::xtb::PeriodicSccOptions per_opts;
+  per_opts.real_cutoff = 18.0;
+  auto r_per = occ::xtb::run_charge_only_periodic_scc(sys, p, per_opts);
+  REQUIRE(r_per.converged);
+
+  // For an isolated molecule in a vacuum-padded cell, both should give the
+  // same energy and charges. The Madelung-style 1/R lattice tail contributes
+  // to the absolute energy via the periodic γ matrix's diagonal shift, but
+  // for a charge-neutral density that contribution comes through the constant
+  // shift in γ — which cancels in q^T γ q since Σq = 0.
+  REQUIRE(r_per.total_energy ==
+          Approx(r_mol.total_energy).margin(1e-5));
+  // Charges respond to the small image-lattice perturbation in γ; for a
+  // 50 Bohr cell with atoms ~3 Bohr apart this is ~1e-4.
+  REQUIRE((r_per.atomic_charges - r_mol.atomic_charges)
+              .cwiseAbs()
+              .maxCoeff() < 1e-4);
+}
+
+TEST_CASE("Periodic SCC: water in moderate cell is α-invariant",
+          "[xtb][periodic][scc]") {
+  using occ::core::Atom;
+  // Water in a 25 Bohr cubic cell — close enough that the periodic γ
+  // contribution is non-trivial (not just a tiny lattice-shift correction)
+  // but neutral (covalent) so SCC converges robustly.
+  std::vector<Atom> atoms{
+      {8, 0.0, 0.0, 0.0},
+      {1, 1.5, 0.5, 0.0},
+      {1, -1.5, 0.5, 0.0},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::Mat3 lattice = occ::Mat3::Identity() * 25.0;
+  occ::xtb::PeriodicSystem sys{atoms, lattice};
+
+  occ::xtb::PeriodicSccOptions opts;
+  opts.real_cutoff = 16.0;
+  auto r1 = occ::xtb::run_charge_only_periodic_scc(sys, p, opts);
+  REQUIRE(r1.converged);
+
+  // Re-solve with a different Ewald α; the SCF result must be invariant
+  // (the only α-dependence in the input is in γ, which is α-invariant).
+  opts.ewald_alpha = 0.4;
+  auto r2 = occ::xtb::run_charge_only_periodic_scc(sys, p, opts);
+  REQUIRE(r2.converged);
+  REQUIRE(r1.total_energy == Approx(r2.total_energy).margin(1e-7));
+  REQUIRE((r1.atomic_charges - r2.atomic_charges).cwiseAbs().maxCoeff() < 1e-7);
 }
 
 TEST_CASE("Pulay-only assembly: Σ Z · ∂S/∂R analytical vs FD",
