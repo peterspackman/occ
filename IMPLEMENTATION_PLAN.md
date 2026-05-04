@@ -26,24 +26,15 @@ Committed in df5757e87 + 5fafb5aa7.
 - **4d.1** `LatticeImage`, `build_lattice_images`, `PeriodicSystem::from_crystal`
 - **4d.2** `gfn_coordination_numbers_periodic`, `repulsion_energy_periodic` (CN + repulsion sum over translations; equal molecular at large cell to 1e-12)
 - **4d.3** `periodic_overlap_blocks`, `periodic_h0_blocks`, `bloch_sum`, `bloch_sum_gamma` (per-T real-space S^T, H0^T blocks via two-cell merged AOBasis; Bloch sum at any k)
+- **4d.4** `periodic_klopman_ohno_gamma` (Ewald-summed shell-resolved γ at Γ).
+  Splits γ = (γ - 1/R) + 1/R: residual sum over real-space lattice (1/R³
+  decay, fixed 60-Bohr default cutoff); Coulomb tail Ewald-summed (real erfc,
+  reciprocal G-sum, background, self). API in `include/occ/xtb/periodic_gamma.h`.
+  Validated: α-invariance of γ matrix to 1e-9, energy α-invariance for neutral
+  density to 1e-10, 2×1×1 supercell consistency for charged ionic pair to 1e-7,
+  large-cell limit reduces to molecular γ (modulo Madelung shift) to 1e-4.
 
 ### Pending — concrete plan for next session (Phase 4d)
-
-**4d.4 — Periodic shell-resolved γ via Ewald** (~300 lines, hardest piece)
-The Klopman-Ohno γ_ij(R) decays as 1/R for large R (when the global α_ewald → ∞ in the formula `(R^α + 1/η^α)^(-1/α)`), so a direct lattice sum is conditionally convergent. Use Ewald splitting:
-
-    γ_ij^periodic(r_AB) =
-        Σ_T [γ_ij(|r_AB + T|) - erf(α_ewald · |r_AB + T|) / |r_AB + T|]   (real space, short range)
-      + (4π/V) Σ_{G≠0} [exp(-G²/(4 α_ewald²)) / G²] cos(G · r_AB)         (reciprocal space)
-      + self term                                                          (G=0 + on-site)
-
-- Real-space loop: only includes T-images such that |r_AB + T| < cutoff (typical ~25 Bohr for 1e-8 convergence).
-- Reciprocal-space loop: G = h·b1 + k·b2 + l·b3, with G_max determined by α_ewald and tolerance (typical ~50 G-vectors per direction).
-- On-site (i=j, T=0) gets only the η_ii diagonal (Klopman-Ohno self-energy), no Ewald subtraction.
-- Choose α_ewald to balance real and reciprocal work — standard formula: α = √π · (V·N²)^(1/6) / V^(1/3) where N is atom count.
-- Adapt `src/mults/ewald_sum.cpp` for the structure (real loop, G loop, self term). Note: that code uses charges/dipoles, not shell-resolved γ — adaptation is non-trivial.
-
-Output: a function `periodic_gamma(sys, shells, params, translations, ewald_params)` → `Mat` (n_shells × n_shells) that gives the full periodic γ matrix at the Γ point. For k≠0, the Bloch phase enters the real-space term (and the reciprocal sum gets `cos(G·r_AB) → exp(i G·r_AB)` style). For an SCC at general k, this becomes `Mat γ(k)` — but γ for the **electrostatic energy** is k-independent (because charges live in the cell), only the **AO matrices** (S, H) become k-dependent. So we just need the Γ-point γ matrix.
 
 **4d.5 — Γ-only periodic SCC** (~150 lines plumbing)
 Add `Gfn2Calculator(Crystal)` constructor that:

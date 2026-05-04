@@ -17,6 +17,7 @@
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/native_calculator.h>
 #include <occ/xtb/periodic.h>
+#include <occ/xtb/periodic_gamma.h>
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/repulsion.h>
 #include <occ/xtb/scc.h>
@@ -506,6 +507,157 @@ TEST_CASE("Periodic AO matrices: large-cell limit equals molecular",
   occ::CMat S_k = occ::xtb::bloch_sum(S_per_T, images, k);
   REQUIRE((S_k.real() - S_mol).cwiseAbs().maxCoeff() < 1e-10);
   REQUIRE(S_k.imag().cwiseAbs().maxCoeff() < 1e-10);
+}
+
+TEST_CASE("Periodic γ: Ewald reduces to molecular at large cell",
+          "[xtb][periodic][ewald]") {
+  using occ::core::Atom;
+  // Water in a 60 Bohr cubic cell. The 1/R lattice tail still contributes
+  // a uniform Madelung-style constant to all γ_ij (same at all R since cell
+  // is huge), so we compare *differences* γ_ij - γ_kk against molecular.
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  auto shells = occ::xtb::build_shell_table(atoms, p);
+  occ::Mat J_mol = occ::xtb::klopman_ohno_gamma(atoms, shells, p);
+
+  occ::Mat3 lattice = occ::Mat3::Identity() * 60.0;
+  occ::xtb::PeriodicSystem sys{atoms, lattice};
+  auto ewald = occ::xtb::build_ewald_data(sys, /*tol=*/1e-12);
+  occ::Mat J_per =
+      occ::xtb::periodic_klopman_ohno_gamma(sys, shells, p, ewald);
+
+  // For very large cell, the lattice contribution is approximately a
+  // constant Madelung-like shift that's the same for every (i,j) pair (since
+  // R_ij << cell). The variation across pairs scales as R_ij/L^3 — for 3-Bohr
+  // separations in a 60-Bohr cell, ~1e-5.
+  const double shift = (J_per - J_mol).mean();
+  occ::Mat residual = (J_per - J_mol).array() - shift;
+  REQUIRE(residual.cwiseAbs().maxCoeff() < 1e-4);
+}
+
+TEST_CASE("Periodic γ: Ewald α-invariance",
+          "[xtb][periodic][ewald]") {
+  using occ::core::Atom;
+  // Small cubic cell so the lattice sum is non-trivial. Two atoms in a
+  // 10 Bohr box: a 'salt-like' pair.
+  std::vector<Atom> atoms{
+      {11, 0.0, 0.0, 0.0},   // Na
+      {17, 5.0, 5.0, 5.0},   // Cl
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  auto shells = occ::xtb::build_shell_table(atoms, p);
+
+  occ::Mat3 lattice = occ::Mat3::Identity() * 10.0;
+  occ::xtb::PeriodicSystem sys{atoms, lattice};
+
+  // Two different α values — Ewald result must be independent of α.
+  auto e1 = occ::xtb::build_ewald_data(sys, 1e-12, /*alpha=*/0.20);
+  auto e2 = occ::xtb::build_ewald_data(sys, 1e-12, /*alpha=*/0.45);
+  occ::Mat J1 = occ::xtb::periodic_klopman_ohno_gamma(sys, shells, p, e1);
+  occ::Mat J2 = occ::xtb::periodic_klopman_ohno_gamma(sys, shells, p, e2);
+  REQUIRE((J1 - J2).cwiseAbs().maxCoeff() < 1e-9);
+}
+
+TEST_CASE("Periodic γ: 2×1×1 supercell consistency",
+          "[xtb][periodic][ewald]") {
+  // Build a 2-atom Na/Cl cell, then a 4-atom 2×1×1 supercell with the same
+  // physical configuration. The energy per primitive cell of a charge-neutral
+  // density must be invariant under this trivial supercell choice.
+  using occ::core::Atom;
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  const double L = 10.0;
+
+  // Primitive cell.
+  std::vector<Atom> atoms_p{
+      {11, 0.0, 0.0, 0.0},
+      {17, L * 0.5, L * 0.5, L * 0.5},
+  };
+  occ::Mat3 lat_p = occ::Mat3::Identity() * L;
+  occ::xtb::PeriodicSystem sys_p{atoms_p, lat_p};
+  auto shells_p = occ::xtb::build_shell_table(atoms_p, p);
+  auto ewald_p = occ::xtb::build_ewald_data(sys_p, 1e-12);
+  occ::Mat J_p = occ::xtb::periodic_klopman_ohno_gamma(sys_p, shells_p, p,
+                                                        ewald_p);
+
+  // 2×1×1 supercell. Two copies of each species.
+  std::vector<Atom> atoms_s{
+      {11, 0.0, 0.0, 0.0},
+      {17, L * 0.5, L * 0.5, L * 0.5},
+      {11, L, 0.0, 0.0},
+      {17, L * 1.5, L * 0.5, L * 0.5},
+  };
+  occ::Mat3 lat_s = lat_p;
+  lat_s.col(0) *= 2.0;
+  occ::xtb::PeriodicSystem sys_s{atoms_s, lat_s};
+  auto shells_s = occ::xtb::build_shell_table(atoms_s, p);
+  auto ewald_s = occ::xtb::build_ewald_data(sys_s, 1e-12);
+  occ::Mat J_s = occ::xtb::periodic_klopman_ohno_gamma(sys_s, shells_s, p,
+                                                        ewald_s);
+
+  // Build matched neutral charge densities.
+  const int n_sh_p = static_cast<int>(shells_p.atom.size());
+  occ::Vec q_p = occ::Vec::Zero(n_sh_p);
+  int n_na_p = 0, n_cl_p = 0;
+  for (int i = 0; i < n_sh_p; ++i) {
+    if (shells_p.atom[i] == 0) ++n_na_p;
+    else ++n_cl_p;
+  }
+  for (int i = 0; i < n_sh_p; ++i) {
+    q_p(i) = (shells_p.atom[i] == 0) ? (1.0 / n_na_p) : (-1.0 / n_cl_p);
+  }
+  // For the supercell, replicate the same per-atom density on both copies.
+  const int n_sh_s = static_cast<int>(shells_s.atom.size());
+  occ::Vec q_s = occ::Vec::Zero(n_sh_s);
+  for (int i = 0; i < n_sh_s; ++i) {
+    // Atom 0,2 are Na; atoms 1,3 are Cl. n_na/n_cl per atom is half of supercell counts.
+    const int A = shells_s.atom[i];
+    const int Z = atoms_s[A].atomic_number;
+    q_s(i) = (Z == 11) ? (1.0 / n_na_p) : -(1.0 / n_cl_p);
+  }
+  // Energy per primitive cell:
+  const double E_p = 0.5 * q_p.dot(J_p * q_p);
+  const double E_s = 0.5 * q_s.dot(J_s * q_s) / 2.0; // 2 primitive cells
+  REQUIRE(E_p == Approx(E_s).margin(1e-7));
+}
+
+TEST_CASE("Periodic γ: neutral charge density energy invariant under α",
+          "[xtb][periodic][ewald]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {11, 0.0, 0.0, 0.0},
+      {17, 5.0, 5.0, 5.0},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  auto shells = occ::xtb::build_shell_table(atoms, p);
+
+  occ::Mat3 lattice = occ::Mat3::Identity() * 10.0;
+  occ::xtb::PeriodicSystem sys{atoms, lattice};
+
+  // Build a neutral shell-resolved charge density: +1 on Na shells, -1 on Cl
+  // shells, distributed evenly across each atom's shells.
+  const int n_sh = static_cast<int>(shells.atom.size());
+  occ::Vec qsh = occ::Vec::Zero(n_sh);
+  int n_na = 0, n_cl = 0;
+  for (int i = 0; i < n_sh; ++i) {
+    if (shells.atom[i] == 0) ++n_na;
+    else ++n_cl;
+  }
+  for (int i = 0; i < n_sh; ++i) {
+    qsh(i) = (shells.atom[i] == 0) ? (1.0 / n_na) : (-1.0 / n_cl);
+  }
+
+  // E = ½ q^T γ^per q must be α-invariant for a neutral system.
+  auto e1 = occ::xtb::build_ewald_data(sys, 1e-12, 0.20);
+  auto e2 = occ::xtb::build_ewald_data(sys, 1e-12, 0.45);
+  occ::Mat J1 = occ::xtb::periodic_klopman_ohno_gamma(sys, shells, p, e1);
+  occ::Mat J2 = occ::xtb::periodic_klopman_ohno_gamma(sys, shells, p, e2);
+  const double E1 = 0.5 * qsh.dot(J1 * qsh);
+  const double E2 = 0.5 * qsh.dot(J2 * qsh);
+  REQUIRE(E1 == Approx(E2).margin(1e-10));
 }
 
 TEST_CASE("Pulay-only assembly: Σ Z · ∂S/∂R analytical vs FD",
