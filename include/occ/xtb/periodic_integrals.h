@@ -48,4 +48,16 @@ CMat bloch_sum(const std::vector<Mat> &M_per_T,
 // returns a plain Mat for efficiency.
 Mat bloch_sum_gamma(const std::vector<Mat> &M_per_T);
 
+// Solve the complex Hermitian generalized eigenvalue problem
+//   H · C = ε · S · C
+// via canonical orthogonalization (X = U·s^(-1/2) where S = U·s·U^H), then
+// standard Hermitian diagonalization of X^H·H·X. Returns ascending eigen-
+// values and eigenvectors normalized so that C^H · S · C = I.
+struct CGenSolveResult {
+  Vec eigenvalues;
+  CMat eigenvectors;
+};
+CGenSolveResult solve_generalized_hermitian(const CMat &H, const CMat &S,
+                                             double s_eps = 1e-10);
+
 } // namespace occ::xtb

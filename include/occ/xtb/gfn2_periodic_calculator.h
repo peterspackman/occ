@@ -46,20 +46,37 @@ struct PeriodicSccResult {
   bool converged{false};
 };
 
-// Γ-point GFN2 SCC for a 3D periodic system. Charge-only (no multipole CAMM
-// or anisotropic ES) and no dispersion in this v1; multipoles + periodic D4
-// come in subsequent phases.
+// Γ-point GFN2 SCC for a 3D periodic system. Charge-only or full GFN2
+// (including CAMM multipoles, anisotropic ES, on-site polarization) selected
+// by `opts.include_multipoles`. No dispersion in this v1.
 //
 // Periodic ingredients used:
 //   - real-space CN, repulsion (sums over translations within real_cutoff)
 //   - per-T overlap and H0 blocks → Bloch-summed at Γ
 //   - shell-resolved γ via Ewald (`periodic_klopman_ohno_gamma`)
+//   - multipole pair sum: real-space lattice sum (gab3/gab5 inline, no Ewald)
 //
-// For a sufficiently large unit cell, this reduces to the molecular charge-
-// only GFN2 SCC.
+// For a sufficiently large unit cell, this reduces to the molecular GFN2 SCC.
 PeriodicSccResult
 run_charge_only_periodic_scc(const PeriodicSystem &sys,
                               const Gfn2Parameters &params,
                               const PeriodicSccOptions &opts = {});
+
+// k-point sampled GFN2 SCC. For each iteration the SCC builds H(k) and S(k)
+// at every k via Bloch sum of the per-T blocks, solves the complex Hermitian
+// generalized eigenproblem, and accumulates the density and Mulliken charges
+// across the k-grid with the given weights.
+//
+// Charge-only (no multipoles in this v1 — multipoles need a different
+// density-partition strategy under k-sampling that we'll wire later).
+//
+// `kpoints` is a Monkhorst-Pack-style mesh (use `monkhorst_pack_grid` to
+// build). For a single Γ-point ({n1, n2, n3} = {1, 1, 1}), this matches the
+// real-arithmetic Γ-only path of `run_charge_only_periodic_scc` to ~1e-9.
+PeriodicSccResult
+run_periodic_scc_kpoints(const PeriodicSystem &sys,
+                          const Gfn2Parameters &params,
+                          const std::vector<struct KPoint> &kpoints,
+                          const PeriodicSccOptions &opts = {});
 
 } // namespace occ::xtb

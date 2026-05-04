@@ -7,7 +7,9 @@
 #include <occ/xtb/basis.h>
 #include <occ/xtb/camm.h>
 #include <occ/xtb/coordination.h>
+#include <algorithm>
 #include <occ/xtb/gfn2_periodic_calculator.h>
+#include <occ/xtb/kpoint_grid.h>
 #include <occ/xtb/multipole_damping.h>
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/periodic_integrals.h>
@@ -221,6 +223,231 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   r.density_matrix = P;
   r.overlap_matrix = S;
   r.orbital_coefficients = C;
+  r.n_iterations = iter;
+  r.converged = false;
+  return r;
+}
+
+PeriodicSccResult
+run_periodic_scc_kpoints(const PeriodicSystem &sys,
+                          const Gfn2Parameters &params,
+                          const std::vector<KPoint> &kpoints,
+                          const PeriodicSccOptions &opts) {
+  if (kpoints.empty()) {
+    throw std::runtime_error("run_periodic_scc_kpoints: empty k-grid");
+  }
+  // Build basis, shells, integrals (central-cell).
+  auto basis = build_aobasis(sys.atoms, params);
+  auto shells = build_shell_table(sys.atoms, params);
+  const int nbf = static_cast<int>(basis.nbf());
+  const int n_shells = static_cast<int>(shells.atom.size());
+  const auto bf_to_atom = basis.bf_to_atom();
+  const auto bf_to_shell = basis.bf_to_shell();
+  const Vec z_sh = shells.ref_occ;
+
+  auto images = build_lattice_images(sys.lattice_bohr, opts.real_cutoff);
+  Vec cn = gfn_coordination_numbers_periodic(sys.atoms, images);
+  const double e_rep = repulsion_energy_periodic(sys.atoms, params, images);
+  auto S_per_T = periodic_overlap_blocks(sys, params, images);
+  auto H0_per_T = periodic_h0_blocks(sys, params, images, S_per_T, cn);
+
+  auto ewald = build_ewald_data(sys, /*tol=*/1e-10, opts.ewald_alpha,
+                                 opts.ewald_residual_cutoff);
+  Mat J = periodic_klopman_ohno_gamma(sys, shells, params, ewald);
+
+  // Pre-compute Bloch-summed S(k), H0(k) for each k (geometry-cached).
+  const int n_k = static_cast<int>(kpoints.size());
+  std::vector<CMat> S_k(n_k), H0_k(n_k);
+  for (int ik = 0; ik < n_k; ++ik) {
+    S_k[ik] = bloch_sum(S_per_T, images, kpoints[ik].k);
+    H0_k[ik] = bloch_sum(H0_per_T, images, kpoints[ik].k);
+  }
+
+  // Electron count (per primitive cell).
+  double n_elec_total = 0.0;
+  for (Eigen::Index i = 0; i < z_sh.size(); ++i) n_elec_total += z_sh(i);
+  n_elec_total -= opts.total_charge;
+  if (std::abs(std::round(n_elec_total) - n_elec_total) > 1e-6) {
+    throw std::runtime_error(
+        "run_periodic_scc_kpoints: non-integer electron count");
+  }
+  const int n_elec = static_cast<int>(std::round(n_elec_total));
+  if (n_elec % 2 != 0) {
+    throw std::runtime_error(
+        "run_periodic_scc_kpoints: open-shell n_elec=" +
+        std::to_string(n_elec));
+  }
+  const double n_pairs_per_cell = 0.5 * n_elec;
+
+  // EEQ initial guess.
+  Vec qsh;
+  try {
+    qsh = eeq_initial_shell_charges(sys.atoms, shells, opts.total_charge);
+  } catch (const std::exception &) {
+    qsh = Vec::Zero(n_shells);
+  }
+  double prev_energy = 0.0;
+  std::vector<Vec> orbital_energies_k(n_k);
+  std::vector<Mat> orbital_occupations_k(n_k, Mat::Zero(nbf, 1));
+  std::vector<CMat> C_k(n_k);
+  std::vector<CMat> P_k(n_k);
+
+  const std::size_t diis_start = 3;
+  const std::size_t diis_subspace = 8;
+  occ::core::diis::DIIS diis(diis_start, diis_subspace);
+
+  occ::log::info("{:=^72s}", "  GFN2-xTB periodic SCC (k-point)  ");
+  occ::log::info(
+      "nbf = {}   n_shells = {}   n_electrons = {}   n_kpts = {}", nbf,
+      n_shells, n_elec, n_k);
+  occ::log::info("real_cutoff = {:.1f} Bohr   ewald α = {:.4f}   #G = {}",
+                  opts.real_cutoff, ewald.alpha, ewald.g_vectors.size());
+  occ::log::info("{:>4s}  {:>20s}  {:>12s}  {:>12s}", "iter", "E (Hartree)",
+                  "|ΔE|", "max|Δq|");
+
+  bool converged = false;
+  int iter = 0;
+  for (iter = 1; iter <= opts.max_iterations; ++iter) {
+    Vec V = J * qsh;
+    for (Eigen::Index s = 0; s < V.size(); ++s) {
+      V(s) += shells.third_order(s) * qsh(s) * qsh(s);
+    }
+
+    // Solve at every k.
+    for (int ik = 0; ik < n_k; ++ik) {
+      CMat H = H0_k[ik];
+      for (Eigen::Index mu = 0; mu < nbf; ++mu) {
+        const int sh_mu = bf_to_shell[mu];
+        for (Eigen::Index nu = 0; nu < nbf; ++nu) {
+          const int sh_nu = bf_to_shell[nu];
+          H(mu, nu) -= 0.5 * S_k[ik](mu, nu) * (V(sh_mu) + V(sh_nu));
+        }
+      }
+      auto sol = solve_generalized_hermitian(H, S_k[ik]);
+      orbital_energies_k[ik] = sol.eigenvalues;
+      C_k[ik] = sol.eigenvectors;
+    }
+
+    // Aufbau across all (k, band) pairs sorted by energy.
+    struct StateRef { double energy; int ik; int band; double weight; };
+    std::vector<StateRef> states;
+    states.reserve(static_cast<size_t>(n_k * nbf));
+    for (int ik = 0; ik < n_k; ++ik) {
+      for (int b = 0; b < nbf; ++b) {
+        states.push_back({orbital_energies_k[ik](b), ik, b, kpoints[ik].weight});
+      }
+    }
+    std::sort(states.begin(), states.end(),
+              [](const StateRef &a, const StateRef &b) {
+                return a.energy < b.energy;
+              });
+
+    // Each state holds 2*w_k electrons (closed shell). Fill from below to
+    // n_elec, with a fractional last state if needed.
+    std::vector<Vec> occ_k(n_k, Vec::Zero(nbf));
+    double remaining = static_cast<double>(n_elec);
+    for (const auto &st : states) {
+      const double cap = 2.0 * st.weight;
+      if (remaining <= 0.0) break;
+      const double take = std::min(cap, remaining);
+      occ_k[st.ik](st.band) = take / st.weight;  // per-k occupation 0..2
+      remaining -= take;
+    }
+    orbital_occupations_k = std::vector<Mat>(n_k);
+    for (int ik = 0; ik < n_k; ++ik)
+      orbital_occupations_k[ik] = occ_k[ik];
+
+    // Density at each k and Mulliken populations summed over k.
+    Vec pop = Vec::Zero(n_shells);
+    double e_h0 = 0.0;
+    for (int ik = 0; ik < n_k; ++ik) {
+      // P(k) = C diag(n_i) C^H
+      CMat W = C_k[ik];
+      for (Eigen::Index i = 0; i < W.cols(); ++i) {
+        W.col(i) *= occ_k[ik](i);
+      }
+      P_k[ik] = W * C_k[ik].adjoint();
+      // Mulliken: n_μ = Re[(P S)_μμ], summed with weight.
+      CMat PS = P_k[ik] * S_k[ik];
+      const double w = kpoints[ik].weight;
+      for (Eigen::Index mu = 0; mu < nbf; ++mu) {
+        pop(bf_to_shell[mu]) += w * PS(mu, mu).real();
+      }
+      // Band-energy / e_h0 contribution: tr(P · H0) at k.
+      const std::complex<double> tr = (P_k[ik].array() *
+                                       H0_k[ik].transpose().array()).sum();
+      e_h0 += w * tr.real();
+    }
+
+    Vec qsh_new = z_sh - pop;
+
+    double e_es = 0.5 * qsh_new.dot(J * qsh_new);
+    double e_third = 0.0;
+    for (Eigen::Index s = 0; s < qsh_new.size(); ++s) {
+      const double q = qsh_new(s);
+      e_third += shells.third_order(s) * q * q * q / 3.0;
+    }
+    double scc_energy = e_h0 + e_es + e_third;
+    double total_energy = scc_energy + e_rep;
+
+    double dq_max = (qsh_new - qsh).cwiseAbs().maxCoeff();
+    double de = std::abs(total_energy - prev_energy);
+    occ::log::info("{:>4d}  {:>20.12f}  {:>12.2e}  {:>12.2e}", iter,
+                    total_energy, de, dq_max);
+
+    bool e_ok = (iter > 1) && de < opts.energy_threshold;
+    bool q_ok = dq_max < opts.charge_threshold;
+    if (e_ok && q_ok) {
+      converged = true;
+      Vec atom_charges = Vec::Zero(sys.atoms.size());
+      for (int s = 0; s < n_shells; ++s)
+        atom_charges(shells.atom[s]) += qsh_new(s);
+      PeriodicSccResult r;
+      r.scc_energy = scc_energy;
+      r.repulsion_energy = e_rep;
+      r.total_energy = total_energy;
+      r.shell_charges = qsh_new;
+      r.atomic_charges = atom_charges;
+      // Report Γ-point quantities (first k) for convenience; full per-k data
+      // could be returned via a richer struct in a future revision.
+      r.orbital_energies = orbital_energies_k[0];
+      r.orbital_occupations = orbital_occupations_k[0];
+      r.density_matrix = P_k[0].real();
+      r.overlap_matrix = S_k[0].real();
+      r.orbital_coefficients = C_k[0].real();
+      r.n_iterations = iter;
+      r.converged = true;
+      occ::log::info("Converged in {} iterations.", iter);
+      return r;
+    }
+
+    Mat x = qsh_new;
+    Mat err = qsh_new - qsh;
+    diis.extrapolate(x, err);
+    if (static_cast<std::size_t>(iter) > diis_start) {
+      qsh = x.col(0);
+    } else {
+      qsh = (1.0 - opts.damping_factor) * qsh_new + opts.damping_factor * qsh;
+    }
+    prev_energy = total_energy;
+  }
+
+  occ::log::warn("Periodic GFN2 SCC (k-point) did not converge in {} iterations",
+                  opts.max_iterations);
+  PeriodicSccResult r;
+  r.scc_energy = prev_energy - e_rep;
+  r.repulsion_energy = e_rep;
+  r.total_energy = prev_energy;
+  r.shell_charges = qsh;
+  Vec atom_charges = Vec::Zero(sys.atoms.size());
+  for (int s = 0; s < n_shells; ++s) atom_charges(shells.atom[s]) += qsh(s);
+  r.atomic_charges = atom_charges;
+  r.orbital_energies = orbital_energies_k.empty() ? Vec() : orbital_energies_k[0];
+  r.orbital_occupations =
+      orbital_occupations_k.empty() ? Mat() : orbital_occupations_k[0];
+  r.density_matrix = P_k.empty() ? Mat() : P_k[0].real();
+  r.overlap_matrix = P_k.empty() ? Mat() : S_k[0].real();
+  r.orbital_coefficients = C_k.empty() ? Mat() : C_k[0].real();
   r.n_iterations = iter;
   r.converged = false;
   return r;

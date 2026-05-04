@@ -143,4 +143,37 @@ Mat bloch_sum_gamma(const std::vector<Mat> &M_per_T) {
   return result;
 }
 
+CGenSolveResult solve_generalized_hermitian(const CMat &H, const CMat &S,
+                                              double s_eps) {
+  // S = U · diag(s) · U^H; build X = U · diag(1/sqrt(s)).
+  Eigen::SelfAdjointEigenSolver<CMat> es_S(S);
+  if (es_S.info() != Eigen::Success) {
+    throw std::runtime_error(
+        "solve_generalized_hermitian: S diagonalization failed");
+  }
+  Vec s_evals = es_S.eigenvalues();
+  CMat U = es_S.eigenvectors();
+  const int n = static_cast<int>(s_evals.size());
+  if (s_evals.minCoeff() <= s_eps) {
+    throw std::runtime_error(
+        "solve_generalized_hermitian: S near-singular (min eigenvalue = " +
+        std::to_string(s_evals.minCoeff()) + ")");
+  }
+  CMat X(n, n);
+  for (int j = 0; j < n; ++j) X.col(j) = U.col(j) / std::sqrt(s_evals(j));
+  // Orthogonal Hermitian eigenproblem on H_orth = X^H · H · X.
+  CMat H_orth = X.adjoint() * H * X;
+  // Symmetrize residual numerical noise.
+  H_orth = 0.5 * (H_orth + H_orth.adjoint().eval());
+  Eigen::SelfAdjointEigenSolver<CMat> es_H(H_orth);
+  if (es_H.info() != Eigen::Success) {
+    throw std::runtime_error(
+        "solve_generalized_hermitian: H_orth diagonalization failed");
+  }
+  CGenSolveResult r;
+  r.eigenvalues = es_H.eigenvalues();
+  r.eigenvectors = X * es_H.eigenvectors();
+  return r;
+}
+
 } // namespace occ::xtb

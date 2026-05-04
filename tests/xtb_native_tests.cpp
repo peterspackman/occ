@@ -17,6 +17,7 @@
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/native_calculator.h>
 #include <occ/xtb/gfn2_periodic_calculator.h>
+#include <occ/xtb/kpoint_grid.h>
 #include <occ/xtb/periodic.h>
 #include <occ/xtb/periodic_gamma.h>
 #include <occ/xtb/periodic_integrals.h>
@@ -747,6 +748,90 @@ TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
   REQUIRE((r_per.atomic_charges - r_mol.atomic_charges)
               .cwiseAbs()
               .maxCoeff() < 1e-4);
+}
+
+TEST_CASE("k-point SCC: 1x1x1 grid matches Γ-only path",
+          "[xtb][periodic][scc][kpoint]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::Mat3 lat = occ::Mat3::Identity() * 30.0;
+  occ::xtb::PeriodicSystem sys{atoms, lat};
+
+  occ::xtb::PeriodicSccOptions opts;
+  opts.real_cutoff = 16.0;
+  opts.include_multipoles = false;
+  // Γ-only via the real-arithmetic path.
+  auto r_gamma = occ::xtb::run_charge_only_periodic_scc(sys, p, opts);
+  REQUIRE(r_gamma.converged);
+
+  // 1×1×1 k-grid (just Γ) via the complex-eigensolve k-point path.
+  auto kpts = occ::xtb::monkhorst_pack_grid(sys.reciprocal_bohr(), 1, 1, 1);
+  REQUIRE(kpts.size() == 1);
+  REQUIRE(kpts[0].weight == Approx(1.0));
+  auto r_k = occ::xtb::run_periodic_scc_kpoints(sys, p, kpts, opts);
+  REQUIRE(r_k.converged);
+
+  REQUIRE(r_k.total_energy == Approx(r_gamma.total_energy).margin(1e-9));
+  REQUIRE((r_k.atomic_charges - r_gamma.atomic_charges).cwiseAbs().maxCoeff() <
+          1e-8);
+}
+
+TEST_CASE("k-point SCC: 2x2x2 grid converges for water in large cell",
+          "[xtb][periodic][scc][kpoint]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::Mat3 lat = occ::Mat3::Identity() * 30.0;
+  occ::xtb::PeriodicSystem sys{atoms, lat};
+
+  occ::xtb::PeriodicSccOptions opts;
+  opts.real_cutoff = 14.0;
+  opts.include_multipoles = false;
+
+  auto kpts = occ::xtb::monkhorst_pack_grid(sys.reciprocal_bohr(), 2, 2, 2);
+  REQUIRE(kpts.size() == 8);
+  // Weights should sum to 1.
+  double wsum = 0.0;
+  for (const auto &kp : kpts) wsum += kp.weight;
+  REQUIRE(wsum == Approx(1.0));
+
+  auto r = occ::xtb::run_periodic_scc_kpoints(sys, p, kpts, opts);
+  REQUIRE(r.converged);
+  // For an isolated molecule in a vacuum-padded cell, k-sampling should give
+  // the same answer as Γ-only (energies/orbitals are flat in BZ).
+  auto r_gamma = occ::xtb::run_charge_only_periodic_scc(sys, p, opts);
+  REQUIRE(r_gamma.converged);
+  REQUIRE(r.total_energy == Approx(r_gamma.total_energy).margin(1e-7));
+}
+
+TEST_CASE("Complex generalized eigensolve: known eigenvalues",
+          "[xtb][periodic][eigen]") {
+  // Trivial Hermitian H, S = I → eigenvalues are H's diagonal in real basis.
+  occ::CMat H(3, 3), S(3, 3);
+  S.setIdentity();
+  H << std::complex<double>(2, 0), std::complex<double>(0, 1),
+       std::complex<double>(0, 0), std::complex<double>(0, -1),
+       std::complex<double>(3, 0), std::complex<double>(0, 0),
+       std::complex<double>(0, 0), std::complex<double>(0, 0),
+       std::complex<double>(5, 0);
+  auto sol = occ::xtb::solve_generalized_hermitian(H, S);
+  // Sort eigenvalues of the upper-left 2x2 Hermitian block: [[2, i], [-i, 3]]
+  // λ = (5 ± √(1 + 4))/2 = (5 ± √5)/2 ≈ {1.382, 3.618}, plus 5 from H[2,2].
+  REQUIRE(sol.eigenvalues(0) == Approx(1.381966).margin(1e-6));
+  REQUIRE(sol.eigenvalues(1) == Approx(3.618034).margin(1e-6));
+  REQUIRE(sol.eigenvalues(2) == Approx(5.0).margin(1e-12));
+  // C^H · S · C = I.
+  occ::CMat ortho = sol.eigenvectors.adjoint() * S * sol.eigenvectors;
+  REQUIRE((ortho - occ::CMat::Identity(3, 3)).cwiseAbs().maxCoeff() < 1e-12);
 }
 
 TEST_CASE("Periodic SCC with multipoles: large cell matches molecular full",
