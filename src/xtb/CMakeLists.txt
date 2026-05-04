@@ -19,6 +19,7 @@ add_library(occ_xtb
     "${CMAKE_CURRENT_SOURCE_DIR}/periodic.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/periodic_integrals.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/periodic_gamma.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_ewald.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/kpoint_grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_periodic_calculator.cpp"
     ${OCC_XTB_INCLUDE_FILES}
