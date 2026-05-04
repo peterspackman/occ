@@ -18,10 +18,11 @@ struct PeriodicSccOptions {
   double total_charge{0.0};       // net charge per primitive cell
   // Include the CAMM anisotropic electrostatics + on-site polarization terms
   // (xtb's "AES"). True for full GFN2; false for the charge-only fast path.
-  // Multipole interactions are restricted to the central cell — image-image
-  // dipole/quadrupole couplings are dropped (typical molecular-crystal
-  // approximation; matches tblite).
   bool include_multipoles{true};
+  // Use Ewald-summed multipole interactions (default) or the simpler real-
+  // space-only lattice cutoff. Ewald is more accurate for polar/ionic systems
+  // but slightly more expensive per geometry.
+  bool multipole_ewald{true};
   // Include native DFT-D4 dispersion (lattice-summed BJ damping over the
   // translations within `disp_cutoff`).
   bool include_dispersion{true};

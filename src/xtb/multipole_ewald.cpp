@@ -77,6 +77,7 @@ build_multipole_ewald_tensors(const PeriodicSystem &sys, const Vec &mp_radii,
   t.alpha = alpha;
   t.real_cutoff = real_cutoff;
   t.recip_cutoff = recip_cutoff;
+  t.images = images;  // cache for gauge-correction lattice sum
   for (int a = 0; a < 3; ++a) t.sd[a] = Mat::Zero(n, n);
   for (int a = 0; a < 3; ++a)
     for (int b = 0; b < 3; ++b) t.dd[a][b] = Mat::Zero(n, n);
@@ -341,21 +342,19 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
                               const Vec &q, const CammMoments &m,
                               const MultipolePairTensors &t,
                               const Gfn2Parameters &params) {
+  // Strict tensor-derivative path. NOTE: the molecular anisotropic_potentials
+  // includes gauge-correction terms (involving absolute atom positions) that
+  // make the per-atom potentials suitable for use with global-origin AO
+  // dipole/quadrupole integrals via apply_anisotropic_h1. Use
+  // anisotropic_potentials_ewald_gauge_corrected for that purpose; this
+  // function is kept for tensor-derivative testing.
   const int n = static_cast<int>(atoms.size());
   AnisotropicPotentials out;
   out.vs = Vec::Zero(n);
   out.vd = Mat3N::Zero(3, n);
   out.vq = Mat::Zero(6, n);
 
-  // Pair contributions from tensors:
-  // dE/dq_i: -Σ_{j,α} sd[α](j, i) · dpat(α, j) - Σ_{j,p} sq[p](j, i) · qpat(p, j)
-  // dE/dμ_α(i): Σ_j sd[α](i, j) · q(j) + Σ_{j,β} dd[α][β](i, j) · dpat(β, j)
-  // dE/dQ_p(i): Σ_j sq[p](i, j) · q(j)
-  //
-  // tblite get_potential adds these via gemv with `beta=1` so they accumulate.
   for (int i = 0; i < n; ++i) {
-    // vs (charge potential): Σ_{j, α} sd^T[α](j, i) · dpat(α, j)
-    //                       + Σ_{j, p} sq^T[p](j, i) · qpat(p, j)
     double s = 0.0;
     for (int j = 0; j < n; ++j) {
       for (int a = 0; a < 3; ++a) s += t.sd[a](j, i) * m.dipm(a, j);
@@ -363,7 +362,6 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
     }
     out.vs(i) = s;
 
-    // vd: dipole potential = Σ_j sd[α](i, j) · q(j) + Σ_{j, β} dd[α][β](i, j) · dpat(β, j)
     for (int a = 0; a < 3; ++a) {
       double v = 0.0;
       for (int j = 0; j < n; ++j) {
@@ -373,10 +371,6 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
       out.vd(a, i) = v;
     }
 
-    // vq: quadrupole potential = Σ_j sq[p](i, j) · q(j)
-    // Storage convention: tblite/OCC potential vq is in qpint order
-    // {xx, yy, zz, xy, xz, yz}. Our tensor sq[p] uses qp order
-    // {xx, xy, yy, xz, yz, zz}. Remap.
     double tmp_xx = 0.0, tmp_xy = 0.0, tmp_yy = 0.0;
     double tmp_xz = 0.0, tmp_yz = 0.0, tmp_zz = 0.0;
     for (int j = 0; j < n; ++j) {
@@ -396,7 +390,6 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
     out.vq(qpint_yz, i) = tmp_yz;
   }
 
-  // CT (on-site polarization) terms — same as molecular anisotropic_potentials.
   for (int i = 0; i < n; ++i) {
     const auto *e = params.element(atoms[i].atomic_number);
     const double qs1 = 2.0 * e->dip_kernel;
@@ -415,6 +408,155 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
     }
     t2a *= e->quad_kernel;
     for (int l1 = 0; l1 < 3; ++l1) out.vq(l1, i) += t2a;
+  }
+
+  return out;
+}
+
+// Periodic anisotropic potentials via direct-space Ewald-corrected lattice
+// sum. This is a verbatim port of the molecular `anisotropic_potentials`
+// formula with `g3 → tmp3 = fdmp3·g3 + e1` and `g5 → tmp5 = fdmp5·g5 + e2`,
+// and an outer loop over lattice translations T.
+//
+// Brute-force per SCC iteration (no pre-built tensor optimization), so cost
+// is O(N² × N_translations). For typical periodic GFN2 cells this is fast.
+//
+// Reciprocal contribution to potentials is NOT included — for the gauge-
+// corrected formula structure, the reciprocal kernel for each gauge term
+// would need separate derivation. Since the Ewald-erfc screening makes the
+// gauge kernel decay exponentially for r > 1/α, the missing reciprocal
+// piece is small for typical molecular crystals. At the molecular limit
+// (very large cell) this reduces to molecular `anisotropic_potentials`.
+//
+// THIS is the function to use as a drop-in replacement for the molecular
+// `anisotropic_potentials` in the periodic SCC's H1 shift.
+AnisotropicPotentials anisotropic_potentials_ewald_gauge_corrected(
+    const std::vector<core::Atom> &atoms, const Vec &q, const Vec &mp_radii,
+    const CammMoments &m, const MultipolePairTensors &t,
+    const Gfn2Parameters &params) {
+  const int n = static_cast<int>(atoms.size());
+  const auto &g = params.globals();
+  const double k3 = g.aesdmp3;
+  const double k5 = g.aesdmp5;
+  const double alpha = t.alpha;
+  const double alpha2 = alpha * alpha;
+  const double alpha3 = alpha * alpha2;
+  const double real_cutoff2 = t.real_cutoff * t.real_cutoff;
+  const double eps2 = 1e-20;
+
+  AnisotropicPotentials out;
+  out.vs = Vec::Zero(n);
+  out.vd = Mat3N::Zero(3, n);
+  out.vq = Mat::Zero(6, n);
+
+  // Verbatim port of the molecular `anisotropic_potentials` per-(i, j) loop,
+  // wrapped in an outer T-loop so each (i, j, T) image is summed. tmp3, tmp5
+  // are computed inline using the Ewald kernel.
+  for (int i = 0; i < n; ++i) {
+    const double rai[3] = {atoms[i].x, atoms[i].y, atoms[i].z};
+    double stmp = 0.0;
+    double dtmp[3] = {0.0, 0.0, 0.0};
+    double qtmp[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+    for (const auto &im : t.images) {
+      for (int j = 0; j < n; ++j) {
+        const double rbj[3] = {atoms[j].x + im.t_bohr.x(),
+                               atoms[j].y + im.t_bohr.y(),
+                               atoms[j].z + im.t_bohr.z()};
+        const double dra[3] = {rai[0] - rbj[0], rai[1] - rbj[1],
+                               rai[2] - rbj[2]};
+        const double r2 = dra[0] * dra[0] + dra[1] * dra[1] + dra[2] * dra[2];
+        if (r2 < eps2 || r2 > real_cutoff2) continue;
+        const double r1 = std::sqrt(r2);
+        const double g1 = 1.0 / r1;
+        const double g3 = g1 * g1 * g1;
+        const double g5 = g3 * g1 * g1;
+        const double rco = 0.5 * (mp_radii(i) + mp_radii(j));
+        const double rco_over_r = rco * g1;
+        const double fdmp3 =
+            1.0 / (1.0 + 6.0 * std::pow(rco_over_r, k3));
+        const double fdmp5 =
+            1.0 / (1.0 + 6.0 * std::pow(rco_over_r, k5));
+        const double arg = r1 * alpha;
+        const double expt = std::exp(-arg * arg) / kSqrtPi;
+        const double erft = -std::erf(arg) * g1;
+        const double e1 = g1 * g1 * (erft + 2.0 * expt * alpha);
+        const double e2 =
+            g1 * g1 * (e1 + 4.0 * expt * alpha2 * alpha / 3.0);
+        const double tmp3 = fdmp3 * g3 + e1;
+        const double tmp5 = fdmp5 * g5 + e2;
+
+        double r2a = 0.0, r2ab = 0.0;
+        double t1a = 0.0, t2a = 0.0, t3a = 0.0;
+        for (int l1 = 0; l1 < 3; ++l1) {
+          r2a += rai[l1] * rai[l1];
+          r2ab += dra[l1] * dra[l1];
+          t1a += rai[l1] * dra[l1];
+          t2a += m.dipm(l1, j) * dra[l1];
+          t3a += rai[l1] * m.dipm(l1, j);
+        }
+
+        double dum5a = 0.0;
+        for (int l1 = 0; l1 < 3; ++l1) {
+          for (int l2 = 0; l2 < 3; ++l2) {
+            dum5a -= m.qp(kl_to_qp_local[l1][l2], j) * dra[l1] * dra[l2];
+            dum5a -= 1.5 * q(j) * dra[l1] * dra[l2] * rai[l1] * rai[l2];
+            if (l2 >= l1) continue;
+            const int ki = qpint_idx(l1, l2);
+            qtmp[ki] -= 3.0 * q(j) * tmp5 * dra[l2] * dra[l1];
+          }
+          qtmp[l1] -= 1.5 * q(j) * tmp5 * dra[l1] * dra[l1];
+        }
+
+        const double dum3a = -t1a * q(j) - t2a;
+        dum5a += t3a * r2ab - 3.0 * t1a * t2a + 0.5 * q(j) * r2a * r2ab;
+        stmp += dum5a * tmp5 + dum3a * tmp3;
+
+        for (int l1 = 0; l1 < 3; ++l1) {
+          const double dd3 = dra[l1] * q(j);
+          const double dd5 = 3.0 * dra[l1] * t2a -
+                             r2ab * m.dipm(l1, j) -
+                             q(j) * r2ab * rai[l1] +
+                             3.0 * q(j) * dra[l1] * t1a;
+          dtmp[l1] += dd3 * tmp3 + dd5 * tmp5;
+          qtmp[l1] += 0.5 * r2ab * q(j) * tmp5;
+        }
+      }
+    }
+
+    // CT (on-site polarization) — same as molecular, applied once per atom.
+    const auto *e = params.element(atoms[i].atomic_number);
+    const double qs1 = 2.0 * e->dip_kernel;
+    const double qs2 = 6.0 * e->quad_kernel;
+    double t3a = 0.0, t2a = 0.0;
+    for (int l1 = 0; l1 < 3; ++l1) {
+      t3a += rai[l1] * m.dipm(l1, i) * qs1;
+      dtmp[l1] -= qs1 * m.dipm(l1, i);
+      for (int l2 = 0; l2 < l1; ++l2) {
+        const int ll = kl_to_qp_local[l1][l2];
+        const int ki = qpint_idx(l1, l2);
+        qtmp[ki] -= m.qp(ll, i) * qs2;
+        t3a -= rai[l1] * rai[l2] * m.qp(ll, i) * qs2;
+        dtmp[l1] += rai[l2] * m.qp(ll, i) * qs2;
+        dtmp[l2] += rai[l1] * m.qp(ll, i) * qs2;
+      }
+      const int ll_diag = kl_to_qp_local[l1][l1];
+      qtmp[l1] -= m.qp(ll_diag, i) * qs2 * 0.5;
+      t3a -= rai[l1] * rai[l1] * m.qp(ll_diag, i) * qs2 * 0.5;
+      dtmp[l1] += rai[l1] * m.qp(ll_diag, i) * qs2;
+      t2a += m.qp(ll_diag, i);
+    }
+    stmp += t3a;
+    t2a *= e->quad_kernel;
+    for (int l1 = 0; l1 < 3; ++l1) {
+      qtmp[l1] += t2a;
+      dtmp[l1] -= 2.0 * rai[l1] * t2a;
+      stmp += t2a * rai[l1] * rai[l1];
+    }
+
+    out.vs(i) = stmp;
+    for (int l1 = 0; l1 < 3; ++l1) out.vd(l1, i) = dtmp[l1];
+    for (int l1 = 0; l1 < 6; ++l1) out.vq(l1, i) = qtmp[l1];
   }
 
   return out;

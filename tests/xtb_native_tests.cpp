@@ -883,11 +883,17 @@ TEST_CASE("Multipole Ewald tensors: large-cell energy matches molecular",
   REQUIRE(e_ew.polariz == Approx(e_mol.polariz).margin(1e-12));
   REQUIRE(e_ew.aes == Approx(e_mol.aes).margin(1e-4));
 
-  // Potentials are not directly comparable yet — the molecular path includes
-  // gauge-correction terms (absolute atom positions) that map AO multipole
-  // integrals at the global origin onto per-atom potentials. The Ewald path
-  // currently returns the strict tensor-contraction derivative; gauge port
-  // is future work.
+  // Gauge-corrected potentials should match molecular at large cell.
+  auto pot_mol = occ::xtb::anisotropic_potentials(atoms, r.atomic_charges,
+                                                    mom, damped, p);
+  auto pot_ew = occ::xtb::anisotropic_potentials_ewald_gauge_corrected(
+      atoms, r.atomic_charges, mp_radii, mom, tensors, p);
+  INFO("vs diff=" << (pot_ew.vs - pot_mol.vs).cwiseAbs().maxCoeff()
+       << " vd diff=" << (pot_ew.vd - pot_mol.vd).cwiseAbs().maxCoeff()
+       << " vq diff=" << (pot_ew.vq - pot_mol.vq).cwiseAbs().maxCoeff());
+  REQUIRE((pot_ew.vs - pot_mol.vs).cwiseAbs().maxCoeff() < 1e-4);
+  REQUIRE((pot_ew.vd - pot_mol.vd).cwiseAbs().maxCoeff() < 1e-4);
+  REQUIRE((pot_ew.vq - pot_mol.vq).cwiseAbs().maxCoeff() < 1e-4);
 }
 
 TEST_CASE("Multipole Ewald: alpha-invariance for charge-neutral water",

@@ -13,6 +13,7 @@
 #include <occ/xtb/gfn2_parameters.h>
 #include <occ/xtb/kpoint_grid.h>
 #include <occ/xtb/multipole_damping.h>
+#include <occ/xtb/multipole_ewald.h>
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/repulsion.h>
@@ -67,10 +68,14 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   MatTriple D_ao;
   std::array<Mat, 6> Q_ao;
   Vec mp_radii;
+  std::optional<MultipolePairTensors> mp_tensors;  // Ewald path
   if (opts.include_multipoles) {
     D_ao = dipole_ao_matrices(engine);
     Q_ao = quadrupole_ao_matrices(engine);
     mp_radii = multipole_radii(sys.atoms, cn, params);
+    if (opts.multipole_ewald) {
+      mp_tensors = build_multipole_ewald_tensors(sys, mp_radii, params);
+    }
   }
 
   // Native D4 lattice translation list (independent of SCC iteration).
@@ -151,11 +156,19 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       Vec atom_q = Vec::Zero(sys.atoms.size());
       for (int s = 0; s < n_shells; ++s)
         atom_q(shells.atom[s]) += qsh(s);
-      auto pot = anisotropic_potentials_periodic(sys.atoms, images, atom_q,
-                                                  mp_radii, mom, params);
+      AnisotropicPotentials pot;
+      if (opts.multipole_ewald) {
+        pot = anisotropic_potentials_ewald_gauge_corrected(
+            sys.atoms, atom_q, mp_radii, mom, *mp_tensors, params);
+        e_aniso = anisotropic_energy_ewald(sys.atoms, atom_q, mom,
+                                            *mp_tensors, params);
+      } else {
+        pot = anisotropic_potentials_periodic(sys.atoms, images, atom_q,
+                                                mp_radii, mom, params);
+        e_aniso = anisotropic_energy_periodic(sys.atoms, images, atom_q,
+                                                mp_radii, mom, params);
+      }
       apply_anisotropic_h1(H, S, D_ao, Q_ao, bf_to_atom, pot);
-      e_aniso = anisotropic_energy_periodic(sys.atoms, images, atom_q,
-                                             mp_radii, mom, params);
     }
 
     Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(H, S);
