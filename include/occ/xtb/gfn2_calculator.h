@@ -6,6 +6,8 @@
 #include <occ/xtb/gamma.h>
 #include <occ/xtb/gfn2_parameters.h>
 #include <occ/xtb/multipole_damping.h>
+#include <occ/xtb/multipole_ewald.h>
+#include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/scc.h>
 
 namespace occ::xtb {
@@ -69,9 +71,12 @@ private:
   Vec m_cn;
   Vec m_mp_radii;
   DampedCoulomb m_damped;
-  // Lazily built when needed (multipoles enabled): dipole/quadrupole AO ints.
-  MatTriple m_D_ao;
-  std::array<Mat, 6> m_Q_ao;
+  // Lazily built when multipoles are enabled. m_mp_ao stores Bra/Ket atom-
+  // centered AO multipole matrices (tblite convention) plus the origin-0 D, Q;
+  // m_mp_tensors stores the sd/dd/sq pair tensors used by the clean tensor
+  // potential / energy routines (no Ewald split for molecular).
+  PeriodicMultipoleAO m_mp_ao;
+  MultipolePairTensors m_mp_tensors;
   bool m_have_multipole_ints{false};
   std::vector<int> m_bf_to_atom;
   std::vector<int> m_bf_to_shell;

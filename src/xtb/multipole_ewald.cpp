@@ -340,6 +340,71 @@ anisotropic_energy_ewald(const std::vector<core::Atom> &atoms, const Vec &q,
   return out;
 }
 
+MultipolePairTensors
+build_molecular_multipole_tensors(const std::vector<core::Atom> &atoms,
+                                   const Vec &mp_radii,
+                                   const Gfn2Parameters &params) {
+  // Same per-pair kernel as the Ewald build's direct loop (real-space damped
+  // 1/r^3 and 1/r^5 with mldmp3/mldmp5), but with no lattice sum, no erfc
+  // screening, no reciprocal, no self/background. Diagonals are zero.
+  const auto &g = params.globals();
+  const double kdmp3 = g.aesdmp3;
+  const double kdmp5 = g.aesdmp5;
+  const int n = static_cast<int>(atoms.size());
+
+  MultipolePairTensors t;
+  for (int a = 0; a < 3; ++a) t.sd[a] = Mat::Zero(n, n);
+  for (int a = 0; a < 3; ++a)
+    for (int b = 0; b < 3; ++b) t.dd[a][b] = Mat::Zero(n, n);
+  for (int p = 0; p < 6; ++p) t.sq[p] = Mat::Zero(n, n);
+  t.alpha = 0.0;
+  t.real_cutoff = std::numeric_limits<double>::infinity();
+  t.recip_cutoff = 0.0;
+  // images is left empty — molecular has no lattice translations.
+
+  std::vector<Vec3> R(n);
+  for (int i = 0; i < n; ++i) R[i] = Vec3(atoms[i].x, atoms[i].y, atoms[i].z);
+
+  for (int iat = 0; iat < n; ++iat) {
+    for (int jat = 0; jat < n; ++jat) {
+      if (iat == jat) continue;
+      const Vec3 vec = R[iat] - R[jat];
+      const double r2 = vec.squaredNorm();
+      const double r1 = std::sqrt(r2);
+      const double g1 = 1.0 / r1;
+      const double g3 = g1 * g1 * g1;
+      const double g5 = g3 * g1 * g1;
+      const double rco = 0.5 * (mp_radii(iat) + mp_radii(jat));
+      const double rco_over_r = rco * g1;
+      const double fdmp3 = 1.0 / (1.0 + 6.0 * std::pow(rco_over_r, kdmp3));
+      const double fdmp5 = 1.0 / (1.0 + 6.0 * std::pow(rco_over_r, kdmp5));
+      const double tmp3 = fdmp3 * g3;
+      const double tmp5 = fdmp5 * g5;
+      const double tmp_iso = fdmp5 * g3;
+
+      // Same OCC sign convention as build_multipole_ewald_tensors (matches
+      // the molecular `anisotropic_energy`'s `rij = r_j - r_i` form).
+      t.sd[0](iat, jat) -= vec.x() * tmp3;
+      t.sd[1](iat, jat) -= vec.y() * tmp3;
+      t.sd[2](iat, jat) -= vec.z() * tmp3;
+      for (int a = 0; a < 3; ++a) {
+        for (int b = 0; b < 3; ++b) {
+          const double iso = (a == b) ? tmp_iso : 0.0;
+          t.dd[a][b](iat, jat) += iso - vec(a) * vec(b) * 3.0 * tmp5;
+        }
+      }
+      const double third = tmp_iso / 3.0;
+      t.sq[qp_xx](iat, jat) += vec.x() * vec.x() * tmp5 - third;
+      t.sq[qp_xy](iat, jat) += 2.0 * vec.x() * vec.y() * tmp5;
+      t.sq[qp_yy](iat, jat) += vec.y() * vec.y() * tmp5 - third;
+      t.sq[qp_xz](iat, jat) += 2.0 * vec.x() * vec.z() * tmp5;
+      t.sq[qp_yz](iat, jat) += 2.0 * vec.y() * vec.z() * tmp5;
+      t.sq[qp_zz](iat, jat) += vec.z() * vec.z() * tmp5 - third;
+    }
+  }
+  return t;
+}
+
 AnisotropicPotentials
 anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
                               const Vec &q, const CammMoments &m,

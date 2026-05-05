@@ -86,10 +86,13 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
         "Gfn2Calculator: open-shell case not yet supported");
   }
 
-  // Build dipole / quadrupole AO matrices on first multipole-enabled call.
+  // Build atom-centered Bra/Ket AO multipole matrices and the molecular
+  // multipole pair tensors (sd/dd/sq) on first multipole-enabled call.
+  // tblite convention end-to-end — the same code path as the periodic SCC.
   if (include_multipoles && !m_have_multipole_ints) {
-    m_D_ao = dipole_ao_matrices(m_engine);
-    m_Q_ao = quadrupole_ao_matrices(m_engine);
+    m_mp_ao = build_molecular_multipole_ao(m_atoms, m_params);
+    m_mp_tensors = build_molecular_multipole_tensors(m_atoms, m_mp_radii,
+                                                     m_params);
     m_have_multipole_ints = true;
   }
 
@@ -169,14 +172,21 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
 
     AnisotropicEnergy e_aniso{0.0, 0.0};
     if (include_multipoles && iter > 1) {
-      auto m = compute_camm_moments(m_atoms, m_bf_to_atom, P, m_S, m_D_ao,
-                                    m_Q_ao);
+      // tblite convention end-to-end: Bra/Ket atom-centered AO multipoles,
+      // clean tensor potentials, periodic-style H1 with side-specific Bra/Ket.
+      auto m = compute_camm_moments_periodic(m_atoms, m_bf_to_atom, P,
+                                              m_mp_ao.D_ket, m_mp_ao.D_bra,
+                                              m_mp_ao.Q_ket, m_mp_ao.Q_bra);
       Vec atom_q = Vec::Zero(m_atoms.size());
       for (int s = 0; s < m_n_shells; ++s)
         atom_q(m_shells.atom[s]) += qsh(s);
-      auto pot = anisotropic_potentials(m_atoms, atom_q, m, m_damped, m_params);
-      apply_anisotropic_h1(H, m_S, m_D_ao, m_Q_ao, m_bf_to_atom, pot);
-      e_aniso = anisotropic_energy(m_atoms, atom_q, m, m_damped, m_params);
+      auto pot = anisotropic_potentials_ewald(m_atoms, atom_q, m, m_mp_tensors,
+                                                m_params);
+      apply_anisotropic_h1_periodic(H, m_S, m_mp_ao.D_ket, m_mp_ao.D_bra,
+                                     m_mp_ao.Q_ket, m_mp_ao.Q_bra,
+                                     m_bf_to_atom, pot);
+      e_aniso = anisotropic_energy_ewald(m_atoms, atom_q, m, m_mp_tensors,
+                                          m_params);
       // Debug: per-atom dipoles/quadrupoles for direct comparison with tblite -v.
       for (int a = 0; a < static_cast<int>(m_atoms.size()); ++a) {
         occ::log::debug(

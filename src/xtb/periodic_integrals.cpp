@@ -367,6 +367,72 @@ PeriodicMultipoleAO build_periodic_multipole_ao(
   return out;
 }
 
+PeriodicMultipoleAO
+build_molecular_multipole_ao(const std::vector<core::Atom> &atoms,
+                              const Gfn2Parameters &params) {
+  // Molecular AO matrices with the per-row/per-col atomic origin shifts baked
+  // in (Bra/Ket convention, matches tblite). D_ket/Q_ket are atom-of-row
+  // centered, D_bra/Q_bra atom-of-col centered. Just one-shot — no lattice.
+  auto basis = build_aobasis(atoms, params);
+  const int nbf = static_cast<int>(basis.nbf());
+  auto bf2at = basis.bf_to_atom();
+
+  Vec row_x(nbf), row_y(nbf), row_z(nbf);
+  for (int p = 0; p < nbf; ++p) {
+    const auto &a = atoms[bf2at[p]];
+    row_x(p) = a.x;
+    row_y(p) = a.y;
+    row_z(p) = a.z;
+  }
+
+  qm::IntegralEngine engine(basis);
+  Mat S = engine.one_electron_operator(qm::IntegralEngine::Op::overlap);
+  MatTriple D0 = dipole_ao_matrices(engine);
+  std::array<Mat, 6> Q0 = quadrupole_ao_matrices(engine);
+
+  PeriodicMultipoleAO out;
+  out.S = S;
+  out.D = D0;
+  out.D_ket = MatTriple::Zero(nbf, nbf);
+  out.D_bra = MatTriple::Zero(nbf, nbf);
+
+  for (int p = 0; p < nbf; ++p) {
+    out.D_ket.x.row(p) = D0.x.row(p) - row_x(p) * S.row(p);
+    out.D_ket.y.row(p) = D0.y.row(p) - row_y(p) * S.row(p);
+    out.D_ket.z.row(p) = D0.z.row(p) - row_z(p) * S.row(p);
+  }
+  for (int q = 0; q < nbf; ++q) {
+    out.D_bra.x.col(q) = D0.x.col(q) - row_x(q) * S.col(q);
+    out.D_bra.y.col(q) = D0.y.col(q) - row_y(q) * S.col(q);
+    out.D_bra.z.col(q) = D0.z.col(q) - row_z(q) * S.col(q);
+  }
+
+  // Quadrupole: full origin-shift expansion
+  //   Q'_kl = Q_kl - R_k·D_l - R_l·D_k + R_k·R_l·S
+  const int k0[6] = {0, 0, 0, 1, 1, 2};
+  const int k1[6] = {0, 1, 2, 1, 2, 2};
+  const Mat *D0_k[3] = {&D0.x, &D0.y, &D0.z};
+  const Vec *axis[3] = {&row_x, &row_y, &row_z};
+  for (int kk = 0; kk < 6; ++kk) {
+    out.Q[kk] = Q0[kk];
+    out.Q_ket[kk] = Q0[kk];
+    out.Q_bra[kk] = Q0[kk];
+    for (int p = 0; p < nbf; ++p) {
+      out.Q_ket[kk].row(p) -= (*axis[k0[kk]])(p) * D0_k[k1[kk]]->row(p);
+      out.Q_ket[kk].row(p) -= (*axis[k1[kk]])(p) * D0_k[k0[kk]]->row(p);
+      out.Q_ket[kk].row(p) +=
+          (*axis[k0[kk]])(p) * (*axis[k1[kk]])(p) * S.row(p);
+    }
+    for (int q = 0; q < nbf; ++q) {
+      out.Q_bra[kk].col(q) -= (*axis[k0[kk]])(q) * D0_k[k1[kk]]->col(q);
+      out.Q_bra[kk].col(q) -= (*axis[k1[kk]])(q) * D0_k[k0[kk]]->col(q);
+      out.Q_bra[kk].col(q) +=
+          (*axis[k0[kk]])(q) * (*axis[k1[kk]])(q) * S.col(q);
+    }
+  }
+  return out;
+}
+
 MatTriple bloch_sum_T_weighted_overlap(
     const std::vector<Mat> &S_per_T,
     const std::vector<LatticeImage> &translations) {

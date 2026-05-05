@@ -102,6 +102,16 @@ PeriodicMultipoleAO build_periodic_multipole_ao(
     const PeriodicSystem &sys, const Gfn2Parameters &params,
     const std::vector<LatticeImage> &translations);
 
+// Molecular variant: returns the same struct as the periodic build but with
+// T = 0 only (no lattice). D_ket / D_bra carry the per-row / per-col atomic
+// origin shifts; the molecular SCC can use these with the same
+// compute_camm_moments_periodic + apply_anisotropic_h1_periodic pipeline as
+// the periodic SCC. This keeps both paths on tblite's atom-centered
+// convention end-to-end.
+PeriodicMultipoleAO
+build_molecular_multipole_ao(const std::vector<core::Atom> &atoms,
+                              const Gfn2Parameters &params);
+
 // Bloch-sum a set of per-T real matrices into a complex matrix at k (Bohr⁻¹):
 //   M(k) = Σ_T M^T exp(i k · T)
 CMat bloch_sum(const std::vector<Mat> &M_per_T,

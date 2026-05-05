@@ -48,6 +48,15 @@ build_multipole_ewald_tensors(const PeriodicSystem &sys,
                               double tol = 1e-10,
                               double alpha_user = 0.0);
 
+// Molecular variant: builds sd/dd/sq pair tensors with the same kernel as the
+// Ewald build but with no lattice sum, no Ewald split, no reciprocal/self/
+// background terms. Use for the molecular SCC path so it can share the same
+// tensor-based potential / energy / H1 routines as the periodic path.
+MultipolePairTensors
+build_molecular_multipole_tensors(const std::vector<core::Atom> &atoms,
+                                   const Vec &mp_radii,
+                                   const Gfn2Parameters &params);
+
 // Anisotropic ES energy (charge-dipole + charge-quadrupole + dipole-dipole)
 // using the pre-built pair tensors. Adds the on-site polarization term
 // (kernel·μ² + kernel·Σ Q²) per atom.
