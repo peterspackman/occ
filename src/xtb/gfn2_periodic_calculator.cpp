@@ -121,6 +121,39 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   double prev_energy = 0.0;
   Vec orbital_energies, orbital_occupations;
   Mat C, P;
+  // Atomic multipole moments — mixed alongside qsh in DIIS so that the H1
+  // multipole contribution stabilizes together with the shell charges. With
+  // qsh-only DIIS the moments re-derive from the latest P each iteration
+  // without smoothing, which can produce sustained ~mHa charge sloshing on
+  // dense molecular crystals (multipole H1 feedback is significant).
+  CammMoments mom;
+  if (opts.include_multipoles) {
+    mom.dipm = Mat3N::Zero(3, sys.atoms.size());
+    mom.qp = Mat::Zero(6, sys.atoms.size());
+  }
+  const int n_atoms = static_cast<int>(sys.atoms.size());
+  // DIIS state size: qsh (n_shells) + dipm (3 × n_atoms) + qp (6 × n_atoms).
+  const int diis_size = opts.include_multipoles
+                             ? (n_shells + 9 * n_atoms)
+                             : n_shells;
+  auto pack_state = [&](const Vec &qsh_v, const CammMoments &m, Vec &out) {
+    out.head(n_shells) = qsh_v;
+    if (opts.include_multipoles) {
+      Eigen::Map<const Vec> dipm_flat(m.dipm.data(), 3 * n_atoms);
+      Eigen::Map<const Vec> qp_flat(m.qp.data(), 6 * n_atoms);
+      out.segment(n_shells, 3 * n_atoms) = dipm_flat;
+      out.segment(n_shells + 3 * n_atoms, 6 * n_atoms) = qp_flat;
+    }
+  };
+  auto unpack_state = [&](const Vec &state, Vec &qsh_v, CammMoments &m) {
+    qsh_v = state.head(n_shells);
+    if (opts.include_multipoles) {
+      Eigen::Map<Vec>(m.dipm.data(), 3 * n_atoms) =
+          state.segment(n_shells, 3 * n_atoms);
+      Eigen::Map<Vec>(m.qp.data(), 6 * n_atoms) =
+          state.segment(n_shells + 3 * n_atoms, 6 * n_atoms);
+    }
+  };
 
   const std::size_t diis_start = 3;
   const std::size_t diis_subspace = 8;
@@ -154,9 +187,10 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
 
     AnisotropicEnergy e_aniso{0.0, 0.0};
     if (opts.include_multipoles && iter > 1) {
-      auto mom = compute_camm_moments_periodic(
-          sys.atoms, bf_to_atom, P, mp_ao->D_ket, mp_ao->D_bra,
-          mp_ao->Q_ket, mp_ao->Q_bra);
+      // mom is the DIIS-mixed atomic multipole state from the previous
+      // iteration's diagonalization. Don't recompute from current P here —
+      // that would skip the DIIS mixing on the moments and reintroduce
+      // the H1 feedback oscillation.
       Vec atom_q = Vec::Zero(sys.atoms.size());
       for (int s = 0; s < n_shells; ++s)
         atom_q(shells.atom[s]) += qsh(s);
@@ -229,15 +263,13 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       Vec atom_q_dbg = Vec::Zero(sys.atoms.size());
       for (int s = 0; s < n_shells; ++s)
         atom_q_dbg(shells.atom[s]) += qsh(s);
-      auto mom_dbg = compute_camm_moments_periodic(
-          sys.atoms, bf_to_atom, P, mp_ao->D_ket, mp_ao->D_bra,
-          mp_ao->Q_ket, mp_ao->Q_bra);
+      // Show the DIIS-mixed mom that was used in this iteration's H1.
       occ::log::debug(
           "    multipoles:  |atom q|_max={:>10.3e}  |dipm|_max={:>10.3e}  "
           "|qp|_max={:>10.3e}",
           atom_q_dbg.cwiseAbs().maxCoeff(),
-          mom_dbg.dipm.cwiseAbs().maxCoeff(),
-          mom_dbg.qp.cwiseAbs().maxCoeff());
+          mom.dipm.cwiseAbs().maxCoeff(),
+          mom.qp.cwiseAbs().maxCoeff());
     }
 
     bool e_ok = (iter > 1) && de < opts.energy_threshold;
@@ -265,13 +297,32 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       return r;
     }
 
-    Mat x = qsh_new;
-    Mat err = qsh_new - qsh;
+    // Compute the new multipole moments from the new density matrix; these
+    // will be DIIS-mixed alongside qsh and used in the next iteration's H1.
+    CammMoments mom_new;
+    if (opts.include_multipoles) {
+      mom_new = compute_camm_moments_periodic(
+          sys.atoms, bf_to_atom, P, mp_ao->D_ket, mp_ao->D_bra,
+          mp_ao->Q_ket, mp_ao->Q_bra);
+    }
+
+    // Pack (qsh_new, mom_new) into a single DIIS state vector. Error is the
+    // change since the previous (qsh, mom). Extrapolate, then unpack back.
+    Vec state(diis_size);
+    Vec state_prev(diis_size);
+    pack_state(qsh_new, mom_new, state);
+    pack_state(qsh, mom, state_prev);
+    Mat x = state;
+    Mat err = state - state_prev;
     diis.extrapolate(x, err);
     if (static_cast<std::size_t>(iter) > diis_start) {
-      qsh = x.col(0);
+      Vec extrapolated = x.col(0);
+      unpack_state(extrapolated, qsh, mom);
     } else {
-      qsh = (1.0 - opts.damping_factor) * qsh_new + opts.damping_factor * qsh;
+      // Linear damping on the full state (charges + moments).
+      Vec mixed = (1.0 - opts.damping_factor) * state +
+                  opts.damping_factor * state_prev;
+      unpack_state(mixed, qsh, mom);
     }
     prev_energy = total_energy;
   }
