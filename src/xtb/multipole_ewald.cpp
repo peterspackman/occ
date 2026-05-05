@@ -458,24 +458,34 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
     out.vq(qpint_yz, i) = tmp_yz;
   }
 
+  // On-site polariz (kernel) potential — matches tblite's
+  // `get_kernel_potential` (multipole.f90 lines 271-291):
+  //   v_dpkernel(i) = 2·dipKernel·dipm(i)
+  //   v_qpkernel(i) = 2·quadKernel·qpat(i) · mpscale,  mpscale=[1,2,1,2,2,1]
+  //
+  // Sign: our CAMM stores dipm = -P·atom_centered_AO_dipole (electron sign);
+  // for compatibility with our `apply_anisotropic_h1_periodic` (and the same
+  // sign convention used for molecular benchmarks), we ADD with minus sign
+  // here so the H1 contribution comes out matching the gauge-corrected
+  // formulation at the molecular limit.
+  // Layout: vq is stored in qpint order (xx, yy, zz, xy, xz, yz). The CAMM
+  // mom.qp is in (xx, xy, yy, xz, yz, zz). Off-diag positions get scale 2.
+  //   qpint:  0=xx 1=yy 2=zz 3=xy 4=xz 5=yz
+  //   mom.qp: 0=xx 1=xy 2=yy 3=xz 4=yz 5=zz
+  // Mapping (qpint_idx → mom.qp idx, mpscale):
+  //   (0=xx → 0, 1), (1=yy → 2, 1), (2=zz → 5, 1)
+  //   (3=xy → 1, 2), (4=xz → 3, 2), (5=yz → 4, 2)
+  static constexpr int qp_from_qpint[6] = {0, 2, 5, 1, 3, 4};
+  static constexpr double mpscale_qpint[6] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0};
   for (int i = 0; i < n; ++i) {
     const auto *e = params.element(atoms[i].atomic_number);
-    const double qs1 = 2.0 * e->dip_kernel;
-    const double qs2 = 6.0 * e->quad_kernel;
-    double t2a = 0.0;
     for (int l1 = 0; l1 < 3; ++l1) {
-      out.vd(l1, i) -= qs1 * m.dipm(l1, i);
-      for (int l2 = 0; l2 < l1; ++l2) {
-        const int ll = kl_to_qp_local[l1][l2];
-        const int ki = qpint_idx(l1, l2);
-        out.vq(ki, i) -= m.qp(ll, i) * qs2;
-      }
-      const int ll_diag = kl_to_qp_local[l1][l1];
-      out.vq(l1, i) -= m.qp(ll_diag, i) * qs2 * 0.5;
-      t2a += m.qp(ll_diag, i);
+      out.vd(l1, i) -= 2.0 * e->dip_kernel * m.dipm(l1, i);
     }
-    t2a *= e->quad_kernel;
-    for (int l1 = 0; l1 < 3; ++l1) out.vq(l1, i) += t2a;
+    for (int p = 0; p < 6; ++p) {
+      out.vq(p, i) -= 2.0 * e->quad_kernel * m.qp(qp_from_qpint[p], i)
+                      * mpscale_qpint[p];
+    }
   }
 
   return out;
