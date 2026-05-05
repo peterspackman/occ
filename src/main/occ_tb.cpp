@@ -83,9 +83,11 @@ void run_molecular(const TbConfig &cfg) {
   auto mol = occ::io::load_molecule(cfg.filename);
   occ::xtb::NativeCalculator calc(mol);
   calc.set_charge(cfg.charge);
+  calc.set_include_multipoles(cfg.include_multipoles);
   occ::log::info("{:-<72s}", "GFN2-xTB molecular ");
   occ::log::info("input          : {}", cfg.filename);
   occ::log::info("atoms          : {}", calc.num_atoms());
+  occ::log::info("multipoles     : {}", cfg.include_multipoles ? "on" : "off");
   occ::log::info("charge         : {:+.3f} e", cfg.charge);
 
   const double e_total = calc.single_point_energy();
