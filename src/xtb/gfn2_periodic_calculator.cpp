@@ -276,6 +276,17 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
           atom_q_dbg.cwiseAbs().maxCoeff(),
           mom.dipm.cwiseAbs().maxCoeff(),
           mom.qp.cwiseAbs().maxCoeff());
+      // Per-atom dump for direct comparison with tblite -v output.
+      for (int a = 0; a < static_cast<int>(sys.atoms.size()); ++a) {
+        occ::log::debug(
+            "    atom {:3d} (Z={:>2d})  q={:+.6f}  d=({:+.6f}, {:+.6f}, "
+            "{:+.6f})  qp_xx={:+.6f} yy={:+.6f} zz={:+.6f} xy={:+.6f} "
+            "xz={:+.6f} yz={:+.6f}",
+            a + 1, sys.atoms[a].atomic_number, atom_q_dbg(a),
+            mom.dipm(0, a), mom.dipm(1, a), mom.dipm(2, a),
+            mom.qp(0, a), mom.qp(2, a), mom.qp(5, a),
+            mom.qp(1, a), mom.qp(3, a), mom.qp(4, a));
+      }
     }
 
     bool e_ok = (iter > 1) && de < opts.energy_threshold;
