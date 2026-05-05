@@ -177,6 +177,17 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
       auto pot = anisotropic_potentials(m_atoms, atom_q, m, m_damped, m_params);
       apply_anisotropic_h1(H, m_S, m_D_ao, m_Q_ao, m_bf_to_atom, pot);
       e_aniso = anisotropic_energy(m_atoms, atom_q, m, m_damped, m_params);
+      // Debug: per-atom dipoles/quadrupoles for direct comparison with tblite -v.
+      for (int a = 0; a < static_cast<int>(m_atoms.size()); ++a) {
+        occ::log::debug(
+            "    atom {:3d} (Z={:>2d})  q={:+.6f}  d=({:+.6f}, {:+.6f}, "
+            "{:+.6f})  qp_xx={:+.6f} yy={:+.6f} zz={:+.6f} xy={:+.6f} "
+            "xz={:+.6f} yz={:+.6f}",
+            a + 1, m_atoms[a].atomic_number, atom_q(a),
+            m.dipm(0, a), m.dipm(1, a), m.dipm(2, a),
+            m.qp(0, a), m.qp(2, a), m.qp(5, a),
+            m.qp(1, a), m.qp(3, a), m.qp(4, a));
+      }
     }
 
     Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(H, m_S);
