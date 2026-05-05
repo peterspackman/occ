@@ -194,10 +194,15 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       Vec atom_q = Vec::Zero(sys.atoms.size());
       for (int s = 0; s < n_shells; ++s)
         atom_q(shells.atom[s]) += qsh(s);
+      // Periodic anisotropic ES: Ewald-summed pair tensors + clean tensor
+      // potentials (no `rai`-based gauge corrections — those are the molecular
+      // partition's compensation for global-origin AO integrals; we now use
+      // atom-centered Bra/Ket integrals and a clean tensor potential like
+      // tblite's `get_potential` in coulomb/multipole.f90).
       AnisotropicPotentials pot;
       if (opts.multipole_ewald) {
-        pot = anisotropic_potentials_ewald_gauge_corrected(
-            sys.atoms, atom_q, mp_radii, mom, *mp_tensors, params);
+        pot = anisotropic_potentials_ewald(sys.atoms, atom_q, mom,
+                                             *mp_tensors, params);
         e_aniso = anisotropic_energy_ewald(sys.atoms, atom_q, mom,
                                             *mp_tensors, params);
       } else {
@@ -206,10 +211,11 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
         e_aniso = anisotropic_energy_periodic(sys.atoms, images, atom_q,
                                                 mp_radii, mom, params);
       }
-      // H1 step uses the origin-0 Bloch-summed D and Q. The molecular
-      // formula `D × (v_μ + v_ν)/2` does the right origin-shift implicitly
-      // via the symmetric average of atomic potentials.
-      apply_anisotropic_h1(H, S, mp_ao->D, mp_ao->Q, bf_to_atom, pot);
+      // Periodic H1 with Bra/Ket atom-centered AO matrices: matches the
+      // tensor-only potential by using each side's atom-centered integrals.
+      apply_anisotropic_h1_periodic(H, S, mp_ao->D_ket, mp_ao->D_bra,
+                                     mp_ao->Q_ket, mp_ao->Q_bra,
+                                     bf_to_atom, pot);
     }
 
     Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(H, S);
