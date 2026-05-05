@@ -18,6 +18,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_ropt.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_surface_cuts.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_tb.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
     ${OCC_MAIN_INCLUDE_FILES}
 )

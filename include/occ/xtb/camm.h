@@ -27,4 +27,24 @@ CammMoments compute_camm_moments(const std::vector<core::Atom> &atoms,
                                  const MatTriple &D,
                                  const std::array<Mat, 6> &Q);
 
+// Periodic CAMM following dftbplus's `getAtomicMultipolePopulation`. Takes
+// pre-built per-atom-centered Ket/Bra Bloch-summed multipole AO matrices (see
+// `PeriodicMultipoleAO` in `periodic_integrals.h`):
+//   Ket(μ, ν) — atom-of-row-centered (origin at R_{atom_of(μ)}, cell 0)
+//   Bra(μ, ν) — atom-of-col-image-centered (origin at R_{atom_of(ν)} + T)
+// Off-diagonal pair (j, i) with j < i contributes pij·Ket(j,i) to atom_of(j)
+// and pij·Bra(j,i) to atom_of(i). Diagonal pair contributes pii·Ket(i,i) to
+// atom_of(i) once. Sign is the molecular CAMM convention (m.dipm = -atomic
+// dipole, electron sign).
+//
+// Reduces exactly to molecular `compute_camm_moments` at the molecular limit
+// (T = 0 only): D_ket = D_origin0 - R_row·S, D_bra = D_origin0 - R_col·S, so
+// the partition reproduces the molecular `xa·ps - pdm` formula per atom.
+CammMoments compute_camm_moments_periodic(
+    const std::vector<core::Atom> &atoms,
+    const std::vector<int> &bf_to_atom,
+    const Mat &P,
+    const MatTriple &D_ket, const MatTriple &D_bra,
+    const std::array<Mat, 6> &Q_ket, const std::array<Mat, 6> &Q_bra);
+
 } // namespace occ::xtb

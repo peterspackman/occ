@@ -153,4 +153,73 @@ CammMoments compute_camm_moments(const std::vector<core::Atom> &atoms,
   return out;
 }
 
+CammMoments compute_camm_moments_periodic(
+    const std::vector<core::Atom> &atoms,
+    const std::vector<int> &bf_to_atom,
+    const Mat &P,
+    const MatTriple &D_ket, const MatTriple &D_bra,
+    const std::array<Mat, 6> &Q_ket, const std::array<Mat, 6> &Q_bra) {
+  const int nat = static_cast<int>(atoms.size());
+  const int nao = static_cast<int>(P.rows());
+
+  CammMoments out;
+  out.dipm = Mat3N::Zero(3, nat);
+  out.qp = Mat::Zero(6, nat);
+
+  // Mirror molecular `compute_camm_moments` accounting: visit each unordered
+  // AO pair once (j < i) and contribute to BOTH atoms (atom-of-row uses Ket,
+  // atom-of-col uses Bra). For the diagonal (j == i), contribute just once.
+  // Sign convention: m.dipm = -atomic_dipole (electron sign).
+  const Mat *D_ket_k[3] = {&D_ket.x, &D_ket.y, &D_ket.z};
+  const Mat *D_bra_k[3] = {&D_bra.x, &D_bra.y, &D_bra.z};
+
+  // Off-diagonal: j < i pairs.
+  for (int i = 0; i < nao; ++i) {
+    const int A_i = bf_to_atom[i];
+    for (int j = 0; j < i; ++j) {
+      const int A_j = bf_to_atom[j];
+      const double pij = P(j, i);
+      for (int k = 0; k < 3; ++k) {
+        // Atom of "first" AO in pair (j) gets Ket centered on A_j;
+        // atom of "second" AO in pair (i) gets Bra centered on A_i (image).
+        out.dipm(k, A_j) -= pij * (*D_ket_k[k])(j, i);
+        out.dipm(k, A_i) -= pij * (*D_bra_k[k])(j, i);
+      }
+      // Q layout: (0:xx, 1:xy, 2:xz, 3:yy, 4:yz, 5:zz) from quadrupole_ao_matrices.
+      // out.qp layout: (0:xx, 1:xy, 2:yy, 3:xz, 4:yz, 5:zz) — remap.
+      static constexpr int qp_from_q[6] = {0, 1, 3, 2, 4, 5};
+      for (int kk = 0; kk < 6; ++kk) {
+        const int qp_idx = qp_from_q[kk];
+        out.qp(qp_idx, A_j) -= pij * Q_ket[kk](j, i);
+        out.qp(qp_idx, A_i) -= pij * Q_bra[kk](j, i);
+      }
+    }
+  }
+  // Diagonal: AO i on atom A_i, contribute once.
+  for (int i = 0; i < nao; ++i) {
+    const int A_i = bf_to_atom[i];
+    const double pii = P(i, i);
+    // For the diagonal, both Ket and Bra are centered on A_i (same atom);
+    // off-T contributions cancel by symmetry on the diagonal. Use Ket.
+    for (int k = 0; k < 3; ++k) {
+      out.dipm(k, A_i) -= pii * (*D_ket_k[k])(i, i);
+    }
+    static constexpr int qp_from_q_diag[6] = {0, 1, 3, 2, 4, 5};
+    for (int kk = 0; kk < 6; ++kk) {
+      out.qp(qp_from_q_diag[kk], A_i) -= pii * Q_ket[kk](i, i);
+    }
+  }
+
+  // Quadrupole trace removal (xtb convention) — match molecular variant.
+  // Diagonals in out.qp layout are at indices 0=xx, 2=yy, 5=zz.
+  for (int a = 0; a < nat; ++a) {
+    const double tr = 0.5 * (out.qp(0, a) + out.qp(2, a) + out.qp(5, a));
+    for (int kk = 0; kk < 6; ++kk) out.qp(kk, a) *= 1.5;
+    out.qp(0, a) -= tr;
+    out.qp(2, a) -= tr;
+    out.qp(5, a) -= tr;
+  }
+  return out;
+}
+
 } // namespace occ::xtb

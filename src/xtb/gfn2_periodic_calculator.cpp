@@ -62,16 +62,17 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
                                  opts.ewald_residual_cutoff);
   Mat J = periodic_klopman_ohno_gamma(sys, shells, params, ewald);
 
-  // Multipole AO matrices (built lazily — central-cell ints; image
-  // contributions to the AO multipole projection are dropped).
+  // Multipole AO matrices — Bloch-summed at Γ with per-atom origin (Ket =
+  // atom-of-row centered, Bra = atom-of-col-image centered). Mirrors
+  // dftbplus's tblite bridge: each AO pair contributes to atom_of(row) via
+  // Ket and atom_of(col) via Bra in the CAMM partition, no R*S correction
+  // needed. Critical for dense crystals where image AO overlaps are large.
   qm::IntegralEngine engine(basis);
-  MatTriple D_ao;
-  std::array<Mat, 6> Q_ao;
+  std::optional<PeriodicMultipoleAO> mp_ao;
   Vec mp_radii;
   std::optional<MultipolePairTensors> mp_tensors;  // Ewald path
   if (opts.include_multipoles) {
-    D_ao = dipole_ao_matrices(engine);
-    Q_ao = quadrupole_ao_matrices(engine);
+    mp_ao = build_periodic_multipole_ao(sys, params, images);
     mp_radii = multipole_radii(sys.atoms, cn, params);
     if (opts.multipole_ewald) {
       mp_tensors = build_multipole_ewald_tensors(sys, mp_radii, params);
@@ -153,7 +154,9 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
 
     AnisotropicEnergy e_aniso{0.0, 0.0};
     if (opts.include_multipoles && iter > 1) {
-      auto mom = compute_camm_moments(sys.atoms, bf_to_atom, P, S, D_ao, Q_ao);
+      auto mom = compute_camm_moments_periodic(
+          sys.atoms, bf_to_atom, P, mp_ao->D_ket, mp_ao->D_bra,
+          mp_ao->Q_ket, mp_ao->Q_bra);
       Vec atom_q = Vec::Zero(sys.atoms.size());
       for (int s = 0; s < n_shells; ++s)
         atom_q(shells.atom[s]) += qsh(s);
@@ -169,7 +172,11 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
         e_aniso = anisotropic_energy_periodic(sys.atoms, images, atom_q,
                                                 mp_radii, mom, params);
       }
-      apply_anisotropic_h1(H, S, D_ao, Q_ao, bf_to_atom, pot);
+      // H1 step uses the origin-0 Bloch-summed dipole/quadrupole AO matrices
+      // (NOT the atom-centered Ket/Bra forms). apply_anisotropic_h1 expects
+      // D, Q at the global origin; it applies its own atom-centered shifts
+      // internally via the potential vectors.
+      apply_anisotropic_h1(H, S, mp_ao->D, mp_ao->Q, bf_to_atom, pot);
     }
 
     Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(H, S);
@@ -212,6 +219,27 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
     double de = std::abs(total_energy - prev_energy);
     occ::log::info("{:>4d}  {:>20.12f}  {:>12.2e}  {:>12.2e}", iter,
                     total_energy, de, dq_max);
+    occ::log::debug(
+        "    breakdown: H0={:>14.6f}  ES={:>14.6f}  3rd={:>10.3e}  "
+        "AES={:>10.3e}  pol={:>10.3e}  rep={:>10.3e}  disp={:>10.3e}",
+        e_h0, e_es, e_third, e_aniso.aes, e_aniso.polariz, e_rep, e_disp);
+    occ::log::debug(
+        "    diagnostics: |q|_max={:>10.3e}  Σq={:>+.3e}  ΣP={:>10.3e}",
+        qsh_new.cwiseAbs().maxCoeff(), qsh_new.sum(), P.sum());
+    if (opts.include_multipoles && iter > 1) {
+      Vec atom_q_dbg = Vec::Zero(sys.atoms.size());
+      for (int s = 0; s < n_shells; ++s)
+        atom_q_dbg(shells.atom[s]) += qsh(s);
+      auto mom_dbg = compute_camm_moments_periodic(
+          sys.atoms, bf_to_atom, P, mp_ao->D_ket, mp_ao->D_bra,
+          mp_ao->Q_ket, mp_ao->Q_bra);
+      occ::log::debug(
+          "    multipoles:  |atom q|_max={:>10.3e}  |dipm|_max={:>10.3e}  "
+          "|qp|_max={:>10.3e}",
+          atom_q_dbg.cwiseAbs().maxCoeff(),
+          mom_dbg.dipm.cwiseAbs().maxCoeff(),
+          mom_dbg.qp.cwiseAbs().maxCoeff());
+    }
 
     bool e_ok = (iter > 1) && de < opts.energy_threshold;
     bool q_ok = dq_max < opts.charge_threshold;
@@ -456,6 +484,13 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
     double de = std::abs(total_energy - prev_energy);
     occ::log::info("{:>4d}  {:>20.12f}  {:>12.2e}  {:>12.2e}", iter,
                     total_energy, de, dq_max);
+    occ::log::debug(
+        "    breakdown: H0={:>14.6f}  ES={:>14.6f}  3rd={:>10.3e}  "
+        "rep={:>10.3e}  disp={:>10.3e}",
+        e_h0, e_es, e_third, e_rep, e_disp);
+    occ::log::debug(
+        "    diagnostics: |q|_max={:>10.3e}  Σq={:>+.3e}",
+        qsh_new.cwiseAbs().maxCoeff(), qsh_new.sum());
 
     bool e_ok = (iter > 1) && de < opts.energy_threshold;
     bool q_ok = dq_max < opts.charge_threshold;

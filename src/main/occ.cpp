@@ -16,6 +16,7 @@
 #include <occ/main/occ_ropt.h>
 #include <occ/main/occ_scf.h>
 #include <occ/main/occ_surface_cuts.h>
+#include <occ/main/occ_tb.h>
 
 int main(int argc, char *argv[]) {
   occ::timing::start(occ::timing::category::global);
@@ -63,6 +64,7 @@ int main(int argc, char *argv[]) {
   auto *ropt = occ::main::add_ropt_subcommand(app);
   auto *scf = occ::main::add_scf_subcommand(app);
   auto *cuts = occ::main::add_surface_cuts_subcommand(app);
+  auto *tb = occ::main::add_tb_subcommand(app);
 
   // ensure we have a subcommand
   app.require_subcommand();
