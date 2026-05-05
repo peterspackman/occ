@@ -10,6 +10,7 @@ struct TbConfig {
   double charge{0.0};
   bool include_multipoles{true};
   bool include_dispersion{true};
+  bool multipole_ewald{true};
   std::vector<int> kpoints{1, 1, 1};
   bool print_charges{true};
 };

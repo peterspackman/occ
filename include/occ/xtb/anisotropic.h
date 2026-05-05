@@ -48,6 +48,18 @@ void apply_anisotropic_h1(Mat &H, const Mat &S, const MatTriple &D,
                           const std::vector<int> &bf_to_atom,
                           const AnisotropicPotentials &pot);
 
+// Periodic variant of `apply_anisotropic_h1`. Uses Ket (atom-of-row-centered)
+// on the row side and Bra (atom-of-col-image-centered) on the column side,
+// each paired with its respective atomic potential — symmetric averaging is
+// no longer correct when the AOs sit at different absolute positions in the
+// Bloch sum.
+void apply_anisotropic_h1_periodic(
+    Mat &H, const Mat &S,
+    const MatTriple &D_ket, const MatTriple &D_bra,
+    const std::array<Mat, 6> &Q_ket, const std::array<Mat, 6> &Q_bra,
+    const std::vector<int> &bf_to_atom,
+    const AnisotropicPotentials &pot);
+
 // Periodic variants of the above. The atom-pair loops sum over lattice
 // translations (T from `images`); for each (i, j, T) the damped multipole
 // kernels gab3/gab5 are evaluated inline.

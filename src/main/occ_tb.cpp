@@ -41,6 +41,7 @@ void run_periodic(const TbConfig &cfg) {
   occ::xtb::NativeCalculator calc(crystal);
   calc.set_charge(cfg.charge);
   calc.set_include_multipoles(cfg.include_multipoles);
+  calc.set_multipole_ewald(cfg.multipole_ewald);
   if (cfg.kpoints[0] != 1 || cfg.kpoints[1] != 1 || cfg.kpoints[2] != 1) {
     calc.set_kpoints(cfg.kpoints[0], cfg.kpoints[1], cfg.kpoints[2]);
   }
@@ -112,6 +113,8 @@ CLI::App *add_tb_subcommand(CLI::App &app) {
   tb->add_option("-c,--charge", cfg->charge, "Net charge (e)");
   tb->add_flag("--no-multipoles{false}", cfg->include_multipoles,
                 "Disable CAMM multipoles + anisotropic ES (charge-only SCC)");
+  tb->add_flag("--no-multipole-ewald{false}", cfg->multipole_ewald,
+                "Use real-space-only multipole pair sum (no Ewald split)");
   tb->add_flag("--no-dispersion{false}", cfg->include_dispersion,
                 "Disable D4 dispersion");
   tb->add_option("-k,--kpoints", cfg->kpoints, "k-mesh (n1 n2 n3, default Γ-only)")

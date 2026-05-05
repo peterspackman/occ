@@ -470,4 +470,42 @@ void apply_anisotropic_h1(Mat &H, const Mat &S, const MatTriple &D,
   }
 }
 
+void apply_anisotropic_h1_periodic(
+    Mat &H, const Mat &S,
+    const MatTriple &D_ket, const MatTriple &D_bra,
+    const std::array<Mat, 6> &Q_ket, const std::array<Mat, 6> &Q_bra,
+    const std::vector<int> &bf_to_atom,
+    const AnisotropicPotentials &pot) {
+  // Periodic AO pair (μ at cell 0, ν at image T): split the H1 contribution
+  // so the Ket integral (atom-of-μ-centered) pairs with vd of atom-of-μ, and
+  // the Bra integral (atom-of-ν-image-centered) pairs with vd of atom-of-ν.
+  // Symmetric averaging (D × (v_μ + v_ν)/2) only works when AOs sit at the
+  // same absolute origin — true for molecular but not in general for periodic.
+  const int nbf = static_cast<int>(H.rows());
+  for (int mu = 0; mu < nbf; ++mu) {
+    const int ii = bf_to_atom[mu];
+    for (int nu = 0; nu < nbf; ++nu) {
+      const int jj = bf_to_atom[nu];
+      double eh1 = 0.5 * S(mu, nu) * (pot.vs(ii) + pot.vs(jj));
+      // Dipole: each side gets its own atom-centered AO matrix × that atom's
+      // potential. (Sum the two halves, no extra 1/2 factor — the original
+      // (1/2)(v_μ + v_ν) was averaging the two atomic-frame views, here we
+      // assemble them directly.)
+      eh1 += 0.5 * (D_ket.x(mu, nu) * pot.vd(0, ii) +
+                    D_ket.y(mu, nu) * pot.vd(1, ii) +
+                    D_ket.z(mu, nu) * pot.vd(2, ii));
+      eh1 += 0.5 * (D_bra.x(mu, nu) * pot.vd(0, jj) +
+                    D_bra.y(mu, nu) * pot.vd(1, jj) +
+                    D_bra.z(mu, nu) * pot.vd(2, jj));
+      // Quadrupole — same split. vq is in qpint order; Q_ket/Q_bra in
+      // {xx, xy, xz, yy, yz, zz} order; remap via q_from_qpint.
+      for (int l = 0; l < 6; ++l) {
+        eh1 += 0.5 * Q_ket[q_from_qpint[l]](mu, nu) * pot.vq(l, ii);
+        eh1 += 0.5 * Q_bra[q_from_qpint[l]](mu, nu) * pot.vq(l, jj);
+      }
+      H(mu, nu) += eh1;
+    }
+  }
+}
+
 } // namespace occ::xtb

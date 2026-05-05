@@ -172,10 +172,9 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
         e_aniso = anisotropic_energy_periodic(sys.atoms, images, atom_q,
                                                 mp_radii, mom, params);
       }
-      // H1 step uses the origin-0 Bloch-summed dipole/quadrupole AO matrices
-      // (NOT the atom-centered Ket/Bra forms). apply_anisotropic_h1 expects
-      // D, Q at the global origin; it applies its own atom-centered shifts
-      // internally via the potential vectors.
+      // H1 step uses the origin-0 Bloch-summed D and Q. The molecular
+      // formula `D × (v_μ + v_ν)/2` does the right origin-shift implicitly
+      // via the symmetric average of atomic potentials.
       apply_anisotropic_h1(H, S, mp_ao->D, mp_ao->Q, bf_to_atom, pot);
     }
 
