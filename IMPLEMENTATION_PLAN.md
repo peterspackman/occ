@@ -33,8 +33,110 @@ Committed in df5757e87 + 5fafb5aa7.
   Validated: α-invariance of γ matrix to 1e-9, energy α-invariance for neutral
   density to 1e-10, 2×1×1 supercell consistency for charged ionic pair to 1e-7,
   large-cell limit reduces to molecular γ (modulo Madelung shift) to 1e-4.
+- **4d.5–4d.7** Γ-only periodic SCC + k-point sampling + crystal-driver
+  `NativeCalculator(Crystal)`. SCC converges on real molecular crystals
+  (BENZEN, ACENAP03, ACSALA07, ANTCEN14, BPHENO10, CITRAC10) with
+  multipoles on, no catastrophic divergence.
+- **4d.8 — periodic AES Ewald + Bra/Ket atom-centered AO multipoles + DIIS
+  on (qsh; dipm; qpat).** `build_multipole_ewald_tensors` (real + reciprocal
+  Ewald split for sd/dd/sq pair tensors), `build_periodic_multipole_ao`
+  (per-T merged-basis dipole/quadrupole AO with origin shifts to row/col
+  atom), `compute_camm_moments_periodic` (Bra-only Mulliken partition to
+  match tblite/dftbplus convention), `apply_anisotropic_h1_periodic` (H1
+  with side-specific Ket/Bra integrals).
 
-### Pending — concrete plan for next session (Phase 4d)
+### AES sign-convention rework (resolved; see commits 397de5a99 + 10bb0630c)
+
+Previous OCC AES code carried OCC's own sign convention for `t.sd[α](i,j)`
+and the gauge-corrected molecular `anisotropic_potentials` formula, which
+were internally consistent at the molecular limit but did not line up with
+tblite's `coulomb/multipole.f90` term-by-term. On crystals the convention
+mismatch produced catastrophic divergence (initial implementation) and
+later, after the convention drift was cancelled, a small but real ~1 mHa
+gap on water vs tblite.
+
+Root causes (all now fixed):
+1. **Q_bra/Q_ket were full Cartesian.** tblite makes the AO quadrupole
+   integrals traceless (1.5·Q − 0.5·tr·δ) at the integral level; we did
+   the trace removal post-CAMM on `qpat` only. Mathematically equivalent
+   for the Mulliken partition itself, but the H1 contribution
+   `0.5·Q_bra·vq` is **not** invariant under post-CAMM trace removal
+   when the trace of Cartesian Q is non-zero. Fix: apply
+   `apply_traceless_quadrupole_transform` to Q_ket/Q_bra in both
+   builders; drop the post-CAMM transform from `compute_camm_moments_periodic`.
+2. **CT (kernel) potential sign** was `vd -= 2·dkernel·dipm` (matching an
+   older OCC apply convention). tblite uses `+= 2·dkernel·dipm` paired
+   with `H1 -= 0.5·D·v`. Fix: flip the CT sign and the apply sign
+   together so the H1 contribution from the on-site polariz kernel
+   matches tblite exactly.
+3. **Apply sign** `H1 += eh1` (was OCC convention) → `H1 -= eh1`
+   (matching tblite's `add_vmp_to_h1` + `add_vao_to_h1`). Done together
+   with (2) so the net H1 contribution is unchanged, but each individual
+   term now has tblite's sign.
+4. **Molecular `anisotropic_energy` e01 sign** was the opposite of tblite's
+   e_qd_v1 because OCC's pair loop uses `rij = R_j - R_i` while tblite's
+   formula uses `(R_i - R_j)`. Fix: flip the sign of the two ed terms
+   (and the same in `aes_pair_energy` for the periodic legacy path).
+
+Validation:
+- `AES potential: tblite reference for water_mol` (xtb_native_tests.cpp)
+  feeds tblite's converged charges/dipoles/quadrupoles into OCC's
+  `anisotropic_potentials_ewald` + `anisotropic_energy_ewald` and
+  verifies e_aes and polariz match tblite to <0.05 mHa.
+- Water molecule total: −5.07036943 Eh vs tblite −5.07036967 Eh
+  (Δ = 0.3 µHa). Benzene molecule: 3 µHa.
+- All 53 xtb_native_tests pass.
+
+### Open issue — periodic crystal energies
+
+Molecular energies match tblite to single-µHa. Crystals do not:
+
+| Crystal   | Atoms | OCC total       | tblite total    | diff (mHa) | Δ/atom (mHa) |
+|-----------|------:|-----------------|-----------------|-----------:|-------------:|
+| BENZEN    |    48 | −63.59235       | −63.57247       | −19.9      | −0.41        |
+| ACENAP03  |    88 | −123.31840      | −123.27769      | −40.7      | −0.46        |
+| ACSALA07  |    84 | −158.66909      | −158.62756      | −41.5      | −0.49        |
+| ANTCEN14  |    48 | −70.05947       | −70.03133       | −28.1      | −0.59        |
+| BPHENO10  |    96 | −147.98072      | −147.94322      | −37.5      | −0.39        |
+| CITRAC10  |    84 | −181.69979      | −181.61219      | −87.6      | −1.04        |
+
+OCC is consistently ~0.4–1 mHa/atom *more* bound than tblite's reported
+total. **Some of this is almost certainly tblite's broken-looking
+periodic D4** — tblite reports `dispersion energy = +0.021 to +0.048 Eh`
+(positive) for these crystals while a proper lattice-summed D4 should
+be negative O(−0.1 Eh). On molecular benzene tblite gives 3e-11 Eh
+correctly; the periodic D4 path looks suspect.
+
+To split the discrepancy:
+- OCC `--no-multipoles` BENZEN: −63.6486 Eh → multipole correction
+  contributes +56 mHa (destabilising; intermolecular dipoles ↔ charges
+  cancel some attractive E_iso).
+- tblite has no equivalent flag, so we can't directly compare
+  multipole-off to multipole-off.
+
+### Plan to close the periodic gap (pending)
+
+1. **Verify or replace tblite's reported "dispersion".** Re-run a couple
+   of crystals against dftb+ (which is the periodic reference dftbplus
+   was written for) or against xtb's own periodic D4 to determine the
+   correct lattice-summed value. If the gap shrinks once tblite's
+   misleading dispersion is removed from the comparison, the AES path
+   is fine and only D4 needs reworking.
+2. **Wigner–Seitz vs raw Ewald gamma.** tblite's `get_amat_3d` uses
+   Wigner–Seitz cell averaging on top of the Ewald split; OCC uses
+   straight Ewald (`periodic_klopman_ohno_gamma`). For neutral cells
+   both should give the same total energy in the limit but they can
+   differ at finite cell — check if WSC averaging closes a few mHa
+   on the harder cases (CITRAC10).
+3. **Periodic CN sensitivity.** Verify `gfn_coordination_numbers_periodic`
+   matches tblite's get_coordination_number for the same cell at sub-µ
+   accuracy. Small CN errors propagate through H0 → ε → P.
+4. **End-to-end vs dftb+.** Build dftb+ locally (or use the conda
+   package), feed it the same gen file, and compare. dftb+ implements
+   GFN2-xTB via a different code path so it's a stronger reference for
+   the periodic case than a possibly-broken tblite.
+
+### Pending — original 4d roadmap items (mostly subsumed by 4d.5–4d.8)
 
 **4d.5 — Γ-only periodic SCC** (~150 lines plumbing)
 Add `Gfn2Calculator(Crystal)` constructor that:
