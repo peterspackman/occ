@@ -666,6 +666,93 @@ TEST_CASE("Periodic γ: neutral charge density energy invariant under α",
   REQUIRE(E1 == Approx(E2).margin(1e-10));
 }
 
+TEST_CASE("CAMM convention: periodic Bra/Ket reduces to molecular at T=0",
+          "[xtb][camm][periodic]") {
+  // Run molecular SCC, then compute atomic dipoles via BOTH paths:
+  //   1. compute_camm_moments (gauge-corrected, origin-0 D)
+  //   2. compute_camm_moments_periodic (Bra/Ket atom-centered, T=0 only)
+  // These should give identical atomic dipoles for the same density.
+  using occ::core::Atom;
+  using occ::units::ANGSTROM_TO_BOHR;
+  std::vector<Atom> atoms{
+      {8, 0.0, 0.0, 0.0},
+      {1, 0.957 * ANGSTROM_TO_BOHR, 0.0, 0.0},
+      {1, -0.240 * ANGSTROM_TO_BOHR, 0.927 * ANGSTROM_TO_BOHR, 0.0},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::xtb::Gfn2Calculator calc(atoms, p);
+  occ::xtb::SccOptions sopts;
+  sopts.include_dispersion = false;
+  auto r = calc.run_full(sopts);
+  REQUIRE(r.converged);
+
+  // Path 1: molecular CAMM.
+  auto basis = occ::xtb::build_aobasis(atoms, p);
+  occ::qm::IntegralEngine eng(basis);
+  auto D0 = occ::xtb::dipole_ao_matrices(eng);
+  auto Q0 = occ::xtb::quadrupole_ao_matrices(eng);
+  auto bf2at = basis.bf_to_atom();
+  auto m_mol = occ::xtb::compute_camm_moments(atoms, bf2at, r.density_matrix,
+                                                r.overlap_matrix, D0, Q0);
+
+  // Path 2: build atom-centered Bra/Ket from the molecular D, S, Q,
+  // and feed compute_camm_moments_periodic.
+  const int nbf = static_cast<int>(basis.nbf());
+  occ::MatTriple D_ket = occ::MatTriple::Zero(nbf, nbf);
+  occ::MatTriple D_bra = occ::MatTriple::Zero(nbf, nbf);
+  std::array<occ::Mat, 6> Q_ket, Q_bra;
+  for (int k = 0; k < 6; ++k) {
+    Q_ket[k] = occ::Mat::Zero(nbf, nbf);
+    Q_bra[k] = occ::Mat::Zero(nbf, nbf);
+  }
+  for (int p_row = 0; p_row < nbf; ++p_row) {
+    const auto &a = atoms[bf2at[p_row]];
+    D_ket.x.row(p_row) = D0.x.row(p_row) - a.x * r.overlap_matrix.row(p_row);
+    D_ket.y.row(p_row) = D0.y.row(p_row) - a.y * r.overlap_matrix.row(p_row);
+    D_ket.z.row(p_row) = D0.z.row(p_row) - a.z * r.overlap_matrix.row(p_row);
+  }
+  for (int q_col = 0; q_col < nbf; ++q_col) {
+    const auto &a = atoms[bf2at[q_col]];
+    D_bra.x.col(q_col) = D0.x.col(q_col) - a.x * r.overlap_matrix.col(q_col);
+    D_bra.y.col(q_col) = D0.y.col(q_col) - a.y * r.overlap_matrix.col(q_col);
+    D_bra.z.col(q_col) = D0.z.col(q_col) - a.z * r.overlap_matrix.col(q_col);
+  }
+  // Quadrupole shift (Q_kl = Q_0_kl - R_k·D_l - R_l·D_k + R_k·R_l·S):
+  const int k0[6] = {0, 0, 0, 1, 1, 2};
+  const int k1[6] = {0, 1, 2, 1, 2, 2};
+  const occ::Mat *D0_k[3] = {&D0.x, &D0.y, &D0.z};
+  for (int kk = 0; kk < 6; ++kk) {
+    Q_ket[kk] = Q0[kk];
+    Q_bra[kk] = Q0[kk];
+    for (int p_row = 0; p_row < nbf; ++p_row) {
+      const auto &ar = atoms[bf2at[p_row]];
+      const double rk[3] = {ar.x, ar.y, ar.z};
+      Q_ket[kk].row(p_row) -= rk[k0[kk]] * D0_k[k1[kk]]->row(p_row);
+      Q_ket[kk].row(p_row) -= rk[k1[kk]] * D0_k[k0[kk]]->row(p_row);
+      Q_ket[kk].row(p_row) +=
+          rk[k0[kk]] * rk[k1[kk]] * r.overlap_matrix.row(p_row);
+    }
+    for (int q_col = 0; q_col < nbf; ++q_col) {
+      const auto &ac = atoms[bf2at[q_col]];
+      const double rk[3] = {ac.x, ac.y, ac.z};
+      Q_bra[kk].col(q_col) -= rk[k0[kk]] * D0_k[k1[kk]]->col(q_col);
+      Q_bra[kk].col(q_col) -= rk[k1[kk]] * D0_k[k0[kk]]->col(q_col);
+      Q_bra[kk].col(q_col) +=
+          rk[k0[kk]] * rk[k1[kk]] * r.overlap_matrix.col(q_col);
+    }
+  }
+
+  auto m_per = occ::xtb::compute_camm_moments_periodic(
+      atoms, bf2at, r.density_matrix, D_ket, D_bra, Q_ket, Q_bra);
+
+  // The two atomic dipoles should match exactly.
+  INFO("mol dipm O = (" << m_mol.dipm(0,0) << ", " << m_mol.dipm(1,0) << ", "
+       << m_mol.dipm(2,0) << ");  per dipm O = (" << m_per.dipm(0,0)
+       << ", " << m_per.dipm(1,0) << ", " << m_per.dipm(2,0) << ")");
+  REQUIRE((m_mol.dipm - m_per.dipm).cwiseAbs().maxCoeff() < 1e-10);
+  REQUIRE((m_mol.qp - m_per.qp).cwiseAbs().maxCoeff() < 1e-10);
+}
+
 TEST_CASE("Periodic EEQ: large-cell limit reproduces molecular charges",
           "[core][eeq][periodic]") {
   // Water in a 50 Å cubic cell — only T=0 contributes meaningfully, so the
