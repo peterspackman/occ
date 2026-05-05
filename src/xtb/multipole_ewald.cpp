@@ -142,9 +142,12 @@ build_multipole_ewald_tensors(const PeriodicSystem &sys, const Vec &mp_radii,
         const double tmp5 = fdmp5 * g5 + e2;
         const double tmp_iso = fdmp5 * g3 + e1;
 
-        // OCC's CAMM stores dipoles with opposite sign convention from tblite's
-        // wfn%dpat — flip sign on sd kernel so the contracted energy matches
-        // the molecular `anisotropic_energy`.
+        // sd[α](i, j) = -vec_α · tmp3 in OCC's convention. The molecular
+        // energy formula (anisotropic.cpp `e += q_j · dpm_i · rij`) uses
+        // `rij = r_j - r_i` whereas the Ewald build uses `vec = r_i - r_j`,
+        // so the sign flip is needed to make the Ewald tensor reproduce the
+        // molecular formula at the molecular limit (verified by the
+        // `Multipole Ewald tensors: large-cell energy matches molecular` test).
         sd_acc[0] -= vec.x() * tmp3;
         sd_acc[1] -= vec.y() * tmp3;
         sd_acc[2] -= vec.z() * tmp3;
@@ -169,7 +172,7 @@ build_multipole_ewald_tensors(const PeriodicSystem &sys, const Vec &mp_radii,
         const double gv = G.dot(rij);
         const double sink = std::sin(gv) * g_coeffs[k];
         const double cosk = std::cos(gv) * g_coeffs[k];
-        // Matching the sign flip on the direct kernel.
+        // Same sign convention as direct kernel (see comment above).
         sd_acc[0] -= 2.0 * G.x() * sink;
         sd_acc[1] -= 2.0 * G.y() * sink;
         sd_acc[2] -= 2.0 * G.z() * sink;
