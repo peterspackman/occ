@@ -27,12 +27,12 @@ struct D3Damping {
 //
 // Supports atomic numbers 1..94. Heavier elements throw at construction.
 //
-//   Dispersion d(atoms);
+//   D3Dispersion d(atoms);
 //   d.set_functional("pbe");
 //   double e = d.energy();
-class DispersionD3 {
+class D3Dispersion {
 public:
-  explicit DispersionD3(std::vector<core::Atom> atoms);
+  explicit D3Dispersion(std::vector<core::Atom> atoms);
 
   void set_damping(const D3Damping &d) { m_damping = d; }
   // Set damping parameters from the bundled functional database (BJ variant).

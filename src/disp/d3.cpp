@@ -595,19 +595,19 @@ const std::unordered_map<std::string, D3Damping> &functional_table() {
 // Public API
 // ============================================================================
 
-DispersionD3::DispersionD3(std::vector<core::Atom> atoms)
+D3Dispersion::D3Dispersion(std::vector<core::Atom> atoms)
     : m_atoms(std::move(atoms)) {
   for (const auto &a : m_atoms) {
     if (a.atomic_number < 1 || a.atomic_number > N_ELEMENTS) {
       throw std::runtime_error(
-          "DispersionD3: element Z=" + std::to_string(a.atomic_number) +
+          "D3Dispersion: element Z=" + std::to_string(a.atomic_number) +
           " is outside the supported range (1..94)");
     }
   }
   (void)d3_data::reference_data();
 }
 
-void DispersionD3::set_functional(const std::string &functional) {
+void D3Dispersion::set_functional(const std::string &functional) {
   const auto &table = functional_table();
   auto it = table.find(functional);
   if (it == table.end()) {
@@ -617,14 +617,14 @@ void DispersionD3::set_functional(const std::string &functional) {
   m_damping = it->second;
 }
 
-void DispersionD3::update_positions(const std::vector<core::Atom> &atoms) {
+void D3Dispersion::update_positions(const std::vector<core::Atom> &atoms) {
   if (atoms.size() != m_atoms.size()) {
-    throw std::runtime_error("DispersionD3::update_positions: count mismatch");
+    throw std::runtime_error("D3Dispersion::update_positions: count mismatch");
   }
   for (std::size_t i = 0; i < atoms.size(); ++i) {
     if (atoms[i].atomic_number != m_atoms[i].atomic_number) {
       throw std::runtime_error(
-          "DispersionD3::update_positions: atomic_number changed at index " +
+          "D3Dispersion::update_positions: atomic_number changed at index " +
           std::to_string(i));
     }
     m_atoms[i].x = atoms[i].x;
@@ -633,18 +633,18 @@ void DispersionD3::update_positions(const std::vector<core::Atom> &atoms) {
   }
 }
 
-Vec DispersionD3::coordination_numbers() const {
+Vec D3Dispersion::coordination_numbers() const {
   return d3_coordination_numbers(m_atoms, m_cutoff_cn);
 }
 
-double DispersionD3::energy() const {
+double D3Dispersion::energy() const {
   const Vec cn = coordination_numbers();
   const double e2 = dispersion_2body(m_atoms, m_damping, cn, m_cutoff_disp2);
   const double e3 = dispersion_3body(m_atoms, m_damping, cn, m_cutoff_disp3);
   return e2 + e3;
 }
 
-std::pair<double, Mat3N> DispersionD3::energy_and_gradient() const {
+std::pair<double, Mat3N> D3Dispersion::energy_and_gradient() const {
   // Analytical gradient: position part + CN chain rule. D3 has no charge
   // dependence, so the q-chain term in D4 has no analogue here.
   const auto cn_with_grad =

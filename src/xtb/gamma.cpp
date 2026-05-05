@@ -99,23 +99,12 @@ Mat klopman_ohno_gamma(const std::vector<core::Atom> &atoms,
   return J;
 }
 
-Vec eeq_initial_shell_charges(const std::vector<core::Atom> &atoms,
-                              const ShellTable &shells, double total_charge) {
-  // EEQ is defined on Angstrom positions; convert from our Bohr atoms.
-  const int n_atoms = static_cast<int>(atoms.size());
-  IVec Z(n_atoms);
-  Mat3N R_ang(3, n_atoms);
-  const double b2a = occ::units::BOHR_TO_ANGSTROM;
-  for (int A = 0; A < n_atoms; ++A) {
-    Z(A) = atoms[A].atomic_number;
-    R_ang(0, A) = atoms[A].x * b2a;
-    R_ang(1, A) = atoms[A].y * b2a;
-    R_ang(2, A) = atoms[A].z * b2a;
-  }
-  Vec q_atom = occ::core::charges::eeq_partial_charges(Z, R_ang, total_charge);
+namespace {
 
-  // Distribute each atom's charge across its shells weighted by ref_occ.
-  // Shells with ref_occ = 0 (empty in the GFN2 reference state) get zero.
+// Distribute per-atom charges across each atom's shells, weighted by ref_occ.
+// Shells with ref_occ = 0 (empty in the GFN2 reference state) get zero.
+Vec distribute_atomic_to_shells(const Vec &q_atom, const ShellTable &shells) {
+  const int n_atoms = static_cast<int>(q_atom.size());
   const int n_shells = static_cast<int>(shells.atom.size());
   std::vector<double> sum_refocc(n_atoms, 0.0);
   for (int s = 0; s < n_shells; ++s) {
@@ -129,6 +118,45 @@ Vec eeq_initial_shell_charges(const std::vector<core::Atom> &atoms,
     }
   }
   return qsh;
+}
+
+void atoms_to_eeq_inputs(const std::vector<core::Atom> &atoms, IVec &Z,
+                          Mat3N &R_ang) {
+  const int n_atoms = static_cast<int>(atoms.size());
+  Z.resize(n_atoms);
+  R_ang.resize(3, n_atoms);
+  const double b2a = occ::units::BOHR_TO_ANGSTROM;
+  for (int A = 0; A < n_atoms; ++A) {
+    Z(A) = atoms[A].atomic_number;
+    R_ang(0, A) = atoms[A].x * b2a;
+    R_ang(1, A) = atoms[A].y * b2a;
+    R_ang(2, A) = atoms[A].z * b2a;
+  }
+}
+
+} // namespace
+
+Vec eeq_initial_shell_charges(const std::vector<core::Atom> &atoms,
+                              const ShellTable &shells, double total_charge) {
+  IVec Z;
+  Mat3N R_ang;
+  atoms_to_eeq_inputs(atoms, Z, R_ang);
+  const Vec q_atom =
+      occ::core::charges::eeq_partial_charges(Z, R_ang, total_charge);
+  return distribute_atomic_to_shells(q_atom, shells);
+}
+
+Vec eeq_initial_shell_charges_periodic(const std::vector<core::Atom> &atoms,
+                                       const ShellTable &shells,
+                                       const Mat3 &lattice_bohr,
+                                       double total_charge) {
+  IVec Z;
+  Mat3N R_ang;
+  atoms_to_eeq_inputs(atoms, Z, R_ang);
+  const Mat3 lattice_ang = lattice_bohr * occ::units::BOHR_TO_ANGSTROM;
+  const Vec q_atom = occ::core::charges::eeq_partial_charges_periodic(
+      Z, R_ang, lattice_ang, total_charge);
+  return distribute_atomic_to_shells(q_atom, shells);
 }
 
 Mat3N klopman_ohno_gamma_energy_gradient(

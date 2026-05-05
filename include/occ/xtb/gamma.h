@@ -50,4 +50,13 @@ Mat3N klopman_ohno_gamma_energy_gradient(
 Vec eeq_initial_shell_charges(const std::vector<core::Atom> &atoms,
                               const ShellTable &shells, double total_charge);
 
+// Periodic variant of `eeq_initial_shell_charges`: uses the Ewald-summed
+// EEQ A matrix (`occ::core::charges::eeq_partial_charges_periodic`) so the
+// initial atomic charges respect the lattice. The same per-atom-to-shell
+// distribution is then applied. `lattice_bohr.cols()` are a, b, c in Bohr.
+Vec eeq_initial_shell_charges_periodic(const std::vector<core::Atom> &atoms,
+                                       const ShellTable &shells,
+                                       const Mat3 &lattice_bohr,
+                                       double total_charge);
+
 } // namespace occ::xtb

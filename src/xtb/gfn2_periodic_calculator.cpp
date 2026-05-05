@@ -78,18 +78,15 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
     }
   }
 
-  // Native D4 lattice translation list (independent of SCC iteration).
-  std::optional<occ::disp::Dispersion> native_d4;
-  std::vector<Vec3> disp_trans;
+  // Native D4: Dispersion owns its own lattice sums internally.
+  std::optional<occ::disp::D4Dispersion> native_d4;
   if (opts.include_dispersion) {
     native_d4.emplace(sys.atoms);
     const auto &g = params.globals();
     native_d4->set_damping(
         occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
-    auto disp_images =
-        build_lattice_images(sys.lattice_bohr, opts.disp_cutoff);
-    disp_trans.reserve(disp_images.size());
-    for (const auto &im : disp_images) disp_trans.push_back(im.t_bohr);
+    native_d4->set_cutoffs(opts.disp_cutoff, /*disp3=*/40.0,
+                            /*cn=*/30.0);
   }
   double e_disp = 0.0;
 
@@ -109,10 +106,14 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   }
   const int n_occ = n_elec / 2;
 
-  // EEQ-based initial guess on the central-cell atoms (no PBC for the guess).
+  // EEQ-based initial guess. Uses the Ewald-summed periodic A matrix so the
+  // starting charges respect the lattice (matters for ionic crystals where
+  // the molecular EEQ would give qualitatively wrong charges).
   Vec qsh;
   try {
-    qsh = eeq_initial_shell_charges(sys.atoms, shells, opts.total_charge);
+    qsh = eeq_initial_shell_charges_periodic(sys.atoms, shells,
+                                              sys.lattice_bohr,
+                                              opts.total_charge);
   } catch (const std::exception &) {
     qsh = Vec::Zero(n_shells);
   }
@@ -194,7 +195,7 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       for (int s = 0; s < n_shells; ++s)
         atom_q_new(shells.atom[s]) += qsh_new(s);
       native_d4->set_charges(atom_q_new);
-      e_disp = native_d4->energy_periodic(disp_trans);
+      e_disp = native_d4->energy_periodic(sys.lattice_bohr);
     }
 
     double e_es = 0.5 * qsh_new.dot(J * qsh_new);
@@ -295,17 +296,14 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
                                  opts.ewald_residual_cutoff);
   Mat J = periodic_klopman_ohno_gamma(sys, shells, params, ewald);
 
-  std::optional<occ::disp::Dispersion> native_d4;
-  std::vector<Vec3> disp_trans;
+  std::optional<occ::disp::D4Dispersion> native_d4;
   if (opts.include_dispersion) {
     native_d4.emplace(sys.atoms);
     const auto &g = params.globals();
     native_d4->set_damping(
         occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
-    auto disp_images =
-        build_lattice_images(sys.lattice_bohr, opts.disp_cutoff);
-    disp_trans.reserve(disp_images.size());
-    for (const auto &im : disp_images) disp_trans.push_back(im.t_bohr);
+    native_d4->set_cutoffs(opts.disp_cutoff, /*disp3=*/40.0,
+                            /*cn=*/30.0);
   }
   double e_disp = 0.0;
 
@@ -333,10 +331,12 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
   }
   const double n_pairs_per_cell = 0.5 * n_elec;
 
-  // EEQ initial guess.
+  // EEQ initial guess (periodic Ewald A matrix).
   Vec qsh;
   try {
-    qsh = eeq_initial_shell_charges(sys.atoms, shells, opts.total_charge);
+    qsh = eeq_initial_shell_charges_periodic(sys.atoms, shells,
+                                              sys.lattice_bohr,
+                                              opts.total_charge);
   } catch (const std::exception &) {
     qsh = Vec::Zero(n_shells);
   }
@@ -440,7 +440,7 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
       for (int s = 0; s < n_shells; ++s)
         atom_q_new(shells.atom[s]) += qsh_new(s);
       native_d4->set_charges(atom_q_new);
-      e_disp = native_d4->energy_periodic(disp_trans);
+      e_disp = native_d4->energy_periodic(sys.lattice_bohr);
     }
 
     double e_es = 0.5 * qsh_new.dot(J * qsh_new);

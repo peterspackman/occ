@@ -44,7 +44,7 @@ TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
 
   SECTION("water pbe matches cpp-d4 to <1 µHa") {
     Molecule m = water_molecule();
-    Dispersion d4(m.atoms(), RefqMode::DFT);
+    D4Dispersion d4(m.atoms(), RefqMode::DFT);
     d4.set_functional("pbe");
     d4.set_charges_eeq(0.0);
     REQUIRE(d4.energy() == Approx(-1.960327305609419e-04).margin(1e-6));
@@ -52,7 +52,7 @@ TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
 
   SECTION("water blyp matches cpp-d4 to <1 µHa") {
     Molecule m = water_molecule();
-    Dispersion d4(m.atoms(), RefqMode::DFT);
+    D4Dispersion d4(m.atoms(), RefqMode::DFT);
     d4.set_functional("blyp");
     d4.set_charges_eeq(0.0);
     REQUIRE(d4.energy() == Approx(-4.734890496748087e-04).margin(1e-6));
@@ -60,7 +60,7 @@ TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
 
   SECTION("benzene wb97x matches cpp-d4 to <10 µHa") {
     Molecule m = benzene_molecule();
-    Dispersion d4(m.atoms(), RefqMode::DFT);
+    D4Dispersion d4(m.atoms(), RefqMode::DFT);
     d4.set_functional("wb97x");
     d4.set_charges_eeq(0.0);
     REQUIRE(d4.energy() == Approx(-1.355940054241274e-03).margin(1e-5));
@@ -69,7 +69,7 @@ TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
   SECTION("benzene b3lyp +1 charge") {
     Molecule m = benzene_molecule();
     m.set_charge(1);
-    Dispersion d4(m.atoms(), RefqMode::DFT);
+    D4Dispersion d4(m.atoms(), RefqMode::DFT);
     d4.set_functional("b3lyp");
     d4.set_charges_eeq(1.0);
     REQUIRE(d4.energy() == Approx(-1.522647086484191e-02).margin(1e-4));
@@ -77,7 +77,7 @@ TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
 
   SECTION("water pbe gradient (sanity)") {
     Molecule m = water_molecule();
-    Dispersion d4(m.atoms(), RefqMode::DFT);
+    D4Dispersion d4(m.atoms(), RefqMode::DFT);
     d4.set_functional("pbe");
     d4.set_charges_eeq(0.0);
     auto [e, grad] = d4.energy_and_gradient();
@@ -95,7 +95,7 @@ TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
   // Re-implement a self-contained 5-point central-difference oracle (the
   // public energy_and_gradient now returns the analytical gradient, so we
   // can't compare it against itself).
-  auto fd_gradient = [&](Dispersion &d, double h = 1e-4) {
+  auto fd_gradient = [&](D4Dispersion &d, double h = 1e-4) {
     auto atoms = std::vector<occ::core::Atom>{};
     // Capture current atoms by re-reading via a probe (we'll mutate via
     // update_positions and restore).
@@ -106,7 +106,7 @@ TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
   SECTION("water (GFN2-xTB SCC-coupled style)") {
     Molecule m = water_molecule();
     auto atoms = m.atoms();
-    Dispersion d4(atoms);
+    D4Dispersion d4(atoms);
     d4.set_damping(gfn2_damping);
     occ::Vec q(3);
     q << -0.5627, 0.2815, 0.2812;
@@ -141,7 +141,7 @@ TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
   SECTION("water (DFT-D4 + EEQ, full force with q-chain)") {
     Molecule m = water_molecule();
     auto atoms = m.atoms();
-    Dispersion d4(atoms, RefqMode::DFT);
+    D4Dispersion d4(atoms, RefqMode::DFT);
     d4.set_functional("pbe");
     d4.set_charges_eeq(0.0);
     auto [e, grad] = d4.energy_and_gradient();
@@ -151,7 +151,7 @@ TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
     // set_charges_eeq), this is the correct comparison.
     occ::Mat3N fd = occ::Mat3N::Zero(3, atoms.size());
     constexpr double h = 1e-4;
-    Dispersion fd_disp(atoms, RefqMode::DFT);
+    D4Dispersion fd_disp(atoms, RefqMode::DFT);
     fd_disp.set_functional("pbe");
     for (std::size_t a = 0; a < atoms.size(); ++a) {
       for (int k = 0; k < 3; ++k) {
@@ -178,7 +178,7 @@ TEST_CASE("native d4 analytical gradient vs FD", "[disp][native][gradient]") {
   SECTION("benzene b3lyp") {
     Molecule m = benzene_molecule();
     auto atoms = m.atoms();
-    Dispersion d4(atoms, RefqMode::DFT);
+    D4Dispersion d4(atoms, RefqMode::DFT);
     d4.set_functional("b3lyp");
     d4.set_charges_eeq(0.0);
     auto [e, grad] = d4.energy_and_gradient();
@@ -197,14 +197,14 @@ TEST_CASE("native d3-bj dispersion", "[disp][native][d3]") {
   // BJ damping). 2-body only (s9=0); s9=1 contributions are tiny for water.
   SECTION("water pbe (2-body + ATM)") {
     Molecule m = water_molecule();
-    DispersionD3 d3(m.atoms());
+    D3Dispersion d3(m.atoms());
     d3.set_functional("pbe");
     REQUIRE(d3.energy() == Approx(-3.5949530662768e-04).margin(1e-7));
   }
 
   SECTION("water blyp") {
     Molecule m = water_molecule();
-    DispersionD3 d3(m.atoms());
+    D3Dispersion d3(m.atoms());
     d3.set_functional("blyp");
     // s-dftd3 reference (--bj blyp --atm)
     auto e = d3.energy();
@@ -215,7 +215,7 @@ TEST_CASE("native d3-bj dispersion", "[disp][native][d3]") {
 
   SECTION("benzene b3lyp") {
     Molecule m = benzene_molecule();
-    DispersionD3 d3(m.atoms());
+    D3Dispersion d3(m.atoms());
     d3.set_functional("b3lyp");
     auto [e, grad] = d3.energy_and_gradient();
     REQUIRE(std::isfinite(e));
@@ -230,7 +230,7 @@ TEST_CASE("native d3-bj dispersion", "[disp][native][d3]") {
   SECTION("water pbe analytical gradient vs FD") {
     Molecule m = water_molecule();
     auto atoms = m.atoms();
-    DispersionD3 d3(atoms);
+    D3Dispersion d3(atoms);
     d3.set_functional("pbe");
     auto [e, grad] = d3.energy_and_gradient();
 

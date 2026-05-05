@@ -184,6 +184,244 @@ Vec eeq_partial_charges(const IVec &atomic_numbers, const Mat3N &positions,
   return A.householderQr().solve(X).topRows(N);
 }
 
+// ============================================================================
+// Periodic (3D) EEQ — Ewald-summed A matrix + lattice-summed CN.
+// Mirrors multicharge/tblite's `get_amat_3d`. The same Ewald split is used in
+// our periodic γ matrix (`occ::xtb::periodic_klopman_ohno_gamma`) — the only
+// difference is the short-range kernel (erf vs Klopman-Ohno).
+// ============================================================================
+
+namespace {
+
+constexpr double kPi = 3.14159265358979323846;
+constexpr double kSqrtPi = 1.7724538509055160273;
+
+// Perpendicular distance from origin to the face spanned by (aj, ak).
+inline double perp_distance(const Vec3 &ai, const Vec3 &aj, const Vec3 &ak) {
+  const double V = std::abs(ai.dot(aj.cross(ak)));
+  const double face = aj.cross(ak).norm();
+  return V / face;
+}
+
+// Triple-loop bounds for a direct-lattice cutoff: integer indices in each
+// lattice direction that suffice to enumerate every translation within
+// `cutoff` of the origin. Stored as a small POD so the enumerator can
+// be reused without recomputing per pair.
+struct LatticeBounds {
+  Vec3 a, b, c;
+  int na, nb, nc;
+  double cutoff;
+  double cutoff_plus_slack; // tight reject inside the loop
+};
+
+inline LatticeBounds compute_lattice_bounds(const Mat3 &lattice_bohr,
+                                             double cutoff_bohr) {
+  LatticeBounds lb;
+  lb.a = lattice_bohr.col(0);
+  lb.b = lattice_bohr.col(1);
+  lb.c = lattice_bohr.col(2);
+  const double da = perp_distance(lb.a, lb.b, lb.c);
+  const double db = perp_distance(lb.b, lb.a, lb.c);
+  const double dc = perp_distance(lb.c, lb.a, lb.b);
+  lb.na = static_cast<int>(std::ceil(cutoff_bohr / da));
+  lb.nb = static_cast<int>(std::ceil(cutoff_bohr / db));
+  lb.nc = static_cast<int>(std::ceil(cutoff_bohr / dc));
+  lb.cutoff = cutoff_bohr;
+  lb.cutoff_plus_slack = cutoff_bohr + std::max({da, db, dc});
+  return lb;
+}
+
+// Inline-able iterator over direct-lattice translations within `lb.cutoff`.
+// `f(const Vec3 &T)` is invoked for each translation including T=0; the
+// only allocation is the caller's accumulator.
+template <typename F>
+inline void for_each_lattice_translation(const LatticeBounds &lb, F &&f) {
+  const double slack = lb.cutoff_plus_slack;
+  for (int i = -lb.na; i <= lb.na; ++i) {
+    for (int j = -lb.nb; j <= lb.nb; ++j) {
+      for (int k = -lb.nc; k <= lb.nc; ++k) {
+        const Vec3 t = i * lb.a + j * lb.b + k * lb.c;
+        if (t.norm() - 1e-12 > slack) continue;
+        f(t);
+      }
+    }
+  }
+}
+
+// Inline-able iterator over G with 0 < |G| ≤ recip_cutoff. `f(const Vec3 &G,
+// double precomputed_coeff)` runs once per qualifying G; `precomputed_coeff`
+// is the (4π/V)·exp(−G²/4α²)/G² factor that appears in the reciprocal Ewald
+// sum (saves a per-call exp() in tight inner loops).
+template <typename F>
+inline void for_each_g_vector(const Mat3 &reciprocal_bohr,
+                               double recip_cutoff, double four_pi_over_V,
+                               double inv4a2, F &&f) {
+  const Vec3 b1 = reciprocal_bohr.col(0);
+  const Vec3 b2 = reciprocal_bohr.col(1);
+  const Vec3 b3 = reciprocal_bohr.col(2);
+  auto bound = [&](const Vec3 &v) {
+    return static_cast<int>(std::ceil(recip_cutoff / v.norm())) + 1;
+  };
+  const int n1 = bound(b1);
+  const int n2 = bound(b2);
+  const int n3 = bound(b3);
+  const double cutoff2 = recip_cutoff * recip_cutoff;
+  for (int i = -n1; i <= n1; ++i) {
+    for (int j = -n2; j <= n2; ++j) {
+      for (int k = -n3; k <= n3; ++k) {
+        const Vec3 G = i * b1 + j * b2 + k * b3;
+        const double g2 = G.squaredNorm();
+        if (g2 < 1e-20 || g2 > cutoff2) continue;
+        const double coeff = four_pi_over_V * std::exp(-g2 * inv4a2) / g2;
+        f(G, coeff);
+      }
+    }
+  }
+}
+
+// Pair Ewald sum at vector R between Gaussian charges with combined width
+// γ_ij = 1/√(w_i² + w_j²). Returns the A_ij contribution
+// (direct + reciprocal + background, plus self if `same_pair`).
+inline double eeq_pair_ewald(const Vec3 &R, double gamma_pair,
+                              const EeqEwaldData &d, bool same_pair) {
+  const double alpha = d.alpha;
+  // Direct: Σ_T [erf(γ·r) − erf(α·r)] / r
+  double s_dir = 0.0;
+  const LatticeBounds lb =
+      compute_lattice_bounds(d.lattice_bohr, d.erfc_cutoff);
+  const double erfc_cutoff = d.erfc_cutoff;
+  for_each_lattice_translation(lb, [&](const Vec3 &T) {
+    const Vec3 dR = R + T;
+    const double r2 = dR.squaredNorm();
+    if (r2 < 1e-20) return; // self position handled by self_term
+    const double r = std::sqrt(r2);
+    if (r > erfc_cutoff) return;
+    s_dir += (std::erf(gamma_pair * r) - std::erf(alpha * r)) / r;
+  });
+  // Reciprocal: (4π/V) Σ_{G≠0} (1/G²) exp(−G²/4α²) cos(G·R)
+  double s_rec = 0.0;
+  for_each_g_vector(d.reciprocal_bohr, d.recip_cutoff, d.four_pi_over_V,
+                     d.inv4a2,
+                     [&](const Vec3 &G, double coeff) {
+                       s_rec += coeff * std::cos(G.dot(R));
+                     });
+  double s = s_dir + s_rec + d.background;
+  if (same_pair) s += d.self_term;
+  return s;
+}
+
+} // namespace
+
+EeqEwaldData build_eeq_ewald_data(const Mat3 &lattice_bohr, double tol,
+                                  double alpha_user) {
+  const Vec3 a = lattice_bohr.col(0);
+  const Vec3 b = lattice_bohr.col(1);
+  const Vec3 c = lattice_bohr.col(2);
+  const double V = std::abs(a.dot(b.cross(c)));
+  const double alpha = (alpha_user > 0.0) ? alpha_user
+                                          : kSqrtPi / std::cbrt(V);
+  // erfc(x) ≤ exp(-x²)/(x√π); set x = sqrt(-ln tol).
+  const double x = std::sqrt(-std::log(tol));
+  EeqEwaldData d;
+  d.lattice_bohr = lattice_bohr;
+  d.reciprocal_bohr = 2.0 * kPi * lattice_bohr.inverse().transpose();
+  d.alpha = alpha;
+  d.erfc_cutoff = x / alpha + 1.0;     // Bohr, +1 safety
+  d.recip_cutoff = 2.0 * alpha * x;    // 1/Bohr
+  d.four_pi_over_V = 4.0 * kPi / V;
+  d.inv4a2 = 1.0 / (4.0 * alpha * alpha);
+  d.background = -kPi / (V * alpha * alpha);
+  d.self_term = -2.0 * alpha / kSqrtPi;
+  return d;
+}
+
+Vec eeq_coordination_numbers_periodic(const IVec &atomic_numbers,
+                                      const Mat3N &positions_angstrom,
+                                      const Mat3 &lattice_angstrom,
+                                      double cutoff_angstrom) {
+  using occ::units::ANGSTROM_TO_BOHR;
+  const int N = atomic_numbers.rows();
+  constexpr double kcn_steepness = 7.5;
+  constexpr double D3_SCALE = 4.0 / 3.0;
+  // CN kernel works in Å (matches the molecular version): rc and r both in Å.
+  // Bounds on the lattice translation enumeration are computed once in Å.
+  const LatticeBounds lb =
+      compute_lattice_bounds(lattice_angstrom, cutoff_angstrom);
+  const double cutoff2 = cutoff_angstrom * cutoff_angstrom;
+  Vec cn = Vec::Zero(N);
+  for (int i = 0; i < N; ++i) {
+    const int ni = atomic_numbers(i);
+    const double rci = impl::covalent[ni];
+    for (int j = 0; j < N; ++j) {
+      const int nj = atomic_numbers(j);
+      const double r0 = (rci + impl::covalent[nj]) * D3_SCALE;
+      const Vec3 dij_ang =
+          positions_angstrom.col(i) - positions_angstrom.col(j);
+      for_each_lattice_translation(lb, [&](const Vec3 &T_ang) {
+        // Skip the i == j self-pair at T = 0.
+        const bool central = T_ang.squaredNorm() < 1e-20;
+        if (central && i == j) return;
+        const Vec3 dR_ang = dij_ang + T_ang;
+        const double r2 = dR_ang.squaredNorm();
+        if (r2 > cutoff2 || r2 < 1e-20) return;
+        const double r = std::sqrt(r2);
+        cn(i) += 0.5 * (1.0 + std::erf(-kcn_steepness * (r - r0) / r0));
+      });
+    }
+  }
+  return cn;
+}
+
+Vec eeq_partial_charges_periodic(const IVec &atomic_numbers,
+                                 const Mat3N &positions_angstrom,
+                                 const Mat3 &lattice_angstrom,
+                                 double total_charge, double tol) {
+  using occ::units::ANGSTROM_TO_BOHR;
+  const int N = atomic_numbers.rows();
+  const double sqrt2_pi = std::sqrt(2.0 / kPi);
+
+  // Bohr conversions for the Ewald math.
+  const Mat3 lattice_bohr = lattice_angstrom * ANGSTROM_TO_BOHR;
+  Mat3N positions_bohr = positions_angstrom * ANGSTROM_TO_BOHR;
+
+  const EeqEwaldData ew = build_eeq_ewald_data(lattice_bohr, tol);
+
+  Mat A = Mat::Zero(N + 1, N + 1);
+  for (int i = 0; i < N; ++i) {
+    const int ni = atomic_numbers(i);
+    const double wi = impl::width[ni];
+    for (int j = i; j < N; ++j) {
+      const int nj = atomic_numbers(j);
+      const double wj = impl::width[nj];
+      const double gamma_pair = 1.0 / std::sqrt(wi * wi + wj * wj);
+      const Vec3 R = positions_bohr.col(i) - positions_bohr.col(j);
+      const bool same_pair = (i == j);
+      const double v = eeq_pair_ewald(R, gamma_pair, ew, same_pair);
+      A(i, j) += v;
+      if (i != j) A(j, i) += v;
+    }
+    // Standard EEQ on-site terms.
+    A(i, i) += impl::eta[ni] + sqrt2_pi / impl::width[ni];
+  }
+  A.row(N).array() = 1.0;
+  A.col(N).array() = 1.0;
+  A(N, N) = 0.0;
+
+  const Vec cn =
+      eeq_coordination_numbers_periodic(atomic_numbers, positions_angstrom,
+                                         lattice_angstrom);
+  Vec X(N + 1);
+  constexpr double eps = 1e-14;
+  for (int i = 0; i < N; ++i) {
+    const int ni = atomic_numbers(i);
+    const double tmp = impl::kcn[ni] / std::sqrt(cn(i) + eps);
+    X(i) = -impl::chi[ni] + tmp * cn(i);
+  }
+  X(N) = total_charge;
+
+  return A.householderQr().solve(X).topRows(N);
+}
+
 EeqWithGradient eeq_partial_charges_and_gradient(
     const IVec &atomic_numbers, const Mat3N &positions_angstrom,
     double charge) {

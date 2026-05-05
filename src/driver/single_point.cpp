@@ -166,7 +166,7 @@ Wavefunction run_method(Molecule &m, const occ::gto::AOBasis &basis,
 
   if (use_d4 || use_xdm) {
     if (use_d4) {
-      occ::disp::Dispersion disp(m.atoms(), occ::disp::RefqMode::DFT);
+      occ::disp::D4Dispersion disp(m.atoms(), occ::disp::RefqMode::DFT);
       try {
         disp.set_functional(method_spec.base_method);
       } catch (const std::exception &ex) {

@@ -153,6 +153,65 @@ CnResult d4_coordination_numbers(const std::vector<core::Atom> &atoms,
   return out;
 }
 
+// Lattice-summed D4 CN. Same erf-counted, EN-weighted kernel as the molecular
+// version, summed over all lattice translations T with |R_ij + T| ≤ cn_cutoff.
+// Excludes the i==j, T=0 self-pair. Translation enumeration is inlined via
+// `for_each_lattice_translation` in the eeq.cpp pattern (no vector allocation).
+Vec d4_coordination_numbers_periodic(const std::vector<core::Atom> &atoms,
+                                      const Mat3 &lattice_bohr,
+                                      double cn_cutoff) {
+  using namespace cn_consts;
+  const int n = static_cast<int>(atoms.size());
+  Vec cn = Vec::Zero(n);
+  const double cutoff2 = cn_cutoff * cn_cutoff;
+
+  // Triple-loop bounds for the lattice translation enumeration (computed once).
+  const Vec3 a = lattice_bohr.col(0);
+  const Vec3 b = lattice_bohr.col(1);
+  const Vec3 c = lattice_bohr.col(2);
+  auto perp = [](const Vec3 &x, const Vec3 &y, const Vec3 &z) {
+    return std::abs(x.dot(y.cross(z))) / y.cross(z).norm();
+  };
+  const double da = perp(a, b, c);
+  const double db = perp(b, a, c);
+  const double dc = perp(c, a, b);
+  const int na = static_cast<int>(std::ceil(cn_cutoff / da));
+  const int nb = static_cast<int>(std::ceil(cn_cutoff / db));
+  const int nc = static_cast<int>(std::ceil(cn_cutoff / dc));
+  const double slack = std::max({da, db, dc});
+
+  for (int i = 0; i < n; ++i) {
+    const int Zi = atoms[i].atomic_number;
+    const double rci = rcov_bohr(Zi);
+    const double eni = pauling_en[Zi];
+    for (int j = 0; j < n; ++j) {
+      const int Zj = atoms[j].atomic_number;
+      const double r0 = rci + rcov_bohr(Zj);
+      const double dEN = std::abs(eni - pauling_en[Zj]);
+      const double den = k4 * std::exp(-((dEN + k5) * (dEN + k5)) / k6);
+      const Vec3 dij(atoms[i].x - atoms[j].x, atoms[i].y - atoms[j].y,
+                     atoms[i].z - atoms[j].z);
+      for (int li = -na; li <= na; ++li) {
+        for (int lj = -nb; lj <= nb; ++lj) {
+          for (int lk = -nc; lk <= nc; ++lk) {
+            const Vec3 T = li * a + lj * b + lk * c;
+            if (T.norm() - 1e-12 > cn_cutoff + slack) continue;
+            // Exclude i==j, T=0 (self-pair within central cell).
+            const bool central = (li == 0 && lj == 0 && lk == 0);
+            if (central && i == j) continue;
+            const Vec3 dR = dij + T;
+            const double r2 = dR.squaredNorm();
+            if (r2 > cutoff2 || r2 < 1e-20) continue;
+            const double r = std::sqrt(r2);
+            cn(i) += den * erf_count(kn, r, r0);
+          }
+        }
+      }
+    }
+  }
+  return cn;
+}
+
 // ============================================================================
 // ζ function for charge-aware projection (Caldeweyher et al., JCP 150, 154122).
 //   ζ(a, c, q_ref, q_mod) = exp(a - exp(c · (1 - q_ref / q_mod)))   if q_mod > 0
@@ -806,14 +865,14 @@ double dispersion_3body(const std::vector<core::Atom> &atoms,
 // Public API
 // ============================================================================
 
-Dispersion::Dispersion(std::vector<core::Atom> atoms, RefqMode mode)
+D4Dispersion::D4Dispersion(std::vector<core::Atom> atoms, RefqMode mode)
     : m_atoms(std::move(atoms)), m_refq_mode(mode) {
   m_q = Vec::Zero(static_cast<int>(m_atoms.size()));
   // Touch the reference data to surface any load errors early.
   (void)d4_data::reference_data();
 }
 
-void Dispersion::set_charges_eeq(double net_charge) {
+void D4Dispersion::set_charges_eeq(double net_charge) {
   // EEQ wants atomic_numbers (IVec) and positions (3×N in Å).
   const int n = static_cast<int>(m_atoms.size());
   IVec atnums(n);
@@ -870,7 +929,7 @@ const std::unordered_map<std::string, D4Damping> &functional_table() {
 
 } // namespace
 
-void Dispersion::set_functional(const std::string &functional) {
+void D4Dispersion::set_functional(const std::string &functional) {
   const auto &table = functional_table();
   auto it = table.find(functional);
   if (it == table.end()) {
@@ -880,14 +939,14 @@ void Dispersion::set_functional(const std::string &functional) {
   m_damping = it->second;
 }
 
-void Dispersion::update_positions(const std::vector<core::Atom> &atoms) {
+void D4Dispersion::update_positions(const std::vector<core::Atom> &atoms) {
   if (atoms.size() != m_atoms.size()) {
-    throw std::runtime_error("Dispersion::update_positions: atom count mismatch");
+    throw std::runtime_error("D4Dispersion::update_positions: atom count mismatch");
   }
   for (std::size_t i = 0; i < atoms.size(); ++i) {
     if (atoms[i].atomic_number != m_atoms[i].atomic_number) {
       throw std::runtime_error(
-          "Dispersion::update_positions: atomic_number changed at index " +
+          "D4Dispersion::update_positions: atomic_number changed at index " +
           std::to_string(i));
     }
     m_atoms[i].x = atoms[i].x;
@@ -899,11 +958,16 @@ void Dispersion::update_positions(const std::vector<core::Atom> &atoms) {
   m_dq_dR.clear();
 }
 
-Vec Dispersion::covalent_coordination_numbers() const {
+Vec D4Dispersion::covalent_coordination_numbers() const {
   return d4_coordination_numbers(m_atoms, m_cutoff_cn, /*with_grad=*/false).cn;
 }
 
-double Dispersion::energy() const {
+Vec D4Dispersion::covalent_coordination_numbers_periodic(
+    const Mat3 &lattice_bohr) const {
+  return d4_coordination_numbers_periodic(m_atoms, lattice_bohr, m_cutoff_cn);
+}
+
+double D4Dispersion::energy() const {
   const auto cn = covalent_coordination_numbers();
   const auto ref_alpha = build_reference_alpha(m_atoms, m_scaling, m_refq_mode);
   const Mat gw = compute_reference_weights(m_atoms, m_scaling, m_refq_mode, cn,
@@ -975,17 +1039,53 @@ double dispersion_2body_periodic(const std::vector<core::Atom> &atoms,
 
 } // namespace
 
-double
-Dispersion::energy_periodic(const std::vector<Vec3> &translations_bohr) const {
-  const auto cn = covalent_coordination_numbers();
+namespace {
+
+// Build the 2-body dispersion translation list for a given lattice, with
+// |T| ≤ cutoff. Includes T = 0. Independent of pair distances — pair pruning
+// happens inside `dispersion_2body_periodic` via squared-distance comparison.
+std::vector<Vec3> build_disp_translations(const Mat3 &lattice_bohr,
+                                           double cutoff_bohr) {
+  const Vec3 a = lattice_bohr.col(0);
+  const Vec3 b = lattice_bohr.col(1);
+  const Vec3 c = lattice_bohr.col(2);
+  auto perp = [](const Vec3 &x, const Vec3 &y, const Vec3 &z) {
+    return std::abs(x.dot(y.cross(z))) / y.cross(z).norm();
+  };
+  const double da = perp(a, b, c);
+  const double db = perp(b, a, c);
+  const double dc = perp(c, a, b);
+  const int na = static_cast<int>(std::ceil(cutoff_bohr / da));
+  const int nb = static_cast<int>(std::ceil(cutoff_bohr / db));
+  const int nc = static_cast<int>(std::ceil(cutoff_bohr / dc));
+  const double slack = std::max({da, db, dc});
+  std::vector<Vec3> out;
+  out.reserve(static_cast<size_t>((2 * na + 1) * (2 * nb + 1) * (2 * nc + 1)));
+  for (int i = -na; i <= na; ++i) {
+    for (int j = -nb; j <= nb; ++j) {
+      for (int k = -nc; k <= nc; ++k) {
+        const Vec3 T = i * a + j * b + k * c;
+        if (T.norm() - 1e-12 > cutoff_bohr + slack) continue;
+        out.push_back(T);
+      }
+    }
+  }
+  return out;
+}
+
+} // namespace
+
+double D4Dispersion::energy_periodic(const Mat3 &lattice_bohr) const {
+  // Periodic CN — lattice sum (was molecular before; this is the fix).
+  const Vec cn = covalent_coordination_numbers_periodic(lattice_bohr);
   const auto ref_alpha = build_reference_alpha(m_atoms, m_scaling, m_refq_mode);
   const Mat gw = compute_reference_weights(m_atoms, m_scaling, m_refq_mode, cn,
                                             m_q);
   const Mat c6 = compute_c6_matrix(m_atoms, gw, ref_alpha);
-  // 2-body lattice sum.
-  const double e2 = dispersion_2body_periodic(m_atoms, translations_bohr,
-                                                m_damping, c6,
-                                                m_cutoff_disp2);
+  // 2-body lattice sum — build the translation list for `m_cutoff_disp2`.
+  const auto disp_trans = build_disp_translations(lattice_bohr, m_cutoff_disp2);
+  const double e2 = dispersion_2body_periodic(m_atoms, disp_trans, m_damping,
+                                                c6, m_cutoff_disp2);
   // 3-body — central-cell only for now (full ATM lattice sum is more
   // involved; the central-cell ATM is a small correction for typical
   // molecular crystals).
@@ -993,7 +1093,7 @@ Dispersion::energy_periodic(const std::vector<Vec3> &translations_bohr) const {
   return e2 + e3;
 }
 
-std::pair<double, Mat3N> Dispersion::energy_and_gradient() const {
+std::pair<double, Mat3N> D4Dispersion::energy_and_gradient() const {
   // Analytical gradient. Three chain-rule contributions:
   //   1. Direct position dependence (BJ damping + ATM angular).
   //   2. CN chain — ∂C6/∂CN_i propagates ∂CN_i/∂R into the gradient.

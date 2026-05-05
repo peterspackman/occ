@@ -267,7 +267,7 @@ Mat3N NativeCalculator::compute_gradient_analytical() {
   double e_disp = 0.0;
   if (wanted_disp) {
     const auto &g = m_calc->parameters().globals();
-    occ::disp::Dispersion d4(m_calc->atoms());
+    occ::disp::D4Dispersion d4(m_calc->atoms());
     d4.set_damping(occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
     Vec atom_q = Vec::Zero(m_calc->atoms().size());
     for (Eigen::Index s = 0; s < m_last_result.shell_charges.size(); ++s) {

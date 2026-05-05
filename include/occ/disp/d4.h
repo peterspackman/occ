@@ -42,18 +42,18 @@ enum class RefqMode { GFN2, DFT };
 //
 // Two main usage patterns:
 //   1. GFN2-xTB SCC-coupled D4 (default RefqMode::GFN2):
-//        Dispersion d(atoms);
+//        D4Dispersion d(atoms);
 //        d.set_damping(gfn2_damping);
 //        d.set_charges(mulliken_atomic);
 //        e = d.energy();
 //   2. DFT-D4 with a functional (RefqMode::DFT, EEQ atomic charges):
-//        Dispersion d(atoms, RefqMode::DFT);
+//        D4Dispersion d(atoms, RefqMode::DFT);
 //        d.set_functional("pbe");
 //        d.set_charges_eeq(net_charge);
 //        e = d.energy();
-class Dispersion {
+class D4Dispersion {
 public:
-  explicit Dispersion(std::vector<core::Atom> atoms,
+  explicit D4Dispersion(std::vector<core::Atom> atoms,
                       RefqMode mode = RefqMode::GFN2);
 
   void set_damping(const D4Damping &d) { m_damping = d; }
@@ -98,18 +98,25 @@ public:
   // (energy, gradient) where gradient is 3 × N_atoms in Hartree/Bohr.
   std::pair<double, Mat3N> energy_and_gradient() const;
 
-  // Periodic 2-body dispersion energy: lattice-summed BJ damping over
-  // translations T (each T = (n1, n2, n3) · lattice in Bohr). The 1/R^6 +
-  // 1/R^8 form converges absolutely in 3D, so a real-space cutoff suffices.
-  // Convention matches the molecular case: T=0 enumerates each pair once
-  // (i<j); T!=0 enumerates all (i,j) including i==j with weight 1/2.
-  // Three-body ATM is not lattice-summed in this v1 (set s9=0 if you want a
-  // strictly 2-body comparison; otherwise the central-cell ATM term still
-  // contributes).
-  double energy_periodic(const std::vector<Vec3> &translations_bohr) const;
+  // Periodic 2-body dispersion energy. Driven by the lattice (columns =
+  // a, b, c in Bohr); two real-space sums are taken internally with cutoffs
+  // `m_cutoff_disp2` (BJ damped 1/R^6+8) and `m_cutoff_cn` (CN counting
+  // function), so the periodic-CN feeds the C6 weights correctly.
+  //
+  // Convention for the 2-body lattice sum:
+  //   T=0 enumerates each pair once (i<j) — matches the molecular case.
+  //   T!=0 enumerates all (i,j) including i==j with weight 1/2.
+  // 3-body ATM is central-cell only (full ATM lattice sum is more involved;
+  // central-cell ATM is small for molecular crystals).
+  double energy_periodic(const occ::Mat3 &lattice_bohr) const;
 
   // The D4 covalent coordination numbers (erf-counted, EN-weighted).
-  Vec covalent_coordination_numbers() const;
+  // Molecular sum.
+  occ::Vec covalent_coordination_numbers() const;
+
+  // Lattice-summed D4 covalent coordination numbers.
+  occ::Vec covalent_coordination_numbers_periodic(
+      const occ::Mat3 &lattice_bohr) const;
 
 private:
   std::vector<core::Atom> m_atoms;

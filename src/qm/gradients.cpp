@@ -12,7 +12,7 @@ std::pair<double, Mat3N> compute_d4_dispersion(
     int charge,
     const std::string &functional) {
 
-  disp::Dispersion d4(atoms, disp::RefqMode::DFT);
+  disp::D4Dispersion d4(atoms, disp::RefqMode::DFT);
   try {
     d4.set_functional(functional);
   } catch (const std::exception &e) {

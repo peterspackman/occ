@@ -114,7 +114,7 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
   // self-consistent D4 to within a few µHa). D4SccState owns dftd4's
   // TMatrix instances which lack proper copy/move, so we hold it via
   // unique_ptr to keep it pinned in memory.
-  std::optional<occ::disp::Dispersion> native_d4;
+  std::optional<occ::disp::D4Dispersion> native_d4;
   if (opts.include_dispersion) {
     native_d4.emplace(m_atoms);
     const auto &g = m_params.globals();
@@ -198,7 +198,7 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
     Vec qsh_new = m_z_sh - pop;
 
     // Compute SCC-coupled D4 with the current Mulliken charges via the
-    // native occ::disp::Dispersion (uses GFN2-xTB reference data).
+    // native occ::disp::D4Dispersion (uses GFN2-xTB reference data).
     if (native_d4) {
       Vec atom_q_new = Vec::Zero(m_atoms.size());
       for (int s = 0; s < m_n_shells; ++s)
