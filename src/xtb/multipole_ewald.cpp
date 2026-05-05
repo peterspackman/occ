@@ -142,15 +142,14 @@ build_multipole_ewald_tensors(const PeriodicSystem &sys, const Vec &mp_radii,
         const double tmp5 = fdmp5 * g5 + e2;
         const double tmp_iso = fdmp5 * g3 + e1;
 
-        // sd[α](i, j) = -vec_α · tmp3 in OCC's convention. The molecular
-        // energy formula (anisotropic.cpp `e += q_j · dpm_i · rij`) uses
-        // `rij = r_j - r_i` whereas the Ewald build uses `vec = r_i - r_j`,
-        // so the sign flip is needed to make the Ewald tensor reproduce the
-        // molecular formula at the molecular limit (verified by the
-        // `Multipole Ewald tensors: large-cell energy matches molecular` test).
-        sd_acc[0] -= vec.x() * tmp3;
-        sd_acc[1] -= vec.y() * tmp3;
-        sd_acc[2] -= vec.z() * tmp3;
+        // sd[α](i, j) = +vec_α · tmp3 with vec = R_i - R_j (tblite convention,
+        // matches tblite/multipole.f90 get_multipole_matrix_0d:
+        //   amat_sd[α, j, i] += (R_i - R_j)_α · g3 · fdmp3).
+        // Used together with `vd CT += 2·dkernel·dipm` and `H1 -= 0.5·D·v`
+        // apply convention to match tblite's H1 update term-by-term.
+        sd_acc[0] += vec.x() * tmp3;
+        sd_acc[1] += vec.y() * tmp3;
+        sd_acc[2] += vec.z() * tmp3;
         for (int a = 0; a < 3; ++a) {
           for (int b = 0; b < 3; ++b) {
             const double iso = (a == b) ? tmp_iso : 0.0;
@@ -172,10 +171,11 @@ build_multipole_ewald_tensors(const PeriodicSystem &sys, const Vec &mp_radii,
         const double gv = G.dot(rij);
         const double sink = std::sin(gv) * g_coeffs[k];
         const double cosk = std::cos(gv) * g_coeffs[k];
-        // Same sign convention as direct kernel (see comment above).
-        sd_acc[0] -= 2.0 * G.x() * sink;
-        sd_acc[1] -= 2.0 * G.y() * sink;
-        sd_acc[2] -= 2.0 * G.z() * sink;
+        // Tblite convention (multipole.f90 get_amat_sdq_rec_3d):
+        //   amat_sd += 2·G·sin(G·rij)·g_coeff
+        sd_acc[0] += 2.0 * G.x() * sink;
+        sd_acc[1] += 2.0 * G.y() * sink;
+        sd_acc[2] += 2.0 * G.z() * sink;
         for (int a = 0; a < 3; ++a) {
           for (int b = 0; b < 3; ++b) {
             dd_acc[a][b] += G(a) * G(b) * cosk;
@@ -295,7 +295,13 @@ anisotropic_energy_ewald(const std::vector<core::Atom> &atoms, const Vec &q,
   for (int i = 0; i < n; ++i)
     for (int a = 0; a < 3; ++a) e_qd += m.dipm(a, i) * vd(a, i);
   // tblite: e01 = (mur)*qat + sum(dpat * vd); then total += 0.5 * e01.
-  e_qd *= 0.5;
+  // Sign flip vs tblite: our t.sd has the opposite sign convention (see the
+  // comment on sd_acc construction), so the natural mur·q + Σ dipm·vd value
+  // here is -tblite_e_qd_v1. Negate to report the same physical energy. The
+  // SCC potential pipeline (anisotropic_potentials_ewald → apply...) is
+  // separately consistent and is NOT changed by this — only the energy
+  // reporting is corrected.
+  e_qd *= -0.5;
 
   // Dipole-dipole: e11 = 0.5 * Σ_{i,j,α,β} dpat(α, i) · dd[α][β](i,j) · dpat(β, j)
   double e_dd = 0.0;
@@ -382,11 +388,10 @@ build_molecular_multipole_tensors(const std::vector<core::Atom> &atoms,
       const double tmp5 = fdmp5 * g5;
       const double tmp_iso = fdmp5 * g3;
 
-      // Same OCC sign convention as build_multipole_ewald_tensors (matches
-      // the molecular `anisotropic_energy`'s `rij = r_j - r_i` form).
-      t.sd[0](iat, jat) -= vec.x() * tmp3;
-      t.sd[1](iat, jat) -= vec.y() * tmp3;
-      t.sd[2](iat, jat) -= vec.z() * tmp3;
+      // tblite convention: sd[α](i, j) = +(R_i - R_j)_α · tmp3.
+      t.sd[0](iat, jat) += vec.x() * tmp3;
+      t.sd[1](iat, jat) += vec.y() * tmp3;
+      t.sd[2](iat, jat) += vec.z() * tmp3;
       for (int a = 0; a < 3; ++a) {
         for (int b = 0; b < 3; ++b) {
           const double iso = (a == b) ? tmp_iso : 0.0;
@@ -424,9 +429,14 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
 
   for (int i = 0; i < n; ++i) {
     double s = 0.0;
+    // vs[i] = "potential at charge i due to all dipoles + quadrupoles at j",
+    // matching tblite's pot.vat += amat_sd · dpat (trans=T) + amat_sq · qpat
+    // (trans=T). After our +(R_i-R_j) sign convention for sd, accessing
+    // t.sd[a](i, j) gives +tblite_amat_sd[a, j, i] which is the right factor
+    // for the trans=T contraction. (sq is symmetric in vec, no sign issue.)
     for (int j = 0; j < n; ++j) {
-      for (int a = 0; a < 3; ++a) s += t.sd[a](j, i) * m.dipm(a, j);
-      for (int p = 0; p < 6; ++p) s += t.sq[p](j, i) * m.qp(p, j);
+      for (int a = 0; a < 3; ++a) s += t.sd[a](i, j) * m.dipm(a, j);
+      for (int p = 0; p < 6; ++p) s += t.sq[p](i, j) * m.qp(p, j);
     }
     out.vs(i) = s;
 
@@ -477,13 +487,16 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
   //   (3=xy → 1, 2), (4=xz → 3, 2), (5=yz → 4, 2)
   static constexpr int qp_from_qpint[6] = {0, 2, 5, 1, 3, 4};
   static constexpr double mpscale_qpint[6] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0};
+  // tblite get_kernel_potential (multipole.f90 lines 329-349):
+  //   vd(:, i) += 2·dkernel·dipm(:, i)
+  //   vq(:, i) += 2·qkernel·qpat(:, i) · mpscale, mpscale=[1,2,1,2,2,1]
   for (int i = 0; i < n; ++i) {
     const auto *e = params.element(atoms[i].atomic_number);
     for (int l1 = 0; l1 < 3; ++l1) {
-      out.vd(l1, i) -= 2.0 * e->dip_kernel * m.dipm(l1, i);
+      out.vd(l1, i) += 2.0 * e->dip_kernel * m.dipm(l1, i);
     }
     for (int p = 0; p < 6; ++p) {
-      out.vq(p, i) -= 2.0 * e->quad_kernel * m.qp(qp_from_qpint[p], i)
+      out.vq(p, i) += 2.0 * e->quad_kernel * m.qp(qp_from_qpint[p], i)
                       * mpscale_qpint[p];
     }
   }

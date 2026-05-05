@@ -102,6 +102,20 @@ PeriodicMultipoleAO build_periodic_multipole_ao(
     const PeriodicSystem &sys, const Gfn2Parameters &params,
     const std::vector<LatticeImage> &translations);
 
+// In-place transform from full Cartesian quadrupole AO matrices (xx, xy, xz,
+// yy, yz, zz) to traceless-Cartesian, matching tblite's
+// integral/multipole.f90 convention:
+//
+//   Q'_xx = 1.5·Q_xx - 0.5·(Q_xx + Q_yy + Q_zz)
+//   Q'_xy = 1.5·Q_xy   ;   Q'_yy = 1.5·Q_yy - 0.5·(...)
+//   Q'_xz = 1.5·Q_xz   ;   Q'_yz = 1.5·Q_yz
+//   Q'_zz = 1.5·Q_zz - 0.5·(...)
+//
+// Applied per AO pair (μ, ν). For the H1 contribution `0.5·Q_AO·vq[A]` to
+// match tblite's update, Q_AO must be the traceless form (otherwise the
+// trace component of vq couples to the non-zero trace of Cartesian Q).
+void apply_traceless_quadrupole_transform(std::array<Mat, 6> &Q);
+
 // Molecular variant: returns the same struct as the periodic build but with
 // T = 0 only (no lattice). D_ket / D_bra carry the per-row / per-col atomic
 // origin shifts; the molecular SCC can use these with the same

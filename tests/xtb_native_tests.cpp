@@ -741,6 +741,10 @@ TEST_CASE("CAMM convention: periodic Bra/Ket reduces to molecular at T=0",
           rk[k0[kk]] * rk[k1[kk]] * r.overlap_matrix.col(q_col);
     }
   }
+  // compute_camm_moments_periodic expects traceless-Cartesian Q AO (tblite
+  // convention) — apply the same transform the production builders do.
+  occ::xtb::apply_traceless_quadrupole_transform(Q_ket);
+  occ::xtb::apply_traceless_quadrupole_transform(Q_bra);
 
   auto m_per = occ::xtb::compute_camm_moments_periodic(
       atoms, bf2at, r.density_matrix, D_ket, D_bra, Q_ket, Q_bra);

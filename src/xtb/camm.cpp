@@ -200,15 +200,10 @@ CammMoments compute_camm_moments_periodic(
   (void)D_ket;
   (void)Q_ket;
 
-  // Quadrupole trace removal (xtb convention) — match molecular variant.
-  // Diagonals in out.qp layout are at indices 0=xx, 2=yy, 5=zz.
-  for (int a = 0; a < nat; ++a) {
-    const double tr = 0.5 * (out.qp(0, a) + out.qp(2, a) + out.qp(5, a));
-    for (int kk = 0; kk < 6; ++kk) out.qp(kk, a) *= 1.5;
-    out.qp(0, a) -= tr;
-    out.qp(2, a) -= tr;
-    out.qp(5, a) -= tr;
-  }
+  // No post-CAMM trace removal: Q_bra is expected to already be the
+  // traceless-Cartesian AO quadrupole (1.5·Q - 0.5·tr·δ) — matches tblite's
+  // integral/multipole.f90 convention. The Mulliken partition of a traceless
+  // AO automatically yields traceless qpat, so no further transform is needed.
   return out;
 }
 

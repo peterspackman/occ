@@ -54,10 +54,14 @@ anisotropic_energy(const std::vector<core::Atom> &atoms, const Vec &q,
       const double r2 = rx * rx + ry * ry + rz * rz;
       const double rij[3] = {rx, ry, rz};
 
+      // Charge-dipole: tblite convention (e_qd_v1 = Σ dipm[i]·(R_i-R_j)·q_j·g3
+      // over ordered i,j ≠ each other). For our pair loop with j < i and rij =
+      // R_j - R_i, the (i,j) and (j,i) contributions combine to:
+      //   E_qd_pair_ij = -q_j · dipm[i] · rij[k] + q_i · dipm[j] · rij[k]
       double ed = 0.0, eq = 0.0, edd = 0.0;
       for (int k = 0; k < 3; ++k) {
-        ed += q_j * m.dipm(k, i) * rij[k];
-        ed -= m.dipm(k, j) * q_i * rij[k];
+        ed -= q_j * m.dipm(k, i) * rij[k];
+        ed += m.dipm(k, j) * q_i * rij[k];
         for (int l = 0; l < 3; ++l) {
           const double tt = rij[l] * rij[k];
           const double tt3 = 3.0 * tt;
@@ -75,7 +79,12 @@ anisotropic_energy(const std::vector<core::Atom> &atoms, const Vec &q,
   }
 
   AnisotropicEnergy out;
-  out.aes = e01 + e02 + e11;
+  // Sign flip on e01 (charge-dipole): OCC's pair sum uses `rij = R_j - R_i`,
+  // so `q_j · dipm[k, i] · rij[k]` = -q_j · dipm[k, i] · (R_i - R_j)[k] —
+  // opposite sign vs tblite's `e_qd_v1 = Σ dipm[i] · (R_i - R_j) · q_j · g3`.
+  // Negate to report the same physical energy. The SCC machinery is
+  // unchanged.
+  out.aes = -e01 + e02 + e11;
   out.polariz = epol;
   return out;
 }
@@ -240,10 +249,11 @@ aes_pair_energy(int i, int j, double rx, double ry, double rz, double g3,
   const double q_i = q(i), q_j = q(j);
   const double rij[3] = {rx, ry, rz};
   const double r2 = rx * rx + ry * ry + rz * rz;
+  // Charge-dipole sign matches tblite — see comment in anisotropic_energy.
   double ed = 0.0, eq = 0.0, edd = 0.0;
   for (int k = 0; k < 3; ++k) {
-    ed += q_j * m.dipm(k, i) * rij[k];
-    ed -= m.dipm(k, j) * q_i * rij[k];
+    ed -= q_j * m.dipm(k, i) * rij[k];
+    ed += m.dipm(k, j) * q_i * rij[k];
     for (int l = 0; l < 3; ++l) {
       const double tt = rij[l] * rij[k];
       const double tt3 = 3.0 * tt;
@@ -326,7 +336,8 @@ AnisotropicEnergy anisotropic_energy_periodic(
   }
 
   AnisotropicEnergy out;
-  out.aes = e01 + e02 + e11;
+  // Same e01 sign flip as molecular `anisotropic_energy` (see comment there).
+  out.aes = -e01 + e02 + e11;
   out.polariz = epol;
   return out;
 }
@@ -503,7 +514,9 @@ void apply_anisotropic_h1_periodic(
         eh1 += 0.5 * Q_ket[q_from_qpint[l]](mu, nu) * pot.vq(l, ii);
         eh1 += 0.5 * Q_bra[q_from_qpint[l]](mu, nu) * pot.vq(l, jj);
       }
-      H(mu, nu) += eh1;
+      // Sign convention matches tblite scf/potential.f90 add_vmp_to_h1 +
+      // add_vao_to_h1: H1 -= 0.5·integral·potential.
+      H(mu, nu) -= eh1;
     }
   }
 }

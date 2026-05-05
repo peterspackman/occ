@@ -224,6 +224,17 @@ MatTriple bloch_sum_gamma_triple(const std::vector<MatTriple> &triples) {
   return result;
 }
 
+void apply_traceless_quadrupole_transform(std::array<Mat, 6> &Q) {
+  // Q layout {xx, xy, xz, yy, yz, zz} → diagonals at indices 0, 3, 5.
+  // Per-AO-pair transform: tr = 0.5·(Q_xx + Q_yy + Q_zz);
+  //                        Q_diag → 1.5·Q_diag - tr; Q_offdiag → 1.5·Q_offdiag.
+  Mat tr = 0.5 * (Q[0] + Q[3] + Q[5]);
+  for (int k = 0; k < 6; ++k) Q[k] *= 1.5;
+  Q[0] -= tr;
+  Q[3] -= tr;
+  Q[5] -= tr;
+}
+
 PeriodicMultipoleAO build_periodic_multipole_ao(
     const PeriodicSystem &sys, const Gfn2Parameters &params,
     const std::vector<LatticeImage> &translations) {
@@ -364,6 +375,10 @@ PeriodicMultipoleAO build_periodic_multipole_ao(
       out.Q_bra[kk] += bra;
     }
   }
+  // Match tblite's traceless-Cartesian AO quadrupole convention so the H1
+  // contribution `0.5·Q_AO·vq[A]` lines up with `add_vmp_to_h1` in tblite.
+  apply_traceless_quadrupole_transform(out.Q_ket);
+  apply_traceless_quadrupole_transform(out.Q_bra);
   return out;
 }
 
@@ -430,6 +445,8 @@ build_molecular_multipole_ao(const std::vector<core::Atom> &atoms,
           (*axis[k0[kk]])(q) * (*axis[k1[kk]])(q) * S.col(q);
     }
   }
+  apply_traceless_quadrupole_transform(out.Q_ket);
+  apply_traceless_quadrupole_transform(out.Q_bra);
   return out;
 }
 
