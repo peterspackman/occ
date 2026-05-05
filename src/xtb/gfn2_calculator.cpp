@@ -233,6 +233,10 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
     double de = std::abs(total_energy - prev_energy);
     occ::log::info("{:>4d}  {:>20.12f}  {:>12.2e}  {:>12.2e}", iter,
                    total_energy, de, dq_max);
+    occ::log::debug(
+        "    breakdown: H0={:>14.6f}  ES={:>14.6f}  3rd={:>10.3e}  "
+        "AES={:>10.3e}  pol={:>10.3e}  rep={:>10.3e}  disp={:>10.3e}",
+        e_h0, e_es, e_third, e_aniso.aes, e_aniso.polariz, m_e_rep, e_disp);
 
     bool e_ok = (iter > 1) && de < opts.energy_threshold;
     bool q_ok = dq_max < opts.charge_threshold;
