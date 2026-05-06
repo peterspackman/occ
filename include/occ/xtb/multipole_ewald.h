@@ -34,9 +34,6 @@ struct MultipolePairTensors {
   double alpha;
   double real_cutoff;
   double recip_cutoff;
-  // Cached so the gauge-correction code in anisotropic_potentials_ewald can
-  // re-do its small direct-space lattice sum without rebuilding the image list.
-  std::vector<LatticeImage> images;
 };
 
 // Auto-pick alpha = sqrt(pi)/V^(1/3); pass alpha_user > 0 to override.
@@ -69,36 +66,13 @@ anisotropic_energy_ewald(const std::vector<core::Atom> &atoms, const Vec &q,
 // Per-atom potentials acting on charges (vs), atomic dipoles (vd), and
 // atomic quadrupoles (vq) from the Ewald pair tensors. vq layout in xtb's
 // qpint order {xx, yy, zz, xy, xz, yz}, matching `anisotropic_potentials`.
-//
-// Note: this returns the strict tensor-contraction derivatives of the Ewald
-// energy. The molecular `anisotropic_potentials` includes additional gauge-
-// correction terms (involving absolute atom positions) that account for the
-// AO dipole/quadrupole integrals being computed at the global origin (0,0,0)
-// rather than per-atom. Those corrections are NOT yet ported to the Ewald
-// path — for SCC use, prefer the real-space `anisotropic_potentials_periodic`
-// which is consistent with `apply_anisotropic_h1` in the OCC AO basis. This
-// function is currently kept for tensor-derivative testing and future work.
+// These are the strict tensor-contraction derivatives of the Ewald energy
+// (no gauge corrections — the AO multipole integrals carry the per-atom
+// origin shift, so the H1 routine consumes these potentials directly).
 AnisotropicPotentials
 anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
                               const Vec &q, const CammMoments &m,
                               const MultipolePairTensors &tensors,
                               const Gfn2Parameters &params);
-
-// Gauge-corrected periodic anisotropic potentials. Uses the pre-built tensors
-// for the simple part (full Ewald with reciprocal) and adds gauge-correction
-// terms via direct-space lattice sum (matching the molecular
-// `anisotropic_potentials` formula structure with Ewald-corrected scalars).
-//
-// Reciprocal contribution to gauge corrections is dropped — exponentially
-// damped by erfc so the missing contribution is small (sub-µHa for typical
-// molecular crystals at 20 Bohr cutoff). At very large cell, this reduces
-// exactly to the molecular `anisotropic_potentials`.
-//
-// THIS is the function to use as a drop-in replacement for the molecular
-// `anisotropic_potentials` in the periodic SCC's H1 shift.
-AnisotropicPotentials anisotropic_potentials_ewald_gauge_corrected(
-    const std::vector<core::Atom> &atoms, const Vec &q, const Vec &mp_radii,
-    const CammMoments &m, const MultipolePairTensors &tensors,
-    const Gfn2Parameters &params);
 
 } // namespace occ::xtb

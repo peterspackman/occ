@@ -20,10 +20,6 @@ using CMat = Eigen::MatrixXcd;
 // same basis functions translated by T. The Bloch-summed matrix at k is
 //   M(k) = Σ_T M^T exp(i k · T)
 // (real-symmetric for k=0, complex-Hermitian otherwise).
-struct PeriodicAOMatrices {
-  std::vector<Mat> S;   // overlap, indexed by translation
-  std::vector<Mat> H0;  // extended Hückel core Hamiltonian
-};
 
 // Compute the per-T overlap blocks. The (T=0) entry is the standard
 // molecular overlap of the central basis.
@@ -38,43 +34,6 @@ std::vector<Mat>
 periodic_h0_blocks(const PeriodicSystem &sys, const Gfn2Parameters &params,
                    const std::vector<LatticeImage> &translations,
                    const std::vector<Mat> &S_per_T, const Vec &cn);
-
-// Per-T dipole AO matrices (one MatTriple per translation): the (μ in cell 0,
-// ν in cell T) block of the dipole AO integral with the origin set as a
-// constant Vec3. Bloch-sum these to get D(k) for the periodic CAMM dipole
-// projection — the central-cell-only `dipole_ao_matrices` misses image
-// contributions in dense cells.
-std::vector<MatTriple>
-periodic_dipole_ao_blocks(const PeriodicSystem &sys,
-                           const Gfn2Parameters &params,
-                           const std::vector<LatticeImage> &translations,
-                           const Vec3 &origin = Vec3::Zero());
-
-// Per-T quadrupole AO matrices (six independent components in xx, xy, xz, yy,
-// yz, zz order — same convention as `quadrupole_ao_matrices`). Same pattern
-// as `periodic_dipole_ao_blocks`.
-std::vector<std::array<Mat, 6>>
-periodic_quadrupole_ao_blocks(const PeriodicSystem &sys,
-                               const Gfn2Parameters &params,
-                               const std::vector<LatticeImage> &translations,
-                               const Vec3 &origin = Vec3::Zero());
-
-// Bloch-sum a vector of MatTriple at Γ — component-wise.
-MatTriple bloch_sum_gamma_triple(const std::vector<MatTriple> &triples);
-
-// Bloch-sum a vector of std::array<Mat, 6> at Γ — component-wise.
-std::array<Mat, 6>
-bloch_sum_gamma_quad(const std::vector<std::array<Mat, 6>> &quads);
-
-// T-weighted Bloch sum of the per-T overlap blocks at Γ. Returns three nbf×nbf
-// matrices W_k(μ, ν) = Σ_T T_k · S_T(μ, ν), one per Cartesian direction.
-//
-// Rationale: the Γ Bloch sum S(Γ) = Σ_T S_T(μ, ν) treats AO ν as living in
-// image T; for the Bra-side dipole partition we need the position correction
-// for that imaged AO (R_ν + T) instead of just R_ν.
-MatTriple bloch_sum_T_weighted_overlap(
-    const std::vector<Mat> &S_per_T,
-    const std::vector<LatticeImage> &translations);
 
 // Bra/Ket atom-centered multipole AO matrices, dftbplus convention. For each
 // AO pair (μ, ν) with atom_of(μ) = A_μ (cell 0) and atom_of(ν) = A_ν (looped

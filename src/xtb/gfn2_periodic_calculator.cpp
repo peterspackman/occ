@@ -3,6 +3,7 @@
 #include <cmath>
 #include <occ/core/diis.h>
 #include <occ/core/log.h>
+#include <occ/core/timings.h>
 #include <occ/disp/d4.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/xtb/anisotropic.h>
@@ -38,6 +39,7 @@ PeriodicSccResult
 run_charge_only_periodic_scc(const PeriodicSystem &sys,
                               const Gfn2Parameters &params,
                               const PeriodicSccOptions &opts) {
+  occ::timing::start(occ::timing::xtb_setup);
   // Build basis, shells, and integrals from the central-cell atoms.
   auto basis = build_aobasis(sys.atoms, params);
   auto shells = build_shell_table(sys.atoms, params);
@@ -47,20 +49,30 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   const auto bf_to_shell = basis.bf_to_shell();
   const Vec z_sh = shells.ref_occ;
 
-  // Lattice translations for AO/CN/repulsion sums.
-  auto images = build_lattice_images(sys.lattice_bohr, opts.real_cutoff);
+  // Per-quantity lattice translations: AO matrices decay as exp(-α·r²) —
+  // a tight cutoff is safe and cheap. CN and repulsion need slightly wider
+  // sums (matching tblite's defaults).
+  auto cn_images = build_lattice_images(sys.lattice_bohr, opts.cn_cutoff);
+  auto rep_images = build_lattice_images(sys.lattice_bohr, opts.rep_cutoff);
+  auto ao_images = build_lattice_images(sys.lattice_bohr, opts.ao_cutoff);
   // Periodic CN, repulsion, AO blocks, Bloch sums at Γ.
-  Vec cn = gfn_coordination_numbers_periodic(sys.atoms, images);
-  const double e_rep = repulsion_energy_periodic(sys.atoms, params, images);
-  auto S_per_T = periodic_overlap_blocks(sys, params, images);
-  auto H0_per_T = periodic_h0_blocks(sys, params, images, S_per_T, cn);
+  Vec cn = gfn_coordination_numbers_periodic(sys.atoms, cn_images);
+  const double e_rep = repulsion_energy_periodic(sys.atoms, params, rep_images);
+  occ::timing::start(occ::timing::xtb_overlap);
+  auto S_per_T = periodic_overlap_blocks(sys, params, ao_images);
+  occ::timing::stop(occ::timing::xtb_overlap);
+  occ::timing::start(occ::timing::xtb_h0);
+  auto H0_per_T = periodic_h0_blocks(sys, params, ao_images, S_per_T, cn);
+  occ::timing::stop(occ::timing::xtb_h0);
   Mat S = bloch_sum_gamma(S_per_T);
   Mat H0 = bloch_sum_gamma(H0_per_T);
 
   // Periodic shell-resolved γ via Ewald.
+  occ::timing::start(occ::timing::xtb_ewald_gamma);
   auto ewald = build_ewald_data(sys, /*tol=*/1e-10, opts.ewald_alpha,
                                  opts.ewald_residual_cutoff);
   Mat J = periodic_klopman_ohno_gamma(sys, shells, params, ewald);
+  occ::timing::stop(occ::timing::xtb_ewald_gamma);
 
   // Multipole AO matrices — Bloch-summed at Γ with per-atom origin (Ket =
   // atom-of-row centered, Bra = atom-of-col-image centered). Mirrors
@@ -72,12 +84,13 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   Vec mp_radii;
   std::optional<MultipolePairTensors> mp_tensors;  // Ewald path
   if (opts.include_multipoles) {
-    mp_ao = build_periodic_multipole_ao(sys, params, images);
+    occ::timing::start(occ::timing::xtb_multipole_ao);
+    mp_ao = build_periodic_multipole_ao(sys, params, ao_images);
     mp_radii = multipole_radii(sys.atoms, cn, params);
-    if (opts.multipole_ewald) {
-      mp_tensors = build_multipole_ewald_tensors(sys, mp_radii, params);
-    }
+    mp_tensors = build_multipole_ewald_tensors(sys, mp_radii, params);
+    occ::timing::stop(occ::timing::xtb_multipole_ao);
   }
+  occ::timing::stop(occ::timing::xtb_setup);
 
   // Native D4: Dispersion owns its own lattice sums internally.
   std::optional<occ::disp::D4Dispersion> native_d4;
@@ -162,8 +175,10 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   occ::log::info("{:=^72s}", "  GFN2-xTB periodic SCC (Γ-only)  ");
   occ::log::info("nbf = {}   n_shells = {}   n_electrons = {}   multipoles = {}",
                   nbf, n_shells, n_elec, opts.include_multipoles ? "on" : "off");
-  occ::log::info("real_cutoff = {:.1f} Bohr   ewald α = {:.4f}   #G = {}",
-                  opts.real_cutoff, ewald.alpha, ewald.g_vectors.size());
+  occ::log::info("cutoffs (Bohr): cn={:.1f}  rep={:.1f}  ao={:.1f}   "
+                  "ewald α={:.4f}   #G={}",
+                  opts.cn_cutoff, opts.rep_cutoff, opts.ao_cutoff,
+                  ewald.alpha, ewald.g_vectors.size());
   occ::log::info("{:>4s}  {:>20s}  {:>12s}  {:>12s}", "iter", "E (Hartree)",
                   "|ΔE|", "max|Δq|");
 
@@ -185,39 +200,24 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       }
     }
 
-    AnisotropicEnergy e_aniso{0.0, 0.0};
     if (opts.include_multipoles && iter > 1) {
-      // mom is the DIIS-mixed atomic multipole state from the previous
-      // iteration's diagonalization. Don't recompute from current P here —
-      // that would skip the DIIS mixing on the moments and reintroduce
-      // the H1 feedback oscillation.
+      // H1 uses the DIIS-mixed multipole state from the previous iteration's
+      // diagonalization (`mom`). At iter 1 `mom = 0` — same convention as
+      // tblite, whose initial guess sets `dpat=qpat=0` and only adds the
+      // multipole H1 once the first density has produced non-zero CAMM.
+      occ::timing::start(occ::timing::xtb_aes);
       Vec atom_q = Vec::Zero(sys.atoms.size());
       for (int s = 0; s < n_shells; ++s)
         atom_q(shells.atom[s]) += qsh(s);
-      // Periodic anisotropic ES: Ewald-summed pair tensors + clean tensor
-      // potentials (no `rai`-based gauge corrections — those are the molecular
-      // partition's compensation for global-origin AO integrals; we now use
-      // atom-centered Bra/Ket integrals and a clean tensor potential like
-      // tblite's `get_potential` in coulomb/multipole.f90).
-      AnisotropicPotentials pot;
-      if (opts.multipole_ewald) {
-        pot = anisotropic_potentials_ewald(sys.atoms, atom_q, mom,
-                                             *mp_tensors, params);
-        e_aniso = anisotropic_energy_ewald(sys.atoms, atom_q, mom,
-                                            *mp_tensors, params);
-      } else {
-        pot = anisotropic_potentials_periodic(sys.atoms, images, atom_q,
-                                                mp_radii, mom, params);
-        e_aniso = anisotropic_energy_periodic(sys.atoms, images, atom_q,
-                                                mp_radii, mom, params);
-      }
-      // Periodic H1 with Bra/Ket atom-centered AO matrices: matches the
-      // tensor-only potential by using each side's atom-centered integrals.
+      AnisotropicPotentials pot = anisotropic_potentials_ewald(
+          sys.atoms, atom_q, mom, *mp_tensors, params);
       apply_anisotropic_h1_periodic(H, S, mp_ao->D_ket, mp_ao->D_bra,
                                      mp_ao->Q_ket, mp_ao->Q_bra,
                                      bf_to_atom, pot);
+      occ::timing::stop(occ::timing::xtb_aes);
     }
 
+    occ::timing::start(occ::timing::xtb_eigensolve);
     Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(H, S);
     if (es.info() != Eigen::Success) {
       throw std::runtime_error(
@@ -225,7 +225,9 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
     }
     orbital_energies = es.eigenvalues();
     C = es.eigenvectors();
+    occ::timing::stop(occ::timing::xtb_eigensolve);
 
+    occ::timing::start(occ::timing::xtb_density);
     orbital_occupations = Vec::Zero(nbf);
     for (int i = 0; i < n_occ; ++i) orbital_occupations(i) = 2.0;
 
@@ -235,13 +237,37 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
     Mat PS = P * S;
     Vec pop = shell_populations(PS, bf_to_shell, n_shells);
     Vec qsh_new = z_sh - pop;
+    occ::timing::stop(occ::timing::xtb_density);
+
+    // Compute the new CAMM multipoles from the just-solved density. tblite
+    // reports the multipole energy from these (post-density) values; we do
+    // the same so the per-iter energy is a self-consistent (P, q, μ) triple
+    // rather than mixing input H1 multipoles with output charges.
+    CammMoments mom_new;
+    AnisotropicEnergy e_aniso{0.0, 0.0};
+    if (opts.include_multipoles) {
+      occ::timing::start(occ::timing::xtb_camm);
+      mom_new = compute_camm_moments_periodic(
+          sys.atoms, bf_to_atom, P, mp_ao->D_ket, mp_ao->D_bra,
+          mp_ao->Q_ket, mp_ao->Q_bra);
+      occ::timing::stop(occ::timing::xtb_camm);
+      Vec atom_q_new = Vec::Zero(sys.atoms.size());
+      for (int s = 0; s < n_shells; ++s)
+        atom_q_new(shells.atom[s]) += qsh_new(s);
+      occ::timing::start(occ::timing::xtb_aes);
+      e_aniso = anisotropic_energy_ewald(sys.atoms, atom_q_new, mom_new,
+                                          *mp_tensors, params);
+      occ::timing::stop(occ::timing::xtb_aes);
+    }
 
     if (native_d4) {
+      occ::timing::start(occ::timing::xtb_dispersion);
       Vec atom_q_new = Vec::Zero(sys.atoms.size());
       for (int s = 0; s < n_shells; ++s)
         atom_q_new(shells.atom[s]) += qsh_new(s);
       native_d4->set_charges(atom_q_new);
       e_disp = native_d4->energy_periodic(sys.lattice_bohr);
+      occ::timing::stop(occ::timing::xtb_dispersion);
     }
 
     double e_es = 0.5 * qsh_new.dot(J * qsh_new);
@@ -314,17 +340,11 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       return r;
     }
 
-    // Compute the new multipole moments from the new density matrix; these
-    // will be DIIS-mixed alongside qsh and used in the next iteration's H1.
-    CammMoments mom_new;
-    if (opts.include_multipoles) {
-      mom_new = compute_camm_moments_periodic(
-          sys.atoms, bf_to_atom, P, mp_ao->D_ket, mp_ao->D_bra,
-          mp_ao->Q_ket, mp_ao->Q_bra);
-    }
-
+    // mom_new is the freshly computed CAMM from the new density (computed
+    // above); reuse it as the input for next iteration's H1 after DIIS mixing.
     // Pack (qsh_new, mom_new) into a single DIIS state vector. Error is the
     // change since the previous (qsh, mom). Extrapolate, then unpack back.
+    occ::timing::start(occ::timing::xtb_diis);
     Vec state(diis_size);
     Vec state_prev(diis_size);
     pack_state(qsh_new, mom_new, state);
@@ -341,14 +361,16 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
                   opts.damping_factor * state_prev;
       unpack_state(mixed, qsh, mom);
     }
+    occ::timing::stop(occ::timing::xtb_diis);
     prev_energy = total_energy;
   }
 
   occ::log::warn("Periodic GFN2 SCC did not converge in {} iterations",
                   opts.max_iterations);
   PeriodicSccResult r;
-  r.scc_energy = prev_energy - e_rep;
+  r.scc_energy = prev_energy - e_rep - e_disp;
   r.repulsion_energy = e_rep;
+  r.dispersion_energy = e_disp;
   r.total_energy = prev_energy;
   r.shell_charges = qsh;
   Vec atom_charges = Vec::Zero(sys.atoms.size());
@@ -381,11 +403,13 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
   const auto bf_to_shell = basis.bf_to_shell();
   const Vec z_sh = shells.ref_occ;
 
-  auto images = build_lattice_images(sys.lattice_bohr, opts.real_cutoff);
-  Vec cn = gfn_coordination_numbers_periodic(sys.atoms, images);
-  const double e_rep = repulsion_energy_periodic(sys.atoms, params, images);
-  auto S_per_T = periodic_overlap_blocks(sys, params, images);
-  auto H0_per_T = periodic_h0_blocks(sys, params, images, S_per_T, cn);
+  auto cn_images = build_lattice_images(sys.lattice_bohr, opts.cn_cutoff);
+  auto rep_images = build_lattice_images(sys.lattice_bohr, opts.rep_cutoff);
+  auto ao_images = build_lattice_images(sys.lattice_bohr, opts.ao_cutoff);
+  Vec cn = gfn_coordination_numbers_periodic(sys.atoms, cn_images);
+  const double e_rep = repulsion_energy_periodic(sys.atoms, params, rep_images);
+  auto S_per_T = periodic_overlap_blocks(sys, params, ao_images);
+  auto H0_per_T = periodic_h0_blocks(sys, params, ao_images, S_per_T, cn);
 
   auto ewald = build_ewald_data(sys, /*tol=*/1e-10, opts.ewald_alpha,
                                  opts.ewald_residual_cutoff);
@@ -406,8 +430,8 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
   const int n_k = static_cast<int>(kpoints.size());
   std::vector<CMat> S_k(n_k), H0_k(n_k);
   for (int ik = 0; ik < n_k; ++ik) {
-    S_k[ik] = bloch_sum(S_per_T, images, kpoints[ik].k);
-    H0_k[ik] = bloch_sum(H0_per_T, images, kpoints[ik].k);
+    S_k[ik] = bloch_sum(S_per_T, ao_images, kpoints[ik].k);
+    H0_k[ik] = bloch_sum(H0_per_T, ao_images, kpoints[ik].k);
   }
 
   // Electron count (per primitive cell).
@@ -449,8 +473,10 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
   occ::log::info(
       "nbf = {}   n_shells = {}   n_electrons = {}   n_kpts = {}", nbf,
       n_shells, n_elec, n_k);
-  occ::log::info("real_cutoff = {:.1f} Bohr   ewald α = {:.4f}   #G = {}",
-                  opts.real_cutoff, ewald.alpha, ewald.g_vectors.size());
+  occ::log::info("cutoffs (Bohr): cn={:.1f}  rep={:.1f}  ao={:.1f}   "
+                  "ewald α={:.4f}   #G={}",
+                  opts.cn_cutoff, opts.rep_cutoff, opts.ao_cutoff,
+                  ewald.alpha, ewald.g_vectors.size());
   occ::log::info("{:>4s}  {:>20s}  {:>12s}  {:>12s}", "iter", "E (Hartree)",
                   "|ΔE|", "max|Δq|");
 
@@ -600,8 +626,9 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
   occ::log::warn("Periodic GFN2 SCC (k-point) did not converge in {} iterations",
                   opts.max_iterations);
   PeriodicSccResult r;
-  r.scc_energy = prev_energy - e_rep;
+  r.scc_energy = prev_energy - e_rep - e_disp;
   r.repulsion_energy = e_rep;
+  r.dispersion_energy = e_disp;
   r.total_energy = prev_energy;
   r.shell_charges = qsh;
   Vec atom_charges = Vec::Zero(sys.atoms.size());

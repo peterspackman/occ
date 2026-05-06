@@ -37,9 +37,6 @@ public:
   // Toggle the multipole AES + on-site polarization. For periodic, only
   // honored at the (1,1,1) Γ-only path (k-sampled multipoles deferred).
   void set_include_multipoles(bool on);
-  // Use Ewald split for the multipole pair sum (default true) vs a pure
-  // real-space lattice cutoff. Periodic only.
-  void set_multipole_ewald(bool on);
 
   // Whether this calculator was built for a periodic system.
   inline bool is_periodic() const { return m_periodic; }

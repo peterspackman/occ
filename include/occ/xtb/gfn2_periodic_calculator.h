@@ -19,10 +19,6 @@ struct PeriodicSccOptions {
   // Include the CAMM anisotropic electrostatics + on-site polarization terms
   // (xtb's "AES"). True for full GFN2; false for the charge-only fast path.
   bool include_multipoles{true};
-  // Use Ewald-summed multipole interactions (default) or the simpler real-
-  // space-only lattice cutoff. Ewald is more accurate for polar/ionic systems
-  // but slightly more expensive per geometry.
-  bool multipole_ewald{true};
   // Include native DFT-D4 dispersion (lattice-summed BJ damping over the
   // translations within `disp_cutoff`).
   bool include_dispersion{true};
@@ -30,9 +26,16 @@ struct PeriodicSccOptions {
   // gives ~ µHa precision for typical molecular crystals; tighter cutoffs are
   // fine for production speed.
   double disp_cutoff{60.0};
-  // Real-space cutoff (Bohr) for periodic CN, repulsion, and per-T AO matrix
-  // blocks. The Ewald γ uses its own (separate) cutoffs.
-  double real_cutoff{20.0};
+  // Per-quantity real-space cutoffs (Bohr). CN's exponential count decays
+  // fast — 25 matches tblite's `default_cutoff` in ncoord/gfn.f90.
+  // Repulsion uses an exp(-α·r) form, fully converged by 30 Bohr. AO
+  // multipole / H0 / S blocks decay as exp(-α·r²) but build_h0's per-T
+  // sum has long-range tails on dense π-stacked crystals (anthracene,
+  // triazine) — 20 Bohr is the empirical convergence threshold; tighter
+  // values risk ~tens of mHa errors. The Ewald γ uses its own cutoffs.
+  double cn_cutoff{25.0};
+  double rep_cutoff{30.0};
+  double ao_cutoff{20.0};
   // Override Ewald α (1/Bohr); 0 → auto-pick.
   double ewald_alpha{0.0};
   // Override residual γ-1/R cutoff (Bohr); 0 → 60 Bohr default.

@@ -90,10 +90,6 @@ void NativeCalculator::set_include_multipoles(bool on) {
   // We stash the flag for periodic dispatch; molecular ignores this setter.
 }
 
-void NativeCalculator::set_multipole_ewald(bool on) {
-  m_periodic_opts.multipole_ewald = on;
-}
-
 void NativeCalculator::initialize_calculator() {
   m_params = std::make_shared<Gfn2Parameters>(Gfn2Parameters::load_default());
   m_calc = std::make_unique<Gfn2Calculator>(

@@ -1,4 +1,5 @@
 #include <cmath>
+#include <occ/qm/cint_interface.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/xtb/basis.h>
 #include <occ/xtb/gamma.h>
@@ -28,6 +29,50 @@ bool is_central(const LatticeImage &im) {
   return im.hkl(0) == 0 && im.hkl(1) == 0 && im.hkl(2) == 0;
 }
 
+// Compute the (cell-0 row, cell-T col) block of an n-component one-electron
+// operator on a merged 2-cell AO basis. Iterates only the cross-cell shell
+// pairs (p in [0, nsh_central), q in [nsh_central, 2·nsh_central)) — half the
+// work of the full symmetric kernel since the cell-0/cell-0 and cell-T/cell-T
+// diagonal blocks are not needed.
+//
+// `n_components` is 1 for overlap, 3 for dipole (cint buffer order x, y, z),
+// 9 for quadrupole (cint stores the 3×3 tensor row-major; caller picks the 6
+// unique entries).
+template <qm::cint::Operator op, gto::Shell::Kind kind>
+std::vector<Mat>
+cross_block_one_electron(const gto::AOBasis &merged_basis,
+                          qm::cint::IntegralEnvironment &env,
+                          int nsh_central, int nbf_central,
+                          int n_components) {
+  std::vector<Mat> result(n_components, Mat::Zero(nbf_central, nbf_central));
+  const int nsh_total = static_cast<int>(merged_basis.size());
+  const auto &first_bf = merged_basis.first_bf();
+
+  qm::cint::Optimizer opt(env, op, 2);
+  std::unique_ptr<double[]> buffer(new double[env.buffer_size_1e(op)]);
+
+  for (int p = 0; p < nsh_central; ++p) {
+    const int bf_p = first_bf[p];
+    const int n_p = static_cast<int>(merged_basis[p].size());
+    for (int q = nsh_central; q < nsh_total; ++q) {
+      const int bf_q = first_bf[q] - nbf_central;  // offset into right block
+      const int n_q = static_cast<int>(merged_basis[q].size());
+      std::array<int, 2> idxs{p, q};
+      auto dims = env.two_center_helper<op, kind>(idxs, opt.optimizer_ptr(),
+                                                    buffer.get(), nullptr);
+      if (dims[0] < 0) continue;
+      const size_t block_size =
+          static_cast<size_t>(dims[0]) * static_cast<size_t>(dims[1]);
+      for (int n = 0; n < n_components; ++n) {
+        Eigen::Map<const Mat> tmp(buffer.get() + n * block_size, dims[0],
+                                    dims[1]);
+        result[n].block(bf_p, bf_q, n_p, n_q) = tmp;
+      }
+    }
+  }
+  return result;
+}
+
 } // namespace
 
 std::vector<Mat>
@@ -51,83 +96,24 @@ periodic_overlap_blocks(const PeriodicSystem &sys,
       continue;
     }
     // Build a "two-cell" basis: central atoms + central atoms translated.
-    auto translated = translated_atoms(sys.atoms, im.t_bohr);
-    auto translated_basis = build_aobasis(translated, params);
-    // Merged basis: central first, translated second (so the (0:nbf, nbf:2nbf)
-    // block of the resulting overlap is S^T).
-    gto::AOBasis merged = central_basis;
-    merged.merge(translated_basis);
-    qm::IntegralEngine engine(merged);
-    Mat S_merged = engine.one_electron_operator(
-        qm::IntegralEngine::Op::overlap);
-    result.push_back(S_merged.block(0, nbf, nbf, nbf));
-  }
-  return result;
-}
-
-std::vector<MatTriple>
-periodic_dipole_ao_blocks(const PeriodicSystem &sys,
-                           const Gfn2Parameters &params,
-                           const std::vector<LatticeImage> &translations,
-                           const Vec3 &origin) {
-  auto central_basis = build_aobasis(sys.atoms, params);
-  const int nbf = static_cast<int>(central_basis.nbf());
-
-  // T = 0: standard molecular dipole AO matrix.
-  qm::IntegralEngine central_engine(central_basis);
-  MatTriple D0 = dipole_ao_matrices(central_engine, origin);
-
-  std::vector<MatTriple> result;
-  result.reserve(translations.size());
-  for (const auto &im : translations) {
-    if (is_central(im)) {
-      result.push_back(D0);
-      continue;
-    }
+    // Cross-block-only: iterate only (cell-0 × cell-T) shell pairs (skip the
+    // cell-0/cell-0 and cell-T/cell-T diagonal blocks we don't need).
     auto translated = translated_atoms(sys.atoms, im.t_bohr);
     auto translated_basis = build_aobasis(translated, params);
     gto::AOBasis merged = central_basis;
     merged.merge(translated_basis);
-    qm::IntegralEngine engine(merged);
-    MatTriple D_merged = dipole_ao_matrices(engine, origin);
-    MatTriple block;
-    block.x = D_merged.x.block(0, nbf, nbf, nbf);
-    block.y = D_merged.y.block(0, nbf, nbf, nbf);
-    block.z = D_merged.z.block(0, nbf, nbf, nbf);
-    result.push_back(std::move(block));
-  }
-  return result;
-}
-
-std::vector<std::array<Mat, 6>>
-periodic_quadrupole_ao_blocks(const PeriodicSystem &sys,
-                               const Gfn2Parameters &params,
-                               const std::vector<LatticeImage> &translations,
-                               const Vec3 &origin) {
-  auto central_basis = build_aobasis(sys.atoms, params);
-  const int nbf = static_cast<int>(central_basis.nbf());
-
-  qm::IntegralEngine central_engine(central_basis);
-  std::array<Mat, 6> Q0 = quadrupole_ao_matrices(central_engine, origin);
-
-  std::vector<std::array<Mat, 6>> result;
-  result.reserve(translations.size());
-  for (const auto &im : translations) {
-    if (is_central(im)) {
-      result.push_back(Q0);
-      continue;
-    }
-    auto translated = translated_atoms(sys.atoms, im.t_bohr);
-    auto translated_basis = build_aobasis(translated, params);
-    gto::AOBasis merged = central_basis;
-    merged.merge(translated_basis);
-    qm::IntegralEngine engine(merged);
-    std::array<Mat, 6> Q_merged = quadrupole_ao_matrices(engine, origin);
-    std::array<Mat, 6> block;
-    for (int k = 0; k < 6; ++k) {
-      block[k] = Q_merged[k].block(0, nbf, nbf, nbf);
-    }
-    result.push_back(std::move(block));
+    qm::IntegralEngine engine(merged, qm::IntegralEngine::NoShellPairs{});
+    auto &env = engine.env();
+    const int nsh_central = static_cast<int>(central_basis.size());
+    using Op = qm::cint::Operator;
+    using SK = gto::Shell::Kind;
+    std::vector<Mat> blocks =
+        engine.is_spherical()
+            ? cross_block_one_electron<Op::overlap, SK::Spherical>(
+                  merged, env, nsh_central, nbf, 1)
+            : cross_block_one_electron<Op::overlap, SK::Cartesian>(
+                  merged, env, nsh_central, nbf, 1);
+    result.push_back(std::move(blocks[0]));
   }
   return result;
 }
@@ -211,19 +197,6 @@ Mat bloch_sum_gamma(const std::vector<Mat> &M_per_T) {
   return result;
 }
 
-MatTriple bloch_sum_gamma_triple(const std::vector<MatTriple> &triples) {
-  if (triples.empty()) {
-    throw std::runtime_error("bloch_sum_gamma_triple: empty input");
-  }
-  MatTriple result = MatTriple::Zero(triples[0].x.rows(), triples[0].x.cols());
-  for (const auto &t : triples) {
-    result.x += t.x;
-    result.y += t.y;
-    result.z += t.z;
-  }
-  return result;
-}
-
 void apply_traceless_quadrupole_transform(std::array<Mat, 6> &Q) {
   // Q layout {xx, xy, xz, yy, yz, zz} → diagonals at indices 0, 3, 5.
   // Per-AO-pair transform: tr = 0.5·(Q_xx + Q_yy + Q_zz);
@@ -289,7 +262,7 @@ PeriodicMultipoleAO build_periodic_multipole_ao(
     MatTriple D_T;
     std::array<Mat, 6> Q_T;
     if (is_central(im)) {
-      qm::IntegralEngine engine(central_basis);
+      qm::IntegralEngine engine(central_basis, qm::IntegralEngine::NoShellPairs{});
       S_T = engine.one_electron_operator(qm::IntegralEngine::Op::overlap);
       D_T = dipole_ao_matrices(engine);
       Q_T = quadrupole_ao_matrices(engine);
@@ -298,16 +271,46 @@ PeriodicMultipoleAO build_periodic_multipole_ao(
       auto translated_basis = build_aobasis(translated, params);
       gto::AOBasis merged = central_basis;
       merged.merge(translated_basis);
-      qm::IntegralEngine engine(merged);
-      Mat S_full =
-          engine.one_electron_operator(qm::IntegralEngine::Op::overlap);
-      MatTriple D_full = dipole_ao_matrices(engine);
-      std::array<Mat, 6> Q_full = quadrupole_ao_matrices(engine);
-      S_T = S_full.block(0, nbf, nbf, nbf);
-      D_T.x = D_full.x.block(0, nbf, nbf, nbf);
-      D_T.y = D_full.y.block(0, nbf, nbf, nbf);
-      D_T.z = D_full.z.block(0, nbf, nbf, nbf);
-      for (int k = 0; k < 6; ++k) Q_T[k] = Q_full[k].block(0, nbf, nbf, nbf);
+      qm::IntegralEngine engine(merged, qm::IntegralEngine::NoShellPairs{});
+      auto &env = engine.env();
+      const int nsh_central = static_cast<int>(central_basis.size());
+      // Cross-block-only: iterate only (cell-0 row × cell-T col) shell pairs.
+      // The cell-0/cell-0 and cell-T/cell-T diagonal blocks would be ~50% of
+      // the full kernel cost and we don't use them.
+      auto sph = engine.is_spherical();
+      using Op = qm::cint::Operator;
+      using SK = gto::Shell::Kind;
+      std::vector<Mat> S_blocks, D_blocks, Q_blocks;
+      if (sph) {
+        S_blocks = cross_block_one_electron<Op::overlap, SK::Spherical>(
+            merged, env, nsh_central, nbf, 1);
+        D_blocks = cross_block_one_electron<Op::dipole, SK::Spherical>(
+            merged, env, nsh_central, nbf, 3);
+        env.set_common_origin({0.0, 0.0, 0.0});
+        Q_blocks = cross_block_one_electron<Op::quadrupole, SK::Spherical>(
+            merged, env, nsh_central, nbf, 9);
+      } else {
+        S_blocks = cross_block_one_electron<Op::overlap, SK::Cartesian>(
+            merged, env, nsh_central, nbf, 1);
+        D_blocks = cross_block_one_electron<Op::dipole, SK::Cartesian>(
+            merged, env, nsh_central, nbf, 3);
+        env.set_common_origin({0.0, 0.0, 0.0});
+        Q_blocks = cross_block_one_electron<Op::quadrupole, SK::Cartesian>(
+            merged, env, nsh_central, nbf, 9);
+      }
+      S_T = std::move(S_blocks[0]);
+      D_T.x = std::move(D_blocks[0]);
+      D_T.y = std::move(D_blocks[1]);
+      D_T.z = std::move(D_blocks[2]);
+      // cint quadrupole layout (3×3 row-major): xx, xy, xz, yx, yy, yz, zx,
+      // zy, zz. Pick the 6 unique upper-triangle entries (xx, xy, xz, yy,
+      // yz, zz) — same convention as quadrupole_ao_matrices.
+      Q_T[0] = std::move(Q_blocks[0]);  // xx
+      Q_T[1] = std::move(Q_blocks[1]);  // xy
+      Q_T[2] = std::move(Q_blocks[2]);  // xz
+      Q_T[3] = std::move(Q_blocks[4]);  // yy
+      Q_T[4] = std::move(Q_blocks[5]);  // yz
+      Q_T[5] = std::move(Q_blocks[8]);  // zz
     }
 
     const double Tx = im.t_bohr.x();
@@ -448,40 +451,6 @@ build_molecular_multipole_ao(const std::vector<core::Atom> &atoms,
   apply_traceless_quadrupole_transform(out.Q_ket);
   apply_traceless_quadrupole_transform(out.Q_bra);
   return out;
-}
-
-MatTriple bloch_sum_T_weighted_overlap(
-    const std::vector<Mat> &S_per_T,
-    const std::vector<LatticeImage> &translations) {
-  if (S_per_T.size() != translations.size()) {
-    throw std::runtime_error("bloch_sum_T_weighted_overlap: size mismatch");
-  }
-  if (S_per_T.empty()) {
-    throw std::runtime_error("bloch_sum_T_weighted_overlap: empty input");
-  }
-  MatTriple W = MatTriple::Zero(S_per_T[0].rows(), S_per_T[0].cols());
-  for (size_t i = 0; i < S_per_T.size(); ++i) {
-    const Vec3 &T = translations[i].t_bohr;
-    W.x += T.x() * S_per_T[i];
-    W.y += T.y() * S_per_T[i];
-    W.z += T.z() * S_per_T[i];
-  }
-  return W;
-}
-
-std::array<Mat, 6>
-bloch_sum_gamma_quad(const std::vector<std::array<Mat, 6>> &quads) {
-  if (quads.empty()) {
-    throw std::runtime_error("bloch_sum_gamma_quad: empty input");
-  }
-  std::array<Mat, 6> result;
-  for (int k = 0; k < 6; ++k)
-    result[k] = Mat::Zero(quads[0][k].rows(), quads[0][k].cols());
-  for (const auto &q : quads) {
-    for (int k = 0; k < 6; ++k)
-      result[k] += q[k];
-  }
-  return result;
 }
 
 CGenSolveResult solve_generalized_hermitian(const CMat &H, const CMat &S,

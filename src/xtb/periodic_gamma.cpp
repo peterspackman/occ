@@ -1,4 +1,5 @@
 #include <cmath>
+#include <occ/xtb/ewald_common.h>
 #include <occ/xtb/gamma.h>
 #include <occ/xtb/gfn2_parameters.h>
 #include <occ/xtb/periodic_gamma.h>
@@ -19,36 +20,15 @@ double ko_gamma(double R, double g, double alpha_KO) {
   return std::pow(r_to_a + inv_g_to_a, -1.0 / alpha_KO);
 }
 
-// Enumerate G-vectors with 0 < |G| <= recip_cutoff.
-std::vector<Vec3> enumerate_g_vectors(const Mat3 &reciprocal_bohr,
-                                       double recip_cutoff) {
-  const Vec3 b1 = reciprocal_bohr.col(0);
-  const Vec3 b2 = reciprocal_bohr.col(1);
-  const Vec3 b3 = reciprocal_bohr.col(2);
-  // Bound on integer indices: |n_i b_i| <= recip_cutoff implies
-  // |n_i| <= recip_cutoff / d⊥(b_i) where d⊥ is reciprocal perpendicular.
-  // We use the simpler bound |n_i| <= ceil(recip_cutoff / |b_i|) since
-  // taking the maximum over directions is sufficient.
-  auto bound = [&](const Vec3 &b) {
-    return static_cast<int>(std::ceil(recip_cutoff / b.norm())) + 1;
-  };
-  const int n1 = bound(b1);
-  const int n2 = bound(b2);
-  const int n3 = bound(b3);
-  std::vector<Vec3> out;
-  out.reserve(static_cast<size_t>((2 * n1 + 1) * (2 * n2 + 1) * (2 * n3 + 1)));
-  const double cutoff2 = recip_cutoff * recip_cutoff;
-  for (int i = -n1; i <= n1; ++i) {
-    for (int j = -n2; j <= n2; ++j) {
-      for (int k = -n3; k <= n3; ++k) {
-        Vec3 G = i * b1 + j * b2 + k * b3;
-        const double g2 = G.squaredNorm();
-        if (g2 < 1e-20 || g2 > cutoff2) continue;
-        out.push_back(G);
-      }
-    }
-  }
-  return out;
+// 5th-order polynomial blend: 1 for r < rcut-1, 0 for r > rcut. Matches
+// tblite's fsmooth in coulomb/charge/effective.f90.
+double fsmooth(double r, double rcut) {
+  constexpr double offset = 1.0;
+  if (r < rcut - offset) return 1.0;
+  if (r > rcut) return 0.0;
+  const double x = (r - (rcut - offset)) / offset;
+  // c5*x^5 + c4*x^4 + c3*x^3 + 1, c = [-6, 15, -10, 1]
+  return ((-6.0 * x + 15.0) * x - 10.0) * x * x * x + 1.0;
 }
 
 } // namespace
@@ -56,12 +36,10 @@ std::vector<Vec3> enumerate_g_vectors(const Mat3 &reciprocal_bohr,
 EwaldGammaData build_ewald_data(const PeriodicSystem &sys, double tol,
                                  double alpha_user, double residual_cutoff) {
   const double V = sys.volume();
-  const double alpha = (alpha_user > 0.0) ? alpha_user
-                                          : kSqrtPi / std::cbrt(V);
-  // erfc(x) ≤ exp(-x²)/(x√π); set x = sqrt(-ln(tol)) and round up.
-  const double x = std::sqrt(-std::log(tol));
-  const double erfc_cutoff = x / alpha + 1.0;  // +1 Bohr safety margin
-  const double recip_cutoff = 2.0 * alpha * x;
+  const double alpha =
+      (alpha_user > 0.0) ? alpha_user : auto_ewald_alpha(V);
+  const double erfc_cutoff = ewald_real_cutoff(alpha, tol);
+  const double recip_cutoff = ewald_recip_cutoff(alpha, tol);
   // The residual γ(R) - 1/R decays as 1/R^3; for a charge-neutral density it
   // decays effectively as 1/R^4 thanks to dipole cancellation. 60 Bohr gives
   // ~1e-7 truncation for typical hardness ranges.
@@ -73,6 +51,7 @@ EwaldGammaData build_ewald_data(const PeriodicSystem &sys, double tol,
   d.erfc_cutoff = erfc_cutoff;
   d.residual_cutoff = resid_cutoff;
   d.recip_cutoff = recip_cutoff;
+  d.gamma_rcut = 10.0;  // tblite default; γ_KO blends to 1/r over [9, 10] Bohr
   d.images =
       build_lattice_images(sys.lattice_bohr, std::max(erfc_cutoff, resid_cutoff));
   d.g_vectors = enumerate_g_vectors(sys.reciprocal_bohr(), recip_cutoff);
@@ -148,8 +127,11 @@ Mat periodic_klopman_ohno_gamma(const PeriodicSystem &sys,
       const Vec3 Rij = R[Ai] - R[Aj];
       const bool same_site = (Ai == Aj);
 
-      // Residual lattice sum: Σ_T [γ(R+T) - 1/|R+T|]
+      // Residual lattice sum: Σ_T fcut(|R+T|) · [γ(R+T) - 1/|R+T|]
       // For same_site, T=0 is the on-site limit γ(0) = g_pair (no 1/R).
+      // The fcut blend (rcut=10 Bohr) zeroes the residual beyond rcut so the
+      // pair sees pure 1/r at long range; matches tblite get_amat_dir_3d.
+      const double rcut = d.gamma_rcut;
       double s_resid = 0.0;
       for (const auto &im : d.images) {
         const Vec3 dR = Rij + im.t_bohr;
@@ -161,9 +143,10 @@ Mat periodic_klopman_ohno_gamma(const PeriodicSystem &sys,
           continue;
         }
         const double r = std::sqrt(r2);
-        if (r > d.residual_cutoff) continue;
+        if (r > rcut) continue;  // fcut == 0 beyond rcut
+        const double fcut = fsmooth(r, rcut);
         const double g_val = ko_gamma(r, g_pair, alpha_KO);
-        s_resid += g_val - 1.0 / r;
+        s_resid += fcut * (g_val - 1.0 / r);
       }
 
       // Coulomb lattice sum via Ewald.

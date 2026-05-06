@@ -856,56 +856,6 @@ TEST_CASE("Periodic EEQ: 2×1×1 supercell consistency",
   REQUIRE(q_s(3) == Approx(q_p(1)).margin(5e-6));
 }
 
-TEST_CASE("Periodic anisotropic: large cell == molecular AES",
-          "[xtb][periodic][aes]") {
-  using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, 0.0, 0.0, 0.0},
-      {1, 1.5, 0.5, 0.0},
-      {1, -1.5, 0.5, 0.0},
-  };
-  auto p = occ::xtb::Gfn2Parameters::load_default();
-  occ::xtb::Gfn2Calculator calc(atoms, p);
-  // Run molecular full SCC to get a converged density.
-  occ::xtb::SccOptions mol_opts;
-  mol_opts.include_dispersion = false;
-  auto r = calc.run_full(mol_opts);
-  REQUIRE(r.converged);
-
-  // Reproduce the multipole inputs for a direct test of the periodic AES
-  // helpers vs the molecular ones.
-  occ::Vec cn = occ::xtb::gfn_coordination_numbers(atoms);
-  auto basis = occ::xtb::build_aobasis(atoms, p);
-  occ::qm::IntegralEngine eng(basis);
-  auto D = occ::xtb::dipole_ao_matrices(eng);
-  auto Q = occ::xtb::quadrupole_ao_matrices(eng);
-  auto bf2at = basis.bf_to_atom();
-  auto mom = occ::xtb::compute_camm_moments(atoms, bf2at, r.density_matrix,
-                                              r.overlap_matrix, D, Q);
-  occ::Vec mp_radii = occ::xtb::multipole_radii(atoms, cn, p);
-  auto damped = occ::xtb::damped_multipole_coulomb(atoms, mp_radii, p);
-  auto e_mol = occ::xtb::anisotropic_energy(atoms, r.atomic_charges, mom,
-                                              damped, p);
-  auto pot_mol = occ::xtb::anisotropic_potentials(atoms, r.atomic_charges,
-                                                    mom, damped, p);
-
-  // Periodic at 50 Bohr cell, real-space cutoff 20 Bohr — image contributions
-  // ~ 1e-5 per pair so should match molecular to ~1e-4.
-  occ::Mat3 lat = occ::Mat3::Identity() * 50.0;
-  auto images = occ::xtb::build_lattice_images(lat, 20.0);
-  auto e_per = occ::xtb::anisotropic_energy_periodic(atoms, images,
-                                                      r.atomic_charges,
-                                                      mp_radii, mom, p);
-  auto pot_per = occ::xtb::anisotropic_potentials_periodic(
-      atoms, images, r.atomic_charges, mp_radii, mom, p);
-
-  REQUIRE(e_per.aes == Approx(e_mol.aes).margin(1e-7));
-  REQUIRE(e_per.polariz == Approx(e_mol.polariz).margin(1e-12));
-  REQUIRE((pot_per.vs - pot_mol.vs).cwiseAbs().maxCoeff() < 1e-6);
-  REQUIRE((pot_per.vd - pot_mol.vd).cwiseAbs().maxCoeff() < 1e-6);
-  REQUIRE((pot_per.vq - pot_mol.vq).cwiseAbs().maxCoeff() < 1e-6);
-}
-
 TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
           "[xtb][periodic][scc]") {
   using occ::core::Atom;
@@ -927,7 +877,9 @@ TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
   occ::Mat3 lattice = occ::Mat3::Identity() * 50.0;
   occ::xtb::PeriodicSystem sys{atoms, lattice};
   occ::xtb::PeriodicSccOptions per_opts;
-  per_opts.real_cutoff = 18.0;
+  per_opts.cn_cutoff = 18.0;
+  per_opts.rep_cutoff = 18.0;
+  per_opts.ao_cutoff = 18.0;
   per_opts.include_multipoles = false;  // match molecular charge-only.
   per_opts.include_dispersion = false;  // molecular charge-only doesn't add D4 here either.
   auto r_per = occ::xtb::run_charge_only_periodic_scc(sys, p, per_opts);
@@ -958,7 +910,9 @@ TEST_CASE("k-point SCC: 1x1x1 grid matches Γ-only path",
   occ::xtb::PeriodicSystem sys{atoms, lat};
 
   occ::xtb::PeriodicSccOptions opts;
-  opts.real_cutoff = 16.0;
+  opts.cn_cutoff = 16.0;
+  opts.rep_cutoff = 16.0;
+  opts.ao_cutoff = 16.0;
   opts.include_multipoles = false;
   // Γ-only via the real-arithmetic path.
   auto r_gamma = occ::xtb::run_charge_only_periodic_scc(sys, p, opts);
@@ -989,7 +943,9 @@ TEST_CASE("k-point SCC: 2x2x2 grid converges for water in large cell",
   occ::xtb::PeriodicSystem sys{atoms, lat};
 
   occ::xtb::PeriodicSccOptions opts;
-  opts.real_cutoff = 14.0;
+  opts.cn_cutoff = 14.0;
+  opts.rep_cutoff = 14.0;
+  opts.ao_cutoff = 14.0;
   opts.include_multipoles = false;
 
   auto kpts = occ::xtb::monkhorst_pack_grid(sys.reciprocal_bohr(), 2, 2, 2);
@@ -1073,18 +1029,6 @@ TEST_CASE("Multipole Ewald tensors: large-cell energy matches molecular",
   // 1/R^3, ~1e-6 at 60 Bohr. Polarization is exactly molecular.
   REQUIRE(e_ew.polariz == Approx(e_mol.polariz).margin(1e-12));
   REQUIRE(e_ew.aes == Approx(e_mol.aes).margin(1e-4));
-
-  // Gauge-corrected potentials should match molecular at large cell.
-  auto pot_mol = occ::xtb::anisotropic_potentials(atoms, r.atomic_charges,
-                                                    mom, damped, p);
-  auto pot_ew = occ::xtb::anisotropic_potentials_ewald_gauge_corrected(
-      atoms, r.atomic_charges, mp_radii, mom, tensors, p);
-  INFO("vs diff=" << (pot_ew.vs - pot_mol.vs).cwiseAbs().maxCoeff()
-       << " vd diff=" << (pot_ew.vd - pot_mol.vd).cwiseAbs().maxCoeff()
-       << " vq diff=" << (pot_ew.vq - pot_mol.vq).cwiseAbs().maxCoeff());
-  REQUIRE((pot_ew.vs - pot_mol.vs).cwiseAbs().maxCoeff() < 1e-4);
-  REQUIRE((pot_ew.vd - pot_mol.vd).cwiseAbs().maxCoeff() < 1e-4);
-  REQUIRE((pot_ew.vq - pot_mol.vq).cwiseAbs().maxCoeff() < 1e-4);
 }
 
 TEST_CASE("AES potential: tblite reference for water_mol",
@@ -1282,7 +1226,9 @@ TEST_CASE("Periodic SCC with multipoles: large cell matches molecular full",
   occ::Mat3 lat = occ::Mat3::Identity() * 50.0;
   occ::xtb::PeriodicSystem sys{atoms, lat};
   occ::xtb::PeriodicSccOptions per_opts;
-  per_opts.real_cutoff = 18.0;
+  per_opts.cn_cutoff = 18.0;
+  per_opts.rep_cutoff = 18.0;
+  per_opts.ao_cutoff = 18.0;
   per_opts.include_multipoles = true;
   per_opts.include_dispersion = false;  // match molecular reference (no D4).
   auto r_per = occ::xtb::run_charge_only_periodic_scc(sys, p, per_opts);
@@ -1335,7 +1281,9 @@ TEST_CASE("Periodic SCC: water in moderate cell is α-invariant",
   occ::xtb::PeriodicSystem sys{atoms, lattice};
 
   occ::xtb::PeriodicSccOptions opts;
-  opts.real_cutoff = 16.0;
+  opts.cn_cutoff = 16.0;
+  opts.rep_cutoff = 16.0;
+  opts.ao_cutoff = 16.0;
   auto r1 = occ::xtb::run_charge_only_periodic_scc(sys, p, opts);
   REQUIRE(r1.converged);
 

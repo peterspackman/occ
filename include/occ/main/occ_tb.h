@@ -10,9 +10,12 @@ struct TbConfig {
   double charge{0.0};
   bool include_multipoles{true};
   bool include_dispersion{true};
-  bool multipole_ewald{true};
   std::vector<int> kpoints{1, 1, 1};
   bool print_charges{true};
+  // Crystal-only: after the periodic SCC, also run a molecular SCC for each
+  // symmetry-unique molecule and report the lattice binding energy
+  // (E_crystal − Σ E_mol_i) per molecule, in kJ/mol.
+  bool lattice_energy{false};
 };
 
 CLI::App *add_tb_subcommand(CLI::App &app);

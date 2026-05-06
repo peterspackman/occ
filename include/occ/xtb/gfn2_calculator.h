@@ -70,7 +70,6 @@ private:
   Mat m_H0;
   Vec m_cn;
   Vec m_mp_radii;
-  DampedCoulomb m_damped;
   // Lazily built when multipoles are enabled. m_mp_ao stores Bra/Ket atom-
   // centered AO multipole matrices (tblite convention) plus the origin-0 D, Q;
   // m_mp_tensors stores the sd/dd/sq pair tensors used by the clean tensor

@@ -62,7 +62,6 @@ void Gfn2Calculator::recompute_geometry_caches() {
   m_J = klopman_ohno_gamma(m_atoms, m_shells, m_params);
   m_H0 = build_h0(m_atoms, m_params, m_shells, m_basis, m_S, m_cn);
   m_mp_radii = multipole_radii(m_atoms, m_cn, m_params);
-  m_damped = damped_multipole_coulomb(m_atoms, m_mp_radii, m_params);
   m_have_multipole_ints = false; // built on demand
 }
 
@@ -170,34 +169,21 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
       }
     }
 
-    AnisotropicEnergy e_aniso{0.0, 0.0};
     if (include_multipoles && iter > 1) {
-      // tblite convention end-to-end: Bra/Ket atom-centered AO multipoles,
-      // clean tensor potentials, periodic-style H1 with side-specific Bra/Ket.
-      auto m = compute_camm_moments_periodic(m_atoms, m_bf_to_atom, P,
-                                              m_mp_ao.D_ket, m_mp_ao.D_bra,
-                                              m_mp_ao.Q_ket, m_mp_ao.Q_bra);
+      // H1 uses CAMM from the previous iteration's density (current `P` at
+      // entry to this iter). Energy is computed below from the new P, the
+      // new qsh, and the new CAMM (matches tblite's iterator.f90).
+      auto m_in = compute_camm_moments_periodic(m_atoms, m_bf_to_atom, P,
+                                                  m_mp_ao.D_ket, m_mp_ao.D_bra,
+                                                  m_mp_ao.Q_ket, m_mp_ao.Q_bra);
       Vec atom_q = Vec::Zero(m_atoms.size());
       for (int s = 0; s < m_n_shells; ++s)
         atom_q(m_shells.atom[s]) += qsh(s);
-      auto pot = anisotropic_potentials_ewald(m_atoms, atom_q, m, m_mp_tensors,
-                                                m_params);
+      auto pot = anisotropic_potentials_ewald(m_atoms, atom_q, m_in,
+                                                m_mp_tensors, m_params);
       apply_anisotropic_h1_periodic(H, m_S, m_mp_ao.D_ket, m_mp_ao.D_bra,
                                      m_mp_ao.Q_ket, m_mp_ao.Q_bra,
                                      m_bf_to_atom, pot);
-      e_aniso = anisotropic_energy_ewald(m_atoms, atom_q, m, m_mp_tensors,
-                                          m_params);
-      // Debug: per-atom dipoles/quadrupoles for direct comparison with tblite -v.
-      for (int a = 0; a < static_cast<int>(m_atoms.size()); ++a) {
-        occ::log::debug(
-            "    atom {:3d} (Z={:>2d})  q={:+.6f}  d=({:+.6f}, {:+.6f}, "
-            "{:+.6f})  qp_xx={:+.6f} yy={:+.6f} zz={:+.6f} xy={:+.6f} "
-            "xz={:+.6f} yz={:+.6f}",
-            a + 1, m_atoms[a].atomic_number, atom_q(a),
-            m.dipm(0, a), m.dipm(1, a), m.dipm(2, a),
-            m.qp(0, a), m.qp(2, a), m.qp(5, a),
-            m.qp(1, a), m.qp(3, a), m.qp(4, a));
-      }
     }
 
     Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(H, m_S);
@@ -217,6 +203,30 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
     Mat PS = P * m_S;
     Vec pop = shell_populations(PS, m_bf_to_shell, m_n_shells);
     Vec qsh_new = m_z_sh - pop;
+
+    // Multipole AES from the post-density CAMM (matches tblite — energy
+    // reflects the just-solved (P, q, μ) triple, not the H1's input state).
+    AnisotropicEnergy e_aniso{0.0, 0.0};
+    if (include_multipoles) {
+      auto m_new = compute_camm_moments_periodic(m_atoms, m_bf_to_atom, P,
+                                                   m_mp_ao.D_ket, m_mp_ao.D_bra,
+                                                   m_mp_ao.Q_ket, m_mp_ao.Q_bra);
+      Vec atom_q_new = Vec::Zero(m_atoms.size());
+      for (int s = 0; s < m_n_shells; ++s)
+        atom_q_new(m_shells.atom[s]) += qsh_new(s);
+      e_aniso = anisotropic_energy_ewald(m_atoms, atom_q_new, m_new,
+                                          m_mp_tensors, m_params);
+      for (int a = 0; a < static_cast<int>(m_atoms.size()); ++a) {
+        occ::log::debug(
+            "    atom {:3d} (Z={:>2d})  q={:+.6f}  d=({:+.6f}, {:+.6f}, "
+            "{:+.6f})  qp_xx={:+.6f} yy={:+.6f} zz={:+.6f} xy={:+.6f} "
+            "xz={:+.6f} yz={:+.6f}",
+            a + 1, m_atoms[a].atomic_number, atom_q_new(a),
+            m_new.dipm(0, a), m_new.dipm(1, a), m_new.dipm(2, a),
+            m_new.qp(0, a), m_new.qp(2, a), m_new.qp(5, a),
+            m_new.qp(1, a), m_new.qp(3, a), m_new.qp(4, a));
+      }
+    }
 
     // Compute SCC-coupled D4 with the current Mulliken charges via the
     // native occ::disp::D4Dispersion (uses GFN2-xTB reference data).

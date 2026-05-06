@@ -65,6 +65,20 @@ enum category {
   crystal_energy,
   optimization,
   elastic_tensor,
+  // GFN2-xTB SCC categories. Setup is the geometry-dependent prep
+  // (basis/integrals/CN/repulsion/H0/multipole AO/Ewald γ); per-iter
+  // categories cover work inside each SCC step.
+  xtb_setup,
+  xtb_h0,
+  xtb_overlap,
+  xtb_multipole_ao,
+  xtb_ewald_gamma,
+  xtb_aes,
+  xtb_dispersion,
+  xtb_eigensolve,
+  xtb_density,
+  xtb_camm,
+  xtb_diis,
   _group_count
 };
 

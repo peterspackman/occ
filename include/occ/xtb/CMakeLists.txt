@@ -16,6 +16,9 @@ set(OCC_XTB_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_calculator.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/native_calculator.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/periodic.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ewald_common.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/periodic_integrals.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_ewald.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/periodic_gamma.h"
     PARENT_SCOPE
 )
