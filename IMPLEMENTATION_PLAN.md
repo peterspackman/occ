@@ -96,6 +96,170 @@ Grimme's `xtb` (`~/git/xtb`), DOI 10.1021/acs.jctc.8b01176.
 
 ---
 
+## Next-session sketches
+
+Concrete plans for picking up open items cold. Each lists files to
+touch, the exact chain rule, what to leverage, and an FD validation
+pattern.
+
+### Phase 5e — numerical Hessian + frequencies — STATUS: shipped (53e3ad5e0)
+
+`XtbCalculator::compute_hessian_numerical(step)` + `compute_vibrational_modes(...)`
+exist and bind to Python (`calc.hessian()`, `calc.vibrational_modes()`)
+and JS (`calc.hessian()`, `calc.vibrationalModes()`). Caveat: built on
+top of `gradient()` which runs charge-only SCC, so the Hessian is of
+the charge-only-SCC energy. Water frequencies land at 1521/3538/3644 cm⁻¹
+vs xtb's 1574/3578/3671 (~50 cm⁻¹ shift from missing multipole-on
+gradient — closes once Phase 5d-rest steps 3-5 land).
+
+If you want full-multipole frequencies *now* (without waiting for 5d-rest),
+the cheap fix is **FD of `single_point_energy` directly** instead of
+FD-of-`gradient`:
+- New method `compute_hessian_numerical_from_energy(step)` doing 4N²
+  central-difference single-point evaluations.
+- Slow (O(N²) SCC calls vs O(N) gradient calls), but multipole-correct.
+- Add a `from_energy=false` flag on `compute_vibrational_modes`.
+
+### Step 4 — AO multipole integral derivatives (the big remaining piece)
+
+This is what unblocks the multipole-on `gradient()`. The Fock under
+multipoles has terms
+
+```
+F_μν -= ½ (D_ket(μ,ν)·vd_A_μ + D_bra(μ,ν)·vd_A_ν)
+F_μν -= ½ Σ_l (Q_ket[l](μ,ν)·vq(l, A_μ) + Q_bra[l](μ,ν)·vq(l, A_ν))
+```
+
+so the gradient has Pulay-like contributions Σ μν P_μν · vd_A · ∂D_ket/∂R
+that don't go through ∂S/∂R alone.
+
+**Files to touch**:
+- `include/occ/qm/integral_engine.h` — should already have
+  `one_electron_operator_grad(Op::dipole)` returning
+  ∂D(origin=0)/∂R. Verify; if missing, the dipole-derivative kernel
+  needs to be wired into `IntegralEngine::compute_one_electron_grad`.
+- `include/occ/xtb/periodic_integrals.h` — add new builder
+  `build_molecular_multipole_ao_with_gradient(atoms, params)` returning
+  the existing `PeriodicMultipoleAO` plus per-axis 3 × N "translation
+  derivative" tensors. The centering chain is:
+    D_ket(μ, ν) = D_origin0(μ, ν) − R_atom_of_μ · S(μ, ν)
+    ∂D_ket(μ, ν) / ∂R_atom_of_μ = ∂D_origin0/∂R_atom_of_μ
+                                  − S(μ, ν) (direct centering term)
+                                  − R_atom_of_μ · ∂S/∂R_atom_of_μ
+  Same shape for D_bra (col-side atom), Q_ket, Q_bra (with the
+  ∂(R·R)/∂R = 2R chain on the quad outer product).
+- `src/xtb/anisotropic.cpp` — extend `apply_anisotropic_h1_periodic`
+  with a "build the H1 contribution as an AO matrix at one (μ, ν)
+  pair" helper that the gradient assembly can iterate over.
+- `src/xtb/h0_gradient.cpp` — the Z-matrix construction stays the
+  same shape but now Z absorbs vs (per-atom) at the AO level rather
+  than per-shell. Easiest path: change `V_shell` argument to
+  `V_ao` (length nbf) so the caller can fold `vs(atom_of(μ))` in.
+
+**Validation pattern** (independent of the SCC):
+1. Pick frozen P (e.g., from converged charge-only SCC).
+2. Pick frozen vs/vd/vq (any reasonable values).
+3. Compute analytical Σ μν P_μν · vd_A · ∂D_ket(μ,ν)/∂R_iα.
+4. FD: displace atom i by ±h, recompute D_ket, re-evaluate
+   Σ μν P_μν · vd_A · D_ket(μ,ν), compare to (E+ − E−)/(2h).
+5. Should match to <1e-7 Ha/Bohr.
+
+Once step 4 passes, integrating it back into `gradient()` is mostly
+re-running the pilot from `8bccec802` with the additional Pulay-like
+∂D/∂R, ∂Q/∂R contributions added.
+
+Estimated effort: ~400 lines of integral derivative + Z-matrix code +
+~150 lines of tests, 1–2 focused sessions.
+
+### Step 3 — Z-matrix update with V_AES — small follow-up to step 4
+
+After step 4 lands, this is bookkeeping:
+- Promote `V_shell` to `V_ao` (length nbf) in `h0_scc_gradient`
+  signature. Each AO inherits its shell's iso V plus its atom's vs.
+- The vd / vq pieces already covered by step 4's ∂D_ket, ∂Q_ket
+  contributions (they're not S-coupled).
+
+Estimated effort: ~50 lines, ½ session.
+
+### Periodic gradient + crystal opt
+
+Mostly a parallel of the molecular gradient with periodic kernel
+sums. Independent of Phase 5d-rest — can be done in parallel.
+
+**Files to touch / add**:
+- `include/occ/xtb/periodic_repulsion.h` (new) — analytical periodic
+  repulsion gradient: lattice sum of pair derivatives over
+  `rep_images`. Mirrors `repulsion_energy_and_gradient` but with
+  translation loop.
+- `src/xtb/periodic_gamma.cpp` — extend `klopman_ohno_gamma_energy_gradient`
+  to a periodic variant. The Ewald split makes this fiddly: residual
+  γ - 1/R has analytical r-derivatives (already in the molecular
+  routine), the Ewald 1/R tail needs its own real-space + reciprocal
+  G-sum derivative. tblite's `coulomb/effective_3d.f90 get_gradient`
+  is a usable reference.
+- `src/xtb/h0_gradient.cpp` — the Pulay assembly works per-T if the
+  caller hands it per-T S^T, P^(0,T), W^(0,T). Add a periodic variant
+  `h0_scc_gradient_periodic(...)` that iterates translations and
+  Bloch-sums correctly.
+- `src/xtb/xtb_calculator.cpp` — periodic branch in `gradient()`
+  that wires the above + the existing periodic D4 gradient
+  (`D4Dispersion::energy_and_gradient_periodic` — already exists).
+
+**Validation**: vacuum-padded crystal (e.g., water at 30 Bohr cubic)
+should match the molecular gradient to ~1e-6 Ha/Bohr.
+
+Estimated effort: ~600 lines, 2–3 sessions.
+
+### Periodic energy gap (~0.4 mHa/atom vs tblite)
+
+WSC averaging is the leading suspect (see "Known issues" below).
+Concretely:
+- `src/xtb/periodic_gamma.cpp::periodic_klopman_ohno_gamma` and
+  `src/xtb/multipole_ewald.cpp::build_multipole_ewald_tensors`:
+  in tblite, both functions average per-image contributions over
+  Wigner–Seitz equidistant images of each pair vector with weight
+  `1/nimg`. We don't.
+- For low-symmetry molecular crystals `nimg = 1` for most pairs, but
+  the cumulative effect across O(N²) pair-images is the suspected
+  source of the 0.4 mHa/atom gap.
+- Implementing requires a WSC neighbor enumerator: for each pair
+  vector R_ij, walk the lattice, find all images at the minimum image
+  distance (within tolerance), and weight by 1/nimg in both real and
+  reciprocal Ewald sums.
+
+Bisection plan:
+1. Add a `wsc_average=true/false` toggle to both routines.
+2. With `wsc_average=false` (current), confirm we still match
+   tblite to the same ~0.4 mHa/atom on the 5 reference crystals.
+3. With `wsc_average=true`, see if the gap closes. If it does, ship.
+   If not, the gap is somewhere else (multipole AO cutoff conventions
+   are the next suspect).
+
+Estimated effort: ~300 lines + lots of careful debugging, 1–2
+sessions.
+
+### Eigensolve threading
+
+Largest remaining serial cost on real crystals (~4 s of 9 s on
+QQQCIG11 at 8 threads — see `git log` for the perf table).
+
+**Files to add**:
+- `src/xtb/lapack_eigensolve.cpp` (new) — small wrapper around
+  Apple Accelerate / OpenBLAS `dsygv_`. Real generalized eigensolve
+  for the Γ-only periodic SCC. About 80 lines.
+- `src/xtb/lapack_zheevd.cpp` (or extend the same file) — complex
+  variant `zhegv_` for k-point eigensolves.
+- Replace `Eigen::GeneralizedSelfAdjointEigenSolver<Mat>` calls in
+  `gfn2_engine.cpp` (molecular) and `gfn2_periodic_calculator.cpp`
+  (periodic) with the LAPACK wrapper. Gate behind `USE_SYSTEM_BLAS`.
+
+Validate: 5 reference crystals' totals must remain identical to
+12 decimals. Speedup target: ~3–4× on the eigensolve phase.
+
+Estimated effort: ~150 lines, 1 session.
+
+---
+
 ## Phase history (archived)
 
 ### Phase 1 — Foundations ✅
