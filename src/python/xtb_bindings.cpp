@@ -198,6 +198,18 @@ nb::module_ register_xtb_bindings(nb::module_ &parent) {
            "numerical"_a = false, "step_bohr"_a = 1e-3,
            "(energy, gradient) pair. Analytical by default.")
 
+      // Hessian / vibrations
+      .def("hessian", &XtbCalculator::compute_hessian_numerical,
+           "step_bohr"_a = 0.005,
+           "Numerical 3N×3N Hessian (Hartree/Bohr²) via central differences "
+           "of the analytical gradient. Costs 6N gradient evaluations.")
+      .def("vibrational_modes",
+           &XtbCalculator::compute_vibrational_modes,
+           "step_bohr"_a = 0.005, "project_tr_rot"_a = false,
+           "Build the Hessian and run a normal-mode analysis. Returns a "
+           ":class:`occ.core.VibrationalModes` with frequencies (cm⁻¹), "
+           "normal modes, and the mass-weighted Hessian.")
+
       // Conversion
       .def("to_molecule", &XtbCalculator::to_molecule,
            "Snapshot atoms / positions as an :class:`occ.core.Molecule`.")

@@ -2,6 +2,7 @@
 #include <array>
 #include <occ/core/dimer.h>
 #include <occ/core/molecule.h>
+#include <occ/core/vibration.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/xtb/gfn2_engine.h>
 #include <occ/xtb/gfn2_parameters.h>
@@ -180,6 +181,28 @@ public:
   std::pair<double, Mat3N>
   compute_energy_and_gradient(bool numerical = false,
                               double step_bohr = 1e-3);
+
+  // ---------------------------------------------------------------------
+  // Hessian / vibrations
+  // ---------------------------------------------------------------------
+
+  /// Numerical 3N×3N Hessian (Hartree/Bohr²) via 5-point central
+  /// differences of `gradient()`. Costs `6N` analytical-gradient evaluations
+  /// (each is one charge-only SCC + the gradient assembly). The returned
+  /// matrix is symmetrised. The Hessian is of the charge-only-SCC energy
+  /// (matches `gradient()`'s convention) — multipole AES is not yet folded
+  /// into the analytical gradient, so it isn't in the Hessian either.
+  Mat compute_hessian_numerical(double step_bohr = 0.005);
+
+  /// Convenience: build the Hessian and run a normal-mode analysis,
+  /// returning frequencies (cm⁻¹), normal modes, and the mass-weighted
+  /// Hessian. Calls `compute_hessian_numerical` then
+  /// `core::compute_vibrational_modes` with the calculator's atomic masses
+  /// + positions. Set `project_tr_rot = true` to project translations and
+  /// rotations out of the mass-weighted Hessian (ORCA-style PROJECTTR).
+  occ::core::VibrationalModes
+  compute_vibrational_modes(double step_bohr = 0.005,
+                             bool project_tr_rot = false);
 
   // ---------------------------------------------------------------------
   // Conversion

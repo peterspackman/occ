@@ -372,6 +372,68 @@ Mat3N XtbCalculator::gradient() {
   return grad;
 }
 
+Mat XtbCalculator::compute_hessian_numerical(double step) {
+  if (m_periodic) {
+    throw std::runtime_error(
+        "XtbCalculator::compute_hessian_numerical: periodic Hessian not "
+        "yet supported");
+  }
+  const int n = num_atoms();
+  const int ndof = 3 * n;
+  Mat H = Mat::Zero(ndof, ndof);
+
+  // Snapshot the input geometry so we can restore exactly.
+  Mat3N original = m_positions_bohr;
+
+  // Tighten SCC limits for the displaced calculations — the per-iter SCC
+  // residuals carry into the gradient, and a loose SCC at displaced points
+  // shows up as ragged Hessian columns.
+  auto prev_max_iter = m_opts.max_iterations;
+  m_opts.max_iterations = std::max(prev_max_iter, 250);
+
+  // Loop over each Cartesian DOF; FD of the analytical gradient gives a
+  // column of the Hessian.
+  for (int B = 0; B < n; ++B) {
+    for (int j = 0; j < 3; ++j) {
+      Mat3N pos_p = original;
+      pos_p(j, B) += step;
+      update_structure(pos_p);
+      Mat3N g_plus = gradient();
+
+      Mat3N pos_m = original;
+      pos_m(j, B) -= step;
+      update_structure(pos_m);
+      Mat3N g_minus = gradient();
+
+      // Central difference: ∂g_iA/∂R_jB = (g+(i,A) − g−(i,A)) / (2h).
+      // That fills column 3B+j with the gradient response.
+      const int col = 3 * B + j;
+      for (int A = 0; A < n; ++A) {
+        for (int i = 0; i < 3; ++i) {
+          H(3 * A + i, col) = (g_plus(i, A) - g_minus(i, A)) / (2.0 * step);
+        }
+      }
+    }
+  }
+
+  // Restore the input geometry and recompute so subsequent queries see
+  // the reference geometry's state.
+  update_structure(original);
+  (void)single_point();
+  m_opts.max_iterations = prev_max_iter;
+
+  // Symmetrise — FD residuals make the raw matrix slightly non-symmetric.
+  H = (0.5 * (H + H.transpose())).eval();
+  return H;
+}
+
+occ::core::VibrationalModes
+XtbCalculator::compute_vibrational_modes(double step, bool project_tr_rot) {
+  Mat H = compute_hessian_numerical(step);
+  return occ::core::compute_vibrational_modes(H, to_molecule(),
+                                                project_tr_rot);
+}
+
 std::pair<double, Mat3N>
 XtbCalculator::compute_energy_and_gradient(bool numerical, double step) {
   if (numerical) {

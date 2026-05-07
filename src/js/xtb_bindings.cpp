@@ -163,6 +163,17 @@ void register_xtb_bindings() {
                   return out;
                 }))
 
+      // Hessian / vibrations
+      .function("hessian",
+                optional_override([](XtbCalculator &c, double step) {
+                  return c.compute_hessian_numerical(step);
+                }))
+      .function("vibrationalModes",
+                optional_override([](XtbCalculator &c, double step,
+                                      bool project_tr_rot) {
+                  return c.compute_vibrational_modes(step, project_tr_rot);
+                }))
+
       // Conversion
       .function("toMolecule", &XtbCalculator::to_molecule)
       .function("toCrystal", &XtbCalculator::to_crystal)

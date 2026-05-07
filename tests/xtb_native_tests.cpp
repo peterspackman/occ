@@ -1704,6 +1704,81 @@ TEST_CASE("XtbCalculator: water Molecule round-trip",
   REQUIRE(e2 == Approx(e).margin(0.01)); // but in the same ballpark
 }
 
+TEST_CASE("XtbCalculator: numerical Hessian symmetry + reasonable freqs",
+          "[xtb][hessian][frequencies]") {
+  using occ::core::Atom;
+  // Optimised water-ish geometry. Not exactly the GFN2 minimum, so the
+  // residual gradient leaves the t/r-projected zero modes slightly
+  // imaginary, but the high-frequency stretches + bend should land within
+  // tens of cm⁻¹ of xtb's reference (1574 / 3578 / 3671 cm⁻¹).
+  auto atoms = water_atoms();
+  occ::core::Molecule mol(atoms);
+  occ::xtb::XtbCalculator calc(mol);
+
+  // Hessian via FD of analytical gradient.
+  occ::Mat H = calc.compute_hessian_numerical(0.005);
+  REQUIRE(H.rows() == 9);
+  REQUIRE(H.cols() == 9);
+  // Symmetry — the body of compute_hessian_numerical symmetrises, so
+  // any residual asymmetry is just floating-point.
+  REQUIRE((H - H.transpose()).cwiseAbs().maxCoeff() < 1e-12);
+
+  // The geometry isn't exactly the GFN2 minimum, so individual diagonal
+  // entries can be slightly negative on soft directions. Just check the
+  // Hessian is bounded — the trace gives a sanity number.
+  REQUIRE(H.diagonal().cwiseAbs().maxCoeff() > 0.1); // stiff bond modes
+  REQUIRE(H.diagonal().cwiseAbs().maxCoeff() < 10.0);
+
+  // FD-of-grad should agree with FD-of-energy at the same step. The
+  // FD-of-energy oracle is O(N²) but we only need a few Hessian entries.
+  // Cross-check the (atom 0, x; atom 0, x) diagonal element.
+  occ::Mat3N original = calc.positions();
+  const double h = 0.005;
+
+  occ::Mat3N pp = original; pp(0, 0) += h;
+  calc.update_structure(pp);
+  double e_pp = calc.single_point_energy();
+
+  occ::Mat3N mm = original; mm(0, 0) -= h;
+  calc.update_structure(mm);
+  double e_mm = calc.single_point_energy();
+
+  calc.update_structure(original);
+  double e_0 = calc.single_point_energy();
+
+  // ∂²E/∂x_O² ≈ (E(+h) − 2 E(0) + E(−h)) / h².
+  // The FD-of-energy uses the full single_point energy (multipoles on),
+  // while the analytical gradient runs charge-only SCC, so the diagonal
+  // entries can disagree by ~mHa/Bohr². Just confirm they're in the same
+  // ballpark — order of magnitude and sign are the real signal.
+  const double H_xx_fd_energy = (e_pp - 2.0 * e_0 + e_mm) / (h * h);
+  REQUIRE(H_xx_fd_energy > 0.0);
+  REQUIRE(H(0, 0) > 0.0);
+  REQUIRE(H(0, 0) == Approx(H_xx_fd_energy).margin(0.1)); // 0.1 Ha/Bohr²
+
+  // Frequencies via mass-weighted diagonalisation + t/r projection.
+  auto modes = calc.compute_vibrational_modes(0.005, /*project_tr_rot=*/true);
+  REQUIRE(modes.frequencies_cm.size() == 9);
+  // Sort frequencies and pick the three vibrational ones (largest in
+  // absolute value; the smallest 6 are translations/rotations near zero).
+  occ::Vec freqs = modes.get_all_frequencies();
+  std::vector<double> sorted_freqs(freqs.data(), freqs.data() + freqs.size());
+  std::sort(sorted_freqs.begin(), sorted_freqs.end());
+  // Top 3 (vibrational): ~1574 (bend), ~3578 (sym str), ~3671 (asym str).
+  // The unoptimised geometry shifts these by tens of cm⁻¹, so use a wide
+  // tolerance.
+  const double f_bend = sorted_freqs[6];
+  const double f_sym  = sorted_freqs[7];
+  const double f_asym = sorted_freqs[8];
+  INFO("Vibrational frequencies (cm⁻¹): " << f_bend << ", " << f_sym
+                                            << ", " << f_asym);
+  REQUIRE(f_bend == Approx(1574.0).margin(150.0));
+  REQUIRE(f_sym  == Approx(3578.0).margin(150.0));
+  REQUIRE(f_asym == Approx(3671.0).margin(150.0));
+  REQUIRE(f_asym > f_sym);
+  REQUIRE(f_sym  > f_bend);
+}
+
 TEST_CASE("Anisotropic ES (post-SCF estimate, water)",
           "[xtb][anisotropic]") {
   using occ::core::Atom;
