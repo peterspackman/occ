@@ -1,4 +1,5 @@
 #include <cmath>
+#include <occ/core/parallel.h>
 #include <occ/xtb/ewald_common.h>
 #include <occ/xtb/gamma.h>
 #include <occ/xtb/gfn2_parameters.h>
@@ -117,8 +118,12 @@ Mat periodic_klopman_ohno_gamma(const PeriodicSystem &sys,
     R[A] = Vec3(sys.atoms[A].x, sys.atoms[A].y, sys.atoms[A].z);
   }
 
-  // Loop over shell pairs (i ≤ j, then symmetrize).
-  for (int i = 0; i < n_sh; ++i) {
+  // Shell pairs (i ≤ j) — independent across pairs. Thread the outer index;
+  // each thread writes only to its own (i, j) cells of J. Symmetrise inside
+  // the loop body so we don't need a separate pass.
+  occ::parallel::parallel_for(size_t{0}, static_cast<size_t>(n_sh),
+                                [&](size_t ii) {
+    const int i = static_cast<int>(ii);
     const int Ai = shells.atom[i];
     for (int j = i; j < n_sh; ++j) {
       const int Aj = shells.atom[j];
@@ -128,35 +133,29 @@ Mat periodic_klopman_ohno_gamma(const PeriodicSystem &sys,
       const bool same_site = (Ai == Aj);
 
       // Residual lattice sum: Σ_T fcut(|R+T|) · [γ(R+T) - 1/|R+T|]
-      // For same_site, T=0 is the on-site limit γ(0) = g_pair (no 1/R).
-      // The fcut blend (rcut=10 Bohr) zeroes the residual beyond rcut so the
-      // pair sees pure 1/r at long range; matches tblite get_amat_dir_3d.
       const double rcut = d.gamma_rcut;
       double s_resid = 0.0;
       for (const auto &im : d.images) {
         const Vec3 dR = Rij + im.t_bohr;
         const double r2 = dR.squaredNorm();
         if (r2 < 1e-20) {
-          // T = -Rij (or T=0 for same-site). The on-site γ limit is g_pair.
-          // No 1/R subtraction here (no Coulomb partner at R=0 to subtract).
           s_resid += g_pair;
           continue;
         }
         const double r = std::sqrt(r2);
-        if (r > rcut) continue;  // fcut == 0 beyond rcut
+        if (r > rcut) continue;
         const double fcut = fsmooth(r, rcut);
         const double g_val = ko_gamma(r, g_pair, alpha_KO);
         s_resid += fcut * (g_val - 1.0 / r);
       }
 
-      // Coulomb lattice sum via Ewald.
       const double s_coul = ewald_coulomb_sum(Rij, d, same_site);
 
       const double total = s_resid + s_coul;
       J(i, j) = total;
       if (i != j) J(j, i) = total;
     }
-  }
+  });
   return J;
 }
 
