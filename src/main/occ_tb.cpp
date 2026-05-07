@@ -71,14 +71,6 @@ void run_periodic(const TbConfig &cfg) {
   occ::log::info("  Dispersion         : {:>20.12f} Ha",
                   calc.dispersion_energy());
   occ::log::info("  Total              : {:>20.12f} Ha", e_total);
-  if (cfg.print_charges) {
-    occ::log::info("");
-    occ::log::info("Atomic charges (Mulliken)  -----------");
-    const auto q = calc.charges();
-    for (int i = 0; i < q.size(); ++i) {
-      occ::log::info("  atom {:>4d}  : {:+.6f}", i + 1, q(i));
-    }
-  }
 
   if (cfg.lattice_energy) {
     // Lattice energy = E_crystal − Σ_i E_mol_i over the unit cell, where
@@ -164,8 +156,6 @@ CLI::App *add_tb_subcommand(CLI::App &app) {
                 "Disable D4 dispersion");
   tb->add_option("-k,--kpoints", cfg->kpoints, "k-mesh (n1 n2 n3, default Γ-only)")
       ->expected(3);
-  tb->add_flag("--no-charges{false}", cfg->print_charges,
-                "Suppress per-atom charge listing");
   tb->add_flag("-L,--lattice-energy", cfg->lattice_energy,
                 "After periodic SCC, compute molecular SCC for each "
                 "symmetry-unique molecule and report lattice energy per "

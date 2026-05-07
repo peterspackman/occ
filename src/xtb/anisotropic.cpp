@@ -258,4 +258,36 @@ void apply_anisotropic_h1_periodic(
   }
 }
 
+void apply_anisotropic_h1_kpoint(
+    CMat &H, const CMat &S,
+    const CMatTriple &D_ket, const CMatTriple &D_bra,
+    const std::array<CMat, 6> &Q_ket, const std::array<CMat, 6> &Q_bra,
+    const std::vector<int> &bf_to_atom,
+    const AnisotropicPotentials &pot) {
+  // Same per-AO-pair formula as the real Γ-only path, with complex Bloch-summed
+  // AO matrices at this k. vs/vd/vq are real (atom-resolved), so the H1 update
+  // contributes complex values whose Hermitian symmetry is inherited from the
+  // (D_bra(k) = D_ket(k)^H, Q_bra(k) = Q_ket(k)^H) relation.
+  const Eigen::Index nbf = H.rows();
+  for (Eigen::Index mu = 0; mu < nbf; ++mu) {
+    const int ii = bf_to_atom[mu];
+    for (Eigen::Index nu = 0; nu < nbf; ++nu) {
+      const int jj = bf_to_atom[nu];
+      std::complex<double> eh1 =
+          0.5 * S(mu, nu) * (pot.vs(ii) + pot.vs(jj));
+      eh1 += 0.5 * (D_ket.x(mu, nu) * pot.vd(0, ii) +
+                    D_ket.y(mu, nu) * pot.vd(1, ii) +
+                    D_ket.z(mu, nu) * pot.vd(2, ii));
+      eh1 += 0.5 * (D_bra.x(mu, nu) * pot.vd(0, jj) +
+                    D_bra.y(mu, nu) * pot.vd(1, jj) +
+                    D_bra.z(mu, nu) * pot.vd(2, jj));
+      for (int l = 0; l < 6; ++l) {
+        eh1 += 0.5 * Q_ket[q_from_qpint[l]](mu, nu) * pot.vq(l, ii);
+        eh1 += 0.5 * Q_bra[q_from_qpint[l]](mu, nu) * pot.vq(l, jj);
+      }
+      H(mu, nu) -= eh1;
+    }
+  }
+}
+
 } // namespace occ::xtb

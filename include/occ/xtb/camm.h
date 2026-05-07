@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/xtb/periodic_integrals.h>
 
 namespace occ::xtb {
 
@@ -46,5 +47,16 @@ CammMoments compute_camm_moments_periodic(
     const Mat &P,
     const MatTriple &D_ket, const MatTriple &D_bra,
     const std::array<Mat, 6> &Q_ket, const std::array<Mat, 6> &Q_bra);
+
+// Accumulate one k-point's contribution to the BZ-averaged CAMM. Adds
+//   mom.dipm[axis, A_ν] -= w_k · Re Σ_μ P(k)(μ, ν) · conj(D_bra(k)(μ, ν))
+//   mom.qp[idx, A_ν]   -= w_k · Re Σ_μ P(k)(μ, ν) · conj(Q_bra(k)[..](μ, ν))
+// over a single k. Caller initializes `mom` to zero before the k-loop, and
+// after summing all weighted k-points the result reduces to the Γ-only CAMM
+// when {k} = {0} (D_bra(0) is real, the conj is a no-op).
+void accumulate_camm_kpoint(const std::vector<int> &bf_to_atom, const CMat &P_k,
+                            double w_k, const CMatTriple &D_bra_k,
+                            const std::array<CMat, 6> &Q_bra_k,
+                            CammMoments &mom);
 
 } // namespace occ::xtb

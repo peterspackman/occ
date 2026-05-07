@@ -3,6 +3,7 @@
 #include <cmath>
 #include <occ/core/diis.h>
 #include <occ/core/log.h>
+#include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/disp/d4.h>
 #include <occ/qm/integral_engine.h>
@@ -415,6 +416,18 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
                                  opts.ewald_residual_cutoff);
   Mat J = periodic_klopman_ohno_gamma(sys, shells, params, ewald);
 
+  // Multipole machinery: per-T AO blocks (for k-point Bloch sums of D_ket /
+  // D_bra / Q_ket / Q_bra) and the Ewald-summed multipole pair tensors
+  // (independent of k — only the AO matrices carry the band-structure phase).
+  std::optional<PeriodicMultipoleAOBlocks> mp_blocks;
+  Vec mp_radii;
+  std::optional<MultipolePairTensors> mp_tensors;
+  if (opts.include_multipoles) {
+    mp_blocks = build_periodic_multipole_ao_blocks(sys, params, ao_images);
+    mp_radii = multipole_radii(sys.atoms, cn, params);
+    mp_tensors = build_multipole_ewald_tensors(sys, mp_radii, params);
+  }
+
   std::optional<occ::disp::D4Dispersion> native_d4;
   if (opts.include_dispersion) {
     native_d4.emplace(sys.atoms);
@@ -426,13 +439,33 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
   }
   double e_disp = 0.0;
 
-  // Pre-compute Bloch-summed S(k), H0(k) for each k (geometry-cached).
+  // Pre-compute Bloch-summed S(k), H0(k) for each k (geometry-cached). The
+  // multipole AO Bloch sums are deferred to inside the SCC loop because they
+  // change with the SCC potentials (vs/vd/vq), but actually no — the AO
+  // matrices themselves are geometry-only. Cache them per-k too if multipoles
+  // are on so we don't pay 18 Bloch sums per (iter × k).
   const int n_k = static_cast<int>(kpoints.size());
   std::vector<CMat> S_k(n_k), H0_k(n_k);
-  for (int ik = 0; ik < n_k; ++ik) {
+  std::vector<CMatTriple> D_ket_k, D_bra_k;
+  std::vector<std::array<CMat, 6>> Q_ket_k, Q_bra_k;
+  if (opts.include_multipoles) {
+    D_ket_k.resize(n_k);
+    D_bra_k.resize(n_k);
+    Q_ket_k.resize(n_k);
+    Q_bra_k.resize(n_k);
+  }
+  // Bloch sums are independent across k — thread them.
+  occ::parallel::parallel_for(size_t{0}, static_cast<size_t>(n_k),
+                                [&](size_t ik) {
     S_k[ik] = bloch_sum(S_per_T, ao_images, kpoints[ik].k);
     H0_k[ik] = bloch_sum(H0_per_T, ao_images, kpoints[ik].k);
-  }
+    if (opts.include_multipoles) {
+      D_ket_k[ik] = bloch_sum_triple(mp_blocks->D_ket, ao_images, kpoints[ik].k);
+      D_bra_k[ik] = bloch_sum_triple(mp_blocks->D_bra, ao_images, kpoints[ik].k);
+      Q_ket_k[ik] = bloch_sum_array6(mp_blocks->Q_ket, ao_images, kpoints[ik].k);
+      Q_bra_k[ik] = bloch_sum_array6(mp_blocks->Q_bra, ao_images, kpoints[ik].k);
+    }
+  });
 
   // Electron count (per primitive cell).
   double n_elec_total = 0.0;
@@ -465,6 +498,36 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
   std::vector<CMat> C_k(n_k);
   std::vector<CMat> P_k(n_k);
 
+  // Atomic multipole state (DIIS-mixed alongside qsh, same as the Γ-only
+  // path). Initial value zero — first iter has no multipole H1 contribution.
+  const int n_atoms = static_cast<int>(sys.atoms.size());
+  CammMoments mom;
+  if (opts.include_multipoles) {
+    mom.dipm = Mat3N::Zero(3, n_atoms);
+    mom.qp = Mat::Zero(6, n_atoms);
+  }
+  const int diis_size = opts.include_multipoles
+                             ? (n_shells + 9 * n_atoms)
+                             : n_shells;
+  auto pack_state = [&](const Vec &qsh_v, const CammMoments &m, Vec &out) {
+    out.head(n_shells) = qsh_v;
+    if (opts.include_multipoles) {
+      Eigen::Map<const Vec> dipm_flat(m.dipm.data(), 3 * n_atoms);
+      Eigen::Map<const Vec> qp_flat(m.qp.data(), 6 * n_atoms);
+      out.segment(n_shells, 3 * n_atoms) = dipm_flat;
+      out.segment(n_shells + 3 * n_atoms, 6 * n_atoms) = qp_flat;
+    }
+  };
+  auto unpack_state = [&](const Vec &state, Vec &qsh_v, CammMoments &m) {
+    qsh_v = state.head(n_shells);
+    if (opts.include_multipoles) {
+      Eigen::Map<Vec>(m.dipm.data(), 3 * n_atoms) =
+          state.segment(n_shells, 3 * n_atoms);
+      Eigen::Map<Vec>(m.qp.data(), 6 * n_atoms) =
+          state.segment(n_shells + 3 * n_atoms, 6 * n_atoms);
+    }
+  };
+
   const std::size_t diis_start = 3;
   const std::size_t diis_subspace = 8;
   occ::core::diis::DIIS diis(diis_start, diis_subspace);
@@ -488,8 +551,21 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
       V(s) += shells.third_order(s) * qsh(s) * qsh(s);
     }
 
-    // Solve at every k.
-    for (int ik = 0; ik < n_k; ++ik) {
+    // Anisotropic potentials from the DIIS-mixed (qsh, mom). At iter 1
+    // mom = 0, so vd / vq vanish and the multipole H1 contribution is
+    // identically zero (same convention as the Γ-only path and tblite).
+    AnisotropicPotentials pot;
+    if (opts.include_multipoles) {
+      Vec atom_q = Vec::Zero(n_atoms);
+      for (int s = 0; s < n_shells; ++s) atom_q(shells.atom[s]) += qsh(s);
+      pot = anisotropic_potentials_ewald(sys.atoms, atom_q, mom, *mp_tensors,
+                                           params);
+    }
+
+    // Solve at every k. Each k-point is independent — H(k) construction +
+    // generalized eigensolve thread cleanly.
+    occ::parallel::parallel_for(size_t{0}, static_cast<size_t>(n_k),
+                                  [&](size_t ik) {
       CMat H = H0_k[ik];
       for (Eigen::Index mu = 0; mu < nbf; ++mu) {
         const int sh_mu = bf_to_shell[mu];
@@ -498,10 +574,15 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
           H(mu, nu) -= 0.5 * S_k[ik](mu, nu) * (V(sh_mu) + V(sh_nu));
         }
       }
+      if (opts.include_multipoles && iter > 1) {
+        apply_anisotropic_h1_kpoint(H, S_k[ik], D_ket_k[ik], D_bra_k[ik],
+                                      Q_ket_k[ik], Q_bra_k[ik], bf_to_atom,
+                                      pot);
+      }
       auto sol = solve_generalized_hermitian(H, S_k[ik]);
       orbital_energies_k[ik] = sol.eigenvalues;
       C_k[ik] = sol.eigenvectors;
-    }
+    });
 
     // Aufbau across all (k, band) pairs sorted by energy.
     struct StateRef { double energy; int ik; int band; double weight; };
@@ -532,9 +613,15 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
     for (int ik = 0; ik < n_k; ++ik)
       orbital_occupations_k[ik] = occ_k[ik];
 
-    // Density at each k and Mulliken populations summed over k.
+    // Density at each k. Mulliken populations + (if multipoles on) CAMM
+    // partition are accumulated in the same k-loop.
     Vec pop = Vec::Zero(n_shells);
     double e_h0 = 0.0;
+    CammMoments mom_new;
+    if (opts.include_multipoles) {
+      mom_new.dipm = Mat3N::Zero(3, n_atoms);
+      mom_new.qp = Mat::Zero(6, n_atoms);
+    }
     for (int ik = 0; ik < n_k; ++ik) {
       // P(k) = C diag(n_i) C^H
       CMat W = C_k[ik];
@@ -552,9 +639,21 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
       const std::complex<double> tr = (P_k[ik].array() *
                                        H0_k[ik].transpose().array()).sum();
       e_h0 += w * tr.real();
+      if (opts.include_multipoles) {
+        accumulate_camm_kpoint(bf_to_atom, P_k[ik], w, D_bra_k[ik],
+                                Q_bra_k[ik], mom_new);
+      }
     }
 
     Vec qsh_new = z_sh - pop;
+
+    AnisotropicEnergy e_aniso{0.0, 0.0};
+    if (opts.include_multipoles) {
+      Vec atom_q_new = Vec::Zero(n_atoms);
+      for (int s = 0; s < n_shells; ++s) atom_q_new(shells.atom[s]) += qsh_new(s);
+      e_aniso = anisotropic_energy_ewald(sys.atoms, atom_q_new, mom_new,
+                                           *mp_tensors, params);
+    }
 
     if (native_d4) {
       Vec atom_q_new = Vec::Zero(sys.atoms.size());
@@ -570,7 +669,7 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
       const double q = qsh_new(s);
       e_third += shells.third_order(s) * q * q * q / 3.0;
     }
-    double scc_energy = e_h0 + e_es + e_third;
+    double scc_energy = e_h0 + e_es + e_third + e_aniso.aes + e_aniso.polariz;
     double total_energy = scc_energy + e_rep + e_disp;
 
     double dq_max = (qsh_new - qsh).cwiseAbs().maxCoeff();
@@ -579,8 +678,8 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
                     total_energy, de, dq_max);
     occ::log::debug(
         "    breakdown: H0={:>14.6f}  ES={:>14.6f}  3rd={:>10.3e}  "
-        "rep={:>10.3e}  disp={:>10.3e}",
-        e_h0, e_es, e_third, e_rep, e_disp);
+        "AES={:>10.3e}  pol={:>10.3e}  rep={:>10.3e}  disp={:>10.3e}",
+        e_h0, e_es, e_third, e_aniso.aes, e_aniso.polariz, e_rep, e_disp);
     occ::log::debug(
         "    diagnostics: |q|_max={:>10.3e}  Σq={:>+.3e}",
         qsh_new.cwiseAbs().maxCoeff(), qsh_new.sum());
@@ -612,13 +711,22 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
       return r;
     }
 
-    Mat x = qsh_new;
-    Mat err = qsh_new - qsh;
+    // DIIS over packed (qsh; dipm; qpat) — matches the Γ-only path so the
+    // multipole H1 contribution stabilises together with the shell charges.
+    Vec state(diis_size);
+    Vec state_prev(diis_size);
+    pack_state(qsh_new, mom_new, state);
+    pack_state(qsh, mom, state_prev);
+    Mat x = state;
+    Mat err = state - state_prev;
     diis.extrapolate(x, err);
     if (static_cast<std::size_t>(iter) > diis_start) {
-      qsh = x.col(0);
+      Vec extrapolated = x.col(0);
+      unpack_state(extrapolated, qsh, mom);
     } else {
-      qsh = (1.0 - opts.damping_factor) * qsh_new + opts.damping_factor * qsh;
+      Vec mixed = (1.0 - opts.damping_factor) * state +
+                  opts.damping_factor * state_prev;
+      unpack_state(mixed, qsh, mom);
     }
     prev_energy = total_energy;
   }

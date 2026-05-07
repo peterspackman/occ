@@ -2,6 +2,7 @@
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/xtb/periodic.h>
+#include <occ/xtb/periodic_integrals.h>
 
 namespace occ::xtb {
 
@@ -47,6 +48,16 @@ void apply_anisotropic_h1_periodic(
     Mat &H, const Mat &S,
     const MatTriple &D_ket, const MatTriple &D_bra,
     const std::array<Mat, 6> &Q_ket, const std::array<Mat, 6> &Q_bra,
+    const std::vector<int> &bf_to_atom,
+    const AnisotropicPotentials &pot);
+
+// Complex variant of apply_anisotropic_h1_periodic for the k-point H(k). Same
+// formula, just with Bloch-summed (complex) AO matrices at k. Hermiticity of
+// H1(k) is preserved because D_bra(k) = D_ket(k)^H by construction.
+void apply_anisotropic_h1_kpoint(
+    CMat &H, const CMat &S,
+    const CMatTriple &D_ket, const CMatTriple &D_bra,
+    const std::array<CMat, 6> &Q_ket, const std::array<CMat, 6> &Q_bra,
     const std::vector<int> &bf_to_atom,
     const AnisotropicPotentials &pot);
 

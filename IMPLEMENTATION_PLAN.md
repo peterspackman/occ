@@ -44,6 +44,27 @@ Committed in df5757e87 + 5fafb5aa7.
   atom), `compute_camm_moments_periodic` (Bra-only Mulliken partition to
   match tblite/dftbplus convention), `apply_anisotropic_h1_periodic` (H1
   with side-specific Ket/Bra integrals).
+- **4d.9 — k-point multipoles.** `build_periodic_multipole_ao_blocks` emits
+  per-T D_ket/D_bra/Q_ket/Q_bra blocks (Γ wrapper now derives from these);
+  `bloch_sum_triple` / `bloch_sum_array6` build complex AO matrices at any k;
+  `apply_anisotropic_h1_kpoint` and `accumulate_camm_kpoint` are the complex
+  variants of the H1 update and CAMM partition. Wired into
+  `run_periodic_scc_kpoints` with the same DIIS-on-(qsh; dipm; qpat) strategy
+  as the Γ-only path. Validated against Γ-only on water (1×1×1 to 1e-9 Ha,
+  2×2×2 vacuum-padded to 1e-7 Ha) and on BENZEN (1×1×1 = Γ-only to 12
+  decimals; 2×2×2 = Γ-only + 0.4 mHa BZ correction, expected magnitude).
+- **4d.10 — fused S/D/Q cross-block kernel + TBB-threaded per-T builds.**
+  `cross_block_sdq` evaluates overlap, dipole, quadrupole in a single
+  shell-pair loop (one IntegralEngine + one cint optimizer per operator,
+  three buffers reused per pair). All three per-T builders
+  (`periodic_overlap_blocks`, `periodic_h0_blocks`,
+  `build_periodic_multipole_ao_blocks`) plus the per-k Bloch sums and
+  per-k generalized eigensolves in `run_periodic_scc_kpoints` are now
+  TBB-parallelised via `occ::parallel::parallel_for`. Each per-T iteration
+  owns its own merged basis + cint env, so no shared mutable state. CITRAC10
+  setup time on 8 threads: 0.77 s → 0.26 s; multipole AO build: 0.59 s →
+  0.19 s. Determinism verified across 4 crystals (BENZEN, ANTCEN14, CITRAC10,
+  ACSALA07) — all 12-decimal-identical to single-thread.
 
 ### AES sign-convention rework (resolved; see commits 397de5a99 + 10bb0630c)
 
@@ -89,23 +110,52 @@ Validation:
 
 ### Open issue — periodic crystal energies
 
-Molecular energies match tblite to single-µHa. Crystals do not:
+Molecular energies match tblite to single-µHa. Crystals do not.
+
+After aligning the γ short-range cutoff with tblite's `effective_coulomb%rcut = 10`
+(commit pending — `periodic_klopman_ohno_gamma` now applies the same 5th-order
+`fsmooth(r, 10 Bohr)` blend tblite uses, so γ_KO smoothly transitions to 1/r
+between 9 and 10 Bohr; beyond 10 Bohr the residual sum is exactly zero and the
+pair sees pure 1/r via Ewald):
 
 | Crystal   | Atoms | OCC total       | tblite total    | diff (mHa) | Δ/atom (mHa) |
 |-----------|------:|-----------------|-----------------|-----------:|-------------:|
-| BENZEN    |    48 | −63.59235       | −63.57247       | −19.9      | −0.41        |
-| ACENAP03  |    88 | −123.31840      | −123.27769      | −40.7      | −0.46        |
-| ACSALA07  |    84 | −158.66909      | −158.62756      | −41.5      | −0.49        |
-| ANTCEN14  |    48 | −70.05947       | −70.03133       | −28.1      | −0.59        |
-| BPHENO10  |    96 | −147.98072      | −147.94322      | −37.5      | −0.39        |
-| CITRAC10  |    84 | −181.69979      | −181.61219      | −87.6      | −1.04        |
+| BENZEN    |    48 | −63.59211       | −63.57247       | −19.6      | −0.41        |
+| ACENAP03  |    88 | −123.31813      | −123.27769      | −40.4      | −0.46        |
+| ACSALA07  |    84 | −158.66089      | −158.62756      | −33.3      | −0.40        |
+| ANTCEN14  |    48 | −70.05917       | −70.03133       | −27.8      | −0.58        |
+| CITRAC10  |    84 | −181.64994      | −181.61219      | −37.7      | −0.45        |
 
-OCC is consistently ~0.4–1 mHa/atom *more* bound than tblite's reported
-total. **Some of this is almost certainly tblite's broken-looking
-periodic D4** — tblite reports `dispersion energy = +0.021 to +0.048 Eh`
-(positive) for these crystals while a proper lattice-summed D4 should
-be negative O(−0.1 Eh). On molecular benzene tblite gives 3e-11 Eh
-correctly; the periodic D4 path looks suspect.
+The cutoff change was ~0–50 mHa per cell depending on chemistry: BENZEN/
+ACENAP03/ANTCEN14 each moved by ~0.3 mHa, ACSALA07 by 8 mHa, and **CITRAC10
+moved by 50 mHa** (closing most of its previously anomalous −87.6 mHa gap).
+Crystals with reactive functionality (carboxylic acids, conjugated systems)
+were most sensitive to the γ tail convention.
+
+After the fix, OCC is consistently ~0.4–0.6 mHa/atom *more* bound than tblite's
+reported total.
+
+**Earlier hypothesis "tblite's periodic D4 is broken" — RETRACTED.** The
+"dispersion energy" line tblite prints (e.g. `+0.021 Eh` for BENZEN) is
+**only the 3-body Axilrod–Teller–Muto term**, computed once at zero
+charges in `get_dispersion_nonsc` (tblite/disp/d4.f90:391, with
+`qat(:) = 0.0_wp` at line 425). The 2-body C6/C8 piece — the dominant
+attractive part of D4 — is added inside the SCC iteration via
+`dispersion%get_energy` and ends up folded into the printed
+"electronic energy". ATM being slightly positive in close-packed
+crystals is physically correct (the angular factor disfavours
+collinear three-body geometries). So tblite's D4 is fine; the
+remaining 0.4–0.6 mHa/atom gap is a real disagreement we have to
+account for elsewhere (WSC averaging, AO multipole integration cutoffs,
+or numerical precision).
+
+**Independent GFN2-xTB reference.** tblite is the only public
+implementation. dftb+ delegates to tblite; xtb's stand-alone periodic
+mode shares the same upstream parametrisation but a different code
+path — running it on the same gen could provide a second opinion but
+isn't authoritative for "what tblite would compute." Until a third
+reference is wired up, single-µHa molecular agreement remains our
+strongest correctness signal.
 
 To split the discrepancy:
 - OCC `--no-multipoles` BENZEN: −63.6486 Eh → multipole correction
@@ -116,25 +166,34 @@ To split the discrepancy:
 
 ### Plan to close the periodic gap (pending)
 
-1. **Verify or replace tblite's reported "dispersion".** Re-run a couple
-   of crystals against dftb+ (which is the periodic reference dftbplus
-   was written for) or against xtb's own periodic D4 to determine the
-   correct lattice-summed value. If the gap shrinks once tblite's
-   misleading dispersion is removed from the comparison, the AES path
-   is fine and only D4 needs reworking.
-2. **Wigner–Seitz vs raw Ewald gamma.** tblite's `get_amat_3d` uses
-   Wigner–Seitz cell averaging on top of the Ewald split; OCC uses
-   straight Ewald (`periodic_klopman_ohno_gamma`). For neutral cells
-   both should give the same total energy in the limit but they can
-   differ at finite cell — check if WSC averaging closes a few mHa
-   on the harder cases (CITRAC10).
-3. **Periodic CN sensitivity.** Verify `gfn_coordination_numbers_periodic`
-   matches tblite's get_coordination_number for the same cell at sub-µ
-   accuracy. Small CN errors propagate through H0 → ε → P.
-4. **End-to-end vs dftb+.** Build dftb+ locally (or use the conda
-   package), feed it the same gen file, and compare. dftb+ implements
-   GFN2-xTB via a different code path so it's a stronger reference for
-   the periodic case than a possibly-broken tblite.
+NOTE: dftbplus delegates GFN2-xTB to tblite (`src/dftbp/extlibs/tblite.F90`
+calls `tblite_xtb_gfn2::new_gfn2_calculator` + `tblite_xtb_singlepoint::xtb_singlepoint`).
+There is no independent dftb+ implementation, so "compare against dftb+"
+collapses to "compare against tblite". tblite is the only public GFN2
+implementation, so we don't have a third reference to break the tie.
+
+1. **Wigner–Seitz cell averaging — most likely remaining culprit.** tblite's
+   `get_amat_3d` and `get_multipole_matrix_3d` average the (real +
+   reciprocal) Ewald per-image contributions over equidistant WSC images
+   of each pair vector with weight `1/nimg`. For low-symmetry molecular
+   crystals `nimg = 1` for most pairs, so the effect is small per pair
+   but accumulates over O(N²) pair-images. Header comment marker is in
+   `include/occ/xtb/periodic_gamma.h`.
+2. **Periodic CN sensitivity (resolved).** Algorithmic match verified:
+   ka=10, kb=20, r_shift=2 Bohr, identical covalent radii, equivalent
+   pair iteration. Cutoffs differ (OCC=40, tblite=25 Bohr) but both are
+   far enough that the count function is ≲1e-4 — no measurable impact.
+3. **Multipole AO cutoff conventions (untested).** The periodic AO
+   dipole/quadrupole blocks use the AO real-space cutoff inherited from
+   the H0/S build. Worth confirming we're using the same `cutoff` tblite
+   uses (`get_cutoff(calc%bas, accuracy)` ≈ 17–20 Bohr).
+4. **Setup-time IntegralEngine reuse (perf, not correctness).** Each
+   per-T merged-basis IntegralEngine recomputes its shellpair list, and
+   we build one engine per (operator, T) → 4 × n_translations engines
+   per setup. Visible at `--verbosity=3` as dozens of "computing
+   shellpairs" lines; ~hundred ms on BENZEN, larger on big cells. Fix
+   either by adding a `compute_shellpairs=false` ctor flag or by
+   building each per-T engine once and reusing across operators.
 
 ### Pending — original 4d roadmap items (mostly subsumed by 4d.5–4d.8)
 

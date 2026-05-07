@@ -48,18 +48,44 @@ periodic_h0_blocks(const PeriodicSystem &sys, const Gfn2Parameters &params,
 //   mpat[A_μ] += Σ_{ν} P(μ, ν) · Ket(μ, ν)  for each AO row μ
 //   mpat[A_ν] += Σ_{μ} P(μ, ν) · Bra(μ, ν)  for each AO column ν
 struct PeriodicMultipoleAO {
-  Mat S;                    // overlap (Bloch sum)
-  MatTriple D;              // dipole AO at origin 0 (Bloch sum) — for H1 step
   MatTriple D_ket;          // dipole AO, atom-of-row-centered (for CAMM partition)
   MatTriple D_bra;          // dipole AO, atom-of-col-image-centered
-  std::array<Mat, 6> Q;     // quadrupole AO at origin 0 (xx, xy, xz, yy, yz, zz)
-  std::array<Mat, 6> Q_ket; // quadrupole AO, atom-of-row-centered
-  std::array<Mat, 6> Q_bra; // quadrupole AO, atom-of-col-image-centered
+  std::array<Mat, 6> Q_ket; // quadrupole AO, atom-of-row-centered (traceless)
+  std::array<Mat, 6> Q_bra; // quadrupole AO, atom-of-col-image-centered (traceless)
 };
 
 PeriodicMultipoleAO build_periodic_multipole_ao(
     const PeriodicSystem &sys, const Gfn2Parameters &params,
     const std::vector<LatticeImage> &translations);
+
+// Per-translation real-space multipole AO blocks. translations[i] corresponds
+// to all per_T[i] entries. Same Bra/Ket convention as `PeriodicMultipoleAO`,
+// just kept un-summed so callers can Bloch-sum at arbitrary k. Q_ket / Q_bra
+// already have the traceless-Cartesian transform applied per-T (linear, so
+// algebraically the same as applying once after summing).
+struct PeriodicMultipoleAOBlocks {
+  std::vector<MatTriple> D_ket;          // dipole AO, atom-of-row-centered
+  std::vector<MatTriple> D_bra;          // dipole AO, atom-of-col-image-centered
+  std::vector<std::array<Mat, 6>> Q_ket; // traceless quadrupole, row-centered
+  std::vector<std::array<Mat, 6>> Q_bra; // traceless quadrupole, col-centered
+};
+
+PeriodicMultipoleAOBlocks build_periodic_multipole_ao_blocks(
+    const PeriodicSystem &sys, const Gfn2Parameters &params,
+    const std::vector<LatticeImage> &translations);
+
+// Complex 3-component AO matrix — Bloch sum of a per-T MatTriple at k.
+struct CMatTriple {
+  CMat x, y, z;
+};
+
+CMatTriple bloch_sum_triple(const std::vector<MatTriple> &per_T,
+                             const std::vector<LatticeImage> &translations,
+                             const Vec3 &k);
+
+std::array<CMat, 6>
+bloch_sum_array6(const std::vector<std::array<Mat, 6>> &per_T,
+                 const std::vector<LatticeImage> &translations, const Vec3 &k);
 
 // In-place transform from full Cartesian quadrupole AO matrices (xx, xy, xz,
 // yy, yz, zz) to traceless-Cartesian, matching tblite's

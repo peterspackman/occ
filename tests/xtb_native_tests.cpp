@@ -930,6 +930,68 @@ TEST_CASE("k-point SCC: 1x1x1 grid matches Γ-only path",
           1e-8);
 }
 
+TEST_CASE("k-point SCC + multipoles: 1x1x1 grid matches Γ-only path",
+          "[xtb][periodic][scc][kpoint][multipoles]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::Mat3 lat = occ::Mat3::Identity() * 30.0;
+  occ::xtb::PeriodicSystem sys{atoms, lat};
+
+  occ::xtb::PeriodicSccOptions opts;
+  opts.cn_cutoff = 16.0;
+  opts.rep_cutoff = 16.0;
+  opts.ao_cutoff = 16.0;
+  opts.include_multipoles = true;
+  auto r_gamma = occ::xtb::run_charge_only_periodic_scc(sys, p, opts);
+  REQUIRE(r_gamma.converged);
+
+  auto kpts = occ::xtb::monkhorst_pack_grid(sys.reciprocal_bohr(), 1, 1, 1);
+  REQUIRE(kpts.size() == 1);
+  auto r_k = occ::xtb::run_periodic_scc_kpoints(sys, p, kpts, opts);
+  REQUIRE(r_k.converged);
+
+  REQUIRE(r_k.total_energy == Approx(r_gamma.total_energy).margin(1e-9));
+  REQUIRE((r_k.atomic_charges - r_gamma.atomic_charges).cwiseAbs().maxCoeff() <
+          1e-8);
+}
+
+TEST_CASE("k-point SCC + multipoles: 2x2x2 grid matches Γ-only on vacuum cell",
+          "[xtb][periodic][scc][kpoint][multipoles]") {
+  using occ::core::Atom;
+  std::vector<Atom> atoms{
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::Mat3 lat = occ::Mat3::Identity() * 30.0;
+  occ::xtb::PeriodicSystem sys{atoms, lat};
+
+  occ::xtb::PeriodicSccOptions opts;
+  opts.cn_cutoff = 14.0;
+  opts.rep_cutoff = 14.0;
+  opts.ao_cutoff = 14.0;
+  opts.include_multipoles = true;
+
+  auto kpts = occ::xtb::monkhorst_pack_grid(sys.reciprocal_bohr(), 2, 2, 2);
+  REQUIRE(kpts.size() == 8);
+  auto r = occ::xtb::run_periodic_scc_kpoints(sys, p, kpts, opts);
+  REQUIRE(r.converged);
+  // For an isolated molecule in a vacuum-padded cell, multipole-on k-sampling
+  // should give the same answer as multipole-on Γ-only — the AO multipole
+  // matrices are concentrated at T=0, so M(k) = M^0 for all k.
+  auto r_gamma = occ::xtb::run_charge_only_periodic_scc(sys, p, opts);
+  REQUIRE(r_gamma.converged);
+  REQUIRE(r.total_energy == Approx(r_gamma.total_energy).margin(1e-7));
+  REQUIRE((r.atomic_charges - r_gamma.atomic_charges).cwiseAbs().maxCoeff() <
+          1e-6);
+}
+
 TEST_CASE("k-point SCC: 2x2x2 grid converges for water in large cell",
           "[xtb][periodic][scc][kpoint]") {
   using occ::core::Atom;

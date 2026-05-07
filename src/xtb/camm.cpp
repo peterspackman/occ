@@ -207,4 +207,37 @@ CammMoments compute_camm_moments_periodic(
   return out;
 }
 
+void accumulate_camm_kpoint(const std::vector<int> &bf_to_atom, const CMat &P_k,
+                            double w_k, const CMatTriple &D_bra_k,
+                            const std::array<CMat, 6> &Q_bra_k,
+                            CammMoments &mom) {
+  // BZ-textbook formula:
+  //   Σ_T Σ_μ P^(0,T)(μ,ν) · M_bra^T(μ,ν)
+  //     = ∫dk Σ_μ P(k)(μ,ν) · conj(M_bra(k)(μ,ν))
+  // (the conj is needed because M(-k) = conj(M(k)) for real-space M^T, so the
+  //  Parseval-style identity gives δ_{T-T',0}, not δ_{T+T',0}). At Γ-only
+  // (k={0}) the conj is identity (M_bra(0) is real), so this reduces to the
+  // existing real-space sum exactly.
+  const Eigen::Index nao = P_k.rows();
+  const CMat *D_bra_k_arr[3] = {&D_bra_k.x, &D_bra_k.y, &D_bra_k.z};
+
+  // Q layout (xx, xy, xz, yy, yz, zz) → out.qp layout (xx, xy, yy, xz, yz, zz).
+  static constexpr int qp_from_q[6] = {0, 1, 3, 2, 4, 5};
+
+  for (Eigen::Index mu = 0; mu < nao; ++mu) {
+    for (Eigen::Index nu = 0; nu < nao; ++nu) {
+      const int A_nu = bf_to_atom[nu];
+      const std::complex<double> pmunu = P_k(mu, nu);
+      for (int k = 0; k < 3; ++k) {
+        const std::complex<double> Dbar = std::conj((*D_bra_k_arr[k])(mu, nu));
+        mom.dipm(k, A_nu) -= w_k * (pmunu * Dbar).real();
+      }
+      for (int kk = 0; kk < 6; ++kk) {
+        const std::complex<double> Qbar = std::conj(Q_bra_k[kk](mu, nu));
+        mom.qp(qp_from_q[kk], A_nu) -= w_k * (pmunu * Qbar).real();
+      }
+    }
+  }
+}
+
 } // namespace occ::xtb
