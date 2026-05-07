@@ -1,26 +1,14 @@
 #pragma once
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
+#include <occ/xtb/xtb_result.h>
 
 namespace occ::xtb {
 
 class Gfn2Parameters;
 
-struct SccResult {
-  double scc_energy{0.0};      // electronic + isotropic Coulomb (Hartree)
-  double repulsion_energy{0.0};
-  double dispersion_energy{0.0};
-  double total_energy{0.0};    // scc + repulsion + dispersion
-  Vec shell_charges;           // q_shell = ref_occ - mulliken_pop (length = N_shells)
-  Vec atomic_charges;          // q_atom = sum over shells (length = N_atoms)
-  Vec orbital_energies;        // ε in Hartree
-  Vec orbital_occupations;     // n_i (0..2)
-  Mat density_matrix;          // P (closed-shell, ∑ over both spins)
-  Mat overlap_matrix;          // S (cached for downstream multipole work)
-  Mat orbital_coefficients;    // C (closed-shell)
-  int n_iterations{0};
-  bool converged{false};
-};
+// Backwards-compatible alias for the unified XtbResult.
+using SccResult = XtbResult;
 
 struct SccOptions {
   int max_iterations{250};

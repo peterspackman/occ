@@ -42,21 +42,9 @@ struct PeriodicSccOptions {
   double ewald_residual_cutoff{0.0};
 };
 
-struct PeriodicSccResult {
-  double scc_energy{0.0};      // electronic + isotropic Coulomb (Hartree)
-  double repulsion_energy{0.0};
-  double dispersion_energy{0.0};
-  double total_energy{0.0};    // scc + repulsion + dispersion
-  Vec shell_charges;           // per-shell, central cell
-  Vec atomic_charges;          // per-atom, central cell
-  Vec orbital_energies;        // ε at Γ (Hartree)
-  Vec orbital_occupations;     // n_i (0..2)
-  Mat density_matrix;          // P at Γ (real, closed-shell)
-  Mat overlap_matrix;          // S at Γ
-  Mat orbital_coefficients;    // C at Γ
-  int n_iterations{0};
-  bool converged{false};
-};
+// Backwards-compatible alias for the unified XtbResult; periodic and
+// molecular SCCs share the same result shape.
+using PeriodicSccResult = XtbResult;
 
 // Γ-point GFN2 SCC for a 3D periodic system. Charge-only or full GFN2
 // (including CAMM multipoles, anisotropic ES, on-site polarization) selected

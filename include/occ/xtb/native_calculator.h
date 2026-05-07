@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <memory>
 #include <occ/core/dimer.h>
 #include <occ/core/molecule.h>
@@ -6,6 +7,7 @@
 #include <occ/xtb/gfn2_periodic_calculator.h>
 #include <occ/xtb/periodic.h>
 #include <occ/xtb/scc.h>
+#include <occ/xtb/xtb_result.h>
 
 namespace occ::crystal {
 class Crystal;
@@ -16,98 +18,193 @@ namespace occ::xtb {
 class Gfn2Calculator;
 class Gfn2Parameters;
 
-// Native in-tree GFN2-xTB backend. Mirrors the public surface of
-// `TbliteCalculator` so callers can swap. Supports both isolated molecular
-// systems and 3D periodic crystals (constructed from `crystal::Crystal`).
+/// In-tree GFN2-xTB calculator. Mirrors the public surface of
+/// `TbliteCalculator` so callers can swap backends. Handles isolated
+/// molecules, dimers, and 3D periodic crystals (Γ-only or k-point sampled).
+///
+/// Typical usage:
+/// \code
+///   NativeCalculator calc(molecule);
+///   calc.set_charge(0);
+///   const XtbResult &r = calc.single_point();
+///   double E = r.total_energy;
+///   Mat3N grad = calc.gradient();
+/// \endcode
 class NativeCalculator {
 public:
+  /// Tight-binding method. Only GFN2 is implemented; the enum exists so the
+  /// API can extend to GFN1 / GFN0 later without breaking callers.
   enum class Method { GFN2 };
 
+  /// Construct from an isolated molecule (positions in Å — converted to Bohr
+  /// internally). Inherits the molecule's charge.
   explicit NativeCalculator(const occ::core::Molecule &mol);
+  /// Construct from a dimer; equivalent to a molecule built from the union of
+  /// monomer atoms.
   explicit NativeCalculator(const occ::core::Dimer &dimer);
-  // Crystal constructor — Γ-only by default; call set_kpoints to enable
-  // k-point sampling.
+  /// Construct from a 3D periodic crystal. Defaults to Γ-only sampling; call
+  /// `set_kpoints` to enable a Monkhorst-Pack mesh.
   explicit NativeCalculator(const occ::crystal::Crystal &crystal);
   ~NativeCalculator();
 
-  // Configure the periodic SCC. Only meaningful when constructed from a
-  // Crystal. Defaults to {1,1,1} (Γ only). Larger meshes use the complex
-  // eigensolve path.
-  void set_kpoints(int n1, int n2, int n3);
-  // Toggle the multipole AES + on-site polarization. For periodic, only
-  // honored at the (1,1,1) Γ-only path (k-sampled multipoles deferred).
+  // ---------------------------------------------------------------------
+  // Identity / topology
+  // ---------------------------------------------------------------------
+
+  /// Tight-binding method enum (currently always `Method::GFN2`).
+  Method method() const { return m_method; }
+  /// Method name as a string ("GFN2"). Convenience for bindings.
+  std::string method_name() const { return "GFN2"; }
+  /// Backend name as a string ("Native"). Distinguishes from `TbliteCalculator`.
+  std::string backend_name() const { return "Native"; }
+  /// True if the calculator was constructed from a `Crystal`.
+  bool is_periodic() const { return m_periodic; }
+  /// Number of atoms in the (central) cell.
+  int num_atoms() const { return m_atomic_numbers.rows(); }
+  /// Atomic numbers (length = `num_atoms()`).
+  const IVec &atomic_numbers() const { return m_atomic_numbers; }
+  /// Cartesian positions in Bohr (3 × N).
+  const Mat3N &positions() const { return m_positions_bohr; }
+  /// Lattice vectors as columns in Bohr (periodic only — throws otherwise).
+  Mat3 lattice() const;
+
+  // ---------------------------------------------------------------------
+  // Configuration (setter / getter pairs)
+  // ---------------------------------------------------------------------
+
+  /// Net molecular / unit-cell charge in electrons.
+  void set_charge(double c);
+  double charge() const { return m_charge; }
+
+  /// Number of unpaired electrons (open-shell). Only `n == 0` is currently
+  /// supported; non-zero values throw `std::runtime_error`. The setter is
+  /// kept for API parity with `TbliteCalculator`.
+  void set_num_unpaired_electrons(int n);
+  int num_unpaired_electrons() const { return 0; }
+
+  /// Maximum SCC iterations.
+  void set_max_iterations(int iterations);
+  int max_iterations() const;
+
+  /// Electronic temperature (K) for Fermi smearing.
+  void set_temperature(double temp);
+  double temperature() const;
+
+  /// SCC mixer damping factor (weight on the previous iteration; ∈ [0, 1)).
+  void set_mixer_damping(double damping_factor);
+  double mixer_damping() const;
+
+  /// Toggle CAMM multipole AES + on-site polarization (`true` for full GFN2).
+  /// For the periodic k-point path this also enables the per-k Bloch-summed
+  /// multipole AO matrices.
   void set_include_multipoles(bool on);
+  bool include_multipoles() const;
 
-  // Whether this calculator was built for a periodic system.
-  inline bool is_periodic() const { return m_periodic; }
+  /// Toggle native D4 dispersion.
+  void set_include_dispersion(bool on);
+  bool include_dispersion() const;
 
+  /// Monkhorst-Pack k-grid for the periodic SCC. `(1, 1, 1)` (default) uses
+  /// the real-arithmetic Γ-only path; larger grids use the complex-eigensolve
+  /// k-point path. No-op for molecular calculators.
+  void set_kpoints(int n1, int n2, int n3);
+  /// Read back the configured k-mesh.
+  std::array<int, 3> kpoints() const;
+
+  /// Enable an implicit-solvent model by name. Not yet implemented in the
+  /// native backend — currently always returns `false`. Kept for API parity
+  /// with `TbliteCalculator::set_solvent`.
+  bool set_solvent(const std::string &name);
+
+  // ---------------------------------------------------------------------
+  // Geometry update — atomic numbers / shell layout are kept fixed.
+  // ---------------------------------------------------------------------
+
+  /// Update Cartesian positions (Bohr). Recomputes geometry-dependent caches
+  /// (S, H0, γ, multipole AO blocks for periodic).
+  void update_structure(const Mat3N &positions);
+  /// Update positions and lattice vectors simultaneously (periodic only).
+  void update_structure(const Mat3N &positions, const Mat3 &lattice_bohr);
+
+  // ---------------------------------------------------------------------
+  // Run + result access
+  // ---------------------------------------------------------------------
+
+  /// Run an SCC at the current geometry / configuration. Returns the cached
+  /// result; subsequent calls re-run.
+  const XtbResult &single_point();
+  /// Convenience wrapper around `single_point()` returning just the total
+  /// energy (Hartree).
   double single_point_energy();
+  /// Read-only access to the most recent SCC result (call after
+  /// `single_point()`).
+  const XtbResult &last_result() const { return m_last_result; }
 
-  // Per-atom Mulliken charges (xtb convention: positive when electron-deficient).
+  // ---------------------------------------------------------------------
+  // Derived quantities (post-SCC)
+  // ---------------------------------------------------------------------
+
+  /// Per-atom Mulliken charges (xtb convention: positive = electron-deficient).
   Vec charges() const;
-
-  // Wiberg bond orders.
+  /// Wiberg bond-order matrix (N × N).
   Mat bond_orders() const;
 
-  // Atomic coordinates in Bohr (3 × N).
-  inline const Mat3N &positions() const { return m_positions_bohr; }
+  /// Total energy from the most recent SCC (Hartree).
+  double total_energy() const { return m_last_result.total_energy; }
+  /// Electronic + isotropic-Coulomb + (multipole AES if on) energy (Hartree).
+  double scc_energy() const { return m_last_result.scc_energy; }
+  /// Closed-form repulsion energy (Hartree).
+  double repulsion_energy() const { return m_last_result.repulsion_energy; }
+  /// Dispersion (D4) energy (Hartree); zero if dispersion is disabled.
+  double dispersion_energy() const { return m_last_result.dispersion_energy; }
 
-  inline int num_atoms() const { return m_atomic_numbers.rows(); }
+  // ---------------------------------------------------------------------
+  // Gradient
+  // ---------------------------------------------------------------------
 
-  // SCC controls.
-  void set_charge(double c);
-  void set_max_iterations(int iterations);
-  void set_temperature(double temp);
-  void set_mixer_damping(double damping_factor);
-
-  // Geometry update — keeps the basis layout (atomic numbers must match).
-  void update_structure(const Mat3N &positions);
-
-  // Decomposed energies from the most recent single_point_energy() call.
-  inline double scc_energy() const { return m_last_result.scc_energy; }
-  inline double repulsion_energy() const { return m_last_result.repulsion_energy; }
-  inline double dispersion_energy() const { return m_last_result.dispersion_energy; }
-  inline const SccResult &last_result() const { return m_last_result; }
-
-  occ::core::Molecule to_molecule() const;
-
-  // Convert the converged SCC state into a `qm::Wavefunction` so that the
-  // rest of occ (FCHK output, Mulliken/Hirshfeld analysis, ESP, etc.) can
-  // consume the GFN2 result. Requires `single_point_energy()` to have run.
-  occ::qm::Wavefunction to_wavefunction() const;
-
-  // Print a GFN2-native results summary (energy decomposition, atomic
-  // charges, HOMO/LUMO/gap) at INFO log level. Useful as the post-SCF
-  // print step in `occ scf -m gfn2 ...`, where the standard wavefunction
-  // properties printer is not the right thing.
-  void print_summary() const;
-
-  // Numerical nuclear gradient via central differences in Bohr. Returns a
-  // 3 × N matrix in Hartree/Bohr. Each call costs `6N` SCC evaluations,
-  // so this is fine for tens of atoms but not hundreds. `step_bohr`
-  // controls the displacement (default 1e-3 Bohr).
-  Mat3N compute_gradient_numerical(double step_bohr = 1e-3);
-
-  // Analytical nuclear gradient. Runs a CHARGE-ONLY SCC (no anisotropic
-  // multipoles) and assembles the closed-form pieces:
-  //   ∂E_h0/∂R + Pulay -Tr(W·∂S/∂R) + Tr(P·∂V_q/∂R) via S
-  //   + ½ q^T (∂γ/∂R) q
-  //   + d_repulsion/dR
-  //   + d_dispersion/dR (native D4, full force with EEQ-style chain rule)
-  //   + ∂CN/∂R chain through self-energy
-  // The energy returned is the full `total_energy` from the same charge-only
-  // SCC (so opt's energy/gradient pair stays consistent). Multipole
-  // contributions to the energy are NOT included here — for relaxed
-  // geometries they're a few µHa per atom, well below typical opt tolerance.
-  Mat3N compute_gradient_analytical();
-
-  // Energy + gradient pair, suitable for plugging into `BernyOptimizer`
-  // or any other optimizer that wants both at once. Uses the analytical
-  // gradient by default; pass `numerical=true` to use central differences
-  // (slower but a useful sanity check).
+  /// Analytical nuclear gradient (Hartree/Bohr, 3 × N). Runs a charge-only
+  /// SCC internally (no anisotropic multipole contribution to the gradient
+  /// energy) so the returned (energy, gradient) pair is self-consistent;
+  /// see `compute_gradient_analytical` body for the breakdown.
+  Mat3N gradient();
+  /// Numerical 5-point central-difference gradient. Slow (6N SCC evals);
+  /// useful as an oracle to validate the analytical version.
+  Mat3N gradient_numerical(double step_bohr = 1e-3);
+  /// (energy, gradient) pair. Uses analytical by default; pass
+  /// `numerical = true` for the FD oracle.
   std::pair<double, Mat3N>
   compute_energy_and_gradient(bool numerical = false,
                               double step_bohr = 1e-3);
+
+  // ---------------------------------------------------------------------
+  // Conversion
+  // ---------------------------------------------------------------------
+
+  /// Snapshot the current atoms / positions as an `occ::core::Molecule`
+  /// (positions returned in Å).
+  occ::core::Molecule to_molecule() const;
+  /// Snapshot the current periodic system as an `occ::crystal::Crystal`
+  /// (periodic only — throws otherwise).
+  occ::crystal::Crystal to_crystal() const;
+  /// Convert the converged SCC state into a `qm::Wavefunction` so the rest
+  /// of occ (FCHK output, Mulliken / Hirshfeld analysis, ESP, ...) can
+  /// consume the GFN2 result. Requires `single_point()` to have run.
+  occ::qm::Wavefunction to_wavefunction() const;
+
+  /// Print a summary (energy decomposition, charges, HOMO/LUMO/gap) at
+  /// INFO log level. Useful as the post-SCF print step in `occ scf`.
+  void print_summary() const;
+
+  // ---------------------------------------------------------------------
+  // Deprecated: kept for backwards compatibility — prefer the names above.
+  // ---------------------------------------------------------------------
+
+  /// \deprecated Use `gradient_numerical` instead.
+  Mat3N compute_gradient_numerical(double step_bohr = 1e-3) {
+    return gradient_numerical(step_bohr);
+  }
+  /// \deprecated Use `gradient` instead.
+  Mat3N compute_gradient_analytical() { return gradient(); }
 
 private:
   void initialize_calculator();
@@ -120,14 +217,13 @@ private:
 
   std::shared_ptr<Gfn2Parameters> m_params;
   std::unique_ptr<Gfn2Calculator> m_calc;
-  SccResult m_last_result;
+  XtbResult m_last_result;
 
   // Periodic state — only populated when built from a Crystal.
   bool m_periodic{false};
   PeriodicSystem m_periodic_sys;
   PeriodicSccOptions m_periodic_opts;
   int m_kpoints[3]{1, 1, 1};
-  PeriodicSccResult m_periodic_result;
 };
 
 } // namespace occ::xtb

@@ -84,10 +84,52 @@ void NativeCalculator::set_kpoints(int n1, int n2, int n3) {
   m_kpoints[2] = n3;
 }
 
+std::array<int, 3> NativeCalculator::kpoints() const {
+  return {m_kpoints[0], m_kpoints[1], m_kpoints[2]};
+}
+
 void NativeCalculator::set_include_multipoles(bool on) {
+  // Single source of truth: m_periodic_opts.include_multipoles is read by
+  // both the periodic dispatch and the molecular dispatch (the latter passes
+  // it through to Gfn2Calculator::single_point's include_multipoles flag).
   m_periodic_opts.include_multipoles = on;
-  // The molecular path always honors multipoles via single_point(opts, true).
-  // We stash the flag for periodic dispatch; molecular ignores this setter.
+}
+
+bool NativeCalculator::include_multipoles() const {
+  return m_periodic_opts.include_multipoles;
+}
+
+void NativeCalculator::set_include_dispersion(bool on) {
+  m_opts.include_dispersion = on;
+  m_periodic_opts.include_dispersion = on;
+}
+
+bool NativeCalculator::include_dispersion() const {
+  return m_periodic_opts.include_dispersion;
+}
+
+bool NativeCalculator::set_solvent(const std::string &name) {
+  // Stub for API parity with TbliteCalculator. Continuum solvent isn't
+  // implemented in the native backend yet — return false so callers can
+  // detect and fall back.
+  (void)name;
+  return false;
+}
+
+void NativeCalculator::set_num_unpaired_electrons(int n) {
+  if (n != 0) {
+    throw std::runtime_error(
+        "NativeCalculator: open-shell GFN2 not yet implemented "
+        "(num_unpaired_electrons must be 0)");
+  }
+}
+
+Mat3 NativeCalculator::lattice() const {
+  if (!m_periodic) {
+    throw std::runtime_error(
+        "NativeCalculator::lattice: not a periodic calculator");
+  }
+  return m_periodic_sys.lattice_bohr;
 }
 
 void NativeCalculator::initialize_calculator() {
@@ -97,41 +139,29 @@ void NativeCalculator::initialize_calculator() {
   m_opts.total_charge = m_charge;
 }
 
-double NativeCalculator::single_point_energy() {
+const XtbResult &NativeCalculator::single_point() {
   if (m_periodic) {
     m_periodic_opts.total_charge = m_charge;
     if (m_kpoints[0] == 1 && m_kpoints[1] == 1 && m_kpoints[2] == 1) {
-      m_periodic_result = run_charge_only_periodic_scc(
+      m_last_result = run_charge_only_periodic_scc(
           m_periodic_sys, *m_params, m_periodic_opts);
     } else {
       auto kpts = monkhorst_pack_grid(m_periodic_sys.reciprocal_bohr(),
                                       m_kpoints[0], m_kpoints[1],
                                       m_kpoints[2]);
-      m_periodic_result =
-          run_periodic_scc_kpoints(m_periodic_sys, *m_params, kpts,
-                                    m_periodic_opts);
+      m_last_result = run_periodic_scc_kpoints(m_periodic_sys, *m_params,
+                                                kpts, m_periodic_opts);
     }
-    // Mirror into m_last_result so the molecular accessors (charges,
-    // bond_orders) keep working on the central-cell density.
-    m_last_result.scc_energy = m_periodic_result.scc_energy;
-    m_last_result.repulsion_energy = m_periodic_result.repulsion_energy;
-    m_last_result.dispersion_energy = m_periodic_result.dispersion_energy;
-    m_last_result.total_energy = m_periodic_result.total_energy;
-    m_last_result.shell_charges = m_periodic_result.shell_charges;
-    m_last_result.atomic_charges = m_periodic_result.atomic_charges;
-    m_last_result.orbital_energies = m_periodic_result.orbital_energies;
-    m_last_result.orbital_occupations = m_periodic_result.orbital_occupations;
-    m_last_result.density_matrix = m_periodic_result.density_matrix;
-    m_last_result.overlap_matrix = m_periodic_result.overlap_matrix;
-    m_last_result.orbital_coefficients =
-        m_periodic_result.orbital_coefficients;
-    m_last_result.n_iterations = m_periodic_result.n_iterations;
-    m_last_result.converged = m_periodic_result.converged;
-    return m_periodic_result.total_energy;
+  } else {
+    m_opts.total_charge = m_charge;
+    m_last_result = m_calc->single_point(m_opts,
+                                          m_periodic_opts.include_multipoles);
   }
-  m_opts.total_charge = m_charge;
-  m_last_result = m_calc->single_point(m_opts, /*include_multipoles=*/true);
-  return m_last_result.total_energy;
+  return m_last_result;
+}
+
+double NativeCalculator::single_point_energy() {
+  return single_point().total_energy;
 }
 
 Vec NativeCalculator::charges() const { return m_last_result.atomic_charges; }
@@ -148,13 +178,22 @@ Mat NativeCalculator::bond_orders() const {
 }
 
 void NativeCalculator::set_charge(double c) { m_charge = c; }
-void NativeCalculator::set_max_iterations(int n) { m_opts.max_iterations = n; }
+void NativeCalculator::set_max_iterations(int n) {
+  m_opts.max_iterations = n;
+  m_periodic_opts.max_iterations = n;
+}
+int NativeCalculator::max_iterations() const { return m_opts.max_iterations; }
 void NativeCalculator::set_temperature(double t) {
   m_opts.electronic_temperature = t;
 }
+double NativeCalculator::temperature() const {
+  return m_opts.electronic_temperature;
+}
 void NativeCalculator::set_mixer_damping(double f) {
   m_opts.damping_factor = f;
+  m_periodic_opts.damping_factor = f;
 }
+double NativeCalculator::mixer_damping() const { return m_opts.damping_factor; }
 
 void NativeCalculator::update_structure(const Mat3N &positions) {
   if (positions.cols() != num_atoms()) {
@@ -162,7 +201,35 @@ void NativeCalculator::update_structure(const Mat3N &positions) {
         "NativeCalculator::update_structure: column count mismatch");
   }
   m_positions_bohr = positions;
-  m_calc->update_positions(make_atoms(m_positions_bohr, m_atomic_numbers));
+  if (m_periodic) {
+    // Refresh atom positions in the cached periodic system. Lattice unchanged.
+    for (int i = 0; i < num_atoms(); ++i) {
+      m_periodic_sys.atoms[i].x = positions(0, i);
+      m_periodic_sys.atoms[i].y = positions(1, i);
+      m_periodic_sys.atoms[i].z = positions(2, i);
+    }
+  } else {
+    m_calc->update_positions(make_atoms(m_positions_bohr, m_atomic_numbers));
+  }
+}
+
+void NativeCalculator::update_structure(const Mat3N &positions,
+                                         const Mat3 &lattice_bohr) {
+  if (!m_periodic) {
+    throw std::runtime_error("NativeCalculator::update_structure(positions, "
+                             "lattice): not a periodic calculator");
+  }
+  if (positions.cols() != num_atoms()) {
+    throw std::runtime_error(
+        "NativeCalculator::update_structure: column count mismatch");
+  }
+  m_positions_bohr = positions;
+  m_periodic_sys.lattice_bohr = lattice_bohr;
+  for (int i = 0; i < num_atoms(); ++i) {
+    m_periodic_sys.atoms[i].x = positions(0, i);
+    m_periodic_sys.atoms[i].y = positions(1, i);
+    m_periodic_sys.atoms[i].z = positions(2, i);
+  }
 }
 
 core::Molecule NativeCalculator::to_molecule() const {
@@ -170,7 +237,25 @@ core::Molecule NativeCalculator::to_molecule() const {
                         m_positions_bohr / occ::units::BOHR_TO_ANGSTROM);
 }
 
-Mat3N NativeCalculator::compute_gradient_numerical(double step) {
+crystal::Crystal NativeCalculator::to_crystal() const {
+  if (!m_periodic) {
+    throw std::runtime_error(
+        "NativeCalculator::to_crystal: not a periodic calculator");
+  }
+  // Same convention as TbliteCalculator::to_crystal: P1 cell with all
+  // central-cell atoms in the asymmetric unit. Symmetry is not preserved
+  // through the calculator — to recover spacegroup-reduced data, keep a
+  // reference to the original Crystal alongside the calculator.
+  occ::crystal::UnitCell uc(m_periodic_sys.lattice_bohr *
+                             occ::units::BOHR_TO_ANGSTROM);
+  occ::crystal::SpaceGroup sg(1);
+  occ::crystal::AsymmetricUnit asym(
+      uc.to_fractional(m_positions_bohr * occ::units::BOHR_TO_ANGSTROM),
+      m_atomic_numbers);
+  return crystal::Crystal(asym, sg, uc);
+}
+
+Mat3N NativeCalculator::gradient_numerical(double step) {
   const int n = num_atoms();
   Mat3N grad = Mat3N::Zero(3, n);
 
@@ -206,7 +291,7 @@ Mat3N NativeCalculator::compute_gradient_numerical(double step) {
   return grad;
 }
 
-Mat3N NativeCalculator::compute_gradient_analytical() {
+Mat3N NativeCalculator::gradient() {
   // Run a charge-only SCC to get a converged density consistent with the
   // pieces we differentiate analytically. Multipole anisotropic terms are
   // NOT in this energy expression — see header docstring.
@@ -293,10 +378,10 @@ Mat3N NativeCalculator::compute_gradient_analytical() {
 std::pair<double, Mat3N>
 NativeCalculator::compute_energy_and_gradient(bool numerical, double step) {
   if (numerical) {
-    Mat3N g = compute_gradient_numerical(step);
+    Mat3N g = gradient_numerical(step);
     return {m_last_result.total_energy, g};
   }
-  Mat3N g = compute_gradient_analytical();
+  Mat3N g = gradient();
   return {m_last_result.total_energy, g};
 }
 
