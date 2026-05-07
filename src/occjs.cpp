@@ -9,6 +9,7 @@
 #include "js/dma_bindings.h"
 #include "js/mults_bindings.h"
 #include "js/volume_bindings.h"
+#include "js/xtb_bindings.h"
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 #include <occ/core/data_directory.h>
@@ -30,6 +31,7 @@ EMSCRIPTEN_BINDINGS(occ) {
     register_dma_bindings();
     register_mults_bindings();
     register_volume_bindings();
+    register_xtb_bindings();
 
     // Global utility functions
     // Note: LogLevel enum and logging functions are now registered in core_bindings.cpp

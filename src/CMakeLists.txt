@@ -89,6 +89,7 @@ set(JS_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/js/dma_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/volume_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/mults_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/xtb_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
 )
 
@@ -116,6 +117,7 @@ target_link_libraries(occjs PUBLIC
     occ_mults
     occ_main
     occ_descriptors
+    occ_xtb
 )
 
 # Emscripten-specific linker flags for JavaScript bindings
