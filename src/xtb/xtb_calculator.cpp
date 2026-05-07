@@ -2,11 +2,15 @@
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/disp/d4.h>
+#include <occ/xtb/anisotropic.h>
+#include <occ/xtb/camm.h>
 #include <occ/xtb/coordination.h>
 #include <occ/xtb/gamma.h>
 #include <occ/xtb/gfn2_engine.h>
 #include <occ/xtb/h0_gradient.h>
 #include <occ/xtb/kpoint_grid.h>
+#include <occ/xtb/multipole_damping.h>
+#include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/xtb_calculator.h>
 #include <occ/xtb/repulsion.h>
 #include <stdexcept>
@@ -291,7 +295,10 @@ Mat3N XtbCalculator::gradient_numerical(double step) {
 Mat3N XtbCalculator::gradient() {
   // Run a charge-only SCC to get a converged density consistent with the
   // pieces we differentiate analytically. Multipole anisotropic terms are
-  // NOT in this energy expression — see header docstring.
+  // NOT in this energy expression — `anisotropic_pair_gradient_with_dcn`
+  // and `multipole_radii_with_gradient` exist as validated standalone
+  // pieces ready to plug in once Phase 5d-rest steps 3-5 (AO multipole
+  // integral derivatives + Pulay) land.
   m_opts.total_charge = m_charge;
   SccOptions opts = m_opts;
   // Dispersion is included in the analytical pipeline via native D4 below;
@@ -318,10 +325,10 @@ Mat3N XtbCalculator::gradient() {
 
   // Coordination numbers + ∂CN/∂R for the H0+self-energy chain.
   auto cn_g = gfn_coordination_numbers_with_gradient(m_calc->atoms());
+  const auto &shells = m_calc->shell_table();
 
   // Shell shift potential V = J·qsh + Γ_3 q² (matches the SCC's F = H0 - V).
   Vec V_shell = m_calc->gamma() * m_last_result.shell_charges;
-  const auto &shells = m_calc->shell_table();
   for (Eigen::Index s = 0; s < V_shell.size(); ++s) {
     V_shell(s) +=
         shells.third_order(s) * m_last_result.shell_charges(s) *
@@ -342,6 +349,7 @@ Mat3N XtbCalculator::gradient() {
   // (3) Repulsion derivative (closed form).
   auto rep = repulsion_energy_and_gradient(m_calc->atoms(), m_calc->parameters());
   grad += rep.gradient;
+
 
   // (4) Native D4 dispersion. SCC-coupled (atomic Mulliken charges as fixed
   // input — variational q ⇒ ∂q/∂R chain vanishes by Hellmann-Feynman; this
