@@ -173,6 +173,8 @@ install(DIRECTORY share/basis DESTINATION "share/occ")
 install(DIRECTORY share/solvent DESTINATION "share/occ")
 install(DIRECTORY share/methods DESTINATION "share/occ")
 install(DIRECTORY share/xtb DESTINATION "share/occ")
+install(DIRECTORY share/dftd4 DESTINATION "share/occ")
+install(DIRECTORY share/dftd3 DESTINATION "share/occ")
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FixBundle.cmake.in"

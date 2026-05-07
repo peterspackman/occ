@@ -43,6 +43,7 @@ set(PYTHON_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/python/opt_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/qm_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/mults_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/xtb_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occpy.cpp"
 )
 
@@ -63,6 +64,7 @@ target_link_libraries(_occpy PUBLIC
     occ_main
     occ_opt
     occ_descriptors
+    occ_xtb
 )
 
 install(TARGETS _occpy LIBRARY DESTINATION occpy)
