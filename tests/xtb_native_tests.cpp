@@ -40,7 +40,30 @@ struct DataDirGuard {
   DataDirGuard() { occ::set_data_directory(OCC_GFN2_DATA_DIR); }
 };
 DataDirGuard _guard;
+
+// Standard test geometries (Bohr). Defined once so that all tests reference
+// the same atoms and the same xtb reference numbers tied to these positions.
+inline std::vector<occ::core::Atom> water_atoms() {
+  return {
+      {8, -1.3269576, -0.1059386, 0.0187882},
+      {1, -1.9316642, 1.6001735, -0.0217105},
+      {1, 0.4866441, 0.0795981, 0.0098625},
+  };
+}
+inline std::vector<occ::core::Atom> methane_atoms() {
+  return {
+      {6, 0.0, 0.0, 0.0},
+      {1, 1.18886, 1.18886, 1.18886},
+      {1, -1.18886, -1.18886, 1.18886},
+      {1, -1.18886, 1.18886, -1.18886},
+      {1, 1.18886, -1.18886, -1.18886},
+  };
+}
 } // namespace
+
+// ============================================================================
+// Phase 1 — Foundations: parameters, STO-NG, basis, CN, multipole AO ints
+// ============================================================================
 
 TEST_CASE("GFN2 parameters: load default", "[xtb][gfn2][params]") {
   using occ::xtb::Gfn2Parameters;
@@ -177,11 +200,7 @@ TEST_CASE("AOBasis: water shell count", "[xtb][basis]") {
   auto p = occ::xtb::Gfn2Parameters::load_default();
 
   // Coordinates in Bohr.
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
 
   auto basis = occ::xtb::build_aobasis(atoms, p);
   REQUIRE(basis.size() == 4);    // O: 2s, 2p   |  H: 1s   |  H: 1s
@@ -193,13 +212,7 @@ TEST_CASE("AOBasis: water shell count", "[xtb][basis]") {
 TEST_CASE("AOBasis: methane shell count", "[xtb][basis]") {
   using occ::core::Atom;
   auto p = occ::xtb::Gfn2Parameters::load_default();
-  std::vector<Atom> atoms{
-      {6, 0.0, 0.0, 0.0},
-      {1, 1.18886, 1.18886, 1.18886},
-      {1, -1.18886, -1.18886, 1.18886},
-      {1, -1.18886, 1.18886, -1.18886},
-      {1, 1.18886, -1.18886, -1.18886},
-  };
+  auto atoms = methane_atoms();
 
   auto basis = occ::xtb::build_aobasis(atoms, p);
   REQUIRE(basis.size() == 6);    // C: 2s, 2p   |  4 H: 4 × 1s
@@ -209,11 +222,7 @@ TEST_CASE("AOBasis: methane shell count", "[xtb][basis]") {
 TEST_CASE("Coordination number: water gfn flavor", "[xtb][cn]") {
   using occ::core::Atom;
   // Water at the GFN2-equilibrium, positions in Bohr.
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
 
   occ::Vec cn = occ::xtb::gfn_coordination_numbers(atoms);
   REQUIRE(cn.size() == 3);
@@ -229,13 +238,7 @@ TEST_CASE("Coordination number: water gfn flavor", "[xtb][cn]") {
 
 TEST_CASE("Coordination number: methane symmetry", "[xtb][cn]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {6, 0.0, 0.0, 0.0},
-      {1, 1.18886, 1.18886, 1.18886},
-      {1, -1.18886, -1.18886, 1.18886},
-      {1, -1.18886, 1.18886, -1.18886},
-      {1, 1.18886, -1.18886, -1.18886},
-  };
+  auto atoms = methane_atoms();
   occ::Vec cn = occ::xtb::gfn_coordination_numbers(atoms);
   REQUIRE(cn.size() == 5);
   // Tetrahedral CH4: counting function saturates around 3.8 for C, 0.96/H.
@@ -248,11 +251,7 @@ TEST_CASE("Coordination number: methane symmetry", "[xtb][cn]") {
 TEST_CASE("Dipole AO matrices: symmetry and overlap consistency",
           "[xtb][multipole_ints]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   auto basis = occ::xtb::build_aobasis(atoms, p);
   occ::qm::IntegralEngine engine(basis);
@@ -271,11 +270,7 @@ TEST_CASE("Dipole AO matrices: symmetry and overlap consistency",
 
 TEST_CASE("Quadrupole AO matrices: symmetry", "[xtb][multipole_ints]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   auto basis = occ::xtb::build_aobasis(atoms, p);
   occ::qm::IntegralEngine engine(basis);
@@ -296,11 +291,7 @@ TEST_CASE("Quadrupole AO matrices: symmetry", "[xtb][multipole_ints]") {
 TEST_CASE("CAMM moments reconstruct molecular dipole",
           "[xtb][camm][multipole_ints]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   auto basis = occ::xtb::build_aobasis(atoms, p);
 
@@ -352,14 +343,14 @@ TEST_CASE("CAMM moments reconstruct molecular dipole",
   REQUIRE((mu_camm - mu_ref).norm() < 1e-10);
 }
 
+// ============================================================================
+// Molecular GFN2 SCC vs xtb references; CAMM partition; AES; repulsion
+// ============================================================================
+
 TEST_CASE("Full GFN2 SCC vs xtb (water, no dispersion)",
           "[xtb][scc][gfn2]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   occ::xtb::SccOptions opts;
   auto r = occ::xtb::run_gfn2_scc(atoms, p, opts);
@@ -383,13 +374,7 @@ TEST_CASE("Full GFN2 SCC vs xtb (water, no dispersion)",
 TEST_CASE("Full GFN2 SCC vs xtb (methane, no dispersion)",
           "[xtb][scc][gfn2]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {6, 0.0, 0.0, 0.0},
-      {1, 1.18886, 1.18886, 1.18886},
-      {1, -1.18886, -1.18886, 1.18886},
-      {1, -1.18886, 1.18886, -1.18886},
-      {1, 1.18886, -1.18886, -1.18886},
-  };
+  auto atoms = methane_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   auto r = occ::xtb::run_gfn2_scc(atoms, p);
   INFO("Total: " << r.total_energy);
@@ -406,6 +391,10 @@ TEST_CASE("Full GFN2 SCC vs xtb (methane, no dispersion)",
             Approx(r.atomic_charges(1)).margin(1e-3));
   }
 }
+
+// ============================================================================
+// Periodic infrastructure: lattice, overlap, H0, AO multipole blocks; γ; EEQ
+// ============================================================================
 
 TEST_CASE("Lattice translations: cubic cell properties", "[xtb][periodic]") {
   // 5 Bohr cubic cell, cutoff 12 Bohr → 3 cells in each direction.
@@ -448,11 +437,7 @@ TEST_CASE("Periodic CN/repulsion fall back to molecular at large cell",
           "[xtb][periodic]") {
   using occ::core::Atom;
   // Water in a 50 Bohr cubic cell — far enough that only T=0 contributes.
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   occ::Mat3 lattice = occ::Mat3::Identity() * 50.0;
   auto images = occ::xtb::build_lattice_images(lattice, 12.0);
   auto p = occ::xtb::Gfn2Parameters::load_default();
@@ -473,11 +458,7 @@ TEST_CASE("Periodic CN/repulsion fall back to molecular at large cell",
 TEST_CASE("Periodic AO matrices: large-cell limit equals molecular",
           "[xtb][periodic]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
 
   // 50 Bohr cubic cell so only T=0 contributes for typical cutoffs.
@@ -521,11 +502,7 @@ TEST_CASE("Periodic γ: Ewald reduces to molecular at large cell",
   // Water in a 60 Bohr cubic cell. The 1/R lattice tail still contributes
   // a uniform Madelung-style constant to all γ_ij (same at all R since cell
   // is huge), so we compare *differences* γ_ij - γ_kk against molecular.
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   auto shells = occ::xtb::build_shell_table(atoms, p);
   occ::Mat J_mol = occ::xtb::klopman_ohno_gamma(atoms, shells, p);
@@ -856,14 +833,14 @@ TEST_CASE("Periodic EEQ: 2×1×1 supercell consistency",
   REQUIRE(q_s(3) == Approx(q_p(1)).margin(5e-6));
 }
 
+// ============================================================================
+// Periodic & k-point SCC; complex eigensolve; multipole Ewald + AES; D4
+// ============================================================================
+
 TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
           "[xtb][periodic][scc]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
 
   // Molecular charge-only SCC for reference.
@@ -900,11 +877,7 @@ TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
 TEST_CASE("k-point SCC: 1x1x1 grid matches Γ-only path",
           "[xtb][periodic][scc][kpoint]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   occ::Mat3 lat = occ::Mat3::Identity() * 30.0;
   occ::xtb::PeriodicSystem sys{atoms, lat};
@@ -933,11 +906,7 @@ TEST_CASE("k-point SCC: 1x1x1 grid matches Γ-only path",
 TEST_CASE("k-point SCC + multipoles: 1x1x1 grid matches Γ-only path",
           "[xtb][periodic][scc][kpoint][multipoles]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   occ::Mat3 lat = occ::Mat3::Identity() * 30.0;
   occ::xtb::PeriodicSystem sys{atoms, lat};
@@ -963,11 +932,7 @@ TEST_CASE("k-point SCC + multipoles: 1x1x1 grid matches Γ-only path",
 TEST_CASE("k-point SCC + multipoles: 2x2x2 grid matches Γ-only on vacuum cell",
           "[xtb][periodic][scc][kpoint][multipoles]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   occ::Mat3 lat = occ::Mat3::Identity() * 30.0;
   occ::xtb::PeriodicSystem sys{atoms, lat};
@@ -995,11 +960,7 @@ TEST_CASE("k-point SCC + multipoles: 2x2x2 grid matches Γ-only on vacuum cell",
 TEST_CASE("k-point SCC: 2x2x2 grid converges for water in large cell",
           "[xtb][periodic][scc][kpoint]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   occ::Mat3 lat = occ::Mat3::Identity() * 30.0;
   occ::xtb::PeriodicSystem sys{atoms, lat};
@@ -1216,6 +1177,10 @@ TEST_CASE("Periodic D4: large-cell limit matches molecular",
   REQUIRE(e_per == Approx(e_mol).margin(1e-9));
 }
 
+// ============================================================================
+// NativeCalculator drivers (molecular & crystal); EEQ initial guess
+// ============================================================================
+
 TEST_CASE("NativeCalculator(Crystal): water 8 Bohr cubic vs tblite",
           "[xtb][periodic][native][tblite]") {
   // Reference from `~/git/tblite/build/app/tblite run --method gfn2` on a
@@ -1272,11 +1237,7 @@ TEST_CASE("NativeCalculator(Crystal): water 8 Bohr cubic vs tblite",
 TEST_CASE("Periodic SCC with multipoles: large cell matches molecular full",
           "[xtb][periodic][scc][aes]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
 
   occ::xtb::SccOptions mol_opts;
@@ -1358,6 +1319,10 @@ TEST_CASE("Periodic SCC: water in moderate cell is α-invariant",
   REQUIRE((r1.atomic_charges - r2.atomic_charges).cwiseAbs().maxCoeff() < 1e-7);
 }
 
+// ============================================================================
+// Analytical gradients vs finite difference
+// ============================================================================
+
 TEST_CASE("Pulay-only assembly: Σ Z · ∂S/∂R analytical vs FD",
           "[xtb][gradient][analytical][pulay]") {
   // Isolate the per-atom Σ_μν Z_μν · ∂S_μν/∂R assembly used by
@@ -1435,11 +1400,7 @@ TEST_CASE("Pulay-only assembly: Σ Z · ∂S/∂R analytical vs FD",
 TEST_CASE("Klopman-Ohno γ gradient: analytical vs finite difference",
           "[xtb][gradient][analytical]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   auto shells = occ::xtb::build_shell_table(atoms, p);
   // Synthetic but non-trivial shell charges (don't need a real SCC for this).
@@ -1479,11 +1440,7 @@ TEST_CASE("H0 + Pulay gradient + γ + repulsion vs full numerical SCC gradient",
   using occ::core::Atom;
   using occ::core::Molecule;
   // A non-equilibrium water — guarantees a non-trivial gradient.
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   Molecule mol(atoms);
   auto p = occ::xtb::Gfn2Parameters::load_default();
 
@@ -1575,11 +1532,7 @@ TEST_CASE("H0 + Pulay gradient + γ + repulsion vs full numerical SCC gradient",
 TEST_CASE("Repulsion gradient: analytical vs finite difference",
           "[xtb][gradient][analytical]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
 
   auto eg = occ::xtb::repulsion_energy_and_gradient(atoms, p);
@@ -1611,11 +1564,7 @@ TEST_CASE("Repulsion gradient: analytical vs finite difference",
 TEST_CASE("CN gradient: analytical vs finite difference",
           "[xtb][gradient][analytical]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
 
   auto cn_g = occ::xtb::gfn_coordination_numbers_with_gradient(atoms);
   occ::Vec cn_ref = occ::xtb::gfn_coordination_numbers(atoms);
@@ -1650,11 +1599,7 @@ TEST_CASE("NativeCalculator: numerical gradient sanity",
   using occ::core::Atom;
   using occ::core::Molecule;
   // Slightly distorted water — non-equilibrium so the gradient is nonzero.
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   Molecule mol(atoms);
   occ::xtb::NativeCalculator calc(mol);
   auto [e, grad] = calc.compute_energy_and_gradient();
@@ -1680,11 +1625,7 @@ TEST_CASE("NativeCalculator: analytical gradient self-consistency vs FD of the "
           "[xtb][native][gradient][analytical]") {
   using occ::core::Atom;
   using occ::core::Molecule;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   Molecule mol(atoms);
   occ::xtb::NativeCalculator calc(mol);
   auto g_an = calc.compute_gradient_analytical();
@@ -1733,11 +1674,7 @@ TEST_CASE("NativeCalculator: water Molecule round-trip",
   // then verify NativeCalculator reproduces the SCC energy.
   using occ::core::Atom;
   using occ::core::Molecule;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   Molecule mol(atoms);
 
   occ::xtb::NativeCalculator calc(mol);
@@ -1770,11 +1707,7 @@ TEST_CASE("NativeCalculator: water Molecule round-trip",
 TEST_CASE("Anisotropic ES (post-SCF estimate, water)",
           "[xtb][anisotropic]") {
   using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   auto basis = occ::xtb::build_aobasis(atoms, p);
   occ::xtb::SccOptions opts;
@@ -1805,136 +1738,14 @@ TEST_CASE("Anisotropic ES (post-SCF estimate, water)",
   REQUIRE(std::abs(e.polariz) < 5e-3);
 }
 
-TEST_CASE("SCC charge-only: water sanity check", "[xtb][scc]") {
-  using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
-  auto p = occ::xtb::Gfn2Parameters::load_default();
-  occ::xtb::SccOptions opts;
-  opts.max_iterations = 250;
-  auto r = occ::xtb::run_charge_only_scc(atoms, p, opts);
-  INFO("Converged in " << r.n_iterations << " iterations");
-  INFO("Total energy: " << r.total_energy);
-  INFO("SCC energy:   " << r.scc_energy);
-  INFO("Repulsion:    " << r.repulsion_energy);
-  INFO("Charges:      " << r.atomic_charges.transpose());
-  INFO("Orb energies (Ha): " << r.orbital_energies.transpose());
-  INFO("Orb energies (eV): "
-       << (r.orbital_energies * occ::units::AU_TO_EV).transpose());
-  REQUIRE(r.converged);
-  // xtb's full GFN2 total is -5.0702559 Eh. Phase 3a (third-order on-site)
-  // closes the gap from ~7 mHa to ~7e-4 Ha. Phase 3b–3f (CAMM multipoles)
-  // and Phase 4 (D4 dispersion) will close the remainder.
-  REQUIRE(r.total_energy == Approx(-5.0702559).margin(1e-3));
-  // Net charge sum must be zero for neutral water.
-  REQUIRE(r.atomic_charges.sum() == Approx(0.0).margin(1e-9));
-  // Oxygen electronegativity gives a negative charge on O.
-  REQUIRE(r.atomic_charges(0) < -0.3);
-  REQUIRE(r.atomic_charges(1) > 0.1);
-  REQUIRE(r.atomic_charges(2) > 0.1);
-  // HOMO of water in GFN2 is around -12.18 eV.
-  // (xtb reference: -0.4476 Hartree.) The charge-only model is ~0.3 eV off.
-  REQUIRE(r.orbital_energies(3) * occ::units::AU_TO_EV ==
-          Approx(-12.18).margin(0.5));
-}
-
-TEST_CASE("SCC charge-only: methane", "[xtb][scc]") {
-  using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {6, 0.0, 0.0, 0.0},
-      {1, 1.18886, 1.18886, 1.18886},
-      {1, -1.18886, -1.18886, 1.18886},
-      {1, -1.18886, 1.18886, -1.18886},
-      {1, 1.18886, -1.18886, -1.18886},
-  };
-  auto p = occ::xtb::Gfn2Parameters::load_default();
-  occ::xtb::SccOptions opts;
-  auto r = occ::xtb::run_charge_only_scc(atoms, p, opts);
-  INFO("Total energy: " << r.total_energy);
-  INFO("Charges:      " << r.atomic_charges.transpose());
-  REQUIRE(r.converged);
-  REQUIRE(r.atomic_charges.sum() == Approx(0.0).margin(1e-9));
-  // C is more electronegative than H, so we'd expect C slightly negative
-  // and the four H's slightly positive (or near zero due to small ΔEN).
-  for (int i = 1; i <= 4; ++i) {
-    REQUIRE(r.atomic_charges(i) ==
-            Approx(r.atomic_charges(1)).margin(1e-3)); // tetrahedral symmetry
-  }
-}
-
 TEST_CASE("Repulsion energy: water vs xtb reference",
           "[xtb][repulsion]") {
   using occ::core::Atom;
   // Water at the geometry that gave xtb's repulsion energy 0.033804516135 Eh.
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
   auto p = occ::xtb::Gfn2Parameters::load_default();
   double E = occ::xtb::repulsion_energy(atoms, p);
   REQUIRE(E == Approx(0.033802464095).margin(1e-9));
-}
-
-TEST_CASE("Gamma matrix: water structure", "[xtb][gamma]") {
-  using occ::core::Atom;
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
-  auto p = occ::xtb::Gfn2Parameters::load_default();
-  auto st = occ::xtb::build_shell_table(atoms, p);
-  // O has 2 shells (2s, 2p), H × 2 has 1 shell each → 4 shells.
-  REQUIRE(st.atom.size() == 4);
-  REQUIRE(st.atom[0] == 0);
-  REQUIRE(st.atom[1] == 0);
-  REQUIRE(st.atom[2] == 1);
-  REQUIRE(st.atom[3] == 2);
-  REQUIRE(st.ang_mom(0) == 0); // O 2s
-  REQUIRE(st.ang_mom(1) == 1); // O 2p
-
-  occ::Mat J = occ::xtb::klopman_ohno_gamma(atoms, st, p);
-  REQUIRE(J.rows() == 4);
-  REQUIRE(J.cols() == 4);
-  // Diagonal must equal the per-shell hardness.
-  for (int i = 0; i < 4; ++i) {
-    REQUIRE(J(i, i) == Approx(st.hardness(i)).margin(1e-12));
-  }
-  // Symmetry.
-  for (int i = 0; i < 4; ++i)
-    for (int j = i + 1; j < 4; ++j)
-      REQUIRE(J(i, j) == Approx(J(j, i)).margin(1e-12));
-  // Same-atom off-diagonals are simply the arithmetic mean of η.
-  REQUIRE(J(0, 1) == Approx(0.5 * (st.hardness(0) + st.hardness(1)))
-                         .margin(1e-12));
-  // Cross-atom values must be smaller than the small-r limit (the average η).
-  REQUIRE(J(0, 2) < 0.5 * (st.hardness(0) + st.hardness(2)));
-  REQUIRE(J(0, 2) > 0.0);
-}
-
-TEST_CASE("AOBasis: overlap diagonal is unity", "[xtb][basis][overlap]") {
-  // Each shell should be normalized: <φ_i | φ_i> = 1 on the diagonal.
-  using occ::core::Atom;
-  auto p = occ::xtb::Gfn2Parameters::load_default();
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
-
-  auto basis = occ::xtb::build_aobasis(atoms, p);
-  occ::qm::IntegralEngine engine(basis);
-  auto S = engine.one_electron_operator(occ::qm::IntegralEngine::Op::overlap);
-
-  REQUIRE(S.rows() == basis.nbf());
-  REQUIRE(S.cols() == basis.nbf());
-  for (Eigen::Index i = 0; i < S.rows(); ++i) {
-    REQUIRE(S(i, i) == Approx(1.0).margin(1e-10));
-  }
 }
 
 #ifdef OCC_HAVE_TBLITE
@@ -1958,16 +1769,16 @@ double max_eigenvalue_diff(const Eigen::MatrixXd &A, const Eigen::MatrixXd &B) {
 
 } // namespace
 
+// ============================================================================
+// vs tblite reference (live calls into tblite — gated on OCC_HAVE_TBLITE)
+// ============================================================================
+
 TEST_CASE("AOBasis: overlap eigenvalues vs tblite (water)",
           "[xtb][basis][overlap][tblite]") {
   using occ::core::Atom;
   using occ::core::Molecule;
 
-  std::vector<Atom> atoms{
-      {8, -1.3269576, -0.1059386, 0.0187882},
-      {1, -1.9316642, 1.6001735, -0.0217105},
-      {1, 0.4866441, 0.0795981, 0.0098625},
-  };
+  auto atoms = water_atoms();
 
   Molecule mol(atoms);
   occ::xtb::TbliteCalculator calc(mol);
@@ -1990,13 +1801,7 @@ TEST_CASE("AOBasis: overlap eigenvalues vs tblite (methane)",
   using occ::core::Atom;
   using occ::core::Molecule;
 
-  std::vector<Atom> atoms{
-      {6, 0.0, 0.0, 0.0},
-      {1, 1.18886, 1.18886, 1.18886},
-      {1, -1.18886, -1.18886, 1.18886},
-      {1, -1.18886, 1.18886, -1.18886},
-      {1, 1.18886, -1.18886, -1.18886},
-  };
+  auto atoms = methane_atoms();
 
   Molecule mol(atoms);
   occ::xtb::TbliteCalculator calc(mol);
