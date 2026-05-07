@@ -8,7 +8,7 @@
 #include <occ/xtb/basis.h>
 #include <occ/xtb/camm.h>
 #include <occ/xtb/coordination.h>
-#include <occ/xtb/gfn2_calculator.h>
+#include <occ/xtb/gfn2_engine.h>
 #include <occ/xtb/h0.h>
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/repulsion.h>
@@ -18,7 +18,7 @@
 
 namespace occ::xtb {
 
-Gfn2Calculator::Gfn2Calculator(std::vector<core::Atom> atoms,
+Gfn2Engine::Gfn2Engine(std::vector<core::Atom> atoms,
                                Gfn2Parameters params)
     : m_atoms(std::move(atoms)), m_params(std::move(params)),
       m_basis(build_aobasis(m_atoms, m_params)),
@@ -31,10 +31,10 @@ Gfn2Calculator::Gfn2Calculator(std::vector<core::Atom> atoms,
   recompute_geometry_caches();
 }
 
-void Gfn2Calculator::update_positions(const std::vector<core::Atom> &atoms) {
+void Gfn2Engine::update_positions(const std::vector<core::Atom> &atoms) {
   if (atoms.size() != m_atoms.size()) {
     throw std::runtime_error(
-        "Gfn2Calculator::update_positions: atom count changed (" +
+        "Gfn2Engine::update_positions: atom count changed (" +
         std::to_string(atoms.size()) + " vs " + std::to_string(m_atoms.size()) +
         ")");
   }
@@ -42,7 +42,7 @@ void Gfn2Calculator::update_positions(const std::vector<core::Atom> &atoms) {
   for (size_t i = 0; i < atoms.size(); ++i) {
     if (atoms[i].atomic_number != m_atoms[i].atomic_number) {
       throw std::runtime_error(
-          "Gfn2Calculator::update_positions: atomic number of atom " +
+          "Gfn2Engine::update_positions: atomic number of atom " +
           std::to_string(i) + " changed");
     }
   }
@@ -55,7 +55,7 @@ void Gfn2Calculator::update_positions(const std::vector<core::Atom> &atoms) {
   recompute_geometry_caches();
 }
 
-void Gfn2Calculator::recompute_geometry_caches() {
+void Gfn2Engine::recompute_geometry_caches() {
   m_S = m_engine.one_electron_operator(qm::IntegralEngine::Op::overlap);
   m_cn = gfn_coordination_numbers(m_atoms);
   m_e_rep = ::occ::xtb::repulsion_energy(m_atoms, m_params);
@@ -78,11 +78,11 @@ Vec shell_populations(const Mat &PS, const std::vector<int> &bf_to_shell,
 
 } // namespace
 
-SccResult Gfn2Calculator::single_point(const SccOptions &opts,
+SccResult Gfn2Engine::single_point(const SccOptions &opts,
                                        bool include_multipoles) {
   if (opts.unpaired_electrons != 0) {
     throw std::runtime_error(
-        "Gfn2Calculator: open-shell case not yet supported");
+        "Gfn2Engine: open-shell case not yet supported");
   }
 
   // Build atom-centered Bra/Ket AO multipole matrices and the molecular
@@ -102,12 +102,12 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
   n_elec_total -= opts.total_charge;
   if (std::abs(std::round(n_elec_total) - n_elec_total) > 1e-6) {
     throw std::runtime_error(
-        "Gfn2Calculator: non-integer electron count not supported");
+        "Gfn2Engine: non-integer electron count not supported");
   }
   const int n_elec = static_cast<int>(std::round(n_elec_total));
   if (n_elec % 2 != 0) {
     throw std::runtime_error(
-        "Gfn2Calculator: open-shell n_elec=" + std::to_string(n_elec));
+        "Gfn2Engine: open-shell n_elec=" + std::to_string(n_elec));
   }
   const int n_occ = n_elec / 2;
 
@@ -188,7 +188,7 @@ SccResult Gfn2Calculator::single_point(const SccOptions &opts,
 
     Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(H, m_S);
     if (es.info() != Eigen::Success) {
-      throw std::runtime_error("Gfn2Calculator: eigensolver failed");
+      throw std::runtime_error("Gfn2Engine: eigensolver failed");
     }
     orbital_energies = es.eigenvalues();
     C = es.eigenvectors();

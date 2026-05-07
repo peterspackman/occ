@@ -12,7 +12,7 @@
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/xdm/xdm.h>
-#include <occ/xtb/native_calculator.h>
+#include <occ/xtb/xtb_calculator.h>
 
 using occ::core::Molecule;
 using occ::dft::DFT;
@@ -194,12 +194,12 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
 
 // Single GFN2-xTB optimization step. Mirrors the run_method_for_optimization
 // shape: returns (Wavefunction, gradient in Hartree/Angstrom). The
-// Wavefunction is a thin wrapper built from NativeCalculator's converged
+// Wavefunction is a thin wrapper built from XtbCalculator's converged
 // state — enough to feed back into BernyOptimizer and to produce the same
 // post-step printout as the SCF case.
 std::pair<Wavefunction, Mat3N>
 run_gfn2_for_optimization(const Molecule &m, const OccInput &config) {
-  occ::xtb::NativeCalculator calc(m);
+  occ::xtb::XtbCalculator calc(m);
   calc.set_charge(config.electronic.charge);
   // single_point_energy() will be implicitly called by the gradient method;
   // use the analytical path for the gradient.

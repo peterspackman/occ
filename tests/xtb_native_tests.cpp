@@ -11,12 +11,12 @@
 #include <occ/xtb/coordination.h>
 #include <occ/xtb/multipole_damping.h>
 #include <occ/xtb/gamma.h>
-#include <occ/xtb/gfn2_calculator.h>
+#include <occ/xtb/gfn2_engine.h>
 #include <occ/xtb/gfn2_parameters.h>
 #include <occ/xtb/h0.h>
 #include <occ/xtb/h0_gradient.h>
 #include <occ/xtb/multipole_ints.h>
-#include <occ/xtb/native_calculator.h>
+#include <occ/xtb/xtb_calculator.h>
 #include <occ/crystal/crystal.h>
 #include <occ/disp/d4.h>
 #include <occ/xtb/gfn2_periodic_calculator.h>
@@ -657,7 +657,7 @@ TEST_CASE("CAMM convention: periodic Bra/Ket reduces to molecular at T=0",
       {1, -0.240 * ANGSTROM_TO_BOHR, 0.927 * ANGSTROM_TO_BOHR, 0.0},
   };
   auto p = occ::xtb::Gfn2Parameters::load_default();
-  occ::xtb::Gfn2Calculator calc(atoms, p);
+  occ::xtb::Gfn2Engine calc(atoms, p);
   occ::xtb::SccOptions sopts;
   sopts.include_dispersion = false;
   auto r = calc.run_full(sopts);
@@ -846,7 +846,7 @@ TEST_CASE("Periodic SCC: water at large cell matches molecular charge-only",
   // Molecular charge-only SCC for reference.
   occ::xtb::SccOptions mol_opts;
   mol_opts.include_dispersion = false;
-  occ::xtb::Gfn2Calculator calc_mol(atoms, p);
+  occ::xtb::Gfn2Engine calc_mol(atoms, p);
   auto r_mol = calc_mol.run_charge_only(mol_opts);
   REQUIRE(r_mol.converged);
 
@@ -1019,7 +1019,7 @@ TEST_CASE("Multipole Ewald tensors: large-cell energy matches molecular",
       {1, -1.5, 0.5, 0.0},
   };
   auto p = occ::xtb::Gfn2Parameters::load_default();
-  occ::xtb::Gfn2Calculator calc(atoms, p);
+  occ::xtb::Gfn2Engine calc(atoms, p);
   occ::xtb::SccOptions opts;
   opts.include_dispersion = false;
   auto r = calc.run_full(opts);
@@ -1122,7 +1122,7 @@ TEST_CASE("Multipole Ewald: alpha-invariance for charge-neutral water",
       {1, -1.5, 0.5, 0.0},
   };
   auto p = occ::xtb::Gfn2Parameters::load_default();
-  occ::xtb::Gfn2Calculator calc(atoms, p);
+  occ::xtb::Gfn2Engine calc(atoms, p);
   occ::xtb::SccOptions opts;
   opts.include_dispersion = false;
   auto r = calc.run_full(opts);
@@ -1178,10 +1178,10 @@ TEST_CASE("Periodic D4: large-cell limit matches molecular",
 }
 
 // ============================================================================
-// NativeCalculator drivers (molecular & crystal); EEQ initial guess
+// XtbCalculator drivers (molecular & crystal); EEQ initial guess
 // ============================================================================
 
-TEST_CASE("NativeCalculator(Crystal): water 8 Bohr cubic vs tblite",
+TEST_CASE("XtbCalculator(Crystal): water 8 Bohr cubic vs tblite",
           "[xtb][periodic][native][tblite]") {
   // Reference from `~/git/tblite/build/app/tblite run --method gfn2` on a
   // gen-format cell with the same geometry (positions in Å, 8 Å cubic cell);
@@ -1213,7 +1213,7 @@ TEST_CASE("NativeCalculator(Crystal): water 8 Bohr cubic vs tblite",
   SpaceGroup sg(1); // P1
   Crystal crystal(asym, sg, cell);
 
-  occ::xtb::NativeCalculator calc(crystal);
+  occ::xtb::XtbCalculator calc(crystal);
   calc.set_include_multipoles(true);
   double e = calc.single_point_energy();
   REQUIRE(calc.last_result().converged);
@@ -1242,7 +1242,7 @@ TEST_CASE("Periodic SCC with multipoles: large cell matches molecular full",
 
   occ::xtb::SccOptions mol_opts;
   mol_opts.include_dispersion = false;
-  occ::xtb::Gfn2Calculator calc_mol(atoms, p);
+  occ::xtb::Gfn2Engine calc_mol(atoms, p);
   auto r_mol = calc_mol.run_full(mol_opts);
   REQUIRE(r_mol.converged);
 
@@ -1446,7 +1446,7 @@ TEST_CASE("H0 + Pulay gradient + γ + repulsion vs full numerical SCC gradient",
 
   // Run charge-only SCC so the only contributions are H0+Pulay + γ + 3rd
   // order (no R-deriv) + repulsion. (No multipole H1 means no aniso terms.)
-  occ::xtb::Gfn2Calculator calc(atoms, p);
+  occ::xtb::Gfn2Engine calc(atoms, p);
   occ::xtb::SccOptions opts;
   opts.include_dispersion = false; // remove the D4 piece for this test
   auto r = calc.run_charge_only(opts);
@@ -1497,10 +1497,10 @@ TEST_CASE("H0 + Pulay gradient + γ + repulsion vs full numerical SCC gradient",
 
   // Full numerical gradient — central differences on the SCC total energy.
   // (Charge-only SCC, no dispersion.)
-  occ::xtb::NativeCalculator num_calc(mol);
+  occ::xtb::XtbCalculator num_calc(mol);
   // Disable dispersion to match.
-  // (NativeCalculator currently always runs full GFN2; for this test we
-  // construct a parallel Gfn2Calculator-driven path.)
+  // (XtbCalculator currently always runs full GFN2; for this test we
+  // construct a parallel Gfn2Engine-driven path.)
   const double step = 1e-4;
   occ::Mat3N grad_total_numerical = occ::Mat3N::Zero(3, atoms.size());
   for (size_t a = 0; a < atoms.size(); ++a) {
@@ -1510,7 +1510,7 @@ TEST_CASE("H0 + Pulay gradient + γ + repulsion vs full numerical SCC gradient",
         if (k == 0) a2[a].x += dh;
         if (k == 1) a2[a].y += dh;
         if (k == 2) a2[a].z += dh;
-        occ::xtb::Gfn2Calculator c2(a2, p);
+        occ::xtb::Gfn2Engine c2(a2, p);
         occ::xtb::SccOptions o2;
         o2.include_dispersion = false;
         return c2.run_charge_only(o2).total_energy;
@@ -1594,14 +1594,14 @@ TEST_CASE("CN gradient: analytical vs finite difference",
   }
 }
 
-TEST_CASE("NativeCalculator: numerical gradient sanity",
+TEST_CASE("XtbCalculator: numerical gradient sanity",
           "[xtb][native][gradient]") {
   using occ::core::Atom;
   using occ::core::Molecule;
   // Slightly distorted water — non-equilibrium so the gradient is nonzero.
   auto atoms = water_atoms();
   Molecule mol(atoms);
-  occ::xtb::NativeCalculator calc(mol);
+  occ::xtb::XtbCalculator calc(mol);
   auto [e, grad] = calc.compute_energy_and_gradient();
 
   // Energy is from charge-only SCC + native dispersion (the energy whose
@@ -1620,14 +1620,14 @@ TEST_CASE("NativeCalculator: numerical gradient sanity",
   REQUIRE(grad.norm() < 0.1); // Ha/Bohr — slightly off-equilibrium geom
 }
 
-TEST_CASE("NativeCalculator: analytical gradient self-consistency vs FD of the "
+TEST_CASE("XtbCalculator: analytical gradient self-consistency vs FD of the "
           "same energy expression",
           "[xtb][native][gradient][analytical]") {
   using occ::core::Atom;
   using occ::core::Molecule;
   auto atoms = water_atoms();
   Molecule mol(atoms);
-  occ::xtb::NativeCalculator calc(mol);
+  occ::xtb::XtbCalculator calc(mol);
   auto g_an = calc.compute_gradient_analytical();
   const double e_an = calc.last_result().total_energy;
 
@@ -1668,16 +1668,16 @@ TEST_CASE("NativeCalculator: analytical gradient self-consistency vs FD of the "
   REQUIRE(e_an == Approx(-5.0702559).margin(2e-3));
 }
 
-TEST_CASE("NativeCalculator: water Molecule round-trip",
+TEST_CASE("XtbCalculator: water Molecule round-trip",
           "[xtb][native]") {
   // Build a Molecule with positions in Angstrom (occ::Molecule convention),
-  // then verify NativeCalculator reproduces the SCC energy.
+  // then verify XtbCalculator reproduces the SCC energy.
   using occ::core::Atom;
   using occ::core::Molecule;
   auto atoms = water_atoms();
   Molecule mol(atoms);
 
-  occ::xtb::NativeCalculator calc(mol);
+  occ::xtb::XtbCalculator calc(mol);
   double e = calc.single_point_energy();
   INFO("Energy: " << e);
   INFO("Charges: " << calc.charges().transpose());

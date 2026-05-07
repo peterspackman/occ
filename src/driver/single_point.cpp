@@ -3,7 +3,7 @@
 #include <occ/dft/dft.h>
 #include <occ/disp/d4.h>
 #include <occ/driver/method_parser.h>
-#include <occ/xtb/native_calculator.h>
+#include <occ/xtb/xtb_calculator.h>
 #include <occ/driver/single_point.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/gradients.h>
@@ -360,7 +360,7 @@ single_point_driver(const OccInput &config,
                                "native backend; build with WITH_TBLITE=ON to "
                                "use the tblite path with solvation.");
     }
-    occ::xtb::NativeCalculator calc(m);
+    occ::xtb::XtbCalculator calc(m);
     if (config.electronic.charge != 0.0)
       calc.set_charge(config.electronic.charge);
     (void)calc.single_point_energy();

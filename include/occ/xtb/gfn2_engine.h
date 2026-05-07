@@ -13,14 +13,14 @@
 namespace occ::xtb {
 
 // Owns the AO basis, integrals, parameters, and all geometry-derived
-// quantities for GFN2-xTB. A single Gfn2Calculator instance can be reused
+// quantities for GFN2-xTB. A single Gfn2Engine instance can be reused
 // across many `single_point()` calls (e.g. during geometry optimization)
 // without re-allocating the integral matrices.
-class Gfn2Calculator {
+class Gfn2Engine {
 public:
   // Construct from atoms + parameters. All geometry-dependent quantities
   // (basis, integrals, CN, repulsion, gamma, H0) are computed eagerly.
-  Gfn2Calculator(std::vector<core::Atom> atoms, Gfn2Parameters params);
+  Gfn2Engine(std::vector<core::Atom> atoms, Gfn2Parameters params);
 
   // Replace atomic positions (atomic numbers and shell layout unchanged).
   // Recomputes the geometry-dependent caches.

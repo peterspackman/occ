@@ -4,10 +4,10 @@
 #include <occ/disp/d4.h>
 #include <occ/xtb/coordination.h>
 #include <occ/xtb/gamma.h>
-#include <occ/xtb/gfn2_calculator.h>
+#include <occ/xtb/gfn2_engine.h>
 #include <occ/xtb/h0_gradient.h>
 #include <occ/xtb/kpoint_grid.h>
-#include <occ/xtb/native_calculator.h>
+#include <occ/xtb/xtb_calculator.h>
 #include <occ/xtb/repulsion.h>
 #include <stdexcept>
 
@@ -46,19 +46,19 @@ Mat compute_wiberg_bond_orders(const Mat &P, const Mat &S,
 
 } // namespace
 
-NativeCalculator::NativeCalculator(const core::Molecule &mol)
+XtbCalculator::XtbCalculator(const core::Molecule &mol)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_charge(mol.charge()) {
   initialize_calculator();
 }
 
-NativeCalculator::NativeCalculator(const core::Dimer &dimer)
+XtbCalculator::XtbCalculator(const core::Dimer &dimer)
     : m_positions_bohr(dimer.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(dimer.atomic_numbers()), m_charge(dimer.charge()) {
   initialize_calculator();
 }
 
-NativeCalculator::NativeCalculator(const crystal::Crystal &crystal) {
+XtbCalculator::XtbCalculator(const crystal::Crystal &crystal) {
   m_periodic = true;
   m_periodic_sys = PeriodicSystem::from_crystal(crystal);
   // Mirror molecular positions / atomic numbers so positions(), num_atoms(),
@@ -76,39 +76,39 @@ NativeCalculator::NativeCalculator(const crystal::Crystal &crystal) {
   m_periodic_opts.total_charge = m_charge;
 }
 
-NativeCalculator::~NativeCalculator() = default;
+XtbCalculator::~XtbCalculator() = default;
 
-void NativeCalculator::set_kpoints(int n1, int n2, int n3) {
+void XtbCalculator::set_kpoints(int n1, int n2, int n3) {
   m_kpoints[0] = n1;
   m_kpoints[1] = n2;
   m_kpoints[2] = n3;
 }
 
-std::array<int, 3> NativeCalculator::kpoints() const {
+std::array<int, 3> XtbCalculator::kpoints() const {
   return {m_kpoints[0], m_kpoints[1], m_kpoints[2]};
 }
 
-void NativeCalculator::set_include_multipoles(bool on) {
+void XtbCalculator::set_include_multipoles(bool on) {
   // Single source of truth: m_periodic_opts.include_multipoles is read by
   // both the periodic dispatch and the molecular dispatch (the latter passes
-  // it through to Gfn2Calculator::single_point's include_multipoles flag).
+  // it through to Gfn2Engine::single_point's include_multipoles flag).
   m_periodic_opts.include_multipoles = on;
 }
 
-bool NativeCalculator::include_multipoles() const {
+bool XtbCalculator::include_multipoles() const {
   return m_periodic_opts.include_multipoles;
 }
 
-void NativeCalculator::set_include_dispersion(bool on) {
+void XtbCalculator::set_include_dispersion(bool on) {
   m_opts.include_dispersion = on;
   m_periodic_opts.include_dispersion = on;
 }
 
-bool NativeCalculator::include_dispersion() const {
+bool XtbCalculator::include_dispersion() const {
   return m_periodic_opts.include_dispersion;
 }
 
-bool NativeCalculator::set_solvent(const std::string &name) {
+bool XtbCalculator::set_solvent(const std::string &name) {
   // Stub for API parity with TbliteCalculator. Continuum solvent isn't
   // implemented in the native backend yet — return false so callers can
   // detect and fall back.
@@ -116,30 +116,30 @@ bool NativeCalculator::set_solvent(const std::string &name) {
   return false;
 }
 
-void NativeCalculator::set_num_unpaired_electrons(int n) {
+void XtbCalculator::set_num_unpaired_electrons(int n) {
   if (n != 0) {
     throw std::runtime_error(
-        "NativeCalculator: open-shell GFN2 not yet implemented "
+        "XtbCalculator: open-shell GFN2 not yet implemented "
         "(num_unpaired_electrons must be 0)");
   }
 }
 
-Mat3 NativeCalculator::lattice() const {
+Mat3 XtbCalculator::lattice() const {
   if (!m_periodic) {
     throw std::runtime_error(
-        "NativeCalculator::lattice: not a periodic calculator");
+        "XtbCalculator::lattice: not a periodic calculator");
   }
   return m_periodic_sys.lattice_bohr;
 }
 
-void NativeCalculator::initialize_calculator() {
+void XtbCalculator::initialize_calculator() {
   m_params = std::make_shared<Gfn2Parameters>(Gfn2Parameters::load_default());
-  m_calc = std::make_unique<Gfn2Calculator>(
+  m_calc = std::make_unique<Gfn2Engine>(
       make_atoms(m_positions_bohr, m_atomic_numbers), *m_params);
   m_opts.total_charge = m_charge;
 }
 
-const XtbResult &NativeCalculator::single_point() {
+const XtbResult &XtbCalculator::single_point() {
   if (m_periodic) {
     m_periodic_opts.total_charge = m_charge;
     if (m_kpoints[0] == 1 && m_kpoints[1] == 1 && m_kpoints[2] == 1) {
@@ -160,16 +160,16 @@ const XtbResult &NativeCalculator::single_point() {
   return m_last_result;
 }
 
-double NativeCalculator::single_point_energy() {
+double XtbCalculator::single_point_energy() {
   return single_point().total_energy;
 }
 
-Vec NativeCalculator::charges() const { return m_last_result.atomic_charges; }
+Vec XtbCalculator::charges() const { return m_last_result.atomic_charges; }
 
-Mat NativeCalculator::bond_orders() const {
+Mat XtbCalculator::bond_orders() const {
   if (m_last_result.density_matrix.size() == 0) {
     throw std::runtime_error(
-        "NativeCalculator::bond_orders: call single_point_energy() first");
+        "XtbCalculator::bond_orders: call single_point_energy() first");
   }
   return compute_wiberg_bond_orders(m_last_result.density_matrix,
                                     m_last_result.overlap_matrix,
@@ -177,28 +177,28 @@ Mat NativeCalculator::bond_orders() const {
                                     static_cast<int>(num_atoms()));
 }
 
-void NativeCalculator::set_charge(double c) { m_charge = c; }
-void NativeCalculator::set_max_iterations(int n) {
+void XtbCalculator::set_charge(double c) { m_charge = c; }
+void XtbCalculator::set_max_iterations(int n) {
   m_opts.max_iterations = n;
   m_periodic_opts.max_iterations = n;
 }
-int NativeCalculator::max_iterations() const { return m_opts.max_iterations; }
-void NativeCalculator::set_temperature(double t) {
+int XtbCalculator::max_iterations() const { return m_opts.max_iterations; }
+void XtbCalculator::set_temperature(double t) {
   m_opts.electronic_temperature = t;
 }
-double NativeCalculator::temperature() const {
+double XtbCalculator::temperature() const {
   return m_opts.electronic_temperature;
 }
-void NativeCalculator::set_mixer_damping(double f) {
+void XtbCalculator::set_mixer_damping(double f) {
   m_opts.damping_factor = f;
   m_periodic_opts.damping_factor = f;
 }
-double NativeCalculator::mixer_damping() const { return m_opts.damping_factor; }
+double XtbCalculator::mixer_damping() const { return m_opts.damping_factor; }
 
-void NativeCalculator::update_structure(const Mat3N &positions) {
+void XtbCalculator::update_structure(const Mat3N &positions) {
   if (positions.cols() != num_atoms()) {
     throw std::runtime_error(
-        "NativeCalculator::update_structure: column count mismatch");
+        "XtbCalculator::update_structure: column count mismatch");
   }
   m_positions_bohr = positions;
   if (m_periodic) {
@@ -213,15 +213,15 @@ void NativeCalculator::update_structure(const Mat3N &positions) {
   }
 }
 
-void NativeCalculator::update_structure(const Mat3N &positions,
+void XtbCalculator::update_structure(const Mat3N &positions,
                                          const Mat3 &lattice_bohr) {
   if (!m_periodic) {
-    throw std::runtime_error("NativeCalculator::update_structure(positions, "
+    throw std::runtime_error("XtbCalculator::update_structure(positions, "
                              "lattice): not a periodic calculator");
   }
   if (positions.cols() != num_atoms()) {
     throw std::runtime_error(
-        "NativeCalculator::update_structure: column count mismatch");
+        "XtbCalculator::update_structure: column count mismatch");
   }
   m_positions_bohr = positions;
   m_periodic_sys.lattice_bohr = lattice_bohr;
@@ -232,15 +232,15 @@ void NativeCalculator::update_structure(const Mat3N &positions,
   }
 }
 
-core::Molecule NativeCalculator::to_molecule() const {
+core::Molecule XtbCalculator::to_molecule() const {
   return core::Molecule(m_atomic_numbers,
                         m_positions_bohr / occ::units::BOHR_TO_ANGSTROM);
 }
 
-crystal::Crystal NativeCalculator::to_crystal() const {
+crystal::Crystal XtbCalculator::to_crystal() const {
   if (!m_periodic) {
     throw std::runtime_error(
-        "NativeCalculator::to_crystal: not a periodic calculator");
+        "XtbCalculator::to_crystal: not a periodic calculator");
   }
   // Same convention as TbliteCalculator::to_crystal: P1 cell with all
   // central-cell atoms in the asymmetric unit. Symmetry is not preserved
@@ -255,7 +255,7 @@ crystal::Crystal NativeCalculator::to_crystal() const {
   return crystal::Crystal(asym, sg, uc);
 }
 
-Mat3N NativeCalculator::gradient_numerical(double step) {
+Mat3N XtbCalculator::gradient_numerical(double step) {
   const int n = num_atoms();
   Mat3N grad = Mat3N::Zero(3, n);
 
@@ -291,7 +291,7 @@ Mat3N NativeCalculator::gradient_numerical(double step) {
   return grad;
 }
 
-Mat3N NativeCalculator::gradient() {
+Mat3N XtbCalculator::gradient() {
   // Run a charge-only SCC to get a converged density consistent with the
   // pieces we differentiate analytically. Multipole anisotropic terms are
   // NOT in this energy expression — see header docstring.
@@ -305,7 +305,7 @@ Mat3N NativeCalculator::gradient() {
   m_last_result = m_calc->run_charge_only(opts);
   if (!m_last_result.converged) {
     throw std::runtime_error(
-        "NativeCalculator::compute_gradient_analytical: charge-only SCC did "
+        "XtbCalculator::compute_gradient_analytical: charge-only SCC did "
         "not converge");
   }
 
@@ -376,7 +376,7 @@ Mat3N NativeCalculator::gradient() {
 }
 
 std::pair<double, Mat3N>
-NativeCalculator::compute_energy_and_gradient(bool numerical, double step) {
+XtbCalculator::compute_energy_and_gradient(bool numerical, double step) {
   if (numerical) {
     Mat3N g = gradient_numerical(step);
     return {m_last_result.total_energy, g};
@@ -385,9 +385,9 @@ NativeCalculator::compute_energy_and_gradient(bool numerical, double step) {
   return {m_last_result.total_energy, g};
 }
 
-void NativeCalculator::print_summary() const {
+void XtbCalculator::print_summary() const {
   if (m_last_result.density_matrix.size() == 0) {
-    occ::log::warn("NativeCalculator::print_summary: nothing to print "
+    occ::log::warn("XtbCalculator::print_summary: nothing to print "
                    "(call single_point_energy() first)");
     return;
   }
@@ -431,10 +431,10 @@ void NativeCalculator::print_summary() const {
   }
 }
 
-occ::qm::Wavefunction NativeCalculator::to_wavefunction() const {
+occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
   if (m_last_result.density_matrix.size() == 0) {
     throw std::runtime_error(
-        "NativeCalculator::to_wavefunction: call single_point_energy() first");
+        "XtbCalculator::to_wavefunction: call single_point_energy() first");
   }
   occ::qm::Wavefunction wfn;
   wfn.method = "GFN2-xTB";

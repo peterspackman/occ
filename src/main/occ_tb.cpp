@@ -12,7 +12,7 @@
 #include <occ/io/xyz.h>
 #include <occ/main/occ_tb.h>
 #include <occ/main/version.h>
-#include <occ/xtb/native_calculator.h>
+#include <occ/xtb/xtb_calculator.h>
 
 namespace occ::main {
 
@@ -41,7 +41,7 @@ Kind classify(const std::string &filename) {
 
 void run_periodic(const TbConfig &cfg) {
   auto crystal = occ::io::load_crystal(cfg.filename);
-  occ::xtb::NativeCalculator calc(crystal);
+  occ::xtb::XtbCalculator calc(crystal);
   calc.set_charge(cfg.charge);
   calc.set_include_multipoles(cfg.include_multipoles);
   if (cfg.kpoints[0] != 1 || cfg.kpoints[1] != 1 || cfg.kpoints[2] != 1) {
@@ -87,7 +87,7 @@ void run_periodic(const TbConfig &cfg) {
 
     std::vector<double> e_unique(n_uniq, 0.0);
     for (int i = 0; i < n_uniq; ++i) {
-      occ::xtb::NativeCalculator mol_calc(uniq_mols[i]);
+      occ::xtb::XtbCalculator mol_calc(uniq_mols[i]);
       mol_calc.set_charge(cfg.charge);
       mol_calc.set_include_multipoles(cfg.include_multipoles);
       const double e_mol = mol_calc.single_point_energy();
@@ -118,7 +118,7 @@ void run_periodic(const TbConfig &cfg) {
 
 void run_molecular(const TbConfig &cfg) {
   auto mol = occ::io::load_molecule(cfg.filename);
-  occ::xtb::NativeCalculator calc(mol);
+  occ::xtb::XtbCalculator calc(mol);
   calc.set_charge(cfg.charge);
   calc.set_include_multipoles(cfg.include_multipoles);
   occ::log::info("{:-<72s}", "GFN2-xTB molecular ");

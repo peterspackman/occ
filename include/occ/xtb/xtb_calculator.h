@@ -15,7 +15,7 @@ class Crystal;
 
 namespace occ::xtb {
 
-class Gfn2Calculator;
+class Gfn2Engine;
 class Gfn2Parameters;
 
 /// In-tree GFN2-xTB calculator. Mirrors the public surface of
@@ -24,13 +24,13 @@ class Gfn2Parameters;
 ///
 /// Typical usage:
 /// \code
-///   NativeCalculator calc(molecule);
+///   XtbCalculator calc(molecule);
 ///   calc.set_charge(0);
 ///   const XtbResult &r = calc.single_point();
 ///   double E = r.total_energy;
 ///   Mat3N grad = calc.gradient();
 /// \endcode
-class NativeCalculator {
+class XtbCalculator {
 public:
   /// Tight-binding method. Only GFN2 is implemented; the enum exists so the
   /// API can extend to GFN1 / GFN0 later without breaking callers.
@@ -38,14 +38,14 @@ public:
 
   /// Construct from an isolated molecule (positions in Å — converted to Bohr
   /// internally). Inherits the molecule's charge.
-  explicit NativeCalculator(const occ::core::Molecule &mol);
+  explicit XtbCalculator(const occ::core::Molecule &mol);
   /// Construct from a dimer; equivalent to a molecule built from the union of
   /// monomer atoms.
-  explicit NativeCalculator(const occ::core::Dimer &dimer);
+  explicit XtbCalculator(const occ::core::Dimer &dimer);
   /// Construct from a 3D periodic crystal. Defaults to Γ-only sampling; call
   /// `set_kpoints` to enable a Monkhorst-Pack mesh.
-  explicit NativeCalculator(const occ::crystal::Crystal &crystal);
-  ~NativeCalculator();
+  explicit XtbCalculator(const occ::crystal::Crystal &crystal);
+  ~XtbCalculator();
 
   // ---------------------------------------------------------------------
   // Identity / topology
@@ -216,7 +216,7 @@ private:
   SccOptions m_opts;
 
   std::shared_ptr<Gfn2Parameters> m_params;
-  std::unique_ptr<Gfn2Calculator> m_calc;
+  std::unique_ptr<Gfn2Engine> m_calc;
   XtbResult m_last_result;
 
   // Periodic state — only populated when built from a Crystal.
