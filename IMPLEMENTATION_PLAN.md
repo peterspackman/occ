@@ -42,11 +42,38 @@ Grimme's `xtb` (`~/git/xtb`), DOI 10.1021/acs.jctc.8b01176.
 
 **Open — medium priority**
 
-4. **Phase 5d-rest — CAMM + anisotropic multipole gradients** (~700 lines).
+4. **Phase 5d-rest — CAMM + anisotropic multipole gradients**.
    Closes the ~1 mHa energy gap between `single_point` (multipole-on) and
-   `gradient` (charge-only SCC for consistency). Needs
-   `IntegralEngine::one_electron_operator_grad(Op::dipole/quadrupole)` plus
-   ∂(gab3, gab5)/∂R chain.
+   `gradient` (charge-only SCC for consistency).
+
+   Status: **steps 1+2 done as standalone validated routines**:
+   - `anisotropic_pair_gradient` — closed-form ∂E_AES/∂R at frozen
+     (q, μ, Q, R_co). Matches FD-of-`anisotropic_energy` to <1e-7 Ha/Bohr.
+   - `anisotropic_pair_gradient_with_dcn` — extends step 1 with the
+     CN chain through `mp_radii(CN)`. Matches FD to <1e-7 Ha/Bohr when
+     mp_radii flows with CN(R).
+   - `multipole_radii_with_gradient` — closed-form `dr/dCN` for the
+     sigmoid in CN.
+
+   Remaining work for full multipole-on `gradient()`:
+   - **Step 3 — Z-matrix update with V_AES**. Promote V_shell's iso
+     shift to per-AO so it can absorb the per-atom AES vs contribution.
+     This makes the `Z·∂S/∂R` Pulay term capture the SCC density response
+     to vs.
+   - **Step 4 — AO multipole integral derivatives**. ∂D_ket/∂R,
+     ∂D_bra/∂R, ∂Q_ket/∂R, ∂Q_bra/∂R for the explicit "centering changes
+     with R" chain. Needed because with multipoles on, the Fock has
+     terms `½ D_ket·vd + ½ D_bra·vd + ½ Σ_l Q_ket[l]·vq_l + ½ Σ_l Q_bra[l]·vq_l`
+     whose ∂/∂R doesn't go through ∂S alone. Probably the largest piece.
+   - **Step 5 — on-site polariz ∂/∂R**. Mostly falls out of step 4 via
+     the (μ, Q) chain.
+
+   Pilot integration (running multipole-on SCC + steps 1+2 inside
+   `gradient()`, with vs folded into V_shell as a partial step 3) showed
+   a ~14 mHa/Bohr gap to FD-of-energy on water — confirming step 4 is
+   the dominant missing piece. Reverted; steps 1+2 stay as standalone
+   functions ready to wire in once 3+4 land.
+
 5. **Eigensolve threading**. Largest remaining serial cost on real
    crystals (~4 s of 9 s wall on QQQCIG11 at 8 threads). Direct `dsygv_`
    call against Apple Accelerate / OpenBLAS via a small wrapper.
