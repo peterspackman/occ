@@ -24,6 +24,19 @@ anisotropic_energy(const std::vector<core::Atom> &atoms, const Vec &q,
                    const CammMoments &m, const DampedCoulomb &damped,
                    const Gfn2Parameters &params);
 
+// Explicit ∂E_AES/∂R at frozen (q, m, mp_radii). Closed-form pair-loop
+// gradient that mirrors `anisotropic_energy`'s pair sum term-by-term
+// (charge-dipole · g3, charge-quadrupole · g5, dipole-dipole · g5) plus
+// the kernel derivatives ∂g3/∂R, ∂g5/∂R. Skips the on-site polarization
+// (no explicit R-dependence at frozen multipoles), the CN chain through
+// multipole radii, and the SCC density response (frozen q, μ, Q).
+//
+// Returned as 3 × N (Hartree/Bohr).
+Mat3N
+anisotropic_pair_gradient(const std::vector<core::Atom> &atoms, const Vec &q,
+                          const CammMoments &m, const Vec &mp_radii,
+                          const Gfn2Parameters &params);
+
 // Per-atom potentials acting on charges (vs), atomic dipoles (vd), and
 // atomic quadrupoles (vq). vq is laid out in `qpint` order (xx, yy, zz, xy,
 // xz, yz) — this matches the storage of `quadrupole_ao_matrices(...)` after

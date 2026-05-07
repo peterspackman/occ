@@ -1779,6 +1779,63 @@ TEST_CASE("XtbCalculator: numerical Hessian symmetry + reasonable freqs",
   REQUIRE(f_sym  > f_bend);
 }
 
+TEST_CASE("AES pair gradient: analytical vs finite difference (water)",
+          "[xtb][anisotropic][gradient]") {
+  using occ::core::Atom;
+  // Run a converged SCC, then freeze (q, μ, Q, mp_radii) and check
+  // analytical ∂E_AES/∂R against FD of `anisotropic_energy.aes` w.r.t.
+  // atomic positions. mp_radii is held fixed (no CN chain in this slice).
+  auto atoms = water_atoms();
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::xtb::Gfn2Engine eng(atoms, p);
+  occ::xtb::SccOptions opts;
+  auto r = eng.run_full(opts);
+  REQUIRE(r.converged);
+
+  // Build CAMM (μ, Q) from the converged density using the molecular path.
+  auto mp_ao = occ::xtb::build_molecular_multipole_ao(atoms, p);
+  auto bf2at = eng.basis().bf_to_atom();
+  auto mom = occ::xtb::compute_camm_moments_periodic(
+      atoms, bf2at, r.density_matrix, mp_ao.D_ket, mp_ao.D_bra,
+      mp_ao.Q_ket, mp_ao.Q_bra);
+  occ::Vec atom_q = occ::Vec::Zero(atoms.size());
+  for (Eigen::Index s = 0; s < r.shell_charges.size(); ++s) {
+    atom_q(eng.shell_table().atom[s]) += r.shell_charges(s);
+  }
+
+  occ::Vec cn = occ::xtb::gfn_coordination_numbers(atoms);
+  occ::Vec mp_radii = occ::xtb::multipole_radii(atoms, cn, p);
+
+  // Analytical gradient at the input geometry.
+  occ::Mat3N g_anal = occ::xtb::anisotropic_pair_gradient(atoms, atom_q, mom,
+                                                          mp_radii, p);
+
+  // Finite difference: 5-point central diff of `anisotropic_energy.aes`
+  // with frozen (q, μ, mp_radii) — the damped-Coulomb table is rebuilt
+  // each step because its R-dependence is what we're checking.
+  const double h = 1e-4;
+  occ::Mat3N g_fd = occ::Mat3N::Zero(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    for (int a = 0; a < 3; ++a) {
+      auto plus = atoms;
+      auto minus = atoms;
+      double *pp = (a == 0) ? &plus[i].x : (a == 1) ? &plus[i].y : &plus[i].z;
+      double *pm = (a == 0) ? &minus[i].x : (a == 1) ? &minus[i].y : &minus[i].z;
+      *pp += h;
+      *pm -= h;
+      auto damped_p = occ::xtb::damped_multipole_coulomb(plus, mp_radii, p);
+      auto damped_m = occ::xtb::damped_multipole_coulomb(minus, mp_radii, p);
+      double e_p = occ::xtb::anisotropic_energy(plus, atom_q, mom, damped_p, p).aes;
+      double e_m = occ::xtb::anisotropic_energy(minus, atom_q, mom, damped_m, p).aes;
+      g_fd(a, i) = (e_p - e_m) / (2.0 * h);
+    }
+  }
+
+  const double max_err = (g_anal - g_fd).cwiseAbs().maxCoeff();
+  INFO("max |g_anal − g_fd| = " << max_err);
+  REQUIRE(max_err < 1e-7);
+}
+
 TEST_CASE("Anisotropic ES (post-SCF estimate, water)",
           "[xtb][anisotropic]") {
   using occ::core::Atom;

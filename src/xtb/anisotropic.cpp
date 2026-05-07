@@ -85,6 +85,133 @@ anisotropic_energy(const std::vector<core::Atom> &atoms, const Vec &q,
 
 namespace {
 
+// Closed-form derivatives of the damped multipole kernels.
+//   g3(R) = damp3 / R³,    damp3 = 1 / (1 + 6 (R_co/R)^k3)
+//   g3'(R) = damp3·[k3·(1 − damp3) − 3] / R⁴
+// Same shape for g5 with k5 / R⁶.
+struct PairDamp {
+  double g3;
+  double g5;
+  double g3prime;  // dg3 / dR
+  double g5prime;  // dg5 / dR
+};
+
+inline PairDamp pair_damp(double R, double R_co, double k3, double k5) {
+  const double rinv = 1.0 / R;
+  const double rcoinvr = R_co * rinv;
+  const double damp3 = 1.0 / (1.0 + 6.0 * std::pow(rcoinvr, k3));
+  const double damp5 = 1.0 / (1.0 + 6.0 * std::pow(rcoinvr, k5));
+  const double r3inv = rinv * rinv * rinv;
+  const double r5inv = r3inv * rinv * rinv;
+  PairDamp p;
+  p.g3 = damp3 * r3inv;
+  p.g5 = damp5 * r5inv;
+  p.g3prime = damp3 * (k3 * (1.0 - damp3) - 3.0) * r3inv * rinv;
+  p.g5prime = damp5 * (k5 * (1.0 - damp5) - 5.0) * r5inv * rinv;
+  return p;
+}
+
+} // namespace
+
+Mat3N
+anisotropic_pair_gradient(const std::vector<core::Atom> &atoms, const Vec &q,
+                          const CammMoments &m, const Vec &mp_radii,
+                          const Gfn2Parameters &params) {
+  const int nat = static_cast<int>(atoms.size());
+  const auto &g = params.globals();
+  const double k3 = g.aesdmp3;
+  const double k5 = g.aesdmp5;
+
+  Mat3N grad = Mat3N::Zero(3, nat);
+
+  // Pair loop mirrors `anisotropic_energy`'s ordering: j < i with
+  // rij = R_j − R_i. ∂rij/∂R_iα = −δ_α (atom i moves rij in the −α
+  // direction), ∂rij/∂R_jα = +δ_α. Newton III gives an antisymmetric
+  // pair contribution (atom j picks up minus what atom i picks up).
+  for (int i = 0; i < nat; ++i) {
+    const double q_i = q(i);
+    const double xi = atoms[i].x, yi = atoms[i].y, zi = atoms[i].z;
+    for (int j = 0; j < i; ++j) {
+      const double q_j = q(j);
+      const double rx = atoms[j].x - xi;
+      const double ry = atoms[j].y - yi;
+      const double rz = atoms[j].z - zi;
+      const double r2 = rx * rx + ry * ry + rz * rz;
+      const double R = std::sqrt(r2);
+      const double rij[3] = {rx, ry, rz};
+      const double R_co = 0.5 * (mp_radii(i) + mp_radii(j));
+      const PairDamp d = pair_damp(R, R_co, k3, k5);
+
+      // -- Energy parts (frozen multipoles) --
+      // ed   = (q_j μ_i − q_i μ_j) · rij
+      // eq   = q_j (rij^T Q_i rij) + q_i (rij^T Q_j rij)
+      // edd  = (μ_i·μ_j) R² − 3 (μ_i·rij)(μ_j·rij)
+      double ed = 0.0, eq = 0.0, edd = 0.0;
+      double mu_i_dot_rij = 0.0, mu_j_dot_rij = 0.0;
+      double mu_i_dot_mu_j = 0.0;
+      // Q · rij for each atom: stored kl_to_qp index map:
+      // {{0,1,3},{1,2,4},{3,4,5}} → flat (xx, xy, yy, xz, yz, zz).
+      double Qi_rij[3] = {0.0, 0.0, 0.0};
+      double Qj_rij[3] = {0.0, 0.0, 0.0};
+      for (int k = 0; k < 3; ++k) {
+        const double mui_k = m.dipm(k, i);
+        const double muj_k = m.dipm(k, j);
+        mu_i_dot_rij += mui_k * rij[k];
+        mu_j_dot_rij += muj_k * rij[k];
+        mu_i_dot_mu_j += mui_k * muj_k;
+        ed += q_j * mui_k * rij[k] - q_i * muj_k * rij[k];
+        for (int l = 0; l < 3; ++l) {
+          const int idx = kl_to_qp[k][l];
+          const double tt = rij[l] * rij[k];
+          eq += q_j * m.qp(idx, i) * tt + q_i * m.qp(idx, j) * tt;
+          edd -= 3.0 * m.dipm(k, j) * m.dipm(l, i) * tt;
+          Qi_rij[k] += m.qp(idx, i) * rij[l];
+          Qj_rij[k] += m.qp(idx, j) * rij[l];
+        }
+        edd += m.dipm(k, j) * m.dipm(k, i) * r2;
+      }
+
+      // -- Energy at this pair (for the kernel-derivative term) --
+      const double E_g3_factor = ed;            // multiplied by g3
+      const double E_g5_factor = eq + edd;      // multiplied by g5
+
+      // ∂R/∂R_iα = −rij[α] / R, so ∂g3/∂R_iα = −g3'(R) · rij[α] / R, etc.
+      const double dg3_factor = -d.g3prime / R; // multiply by rij[α] for Δgrad_i
+      const double dg5_factor = -d.g5prime / R;
+
+      // -- ∂(ed, eq, edd)/∂R_iα at frozen multipoles --
+      // ∂ed/∂R_iα   = −(q_j μ_i[α] − q_i μ_j[α])
+      // ∂eq/∂R_iα   = −2 (q_j Q_i + q_i Q_j) · rij)[α]
+      // ∂edd/∂R_iα  = −2 (μ_i·μ_j) rij[α]
+      //              + 3 [μ_i[α] (μ_j·rij) + μ_j[α] (μ_i·rij)]
+      // (We then multiply ∂ed by g3, ∂eq + ∂edd by g5.)
+      double grad_i[3];
+      for (int a = 0; a < 3; ++a) {
+        const double dEd_da =
+            -(q_j * m.dipm(a, i) - q_i * m.dipm(a, j));
+        const double dEq_da = -2.0 * (q_j * Qi_rij[a] + q_i * Qj_rij[a]);
+        const double dEdd_da = -2.0 * mu_i_dot_mu_j * rij[a]
+                                + 3.0 * (m.dipm(a, i) * mu_j_dot_rij +
+                                          m.dipm(a, j) * mu_i_dot_rij);
+
+        // Chain rule total: explicit-rij + kernel-R chains.
+        grad_i[a] = dEd_da * d.g3 + (dEq_da + dEdd_da) * d.g5
+                  + E_g3_factor * dg3_factor * rij[a]
+                  + E_g5_factor * dg5_factor * rij[a];
+      }
+
+      // Distribute to atoms i and j.
+      for (int a = 0; a < 3; ++a) {
+        grad(a, i) += grad_i[a];
+        grad(a, j) -= grad_i[a]; // Newton's third law
+      }
+    }
+  }
+  return grad;
+}
+
+namespace {
+
 // xtb's qpint flat index for (k, l), 0-based, in (xx, yy, zz, xy, xz, yz)
 // order. Diagonals: xx=0, yy=1, zz=2. Off-diagonals (k != l): xy=3, xz=4,
 // yz=5.
