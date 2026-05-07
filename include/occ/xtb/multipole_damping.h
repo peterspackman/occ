@@ -13,6 +13,18 @@ class Gfn2Parameters;
 Vec multipole_radii(const std::vector<core::Atom> &atoms, const Vec &cn,
                     const Gfn2Parameters &params);
 
+// Same as `multipole_radii` but also returns ∂mp_radii(i)/∂CN_i. Each atom's
+// radius depends only on its own CN (element-wise sigmoid), so the
+// derivative is a length-N vector.
+struct MultipoleRadiiWithGradient {
+  Vec radii;
+  Vec dradii_dcn;
+};
+
+MultipoleRadiiWithGradient
+multipole_radii_with_gradient(const std::vector<core::Atom> &atoms,
+                               const Vec &cn, const Gfn2Parameters &params);
+
 // Pair-wise damped Coulomb tables for multipole-multipole interactions.
 //   gab_n(i,j) = damp_n * R_ij^{-n}
 //   damp_n = 1 / (1 + 6 * (rco / R_ij)^kdmp_n),  rco = (r_i + r_j) / 2

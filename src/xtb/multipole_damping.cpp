@@ -84,6 +84,30 @@ Vec multipole_radii(const std::vector<core::Atom> &atoms, const Vec &cn,
   return r;
 }
 
+MultipoleRadiiWithGradient
+multipole_radii_with_gradient(const std::vector<core::Atom> &atoms,
+                               const Vec &cn, const Gfn2Parameters &params) {
+  // r(CN) = rco + (rmax − rco) · σ,   σ = 1 / (1 + exp(−expo·(CN − valCN − shift)))
+  // dr/dCN = (rmax − rco) · expo · σ · (1 − σ)
+  const auto &g = params.globals();
+  const double rmax = g.aesrmax;
+  const double expo = g.aesexp;
+  const double shift = g.aesshift;
+  const int n = static_cast<int>(atoms.size());
+  MultipoleRadiiWithGradient out;
+  out.radii = Vec::Zero(n);
+  out.dradii_dcn = Vec::Zero(n);
+  for (int i = 0; i < n; ++i) {
+    const int z = atoms[i].atomic_number;
+    const double rco = multi_rad(z);
+    const double t = cn(i) - val_cn(z) - shift;
+    const double sig = 1.0 / (1.0 + std::exp(-expo * t));
+    out.radii(i) = rco + (rmax - rco) * sig;
+    out.dradii_dcn(i) = (rmax - rco) * expo * sig * (1.0 - sig);
+  }
+  return out;
+}
+
 DampedCoulomb damped_multipole_coulomb(const std::vector<core::Atom> &atoms,
                                        const Vec &mp_radii,
                                        const Gfn2Parameters &params) {

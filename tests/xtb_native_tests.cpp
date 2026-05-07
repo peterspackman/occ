@@ -1836,6 +1836,74 @@ TEST_CASE("AES pair gradient: analytical vs finite difference (water)",
   REQUIRE(max_err < 1e-7);
 }
 
+TEST_CASE("AES gradient + CN chain: analytical vs FD (water)",
+          "[xtb][anisotropic][gradient][cn]") {
+  using occ::core::Atom;
+  // Same setup as the explicit-pair-gradient test, but the FD oracle now
+  // lets the multipole radii flow with CN(R). Validates step 2 of
+  // Phase 5d-rest: CN chain through mp_radii.
+  auto atoms = water_atoms();
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::xtb::Gfn2Engine eng(atoms, p);
+  occ::xtb::SccOptions opts;
+  auto r = eng.run_full(opts);
+  REQUIRE(r.converged);
+
+  auto mp_ao = occ::xtb::build_molecular_multipole_ao(atoms, p);
+  auto bf2at = eng.basis().bf_to_atom();
+  auto mom = occ::xtb::compute_camm_moments_periodic(
+      atoms, bf2at, r.density_matrix, mp_ao.D_ket, mp_ao.D_bra,
+      mp_ao.Q_ket, mp_ao.Q_bra);
+  occ::Vec atom_q = occ::Vec::Zero(atoms.size());
+  for (Eigen::Index s = 0; s < r.shell_charges.size(); ++s) {
+    atom_q(eng.shell_table().atom[s]) += r.shell_charges(s);
+  }
+
+  // CN + ∂CN/∂R, mp_radii + ∂mp_radii/∂CN at the input geometry.
+  auto cn_g = occ::xtb::gfn_coordination_numbers_with_gradient(atoms);
+  auto mr = occ::xtb::multipole_radii_with_gradient(atoms, cn_g.cn, p);
+
+  // Analytical: explicit-R + CN chain via dcn.
+  auto ag = occ::xtb::anisotropic_pair_gradient_with_dcn(
+      atoms, atom_q, mom, mr.radii, mr.dradii_dcn, p);
+  occ::Mat3N grad_anal = ag.grad_explicit;
+  for (size_t A = 0; A < atoms.size(); ++A) {
+    if (ag.dE_dcn(A) != 0.0) {
+      grad_anal.noalias() += ag.dE_dcn(A) * cn_g.dcn[A];
+    }
+  }
+
+  // FD oracle: full ∂E_AES/∂R with frozen (q, μ, Q) but mp_radii flowing
+  // with CN(R) at each displaced geometry.
+  const double h = 1e-4;
+  occ::Mat3N grad_fd = occ::Mat3N::Zero(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    for (int a = 0; a < 3; ++a) {
+      auto plus = atoms;
+      auto minus = atoms;
+      double *pp = (a == 0) ? &plus[i].x : (a == 1) ? &plus[i].y : &plus[i].z;
+      double *pm = (a == 0) ? &minus[i].x : (a == 1) ? &minus[i].y : &minus[i].z;
+      *pp += h;
+      *pm -= h;
+      auto cn_p = occ::xtb::gfn_coordination_numbers(plus);
+      auto cn_m = occ::xtb::gfn_coordination_numbers(minus);
+      auto mr_p = occ::xtb::multipole_radii(plus, cn_p, p);
+      auto mr_m = occ::xtb::multipole_radii(minus, cn_m, p);
+      auto damped_p = occ::xtb::damped_multipole_coulomb(plus, mr_p, p);
+      auto damped_m = occ::xtb::damped_multipole_coulomb(minus, mr_m, p);
+      double e_p =
+          occ::xtb::anisotropic_energy(plus, atom_q, mom, damped_p, p).aes;
+      double e_m =
+          occ::xtb::anisotropic_energy(minus, atom_q, mom, damped_m, p).aes;
+      grad_fd(a, i) = (e_p - e_m) / (2.0 * h);
+    }
+  }
+
+  const double max_err = (grad_anal - grad_fd).cwiseAbs().maxCoeff();
+  INFO("max |grad_anal − grad_fd| = " << max_err);
+  REQUIRE(max_err < 1e-7);
+}
+
 TEST_CASE("Anisotropic ES (post-SCF estimate, water)",
           "[xtb][anisotropic]") {
   using occ::core::Atom;

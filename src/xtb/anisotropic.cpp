@@ -86,14 +86,17 @@ anisotropic_energy(const std::vector<core::Atom> &atoms, const Vec &q,
 namespace {
 
 // Closed-form derivatives of the damped multipole kernels.
-//   g3(R) = damp3 / R³,    damp3 = 1 / (1 + 6 (R_co/R)^k3)
-//   g3'(R) = damp3·[k3·(1 − damp3) − 3] / R⁴
-// Same shape for g5 with k5 / R⁶.
+//   g3(R)       = damp3 / R³,                  damp3 = 1 / (1 + 6 (R_co/R)^k3)
+//   ∂g3/∂R     = damp3·[k3·(1 − damp3) − 3] / R⁴
+//   ∂g3/∂R_co  = −damp3·k3·(1 − damp3) / (R_co · R³)
+// Same shapes for g5 with k5 / R⁶.
 struct PairDamp {
   double g3;
   double g5;
-  double g3prime;  // dg3 / dR
-  double g5prime;  // dg5 / dR
+  double g3prime;       // ∂g3 / ∂R
+  double g5prime;       // ∂g5 / ∂R
+  double dg3_drco;      // ∂g3 / ∂R_co
+  double dg5_drco;      // ∂g5 / ∂R_co
 };
 
 inline PairDamp pair_damp(double R, double R_co, double k3, double k5) {
@@ -108,6 +111,9 @@ inline PairDamp pair_damp(double R, double R_co, double k3, double k5) {
   p.g5 = damp5 * r5inv;
   p.g3prime = damp3 * (k3 * (1.0 - damp3) - 3.0) * r3inv * rinv;
   p.g5prime = damp5 * (k5 * (1.0 - damp5) - 5.0) * r5inv * rinv;
+  const double rco_inv = 1.0 / R_co;
+  p.dg3_drco = -damp3 * k3 * (1.0 - damp3) * rco_inv * r3inv;
+  p.dg5_drco = -damp5 * k5 * (1.0 - damp5) * rco_inv * r5inv;
   return p;
 }
 
@@ -208,6 +214,90 @@ anisotropic_pair_gradient(const std::vector<core::Atom> &atoms, const Vec &q,
     }
   }
   return grad;
+}
+
+AnisotropicPairGradient
+anisotropic_pair_gradient_with_dcn(const std::vector<core::Atom> &atoms,
+                                    const Vec &q, const CammMoments &m,
+                                    const Vec &mp_radii,
+                                    const Vec &dmp_radii_dcn,
+                                    const Gfn2Parameters &params) {
+  const int nat = static_cast<int>(atoms.size());
+  const auto &g = params.globals();
+  const double k3 = g.aesdmp3;
+  const double k5 = g.aesdmp5;
+
+  AnisotropicPairGradient out;
+  out.grad_explicit = Mat3N::Zero(3, nat);
+  out.dE_dcn = Vec::Zero(nat);
+
+  for (int i = 0; i < nat; ++i) {
+    const double q_i = q(i);
+    const double xi = atoms[i].x, yi = atoms[i].y, zi = atoms[i].z;
+    for (int j = 0; j < i; ++j) {
+      const double q_j = q(j);
+      const double rx = atoms[j].x - xi;
+      const double ry = atoms[j].y - yi;
+      const double rz = atoms[j].z - zi;
+      const double r2 = rx * rx + ry * ry + rz * rz;
+      const double R = std::sqrt(r2);
+      const double rij[3] = {rx, ry, rz};
+      const double R_co = 0.5 * (mp_radii(i) + mp_radii(j));
+      const PairDamp d = pair_damp(R, R_co, k3, k5);
+
+      double ed = 0.0, eq = 0.0, edd = 0.0;
+      double mu_i_dot_rij = 0.0, mu_j_dot_rij = 0.0, mu_i_dot_mu_j = 0.0;
+      double Qi_rij[3] = {0.0, 0.0, 0.0};
+      double Qj_rij[3] = {0.0, 0.0, 0.0};
+      for (int k = 0; k < 3; ++k) {
+        const double mui_k = m.dipm(k, i);
+        const double muj_k = m.dipm(k, j);
+        mu_i_dot_rij += mui_k * rij[k];
+        mu_j_dot_rij += muj_k * rij[k];
+        mu_i_dot_mu_j += mui_k * muj_k;
+        ed += q_j * mui_k * rij[k] - q_i * muj_k * rij[k];
+        for (int l = 0; l < 3; ++l) {
+          const int idx = kl_to_qp[k][l];
+          const double tt = rij[l] * rij[k];
+          eq += q_j * m.qp(idx, i) * tt + q_i * m.qp(idx, j) * tt;
+          edd -= 3.0 * m.dipm(k, j) * m.dipm(l, i) * tt;
+          Qi_rij[k] += m.qp(idx, i) * rij[l];
+          Qj_rij[k] += m.qp(idx, j) * rij[l];
+        }
+        edd += m.dipm(k, j) * m.dipm(k, i) * r2;
+      }
+
+      // Explicit-R gradient (same as `anisotropic_pair_gradient`).
+      const double E_g3_factor = ed;
+      const double E_g5_factor = eq + edd;
+      const double dg3_factor = -d.g3prime / R;
+      const double dg5_factor = -d.g5prime / R;
+      double grad_i[3];
+      for (int a = 0; a < 3; ++a) {
+        const double dEd_da =
+            -(q_j * m.dipm(a, i) - q_i * m.dipm(a, j));
+        const double dEq_da = -2.0 * (q_j * Qi_rij[a] + q_i * Qj_rij[a]);
+        const double dEdd_da = -2.0 * mu_i_dot_mu_j * rij[a]
+                                + 3.0 * (m.dipm(a, i) * mu_j_dot_rij +
+                                          m.dipm(a, j) * mu_i_dot_rij);
+        grad_i[a] = dEd_da * d.g3 + (dEq_da + dEdd_da) * d.g5
+                  + E_g3_factor * dg3_factor * rij[a]
+                  + E_g5_factor * dg5_factor * rij[a];
+      }
+      for (int a = 0; a < 3; ++a) {
+        out.grad_explicit(a, i) += grad_i[a];
+        out.grad_explicit(a, j) -= grad_i[a];
+      }
+
+      // ∂E_pair/∂R_co contribution. R_co = ½(mp_radii(i) + mp_radii(j)),
+      // so ∂R_co/∂CN_A = ½ δ_iA · dmp_radii(i)/dCN_i + ½ δ_jA · dmp_radii(j)/dCN_j.
+      const double dE_pair_drco =
+          E_g3_factor * d.dg3_drco + E_g5_factor * d.dg5_drco;
+      out.dE_dcn(i) += 0.5 * dmp_radii_dcn(i) * dE_pair_drco;
+      out.dE_dcn(j) += 0.5 * dmp_radii_dcn(j) * dE_pair_drco;
+    }
+  }
+  return out;
 }
 
 namespace {

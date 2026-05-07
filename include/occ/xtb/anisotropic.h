@@ -37,6 +37,22 @@ anisotropic_pair_gradient(const std::vector<core::Atom> &atoms, const Vec &q,
                           const CammMoments &m, const Vec &mp_radii,
                           const Gfn2Parameters &params);
 
+// Same as `anisotropic_pair_gradient` but also accumulates ∂E_AES/∂CN_A per
+// atom. The damping kernels' R_co dependence enters E_AES through
+// mp_radii(i) = f(CN_i), so callers chaining the CN response into the full
+// nuclear gradient need the per-atom ∂E_AES/∂CN_A as well.
+struct AnisotropicPairGradient {
+  Mat3N grad_explicit;  // ∂E_AES/∂R_iα at frozen mp_radii (3 × N, Ha/Bohr).
+  Vec   dE_dcn;         // ∂E_AES/∂CN_A per atom (length N, Ha).
+};
+
+AnisotropicPairGradient
+anisotropic_pair_gradient_with_dcn(const std::vector<core::Atom> &atoms,
+                                    const Vec &q, const CammMoments &m,
+                                    const Vec &mp_radii,
+                                    const Vec &dmp_radii_dcn,
+                                    const Gfn2Parameters &params);
+
 // Per-atom potentials acting on charges (vs), atomic dipoles (vd), and
 // atomic quadrupoles (vq). vq is laid out in `qpint` order (xx, yy, zz, xy,
 // xz, yz) — this matches the storage of `quadrupole_ao_matrices(...)` after
