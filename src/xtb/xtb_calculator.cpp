@@ -72,11 +72,9 @@ XtbCalculator::XtbCalculator(const crystal::Crystal &crystal) {
     m_positions_bohr(2, i) = m_periodic_sys.atoms[i].z;
     m_atomic_numbers(i) = m_periodic_sys.atoms[i].atomic_number;
   }
-  m_params = std::make_shared<Gfn2Parameters>(Gfn2Parameters::load_default());
+  m_params = Gfn2Parameters::load_default();
   m_periodic_opts.total_charge = m_charge;
 }
-
-XtbCalculator::~XtbCalculator() = default;
 
 void XtbCalculator::set_kpoints(int n1, int n2, int n3) {
   m_kpoints[0] = n1;
@@ -133,9 +131,8 @@ Mat3 XtbCalculator::lattice() const {
 }
 
 void XtbCalculator::initialize_calculator() {
-  m_params = std::make_shared<Gfn2Parameters>(Gfn2Parameters::load_default());
-  m_calc = std::make_unique<Gfn2Engine>(
-      make_atoms(m_positions_bohr, m_atomic_numbers), *m_params);
+  m_params = Gfn2Parameters::load_default();
+  m_calc.emplace(make_atoms(m_positions_bohr, m_atomic_numbers), m_params);
   m_opts.total_charge = m_charge;
 }
 
@@ -144,12 +141,12 @@ const XtbResult &XtbCalculator::single_point() {
     m_periodic_opts.total_charge = m_charge;
     if (m_kpoints[0] == 1 && m_kpoints[1] == 1 && m_kpoints[2] == 1) {
       m_last_result = run_charge_only_periodic_scc(
-          m_periodic_sys, *m_params, m_periodic_opts);
+          m_periodic_sys, m_params, m_periodic_opts);
     } else {
       auto kpts = monkhorst_pack_grid(m_periodic_sys.reciprocal_bohr(),
                                       m_kpoints[0], m_kpoints[1],
                                       m_kpoints[2]);
-      m_last_result = run_periodic_scc_kpoints(m_periodic_sys, *m_params,
+      m_last_result = run_periodic_scc_kpoints(m_periodic_sys, m_params,
                                                 kpts, m_periodic_opts);
     }
   } else {
@@ -447,7 +444,7 @@ occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
   // (mulliken_charges, etc.) compute Z_eff − pop instead of Z − pop.
   std::vector<int> core_electrons(wfn.atoms.size(), 0);
   for (size_t a = 0; a < wfn.atoms.size(); ++a) {
-    const auto *e = m_params->element(wfn.atoms[a].atomic_number);
+    const auto *e = m_params.element(wfn.atoms[a].atomic_number);
     double valence = 0.0;
     for (const auto &s : e->shells)
       valence += s.ref_occ;

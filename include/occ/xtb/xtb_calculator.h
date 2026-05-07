@@ -1,22 +1,21 @@
 #pragma once
 #include <array>
-#include <memory>
 #include <occ/core/dimer.h>
 #include <occ/core/molecule.h>
 #include <occ/qm/wavefunction.h>
+#include <occ/xtb/gfn2_engine.h>
+#include <occ/xtb/gfn2_parameters.h>
 #include <occ/xtb/gfn2_periodic_calculator.h>
 #include <occ/xtb/periodic.h>
 #include <occ/xtb/scc.h>
 #include <occ/xtb/xtb_result.h>
+#include <optional>
 
 namespace occ::crystal {
 class Crystal;
 }
 
 namespace occ::xtb {
-
-class Gfn2Engine;
-class Gfn2Parameters;
 
 /// In-tree GFN2-xTB calculator. Mirrors the public surface of
 /// `TbliteCalculator` so callers can swap backends. Handles isolated
@@ -45,7 +44,13 @@ public:
   /// Construct from a 3D periodic crystal. Defaults to Γ-only sampling; call
   /// `set_kpoints` to enable a Monkhorst-Pack mesh.
   explicit XtbCalculator(const occ::crystal::Crystal &crystal);
-  ~XtbCalculator();
+
+  // Move-only — IntegralEngine (held inside Gfn2Engine) owns a
+  // unique_ptr<ESPEvaluator> so default copy is implicitly deleted.
+  XtbCalculator(XtbCalculator &&) = default;
+  XtbCalculator &operator=(XtbCalculator &&) = default;
+  XtbCalculator(const XtbCalculator &) = delete;
+  XtbCalculator &operator=(const XtbCalculator &) = delete;
 
   // ---------------------------------------------------------------------
   // Identity / topology
@@ -215,8 +220,11 @@ private:
   Method m_method{Method::GFN2};
   SccOptions m_opts;
 
-  std::shared_ptr<Gfn2Parameters> m_params;
-  std::unique_ptr<Gfn2Engine> m_calc;
+  Gfn2Parameters m_params;
+  // Engine owns the basis / integrals / H0 / γ for the molecular SCC. Built
+  // lazily — molecular ctors emplace it; the periodic ctor leaves it empty
+  // since the periodic SCC drivers don't go through Gfn2Engine.
+  std::optional<Gfn2Engine> m_calc;
   XtbResult m_last_result;
 
   // Periodic state — only populated when built from a Crystal.
