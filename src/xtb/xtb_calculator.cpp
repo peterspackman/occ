@@ -295,6 +295,11 @@ Mat3N XtbCalculator::gradient_numerical(double step) {
 }
 
 Mat3N XtbCalculator::gradient() {
+  if (m_periodic) {
+    throw std::runtime_error(
+        "XtbCalculator::gradient: periodic gradient not yet supported "
+        "(use gradient_numerical() or wait for the periodic gradient).");
+  }
   // Run a multipole-on SCC so the converged density carries the AES /
   // on-site polarization shifts. The full ∂E/∂R is then assembled from
   //   (1) h0_scc_gradient with V_shell augmented by per-atom vs from
@@ -420,22 +425,21 @@ Mat3N XtbCalculator::gradient() {
   }
 
   // (6) Density-Pulay piece (Phase 5d-rest steps 3+4): chain through
-  // ∂μ_A/∂R, ∂Q_A/∂R at fixed P. Uses int1e_irp/int1e_irrp through the
-  // typed `dipole_ao_grad` / `quadrupole_ao_grad` builders.
+  // ∂μ_A/∂R, ∂Q_A/∂R at fixed P. Uses int1e_irp / int1e_irrp through the
+  // typed `dipole_ao_grad` / `quadrupole_ao_grad` builders. vs has already
+  // been absorbed into V_shell above (handled by h0_scc_gradient via
+  // 0.5 P·(V_μ + V_ν)·∂S/∂R), so we zero it out here to avoid double-count.
   {
     auto &engine = m_calc->engine();
-    MatTriple D0 = dipole_ao_matrices(engine);
-    auto Q0 = quadrupole_ao_matrices(engine);
-    auto irp = dipole_ao_grad(engine);
-    auto irrp = quadrupole_ao_grad(engine);
-    MatTriple ovlp_grad = engine.one_electron_operator_grad(
-        qm::IntegralEngine::Op::overlap);
-    // vs is already absorbed into V_shell above (handled by h0_scc_gradient).
     AnisotropicPotentials pot_density = pot;
     pot_density.vs.setZero();
     grad += anisotropic_density_pulay_gradient(
         atoms, bf2at, m_last_result.density_matrix,
-        m_last_result.overlap_matrix, D0, Q0, irp, irrp, ovlp_grad,
+        m_last_result.overlap_matrix,
+        dipole_ao_matrices(engine),
+        dipole_ao_grad(engine),
+        quadrupole_ao_grad(engine),
+        engine.one_electron_operator_grad(qm::IntegralEngine::Op::overlap),
         pot_density);
   }
 

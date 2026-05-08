@@ -25,23 +25,16 @@ anisotropic_energy(const std::vector<core::Atom> &atoms, const Vec &q,
                    const CammMoments &m, const DampedCoulomb &damped,
                    const Gfn2Parameters &params);
 
-// Explicit ∂E_AES/∂R at frozen (q, m, mp_radii). Closed-form pair-loop
-// gradient that mirrors `anisotropic_energy`'s pair sum term-by-term
-// (charge-dipole · g3, charge-quadrupole · g5, dipole-dipole · g5) plus
-// the kernel derivatives ∂g3/∂R, ∂g5/∂R. Skips the on-site polarization
-// (no explicit R-dependence at frozen multipoles), the CN chain through
-// multipole radii, and the SCC density response (frozen q, μ, Q).
+// Explicit ∂E_AES/∂R at frozen (q, m, mp_radii) plus the per-atom
+// ∂E_AES/∂CN_A chain through R_co = ½(mp_radii(i) + mp_radii(j)). Closed-form
+// pair-loop gradient that mirrors `anisotropic_energy`'s pair sum term-by-
+// term (charge-dipole · g3, charge-quadrupole · g5, dipole-dipole · g5) plus
+// the kernel derivatives ∂g3/∂R, ∂g5/∂R. Skips the on-site polarization (no
+// explicit R-dependence at frozen multipoles) and the SCC density response
+// (frozen q, μ, Q).
 //
-// Returned as 3 × N (Hartree/Bohr).
-Mat3N
-anisotropic_pair_gradient(const std::vector<core::Atom> &atoms, const Vec &q,
-                          const CammMoments &m, const Vec &mp_radii,
-                          const Gfn2Parameters &params);
-
-// Same as `anisotropic_pair_gradient` but also accumulates ∂E_AES/∂CN_A per
-// atom. The damping kernels' R_co dependence enters E_AES through
-// mp_radii(i) = f(CN_i), so callers chaining the CN response into the full
-// nuclear gradient need the per-atom ∂E_AES/∂CN_A as well.
+// Pass an empty / zero-size `dmp_radii_dcn` to skip the CN chain (e.g., to
+// reproduce a frozen-radii gradient). Otherwise its length must equal nat.
 struct AnisotropicPairGradient {
   Mat3N grad_explicit;  // ∂E_AES/∂R_iα at frozen mp_radii (3 × N, Ha/Bohr).
   Vec   dE_dcn;         // ∂E_AES/∂CN_A per atom (length N, Ha).
@@ -110,13 +103,16 @@ void apply_anisotropic_h1_kpoint(
 // applied internally to match the CAMM partition.
 //
 // `ovlp_grad` is `engine.one_electron_operator_grad(Op::overlap)` (libcint
-// convention: `ovlp_grad.γ(μ, ν) = ⟨∂_γ φ_μ | φ_ν⟩`).
+// convention: `ovlp_grad[γ](μ, ν) = ⟨∂_γ φ_μ | φ_ν⟩`).  `D_origin0` is the
+// bare AO dipole matrix at common origin O = 0 (output of
+// `dipole_ao_matrices`); the Q-bra centering chain doesn't actually need
+// Q_origin0 (only ∂Q/∂R, supplied via `irrp`, plus the algebraic
+// δ_αγ·D_β + δ_βγ·D_α IBP terms).
 Mat3N anisotropic_density_pulay_gradient(
     const std::vector<core::Atom> &atoms,
     const std::vector<int> &bf_to_atom,
     const Mat &P, const Mat &S,
     const MatTriple &D_origin0,
-    const std::array<Mat, 6> &Q_origin0,
     const std::array<MatTriple, 3> &irp,        // dipole_ao_grad output
     const std::array<MatTriple, 6> &irrp,       // quadrupole_ao_grad output
     const MatTriple &ovlp_grad,

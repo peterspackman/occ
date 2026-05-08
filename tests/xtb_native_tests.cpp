@@ -1805,9 +1805,12 @@ TEST_CASE("AES pair gradient: analytical vs finite difference (water)",
   occ::Vec cn = occ::xtb::gfn_coordination_numbers(atoms);
   occ::Vec mp_radii = occ::xtb::multipole_radii(atoms, cn, p);
 
-  // Analytical gradient at the input geometry.
-  occ::Mat3N g_anal = occ::xtb::anisotropic_pair_gradient(atoms, atom_q, mom,
-                                                          mp_radii, p);
+  // Analytical gradient at the input geometry. Pass an empty dmp_radii_dcn
+  // to skip the CN-chain piece — this slice tests the explicit-R pair
+  // gradient at frozen mp_radii.
+  occ::Mat3N g_anal = occ::xtb::anisotropic_pair_gradient_with_dcn(
+                         atoms, atom_q, mom, mp_radii, occ::Vec{}, p)
+                          .grad_explicit;
 
   // Finite difference: 5-point central diff of `anisotropic_energy.aes`
   // with frozen (q, μ, mp_radii) — the damped-Coulomb table is rebuilt
@@ -2141,13 +2144,12 @@ TEST_CASE(
   // Analytical
   auto &engine = eng.engine();
   occ::MatTriple D0 = occ::xtb::dipole_ao_matrices(engine);
-  auto Q0 = occ::xtb::quadrupole_ao_matrices(engine);
   auto irp = occ::xtb::dipole_ao_grad(engine);
   auto irrp = occ::xtb::quadrupole_ao_grad(engine);
   occ::MatTriple ovlp_grad = engine.one_electron_operator_grad(
       occ::qm::IntegralEngine::Op::overlap);
   occ::Mat3N g_anal = occ::xtb::anisotropic_density_pulay_gradient(
-      atoms, bf2at, P, S, D0, Q0, irp, irrp, ovlp_grad, pot);
+      atoms, bf2at, P, S, D0, irp, irrp, ovlp_grad, pot);
 
   // FD: at displaced R, compute T(R) via the CAMM partition + (vd, vq)
   // contraction. qpint→q-storage map mirrors `apply_anisotropic_h1_periodic`.
@@ -2240,13 +2242,12 @@ TEST_CASE(
   // Analytical
   auto &engine = eng.engine();
   occ::MatTriple D0 = occ::xtb::dipole_ao_matrices(engine);
-  auto Q0 = occ::xtb::quadrupole_ao_matrices(engine); // unused for dipole only
   auto irp = occ::xtb::dipole_ao_grad(engine);
   auto irrp = occ::xtb::quadrupole_ao_grad(engine);
   occ::MatTriple ovlp_grad = engine.one_electron_operator_grad(
       occ::qm::IntegralEngine::Op::overlap);
   occ::Mat3N g_anal = occ::xtb::anisotropic_density_pulay_gradient(
-      atoms, bf2at, P, S, D0, Q0, irp, irrp, ovlp_grad, pot_dip);
+      atoms, bf2at, P, S, D0, irp, irrp, ovlp_grad, pot_dip);
 
   // FD: at displaced R, recompute D_bra and evaluate T(R) = Σ_A vd·μ_A(R).
   auto eval_T = [&](const std::vector<occ::core::Atom> &atoms_R) {

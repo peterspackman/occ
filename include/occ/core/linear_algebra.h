@@ -90,6 +90,14 @@ struct MatTriple {
                      Mat::Zero(rows, cols)};
   }
 
+  // Index by Cartesian axis: 0=x, 1=y, 2=z.
+  inline const Mat &operator[](int axis) const {
+    return axis == 0 ? x : (axis == 1 ? y : z);
+  }
+  inline Mat &operator[](int axis) {
+    return axis == 0 ? x : (axis == 1 ? y : z);
+  }
+
   void scale_by(double fac);
   void symmetrize();
 };
