@@ -177,7 +177,10 @@ private:
 
     float w_in = m_func(d_in, m_internal_elements);
     float w_out = m_func(d_ext, m_external_elements);
-    return w_in / (w_in + w_out);
+    float total = w_in + w_out;
+    if (total <= 0.0f)
+      return 0.0f;
+    return w_in / total;
   }
 
   FVec compute_distances(const FVec3 &pos, const FMat3N &points) const {
