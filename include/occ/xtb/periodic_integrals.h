@@ -101,12 +101,27 @@ bloch_sum_array6(const std::vector<std::array<Mat, 6>> &per_T,
 // trace component of vq couples to the non-zero trace of Cartesian Q).
 void apply_traceless_quadrupole_transform(std::array<Mat, 6> &Q);
 
+// Apply per-atom origin centering (Bra/Ket convention, matches tblite) to
+// raw common-origin-0 AO multipole matrices. `D_origin0` and `Q_origin0`
+// are the outputs of `dipole_ao_matrices` / `quadrupole_ao_matrices` (the
+// latter in raw {xx, xy, xz, yy, yz, zz} Cartesian form, NOT traceless yet).
+// The returned struct's Q_ket / Q_bra are traceless-Cartesian, ready for
+// `compute_camm_moments_periodic` / `apply_anisotropic_h1_periodic`.
+PeriodicMultipoleAO
+center_multipole_ao(const std::vector<core::Atom> &atoms,
+                    const std::vector<int> &bf_to_atom,
+                    const Mat &S,
+                    const MatTriple &D_origin0,
+                    const std::array<Mat, 6> &Q_origin0);
+
 // Molecular variant: returns the same struct as the periodic build but with
 // T = 0 only (no lattice). D_ket / D_bra carry the per-row / per-col atomic
 // origin shifts; the molecular SCC can use these with the same
 // compute_camm_moments_periodic + apply_anisotropic_h1_periodic pipeline as
 // the periodic SCC. This keeps both paths on tblite's atom-centered
-// convention end-to-end.
+// convention end-to-end. The (atoms, params) overload builds its own
+// IntegralEngine internally; callers that already have one (the SCC path,
+// the analytical gradient) should prefer `center_multipole_ao` directly.
 PeriodicMultipoleAO
 build_molecular_multipole_ao(const std::vector<core::Atom> &atoms,
                               const Gfn2Parameters &params);

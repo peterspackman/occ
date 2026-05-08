@@ -57,6 +57,19 @@ public:
   // path which calls `one_electron_operator_grad(overlap)`.
   inline qm::IntegralEngine &engine() { return m_engine; }
 
+  // Optional warm-start: if `qsh_init.size() == n_shells` on the next
+  // `single_point` call, the SCC seeds qsh from this vector instead of from
+  // EEQ. Useful in geometry optimization / Hessian FD where successive
+  // calls have nearly identical converged densities.
+  void set_initial_shell_charges(const Vec &qsh_init) {
+    m_qsh_init = qsh_init;
+  }
+  // Read back the converged shell charges (length = n_shells). Returns an
+  // empty vector if no SCC has run yet.
+  inline const Vec &last_shell_charges() const {
+    return m_last_shell_charges;
+  }
+
 private:
   void recompute_geometry_caches();
 
@@ -84,6 +97,11 @@ private:
   int m_nbf{0};
   double m_e_rep{0.0};
   Vec m_n_elec_baseline; // per-shell ref_occ summed (cached)
+  // Warm-start: optional initial-guess qsh for the next SCC, plus the
+  // converged qsh from the most recent SCC (callers reuse it across
+  // displaced-geometry steps in optimization / Hessian FD).
+  Vec m_qsh_init;
+  Vec m_last_shell_charges;
 };
 
 } // namespace occ::xtb

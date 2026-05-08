@@ -332,6 +332,11 @@ Mat3N XtbCalculator::gradient() {
     throw std::runtime_error(
         "XtbCalculator::gradient: multipole-on SCC did not converge");
   }
+  // Hand the converged qsh back to the engine as a warm-start seed for the
+  // *next* gradient call. Pays off when successive gradient calls are on
+  // nearby geometries (geometry optimization, Hessian FD): a previous
+  // converged qsh is much closer to the new SCC's fixed point than EEQ.
+  m_calc->set_initial_shell_charges(m_last_result.shell_charges);
 
   // Build the energy-weighted density W = 2 Σ_i^occ ε_i C_i C_i^T
   // (closed shell — sum over both spins folded in via the factor 2).
@@ -358,9 +363,16 @@ Mat3N XtbCalculator::gradient() {
 
   // Build CAMM moments and per-atom potentials at the converged density.
   // mp_radii drives the anisotropic damping and depends on CN(R) — its
-  // gradient enters the AES gradient via the dE/dCN chain.
-  auto mp_ao = build_molecular_multipole_ao(atoms, m_calc->parameters());
+  // gradient enters the AES gradient via the dE/dCN chain. We compute D0
+  // / Q0 here ONCE and feed them both to the centering chain (for the SCC-
+  // partition matrices) and the density-Pulay assembly (which also needs
+  // D0 for the Q-bra centering chain via δ_αγ·D_β + δ_βγ·D_α IBP terms).
+  auto &engine = m_calc->engine();
   const auto bf2at = m_calc->basis().bf_to_atom();
+  MatTriple D0 = dipole_ao_matrices(engine);
+  std::array<Mat, 6> Q0 = quadrupole_ao_matrices(engine);
+  auto mp_ao = center_multipole_ao(
+      atoms, bf2at, m_last_result.overlap_matrix, D0, Q0);
   auto mom = compute_camm_moments_periodic(
       atoms, bf2at, m_last_result.density_matrix, mp_ao.D_ket, mp_ao.D_bra,
       mp_ao.Q_ket, mp_ao.Q_bra);
@@ -429,17 +441,18 @@ Mat3N XtbCalculator::gradient() {
   // typed `dipole_ao_grad` / `quadrupole_ao_grad` builders. vs has already
   // been absorbed into V_shell above (handled by h0_scc_gradient via
   // 0.5 P·(V_μ + V_ν)·∂S/∂R), so we zero it out here to avoid double-count.
+  // D0 was already computed above for the centering chain — reuse it.
   {
-    auto &engine = m_calc->engine();
     AnisotropicPotentials pot_density = pot;
     pot_density.vs.setZero();
+    auto irp = dipole_ao_grad(engine);
+    auto irrp = quadrupole_ao_grad(engine);
+    auto ovlp_grad = engine.one_electron_operator_grad(
+        qm::IntegralEngine::Op::overlap);
     grad += anisotropic_density_pulay_gradient(
         atoms, bf2at, m_last_result.density_matrix,
         m_last_result.overlap_matrix,
-        dipole_ao_matrices(engine),
-        dipole_ao_grad(engine),
-        quadrupole_ao_grad(engine),
-        engine.one_electron_operator_grad(qm::IntegralEngine::Op::overlap),
+        D0, irp, irrp, ovlp_grad,
         pot_density);
   }
 

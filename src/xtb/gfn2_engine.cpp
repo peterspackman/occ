@@ -88,8 +88,12 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
   // Build atom-centered Bra/Ket AO multipole matrices and the molecular
   // multipole pair tensors (sd/dd/sq) on first multipole-enabled call.
   // tblite convention end-to-end — the same code path as the periodic SCC.
+  // Reuse the existing m_engine/m_S instead of going through
+  // build_molecular_multipole_ao (which would build a fresh basis+engine+S).
   if (include_multipoles && !m_have_multipole_ints) {
-    m_mp_ao = build_molecular_multipole_ao(m_atoms, m_params);
+    MatTriple D0 = dipole_ao_matrices(m_engine);
+    std::array<Mat, 6> Q0 = quadrupole_ao_matrices(m_engine);
+    m_mp_ao = center_multipole_ao(m_atoms, m_bf_to_atom, m_S, D0, Q0);
     m_mp_tensors = build_molecular_multipole_tensors(m_atoms, m_mp_radii,
                                                      m_params);
     m_have_multipole_ints = true;
@@ -125,13 +129,24 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
   }
   double e_disp = 0.0;
 
-  // EEQ-based initial guess (xtb convention). Falls back to zeros if EEQ
-  // doesn't have parameters for one of the elements.
+  // SCC initial guess. Priority:
+  //   1. Caller-supplied warm-start `m_qsh_init` if its length matches
+  //      n_shells (typically the previous gradient/opt step's converged
+  //      qsh on a nearby geometry — saves several SCC iterations).
+  //   2. EEQ charges (xtb convention).
+  //   3. Zeros (if EEQ doesn't have parameters for one of the elements).
+  // Cleared after consuming so a stale warm-start can't silently leak
+  // into a subsequent unrelated call.
   Vec qsh;
-  try {
-    qsh = eeq_initial_shell_charges(m_atoms, m_shells, opts.total_charge);
-  } catch (const std::exception &) {
-    qsh = Vec::Zero(m_n_shells);
+  if (m_qsh_init.size() == m_n_shells) {
+    qsh = m_qsh_init;
+    m_qsh_init = Vec();
+  } else {
+    try {
+      qsh = eeq_initial_shell_charges(m_atoms, m_shells, opts.total_charge);
+    } catch (const std::exception &) {
+      qsh = Vec::Zero(m_n_shells);
+    }
   }
   double prev_energy = 0.0;
   Vec orbital_energies, orbital_occupations;
@@ -279,6 +294,7 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
       r.orbital_coefficients = C;
       r.n_iterations = iter;
       r.converged = true;
+      m_last_shell_charges = qsh_new;
       occ::log::info("Converged in {} iterations.", iter);
       return r;
     }

@@ -486,32 +486,23 @@ bloch_sum_array6(const std::vector<std::array<Mat, 6>> &per_T,
 }
 
 PeriodicMultipoleAO
-build_molecular_multipole_ao(const std::vector<core::Atom> &atoms,
-                              const Gfn2Parameters &params) {
-  // Molecular AO matrices with the per-row/per-col atomic origin shifts baked
-  // in (Bra/Ket convention, matches tblite). D_ket/Q_ket are atom-of-row
-  // centered, D_bra/Q_bra atom-of-col centered. Just one-shot — no lattice.
-  auto basis = build_aobasis(atoms, params);
-  const int nbf = static_cast<int>(basis.nbf());
-  auto bf2at = basis.bf_to_atom();
-
+center_multipole_ao(const std::vector<core::Atom> &atoms,
+                    const std::vector<int> &bf_to_atom,
+                    const Mat &S,
+                    const MatTriple &D0,
+                    const std::array<Mat, 6> &Q0) {
+  const int nbf = static_cast<int>(S.rows());
   Vec row_x(nbf), row_y(nbf), row_z(nbf);
   for (int p = 0; p < nbf; ++p) {
-    const auto &a = atoms[bf2at[p]];
+    const auto &a = atoms[bf_to_atom[p]];
     row_x(p) = a.x;
     row_y(p) = a.y;
     row_z(p) = a.z;
   }
 
-  qm::IntegralEngine engine(basis);
-  Mat S = engine.one_electron_operator(qm::IntegralEngine::Op::overlap);
-  MatTriple D0 = dipole_ao_matrices(engine);
-  std::array<Mat, 6> Q0 = quadrupole_ao_matrices(engine);
-
   PeriodicMultipoleAO out;
   out.D_ket = MatTriple::Zero(nbf, nbf);
   out.D_bra = MatTriple::Zero(nbf, nbf);
-
   for (int p = 0; p < nbf; ++p) {
     out.D_ket.x.row(p) = D0.x.row(p) - row_x(p) * S.row(p);
     out.D_ket.y.row(p) = D0.y.row(p) - row_y(p) * S.row(p);
@@ -548,6 +539,21 @@ build_molecular_multipole_ao(const std::vector<core::Atom> &atoms,
   apply_traceless_quadrupole_transform(out.Q_ket);
   apply_traceless_quadrupole_transform(out.Q_bra);
   return out;
+}
+
+PeriodicMultipoleAO
+build_molecular_multipole_ao(const std::vector<core::Atom> &atoms,
+                              const Gfn2Parameters &params) {
+  // Stand-alone wrapper: build basis + engine + raw AO multipole integrals,
+  // then center them. Callers that already have an IntegralEngine (the SCC
+  // and the analytical gradient) should compute D0/Q0/S themselves and call
+  // `center_multipole_ao` directly to avoid the redundant rebuild here.
+  auto basis = build_aobasis(atoms, params);
+  qm::IntegralEngine engine(basis);
+  Mat S = engine.one_electron_operator(qm::IntegralEngine::Op::overlap);
+  MatTriple D0 = dipole_ao_matrices(engine);
+  std::array<Mat, 6> Q0 = quadrupole_ao_matrices(engine);
+  return center_multipole_ao(atoms, basis.bf_to_atom(), S, D0, Q0);
 }
 
 CGenSolveResult solve_generalized_hermitian(const CMat &H, const CMat &S,
