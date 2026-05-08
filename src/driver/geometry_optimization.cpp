@@ -197,12 +197,36 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
 // Wavefunction is a thin wrapper built from XtbCalculator's converged
 // state — enough to feed back into BernyOptimizer and to produce the same
 // post-step printout as the SCF case.
+//
+// `cached` (when non-null) holds an XtbCalculator that's reused across opt
+// steps: the basis / IntegralEngine / shell tables / γ matrix are all
+// geometry-derived caches that get rebuilt cheaply by `update_structure`,
+// AND the converged shell charges are seeded as the next SCC's
+// initial guess (warm-start). Constructing fresh each step would discard
+// both, costing 1× full Gfn2Engine construction + ~3 SCC iterations per
+// step.
 std::pair<Wavefunction, Mat3N>
-run_gfn2_for_optimization(const Molecule &m, const OccInput &config) {
-  occ::xtb::XtbCalculator calc(m);
-  calc.set_charge(config.electronic.charge);
-  // single_point_energy() will be implicitly called by the gradient method;
-  // use the analytical path for the gradient.
+run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
+                          std::optional<occ::xtb::XtbCalculator> *cached =
+                              nullptr) {
+  occ::xtb::XtbCalculator *calc_ptr = nullptr;
+  std::optional<occ::xtb::XtbCalculator> local;
+  if (cached) {
+    if (!cached->has_value()) {
+      cached->emplace(m);
+      cached->value().set_charge(config.electronic.charge);
+    } else {
+      cached->value().update_structure(m.positions() *
+                                        occ::units::ANGSTROM_TO_BOHR);
+    }
+    calc_ptr = &cached->value();
+  } else {
+    local.emplace(m);
+    local->set_charge(config.electronic.charge);
+    calc_ptr = &local.value();
+  }
+  auto &calc = *calc_ptr;
+
   auto [e, g] = calc.compute_energy_and_gradient(/*numerical=*/false);
   log::info("GFN2-xTB energy:                {: 20.12f} Ha", e);
   log::info("GFN2-xTB gradient norm:         {: 20.12f} Ha/Bohr", g.norm());
@@ -213,10 +237,12 @@ run_gfn2_for_optimization(const Molecule &m, const OccInput &config) {
   return {wfn, g};
 }
 
-std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
-                                                        const Molecule &m,
-                                                        const Wavefunction *prev_wfn = nullptr,
-                                                        double energy_change = 1.0) {
+std::pair<Wavefunction, Mat3N>
+optimization_step_driver(const OccInput &config, const Molecule &m,
+                         const Wavefunction *prev_wfn = nullptr,
+                         double energy_change = 1.0,
+                         std::optional<occ::xtb::XtbCalculator> *gfn2_cache =
+                             nullptr) {
   constexpr auto R = SpinorbitalKind::Restricted;
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;
@@ -260,7 +286,7 @@ std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
       break;
     }
     case MethodKind::GFN2: {
-      return run_gfn2_for_optimization(m, config);
+      return run_gfn2_for_optimization(m, config, gfn2_cache);
     }
     }
   } else {
@@ -314,9 +340,17 @@ Wavefunction geometry_optimization(const OccInput &config) {
   step_log.print("OCC BernyOptimizer Step-by-Step Log\n");
   step_log.print("===================================\n\n");
   
+  // GFN2 stateful cache: reused across opt steps so the basis / engine /
+  // shell tables / γ matrix don't get rebuilt every iteration AND the
+  // converged shell charges seed the next SCC. Constructed lazily on
+  // first GFN2 step. For HF/DFT the existing prev_wfn-based warm-start
+  // covers the analogous role.
+  std::optional<occ::xtb::XtbCalculator> gfn2_cache;
+
   // Step 0: Compute initial energy and gradient
   occ::log::info("Computing initial wavefunction for optimization");
-  std::tie(wfn, gradient) = optimization_step_driver(config, m);
+  std::tie(wfn, gradient) =
+      optimization_step_driver(config, m, nullptr, 1.0, &gfn2_cache);
   
   // Write initial geometry to trajectory
   const auto &el = m.elements();
@@ -398,7 +432,8 @@ Wavefunction geometry_optimization(const OccInput &config) {
     double prev_energy = wfn.energy.total;
     // For step 1, use large energy change; for later steps, use previous step's change
     static double last_energy_change = 1.0;
-    std::tie(wfn, gradient) = optimization_step_driver(config, m_new, &wfn, last_energy_change);
+    std::tie(wfn, gradient) = optimization_step_driver(
+        config, m_new, &wfn, last_energy_change, &gfn2_cache);
     
     // Write geometry to trajectory
     traj.print("{}\nStep {} Energy={:.9f}\n", el.size(), current_step, wfn.energy.total);
