@@ -10,6 +10,8 @@
 #include <occ/xtb/h0_gradient.h>
 #include <occ/xtb/kpoint_grid.h>
 #include <occ/xtb/multipole_damping.h>
+#include <occ/xtb/multipole_ewald.h>
+#include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/xtb_calculator.h>
 #include <occ/xtb/repulsion.h>
@@ -293,12 +295,26 @@ Mat3N XtbCalculator::gradient_numerical(double step) {
 }
 
 Mat3N XtbCalculator::gradient() {
-  // Run a charge-only SCC to get a converged density consistent with the
-  // pieces we differentiate analytically. Multipole anisotropic terms are
-  // NOT in this energy expression — `anisotropic_pair_gradient_with_dcn`
-  // and `multipole_radii_with_gradient` exist as validated standalone
-  // pieces ready to plug in once Phase 5d-rest steps 3-5 (AO multipole
-  // integral derivatives + Pulay) land.
+  // Run a multipole-on SCC so the converged density carries the AES /
+  // on-site polarization shifts. The full ∂E/∂R is then assembled from
+  //   (1) h0_scc_gradient with V_shell augmented by per-atom vs from
+  //       anisotropic_potentials_ewald — captures the V_q + vs Pulay
+  //       terms via Z·∂S/∂R.
+  //   (2) ½ qᵀ ∂γ/∂R q (analytical Klopman-Ohno γ derivative).
+  //   (3) Closed-form repulsion gradient.
+  //   (4) Native D4 dispersion gradient (SCC-coupled).
+  //   (5) Anisotropic pair gradient + CN-chain through mp_radii (Phase
+  //       5d-rest steps 1+2).
+  //   (6) Density-Pulay piece Σ_A vd·∂μ_A/∂R + Σ_A vq·∂Q_A/∂R at fixed P
+  //       (Phase 5d-rest steps 3+4: int1e_irp/int1e_irrp + traceless
+  //       transform + centering chain).
+  //
+  // We use `anisotropic_potentials_ewald` (the tblite-convention variant
+  // also used by the SCC): vd = +∂E_aniso/∂μ_xtb,
+  // vq = +∂E_aniso/∂Q_xtb_qpint, vs = +∂E_aniso/∂q. The "_ewald" name is
+  // a misnomer — it works for both molecular and periodic systems with
+  // the appropriate tensor builder; the suffix only refers to how the
+  // PERIODIC tensors are constructed.
   m_opts.total_charge = m_charge;
   SccOptions opts = m_opts;
   // Dispersion is included in the analytical pipeline via native D4 below;
@@ -306,11 +322,10 @@ Mat3N XtbCalculator::gradient() {
   // get the *raw* SCC charges for the dispersion piece.
   const bool wanted_disp = opts.include_dispersion;
   opts.include_dispersion = false;
-  m_last_result = m_calc->run_charge_only(opts);
+  m_last_result = m_calc->run_full(opts);
   if (!m_last_result.converged) {
     throw std::runtime_error(
-        "XtbCalculator::compute_gradient_analytical: charge-only SCC did "
-        "not converge");
+        "XtbCalculator::gradient: multipole-on SCC did not converge");
   }
 
   // Build the energy-weighted density W = 2 Σ_i^occ ε_i C_i C_i^T
@@ -323,33 +338,61 @@ Mat3N XtbCalculator::gradient() {
     W.noalias() += 2.0 * eps(i) * C.col(i) * C.col(i).transpose();
   }
 
-  // Coordination numbers + ∂CN/∂R for the H0+self-energy chain.
+  // Coordination numbers + ∂CN/∂R for the H0+self-energy chain. The same
+  // gfn-CN vector is reused below for `multipole_radii_with_gradient`.
   auto cn_g = gfn_coordination_numbers_with_gradient(m_calc->atoms());
   const auto &shells = m_calc->shell_table();
+  const auto &atoms = m_calc->atoms();
 
-  // Shell shift potential V = J·qsh + Γ_3 q² (matches the SCC's F = H0 - V).
+  // Per-atom Mulliken charges from converged shell charges (used by the
+  // anisotropic pieces below and by D4).
+  Vec atom_q = Vec::Zero(atoms.size());
+  for (Eigen::Index s = 0; s < m_last_result.shell_charges.size(); ++s) {
+    atom_q(shells.atom[s]) += m_last_result.shell_charges(s);
+  }
+
+  // Build CAMM moments and per-atom potentials at the converged density.
+  // mp_radii drives the anisotropic damping and depends on CN(R) — its
+  // gradient enters the AES gradient via the dE/dCN chain.
+  auto mp_ao = build_molecular_multipole_ao(atoms, m_calc->parameters());
+  const auto bf2at = m_calc->basis().bf_to_atom();
+  auto mom = compute_camm_moments_periodic(
+      atoms, bf2at, m_last_result.density_matrix, mp_ao.D_ket, mp_ao.D_bra,
+      mp_ao.Q_ket, mp_ao.Q_bra);
+  auto mr =
+      multipole_radii_with_gradient(atoms, cn_g.cn, m_calc->parameters());
+  auto mp_tensors =
+      build_molecular_multipole_tensors(atoms, mr.radii, m_calc->parameters());
+  auto pot = anisotropic_potentials_ewald(atoms, atom_q, mom, mp_tensors,
+                                           m_calc->parameters());
+
+  // Shell shift potential V_q = J·qsh + Γ_3 q² (charge-only piece).  Augment
+  // with per-atom vs from the anisotropic potentials so the existing
+  // h0_scc_gradient Pulay term `0.5 P·(V_μ+V_ν)·∂S/∂R` absorbs the AES vs
+  // contribution at the AO level (each AO inherits its shell's V_q plus its
+  // atom's vs).
   Vec V_shell = m_calc->gamma() * m_last_result.shell_charges;
   for (Eigen::Index s = 0; s < V_shell.size(); ++s) {
     V_shell(s) +=
         shells.third_order(s) * m_last_result.shell_charges(s) *
         m_last_result.shell_charges(s);
+    V_shell(s) += pot.vs(shells.atom[s]);
   }
 
-  // (1) H0 + Pulay + V_q-via-S + ∂Π/∂R + dE/dCN chain through self-energy.
+  // (1) H0 + Pulay + V_q-via-S + vs-via-S + ∂Π/∂R + dE/dCN chain.
   Mat3N grad = h0_scc_gradient(
-      m_calc->atoms(), m_calc->parameters(), shells, m_calc->basis(),
+      atoms, m_calc->parameters(), shells, m_calc->basis(),
       m_calc->engine(), m_last_result.overlap_matrix,
       m_last_result.density_matrix, W, V_shell, cn_g.cn, cn_g.dcn);
 
   // (2) ½ q^T (∂γ/∂R) q  (analytical Klopman-Ohno γ derivative).
   grad += klopman_ohno_gamma_energy_gradient(
-      m_calc->atoms(), shells, m_calc->parameters(), m_calc->gamma(),
+      atoms, shells, m_calc->parameters(), m_calc->gamma(),
       m_last_result.shell_charges);
 
   // (3) Repulsion derivative (closed form).
-  auto rep = repulsion_energy_and_gradient(m_calc->atoms(), m_calc->parameters());
+  auto rep = repulsion_energy_and_gradient(atoms, m_calc->parameters());
   grad += rep.gradient;
-
 
   // (4) Native D4 dispersion. SCC-coupled (atomic Mulliken charges as fixed
   // input — variational q ⇒ ∂q/∂R chain vanishes by Hellmann-Feynman; this
@@ -357,26 +400,54 @@ Mat3N XtbCalculator::gradient() {
   double e_disp = 0.0;
   if (wanted_disp) {
     const auto &g = m_calc->parameters().globals();
-    occ::disp::D4Dispersion d4(m_calc->atoms());
+    occ::disp::D4Dispersion d4(atoms);
     d4.set_damping(occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
-    Vec atom_q = Vec::Zero(m_calc->atoms().size());
-    for (Eigen::Index s = 0; s < m_last_result.shell_charges.size(); ++s) {
-      atom_q(shells.atom[s]) += m_last_result.shell_charges(s);
-    }
     d4.set_charges(atom_q);
     auto [ed, gd] = d4.energy_and_gradient();
     e_disp = ed;
     grad += gd;
   }
 
-  // Update last_result so callers see the energy that matches the gradient
-  // (charge-only SCC + native dispersion).
+  // (5) Anisotropic pair gradient at fixed (q, μ, Q, mp_radii) +
+  // CN-chain through mp_radii (Phase 5d-rest steps 1+2).
+  auto ag = anisotropic_pair_gradient_with_dcn(
+      atoms, atom_q, mom, mr.radii, mr.dradii_dcn, m_calc->parameters());
+  grad += ag.grad_explicit;
+  for (size_t A = 0; A < atoms.size(); ++A) {
+    if (ag.dE_dcn(A) != 0.0) {
+      grad.noalias() += ag.dE_dcn(A) * cn_g.dcn[A];
+    }
+  }
+
+  // (6) Density-Pulay piece (Phase 5d-rest steps 3+4): chain through
+  // ∂μ_A/∂R, ∂Q_A/∂R at fixed P. Uses int1e_irp/int1e_irrp through the
+  // typed `dipole_ao_grad` / `quadrupole_ao_grad` builders.
+  {
+    auto &engine = m_calc->engine();
+    MatTriple D0 = dipole_ao_matrices(engine);
+    auto Q0 = quadrupole_ao_matrices(engine);
+    auto irp = dipole_ao_grad(engine);
+    auto irrp = quadrupole_ao_grad(engine);
+    MatTriple ovlp_grad = engine.one_electron_operator_grad(
+        qm::IntegralEngine::Op::overlap);
+    // vs is already absorbed into V_shell above (handled by h0_scc_gradient).
+    AnisotropicPotentials pot_density = pot;
+    pot_density.vs.setZero();
+    grad += anisotropic_density_pulay_gradient(
+        atoms, bf2at, m_last_result.density_matrix,
+        m_last_result.overlap_matrix, D0, Q0, irp, irrp, ovlp_grad,
+        pot_density);
+  }
+
+  // last_result already carries scc_energy from `run_full` (= electronic +
+  // iso-Coulomb + 3rd-order + AES + polariz). Total adds repulsion + D4.
   m_last_result.dispersion_energy = e_disp;
   m_last_result.total_energy = m_last_result.scc_energy +
                                 m_last_result.repulsion_energy + e_disp;
-  occ::log::debug("analytical gradient: scc={:.10f} rep={:.10f} disp={:.10f} total={:.10f}",
-                   m_last_result.scc_energy, m_last_result.repulsion_energy,
-                   e_disp, m_last_result.total_energy);
+  occ::log::debug(
+      "analytical gradient: scc={:.10f} rep={:.10f} disp={:.10f} total={:.10f}",
+      m_last_result.scc_energy, m_last_result.repulsion_energy, e_disp,
+      m_last_result.total_energy);
   return grad;
 }
 

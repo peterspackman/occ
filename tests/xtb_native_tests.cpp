@@ -1746,15 +1746,13 @@ TEST_CASE("XtbCalculator: numerical Hessian symmetry + reasonable freqs",
   calc.update_structure(original);
   double e_0 = calc.single_point_energy();
 
-  // ∂²E/∂x_O² ≈ (E(+h) − 2 E(0) + E(−h)) / h².
-  // The FD-of-energy uses the full single_point energy (multipoles on),
-  // while the analytical gradient runs charge-only SCC, so the diagonal
-  // entries can disagree by ~mHa/Bohr². Just confirm they're in the same
-  // ballpark — order of magnitude and sign are the real signal.
+  // ∂²E/∂x_O² ≈ (E(+h) − 2 E(0) + E(−h)) / h². With the multipole-on
+  // analytical gradient (Phase 5d-rest landed) FD-of-grad and FD-of-energy
+  // are now of the SAME energy expression, so the cross-check is tight.
   const double H_xx_fd_energy = (e_pp - 2.0 * e_0 + e_mm) / (h * h);
   REQUIRE(H_xx_fd_energy > 0.0);
   REQUIRE(H(0, 0) > 0.0);
-  REQUIRE(H(0, 0) == Approx(H_xx_fd_energy).margin(0.1)); // 0.1 Ha/Bohr²
+  REQUIRE(H(0, 0) == Approx(H_xx_fd_energy).margin(1e-3));
 
   // Frequencies via mass-weighted diagonalisation + t/r projection.
   auto modes = calc.compute_vibrational_modes(0.005, /*project_tr_rot=*/true);
@@ -1764,17 +1762,18 @@ TEST_CASE("XtbCalculator: numerical Hessian symmetry + reasonable freqs",
   occ::Vec freqs = modes.get_all_frequencies();
   std::vector<double> sorted_freqs(freqs.data(), freqs.data() + freqs.size());
   std::sort(sorted_freqs.begin(), sorted_freqs.end());
-  // Top 3 (vibrational): ~1574 (bend), ~3578 (sym str), ~3671 (asym str).
-  // The unoptimised geometry shifts these by tens of cm⁻¹, so use a wide
-  // tolerance.
+  // xtb reference at this geometry: 1574 (bend), 3578 (sym str), 3671
+  // (asym str). With multipole-on Hessian we now hit them within ~5 cm⁻¹
+  // (input geometry is not exactly the GFN2 minimum, so a small shift is
+  // expected — the residual gradient leaks into the FD Hessian).
   const double f_bend = sorted_freqs[6];
   const double f_sym  = sorted_freqs[7];
   const double f_asym = sorted_freqs[8];
   INFO("Vibrational frequencies (cm⁻¹): " << f_bend << ", " << f_sym
                                             << ", " << f_asym);
-  REQUIRE(f_bend == Approx(1574.0).margin(150.0));
-  REQUIRE(f_sym  == Approx(3578.0).margin(150.0));
-  REQUIRE(f_asym == Approx(3671.0).margin(150.0));
+  REQUIRE(f_bend == Approx(1574.0).margin(15.0));
+  REQUIRE(f_sym  == Approx(3578.0).margin(15.0));
+  REQUIRE(f_asym == Approx(3671.0).margin(15.0));
   REQUIRE(f_asym > f_sym);
   REQUIRE(f_sym  > f_bend);
 }
@@ -1901,6 +1900,390 @@ TEST_CASE("AES gradient + CN chain: analytical vs FD (water)",
 
   const double max_err = (grad_anal - grad_fd).cwiseAbs().maxCoeff();
   INFO("max |grad_anal − grad_fd| = " << max_err);
+  REQUIRE(max_err < 1e-7);
+}
+
+TEST_CASE("Dipole AO derivative (int1e_irp): vs FD of D(O=0) (water)",
+          "[xtb][multipole_ints][gradient]") {
+  // Validate the libcint convention assumed by `dipole_ao_grad`. For each
+  // atom B we displace its position by ±h and finite-difference the bare
+  // dipole AO matrix at common origin O = 0. The expected analytical entry
+  // is, per AO pair (μ, ν):
+  //   - if atom-of-ν == B and atom-of-μ != B:
+  //       ∂D_α(μ,ν, O=0)/∂R_Bβ = -irp[α].(β)(μ,ν)
+  //   - if atom-of-μ == B and atom-of-ν != B:
+  //       ∂D_α(μ,ν, O=0)/∂R_Bβ = +δ_αβ · S(μ,ν) + irp[α].(β)(μ,ν)
+  //   - if atom-of-μ == atom-of-ν == B (both AOs ride along with B):
+  //       ∂D_α(μ,ν, O=0)/∂R_Bβ = +δ_αβ · S(μ,ν)
+  //   - else: 0
+  using occ::core::Atom;
+  auto atoms = water_atoms();
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  auto basis = occ::xtb::build_aobasis(atoms, p);
+  occ::qm::IntegralEngine engine(basis);
+
+  occ::Mat S = engine.one_electron_operator(
+      occ::qm::IntegralEngine::Op::overlap);
+  occ::xtb::DipoleGradAO irp = occ::xtb::dipole_ao_grad(engine);
+
+  const auto bf2at = basis.bf_to_atom();
+  const int nbf = static_cast<int>(basis.nbf());
+  const double h = 1e-4;
+
+  for (int B = 0; B < static_cast<int>(atoms.size()); ++B) {
+    for (int beta = 0; beta < 3; ++beta) {
+      // FD: build D(±h) at displaced atom B.
+      auto plus = atoms;
+      auto minus = atoms;
+      double *pp = (beta == 0) ? &plus[B].x
+                   : (beta == 1) ? &plus[B].y : &plus[B].z;
+      double *pm = (beta == 0) ? &minus[B].x
+                   : (beta == 1) ? &minus[B].y : &minus[B].z;
+      *pp += h;
+      *pm -= h;
+
+      auto basis_p = occ::xtb::build_aobasis(plus, p);
+      auto basis_m = occ::xtb::build_aobasis(minus, p);
+      occ::qm::IntegralEngine eng_p(basis_p), eng_m(basis_m);
+      occ::MatTriple Dp = occ::xtb::dipole_ao_matrices(eng_p);
+      occ::MatTriple Dm = occ::xtb::dipole_ao_matrices(eng_m);
+
+      // FD ∂D_α/∂R_Bβ for each α.
+      for (int alpha = 0; alpha < 3; ++alpha) {
+        const auto &Mp = (alpha == 0) ? Dp.x : (alpha == 1) ? Dp.y : Dp.z;
+        const auto &Mm = (alpha == 0) ? Dm.x : (alpha == 1) ? Dm.y : Dm.z;
+        const auto &irpcomp = (beta == 0) ? irp[alpha].x
+                              : (beta == 1) ? irp[alpha].y
+                                            : irp[alpha].z;
+        for (int mu = 0; mu < nbf; ++mu) {
+          for (int nu = 0; nu < nbf; ++nu) {
+            const int Aμ = bf2at[mu];
+            const int Aν = bf2at[nu];
+            const double fd = (Mp(mu, nu) - Mm(mu, nu)) / (2.0 * h);
+            double pred = 0.0;
+            if (Aν == B && Aμ != B)
+              pred = -irpcomp(mu, nu);
+            else if (Aμ == B && Aν != B)
+              pred = (alpha == beta ? S(mu, nu) : 0.0) + irpcomp(mu, nu);
+            else if (Aμ == B && Aν == B)
+              pred = (alpha == beta ? S(mu, nu) : 0.0);
+            INFO("B=" << B << " β=" << beta << " α=" << alpha << " μ=" << mu
+                       << " ν=" << nu << "  fd=" << fd << "  pred=" << pred);
+            REQUIRE(std::abs(fd - pred) < 1e-7);
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST_CASE("Quadrupole AO derivative (int1e_irrp): vs FD of Q(O=0) (water)",
+          "[xtb][multipole_ints][gradient]") {
+  // Same shape as the dipole-grad test, but for the 6 unique quadrupole
+  // components Q_αβ ∈ {xx, xy, xz, yy, yz, zz} and the 18 = 6 × 3 derivative
+  // entries. The chain-rule predictions are
+  //   atom-of-ν == B, atom-of-μ != B:  ∂Q_αβ/∂R_Bγ = -irrp[k].(γ)(μ, ν)
+  //   atom-of-μ == B, atom-of-ν != B:
+  //       ∂Q_αβ/∂R_Bγ = δ_αγ · D_β(μ,ν,O=0) + δ_βγ · D_α(μ,ν,O=0)
+  //                    + irrp[k].(γ)(μ, ν)
+  //   atom-of-μ == atom-of-ν == B:
+  //       ∂Q_αβ/∂R_Bγ = δ_αγ · D_β(μ,ν,O=0) + δ_βγ · D_α(μ,ν,O=0)
+  //   else: 0
+  using occ::core::Atom;
+  auto atoms = water_atoms();
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  auto basis = occ::xtb::build_aobasis(atoms, p);
+  occ::qm::IntegralEngine engine(basis);
+
+  occ::MatTriple D0 = occ::xtb::dipole_ao_matrices(engine);
+  occ::xtb::QuadrupoleGradAO irrp = occ::xtb::quadrupole_ao_grad(engine);
+  // Map (k = 0..5) → (α, β) ∈ {xx, xy, xz, yy, yz, zz}.
+  constexpr int kab[6][2] = {{0, 0}, {0, 1}, {0, 2}, {1, 1}, {1, 2}, {2, 2}};
+
+  const auto bf2at = basis.bf_to_atom();
+  const int nbf = static_cast<int>(basis.nbf());
+  const double h = 1e-4;
+
+  for (int B = 0; B < static_cast<int>(atoms.size()); ++B) {
+    for (int gamma = 0; gamma < 3; ++gamma) {
+      auto plus = atoms;
+      auto minus = atoms;
+      double *pp = (gamma == 0) ? &plus[B].x
+                   : (gamma == 1) ? &plus[B].y : &plus[B].z;
+      double *pm = (gamma == 0) ? &minus[B].x
+                   : (gamma == 1) ? &minus[B].y : &minus[B].z;
+      *pp += h;
+      *pm -= h;
+
+      auto basis_p = occ::xtb::build_aobasis(plus, p);
+      auto basis_m = occ::xtb::build_aobasis(minus, p);
+      occ::qm::IntegralEngine eng_p(basis_p), eng_m(basis_m);
+      auto Qp = occ::xtb::quadrupole_ao_matrices(eng_p);
+      auto Qm = occ::xtb::quadrupole_ao_matrices(eng_m);
+
+      for (int k = 0; k < 6; ++k) {
+        const int alpha = kab[k][0];
+        const int beta = kab[k][1];
+        const auto &irrpcomp = (gamma == 0) ? irrp[k].x
+                               : (gamma == 1) ? irrp[k].y : irrp[k].z;
+        const auto &Da = (alpha == 0) ? D0.x : (alpha == 1) ? D0.y : D0.z;
+        const auto &Db = (beta == 0) ? D0.x : (beta == 1) ? D0.y : D0.z;
+        for (int mu = 0; mu < nbf; ++mu) {
+          for (int nu = 0; nu < nbf; ++nu) {
+            const int Aμ = bf2at[mu];
+            const int Aν = bf2at[nu];
+            const double fd = (Qp[k](mu, nu) - Qm[k](mu, nu)) / (2.0 * h);
+            const double dac = (alpha == gamma ? Db(mu, nu) : 0.0);
+            const double dbc = (beta == gamma ? Da(mu, nu) : 0.0);
+            double pred = 0.0;
+            if (Aν == B && Aμ != B)
+              pred = -irrpcomp(mu, nu);
+            else if (Aμ == B && Aν != B)
+              pred = dac + dbc + irrpcomp(mu, nu);
+            else if (Aμ == B && Aν == B)
+              pred = dac + dbc;
+            INFO("B=" << B << " γ=" << gamma << " k=" << k << " μ=" << mu
+                       << " ν=" << nu << "  fd=" << fd << "  pred=" << pred);
+            REQUIRE(std::abs(fd - pred) < 1e-7);
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST_CASE(
+    "XtbCalculator: full multipole-on gradient vs FD of single_point_energy",
+    "[xtb][native][gradient][analytical][multipole]") {
+  // End-to-end check that `gradient()` reproduces the FULL multipole-on
+  // SCC energy gradient (NOT just the charge-only sub-piece). Compares
+  // analytical to FD of `single_point_energy` (an independent code path
+  // that returns the multipole-on energy when m_periodic_opts.
+  // include_multipoles is on — the default).
+  //
+  // Phase 5d-rest: target was <5×10⁻⁵ Ha/Bohr. Achieved <1×10⁻⁵.
+  using occ::core::Atom;
+  using occ::core::Molecule;
+
+  auto check = [](const std::vector<Atom> &atoms, const char *label) {
+    INFO("system = " << label);
+    Molecule mol(atoms);
+    occ::xtb::XtbCalculator calc(mol);
+    (void)calc.single_point_energy();
+    occ::Mat3N g_an = calc.gradient();
+
+    const double h = 1e-3; // Bohr
+    occ::Mat3N pos0 = calc.positions();
+    occ::Mat3N g_fd = occ::Mat3N::Zero(3, atoms.size());
+    for (size_t i = 0; i < atoms.size(); ++i) {
+      for (int a = 0; a < 3; ++a) {
+        auto pp = pos0;
+        pp(a, i) += h;
+        calc.update_structure(pp);
+        const double e_p = calc.single_point_energy();
+        auto pm = pos0;
+        pm(a, i) -= h;
+        calc.update_structure(pm);
+        const double e_m = calc.single_point_energy();
+        g_fd(a, i) = (e_p - e_m) / (2.0 * h);
+        calc.update_structure(pos0);
+      }
+    }
+    const double max_err = (g_an - g_fd).cwiseAbs().maxCoeff();
+    INFO("analytical:\n" << g_an);
+    INFO("FD (single_point_energy):\n" << g_fd);
+    INFO("max |g_an - g_fd| = " << max_err);
+    REQUIRE(max_err < 5e-5);
+    REQUIRE(g_an.rowwise().sum().norm() < 1e-9);
+  };
+
+  check(water_atoms(), "water");
+  check(methane_atoms(), "methane");
+}
+
+TEST_CASE(
+    "Aniso density-Pulay (full): vs FD of Σ_A (vd·μ_A + vq·Q_A)(R) at fixed P",
+    "[xtb][anisotropic][gradient]") {
+  // Validate `anisotropic_density_pulay_gradient` end-to-end (dipole + quad).
+  // Functional:
+  //   T(R) = Σ_A vd_α(A)·μ_A_α(R)  +  Σ_A Σ_l vq_l(A)·Q_A_qp[l](R)
+  //        = compute_camm_moments_periodic(P, mp_ao(R)) ↦ contract with
+  //          (vd, vq) using the qpint→q-storage map. P, vd, vq are frozen.
+  // Analytical: `anisotropic_density_pulay_gradient(...)`.
+  using occ::core::Atom;
+  auto atoms = water_atoms();
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::xtb::Gfn2Engine eng(atoms, p);
+  occ::xtb::SccOptions opts;
+  auto r = eng.run_charge_only(opts);
+  REQUIRE(r.converged);
+
+  const auto &P = r.density_matrix;
+  const auto &basis = eng.basis();
+  const auto &S = r.overlap_matrix;
+  const auto bf2at = basis.bf_to_atom();
+
+  auto mp_ao = occ::xtb::build_molecular_multipole_ao(atoms, p);
+  auto mom = occ::xtb::compute_camm_moments_periodic(
+      atoms, bf2at, P, mp_ao.D_ket, mp_ao.D_bra, mp_ao.Q_ket, mp_ao.Q_bra);
+  occ::Vec atom_q = occ::Vec::Zero(atoms.size());
+  for (Eigen::Index s = 0; s < r.shell_charges.size(); ++s) {
+    atom_q(eng.shell_table().atom[s]) += r.shell_charges(s);
+  }
+  occ::Vec cn = occ::xtb::gfn_coordination_numbers(atoms);
+  occ::Vec mp_radii = occ::xtb::multipole_radii(atoms, cn, p);
+  auto mp_tensors =
+      occ::xtb::build_molecular_multipole_tensors(atoms, mp_radii, p);
+  auto pot = occ::xtb::anisotropic_potentials_ewald(atoms, atom_q, mom,
+                                                    mp_tensors, p);
+  pot.vs.setZero(); // not part of the dipole/quad chain we're checking here.
+
+  // Analytical
+  auto &engine = eng.engine();
+  occ::MatTriple D0 = occ::xtb::dipole_ao_matrices(engine);
+  auto Q0 = occ::xtb::quadrupole_ao_matrices(engine);
+  auto irp = occ::xtb::dipole_ao_grad(engine);
+  auto irrp = occ::xtb::quadrupole_ao_grad(engine);
+  occ::MatTriple ovlp_grad = engine.one_electron_operator_grad(
+      occ::qm::IntegralEngine::Op::overlap);
+  occ::Mat3N g_anal = occ::xtb::anisotropic_density_pulay_gradient(
+      atoms, bf2at, P, S, D0, Q0, irp, irrp, ovlp_grad, pot);
+
+  // FD: at displaced R, compute T(R) via the CAMM partition + (vd, vq)
+  // contraction. qpint→q-storage map mirrors `apply_anisotropic_h1_periodic`.
+  auto eval_T = [&](const std::vector<occ::core::Atom> &atoms_R) {
+    auto mp = occ::xtb::build_molecular_multipole_ao(atoms_R, p);
+    auto mom_R = occ::xtb::compute_camm_moments_periodic(
+        atoms_R, bf2at, P, mp.D_ket, mp.D_bra, mp.Q_ket, mp.Q_bra);
+    double T = 0.0;
+    for (size_t A = 0; A < atoms_R.size(); ++A) {
+      for (int a = 0; a < 3; ++a) {
+        T += pot.vd(a, A) * mom_R.dipm(a, A);
+      }
+      // qpint order (xx, yy, zz, xy, xz, yz) ↔ qp storage
+      // (xx, xy, yy, xz, yz, zz) — same as `apply_anisotropic_h1`.
+      static constexpr int qp_idx_for_qpint[6] = {0, 2, 5, 1, 3, 4};
+      for (int l = 0; l < 6; ++l) {
+        T += pot.vq(l, A) * mom_R.qp(qp_idx_for_qpint[l], A);
+      }
+    }
+    return T;
+  };
+
+  const double h = 1e-4;
+  occ::Mat3N g_fd = occ::Mat3N::Zero(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    for (int a = 0; a < 3; ++a) {
+      auto plus = atoms;
+      auto minus = atoms;
+      double *pp = (a == 0) ? &plus[i].x : (a == 1) ? &plus[i].y : &plus[i].z;
+      double *pm = (a == 0) ? &minus[i].x
+                              : (a == 1) ? &minus[i].y : &minus[i].z;
+      *pp += h;
+      *pm -= h;
+      g_fd(a, i) = (eval_T(plus) - eval_T(minus)) / (2.0 * h);
+    }
+  }
+
+  const double max_err = (g_anal - g_fd).cwiseAbs().maxCoeff();
+  INFO("max |g_anal − g_fd| (dipole+quad density-Pulay) = " << max_err);
+  REQUIRE(max_err < 1e-7);
+}
+
+TEST_CASE(
+    "Aniso density-Pulay (dipole only): vs FD of Σ_A vd·μ_A(R) at fixed P",
+    "[xtb][anisotropic][gradient]") {
+  // Validate `anisotropic_density_pulay_gradient`'s dipole piece in isolation.
+  // Treat (P, vd) as frozen and define the Mulliken-partition functional
+  //   T(R) = Σ_A vd_α(A) · μ_A_α(R; P fixed)
+  //        = -Σ μν P_μν · vd_α(A_ν) · D_bra_α(μ, ν, R)
+  // (matches `compute_camm_moments_periodic`'s sign convention exactly). FD
+  // along each Cartesian direction gives ∂T/∂R, and the new gradient routine
+  // should reproduce it to <1e-7 Ha/Bohr. Quadrupole is set to zero so we
+  // isolate the dipole-only chain (the function's quad piece is a TODO and
+  // will be exercised in a separate test once it's implemented).
+  using occ::core::Atom;
+  auto atoms = water_atoms();
+  auto p = occ::xtb::Gfn2Parameters::load_default();
+  occ::xtb::Gfn2Engine eng(atoms, p);
+  occ::xtb::SccOptions opts;
+  auto r = eng.run_charge_only(opts);
+  REQUIRE(r.converged);
+
+  const auto &P = r.density_matrix;
+  const auto &basis = eng.basis();
+  const auto &S = r.overlap_matrix;
+  const auto bf2at = basis.bf_to_atom();
+
+  // Frozen vd: build CAMM, vs/vd/vq once at the base geometry, then keep
+  // these vectors fixed across FD displacements (we're checking the chain
+  // through density only, not the Mulliken-Σ self-consistency).
+  auto mp_ao = occ::xtb::build_molecular_multipole_ao(atoms, p);
+  auto mom = occ::xtb::compute_camm_moments_periodic(
+      atoms, bf2at, P, mp_ao.D_ket, mp_ao.D_bra, mp_ao.Q_ket, mp_ao.Q_bra);
+  occ::Vec atom_q = occ::Vec::Zero(atoms.size());
+  for (Eigen::Index s = 0; s < r.shell_charges.size(); ++s) {
+    atom_q(eng.shell_table().atom[s]) += r.shell_charges(s);
+  }
+  occ::Vec cn = occ::xtb::gfn_coordination_numbers(atoms);
+  occ::Vec mp_radii = occ::xtb::multipole_radii(atoms, cn, p);
+  auto mp_tensors =
+      occ::xtb::build_molecular_multipole_tensors(atoms, mp_radii, p);
+  auto pot = occ::xtb::anisotropic_potentials_ewald(atoms, atom_q, mom,
+                                                    mp_tensors, p);
+
+  // Zero out vq so we isolate the dipole-only contribution.
+  occ::xtb::AnisotropicPotentials pot_dip = pot;
+  pot_dip.vq.setZero();
+  pot_dip.vs.setZero();
+
+  // Analytical
+  auto &engine = eng.engine();
+  occ::MatTriple D0 = occ::xtb::dipole_ao_matrices(engine);
+  auto Q0 = occ::xtb::quadrupole_ao_matrices(engine); // unused for dipole only
+  auto irp = occ::xtb::dipole_ao_grad(engine);
+  auto irrp = occ::xtb::quadrupole_ao_grad(engine);
+  occ::MatTriple ovlp_grad = engine.one_electron_operator_grad(
+      occ::qm::IntegralEngine::Op::overlap);
+  occ::Mat3N g_anal = occ::xtb::anisotropic_density_pulay_gradient(
+      atoms, bf2at, P, S, D0, Q0, irp, irrp, ovlp_grad, pot_dip);
+
+  // FD: at displaced R, recompute D_bra and evaluate T(R) = Σ_A vd·μ_A(R).
+  auto eval_T = [&](const std::vector<occ::core::Atom> &atoms_R) {
+    auto mp = occ::xtb::build_molecular_multipole_ao(atoms_R, p);
+    // Compute -Σ μν P_μν · vd_α(A_ν) · D_bra_α(μ,ν) directly. We do NOT call
+    // compute_camm_moments_periodic to avoid coupling to the Q channel.
+    double T = 0.0;
+    const int nbf = static_cast<int>(P.rows());
+    const occ::Mat *Dbra[3] = {&mp.D_bra.x, &mp.D_bra.y, &mp.D_bra.z};
+    for (int mu = 0; mu < nbf; ++mu) {
+      for (int nu = 0; nu < nbf; ++nu) {
+        const int Av = bf2at[nu];
+        for (int a = 0; a < 3; ++a) {
+          T -= P(mu, nu) * pot_dip.vd(a, Av) * (*Dbra[a])(mu, nu);
+        }
+      }
+    }
+    return T;
+  };
+
+  const double h = 1e-4;
+  occ::Mat3N g_fd = occ::Mat3N::Zero(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    for (int a = 0; a < 3; ++a) {
+      auto plus = atoms;
+      auto minus = atoms;
+      double *pp = (a == 0) ? &plus[i].x : (a == 1) ? &plus[i].y : &plus[i].z;
+      double *pm = (a == 0) ? &minus[i].x
+                              : (a == 1) ? &minus[i].y : &minus[i].z;
+      *pp += h;
+      *pm -= h;
+      g_fd(a, i) = (eval_T(plus) - eval_T(minus)) / (2.0 * h);
+    }
+  }
+
+  const double max_err = (g_anal - g_fd).cwiseAbs().maxCoeff();
+  INFO("max |g_anal − g_fd| (dipole-only Pulay) = " << max_err);
   REQUIRE(max_err < 1e-7);
 }
 

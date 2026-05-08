@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/xtb/periodic.h>
@@ -54,19 +55,19 @@ anisotropic_pair_gradient_with_dcn(const std::vector<core::Atom> &atoms,
                                     const Gfn2Parameters &params);
 
 // Per-atom potentials acting on charges (vs), atomic dipoles (vd), and
-// atomic quadrupoles (vq). vq is laid out in `qpint` order (xx, yy, zz, xy,
-// xz, yz) — this matches the storage of `quadrupole_ao_matrices(...)` after
-// remapping inside `apply_anisotropic_h1_periodic`. Hartree units throughout.
+// atomic quadrupoles (vq) — the variational conjugates of (q, μ_xtb,
+// Q_xtb) at the converged density. vq is laid out in `qpint` order
+// (xx, yy, zz, xy, xz, yz). The conjugate convention
+//   vd = +∂E_aniso/∂μ_xtb,  vq = +∂E_aniso/∂Q_xtb_qpint, vs = +∂E_aniso/∂q
+// matches tblite. Hartree units throughout. The actual builder is
+// `anisotropic_potentials_ewald` (multipole_ewald.h) — works for both
+// molecular and periodic systems via `build_molecular_multipole_tensors`
+// or `build_multipole_ewald_tensors` respectively.
 struct AnisotropicPotentials {
   Vec vs;     // n_atoms
   Mat3N vd;   // 3 × n_atoms
   Mat vq;     // 6 × n_atoms (xx, yy, zz, xy, xz, yz)
 };
-
-AnisotropicPotentials
-anisotropic_potentials(const std::vector<core::Atom> &atoms, const Vec &q,
-                       const CammMoments &m, const DampedCoulomb &damped,
-                       const Gfn2Parameters &params);
 
 // Add the CAMM-induced shift to the AO Fock matrix H. Uses Ket (atom-of-row-centered)
 // on the row side and Bra (atom-of-col-image-centered) on the column side,
@@ -88,6 +89,37 @@ void apply_anisotropic_h1_kpoint(
     const CMatTriple &D_ket, const CMatTriple &D_bra,
     const std::array<CMat, 6> &Q_ket, const std::array<CMat, 6> &Q_bra,
     const std::vector<int> &bf_to_atom,
+    const AnisotropicPotentials &pot);
+
+// Pulay-like nuclear gradient piece from the SCC density's response to AO
+// multipole integrals. At fixed P, the converged μ_A and Q_A both depend on
+// R via the per-atom-centered AO matrices D_bra and Q_bra (see
+// `compute_camm_moments_periodic`). This function returns
+//
+//   ∂(Σ_A vd_α(A) · μ_A_α  +  Σ_A Σ_l vq_l(A) · Q_A_l) / ∂R |_{P fixed}
+//
+// using the bra-side AO derivative integrals (`int1e_irp` and `int1e_irrp`,
+// wrapped in `dipole_ao_grad` / `quadrupole_ao_grad`) and the centering chain
+// through R_(atom of ν) · S, R_(atom of ν) · D, etc.  The result is added
+// directly to the gradient by the caller.
+//
+// `D_origin0` and `Q_origin0` must be the BARE AO multipole matrices at common
+// origin O = 0 (output of `dipole_ao_matrices` / `quadrupole_ao_matrices`),
+// NOT the per-atom-centered Bra/Ket variants.  `Q_origin0` must be the raw
+// Cartesian quadrupole (xx, xy, xz, yy, yz, zz) — the traceless transform is
+// applied internally to match the CAMM partition.
+//
+// `ovlp_grad` is `engine.one_electron_operator_grad(Op::overlap)` (libcint
+// convention: `ovlp_grad.γ(μ, ν) = ⟨∂_γ φ_μ | φ_ν⟩`).
+Mat3N anisotropic_density_pulay_gradient(
+    const std::vector<core::Atom> &atoms,
+    const std::vector<int> &bf_to_atom,
+    const Mat &P, const Mat &S,
+    const MatTriple &D_origin0,
+    const std::array<Mat, 6> &Q_origin0,
+    const std::array<MatTriple, 3> &irp,        // dipole_ao_grad output
+    const std::array<MatTriple, 6> &irrp,       // quadrupole_ao_grad output
+    const MatTriple &ovlp_grad,
     const AnisotropicPotentials &pot);
 
 } // namespace occ::xtb

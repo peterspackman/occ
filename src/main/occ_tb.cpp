@@ -6,9 +6,12 @@
 #include <occ/core/timings.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
+#include <occ/core/vibration.h>
+#include <occ/driver/geometry_optimization.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/dftb_gen.h>
 #include <occ/io/load_geometry.h>
+#include <occ/io/occ_input.h>
 #include <occ/io/xyz.h>
 #include <occ/main/occ_tb.h>
 #include <occ/main/version.h>
@@ -116,8 +119,76 @@ void run_periodic(const TbConfig &cfg) {
   }
 }
 
+void run_frequencies(occ::xtb::XtbCalculator &calc, const TbConfig &cfg) {
+  // Numerical Hessian via FD of the (multipole-on) analytical gradient,
+  // then mass-weighted diagonalisation with optional t/r projection. Cost
+  // ≈ 6N analytical-gradient evaluations.
+  occ::log::info("");
+  occ::log::info("{:-<72s}", "Vibrational analysis ");
+  occ::log::info("Hessian step    : {:.4f} Bohr", cfg.freq_step_bohr);
+  occ::log::info("Project T/R     : {}",
+                  cfg.freq_project_tr_rot ? "yes (ORCA-style)" : "no");
+  auto modes = calc.compute_vibrational_modes(cfg.freq_step_bohr,
+                                               cfg.freq_project_tr_rot);
+  occ::log::info("");
+  // Sorted ascending — translations + rotations come first (≈0 with t/r
+  // projection on, otherwise some imaginary "soft" modes).
+  auto sorted = modes.get_all_frequencies();
+  occ::log::info("{:>6s} {:>14s} {:>14s}", "Mode", "Freq (cm⁻¹)",
+                  "Freq (meV)");
+  occ::log::info("{:-<38s}", "");
+  constexpr double cm_to_meV = 0.1239841974;
+  for (Eigen::Index i = 0; i < sorted.size(); ++i) {
+    occ::log::info("{:6d} {:14.2f} {:14.2f}", i + 1, sorted(i),
+                    sorted(i) * cm_to_meV);
+  }
+  // Pull out the (likely) vibrational modes — the largest 3N-6 (or 3N-5
+  // for linear). Reported separately for convenience.
+  const auto N = static_cast<int>(modes.n_atoms());
+  const int n_vib = std::max(0, 3 * N - 6);
+  if (n_vib > 0) {
+    occ::log::info("");
+    occ::log::info("Vibrational modes (top {}):", n_vib);
+    for (Eigen::Index i = sorted.size() - n_vib; i < sorted.size(); ++i) {
+      occ::log::info("  {:14.2f} cm⁻¹", sorted(i));
+    }
+  }
+}
+
 void run_molecular(const TbConfig &cfg) {
   auto mol = occ::io::load_molecule(cfg.filename);
+
+  if (cfg.optimize) {
+    // Build a minimal OccInput and route through the existing
+    // `geometry_optimization` driver. The driver's MethodKind::GFN2 branch
+    // calls `XtbCalculator::compute_energy_and_gradient(numerical=false)`,
+    // which is the analytical multipole-on gradient validated in
+    // tests/xtb_native_tests.cpp.
+    occ::io::OccInput input;
+    input.method.name = "gfn2";
+    input.geometry.set_molecule(mol);
+    input.electronic.charge = cfg.charge;
+    input.filename = cfg.filename;
+    occ::log::info("{:-<72s}", "GFN2-xTB molecular optimization ");
+    occ::log::info("input          : {}", cfg.filename);
+    occ::log::info("atoms          : {}", mol.size());
+    occ::log::info("multipoles     : on (analytical gradient)");
+    occ::log::info("charge         : {:+.3f} e", cfg.charge);
+    occ::log::info("");
+    auto wfn = occ::driver::geometry_optimization(input);
+    if (cfg.frequencies) {
+      // Vibrational analysis on the optimized geometry. The optimizer
+      // returns a Wavefunction with the converged atoms baked in; rebuild
+      // an XtbCalculator from those atoms.
+      occ::core::Molecule opt_mol(wfn.atoms);
+      occ::xtb::XtbCalculator opt_calc(opt_mol);
+      opt_calc.set_charge(cfg.charge);
+      opt_calc.set_include_multipoles(cfg.include_multipoles);
+      run_frequencies(opt_calc, cfg);
+    }
+    return;
+  }
+
   occ::xtb::XtbCalculator calc(mol);
   calc.set_charge(cfg.charge);
   calc.set_include_multipoles(cfg.include_multipoles);
@@ -136,6 +207,10 @@ void run_molecular(const TbConfig &cfg) {
   calc.print_summary();
   occ::log::info("");
   occ::log::info("Total energy        : {:>20.12f} Ha", e_total);
+
+  if (cfg.frequencies) {
+    run_frequencies(calc, cfg);
+  }
 }
 
 } // namespace
@@ -160,6 +235,19 @@ CLI::App *add_tb_subcommand(CLI::App &app) {
                 "After periodic SCC, compute molecular SCC for each "
                 "symmetry-unique molecule and report lattice energy per "
                 "molecule (kJ/mol). Crystal input only.");
+  tb->add_flag("--opt", cfg->optimize,
+                "Geometry optimization (Berny / internal coords). "
+                "Molecular only. Writes <input>_opt.xyz on convergence and "
+                "<input>_trj.xyz with the trajectory.");
+  tb->add_flag("--freq,--frequencies", cfg->frequencies,
+                "After SCC, compute the numerical Hessian (FD of the "
+                "multipole-on analytical gradient, ~6N gradient calls) and "
+                "report vibrational frequencies. Molecular only.");
+  tb->add_option("--freq-step", cfg->freq_step_bohr,
+                  "Hessian FD step size in Bohr (default 0.005).");
+  tb->add_flag("--no-project-tr-rot{false}", cfg->freq_project_tr_rot,
+                "Disable translation/rotation projection of the mass-"
+                "weighted Hessian (default on).");
 
   tb->callback([cfg]() { run_tb_subcommand(*cfg); });
   return tb;

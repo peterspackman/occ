@@ -65,7 +65,7 @@ anisotropic_energy_ewald(const std::vector<core::Atom> &atoms, const Vec &q,
 
 // Per-atom potentials acting on charges (vs), atomic dipoles (vd), and
 // atomic quadrupoles (vq) from the Ewald pair tensors. vq layout in xtb's
-// qpint order {xx, yy, zz, xy, xz, yz}, matching `anisotropic_potentials`.
+// qpint order {xx, yy, zz, xy, xz, yz}, matching the H1 update's vq layout.
 // These are the strict tensor-contraction derivatives of the Ewald energy
 // (no gauge corrections — the AO multipole integrals carry the per-atom
 // origin shift, so the H1 routine consumes these potentials directly).

@@ -196,8 +196,8 @@ constexpr int kl_to_qp_local[3][3] = {{qp_xx, qp_xy, qp_xz},
                                        {qp_xy, qp_yy, qp_yz},
                                        {qp_xz, qp_yz, qp_zz}};
 
-// xtb's qpint storage order {xx, yy, zz, xy, xz, yz} for the AnisotropicPotentials
-// vq output (matches the molecular `anisotropic_potentials` convention).
+// xtb's qpint storage order {xx, yy, zz, xy, xz, yz} for the
+// AnisotropicPotentials vq output (matches the H1 update's vq layout).
 constexpr int qpint_xx = 0, qpint_yy = 1, qpint_zz = 2;
 constexpr int qpint_xy = 3, qpint_xz = 4, qpint_yz = 5;
 
@@ -388,12 +388,14 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
                               const Vec &q, const CammMoments &m,
                               const MultipolePairTensors &t,
                               const Gfn2Parameters &params) {
-  // Strict tensor-derivative path. NOTE: the molecular anisotropic_potentials
-  // includes gauge-correction terms (involving absolute atom positions) that
-  // make the per-atom potentials suitable for use with global-origin AO
-  // dipole/quadrupole integrals via apply_anisotropic_h1. Use
-  // anisotropic_potentials_ewald_gauge_corrected for that purpose; this
-  // function is kept for tensor-derivative testing.
+  // Strict tensor-derivative path. Mirrors tblite's `multipole.f90 ::
+  // get_potential` exactly: per-atom potentials are the variational
+  // conjugates of (q, μ_xtb, Q_xtb), to be paired with the centered Bra/
+  // Ket AO multipole matrices in `apply_anisotropic_h1_periodic`.
+  // Sign / normalization convention:
+  //   vd = +∂E_aniso/∂μ_xtb_α(A)    (pair + on-site polariz)
+  //   vq = +∂E_aniso/∂Q_xtb(qpint)(A)  (pair + on-site, with mpscale)
+  //   vs = +∂E_aniso/∂q_A           (pair only — on-site has no q-dep)
   const int n = static_cast<int>(atoms.size());
   AnisotropicPotentials out;
   out.vs = Vec::Zero(n);

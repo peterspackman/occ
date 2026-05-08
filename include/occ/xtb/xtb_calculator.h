@@ -188,10 +188,10 @@ public:
 
   /// Numerical 3N×3N Hessian (Hartree/Bohr²) via 5-point central
   /// differences of `gradient()`. Costs `6N` analytical-gradient evaluations
-  /// (each is one charge-only SCC + the gradient assembly). The returned
-  /// matrix is symmetrised. The Hessian is of the charge-only-SCC energy
-  /// (matches `gradient()`'s convention) — multipole AES is not yet folded
-  /// into the analytical gradient, so it isn't in the Hessian either.
+  /// (each is one multipole-on SCC + the analytical gradient assembly).
+  /// The returned matrix is symmetrised. Inherits `gradient()`'s
+  /// convention — full multipole-on (CAMM AES + on-site polarization)
+  /// since Phase 5d-rest landed.
   Mat compute_hessian_numerical(double step_bohr = 0.005);
 
   /// Convenience: build the Hessian and run a normal-mode analysis,

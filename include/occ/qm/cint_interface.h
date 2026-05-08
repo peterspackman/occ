@@ -226,6 +226,18 @@ public:
         libcint::int1e_iprinv_sph(
             buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
             basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::dipole)
+        // <φ_μ | r_α | ∇_β φ_ν>: ∇ on ket of dipole. 9 components,
+        // α (dipole) outer × β (gradient) inner in libcint's buffer order.
+        libcint::int1e_irp_sph(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::quadrupole)
+        // <φ_μ | r_α r_β | ∇_γ φ_ν>: ∇ on ket of quadrupole. 27 components,
+        // (α, β) outer (row-major xx,xy,xz,yx,...) × γ inner.
+        libcint::int1e_irrp_sph(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
 
       else {
         impl::static_invalid_operator();
@@ -250,6 +262,14 @@ public:
             basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
       else if constexpr (OP == Operator::coulomb)
         libcint::int2c2e_ip1_cart(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::dipole)
+        libcint::int1e_irp_cart(
+            buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
+            basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
+      else if constexpr (OP == Operator::quadrupole)
+        libcint::int1e_irrp_cart(
             buffer, dims.data(), shells.data(), atom_data_ptr(), num_atoms(),
             basis_data_ptr(), num_basis(), env_data_ptr(), opt, cache);
       else {
@@ -557,33 +577,35 @@ public:
   inline size_t buffer_size_1e(const Operator op = Operator::overlap,
                                int grad = 0) const {
     auto bufsize = m_max_shell_size * m_max_shell_size;
-    switch (grad) {
-    case 1:
-      return bufsize * 3;
-    case 2:
-      return bufsize * 9;
+
+    // Number of operator components produced per AO pair, ignoring the
+    // gradient. Dipole = 3, quadrupole = 3×3 = 9, etc.
+    size_t op_components = 1;
+    switch (op) {
+    // libcint doesn't just return unique components but the full tensor...
+    case Operator::dipole:
+      op_components = 3;
+      break;
+    case Operator::quadrupole:
+      op_components = 3 * 3;
+      break;
+    case Operator::octapole:
+      op_components = 3 * 3 * 3;
+      break;
+    case Operator::hexadecapole:
+      op_components = 3 * 3 * 3 * 3;
+      break;
     default:
       break;
     }
 
-    switch (op) {
-    // libcint doesn't just return unique components but the full tensor...
-    case Operator::dipole:
-      bufsize *= 3;
-      break;
-    case Operator::quadrupole:
-      bufsize *= 3 * 3;
-      break;
-    case Operator::octapole:
-      bufsize *= 3 * 3 * 3;
-      break;
-    case Operator::hexadecapole:
-      bufsize *= 3 * 3 * 3 * 3;
-      break;
-    default:
-      break;
-    }
-    return bufsize;
+    // Each derivative direction multiplies the component count by 3 (one
+    // entry per ∂/∂R_α). Powering up by `grad` covers Hessian (3×3) too.
+    size_t grad_factor = 1;
+    for (int i = 0; i < grad; ++i)
+      grad_factor *= 3;
+
+    return bufsize * op_components * grad_factor;
   }
 
   inline size_t buffer_size_3e(int grad = 0) const {

@@ -98,4 +98,28 @@ std::array<Mat, 6> quadrupole_ao_matrices(qm::IntegralEngine &engine,
           std::move(blocks[4]), std::move(blocks[5]), std::move(blocks[8])};
 }
 
+DipoleGradAO dipole_ao_grad(qm::IntegralEngine &engine) {
+  // Engine's `multipole_operator_grad(Op::dipole)` returns 3 MatTriples,
+  // one per dipole component α. The MatTriple holds 3 spatial deriv
+  // components β (= x, y, z), each an nbf×nbf matrix
+  //   irp[α].(β)(μ, ν) = <φ_μ | r_α | ∇_β φ_ν>     at common origin O = 0
+  // (libcint's int1e_irp output, packed via the engine).
+  auto v = engine.multipole_operator_grad(qm::IntegralEngine::Op::dipole);
+  if (v.size() != 3)
+    throw std::runtime_error("dipole_ao_grad: expected 3 components");
+  return {std::move(v[0]), std::move(v[1]), std::move(v[2])};
+}
+
+QuadrupoleGradAO quadrupole_ao_grad(qm::IntegralEngine &engine) {
+  // Engine returns 9 MatTriples (full 3×3 (α, β) tensor with γ in the
+  // MatTriple). We keep only the 6 unique upper-triangle (α, β) entries
+  // in the order {xx, xy, xz, yy, yz, zz} to match `quadrupole_ao_matrices`.
+  // Indexing into the 9 row-major blocks: xx=0, xy=1, xz=2, yy=4, yz=5, zz=8.
+  auto v = engine.multipole_operator_grad(qm::IntegralEngine::Op::quadrupole);
+  if (v.size() != 9)
+    throw std::runtime_error("quadrupole_ao_grad: expected 9 components");
+  return {std::move(v[0]), std::move(v[1]), std::move(v[2]),
+          std::move(v[4]), std::move(v[5]), std::move(v[8])};
+}
+
 } // namespace occ::xtb

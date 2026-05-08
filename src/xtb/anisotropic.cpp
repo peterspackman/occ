@@ -302,138 +302,11 @@ anisotropic_pair_gradient_with_dcn(const std::vector<core::Atom> &atoms,
 
 namespace {
 
-// xtb's qpint flat index for (k, l), 0-based, in (xx, yy, zz, xy, xz, yz)
-// order. Diagonals: xx=0, yy=1, zz=2. Off-diagonals (k != l): xy=3, xz=4,
-// yz=5.
-constexpr int qpint_idx(int k, int l) {
-  if (k == l) return k;
-  // k+l+1 in 0-based:
-  //   (0,1)=1+1=2 → +1 = 3 (xy)? Actually in 1-based xtb: ki = l1+l2+1.
-  // In 0-based it's k+l+1 → (0,1)=2 (xy), (0,2)=3 (xz), (1,2)=4 (yz). Wait
-  // we want xy=3, xz=4, yz=5 (0-based). Let me just enumerate manually.
-  if ((k == 0 && l == 1) || (k == 1 && l == 0)) return 3;
-  if ((k == 0 && l == 2) || (k == 2 && l == 0)) return 4;
-  if ((k == 1 && l == 2) || (k == 2 && l == 1)) return 5;
-  return -1;
-}
-
-// xtb's qp (CAMM storage) flat index for (k, l), 0-based:
-// (xx, xy, yy, xz, yz, zz).
-constexpr int qp_idx(int k, int l) {
-  // From kl_to_qp earlier in the file: {{0,1,3},{1,2,4},{3,4,5}}
-  static_assert(true);
-  constexpr int t[3][3] = {{0, 1, 3}, {1, 2, 4}, {3, 4, 5}};
-  return t[k][l];
-}
-
 // Mapping from xtb's qpint order (xx, yy, zz, xy, xz, yz) → my Q array order
 // (xx, xy, xz, yy, yz, zz).  q_idx_from_qpint[i] gives the index into my Q.
 constexpr int q_from_qpint[6] = {0, 3, 5, 1, 2, 4};
 
 } // namespace
-
-AnisotropicPotentials
-anisotropic_potentials(const std::vector<core::Atom> &atoms, const Vec &q,
-                       const CammMoments &m, const DampedCoulomb &damped,
-                       const Gfn2Parameters &params) {
-  const int nat = static_cast<int>(atoms.size());
-
-  AnisotropicPotentials out;
-  out.vs = Vec::Zero(nat);
-  out.vd = Mat3N::Zero(3, nat);
-  out.vq = Mat::Zero(6, nat);
-
-  // Pair contributions (all j, including self via the self-interaction
-  // limit, mirrors xtb's setvsdq).
-  for (int i = 0; i < nat; ++i) {
-    const double rai[3] = {atoms[i].x, atoms[i].y, atoms[i].z};
-    double stmp = 0.0;
-    double dtmp[3] = {0.0, 0.0, 0.0};
-    double qtmp[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-
-    for (int j = 0; j < nat; ++j) {
-      const double g3 = damped.gab3(j, i);
-      const double g5 = damped.gab5(j, i);
-      const double rbj[3] = {atoms[j].x, atoms[j].y, atoms[j].z};
-      const double dra[3] = {rai[0] - rbj[0], rai[1] - rbj[1], rai[2] - rbj[2]};
-
-      double r2a = 0.0, r2ab = 0.0;
-      double t1a = 0.0, t2a = 0.0, t3a = 0.0;
-      for (int l1 = 0; l1 < 3; ++l1) {
-        r2a += rai[l1] * rai[l1];
-        r2ab += dra[l1] * dra[l1];
-        t1a += rai[l1] * dra[l1];
-        t2a += m.dipm(l1, j) * dra[l1];
-        t3a += rai[l1] * m.dipm(l1, j);
-      }
-
-      double dum5a = 0.0;
-      for (int l1 = 0; l1 < 3; ++l1) {
-        for (int l2 = 0; l2 < 3; ++l2) {
-          dum5a -= m.qp(qp_idx(l1, l2), j) * dra[l1] * dra[l2];
-          dum5a -= 1.5 * q(j) * dra[l1] * dra[l2] * rai[l1] * rai[l2];
-          if (l2 >= l1) continue;
-          // Off-diagonal qpint slot — ki in xtb is l1+l2+1 (1-based) which
-          // is xy/xz/yz for the three off-diag (l1>l2) pairs.
-          const int ki = qpint_idx(l1, l2);
-          qtmp[ki] -= 3.0 * q(j) * g5 * dra[l2] * dra[l1];
-        }
-        // Diagonal qpint slot — index l1 (xx, yy, zz)
-        qtmp[l1] -= 1.5 * q(j) * g5 * dra[l1] * dra[l1];
-      }
-
-      const double dum3a = -t1a * q(j) - t2a;
-      dum5a += t3a * r2ab - 3.0 * t1a * t2a + 0.5 * q(j) * r2a * r2ab;
-      stmp += dum5a * g5 + dum3a * g3;
-
-      for (int l1 = 0; l1 < 3; ++l1) {
-        const double dd3 = dra[l1] * q(j);
-        const double dd5 = 3.0 * dra[l1] * t2a -
-                           r2ab * m.dipm(l1, j) -
-                           q(j) * r2ab * rai[l1] +
-                           3.0 * q(j) * dra[l1] * t1a;
-        dtmp[l1] += dd3 * g3 + dd5 * g5;
-        qtmp[l1] += 0.5 * r2ab * q(j) * g5;
-      }
-    }
-
-    // CT (on-site polarization) terms
-    const auto *e = params.element(atoms[i].atomic_number);
-    const double qs1 = 2.0 * e->dip_kernel;
-    const double qs2 = 6.0 * e->quad_kernel;
-    double t3a = 0.0, t2a = 0.0;
-    for (int l1 = 0; l1 < 3; ++l1) {
-      t3a += rai[l1] * m.dipm(l1, i) * qs1;
-      dtmp[l1] -= qs1 * m.dipm(l1, i);
-      for (int l2 = 0; l2 < l1; ++l2) {
-        const int ll = qp_idx(l1, l2);
-        const int ki = qpint_idx(l1, l2);
-        qtmp[ki] -= m.qp(ll, i) * qs2;
-        t3a -= rai[l1] * rai[l2] * m.qp(ll, i) * qs2;
-        dtmp[l1] += rai[l2] * m.qp(ll, i) * qs2;
-        dtmp[l2] += rai[l1] * m.qp(ll, i) * qs2;
-      }
-      const int ll_diag = qp_idx(l1, l1);
-      qtmp[l1] -= m.qp(ll_diag, i) * qs2 * 0.5;
-      t3a -= rai[l1] * rai[l1] * m.qp(ll_diag, i) * qs2 * 0.5;
-      dtmp[l1] += rai[l1] * m.qp(ll_diag, i) * qs2;
-      t2a += m.qp(ll_diag, i);
-    }
-    stmp += t3a;
-    t2a *= e->quad_kernel;
-    for (int l1 = 0; l1 < 3; ++l1) {
-      qtmp[l1] += t2a;
-      dtmp[l1] -= 2.0 * rai[l1] * t2a;
-      stmp += t2a * rai[l1] * rai[l1];
-    }
-
-    out.vs(i) = stmp;
-    for (int l1 = 0; l1 < 3; ++l1) out.vd(l1, i) = dtmp[l1];
-    for (int l1 = 0; l1 < 6; ++l1) out.vq(l1, i) = qtmp[l1];
-  }
-
-  return out;
-}
 
 void apply_anisotropic_h1_periodic(
     Mat &H, const Mat &S,
@@ -473,6 +346,233 @@ void apply_anisotropic_h1_periodic(
       H(mu, nu) -= eh1;
     }
   }
+}
+
+namespace {
+
+// Per-AO scalar U(ν) := Σ_α vd_α(A_ν) · R_{A_ν, α}.  Used by the centering
+// chain term R_{A_ν,α} · ∂S/∂R in the dipole-Pulay gradient.
+inline Vec compute_U_per_bf(const std::vector<core::Atom> &atoms,
+                            const std::vector<int> &bf_to_atom,
+                            const Mat3N &vd) {
+  const int nbf = static_cast<int>(bf_to_atom.size());
+  Vec U(nbf);
+  for (int nu = 0; nu < nbf; ++nu) {
+    const int A = bf_to_atom[nu];
+    U(nu) = vd(0, A) * atoms[A].x + vd(1, A) * atoms[A].y +
+            vd(2, A) * atoms[A].z;
+  }
+  return U;
+}
+
+} // namespace
+
+Mat3N anisotropic_density_pulay_gradient(
+    const std::vector<core::Atom> &atoms,
+    const std::vector<int> &bf_to_atom,
+    const Mat &P, const Mat &S,
+    const MatTriple &D_origin0,
+    const std::array<Mat, 6> &Q_origin0,
+    const std::array<MatTriple, 3> &irp,
+    const std::array<MatTriple, 6> &irrp,
+    const MatTriple &ovlp_grad,
+    const AnisotropicPotentials &pot) {
+  // Mulliken partition (matches `compute_camm_moments_periodic`):
+  //   μ_A_α   = -Σ_{ν ∈ A, μ} P_μν · D_bra_α(μ, ν)
+  //   Q_A_qp[l] = -Σ_{ν ∈ A, μ} P_μν · Q_bra_traceless[remap(l)](μ, ν)
+  //
+  // where D_bra and Q_bra are the per-atom (column-side) centered AO
+  // matrices (centering origin = R_{A_ν}).  Energy chain through density
+  // contributes
+  //   Σ_A vd_α(A) ∂μ_A_α/∂R_C |_P  +  Σ_A Σ_l vq_l(A) ∂Q_A_l/∂R_C |_P
+  // = -Σ μν P_μν · vd_α(A_ν) · ∂D_bra_α(μ,ν)/∂R_C
+  //   -Σ μν P_μν · vq_l(A_ν) · ∂Q_bra_traceless[remap(l)](μ,ν)/∂R_C
+  //
+  // Per ordered AO pair (μ, ν) with A_μ ≠ A_ν the contribution distributes
+  // to atoms A_μ and A_ν via the IBP / centering chain rule (same-atom pairs
+  // give 0 by translation invariance).
+  const int N = static_cast<int>(atoms.size());
+  const int nbf = static_cast<int>(P.rows());
+  Mat3N g = Mat3N::Zero(3, N);
+
+  Vec U = compute_U_per_bf(atoms, bf_to_atom, pot.vd);
+
+  // Quadrupole helpers: precompute the six independent vq components
+  // already paired with the corresponding Q-storage index (k in
+  // {xx, xy, xz, yy, yz, zz}). vq is in qpint order (xx, yy, zz, xy, xz, yz);
+  // the bridge map q_to_qpint[k] gives the qpint slot for storage slot k.
+  constexpr int q_to_qpint[6] = {0, 3, 4, 1, 5, 2};
+  // (α, β) pair for each q-storage slot k.
+  constexpr int kab[6][2] = {
+      {0, 0}, {0, 1}, {0, 2}, {1, 1}, {1, 2}, {2, 2},
+  };
+  // Build per-atom 3×3 vq_full(α, β) tensor (symmetric, qpint layout
+  // collapsed). Used for fast dot-products in the inner loop.
+  Eigen::Matrix<double, 3, 3, Eigen::RowMajor> dummy33;
+  (void)dummy33;
+  std::array<Eigen::Matrix3d, 1> _; // placeholder to silence unused warnings
+  (void)_;
+
+  // Precompute traceless-Cartesian q-storage of Q_origin0 for the bra-side
+  // chain through ∂D_β(O=0)/∂R; the algebraic structure δ_αγ D_β + δ_βγ D_α
+  // doesn't lift trivially to traceless form, so we handle it via raw 6-vector
+  // accumulation per pair followed by a linear traceless projection at the
+  // contraction step.
+
+  for (int mu = 0; mu < nbf; ++mu) {
+    const int Aμ = bf_to_atom[mu];
+    for (int nu = 0; nu < nbf; ++nu) {
+      const int Aν = bf_to_atom[nu];
+      if (Aμ == Aν)
+        continue;
+
+      const double Pμν = P(mu, nu);
+      const double Sμν = S(mu, nu);
+
+      // Per-pair coordinates of the col-side atom (where centering origin
+      // sits for D_bra and Q_bra).
+      const double Rν[3] = {atoms[Aν].x, atoms[Aν].y, atoms[Aν].z};
+
+      // Cache D_origin0(μ, ν) as a 3-vector for the (α, β) loops.
+      const double D0[3] = {D_origin0.x(mu, nu), D_origin0.y(mu, nu),
+                             D_origin0.z(mu, nu)};
+
+      // Cache Q_origin0(μ, ν) as a 6-vector in q-storage order.
+      const double Q0[6] = {Q_origin0[0](mu, nu), Q_origin0[1](mu, nu),
+                             Q_origin0[2](mu, nu), Q_origin0[3](mu, nu),
+                             Q_origin0[4](mu, nu), Q_origin0[5](mu, nu)};
+
+      for (int gamma = 0; gamma < 3; ++gamma) {
+        // ∂S(μ,ν)/∂R_(A_μ)γ = -⟨∂_γ φ_μ | φ_ν⟩ = -ovlp_grad.γ(μ,ν).
+        // ∂S(μ,ν)/∂R_(A_ν)γ = -⟨∂_γ φ_ν | φ_μ⟩ = -ovlp_grad.γ(ν,μ).
+        const double dS_mu = -((gamma == 0) ? ovlp_grad.x(mu, nu)
+                                : (gamma == 1) ? ovlp_grad.y(mu, nu)
+                                                : ovlp_grad.z(mu, nu));
+        const double dS_nu = -((gamma == 0) ? ovlp_grad.x(nu, mu)
+                                : (gamma == 1) ? ovlp_grad.y(nu, mu)
+                                                : ovlp_grad.z(nu, mu));
+
+        // -- DIPOLE chain ----------------------------------------------
+        // ∂D_bra_α/∂R_(A_μ)γ = δ_αγ Sμν + irp[α].γ(μ,ν) − R_{A_ν,α} · dS_mu
+        // ∂D_bra_α/∂R_(A_ν)γ = -irp[α].γ(μ,ν) − δ_αγ Sμν − R_{A_ν,α} · dS_nu
+        //
+        // g_C(γ) += -P_μν · vd_α(A_ν) · ∂D_bra_α/∂R_Cγ.
+        double dip_mu = pot.vd(gamma, Aν) * Sμν - U(nu) * dS_mu;
+        double dip_nu = -pot.vd(gamma, Aν) * Sμν - U(nu) * dS_nu;
+        // Cache irp[α].γ(μ, ν) for the (α = 0, 1, 2) indices — shared by
+        // the dipole and quadrupole chains (the latter sees ∂D_α/∂R via
+        // ∂(R · D)).
+        const double irp_g[3] = {
+            ((gamma == 0) ? irp[0].x : (gamma == 1) ? irp[0].y : irp[0].z)(mu, nu),
+            ((gamma == 0) ? irp[1].x : (gamma == 1) ? irp[1].y : irp[1].z)(mu, nu),
+            ((gamma == 0) ? irp[2].x : (gamma == 1) ? irp[2].y : irp[2].z)(mu, nu),
+        };
+        for (int alpha = 0; alpha < 3; ++alpha) {
+          dip_mu += pot.vd(alpha, Aν) * irp_g[alpha];
+          dip_nu -= pot.vd(alpha, Aν) * irp_g[alpha];
+        }
+        g(gamma, Aμ) -= Pμν * dip_mu;
+        g(gamma, Aν) -= Pμν * dip_nu;
+
+        // -- QUADRUPOLE chain ------------------------------------------
+        // Q_bra_(αβ) = Q_(αβ)(O=0) − R_{A_ν,α} D_β − R_{A_ν,β} D_α
+        //              + R_{A_ν,α} R_{A_ν,β} S
+        //
+        // Build raw (non-traceless) 6-vector ∂Q_bra/∂R_Cγ (q-storage layout
+        // {xx, xy, xz, yy, yz, zz}) for both atoms C ∈ {A_μ, A_ν}, then
+        // traceless-project (1.5×k − 0.5·δ_αβ tr) and contract with vq.
+        //
+        // Bra-side ∂D_β/∂R_(A_μ)γ = δ_βγ Sμν + irp[β].γ(μ,ν).
+        // Ket-side ∂D_β/∂R_(A_ν)γ = -irp[β].γ(μ,ν).
+        // ∂Q(O=0)/∂R: bra = irrp[k].γ; ket = -irrp[k].γ.
+        const double irrp_g_k[6] = {
+            ((gamma == 0) ? irrp[0].x : (gamma == 1) ? irrp[0].y : irrp[0].z)(mu, nu),
+            ((gamma == 0) ? irrp[1].x : (gamma == 1) ? irrp[1].y : irrp[1].z)(mu, nu),
+            ((gamma == 0) ? irrp[2].x : (gamma == 1) ? irrp[2].y : irrp[2].z)(mu, nu),
+            ((gamma == 0) ? irrp[3].x : (gamma == 1) ? irrp[3].y : irrp[3].z)(mu, nu),
+            ((gamma == 0) ? irrp[4].x : (gamma == 1) ? irrp[4].y : irrp[4].z)(mu, nu),
+            ((gamma == 0) ? irrp[5].x : (gamma == 1) ? irrp[5].y : irrp[5].z)(mu, nu),
+        };
+
+        double dQbra_mu[6] = {0, 0, 0, 0, 0, 0};
+        double dQbra_nu[6] = {0, 0, 0, 0, 0, 0};
+        for (int k = 0; k < 6; ++k) {
+          const int alpha = kab[k][0];
+          const int beta = kab[k][1];
+
+          // ∂Q(O=0)/∂R_Cγ.  IBP on ⟨φ_μ | r_α r_β | φ_ν⟩ at the bra side gives
+          //   ⟨-∂_γ φ_μ | r_α r_β | φ_ν⟩ = +irrp[k][γ] + δ_αγ D_β + δ_βγ D_α
+          // (matches the predictions verified in the irrp FD test).
+          dQbra_mu[k] += irrp_g_k[k];
+          if (alpha == gamma)
+            dQbra_mu[k] += D0[beta];
+          if (beta == gamma)
+            dQbra_mu[k] += D0[alpha];
+          // Ket side: ⟨φ_μ | r_α r_β | -∂_γ φ_ν⟩ = -irrp[k][γ] (no extra δ-D).
+          dQbra_nu[k] += -irrp_g_k[k];
+
+          // -R_{A_ν,α} · ∂D_β(O=0)/∂R_Cγ -R_{A_ν,β} · ∂D_α(O=0)/∂R_Cγ
+          // Bra-side (C = A_μ): ∂D/∂R_(A_μ)γ = δ_*γ S + irp[*].γ
+          double dDb_mu_β = (beta == gamma ? Sμν : 0.0) + irp_g[beta];
+          double dDb_mu_α = (alpha == gamma ? Sμν : 0.0) + irp_g[alpha];
+          dQbra_mu[k] += -Rν[alpha] * dDb_mu_β - Rν[beta] * dDb_mu_α;
+          // Ket-side (C = A_ν): ∂D/∂R_(A_ν)γ = -irp[*].γ
+          dQbra_nu[k] += -Rν[alpha] * (-irp_g[beta]) -
+                          Rν[beta] * (-irp_g[alpha]);
+
+          // Explicit ∂R_{A_ν}/∂R_(A_ν)γ chain (only A_ν side):
+          //   −δ_αγ D_β − δ_βγ D_α
+          //   +(δ_αγ R_β + δ_βγ R_α) · S
+          if (alpha == gamma) {
+            dQbra_nu[k] += -D0[beta] + Rν[beta] * Sμν;
+          }
+          if (beta == gamma) {
+            dQbra_nu[k] += -D0[alpha] + Rν[alpha] * Sμν;
+          }
+
+          // R_{A_ν,α} R_{A_ν,β} · ∂S/∂R_Cγ
+          dQbra_mu[k] += Rν[alpha] * Rν[beta] * dS_mu;
+          dQbra_nu[k] += Rν[alpha] * Rν[beta] * dS_nu;
+
+          (void)Q0; // Q0 itself doesn't appear in the derivative — only ∂Q.
+        }
+
+        // Linear traceless-Cartesian projection on the 6-vector
+        // (q-storage {xx, xy, xz, yy, yz, zz}):
+        //   Q'_xx = 1.5·Q_xx - 0.5·(Q_xx + Q_yy + Q_zz)
+        //   Q'_yy = 1.5·Q_yy - 0.5·(... )
+        //   Q'_zz = 1.5·Q_zz - 0.5·(... )
+        //   Q'_off = 1.5·Q_off
+        auto traceless6 = [](const double in[6], double out[6]) {
+          const double trace = in[0] + in[3] + in[5];
+          out[0] = 1.5 * in[0] - 0.5 * trace;
+          out[3] = 1.5 * in[3] - 0.5 * trace;
+          out[5] = 1.5 * in[5] - 0.5 * trace;
+          out[1] = 1.5 * in[1];
+          out[2] = 1.5 * in[2];
+          out[4] = 1.5 * in[4];
+        };
+        double dQbra_t_mu[6], dQbra_t_nu[6];
+        traceless6(dQbra_mu, dQbra_t_mu);
+        traceless6(dQbra_nu, dQbra_t_nu);
+
+        // Contract with vq (qpint order). Sum over k = 0..5 q-storage slots,
+        // mapping into qpint via q_to_qpint[k]. Subtraction sign comes from
+        //   g_C += Σ_l vq_l ∂Q_l/∂R_C  with  Q_l = -Σ μν P_μν · Q_bra_l,
+        // i.e.  g_C -= Σ_l vq_l · Pμν · ∂Q_bra_l/∂R_C.
+        double quad_mu = 0.0, quad_nu = 0.0;
+        for (int k = 0; k < 6; ++k) {
+          const double vqk = pot.vq(q_to_qpint[k], Aν);
+          quad_mu += vqk * dQbra_t_mu[k];
+          quad_nu += vqk * dQbra_t_nu[k];
+        }
+        g(gamma, Aμ) -= Pμν * quad_mu;
+        g(gamma, Aν) -= Pμν * quad_nu;
+      }
+    }
+  }
+
+  return g;
 }
 
 void apply_anisotropic_h1_kpoint(

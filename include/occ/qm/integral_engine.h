@@ -153,6 +153,20 @@ public:
   MatTriple one_electron_operator_grad(Op op,
                                        bool use_shellpair_list = true) const;
 
+  /// Multipole AO matrices with the gradient operator on the ket. For
+  /// `op == Op::dipole` libcint computes <φ_μ | r_α | ∇_β φ_ν> (9
+  /// components: α outer, β inner). For `op == Op::quadrupole` it computes
+  /// <φ_μ | r_α r_β | ∇_γ φ_ν> (27 components: row-major (α,β) outer, γ
+  /// inner). Returns one MatTriple per multipole component (3 for dipole,
+  /// 9 for quadrupole), with the inner MatTriple holding the 3 spatial
+  /// derivative components.
+  ///
+  /// Use the chain rule
+  ///   ∂M_α(μ, ν, O=0)/∂R_(atom of ν)_β = - <φ_μ | M_α | ∂_β φ_ν>
+  /// to convert these "ket-side" integrals to per-atom Cartesian gradients.
+  std::vector<MatTriple>
+  multipole_operator_grad(Op op, bool use_shellpair_list = true) const;
+
   MatSix one_electron_operator_hess(Op op,
                                     bool use_shellpair_list = true) const;
 
