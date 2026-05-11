@@ -24,10 +24,10 @@ void CpcmXSolvationModel::initialize(const Mat3N &positions_bohr,
   m_f_eps = (m_epsilon - 1.0) / (m_epsilon + m_opts.x);
 
   // CPCM cavity from atomic vdW radii. `solvation_radii` returns Bohr.
-  Vec radii = occ::solvent::cosmo::solvation_radii(atomic_numbers);
+  m_atom_radii = occ::solvent::cosmo::solvation_radii(atomic_numbers);
   m_surface = occ::solvent::surface::solvent_surface(
-      radii, atomic_numbers, positions_bohr, m_opts.probe_radius_angs,
-      /*axis_aligned=*/false);
+      m_atom_radii, atomic_numbers, positions_bohr, m_opts.probe_radius_angs,
+      /*axis_aligned=*/false, m_opts.smoothing_width_bohr);
 
   const Eigen::Index ncav =
       static_cast<Eigen::Index>(m_surface.areas.size());
@@ -76,7 +76,7 @@ Mat3N CpcmXSolvationModel::gradient() const {
     return Mat3N::Zero(3, m_atom_positions.cols());
   }
   return cosmo::gradient(m_atom_positions, m_surface, m_atomic_charges, m_sigma,
-                         m_f_eps);
+                         m_f_eps, m_atom_radii, m_opts.smoothing_width_bohr);
 }
 
 std::string CpcmXSolvationModel::name() const {

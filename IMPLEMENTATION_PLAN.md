@@ -339,11 +339,42 @@ Shipped:
   occasional cavity-mask flips in FD.
 
 Open:
-- Smooth-cavity surface generation (à la D-COSMO-RS / tblite). Removes
-  the mask-flip discontinuities and lets us tighten the FD threshold to
-  <1e-6 Ha/Bohr.
 - Periodic solvation gradient. Currently the periodic path warns and
   ignores solvation entirely (Phase 7A note).
+
+#### Phase 7G — Smooth cavity → continuous gradients — STATUS: shipped at 0.1 Bohr
+
+Shipped:
+- `occ::solvent::surface::solvent_surface(..., smoothing_width_bohr)`
+  replaces the boolean mask with `weight_j = Π_{k ≠ atom_j} smoothstep(
+  |r_j − R_k|, r_k, w)` when `w > 0`. `w = 0` (default) preserves the
+  legacy boolean cavity bit-for-bit; ContinuumSolvationModel (SMD HF/DFT)
+  callers see no change.
+- `cosmo::gradient` gains an opt-in diagonal-A term:
+  `∂A_ii/∂R_c = −½ A_ii · ∂ln(weight_i)/∂R_c`, with the smoothstep'
+  flowing rigid-attachment chain rules into the same per-atom grad
+  accumulator as the off-diagonal pieces.
+- `CpcmXOptions::smoothing_width_bohr` and the SMD model's internal
+  width default to **0.1 Bohr**. The CDS branch of SMD's gradient
+  rebuilds the CDS cavity at each FD step so smooth-weight areas
+  propagate.
+- FD validation at the default 0.1 Bohr:
+    • CpcmX model FD (isolated, fixed q): <3e-5 Ha/Bohr — essentially
+      at the FD truncation floor.
+    • CpcmX water (full pipeline): <2e-4 Ha/Bohr.
+    • SMD water (full pipeline): <2e-4 Ha/Bohr.
+    • SMD methane (full pipeline): <2e-4 Ha/Bohr.
+
+Known limitation:
+- Widening the smoothing past ~0.15 Bohr causes a sharp residual
+  climb (≈1e-2 Ha/Bohr at 0.2 Bohr). Bisection localised it to the
+  *off-diagonal* `cosmo::gradient` paths under smooth cavity — flipping
+  the diagonal-A sign changes the residual by only ~7e-4. The leading
+  hypothesis is that a second-order chain through the (now-geometry-
+  dependent) cavity weights leaks into σ at the variational fixed
+  point in a way Hellmann-Feynman doesn't immediately cancel. Not
+  blocking — 0.1 Bohr gives FD-clean gradients and the cavity is C∞
+  there.
 
 #### Phase 7C — SMD on top of the CPCM-X backbone — STATUS: shipped
 

@@ -22,6 +22,18 @@ struct CpcmXOptions {
   /// `occ::solvent::surface::solvent_surface` implementation clamps this to
   /// 0.001 Å — left as-is to match the rest of the OCC pipeline.
   double probe_radius_angs{0.4};
+  /// Smoothing width (Bohr) used by `solvent_surface` to soften the boolean
+  /// cavity mask into a continuous erf-based weight. Zero falls back to the
+  /// legacy hard-mask cavity and disables the smooth-cavity diagonal term
+  /// in the analytical gradient.
+  /// 0.1 Bohr keeps the FD residual at ~3e-5 Ha/Bohr on water, well below the
+  /// gas-phase analytical/FD floor (~1e-4 from the missing D4 CPSCF chain).
+  /// Wider smoothings put more points in the transition region; somewhere
+  /// above ~0.15 Bohr the residual climbs sharply (~1e-2 at 0.2 Bohr) — the
+  /// cause isn't yet pinned down, likely a second-order term in the
+  /// variational expansion that grows with `w`. Stick to 0.1 unless you know
+  /// what you're doing.
+  double smoothing_width_bohr{0.1};
 };
 
 /// CPCM-X (xtb-flavoured CPCM) implicit-solvent model.
@@ -69,6 +81,9 @@ private:
   // cavity analytical gradient (∂B/∂R, ∂A/∂R reference both atom and cavity
   // positions).
   Mat3N m_atom_positions;
+  // Atomic radii (Bohr) used to build the cavity; passed through to the
+  // gradient so the smooth-cavity diagonal term can reconstruct weights.
+  Vec m_atom_radii;
   occ::solvent::surface::Surface m_surface;
   // Cavity → atoms Coulomb `B(i, a) = 1 / |r_i − R_a|` (kept for per-element
   // ES decomposition `½ σ_i · φ_i` with `φ = B·q`).

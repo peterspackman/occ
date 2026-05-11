@@ -77,6 +77,12 @@ private:
   // to thread state through.
   Mat3N m_atom_positions;   // Bohr
   IVec m_atomic_numbers;
+  // ES cavity radii (Bohr) — handed to the gradient so the smooth-cavity
+  // diagonal term can reconstruct weights consistent with the cavity build.
+  Vec m_es_radii;
+  // Smoothing width used for both cavities (Bohr). See CpcmXOptions for the
+  // rationale behind the 0.1 default.
+  double m_smoothing_width_bohr{0.1};
 
   // ES branch
   occ::solvent::surface::Surface m_es_surface;

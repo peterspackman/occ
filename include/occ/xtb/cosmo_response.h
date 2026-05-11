@@ -50,17 +50,31 @@ Response build(const Mat3N &atom_positions_bohr,
 ///
 ///   ∂E_es/∂R_c = -Σ_{i: a_i=c} σ_i · g_i  +  q_c · h_c
 ///                + (1/f(ε)) · Σ_{i: a_i=c} σ_i · t_i
+///                + diagonal-A term (smooth cavity only — see below)
 ///
 ///   g_i = Σ_a  q_a · (r_i - R_a) / |r_i - R_a|³     (field at cavity i from q)
 ///   t_i = -Σ_{j≠i} σ_j · (r_i - r_j) / |r_i - r_j|³ (field at cavity i from σ)
 ///   h_c = Σ_i σ_i · (r_i - R_c) / |r_i - R_c|³      (field at atom c from σ)
 ///
-/// Atoms move with their cavity points rigidly (Lebedev attachment), so the
-/// per-element areas are geometry-independent and the diagonal of A drops out.
+/// With a boolean cavity (smoothing_width = 0), per-element areas are
+/// geometry-independent and ∂A_ii/∂R = 0. With a smooth cavity
+/// (`solvent_surface(..., smoothing_width > 0)`), each per-element area
+/// depends smoothly on every other atom's position through the smoothstep
+/// weight, giving
+///
+///   ∂A_ii/∂R_c = -½ A_ii · ∂ln(weight_i)/∂R_c
+///   ∂ln(weight_i)/∂R_c = Σ_{k ≠ a_i} (s'/s)|d_ik · ∂d_ik/∂R_c
+///
+/// where `s(d) = ½(1 + erf((d − t_k)/w))` with `t_k = r_k` (post-shift). Pass
+/// `atom_radii_bohr` and `smoothing_width_bohr` to enable this term; leave
+/// `smoothing_width_bohr = 0` to skip it (boolean-cavity default).
+///
 /// Returns 3 × N_atoms in Hartree/Bohr.
 [[nodiscard]] Mat3N
 gradient(const Mat3N &atom_positions_bohr,
          const occ::solvent::surface::Surface &surface,
-         const Vec &atom_charges, const Vec &sigma, double f_epsilon);
+         const Vec &atom_charges, const Vec &sigma, double f_epsilon,
+         const Vec &atom_radii_bohr = Vec(),
+         double smoothing_width_bohr = 0.0);
 
 } // namespace occ::xtb::cosmo

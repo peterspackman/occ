@@ -23,11 +23,11 @@ void SmdSolvationModel::initialize(const Mat3N &positions_bohr,
   // ----------------------------------------------------------------------
   // Electrostatic cavity: classical-COSMO over the SMD Coulomb surface.
   // ----------------------------------------------------------------------
-  Vec es_radii =
+  m_es_radii =
       occ::solvent::smd::intrinsic_coulomb_radii(atomic_numbers, m_params);
   m_es_surface = occ::solvent::surface::solvent_surface(
-      es_radii, atomic_numbers, positions_bohr, /*probe_radius_angs=*/0.4,
-      /*axis_aligned=*/false);
+      m_es_radii, atomic_numbers, positions_bohr, /*probe_radius_angs=*/0.4,
+      /*axis_aligned=*/false, m_smoothing_width_bohr);
 
   // CPCM ideal-conductor convention (x = 0). SMD's electrostatic term has
   // traditionally been formulated as IEFPCM, but for atom-resolved xTB the
@@ -48,7 +48,7 @@ void SmdSolvationModel::initialize(const Mat3N &positions_bohr,
   Vec cds_r = occ::solvent::smd::cds_radii(atomic_numbers, m_params);
   m_cds_surface = occ::solvent::surface::solvent_surface(
       cds_r, atomic_numbers, positions_bohr, /*probe_radius_angs=*/0.4,
-      /*axis_aligned=*/false);
+      /*axis_aligned=*/false, m_smoothing_width_bohr);
 
   Mat3N pos_angs = positions_bohr * occ::units::BOHR_TO_ANGSTROM;
   Vec sigma_atom = occ::solvent::smd::atomic_surface_tension(
@@ -117,22 +117,37 @@ Mat3N SmdSolvationModel::gradient() const {
   // -- ES branch: shared CPCM/COSMO closed-form gradient.
   if (m_sigma.size() > 0 && m_atomic_charges.size() > 0) {
     grad += cosmo::gradient(m_atom_positions, m_es_surface, m_atomic_charges,
-                            m_sigma, (m_epsilon - 1.0) / m_epsilon);
+                            m_sigma, (m_epsilon - 1.0) / m_epsilon,
+                            m_es_radii, m_smoothing_width_bohr);
   }
 
-  // -- CDS branch: frozen cavity, so areas are constant. The only
-  // geometry-dependent piece is `atomic_surface_tension(R)`, which is fast
-  // enough to FD per displaced atom (one cot-matrix evaluation per step).
-  //   E_cds = σ_atom · A_per_atom_angs · scale + γ_macro · A_total_angs · scale
-  // Only the first term depends on R; the second is constant.
+  // -- CDS branch: FD of E_cds with the CDS cavity rebuilt at each step.
+  // Rebuilding is necessary with smooth masking (weights, and thus per-atom
+  // areas, depend on geometry). For boolean masking the cavity is stable to
+  // small displacements so the result is essentially the same as the
+  // frozen-cavity FD, just slightly more expensive.
   const double scale_to_hartree =
       1.0 / (1000.0 * occ::units::AU_TO_KCAL_PER_MOL);
   const double h = 1e-4;  // Bohr
+  const double area_conv =
+      occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
+  const Vec cds_r = occ::solvent::smd::cds_radii(m_atomic_numbers, m_params);
+  const double gamma_macro =
+      occ::solvent::smd::molecular_surface_tension(m_params);
   auto e_cds_at = [&](const Mat3N &pos_bohr) {
+    auto cds_surf = occ::solvent::surface::solvent_surface(
+        cds_r, m_atomic_numbers, pos_bohr, /*probe_radius_angs=*/0.4,
+        /*axis_aligned=*/false, m_smoothing_width_bohr);
     Mat3N pos_angs = pos_bohr * occ::units::BOHR_TO_ANGSTROM;
-    Vec sigma = occ::solvent::smd::atomic_surface_tension(
+    Vec sigma_atom = occ::solvent::smd::atomic_surface_tension(
         m_params, m_atomic_numbers, pos_angs);
-    return sigma.dot(m_cds_area_per_atom_angs) * scale_to_hartree;
+    double e = 0.0;
+    for (Eigen::Index i = 0; i < cds_surf.areas.size(); ++i) {
+      const int a = cds_surf.atom_index(i);
+      const double area_angs = area_conv * cds_surf.areas(i);
+      e += (sigma_atom(a) + gamma_macro) * area_angs;
+    }
+    return e * scale_to_hartree;
   };
   for (Eigen::Index a = 0; a < natom; ++a) {
     for (int k = 0; k < 3; ++k) {

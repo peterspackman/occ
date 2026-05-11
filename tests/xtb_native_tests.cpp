@@ -895,6 +895,64 @@ TEST_CASE("Per-element surfaces: gas phase exposes none",
 // Phase 7F — Analytical solvation gradients (frozen cavity)
 // ============================================================================
 
+TEST_CASE("CPCM-X model: gradient matches FD on energy(R) at fixed q",
+          "[xtb][solvation][cpcmx][gradient][isolated]") {
+  using occ::xtb::CpcmXOptions;
+  using occ::xtb::CpcmXSolvationModel;
+
+  // Isolated test: bypass the SCF entirely. Hold q fixed; FD model.energy()
+  // against atom displacements. Tests cosmo::gradient + the model's
+  // gradient assembly in isolation from the calculator's SCF chain.
+  auto atoms = water_atoms();
+  occ::IVec nums(atoms.size());
+  occ::Mat3N pos(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    nums(i) = atoms[i].atomic_number;
+    pos(0, i) = atoms[i].x;
+    pos(1, i) = atoms[i].y;
+    pos(2, i) = atoms[i].z;
+  }
+
+  CpcmXOptions opts;
+  opts.solvent = "water";
+  CpcmXSolvationModel m(opts);
+  m.initialize(pos, nums);
+
+  // Use a representative q (water-like) and HOLD IT FIXED across FD steps.
+  occ::Vec q(3);
+  q << -0.6, 0.3, 0.3;
+  m.update(q);
+  occ::Mat3N grad_a = m.gradient();
+  const double e0 = m.energy();
+  INFO("e0 = " << e0 << "  smoothing = " << opts.smoothing_width_bohr);
+
+  // FD: re-initialize at displaced position, update with SAME q, get energy.
+  const double h = 2e-3;
+  occ::Mat3N grad_fd = occ::Mat3N::Zero(3, atoms.size());
+  for (Eigen::Index a = 0; a < (Eigen::Index)atoms.size(); ++a) {
+    for (int k = 0; k < 3; ++k) {
+      CpcmXSolvationModel mp(opts), mm(opts);
+      occ::Mat3N pp = pos, pm = pos;
+      pp(k, a) += h;
+      pm(k, a) -= h;
+      mp.initialize(pp, nums);
+      mp.update(q);
+      mm.initialize(pm, nums);
+      mm.update(q);
+      grad_fd(k, a) = (mp.energy() - mm.energy()) / (2 * h);
+    }
+  }
+
+  const double max_abs = (grad_a - grad_fd).cwiseAbs().maxCoeff();
+  INFO("analytical:\n" << grad_a);
+  INFO("FD:\n" << grad_fd);
+  INFO("diff:\n" << (grad_a - grad_fd));
+  INFO("max |analytical - FD| = " << max_abs);
+  // Pure model arithmetic, no SCF. FD truncation at this step gives a floor
+  // around mid 10⁻⁵ Ha/Bohr.
+  REQUIRE(max_abs < 1e-4);
+}
+
 TEST_CASE("CPCM-X: analytical gradient matches FD on water",
           "[xtb][solvation][cpcmx][gradient]") {
   using occ::xtb::CpcmXOptions;
@@ -902,21 +960,28 @@ TEST_CASE("CPCM-X: analytical gradient matches FD on water",
   using occ::xtb::XtbCalculator;
 
   auto water = water_molecule();
-  XtbCalculator calc(water);
+
+  // Gas-phase analytical + FD — the existing baseline residual.
+  XtbCalculator gas(water);
+  occ::Mat3N grad_gas_a = gas.gradient();
+  occ::Mat3N grad_gas_fd = gas.gradient_numerical(2e-3);
+
+  XtbCalculator solv(water);
   CpcmXOptions opts;
   opts.solvent = "water";
-  calc.set_solvation_model(std::make_shared<CpcmXSolvationModel>(opts));
+  solv.set_solvation_model(std::make_shared<CpcmXSolvationModel>(opts));
 
-  occ::Mat3N grad_analytical = calc.gradient();
-  occ::Mat3N grad_fd = calc.gradient_numerical(2e-3);
+  occ::Mat3N grad_a = solv.gradient();
+  occ::Mat3N grad_fd = solv.gradient_numerical(2e-3);
 
-  const double max_abs =
-      (grad_analytical - grad_fd).cwiseAbs().maxCoeff();
-  INFO("max |analytical - FD| = " << max_abs << " Ha/Bohr");
-  INFO("analytical:\n" << grad_analytical);
-  INFO("FD:\n" << grad_fd);
-  // Tighter than gas-phase ≤5e-5 once we add solvation? — typically yes
-  // once cavity is rigid; loosen a bit for SCF/mask noise.
+  occ::Mat3N solv_a = grad_a - grad_gas_a;
+  occ::Mat3N solv_fd = grad_fd - grad_gas_fd;
+
+  const double max_abs = (grad_a - grad_fd).cwiseAbs().maxCoeff();
+  INFO("max |analytical - FD| (total) = " << max_abs);
+  INFO("solv contribution analytical:\n" << solv_a);
+  INFO("solv contribution FD:\n" << solv_fd);
+  INFO("solv diff:\n" << (solv_a - solv_fd));
   REQUIRE(max_abs < 2e-4);
 }
 

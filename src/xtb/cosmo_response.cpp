@@ -65,7 +65,8 @@ Response build(const Mat3N &atom_positions_bohr,
 Mat3N gradient(const Mat3N &atom_positions_bohr,
                const occ::solvent::surface::Surface &surface,
                const Vec &atom_charges, const Vec &sigma,
-               double f_epsilon) {
+               double f_epsilon, const Vec &atom_radii_bohr,
+               double smoothing_width_bohr) {
   const Eigen::Index natom = atom_positions_bohr.cols();
   const Eigen::Index ncav = surface.vertices.cols();
   Mat3N grad = Mat3N::Zero(3, natom);
@@ -132,6 +133,46 @@ Mat3N gradient(const Mat3N &atom_positions_bohr,
   }
   for (Eigen::Index c = 0; c < natom; ++c) {
     grad.col(c) += atom_charges(c) * h_field.col(c);
+  }
+
+  // Smooth-cavity diagonal A term. Only contributes when the caller opts in
+  // via `smoothing_width_bohr > 0` (the cavity itself must have been built
+  // with the same smoothing for the formula to be self-consistent).
+  //
+  //   ∂A_ii/∂R_c = -½ A_ii · ∂ln(weight_i)/∂R_c
+  //   ∂ln(weight_i)/∂R_c = Σ_{k ≠ a_i} (s'/s)|d_ik · ∂d_ik/∂R_c
+  //   contribution to ∂E/∂R_c: (1/(2 f(ε))) Σ_i σ_i² ∂A_ii/∂R_c
+  //                          = -(1/(4 f(ε))) Σ_i σ_i² A_ii ∂ln(weight_i)/∂R_c
+  if (smoothing_width_bohr > 0.0 && atom_radii_bohr.size() == natom) {
+    const double sqrt_pi = std::sqrt(M_PI);
+    for (Eigen::Index i = 0; i < ncav; ++i) {
+      const int atom_i = surface.atom_index(i);
+      // A_ii = 1.07·√(4π/area_i) = 3.793051240937804 / √area_i
+      const double a_ii = 3.793051240937804 / std::sqrt(surface.areas(i));
+      const double prefac =
+          -0.25 / f_epsilon * sigma(i) * sigma(i) * a_ii;
+      const Vec3 r_i = surface.vertices.col(i);
+      for (Eigen::Index k = 0; k < natom; ++k) {
+        if (k == atom_i)
+          continue;
+        const Vec3 d_vec = r_i - atom_positions_bohr.col(k);
+        const double d = d_vec.norm();
+        if (d < 1e-12)
+          continue;
+        const double t_k = atom_radii_bohr(k);
+        const double arg = (d - t_k) / smoothing_width_bohr;
+        const double s = 0.5 * (1.0 + std::erf(arg));
+        if (s < 1e-12)
+          continue;  // weight effectively zero — contribution negligible
+        const double s_prime =
+            std::exp(-arg * arg) / (smoothing_width_bohr * sqrt_pi);
+        const double dlog_dd = s_prime / s;
+        const Vec3 d_hat = d_vec / d;
+        // ∂d_ik/∂R_atom_i = +d_hat;  ∂d_ik/∂R_k = -d_hat (rigid attachment).
+        grad.col(atom_i) += prefac * dlog_dd * d_hat;
+        grad.col(k) -= prefac * dlog_dd * d_hat;
+      }
+    }
   }
 
   return grad;
