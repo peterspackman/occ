@@ -9,6 +9,7 @@ set(OCC_XTB_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/h0.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/h0_gradient.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/scc.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/solvation_interface.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_ints.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/camm.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_damping.h"

@@ -9,7 +9,9 @@
 #include <occ/xtb/gfn2_periodic_calculator.h>
 #include <occ/xtb/periodic.h>
 #include <occ/xtb/scc.h>
+#include <occ/xtb/solvation_interface.h>
 #include <occ/xtb/xtb_result.h>
+#include <memory>
 #include <optional>
 
 namespace occ::crystal {
@@ -119,8 +121,19 @@ public:
 
   /// Enable an implicit-solvent model by name. Not yet implemented in the
   /// native backend — currently always returns `false`. Kept for API parity
-  /// with `TbliteCalculator::set_solvent`.
+  /// with `TbliteCalculator::set_solvent`. Real built-in models will land in
+  /// Phase 7B (CPCM-X) / 7C (SMD); until then, use `set_solvation_model`
+  /// directly to inject a custom `XtbSolvationModel`.
   bool set_solvent(const std::string &name);
+
+  /// Attach an `XtbSolvationModel` (or clear it by passing `nullptr`). The
+  /// model is consumed by the molecular SCC each iteration — gas-phase for
+  /// `nullptr` or a `NullSolvationModel`. No-op on the periodic path until
+  /// Phase 7B's periodic CPCM-X lands. The calculator keeps a shared
+  /// reference; the same model can be re-attached after
+  /// `update_structure(...)` and will rebuild its cavity on the next SCC.
+  void set_solvation_model(std::shared_ptr<XtbSolvationModel> model);
+  const std::shared_ptr<XtbSolvationModel> &solvation_model() const;
 
   // ---------------------------------------------------------------------
   // Geometry update — atomic numbers / shell layout are kept fixed.

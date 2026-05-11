@@ -27,6 +27,7 @@
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/repulsion.h>
 #include <occ/xtb/scc.h>
+#include <occ/xtb/solvation_interface.h>
 #include <occ/xtb/sto_ng.h>
 
 #ifndef OCC_GFN2_DATA_DIR
@@ -389,6 +390,93 @@ TEST_CASE("Full GFN2 SCC vs xtb (methane, no dispersion)",
   for (int i = 1; i <= 4; ++i) {
     REQUIRE(r.atomic_charges(i) ==
             Approx(r.atomic_charges(1)).margin(1e-3));
+  }
+}
+
+// ============================================================================
+// Phase 7A — Solvation plumbing: NullSolvationModel must not perturb numbers
+// ============================================================================
+
+TEST_CASE("Solvation plumbing: NullSolvationModel preserves gas phase",
+          "[xtb][solvation][gate]") {
+  using occ::core::Molecule;
+  using occ::xtb::NullSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  // Water — both charge-only and multipole-on paths. Atoms are in Bohr in
+  // the test helper, but XtbCalculator(Molecule) wants Å.
+  auto atoms = water_atoms();
+  occ::IVec nums(atoms.size());
+  occ::Mat3N pos_ang(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    nums(i) = atoms[i].atomic_number;
+    pos_ang(0, i) = atoms[i].x / occ::units::ANGSTROM_TO_BOHR;
+    pos_ang(1, i) = atoms[i].y / occ::units::ANGSTROM_TO_BOHR;
+    pos_ang(2, i) = atoms[i].z / occ::units::ANGSTROM_TO_BOHR;
+  }
+  Molecule water(nums, pos_ang);
+
+  SECTION("water, multipole-on") {
+    XtbCalculator gas(water);
+    const double e_gas = gas.single_point_energy();
+    const occ::Vec q_gas = gas.charges();
+
+    XtbCalculator solv(water);
+    solv.set_solvation_model(std::make_shared<NullSolvationModel>());
+    REQUIRE(solv.solvation_model() != nullptr);
+    REQUIRE(solv.solvation_model()->name() == "null");
+    const double e_solv = solv.single_point_energy();
+    const occ::Vec q_solv = solv.charges();
+
+    INFO("ΔE  = " << (e_solv - e_gas));
+    INFO("max|Δq| = " << (q_solv - q_gas).cwiseAbs().maxCoeff());
+    REQUIRE(e_solv == Approx(e_gas).margin(1e-12));
+    REQUIRE((q_solv - q_gas).cwiseAbs().maxCoeff() < 1e-12);
+  }
+
+  SECTION("water, charge-only SCC (multipoles off)") {
+    XtbCalculator gas(water);
+    gas.set_include_multipoles(false);
+    const double e_gas = gas.single_point_energy();
+
+    XtbCalculator solv(water);
+    solv.set_include_multipoles(false);
+    solv.set_solvation_model(std::make_shared<NullSolvationModel>());
+    const double e_solv = solv.single_point_energy();
+    REQUIRE(e_solv == Approx(e_gas).margin(1e-12));
+  }
+
+  SECTION("methane, multipole-on") {
+    auto m_atoms = methane_atoms();
+    occ::IVec mn(m_atoms.size());
+    occ::Mat3N mp(3, m_atoms.size());
+    for (size_t i = 0; i < m_atoms.size(); ++i) {
+      mn(i) = m_atoms[i].atomic_number;
+      mp(0, i) = m_atoms[i].x / occ::units::ANGSTROM_TO_BOHR;
+      mp(1, i) = m_atoms[i].y / occ::units::ANGSTROM_TO_BOHR;
+      mp(2, i) = m_atoms[i].z / occ::units::ANGSTROM_TO_BOHR;
+    }
+    Molecule methane(mn, mp);
+
+    XtbCalculator gas(methane);
+    const double e_gas = gas.single_point_energy();
+
+    XtbCalculator solv(methane);
+    solv.set_solvation_model(std::make_shared<NullSolvationModel>());
+    const double e_solv = solv.single_point_energy();
+    REQUIRE(e_solv == Approx(e_gas).margin(1e-12));
+  }
+
+  SECTION("clearing model restores gas phase exactly") {
+    XtbCalculator calc(water);
+    calc.set_solvation_model(std::make_shared<NullSolvationModel>());
+    (void)calc.single_point_energy();
+    calc.set_solvation_model(nullptr);
+    REQUIRE(calc.solvation_model() == nullptr);
+
+    XtbCalculator gas(water);
+    REQUIRE(calc.single_point_energy() ==
+            Approx(gas.single_point_energy()).margin(1e-12));
   }
 }
 

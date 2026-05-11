@@ -90,9 +90,9 @@ Grimme's `xtb` (`~/git/xtb`), DOI 10.1021/acs.jctc.8b01176.
    restarts from zero charges); cache D4 reference α-tables across calls.
 9. **Open-shell GFN2** (`set_num_unpaired_electrons` is currently a stub
    that throws unless n=0). GFN1/GFN0 also out of scope for v1.
-10. **Continuum solvent** (`set_solvent` is a stub returning false).
+10. **Continuum solvent** — see Phase 7 below (in progress).
 
-**Out of scope for v1**: GFN1/GFN0, solvation.
+**Out of scope for v1**: GFN1/GFN0.
 
 ---
 
@@ -237,6 +237,92 @@ Bisection plan:
 
 Estimated effort: ~300 lines + lots of careful debugging, 1–2
 sessions.
+
+### Phase 7 — Implicit solvation (CPCM-X + SMD)
+
+End goal: per-surface-element solvation contributions exposed through
+`occ cg` so the crystal-growth energy decomposition can attribute
+electrostatic + CDS energy to each surface patch and each neighbour.
+
+Decisions locked in for this work:
+- **CPCM-X first**, SMD second. CPCM-X has a tblite reference; SMD's CDS
+  is additive on top of an ES backbone we get for free from CPCM-X.
+- **Classical COSMO solver** (reuse `occ::solvent::COSMO`), not ddCOSMO.
+  Documented small (~µHa) discrepancy vs tblite's ddCOSMO.
+- **Atom-resolved** solvation potential (matches tblite; simplifies the
+  Fock-shift to a per-shell add inside the existing iso V).
+- **Per-element data** lives on a `SolventSurface`-shaped struct exposed
+  through `XtbResult` so the cg layer can consume it directly.
+
+#### Phase 7A — Solvation plumbing (no physics) — STATUS: in progress
+
+Goal: any `XtbSolvationModel` (initially a `NullSolvationModel`) plugs
+into the SCC without breaking gas-phase numbers.
+
+Touches:
+- `include/occ/xtb/solvation_interface.h` (new) — abstract
+  `XtbSolvationModel { initialize(positions, Z); update(atom_q);
+  atom_potential() const; energy() const; name() const; }` plus a
+  `NullSolvationModel`.
+- `include/occ/xtb/gfn2_engine.h`,
+  `src/xtb/gfn2_engine.cpp` — engine holds
+  `std::shared_ptr<XtbSolvationModel>`. SCC calls `initialize()` at the
+  top of `single_point()`, `update(atom_q_iter)` at the start of each
+  iteration, folds `atom_potential()[atom_of_shell(s)]` into the
+  per-shell `V`, and adds `energy()` to `scc_energy` in the breakdown.
+- `include/occ/xtb/xtb_calculator.h`,
+  `src/xtb/xtb_calculator.cpp` — `set_solvation_model(shared_ptr)`
+  forwards to the engine. Public `set_solvent(name)` stays a stub
+  (returns false) until built-in models exist (7B/7C).
+- `tests/xtb_native_tests.cpp` — gate test: `NullSolvationModel`
+  attached to water + methane must produce identical
+  `single_point_energy()` and `charges()` to gas phase (<1e-10 Ha,
+  <1e-12 e). Multipole-on path identical.
+
+Gradient interaction: with `NullSolvationModel` the analytical gradient
+is unchanged because `atom_potential()` and `energy()` are zero. Real
+models will need a gradient hook in Phase 7B+; for now the engine warns
+once if a non-null model is attached and `gradient()` is called.
+
+#### Phase 7B — CPCM-X (tblite-parity electrostatics)
+
+- `include/occ/xtb/cpcmx.h`, `src/xtb/cpcmx.cpp` (new) —
+  `CpcmXSolvationModel : XtbSolvationModel`. Cavity via the existing
+  `occ::solvent::surface` Lebedev builder, ASC via `occ::solvent::COSMO`,
+  atom-resolved potential = σ contracted against atom→cavity Coulomb
+  blocks.
+- Validate water / methanol / formamide single-point against tblite
+  CPCM/GFN2 (ε=78.4). Target <5e-5 Ha; document the residual as
+  classical-vs-ddCOSMO.
+- Analytical gradient via adjoint (`s · ∂A/∂R · σ` + nuclear-side
+  ∂φ/∂R). FD-validate to <1e-7 Ha/Bohr.
+
+#### Phase 7C — SMD on top of the CPCM-X backbone
+
+- `include/occ/xtb/smd_xtb.h`, `src/xtb/smd_xtb.cpp` (new) —
+  `SmdSolvationModel : XtbSolvationModel`. Reuses the ES solve from 7B
+  with SMD radii and ε; CDS energy adds non-self-consistent atomic-σ +
+  macroscopic-γ × surface-area terms (cavity rebuilt with SMD radii).
+- Validate SMD/GFN2 hydration free energy on a 5-molecule benchmark
+  against published numbers; qualitative match is sufficient.
+
+#### Phase 7D — Per-element exposure
+
+- `XtbResult` grows `std::optional<SolventSurface> solvent_surface;`
+  carrying `{ positions, areas, atom_index, e_coulomb_per_element,
+  e_cds_per_element }`. Mirrors `occ::cg::SMDSolventSurfaces` so cg
+  consumers can swap backends without conditionals.
+
+#### Phase 7E — cg integration
+
+- `XTBCrystalGrowthCalculator` pulls the per-element surface from
+  `XtbResult` directly (no DFT post-processing pass needed).
+- Replace scalar accumulation in `SolventSurfacePartitioner` with a
+  per-element-preserving variant; preserve the per-dimer scalars as a
+  derived view for backward compatibility.
+- Extend `cg_json.h` to dump per-element JSON:
+  `{position, area, atom_index, neighbor_index, e_coulomb, e_cds,
+  e_total}`.
 
 ### Eigensolve threading
 

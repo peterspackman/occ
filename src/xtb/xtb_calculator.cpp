@@ -115,9 +115,27 @@ bool XtbCalculator::include_dispersion() const {
 bool XtbCalculator::set_solvent(const std::string &name) {
   // Stub for API parity with TbliteCalculator. Continuum solvent isn't
   // implemented in the native backend yet — return false so callers can
-  // detect and fall back.
+  // detect and fall back. Direct injection of a custom model is available
+  // via `set_solvation_model`.
   (void)name;
   return false;
+}
+
+void XtbCalculator::set_solvation_model(
+    std::shared_ptr<XtbSolvationModel> model) {
+  if (m_calc) {
+    m_calc->set_solvation_model(model);
+  } else if (m_periodic && model) {
+    occ::log::warn(
+        "XtbCalculator::set_solvation_model: periodic SCC does not yet "
+        "consume solvation models (Phase 7B); ignoring.");
+  }
+}
+
+const std::shared_ptr<XtbSolvationModel> &
+XtbCalculator::solvation_model() const {
+  static const std::shared_ptr<XtbSolvationModel> empty;
+  return m_calc ? m_calc->solvation_model() : empty;
 }
 
 void XtbCalculator::set_num_unpaired_electrons(int n) {

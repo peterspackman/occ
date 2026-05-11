@@ -85,6 +85,21 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
         "Gfn2Engine: open-shell case not yet supported");
   }
 
+  // Initialise the (optional) implicit-solvent model at the current geometry.
+  // Models are re-initialised on every SCC so the same instance can outlive
+  // geometry updates from XtbCalculator::update_structure.
+  if (m_solvation) {
+    Mat3N positions(3, m_atoms.size());
+    IVec atomic_numbers(m_atoms.size());
+    for (size_t a = 0; a < m_atoms.size(); ++a) {
+      positions(0, a) = m_atoms[a].x;
+      positions(1, a) = m_atoms[a].y;
+      positions(2, a) = m_atoms[a].z;
+      atomic_numbers(a) = m_atoms[a].atomic_number;
+    }
+    m_solvation->initialize(positions, atomic_numbers);
+  }
+
   // Build atom-centered Bra/Ket AO multipole matrices and the molecular
   // multipole pair tensors (sd/dd/sq) on first multipole-enabled call.
   // tblite convention end-to-end — the same code path as the periodic SCC.
@@ -162,16 +177,36 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
   occ::log::info("{:=^72s}", "  GFN2-xTB self-consistent charges  ");
   occ::log::info("nbf = {}   n_shells = {}   n_electrons = {}   multipoles = {}",
                  m_nbf, m_n_shells, n_elec, include_multipoles ? "on" : "off");
+  if (m_solvation) {
+    occ::log::info("solvation: {}", m_solvation->name());
+  }
   occ::log::info("{:>4s}  {:>20s}  {:>12s}  {:>12s}", "iter", "E (Hartree)",
                  "|ΔE|", "max|Δq|");
 
   bool converged = false;
   int iter = 0;
   for (iter = 1; iter <= opts.max_iterations; ++iter) {
+    // Solvation update at the current input shell charges. Projection
+    // shell → atom matches the convention used by the AES H1 below.
+    if (m_solvation) {
+      Vec atom_q = Vec::Zero(m_atoms.size());
+      for (int s = 0; s < m_n_shells; ++s)
+        atom_q(m_shells.atom[s]) += qsh(s);
+      m_solvation->update(atom_q);
+    }
+
     // Isotropic + third-order shell potential.
     Vec V = m_J * qsh;
     for (Eigen::Index s = 0; s < V.size(); ++s) {
       V(s) += m_shells.third_order(s) * qsh(s) * qsh(s);
+    }
+    // Fold the atom-resolved solvation shift into each shell's V (each AO
+    // ultimately picks it up via the 0.5·S·(V_μ + V_ν) term that builds H).
+    if (m_solvation) {
+      const Vec &v_solv = m_solvation->atom_potential();
+      for (Eigen::Index s = 0; s < V.size(); ++s) {
+        V(s) += v_solv(m_shells.atom[s]);
+      }
     }
 
     // Start with H = H0 - 0.5 * S * (V_iso_μ + V_iso_ν).
@@ -260,8 +295,9 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
       e_third += m_shells.third_order(s) * q * q * q / 3.0;
     }
     double e_h0 = (P.cwiseProduct(m_H0)).sum();
+    double e_solv = m_solvation ? m_solvation->energy() : 0.0;
     double scc_energy =
-        e_h0 + e_es + e_third + e_aniso.aes + e_aniso.polariz;
+        e_h0 + e_es + e_third + e_aniso.aes + e_aniso.polariz + e_solv;
     double total_energy = scc_energy + m_e_rep + e_disp;
 
     double dq_max = (qsh_new - qsh).cwiseAbs().maxCoeff();
@@ -270,8 +306,10 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
                    total_energy, de, dq_max);
     occ::log::debug(
         "    breakdown: H0={:>14.6f}  ES={:>14.6f}  3rd={:>10.3e}  "
-        "AES={:>10.3e}  pol={:>10.3e}  rep={:>10.3e}  disp={:>10.3e}",
-        e_h0, e_es, e_third, e_aniso.aes, e_aniso.polariz, m_e_rep, e_disp);
+        "AES={:>10.3e}  pol={:>10.3e}  solv={:>10.3e}  rep={:>10.3e}  "
+        "disp={:>10.3e}",
+        e_h0, e_es, e_third, e_aniso.aes, e_aniso.polariz, e_solv, m_e_rep,
+        e_disp);
 
     bool e_ok = (iter > 1) && de < opts.energy_threshold;
     bool q_ok = dq_max < opts.charge_threshold;

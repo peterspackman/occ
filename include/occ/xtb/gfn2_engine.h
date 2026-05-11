@@ -9,6 +9,8 @@
 #include <occ/xtb/multipole_ewald.h>
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/scc.h>
+#include <occ/xtb/solvation_interface.h>
+#include <memory>
 
 namespace occ::xtb {
 
@@ -64,6 +66,19 @@ public:
   void set_initial_shell_charges(const Vec &qsh_init) {
     m_qsh_init = qsh_init;
   }
+
+  // Attach (or clear, by passing nullptr) an implicit-solvation model. The
+  // engine takes shared ownership; the model is called per SCC iteration to
+  // provide an atom-resolved potential shift and an energy contribution. Set
+  // before `single_point()`; `initialize()` is invoked once per SCC at the
+  // current geometry, so a single model instance can outlive geometry
+  // changes (it just gets re-initialised).
+  void set_solvation_model(std::shared_ptr<XtbSolvationModel> model) {
+    m_solvation = std::move(model);
+  }
+  const std::shared_ptr<XtbSolvationModel> &solvation_model() const {
+    return m_solvation;
+  }
   // Read back the converged shell charges (length = n_shells). Returns an
   // empty vector if no SCC has run yet.
   inline const Vec &last_shell_charges() const {
@@ -102,6 +117,9 @@ private:
   // displaced-geometry steps in optimization / Hessian FD).
   Vec m_qsh_init;
   Vec m_last_shell_charges;
+
+  // Optional implicit-solvent contribution. nullptr → gas phase (Phase 7A).
+  std::shared_ptr<XtbSolvationModel> m_solvation;
 };
 
 } // namespace occ::xtb
