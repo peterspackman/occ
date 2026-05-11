@@ -1,0 +1,90 @@
+#pragma once
+#include <occ/core/linear_algebra.h>
+#include <occ/solvent/smd_parameters.h>
+#include <occ/solvent/surface.h>
+#include <occ/xtb/solvation_interface.h>
+#include <string>
+
+namespace occ::xtb {
+
+/// SMD ("Solvation Model based on Density") for GFN-xTB.
+///
+/// Two cavities:
+///   • Electrostatic (ES) surface with SMD intrinsic Coulomb radii — feeds a
+///     classical-COSMO ASC solve (same machinery as `CpcmXSolvationModel`,
+///     just with different radii).
+///   • CDS surface with SMD CDS radii — used purely geometrically to evaluate
+///     the cavitation–dispersion–solvent rearrangement (CDS) energy
+///     `E_cds = (Σ_a σ_a(geom)·A_a + γ·A_total) / (1000·E_h→kcal)`. The CDS
+///     piece does not depend on the SCC charges; it is fixed once the
+///     geometry is known and just rides along inside `energy()`.
+///
+/// Per-element decomposition (Phase 7D handle):
+///   • `cds_energy_elements()[i] = (σ_atom_of(i) + γ)·area_i / scale` — fixed.
+///   • ES per-element energy `½·σ_i·φ_i` is reconstructible on demand from
+///     `surface_charges()` and the cavity geometry; the SCC tracks the
+///     atom-resolved view (`atom_potential()`) for Fock-shift purposes.
+class SmdSolvationModel final : public XtbSolvationModel {
+public:
+  explicit SmdSolvationModel(std::string solvent = "water");
+
+  void initialize(const Mat3N &positions_bohr,
+                  const IVec &atomic_numbers) override;
+  void update(const Vec &atomic_charges) override;
+  const Vec &atom_potential() const override { return m_v_solv; }
+  double energy() const override { return m_energy; }
+  std::string name() const override;
+
+  // ---------------------------------------------------------------------
+  // Inspection / Phase 7D hooks
+  // ---------------------------------------------------------------------
+
+  const occ::solvent::SMDSolventParameters &parameters() const {
+    return m_params;
+  }
+  double dielectric() const { return m_epsilon; }
+
+  // ES (Coulomb) surface — feeds the SCC.
+  const occ::solvent::surface::Surface &es_surface() const {
+    return m_es_surface;
+  }
+  size_t num_es_surface_points() const { return m_es_surface.areas.size(); }
+  /// Apparent surface charge σ at the latest `update(q)`. Empty until then.
+  const Vec &surface_charges() const { return m_sigma; }
+
+  // CDS surface — geometry-only.
+  const occ::solvent::surface::Surface &cds_surface() const {
+    return m_cds_surface;
+  }
+  size_t num_cds_surface_points() const { return m_cds_surface.areas.size(); }
+  /// Per-element CDS energy contribution (Hartree). Length = number of CDS
+  /// surface points. Stable across `update()` calls (geometry only).
+  const Vec &cds_energy_elements() const { return m_cds_energy_elements; }
+
+  // Energy split (last `update`).
+  double e_es() const { return m_e_es; }
+  double e_cds() const { return m_e_cds; }
+
+private:
+  std::string m_solvent;
+  occ::solvent::SMDSolventParameters m_params;
+  double m_epsilon{1.0};
+
+  // ES branch
+  occ::solvent::surface::Surface m_es_surface;
+  Mat m_G;       // ncav_es × natom
+  Mat m_J_solv;  // natom × natom (symmetric, neg-def)
+
+  // CDS branch (geometry-only)
+  occ::solvent::surface::Surface m_cds_surface;
+  Vec m_cds_energy_elements;
+  double m_e_cds{0.0};
+
+  // Refreshed per update
+  Vec m_sigma;
+  Vec m_v_solv;
+  double m_e_es{0.0};
+  double m_energy{0.0};
+};
+
+} // namespace occ::xtb

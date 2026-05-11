@@ -315,14 +315,33 @@ Open (deferred, none blocking Phase 7C):
   capped by `solvent_surface()` calling `lebedev(146)`). Likely a small
   energy shift; revisit when bit-parity matters.
 
-#### Phase 7C — SMD on top of the CPCM-X backbone
+#### Phase 7C — SMD on top of the CPCM-X backbone — STATUS: shipped
 
-- `include/occ/xtb/smd_xtb.h`, `src/xtb/smd_xtb.cpp` (new) —
-  `SmdSolvationModel : XtbSolvationModel`. Reuses the ES solve from 7B
-  with SMD radii and ε; CDS energy adds non-self-consistent atomic-σ +
-  macroscopic-γ × surface-area terms (cavity rebuilt with SMD radii).
-- Validate SMD/GFN2 hydration free energy on a 5-molecule benchmark
-  against published numbers; qualitative match is sufficient.
+Shipped:
+- Extracted the cavity-response builder into `occ::xtb::cosmo::build()`
+  (`include/occ/xtb/cosmo_response.h`, `src/xtb/cosmo_response.cpp`) so
+  the CPCM-X and SMD models share one implementation. `CpcmXSolvationModel`
+  refactored to call it; tests unchanged.
+- `include/occ/xtb/smd_xtb.h`, `src/xtb/smd_xtb.cpp`. Two cavities:
+  the ES surface uses SMD `intrinsic_coulomb_radii` and feeds through
+  `cosmo::build` exactly like CPCM-X; the CDS surface uses
+  `smd::cds_radii` and is purely geometric — every element carries a
+  fixed `(σ_atom + γ_macro) × area` contribution in Hartree. The
+  per-element CDS energy vector is exposed verbatim (Phase 7D will plug
+  this into `XtbResult`).
+- `update(q)` only refreshes the ES branch; CDS rides along in
+  `energy()`. `atom_potential()` is the ES Fock shift (CDS is q-free).
+- Tests cover: math invariants (CDS sum matches per-element sum;
+  variational consistency for the ES branch to <1e-9), SCC on water in
+  water (energy stabilises within a few-kcal/mol window),
+  hydrophobic-methane sanity (E_cds > 0). 28 new assertions in 3 cases.
+
+Open (deferred):
+- Bit-validate hydration free energies against published xtb SMD numbers
+  on a 5-molecule benchmark. Needs reference data; not blocking 7D.
+- Optionally switch the ES branch from classical-COSMO to IEFPCM to
+  match the canonical SMD formulation; both produce similar magnitudes
+  in this regime so it can wait.
 
 #### Phase 7D — Per-element exposure
 

@@ -28,6 +28,7 @@
 #include <occ/xtb/repulsion.h>
 #include <occ/xtb/cpcmx.h>
 #include <occ/xtb/scc.h>
+#include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/solvation_interface.h>
 #include <occ/xtb/sto_ng.h>
 
@@ -668,6 +669,152 @@ TEST_CASE("CPCM-X: vacuum (ε=1) in SCC matches gas phase",
 
   // ε=1 → f(ε)=0 → V_solv=0 → SCC reduces exactly to gas phase.
   REQUIRE(e_vac == Approx(e_gas).margin(1e-12));
+}
+
+// ============================================================================
+// Phase 7C — SMD: ES on intrinsic Coulomb cavity + per-element CDS terms
+// ============================================================================
+
+namespace {
+inline occ::core::Molecule methane_molecule() {
+  auto m_atoms = methane_atoms();
+  occ::IVec mn(m_atoms.size());
+  occ::Mat3N mp(3, m_atoms.size());
+  for (size_t i = 0; i < m_atoms.size(); ++i) {
+    mn(i) = m_atoms[i].atomic_number;
+    mp(0, i) = m_atoms[i].x / occ::units::ANGSTROM_TO_BOHR;
+    mp(1, i) = m_atoms[i].y / occ::units::ANGSTROM_TO_BOHR;
+    mp(2, i) = m_atoms[i].z / occ::units::ANGSTROM_TO_BOHR;
+  }
+  return {mn, mp};
+}
+} // namespace
+
+TEST_CASE("SMD-xtb: math invariants (water cavity)",
+          "[xtb][solvation][smd]") {
+  using occ::xtb::SmdSolvationModel;
+
+  auto atoms = water_atoms();
+  occ::IVec nums(atoms.size());
+  occ::Mat3N pos(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    nums(i) = atoms[i].atomic_number;
+    pos(0, i) = atoms[i].x;
+    pos(1, i) = atoms[i].y;
+    pos(2, i) = atoms[i].z;
+  }
+
+  SmdSolvationModel m("water");
+  m.initialize(pos, nums);
+
+  INFO("ncav_es  = " << m.num_es_surface_points());
+  INFO("ncav_cds = " << m.num_cds_surface_points());
+  INFO("eps      = " << m.dielectric());
+  INFO("E_cds    = " << m.e_cds() << " Ha = " << m.e_cds() * 627.5095
+                    << " kcal/mol");
+  REQUIRE(m.num_es_surface_points() > 0);
+  REQUIRE(m.num_cds_surface_points() > 0);
+  REQUIRE(m.dielectric() == Approx(78.355).margin(0.5));  // SMD water
+
+  // The is_water special-case in molecular_surface_tension makes γ_macro = 0
+  // for water; the atomic surface tensions for H/O dominate and produce a
+  // small, sign-dependent E_cds. Just require it to be defined and finite.
+  REQUIRE(std::isfinite(m.e_cds()));
+
+  SECTION("zero charges → ES energy zero; total energy = CDS only") {
+    occ::Vec q = occ::Vec::Zero(atoms.size());
+    m.update(q);
+    REQUIRE(m.e_es() == Approx(0.0).margin(1e-14));
+    REQUIRE(m.energy() == Approx(m.e_cds()).margin(1e-14));
+    REQUIRE(m.atom_potential().cwiseAbs().maxCoeff() < 1e-14);
+  }
+
+  SECTION("typical water charges → negative ES, sensible-magnitude total") {
+    occ::Vec q(3);
+    q << -0.6, 0.3, 0.3;
+    m.update(q);
+    INFO("E_es  = " << m.e_es() << " Ha (" << m.e_es() * 627.5095 << " kcal/mol)");
+    INFO("E_cds = " << m.e_cds() << " Ha (" << m.e_cds() * 627.5095
+                   << " kcal/mol)");
+    INFO("E_tot = " << m.energy() << " Ha (" << m.energy() * 627.5095
+                   << " kcal/mol)");
+    REQUIRE(m.e_es() < 0.0);
+    // ES + CDS must stay bounded (< 100 kcal/mol either way).
+    REQUIRE(std::abs(m.energy() * 627.5095) < 100.0);
+  }
+
+  SECTION("per-element CDS sum matches scalar e_cds()") {
+    REQUIRE(m.cds_energy_elements().sum() == Approx(m.e_cds()).margin(1e-12));
+  }
+
+  SECTION("variational consistency: V_solv = ∂E_es/∂q (CDS factors out)") {
+    occ::Vec q(3);
+    q << -0.6, 0.3, 0.3;
+    m.update(q);
+    occ::Vec v_analytical = m.atom_potential();
+    const double E0_es = m.e_es();
+
+    const double h = 1e-5;
+    occ::Vec v_fd(3);
+    for (Eigen::Index a = 0; a < 3; ++a) {
+      occ::Vec qp = q, qm = q;
+      qp(a) += h;
+      qm(a) -= h;
+      m.update(qp);
+      const double Ep = m.e_es();
+      m.update(qm);
+      const double Em = m.e_es();
+      v_fd(a) = (Ep - Em) / (2 * h);
+    }
+    INFO("E0_es         = " << E0_es);
+    INFO("V analytical  = " << v_analytical.transpose());
+    INFO("V finite-diff = " << v_fd.transpose());
+    REQUIRE((v_analytical - v_fd).cwiseAbs().maxCoeff() < 1e-9);
+  }
+}
+
+TEST_CASE("SMD-xtb: SCC on water in water", "[xtb][solvation][smd][scc]") {
+  using occ::xtb::SmdSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  auto water = water_molecule();
+
+  XtbCalculator gas(water);
+  const double e_gas = gas.single_point_energy();
+
+  XtbCalculator solv(water);
+  solv.set_solvation_model(std::make_shared<SmdSolvationModel>("water"));
+  const double e_solv = solv.single_point_energy();
+
+  REQUIRE(solv.last_result().converged);
+  const double dE_kcal = (e_solv - e_gas) * 627.5095;
+  INFO("ΔE_solv(water, SMD) = " << dE_kcal << " kcal/mol");
+  REQUIRE(dE_kcal < 0.0);
+  REQUIRE(dE_kcal > -30.0);
+}
+
+TEST_CASE("SMD-xtb: methane in water produces positive CDS (hydrophobic)",
+          "[xtb][solvation][smd][scc]") {
+  using occ::xtb::SmdSolvationModel;
+
+  auto m_atoms = methane_atoms();
+  occ::IVec nums(m_atoms.size());
+  occ::Mat3N pos(3, m_atoms.size());
+  for (size_t i = 0; i < m_atoms.size(); ++i) {
+    nums(i) = m_atoms[i].atomic_number;
+    pos(0, i) = m_atoms[i].x;
+    pos(1, i) = m_atoms[i].y;
+    pos(2, i) = m_atoms[i].z;
+  }
+  SmdSolvationModel m("water");
+  m.initialize(pos, nums);
+
+  // Methane is hydrophobic — the atomic surface tensions for C and H in
+  // water are positive, so E_cds > 0 even before any SCC update.
+  INFO("E_cds (CH4, water) = " << m.e_cds() << " Ha = " << m.e_cds() * 627.5095
+                                << " kcal/mol");
+  REQUIRE(m.e_cds() > 0.0);
+  REQUIRE(m.e_cds() * 627.5095 < 20.0);  // a few kcal/mol is the expected scale
 }
 
 // ============================================================================

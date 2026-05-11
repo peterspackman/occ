@@ -1,5 +1,4 @@
 #pragma once
-#include <Eigen/LU>
 #include <occ/core/linear_algebra.h>
 #include <occ/solvent/surface.h>
 #include <occ/xtb/solvation_interface.h>
@@ -65,10 +64,6 @@ private:
   double m_f_eps{0.0};
 
   occ::solvent::surface::Surface m_surface;
-  // Cached cavity → cavity LU factorisation of A (response matrix).
-  Eigen::PartialPivLU<Mat> m_lu_A;
-  // Cavity → atoms Coulomb matrix `B(i, a) = 1 / |r_i − R_a|`.
-  Mat m_B;
   // Pre-solved `−f(ε) · A^{-1} · B` (used to reconstruct σ for inspection).
   Mat m_G;
   // Atom-resolved response: `J_solv = B^T · G`. Symmetric, negative-definite.
