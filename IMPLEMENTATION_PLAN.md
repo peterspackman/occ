@@ -369,16 +369,43 @@ What's left for cg consumption:
   shape-compatible; Phase 7E supplies the adapter + cg pipeline
   changes.
 
-#### Phase 7E — cg integration
+#### Phase 7E — cg integration — STATUS: adapter shipped; driver wiring follow-up
 
-- `XTBCrystalGrowthCalculator` pulls the per-element surface from
-  `XtbResult` directly (no DFT post-processing pass needed).
-- Replace scalar accumulation in `SolventSurfacePartitioner` with a
-  per-element-preserving variant; preserve the per-dimer scalars as a
-  derived view for backward compatibility.
-- Extend `cg_json.h` to dump per-element JSON:
-  `{position, area, atom_index, neighbor_index, e_coulomb, e_cds,
-  e_total}`.
+Shipped:
+- `occ::cg::from_xtb_surfaces(const xtb::SolvationSurfaces&)` adapter
+  in `include/occ/cg/solvent_surface.h`, `src/cg/solvent_surface.cpp`.
+  Maps xtb's per-element shape onto `cg::SMDSolventSurfaces`:
+  positions/areas/energies copy verbatim; xtb's `coulomb.energies`
+  already carries the full per-element ES contribution so the bundle's
+  `electronic_energies` stays zero (cg's partitioner sums both). CPCM-X
+  (no CDS) lands with an empty cds branch; `total_solvation_energy` is
+  the xtb total.
+- End-to-end test on the acetic-acid crystal: `XtbCalculator(mol)` with
+  `SmdSolvationModel("water")` → `XtbResult.solvation_surfaces` →
+  `from_xtb_surfaces` → `SolventSurfacePartitioner.partition(neighbours,
+  surface)`. Forward sum of partitioned Coulomb / CDS contributions
+  agrees with the model's `e_es()` / `e_cds()` to 1e-9 Ha. 17 assertions
+  / 2 cases. Full cg suite at 218/218.
+
+Follow-up (data flow works end-to-end; the driver just doesn't use it
+yet):
+- `XTBCrystalGrowthCalculator` in `src/driver/crystal_growth.cpp`
+  currently shells out via the legacy `XTBCalculator` and uses a
+  desolvation-weight scheme. Switch to the in-tree path:
+    1. Construct an `SmdSolvationModel` from `opts.solvent` /
+       `opts.xtb_solvation_model`.
+    2. Run `xtb::XtbCalculator` with the model attached inside
+       `init_monomer_energies`; stash
+       `last_result().solvation_surfaces`.
+    3. Replace the weight-based scalar partitioning in
+       `process_neighbors_for_symmetry_unique_molecule` with the same
+       `SolventSurfacePartitioner` path the CE model uses, fed via
+       `from_xtb_surfaces`.
+- `cg_json.h` per-element JSON dump: `{position, area, atom_index,
+  neighbor_index, e_coulomb, e_cds, e_total}`. The data is already
+  flowing through `SMDSolventSurfaces` + the partitioner; emitting a
+  per-element JSON view is a straightforward serialise step that
+  doesn't need any new physics.
 
 ### Eigensolve threading
 
