@@ -38,8 +38,10 @@ void CpcmXSolvationModel::initialize(const Mat3N &positions_bohr,
   }
 
   auto resp = cosmo::build(positions_bohr, m_surface, m_epsilon, m_opts.x);
+  m_B = std::move(resp.B);
   m_G = std::move(resp.G);
   m_J_solv = std::move(resp.J_solv);
+  m_phi = Vec();
 
   occ::log::debug("CPCM-X: solvent='{}' eps={:.4f} f(eps)={:.4f} "
                   "ncav={} natom={}",
@@ -54,8 +56,10 @@ void CpcmXSolvationModel::update(const Vec &atomic_charges) {
   }
   if (m_G.rows() > 0) {
     m_sigma = m_G * atomic_charges;
+    m_phi = m_B * atomic_charges;
   } else {
     m_sigma = Vec();
+    m_phi = Vec();
   }
   m_v_solv = m_J_solv * atomic_charges;
   m_energy = 0.5 * atomic_charges.dot(m_v_solv);
@@ -64,6 +68,24 @@ void CpcmXSolvationModel::update(const Vec &atomic_charges) {
 std::string CpcmXSolvationModel::name() const {
   return fmt::format("CPCM-X(solvent='{}', eps={:.3f})", m_opts.solvent,
                      m_epsilon);
+}
+
+std::optional<SolvationSurfaces> CpcmXSolvationModel::surfaces() const {
+  if (m_surface.areas.size() == 0)
+    return std::nullopt;
+  SolvationSurface s;
+  s.positions = m_surface.vertices;
+  s.areas = m_surface.areas;
+  s.atom_index = m_surface.atom_index;
+  if (m_sigma.size() == s.areas.size() && m_phi.size() == s.areas.size()) {
+    // Per-element ES energy ½ σ_i · φ_i (sums to ½ q · V_solv = E_solv).
+    s.energies = 0.5 * m_sigma.array() * m_phi.array();
+  } else {
+    s.energies = Vec::Zero(s.areas.size());
+  }
+  SolvationSurfaces out;
+  out.coulomb = std::move(s);
+  return out;
 }
 
 } // namespace occ::xtb

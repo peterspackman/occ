@@ -1,8 +1,44 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
+#include <optional>
 #include <string>
 
 namespace occ::xtb {
+
+/// Per-element solvation surface data, the Phase 7D shape consumed by the
+/// crystal-growth (`occ::cg`) energy decomposition.
+///
+/// All quantities are in atomic units: positions in Bohr, areas in Bohr²,
+/// energies in Hartree. `atom_index(i)` is the atomic index this element was
+/// generated on (0-based, < num_atoms).
+struct SolvationSurface {
+  Mat3N positions;
+  Vec areas;
+  IVec atom_index;
+  Vec energies;
+
+  size_t size() const { return static_cast<size_t>(areas.size()); }
+  double total_energy() const { return energies.sum(); }
+  double total_area() const { return areas.sum(); }
+};
+
+/// Bundle of optional surfaces — `coulomb` is the electrostatic cavity, `cds`
+/// is SMD's cavitation–dispersion–solvent-rearrangement cavity. CPCM-X
+/// populates `coulomb` only; SMD populates both. `NullSolvationModel`
+/// returns no surfaces at all (the parent optional in `XtbResult` is empty).
+struct SolvationSurfaces {
+  std::optional<SolvationSurface> coulomb;
+  std::optional<SolvationSurface> cds;
+
+  double total_energy() const {
+    double e = 0.0;
+    if (coulomb)
+      e += coulomb->total_energy();
+    if (cds)
+      e += cds->total_energy();
+    return e;
+  }
+};
 
 /// Abstract interface for an implicit-solvent contribution to a GFN-xTB SCC.
 ///
@@ -39,6 +75,13 @@ public:
   virtual double energy() const = 0;
 
   virtual std::string name() const = 0;
+
+  /// Optional per-element decomposition of the latest solvation contribution.
+  /// Concrete models (CPCM-X, SMD) override; the default returns
+  /// `std::nullopt`. Reflects the state at the most recent `update(q)`.
+  virtual std::optional<SolvationSurfaces> surfaces() const {
+    return std::nullopt;
+  }
 };
 
 /// No-op solvation model — preserves gas-phase numbers. Used as the Phase 7A

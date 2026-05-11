@@ -24,7 +24,14 @@ namespace occ::xtb::cosmo {
 ///   V_solv = J_solv · q
 ///   E_solv = ½ q · V_solv = ½ σ · φ
 struct Response {
+  /// `B(i, a) = 1 / |r_i − R_a|` (ncav × natom). Kept around so callers can
+  /// reconstruct the per-element source potential `φ_i = (B · q)_i` for the
+  /// per-element energy decomposition `½ σ_i · φ_i`.
+  Mat B;
+  /// `G = −f(ε) · A^{-1} · B` (ncav × natom). σ = G · q.
   Mat G;
+  /// `J_solv = B^T · G` (natom × natom). Symmetric, negative-definite.
+  /// V_solv = J_solv · q.
   Mat J_solv;
 };
 

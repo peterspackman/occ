@@ -34,6 +34,7 @@ public:
   const Vec &atom_potential() const override { return m_v_solv; }
   double energy() const override { return m_energy; }
   std::string name() const override;
+  std::optional<SolvationSurfaces> surfaces() const override;
 
   // ---------------------------------------------------------------------
   // Inspection / Phase 7D hooks
@@ -72,6 +73,7 @@ private:
 
   // ES branch
   occ::solvent::surface::Surface m_es_surface;
+  Mat m_B;       // ncav_es × natom (kept for per-element ES decomposition)
   Mat m_G;       // ncav_es × natom
   Mat m_J_solv;  // natom × natom (symmetric, neg-def)
 
@@ -82,6 +84,7 @@ private:
 
   // Refreshed per update
   Vec m_sigma;
+  Vec m_phi;       // ncav_es: per-element source potential φ = B·q
   Vec m_v_solv;
   double m_e_es{0.0};
   double m_energy{0.0};

@@ -45,6 +45,7 @@ Response build(const Mat3N &atom_positions_bohr,
   const Eigen::Index ncav = surface.vertices.cols();
   const Eigen::Index natom = atom_positions_bohr.cols();
   if (ncav == 0) {
+    out.B = Mat(0, natom);
     out.G = Mat(0, natom);
     out.J_solv = Mat::Zero(natom, natom);
     return out;
@@ -53,10 +54,10 @@ Response build(const Mat3N &atom_positions_bohr,
   const double f_eps = (epsilon - 1.0) / (epsilon + x);
   Mat A = build_A(surface.vertices, surface.areas);
   Eigen::PartialPivLU<Mat> lu(A);
-  Mat B = build_B(surface.vertices, atom_positions_bohr);
-  out.G = lu.solve(-f_eps * B);
+  out.B = build_B(surface.vertices, atom_positions_bohr);
+  out.G = lu.solve(-f_eps * out.B);
   // B^T · G is mathematically symmetric; symmetrise to absorb round-off.
-  Mat J = B.transpose() * out.G;
+  Mat J = out.B.transpose() * out.G;
   out.J_solv = 0.5 * (J + J.transpose()).eval();
   return out;
 }

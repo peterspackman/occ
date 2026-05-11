@@ -343,12 +343,31 @@ Open (deferred):
   match the canonical SMD formulation; both produce similar magnitudes
   in this regime so it can wait.
 
-#### Phase 7D — Per-element exposure
+#### Phase 7D — Per-element exposure — STATUS: shipped
 
-- `XtbResult` grows `std::optional<SolventSurface> solvent_surface;`
-  carrying `{ positions, areas, atom_index, e_coulomb_per_element,
-  e_cds_per_element }`. Mirrors `occ::cg::SMDSolventSurfaces` so cg
-  consumers can swap backends without conditionals.
+Shipped:
+- `occ::xtb::SolvationSurface { positions, areas, atom_index, energies }`
+  and `SolvationSurfaces { coulomb?, cds? }` in
+  `include/occ/xtb/solvation_interface.h`.
+- `XtbSolvationModel::surfaces()` virtual hook (default `std::nullopt`).
+- `cosmo::Response` now keeps `B` so models can recover the per-element
+  source potential `φ = B·q` and compose `½ σ_i · φ_i` per-element ES
+  energies that sum exactly to `½ q · V_solv`.
+- `CpcmXSolvationModel::surfaces()` populates `coulomb` only; SMD
+  populates both `coulomb` (ES) and `cds` (geometric).
+- `XtbResult` grew `std::optional<SolvationSurfaces> solvation_surfaces`;
+  `Gfn2Engine` refreshes `update(q_converged)` at the end of SCC so the
+  per-element decomposition reflects the same charges the energy uses,
+  then snapshots `surfaces()` into the result.
+- Tests cover: per-element coulomb sum == E_es (CPCM-X + SMD),
+  per-element cds sum == E_cds (SMD), total sum == model.energy(),
+  shape invariants (lengths match, atom_index in valid range), no
+  surfaces for null / gas-phase paths. 23 new assertions / 4 cases.
+
+What's left for cg consumption:
+- `occ::xtb::SolvationSurface` and `occ::cg::SolventSurface` are
+  shape-compatible; Phase 7E supplies the adapter + cg pipeline
+  changes.
 
 #### Phase 7E — cg integration
 

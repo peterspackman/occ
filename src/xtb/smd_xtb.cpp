@@ -31,8 +31,10 @@ void SmdSolvationModel::initialize(const Mat3N &positions_bohr,
   // f(ε) as the CPCM-X model so the two paths share a code path.
   auto resp =
       cosmo::build(positions_bohr, m_es_surface, m_epsilon, /*x=*/0.0);
+  m_B = std::move(resp.B);
   m_G = std::move(resp.G);
   m_J_solv = std::move(resp.J_solv);
+  m_phi = Vec();
 
   // ----------------------------------------------------------------------
   // CDS cavity: pure geometry. Atomic surface tensions live in cal/(mol·Å²);
@@ -86,8 +88,10 @@ void SmdSolvationModel::update(const Vec &q) {
   }
   if (m_G.rows() > 0) {
     m_sigma = m_G * q;
+    m_phi = m_B * q;
   } else {
     m_sigma = Vec();
+    m_phi = Vec();
   }
   m_v_solv = m_J_solv * q;
   m_e_es = 0.5 * q.dot(m_v_solv);
@@ -97,6 +101,33 @@ void SmdSolvationModel::update(const Vec &q) {
 std::string SmdSolvationModel::name() const {
   return fmt::format("SMD-xtb(solvent='{}', eps={:.3f})", m_solvent,
                      m_epsilon);
+}
+
+std::optional<SolvationSurfaces> SmdSolvationModel::surfaces() const {
+  SolvationSurfaces out;
+  if (m_es_surface.areas.size() > 0) {
+    SolvationSurface s;
+    s.positions = m_es_surface.vertices;
+    s.areas = m_es_surface.areas;
+    s.atom_index = m_es_surface.atom_index;
+    if (m_sigma.size() == s.areas.size() && m_phi.size() == s.areas.size()) {
+      s.energies = 0.5 * m_sigma.array() * m_phi.array();
+    } else {
+      s.energies = Vec::Zero(s.areas.size());
+    }
+    out.coulomb = std::move(s);
+  }
+  if (m_cds_surface.areas.size() > 0) {
+    SolvationSurface s;
+    s.positions = m_cds_surface.vertices;
+    s.areas = m_cds_surface.areas;
+    s.atom_index = m_cds_surface.atom_index;
+    s.energies = m_cds_energy_elements;
+    out.cds = std::move(s);
+  }
+  if (!out.coulomb && !out.cds)
+    return std::nullopt;
+  return out;
 }
 
 } // namespace occ::xtb

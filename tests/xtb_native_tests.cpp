@@ -793,6 +793,104 @@ TEST_CASE("SMD-xtb: SCC on water in water", "[xtb][solvation][smd][scc]") {
   REQUIRE(dE_kcal > -30.0);
 }
 
+// ============================================================================
+// Phase 7D — Per-element surface exposure through XtbResult
+// ============================================================================
+
+TEST_CASE("Per-element surfaces: CPCM-X coulomb sum matches scalar energy",
+          "[xtb][solvation][cpcmx][surfaces]") {
+  using occ::xtb::CpcmXOptions;
+  using occ::xtb::CpcmXSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  auto water = water_molecule();
+  XtbCalculator calc(water);
+  CpcmXOptions opts;
+  opts.solvent = "water";
+  auto model = std::make_shared<CpcmXSolvationModel>(opts);
+  calc.set_solvation_model(model);
+  (void)calc.single_point_energy();
+
+  REQUIRE(calc.last_result().solvation_surfaces.has_value());
+  const auto &s = calc.last_result().solvation_surfaces.value();
+  REQUIRE(s.coulomb.has_value());
+  REQUIRE_FALSE(s.cds.has_value());  // CPCM-X has no CDS branch
+
+  const auto &c = s.coulomb.value();
+  REQUIRE(c.positions.cols() == c.areas.size());
+  REQUIRE(c.atom_index.size() == c.areas.size());
+  REQUIRE(c.energies.size() == c.areas.size());
+
+  // Atom indices in [0, n_atoms).
+  REQUIRE(c.atom_index.minCoeff() >= 0);
+  REQUIRE(c.atom_index.maxCoeff() < calc.num_atoms());
+
+  // Per-element sum = scalar E_solv = model.energy() at the converged q.
+  INFO("sum(per-element) = " << c.total_energy());
+  INFO("model.energy()   = " << model->energy());
+  REQUIRE(c.total_energy() == Approx(model->energy()).margin(1e-12));
+}
+
+TEST_CASE("Per-element surfaces: SMD coulomb + cds sums match split energies",
+          "[xtb][solvation][smd][surfaces]") {
+  using occ::xtb::SmdSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  auto water = water_molecule();
+  XtbCalculator calc(water);
+  auto model = std::make_shared<SmdSolvationModel>("water");
+  calc.set_solvation_model(model);
+  (void)calc.single_point_energy();
+
+  REQUIRE(calc.last_result().solvation_surfaces.has_value());
+  const auto &s = calc.last_result().solvation_surfaces.value();
+  REQUIRE(s.coulomb.has_value());
+  REQUIRE(s.cds.has_value());
+
+  const auto &c = s.coulomb.value();
+  const auto &d = s.cds.value();
+
+  // Shape consistency on both surfaces.
+  REQUIRE(c.positions.cols() == c.areas.size());
+  REQUIRE(d.positions.cols() == d.areas.size());
+  REQUIRE(c.atom_index.size() == c.areas.size());
+  REQUIRE(d.atom_index.size() == d.areas.size());
+  REQUIRE(c.atom_index.maxCoeff() < calc.num_atoms());
+  REQUIRE(d.atom_index.maxCoeff() < calc.num_atoms());
+
+  // Per-element ES sum = E_es; per-element CDS sum = E_cds; combined =
+  // model.energy().
+  INFO("E_es (sum) = " << c.total_energy() << "  vs model.e_es = "
+                      << model->e_es());
+  INFO("E_cds(sum) = " << d.total_energy() << "  vs model.e_cds= "
+                      << model->e_cds());
+  INFO("total      = " << s.total_energy() << "  vs model.energy = "
+                      << model->energy());
+  REQUIRE(c.total_energy() == Approx(model->e_es()).margin(1e-12));
+  REQUIRE(d.total_energy() == Approx(model->e_cds()).margin(1e-12));
+  REQUIRE(s.total_energy() == Approx(model->energy()).margin(1e-12));
+}
+
+TEST_CASE("Per-element surfaces: NullSolvationModel exposes none",
+          "[xtb][solvation][null][surfaces]") {
+  using occ::xtb::NullSolvationModel;
+  using occ::xtb::XtbCalculator;
+  auto water = water_molecule();
+  XtbCalculator calc(water);
+  calc.set_solvation_model(std::make_shared<NullSolvationModel>());
+  (void)calc.single_point_energy();
+  REQUIRE_FALSE(calc.last_result().solvation_surfaces.has_value());
+}
+
+TEST_CASE("Per-element surfaces: gas phase exposes none",
+          "[xtb][solvation][surfaces]") {
+  using occ::xtb::XtbCalculator;
+  auto water = water_molecule();
+  XtbCalculator calc(water);
+  (void)calc.single_point_energy();
+  REQUIRE_FALSE(calc.last_result().solvation_surfaces.has_value());
+}
+
 TEST_CASE("SMD-xtb: methane in water produces positive CDS (hydrophobic)",
           "[xtb][solvation][smd][scc]") {
   using occ::xtb::SmdSolvationModel;

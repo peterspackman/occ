@@ -1,5 +1,7 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
+#include <occ/xtb/solvation_interface.h>
+#include <optional>
 
 namespace occ::xtb {
 
@@ -40,6 +42,12 @@ struct XtbResult {
   int n_iterations{0};
   /// True if the SCC converged within the iteration / threshold limits.
   bool converged{false};
+
+  /// Per-element solvation surfaces (Phase 7D). Populated only when an
+  /// `XtbSolvationModel` is attached that exposes surface data — CPCM-X
+  /// fills `coulomb`; SMD fills both `coulomb` and `cds`; NullSolvationModel
+  /// leaves this empty.
+  std::optional<SolvationSurfaces> solvation_surfaces;
 };
 
 } // namespace occ::xtb

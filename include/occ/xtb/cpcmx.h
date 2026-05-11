@@ -47,6 +47,7 @@ public:
   const Vec &atom_potential() const override { return m_v_solv; }
   double energy() const override { return m_energy; }
   std::string name() const override;
+  std::optional<SolvationSurfaces> surfaces() const override;
 
   /// Number of cavity surface elements (post-masking). May be zero for an
   /// empty / pathological input.
@@ -64,6 +65,9 @@ private:
   double m_f_eps{0.0};
 
   occ::solvent::surface::Surface m_surface;
+  // Cavity → atoms Coulomb `B(i, a) = 1 / |r_i − R_a|` (kept for per-element
+  // ES decomposition `½ σ_i · φ_i` with `φ = B·q`).
+  Mat m_B;
   // Pre-solved `−f(ε) · A^{-1} · B` (used to reconstruct σ for inspection).
   Mat m_G;
   // Atom-resolved response: `J_solv = B^T · G`. Symmetric, negative-definite.
@@ -71,6 +75,7 @@ private:
 
   // State refreshed by `update(q)`.
   Vec m_sigma;
+  Vec m_phi;  // per-element source potential φ = B·q at the latest q
   Vec m_v_solv;
   double m_energy{0.0};
 };

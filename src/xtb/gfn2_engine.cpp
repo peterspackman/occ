@@ -318,6 +318,11 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
       Vec atom_charges = Vec::Zero(m_atoms.size());
       for (int s = 0; s < m_n_shells; ++s)
         atom_charges(m_shells.atom[s]) += qsh_new(s);
+      // Refresh solvation state at the converged charges so the per-element
+      // decomposition reflects the same q that the reported energy uses.
+      if (m_solvation) {
+        m_solvation->update(atom_charges);
+      }
       SccResult r;
       r.scc_energy = scc_energy;
       r.repulsion_energy = m_e_rep;
@@ -332,6 +337,9 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
       r.orbital_coefficients = C;
       r.n_iterations = iter;
       r.converged = true;
+      if (m_solvation) {
+        r.solvation_surfaces = m_solvation->surfaces();
+      }
       m_last_shell_charges = qsh_new;
       occ::log::info("Converged in {} iterations.", iter);
       return r;
