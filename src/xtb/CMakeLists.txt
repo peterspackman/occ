@@ -15,6 +15,7 @@ add_library(occ_xtb
     "${CMAKE_CURRENT_SOURCE_DIR}/multipole_damping.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/anisotropic.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_engine.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpcmx.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xtb_calculator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/periodic.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ewald_common.cpp"
@@ -33,6 +34,7 @@ target_link_libraries(occ_xtb
     occ_qm
     occ_dft
     occ_disp
+    occ_solvent
 )
 
 target_include_directories(occ_xtb PUBLIC 

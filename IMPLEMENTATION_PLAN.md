@@ -254,7 +254,7 @@ Decisions locked in for this work:
 - **Per-element data** lives on a `SolventSurface`-shaped struct exposed
   through `XtbResult` so the cg layer can consume it directly.
 
-#### Phase 7A — Solvation plumbing (no physics) — STATUS: in progress
+#### Phase 7A — Solvation plumbing (no physics) — STATUS: shipped (e7c81e081)
 
 Goal: any `XtbSolvationModel` (initially a `NullSolvationModel`) plugs
 into the SCC without breaking gas-phase numbers.
@@ -284,18 +284,36 @@ is unchanged because `atom_potential()` and `energy()` are zero. Real
 models will need a gradient hook in Phase 7B+; for now the engine warns
 once if a non-null model is attached and `gradient()` is called.
 
-#### Phase 7B — CPCM-X (tblite-parity electrostatics)
+#### Phase 7B — CPCM-X (tblite-parity electrostatics) — STATUS: math + SCC integration done
 
-- `include/occ/xtb/cpcmx.h`, `src/xtb/cpcmx.cpp` (new) —
-  `CpcmXSolvationModel : XtbSolvationModel`. Cavity via the existing
-  `occ::solvent::surface` Lebedev builder, ASC via `occ::solvent::COSMO`,
-  atom-resolved potential = σ contracted against atom→cavity Coulomb
-  blocks.
-- Validate water / methanol / formamide single-point against tblite
-  CPCM/GFN2 (ε=78.4). Target <5e-5 Ha; document the residual as
-  classical-vs-ddCOSMO.
+Shipped:
+- `include/occ/xtb/cpcmx.h`, `src/xtb/cpcmx.cpp`. Cavity via the existing
+  `occ::solvent::surface` 146-point Lebedev builder; A-matrix and atom→
+  cavity Coulomb B built and LU-factored once per `initialize()`; the
+  symmetric negative-definite atom-resolved response operator
+  `J_solv = −f(ε) B^T A^{-1} B` is precomputed so per-SCC `update(q)` is
+  two GEMVs.
+- CPCM ideal-conductor convention (`x = 0` in `f(ε) = (ε−1)/(ε+x)`); the
+  Klamt classical-COSMO `x = 0.5` is opt-in via `CpcmXOptions::x`.
+- Wired through `XtbCalculator::set_solvation_model`. Water in water
+  converges in 11 SCC iters with ΔE_solv ≈ −3.7 kcal/mol — sensible vs
+  the SMD experimental ΔG_solv of −6.3 kcal/mol (the rest is the missing
+  CDS term that Phase 7C adds).
+- Tests cover: math invariants (zero charges → zero E, vacuum limit
+  ε=1 → exact gas, conductor limit saturates monotonically,
+  variational consistency V_solv = ∂E/∂q to <1e-9), SCC integration
+  (E_solv < E_gas, polarisation of charges in the expected direction).
+
+Open (deferred, none blocking Phase 7C):
+- Bit-validate against tblite CPCM/GFN2 on water / methanol / formamide.
+  Needs `WITH_TBLITE=ON`; was off in this build. Target <5e-5 Ha after
+  matching tblite's exact `keps` convention (currently CPCM ideal-cond).
 - Analytical gradient via adjoint (`s · ∂A/∂R · σ` + nuclear-side
-  ∂φ/∂R). FD-validate to <1e-7 Ha/Bohr.
+  ∂φ/∂R). FD-validate to <1e-7 Ha/Bohr. Energy is right; gradient is
+  needed before solvated geometry optimisation works.
+- Increase Lebedev grid order from 146 to 590 to match tblite (currently
+  capped by `solvent_surface()` calling `lebedev(146)`). Likely a small
+  energy shift; revisit when bit-parity matters.
 
 #### Phase 7C — SMD on top of the CPCM-X backbone
 

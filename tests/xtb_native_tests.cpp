@@ -26,6 +26,7 @@
 #include <occ/xtb/periodic_gamma.h>
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/repulsion.h>
+#include <occ/xtb/cpcmx.h>
 #include <occ/xtb/scc.h>
 #include <occ/xtb/solvation_interface.h>
 #include <occ/xtb/sto_ng.h>
@@ -478,6 +479,195 @@ TEST_CASE("Solvation plumbing: NullSolvationModel preserves gas phase",
     REQUIRE(calc.single_point_energy() ==
             Approx(gas.single_point_energy()).margin(1e-12));
   }
+}
+
+// ============================================================================
+// Phase 7B — CPCM-X: cavity, ASC solve, atom-resolved response
+// ============================================================================
+
+namespace {
+// Helper: build a water Molecule (Å) from the Bohr test geometry.
+inline occ::core::Molecule water_molecule() {
+  auto atoms = water_atoms();
+  occ::IVec nums(atoms.size());
+  occ::Mat3N pos_ang(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    nums(i) = atoms[i].atomic_number;
+    pos_ang(0, i) = atoms[i].x / occ::units::ANGSTROM_TO_BOHR;
+    pos_ang(1, i) = atoms[i].y / occ::units::ANGSTROM_TO_BOHR;
+    pos_ang(2, i) = atoms[i].z / occ::units::ANGSTROM_TO_BOHR;
+  }
+  return {nums, pos_ang};
+}
+} // namespace
+
+TEST_CASE("CPCM-X: math invariants (water cavity)",
+          "[xtb][solvation][cpcmx]") {
+  using occ::xtb::CpcmXOptions;
+  using occ::xtb::CpcmXSolvationModel;
+
+  auto atoms = water_atoms();
+  occ::IVec nums(atoms.size());
+  occ::Mat3N pos(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    nums(i) = atoms[i].atomic_number;
+    pos(0, i) = atoms[i].x;
+    pos(1, i) = atoms[i].y;
+    pos(2, i) = atoms[i].z;
+  }
+
+  CpcmXOptions opts;
+  opts.solvent = "water";
+  CpcmXSolvationModel m(opts);
+  m.initialize(pos, nums);
+
+  INFO("ncav = " << m.num_surface_points());
+  INFO("eps  = " << m.dielectric());
+  INFO("f(eps) = " << m.f_epsilon());
+  REQUIRE(m.num_surface_points() > 0);
+  REQUIRE(m.dielectric() > 1.0);
+  REQUIRE(m.f_epsilon() > 0.0);
+
+  SECTION("zero charges → zero energy / potential") {
+    occ::Vec q = occ::Vec::Zero(atoms.size());
+    m.update(q);
+    REQUIRE(m.energy() == Approx(0.0).margin(1e-14));
+    REQUIRE(m.atom_potential().cwiseAbs().maxCoeff() < 1e-14);
+  }
+
+  SECTION("typical water charges → negative, sensible-magnitude energy") {
+    // Mulliken charges for water in xtb-style convention (O negative, H+).
+    occ::Vec q(3);
+    q << -0.6, 0.3, 0.3;
+    m.update(q);
+    INFO("E_solv = " << m.energy() << " Ha");
+    INFO("V_solv = " << m.atom_potential().transpose());
+    // Physical solvation of water in water: a few kcal/mol, definitely < 0.
+    REQUIRE(m.energy() < 0.0);
+    // sanity bound: > -100 kcal/mol (= -0.16 Ha)
+    REQUIRE(m.energy() > -0.16);
+  }
+
+  SECTION("variational consistency: V_solv = ∂E/∂q") {
+    occ::Vec q(3);
+    q << -0.6, 0.3, 0.3;
+    m.update(q);
+    occ::Vec v_analytical = m.atom_potential();
+    const double E0 = m.energy();
+
+    const double h = 1e-5;
+    occ::Vec v_fd(3);
+    for (Eigen::Index a = 0; a < 3; ++a) {
+      occ::Vec qp = q, qm = q;
+      qp(a) += h;
+      qm(a) -= h;
+      m.update(qp);
+      const double Ep = m.energy();
+      m.update(qm);
+      const double Em = m.energy();
+      v_fd(a) = (Ep - Em) / (2 * h);
+    }
+    INFO("E0            = " << E0);
+    INFO("V analytical  = " << v_analytical.transpose());
+    INFO("V finite-diff = " << v_fd.transpose());
+    REQUIRE((v_analytical - v_fd).cwiseAbs().maxCoeff() < 1e-9);
+  }
+
+  SECTION("vacuum limit (ε = 1) → zero solvation") {
+    CpcmXOptions o2;
+    o2.dielectric_override = 1.0;
+    CpcmXSolvationModel m2(o2);
+    m2.initialize(pos, nums);
+    occ::Vec q(3);
+    q << -0.6, 0.3, 0.3;
+    m2.update(q);
+    REQUIRE(std::abs(m2.energy()) < 1e-14);
+    REQUIRE(m2.atom_potential().cwiseAbs().maxCoeff() < 1e-14);
+  }
+
+  SECTION("conductor limit saturates monotonically") {
+    occ::Vec q(3);
+    q << -0.6, 0.3, 0.3;
+    double prev = 0.0;
+    for (double eps : {2.0, 10.0, 80.0, 1000.0}) {
+      CpcmXOptions o2;
+      o2.dielectric_override = eps;
+      CpcmXSolvationModel m2(o2);
+      m2.initialize(pos, nums);
+      m2.update(q);
+      // Each ε step screens harder ⇒ E gets more negative.
+      INFO("eps=" << eps << "  E=" << m2.energy());
+      REQUIRE(m2.energy() < prev);
+      prev = m2.energy();
+    }
+  }
+}
+
+TEST_CASE("CPCM-X: SCC integration on water",
+          "[xtb][solvation][cpcmx][scc]") {
+  using occ::xtb::CpcmXOptions;
+  using occ::xtb::CpcmXSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  auto water = water_molecule();
+
+  // Gas-phase reference.
+  XtbCalculator gas(water);
+  const double e_gas = gas.single_point_energy();
+  const occ::Vec q_gas = gas.charges();
+
+  // Solvated.
+  XtbCalculator solv(water);
+  CpcmXOptions opts;
+  opts.solvent = "water";
+  solv.set_solvation_model(std::make_shared<CpcmXSolvationModel>(opts));
+  const double e_solv = solv.single_point_energy();
+  const occ::Vec q_solv = solv.charges();
+
+  REQUIRE(solv.last_result().converged);
+  const double dE = e_solv - e_gas;
+  INFO("E_gas   = " << e_gas);
+  INFO("E_solv  = " << e_solv);
+  INFO("ΔE_solv = " << dE << " Ha = " << dE * 627.5095 << " kcal/mol");
+  INFO("q_gas   = " << q_gas.transpose());
+  INFO("q_solv  = " << q_solv.transpose());
+
+  // Solvation must stabilise the molecule.
+  REQUIRE(e_solv < e_gas);
+
+  // Magnitude should be a few-to-ten kcal/mol for water in water (purely
+  // electrostatic CPCM piece, no CDS — full SMD experimental ΔG_solv ≈
+  // −6.3 kcal/mol). Allow a wide window since we're in classical COSMO with
+  // an extreme probe-radius clamp.
+  const double dE_kcal = dE * 627.5095;
+  REQUIRE(dE_kcal < 0.0);
+  REQUIRE(dE_kcal > -50.0);
+
+  // Polarisation: H charges should become more positive (more proton-like)
+  // and the O charge more negative in solvent. Compare component-wise.
+  REQUIRE(q_solv(0) <= q_gas(0));      // O more negative
+  REQUIRE(q_solv(1) >= q_gas(1));      // H1 more positive
+  REQUIRE(q_solv(2) >= q_gas(2));      // H2 more positive
+}
+
+TEST_CASE("CPCM-X: vacuum (ε=1) in SCC matches gas phase",
+          "[xtb][solvation][cpcmx][scc]") {
+  using occ::xtb::CpcmXOptions;
+  using occ::xtb::CpcmXSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  auto water = water_molecule();
+  XtbCalculator gas(water);
+  const double e_gas = gas.single_point_energy();
+
+  XtbCalculator vac(water);
+  CpcmXOptions opts;
+  opts.dielectric_override = 1.0;
+  vac.set_solvation_model(std::make_shared<CpcmXSolvationModel>(opts));
+  const double e_vac = vac.single_point_energy();
+
+  // ε=1 → f(ε)=0 → V_solv=0 → SCC reduces exactly to gas phase.
+  REQUIRE(e_vac == Approx(e_gas).margin(1e-12));
 }
 
 // ============================================================================
