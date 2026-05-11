@@ -387,20 +387,22 @@ Shipped:
   agrees with the model's `e_es()` / `e_cds()` to 1e-9 Ha. 17 assertions
   / 2 cases. Full cg suite at 218/218.
 
-Follow-up (data flow works end-to-end; the driver just doesn't use it
-yet):
-- `XTBCrystalGrowthCalculator` in `src/driver/crystal_growth.cpp`
-  currently shells out via the legacy `XTBCalculator` and uses a
-  desolvation-weight scheme. Switch to the in-tree path:
-    1. Construct an `SmdSolvationModel` from `opts.solvent` /
-       `opts.xtb_solvation_model`.
-    2. Run `xtb::XtbCalculator` with the model attached inside
-       `init_monomer_energies`; stash
-       `last_result().solvation_surfaces`.
-    3. Replace the weight-based scalar partitioning in
-       `process_neighbors_for_symmetry_unique_molecule` with the same
-       `SolventSurfacePartitioner` path the CE model uses, fed via
-       `from_xtb_surfaces`.
+Driver migration shipped:
+- `XTBCrystalGrowthCalculator` in `src/driver/crystal_growth.cpp` now
+  drives the in-tree backend. `init_monomer_energies` runs
+  `xtb::XtbCalculator` (gas + SMD-solvated) per monomer, stashes the
+  per-element surfaces via `from_xtb_surfaces` into
+  `m_solvated_surface_properties`. `converge_lattice_energy` no longer
+  runs solvated-dimer calculations — the per-monomer surface partitioned
+  over the crystal's neighbour list replaces that scheme entirely.
+  `process_neighbors_for_symmetry_unique_molecule` now uses
+  `cg::SolventSurfacePartitioner` exactly the way the CE model does
+  (forward/reverse Coulomb + CDS contributions feeding
+  `DimerSolventTerm.ab/ba/total`).
+- `m_solvated_dimer_energies` and `m_partial_charges` deleted from the
+  XTB calculator's state — both were unique to the weight scheme.
+
+Open:
 - `cg_json.h` per-element JSON dump: `{position, area, atom_index,
   neighbor_index, e_coulomb, e_cds, e_total}`. The data is already
   flowing through `SMDSolventSurfaces` + the partitioner; emitting a
