@@ -405,13 +405,23 @@ Mat3N XtbCalculator::gradient() {
   // with per-atom vs from the anisotropic potentials so the existing
   // h0_scc_gradient Pulay term `0.5 P·(V_μ+V_ν)·∂S/∂R` absorbs the AES vs
   // contribution at the AO level (each AO inherits its shell's V_q plus its
-  // atom's vs).
+  // atom's vs). If an implicit-solvent model is attached, also fold its
+  // atom-resolved V_solv shift in: the SCF built H with this contribution,
+  // so the gradient's Pulay term must absorb it too — otherwise the SCF
+  // density response to solvation is silently dropped.
   Vec V_shell = m_calc->gamma() * m_last_result.shell_charges;
+  Vec v_solv_atom;
+  if (auto solv = m_calc->solvation_model()) {
+    v_solv_atom = solv->atom_potential();
+  }
   for (Eigen::Index s = 0; s < V_shell.size(); ++s) {
     V_shell(s) +=
         shells.third_order(s) * m_last_result.shell_charges(s) *
         m_last_result.shell_charges(s);
     V_shell(s) += pot.vs(shells.atom[s]);
+    if (v_solv_atom.size() > 0) {
+      V_shell(s) += v_solv_atom(shells.atom[s]);
+    }
   }
 
   // (1) H0 + Pulay + V_q-via-S + vs-via-S + ∂Π/∂R + dE/dCN chain.
@@ -474,8 +484,22 @@ Mat3N XtbCalculator::gradient() {
         pot_density);
   }
 
+  // (7) Implicit solvation. h0_scc_gradient already absorbed v_solv into the
+  // Pulay/Z chain via the V_shell augmentation that happens inside
+  // run_full → so the converged density derivatives are already correct.
+  // What's left is the explicit ∂E_solv/∂R at fixed (q, σ, cavity): the
+  // frozen-cavity CPCM closed form for ES, plus (for SMD) a numerical FD on
+  // the geometry-only CDS piece.
+  if (auto solv = m_calc->solvation_model()) {
+    Mat3N solv_grad = solv->gradient();
+    if (solv_grad.cols() == grad.cols()) {
+      grad += solv_grad;
+    }
+  }
+
   // last_result already carries scc_energy from `run_full` (= electronic +
-  // iso-Coulomb + 3rd-order + AES + polariz). Total adds repulsion + D4.
+  // iso-Coulomb + 3rd-order + AES + polariz + solvation if attached). Total
+  // adds repulsion + D4.
   m_last_result.dispersion_energy = e_disp;
   m_last_result.total_energy = m_last_result.scc_energy +
                                 m_last_result.repulsion_energy + e_disp;

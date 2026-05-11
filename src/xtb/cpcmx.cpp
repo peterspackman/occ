@@ -15,6 +15,9 @@ void CpcmXSolvationModel::initialize(const Mat3N &positions_bohr,
                                      const IVec &atomic_numbers) {
   const Eigen::Index natom = atomic_numbers.size();
 
+  m_atom_positions = positions_bohr;
+  m_atomic_charges = Vec();
+
   m_epsilon = (m_opts.dielectric_override > 0.0)
                   ? m_opts.dielectric_override
                   : occ::solvent::get_dielectric(m_opts.solvent);
@@ -23,7 +26,8 @@ void CpcmXSolvationModel::initialize(const Mat3N &positions_bohr,
   // CPCM cavity from atomic vdW radii. `solvation_radii` returns Bohr.
   Vec radii = occ::solvent::cosmo::solvation_radii(atomic_numbers);
   m_surface = occ::solvent::surface::solvent_surface(
-      radii, atomic_numbers, positions_bohr, m_opts.probe_radius_angs);
+      radii, atomic_numbers, positions_bohr, m_opts.probe_radius_angs,
+      /*axis_aligned=*/false);
 
   const Eigen::Index ncav =
       static_cast<Eigen::Index>(m_surface.areas.size());
@@ -54,6 +58,7 @@ void CpcmXSolvationModel::update(const Vec &atomic_charges) {
         "CpcmXSolvationModel::update: atomic_charges length mismatch "
         "(model not initialized at this geometry?)");
   }
+  m_atomic_charges = atomic_charges;
   if (m_G.rows() > 0) {
     m_sigma = m_G * atomic_charges;
     m_phi = m_B * atomic_charges;
@@ -63,6 +68,15 @@ void CpcmXSolvationModel::update(const Vec &atomic_charges) {
   }
   m_v_solv = m_J_solv * atomic_charges;
   m_energy = 0.5 * atomic_charges.dot(m_v_solv);
+}
+
+Mat3N CpcmXSolvationModel::gradient() const {
+  if (m_atom_positions.cols() == 0 || m_sigma.size() == 0 ||
+      m_atomic_charges.size() == 0) {
+    return Mat3N::Zero(3, m_atom_positions.cols());
+  }
+  return cosmo::gradient(m_atom_positions, m_surface, m_atomic_charges, m_sigma,
+                         m_f_eps);
 }
 
 std::string CpcmXSolvationModel::name() const {

@@ -891,6 +891,86 @@ TEST_CASE("Per-element surfaces: gas phase exposes none",
   REQUIRE_FALSE(calc.last_result().solvation_surfaces.has_value());
 }
 
+// ============================================================================
+// Phase 7F — Analytical solvation gradients (frozen cavity)
+// ============================================================================
+
+TEST_CASE("CPCM-X: analytical gradient matches FD on water",
+          "[xtb][solvation][cpcmx][gradient]") {
+  using occ::xtb::CpcmXOptions;
+  using occ::xtb::CpcmXSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  auto water = water_molecule();
+  XtbCalculator calc(water);
+  CpcmXOptions opts;
+  opts.solvent = "water";
+  calc.set_solvation_model(std::make_shared<CpcmXSolvationModel>(opts));
+
+  occ::Mat3N grad_analytical = calc.gradient();
+  occ::Mat3N grad_fd = calc.gradient_numerical(2e-3);
+
+  const double max_abs =
+      (grad_analytical - grad_fd).cwiseAbs().maxCoeff();
+  INFO("max |analytical - FD| = " << max_abs << " Ha/Bohr");
+  INFO("analytical:\n" << grad_analytical);
+  INFO("FD:\n" << grad_fd);
+  // Tighter than gas-phase ≤5e-5 once we add solvation? — typically yes
+  // once cavity is rigid; loosen a bit for SCF/mask noise.
+  REQUIRE(max_abs < 2e-4);
+}
+
+TEST_CASE("SMD-xtb: analytical gradient matches FD on water",
+          "[xtb][solvation][smd][gradient]") {
+  using occ::xtb::SmdSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  auto water = water_molecule();
+  XtbCalculator calc(water);
+  calc.set_solvation_model(std::make_shared<SmdSolvationModel>("water"));
+
+  // FD step deliberately on the loose side (2e-3 Bohr): SCF tolerance is 1e-7
+  // Ha, so a smaller step amplifies SCF noise more than it tightens truncation.
+  occ::Mat3N grad_analytical = calc.gradient();
+  occ::Mat3N grad_fd = calc.gradient_numerical(2e-3);
+
+  occ::Mat3N diff = grad_analytical - grad_fd;
+  const double max_abs = diff.cwiseAbs().maxCoeff();
+  INFO("max |analytical - FD| = " << max_abs << " Ha/Bohr");
+  INFO("analytical:\n" << grad_analytical);
+  INFO("FD:\n" << grad_fd);
+  REQUIRE(max_abs < 2e-4);
+}
+
+TEST_CASE("SMD-xtb: analytical gradient matches FD on methane (hydrophobic)",
+          "[xtb][solvation][smd][gradient]") {
+  using occ::xtb::SmdSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  auto m_atoms = methane_atoms();
+  occ::IVec nums(m_atoms.size());
+  occ::Mat3N pos_ang(3, m_atoms.size());
+  for (size_t i = 0; i < m_atoms.size(); ++i) {
+    nums(i) = m_atoms[i].atomic_number;
+    pos_ang(0, i) = m_atoms[i].x / occ::units::ANGSTROM_TO_BOHR;
+    pos_ang(1, i) = m_atoms[i].y / occ::units::ANGSTROM_TO_BOHR;
+    pos_ang(2, i) = m_atoms[i].z / occ::units::ANGSTROM_TO_BOHR;
+  }
+  occ::core::Molecule methane(nums, pos_ang);
+
+  XtbCalculator calc(methane);
+  calc.set_solvation_model(std::make_shared<SmdSolvationModel>("water"));
+
+  // FD step deliberately on the loose side (2e-3 Bohr): SCF tolerance is 1e-7
+  // Ha, so a smaller step amplifies SCF noise more than it tightens truncation.
+  occ::Mat3N grad_analytical = calc.gradient();
+  occ::Mat3N grad_fd = calc.gradient_numerical(2e-3);
+  const double max_abs =
+      (grad_analytical - grad_fd).cwiseAbs().maxCoeff();
+  INFO("max |analytical - FD| = " << max_abs << " Ha/Bohr");
+  REQUIRE(max_abs < 2e-4);
+}
+
 TEST_CASE("SMD-xtb: methane in water produces positive CDS (hydrophobic)",
           "[xtb][solvation][smd][scc]") {
   using occ::xtb::SmdSolvationModel;

@@ -48,6 +48,7 @@ public:
   double energy() const override { return m_energy; }
   std::string name() const override;
   std::optional<SolvationSurfaces> surfaces() const override;
+  Mat3N gradient() const override;
 
   /// Number of cavity surface elements (post-masking). May be zero for an
   /// empty / pathological input.
@@ -64,6 +65,10 @@ private:
   double m_epsilon{1.0};
   double m_f_eps{0.0};
 
+  // Atom positions (Bohr) cached at initialize() — needed for the frozen-
+  // cavity analytical gradient (∂B/∂R, ∂A/∂R reference both atom and cavity
+  // positions).
+  Mat3N m_atom_positions;
   occ::solvent::surface::Surface m_surface;
   // Cavity → atoms Coulomb `B(i, a) = 1 / |r_i − R_a|` (kept for per-element
   // ES decomposition `½ σ_i · φ_i` with `φ = B·q`).
@@ -74,6 +79,7 @@ private:
   Mat m_J_solv;
 
   // State refreshed by `update(q)`.
+  Vec m_atomic_charges;  // last q (needed alongside σ for the gradient)
   Vec m_sigma;
   Vec m_phi;  // per-element source potential φ = B·q at the latest q
   Vec m_v_solv;

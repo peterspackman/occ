@@ -82,6 +82,13 @@ public:
   virtual std::optional<SolvationSurfaces> surfaces() const {
     return std::nullopt;
   }
+
+  /// Analytical gradient of the solvation energy with respect to atomic
+  /// positions (Hartree/Bohr, 3 × N_atoms). Frozen-cavity convention — the
+  /// cavity points move rigidly with their parent atoms and per-element areas
+  /// are constant. Concrete models override; the default returns an empty
+  /// matrix so callers can detect "no gradient available" without surprise.
+  virtual Mat3N gradient() const { return Mat3N(); }
 };
 
 /// No-op solvation model — preserves gas-phase numbers. Used as the Phase 7A

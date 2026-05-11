@@ -35,6 +35,7 @@ public:
   double energy() const override { return m_energy; }
   std::string name() const override;
   std::optional<SolvationSurfaces> surfaces() const override;
+  Mat3N gradient() const override;
 
   // ---------------------------------------------------------------------
   // Inspection / Phase 7D hooks
@@ -71,6 +72,12 @@ private:
   occ::solvent::SMDSolventParameters m_params;
   double m_epsilon{1.0};
 
+  // Geometry cached at initialize() so the gradient method can recompute
+  // atomic_surface_tension at displaced positions without needing the caller
+  // to thread state through.
+  Mat3N m_atom_positions;   // Bohr
+  IVec m_atomic_numbers;
+
   // ES branch
   occ::solvent::surface::Surface m_es_surface;
   Mat m_B;       // ncav_es × natom (kept for per-element ES decomposition)
@@ -80,9 +87,15 @@ private:
   // CDS branch (geometry-only)
   occ::solvent::surface::Surface m_cds_surface;
   Vec m_cds_energy_elements;
+  // Per-atom sum of CDS surface area, converted to Å² and weighted by the
+  // per-element scale factor — precomputed so the numerical CDS gradient
+  // only needs to re-evaluate `atomic_surface_tension(R)` per FD step.
+  Vec m_cds_area_per_atom_angs;
+  double m_cds_total_area_angs{0.0};
   double m_e_cds{0.0};
 
   // Refreshed per update
+  Vec m_atomic_charges;  // last q (needed alongside σ for the ES gradient)
   Vec m_sigma;
   Vec m_phi;       // ncav_es: per-element source potential φ = B·q
   Vec m_v_solv;

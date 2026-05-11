@@ -21,7 +21,8 @@ Mat3 principal_axes(const Mat3N &positions) {
 }
 
 Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
-                        const Mat3N &positions, double solvent_radius_angs) {
+                        const Mat3N &positions, double solvent_radius_angs,
+                        bool axis_aligned) {
   const size_t N = atomic_numbers.rows();
   const double solvent_radius =
       std::min(solvent_radius_angs, 0.001) * occ::units::ANGSTROM_TO_BOHR;
@@ -31,9 +32,13 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
   Mat tmp_vertices(3, npts * N);
   Vec tmp_areas(npts * N);
   IVec tmp_atom_index(npts * N);
-  Vec3 centroid = positions.rowwise().mean();
+  // For analytical gradients the cavity must be rigidly attached to atoms; the
+  // principal-axes rotation introduces a global ∂axes/∂R chain that breaks
+  // the rigid-attachment assumption.
+  Vec3 centroid = axis_aligned ? Vec3(positions.rowwise().mean())
+                               : Vec3(Vec3::Zero());
   Mat3N centered = positions.colwise() - centroid;
-  auto axes = principal_axes(centered);
+  Mat3 axes = axis_aligned ? principal_axes(centered) : Mat3::Identity();
   centered = axes.transpose() * centered;
 
   Vec ri = radii.array();

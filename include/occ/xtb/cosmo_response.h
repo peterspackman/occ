@@ -45,4 +45,22 @@ Response build(const Mat3N &atom_positions_bohr,
                const occ::solvent::surface::Surface &surface,
                double epsilon, double x);
 
+/// Frozen-cavity analytical gradient of the polarisation energy with respect
+/// to atomic positions:
+///
+///   ∂E_es/∂R_c = -Σ_{i: a_i=c} σ_i · g_i  +  q_c · h_c
+///                + (1/f(ε)) · Σ_{i: a_i=c} σ_i · t_i
+///
+///   g_i = Σ_a  q_a · (r_i - R_a) / |r_i - R_a|³     (field at cavity i from q)
+///   t_i = -Σ_{j≠i} σ_j · (r_i - r_j) / |r_i - r_j|³ (field at cavity i from σ)
+///   h_c = Σ_i σ_i · (r_i - R_c) / |r_i - R_c|³      (field at atom c from σ)
+///
+/// Atoms move with their cavity points rigidly (Lebedev attachment), so the
+/// per-element areas are geometry-independent and the diagonal of A drops out.
+/// Returns 3 × N_atoms in Hartree/Bohr.
+[[nodiscard]] Mat3N
+gradient(const Mat3N &atom_positions_bohr,
+         const occ::solvent::surface::Surface &surface,
+         const Vec &atom_charges, const Vec &sigma, double f_epsilon);
+
 } // namespace occ::xtb::cosmo

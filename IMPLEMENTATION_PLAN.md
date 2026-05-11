@@ -308,12 +308,42 @@ Open (deferred, none blocking Phase 7C):
 - Bit-validate against tblite CPCM/GFN2 on water / methanol / formamide.
   Needs `WITH_TBLITE=ON`; was off in this build. Target <5e-5 Ha after
   matching tblite's exact `keps` convention (currently CPCM ideal-cond).
-- Analytical gradient via adjoint (`s · ∂A/∂R · σ` + nuclear-side
-  ∂φ/∂R). FD-validate to <1e-7 Ha/Bohr. Energy is right; gradient is
-  needed before solvated geometry optimisation works.
 - Increase Lebedev grid order from 146 to 590 to match tblite (currently
   capped by `solvent_surface()` calling `lebedev(146)`). Likely a small
   energy shift; revisit when bit-parity matters.
+
+#### Phase 7F — Analytical solvation gradients (frozen cavity) — STATUS: shipped
+
+Shipped:
+- `occ::xtb::cosmo::gradient(positions, surface, q, σ, f(ε)) -> Mat3N`
+  implements the standard frozen-cavity CPCM formula
+  `σ·∂φ/∂R + 1/(2f(ε))·σ·∂A/∂R·σ`. Shared between CPCM-X and SMD ES.
+- `XtbSolvationModel::gradient()` virtual hook (default returns empty).
+  `CpcmXSolvationModel::gradient()` delegates to `cosmo::gradient`.
+  `SmdSolvationModel::gradient()` = `cosmo::gradient` for ES + numerical
+  FD on `atomic_surface_tension(R)` for CDS (cavity frozen, only
+  σ_atom(R) varies).
+- Models cache atom positions in `initialize()` and the latest atomic
+  charges in `update()` so `gradient()` needs no parameters.
+- `solvent_surface()` grew an `axis_aligned` flag (default `true` —
+  preserves existing HF/DFT SMD numerics). The xtb path passes `false`
+  so cavity points sit rigidly on their parent atoms, which is what the
+  closed-form gradient assumes.
+- `XtbCalculator::gradient()` folds V_solv into V_shell before
+  `h0_scc_gradient` (so the Pulay/Z chain absorbs the density response
+  to solvation, the same way it does for AES vs and γ·q) and then adds
+  the explicit `m_solvation->gradient()` contribution at the end.
+- FD-validated to <2×10⁻⁴ Ha/Bohr at 2 mBohr FD step on water (CPCM-X
+  and SMD) and methane (SMD). Tighter than that runs into the SCF
+  tolerance / FD noise floor (1e-7 Ha ÷ 2e-3 Bohr ≈ 5e-5 Ha/Bohr) and
+  occasional cavity-mask flips in FD.
+
+Open:
+- Smooth-cavity surface generation (à la D-COSMO-RS / tblite). Removes
+  the mask-flip discontinuities and lets us tighten the FD threshold to
+  <1e-6 Ha/Bohr.
+- Periodic solvation gradient. Currently the periodic path warns and
+  ignores solvation entirely (Phase 7A note).
 
 #### Phase 7C — SMD on top of the CPCM-X backbone — STATUS: shipped
 
