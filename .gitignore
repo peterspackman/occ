@@ -45,3 +45,5 @@ coverage/
 *.cube
 *.pgrid
 *.ply
+.direnv
+.envrc

@@ -1,0 +1,116 @@
+{
+  "nodes": {
+    "dftd4-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1741937608,
+        "narHash": "sha256-aBWw9DGt0s5nGvmHQZzuZDPTWRGCsaKCrp4NylHOzqw=",
+        "owner": "peterspackman",
+        "repo": "cpp-d4",
+        "rev": "792e97c45699faf96813dd1df654fea79ab4fdcc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "peterspackman",
+        "ref": "main",
+        "repo": "cpp-d4",
+        "type": "github"
+      }
+    },
+    "fast-float-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1725816977,
+        "narHash": "sha256-MEJMPQZZZhOFiKlPAKIi0zVzaJBvjAlbSyg3wLOQ1fg=",
+        "owner": "fastfloat",
+        "repo": "fast_float",
+        "rev": "00c8c7b0d5c722d2212568d915a39ea73b08b973",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fastfloat",
+        "ref": "v6.1.6",
+        "repo": "fast_float",
+        "type": "github"
+      }
+    },
+    "gemmi-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1708169757,
+        "narHash": "sha256-JJ6YBsdL3J+d0ihuJ2Nowp40c7FkDdfTqBhDrxWgSFw=",
+        "owner": "project-gemmi",
+        "repo": "gemmi",
+        "rev": "e471b13704c3bb0a6fc53c70b838df0dfa2088e1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "project-gemmi",
+        "ref": "v0.6.5",
+        "repo": "gemmi",
+        "type": "github"
+      }
+    },
+    "lbfgspp-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1745147553,
+        "narHash": "sha256-PUzZ2jUVgHq1LJDWIWW93KnV7vBBEdZlspOrE5TcYBc=",
+        "owner": "yixuan",
+        "repo": "LBFGSpp",
+        "rev": "c524a407fb85b74807f53de5a3ca2ddbcc164e54",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yixuan",
+        "ref": "v0.4.0",
+        "repo": "LBFGSpp",
+        "type": "github"
+      }
+    },
+    "libcint-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1752539348,
+        "narHash": "sha256-JWk1B+Fz5nHxnGI5WlSynNqvkqIRvkbba8Nx3I5Tziw=",
+        "owner": "peterspackman",
+        "repo": "libcint",
+        "rev": "644c68c695ac4f20fb5838391a01931e9484650b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "peterspackman",
+        "repo": "libcint",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1769789167,
+        "narHash": "sha256-kKB3bqYJU5nzYeIROI82Ef9VtTbu4uA3YydSk/Bioa8=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "62c8382960464ceb98ea593cb8321a2cf8f9e3e5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "dftd4-src": "dftd4-src",
+        "fast-float-src": "fast-float-src",
+        "gemmi-src": "gemmi-src",
+        "lbfgspp-src": "lbfgspp-src",
+        "libcint-src": "libcint-src",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
