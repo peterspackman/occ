@@ -65,46 +65,22 @@ public:
   }
   Vec surface_polarization_energy_elements() const;
 
-  template <typename Proc>
-  Vec surface_nuclear_energy_elements(const Proc &proc) const {
-    Vec qn = proc.nuclear_electric_potential_contribution(
-        m_engine.es_cavity().vertices);
-    qn.array() *= m_asc.array();
-    return qn;
+  /// Per-element decomposition of the latest SCF in the unified
+  /// `occ::scrf::SolvationSurfaces` shape (the same one consumed by cg).
+  ///
+  /// The coulomb branch energies are `½ σ_i · φ_total_i` per element, which
+  /// is algebraically identical to `nuc_i + elec_i + pol_i` from the per-
+  /// element decomposition above. Verify:
+  ///   nuc_i + elec_i + pol_i
+  ///     = σ_i·φ_nuc_i + σ_i·φ_elec_i − ½ σ_i·φ_total_i
+  ///     = σ_i·φ_total_i − ½ σ_i·φ_total_i = ½ σ_i·φ_total_i.
+  occ::scrf::SolvationSurfaces solvation_surfaces() const {
+    return m_engine.surfaces();
   }
 
-  template <typename Proc>
-  Vec surface_electronic_energy_elements(const MolecularOrbitals &mo,
-                                         const Proc &p) const {
-    const auto &surf = m_engine.es_cavity();
-    Vec result(surf.areas.rows());
-    Mat X;
-    std::vector<core::PointCharge> point_charges;
-    point_charges.emplace_back(0, 0.0, 0.0, 0.0);
-    for (int i = 0; i < surf.areas.rows(); i++) {
-      point_charges[0].set_charge(m_asc(i));
-      point_charges[0].set_position(surf.vertices.col(i));
-
-      X = p.compute_point_charge_interaction_matrix(point_charges);
-      switch (mo.kind) {
-      case SpinorbitalKind::Restricted: {
-        result(i) =
-            2 * occ::qm::expectation<SpinorbitalKind::Restricted>(mo.D, X);
-        break;
-      }
-      case SpinorbitalKind::Unrestricted: {
-        result(i) =
-            2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(mo.D, X);
-        break;
-      }
-      case SpinorbitalKind::General: {
-        result(i) = 2 * occ::qm::expectation<SpinorbitalKind::General>(mo.D, X);
-        break;
-      }
-      }
-    }
-    return result;
-  }
+  /// Access the underlying SCRF engine — exposes the pre-factored A matrix,
+  /// surfaces, and direct ASC/V_atom accessors. Phase 2 onwards.
+  const occ::scrf::ReactionFieldEngine &engine() const { return m_engine; }
 
   void write_surface_file(const std::string &filename);
   inline std::string name() const {
@@ -336,11 +312,13 @@ public:
     return m_solvation_model.surface_polarization_energy_elements();
   }
 
-  auto surface_nuclear_energy_elements() const {
-    return m_solvation_model.surface_nuclear_energy_elements(m_proc);
+  /// Per-element decomposition in the unified `occ::scrf::SolvationSurfaces`
+  /// shape (same one consumed by cg, same one produced by the xTB pipeline).
+  occ::scrf::SolvationSurfaces solvation_surfaces() const {
+    return m_solvation_model.solvation_surfaces();
   }
-  auto surface_electronic_energy_elements(const MolecularOrbitals &mo) const {
-    return m_solvation_model.surface_electronic_energy_elements(mo, m_proc);
+  const occ::scrf::ReactionFieldEngine &engine() const {
+    return m_solvation_model.engine();
   }
 
   template <unsigned int order = 1>

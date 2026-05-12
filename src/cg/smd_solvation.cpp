@@ -1,6 +1,7 @@
 #include <fmt/os.h>
 #include <occ/cg/cg_json.h>
 #include <occ/cg/smd_solvation.h>
+#include <occ/cg/solvent_surface.h>
 #include <occ/core/point_group.h>
 #include <occ/qm/scf.h>
 
@@ -61,27 +62,17 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   double solvated_energy = scf.compute_scf_energy();
   auto solvated_wfn = scf.wavefunction();
 
-  // Collect surface data
-  SMDSolventSurfaces surfaces;
-  surfaces.coulomb.positions = proc_solv.surface_positions_coulomb();
-  surfaces.cds.positions = proc_solv.surface_positions_cds();
-  surfaces.coulomb.areas = proc_solv.surface_areas_coulomb();
-  surfaces.cds.areas = proc_solv.surface_areas_cds();
-  surfaces.cds.energies = proc_solv.surface_cds_energy_elements();
+  // Collect surface data from the unified SCRF engine. The engine reports
+  // per-element ES energies as ½σ_i·φ_total_i, which is algebraically
+  // identical to the legacy `nuc_i + elec_i + pol_i` decomposition (see
+  // `from_scrf_surfaces`); summed totals match to floating-point precision.
+  auto scrf_surfaces = proc_solv.solvation_surfaces();
+  SMDSolventSurfaces surfaces = occ::cg::from_scrf_surfaces(scrf_surfaces);
 
-  auto nuc = proc_solv.surface_nuclear_energy_elements();
-  auto elec = proc_solv.surface_electronic_energy_elements(scf.ctx.mo);
-  auto pol = proc_solv.surface_polarization_energy_elements();
-  surfaces.coulomb.energies = nuc + elec + pol;
-
-  // Debug energy components
-  occ::log::debug("sum e_nuc {:12.6f}", nuc.array().sum());
-  occ::log::debug("sum e_ele {:12.6f}", elec.array().sum());
-  occ::log::debug("sum e_pol {:12.6f}", pol.array().sum());
+  occ::log::debug("sum e_es  {:12.6f}", surfaces.coulomb.energies.array().sum());
   occ::log::debug("sum e_cds {:12.6f}", surfaces.cds.energies.array().sum());
 
-  double surface_energy = nuc.array().sum() + elec.array().sum() +
-                          pol.array().sum() +
+  double surface_energy = surfaces.coulomb.energies.array().sum() +
                           surfaces.cds.energies.array().sum();
 
   calculate_free_energy_components(surfaces, mol, original_energy,
