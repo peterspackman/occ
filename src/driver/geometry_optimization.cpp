@@ -88,7 +88,10 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
                   config.electronic.multiplicity);
   scf.set_charge_multiplicity(config.electronic.charge,
                               config.electronic.multiplicity);
-  scf.set_point_charges(config.geometry.point_charges);
+  if (!config.geometry.point_charges.empty()) {
+    scf.set_external_potential(
+        occ::qm::PointChargePotential{config.geometry.point_charges});
+  }
   if (!config.basis.df_name.empty()) {
     scf.convergence_settings.incremental_fock_threshold = 0.0;
   }

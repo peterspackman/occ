@@ -13,6 +13,7 @@
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/expectation.h>
+#include <occ/qm/external_potential.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/scf.h>
@@ -34,6 +35,8 @@ EM_JS(void, debug_log_double, (const char *msg, double val),
 void register_qm_bindings() {
   // Vector bindings
   register_vector<Shell>("VectorShell");
+  register_vector<PointCharge>("VectorPointCharge");
+  register_vector<double>("VectorDouble");
 
   // SpinorbitalKind enum
   enum_<SpinorbitalKind>("SpinorbitalKind")
@@ -448,6 +451,68 @@ void register_qm_bindings() {
                          ", " + std::to_string(hf.atoms().size()) + " atoms)>";
                 }));
 
+  // External-potential strategy engines. Build one with the charges /
+  // parameters you want, then hand it to `HartreeFockSCF.setExternalPotential`
+  // (or `KohnShamSCF.setExternalPotential` on the DFT side).
+  class_<PointChargePotential>("PointChargePotential")
+      .constructor<>()
+      .constructor(optional_override(
+          [](const std::vector<PointCharge> &charges) {
+            return PointChargePotential{charges};
+          }))
+      .property("charges", &PointChargePotential::charges)
+      .function("computePotentialMatrix",
+                optional_override([](const PointChargePotential &pot,
+                                     HartreeFock &hf) {
+                  return pot.compute_potential_matrix(hf);
+                }))
+      .function("nuclearInteractionEnergy",
+                optional_override([](const PointChargePotential &pot,
+                                     const HartreeFock &hf) {
+                  return pot.nuclear_interaction_energy(hf);
+                }))
+      .function("label",
+                optional_override([](const PointChargePotential &pot) {
+                  return std::string(pot.label());
+                }))
+      .function("toString",
+                optional_override([](const PointChargePotential &pot) {
+                  return std::string("<") + pot.descriptor() + ">";
+                }));
+
+  class_<WolfPointChargePotential>("WolfPointChargePotential")
+      .constructor<>()
+      .constructor(optional_override(
+          [](const std::vector<PointCharge> &charges,
+             const std::vector<double> &molecular_charges, double alpha,
+             double cutoff) {
+            return WolfPointChargePotential{charges, molecular_charges, alpha,
+                                            cutoff};
+          }))
+      .property("charges", &WolfPointChargePotential::charges)
+      .property("molecularCharges",
+                &WolfPointChargePotential::molecular_charges)
+      .property("alpha", &WolfPointChargePotential::alpha)
+      .property("cutoff", &WolfPointChargePotential::cutoff)
+      .function("computePotentialMatrix",
+                optional_override([](const WolfPointChargePotential &pot,
+                                     HartreeFock &hf) {
+                  return pot.compute_potential_matrix(hf);
+                }))
+      .function("nuclearInteractionEnergy",
+                optional_override([](const WolfPointChargePotential &pot,
+                                     const HartreeFock &hf) {
+                  return pot.nuclear_interaction_energy(hf);
+                }))
+      .function("label",
+                optional_override([](const WolfPointChargePotential &pot) {
+                  return std::string(pot.label());
+                }))
+      .function("toString",
+                optional_override([](const WolfPointChargePotential &pot) {
+                  return std::string("<") + pot.descriptor() + ">";
+                }));
+
   // HartreeFockSCF class binding - manual wrapper for SCF<HartreeFock>
   class_<SCF<HartreeFock>>("HartreeFockSCF")
       .constructor<HartreeFock &>()
@@ -457,6 +522,23 @@ void register_qm_bindings() {
                 &SCF<HartreeFock>::set_charge_multiplicity)
       .function("setInitialGuess",
                 &SCF<HartreeFock>::set_initial_guess_from_wfn)
+      .function("setExternalPotential",
+                optional_override([](SCF<HartreeFock> &scf,
+                                     const occ::Mat &V_ext,
+                                     double nuclear_energy,
+                                     const std::string &label) {
+                  scf.set_external_potential(V_ext, nuclear_energy, label);
+                }))
+      .function("setExternalPotentialFromPointCharges",
+                optional_override([](SCF<HartreeFock> &scf,
+                                     const PointChargePotential &pot) {
+                  scf.set_external_potential(pot);
+                }))
+      .function("setExternalPotentialFromWolf",
+                optional_override([](SCF<HartreeFock> &scf,
+                                     const WolfPointChargePotential &pot) {
+                  scf.set_external_potential(pot);
+                }))
       .function("getScfKind",
                 optional_override([](const SCF<HartreeFock> &scf) {
                   return std::string(scf.scf_kind());

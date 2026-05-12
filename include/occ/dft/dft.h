@@ -87,12 +87,17 @@ public:
       energy["electronic.nonlocal_correlation"] = m_nlc_energy;
     }
 
-    energy["total"] = energy["electronic"] + energy["nuclear.repulsion"];
-
-    const auto pcloc = energy.find("nuclear.point_charge");
-    if (pcloc != energy.end()) {
-      energy["total"] += pcloc->second;
+    double total = energy["electronic"] + energy["nuclear.repulsion"];
+    // Fold in any external-potential nuclear contribution recorded by SCF
+    // (`nuclear.<label>` — see `SCF::set_external_potential`). Skip
+    // `nuclear.repulsion`, which is already counted above.
+    for (const auto &[key, value] : energy) {
+      if (key.size() > 8 && key.compare(0, 8, "nuclear.") == 0 &&
+          key != "nuclear.repulsion") {
+        total += value;
+      }
     }
+    energy["total"] = total;
   }
   bool supports_incremental_fock_build() const { return false; }
   inline bool have_effective_core_potentials() const {

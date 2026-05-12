@@ -190,6 +190,26 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
       .def_rw("convergence_settings", &HF::convergence_settings)
       .def("set_charge_multiplicity", &HF::set_charge_multiplicity)
       .def("set_initial_guess", &HF::set_initial_guess_from_wfn)
+      .def("set_external_potential",
+           [](HF &scf, const Mat &V_ext, double nuclear_energy,
+              std::string_view label) {
+             scf.set_external_potential(V_ext, nuclear_energy, label);
+           },
+           "V_ext"_a, "nuclear_energy"_a, "label"_a,
+           "Generic external-potential entry point — provide V_ext "
+           "(nbf×nbf), nuclear–external energy, and an energy-key label.")
+      .def("set_external_potential",
+           [](HF &scf, const PointChargePotential &pot) {
+             scf.set_external_potential(pot);
+           },
+           "potential"_a,
+           "Route a `PointChargePotential` engine into SCF.")
+      .def("set_external_potential",
+           [](HF &scf, const WolfPointChargePotential &pot) {
+             scf.set_external_potential(pot);
+           },
+           "potential"_a,
+           "Route a `WolfPointChargePotential` engine into SCF.")
       .def("scf_kind", &HF::scf_kind)
       .def("run", &HF::compute_scf_energy)
       .def("compute_scf_energy", &HF::compute_scf_energy)
@@ -269,83 +289,71 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
                            hf.atoms().size());
       });
 
-  // Point charge corrected procedures
-  using PointChargeHF = PointChargeCorrectedProcedure<HartreeFock>;
-  using SCF_PointChargeHF = SCF<PointChargeHF>;
-
-  nb::class_<PointChargeHF>(m, "PointChargeHF")
-      .def(nb::init<HartreeFock &, const PointChargeList &>(),
-           "hf"_a, "point_charges"_a,
-           "Create HF procedure with external point charge potential")
-      .def("nuclear_repulsion", &PointChargeHF::nuclear_repulsion_energy)
-      .def("atoms", &PointChargeHF::atoms)
-      .def("aobasis", &PointChargeHF::aobasis)
-      .def("scf",
-           [](PointChargeHF &proc,
-              SpinorbitalKind kind = SpinorbitalKind::Restricted) {
-             return SCF_PointChargeHF(proc, kind);
+  // External-potential strategy engines. Use these on the side
+  // (compute the V_ext matrix / nuclear interaction energy directly), or
+  // hand them to `SCF.set_external_potential(potential)`.
+  nb::class_<PointChargePotential>(m, "PointChargePotential")
+      .def(nb::init<>())
+      .def("__init__",
+           [](PointChargePotential *self, PointChargeList charges) {
+             new (self) PointChargePotential{std::move(charges)};
            },
-           "kind"_a = SpinorbitalKind::Restricted,
-           "Create SCF driver for point-charge-corrected HF")
-      .def("__repr__", [](const PointChargeHF &proc) {
-        return fmt::format("<PointChargeHF ({}, {} atoms)>",
-                           proc.aobasis().name(), proc.atoms().size());
-      });
-
-  nb::class_<SCF_PointChargeHF>(m, "SCF_PointChargeHF")
-      .def(nb::init<PointChargeHF &>())
-      .def(nb::init<PointChargeHF &, SpinorbitalKind>())
-      .def_rw("convergence_settings", &SCF_PointChargeHF::convergence_settings)
-      .def("set_charge_multiplicity", &SCF_PointChargeHF::set_charge_multiplicity)
-      .def("set_initial_guess", &SCF_PointChargeHF::set_initial_guess_from_wfn)
-      .def("scf_kind", &SCF_PointChargeHF::scf_kind)
-      .def("run", &SCF_PointChargeHF::compute_scf_energy)
-      .def("compute_scf_energy", &SCF_PointChargeHF::compute_scf_energy)
-      .def("wavefunction", &SCF_PointChargeHF::wavefunction)
-      .def("__repr__", [](const SCF_PointChargeHF &scf) {
-        return fmt::format("<SCF(PointChargeHF) ({}, {} atoms)>",
-                           scf.m_procedure.aobasis().name(),
-                           scf.m_procedure.atoms().size());
-      });
-
-  // Wolf sum corrected procedures
-  using WolfHF = WolfSumCorrectedProcedure<HartreeFock>;
-  using SCF_WolfHF = SCF<WolfHF>;
-
-  nb::class_<WolfHF>(m, "WolfHF")
-      .def(nb::init<HartreeFock &, const PointChargeList &,
-                    const std::vector<double> &, double, double>(),
-           "hf"_a, "point_charges"_a, "molecular_charges"_a, "alpha"_a,
-           "cutoff"_a,
-           "Create HF procedure with Wolf sum external potential")
-      .def("nuclear_repulsion", &WolfHF::nuclear_repulsion_energy)
-      .def("atoms", &WolfHF::atoms)
-      .def("aobasis", &WolfHF::aobasis)
-      .def("scf",
-           [](WolfHF &proc, SpinorbitalKind kind = SpinorbitalKind::Restricted) {
-             return SCF_WolfHF(proc, kind);
+           "charges"_a,
+           "External point charges as a list of `PointCharge` objects.")
+      .def_rw("charges", &PointChargePotential::charges)
+      .def("compute_potential_matrix",
+           [](const PointChargePotential &pot, HartreeFock &hf) {
+             return pot.compute_potential_matrix(hf);
            },
-           "kind"_a = SpinorbitalKind::Restricted,
-           "Create SCF driver for Wolf-corrected HF")
-      .def("__repr__", [](const WolfHF &proc) {
-        return fmt::format("<WolfHF ({}, {} atoms)>", proc.aobasis().name(),
-                           proc.atoms().size());
+           "hf"_a,
+           "Build the one-electron V_ext (nbf×nbf) for `hf`.")
+      .def("nuclear_interaction_energy",
+           [](const PointChargePotential &pot, const HartreeFock &hf) {
+             return pot.nuclear_interaction_energy(hf);
+           },
+           "hf"_a,
+           "Nuclear–external Coulomb interaction energy for `hf`.")
+      .def("label", [](const PointChargePotential &pot) {
+        return std::string(pot.label());
+      })
+      .def("__repr__", [](const PointChargePotential &pot) {
+        return fmt::format("<{}>", pot.descriptor());
       });
 
-  nb::class_<SCF_WolfHF>(m, "SCF_WolfHF")
-      .def(nb::init<WolfHF &>())
-      .def(nb::init<WolfHF &, SpinorbitalKind>())
-      .def_rw("convergence_settings", &SCF_WolfHF::convergence_settings)
-      .def("set_charge_multiplicity", &SCF_WolfHF::set_charge_multiplicity)
-      .def("set_initial_guess", &SCF_WolfHF::set_initial_guess_from_wfn)
-      .def("scf_kind", &SCF_WolfHF::scf_kind)
-      .def("run", &SCF_WolfHF::compute_scf_energy)
-      .def("compute_scf_energy", &SCF_WolfHF::compute_scf_energy)
-      .def("wavefunction", &SCF_WolfHF::wavefunction)
-      .def("__repr__", [](const SCF_WolfHF &scf) {
-        return fmt::format("<SCF(WolfHF) ({}, {} atoms)>",
-                           scf.m_procedure.aobasis().name(),
-                           scf.m_procedure.atoms().size());
+  nb::class_<WolfPointChargePotential>(m, "WolfPointChargePotential")
+      .def(nb::init<>())
+      .def("__init__",
+           [](WolfPointChargePotential *self, PointChargeList charges,
+              std::vector<double> molecular_charges, double alpha,
+              double cutoff) {
+             new (self) WolfPointChargePotential{std::move(charges),
+                                                  std::move(molecular_charges),
+                                                  alpha, cutoff};
+           },
+           "charges"_a, "molecular_charges"_a, "alpha"_a, "cutoff"_a,
+           "Wolf-summed periodic point charges. `alpha` in 1/Å, `cutoff` "
+           "in Å; `molecular_charges` are the per-atom partial charges of "
+           "the embedded molecule.")
+      .def_rw("charges", &WolfPointChargePotential::charges)
+      .def_rw("molecular_charges",
+              &WolfPointChargePotential::molecular_charges)
+      .def_rw("alpha", &WolfPointChargePotential::alpha)
+      .def_rw("cutoff", &WolfPointChargePotential::cutoff)
+      .def("compute_potential_matrix",
+           [](const WolfPointChargePotential &pot, HartreeFock &hf) {
+             return pot.compute_potential_matrix(hf);
+           },
+           "hf"_a)
+      .def("nuclear_interaction_energy",
+           [](const WolfPointChargePotential &pot, const HartreeFock &hf) {
+             return pot.nuclear_interaction_energy(hf);
+           },
+           "hf"_a)
+      .def("label", [](const WolfPointChargePotential &pot) {
+        return std::string(pot.label());
+      })
+      .def("__repr__", [](const WolfPointChargePotential &pot) {
+        return fmt::format("<{}>", pot.descriptor());
       });
 
   // Hessian evaluator for HartreeFock

@@ -243,7 +243,6 @@ template <SCFMethod P> void SCF<P>::set_conditioning_orthogonalizer() {
 template <SCFMethod P> void SCF<P>::set_core_matrices() {
 
   bool calc_ecp = m_procedure.have_effective_core_potentials();
-  bool calc_pc = ctx.point_charges.size() > 0;
   switch (ctx.mo.kind) {
   case SpinorbitalKind::Restricted: {
     ctx.S = m_procedure.compute_overlap_matrix();
@@ -251,10 +250,6 @@ template <SCFMethod P> void SCF<P>::set_core_matrices() {
     ctx.V = m_procedure.compute_nuclear_attraction_matrix();
     if (calc_ecp) {
       ctx.Vecp = m_procedure.compute_effective_core_potential_matrix();
-    }
-    if (calc_pc) {
-      ctx.V_ext = m_procedure.compute_point_charge_interaction_matrix(
-          ctx.point_charges);
     }
     break;
   }
@@ -270,11 +265,6 @@ template <SCFMethod P> void SCF<P>::set_core_matrices() {
           m_procedure.compute_effective_core_potential_matrix();
       block::b(ctx.Vecp) = block::a(ctx.Vecp);
     }
-    if (calc_pc) {
-      block::a(ctx.V_ext) = m_procedure.compute_point_charge_interaction_matrix(
-          ctx.point_charges);
-      block::b(ctx.V_ext) = block::a(ctx.V_ext);
-    }
     break;
   }
   case SpinorbitalKind::General: {
@@ -289,16 +279,11 @@ template <SCFMethod P> void SCF<P>::set_core_matrices() {
           m_procedure.compute_effective_core_potential_matrix();
       block::bb(ctx.Vecp) = block::aa(ctx.Vecp);
     }
-    if (calc_pc) {
-      block::aa(ctx.V_ext) =
-          m_procedure.compute_point_charge_interaction_matrix(
-              ctx.point_charges);
-      block::bb(ctx.V_ext) = block::aa(ctx.V_ext);
-    }
-
     break;
   }
   }
+  // `ctx.V_ext` is populated by `set_external_potential(...)` and stays
+  // zero otherwise — see `<occ/qm/external_potential.h>`.
   ctx.H = ctx.T + ctx.V + ctx.Vecp + ctx.V_ext;
 }
 
@@ -411,23 +396,37 @@ template <SCFMethod P> void SCF<P>::compute_sap_guess() {
 }
 
 template <SCFMethod P>
-void SCF<P>::set_point_charges(const PointChargeList &charges) {
-  log::info("Including potential from {} point charges", charges.size());
-  ctx.energy["nuclear.point_charge"] =
-      m_procedure.nuclear_point_charge_interaction_energy(charges);
-  ctx.energy["nuclear.total"] =
-      ctx.energy["nuclear.point_charge"] + ctx.energy["nuclear.repulsion"];
-  ctx.point_charges = charges;
-}
-
-template <SCFMethod P> void SCF<P>::set_external_potential(const Mat &V_ext) {
-  log::info("Setting external potential matrix ({}x{})", V_ext.rows(),
-            V_ext.cols());
-  if (V_ext.rows() != ctx.V_ext.rows() || V_ext.cols() != ctx.V_ext.cols()) {
+void SCF<P>::set_external_potential(const Mat &V_ext_single,
+                                    double nuclear_energy,
+                                    std::string_view label) {
+  if (label.empty()) {
     throw std::runtime_error(
-        "External potential matrix dimensions do not match basis");
+        "External potential label must be non-empty");
   }
-  ctx.V_ext = V_ext;
+  const size_t nbf = m_procedure.nbf();
+  if (static_cast<size_t>(V_ext_single.rows()) != nbf ||
+      static_cast<size_t>(V_ext_single.cols()) != nbf) {
+    throw std::runtime_error(fmt::format(
+        "External potential matrix shape {}x{} does not match basis nbf={}",
+        V_ext_single.rows(), V_ext_single.cols(), nbf));
+  }
+  switch (ctx.mo.kind) {
+  case SpinorbitalKind::Restricted:
+    ctx.V_ext = V_ext_single;
+    break;
+  case SpinorbitalKind::Unrestricted:
+    block::a(ctx.V_ext) = V_ext_single;
+    block::b(ctx.V_ext) = V_ext_single;
+    break;
+  case SpinorbitalKind::General:
+    block::aa(ctx.V_ext) = V_ext_single;
+    block::bb(ctx.V_ext) = V_ext_single;
+    break;
+  }
+  ctx.external_potential_label.assign(label);
+  ctx.energy["nuclear." + ctx.external_potential_label] = nuclear_energy;
+  log::info("External potential '{}' set: nuclear–external energy = {:.8f} Ha",
+            label, nuclear_energy);
 }
 
 template <SCFMethod P> void SCF<P>::update_scf_energy(bool incremental) {
@@ -449,17 +448,17 @@ template <SCFMethod P> void SCF<P>::update_scf_energy(bool incremental) {
         ctx.energy["electronic"] - ctx.energy["electronic.1e"];
     ctx.energy["total"] =
         ctx.energy["electronic"] + ctx.energy["nuclear.repulsion"];
-    const auto pcloc = ctx.energy.find("nuclear.point_charge");
-    if (pcloc != ctx.energy.end()) {
-      ctx.energy["total"] += pcloc->second;
+    if (!ctx.external_potential_label.empty()) {
+      ctx.energy["total"] +=
+          ctx.energy["nuclear." + ctx.external_potential_label];
     }
     occ::timing::stop(occ::timing::category::la);
   }
   if (m_procedure.have_effective_core_potentials()) {
     ctx.energy["electronic.ecp"] = expectation(ctx.mo.kind, ctx.mo.D, ctx.Vecp);
   }
-  if (ctx.point_charges.size() > 0) {
-    ctx.energy["electronic.point_charge"] =
+  if (!ctx.external_potential_label.empty()) {
+    ctx.energy["electronic." + ctx.external_potential_label] =
         2 * expectation(ctx.mo.kind, ctx.mo.D, ctx.V_ext);
   }
   m_procedure.update_scf_energy(ctx.energy, incremental);

@@ -226,8 +226,49 @@ export interface SCFConvergenceSettings {
   diisStartIteration: number;
 }
 
+export interface PointChargePotential {
+  charges: VectorPointCharge;
+  computePotentialMatrix(hf: HartreeFock): Mat;
+  nuclearInteractionEnergy(hf: HartreeFock): number;
+  label(): string;
+  toString(): string;
+}
+
+export interface WolfPointChargePotential {
+  charges: VectorPointCharge;
+  molecularCharges: VectorDouble;
+  alpha: number;
+  cutoff: number;
+  computePotentialMatrix(hf: HartreeFock): Mat;
+  nuclearInteractionEnergy(hf: HartreeFock): number;
+  label(): string;
+  toString(): string;
+}
+
+export interface VectorPointCharge {
+  size(): number;
+  get(index: number): PointCharge;
+  set(index: number, value: PointCharge): void;
+  push_back(value: PointCharge): void;
+  delete(): void;
+}
+
+export interface VectorDouble {
+  size(): number;
+  get(index: number): number;
+  set(index: number, value: number): void;
+  push_back(value: number): void;
+  delete(): void;
+}
+
 export interface HartreeFockSCF {
   setConvergenceSettings(settings: SCFConvergenceSettings): void;
+  /// Generic external-potential setter — caller supplies V_ext (nbf×nbf),
+  /// nuclear-external interaction energy, and a label keying the
+  /// `nuclear.<label>` / `electronic.<label>` energy report.
+  setExternalPotential(V_ext: Mat, nuclearEnergy: number, label: string): void;
+  setExternalPotentialFromPointCharges(pot: PointChargePotential): void;
+  setExternalPotentialFromWolf(pot: WolfPointChargePotential): void;
   run(): void;
   energy(): number;
   converged(): boolean;
@@ -366,6 +407,10 @@ export interface OCCModule {
   HartreeFock: typeof HartreeFock;
   SCFConvergenceSettings: typeof SCFConvergenceSettings;
   HartreeFockSCF: typeof HartreeFockSCF;
+  PointChargePotential: typeof PointChargePotential;
+  WolfPointChargePotential: typeof WolfPointChargePotential;
+  VectorPointCharge: typeof VectorPointCharge;
+  VectorDouble: typeof VectorDouble;
   
   // Utility functions
   eemPartialCharges(atomicNumbers: IVec, positions: Mat3N, charge?: number): Vec;
