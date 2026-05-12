@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
+#include <occ/scrf/reaction_field.h>
 #include <occ/solvent/smd_parameters.h>
 #include <occ/solvent/surface.h>
 #include <occ/xtb/solvation_interface.h>
@@ -19,11 +20,11 @@ namespace occ::xtb {
 ///     piece does not depend on the SCC charges; it is fixed once the
 ///     geometry is known and just rides along inside `energy()`.
 ///
-/// Per-element decomposition (Phase 7D handle):
-///   • `cds_energy_elements()[i] = (σ_atom_of(i) + γ)·area_i / scale` — fixed.
-///   • ES per-element energy `½·σ_i·φ_i` is reconstructible on demand from
-///     `surface_charges()` and the cavity geometry; the SCC tracks the
-///     atom-resolved view (`atom_potential()`) for Fock-shift purposes.
+/// Phase 2: this class is a thin adapter over `occ::scrf::ReactionFieldEngine`
+/// configured with `Radii::SmdIntrinsicCoulomb + include_cds = true`. The xTB
+/// SCC consumes solvation via the `XtbSolvationModel` virtual contract —
+/// keeping the class makes that hookup transparent and gives callers an
+/// "SMD-shaped" handle for inspection.
 class SmdSolvationModel final : public XtbSolvationModel {
 public:
   explicit SmdSolvationModel(std::string solvent = "water");
@@ -31,82 +32,54 @@ public:
   void initialize(const Mat3N &positions_bohr,
                   const IVec &atomic_numbers) override;
   void update(const Vec &atomic_charges) override;
-  const Vec &atom_potential() const override { return m_v_solv; }
-  double energy() const override { return m_energy; }
+  const Vec &atom_potential() const override { return m_engine.atom_potential(); }
+  double energy() const override { return m_engine.energy(); }
   std::string name() const override;
   std::optional<SolvationSurfaces> surfaces() const override;
-  Mat3N gradient() const override;
+  Mat3N gradient() const override { return m_engine.gradient(); }
 
   // ---------------------------------------------------------------------
   // Inspection / Phase 7D hooks
   // ---------------------------------------------------------------------
 
   const occ::solvent::SMDSolventParameters &parameters() const {
-    return m_params;
+    return m_engine.smd_parameters();
   }
-  double dielectric() const { return m_epsilon; }
+  double dielectric() const { return m_engine.dielectric(); }
 
   // ES (Coulomb) surface — feeds the SCC.
   const occ::solvent::surface::Surface &es_surface() const {
-    return m_es_surface;
+    return m_engine.es_cavity();
   }
-  size_t num_es_surface_points() const { return m_es_surface.areas.size(); }
+  size_t num_es_surface_points() const {
+    return m_engine.num_es_surface_points();
+  }
   /// Apparent surface charge σ at the latest `update(q)`. Empty until then.
-  const Vec &surface_charges() const { return m_sigma; }
+  const Vec &surface_charges() const { return m_engine.surface_charges(); }
 
   // CDS surface — geometry-only.
   const occ::solvent::surface::Surface &cds_surface() const {
-    return m_cds_surface;
+    return m_engine.cds_cavity();
   }
-  size_t num_cds_surface_points() const { return m_cds_surface.areas.size(); }
+  size_t num_cds_surface_points() const {
+    return m_engine.num_cds_surface_points();
+  }
   /// Per-element CDS energy contribution (Hartree). Length = number of CDS
   /// surface points. Stable across `update()` calls (geometry only).
-  const Vec &cds_energy_elements() const { return m_cds_energy_elements; }
+  const Vec &cds_energy_elements() const {
+    return m_engine.cds_energy_elements();
+  }
 
   // Energy split (last `update`).
-  double e_es() const { return m_e_es; }
-  double e_cds() const { return m_e_cds; }
+  double e_es() const { return m_engine.energy_es(); }
+  double e_cds() const { return m_engine.energy_cds(); }
+
+  /// Access the underlying engine (for inspection / tests).
+  const occ::scrf::ReactionFieldEngine &engine() const { return m_engine; }
 
 private:
   std::string m_solvent;
-  occ::solvent::SMDSolventParameters m_params;
-  double m_epsilon{1.0};
-
-  // Geometry cached at initialize() so the gradient method can recompute
-  // atomic_surface_tension at displaced positions without needing the caller
-  // to thread state through.
-  Mat3N m_atom_positions;   // Bohr
-  IVec m_atomic_numbers;
-  // ES cavity radii (Bohr) — handed to the gradient so the smooth-cavity
-  // diagonal term can reconstruct weights consistent with the cavity build.
-  Vec m_es_radii;
-  // Smoothing width used for both cavities (Bohr). See CpcmXOptions for the
-  // rationale behind the 0.1 default.
-  double m_smoothing_width_bohr{0.1};
-
-  // ES branch
-  occ::solvent::surface::Surface m_es_surface;
-  Mat m_B;       // ncav_es × natom (kept for per-element ES decomposition)
-  Mat m_G;       // ncav_es × natom
-  Mat m_J_solv;  // natom × natom (symmetric, neg-def)
-
-  // CDS branch (geometry-only)
-  occ::solvent::surface::Surface m_cds_surface;
-  Vec m_cds_energy_elements;
-  // Per-atom sum of CDS surface area, converted to Å² and weighted by the
-  // per-element scale factor — precomputed so the numerical CDS gradient
-  // only needs to re-evaluate `atomic_surface_tension(R)` per FD step.
-  Vec m_cds_area_per_atom_angs;
-  double m_cds_total_area_angs{0.0};
-  double m_e_cds{0.0};
-
-  // Refreshed per update
-  Vec m_atomic_charges;  // last q (needed alongside σ for the ES gradient)
-  Vec m_sigma;
-  Vec m_phi;       // ncav_es: per-element source potential φ = B·q
-  Vec m_v_solv;
-  double m_e_es{0.0};
-  double m_energy{0.0};
+  occ::scrf::ReactionFieldEngine m_engine;
 };
 
 } // namespace occ::xtb
