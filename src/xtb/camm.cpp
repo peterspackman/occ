@@ -166,7 +166,7 @@ CammMoments compute_camm_moments_periodic(
   out.dipm = Mat3N::Zero(3, nat);
   out.qp = Mat::Zero(6, nat);
 
-  // Match tblite's `get_mulliken_atomic_multipoles` (mulliken.f90 lines 76-86):
+  // Atomic-multipole Mulliken partition:
   //   for iao = 1..nao:
   //     mpat[atom_of(iao)] -= Σ_jao P(jao, iao) · mpmat(jao, iao)
   // where mpmat is centered on atom_of(iao) (the column index). In our
@@ -201,9 +201,9 @@ CammMoments compute_camm_moments_periodic(
   (void)Q_ket;
 
   // No post-CAMM trace removal: Q_bra is expected to already be the
-  // traceless-Cartesian AO quadrupole (1.5·Q - 0.5·tr·δ) — matches tblite's
-  // integral/multipole.f90 convention. The Mulliken partition of a traceless
-  // AO automatically yields traceless qpat, so no further transform is needed.
+  // traceless-Cartesian AO quadrupole (1.5·Q − 0.5·tr·δ). The Mulliken
+  // partition of a traceless AO automatically yields traceless qpat, so no
+  // further transform is needed.
   return out;
 }
 

@@ -99,9 +99,9 @@ private:
   Vec m_cn;
   Vec m_mp_radii;
   // Lazily built when multipoles are enabled. m_mp_ao stores Bra/Ket atom-
-  // centered AO multipole matrices (tblite convention) plus the origin-0 D, Q;
-  // m_mp_tensors stores the sd/dd/sq pair tensors used by the clean tensor
-  // potential / energy routines (no Ewald split for molecular).
+  // centered AO multipole matrices plus the origin-0 D, Q; m_mp_tensors
+  // stores the sd/dd/sq pair tensors used by the tensor potential /
+  // energy routines (no Ewald split for molecular).
   PeriodicMultipoleAO m_mp_ao;
   MultipolePairTensors m_mp_tensors;
   bool m_have_multipole_ints{false};

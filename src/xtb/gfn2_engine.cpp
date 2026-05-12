@@ -101,10 +101,10 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
   }
 
   // Build atom-centered Bra/Ket AO multipole matrices and the molecular
-  // multipole pair tensors (sd/dd/sq) on first multipole-enabled call.
-  // tblite convention end-to-end — the same code path as the periodic SCC.
-  // Reuse the existing m_engine/m_S instead of going through
-  // build_molecular_multipole_ao (which would build a fresh basis+engine+S).
+  // multipole pair tensors (sd/dd/sq) on first multipole-enabled call —
+  // shares its code path with the periodic SCC. Reuse the existing
+  // m_engine/m_S instead of going through build_molecular_multipole_ao
+  // (which would build a fresh basis+engine+S).
   if (include_multipoles && !m_have_multipole_ints) {
     MatTriple D0 = dipole_ao_matrices(m_engine);
     std::array<Mat, 6> Q0 = quadrupole_ao_matrices(m_engine);
@@ -222,7 +222,7 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
     if (include_multipoles && iter > 1) {
       // H1 uses CAMM from the previous iteration's density (current `P` at
       // entry to this iter). Energy is computed below from the new P, the
-      // new qsh, and the new CAMM (matches tblite's iterator.f90).
+      // new qsh, and the new CAMM (post-density values).
       auto m_in = compute_camm_moments_periodic(m_atoms, m_bf_to_atom, P,
                                                   m_mp_ao.D_ket, m_mp_ao.D_bra,
                                                   m_mp_ao.Q_ket, m_mp_ao.Q_bra);
@@ -254,8 +254,8 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
     Vec pop = shell_populations(PS, m_bf_to_shell, m_n_shells);
     Vec qsh_new = m_z_sh - pop;
 
-    // Multipole AES from the post-density CAMM (matches tblite — energy
-    // reflects the just-solved (P, q, μ) triple, not the H1's input state).
+    // Multipole AES from the post-density CAMM — energy reflects the
+    // just-solved (P, q, μ) triple, not the H1's input state.
     AnisotropicEnergy e_aniso{0.0, 0.0};
     if (include_multipoles) {
       auto m_new = compute_camm_moments_periodic(m_atoms, m_bf_to_atom, P,

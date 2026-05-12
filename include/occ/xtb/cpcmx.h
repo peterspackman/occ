@@ -18,8 +18,8 @@ struct CpcmXOptions {
   /// Any value `> 0` takes precedence over `solvent`.
   double dielectric_override{-1.0};
   /// COSMO/CPCM scaling factor in `f(ε) = (ε − 1) / (ε + x)`. The default
-  /// `x = 0` is the ideal-conductor convention used by tblite's CPCM. The
-  /// classical Klamt COSMO value is `x = 0.5`.
+  /// `x = 0` is the ideal-conductor (CPCM) convention; the classical Klamt
+  /// COSMO value is `x = 0.5`.
   double x{0.0};
   /// Solvent probe radius (Å) handed to the cavity builder. Note: the current
   /// `occ::solvent::surface::solvent_surface` implementation clamps this to

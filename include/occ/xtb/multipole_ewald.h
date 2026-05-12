@@ -13,17 +13,17 @@ struct CammMoments;
 
 // Pre-built atom-pair interaction tensors for periodic multipole ES, computed
 // via Ewald split (real-space damped + erfc + reciprocal G-sum + self/back-
-// ground corrections). Mirrors tblite's get_multipole_matrix_3d:
+// ground corrections):
 //
 //   sd[α](i, j)        — charge → dipole field tensor
 //   dd[α][β](i, j)     — dipole → dipole field tensor
 //   sq[p](i, j)        — charge → quadrupole field tensor (p in OCC's qp order
 //                         {xx, xy, yy, xz, yz, zz}, same as CammMoments::qp)
 //
-// `vec` in the kernel uses tblite's sign convention: `vec = R_i - R_j - T`,
-// and the inner Ewald loop runs over T spanning the full set of lattice
-// translations (real-space erfc cutoff). The reciprocal sum runs over G with
-// |G| ≤ recip_cutoff.
+// The kernel uses the sign convention `vec = R_i - R_j - T`, with the inner
+// Ewald loop running over T spanning the full set of lattice translations
+// (real-space erfc cutoff). The reciprocal sum runs over G with |G| ≤
+// recip_cutoff.
 //
 // Geometry-cached: depends on atom positions, mp_radii, and the cell. NOT on
 // charges or moments. Rebuild only when geometry changes.

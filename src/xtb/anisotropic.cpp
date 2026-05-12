@@ -54,9 +54,9 @@ anisotropic_energy(const std::vector<core::Atom> &atoms, const Vec &q,
       const double r2 = rx * rx + ry * ry + rz * rz;
       const double rij[3] = {rx, ry, rz};
 
-      // Charge-dipole: tblite convention is `e_qd_v1 = Σ dipm[i]·(R_i-R_j)·q_j·g3`
-      // over ordered (i, j ≠ i). With our pair loop (j < i) and `rij = R_j - R_i`,
-      // we negate to match tblite directly.
+      // Charge-dipole convention: `e_qd = Σ dipm[i]·(R_i-R_j)·q_j·g3` over
+      // ordered (i, j ≠ i). With our pair loop (j < i) and `rij = R_j - R_i`,
+      // we negate so the unordered-pair sum matches the ordered-pair form.
       double ed = 0.0, eq = 0.0, edd = 0.0;
       for (int k = 0; k < 3; ++k) {
         ed += q_j * m.dipm(k, i) * rij[k];
@@ -253,8 +253,8 @@ void apply_anisotropic_h1_periodic(
         eh1 += 0.5 * Q_ket[q_from_qpint[l]](mu, nu) * pot.vq(l, ii);
         eh1 += 0.5 * Q_bra[q_from_qpint[l]](mu, nu) * pot.vq(l, jj);
       }
-      // Sign convention matches tblite scf/potential.f90 add_vmp_to_h1 +
-      // add_vao_to_h1: H1 -= 0.5·integral·potential.
+      // Sign convention: H1 -= 0.5·integral·potential (combined dipole and
+      // quadrupole AO contributions on this pair).
       H(mu, nu) -= eh1;
     }
   }

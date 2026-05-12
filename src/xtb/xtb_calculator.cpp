@@ -332,12 +332,12 @@ Mat3N XtbCalculator::gradient() {
   //       (Phase 5d-rest steps 3+4: int1e_irp/int1e_irrp + traceless
   //       transform + centering chain).
   //
-  // We use `anisotropic_potentials_ewald` (the tblite-convention variant
-  // also used by the SCC): vd = +∂E_aniso/∂μ_xtb,
-  // vq = +∂E_aniso/∂Q_xtb_qpint, vs = +∂E_aniso/∂q. The "_ewald" name is
-  // a misnomer — it works for both molecular and periodic systems with
-  // the appropriate tensor builder; the suffix only refers to how the
-  // PERIODIC tensors are constructed.
+  // We use `anisotropic_potentials_ewald` (the variant also used by the
+  // SCC): vd = +∂E_aniso/∂μ_xtb, vq = +∂E_aniso/∂Q_xtb_qpint,
+  // vs = +∂E_aniso/∂q. The "_ewald" name is a misnomer — it works for
+  // both molecular and periodic systems with the appropriate tensor
+  // builder; the suffix only refers to how the PERIODIC tensors are
+  // constructed.
   m_opts.total_charge = m_charge;
   SccOptions opts = m_opts;
   // Dispersion is included in the analytical pipeline via native D4 below;

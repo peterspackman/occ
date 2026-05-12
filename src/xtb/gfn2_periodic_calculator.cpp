@@ -52,7 +52,7 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
 
   // Per-quantity lattice translations: AO matrices decay as exp(-α·r²) —
   // a tight cutoff is safe and cheap. CN and repulsion need slightly wider
-  // sums (matching tblite's defaults).
+  // sums.
   auto cn_images = build_lattice_images(sys.lattice_bohr, opts.cn_cutoff);
   auto rep_images = build_lattice_images(sys.lattice_bohr, opts.rep_cutoff);
   auto ao_images = build_lattice_images(sys.lattice_bohr, opts.ao_cutoff);
@@ -76,10 +76,10 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
   occ::timing::stop(occ::timing::xtb_ewald_gamma);
 
   // Multipole AO matrices — Bloch-summed at Γ with per-atom origin (Ket =
-  // atom-of-row centered, Bra = atom-of-col-image centered). Mirrors
-  // dftbplus's tblite bridge: each AO pair contributes to atom_of(row) via
-  // Ket and atom_of(col) via Bra in the CAMM partition, no R*S correction
-  // needed. Critical for dense crystals where image AO overlaps are large.
+  // atom-of-row centered, Bra = atom-of-col-image centered). With this
+  // convention each AO pair contributes to atom_of(row) via Ket and
+  // atom_of(col) via Bra in the CAMM partition, with no R*S correction
+  // needed — critical for dense crystals where image AO overlaps are large.
   qm::IntegralEngine engine(basis);
   std::optional<PeriodicMultipoleAO> mp_ao;
   Vec mp_radii;
@@ -203,9 +203,8 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
 
     if (opts.include_multipoles && iter > 1) {
       // H1 uses the DIIS-mixed multipole state from the previous iteration's
-      // diagonalization (`mom`). At iter 1 `mom = 0` — same convention as
-      // tblite, whose initial guess sets `dpat=qpat=0` and only adds the
-      // multipole H1 once the first density has produced non-zero CAMM.
+      // diagonalization (`mom`). At iter 1 `mom = 0`: the multipole H1 only
+      // turns on once the first density has produced non-zero CAMM.
       occ::timing::start(occ::timing::xtb_aes);
       Vec atom_q = Vec::Zero(sys.atoms.size());
       for (int s = 0; s < n_shells; ++s)
@@ -240,10 +239,10 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
     Vec qsh_new = z_sh - pop;
     occ::timing::stop(occ::timing::xtb_density);
 
-    // Compute the new CAMM multipoles from the just-solved density. tblite
-    // reports the multipole energy from these (post-density) values; we do
-    // the same so the per-iter energy is a self-consistent (P, q, μ) triple
-    // rather than mixing input H1 multipoles with output charges.
+    // Compute the new CAMM multipoles from the just-solved density. The
+    // multipole energy is reported from these post-density values so the
+    // per-iter energy is a self-consistent (P, q, μ) triple rather than a
+    // mix of input H1 multipoles with output charges.
     CammMoments mom_new;
     AnisotropicEnergy e_aniso{0.0, 0.0};
     if (opts.include_multipoles) {
@@ -303,7 +302,7 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
           atom_q_dbg.cwiseAbs().maxCoeff(),
           mom.dipm.cwiseAbs().maxCoeff(),
           mom.qp.cwiseAbs().maxCoeff());
-      // Per-atom dump for direct comparison with tblite -v output.
+      // Per-atom dump for diagnostic comparison.
       for (int a = 0; a < static_cast<int>(sys.atoms.size()); ++a) {
         occ::log::debug(
             "    atom {:3d} (Z={:>2d})  q={:+.6f}  d=({:+.6f}, {:+.6f}, "
@@ -553,7 +552,7 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
 
     // Anisotropic potentials from the DIIS-mixed (qsh, mom). At iter 1
     // mom = 0, so vd / vq vanish and the multipole H1 contribution is
-    // identically zero (same convention as the Γ-only path and tblite).
+    // identically zero (same convention as the Γ-only path).
     AnisotropicPotentials pot;
     if (opts.include_multipoles) {
       Vec atom_q = Vec::Zero(n_atoms);

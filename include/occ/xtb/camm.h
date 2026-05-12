@@ -28,8 +28,8 @@ CammMoments compute_camm_moments(const std::vector<core::Atom> &atoms,
                                  const MatTriple &D,
                                  const std::array<Mat, 6> &Q);
 
-// Periodic CAMM following dftbplus's `getAtomicMultipolePopulation`. Takes
-// pre-built per-atom-centered Ket/Bra Bloch-summed multipole AO matrices (see
+// Periodic CAMM (atomic-multipole population) partition. Takes pre-built
+// per-atom-centered Ket/Bra Bloch-summed multipole AO matrices (see
 // `PeriodicMultipoleAO` in `periodic_integrals.h`):
 //   Ket(μ, ν) — atom-of-row-centered (origin at R_{atom_of(μ)}, cell 0)
 //   Bra(μ, ν) — atom-of-col-image-centered (origin at R_{atom_of(ν)} + T)

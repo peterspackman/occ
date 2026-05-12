@@ -50,9 +50,9 @@ anisotropic_pair_gradient_with_dcn(const std::vector<core::Atom> &atoms,
 // Per-atom potentials acting on charges (vs), atomic dipoles (vd), and
 // atomic quadrupoles (vq) — the variational conjugates of (q, μ_xtb,
 // Q_xtb) at the converged density. vq is laid out in `qpint` order
-// (xx, yy, zz, xy, xz, yz). The conjugate convention
-//   vd = +∂E_aniso/∂μ_xtb,  vq = +∂E_aniso/∂Q_xtb_qpint, vs = +∂E_aniso/∂q
-// matches tblite. Hartree units throughout. The actual builder is
+// (xx, yy, zz, xy, xz, yz). The sign convention is
+//   vd = +∂E_aniso/∂μ_xtb,  vq = +∂E_aniso/∂Q_xtb_qpint,  vs = +∂E_aniso/∂q
+// (Hartree units throughout). The actual builder is
 // `anisotropic_potentials_ewald` (multipole_ewald.h) — works for both
 // molecular and periodic systems via `build_molecular_multipole_tensors`
 // or `build_multipole_ewald_tensors` respectively.

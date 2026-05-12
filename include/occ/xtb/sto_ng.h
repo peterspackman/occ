@@ -6,7 +6,7 @@ namespace occ::xtb {
 // Coefficients are taken from:
 //   R. F. Stewart, Small Gaussian Expansions of Slater-Type Orbitals,
 //   J. Chem. Phys. 52, 431 (1970).  DOI: 10.1063/1.1672702
-// Re-uses Grimme's xtb encoding (src/slater.f90); validated against tblite.
+// Re-uses the encoding from Grimme's xtb (src/slater.f90).
 //
 // Restrictions: 1 <= NG <= 6, l in [0..4], n in [1..5] (with the special-case
 // (n=6, l=0) and (n=6, l=1) supported only for NG=6).

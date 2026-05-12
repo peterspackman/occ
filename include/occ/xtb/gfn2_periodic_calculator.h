@@ -27,7 +27,7 @@ struct PeriodicSccOptions {
   // fine for production speed.
   double disp_cutoff{60.0};
   // Per-quantity real-space cutoffs (Bohr). CN's exponential count decays
-  // fast — 25 matches tblite's `default_cutoff` in ncoord/gfn.f90.
+  // fast — 25 Bohr is the standard default.
   // Repulsion uses an exp(-α·r) form, fully converged by 30 Bohr. AO
   // multipole / H0 / S blocks decay as exp(-α·r²) but build_h0's per-T
   // sum has long-range tails on dense π-stacked crystals (anthracene,

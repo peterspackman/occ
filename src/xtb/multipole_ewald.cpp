@@ -17,7 +17,6 @@ constexpr double kSqrtPi = 1.7724538509055160273;
 
 // Quadrupole storage order (matches CammMoments::qp / OCC's kl_to_qp):
 //   0 = xx, 1 = xy, 2 = yy, 3 = xz, 4 = yz, 5 = zz
-// (Same order as tblite's dir kernel amat_sq indices 1..6.)
 constexpr int qp_xx = 0, qp_xy = 1, qp_yy = 2, qp_xz = 3, qp_yz = 4, qp_zz = 5;
 
 } // namespace
@@ -75,8 +74,7 @@ build_multipole_ewald_tensors(const PeriodicSystem &sys, const Vec &mp_radii,
 
   // Self-energy per (i, i) on the diagonal (from removing the G=0 limit and
   // self-image exclusion of the real-space term). Coefficients chosen so
-  // that 0.5 · μ^T · amat_dd · μ contributes -2/3 α³/√π · μ² per atom (matches
-  // tblite get_multipole_matrix_3d post-loop adjustment).
+  // that 0.5 · μ^T · amat_dd · μ contributes -2/3 α³/√π · μ² per atom.
   const double dd_self = 2.0 * (-2.0 / 3.0) * alpha3 / kSqrtPi;  // = -4/3 α³/√π
   const double sq_self = 4.0 / 9.0 * alpha3 / kSqrtPi;
 
@@ -118,9 +116,9 @@ build_multipole_ewald_tensors(const PeriodicSystem &sys, const Vec &mp_radii,
         // value is +(R_j - R_i)·tmp3). Together with the access pattern
         //   vd[a, i] = Σ_j sd[a](i, j) · q[j]   = Σ (R_j - R_i)·tmp3·q[j]
         //   vat[i]  = Σ_j sd[a](j, i) · dipm[a, j] = Σ (R_i - R_j)·tmp3·dipm[a, j]
-        // this reproduces tblite's amat_sd-with-trans gemv convention exactly:
-        //   tblite_vd[β, A] = Σ (R_inner - R_A)·g3·q[inner]
-        //   tblite_vat[A]  = Σ (R_A - R_inner)·g3·dpat[inner]
+        // this implements the amat_sd-with-trans gemv convention:
+        //   vd[β, A]  = Σ (R_inner - R_A)·g3·q[inner]
+        //   vat[A]   = Σ (R_A - R_inner)·g3·dpat[inner]
         sd_acc[0] -= vec.x() * tmp3;
         sd_acc[1] -= vec.y() * tmp3;
         sd_acc[2] -= vec.z() * tmp3;
@@ -147,7 +145,7 @@ build_multipole_ewald_tensors(const PeriodicSystem &sys, const Vec &mp_radii,
         const double cosk = std::cos(gv) * g_coeffs[k];
         // Same sign convention as direct kernel (see comment above):
         // sd[α](i, j) stored with the (R_j - R_i) sign so the access pattern
-        // mirrors tblite's amat_sd[β, jat, iat] = (R_iat - R_jat)·g3.
+        // gives amat_sd[β, jat, iat] = (R_iat - R_jat)·g3.
         sd_acc[0] -= 2.0 * G.x() * sink;
         sd_acc[1] -= 2.0 * G.y() * sink;
         sd_acc[2] -= 2.0 * G.z() * sink;
@@ -240,7 +238,7 @@ anisotropic_energy_ewald(const std::vector<core::Atom> &atoms, const Vec &q,
   // Actually with the symmetric tensor convention from Ewald:
   // sd[α](i, j) is "field on dipole α at i due to charge j", so
   // E_qd_part = - Σ_{i, j, α} q_j · dpat_α(i) · sd[α](i, j)?
-  // Easier: just use the gemv pattern from tblite directly.
+  // Use the explicit gemv pattern:
   //   vd_from_q(α, i) = Σ_j sd[α](i, j) · q(j)
   //   vat_from_dp(j)  = Σ_{α, i} sd[α](i, j) · dpat(α, i)
   //   e_qd contribution = Σ_{α, i} dpat(α, i) · vd_from_q(α, i)
@@ -248,7 +246,7 @@ anisotropic_energy_ewald(const std::vector<core::Atom> &atoms, const Vec &q,
   //                        contribution is captured in the same term thanks to
   //                        sd's antisymmetric construction over (i, j) pairs.)
   //
-  // Following tblite's get_energy: e01 = (mur)·qat + sum(dpat · vd)
+  // Energy form: e01 = (mur)·qat + sum(dpat · vd)
   //   where vd = sd · qat, and mur(j) = Σ_{α, i} sd^T_{αi,j} dpat(α, i).
   Mat vd = Mat::Zero(3, n);
   Vec mur = Vec::Zero(n);
@@ -269,10 +267,10 @@ anisotropic_energy_ewald(const std::vector<core::Atom> &atoms, const Vec &q,
   for (int j = 0; j < n; ++j) e_qd += mur(j) * q(j);
   for (int i = 0; i < n; ++i)
     for (int a = 0; a < 3; ++a) e_qd += m.dipm(a, i) * vd(a, i);
-  // tblite: e01 = (mur)*qat + sum(dpat * vd); then total += 0.5 * e01.
+  // e01 = (mur)*qat + sum(dpat * vd); total += 0.5 * e01.
   // With t.sd[a](i, j) = (R_j - R_i)·tmp3 and the access pattern above,
-  // both mur·q and Σ dipm·vd evaluate to +tblite_e_qd_v1 (each), so the
-  // 0.5 prefactor recovers the correct energy.
+  // both mur·q and Σ dipm·vd evaluate to +e_qd_v1 (each), so the 0.5
+  // prefactor recovers the correct energy.
   e_qd *= 0.5;
 
   // Dipole-dipole: e11 = 0.5 * Σ_{i,j,α,β} dpat(α, i) · dd[α][β](i,j) · dpat(β, j)
@@ -290,7 +288,7 @@ anisotropic_energy_ewald(const std::vector<core::Atom> &atoms, const Vec &q,
 
   // Charge-quadrupole: e02 = 0.5 * (Σ_{i,p} qpat(p, i) · sq[p](i,j) · q(j) +
   //                              Σ_{j,p} qpat(p, j) · sq[p](j,i)^T · q(i))
-  // tblite: e02 = t1*qat + sum(qpat * vq); 0.5 prefactor.
+  // Equivalent: e02 = t1*qat + sum(qpat * vq); 0.5 prefactor.
   Mat vq_from_q = Mat::Zero(6, n);
   Vec t1 = Vec::Zero(n);
   for (int i = 0; i < n; ++i) {
@@ -388,8 +386,7 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
                               const Vec &q, const CammMoments &m,
                               const MultipolePairTensors &t,
                               const Gfn2Parameters &params) {
-  // Strict tensor-derivative path. Mirrors tblite's `multipole.f90 ::
-  // get_potential` exactly: per-atom potentials are the variational
+  // Strict tensor-derivative path: per-atom potentials are the variational
   // conjugates of (q, μ_xtb, Q_xtb), to be paired with the centered Bra/
   // Ket AO multipole matrices in `apply_anisotropic_h1_periodic`.
   // Sign / normalization convention:
@@ -405,10 +402,10 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
   for (int i = 0; i < n; ++i) {
     double s = 0.0;
     // vs[i] = "potential at charge i due to all dipoles + quadrupoles at j".
-    // Mirrors tblite's pot.vat += gemv(amat_sd, dpat, trans="T") which
+    // Equivalent to pot.vat += gemv(amat_sd, dpat, trans="T") which
     // computes vat[i] = Σ_j (R_i - R_j)·g3·dpat[j]. With our storage
     // t.sd[a](i, j) = +(R_j - R_i)·tmp3, accessing the swapped slot
-    // t.sd[a](j, i) = +(R_i - R_j)·tmp3 gives the right tblite-matching value.
+    // t.sd[a](j, i) = +(R_i - R_j)·tmp3 gives the correct value.
     // (sq is even in vec so the index swap is sign-neutral; we use (j, i)
     //  too for consistency.)
     for (int j = 0; j < n; ++j) {
@@ -445,16 +442,15 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
     out.vq(qpint_yz, i) = tmp_yz;
   }
 
-  // On-site polariz (kernel) potential — matches tblite's
-  // `get_kernel_potential` (multipole.f90 lines 271-291):
+  // On-site polariz (kernel) potential:
   //   v_dpkernel(i) = 2·dipKernel·dipm(i)
   //   v_qpkernel(i) = 2·quadKernel·qpat(i) · mpscale,  mpscale=[1,2,1,2,2,1]
   //
   // Sign: our CAMM stores dipm = -P·atom_centered_AO_dipole (electron sign);
   // for compatibility with our `apply_anisotropic_h1_periodic` (and the same
   // sign convention used for molecular benchmarks), we ADD with minus sign
-  // here so the H1 contribution comes out matching the gauge-corrected
-  // formulation at the molecular limit.
+  // here so the H1 contribution matches the gauge-corrected formulation at
+  // the molecular limit.
   // Layout: vq is stored in qpint order (xx, yy, zz, xy, xz, yz). The CAMM
   // mom.qp is in (xx, xy, yy, xz, yz, zz). Off-diag positions get scale 2.
   //   qpint:  0=xx 1=yy 2=zz 3=xy 4=xz 5=yz
@@ -464,7 +460,7 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
   //   (3=xy → 1, 2), (4=xz → 3, 2), (5=yz → 4, 2)
   static constexpr int qp_from_qpint[6] = {0, 2, 5, 1, 3, 4};
   static constexpr double mpscale_qpint[6] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0};
-  // tblite get_kernel_potential (multipole.f90 lines 329-349):
+  // Kernel-potential contributions:
   //   vd(:, i) += 2·dkernel·dipm(:, i)
   //   vq(:, i) += 2·qkernel·qpat(:, i) · mpscale, mpscale=[1,2,1,2,2,1]
   for (int i = 0; i < n; ++i) {

@@ -35,16 +35,15 @@ periodic_h0_blocks(const PeriodicSystem &sys, const Gfn2Parameters &params,
                    const std::vector<LatticeImage> &translations,
                    const std::vector<Mat> &S_per_T, const Vec &cn);
 
-// Bra/Ket atom-centered multipole AO matrices, dftbplus convention. For each
-// AO pair (μ, ν) with atom_of(μ) = A_μ (cell 0) and atom_of(ν) = A_ν (looped
-// over images of T):
+// Bra/Ket atom-centered multipole AO matrices. For each AO pair (μ, ν) with
+// atom_of(μ) = A_μ (cell 0) and atom_of(ν) = A_ν (looped over images of T):
 //   Ket(μ, ν) = AO multipole integral with origin at R_{A_μ} (cell-0 row
-//               atom) — so the integral is "atom-of-row-centered".
+//               atom) — "atom-of-row-centered".
 //   Bra(μ, ν) = AO multipole integral with origin at R_{A_ν} + T (image-T
 //               column atom) — "atom-of-col-image-centered".
 // Bloch-summed at Γ.
 //
-// Periodic CAMM partition (mirrors dftbplus's `getAtomicMultipolePopulation`):
+// Periodic CAMM partition:
 //   mpat[A_μ] += Σ_{ν} P(μ, ν) · Ket(μ, ν)  for each AO row μ
 //   mpat[A_ν] += Σ_{μ} P(μ, ν) · Bra(μ, ν)  for each AO column ν
 struct PeriodicMultipoleAO {
@@ -88,8 +87,7 @@ bloch_sum_array6(const std::vector<std::array<Mat, 6>> &per_T,
                  const std::vector<LatticeImage> &translations, const Vec3 &k);
 
 // In-place transform from full Cartesian quadrupole AO matrices (xx, xy, xz,
-// yy, yz, zz) to traceless-Cartesian, matching tblite's
-// integral/multipole.f90 convention:
+// yy, yz, zz) to traceless-Cartesian:
 //
 //   Q'_xx = 1.5·Q_xx - 0.5·(Q_xx + Q_yy + Q_zz)
 //   Q'_xy = 1.5·Q_xy   ;   Q'_yy = 1.5·Q_yy - 0.5·(...)
@@ -97,12 +95,12 @@ bloch_sum_array6(const std::vector<std::array<Mat, 6>> &per_T,
 //   Q'_zz = 1.5·Q_zz - 0.5·(...)
 //
 // Applied per AO pair (μ, ν). For the H1 contribution `0.5·Q_AO·vq[A]` to
-// match tblite's update, Q_AO must be the traceless form (otherwise the
-// trace component of vq couples to the non-zero trace of Cartesian Q).
+// be correct, Q_AO must be the traceless form (otherwise the trace
+// component of vq couples to the non-zero trace of Cartesian Q).
 void apply_traceless_quadrupole_transform(std::array<Mat, 6> &Q);
 
-// Apply per-atom origin centering (Bra/Ket convention, matches tblite) to
-// raw common-origin-0 AO multipole matrices. `D_origin0` and `Q_origin0`
+// Apply per-atom origin centering (Bra/Ket convention) to raw
+// common-origin-0 AO multipole matrices. `D_origin0` and `Q_origin0`
 // are the outputs of `dipole_ao_matrices` / `quadrupole_ao_matrices` (the
 // latter in raw {xx, xy, xz, yy, yz, zz} Cartesian form, NOT traceless yet).
 // The returned struct's Q_ket / Q_bra are traceless-Cartesian, ready for
@@ -118,10 +116,10 @@ center_multipole_ao(const std::vector<core::Atom> &atoms,
 // T = 0 only (no lattice). D_ket / D_bra carry the per-row / per-col atomic
 // origin shifts; the molecular SCC can use these with the same
 // compute_camm_moments_periodic + apply_anisotropic_h1_periodic pipeline as
-// the periodic SCC. This keeps both paths on tblite's atom-centered
-// convention end-to-end. The (atoms, params) overload builds its own
-// IntegralEngine internally; callers that already have one (the SCC path,
-// the analytical gradient) should prefer `center_multipole_ao` directly.
+// the periodic SCC, keeping both paths on the atom-centered convention
+// end-to-end. The (atoms, params) overload builds its own IntegralEngine
+// internally; callers that already have one (the SCC path, the analytical
+// gradient) should prefer `center_multipole_ao` directly.
 PeriodicMultipoleAO
 build_molecular_multipole_ao(const std::vector<core::Atom> &atoms,
                               const Gfn2Parameters &params);

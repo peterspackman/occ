@@ -37,9 +37,9 @@ struct EwaldGammaData {
   double recip_cutoff;                // 1/Bohr
   // Smooth cutoff radius for γ_KO → 1/R blend. Per pair-image, the residual
   // sum picks up `fcut · (γ_KO(r) - 1/r)` where fcut(r) is 1 for r < gamma_rcut-1,
-  // 0 for r > gamma_rcut, and a 5th-order polynomial blend in between. Matches
-  // tblite's `effective_coulomb%rcut = 10 Bohr` convention so the residual sum
-  // beyond rcut sees pure 1/R (which Ewald handles exactly).
+  // 0 for r > gamma_rcut, and a 5th-order polynomial blend in between. The
+  // default of 10 Bohr ensures the residual sum beyond rcut sees pure 1/R
+  // (which Ewald handles exactly).
   double gamma_rcut;                  // Bohr (default 10.0)
   std::vector<LatticeImage> images;   // direct-lattice translations within max(erfc_cutoff, residual_cutoff)
   std::vector<Vec3> g_vectors;        // G with 0 < |G| <= recip_cutoff
@@ -53,12 +53,12 @@ struct EwaldGammaData {
 // 0 to use the default (60 Bohr, gives ~1e-7 truncation for charge-neutral
 // densities). Pass alpha_user > 0 to override the α auto-pick.
 //
-// TODO: tblite (`get_amat_3d`) additionally averages the per-image (real +
-// reciprocal) γ contribution over Wigner-Seitz equivalent images of each
-// pair vector with weight 1/nimg. For non-degenerate pair vectors (typical
-// in low-symmetry molecular crystals) `nimg = 1` and this is a no-op, so we
-// skip it for now. Worth adding if we ever target high-symmetry cells where
-// pairs sit on WSC faces.
+// Known issue: this build does not average the per-image (real + reciprocal)
+// γ contribution over Wigner-Seitz equivalent images of each pair vector
+// with weight 1/nimg. For non-degenerate pair vectors (typical in
+// low-symmetry molecular crystals) `nimg = 1` and this is a no-op, so we
+// skip it for now. Adding it would be relevant for high-symmetry cells
+// where pairs sit on WSC faces.
 EwaldGammaData build_ewald_data(const PeriodicSystem &sys, double tol = 1e-10,
                                 double alpha_user = 0.0,
                                 double residual_cutoff = 0.0);

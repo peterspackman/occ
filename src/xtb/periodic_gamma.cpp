@@ -21,8 +21,7 @@ double ko_gamma(double R, double g, double alpha_KO) {
   return std::pow(r_to_a + inv_g_to_a, -1.0 / alpha_KO);
 }
 
-// 5th-order polynomial blend: 1 for r < rcut-1, 0 for r > rcut. Matches
-// tblite's fsmooth in coulomb/charge/effective.f90.
+// 5th-order polynomial blend: 1 for r < rcut-1, 0 for r > rcut.
 double fsmooth(double r, double rcut) {
   constexpr double offset = 1.0;
   if (r < rcut - offset) return 1.0;
@@ -52,7 +51,7 @@ EwaldGammaData build_ewald_data(const PeriodicSystem &sys, double tol,
   d.erfc_cutoff = erfc_cutoff;
   d.residual_cutoff = resid_cutoff;
   d.recip_cutoff = recip_cutoff;
-  d.gamma_rcut = 10.0;  // tblite default; γ_KO blends to 1/r over [9, 10] Bohr
+  d.gamma_rcut = 10.0;  // γ_KO blends to 1/r over [9, 10] Bohr
   d.images =
       build_lattice_images(sys.lattice_bohr, std::max(erfc_cutoff, resid_cutoff));
   d.g_vectors = enumerate_g_vectors(sys.reciprocal_bohr(), recip_cutoff);
