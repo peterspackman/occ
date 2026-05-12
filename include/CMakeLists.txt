@@ -13,6 +13,7 @@ add_subdirectory(occ/io)
 add_subdirectory(occ/main)
 add_subdirectory(occ/opt)
 add_subdirectory(occ/qm)
+add_subdirectory(occ/scrf)
 add_subdirectory(occ/sht)
 add_subdirectory(occ/slater)
 add_subdirectory(occ/xdm)
@@ -39,6 +40,7 @@ set(OCC_INCLUDE_FILES
     ${OCC_MULTS_INCLUDE_FILES}
     ${OCC_OPT_INCLUDE_FILES}
     ${OCC_QM_INCLUDE_FILES}
+    ${OCC_SCRF_INCLUDE_FILES}
     ${OCC_SHT_INCLUDE_FILES}
     ${OCC_SLATER_INCLUDE_FILES}
     ${OCC_XDM_INCLUDE_FILES}

@@ -1,9 +1,9 @@
 #include <fmt/core.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
+#include <occ/scrf/cosmo_kernel.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
-#include <occ/xtb/cosmo_response.h>
 #include <occ/xtb/smd_xtb.h>
 #include <stdexcept>
 
@@ -33,8 +33,9 @@ void SmdSolvationModel::initialize(const Mat3N &positions_bohr,
   // traditionally been formulated as IEFPCM, but for atom-resolved xTB the
   // Klamt classical-COSMO solve is the natural drop-in — we adopt the same
   // f(ε) as the CPCM-X model so the two paths share a code path.
-  auto resp =
-      cosmo::build(positions_bohr, m_es_surface, m_epsilon, /*x=*/0.0);
+  auto resp = occ::scrf::detail::build_cosmo_response(
+      positions_bohr, m_es_surface.vertices, m_es_surface.areas, m_epsilon,
+      /*x=*/0.0);
   m_B = std::move(resp.B);
   m_G = std::move(resp.G);
   m_J_solv = std::move(resp.J_solv);
@@ -116,9 +117,10 @@ Mat3N SmdSolvationModel::gradient() const {
 
   // -- ES branch: shared CPCM/COSMO closed-form gradient.
   if (m_sigma.size() > 0 && m_atomic_charges.size() > 0) {
-    grad += cosmo::gradient(m_atom_positions, m_es_surface, m_atomic_charges,
-                            m_sigma, (m_epsilon - 1.0) / m_epsilon,
-                            m_es_radii, m_smoothing_width_bohr);
+    grad += occ::scrf::detail::cosmo_gradient_frozen(
+        m_atom_positions, m_es_surface.vertices, m_es_surface.areas,
+        m_es_surface.atom_index, m_atomic_charges, m_sigma,
+        (m_epsilon - 1.0) / m_epsilon, m_es_radii, m_smoothing_width_bohr);
   }
 
   // -- CDS branch: FD of E_cds with the CDS cavity rebuilt at each step.

@@ -1,48 +1,44 @@
-#include <occ/xtb/cosmo_response.h>
+#include <cmath>
+#include <occ/scrf/cosmo_kernel.h>
 
-namespace occ::xtb::cosmo {
+namespace occ::scrf::detail {
 
-namespace {
-
-// off-diag(i, j) = 1/|r_i − r_j|; diag(i) = 1.07·√(4π/S_i) (same convention
-// as occ::solvent::COSMO).
-Mat build_A(const Mat3N &points, const Vec &areas) {
-  const Eigen::Index n = points.cols();
+Mat build_cosmo_A(const Mat3N &cavity_points, const Vec &cavity_areas) {
+  const Eigen::Index n = cavity_points.cols();
   Mat A(n, n);
   for (Eigen::Index i = 0; i < n; ++i) {
     for (Eigen::Index j = i + 1; j < n; ++j) {
-      const double d = (points.col(i) - points.col(j)).norm();
+      const double d = (cavity_points.col(i) - cavity_points.col(j)).norm();
       const double off = (d > 1e-6) ? 1.0 / d : 0.0;
       A(i, j) = off;
       A(j, i) = off;
     }
   }
   // 1.07 · √(4π) ≈ 3.793051240937804.
-  A.diagonal().array() = 3.793051240937804 / areas.array().sqrt();
+  A.diagonal().array() = 3.793051240937804 / cavity_areas.array().sqrt();
   return A;
 }
 
-// B(i, a) = 1/|r_i − R_a|.
-Mat build_B(const Mat3N &surface_points, const Mat3N &atom_positions) {
-  const Eigen::Index ncav = surface_points.cols();
+Mat build_atom_cavity_coulomb(const Mat3N &cavity_points,
+                              const Mat3N &atom_positions) {
+  const Eigen::Index ncav = cavity_points.cols();
   const Eigen::Index natom = atom_positions.cols();
   Mat B(ncav, natom);
   for (Eigen::Index a = 0; a < natom; ++a) {
     for (Eigen::Index i = 0; i < ncav; ++i) {
-      const double d = (surface_points.col(i) - atom_positions.col(a)).norm();
+      const double d = (cavity_points.col(i) - atom_positions.col(a)).norm();
       B(i, a) = (d > 1e-6) ? 1.0 / d : 0.0;
     }
   }
   return B;
 }
 
-} // namespace
-
-Response build(const Mat3N &atom_positions_bohr,
-               const occ::solvent::surface::Surface &surface,
-               double epsilon, double x) {
-  Response out;
-  const Eigen::Index ncav = surface.vertices.cols();
+CosmoResponse build_cosmo_response(const Mat3N &atom_positions_bohr,
+                                   const Mat3N &cavity_points,
+                                   const Vec &cavity_areas, double epsilon,
+                                   double x) {
+  CosmoResponse out;
+  const Eigen::Index ncav = cavity_points.cols();
   const Eigen::Index natom = atom_positions_bohr.cols();
   if (ncav == 0) {
     out.B = Mat(0, natom);
@@ -52,9 +48,9 @@ Response build(const Mat3N &atom_positions_bohr,
   }
 
   const double f_eps = (epsilon - 1.0) / (epsilon + x);
-  Mat A = build_A(surface.vertices, surface.areas);
+  Mat A = build_cosmo_A(cavity_points, cavity_areas);
   Eigen::PartialPivLU<Mat> lu(A);
-  out.B = build_B(surface.vertices, atom_positions_bohr);
+  out.B = build_atom_cavity_coulomb(cavity_points, atom_positions_bohr);
   out.G = lu.solve(-f_eps * out.B);
   // B^T · G is mathematically symmetric; symmetrise to absorb round-off.
   Mat J = out.B.transpose() * out.G;
@@ -62,13 +58,15 @@ Response build(const Mat3N &atom_positions_bohr,
   return out;
 }
 
-Mat3N gradient(const Mat3N &atom_positions_bohr,
-               const occ::solvent::surface::Surface &surface,
-               const Vec &atom_charges, const Vec &sigma,
-               double f_epsilon, const Vec &atom_radii_bohr,
-               double smoothing_width_bohr) {
+Mat3N cosmo_gradient_frozen(const Mat3N &atom_positions_bohr,
+                            const Mat3N &cavity_points,
+                            const Vec &cavity_areas,
+                            const IVec &cavity_atom_index,
+                            const Vec &atom_charges, const Vec &sigma,
+                            double f_epsilon, const Vec &atom_radii_bohr,
+                            double smoothing_width_bohr) {
   const Eigen::Index natom = atom_positions_bohr.cols();
-  const Eigen::Index ncav = surface.vertices.cols();
+  const Eigen::Index ncav = cavity_points.cols();
   Mat3N grad = Mat3N::Zero(3, natom);
   if (ncav == 0 || std::abs(f_epsilon) < 1e-14)
     return grad;
@@ -77,7 +75,7 @@ Mat3N gradient(const Mat3N &atom_positions_bohr,
   Mat3N g_field(3, ncav);
   for (Eigen::Index i = 0; i < ncav; ++i) {
     Mat3N diff = atom_positions_bohr;
-    diff.colwise() -= surface.vertices.col(i);
+    diff.colwise() -= cavity_points.col(i);
     // -(r_i - R_a) = (R_a - r_i)
     Vec r2 = diff.colwise().squaredNorm();
     Vec3 g = Vec3::Zero();
@@ -99,7 +97,7 @@ Mat3N gradient(const Mat3N &atom_positions_bohr,
     for (Eigen::Index j = 0; j < ncav; ++j) {
       if (i == j)
         continue;
-      Vec3 d = surface.vertices.col(i) - surface.vertices.col(j);
+      Vec3 d = cavity_points.col(i) - cavity_points.col(j);
       const double d2 = d.squaredNorm();
       if (d2 > 1e-20) {
         const double r3 = d2 * std::sqrt(d2);
@@ -114,7 +112,7 @@ Mat3N gradient(const Mat3N &atom_positions_bohr,
   for (Eigen::Index c = 0; c < natom; ++c) {
     Vec3 h = Vec3::Zero();
     for (Eigen::Index i = 0; i < ncav; ++i) {
-      Vec3 d = surface.vertices.col(i) - atom_positions_bohr.col(c);
+      Vec3 d = cavity_points.col(i) - atom_positions_bohr.col(c);
       const double d2 = d.squaredNorm();
       if (d2 > 1e-20) {
         const double r3 = d2 * std::sqrt(d2);
@@ -127,7 +125,7 @@ Mat3N gradient(const Mat3N &atom_positions_bohr,
   // Assemble the per-atom gradient.
   const double inv_f = 1.0 / f_epsilon;
   for (Eigen::Index i = 0; i < ncav; ++i) {
-    const int c = surface.atom_index(i);
+    const int c = cavity_atom_index(i);
     grad.col(c) -= sigma(i) * g_field.col(i);
     grad.col(c) += inv_f * sigma(i) * t_field.col(i);
   }
@@ -146,12 +144,11 @@ Mat3N gradient(const Mat3N &atom_positions_bohr,
   if (smoothing_width_bohr > 0.0 && atom_radii_bohr.size() == natom) {
     const double sqrt_pi = std::sqrt(M_PI);
     for (Eigen::Index i = 0; i < ncav; ++i) {
-      const int atom_i = surface.atom_index(i);
+      const int atom_i = cavity_atom_index(i);
       // A_ii = 1.07·√(4π/area_i) = 3.793051240937804 / √area_i
-      const double a_ii = 3.793051240937804 / std::sqrt(surface.areas(i));
-      const double prefac =
-          -0.25 / f_epsilon * sigma(i) * sigma(i) * a_ii;
-      const Vec3 r_i = surface.vertices.col(i);
+      const double a_ii = 3.793051240937804 / std::sqrt(cavity_areas(i));
+      const double prefac = -0.25 / f_epsilon * sigma(i) * sigma(i) * a_ii;
+      const Vec3 r_i = cavity_points.col(i);
       for (Eigen::Index k = 0; k < natom; ++k) {
         if (k == atom_i)
           continue;
@@ -163,7 +160,7 @@ Mat3N gradient(const Mat3N &atom_positions_bohr,
         const double arg = (d - t_k) / smoothing_width_bohr;
         const double s = 0.5 * (1.0 + std::erf(arg));
         if (s < 1e-12)
-          continue;  // weight effectively zero — contribution negligible
+          continue; // weight effectively zero — contribution negligible
         const double s_prime =
             std::exp(-arg * arg) / (smoothing_width_bohr * sqrt_pi);
         const double dlog_dd = s_prime / s;
@@ -178,4 +175,4 @@ Mat3N gradient(const Mat3N &atom_positions_bohr,
   return grad;
 }
 
-} // namespace occ::xtb::cosmo
+} // namespace occ::scrf::detail

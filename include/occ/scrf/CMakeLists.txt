@@ -1,0 +1,3 @@
+set(OCC_SCRF_INCLUDE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/cosmo_kernel.h"
+    PARENT_SCOPE)

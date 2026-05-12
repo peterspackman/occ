@@ -1,8 +1,8 @@
 #include <fmt/core.h>
 #include <occ/core/log.h>
+#include <occ/scrf/cosmo_kernel.h>
 #include <occ/solvent/cosmo.h>
 #include <occ/solvent/parameters.h>
-#include <occ/xtb/cosmo_response.h>
 #include <occ/xtb/cpcmx.h>
 #include <stdexcept>
 
@@ -41,7 +41,9 @@ void CpcmXSolvationModel::initialize(const Mat3N &positions_bohr,
                    "contribution will be zero.");
   }
 
-  auto resp = cosmo::build(positions_bohr, m_surface, m_epsilon, m_opts.x);
+  auto resp = occ::scrf::detail::build_cosmo_response(
+      positions_bohr, m_surface.vertices, m_surface.areas, m_epsilon,
+      m_opts.x);
   m_B = std::move(resp.B);
   m_G = std::move(resp.G);
   m_J_solv = std::move(resp.J_solv);
@@ -75,8 +77,10 @@ Mat3N CpcmXSolvationModel::gradient() const {
       m_atomic_charges.size() == 0) {
     return Mat3N::Zero(3, m_atom_positions.cols());
   }
-  return cosmo::gradient(m_atom_positions, m_surface, m_atomic_charges, m_sigma,
-                         m_f_eps, m_atom_radii, m_opts.smoothing_width_bohr);
+  return occ::scrf::detail::cosmo_gradient_frozen(
+      m_atom_positions, m_surface.vertices, m_surface.areas,
+      m_surface.atom_index, m_atomic_charges, m_sigma, m_f_eps, m_atom_radii,
+      m_opts.smoothing_width_bohr);
 }
 
 std::string CpcmXSolvationModel::name() const {
