@@ -27,6 +27,10 @@ struct TbConfig {
   // Project translations and rotations out of the mass-weighted Hessian
   // before diagonalisation (ORCA-style PROJECTTR).
   bool freq_project_tr_rot{true};
+  // Wavefunction output formats. Default writes `<input>.owf.json` (and
+  // `<input>_opt.owf.json` for --opt). Mirrors `OutputInput::formats` used
+  // by `occ scf`. Empty list disables wavefunction output.
+  std::vector<std::string> formats{"json"};
 };
 
 CLI::App *add_tb_subcommand(CLI::App &app);

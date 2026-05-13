@@ -3,6 +3,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/disp/d4.h>
 #include <occ/xtb/anisotropic.h>
+#include <occ/xtb/basis.h>
 #include <occ/xtb/camm.h>
 #include <occ/xtb/coordination.h>
 #include <occ/xtb/gamma.h>
@@ -633,11 +634,24 @@ occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
     throw std::runtime_error(
         "XtbCalculator::to_wavefunction: call single_point_energy() first");
   }
+
+  // Build basis + shell metadata locally from the cached atoms / params.
+  // build_aobasis / build_shell_table are the same helpers Gfn2Engine and
+  // the periodic SCC drivers use, so the result is bit-identical to what
+  // produced m_last_result — and this works for the Crystal ctor too,
+  // where m_calc is unemplaced. For the periodic case the returned
+  // wavefunction is a Γ-only central-cell snapshot: downstream cube /
+  // isosurface treats it as a molecular wavefunction (no Bloch sum at
+  // evaluation time), suitable for visualisation but not a substitute
+  // for a full periodic wavefunction.
+  auto atoms = make_atoms(m_positions_bohr, m_atomic_numbers);
+  auto shell_table = build_shell_table(atoms, m_params);
+
   occ::qm::Wavefunction wfn;
   wfn.method = "GFN2-xTB";
-  wfn.basis = m_calc->basis();
+  wfn.basis = build_aobasis(atoms, m_params);
   wfn.nbf = wfn.basis.nbf();
-  wfn.atoms = m_calc->atoms();
+  wfn.atoms = std::move(atoms);
 
   // GFN2 only carries valence electrons in its basis. Tell the basis to
   // treat the rest as ECP-like core electrons so downstream analyses
@@ -655,8 +669,8 @@ occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
 
   // Closed-shell: total electrons = sum of reference shell occupations - charge.
   double n_elec = 0.0;
-  for (Eigen::Index i = 0; i < m_calc->shell_table().ref_occ.size(); ++i)
-    n_elec += m_calc->shell_table().ref_occ(i);
+  for (Eigen::Index i = 0; i < shell_table.ref_occ.size(); ++i)
+    n_elec += shell_table.ref_occ(i);
   n_elec -= m_charge;
   const int n_alpha =
       static_cast<int>(std::round(n_elec)) / 2; // restricted, so n_alpha = n_occ
@@ -672,11 +686,21 @@ occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
   mo.D = 0.5 * m_last_result.density_matrix; // Wavefunction stores α-only D
   mo.Cocc = mo.C.leftCols(n_alpha);
 
-  // Energies — total only. Decomposition fields aren't part of `Energy`'s
-  // standard set; fold the extras into nuclear/repulsion slots informally.
+  // Energies — `Energy::total` is the only standard slot that maps cleanly
+  // to a GFN2 single-point. The SCC / repulsion / dispersion split lives
+  // on the `xtb_*` fields below so it survives JSON round-trip without
+  // hijacking HF/DFT-shaped fields (e.g. `nuclear_repulsion`).
   wfn.energy.total = m_last_result.total_energy;
-  wfn.energy.nuclear_repulsion = m_last_result.repulsion_energy;
   wfn.have_energies = true;
+
+  // GFN2-specific extras (preserved through .owf.json round-trip).
+  wfn.have_xtb_data = true;
+  wfn.xtb_scc_energy = m_last_result.scc_energy;
+  wfn.xtb_repulsion_energy = m_last_result.repulsion_energy;
+  wfn.xtb_dispersion_energy = m_last_result.dispersion_energy;
+  wfn.xtb_atomic_charges = m_last_result.atomic_charges;
+  wfn.xtb_converged = m_last_result.converged;
+  wfn.xtb_n_iterations = m_last_result.n_iterations;
 
   // Cache the overlap matrix on T (commonly used by downstream).
   wfn.T = m_last_result.overlap_matrix;

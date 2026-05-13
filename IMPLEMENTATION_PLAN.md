@@ -490,6 +490,128 @@ Validate: 5 reference crystals' totals must remain identical to
 
 Estimated effort: ~150 lines, 1 session.
 
+### Wavefunction persistence — `occ tb -o` + periodic `to_wavefunction`
+
+GFN2 results today reach the rest of occ in two ways: (a) molecular
+single-points routed through `single_point_driver` (`occ scf
+--method gfn2`) already produce a `Wavefunction` and `write_output_files`
+saves a `.owf.json` reloadable by `occ cube`, `occ isosurface`, and
+`occ cg`; (b) `occ tb` runs the SCC but never persists a wavefunction,
+and `XtbCalculator::to_wavefunction()` crashes on periodic inputs
+because `m_calc` is unemplaced for the Crystal ctor. These two gaps
+block the natural workflow "run `occ tb`, then make a cube / isosurface
+from the result". The lossiness of the JSON round-trip (xTB-specific
+energy decomposition + charges collapse into `Energy::total` and
+`Energy::nuclear_repulsion`) is a separate, lower-priority concern.
+
+#### Stage 1 — periodic-safe `to_wavefunction()`
+
+**Files to touch**:
+- `src/xtb/xtb_calculator.cpp::to_wavefunction()` (line 631).
+
+**Plan**:
+- Replace `m_calc->basis()` / `m_calc->atoms()` / `m_calc->shell_table()`
+  with locally built equivalents: `make_atoms(m_positions_bohr,
+  m_atomic_numbers)`, then `build_aobasis(atoms, m_params)` and
+  `build_shell_table(atoms, m_params)`. Both helpers already exist
+  (`xtb/basis.h`, `xtb/gamma.h`) and are the same builders used by
+  `Gfn2Engine` and the periodic SCC drivers, so molecular results are
+  bit-identical.
+- For periodic, the existing periodic SCC drivers
+  (`gfn2_periodic_calculator.cpp:334-381`, `:704-749`) already write
+  `density_matrix`, `orbital_coefficients`, `orbital_energies` at Γ
+  into `XtbResult`, so the body of `to_wavefunction` is unchanged once
+  basis/atoms come from a periodic-safe source.
+- Docstring: clarify that the periodic case is a Γ-only central-cell
+  snapshot — downstream cube/isosurface treats it as a molecular
+  wavefunction (no Bloch sum at evaluation time). Suitable for
+  visualisation; not a full periodic wavefunction.
+
+**Tests** (new `tests/xtb_wavefunction_io_tests.cpp`):
+- Molecular `XtbCalculator(water)` → `to_wavefunction()` → save .owf.json
+  → reload → compare D, C, ε, atoms, nbf to the original.
+- Same for `XtbCalculator(benzene_crystal)` Γ-only.
+- After reload, `wfn.electron_density(test_points)` matches the
+  in-memory `wfn.electron_density(test_points)` to 1e-10 — this is
+  what the cube/isosurface pipelines actually call.
+
+#### Stage 2 — wire `occ tb -o` to write wavefunctions
+
+**Files to touch**:
+- `include/occ/main/occ_tb.h` — add `std::vector<std::string> formats{"json"};`
+  to `TbConfig`.
+- `src/main/occ_tb.cpp` — CLI plumbing + write call sites.
+
+**Plan**:
+- Add `tb->add_option("-o,--output", cfg->formats, "wavefunction output formats (json/fchk; empty disables)")`,
+  mirroring `occ scf`'s `OutputInput::formats`.
+- Factor a `write_wavefunction(const XtbCalculator&, const std::string &input_path, const std::vector<std::string> &fmts, const std::string &suffix = "")` helper:
+  for each format, build path `<stem><suffix>.owf.<fmt>` and call
+  `calc.to_wavefunction().save(path)`. Skip when `fmts` is empty or
+  contains only blanks.
+- Call sites:
+  - `run_molecular` single-point: write after `calc.single_point_energy()`.
+  - `run_molecular --opt`: `geometry_optimization` already returns a
+    `Wavefunction`; just call `wfn.save(...)` directly with suffix
+    `_opt` instead of running another SCC.
+  - `run_periodic`: write after the SCC. For `--lattice-energy`, write
+    only the crystal wfn (one file); skip per-monomer to keep the
+    output set predictable.
+  - `--freq`: vibrational analysis doesn't change the wavefunction;
+    the converged single-point wfn is what we save.
+
+**Success criteria / smoke tests**:
+- `occ tb water.xyz` produces `water.owf.json`; loading it back with
+  `Wavefunction::load` succeeds and `wfn.method == "GFN2-xTB"`.
+- `occ tb benzene.cif` produces `benzene.owf.json`.
+- `occ tb water.xyz --opt` produces `water_opt.owf.json` with the
+  optimised geometry.
+- `occ tb water.xyz -o` (empty list) writes nothing; energy summary
+  unchanged.
+- End-to-end smoke: `occ tb water.xyz && occ cube water.owf.json
+  --property rho` produces a non-empty cube.
+
+#### Stage 3 (optional) — preserve xTB-specific extras in the JSON
+
+**Why**: `to_wavefunction()` currently folds `repulsion_energy` into
+`Energy::nuclear_repulsion`, drops `dispersion_energy` and
+`scc_energy` (only `total = scc + rep + disp` survives), and discards
+`atomic_charges`, `shell_charges`, `converged`, `n_iterations`,
+`orbital_occupations`, `solvation_surfaces`. Round-trip loses the
+breakdown a user would expect to inspect after reload.
+
+**Plan (option A — JSON-only, recommended)**:
+- In `wavefunction_json.cpp::to_json/from_json`, when `wfn.method`
+  starts with "GFN2", emit/consume an `"xtb"` block holding
+  `{ scc_energy, repulsion_energy, dispersion_energy, atomic_charges,
+    shell_charges, converged, n_iterations }`. Store it on
+  `Wavefunction` as either an `std::optional<nlohmann::json>
+  method_extras` (free-form) or a typed `XtbExtras` (clean but adds
+  a header dependency).
+- Recommend: `std::optional<nlohmann::json> method_extras` — keeps
+  `wavefunction.h` free of xTB-specific types and lets us extend the
+  block later (e.g. AES energy, dispersion components) without
+  breaking the public struct.
+
+**Plan (option B — typed)**: add a small `XtbExtras` struct to
+`qm::Wavefunction`. Cleaner C++ API, but pulls xTB concepts into
+the core qm header. Skip unless the consumers (e.g. `occ cg`) need
+typed access without going through `nlohmann::json`.
+
+**Tests**: round-trip the extras and assert equality field-by-field
+against the original `XtbResult`. Skip in the molecular wavefunction
+JSON test until this stage lands.
+
+#### Sequencing
+
+Stage 1 is a prerequisite for Stage 2 on the periodic side (otherwise
+`occ tb crystal.cif` would crash inside the new write step). Stage 1
+is also small (~20-line refactor + a test file). Stage 2 is the
+user-visible change. Stage 3 is independent and easy to defer.
+
+Estimated effort: Stage 1 ≈ 50 lines + tests, Stage 2 ≈ 80 lines
+including CLI, Stage 3 ≈ 60 lines + tests if pursued.
+
 ---
 
 ## Phase history (archived)

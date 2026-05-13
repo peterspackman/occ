@@ -130,6 +130,19 @@ struct Wavefunction {
   Vec xdm_volumes;
   Vec xdm_free_volumes;
   double xdm_energy{0.0};
+
+  // GFN2-xTB result breakdown — preserved through .owf.json round-trip so
+  // downstream tools can read back the SCC / repulsion / dispersion split,
+  // the xtb-convention atomic charges, and the SCC convergence diagnostic
+  // without re-running the calculator. `wfn.energy.total` always carries
+  // the sum; these fields only carry the decomposition.
+  bool have_xtb_data{false};
+  double xtb_scc_energy{0.0};
+  double xtb_repulsion_energy{0.0};
+  double xtb_dispersion_energy{0.0};
+  Vec xtb_atomic_charges;
+  bool xtb_converged{false};
+  int xtb_n_iterations{0};
 };
 
 } // namespace occ::qm

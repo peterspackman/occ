@@ -228,8 +228,15 @@ public:
   /// (periodic only — throws otherwise).
   occ::crystal::Crystal to_crystal() const;
   /// Convert the converged SCC state into a `qm::Wavefunction` so the rest
-  /// of occ (FCHK output, Mulliken / Hirshfeld analysis, ESP, ...) can
-  /// consume the GFN2 result. Requires `single_point()` to have run.
+  /// of occ (`.owf.json` save/load, `occ cube`, `occ isosurface`, Mulliken /
+  /// Hirshfeld analysis, ESP, ...) can consume the GFN2 result. Requires
+  /// `single_point()` to have run.
+  ///
+  /// For the periodic ctor this is a Γ-only central-cell snapshot — the
+  /// orbital coefficients, density matrix, and orbital energies are the
+  /// Γ-point values from `XtbResult`, and downstream consumers treat it as
+  /// a molecular wavefunction (no Bloch sum at evaluation time). Useful
+  /// for visualisation; not a substitute for a full periodic wavefunction.
   occ::qm::Wavefunction to_wavefunction() const;
 
   /// Print a summary (energy decomposition, charges, HOMO/LUMO/gap) at

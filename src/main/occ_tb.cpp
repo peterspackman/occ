@@ -1,5 +1,6 @@
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
+#include <filesystem>
 #include <fmt/core.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
@@ -15,11 +16,37 @@
 #include <occ/io/xyz.h>
 #include <occ/main/occ_tb.h>
 #include <occ/main/version.h>
+#include <occ/qm/wavefunction.h>
 #include <occ/xtb/xtb_calculator.h>
 
 namespace occ::main {
 
 namespace {
+
+namespace fs = std::filesystem;
+
+// Save a converged GFN2 wavefunction next to the input geometry, one file
+// per requested format. `<stem><suffix>.owf.<fmt>` (e.g. water.owf.json or
+// water_opt.owf.json). Empty entries in `formats` are skipped; formats not
+// understood by `Wavefunction::save` log a warning from save() itself.
+void write_wavefunction(const occ::qm::Wavefunction &wfn,
+                        const std::string &input_path,
+                        const std::vector<std::string> &formats,
+                        const std::string &suffix = "") {
+  if (formats.empty())
+    return;
+  fs::path base(input_path);
+  fs::path parent = base.parent_path();
+  const std::string stem = base.stem().string();
+  for (const auto &fmt_ext : formats) {
+    if (fmt_ext.empty())
+      continue;
+    fs::path path =
+        parent / fmt::format("{}{}.owf.{}", stem, suffix, fmt_ext);
+    occ::qm::Wavefunction copy = wfn; // save() is non-const
+    copy.save(path.string());          // save() logs the path on success
+  }
+}
 
 // Decide whether `filename` resolves to a Crystal or a Molecule.
 // CIF → always crystal. .gen → either (parser detects). .xyz → molecular.
@@ -74,6 +101,13 @@ void run_periodic(const TbConfig &cfg) {
   occ::log::info("  Dispersion         : {:>20.12f} Ha",
                   calc.dispersion_energy());
   occ::log::info("  Total              : {:>20.12f} Ha", e_total);
+
+  // Periodic GFN2 wavefunction: Γ-only central-cell snapshot, suitable
+  // for cube / isosurface visualisation. `--lattice-energy` adds per-
+  // monomer SCCs below but their wavefunctions are not persisted to
+  // keep the output set predictable — run them as standalone `occ tb`
+  // jobs if you need their files.
+  write_wavefunction(calc.to_wavefunction(), cfg.filename, cfg.formats);
 
   if (cfg.lattice_energy) {
     // Lattice energy = E_crystal − Σ_i E_mol_i over the unit cell, where
@@ -176,6 +210,10 @@ void run_molecular(const TbConfig &cfg) {
     occ::log::info("charge         : {:+.3f} e", cfg.charge);
     occ::log::info("");
     auto wfn = occ::driver::geometry_optimization(input);
+    // Save the converged wavefunction at the optimised geometry. The
+    // driver already returned it from `to_wavefunction()`, so no extra
+    // SCC is needed.
+    write_wavefunction(wfn, cfg.filename, cfg.formats, "_opt");
     if (cfg.frequencies) {
       // Vibrational analysis on the optimized geometry. The optimizer
       // returns a Wavefunction with the converged atoms baked in; rebuild
@@ -207,6 +245,8 @@ void run_molecular(const TbConfig &cfg) {
   calc.print_summary();
   occ::log::info("");
   occ::log::info("Total energy        : {:>20.12f} Ha", e_total);
+
+  write_wavefunction(calc.to_wavefunction(), cfg.filename, cfg.formats);
 
   if (cfg.frequencies) {
     run_frequencies(calc, cfg);
@@ -248,6 +288,12 @@ CLI::App *add_tb_subcommand(CLI::App &app) {
   tb->add_flag("--no-project-tr-rot{false}", cfg->freq_project_tr_rot,
                 "Disable translation/rotation projection of the mass-"
                 "weighted Hessian (default on).");
+  tb->add_option(
+      "-o,--output", cfg->formats,
+      "Wavefunction output formats (json, fchk; default json). Writes "
+      "`<input>.owf.<fmt>` (and `<input>_opt.owf.<fmt>` with --opt). "
+      "Periodic inputs save a Γ-only central-cell snapshot. Pass an "
+      "empty value to disable.");
 
   tb->callback([cfg]() { run_tb_subcommand(*cfg); });
   return tb;
