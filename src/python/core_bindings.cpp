@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include "core_bindings.h"
 #include <fmt/core.h>
 #include <nanobind/eigen/dense.h>

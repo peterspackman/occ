@@ -1,3 +1,5 @@
+#include <Eigen/Geometry>
+#include <Eigen/SVD>
 #include <cstring>
 #include <fmt/core.h>
 #include <fmt/ostream.h>

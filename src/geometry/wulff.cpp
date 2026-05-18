@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include <fmt/core.h>
 #include <numeric>
 #include <occ/core/format_matrix.h>

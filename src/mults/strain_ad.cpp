@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/mults/strain_ad.h>
 #include <occ/mults/crystal_energy.h>
 #include <occ/core/units.h>

@@ -1,3 +1,5 @@
+#include <Eigen/LU>
+#include <Eigen/Eigenvalues>
 #include <CLI/App.hpp>
 #include <filesystem>
 #include <algorithm>

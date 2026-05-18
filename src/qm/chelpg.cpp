@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/core/element.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>

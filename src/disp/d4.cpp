@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include "d4_data.h"
 #include <cmath>
 #include <filesystem>

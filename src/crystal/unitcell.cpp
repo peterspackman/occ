@@ -1,4 +1,5 @@
 
+#include <Eigen/LU>
 #include <occ/crystal/unitcell.h>
 
 namespace occ::crystal {

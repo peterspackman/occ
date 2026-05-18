@@ -1,5 +1,5 @@
 #pragma once
-#include <Eigen/Dense>
+#include <Eigen/Core>
 #include <Eigen/StdVector>
 
 namespace occ {

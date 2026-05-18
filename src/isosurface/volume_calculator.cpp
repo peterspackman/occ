@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/isosurface/volume_calculator.h>
 #include <occ/isosurface/point_functors.h>
 #include <occ/io/adaptive_grid.h>

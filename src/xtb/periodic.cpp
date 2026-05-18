@@ -1,3 +1,5 @@
+#include <Eigen/Geometry>
+#include <Eigen/LU>
 #include <algorithm>
 #include <cmath>
 #include <occ/core/units.h>

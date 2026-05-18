@@ -1,3 +1,4 @@
+#include <Eigen/Cholesky>
 #include <occ/mults/crystal_strain.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>

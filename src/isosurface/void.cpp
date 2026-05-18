@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/core/log.h>
 #include <occ/isosurface/void.h>
 #include <occ/slater/slaterbasis.h>

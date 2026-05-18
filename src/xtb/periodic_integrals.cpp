@@ -1,3 +1,4 @@
+#include <Eigen/Eigenvalues>
 #include <cmath>
 #include <occ/core/parallel.h>
 #include <occ/qm/cint_interface.h>

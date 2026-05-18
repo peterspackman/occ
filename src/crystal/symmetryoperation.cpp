@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <fmt/core.h>
 #include <cmath>
 #include <occ/core/fraction.h>

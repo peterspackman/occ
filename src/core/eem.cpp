@@ -1,3 +1,4 @@
+#include <Eigen/QR>
 #include <occ/core/eem.h>
 #include <occ/core/units.h>
 

@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include <fmt/core.h>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>

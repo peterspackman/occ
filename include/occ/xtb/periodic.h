@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/Geometry>
 #include <occ/core/atom.h>
 #include <occ/core/linear_algebra.h>
 #include <vector>

@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include "crystal_bindings.h"
 #include "eigen_conv.h"
 #include <ankerl/unordered_dense.h>

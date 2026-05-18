@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/crystal/muldin.h>
 
 namespace occ::crystal {

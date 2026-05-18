@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/core/element.h>
 #include <occ/core/kdtree.h>
 #include <occ/core/log.h>

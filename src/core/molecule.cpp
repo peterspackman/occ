@@ -1,3 +1,4 @@
+#include <Eigen/Eigenvalues>
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <occ/core/constants.h>

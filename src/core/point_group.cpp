@@ -1,3 +1,6 @@
+#include <Eigen/LU>
+#include <Eigen/Eigenvalues>
+#include <Eigen/Geometry>
 #include <ankerl/unordered_dense.h>
 #include <occ/core/log.h>
 #include <occ/core/point_group.h>

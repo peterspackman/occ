@@ -1,3 +1,6 @@
+#include <Eigen/Geometry>
+#include <Eigen/QR>
+#include <Eigen/LU>
 #include <array>
 #include <cmath>
 #include <occ/core/eeq.h>

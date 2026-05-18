@@ -7,6 +7,7 @@
  * by Jan Hermann <dev@jan.hermann.name>, licensed under MPL-2.0.
  */
 
+#include <Eigen/SVD>
 #include <occ/opt/pseudoinverse.h>
 #include <occ/core/log.h>
 

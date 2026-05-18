@@ -5,6 +5,7 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/core/timings.h>
+#include <Eigen/LU>
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 #include <algorithm>

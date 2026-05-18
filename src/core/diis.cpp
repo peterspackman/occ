@@ -1,3 +1,4 @@
+#include <Eigen/QR>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/diis.h>

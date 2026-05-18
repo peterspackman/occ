@@ -1,3 +1,4 @@
+#include <Eigen/Eigenvalues>
 #include <cmath>
 #include <occ/core/linear_algebra.h>
 #include <occ/dma/quadrature.h>

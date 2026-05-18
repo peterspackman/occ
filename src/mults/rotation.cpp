@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/mults/rotation.h>
 #include <occ/sht/wigner3j.h>
 #include <occ/sht/clebsch.h>

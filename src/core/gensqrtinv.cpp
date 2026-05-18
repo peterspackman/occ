@@ -1,3 +1,5 @@
+#include <Eigen/LU>
+#include <Eigen/Eigenvalues>
 #include <occ/core/gensqrtinv.h>
 
 namespace occ::core {

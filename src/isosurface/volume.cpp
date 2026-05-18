@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/isosurface/volume.h>
 
 namespace occ::isosurface {

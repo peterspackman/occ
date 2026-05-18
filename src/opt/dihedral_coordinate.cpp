@@ -7,6 +7,8 @@
  * by Jan Hermann <dev@jan.hermann.name>, licensed under MPL-2.0.
  */
 
+#include <Eigen/Geometry>
+#include <Eigen/LU>
 #include <occ/opt/dihedral_coordinate.h>
 #include <occ/core/units.h>
 #include <cmath>

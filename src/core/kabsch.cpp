@@ -1,3 +1,5 @@
+#include <Eigen/LU>
+#include <Eigen/SVD>
 #include <occ/core/kabsch.h>
 
 namespace occ::core::linalg {

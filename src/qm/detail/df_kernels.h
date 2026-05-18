@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/Cholesky>
 #include "kernel_traits.h"
 #include <occ/qm/integral_engine_df.h>
 

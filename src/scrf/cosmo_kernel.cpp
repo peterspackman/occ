@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <cmath>
 #include <occ/scrf/cosmo_kernel.h>
 

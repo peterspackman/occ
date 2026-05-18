@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <CLI/App.hpp>
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
