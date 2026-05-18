@@ -1,4 +1,5 @@
 #pragma once
+#include <fmt/format.h>
 #include <filesystem>
 #include <occ/cg/solvent_surface.h>
 #include <occ/core/molecule.h>

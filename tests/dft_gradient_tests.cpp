@@ -1,5 +1,7 @@
+#include <fmt/core.h>
 #include <catch2/catch_test_macros.hpp>
 #include <occ/core/atom.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/molecule.h>
 #include <occ/core/util.h>
 #include <occ/dft/dft.h>

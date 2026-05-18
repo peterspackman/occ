@@ -2,6 +2,7 @@
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <fstream>
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/numint/molecular_grid.h>

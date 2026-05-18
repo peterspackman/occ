@@ -1,3 +1,5 @@
+#include <fmt/core.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>

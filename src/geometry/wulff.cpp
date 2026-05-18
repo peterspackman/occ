@@ -1,4 +1,6 @@
+#include <fmt/core.h>
 #include <numeric>
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/geometry/quickhull.h>
 #include <occ/geometry/wulff.h>

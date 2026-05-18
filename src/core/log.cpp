@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <memory>
 #include <mutex>
 #include <occ/core/log.h>

@@ -6,6 +6,7 @@
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
 #include <occ/core/element.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>

@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/isosurface/electron_density.h>

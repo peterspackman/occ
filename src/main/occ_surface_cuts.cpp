@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/surface.h>

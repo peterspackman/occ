@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/qm/cint_interface.h>
 
 namespace occ::qm::cint {

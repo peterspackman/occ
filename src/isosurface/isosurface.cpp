@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/core/eeq.h>
 #include <occ/core/kdtree.h>
 #include <occ/geometry/marching_cubes.h>

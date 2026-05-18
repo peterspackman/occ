@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/core/table.h>
 
 namespace occ::io {

@@ -27,6 +27,7 @@
 #include <fmt/format.h>
 #include <sstream>
 
+#include <occ/core/format_matrix.h>
 namespace occ::lua_bindings {
 
 // Thin handle into a parent matrix. The pointer is only safe while the

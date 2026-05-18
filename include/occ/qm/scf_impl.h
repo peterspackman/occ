@@ -1,4 +1,5 @@
 #pragma once
+#include <fmt/format.h>
 
 namespace occ::qm {
 

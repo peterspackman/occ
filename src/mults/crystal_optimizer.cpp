@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/mults/crystal_optimizer.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>

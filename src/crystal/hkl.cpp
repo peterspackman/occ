@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/crystal/hkl.h>
 
 namespace occ::crystal {

@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/core/constants.h>
 #include <occ/core/data_directory.h>
 #include <occ/dft/dft.h>

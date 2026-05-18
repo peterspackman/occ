@@ -1,4 +1,6 @@
+#include <fmt/core.h>
 #include <catch2/catch_test_macros.hpp>
+#include <occ/core/format_matrix.h>
 #include <occ/core/util.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>

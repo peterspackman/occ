@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <fstream>
 #include <occ/core/element.h>
 #include <occ/core/log.h>

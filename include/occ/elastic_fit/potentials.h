@@ -1,4 +1,5 @@
 #pragma once
+#include <fmt/format.h>
 #include <cmath>
 #include <occ/core/log.h>
 #include <occ/crystal/crystal.h>

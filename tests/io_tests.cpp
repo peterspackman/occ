@@ -1,6 +1,8 @@
+#include <fmt/core.h>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <occ/core/format_matrix.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/crystalgrower.h>

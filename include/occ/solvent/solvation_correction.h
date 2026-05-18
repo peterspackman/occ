@@ -1,4 +1,5 @@
 #pragma once
+#include <fmt/format.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>

@@ -7,6 +7,7 @@
 #include <occ/core/eeq.h>
 #include <occ/core/elastic_tensor.h>
 #include <occ/core/element.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/graph.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>

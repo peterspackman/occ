@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <cstdlib>
 #include <occ/dft/functional.h>
 

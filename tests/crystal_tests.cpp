@@ -4,6 +4,7 @@
 #include <catch2/matchers/catch_matchers_vector.hpp>
 #include <fmt/ostream.h>
 #include <iostream>
+#include <occ/core/format_matrix.h>
 #include <occ/core/molecular_symmetry.h>
 #include <occ/core/point_group.h>
 #include <occ/core/timings.h>

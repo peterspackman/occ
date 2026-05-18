@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <ankerl/unordered_dense.h>
 #include <filesystem>
 #include <fstream>

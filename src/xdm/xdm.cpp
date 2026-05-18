@@ -1,4 +1,5 @@
 #include <occ/core/element.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>

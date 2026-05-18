@@ -4,6 +4,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/atom.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/conditioning_orthogonalizer.h>
 #include <occ/core/util.h>
