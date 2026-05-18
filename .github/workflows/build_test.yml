@@ -6,10 +6,19 @@ on:
   pull_request:
     branches: ["main"]
     tags: "v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   BUILD_TYPE: Release
   CPM_SOURCE_CACHE: ${{github.workspace}}/cache/cpm
   OCC_DATA_PATH: ${{github.workspace}}/share
+  CCACHE_DIR: ${{github.workspace}}/.ccache
+  CCACHE_MAXSIZE: "1500M"
+  CCACHE_COMPRESS: "1"
+  CCACHE_COMPRESSLEVEL: "6"
 jobs:
   build:
     strategy:
@@ -51,12 +60,12 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y python3-numpy libpthread-stubs0-dev \
-            doxygen graphviz ninja-build
+            doxygen graphviz ninja-build ccache lld
 
     - name: Install Dependencies Mac
       if: startsWith(runner.os, 'macOS')
       run: |
-        brew install ninja doxygen graphviz
+        brew install ninja doxygen graphviz ccache
 
     - name: Install Dependencies Windows
       if: startsWith(runner.os, 'Windows')
@@ -69,15 +78,28 @@ jobs:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
           ${{github.workspace}}/build
-        key: ${{ matrix.name }}-occ-build-${{ hashFiles('**/CMakeLists.txt', 'share/**/*.json') }}
+        key: ${{ matrix.name }}-occ-build-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: |
           ${{ matrix.name }}-occ-build-
+
+    - name: Cache ccache
+      if: runner.os != 'Windows'
+      uses: actions/cache@v4
+      with:
+        path: ${{env.CCACHE_DIR}}
+        key: ${{ matrix.name }}-ccache-${{ github.sha }}
+        restore-keys: |
+          ${{ matrix.name }}-ccache-
 
     - name: Run build script (non-Windows)
       if: runner.os != 'Windows'
       run: |
         rm -f build/*.xz
         ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
+
+    - name: ccache stats
+      if: runner.os != 'Windows'
+      run: ccache -s
 
     - name: Run build script (Windows)
       if: runner.os == 'Windows'
