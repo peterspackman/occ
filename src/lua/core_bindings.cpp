@@ -516,7 +516,9 @@ void register_point_groups(sol::table &m) {
       "point_group", sol::readonly_property(&MolecularPointGroup::point_group),
       "symops", sol::readonly_property(&MolecularPointGroup::symops),
       "rotational_symmetries",
-      sol::readonly_property(&MolecularPointGroup::rotational_symmetries),
+      sol::readonly_property([](const MolecularPointGroup &pg) {
+        return sol::as_table(pg.rotational_symmetries());
+      }),
       "symmetry_number",
       sol::readonly_property(&MolecularPointGroup::symmetry_number),
       sol::meta_function::to_string, [](const MolecularPointGroup &pg) {
