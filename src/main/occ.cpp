@@ -12,6 +12,9 @@
 #include <occ/main/occ_elat.h>
 #include <occ/main/occ_embed.h>
 #include <occ/main/occ_isosurface.h>
+#ifdef OCC_HAVE_LUA
+#include <occ/main/occ_lua.h>
+#endif
 #include <occ/main/occ_pair.h>
 #include <occ/main/occ_ropt.h>
 #include <occ/main/occ_scf.h>
@@ -60,6 +63,9 @@ int main(int argc, char *argv[]) {
   auto *elastic_fit = occ::main::add_elastic_fit_subcommand(app);
   auto *embed = occ::main::add_embed_subcommand(app);
   auto *iso = occ::main::add_isosurface_subcommand(app);
+#ifdef OCC_HAVE_LUA
+  auto *lua = occ::main::add_lua_subcommand(app);
+#endif
   auto *pair = occ::main::add_pair_subcommand(app);
   auto *ropt = occ::main::add_ropt_subcommand(app);
   auto *scf = occ::main::add_scf_subcommand(app);

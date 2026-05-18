@@ -191,3 +191,89 @@ CPMAddPackage(
     GIT_TAG "v2.9.2"
 )
 endif()
+
+if("${WITH_LUA_BINDINGS}")
+# Upstream Lua ships only a Makefile, so fetch the source and build a
+# plain static library ourselves. Keeping it in-tree avoids depending on
+# a third-party CMake fork.
+CPMAddPackage(
+    NAME lua
+    GITHUB_REPOSITORY "lua/lua"
+    GIT_TAG "v5.4.7"
+    DOWNLOAD_ONLY YES
+)
+
+if(lua_ADDED)
+    set(LUA_CORE_SRC
+        lapi.c lcode.c lctype.c ldebug.c ldo.c ldump.c lfunc.c lgc.c
+        llex.c lmem.c lobject.c lopcodes.c lparser.c lstate.c lstring.c
+        ltable.c ltm.c lundump.c lvm.c lzio.c
+    )
+    set(LUA_LIB_SRC
+        lauxlib.c lbaselib.c lcorolib.c ldblib.c liolib.c lmathlib.c
+        loadlib.c loslib.c lstrlib.c ltablib.c lutf8lib.c linit.c
+    )
+    set(LUA_ALL_SRC ${LUA_CORE_SRC} ${LUA_LIB_SRC})
+    list(TRANSFORM LUA_ALL_SRC PREPEND "${lua_SOURCE_DIR}/")
+    add_library(occ_lua_runtime STATIC ${LUA_ALL_SRC})
+    target_include_directories(occ_lua_runtime PUBLIC "${lua_SOURCE_DIR}")
+    set_target_properties(occ_lua_runtime PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
+        C_STANDARD 99
+    )
+    if(APPLE)
+        target_compile_definitions(occ_lua_runtime PUBLIC LUA_USE_MACOSX)
+    elseif(UNIX)
+        target_compile_definitions(occ_lua_runtime PUBLIC LUA_USE_LINUX)
+        target_link_libraries(occ_lua_runtime PUBLIC dl)
+    endif()
+    if(UNIX)
+        target_link_libraries(occ_lua_runtime PUBLIC m)
+    endif()
+    add_library(lua::lua ALIAS occ_lua_runtime)
+endif()
+
+# sol2 is header-only; pull its DOWNLOAD_ONLY tree and expose an
+# INTERFACE library that bundles the Lua link dependency.
+CPMAddPackage(
+    NAME sol2
+    GITHUB_REPOSITORY "ThePhD/sol2"
+    GIT_TAG "v3.5.0"
+    DOWNLOAD_ONLY YES
+)
+
+if(sol2_ADDED)
+    add_library(occ_sol2 INTERFACE)
+    target_include_directories(occ_sol2 INTERFACE "${sol2_SOURCE_DIR}/include")
+    target_link_libraries(occ_sol2 INTERFACE lua::lua)
+    target_compile_features(occ_sol2 INTERFACE cxx_std_20)
+    add_library(sol2::sol2 ALIAS occ_sol2)
+endif()
+
+# linenoise: tiny single-file line editor for the `occ lua` REPL.
+# POSIX-only (Linux/macOS/BSD). Windows builds skip the REPL path
+# entirely and fall back to stdin-slurp, so we only fetch the source
+# on non-Windows platforms.
+if(NOT WIN32)
+CPMAddPackage(
+    NAME linenoise
+    GITHUB_REPOSITORY "antirez/linenoise"
+    GIT_TAG "1.0"
+    DOWNLOAD_ONLY YES
+)
+
+if(linenoise_ADDED)
+    add_library(occ_linenoise STATIC
+        "${linenoise_SOURCE_DIR}/linenoise.c"
+    )
+    target_include_directories(occ_linenoise PUBLIC
+        "${linenoise_SOURCE_DIR}"
+    )
+    set_target_properties(occ_linenoise PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
+        C_STANDARD 99
+    )
+    add_library(linenoise::linenoise ALIAS occ_linenoise)
+endif()
+endif()
+endif()

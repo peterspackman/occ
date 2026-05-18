@@ -25,6 +25,11 @@ add_subdirectory(opt)
 add_subdirectory(driver)
 
 add_subdirectory(isosurface)
+
+if("${WITH_LUA_BINDINGS}")
+    add_subdirectory(lua)
+endif()
+
 add_subdirectory(main)
 
 if("${WITH_PYTHON_BINDINGS}")
