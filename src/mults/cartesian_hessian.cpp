@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include <occ/mults/cartesian_hessian.h>
 #include <occ/mults/interaction_tensor.h>
 #include <occ/mults/cartesian_rotation.h>

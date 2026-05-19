@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/dftb_gen.h>
 #include <occ/io/load_geometry.h>

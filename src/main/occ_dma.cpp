@@ -1,5 +1,6 @@
 #include <CLI/App.hpp>
 #include <occ/core/element.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/units.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/driver/dma_driver.h>

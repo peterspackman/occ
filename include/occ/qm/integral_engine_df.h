@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/Cholesky>
 #include <Eigen/IterativeLinearSolvers>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/mp2_components.h>

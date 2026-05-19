@@ -1,3 +1,5 @@
+#include <Eigen/Geometry>
+#include <Eigen/SVD>
 #include <cstring>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -21,7 +23,8 @@ Mat3 principal_axes(const Mat3N &positions) {
 }
 
 Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
-                        const Mat3N &positions, double solvent_radius_angs) {
+                        const Mat3N &positions, double solvent_radius_angs,
+                        bool axis_aligned, double smoothing_width_bohr) {
   const size_t N = atomic_numbers.rows();
   const double solvent_radius =
       std::min(solvent_radius_angs, 0.001) * occ::units::ANGSTROM_TO_BOHR;
@@ -31,63 +34,92 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
   Mat tmp_vertices(3, npts * N);
   Vec tmp_areas(npts * N);
   IVec tmp_atom_index(npts * N);
-  Vec3 centroid = positions.rowwise().mean();
+  // For analytical gradients the cavity must be rigidly attached to atoms; the
+  // principal-axes rotation introduces a global ∂axes/∂R chain that breaks
+  // the rigid-attachment assumption.
+  Vec3 centroid = axis_aligned ? Vec3(positions.rowwise().mean())
+                               : Vec3(Vec3::Zero());
   Mat3N centered = positions.colwise() - centroid;
-  auto axes = principal_axes(centered);
+  Mat3 axes = axis_aligned ? principal_axes(centered) : Mat3::Identity();
   centered = axes.transpose() * centered;
 
   Vec ri = radii.array();
+  const bool use_smooth = smoothing_width_bohr > 0.0;
 
-  size_t num_valid_points{0};
+  // Pre-shift positions at radius (r_i + solvent_radius) from atom centre.
+  // The legacy (boolean) path masks against these and then shifts inward by
+  // `solvent_radius` for kept points. The smooth path instead pre-shifts
+  // here (tmp_vertices end up at post-shift radius r_i) so the cosmo
+  // gradient can reconstruct identical weights from `surface.vertices`
+  // alone.
   for (size_t i = 0; i < N; i++) {
-    double rs = ri(i);
-    double r = rs + solvent_radius;
-    double surface_area = 4 * M_PI * rs * rs;
-    tmp_areas.segment(num_valid_points, npts).array() =
+    const double rs = ri(i);
+    const double r = use_smooth ? rs : (rs + solvent_radius);
+    const double surface_area = 4 * M_PI * rs * rs;
+    tmp_areas.segment(i * npts, npts).array() =
         grid.col(3).array() * surface_area;
-    auto vblock = tmp_vertices.block(0, num_valid_points, 3, npts);
+    auto vblock = tmp_vertices.block(0, i * npts, 3, npts);
     vblock.array() = grid.block(0, 0, npts, 3).transpose() * r;
     vblock.colwise() += centered.col(i);
-    tmp_atom_index.segment(num_valid_points, npts).array() = i;
-    num_valid_points += npts;
+    tmp_atom_index.segment(i * npts, npts).array() = i;
   }
 
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> mask(num_valid_points);
-  mask.setConstant(true);
+  const size_t n_total = N * npts;
+  Vec weights = Vec::Ones(n_total);
 
   for (size_t i = 0; i < N; i++) {
-    Vec3 q = centered.col(i);
-    for (size_t j = 0; j < tmp_vertices.cols(); j++) {
-      if (!mask(j) || tmp_atom_index(j) == i)
+    const Vec3 q = centered.col(i);
+    // Boolean path: cavity point j (pre-shift) is masked by atom i if it
+    // lies within (r_i + solvent_radius). Smooth path: post-shift point j
+    // is weighted by smoothstep about r_i — both express "point inside
+    // atom i's effective sphere", just on different position conventions.
+    const double t = use_smooth ? ri(i) : (ri(i) + solvent_radius);
+    for (size_t j = 0; j < n_total; j++) {
+      if (tmp_atom_index(j) == static_cast<int>(i))
         continue;
-      double r = (q - tmp_vertices.col(j)).norm();
-      if (r < (ri(i) + solvent_radius)) {
-        num_valid_points--;
-        mask(j) = false;
+      if (weights(j) < 1e-15)
+        continue;  // already fully masked, no need to keep multiplying
+      const double d = (q - tmp_vertices.col(j)).norm();
+      double w;
+      if (use_smooth) {
+        w = 0.5 * (1.0 + std::erf((d - t) / smoothing_width_bohr));
+      } else {
+        w = (d < t) ? 0.0 : 1.0;
       }
+      weights(j) *= w;
     }
   }
 
-  Mat3N remaining_points(3, num_valid_points);
-  Vec remaining_weights(num_valid_points);
-  IVec remaining_atom_index(num_valid_points);
-  size_t j = 0;
-  for (size_t i = 0; i < mask.rows(); i++) {
-    if (mask(i)) {
-      size_t atom_idx = tmp_atom_index(i);
-      Vec3 v = tmp_vertices.col(i);
-      Vec3 shift = (v - centered.col(atom_idx));
+  // Keep points above a tiny weight threshold. Boolean mode is exactly
+  // binary so 0.5 picks all "kept" points and reproduces the legacy
+  // behaviour bit-for-bit; smooth mode keeps anything still contributing.
+  const double keep_threshold = use_smooth ? 1e-3 : 0.5;
+  size_t num_kept = 0;
+  for (size_t j = 0; j < n_total; j++)
+    if (weights(j) > keep_threshold) num_kept++;
+
+  Mat3N remaining_points(3, num_kept);
+  Vec remaining_areas(num_kept);
+  IVec remaining_atom_index(num_kept);
+  size_t k = 0;
+  for (size_t j = 0; j < n_total; j++) {
+    if (weights(j) <= keep_threshold) continue;
+    const size_t atom_idx = tmp_atom_index(j);
+    Vec3 v = tmp_vertices.col(j);
+    if (!use_smooth) {
+      // Legacy convention: kept boolean points get shifted inward by
+      // solvent_radius so their final radius is r_atom (not r_atom + probe).
+      Vec3 shift = v - centered.col(atom_idx);
       shift.normalize();
-      shift.array() *= solvent_radius;
-      // shift the position back by solvent radius
+      shift *= solvent_radius;
       v -= shift;
-      remaining_points.col(j) = v;
-      remaining_weights(j) = tmp_areas(i);
-      remaining_atom_index(j) = atom_idx;
-      j++;
     }
+    remaining_points.col(k) = v;
+    remaining_areas(k) = tmp_areas(j) * weights(j);
+    remaining_atom_index(k) = atom_idx;
+    k++;
   }
-  surface.areas = remaining_weights;
+  surface.areas = remaining_areas;
   surface.atom_index = remaining_atom_index;
   surface.vertices = (axes * remaining_points).colwise() + centroid;
   return surface;

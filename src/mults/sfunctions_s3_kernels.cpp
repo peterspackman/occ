@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/mults/sfunctions.h>
 
 namespace occ::mults::kernels {

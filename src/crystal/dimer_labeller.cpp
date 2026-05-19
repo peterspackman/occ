@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/crystal/dimer_labeller.h>
 
 namespace occ::crystal {

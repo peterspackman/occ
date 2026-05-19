@@ -1,6 +1,7 @@
 add_library(occ_gto
     "${CMAKE_CURRENT_SOURCE_DIR}/density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gto.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/rotation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/shell.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sto3g_basis.cpp"

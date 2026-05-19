@@ -1,15 +1,42 @@
 add_library(occ_xtb
     STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/xtb_wrapper.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_parameters.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sto_ng.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/basis.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/coordination.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/repulsion.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gamma.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/h0.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/h0_gradient.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/scc.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_ints.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/camm.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_damping.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/anisotropic.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_engine.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpcmx.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/smd_xtb.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/xtb_calculator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/periodic.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ewald_common.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/periodic_integrals.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/periodic_gamma.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/multipole_ewald.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/kpoint_grid.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gfn2_periodic_calculator.cpp"
     ${OCC_XTB_INCLUDE_FILES}
 )
 
 target_link_libraries(occ_xtb
-    PUBLIC 
+    PUBLIC
     occ_core
     occ_crystal
     occ_qm
     occ_dft
+    occ_disp
+    occ_scrf
+    occ_solvent
 )
 
 target_include_directories(occ_xtb PUBLIC 

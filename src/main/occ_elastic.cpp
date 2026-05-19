@@ -1,6 +1,7 @@
 #include <CLI/App.hpp>
 #include <fmt/os.h>
 #include <occ/core/elastic_tensor.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/surface.h>

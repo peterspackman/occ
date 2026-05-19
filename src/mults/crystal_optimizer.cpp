@@ -1,8 +1,11 @@
+#include <fmt/core.h>
 #include <occ/mults/crystal_optimizer.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/element.h>
 #include <occ/core/units.h>
+#include <Eigen/LU>
+#include <Eigen/SVD>
 #include <Eigen/Eigenvalues>
 #include <algorithm>
 #include <array>

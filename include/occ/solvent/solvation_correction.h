@@ -1,4 +1,5 @@
 #pragma once
+#include <fmt/format.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
@@ -6,6 +7,7 @@
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
 #include <occ/gto/shell.h>
+#include <occ/scrf/reaction_field.h>
 #include <occ/solvent/cosmo.h>
 #include <occ/solvent/parameters.h>
 
@@ -15,6 +17,13 @@ using occ::qm::MolecularOrbitals;
 using occ::qm::SpinorbitalKind;
 using PointChargeList = std::vector<occ::core::PointCharge>;
 
+/// SMD-style continuum solvation model used by the HF/DFT pipeline.
+///
+/// Phase 2: this class is now a thin adapter over
+/// `occ::scrf::ReactionFieldEngine`. The public API is preserved so callers
+/// (drivers, `SolvationCorrectedProcedure<Proc>`, the cg solvation pipeline)
+/// do not need to change; the engine pre-factors the COSMO A matrix once and
+/// re-uses it across SCF iterations.
 class ContinuumSolvationModel {
 public:
   ContinuumSolvationModel(const std::vector<occ::core::Atom> &,
@@ -26,19 +35,25 @@ public:
 
   const Mat3N &nuclear_positions() const { return m_nuclear_positions; }
   const Mat3N &surface_positions_coulomb() const {
-    return m_surface_positions_coulomb;
+    return m_engine.es_cavity().vertices;
   }
-  const Mat3N &surface_positions_cds() const { return m_surface_positions_cds; }
-  const Vec &surface_areas_coulomb() const { return m_surface_areas_coulomb; }
-  const Vec &surface_areas_cds() const { return m_surface_areas_cds; }
+  const Mat3N &surface_positions_cds() const {
+    return m_engine.cds_cavity().vertices;
+  }
+  const Vec &surface_areas_coulomb() const {
+    return m_engine.es_cavity().areas;
+  }
+  const Vec &surface_areas_cds() const { return m_engine.cds_cavity().areas; }
   const Vec &nuclear_charges() const { return m_nuclear_charges; }
-  size_t num_surface_points() const { return m_surface_areas_coulomb.rows(); }
+  size_t num_surface_points() const {
+    return m_engine.num_es_surface_points();
+  }
   void set_surface_potential(const Vec &);
   const Vec &apparent_surface_charge();
 
   double surface_polarization_energy();
   double surface_charge() const { return m_asc.array().sum(); }
-  double smd_cds_energy() const;
+  double smd_cds_energy() const { return m_engine.energy_cds(); }
 
   inline double charge() const { return m_charge; }
   inline void set_charge(double charge) {
@@ -46,48 +61,27 @@ public:
     initialize_surfaces();
   }
 
-  Vec surface_cds_energy_elements() const;
+  Vec surface_cds_energy_elements() const {
+    return m_engine.cds_energy_elements();
+  }
   Vec surface_polarization_energy_elements() const;
 
-  template <typename Proc>
-  Vec surface_nuclear_energy_elements(const Proc &proc) const {
-    Vec qn = proc.nuclear_electric_potential_contribution(
-        m_surface_positions_coulomb);
-    qn.array() *= m_asc.array();
-    return qn;
+  /// Per-element decomposition of the latest SCF in the unified
+  /// `occ::scrf::SolvationSurfaces` shape (the same one consumed by cg).
+  ///
+  /// The coulomb branch energies are `½ σ_i · φ_total_i` per element, which
+  /// is algebraically identical to `nuc_i + elec_i + pol_i` from the per-
+  /// element decomposition above. Verify:
+  ///   nuc_i + elec_i + pol_i
+  ///     = σ_i·φ_nuc_i + σ_i·φ_elec_i − ½ σ_i·φ_total_i
+  ///     = σ_i·φ_total_i − ½ σ_i·φ_total_i = ½ σ_i·φ_total_i.
+  occ::scrf::SolvationSurfaces solvation_surfaces() const {
+    return m_engine.surfaces();
   }
 
-  template <typename Proc>
-  Vec surface_electronic_energy_elements(const MolecularOrbitals &mo,
-                                         const Proc &p) const {
-    Vec result(m_surface_areas_coulomb.rows());
-    Mat X;
-    std::vector<core::PointCharge> point_charges;
-    point_charges.emplace_back(0, 0.0, 0.0, 0.0);
-    for (int i = 0; i < m_surface_areas_coulomb.rows(); i++) {
-      point_charges[0].set_charge(m_asc(i));
-      point_charges[0].set_position(m_surface_positions_coulomb.col(i));
-
-      X = p.compute_point_charge_interaction_matrix(point_charges);
-      switch (mo.kind) {
-      case SpinorbitalKind::Restricted: {
-        result(i) =
-            2 * occ::qm::expectation<SpinorbitalKind::Restricted>(mo.D, X);
-        break;
-      }
-      case SpinorbitalKind::Unrestricted: {
-        result(i) =
-            2 * occ::qm::expectation<SpinorbitalKind::Unrestricted>(mo.D, X);
-        break;
-      }
-      case SpinorbitalKind::General: {
-        result(i) = 2 * occ::qm::expectation<SpinorbitalKind::General>(mo.D, X);
-        break;
-      }
-      }
-    }
-    return result;
-  }
+  /// Access the underlying SCRF engine — exposes the pre-factored A matrix,
+  /// surfaces, and direct ASC/V_atom accessors. Phase 2 onwards.
+  const occ::scrf::ReactionFieldEngine &engine() const { return m_engine; }
 
   void write_surface_file(const std::string &filename);
   inline std::string name() const {
@@ -96,25 +90,22 @@ public:
 
 private:
   void initialize_surfaces();
-  void update_radii();
+  /// Returns the ES radii to use for the current geometry/charge — uses
+  /// DRACO-scaled radii when `m_scale_radii`, intrinsic Coulomb radii otherwise.
+  Vec compute_es_radii();
 
   double m_charge{0.0};
-  Vec m_coulomb_radii;
-  Vec m_cds_radii;
-  Vec m_atomic_charges;
+  Vec m_atomic_charges;            // EEQ charges (DRACO path only)
 
   std::string m_solvent_name;
   Mat3N m_nuclear_positions;
   Vec m_nuclear_charges;
-  Mat3N m_surface_positions_coulomb, m_surface_positions_cds;
-  Vec m_surface_areas_coulomb, m_surface_areas_cds;
   Vec m_surface_potential;
   Vec m_asc;
-  IVec m_surface_atoms_coulomb, m_surface_atoms_cds;
   bool m_asc_needs_update{true};
   SMDSolventParameters m_params;
 
-  COSMO m_cosmo;
+  occ::scrf::ReactionFieldEngine m_engine;
   bool m_scale_radii{false};
 };
 
@@ -322,11 +313,13 @@ public:
     return m_solvation_model.surface_polarization_energy_elements();
   }
 
-  auto surface_nuclear_energy_elements() const {
-    return m_solvation_model.surface_nuclear_energy_elements(m_proc);
+  /// Per-element decomposition in the unified `occ::scrf::SolvationSurfaces`
+  /// shape (same one consumed by cg, same one produced by the xTB pipeline).
+  occ::scrf::SolvationSurfaces solvation_surfaces() const {
+    return m_solvation_model.solvation_surfaces();
   }
-  auto surface_electronic_energy_elements(const MolecularOrbitals &mo) const {
-    return m_solvation_model.surface_electronic_energy_elements(mo, m_proc);
+  const occ::scrf::ReactionFieldEngine &engine() const {
+    return m_solvation_model.engine();
   }
 
   template <unsigned int order = 1>

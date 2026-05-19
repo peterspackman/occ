@@ -2,7 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/eigen_json.h>
-#include <occ/io/gto_json.h>
+#include <occ/gto/json.h>
 #include <occ/io/json_basis.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/mo.h>
@@ -150,6 +150,16 @@ void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
     xdm.at("free volumes").get_to(wfn.xdm_free_volumes);
     xdm.at("energy").get_to(wfn.xdm_energy);
   }
+  if (J.contains("xtb")) {
+    wfn.have_xtb_data = true;
+    const auto &xtb = J.at("xtb");
+    xtb.at("scc energy").get_to(wfn.xtb_scc_energy);
+    xtb.at("repulsion energy").get_to(wfn.xtb_repulsion_energy);
+    xtb.at("dispersion energy").get_to(wfn.xtb_dispersion_energy);
+    xtb.at("atomic charges").get_to(wfn.xtb_atomic_charges);
+    xtb.at("converged").get_to(wfn.xtb_converged);
+    xtb.at("scc iterations").get_to(wfn.xtb_n_iterations);
+  }
   if (J.contains("method")) {
     J.at("method").get_to(wfn.method);
   }
@@ -211,6 +221,16 @@ void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
     xdm_params["free volumes"] = wfn.xdm_free_volumes;
     xdm_params["energy"] = wfn.xdm_energy;
     J["xdm parameters"] = xdm_params;
+  }
+  if (wfn.have_xtb_data) {
+    nlohmann::json xtb;
+    xtb["scc energy"] = wfn.xtb_scc_energy;
+    xtb["repulsion energy"] = wfn.xtb_repulsion_energy;
+    xtb["dispersion energy"] = wfn.xtb_dispersion_energy;
+    xtb["atomic charges"] = wfn.xtb_atomic_charges;
+    xtb["converged"] = wfn.xtb_converged;
+    xtb["scc iterations"] = wfn.xtb_n_iterations;
+    J["xtb"] = xtb;
   }
   J["method"] = wfn.method;
 }

@@ -40,8 +40,10 @@ OCC provides comprehensive functionality for ground-state single-point calculati
     - Supported approximations: LDA, GGA, meta-GGA
     - Global hybrid functionals (range-separated support planned)
   - Density fitting (RI-JK) with auxiliary basis sets
-  - Implicit solvation via SMD
+  - GFN2-xTB semi-empirical tight-binding (molecular + periodic; see below)
+  - Implicit solvation via SMD, CPCM-X for xTB
   - XDM dispersion model
+  - D4 (DFT-D4) dispersion correction
 
 - **Property Calculations**
   - Molecular and atomic multipole moments (up to hexadecapole)
@@ -63,6 +65,42 @@ OCC provides comprehensive functionality for ground-state single-point calculati
 - Surface analysis:
   - Hirshfeld surfaces
   - Promolecule surfaces
+
+### GFN2-xTB
+
+OCC ships a native C++ implementation of the GFN2-xTB semi-empirical
+tight-binding method (Bannwarth, Ehlers, Grimme, *J. Chem. Theory Comput.*
+**15**, 1652 (2019), [doi:10.1021/acs.jctc.8b01176](https://doi.org/10.1021/acs.jctc.8b01176)).
+The implementation was developed with reference to Grimme's xTB and the
+[tblite](https://github.com/tblite/tblite) reference implementation
+(Apache-2.0 / LGPL-3.0+), and uses the published GFN2-xTB parameter set
+(bundled in `share/xtb/gfn2.json`).
+
+**Available now**
+
+- Molecular SCC: full GFN2 with CAMM multipole AES, on-site polarisation,
+  third-order, and native D4 dispersion -- agrees with xTB to single uHa
+  on small molecules.
+- Periodic SCC (Gamma-only and Monkhorst-Pack k-point sampling) on real
+  molecular crystals, with multipole AES, Ewald-summed gamma, and
+  lattice-summed D4.
+- Analytical molecular gradient (charge-only SCC variant), validated to
+  5e-5 Ha/Bohr against finite differences; numerical Hessian for
+  frequencies.
+- Implicit solvation via CPCM-X and SMD-xTB.
+- Bindings via the `XtbCalculator` class in Python (nanobind) and
+  JS/WASM (emscripten/embind).
+
+**Current limitations**
+
+- Periodic gradient and crystal-cell optimisation are not yet wired up.
+- The "multipole-on" analytical gradient still has a known ~1 mHa gap
+  versus FD-of-energy from missing AO-multipole integral derivatives --
+  the charge-only gradient is the production variant.
+- Open-shell GFN2 (and GFN1/GFN0) are out of scope for v1.
+- Periodic energies on dense molecular crystals are ~0.4-0.6 mHa/atom too
+  bound versus tblite (missing WSC-image averaging in the gamma build is
+  the leading suspect).
 
 ### Additional Features
 
@@ -109,7 +147,7 @@ energy = ks.run()
 
 # Crystal structure analysis
 crystal = Crystal.from_cif_file("structure.cif")
-dimers = crystal.symmetry_unique_dimers(10.0)  # Get unique dimers within 10 Å
+dimers = crystal.symmetry_unique_dimers(10.0)  # Get unique dimers within 10 A
 ```
 
 For more examples and detailed API documentation, please refer to the [documentation](docs_url_here).
@@ -189,4 +227,22 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ## Citation
 
-If you use OCC in your research, please cite the appropriate papers for all functionals, methods etc. you use, along with the citations for the core dependencies here.
+If you use OCC in your research, please cite the appropriate papers for all
+functionals, methods etc. you use, along with the citations for the core
+dependencies here.
+
+If you use the GFN2-xTB implementation, cite:
+
+- C. Bannwarth, S. Ehlers, S. Grimme,
+  *GFN2-xTB -- An Accurate and Broadly Parametrized Self-Consistent
+  Tight-Binding Quantum Chemical Method with Multipole Electrostatics and
+  Density-Dependent Dispersion Contributions*,
+  J. Chem. Theory Comput. **15**, 1652-1671 (2019).
+  [doi:10.1021/acs.jctc.8b01176](https://doi.org/10.1021/acs.jctc.8b01176)
+- E. Caldeweyher, S. Ehlers, S. Grimme et al.,
+  *A generally applicable atomic-charge dependent London dispersion
+  correction*, J. Chem. Phys. **150**, 154122 (2019).
+  [doi:10.1063/1.5090222](https://doi.org/10.1063/1.5090222)
+
+The OCC implementation of GFN2-xTB is independent of, but was developed
+with reference to, the [tblite](https://github.com/tblite/tblite) project.

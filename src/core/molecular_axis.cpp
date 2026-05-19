@@ -4,6 +4,8 @@
 #include <fmt/core.h>
 #include <fstream>
 #include <unordered_map>
+#include <Eigen/Geometry>
+#include <Eigen/LU>
 #include <Eigen/SVD>
 #include <Eigen/Eigenvalues>
 

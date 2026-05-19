@@ -126,8 +126,26 @@ add_executable(xtb_tests "${CMAKE_CURRENT_SOURCE_DIR}/xtb_tests.cpp")
 target_link_libraries(xtb_tests PRIVATE occ_xtb Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(xtb_tests)
 
+add_executable(xtb_native_tests "${CMAKE_CURRENT_SOURCE_DIR}/xtb_native_tests.cpp")
+target_link_libraries(xtb_native_tests PRIVATE occ_xtb Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(xtb_native_tests PRIVATE
+    OCC_GFN2_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
+catch_discover_tests(xtb_native_tests)
+
+add_executable(xtb_wavefunction_io_tests "${CMAKE_CURRENT_SOURCE_DIR}/xtb_wavefunction_io_tests.cpp")
+target_link_libraries(xtb_wavefunction_io_tests PRIVATE occ_xtb Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(xtb_wavefunction_io_tests PRIVATE
+    OCC_GFN2_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
+catch_discover_tests(xtb_wavefunction_io_tests)
+
 add_executable(cg_tests "${CMAKE_CURRENT_SOURCE_DIR}/cg_tests.cpp")
 target_link_libraries(cg_tests PRIVATE occ_cg Catch2::Catch2WithMain Threads::Threads)
+# Resolve the GFN2 parameter file from the source share/ tree at runtime —
+# matches the xtb / xtb_wavefunction_io test executables. Without this
+# the test's DataDirGuard falls back to the relative `"share"` default
+# and fails on a clean build dir.
+target_compile_definitions(cg_tests PRIVATE
+    OCC_GFN2_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
 catch_discover_tests(cg_tests)
 
 add_executable(dma_tests "${CMAKE_CURRENT_SOURCE_DIR}/dma_tests.cpp")

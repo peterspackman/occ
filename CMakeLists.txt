@@ -62,6 +62,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
     option(WITH_CLANG_TIDY "Enable clang tidy" OFF)
     option(WITH_PYTHON_BINDINGS "Build python bindings" OFF)
+    option(WITH_LUA_BINDINGS "Build Lua bindings and the `occ lua` subcommand" ON)
     option(WITH_TBLITE "Include the tblite API in the build" OFF)
     option(BUILD_DOCS "Build documentation using Doxygen" OFF)
     option(USE_MLX "Use Apple MLX library for GPU offloading (WIP)" OFF)
@@ -116,6 +117,9 @@ if(${EMSCRIPTEN})
 message(STATUS "Emscripten build flags")
 # Disable system TBB for Emscripten builds (we'll use the built-in one)
 set(USE_SYSTEM_TBB OFF CACHE BOOL "System TBB is disabled for Emscripten builds" FORCE)
+# The `occ lua` subcommand is a native concept; embedding Lua under wasm
+# would work but adds binary weight for no real use case.
+set(WITH_LUA_BINDINGS OFF CACHE BOOL "Lua bindings are disabled for Emscripten builds" FORCE)
 
 # Set Emscripten-specific compile flags (serial build)
 add_compile_options(-Wno-unused-command-line-argument -matomics -mbulk-memory)
@@ -172,6 +176,9 @@ install(TARGETS occ
 install(DIRECTORY share/basis DESTINATION "share/occ")
 install(DIRECTORY share/solvent DESTINATION "share/occ")
 install(DIRECTORY share/methods DESTINATION "share/occ")
+install(DIRECTORY share/xtb DESTINATION "share/occ")
+install(DIRECTORY share/dftd4 DESTINATION "share/occ")
+install(DIRECTORY share/dftd3 DESTINATION "share/occ")
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FixBundle.cmake.in"

@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/qm/cint_interface.h>
 
 namespace occ::qm::cint {
@@ -107,6 +108,18 @@ void Optimizer::create1or2c_grad(IntegralEnvironment &env) {
     libcint::int1e_iprinv_optimizer(&m_optimizer, env.atom_data_ptr(),
                                     env.num_atoms(), env.basis_data_ptr(),
                                     env.num_basis(), env.env_data_ptr());
+    break;
+  case Operator::dipole:
+    // Optimizer for int1e_irp = <φ_μ | r_α | ∇_β φ_ν>.
+    libcint::int1e_irp_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                 env.num_atoms(), env.basis_data_ptr(),
+                                 env.num_basis(), env.env_data_ptr());
+    break;
+  case Operator::quadrupole:
+    // Optimizer for int1e_irrp = <φ_μ | r_α r_β | ∇_γ φ_ν>.
+    libcint::int1e_irrp_optimizer(&m_optimizer, env.atom_data_ptr(),
+                                  env.num_atoms(), env.basis_data_ptr(),
+                                  env.num_basis(), env.env_data_ptr());
     break;
   default:
     throw std::runtime_error(

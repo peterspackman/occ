@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/mults/torque.h>
 #include <occ/mults/rotation.h>
 #include <occ/mults/multipole_interactions.h>

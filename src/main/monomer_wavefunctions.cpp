@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <filesystem>
 #include <occ/core/log.h>
 #include <occ/driver/single_point.h>

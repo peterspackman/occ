@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/mults/rigid_body.h>
 #include <occ/mults/rotation.h>
 #include <cmath>

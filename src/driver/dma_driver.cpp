@@ -1,5 +1,6 @@
 #include <occ/driver/dma_driver.h>
 #include <occ/core/element.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/units.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecular_axis.h>

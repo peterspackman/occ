@@ -1,0 +1,62 @@
+#pragma once
+#include <occ/core/atom.h>
+#include <occ/core/linear_algebra.h>
+
+namespace occ::xtb {
+
+class Gfn2Parameters;
+
+// Per-shell metadata used by the SCC: which atom owns this shell, which
+// element-shell-index it corresponds to, the shell-resolved Hubbard hardness,
+// the shell self-energy, etc. Built once from (atoms, params) and reused.
+struct ShellTable {
+  std::vector<int> atom;          // owning atom index
+  std::vector<int> elem_shell;    // index within element->shells[]
+  Vec hardness;                   // per-shell η (atomic units)
+  Vec self_energy_ev;             // per-shell ε (eV — convert at use)
+  Vec kcn;                        // per-shell CN coefficient
+  Vec shell_poly;                 // per-shell distance polynom coefficient
+  Vec ref_occ;                    // per-shell reference occupation
+  IVec ang_mom;                   // per-shell angular momentum (l)
+  IVec n_quantum;                 // per-shell principal quantum number
+  Vec third_order;                // per-shell Γ_3 = third_order_atom * gam3shell[l]
+};
+
+// Build the per-shell metadata for the given atoms.
+ShellTable build_shell_table(const std::vector<core::Atom> &atoms,
+                             const Gfn2Parameters &params);
+
+// Klopman-Ohno gamma matrix with arithmetic averaging (GFN2's convention):
+//   - cross-atom: γ_ij(R) = (R^α + g_ij^{-α})^{-1/α}, α = globals.alphaj
+//   - same-atom, different shell: γ = g_ij = ½(η_i + η_j)
+//   - same shell (diagonal): γ = η_i
+// Atomic positions in Bohr.
+Mat klopman_ohno_gamma(const std::vector<core::Atom> &atoms,
+                       const ShellTable &shells,
+                       const Gfn2Parameters &params);
+
+// Analytical gradient of ½ q^T γ q with respect to nuclear positions.
+// Only cross-atom γ entries contribute (same-atom γ has no R-dependence).
+Mat3N klopman_ohno_gamma_energy_gradient(
+    const std::vector<core::Atom> &atoms, const ShellTable &shells,
+    const Gfn2Parameters &params, const Mat &gamma_matrix, const Vec &qsh);
+
+// Initial shell-resolved charges from EEQ atomic charges (xtb convention).
+// EEQ is computed on the molecular geometry and each atom's charge is
+// distributed across its shells weighted by ref_occ; for shells with
+// ref_occ = 0 the contribution is zero. Useful as an SCC initial guess.
+//   atoms: Bohr coordinates
+//   total_charge: net molecular charge (electrons removed)
+Vec eeq_initial_shell_charges(const std::vector<core::Atom> &atoms,
+                              const ShellTable &shells, double total_charge);
+
+// Periodic variant of `eeq_initial_shell_charges`: uses the Ewald-summed
+// EEQ A matrix (`occ::core::charges::eeq_partial_charges_periodic`) so the
+// initial atomic charges respect the lattice. The same per-atom-to-shell
+// distribution is then applied. `lattice_bohr.cols()` are a, b, c in Bohr.
+Vec eeq_initial_shell_charges_periodic(const std::vector<core::Atom> &atoms,
+                                       const ShellTable &shells,
+                                       const Mat3 &lattice_bohr,
+                                       double total_charge);
+
+} // namespace occ::xtb

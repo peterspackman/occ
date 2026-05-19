@@ -1,5 +1,5 @@
 #include <nlohmann/json.hpp>
-#include <occ/io/gto_json.h>
+#include <occ/gto/json.h>
 #include <occ/io/eigen_json.h>
 
 namespace occ::gto {

@@ -2,6 +2,7 @@ from pathlib import Path
 import site
 import warnings
 from ._occpy import *
+from ._occpy import __version__  # re-export for `occpy.__version__`
 
 # Set up logging first, only log critical errors
 set_log_level(LogLevel.CRITICAL)

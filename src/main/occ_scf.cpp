@@ -284,8 +284,14 @@ void run_scf_subcommand(occ::io::OccInput config) {
 
     Wavefunction wfn = occ::driver::single_point(config);
     write_output_files(config, wfn);
-    occ::main::calculate_dispersion(config, wfn);
-    occ::main::calculate_properties(config, wfn);
+    if (wfn.method != "GFN2-xTB") {
+      // GFN2 already prints its own native summary inside the driver; the
+      // standard wavefunction properties printer (multipoles via HF integrals,
+      // Mulliken via orbital partition) is misleading for a tight-binding
+      // method, so skip it.
+      occ::main::calculate_dispersion(config, wfn);
+      occ::main::calculate_properties(config, wfn);
+    }
 
     config.solvent.solvent_name = stored_solvent_name;
 

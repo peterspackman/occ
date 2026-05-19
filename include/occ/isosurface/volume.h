@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/LU>
 #include <occ/geometry/volume_grid.h>
 #include <occ/isosurface/common.h>
 

@@ -17,7 +17,15 @@ __pycache__
 occjs.js
 occjs.wasm
 wasm/
+# Ignore everything in examples/ by default (cube/ply/scratch outputs
+# accumulate there), but explicitly whitelist the curated subdirectories
+# of paired scripts + sample inputs and the README.
 examples/*
+!examples/README.md
+!examples/python/
+!examples/lua/
+!examples/scf/
+!examples/external_energy/
 CMakeFiles/
 
 # Node.js
@@ -45,3 +53,10 @@ coverage/
 *.cube
 *.pgrid
 *.ply
+
+# xtb scratch outputs (when running xtb side-by-side for validation)
+.EDISP
+charges
+wbo
+xtbrestart
+xtbtopo.mol

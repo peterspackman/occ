@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/LU>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>

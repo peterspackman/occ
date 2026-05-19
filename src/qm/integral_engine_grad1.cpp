@@ -170,6 +170,147 @@ IntegralEngine::one_electron_operator_grad(Op op,
   }
 }
 
+// Generic kernel for "multipole-with-ket-gradient" integrals: int1e_irp
+// (dipole-grad) and int1e_irrp (quadrupole-grad). Each AO pair returns
+// `n_op_components × 3` doubles in the libcint buffer, with the operator
+// components varying outermost and the gradient direction inner. We pack
+// the result as `n_op_components` MatTriples.
+template <Op op, ShellKind kind>
+std::vector<MatTriple>
+multipole_operator_grad_kernel(const AOBasis &basis, IntEnv &env,
+                                const ShellPairList &shellpairs,
+                                int n_op_components) {
+  using Result = IntegralEngine::IntegralResult<2>;
+  const auto nbf = basis.nbf();
+  std::vector<MatTriple> result(n_op_components);
+  for (auto &mt : result)
+    mt = MatTriple::Zero(nbf, nbf);
+
+  occ::parallel::thread_local_storage<std::vector<MatTriple>> results_local(
+      [nbf, n_op_components]() {
+        std::vector<MatTriple> r(n_op_components);
+        for (auto &mt : r)
+          mt = MatTriple::Zero(nbf, nbf);
+        return r;
+      });
+
+  auto f = [&results_local, n_op_components](const Result &args) {
+    auto &local = results_local.local();
+    const auto block_size = static_cast<size_t>(args.dims[0]) *
+                             static_cast<size_t>(args.dims[1]);
+    for (int n = 0; n < n_op_components; ++n) {
+      const double *base = args.buffer + 3 * n * block_size;
+      Eigen::Map<const Mat> tmpx(base, args.dims[0], args.dims[1]),
+          tmpy(base + block_size, args.dims[0], args.dims[1]),
+          tmpz(base + 2 * block_size, args.dims[0], args.dims[1]);
+      local[n].x.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
+          tmpx;
+      local[n].y.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
+          tmpy;
+      local[n].z.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
+          tmpz;
+    }
+  };
+
+  const auto nsh = basis.size();
+  if (shellpairs.size() > 0) {
+    occ::parallel::parallel_for(size_t(0), nsh, [&](size_t p) {
+      IntEnv thread_env = env;
+      occ::qm::cint::Optimizer opt(thread_env, op, 2, 1);
+      auto bufsize = thread_env.buffer_size_1e(op, 1);
+      auto buffer = std::make_unique<double[]>(bufsize);
+      const auto &first_bf = basis.first_bf();
+      int bf1 = first_bf[p];
+      for (const auto &q : shellpairs[p]) {
+        int bf2 = first_bf[q];
+        std::array<int, 2> idxs{static_cast<int>(p), static_cast<int>(q)};
+        Result args{0,
+                    idxs,
+                    {bf1, bf2},
+                    thread_env.two_center_helper_grad<op, kind>(
+                        idxs, opt.optimizer_ptr(), buffer.get(), nullptr),
+                    buffer.get()};
+        if (args.dims[0] > -1)
+          f(args);
+        if (p != q) {
+          std::array<int, 2> idxs2{static_cast<int>(q), static_cast<int>(p)};
+          Result args2{0,
+                       idxs2,
+                       {bf2, bf1},
+                       thread_env.two_center_helper_grad<op, kind>(
+                           idxs2, opt.optimizer_ptr(), buffer.get(), nullptr),
+                       buffer.get()};
+          if (args2.dims[0] > -1)
+            f(args2);
+        }
+      }
+    });
+  } else {
+    occ::parallel::parallel_for_2d(
+        size_t(0), nsh, size_t(0), nsh, [&](size_t p, size_t q) {
+          IntEnv thread_env = env;
+          occ::qm::cint::Optimizer opt(thread_env, op, 2, 1);
+          auto bufsize = thread_env.buffer_size_1e(op, 1);
+          auto buffer = std::make_unique<double[]>(bufsize);
+          const auto &first_bf = basis.first_bf();
+          int bf1 = first_bf[p];
+          int bf2 = first_bf[q];
+          std::array<int, 2> idxs{static_cast<int>(p), static_cast<int>(q)};
+          Result args{0,
+                      idxs,
+                      {bf1, bf2},
+                      thread_env.two_center_helper_grad<op, kind>(
+                          idxs, opt.optimizer_ptr(), buffer.get(), nullptr),
+                      buffer.get()};
+          if (args.dims[0] > -1)
+            f(args);
+        });
+  }
+
+  for (const auto &local : results_local) {
+    for (int n = 0; n < n_op_components; ++n) {
+      result[n].x.noalias() += local[n].x;
+      result[n].y.noalias() += local[n].y;
+      result[n].z.noalias() += local[n].z;
+    }
+  }
+  return result;
+}
+
+std::vector<MatTriple>
+IntegralEngine::multipole_operator_grad(Op op,
+                                         bool use_shellpair_list) const {
+  bool spherical = is_spherical();
+  constexpr auto Cart = ShellKind::Cartesian;
+  constexpr auto Sph = ShellKind::Spherical;
+  ShellPairList empty_shellpairs = {};
+  const auto &shellpairs =
+      use_shellpair_list ? m_shellpairs : empty_shellpairs;
+
+  switch (op) {
+  case Op::dipole: {
+    constexpr int n = 3;
+    if (spherical)
+      return multipole_operator_grad_kernel<Op::dipole, Sph>(
+          m_aobasis, m_env, shellpairs, n);
+    return multipole_operator_grad_kernel<Op::dipole, Cart>(
+        m_aobasis, m_env, shellpairs, n);
+  }
+  case Op::quadrupole: {
+    constexpr int n = 9;
+    if (spherical)
+      return multipole_operator_grad_kernel<Op::quadrupole, Sph>(
+          m_aobasis, m_env, shellpairs, n);
+    return multipole_operator_grad_kernel<Op::quadrupole, Cart>(
+        m_aobasis, m_env, shellpairs, n);
+  }
+  default:
+    throw std::runtime_error(
+        "multipole_operator_grad: only Op::dipole and Op::quadrupole "
+        "are supported (use one_electron_operator_grad for the others)");
+  }
+}
+
 MatTriple
 IntegralEngine::rinv_operator_grad_atom(size_t atom_index,
                                         bool use_shellpair_list) const {

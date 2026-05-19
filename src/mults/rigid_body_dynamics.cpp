@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include <occ/mults/rigid_body_dynamics.h>
 #include <occ/mults/torque.h>
 #include <occ/mults/multipole_interactions.h>

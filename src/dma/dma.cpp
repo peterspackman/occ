@@ -1,3 +1,4 @@
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/core/units.h>

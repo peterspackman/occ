@@ -11,6 +11,7 @@ add_subdirectory(gto)
 add_subdirectory(io)
 add_subdirectory(elastic_fit)
 add_subdirectory(qm)
+add_subdirectory(scrf)
 add_subdirectory(numint)
 add_subdirectory(dft)
 add_subdirectory(sht)
@@ -24,6 +25,11 @@ add_subdirectory(opt)
 add_subdirectory(driver)
 
 add_subdirectory(isosurface)
+
+if("${WITH_LUA_BINDINGS}")
+    add_subdirectory(lua)
+endif()
+
 add_subdirectory(main)
 
 if("${WITH_PYTHON_BINDINGS}")
@@ -43,6 +49,7 @@ set(PYTHON_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/python/opt_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/qm_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/python/mults_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/python/xtb_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occpy.cpp"
 )
 
@@ -63,6 +70,7 @@ target_link_libraries(_occpy PUBLIC
     occ_main
     occ_opt
     occ_descriptors
+    occ_xtb
 )
 
 install(TARGETS _occpy LIBRARY DESTINATION occpy)
@@ -87,6 +95,7 @@ set(JS_BINDING_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/js/dma_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/volume_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/mults_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/xtb_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occjs.cpp"
 )
 
@@ -114,6 +123,7 @@ target_link_libraries(occjs PUBLIC
     occ_mults
     occ_main
     occ_descriptors
+    occ_xtb
 )
 
 # Emscripten-specific linker flags for JavaScript bindings

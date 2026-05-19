@@ -1,4 +1,5 @@
 #include <occ/core/dimer.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/kabsch.h>
 #include <occ/core/log.h>
 #include <occ/core/util.h>

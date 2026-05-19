@@ -6,6 +6,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elastic.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.cpp"
+    $<$<BOOL:${WITH_LUA_BINDINGS}>:${CMAKE_CURRENT_SOURCE_DIR}/occ_lua.cpp>
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cg.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_cube.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_dimers.cpp"
@@ -18,6 +19,7 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_ropt.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_surface_cuts.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_tb.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
     ${OCC_MAIN_INCLUDE_FILES}
 )
@@ -51,6 +53,18 @@ target_include_directories(occ_main PUBLIC
 )
 
 target_compile_features(occ_main PUBLIC cxx_std_20)
+
+if("${WITH_LUA_BINDINGS}")
+    target_link_libraries(occ_main PUBLIC occ_lua_bindings)
+    target_compile_definitions(occ_main PUBLIC OCC_HAVE_LUA)
+    # linenoise powers the interactive REPL when stdin is a tty. Skipped
+    # on Windows (the 3rdparty CMakeLists guards the fetch + lib) — the
+    # REPL path is `#ifdef`'d out there and we just slurp stdin.
+    if(NOT WIN32)
+        target_link_libraries(occ_main PUBLIC linenoise::linenoise)
+        target_compile_definitions(occ_main PUBLIC OCC_HAVE_LINENOISE)
+    endif()
+endif()
 
 add_executable(xdm EXCLUDE_FROM_ALL 
     "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp")

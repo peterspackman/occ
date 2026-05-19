@@ -1,5 +1,6 @@
 #include <ankerl/unordered_dense.h>
 #include <fmt/os.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/elastic_fit/elastic_fitting.h>

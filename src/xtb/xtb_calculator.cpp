@@ -1,0 +1,710 @@
+#include <occ/core/log.h>
+#include <occ/core/units.h>
+#include <occ/crystal/crystal.h>
+#include <occ/disp/d4.h>
+#include <occ/xtb/anisotropic.h>
+#include <occ/xtb/basis.h>
+#include <occ/xtb/camm.h>
+#include <occ/xtb/coordination.h>
+#include <occ/xtb/gamma.h>
+#include <occ/xtb/gfn2_engine.h>
+#include <occ/xtb/h0_gradient.h>
+#include <occ/xtb/kpoint_grid.h>
+#include <occ/xtb/multipole_damping.h>
+#include <occ/xtb/multipole_ewald.h>
+#include <occ/xtb/multipole_ints.h>
+#include <occ/xtb/periodic_integrals.h>
+#include <occ/xtb/xtb_calculator.h>
+#include <occ/xtb/repulsion.h>
+#include <stdexcept>
+
+namespace occ::xtb {
+
+namespace {
+
+std::vector<core::Atom> make_atoms(const Mat3N &positions_bohr,
+                                   const IVec &atomic_numbers) {
+  std::vector<core::Atom> atoms;
+  atoms.reserve(atomic_numbers.size());
+  for (Eigen::Index i = 0; i < atomic_numbers.size(); ++i) {
+    atoms.push_back({atomic_numbers(i), positions_bohr(0, i),
+                     positions_bohr(1, i), positions_bohr(2, i)});
+  }
+  return atoms;
+}
+
+// Wiberg bond orders: Σ_{μ∈A, ν∈B} (P·S)_μν · (P·S)_νμ.
+Mat compute_wiberg_bond_orders(const Mat &P, const Mat &S,
+                               const std::vector<int> &bf_to_atom,
+                               int n_atoms) {
+  Mat PS = P * S;
+  Mat wb = Mat::Zero(n_atoms, n_atoms);
+  for (Eigen::Index mu = 0; mu < PS.rows(); ++mu) {
+    const int ai = bf_to_atom[mu];
+    for (Eigen::Index nu = 0; nu < PS.cols(); ++nu) {
+      const int aj = bf_to_atom[nu];
+      if (ai == aj)
+        continue;
+      wb(ai, aj) += PS(mu, nu) * PS(nu, mu);
+    }
+  }
+  return wb;
+}
+
+} // namespace
+
+XtbCalculator::XtbCalculator(const core::Molecule &mol)
+    : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
+      m_atomic_numbers(mol.atomic_numbers()), m_charge(mol.charge()) {
+  initialize_calculator();
+}
+
+XtbCalculator::XtbCalculator(const core::Dimer &dimer)
+    : m_positions_bohr(dimer.positions() * occ::units::ANGSTROM_TO_BOHR),
+      m_atomic_numbers(dimer.atomic_numbers()), m_charge(dimer.charge()) {
+  initialize_calculator();
+}
+
+XtbCalculator::XtbCalculator(const crystal::Crystal &crystal) {
+  m_periodic = true;
+  m_periodic_sys = PeriodicSystem::from_crystal(crystal);
+  // Mirror molecular positions / atomic numbers so positions(), num_atoms(),
+  // and to_wavefunction() can act on the central-cell atoms.
+  const int n = m_periodic_sys.num_atoms();
+  m_positions_bohr.resize(3, n);
+  m_atomic_numbers.resize(n);
+  for (int i = 0; i < n; ++i) {
+    m_positions_bohr(0, i) = m_periodic_sys.atoms[i].x;
+    m_positions_bohr(1, i) = m_periodic_sys.atoms[i].y;
+    m_positions_bohr(2, i) = m_periodic_sys.atoms[i].z;
+    m_atomic_numbers(i) = m_periodic_sys.atoms[i].atomic_number;
+  }
+  m_params = Gfn2Parameters::load_default();
+  m_periodic_opts.total_charge = m_charge;
+}
+
+void XtbCalculator::set_kpoints(int n1, int n2, int n3) {
+  m_kpoints[0] = n1;
+  m_kpoints[1] = n2;
+  m_kpoints[2] = n3;
+}
+
+std::array<int, 3> XtbCalculator::kpoints() const {
+  return {m_kpoints[0], m_kpoints[1], m_kpoints[2]};
+}
+
+void XtbCalculator::set_include_multipoles(bool on) {
+  // Single source of truth: m_periodic_opts.include_multipoles is read by
+  // both the periodic dispatch and the molecular dispatch (the latter passes
+  // it through to Gfn2Engine::single_point's include_multipoles flag).
+  m_periodic_opts.include_multipoles = on;
+}
+
+bool XtbCalculator::include_multipoles() const {
+  return m_periodic_opts.include_multipoles;
+}
+
+void XtbCalculator::set_include_dispersion(bool on) {
+  m_opts.include_dispersion = on;
+  m_periodic_opts.include_dispersion = on;
+}
+
+bool XtbCalculator::include_dispersion() const {
+  return m_periodic_opts.include_dispersion;
+}
+
+bool XtbCalculator::set_solvent(const std::string &name) {
+  // Stub for API parity with TbliteCalculator. Continuum solvent isn't
+  // implemented in the native backend yet — return false so callers can
+  // detect and fall back. Direct injection of a custom model is available
+  // via `set_solvation_model`.
+  (void)name;
+  return false;
+}
+
+void XtbCalculator::set_solvation_model(
+    std::shared_ptr<XtbSolvationModel> model) {
+  if (m_calc) {
+    m_calc->set_solvation_model(model);
+  } else if (m_periodic && model) {
+    occ::log::warn(
+        "XtbCalculator::set_solvation_model: periodic SCC does not yet "
+        "consume solvation models (Phase 7B); ignoring.");
+  }
+}
+
+const std::shared_ptr<XtbSolvationModel> &
+XtbCalculator::solvation_model() const {
+  static const std::shared_ptr<XtbSolvationModel> empty;
+  return m_calc ? m_calc->solvation_model() : empty;
+}
+
+void XtbCalculator::set_num_unpaired_electrons(int n) {
+  if (n != 0) {
+    throw std::runtime_error(
+        "XtbCalculator: open-shell GFN2 not yet implemented "
+        "(num_unpaired_electrons must be 0)");
+  }
+}
+
+Mat3 XtbCalculator::lattice() const {
+  if (!m_periodic) {
+    throw std::runtime_error(
+        "XtbCalculator::lattice: not a periodic calculator");
+  }
+  return m_periodic_sys.lattice_bohr;
+}
+
+void XtbCalculator::initialize_calculator() {
+  m_params = Gfn2Parameters::load_default();
+  m_calc.emplace(make_atoms(m_positions_bohr, m_atomic_numbers), m_params);
+  m_opts.total_charge = m_charge;
+}
+
+const XtbResult &XtbCalculator::single_point() {
+  if (m_periodic) {
+    m_periodic_opts.total_charge = m_charge;
+    if (m_kpoints[0] == 1 && m_kpoints[1] == 1 && m_kpoints[2] == 1) {
+      m_last_result = run_charge_only_periodic_scc(
+          m_periodic_sys, m_params, m_periodic_opts);
+    } else {
+      auto kpts = monkhorst_pack_grid(m_periodic_sys.reciprocal_bohr(),
+                                      m_kpoints[0], m_kpoints[1],
+                                      m_kpoints[2]);
+      m_last_result = run_periodic_scc_kpoints(m_periodic_sys, m_params,
+                                                kpts, m_periodic_opts);
+    }
+  } else {
+    m_opts.total_charge = m_charge;
+    m_last_result = m_calc->single_point(m_opts,
+                                          m_periodic_opts.include_multipoles);
+  }
+  return m_last_result;
+}
+
+double XtbCalculator::single_point_energy() {
+  return single_point().total_energy;
+}
+
+Vec XtbCalculator::charges() const { return m_last_result.atomic_charges; }
+
+Mat XtbCalculator::bond_orders() const {
+  if (m_last_result.density_matrix.size() == 0) {
+    throw std::runtime_error(
+        "XtbCalculator::bond_orders: call single_point_energy() first");
+  }
+  return compute_wiberg_bond_orders(m_last_result.density_matrix,
+                                    m_last_result.overlap_matrix,
+                                    m_calc->bf_to_atom(),
+                                    static_cast<int>(num_atoms()));
+}
+
+void XtbCalculator::set_charge(double c) { m_charge = c; }
+void XtbCalculator::set_max_iterations(int n) {
+  m_opts.max_iterations = n;
+  m_periodic_opts.max_iterations = n;
+}
+int XtbCalculator::max_iterations() const { return m_opts.max_iterations; }
+void XtbCalculator::set_temperature(double t) {
+  m_opts.electronic_temperature = t;
+}
+double XtbCalculator::temperature() const {
+  return m_opts.electronic_temperature;
+}
+void XtbCalculator::set_mixer_damping(double f) {
+  m_opts.damping_factor = f;
+  m_periodic_opts.damping_factor = f;
+}
+double XtbCalculator::mixer_damping() const { return m_opts.damping_factor; }
+
+void XtbCalculator::update_structure(const Mat3N &positions) {
+  if (positions.cols() != num_atoms()) {
+    throw std::runtime_error(
+        "XtbCalculator::update_structure: column count mismatch");
+  }
+  m_positions_bohr = positions;
+  if (m_periodic) {
+    // Refresh atom positions in the cached periodic system. Lattice unchanged.
+    for (int i = 0; i < num_atoms(); ++i) {
+      m_periodic_sys.atoms[i].x = positions(0, i);
+      m_periodic_sys.atoms[i].y = positions(1, i);
+      m_periodic_sys.atoms[i].z = positions(2, i);
+    }
+  } else {
+    m_calc->update_positions(make_atoms(m_positions_bohr, m_atomic_numbers));
+  }
+}
+
+void XtbCalculator::update_structure(const Mat3N &positions,
+                                         const Mat3 &lattice_bohr) {
+  if (!m_periodic) {
+    throw std::runtime_error("XtbCalculator::update_structure(positions, "
+                             "lattice): not a periodic calculator");
+  }
+  if (positions.cols() != num_atoms()) {
+    throw std::runtime_error(
+        "XtbCalculator::update_structure: column count mismatch");
+  }
+  m_positions_bohr = positions;
+  m_periodic_sys.lattice_bohr = lattice_bohr;
+  for (int i = 0; i < num_atoms(); ++i) {
+    m_periodic_sys.atoms[i].x = positions(0, i);
+    m_periodic_sys.atoms[i].y = positions(1, i);
+    m_periodic_sys.atoms[i].z = positions(2, i);
+  }
+}
+
+core::Molecule XtbCalculator::to_molecule() const {
+  return core::Molecule(m_atomic_numbers,
+                        m_positions_bohr / occ::units::BOHR_TO_ANGSTROM);
+}
+
+crystal::Crystal XtbCalculator::to_crystal() const {
+  if (!m_periodic) {
+    throw std::runtime_error(
+        "XtbCalculator::to_crystal: not a periodic calculator");
+  }
+  // Same convention as TbliteCalculator::to_crystal: P1 cell with all
+  // central-cell atoms in the asymmetric unit. Symmetry is not preserved
+  // through the calculator — to recover spacegroup-reduced data, keep a
+  // reference to the original Crystal alongside the calculator.
+  occ::crystal::UnitCell uc(m_periodic_sys.lattice_bohr *
+                             occ::units::BOHR_TO_ANGSTROM);
+  occ::crystal::SpaceGroup sg(1);
+  occ::crystal::AsymmetricUnit asym(
+      uc.to_fractional(m_positions_bohr * occ::units::BOHR_TO_ANGSTROM),
+      m_atomic_numbers);
+  return crystal::Crystal(asym, sg, uc);
+}
+
+Mat3N XtbCalculator::gradient_numerical(double step) {
+  const int n = num_atoms();
+  Mat3N grad = Mat3N::Zero(3, n);
+
+  // Snapshot the original geometry so we can restore exactly.
+  Mat3N original = m_positions_bohr;
+
+  // Suppress per-iteration SCC chatter and crank max iterations to be safe
+  // for displaced geometries that may converge slower.
+  auto prev_max_iter = m_opts.max_iterations;
+  m_opts.max_iterations = std::max(prev_max_iter, 250);
+
+  for (int a = 0; a < n; ++a) {
+    for (int k = 0; k < 3; ++k) {
+      Mat3N pos_p = original;
+      pos_p(k, a) += step;
+      update_structure(pos_p);
+      const double e_plus = single_point_energy();
+
+      Mat3N pos_m = original;
+      pos_m(k, a) -= step;
+      update_structure(pos_m);
+      const double e_minus = single_point_energy();
+
+      grad(k, a) = (e_plus - e_minus) / (2.0 * step);
+    }
+  }
+
+  // Restore the original geometry and recompute so subsequent queries
+  // (charges(), bond_orders(), to_wavefunction()) reflect the input point.
+  update_structure(original);
+  (void)single_point_energy();
+  m_opts.max_iterations = prev_max_iter;
+  return grad;
+}
+
+Mat3N XtbCalculator::gradient() {
+  if (m_periodic) {
+    throw std::runtime_error(
+        "XtbCalculator::gradient: periodic gradient not yet supported "
+        "(use gradient_numerical() or wait for the periodic gradient).");
+  }
+  // Run a multipole-on SCC so the converged density carries the AES /
+  // on-site polarization shifts. The full ∂E/∂R is then assembled from
+  //   (1) h0_scc_gradient with V_shell augmented by per-atom vs from
+  //       anisotropic_potentials_ewald — captures the V_q + vs Pulay
+  //       terms via Z·∂S/∂R.
+  //   (2) ½ qᵀ ∂γ/∂R q (analytical Klopman-Ohno γ derivative).
+  //   (3) Closed-form repulsion gradient.
+  //   (4) Native D4 dispersion gradient (SCC-coupled).
+  //   (5) Anisotropic pair gradient + CN-chain through mp_radii (Phase
+  //       5d-rest steps 1+2).
+  //   (6) Density-Pulay piece Σ_A vd·∂μ_A/∂R + Σ_A vq·∂Q_A/∂R at fixed P
+  //       (Phase 5d-rest steps 3+4: int1e_irp/int1e_irrp + traceless
+  //       transform + centering chain).
+  //
+  // We use `anisotropic_potentials_ewald` (the variant also used by the
+  // SCC): vd = +∂E_aniso/∂μ_xtb, vq = +∂E_aniso/∂Q_xtb_qpint,
+  // vs = +∂E_aniso/∂q. The "_ewald" name is a misnomer — it works for
+  // both molecular and periodic systems with the appropriate tensor
+  // builder; the suffix only refers to how the PERIODIC tensors are
+  // constructed.
+  m_opts.total_charge = m_charge;
+  SccOptions opts = m_opts;
+  // Dispersion is included in the analytical pipeline via native D4 below;
+  // disable it inside the SCC so we don't double-count the energy and so we
+  // get the *raw* SCC charges for the dispersion piece.
+  const bool wanted_disp = opts.include_dispersion;
+  opts.include_dispersion = false;
+  m_last_result = m_calc->run_full(opts);
+  if (!m_last_result.converged) {
+    throw std::runtime_error(
+        "XtbCalculator::gradient: multipole-on SCC did not converge");
+  }
+  // Hand the converged qsh back to the engine as a warm-start seed for the
+  // *next* gradient call. Pays off when successive gradient calls are on
+  // nearby geometries (geometry optimization, Hessian FD): a previous
+  // converged qsh is much closer to the new SCC's fixed point than EEQ.
+  m_calc->set_initial_shell_charges(m_last_result.shell_charges);
+
+  // Build the energy-weighted density W = 2 Σ_i^occ ε_i C_i C_i^T
+  // (closed shell — sum over both spins folded in via the factor 2).
+  const auto &C = m_last_result.orbital_coefficients;
+  const auto &eps = m_last_result.orbital_energies;
+  const int n_occ = static_cast<int>(eps.size()) / 2; // closed-shell SCC
+  Mat W = Mat::Zero(C.rows(), C.rows());
+  for (int i = 0; i < n_occ; ++i) {
+    W.noalias() += 2.0 * eps(i) * C.col(i) * C.col(i).transpose();
+  }
+
+  // Coordination numbers + ∂CN/∂R for the H0+self-energy chain. The same
+  // gfn-CN vector is reused below for `multipole_radii_with_gradient`.
+  auto cn_g = gfn_coordination_numbers_with_gradient(m_calc->atoms());
+  const auto &shells = m_calc->shell_table();
+  const auto &atoms = m_calc->atoms();
+
+  // Per-atom Mulliken charges from converged shell charges (used by the
+  // anisotropic pieces below and by D4).
+  Vec atom_q = Vec::Zero(atoms.size());
+  for (Eigen::Index s = 0; s < m_last_result.shell_charges.size(); ++s) {
+    atom_q(shells.atom[s]) += m_last_result.shell_charges(s);
+  }
+
+  // Build CAMM moments and per-atom potentials at the converged density.
+  // mp_radii drives the anisotropic damping and depends on CN(R) — its
+  // gradient enters the AES gradient via the dE/dCN chain. We compute D0
+  // / Q0 here ONCE and feed them both to the centering chain (for the SCC-
+  // partition matrices) and the density-Pulay assembly (which also needs
+  // D0 for the Q-bra centering chain via δ_αγ·D_β + δ_βγ·D_α IBP terms).
+  auto &engine = m_calc->engine();
+  const auto bf2at = m_calc->basis().bf_to_atom();
+  MatTriple D0 = dipole_ao_matrices(engine);
+  std::array<Mat, 6> Q0 = quadrupole_ao_matrices(engine);
+  auto mp_ao = center_multipole_ao(
+      atoms, bf2at, m_last_result.overlap_matrix, D0, Q0);
+  auto mom = compute_camm_moments_periodic(
+      atoms, bf2at, m_last_result.density_matrix, mp_ao.D_ket, mp_ao.D_bra,
+      mp_ao.Q_ket, mp_ao.Q_bra);
+  auto mr =
+      multipole_radii_with_gradient(atoms, cn_g.cn, m_calc->parameters());
+  auto mp_tensors =
+      build_molecular_multipole_tensors(atoms, mr.radii, m_calc->parameters());
+  auto pot = anisotropic_potentials_ewald(atoms, atom_q, mom, mp_tensors,
+                                           m_calc->parameters());
+
+  // Shell shift potential V_q = J·qsh + Γ_3 q² (charge-only piece).  Augment
+  // with per-atom vs from the anisotropic potentials so the existing
+  // h0_scc_gradient Pulay term `0.5 P·(V_μ+V_ν)·∂S/∂R` absorbs the AES vs
+  // contribution at the AO level (each AO inherits its shell's V_q plus its
+  // atom's vs). If an implicit-solvent model is attached, also fold its
+  // atom-resolved V_solv shift in: the SCF built H with this contribution,
+  // so the gradient's Pulay term must absorb it too — otherwise the SCF
+  // density response to solvation is silently dropped.
+  Vec V_shell = m_calc->gamma() * m_last_result.shell_charges;
+  Vec v_solv_atom;
+  if (auto solv = m_calc->solvation_model()) {
+    v_solv_atom = solv->atom_potential();
+  }
+  for (Eigen::Index s = 0; s < V_shell.size(); ++s) {
+    V_shell(s) +=
+        shells.third_order(s) * m_last_result.shell_charges(s) *
+        m_last_result.shell_charges(s);
+    V_shell(s) += pot.vs(shells.atom[s]);
+    if (v_solv_atom.size() > 0) {
+      V_shell(s) += v_solv_atom(shells.atom[s]);
+    }
+  }
+
+  // (1) H0 + Pulay + V_q-via-S + vs-via-S + ∂Π/∂R + dE/dCN chain.
+  Mat3N grad = h0_scc_gradient(
+      atoms, m_calc->parameters(), shells, m_calc->basis(),
+      m_calc->engine(), m_last_result.overlap_matrix,
+      m_last_result.density_matrix, W, V_shell, cn_g.cn, cn_g.dcn);
+
+  // (2) ½ q^T (∂γ/∂R) q  (analytical Klopman-Ohno γ derivative).
+  grad += klopman_ohno_gamma_energy_gradient(
+      atoms, shells, m_calc->parameters(), m_calc->gamma(),
+      m_last_result.shell_charges);
+
+  // (3) Repulsion derivative (closed form).
+  auto rep = repulsion_energy_and_gradient(atoms, m_calc->parameters());
+  grad += rep.gradient;
+
+  // (4) Native D4 dispersion. SCC-coupled (atomic Mulliken charges as fixed
+  // input — variational q ⇒ ∂q/∂R chain vanishes by Hellmann-Feynman; this
+  // matches xtb's d4_gradient convention).
+  double e_disp = 0.0;
+  if (wanted_disp) {
+    const auto &g = m_calc->parameters().globals();
+    occ::disp::D4Dispersion d4(atoms);
+    d4.set_damping(occ::disp::D4Damping{g.s6, g.s8, g.s9, g.a1, g.a2, 16});
+    d4.set_charges(atom_q);
+    auto [ed, gd] = d4.energy_and_gradient();
+    e_disp = ed;
+    grad += gd;
+  }
+
+  // (5) Anisotropic pair gradient at fixed (q, μ, Q, mp_radii) +
+  // CN-chain through mp_radii (Phase 5d-rest steps 1+2).
+  auto ag = anisotropic_pair_gradient_with_dcn(
+      atoms, atom_q, mom, mr.radii, mr.dradii_dcn, m_calc->parameters());
+  grad += ag.grad_explicit;
+  for (size_t A = 0; A < atoms.size(); ++A) {
+    if (ag.dE_dcn(A) != 0.0) {
+      grad.noalias() += ag.dE_dcn(A) * cn_g.dcn[A];
+    }
+  }
+
+  // (6) Density-Pulay piece (Phase 5d-rest steps 3+4): chain through
+  // ∂μ_A/∂R, ∂Q_A/∂R at fixed P. Uses int1e_irp / int1e_irrp through the
+  // typed `dipole_ao_grad` / `quadrupole_ao_grad` builders. vs has already
+  // been absorbed into V_shell above (handled by h0_scc_gradient via
+  // 0.5 P·(V_μ + V_ν)·∂S/∂R), so we zero it out here to avoid double-count.
+  // D0 was already computed above for the centering chain — reuse it.
+  {
+    AnisotropicPotentials pot_density = pot;
+    pot_density.vs.setZero();
+    auto irp = dipole_ao_grad(engine);
+    auto irrp = quadrupole_ao_grad(engine);
+    auto ovlp_grad = engine.one_electron_operator_grad(
+        qm::IntegralEngine::Op::overlap);
+    grad += anisotropic_density_pulay_gradient(
+        atoms, bf2at, m_last_result.density_matrix,
+        m_last_result.overlap_matrix,
+        D0, irp, irrp, ovlp_grad,
+        pot_density);
+  }
+
+  // (7) Implicit solvation. h0_scc_gradient already absorbed v_solv into the
+  // Pulay/Z chain via the V_shell augmentation that happens inside
+  // run_full → so the converged density derivatives are already correct.
+  // What's left is the explicit ∂E_solv/∂R at fixed (q, σ, cavity): the
+  // frozen-cavity CPCM closed form for ES, plus (for SMD) a numerical FD on
+  // the geometry-only CDS piece.
+  if (auto solv = m_calc->solvation_model()) {
+    Mat3N solv_grad = solv->gradient();
+    if (solv_grad.cols() == grad.cols()) {
+      grad += solv_grad;
+    }
+  }
+
+  // last_result already carries scc_energy from `run_full` (= electronic +
+  // iso-Coulomb + 3rd-order + AES + polariz + solvation if attached). Total
+  // adds repulsion + D4.
+  m_last_result.dispersion_energy = e_disp;
+  m_last_result.total_energy = m_last_result.scc_energy +
+                                m_last_result.repulsion_energy + e_disp;
+  occ::log::debug(
+      "analytical gradient: scc={:.10f} rep={:.10f} disp={:.10f} total={:.10f}",
+      m_last_result.scc_energy, m_last_result.repulsion_energy, e_disp,
+      m_last_result.total_energy);
+  return grad;
+}
+
+Mat XtbCalculator::compute_hessian_numerical(double step) {
+  if (m_periodic) {
+    throw std::runtime_error(
+        "XtbCalculator::compute_hessian_numerical: periodic Hessian not "
+        "yet supported");
+  }
+  const int n = num_atoms();
+  const int ndof = 3 * n;
+  Mat H = Mat::Zero(ndof, ndof);
+
+  // Snapshot the input geometry so we can restore exactly.
+  Mat3N original = m_positions_bohr;
+
+  // Tighten SCC limits for the displaced calculations — the per-iter SCC
+  // residuals carry into the gradient, and a loose SCC at displaced points
+  // shows up as ragged Hessian columns.
+  auto prev_max_iter = m_opts.max_iterations;
+  m_opts.max_iterations = std::max(prev_max_iter, 250);
+
+  // Loop over each Cartesian DOF; FD of the analytical gradient gives a
+  // column of the Hessian.
+  for (int B = 0; B < n; ++B) {
+    for (int j = 0; j < 3; ++j) {
+      Mat3N pos_p = original;
+      pos_p(j, B) += step;
+      update_structure(pos_p);
+      Mat3N g_plus = gradient();
+
+      Mat3N pos_m = original;
+      pos_m(j, B) -= step;
+      update_structure(pos_m);
+      Mat3N g_minus = gradient();
+
+      // Central difference: ∂g_iA/∂R_jB = (g+(i,A) − g−(i,A)) / (2h).
+      // That fills column 3B+j with the gradient response.
+      const int col = 3 * B + j;
+      for (int A = 0; A < n; ++A) {
+        for (int i = 0; i < 3; ++i) {
+          H(3 * A + i, col) = (g_plus(i, A) - g_minus(i, A)) / (2.0 * step);
+        }
+      }
+    }
+  }
+
+  // Restore the input geometry and recompute so subsequent queries see
+  // the reference geometry's state.
+  update_structure(original);
+  (void)single_point();
+  m_opts.max_iterations = prev_max_iter;
+
+  // Symmetrise — FD residuals make the raw matrix slightly non-symmetric.
+  H = (0.5 * (H + H.transpose())).eval();
+  return H;
+}
+
+occ::core::VibrationalModes
+XtbCalculator::compute_vibrational_modes(double step, bool project_tr_rot) {
+  Mat H = compute_hessian_numerical(step);
+  return occ::core::compute_vibrational_modes(H, to_molecule(),
+                                                project_tr_rot);
+}
+
+std::pair<double, Mat3N>
+XtbCalculator::compute_energy_and_gradient(bool numerical, double step) {
+  if (numerical) {
+    Mat3N g = gradient_numerical(step);
+    return {m_last_result.total_energy, g};
+  }
+  Mat3N g = gradient();
+  return {m_last_result.total_energy, g};
+}
+
+void XtbCalculator::print_summary() const {
+  if (m_last_result.density_matrix.size() == 0) {
+    occ::log::warn("XtbCalculator::print_summary: nothing to print "
+                   "(call single_point_energy() first)");
+    return;
+  }
+  const auto &r = m_last_result;
+  occ::log::info("{:=^72s}", "  GFN2-xTB results  ");
+  occ::log::info("{:<32s} {:>20.12f} Ha", "Total energy", r.total_energy);
+  occ::log::info("{:<32s} {:>20.12f} Ha", "  SCC (electronic + ES)",
+                 r.scc_energy);
+  occ::log::info("{:<32s} {:>20.12f} Ha", "  Repulsion", r.repulsion_energy);
+  occ::log::info("{:<32s} {:>20.12f} Ha", "  Dispersion (D4)",
+                 r.dispersion_energy);
+  if (r.converged) {
+    occ::log::info("Converged in {} SCC iterations", r.n_iterations);
+  } else {
+    occ::log::warn("Did NOT converge ({} iterations)", r.n_iterations);
+  }
+
+  // HOMO / LUMO from the orbital energies.
+  Eigen::Index n_occ = static_cast<Eigen::Index>(num_atoms()); // placeholder
+  // Find n_occ from orbital_occupations.
+  n_occ = 0;
+  for (Eigen::Index i = 0; i < r.orbital_occupations.size(); ++i)
+    if (r.orbital_occupations(i) > 1e-6) ++n_occ;
+  if (n_occ > 0 && n_occ < r.orbital_energies.size()) {
+    const double homo = r.orbital_energies(n_occ - 1);
+    const double lumo = r.orbital_energies(n_occ);
+    const double gap = lumo - homo;
+    occ::log::info("HOMO = {:>10.4f} Ha ({:>8.3f} eV)", homo,
+                   homo * occ::units::AU_TO_EV);
+    occ::log::info("LUMO = {:>10.4f} Ha ({:>8.3f} eV)", lumo,
+                   lumo * occ::units::AU_TO_EV);
+    occ::log::info("Gap  = {:>10.4f} Ha ({:>8.3f} eV)", gap,
+                   gap * occ::units::AU_TO_EV);
+  }
+
+  occ::log::info("{:-<72s}", "Atomic Mulliken charges  ");
+  occ::log::info("  {:>3s}  {:>4s}  {:>14s}", "idx", "Z", "q (e)");
+  for (int i = 0; i < num_atoms(); ++i) {
+    occ::log::info("  {:>3d}  {:>4d}  {:>14.6f}", i, m_atomic_numbers(i),
+                   r.atomic_charges(i));
+  }
+}
+
+occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
+  if (m_last_result.density_matrix.size() == 0) {
+    throw std::runtime_error(
+        "XtbCalculator::to_wavefunction: call single_point_energy() first");
+  }
+
+  // Build basis + shell metadata locally from the cached atoms / params.
+  // build_aobasis / build_shell_table are the same helpers Gfn2Engine and
+  // the periodic SCC drivers use, so the result is bit-identical to what
+  // produced m_last_result — and this works for the Crystal ctor too,
+  // where m_calc is unemplaced. For the periodic case the returned
+  // wavefunction is a Γ-only central-cell snapshot: downstream cube /
+  // isosurface treats it as a molecular wavefunction (no Bloch sum at
+  // evaluation time), suitable for visualisation but not a substitute
+  // for a full periodic wavefunction.
+  auto atoms = make_atoms(m_positions_bohr, m_atomic_numbers);
+  auto shell_table = build_shell_table(atoms, m_params);
+
+  occ::qm::Wavefunction wfn;
+  wfn.method = "GFN2-xTB";
+  wfn.basis = build_aobasis(atoms, m_params);
+  wfn.nbf = wfn.basis.nbf();
+  wfn.atoms = std::move(atoms);
+
+  // GFN2 only carries valence electrons in its basis. Tell the basis to
+  // treat the rest as ECP-like core electrons so downstream analyses
+  // (mulliken_charges, etc.) compute Z_eff − pop instead of Z − pop.
+  std::vector<int> core_electrons(wfn.atoms.size(), 0);
+  for (size_t a = 0; a < wfn.atoms.size(); ++a) {
+    const auto *e = m_params.element(wfn.atoms[a].atomic_number);
+    double valence = 0.0;
+    for (const auto &s : e->shells)
+      valence += s.ref_occ;
+    core_electrons[a] = wfn.atoms[a].atomic_number -
+                        static_cast<int>(std::round(valence));
+  }
+  wfn.basis.set_ecp_electrons(core_electrons);
+
+  // Closed-shell: total electrons = sum of reference shell occupations - charge.
+  double n_elec = 0.0;
+  for (Eigen::Index i = 0; i < shell_table.ref_occ.size(); ++i)
+    n_elec += shell_table.ref_occ(i);
+  n_elec -= m_charge;
+  const int n_alpha =
+      static_cast<int>(std::round(n_elec)) / 2; // restricted, so n_alpha = n_occ
+  wfn.num_electrons = static_cast<int>(std::round(n_elec));
+
+  auto &mo = wfn.mo;
+  mo.kind = occ::qm::SpinorbitalKind::Restricted;
+  mo.n_ao = wfn.nbf;
+  mo.n_alpha = n_alpha;
+  mo.n_beta = n_alpha; // closed-shell
+  mo.C = m_last_result.orbital_coefficients;
+  mo.energies = m_last_result.orbital_energies;
+  mo.D = 0.5 * m_last_result.density_matrix; // Wavefunction stores α-only D
+  mo.Cocc = mo.C.leftCols(n_alpha);
+
+  // Energies — `Energy::total` is the only standard slot that maps cleanly
+  // to a GFN2 single-point. The SCC / repulsion / dispersion split lives
+  // on the `xtb_*` fields below so it survives JSON round-trip without
+  // hijacking HF/DFT-shaped fields (e.g. `nuclear_repulsion`).
+  wfn.energy.total = m_last_result.total_energy;
+  wfn.have_energies = true;
+
+  // GFN2-specific extras (preserved through .owf.json round-trip).
+  wfn.have_xtb_data = true;
+  wfn.xtb_scc_energy = m_last_result.scc_energy;
+  wfn.xtb_repulsion_energy = m_last_result.repulsion_energy;
+  wfn.xtb_dispersion_energy = m_last_result.dispersion_energy;
+  wfn.xtb_atomic_charges = m_last_result.atomic_charges;
+  wfn.xtb_converged = m_last_result.converged;
+  wfn.xtb_n_iterations = m_last_result.n_iterations;
+
+  // Cache the overlap matrix on T (commonly used by downstream).
+  wfn.T = m_last_result.overlap_matrix;
+  return wfn;
+}
+
+} // namespace occ::xtb

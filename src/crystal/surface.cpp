@@ -1,3 +1,6 @@
+#include <Eigen/Geometry>
+#include <Eigen/LU>
+#include <fmt/core.h>
 #include <algorithm>
 #include <ankerl/unordered_dense.h>
 #include <numeric>

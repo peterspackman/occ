@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/Geometry>
 #include <array>
 #include <occ/core/linear_algebra.h>
 #include <occ/crystal/crystal.h>

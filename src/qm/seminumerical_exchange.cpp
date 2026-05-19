@@ -1,3 +1,5 @@
+#include <Eigen/Cholesky>
+#include <fmt/core.h>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>

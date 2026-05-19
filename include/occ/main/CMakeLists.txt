@@ -8,6 +8,7 @@ set(OCC_MAIN_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elat.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elastic_fit.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/occ_lua.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.h"

@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <cmath>
 #include <filesystem>
 #include <occ/core/constants.h>

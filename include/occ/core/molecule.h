@@ -1,4 +1,6 @@
 #pragma once
+#include <Eigen/Eigenvalues>
+#include <Eigen/Geometry>
 #include <array>
 #include <occ/core/atom.h>
 #include <occ/core/element.h>

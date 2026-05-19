@@ -8,6 +8,7 @@
 #include <occ/core/util.h>
 #include <occ/qm/convergence_accelerator.h>
 #include <occ/qm/expectation.h>
+#include <occ/qm/external_potential.h>
 #include <occ/qm/guess_density.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/opmatrix.h>
@@ -40,7 +41,11 @@ struct SCFContext {
   CanonicalOrthogonalizer orthogonalizer;
   occ::core::EnergyComponents energy;
   occ::qm::MolecularOrbitals mo;
-  PointChargeList point_charges;
+
+  /// Energy-key suffix for the active external-potential contribution; empty
+  /// when none is set. When non-empty, SCF reports `nuclear.<label>` /
+  /// `electronic.<label>` and folds them into `total`.
+  std::string external_potential_label;
 };
 
 template <SCFMethod Procedure> struct SCF {
@@ -66,8 +71,27 @@ template <SCFMethod Procedure> struct SCF {
 
   void compute_initial_guess();
   void compute_sap_guess();
-  void set_point_charges(const PointChargeList &charges);
-  void set_external_potential(const Mat &V_ext);
+
+  /// Generic external-potential entry point. `V_ext_single` is a single
+  /// `nbf x nbf` one-electron operator in the AO basis — SCF expands it
+  /// into the correct spin block(s) of `ctx.V_ext`. Records
+  /// `nuclear.<label>` and arranges `electronic.<label>` to be updated each
+  /// iteration. Pass any matrix and energy you like; the caller's choice of
+  /// `label` ends up in the final energy report.
+  void set_external_potential(const Mat &V_ext_single, double nuclear_energy,
+                              std::string_view label);
+
+  /// Convenience overload: takes any `ExternalPotential` model and forwards
+  /// the matrix/energy/label it produces. The model must satisfy
+  /// `ExternalPotential<Model, Procedure>` from
+  /// `<occ/qm/external_potential.h>`.
+  template <typename Model>
+    requires ExternalPotential<Model, Procedure>
+  void set_external_potential(const Model &model) {
+    set_external_potential(model.compute_potential_matrix(m_procedure),
+                           model.nuclear_interaction_energy(m_procedure),
+                           model.label());
+  }
 
   void update_scf_energy(bool incremental);
   inline const char *scf_kind() const;

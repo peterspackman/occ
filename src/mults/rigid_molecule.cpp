@@ -1,4 +1,6 @@
 #include <occ/mults/rigid_molecule.h>
+#include <Eigen/LU>
+#include <Eigen/SVD>
 #include <Eigen/Geometry>
 #include <cmath>
 

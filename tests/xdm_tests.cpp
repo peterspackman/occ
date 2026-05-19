@@ -1,7 +1,9 @@
+#include <fmt/core.h>
 #include <array>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <occ/core/element.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/util.h>
 #include <occ/xdm/xdm.h>

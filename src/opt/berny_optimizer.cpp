@@ -7,7 +7,11 @@
  * by Jan Hermann <dev@jan.hermann.name>, licensed under MPL-2.0.
  */
 
+#include <Eigen/Cholesky>
+#include <Eigen/Eigenvalues>
+#include <fmt/core.h>
 #include <cmath>
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/opt/berny_optimizer.h>
 #include <occ/opt/internal_coordinates.h>

@@ -1,8 +1,10 @@
+#include <fmt/core.h>
 #include <occ/core/constants.h>
 #include <occ/core/data_directory.h>
 #include <occ/dft/dft.h>
-#include <occ/disp/dftd4.h>
+#include <occ/disp/d4.h>
 #include <occ/driver/method_parser.h>
+#include <occ/xtb/xtb_calculator.h>
 #include <occ/driver/single_point.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/gradients.h>
@@ -139,7 +141,10 @@ Wavefunction run_method(Molecule &m, const occ::gto::AOBasis &basis,
                   config.electronic.multiplicity);
   scf.set_charge_multiplicity(config.electronic.charge,
                               config.electronic.multiplicity);
-  scf.set_point_charges(config.geometry.point_charges);
+  if (!config.geometry.point_charges.empty()) {
+    scf.set_external_potential(
+        occ::qm::PointChargePotential{config.geometry.point_charges});
+  }
   if (!config.basis.df_name.empty()) {
     scf.convergence_settings.incremental_fock_threshold = 0.0;
   }
@@ -165,15 +170,16 @@ Wavefunction run_method(Molecule &m, const occ::gto::AOBasis &basis,
 
   if (use_d4 || use_xdm) {
     if (use_d4) {
-      occ::disp::D4Dispersion disp(m.atoms());
-      disp.set_charge(config.electronic.charge);
-
-      bool success = disp.set_functional(method_spec.base_method);
-      if (!success) {
-        log::warn("D4 parameters not found for functional '{}', using default PBE parameters",
-                  method_spec.base_method);
+      occ::disp::D4Dispersion disp(m.atoms(), occ::disp::RefqMode::DFT);
+      try {
+        disp.set_functional(method_spec.base_method);
+      } catch (const std::exception &ex) {
+        log::warn("D4 parameters not found for functional '{}' ({}), "
+                  "using default PBE parameters",
+                  method_spec.base_method, ex.what());
+        disp.set_functional("pbe");
       }
-
+      disp.set_charges_eeq(static_cast<double>(config.electronic.charge));
       double e_disp = disp.energy();
       log::info("D4 dispersion correction:        {: 20.12f}", e_disp);
       e += e_disp;
@@ -348,8 +354,25 @@ single_point_driver(const OccInput &config,
                    config.basis.basis_set_directory);
     occ::set_data_directory(config.basis.basis_set_directory);
   }
-  auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
+
   auto method_kind = method_kind_from_string(config.method.name);
+
+  // Methods with their own internal basis (GFN2-xTB) skip the AO basis load.
+  if (method_kind == MethodKind::GFN2) {
+    if (!config.solvent.solvent_name.empty()) {
+      throw std::runtime_error("GFN2-xTB solvation is not yet wired into the "
+                               "native backend; build with WITH_TBLITE=ON to "
+                               "use the tblite path with solvation.");
+    }
+    occ::xtb::XtbCalculator calc(m);
+    if (config.electronic.charge != 0.0)
+      calc.set_charge(config.electronic.charge);
+    (void)calc.single_point_energy();
+    calc.print_summary();
+    return calc.to_wavefunction();
+  }
+
+  auto basis = load_basis_set(m, config.basis.name, config.basis.spherical);
   auto guess_sk = determine_spinorbital_kind(
       config.method.name, config.electronic.multiplicity, method_kind);
   auto conf_sk = config.electronic.spinorbital_kind;

@@ -2,7 +2,7 @@
 #include <fmt/core.h>
 #include <fstream>
 #include <occ/core/log.h>
-#include <occ/io/solvent_json.h>
+#include <occ/solvent/json.h>
 #include <occ/solvent/parameters.h>
 
 namespace fs = std::filesystem;

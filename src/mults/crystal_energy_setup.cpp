@@ -7,6 +7,7 @@
 #include <occ/core/units.h>
 #include <occ/driver/dma_driver.h>
 #include <occ/main/monomer_wavefunctions.h>
+#include <Eigen/LU>
 #include <Eigen/Geometry>
 #include <set>
 #include <stdexcept>

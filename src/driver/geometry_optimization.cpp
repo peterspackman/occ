@@ -3,7 +3,7 @@
 #include <occ/core/data_directory.h>
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
-#include <occ/disp/dftd4.h>
+#include <occ/disp/d4.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/vibrational_analysis.h>
 #include <occ/driver/method_parser.h>
@@ -12,6 +12,7 @@
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/xdm/xdm.h>
+#include <occ/xtb/xtb_calculator.h>
 
 using occ::core::Molecule;
 using occ::dft::DFT;
@@ -87,7 +88,10 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
                   config.electronic.multiplicity);
   scf.set_charge_multiplicity(config.electronic.charge,
                               config.electronic.multiplicity);
-  scf.set_point_charges(config.geometry.point_charges);
+  if (!config.geometry.point_charges.empty()) {
+    scf.set_external_potential(
+        occ::qm::PointChargePotential{config.geometry.point_charges});
+  }
   if (!config.basis.df_name.empty()) {
     scf.convergence_settings.incremental_fock_threshold = 0.0;
   }
@@ -129,14 +133,16 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
 
   if (use_d4 || use_xdm) {
     if (use_d4) {
-      occ::disp::D4Dispersion disp(m.atoms());
-      disp.set_charge(config.electronic.charge);
-
-      bool success = disp.set_functional(method_spec.base_method);
-      if (!success) {
-        log::warn("D4 parameters not found for functional '{}', using default PBE parameters",
-                  method_spec.base_method);
+      occ::disp::D4Dispersion disp(m.atoms(), occ::disp::RefqMode::DFT);
+      try {
+        disp.set_functional(method_spec.base_method);
+      } catch (const std::exception &ex) {
+        log::warn("D4 parameters not found for functional '{}' ({}), "
+                  "using default PBE parameters",
+                  method_spec.base_method, ex.what());
+        disp.set_functional("pbe");
       }
+      disp.set_charges_eeq(static_cast<double>(config.electronic.charge));
 
       double e_d4 = disp.energy();
       log::info("D4 dispersion correction:        {: 20.12f}", e_d4);
@@ -189,10 +195,57 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
   return {wfn, gradient};
 }
 
-std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
-                                                        const Molecule &m,
-                                                        const Wavefunction *prev_wfn = nullptr,
-                                                        double energy_change = 1.0) {
+// Single GFN2-xTB optimization step. Mirrors the run_method_for_optimization
+// shape: returns (Wavefunction, gradient in Hartree/Angstrom). The
+// Wavefunction is a thin wrapper built from XtbCalculator's converged
+// state — enough to feed back into BernyOptimizer and to produce the same
+// post-step printout as the SCF case.
+//
+// `cached` (when non-null) holds an XtbCalculator that's reused across opt
+// steps: the basis / IntegralEngine / shell tables / γ matrix are all
+// geometry-derived caches that get rebuilt cheaply by `update_structure`,
+// AND the converged shell charges are seeded as the next SCC's
+// initial guess (warm-start). Constructing fresh each step would discard
+// both, costing 1× full Gfn2Engine construction + ~3 SCC iterations per
+// step.
+std::pair<Wavefunction, Mat3N>
+run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
+                          std::optional<occ::xtb::XtbCalculator> *cached =
+                              nullptr) {
+  occ::xtb::XtbCalculator *calc_ptr = nullptr;
+  std::optional<occ::xtb::XtbCalculator> local;
+  if (cached) {
+    if (!cached->has_value()) {
+      cached->emplace(m);
+      cached->value().set_charge(config.electronic.charge);
+    } else {
+      cached->value().update_structure(m.positions() *
+                                        occ::units::ANGSTROM_TO_BOHR);
+    }
+    calc_ptr = &cached->value();
+  } else {
+    local.emplace(m);
+    local->set_charge(config.electronic.charge);
+    calc_ptr = &local.value();
+  }
+  auto &calc = *calc_ptr;
+
+  auto [e, g] = calc.compute_energy_and_gradient(/*numerical=*/false);
+  log::info("GFN2-xTB energy:                {: 20.12f} Ha", e);
+  log::info("GFN2-xTB gradient norm:         {: 20.12f} Ha/Bohr", g.norm());
+
+  Wavefunction wfn = calc.to_wavefunction();
+  // Convert to Hartree/Angstrom for the optimizer.
+  g /= occ::units::ANGSTROM_TO_BOHR;
+  return {wfn, g};
+}
+
+std::pair<Wavefunction, Mat3N>
+optimization_step_driver(const OccInput &config, const Molecule &m,
+                         const Wavefunction *prev_wfn = nullptr,
+                         double energy_change = 1.0,
+                         std::optional<occ::xtb::XtbCalculator> *gfn2_cache =
+                             nullptr) {
   constexpr auto R = SpinorbitalKind::Restricted;
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;
@@ -234,6 +287,9 @@ std::pair<Wavefunction, Mat3N> optimization_step_driver(const OccInput &config,
       throw std::runtime_error(
           "Not implemented: MP2 gradients for geometry optimization");
       break;
+    }
+    case MethodKind::GFN2: {
+      return run_gfn2_for_optimization(m, config, gfn2_cache);
     }
     }
   } else {
@@ -287,9 +343,17 @@ Wavefunction geometry_optimization(const OccInput &config) {
   step_log.print("OCC BernyOptimizer Step-by-Step Log\n");
   step_log.print("===================================\n\n");
   
+  // GFN2 stateful cache: reused across opt steps so the basis / engine /
+  // shell tables / γ matrix don't get rebuilt every iteration AND the
+  // converged shell charges seed the next SCC. Constructed lazily on
+  // first GFN2 step. For HF/DFT the existing prev_wfn-based warm-start
+  // covers the analogous role.
+  std::optional<occ::xtb::XtbCalculator> gfn2_cache;
+
   // Step 0: Compute initial energy and gradient
   occ::log::info("Computing initial wavefunction for optimization");
-  std::tie(wfn, gradient) = optimization_step_driver(config, m);
+  std::tie(wfn, gradient) =
+      optimization_step_driver(config, m, nullptr, 1.0, &gfn2_cache);
   
   // Write initial geometry to trajectory
   const auto &el = m.elements();
@@ -371,7 +435,8 @@ Wavefunction geometry_optimization(const OccInput &config) {
     double prev_energy = wfn.energy.total;
     // For step 1, use large energy change; for later steps, use previous step's change
     static double last_energy_change = 1.0;
-    std::tie(wfn, gradient) = optimization_step_driver(config, m_new, &wfn, last_energy_change);
+    std::tie(wfn, gradient) = optimization_step_driver(
+        config, m_new, &wfn, last_energy_change, &gfn2_cache);
     
     // Write geometry to trajectory
     traj.print("{}\nStep {} Energy={:.9f}\n", el.size(), current_step, wfn.energy.total);

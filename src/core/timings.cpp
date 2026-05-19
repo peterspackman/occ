@@ -127,6 +127,28 @@ const char *category_name(category cat) {
     return "Optimization";
   case elastic_tensor:
     return "Elastic tensor";
+  case xtb_setup:
+    return "GFN2 setup";
+  case xtb_h0:
+    return "GFN2 H0 (per-T blocks)";
+  case xtb_overlap:
+    return "GFN2 overlap (per-T blocks)";
+  case xtb_multipole_ao:
+    return "GFN2 multipole AO (Bra/Ket)";
+  case xtb_ewald_gamma:
+    return "GFN2 Ewald γ matrix";
+  case xtb_aes:
+    return "GFN2 anisotropic ES";
+  case xtb_dispersion:
+    return "GFN2 D4 dispersion";
+  case xtb_eigensolve:
+    return "GFN2 eigensolve";
+  case xtb_density:
+    return "GFN2 density / Mulliken";
+  case xtb_camm:
+    return "GFN2 CAMM partition";
+  case xtb_diis:
+    return "GFN2 DIIS extrapolation";
   default:
     return "other";
   }
@@ -176,6 +198,17 @@ void print_timings() {
       crystal_energy,
       optimization,
       elastic_tensor,
+      xtb_setup,
+      xtb_overlap,
+      xtb_h0,
+      xtb_multipole_ao,
+      xtb_ewald_gamma,
+      xtb_eigensolve,
+      xtb_density,
+      xtb_camm,
+      xtb_aes,
+      xtb_dispersion,
+      xtb_diis,
       global,
   };
   log::info("Wall clock time by category (s)");

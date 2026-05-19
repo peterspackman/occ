@@ -1,4 +1,6 @@
 #pragma once
+#include <Eigen/Geometry>
+#include <Eigen/LU>
 #include <array>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/timings.h>

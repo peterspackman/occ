@@ -1,9 +1,11 @@
+#include <Eigen/Geometry>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/atom.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/conditioning_orthogonalizer.h>
 #include <occ/core/util.h>

@@ -409,12 +409,37 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   return result;
 }
 
+namespace {
+// Treat `gfn1`, `gfn2`, `xtb`, `gfn1-xtb`, `gfn2-xtb`, … as routes to the
+// in-tree xtb backend so users can pick it via `-m gfn2-xtb` instead of
+// having to remember the `--xtb` flag. Case-insensitive; ignores anything
+// after a leading "gfn" / "xtb" prefix so future variants come along free.
+bool model_name_implies_xtb(const std::string &name) {
+  if (name.empty())
+    return false;
+  std::string lower(name.size(), '\0');
+  std::transform(name.begin(), name.end(), lower.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  return lower.rfind("gfn", 0) == 0 || lower.rfind("xtb", 0) == 0;
+}
+} // namespace
+
 CrystalGrowthResult run_cg(CGConfig const &config) {
   CrystalGrowthResult result;
 
+  const bool use_xtb_route =
+      config.use_xtb ||
+      model_name_implies_xtb(config.lattice_settings.model_name);
+
   if (config.dry_run) {
     result = run_cg_impl<driver::DummyCrystalGrowthCalculator>(config);
-  } else if (config.use_xtb) {
+  } else if (use_xtb_route) {
+    if (!config.use_xtb) {
+      occ::log::info(
+          "Model '{}' selected — routing through XTBCrystalGrowthCalculator "
+          "(equivalent to --xtb).",
+          config.lattice_settings.model_name);
+    }
     result = run_cg_impl<driver::XTBCrystalGrowthCalculator>(config);
   } else {
     result = run_cg_impl<driver::CEModelCrystalGrowthCalculator>(config);

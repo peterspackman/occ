@@ -524,122 +524,48 @@ Wavefunction perform_embedded_scf(
     bool is_dft = (config.method_name != "hf" && config.method_name != "rhf" &&
                    config.method_name != "uhf");
 
+    auto run_with_proc = [&](auto &proc, auto &&potential,
+                             const char *banner) -> Wavefunction {
+      occ::log::info("Setting up SCF with {} external potential", banner);
+      using Proc = std::remove_reference_t<decltype(proc)>;
+      qm::SCF<Proc> scf(proc, SpinorbitalKind::Restricted);
+      scf.set_charge_multiplicity(net_charge, multiplicity);
+      scf.set_external_potential(potential);
+      if (initial_guess.has_value()) {
+        occ::log::info(
+            "Using wavefunction from previous cycle as initial guess");
+        scf.set_initial_guess_from_wfn(initial_guess.value());
+      }
+      double energy = scf.compute_scf_energy();
+      occ::log::info(
+          "Embedded SCF with {} converged. Total energy: {:.8f} Hartree",
+          banner, energy);
+      return scf.wavefunction();
+    };
+
     if (is_dft) {
-      // Create DFT procedure
       dft::DFT dft_proc(config.method_name, basis);
-
-      // Use appropriate wrapper based on configuration
       if (config.use_wolf_sum) {
-        occ::log::info("Setting up DFT SCF with Wolf sum external potential");
-        qm::WolfSumCorrectedProcedure<dft::DFT> wolf_dft(
-            dft_proc, external_charges, molecular_charges, config.wolf_alpha,
-            config.wolf_cutoff);
-        qm::SCF<qm::WolfSumCorrectedProcedure<dft::DFT>> scf(
-            wolf_dft, SpinorbitalKind::Restricted);
-
-        // Set charge and multiplicity
-        scf.set_charge_multiplicity(net_charge, multiplicity);
-
-        // Set initial guess from previous cycle if available
-        if (initial_guess.has_value()) {
-          occ::log::info(
-              "Using wavefunction from previous cycle as initial guess");
-          scf.set_initial_guess_from_wfn(initial_guess.value());
-        }
-
-        // Run SCF
-        double energy = scf.compute_scf_energy();
-        auto wfn = scf.wavefunction();
-
-        occ::log::info("Embedded DFT SCF with Wolf potential converged. Total "
-                       "energy: {:.8f} Hartree",
-                       energy);
-        return wfn;
-
-      } else {
-        occ::log::info("Setting up DFT SCF with point charge external potential");
-        qm::PointChargeCorrectedProcedure<dft::DFT> pc_dft(
-            dft_proc, external_charges);
-        qm::SCF<qm::PointChargeCorrectedProcedure<dft::DFT>> scf(
-            pc_dft, SpinorbitalKind::Restricted);
-
-        // Set charge and multiplicity
-        scf.set_charge_multiplicity(net_charge, multiplicity);
-
-        // Set initial guess from previous cycle if available
-        if (initial_guess.has_value()) {
-          occ::log::info(
-              "Using wavefunction from previous cycle as initial guess");
-          scf.set_initial_guess_from_wfn(initial_guess.value());
-        }
-
-        // Run SCF
-        double energy = scf.compute_scf_energy();
-        auto wfn = scf.wavefunction();
-
-        occ::log::info("Embedded DFT SCF with point charges converged. Total energy: "
-                       "{:.8f} Hartree",
-                       energy);
-        return wfn;
+        return run_with_proc(dft_proc,
+                             qm::WolfPointChargePotential{
+                                 external_charges, molecular_charges,
+                                 config.wolf_alpha, config.wolf_cutoff},
+                             "DFT+Wolf");
       }
+      return run_with_proc(dft_proc,
+                           qm::PointChargePotential{external_charges},
+                           "DFT+PointCharges");
     } else {
-      // Create HF procedure
       qm::HartreeFock hf(basis);
-
-      // Use appropriate wrapper based on configuration
       if (config.use_wolf_sum) {
-        occ::log::info("Setting up HF SCF with Wolf sum external potential");
-        qm::WolfSumCorrectedProcedure<qm::HartreeFock> wolf_hf(
-            hf, external_charges, molecular_charges, config.wolf_alpha,
-            config.wolf_cutoff);
-        qm::SCF<qm::WolfSumCorrectedProcedure<qm::HartreeFock>> scf(
-            wolf_hf, SpinorbitalKind::Restricted);
-
-        // Set charge and multiplicity
-        scf.set_charge_multiplicity(net_charge, multiplicity);
-
-        // Set initial guess from previous cycle if available
-        if (initial_guess.has_value()) {
-          occ::log::info(
-              "Using wavefunction from previous cycle as initial guess");
-          scf.set_initial_guess_from_wfn(initial_guess.value());
-        }
-
-        // Run SCF
-        double energy = scf.compute_scf_energy();
-        auto wfn = scf.wavefunction();
-
-        occ::log::info("Embedded HF SCF with Wolf potential converged. Total "
-                       "energy: {:.8f} Hartree",
-                       energy);
-        return wfn;
-
-      } else {
-        occ::log::info("Setting up HF SCF with point charge external potential");
-        qm::PointChargeCorrectedProcedure<qm::HartreeFock> pc_hf(
-            hf, external_charges);
-        qm::SCF<qm::PointChargeCorrectedProcedure<qm::HartreeFock>> scf(
-            pc_hf, SpinorbitalKind::Restricted);
-
-        // Set charge and multiplicity
-        scf.set_charge_multiplicity(net_charge, multiplicity);
-
-        // Set initial guess from previous cycle if available
-        if (initial_guess.has_value()) {
-          occ::log::info(
-              "Using wavefunction from previous cycle as initial guess");
-          scf.set_initial_guess_from_wfn(initial_guess.value());
-        }
-
-        // Run SCF
-        double energy = scf.compute_scf_energy();
-        auto wfn = scf.wavefunction();
-
-        occ::log::info("Embedded HF SCF with point charges converged. Total energy: "
-                       "{:.8f} Hartree",
-                       energy);
-        return wfn;
+        return run_with_proc(hf,
+                             qm::WolfPointChargePotential{
+                                 external_charges, molecular_charges,
+                                 config.wolf_alpha, config.wolf_cutoff},
+                             "HF+Wolf");
       }
+      return run_with_proc(hf, qm::PointChargePotential{external_charges},
+                           "HF+PointCharges");
     }
   } else {
     // No external charges, just do gas phase

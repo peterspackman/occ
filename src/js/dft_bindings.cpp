@@ -4,6 +4,7 @@
 #include <emscripten/val.h>
 #include <occ/dft/dft.h>
 #include <occ/io/grid_settings.h>
+#include <occ/qm/external_potential.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/hessians.h>
 #include <occ/qm/gradients.h>
@@ -77,6 +78,24 @@ void register_dft_bindings() {
       .property("convergenceSettings", &SCF<DFT>::convergence_settings)
       .function("setChargeMultiplicity", &SCF<DFT>::set_charge_multiplicity)
       .function("setInitialGuess", &SCF<DFT>::set_initial_guess_from_wfn)
+      .function("setExternalPotential",
+                optional_override([](SCF<DFT> &scf, const occ::Mat &V_ext,
+                                     double nuclear_energy,
+                                     const std::string &label) {
+                  scf.set_external_potential(V_ext, nuclear_energy, label);
+                }))
+      .function("setExternalPotentialFromPointCharges",
+                optional_override(
+                    [](SCF<DFT> &scf,
+                       const occ::qm::PointChargePotential &pot) {
+                      scf.set_external_potential(pot);
+                    }))
+      .function("setExternalPotentialFromWolf",
+                optional_override(
+                    [](SCF<DFT> &scf,
+                       const occ::qm::WolfPointChargePotential &pot) {
+                      scf.set_external_potential(pot);
+                    }))
       .function("getScfKind", optional_override([](const SCF<DFT> &scf) {
                   return std::string(scf.scf_kind());
                 }))

@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/mults/ewald_sum.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>

@@ -1,6 +1,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <occ/core/format_matrix.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/core/vibration.h>

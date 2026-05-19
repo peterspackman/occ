@@ -1,3 +1,4 @@
+#include <Eigen/Cholesky>
 #include "detail/df_kernels.h"
 
 namespace occ::qm {

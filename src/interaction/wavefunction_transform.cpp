@@ -1,3 +1,4 @@
+#include <Eigen/LU>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/interaction/wavefunction_transform.h>

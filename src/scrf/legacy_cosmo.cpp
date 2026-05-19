@@ -1,6 +1,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/units.h>
+#include <occ/scrf/cosmo_kernel.h>
 #include <occ/solvent/cosmo.h>
 
 namespace occ::solvent {
@@ -28,27 +29,11 @@ Vec solvation_radii(const IVec &nums) {
 
 COSMO::Result COSMO::operator()(const Mat3N &positions, const Vec &areas,
                                 const Vec &charges) const {
+  // Shared kernel: same A matrix construction (1.07·√(4π/S_i) diagonal,
+  // 1/|r_i - r_j| off-diagonal) as the xTB-side CPCM-X / SMD ES path.
   COSMO::Result res;
-  Mat A(positions.cols(), positions.cols());
-  for (size_t i = 0; i < positions.cols(); i++) {
-    for (size_t j = i + 1; j < positions.cols(); j++) {
-      double norm = (positions.col(i) - positions.col(j)).norm();
-      if (norm > 1e-3)
-        A(i, j) = 1.0 / norm;
-      else
-        A(i, j) = 0.0;
-      A(j, i) = A(i, j);
-    }
-  }
-  bool make_hermitian{true};
-  if (make_hermitian)
-    A = 0.5 * (A + A.adjoint().eval());
-
-  // 1.07 * \sqrt(4 * \pi / S_i)
-  A.diagonal().array() = 3.793051240937804 / areas.array().sqrt();
+  Mat A = occ::scrf::detail::build_cosmo_A(positions, areas);
   res.initial = -surface_charge(charges);
-  res.converged = Vec(res.initial.rows());
-
   res.converged = A.lu().solve(res.initial);
   res.energy = -0.5 * res.initial.dot(res.converged);
   return res;

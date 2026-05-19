@@ -177,10 +177,8 @@ public:
       int i, const std::string &molname) override;
 
   std::vector<double> m_gas_phase_energies;
-  std::vector<occ::Vec> m_partial_charges;
   std::vector<double> m_solvated_energies;
   std::vector<double> m_dimer_energies;
-  std::vector<double> m_solvated_dimer_energies;
 };
 
 } // namespace occ::driver

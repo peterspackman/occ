@@ -1,3 +1,6 @@
+#include <Eigen/Eigenvalues>
+#include <Eigen/SVD>
+#include <fmt/core.h>
 #include <occ/core/constants.h>
 #include <occ/elastic_fit/monkhorst_pack.h>
 #include <occ/elastic_fit/pes.h>

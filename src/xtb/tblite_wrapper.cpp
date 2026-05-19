@@ -3,6 +3,10 @@
 #include <occ/core/units.h>
 #include <occ/xtb/tblite_wrapper.h>
 
+extern "C" {
+#include "tblite/result.h"
+}
+
 using occ::core::Dimer;
 using occ::core::Molecule;
 using occ::crystal::Crystal;
@@ -206,6 +210,33 @@ Mat TbliteCalculator::bond_orders() const {
   tblite_get_result_bond_orders(m_tb_error, m_tb_result, bo.data());
   check_error(m_tb_error);
   return bo;
+}
+
+void TbliteCalculator::save_integrals(bool enable) {
+  tblite_set_calculator_save_integrals(m_tb_ctx, m_tb_calc, enable ? 1 : 0);
+}
+
+int TbliteCalculator::num_orbitals() const {
+  int nao = 0;
+  tblite_get_result_number_of_orbitals(m_tb_error, m_tb_result, &nao);
+  check_error(m_tb_error);
+  return nao;
+}
+
+Mat TbliteCalculator::overlap() const {
+  int nao = num_orbitals();
+  Mat S(nao, nao);
+  tblite_get_result_overlap_matrix(m_tb_error, m_tb_result, S.data());
+  check_error(m_tb_error);
+  return S;
+}
+
+Mat TbliteCalculator::hamiltonian() const {
+  int nao = num_orbitals();
+  Mat H(nao, nao);
+  tblite_get_result_hamiltonian_matrix(m_tb_error, m_tb_result, H.data());
+  check_error(m_tb_error);
+  return H;
 }
 
 TbliteCalculator::~TbliteCalculator() {

@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/interaction/external_energy_model.h>
 #include <occ/io/core_json.h>
 #include <occ/core/log.h>

@@ -1,6 +1,7 @@
 ﻿#include <filesystem>
 #include <gemmi/numb.hpp>
 #include <occ/core/element.h>
+#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/io/cifparser.h>
 

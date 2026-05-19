@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include <occ/mults/short_range.h>
 #include <cmath>
 #include <stdexcept>

@@ -1,3 +1,4 @@
+#include <Eigen/Geometry>
 #include <occ/mults/cartesian_force.h>
 #include <occ/mults/interaction_tensor.h>
 #include <occ/core/units.h>

@@ -6,7 +6,15 @@
 #include <occ/cg/result_types.h>
 #include <occ/cg/solvation_types.h>
 #include <occ/cg/solvent_surface.h>
+#include <occ/core/data_directory.h>
+#include <occ/core/units.h>
 #include <occ/solvent/surface.h>
+#include <occ/xtb/smd_xtb.h>
+#include <occ/xtb/xtb_calculator.h>
+
+#ifndef OCC_GFN2_DATA_DIR
+#define OCC_GFN2_DATA_DIR "share"
+#endif
 
 using namespace occ::cg;
 using Catch::Approx;
@@ -550,4 +558,110 @@ TEST_CASE("CG: SolventSurfacePartitioner with acetic acid crystal",
       CHECK(exchange_count > 0);
     }
   }
+}
+
+// ============================================================================
+// Phase 7E — xtb backend → cg partitioner end-to-end
+// ============================================================================
+
+namespace {
+struct DataDirGuard {
+  DataDirGuard() { occ::set_data_directory(OCC_GFN2_DATA_DIR); }
+};
+DataDirGuard _xtb_data_guard;
+} // namespace
+
+TEST_CASE("CG: xtb SMD surfaces partition through acetic-acid crystal",
+          "[cg][partition][xtb][solvation]") {
+  using namespace occ::crystal;
+  auto crystal = acetic_acid_crystal();
+
+  // Use the cg molecules + neighbours just like the existing test.
+  auto dimers = crystal.symmetry_unique_dimers(7.0);
+  auto neighbors = dimers.molecule_neighbors[0];
+
+  // ---------------------------------------------------------------
+  // Drive the in-tree xtb backend with SMD on a single monomer.
+  // ---------------------------------------------------------------
+  auto mol = crystal.symmetry_unique_molecules()[0];
+  occ::xtb::XtbCalculator calc(mol);
+  auto model = std::make_shared<occ::xtb::SmdSolvationModel>("water");
+  calc.set_solvation_model(model);
+  (void)calc.single_point_energy();
+
+  const auto &res = calc.last_result();
+  REQUIRE(res.converged);
+  REQUIRE(res.solvation_surfaces.has_value());
+  const auto &xtb_surfs = res.solvation_surfaces.value();
+  REQUIRE(xtb_surfs.coulomb.has_value());
+  REQUIRE(xtb_surfs.cds.has_value());
+
+  // ---------------------------------------------------------------
+  // Convert and partition.
+  // ---------------------------------------------------------------
+  SMDSolventSurfaces cg_surfs = from_xtb_surfaces(xtb_surfs);
+  REQUIRE(cg_surfs.coulomb.size() == xtb_surfs.coulomb->size());
+  REQUIRE(cg_surfs.cds.size() == xtb_surfs.cds->size());
+
+  // Round-trip identity: per-element sums should equal the underlying model.
+  CHECK(cg_surfs.coulomb.total_energy() ==
+        Approx(model->e_es()).margin(1e-12));
+  CHECK(cg_surfs.cds.total_energy() == Approx(model->e_cds()).margin(1e-12));
+  // electronic_energies is zeroed; SMDSolventSurfaces::total_energy() sums
+  // coulomb+cds+electronic, which now adds up to model->energy() exactly.
+  CHECK(cg_surfs.total_energy() == Approx(model->energy()).margin(1e-12));
+
+  // ---------------------------------------------------------------
+  // SolventSurfacePartitioner over the crystal's neighbour list.
+  // ---------------------------------------------------------------
+  SolventSurfacePartitioner partitioner(crystal, neighbors);
+  partitioner.set_should_write_surface_files(false);
+  partitioner.set_use_normalized_distance(false);
+  auto contributions = partitioner.partition(neighbors, cg_surfs);
+
+  REQUIRE(contributions.size() == neighbors.size());
+
+  // Sum the partitioned forward Coulomb + CDS contributions. The partitioner
+  // assigns each surface element's energy to a single neighbour's *forward*
+  // slot before `exchange_matching_forward_reverse_pairs` copies forwards
+  // into the partner's reverse, so the forward sum is the original
+  // per-element total (no double-counting).
+  double sum_coulomb_forward = 0.0;
+  double sum_cds_forward = 0.0;
+  int neighbours_with_assignment = 0;
+  for (const auto &c : contributions) {
+    sum_coulomb_forward += c.coulomb().forward;
+    sum_cds_forward += c.cds().forward;
+    if (c.coulomb().forward != 0.0 || c.coulomb().reverse != 0.0)
+      neighbours_with_assignment++;
+  }
+
+  CAPTURE(sum_coulomb_forward);
+  CAPTURE(model->e_es());
+  CAPTURE(sum_cds_forward);
+  CAPTURE(model->e_cds());
+  CAPTURE(neighbours_with_assignment);
+  CHECK(sum_coulomb_forward == Approx(model->e_es()).margin(1e-9));
+  CHECK(sum_cds_forward == Approx(model->e_cds()).margin(1e-9));
+  CHECK(neighbours_with_assignment > 0);
+}
+
+TEST_CASE("CG: from_xtb_surfaces handles CPCM-X (no cds)",
+          "[cg][xtb][solvation]") {
+  // Synthesise an xtb SolvationSurfaces with only the coulomb branch and
+  // confirm the adapter produces an SMD bundle with an empty cds and a
+  // sensible total.
+  occ::xtb::SolvationSurfaces s;
+  occ::xtb::SolvationSurface c;
+  c.positions = occ::Mat3N::Random(3, 5);
+  c.areas = occ::Vec::Ones(5);
+  c.atom_index = occ::IVec::Zero(5);
+  c.energies = occ::Vec::Constant(5, -0.01);
+  s.coulomb = std::move(c);
+
+  auto cg_s = from_xtb_surfaces(s);
+  CHECK(cg_s.coulomb.size() == 5);
+  CHECK(cg_s.cds.size() == 0);
+  CHECK(cg_s.coulomb.total_energy() == Approx(-0.05).margin(1e-12));
+  CHECK(cg_s.total_solvation_energy == Approx(-0.05).margin(1e-12));
 }

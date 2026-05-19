@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/Geometry>
 #include <Eigen/Dense>
 #include <occ/geometry/plane.h>
 #include <occ/geometry/ray.h>

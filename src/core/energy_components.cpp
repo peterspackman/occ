@@ -1,3 +1,4 @@
+#include <fmt/core.h>
 #include <occ/core/energy_components.h>
 #include <occ/core/util.h>
 
