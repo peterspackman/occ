@@ -35,7 +35,8 @@ struct LuaState {
   lua_State *L;
   LuaState() : L(luaL_newstate()) {}
   ~LuaState() {
-    if (L) lua_close(L);
+    if (L)
+      lua_close(L);
   }
   LuaState(const LuaState &) = delete;
   LuaState &operator=(const LuaState &) = delete;
@@ -75,7 +76,8 @@ std::string history_file_path() {
 // fire. Pops the returns off the stack.
 void print_results(lua_State *L, int base) {
   const int n = lua_gettop(L) - base;
-  if (n <= 0) return;
+  if (n <= 0)
+    return;
   lua_getglobal(L, "pp");
   const bool have_pp = lua_isfunction(L, -1);
   lua_pop(L, 1);
@@ -115,7 +117,8 @@ bool try_load_as_expression(lua_State *L, const std::string &chunk) {
   std::string wrapped = "return " + chunk + ";";
   const int status =
       luaL_loadbuffer(L, wrapped.data(), wrapped.size(), "=stdin");
-  if (status == LUA_OK) return true;
+  if (status == LUA_OK)
+    return true;
   lua_pop(L, 1);
   return false;
 }
@@ -179,26 +182,26 @@ bool push_parent(lua_State *L, const std::string &dotted) {
   size_t pos = 0;
   while (pos < dotted.size()) {
     size_t dot = dotted.find('.', pos);
-    std::string segment = dotted.substr(pos, dot == std::string::npos
-                                                  ? std::string::npos
-                                                  : dot - pos);
+    std::string segment = dotted.substr(
+        pos, dot == std::string::npos ? std::string::npos : dot - pos);
     lua_getfield(L, -1, segment.c_str());
     lua_remove(L, -2);
     if (lua_isnil(L, -1)) {
       lua_pop(L, 1);
       return false;
     }
-    if (dot == std::string::npos) break;
+    if (dot == std::string::npos)
+      break;
     pos = dot + 1;
   }
   return true;
 }
 
 void emit_completions_for_keys(lua_State *L, int iter_idx,
-                                const std::string &partial, bool method_call,
-                                const std::string &prefix_path,
-                                const std::string &line_prefix,
-                                linenoiseCompletions *lc) {
+                               const std::string &partial, bool method_call,
+                               const std::string &prefix_path,
+                               const std::string &line_prefix,
+                               linenoiseCompletions *lc) {
   lua_pushnil(L);
   while (lua_next(L, iter_idx) != 0) {
     if (lua_type(L, -2) == LUA_TSTRING) {
@@ -209,7 +212,8 @@ void emit_completions_for_keys(lua_State *L, int iter_idx,
           key.compare(0, partial.size(), partial) == 0) {
         std::string sep = method_call ? ":" : ".";
         std::string completion = line_prefix + prefix_path + sep + key;
-        if (prefix_path.empty()) completion = line_prefix + key;
+        if (prefix_path.empty())
+          completion = line_prefix + key;
         linenoiseAddCompletion(lc, completion.c_str());
       }
     }
@@ -220,10 +224,12 @@ void emit_completions_for_keys(lua_State *L, int iter_idx,
 void collect_keys(lua_State *L, const std::string &partial, bool method_call,
                   const std::string &prefix_path,
                   const std::string &line_prefix, linenoiseCompletions *lc) {
-  if (!(lua_isuserdata(L, -1) || lua_istable(L, -1))) return;
+  if (!(lua_isuserdata(L, -1) || lua_istable(L, -1)))
+    return;
 
   if (lua_isuserdata(L, -1)) {
-    if (!lua_getmetatable(L, -1)) return;
+    if (!lua_getmetatable(L, -1))
+      return;
     const int mt_idx = lua_gettop(L);
     // LuaBridge3 puts methods on mt.__index when it's a table.
     lua_getfield(L, mt_idx, "__index");
@@ -247,11 +253,13 @@ void collect_keys(lua_State *L, const std::string &partial, bool method_call,
 lua_State *t_active_lua = nullptr;
 
 void completion_callback(const char *buf, linenoiseCompletions *lc) {
-  if (!t_active_lua) return;
+  if (!t_active_lua)
+    return;
   lua_State *L = t_active_lua;
   CompletionContext ctx = split_completion(buf);
   const int base = lua_gettop(L);
-  if (!push_parent(L, ctx.parent_path)) return;
+  if (!push_parent(L, ctx.parent_path))
+    return;
   collect_keys(L, ctx.partial, ctx.method_call, ctx.parent_path, ctx.prefix,
                lc);
   lua_settop(L, base);
@@ -293,8 +301,10 @@ int run_repl(lua_State *L) {
     std::string line(raw);
     free(raw);
 
-    if (buffer.empty() && line.empty()) continue;
-    if (!buffer.empty()) buffer += "\n";
+    if (buffer.empty() && line.empty())
+      continue;
+    if (!buffer.empty())
+      buffer += "\n";
     buffer += line;
 
     const int base = lua_gettop(L);
@@ -323,7 +333,8 @@ int run_repl(lua_State *L) {
 
     if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
       std::string msg = pop_lua_error(L);
-      if (msg.empty()) msg = "(no error message)";
+      if (msg.empty())
+        msg = "(no error message)";
       std::cerr << "error: " << msg << std::endl;
     } else {
       print_results(L, base);
@@ -341,7 +352,7 @@ int run_repl(lua_State *L) {
 #endif // OCC_HAVE_LINENOISE
 
 void run_chunk(lua_State *L, const std::string &source,
-                const std::string &chunkname) {
+               const std::string &chunkname) {
   if (luaL_loadbuffer(L, source.data(), source.size(), chunkname.c_str()) !=
       LUA_OK) {
     throw std::runtime_error(
@@ -365,7 +376,7 @@ CLI::App *add_lua_subcommand(CLI::App &app) {
   lua->fallthrough();
 
   lua->add_option("script", cfg->script,
-                   "Path to a Lua script (omit to read from stdin)");
+                  "Path to a Lua script (omit to read from stdin)");
   lua->add_option(
       "-e,--execute", cfg->exec_snippets,
       "Execute a Lua statement before running the script. Repeatable.");

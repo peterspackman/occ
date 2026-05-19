@@ -27,39 +27,38 @@ namespace {
 void register_module_level_helpers(lua_State *L) {
   luabridge::getGlobalNamespace(L)
       .beginNamespace("occ")
-      .addFunction("set_log_level",
-                   +[](const luabridge::LuaRef &level) {
-                     if (level.isString()) {
-                       occ::log::set_log_level(
-                           level.unsafe_cast<std::string>());
-                     } else if (level.isNumber()) {
-                       occ::log::set_log_level(level.unsafe_cast<int>());
-                     } else {
-                       throw std::runtime_error(
-                           "set_log_level: expected string or integer");
-                     }
-                   })
+      .addFunction(
+          "set_log_level",
+          +[](const luabridge::LuaRef &level) {
+            if (level.isString()) {
+              occ::log::set_log_level(level.unsafe_cast<std::string>());
+            } else if (level.isNumber()) {
+              occ::log::set_log_level(level.unsafe_cast<int>());
+            } else {
+              throw std::runtime_error(
+                  "set_log_level: expected string or integer");
+            }
+          })
       .addFunction("set_log_file", &occ::log::set_log_file)
-      .addFunction("log_info",
-                   +[](const std::string &msg) { occ::log::info(msg); })
-      .addFunction("log_warn",
-                   +[](const std::string &msg) { occ::log::warn(msg); })
-      .addFunction("log_error",
-                   +[](const std::string &msg) { occ::log::error(msg); })
-      .addFunction("log_debug",
-                   +[](const std::string &msg) { occ::log::debug(msg); })
-      .addFunction("set_num_threads",
-                   +[](int n) { occ::parallel::set_num_threads(n); })
-      .addFunction("set_data_directory",
-                   +[](const std::string &s) { occ::set_data_directory(s); })
-      .addFunction("load_molecule",
-                   +[](const std::string &path) {
-                     return occ::io::load_molecule(path);
-                   })
-      .addFunction("load_crystal",
-                   +[](const std::string &path) {
-                     return occ::io::load_crystal(path);
-                   })
+      .addFunction(
+          "log_info", +[](const std::string &msg) { occ::log::info(msg); })
+      .addFunction(
+          "log_warn", +[](const std::string &msg) { occ::log::warn(msg); })
+      .addFunction(
+          "log_error", +[](const std::string &msg) { occ::log::error(msg); })
+      .addFunction(
+          "log_debug", +[](const std::string &msg) { occ::log::debug(msg); })
+      .addFunction(
+          "set_num_threads", +[](int n) { occ::parallel::set_num_threads(n); })
+      .addFunction(
+          "set_data_directory",
+          +[](const std::string &s) { occ::set_data_directory(s); })
+      .addFunction(
+          "load_molecule",
+          +[](const std::string &path) { return occ::io::load_molecule(path); })
+      .addFunction(
+          "load_crystal",
+          +[](const std::string &path) { return occ::io::load_crystal(path); })
       .endNamespace();
 }
 

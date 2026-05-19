@@ -36,8 +36,8 @@ namespace occ::lua_bindings {
 inline double lua_get_num(const luabridge::LuaRef &t, int i) {
   auto v = t[i].template cast<double>();
   if (!v) {
-    throw std::runtime_error(
-        "expected number at table index " + std::to_string(i));
+    throw std::runtime_error("expected number at table index " +
+                             std::to_string(i));
   }
   return *v;
 }
@@ -45,8 +45,8 @@ inline double lua_get_num(const luabridge::LuaRef &t, int i) {
 inline luabridge::LuaRef lua_get_table(const luabridge::LuaRef &t, int i) {
   auto v = t[i].template cast<luabridge::LuaRef>();
   if (!v) {
-    throw std::runtime_error(
-        "expected nested table at index " + std::to_string(i));
+    throw std::runtime_error("expected nested table at index " +
+                             std::to_string(i));
   }
   return *v;
 }
@@ -54,15 +54,16 @@ inline luabridge::LuaRef lua_get_table(const luabridge::LuaRef &t, int i) {
 inline Vec table_to_vecx(const luabridge::LuaRef &t) {
   const int n = t.length();
   Vec v(n);
-  for (int i = 0; i < n; ++i) v(i) = lua_get_num(t, i + 1);
+  for (int i = 0; i < n; ++i)
+    v(i) = lua_get_num(t, i + 1);
   return v;
 }
 
 template <int N>
-inline Eigen::Matrix<double, N, 1>
-table_to_vec(const luabridge::LuaRef &t) {
+inline Eigen::Matrix<double, N, 1> table_to_vec(const luabridge::LuaRef &t) {
   Eigen::Matrix<double, N, 1> v;
-  for (int i = 0; i < N; ++i) v(i) = lua_get_num(t, i + 1);
+  for (int i = 0; i < N; ++i)
+    v(i) = lua_get_num(t, i + 1);
   return v;
 }
 
@@ -80,7 +81,8 @@ inline Mat3 table_to_mat3(const luabridge::LuaRef &t) {
   Mat3 m;
   for (int i = 0; i < 3; ++i) {
     luabridge::LuaRef row = lua_get_table(t, i + 1);
-    for (int j = 0; j < 3; ++j) m(i, j) = lua_get_num(row, j + 1);
+    for (int j = 0; j < 3; ++j)
+      m(i, j) = lua_get_num(row, j + 1);
   }
   return m;
 }
@@ -89,14 +91,16 @@ inline Mat4 table_to_mat4(const luabridge::LuaRef &t) {
   Mat4 m;
   for (int i = 0; i < 4; ++i) {
     luabridge::LuaRef row = lua_get_table(t, i + 1);
-    for (int j = 0; j < 4; ++j) m(i, j) = lua_get_num(row, j + 1);
+    for (int j = 0; j < 4; ++j)
+      m(i, j) = lua_get_num(row, j + 1);
   }
   return m;
 }
 
 inline Mat3N table_to_mat3n(const luabridge::LuaRef &t) {
   const int rows = t.length();
-  if (rows == 0) return Mat3N(3, 0);
+  if (rows == 0)
+    return Mat3N(3, 0);
   if (rows != 3) {
     throw std::runtime_error(
         "expected a 3×N table (rows = x/y/z, columns = atoms); got " +
@@ -107,7 +111,8 @@ inline Mat3N table_to_mat3n(const luabridge::LuaRef &t) {
   Mat3N m(3, n);
   for (int i = 0; i < 3; ++i) {
     luabridge::LuaRef row = lua_get_table(t, i + 1);
-    for (int j = 0; j < n; ++j) m(i, j) = lua_get_num(row, j + 1);
+    for (int j = 0; j < n; ++j)
+      m(i, j) = lua_get_num(row, j + 1);
   }
   return m;
 }
@@ -117,7 +122,8 @@ template <typename Mat>
 inline Mat table_to_eigen_matrix(const luabridge::LuaRef &t) {
   using Scalar = typename Mat::Scalar;
   const int rows = t.length();
-  if (rows == 0) return Mat();
+  if (rows == 0)
+    return Mat();
   luabridge::LuaRef first = lua_get_table(t, 1);
   const int cols = first.length();
 
@@ -125,11 +131,10 @@ inline Mat table_to_eigen_matrix(const luabridge::LuaRef &t) {
   if constexpr (Mat::RowsAtCompileTime == Eigen::Dynamic ||
                 Mat::ColsAtCompileTime == Eigen::Dynamic) {
     m.resize(rows, cols);
-  } else if (rows != Mat::RowsAtCompileTime ||
-             cols != Mat::ColsAtCompileTime) {
-    throw std::runtime_error(
-        "table shape (" + std::to_string(rows) + "x" +
-        std::to_string(cols) + ") does not match fixed Eigen size");
+  } else if (rows != Mat::RowsAtCompileTime || cols != Mat::ColsAtCompileTime) {
+    throw std::runtime_error("table shape (" + std::to_string(rows) + "x" +
+                             std::to_string(cols) +
+                             ") does not match fixed Eigen size");
   }
   for (int i = 0; i < rows; ++i) {
     luabridge::LuaRef row = lua_get_table(t, i + 1);
@@ -146,7 +151,8 @@ template <typename Derived>
 inline luabridge::LuaRef vec_to_table(lua_State *L,
                                       const Eigen::MatrixBase<Derived> &v) {
   luabridge::LuaRef t = luabridge::newTable(L);
-  for (Eigen::Index i = 0; i < v.size(); ++i) t[i + 1] = v(i);
+  for (Eigen::Index i = 0; i < v.size(); ++i)
+    t[i + 1] = v(i);
   return t;
 }
 
@@ -156,7 +162,8 @@ inline luabridge::LuaRef mat_to_table(lua_State *L,
   luabridge::LuaRef t = luabridge::newTable(L);
   for (Eigen::Index i = 0; i < m.rows(); ++i) {
     luabridge::LuaRef row = luabridge::newTable(L);
-    for (Eigen::Index j = 0; j < m.cols(); ++j) row[j + 1] = m(i, j);
+    for (Eigen::Index j = 0; j < m.cols(); ++j)
+      row[j + 1] = m(i, j);
     t[i + 1] = row;
   }
   return t;
