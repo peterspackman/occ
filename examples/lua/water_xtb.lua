@@ -6,7 +6,7 @@
 local input = arg[1] or "examples/scf/water.xyz"
 
 local mol = occ.load_molecule(input)
-print(string.format("Loaded %s (%d atoms)", input, mol:size()))
+print(string.format("Loaded %s (%d atoms)", input, mol.size))
 
 local calc = occ.XtbCalculator(mol)
 calc.charge = 0

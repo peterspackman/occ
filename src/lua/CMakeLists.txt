@@ -21,17 +21,9 @@ target_include_directories(occ_lua_bindings PUBLIC
 
 target_compile_features(occ_lua_bindings PUBLIC cxx_std_20)
 
-# Turn on every sol2 safety toggle: argument-count checks, type checks on
-# userdata, reference validity, numeric-range checks. Without these, a
-# Lua caller passing wrong arg types lands inside unchecked stack pops
-# and we see segfaults instead of clean Lua errors. PUBLIC so the
-# `occ lua` subcommand picks up the same macros when it includes any of
-# our headers.
-target_compile_definitions(occ_lua_bindings PUBLIC SOL_ALL_SAFETIES_ON=1)
-
 target_link_libraries(occ_lua_bindings
     PUBLIC
-    sol2::sol2
+    luabridge3::luabridge3
     occ_core
     occ_xtb
     occ_crystal

@@ -233,21 +233,25 @@ if(lua_ADDED)
     add_library(lua::lua ALIAS occ_lua_runtime)
 endif()
 
-# sol2 is header-only; pull its DOWNLOAD_ONLY tree and expose an
-# INTERFACE library that bundles the Lua link dependency.
+# LuaBridge3 — header-only Lua binding library. Replaced sol2 in
+# the binding layer for substantially faster compile times
+# (~50% wall-time and ~67% backend-codegen reduction on the
+# interaction_bindings PoC). Lua-headers must be included BEFORE
+# LuaBridge ones; eigen_conv.h handles that for every binding TU.
 CPMAddPackage(
-    NAME sol2
-    GITHUB_REPOSITORY "ThePhD/sol2"
-    GIT_TAG "v3.5.0"
+    NAME LuaBridge3
+    GITHUB_REPOSITORY "kunitoki/LuaBridge3"
+    GIT_TAG "3.0-rc11"
     DOWNLOAD_ONLY YES
 )
 
-if(sol2_ADDED)
-    add_library(occ_sol2 INTERFACE)
-    target_include_directories(occ_sol2 INTERFACE "${sol2_SOURCE_DIR}/include")
-    target_link_libraries(occ_sol2 INTERFACE lua::lua)
-    target_compile_features(occ_sol2 INTERFACE cxx_std_20)
-    add_library(sol2::sol2 ALIAS occ_sol2)
+if(LuaBridge3_ADDED)
+    add_library(occ_luabridge3 INTERFACE)
+    target_include_directories(occ_luabridge3
+        INTERFACE "${LuaBridge3_SOURCE_DIR}/Source")
+    target_link_libraries(occ_luabridge3 INTERFACE lua::lua)
+    target_compile_features(occ_luabridge3 INTERFACE cxx_std_20)
+    add_library(luabridge3::luabridge3 ALIAS occ_luabridge3)
 endif()
 
 # linenoise: tiny single-file line editor for the `occ lua` REPL.

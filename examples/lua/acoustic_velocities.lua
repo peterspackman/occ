@@ -19,10 +19,9 @@ local C = {
 local et = occ.ElasticTensor(C)
 
 print("=== NaCl elastic tensor ===")
--- `voigt_c` is bound as a method (the Python `def_prop_ro` form) — call
--- it with `:` to get the 6×6 matrix back.
+-- `voigt_c` is a read-only property returning the 6×6 stiffness matrix.
 print("Voigt stiffness (GPa):")
-pp(et:voigt_c())
+pp(et.voigt_c)
 
 local Hill = occ.AveragingScheme.HILL
 

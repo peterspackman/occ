@@ -81,7 +81,7 @@ if not converged then
 end
 
 local final_mol = optimizer:get_next_geometry()
-local final_energy = optimizer:current_energy()
+local final_energy = optimizer.current_energy
 print(string.format("\nFinal energy: %.8f Ha", final_energy))
 print("Optimized geometry:")
 print(final_mol)
@@ -104,9 +104,9 @@ if converged then
 
     local vib = occ.compute_vibrational_modes(hessian, final_mol)
 
-    print(string.format("Computed %d vibrational modes", vib:n_modes()))
+    print(string.format("Computed %d vibrational modes", vib.n_modes))
     print("\nFrequencies (cm⁻¹):")
-    local freqs = vib:get_all_frequencies()
+    local freqs = vib.get_all_frequencies
     for i, f in ipairs(freqs) do
         if f < 0 then
             print(string.format("  Mode %2d: %8.2fi cm⁻¹ (imaginary)", i, math.abs(f)))
@@ -116,5 +116,5 @@ if converged then
     end
 
     print("\nVibrational analysis summary:")
-    print(vib:summary_string())
+    print(vib.summary_string)
 end

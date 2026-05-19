@@ -28,751 +28,975 @@ using occ::Vec;
 using occ::Vec3;
 using namespace occ::core;
 using occ::crystal::Crystal;
+namespace lb = luabridge;
 
 namespace {
 
 // -- Element / Atom / PointCharge -----------------------------------------
 
-void register_atomic_types(sol::table &m) {
-  m.new_usertype<Element>(
-      "Element",
-      sol::call_constructor,
-      sol::factories([](const std::string &symbol) { return Element(symbol); },
-                     [](int atomic_number) { return Element(atomic_number); }),
-      "symbol", sol::readonly_property(&Element::symbol),
-      "mass", sol::readonly_property(&Element::mass),
-      "name", sol::readonly_property(&Element::name),
-      "van_der_waals_radius",
-      sol::readonly_property(&Element::van_der_waals_radius),
-      "covalent_radius", sol::readonly_property(&Element::covalent_radius),
-      "atomic_number", sol::readonly_property(&Element::atomic_number),
-      sol::meta_function::less_than,
-      [](const Element &a, const Element &b) { return a < b; },
-      sol::meta_function::equal_to,
-      [](const Element &a, const Element &b) { return a == b; },
-      sol::meta_function::to_string, [](const Element &a) {
-        return fmt::format("<Element '{}'>", a.symbol());
-      });
+void register_atomic_types(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+        .beginClass<Element>("Element")
+          // Two overloaded constructors so `occ.Element("C")` and
+          // `occ.Element(1)` both work — type-only form, LuaBridge3
+          // dispatches on arity and the type checkers.
+          .addConstructor<void (*)(const std::string &),
+                          void (*)(int)>()
+          .addProperty("symbol", &Element::symbol)
+          .addProperty("mass", &Element::mass)
+          .addProperty("name", &Element::name)
+          .addProperty("van_der_waals_radius", &Element::van_der_waals_radius)
+          .addProperty("covalent_radius", &Element::covalent_radius)
+          .addProperty("atomic_number", &Element::atomic_number)
+          .addFunction("__lt",
+                       +[](const Element *a, const Element &b) {
+                         return *a < b;
+                       })
+          .addFunction("__eq",
+                       +[](const Element *a, const Element &b) {
+                         return *a == b;
+                       })
+          .addFunction("__tostring",
+                       +[](const Element *a) {
+                         return fmt::format("<Element '{}'>", a->symbol());
+                       })
+        .endClass()
 
-  m.new_usertype<Atom>(
-      "Atom",
-      sol::call_constructor,
-      sol::constructors<Atom(int, double, double, double)>(),
-      "atomic_number", &Atom::atomic_number,
-      "x", &Atom::x,
-      "y", &Atom::y,
-      "z", &Atom::z,
-      "position",
-      sol::property(
-          [](const Atom &a, sol::this_state s) {
-            return Vec3(a.x, a.y, a.z);
-          },
-          [](Atom &a, const sol::table &t) {
-            a.set_position(table_to_vec3(t));
-          }),
-      sol::meta_function::to_string, [](const Atom &a) {
-        return fmt::format("<Atom {} [{:.5f}, {:.5f}, {:.5f}]>",
-                           a.atomic_number, a.x, a.y, a.z);
-      });
+        .beginClass<Atom>("Atom")
+          .addConstructor<void (*)(int, double, double, double)>()
+          .addProperty("atomic_number", &Atom::atomic_number)
+          .addProperty("x", &Atom::x)
+          .addProperty("y", &Atom::y)
+          .addProperty("z", &Atom::z)
+          // sol::property with custom getter/setter (and getter needs
+          // lua_State for tab-building) → paired get_/set_ functions.
+          .addProperty("get_position",
+                       +[](const Atom *a) -> Vec3 {
+                         return Vec3(a->x, a->y, a->z);
+                       })
+          .addFunction("set_position",
+                       +[](Atom *a, const lb::LuaRef &t) {
+                         a->set_position(table_to_vec3(t));
+                       })
+          .addFunction("__tostring",
+                       +[](const Atom *a) {
+                         return fmt::format("<Atom {} [{:.5f}, {:.5f}, {:.5f}]>",
+                                            a->atomic_number, a->x, a->y, a->z);
+                       })
+        .endClass()
 
-  m.new_usertype<PointCharge>(
-      "PointCharge",
-      sol::call_constructor,
-      sol::factories(
-          [](double q, double x, double y, double z) {
-            return PointCharge(q, x, y, z);
-          },
-          [](double q, const sol::table &pos) {
-            return PointCharge(q, table_to_vec3(pos));
-          }),
-      "charge", sol::property(&PointCharge::charge, &PointCharge::set_charge),
-      "position",
-      sol::property(
-          [](const PointCharge &pc, sol::this_state s) {
-            return pc.position();
-          },
-          [](PointCharge &pc, const sol::table &t) {
-            pc.set_position(table_to_vec3(t));
-          }),
-      sol::meta_function::to_string, [](const PointCharge &pc) {
-        const auto &p = pc.position();
-        return fmt::format("<PointCharge q={:.5f} [{:.5f}, {:.5f}, {:.5f}]>",
-                           pc.charge(), p.x(), p.y(), p.z());
-      });
+        .beginClass<PointCharge>("PointCharge")
+          // Two factory shapes (q,x,y,z) and (q, pos-table). Pick the
+          // explicit-coords form as canonical; expose the table form as
+          // static factory.
+          .addConstructor<void (*)(double, double, double, double)>()
+          .addStaticFunction(
+              "from_position",
+              +[](double q, const lb::LuaRef &pos) {
+                return new PointCharge(q, table_to_vec3(pos));
+              })
+          .addProperty("charge", &PointCharge::charge, &PointCharge::set_charge)
+          .addProperty("get_position",
+                       +[](const PointCharge *pc) -> Vec3 {
+                         return pc->position();
+                       })
+          .addFunction("set_position",
+                       +[](PointCharge *pc, const lb::LuaRef &t) {
+                         pc->set_position(table_to_vec3(t));
+                       })
+          .addFunction("__tostring",
+                       +[](const PointCharge *pc) {
+                         const auto &p = pc->position();
+                         return fmt::format(
+                             "<PointCharge q={:.5f} [{:.5f}, {:.5f}, {:.5f}]>",
+                             pc->charge(), p.x(), p.y(), p.z());
+                       })
+        .endClass()
+      .endNamespace();
 }
 
 // -- Molecule / Dimer -----------------------------------------------------
 
-void register_molecule_and_dimer(sol::table &m) {
-  m.new_enum<Molecule::Origin>(
-      "Origin", {{"CARTESIAN", Molecule::Origin::Cartesian},
-                 {"CENTROID", Molecule::Origin::Centroid},
-                 {"CENTEROFMASS", Molecule::Origin::CenterOfMass}});
+void register_molecule_and_dimer(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
 
-  m.new_usertype<Molecule>(
-      "Molecule",
-      sol::call_constructor,
-      sol::factories(
-          // Construct from atomic-number list + 3xN positions (rows are
-          // accepted in either orientation by table_to_mat3n).
-          [](const sol::table &atomic_numbers, const sol::table &positions) {
-            const int n = static_cast<int>(atomic_numbers.size());
-            IVec z(n);
-            for (int i = 0; i < n; ++i) z(i) = atomic_numbers.get<int>(i + 1);
-            return Molecule(z, table_to_mat3n(positions));
-          }),
-      sol::meta_function::length, &Molecule::size,
-      "size", &Molecule::size,
-      "elements", &Molecule::elements,
-      "positions",
-      sol::readonly_property([](const Molecule &mol, sol::this_state s) {
-        return mol.positions();
-      }),
-      "name", sol::property(&Molecule::name, &Molecule::set_name),
-      "partial_charges",
-      sol::property(
-          [](const Molecule &mol, sol::this_state s) {
-            return mol.partial_charges();
-          },
-          [](Molecule &mol, const sol::table &t) {
-            mol.set_partial_charges(table_to_vecx(t));
-          }),
-      "esp_partial_charges",
-      [](const Molecule &mol, const Vec &charges, sol::this_state s) {
-        return mol.esp_partial_charges(charges);
-      },
-      "atomic_masses",
-      [](const Molecule &mol, sol::this_state s) {
-        return mol.atomic_masses();
-      },
-      "atomic_numbers",
-      [](const Molecule &mol, sol::this_state s) {
-        return mol.atomic_numbers();
-      },
-      "vdw_radii",
-      [](const Molecule &mol, sol::this_state s) {
-        return mol.vdw_radii();
-      },
-      "molar_mass", &Molecule::molar_mass,
-      "atoms", &Molecule::atoms,
-      "bonds", &Molecule::bonds,
-      "center_of_mass",
-      [](const Molecule &mol, sol::this_state s) {
-        return mol.center_of_mass();
-      },
-      "centroid",
-      [](const Molecule &mol, sol::this_state s) {
-        return mol.centroid();
-      },
-      "unit_cell_molecule_idx", &Molecule::unit_cell_molecule_idx,
-      "asymmetric_molecule_idx", &Molecule::asymmetric_molecule_idx,
-      "asymmetric_unit_idx",
-      [](const Molecule &mol, sol::this_state s) {
-        return mol.asymmetric_unit_idx();
-      },
-      "is_equivalent_to", &Molecule::is_equivalent_to,
-      // -- In-place transforms (return self for chaining? — kept void to
-      // match the Python binding)
-      "rotate",
-      sol::overload(
-          [](Molecule &mol, const sol::table &rotation,
-             Molecule::Origin origin) {
-            mol.rotate(table_to_mat3(rotation), origin);
-          },
-          [](Molecule &mol, const sol::table &rotation,
-             const sol::table &point) {
-            mol.rotate(table_to_mat3(rotation), table_to_vec3(point));
-          }),
-      "transform",
-      sol::overload(
-          [](Molecule &mol, const sol::table &t, Molecule::Origin origin) {
-            mol.transform(table_to_mat4(t), origin);
-          },
-          [](Molecule &mol, const sol::table &t, const sol::table &point) {
-            mol.transform(table_to_mat4(t), table_to_vec3(point));
-          }),
-      "translate",
-      [](Molecule &mol, const sol::table &translation) {
-        mol.translate(table_to_vec3(translation));
-      },
-      // -- Copy-returning variants
-      "rotated",
-      sol::overload(
-          [](const Molecule &mol, const sol::table &rotation,
-             Molecule::Origin origin) {
-            return mol.rotated(table_to_mat3(rotation), origin);
-          },
-          [](const Molecule &mol, const sol::table &rotation,
-             const sol::table &point) {
-            return mol.rotated(table_to_mat3(rotation), table_to_vec3(point));
-          }),
-      "transformed",
-      sol::overload(
-          [](const Molecule &mol, const sol::table &t,
-             Molecule::Origin origin) {
-            return mol.transformed(table_to_mat4(t), origin);
-          },
-          [](const Molecule &mol, const sol::table &t,
-             const sol::table &point) {
-            return mol.transformed(table_to_mat4(t), table_to_vec3(point));
-          }),
-      "translated",
-      [](const Molecule &mol, const sol::table &translation) {
-        return mol.translated(table_to_vec3(translation));
-      },
-      "centered",
-      [](const Molecule &mol, sol::optional<Molecule::Origin> origin) {
-        Vec3 center;
-        switch (origin.value_or(Molecule::Origin::Centroid)) {
-        case Molecule::Origin::Centroid: center = mol.centroid(); break;
-        case Molecule::Origin::CenterOfMass:
-          center = mol.center_of_mass();
-          break;
-        default: center = Vec3::Zero();
-        }
-        return mol.translated(-center);
-      },
-      "translational_free_energy", &Molecule::translational_free_energy,
-      "rotational_free_energy", &Molecule::rotational_free_energy,
-      sol::meta_function::to_string, [](const Molecule &mol) {
-        auto com = mol.center_of_mass();
-        return fmt::format("<Molecule {} @[{:.5f}, {:.5f}, {:.5f}]>",
-                           mol.name(), com.x(), com.y(), com.z());
-      });
+        .beginNamespace("Origin")
+          .addProperty("CARTESIAN",
+                       +[]() { return static_cast<int>(Molecule::Origin::Cartesian); })
+          .addProperty("CENTROID",
+                       +[]() { return static_cast<int>(Molecule::Origin::Centroid); })
+          .addProperty("CENTEROFMASS",
+                       +[]() { return static_cast<int>(Molecule::Origin::CenterOfMass); })
+        .endNamespace()
 
-  // Static factories on Molecule mirror the Python `from_xyz_file` /
-  // `from_xyz_string`. Lua doesn't have a static-method idiom; expose
-  // them as plain free functions in occ.molecule_from_xyz_*.
-  m.set_function("molecule_from_xyz_file", [](const std::string &filename) {
-    return occ::io::molecule_from_xyz_file(filename);
-  });
-  m.set_function("molecule_from_xyz_string", [](const std::string &contents) {
-    return occ::io::molecule_from_xyz_string(contents);
-  });
+        .beginClass<Molecule>("Molecule")
+          // Construct from atomic-number list + 3xN positions table —
+          // `occ.Molecule({Z}, {{x},{y},{z}})`.
+          .addConstructor<Molecule *(*)(void *, const lb::LuaRef &,
+                                         const lb::LuaRef &)>(
+              +[](void *p, const lb::LuaRef &atomic_numbers,
+                  const lb::LuaRef &positions) {
+                const int n = atomic_numbers.length();
+                IVec z(n);
+                for (int i = 0; i < n; ++i) {
+                  z(i) = static_cast<int>(lua_get_num(atomic_numbers, i + 1));
+                }
+                return new (p) Molecule(z, table_to_mat3n(positions));
+              })
+          .addFunction("__len", &Molecule::size)
+          .addProperty("size", &Molecule::size)
+          // elements() returns const std::vector<Element>& — properties
+          // tripping over the const ref binding to non-trivially-copyable
+          // userdata, leave as a method.
+          .addFunction("elements", &Molecule::elements)
+          .addProperty("positions",
+                       +[](const Molecule *mol) -> Mat3N { return mol->positions(); })
+          .addProperty("name", &Molecule::name, &Molecule::set_name)
+          .addProperty("get_partial_charges",
+                       +[](const Molecule *mol) -> Vec { return mol->partial_charges(); })
+          .addFunction("set_partial_charges",
+                       +[](Molecule *mol, const lb::LuaRef &t) {
+                         mol->set_partial_charges(table_to_vecx(t));
+                       })
+          .addFunction(
+              "esp_partial_charges",
+              +[](const Molecule *mol, lua_State *S, const Vec &charges) {
+                return vec_to_table(S, mol->esp_partial_charges(charges));
+              })
+          .addProperty("atomic_masses",
+                       +[](const Molecule *mol) -> Vec { return mol->atomic_masses(); })
+          .addProperty("atomic_numbers",
+                       +[](const Molecule *mol) -> IVec { return mol->atomic_numbers(); })
+          .addProperty("vdw_radii",
+                       +[](const Molecule *mol) -> Vec { return mol->vdw_radii(); })
+          .addProperty("molar_mass", &Molecule::molar_mass)
+          // atoms()/bonds() return const std::vector<...>& — stay as methods
+          // for the same reason as elements().
+          .addFunction("atoms", &Molecule::atoms)
+          .addFunction("bonds", &Molecule::bonds)
+          .addProperty("center_of_mass",
+                       +[](const Molecule *mol) -> Vec3 { return mol->center_of_mass(); })
+          .addProperty("centroid",
+                       +[](const Molecule *mol) -> Vec3 { return mol->centroid(); })
+          .addProperty("unit_cell_molecule_idx",
+                       &Molecule::unit_cell_molecule_idx)
+          .addProperty("asymmetric_molecule_idx",
+                       &Molecule::asymmetric_molecule_idx)
+          .addProperty("asymmetric_unit_idx",
+                       +[](const Molecule *mol) -> IVec { return mol->asymmetric_unit_idx(); })
+          .addFunction("is_equivalent_to", &Molecule::is_equivalent_to)
+          // In-place transforms. sol::overload split into uniquely-named.
+          .addFunction(
+              "rotate",
+              +[](Molecule *mol, const lb::LuaRef &rotation, int origin) {
+                mol->rotate(table_to_mat3(rotation),
+                            static_cast<Molecule::Origin>(origin));
+              })
+          .addFunction(
+              "rotate_about_point",
+              +[](Molecule *mol, const lb::LuaRef &rotation,
+                  const lb::LuaRef &point) {
+                mol->rotate(table_to_mat3(rotation), table_to_vec3(point));
+              })
+          .addFunction(
+              "transform",
+              +[](Molecule *mol, const lb::LuaRef &t, int origin) {
+                mol->transform(table_to_mat4(t),
+                               static_cast<Molecule::Origin>(origin));
+              })
+          .addFunction(
+              "transform_about_point",
+              +[](Molecule *mol, const lb::LuaRef &t,
+                  const lb::LuaRef &point) {
+                mol->transform(table_to_mat4(t), table_to_vec3(point));
+              })
+          .addFunction(
+              "translate",
+              +[](Molecule *mol, const lb::LuaRef &translation) {
+                mol->translate(table_to_vec3(translation));
+              })
+          // Copy-returning variants.
+          .addFunction(
+              "rotated",
+              +[](const Molecule *mol, const lb::LuaRef &rotation, int origin) {
+                return mol->rotated(table_to_mat3(rotation),
+                                    static_cast<Molecule::Origin>(origin));
+              })
+          .addFunction(
+              "rotated_about_point",
+              +[](const Molecule *mol, const lb::LuaRef &rotation,
+                  const lb::LuaRef &point) {
+                return mol->rotated(table_to_mat3(rotation),
+                                    table_to_vec3(point));
+              })
+          .addFunction(
+              "transformed",
+              +[](const Molecule *mol, const lb::LuaRef &t, int origin) {
+                return mol->transformed(table_to_mat4(t),
+                                        static_cast<Molecule::Origin>(origin));
+              })
+          .addFunction(
+              "transformed_about_point",
+              +[](const Molecule *mol, const lb::LuaRef &t,
+                  const lb::LuaRef &point) {
+                return mol->transformed(table_to_mat4(t), table_to_vec3(point));
+              })
+          .addFunction(
+              "translated",
+              +[](const Molecule *mol, const lb::LuaRef &translation) {
+                return mol->translated(table_to_vec3(translation));
+              })
+          // sol::optional<Origin> → split.
+          .addFunction(
+              "centered",
+              +[](const Molecule *mol, int origin) {
+                Vec3 center;
+                switch (static_cast<Molecule::Origin>(origin)) {
+                case Molecule::Origin::Centroid:
+                  center = mol->centroid();
+                  break;
+                case Molecule::Origin::CenterOfMass:
+                  center = mol->center_of_mass();
+                  break;
+                default: center = Vec3::Zero();
+                }
+                return mol->translated(-center);
+              })
+          .addFunction(
+              "centered_default",
+              +[](const Molecule *mol) {
+                return mol->translated(-mol->centroid());
+              })
+          .addFunction("translational_free_energy",
+                       &Molecule::translational_free_energy)
+          .addFunction("rotational_free_energy",
+                       &Molecule::rotational_free_energy)
+          .addFunction("__tostring",
+                       +[](const Molecule *mol) {
+                         auto com = mol->center_of_mass();
+                         return fmt::format(
+                             "<Molecule {} @[{:.5f}, {:.5f}, {:.5f}]>",
+                             mol->name(), com.x(), com.y(), com.z());
+                       })
+        .endClass()
 
-  m.new_usertype<Dimer>(
-      "Dimer",
-      sol::call_constructor,
-      sol::factories(
-          [](const Molecule &a, const Molecule &b) { return Dimer(a, b); },
-          [](const std::vector<Atom> &a, const std::vector<Atom> &b) {
-            return Dimer(a, b);
-          }),
-      "a", sol::readonly_property(&Dimer::a),
-      "b", sol::readonly_property(&Dimer::b),
-      "nearest_distance", sol::readonly_property(&Dimer::nearest_distance),
-      "center_of_mass_distance",
-      sol::readonly_property(&Dimer::center_of_mass_distance),
-      "centroid_distance", sol::readonly_property(&Dimer::centroid_distance),
-      // optional<Mat4> needs an explicit wrapper — sol2's default container
-      // dispatch tries to iterate Eigen matrices and fails to compile.
-      "symmetry_relation",
-      [](const Dimer &d, sol::this_state s) -> sol::object {
-        auto rel = d.symmetry_relation();
-        if (!rel) return sol::nil;
-        return sol::make_object(s, mat_to_table(s, *rel));
-      },
-      "name", sol::property(&Dimer::name, &Dimer::set_name),
-      "v_ab_com", [](const Dimer &d, sol::this_state s) {
-        return d.v_ab_com();
-      });
+        // Static factories on Molecule mirror the Python `from_xyz_file` /
+        // `from_xyz_string`. Expose as plain free functions.
+        .addFunction("molecule_from_xyz_file",
+                     +[](const std::string &filename) {
+                       return occ::io::molecule_from_xyz_file(filename);
+                     })
+        .addFunction("molecule_from_xyz_string",
+                     +[](const std::string &contents) {
+                       return occ::io::molecule_from_xyz_string(contents);
+                     })
+
+        .beginClass<Dimer>("Dimer")
+          // Two factory shapes (Molecule, Molecule) and (atoms, atoms).
+          // Pick Molecule pair as canonical; atoms-pair as static.
+          .addConstructor<void (*)(const Molecule &, const Molecule &)>()
+          .addStaticFunction(
+              "from_atom_lists",
+              +[](const std::vector<Atom> &a, const std::vector<Atom> &b) {
+                return new Dimer(a, b);
+              })
+          .addProperty("a", &Dimer::a)
+          .addProperty("b", &Dimer::b)
+          .addProperty("nearest_distance", &Dimer::nearest_distance)
+          .addProperty("center_of_mass_distance",
+                       &Dimer::center_of_mass_distance)
+          .addProperty("centroid_distance", &Dimer::centroid_distance)
+          // optional<Mat4>: returns nil if absent, else table-of-tables.
+          // LuaBridge3: build dynamically via a LuaRef return.
+          .addFunction(
+              "symmetry_relation",
+              +[](const Dimer *d, lua_State *S) {
+                auto rel = d->symmetry_relation();
+                if (!rel) return lb::LuaRef(S);  // nil
+                return mat_to_table(S, *rel);
+              })
+          .addProperty("name", &Dimer::name, &Dimer::set_name)
+          .addProperty("v_ab_com",
+                       +[](const Dimer *d) -> Vec3 { return d->v_ab_com(); })
+        .endClass()
+      .endNamespace();
 }
 
 // -- Elastic tensor -------------------------------------------------------
 
-void register_elastic_tensor(sol::table &m) {
-  m.new_enum<ElasticTensor::AveragingScheme>(
-      "AveragingScheme", {{"VOIGT", ElasticTensor::AveragingScheme::Voigt},
-                          {"REUSS", ElasticTensor::AveragingScheme::Reuss},
-                          {"HILL", ElasticTensor::AveragingScheme::Hill},
-                          {"NUMERICAL",
-                           ElasticTensor::AveragingScheme::Numerical}});
+void register_elastic_tensor(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+        .beginNamespace("AveragingScheme")
+          .addProperty(
+              "VOIGT",
+              +[]() {
+                return static_cast<int>(ElasticTensor::AveragingScheme::Voigt);
+              })
+          .addProperty(
+              "REUSS",
+              +[]() {
+                return static_cast<int>(ElasticTensor::AveragingScheme::Reuss);
+              })
+          .addProperty(
+              "HILL",
+              +[]() {
+                return static_cast<int>(ElasticTensor::AveragingScheme::Hill);
+              })
+          .addProperty(
+              "NUMERICAL",
+              +[]() {
+                return static_cast<int>(
+                    ElasticTensor::AveragingScheme::Numerical);
+              })
+        .endNamespace()
 
-  m.new_usertype<ElasticTensor>(
-      "ElasticTensor",
-      sol::call_constructor,
-      sol::factories([](const sol::table &voigt_c) {
-        // Accept a 6x6 row-major Voigt table.
-        Mat6 c;
-        for (int i = 0; i < 6; ++i) {
-          sol::table row = voigt_c.get<sol::table>(i + 1);
-          for (int j = 0; j < 6; ++j) c(i, j) = row.get<double>(j + 1);
-        }
-        return ElasticTensor(c);
-      }),
-      "youngs_modulus",
-      [](const ElasticTensor &self, const sol::table &d) {
-        return self.youngs_modulus(table_to_vec3(d));
-      },
-      "linear_compressibility",
-      [](const ElasticTensor &self, const sol::table &d) {
-        return self.linear_compressibility(table_to_vec3(d));
-      },
-      "shear_modulus",
-      [](const ElasticTensor &self, const sol::table &d1,
-         const sol::table &d2) {
-        return self.shear_modulus(table_to_vec3(d1), table_to_vec3(d2));
-      },
-      "poisson_ratio",
-      [](const ElasticTensor &self, const sol::table &d1,
-         const sol::table &d2) {
-        return self.poisson_ratio(table_to_vec3(d1), table_to_vec3(d2));
-      },
-      "shear_modulus_minmax",
-      [](const ElasticTensor &self, const sol::table &d, sol::this_state s) {
-        auto pair = self.shear_modulus_minmax(table_to_vec3(d));
-        sol::state_view lua(s);
-        sol::table t = lua.create_table(2, 0);
-        t[1] = pair.first;
-        t[2] = pair.second;
-        return t;
-      },
-      "poisson_ratio_minmax",
-      [](const ElasticTensor &self, const sol::table &d, sol::this_state s) {
-        auto pair = self.poisson_ratio_minmax(table_to_vec3(d));
-        sol::state_view lua(s);
-        sol::table t = lua.create_table(2, 0);
-        t[1] = pair.first;
-        t[2] = pair.second;
-        return t;
-      },
-      "average_bulk_modulus",
-      [](const ElasticTensor &self,
-         sol::optional<ElasticTensor::AveragingScheme> scheme) {
-        return self.average_bulk_modulus(
-            scheme.value_or(ElasticTensor::AveragingScheme::Hill));
-      },
-      "average_shear_modulus",
-      [](const ElasticTensor &self,
-         sol::optional<ElasticTensor::AveragingScheme> scheme) {
-        return self.average_shear_modulus(
-            scheme.value_or(ElasticTensor::AveragingScheme::Hill));
-      },
-      "average_youngs_modulus",
-      [](const ElasticTensor &self,
-         sol::optional<ElasticTensor::AveragingScheme> scheme) {
-        return self.average_youngs_modulus(
-            scheme.value_or(ElasticTensor::AveragingScheme::Hill));
-      },
-      "average_poisson_ratio",
-      [](const ElasticTensor &self,
-         sol::optional<ElasticTensor::AveragingScheme> scheme) {
-        return self.average_poisson_ratio(
-            scheme.value_or(ElasticTensor::AveragingScheme::Hill));
-      },
-      "average_poisson_ratio_direction",
-      [](const ElasticTensor &self, const sol::table &direction,
-         sol::optional<int> num_samples) {
-        return self.average_poisson_ratio_direction(
-            table_to_vec3(direction), num_samples.value_or(360));
-      },
-      "reduced_youngs_modulus",
-      [](const ElasticTensor &self, const sol::table &direction,
-         sol::optional<int> num_samples) {
-        return self.reduced_youngs_modulus(table_to_vec3(direction),
-                                           num_samples.value_or(360));
-      },
-      "transverse_acoustic_velocity",
-      &ElasticTensor::transverse_acoustic_velocity,
-      "longitudinal_acoustic_velocity",
-      &ElasticTensor::longitudinal_acoustic_velocity,
-      "voigt_s",
-      [](const ElasticTensor &self, sol::this_state s) {
-        return self.voigt_s();
-      },
-      "voigt_c",
-      [](const ElasticTensor &self, sol::this_state s) {
-        return self.voigt_c();
-      },
-      "component",
-      [](const ElasticTensor &self, int i, int j, int k, int l) {
-        return self.component(i, j, k, l);
-      },
-      "eigenvalues",
-      [](const ElasticTensor &self, sol::this_state s) {
-        return self.eigenvalues();
-      },
-      "voigt_rotation_matrix",
-      [](const ElasticTensor &self, const sol::table &rotation,
-         sol::this_state s) {
-        return mat_to_table(s,
-                            self.voigt_rotation_matrix(table_to_mat3(rotation)));
-      },
-      "rotate_voigt_stiffness",
-      [](const ElasticTensor &self, const sol::table &rotation,
-         sol::this_state s) {
-        return mat_to_table(s,
-                            self.rotate_voigt_stiffness(table_to_mat3(rotation)));
-      },
-      "rotate_voigt_compliance",
-      [](const ElasticTensor &self, const sol::table &rotation,
-         sol::this_state s) {
-        return mat_to_table(
-            s, self.rotate_voigt_compliance(table_to_mat3(rotation)));
-      });
+        .beginClass<ElasticTensor>("ElasticTensor")
+          // Direct construction from a 6x6 row-major Voigt table —
+          // `occ.ElasticTensor(c)` matches the existing example style.
+          .addConstructor<ElasticTensor *(*)(void *, const lb::LuaRef &)>(
+              +[](void *p, const lb::LuaRef &voigt_c) {
+                Mat6 c;
+                for (int i = 0; i < 6; ++i) {
+                  lb::LuaRef row = lua_get_table(voigt_c, i + 1);
+                  for (int j = 0; j < 6; ++j) c(i, j) = lua_get_num(row, j + 1);
+                }
+                return new (p) ElasticTensor(c);
+              })
+          .addFunction(
+              "youngs_modulus",
+              +[](const ElasticTensor *self, const lb::LuaRef &d) {
+                return self->youngs_modulus(table_to_vec3(d));
+              })
+          .addFunction(
+              "linear_compressibility",
+              +[](const ElasticTensor *self, const lb::LuaRef &d) {
+                return self->linear_compressibility(table_to_vec3(d));
+              })
+          .addFunction(
+              "shear_modulus",
+              +[](const ElasticTensor *self, const lb::LuaRef &d1,
+                  const lb::LuaRef &d2) {
+                return self->shear_modulus(table_to_vec3(d1),
+                                           table_to_vec3(d2));
+              })
+          .addFunction(
+              "poisson_ratio",
+              +[](const ElasticTensor *self, const lb::LuaRef &d1,
+                  const lb::LuaRef &d2) {
+                return self->poisson_ratio(table_to_vec3(d1),
+                                           table_to_vec3(d2));
+              })
+          .addFunction(
+              "shear_modulus_minmax",
+              +[](const ElasticTensor *self, lua_State *S,
+                  const lb::LuaRef &d) {
+                auto pair = self->shear_modulus_minmax(table_to_vec3(d));
+                lb::LuaRef t = lb::newTable(S);
+                t[1] = pair.first;
+                t[2] = pair.second;
+                return t;
+              })
+          .addFunction(
+              "poisson_ratio_minmax",
+              +[](const ElasticTensor *self, lua_State *S,
+                  const lb::LuaRef &d) {
+                auto pair = self->poisson_ratio_minmax(table_to_vec3(d));
+                lb::LuaRef t = lb::newTable(S);
+                t[1] = pair.first;
+                t[2] = pair.second;
+                return t;
+              })
+          // sol::optional<AveragingScheme> → split for each average_*.
+          .addFunction(
+              "average_bulk_modulus",
+              +[](const ElasticTensor *self, int scheme) {
+                return self->average_bulk_modulus(
+                    static_cast<ElasticTensor::AveragingScheme>(scheme));
+              })
+          .addFunction(
+              "average_bulk_modulus_default",
+              +[](const ElasticTensor *self) {
+                return self->average_bulk_modulus(
+                    ElasticTensor::AveragingScheme::Hill);
+              })
+          .addFunction(
+              "average_shear_modulus",
+              +[](const ElasticTensor *self, int scheme) {
+                return self->average_shear_modulus(
+                    static_cast<ElasticTensor::AveragingScheme>(scheme));
+              })
+          .addFunction(
+              "average_shear_modulus_default",
+              +[](const ElasticTensor *self) {
+                return self->average_shear_modulus(
+                    ElasticTensor::AveragingScheme::Hill);
+              })
+          .addFunction(
+              "average_youngs_modulus",
+              +[](const ElasticTensor *self, int scheme) {
+                return self->average_youngs_modulus(
+                    static_cast<ElasticTensor::AveragingScheme>(scheme));
+              })
+          .addFunction(
+              "average_youngs_modulus_default",
+              +[](const ElasticTensor *self) {
+                return self->average_youngs_modulus(
+                    ElasticTensor::AveragingScheme::Hill);
+              })
+          .addFunction(
+              "average_poisson_ratio",
+              +[](const ElasticTensor *self, int scheme) {
+                return self->average_poisson_ratio(
+                    static_cast<ElasticTensor::AveragingScheme>(scheme));
+              })
+          .addFunction(
+              "average_poisson_ratio_default",
+              +[](const ElasticTensor *self) {
+                return self->average_poisson_ratio(
+                    ElasticTensor::AveragingScheme::Hill);
+              })
+          // sol::optional<int> num_samples → split.
+          .addFunction(
+              "average_poisson_ratio_direction",
+              +[](const ElasticTensor *self, const lb::LuaRef &direction,
+                  int num_samples) {
+                return self->average_poisson_ratio_direction(
+                    table_to_vec3(direction), num_samples);
+              })
+          .addFunction(
+              "average_poisson_ratio_direction_default",
+              +[](const ElasticTensor *self, const lb::LuaRef &direction) {
+                return self->average_poisson_ratio_direction(
+                    table_to_vec3(direction), 360);
+              })
+          .addFunction(
+              "reduced_youngs_modulus",
+              +[](const ElasticTensor *self, const lb::LuaRef &direction,
+                  int num_samples) {
+                return self->reduced_youngs_modulus(table_to_vec3(direction),
+                                                    num_samples);
+              })
+          .addFunction(
+              "reduced_youngs_modulus_default",
+              +[](const ElasticTensor *self, const lb::LuaRef &direction) {
+                return self->reduced_youngs_modulus(table_to_vec3(direction),
+                                                    360);
+              })
+          .addFunction("transverse_acoustic_velocity",
+                       &ElasticTensor::transverse_acoustic_velocity)
+          .addFunction("longitudinal_acoustic_velocity",
+                       &ElasticTensor::longitudinal_acoustic_velocity)
+          .addProperty("voigt_s",
+                       +[](const ElasticTensor *self) -> Mat6 { return self->voigt_s(); })
+          .addProperty("voigt_c",
+                       +[](const ElasticTensor *self) -> Mat6 { return self->voigt_c(); })
+          .addFunction(
+              "component",
+              +[](const ElasticTensor *self, int i, int j, int k, int l) {
+                return self->component(i, j, k, l);
+              })
+          .addProperty("eigenvalues",
+                       +[](const ElasticTensor *self) -> Vec { return self->eigenvalues(); })
+          .addFunction(
+              "voigt_rotation_matrix",
+              +[](const ElasticTensor *self, lua_State *S,
+                  const lb::LuaRef &rotation) {
+                return mat_to_table(
+                    S, self->voigt_rotation_matrix(table_to_mat3(rotation)));
+              })
+          .addFunction(
+              "rotate_voigt_stiffness",
+              +[](const ElasticTensor *self, lua_State *S,
+                  const lb::LuaRef &rotation) {
+                return mat_to_table(
+                    S, self->rotate_voigt_stiffness(table_to_mat3(rotation)));
+              })
+          .addFunction(
+              "rotate_voigt_compliance",
+              +[](const ElasticTensor *self, lua_State *S,
+                  const lb::LuaRef &rotation) {
+                return mat_to_table(
+                    S, self->rotate_voigt_compliance(table_to_mat3(rotation)));
+              })
+        .endClass()
+      .endNamespace();
 }
 
 // -- Point groups / symmetry ----------------------------------------------
 
-void register_point_groups(sol::table &m) {
-  m.new_enum<PointGroup>(
-      "PointGroup",
-      {{"C1", PointGroup::C1},     {"Ci", PointGroup::Ci},
-       {"Cs", PointGroup::Cs},     {"C2", PointGroup::C2},
-       {"C3", PointGroup::C3},     {"C4", PointGroup::C4},
-       {"C5", PointGroup::C5},     {"C6", PointGroup::C6},
-       {"C8", PointGroup::C8},     {"Coov", PointGroup::Coov},
-       {"Dooh", PointGroup::Dooh}, {"C2v", PointGroup::C2v},
-       {"C3v", PointGroup::C3v},   {"C4v", PointGroup::C4v},
-       {"C5v", PointGroup::C5v},   {"C6v", PointGroup::C6v},
-       {"C2h", PointGroup::C2h},   {"C3h", PointGroup::C3h},
-       {"C4h", PointGroup::C4h},   {"C5h", PointGroup::C5h},
-       {"C6h", PointGroup::C6h},   {"D2", PointGroup::D2},
-       {"D3", PointGroup::D3},     {"D4", PointGroup::D4},
-       {"D5", PointGroup::D5},     {"D6", PointGroup::D6},
-       {"D7", PointGroup::D7},     {"D8", PointGroup::D8},
-       {"D2h", PointGroup::D2h},   {"D3h", PointGroup::D3h},
-       {"D4h", PointGroup::D4h},   {"D5h", PointGroup::D5h},
-       {"D6h", PointGroup::D6h},   {"D7h", PointGroup::D7h},
-       {"D8h", PointGroup::D8h},   {"D2d", PointGroup::D2d},
-       {"D3d", PointGroup::D3d},   {"D4d", PointGroup::D4d},
-       {"D5d", PointGroup::D5d},   {"D6d", PointGroup::D6d},
-       {"D7d", PointGroup::D7d},   {"D8d", PointGroup::D8d},
-       {"S4", PointGroup::S4},     {"S6", PointGroup::S6},
-       {"S8", PointGroup::S8},     {"T", PointGroup::T},
-       {"Td", PointGroup::Td},     {"Th", PointGroup::Th},
-       {"O", PointGroup::O},       {"Oh", PointGroup::Oh},
-       {"I", PointGroup::I},       {"Ih", PointGroup::Ih}});
+void register_point_groups(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+        .beginNamespace("PointGroup")
+          .addProperty("C1", +[]() { return static_cast<int>(::occ::core::PointGroup::C1); })
+          .addProperty("Ci", +[]() { return static_cast<int>(::occ::core::PointGroup::Ci); })
+          .addProperty("Cs", +[]() { return static_cast<int>(::occ::core::PointGroup::Cs); })
+          .addProperty("C2", +[]() { return static_cast<int>(::occ::core::PointGroup::C2); })
+          .addProperty("C3", +[]() { return static_cast<int>(::occ::core::PointGroup::C3); })
+          .addProperty("C4", +[]() { return static_cast<int>(::occ::core::PointGroup::C4); })
+          .addProperty("C5", +[]() { return static_cast<int>(::occ::core::PointGroup::C5); })
+          .addProperty("C6", +[]() { return static_cast<int>(::occ::core::PointGroup::C6); })
+          .addProperty("C8", +[]() { return static_cast<int>(::occ::core::PointGroup::C8); })
+          .addProperty("Coov", +[]() { return static_cast<int>(::occ::core::PointGroup::Coov); })
+          .addProperty("Dooh", +[]() { return static_cast<int>(::occ::core::PointGroup::Dooh); })
+          .addProperty("C2v", +[]() { return static_cast<int>(::occ::core::PointGroup::C2v); })
+          .addProperty("C3v", +[]() { return static_cast<int>(::occ::core::PointGroup::C3v); })
+          .addProperty("C4v", +[]() { return static_cast<int>(::occ::core::PointGroup::C4v); })
+          .addProperty("C5v", +[]() { return static_cast<int>(::occ::core::PointGroup::C5v); })
+          .addProperty("C6v", +[]() { return static_cast<int>(::occ::core::PointGroup::C6v); })
+          .addProperty("C2h", +[]() { return static_cast<int>(::occ::core::PointGroup::C2h); })
+          .addProperty("C3h", +[]() { return static_cast<int>(::occ::core::PointGroup::C3h); })
+          .addProperty("C4h", +[]() { return static_cast<int>(::occ::core::PointGroup::C4h); })
+          .addProperty("C5h", +[]() { return static_cast<int>(::occ::core::PointGroup::C5h); })
+          .addProperty("C6h", +[]() { return static_cast<int>(::occ::core::PointGroup::C6h); })
+          .addProperty("D2", +[]() { return static_cast<int>(::occ::core::PointGroup::D2); })
+          .addProperty("D3", +[]() { return static_cast<int>(::occ::core::PointGroup::D3); })
+          .addProperty("D4", +[]() { return static_cast<int>(::occ::core::PointGroup::D4); })
+          .addProperty("D5", +[]() { return static_cast<int>(::occ::core::PointGroup::D5); })
+          .addProperty("D6", +[]() { return static_cast<int>(::occ::core::PointGroup::D6); })
+          .addProperty("D7", +[]() { return static_cast<int>(::occ::core::PointGroup::D7); })
+          .addProperty("D8", +[]() { return static_cast<int>(::occ::core::PointGroup::D8); })
+          .addProperty("D2h", +[]() { return static_cast<int>(::occ::core::PointGroup::D2h); })
+          .addProperty("D3h", +[]() { return static_cast<int>(::occ::core::PointGroup::D3h); })
+          .addProperty("D4h", +[]() { return static_cast<int>(::occ::core::PointGroup::D4h); })
+          .addProperty("D5h", +[]() { return static_cast<int>(::occ::core::PointGroup::D5h); })
+          .addProperty("D6h", +[]() { return static_cast<int>(::occ::core::PointGroup::D6h); })
+          .addProperty("D7h", +[]() { return static_cast<int>(::occ::core::PointGroup::D7h); })
+          .addProperty("D8h", +[]() { return static_cast<int>(::occ::core::PointGroup::D8h); })
+          .addProperty("D2d", +[]() { return static_cast<int>(::occ::core::PointGroup::D2d); })
+          .addProperty("D3d", +[]() { return static_cast<int>(::occ::core::PointGroup::D3d); })
+          .addProperty("D4d", +[]() { return static_cast<int>(::occ::core::PointGroup::D4d); })
+          .addProperty("D5d", +[]() { return static_cast<int>(::occ::core::PointGroup::D5d); })
+          .addProperty("D6d", +[]() { return static_cast<int>(::occ::core::PointGroup::D6d); })
+          .addProperty("D7d", +[]() { return static_cast<int>(::occ::core::PointGroup::D7d); })
+          .addProperty("D8d", +[]() { return static_cast<int>(::occ::core::PointGroup::D8d); })
+          .addProperty("S4", +[]() { return static_cast<int>(::occ::core::PointGroup::S4); })
+          .addProperty("S6", +[]() { return static_cast<int>(::occ::core::PointGroup::S6); })
+          .addProperty("S8", +[]() { return static_cast<int>(::occ::core::PointGroup::S8); })
+          .addProperty("T", +[]() { return static_cast<int>(::occ::core::PointGroup::T); })
+          .addProperty("Td", +[]() { return static_cast<int>(::occ::core::PointGroup::Td); })
+          .addProperty("Th", +[]() { return static_cast<int>(::occ::core::PointGroup::Th); })
+          .addProperty("O", +[]() { return static_cast<int>(::occ::core::PointGroup::O); })
+          .addProperty("Oh", +[]() { return static_cast<int>(::occ::core::PointGroup::Oh); })
+          .addProperty("I", +[]() { return static_cast<int>(::occ::core::PointGroup::I); })
+          .addProperty("Ih", +[]() { return static_cast<int>(::occ::core::PointGroup::Ih); })
+        .endNamespace()
 
-  m.new_enum<MirrorType>(
-      "MirrorType",
-      {{"None_", MirrorType::None},  // `none` is reserved in some Lua dialects
-       {"H", MirrorType::H},
-       {"D", MirrorType::D},
-       {"V", MirrorType::V}});
+        .beginNamespace("MirrorType")
+          .addProperty("None_",
+                       +[]() { return static_cast<int>(MirrorType::None); })
+          .addProperty("H",
+                       +[]() { return static_cast<int>(MirrorType::H); })
+          .addProperty("D",
+                       +[]() { return static_cast<int>(MirrorType::D); })
+          .addProperty("V",
+                       +[]() { return static_cast<int>(MirrorType::V); })
+        .endNamespace()
 
-  m.new_usertype<SymOp>(
-      "SymOp",
-      sol::call_constructor,
-      sol::factories([]() { return SymOp(); },
-                     [](const sol::table &rotation, const sol::table &trans) {
-                       return SymOp(table_to_mat3(rotation),
-                                    table_to_vec3(trans));
-                     },
-                     [](const sol::table &transformation) {
-                       return SymOp(table_to_mat4(transformation));
-                     }),
-      "apply",
-      [](const SymOp &op, const sol::table &positions, sol::this_state s) {
-        return op.apply(table_to_mat3n(positions));
-      },
-      // SymOp::rotation/translation return Eigen Block *expressions*
-      // (because of the `auto` return type in the C++ header), not
-      // concrete Mat3/Vec3 — force materialization here so sol2 has a
-      // registered usertype to push.
-      "rotation",
-      sol::readonly_property([](const SymOp &op) -> occ::Mat3 {
-        return op.rotation();
-      }),
-      "translation",
-      sol::readonly_property([](const SymOp &op) -> occ::Vec3 {
-        return op.translation();
-      }),
-      "transformation",
-      sol::property(
-          [](const SymOp &op, sol::this_state s) {
-            return op.transformation;
-          },
-          [](SymOp &op, const sol::table &t) {
-            op.transformation = table_to_mat4(t);
-          }));
-  // Free helpers; sol2 doesn't model Python's `def_static`.
-  m.set_function(
-      "symop_from_rotation_vector",
-      [](const sol::table &axis, double angle) {
-        return SymOp::from_rotation_vector(table_to_vec3(axis));
-      });
-  m.set_function("symop_from_axis_angle",
-                 [](const sol::table &axis, double angle) {
-                   return SymOp::from_axis_angle(table_to_vec3(axis), angle);
-                 });
-  m.set_function("symop_reflection", [](const sol::table &normal) {
-    return SymOp::reflection(table_to_vec3(normal));
-  });
-  m.set_function("symop_rotoreflection",
-                 [](const sol::table &axis, double angle) {
-                   return SymOp::rotoreflection(table_to_vec3(axis), angle);
-                 });
-  m.set_function("symop_inversion", []() { return SymOp::inversion(); });
-  m.set_function("symop_identity", []() { return SymOp::identity(); });
+        .beginClass<SymOp>("SymOp")
+          // Three factory shapes: default, (rotation, translation), (Mat4).
+          // Pick default as canonical, expose other two as static.
+          .addConstructor<void (*)()>()
+          .addStaticFunction(
+              "from_rotation_translation",
+              +[](const lb::LuaRef &rotation, const lb::LuaRef &trans) {
+                return new SymOp(table_to_mat3(rotation),
+                                 table_to_vec3(trans));
+              })
+          .addStaticFunction(
+              "from_transformation",
+              +[](const lb::LuaRef &transformation) {
+                return new SymOp(table_to_mat4(transformation));
+              })
+          .addFunction(
+              "apply",
+              +[](const SymOp *op, lua_State *S, const lb::LuaRef &positions) {
+                return mat_to_table(S, op->apply(table_to_mat3n(positions)));
+              })
+          // SymOp::rotation/translation return Eigen Block *expressions*;
+          // materialize via explicit return type.
+          .addProperty("rotation",
+                       +[](const SymOp *op) -> Mat3 { return op->rotation(); })
+          .addProperty("translation",
+                       +[](const SymOp *op) -> Vec3 { return op->translation(); })
+          .addProperty("get_transformation",
+                       +[](const SymOp *op) -> Mat4 { return op->transformation; })
+          .addFunction("set_transformation",
+                       +[](SymOp *op, const lb::LuaRef &t) {
+                         op->transformation = table_to_mat4(t);
+                       })
+        .endClass()
 
-  m.new_usertype<MolecularPointGroup>(
-      "MolecularPointGroup",
-      sol::call_constructor,
-      sol::constructors<MolecularPointGroup(const Molecule &)>(),
-      "description", sol::readonly_property(&MolecularPointGroup::description),
-      "point_group_string",
-      sol::readonly_property(&MolecularPointGroup::point_group_string),
-      "point_group", sol::readonly_property(&MolecularPointGroup::point_group),
-      "symops", sol::readonly_property(&MolecularPointGroup::symops),
-      "rotational_symmetries",
-      sol::readonly_property([](const MolecularPointGroup &pg) {
-        return sol::as_table(pg.rotational_symmetries());
-      }),
-      "symmetry_number",
-      sol::readonly_property(&MolecularPointGroup::symmetry_number),
-      sol::meta_function::to_string, [](const MolecularPointGroup &pg) {
-        return fmt::format("<MolecularPointGroup '{}'>",
-                           pg.point_group_string());
-      });
+        // Free helpers; LuaBridge3 doesn't model Python's `def_static` either.
+        .addFunction("symop_from_rotation_vector",
+                     +[](const lb::LuaRef &axis, double /*angle*/) {
+                       return SymOp::from_rotation_vector(table_to_vec3(axis));
+                     })
+        .addFunction("symop_from_axis_angle",
+                     +[](const lb::LuaRef &axis, double angle) {
+                       return SymOp::from_axis_angle(table_to_vec3(axis), angle);
+                     })
+        .addFunction("symop_reflection",
+                     +[](const lb::LuaRef &normal) {
+                       return SymOp::reflection(table_to_vec3(normal));
+                     })
+        .addFunction("symop_rotoreflection",
+                     +[](const lb::LuaRef &axis, double angle) {
+                       return SymOp::rotoreflection(table_to_vec3(axis), angle);
+                     })
+        .addFunction("symop_inversion", +[]() { return SymOp::inversion(); })
+        .addFunction("symop_identity", +[]() { return SymOp::identity(); })
 
-  m.set_function("dihedral_group", &occ::core::dihedral_group);
-  m.set_function("cyclic_group", &occ::core::cyclic_group);
+        .beginClass<MolecularPointGroup>("MolecularPointGroup")
+          .addConstructor<void (*)(const Molecule &)>()
+          .addProperty("description", &MolecularPointGroup::description)
+          .addProperty("point_group_string",
+                       &MolecularPointGroup::point_group_string)
+          // Returns const PointGroup by value — LuaBridge3 can't build a
+          // const userdata, so wrap in a lambda that drops the cv-qual.
+          .addProperty("point_group",
+                       +[](const MolecularPointGroup *pg) {
+                         return static_cast<int>(pg->point_group());
+                       })
+          .addProperty("symops", &MolecularPointGroup::symops)
+          .addFunction("rotational_symmetries",
+                       +[](const MolecularPointGroup *pg, lua_State *S) {
+                         lb::LuaRef t = lb::newTable(S);
+                         const auto &v = pg->rotational_symmetries();
+                         for (size_t i = 0; i < v.size(); ++i) {
+                           t[static_cast<int>(i + 1)] = v[i];
+                         }
+                         return t;
+                       })
+          .addProperty("symmetry_number",
+                       &MolecularPointGroup::symmetry_number)
+          .addFunction("__tostring",
+                       +[](const MolecularPointGroup *pg) {
+                         return fmt::format("<MolecularPointGroup '{}'>",
+                                            pg->point_group_string());
+                       })
+        .endClass()
+
+        .addFunction("dihedral_group", &occ::core::dihedral_group)
+        .addFunction("cyclic_group", &occ::core::cyclic_group)
+      .endNamespace();
 }
 
 // -- Multipoles -----------------------------------------------------------
 
-// Minimal binding for each rank — accessors + components, no operator+
-// chain (which would need 25 overloads). Lua callers can sum the
-// `components` tables directly if they need it.
+// Minimal binding for each rank — accessors + components.
+//
+// LuaBridge3's `Namespace::Class<T>` is move-only (non-copyable), so we
+// can't grab it with `auto cls = chain` and split the chain later for
+// the conditional `if constexpr (L >= 1)` dipole binding. Instead we
+// register the dipole on a SECOND beginClass<MP> chain — LuaBridge3
+// re-opens the existing class table and the extra method is appended.
 template <int L>
-void register_multipole(sol::table &m, const std::string &name) {
+void register_multipole(lua_State *Ls, const std::string &name) {
   using MP = Multipole<L>;
-  auto t = m.new_usertype<MP>(
-      name,
-      sol::call_constructor,
-      sol::factories([]() { return MP{}; },
-                     [](const sol::table &components) {
-                       MP mp{};
-                       const size_t n = std::min(
-                           static_cast<size_t>(components.size()),
-                           mp.components.size());
-                       for (size_t i = 0; i < n; ++i) {
-                         mp.components[i] = components.get<double>(i + 1);
-                       }
-                       return mp;
-                     }),
-      "num_components",
-      sol::readonly_property([](const MP &mp) { return mp.components.size(); }),
-      "charge", sol::readonly_property(&MP::charge),
-      "components",
-      sol::property(
-          [](const MP &mp, sol::this_state s) {
-            sol::state_view lua(s);
-            sol::table t = lua.create_table(
-                static_cast<int>(mp.components.size()), 0);
-            for (size_t i = 0; i < mp.components.size(); ++i) {
-              t[i + 1] = mp.components[i];
-            }
-            return t;
-          },
-          [](MP &mp, const sol::table &components) {
-            const size_t n = std::min(
-                static_cast<size_t>(components.size()),
-                mp.components.size());
-            for (size_t i = 0; i < n; ++i) {
-              mp.components[i] = components.get<double>(i + 1);
-            }
-          }),
-      "to_string", &MP::to_string,
-      sol::meta_function::to_string, [name](const MP &mp) {
-        return fmt::format("<{} q={:.6f}>", name, mp.charge());
-      });
+  lb::getGlobalNamespace(Ls)
+      .beginNamespace("occ")
+        .template beginClass<MP>(name.c_str())
+          .template addConstructor<void (*)()>()
+          .addStaticFunction(
+              "from_components",
+              +[](const lb::LuaRef &components) {
+                MP *mp = new MP{};
+                const size_t n = std::min(
+                    static_cast<size_t>(components.length()),
+                    mp->components.size());
+                for (size_t i = 0; i < n; ++i) {
+                  mp->components[i] =
+                      lua_get_num(components, static_cast<int>(i + 1));
+                }
+                return mp;
+              })
+          .addProperty(
+              "num_components",
+              +[](const MP *mp) { return mp->components.size(); })
+          .addProperty("charge", &MP::charge)
+          .addFunction(
+              "get_components",
+              +[](const MP *mp, lua_State *S) {
+                lb::LuaRef t = lb::newTable(S);
+                for (size_t i = 0; i < mp->components.size(); ++i) {
+                  t[static_cast<int>(i + 1)] = mp->components[i];
+                }
+                return t;
+              })
+          .addFunction(
+              "set_components",
+              +[](MP *mp, const lb::LuaRef &components) {
+                const size_t n = std::min(
+                    static_cast<size_t>(components.length()),
+                    mp->components.size());
+                for (size_t i = 0; i < n; ++i) {
+                  mp->components[i] =
+                      lua_get_num(components, static_cast<int>(i + 1));
+                }
+              })
+          .addFunction("to_string", &MP::to_string)
+          // Capturing lambda — drop the unary `+` so LuaBridge3 routes
+          // it through std::function rather than a plain function pointer.
+          .addFunction(
+              "__tostring",
+              [name](const MP *mp) {
+                return fmt::format("<{} q={:.6f}>", name, mp->charge());
+              })
+        .endClass()
+      .endNamespace();
+
   if constexpr (L >= 1) {
-    t["dipole"] = sol::readonly_property([](const MP &mp, sol::this_state s) {
-      return Vec3(mp.dipole().data());
-    });
+    lb::getGlobalNamespace(Ls)
+        .beginNamespace("occ")
+          .template beginClass<MP>(name.c_str())
+            .addProperty("dipole",
+                         +[](const MP *mp) -> Vec3 {
+                           return Vec3(mp->dipole().data());
+                         })
+          .endClass()
+        .endNamespace();
   }
 }
 
-void register_multipoles(sol::table &m) {
-  register_multipole<0>(m, "Monopole");
-  register_multipole<1>(m, "Dipole");
-  register_multipole<2>(m, "Quadrupole");
-  register_multipole<3>(m, "Octupole");
-  register_multipole<4>(m, "Hexadecapole");
+void register_multipoles(lua_State *L) {
+  register_multipole<0>(L, "Monopole");
+  register_multipole<1>(L, "Dipole");
+  register_multipole<2>(L, "Quadrupole");
+  register_multipole<3>(L, "Octupole");
+  register_multipole<4>(L, "Hexadecapole");
 
   // Polymorphic factory mirroring the Python `Multipole(order, components?)`
-  // wrapper. Returns the rank-specific userdata.
-  m.set_function(
-      "Multipole",
-      sol::overload(
-          [](int order, sol::this_state s) -> sol::object {
-            sol::state_view lua(s);
-            switch (order) {
-            case 0: return sol::make_object(lua, Multipole<0>{});
-            case 1: return sol::make_object(lua, Multipole<1>{});
-            case 2: return sol::make_object(lua, Multipole<2>{});
-            case 3: return sol::make_object(lua, Multipole<3>{});
-            case 4: return sol::make_object(lua, Multipole<4>{});
-            default:
-              throw std::runtime_error(
-                  fmt::format("Unsupported multipole order: {}", order));
-            }
-          },
-          [](int order, const sol::table &components,
-             sol::this_state s) -> sol::object {
-            sol::state_view lua(s);
-            auto fill = [&](auto &&mp) {
-              const size_t n = std::min(static_cast<size_t>(components.size()),
-                                         mp.components.size());
-              for (size_t i = 0; i < n; ++i) {
-                mp.components[i] = components.get<double>(i + 1);
+  // wrapper. sol2 used `sol::object` + `sol::make_object`; LuaBridge3's
+  // equivalent is `lb::LuaRef::newValue(L, value)`. Split components-taking
+  // form into a separate name since LuaBridge3 doesn't auto-overload.
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+        .addFunction(
+            "Multipole",
+            +[](lua_State *S, int order) {
+              switch (order) {
+              case 0: return lb::LuaRef(S, Multipole<0>{});
+              case 1: return lb::LuaRef(S, Multipole<1>{});
+              case 2: return lb::LuaRef(S, Multipole<2>{});
+              case 3: return lb::LuaRef(S, Multipole<3>{});
+              case 4: return lb::LuaRef(S, Multipole<4>{});
+              default:
+                throw std::runtime_error(
+                    fmt::format("Unsupported multipole order: {}", order));
               }
-              return mp;
-            };
-            switch (order) {
-            case 0: return sol::make_object(lua, fill(Multipole<0>{}));
-            case 1: return sol::make_object(lua, fill(Multipole<1>{}));
-            case 2: return sol::make_object(lua, fill(Multipole<2>{}));
-            case 3: return sol::make_object(lua, fill(Multipole<3>{}));
-            case 4: return sol::make_object(lua, fill(Multipole<4>{}));
-            default:
-              throw std::runtime_error(
-                  fmt::format("Unsupported multipole order: {}", order));
-            }
-          }));
+            })
+        .addFunction(
+            "Multipole_with_components",
+            +[](lua_State *S, int order, const lb::LuaRef &components) {
+              auto fill = [&](auto mp) {
+                const size_t n = std::min(
+                    static_cast<size_t>(components.length()),
+                    mp.components.size());
+                for (size_t i = 0; i < n; ++i) {
+                  mp.components[i] =
+                      lua_get_num(components, static_cast<int>(i + 1));
+                }
+                return mp;
+              };
+              switch (order) {
+              case 0:
+                return lb::LuaRef(S, fill(Multipole<0>{}));
+              case 1:
+                return lb::LuaRef(S, fill(Multipole<1>{}));
+              case 2:
+                return lb::LuaRef(S, fill(Multipole<2>{}));
+              case 3:
+                return lb::LuaRef(S, fill(Multipole<3>{}));
+              case 4:
+                return lb::LuaRef(S, fill(Multipole<4>{}));
+              default:
+                throw std::runtime_error(
+                    fmt::format("Unsupported multipole order: {}", order));
+              }
+            })
+      .endNamespace();
 }
 
 // -- MatTriple + free functions -------------------------------------------
 
-void register_misc(sol::table &m) {
-  m.new_usertype<MatTriple>(
-      "MatTriple",
-      sol::call_constructor,
-      sol::factories([]() { return MatTriple{}; }),
-      "x",
-      sol::property(
-          [](const MatTriple &mt, sol::this_state s) {
-            return mt.x;
-          },
-          // Setting MatTriple.x/y/z from a table is unusual; expose only
-          // the getter for now. Direct mutation via the C++ binding would
-          // be required for write access.
-          [](MatTriple &mt, sol::object) {
-            throw std::runtime_error(
-                "MatTriple components are read-only from Lua");
-          }),
-      "y",
-      sol::readonly_property([](const MatTriple &mt, sol::this_state s) {
-        return mt.y;
-      }),
-      "z",
-      sol::readonly_property([](const MatTriple &mt, sol::this_state s) {
-        return mt.z;
-      }),
-      "scale_by", &MatTriple::scale_by,
-      "symmetrize", &MatTriple::symmetrize,
-      sol::meta_function::addition, &MatTriple::operator+,
-      sol::meta_function::subtraction, &MatTriple::operator-,
-      sol::meta_function::to_string, [](const MatTriple &mt) {
-        return fmt::format("<MatTriple ({}x{})>", mt.x.rows(), mt.x.cols());
-      });
+void register_misc(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+        .beginClass<MatTriple>("MatTriple")
+          .addConstructor<void (*)()>()
+          .addProperty("get_x",
+                       +[](const MatTriple *mt) -> Mat { return mt->x; })
+          .addProperty("get_y",
+                       +[](const MatTriple *mt) -> Mat { return mt->y; })
+          .addProperty("get_z",
+                       +[](const MatTriple *mt) -> Mat { return mt->z; })
+          .addFunction("scale_by", &MatTriple::scale_by)
+          .addFunction("symmetrize", &MatTriple::symmetrize)
+          // operator+/- may be non-const upstream — take mutable self ptr.
+          .addFunction("__add",
+                       +[](MatTriple *a, const MatTriple &b) { return *a + b; })
+          .addFunction("__sub",
+                       +[](MatTriple *a, const MatTriple &b) { return *a - b; })
+          .addFunction("__tostring",
+                       +[](const MatTriple *mt) {
+                         return fmt::format("<MatTriple ({}x{})>",
+                                            mt->x.rows(), mt->x.cols());
+                       })
+        .endClass()
 
-  m.set_function(
-      "eem_partial_charges",
-      [](const sol::table &atomic_numbers, const sol::table &positions,
-         sol::optional<double> charge, sol::this_state s) {
-        const int n = static_cast<int>(atomic_numbers.size());
-        IVec z(n);
-        for (int i = 0; i < n; ++i) z(i) = atomic_numbers.get<int>(i + 1);
-        return vec_to_table(s, occ::core::charges::eem_partial_charges(
-                                    z, table_to_mat3n(positions),
-                                    charge.value_or(0.0)));
-      });
+        // Optional `charge` arg as `LuaRef` so a 2-arg call also works
+        // (defaults to 0). The lua_State* is recoverable from the
+        // atomic_numbers LuaRef so we don't need it as a separate
+        // parameter (LuaBridge3's auto-injection looks brittle when
+        // followed by other LuaRef args).
+        .addFunction(
+            "eem_partial_charges",
+            +[](const lb::LuaRef &atomic_numbers,
+                const lb::LuaRef &positions, const lb::LuaRef &charge) {
+              const int n = atomic_numbers.length();
+              IVec z(n);
+              for (int i = 0; i < n; ++i) {
+                z(i) = static_cast<int>(lua_get_num(atomic_numbers, i + 1));
+              }
+              const double q =
+                  charge.isNumber() ? charge.unsafe_cast<double>() : 0.0;
+              return vec_to_table(
+                  atomic_numbers.state(),
+                  occ::core::charges::eem_partial_charges(
+                      z, table_to_mat3n(positions), q));
+            })
+        .addFunction(
+            "eem_partial_charges_default",
+            +[](lua_State *S, const lb::LuaRef &atomic_numbers,
+                const lb::LuaRef &positions) {
+              const int n = atomic_numbers.length();
+              IVec z(n);
+              for (int i = 0; i < n; ++i) {
+                z(i) = static_cast<int>(lua_get_num(atomic_numbers, i + 1));
+              }
+              return vec_to_table(
+                  S, occ::core::charges::eem_partial_charges(
+                         z, table_to_mat3n(positions), 0.0));
+            })
 
-  m.set_function(
-      "eeq_partial_charges",
-      [](const sol::table &atomic_numbers, const sol::table &positions,
-         sol::optional<double> charge, sol::this_state s) {
-        const int n = static_cast<int>(atomic_numbers.size());
-        IVec z(n);
-        for (int i = 0; i < n; ++i) z(i) = atomic_numbers.get<int>(i + 1);
-        return vec_to_table(s, occ::core::charges::eeq_partial_charges(
-                                    z, table_to_mat3n(positions),
-                                    charge.value_or(0.0)));
-      });
+        .addFunction(
+            "eeq_partial_charges",
+            +[](const lb::LuaRef &atomic_numbers,
+                const lb::LuaRef &positions, const lb::LuaRef &charge) {
+              const int n = atomic_numbers.length();
+              IVec z(n);
+              for (int i = 0; i < n; ++i) {
+                z(i) = static_cast<int>(lua_get_num(atomic_numbers, i + 1));
+              }
+              const double q =
+                  charge.isNumber() ? charge.unsafe_cast<double>() : 0.0;
+              return vec_to_table(
+                  atomic_numbers.state(),
+                  occ::core::charges::eeq_partial_charges(
+                      z, table_to_mat3n(positions), q));
+            })
 
-  m.set_function(
-      "eeq_coordination_numbers",
-      [](const sol::table &atomic_numbers, const sol::table &positions,
-         sol::this_state s) {
-        const int n = static_cast<int>(atomic_numbers.size());
-        IVec z(n);
-        for (int i = 0; i < n; ++i) z(i) = atomic_numbers.get<int>(i + 1);
-        return vec_to_table(
-            s, occ::core::charges::eeq_coordination_numbers(
-                   z, table_to_mat3n(positions)));
-      });
+        .addFunction(
+            "eeq_coordination_numbers",
+            +[](const lb::LuaRef &atomic_numbers,
+                const lb::LuaRef &positions) {
+              const int n = atomic_numbers.length();
+              IVec z(n);
+              for (int i = 0; i < n; ++i) {
+                z(i) = static_cast<int>(lua_get_num(atomic_numbers, i + 1));
+              }
+              return vec_to_table(
+                  atomic_numbers.state(),
+                  occ::core::charges::eeq_coordination_numbers(
+                      z, table_to_mat3n(positions)));
+            })
 
-  m.set_function(
-      "quasirandom_kgf",
-      [](int ndims, int count, sol::optional<int> seed, sol::this_state s) {
-        return mat_to_table(
-            s, occ::core::quasirandom_kgf(ndims, count, seed.value_or(0)));
-      });
+        // sol::optional<int> seed → split.
+        .addFunction(
+            "quasirandom_kgf",
+            +[](lua_State *S, int ndims, int count, int seed) {
+              return mat_to_table(
+                  S, occ::core::quasirandom_kgf(ndims, count, seed));
+            })
+        .addFunction(
+            "quasirandom_kgf_default",
+            +[](lua_State *S, int ndims, int count) {
+              return mat_to_table(
+                  S, occ::core::quasirandom_kgf(ndims, count, 0));
+            })
+      .endNamespace();
 }
 
 // -- Logging --------------------------------------------------------------
 
-void register_logging(sol::table &m) {
-  m.new_enum<spdlog::level::level_enum>(
-      "LogLevel",
-      {{"TRACE", spdlog::level::trace}, {"DEBUG", spdlog::level::debug},
-       {"INFO", spdlog::level::info},   {"WARN", spdlog::level::warn},
-       {"ERROR", spdlog::level::err},   {"CRITICAL", spdlog::level::critical},
-       {"OFF", spdlog::level::off}});
+void register_logging(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+        .beginNamespace("LogLevel")
+          .addProperty("TRACE",
+                       +[]() { return static_cast<int>(spdlog::level::trace); })
+          .addProperty("DEBUG",
+                       +[]() { return static_cast<int>(spdlog::level::debug); })
+          .addProperty("INFO",
+                       +[]() { return static_cast<int>(spdlog::level::info); })
+          .addProperty("WARN",
+                       +[]() { return static_cast<int>(spdlog::level::warn); })
+          .addProperty("ERROR",
+                       +[]() { return static_cast<int>(spdlog::level::err); })
+          .addProperty(
+              "CRITICAL",
+              +[]() { return static_cast<int>(spdlog::level::critical); })
+          .addProperty("OFF",
+                       +[]() { return static_cast<int>(spdlog::level::off); })
+        .endNamespace()
 
-  // set_log_level already registered in occ_module.cpp; the other helpers
-  // round out the surface.
-  m.set_function("clear_log_buffer", &occ::log::clear_log_buffer);
-  m.set_function("set_log_buffering", &occ::log::set_log_buffering);
-  m.set_function("get_buffered_logs",
-                 [](sol::this_state s) {
-                   sol::state_view lua(s);
-                   auto logs = occ::log::get_buffered_logs();
-                   sol::table out =
-                       lua.create_table(static_cast<int>(logs.size()), 0);
-                   int i = 1;
-                   for (const auto &[level, message] : logs) {
-                     sol::table entry = lua.create_table(0, 2);
-                     entry["level"] = static_cast<int>(level);
-                     entry["message"] = message;
-                     out[i++] = entry;
-                   }
-                   return out;
-                 });
+        // set_log_level is already registered in occ_module.cpp.
+        .addFunction("clear_log_buffer", &occ::log::clear_log_buffer)
+        .addFunction("set_log_buffering", &occ::log::set_log_buffering)
+        .addFunction(
+            "get_buffered_logs",
+            +[](lua_State *S) {
+              auto logs = occ::log::get_buffered_logs();
+              lb::LuaRef out = lb::newTable(S);
+              int i = 1;
+              for (const auto &[level, message] : logs) {
+                lb::LuaRef entry = lb::newTable(S);
+                entry["level"] = static_cast<int>(level);
+                entry["message"] = message;
+                out[i++] = entry;
+              }
+              return out;
+            })
 
-  m.set_function("log_trace", [](const std::string &msg) {
-    occ::log::trace(msg);
-  });
-  m.set_function("log_debug", [](const std::string &msg) {
-    occ::log::debug(msg);
-  });
-  m.set_function("log_info", [](const std::string &msg) {
-    occ::log::info(msg);
-  });
-  m.set_function("log_warn", [](const std::string &msg) {
-    occ::log::warn(msg);
-  });
-  m.set_function("log_error", [](const std::string &msg) {
-    occ::log::error(msg);
-  });
-  m.set_function("log_critical", [](const std::string &msg) {
-    occ::log::critical(msg);
-  });
+        .addFunction("log_trace",
+                     +[](const std::string &msg) { occ::log::trace(msg); })
+        .addFunction("log_debug",
+                     +[](const std::string &msg) { occ::log::debug(msg); })
+        .addFunction("log_info",
+                     +[](const std::string &msg) { occ::log::info(msg); })
+        .addFunction("log_warn",
+                     +[](const std::string &msg) { occ::log::warn(msg); })
+        .addFunction("log_error",
+                     +[](const std::string &msg) { occ::log::error(msg); })
+        .addFunction("log_critical",
+                     +[](const std::string &msg) { occ::log::critical(msg); })
+      .endNamespace();
 }
 
 } // namespace
 
-void register_core_bindings(sol::state_view, sol::table &occ_module) {
-  register_atomic_types(occ_module);
-  register_molecule_and_dimer(occ_module);
-  register_elastic_tensor(occ_module);
-  register_point_groups(occ_module);
-  register_multipoles(occ_module);
-  register_misc(occ_module);
-  register_logging(occ_module);
+void register_core_bindings(lua_State *L) {
+  register_atomic_types(L);
+  register_molecule_and_dimer(L);
+  register_elastic_tensor(L);
+  register_point_groups(L);
+  register_multipoles(L);
+  register_misc(L);
+  register_logging(L);
 }
 
 } // namespace occ::lua_bindings

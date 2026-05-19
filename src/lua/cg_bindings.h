@@ -1,11 +1,11 @@
 #pragma once
-#include <sol/sol.hpp>
+struct lua_State;
 
 namespace occ::lua_bindings {
 
 // Register `occ::cg` (CrystalGrowthResult, DimerResult, MoleculeResult,
-// InteractionMapper, ...) onto the `occ` table. Mirrors
+// InteractionMapper, ...) onto the `occ` namespace. Mirrors
 // src/python/cg_bindings.cpp.
-void register_cg_bindings(sol::state_view lua, sol::table &occ_module);
+void register_cg_bindings(lua_State *L);
 
 } // namespace occ::lua_bindings

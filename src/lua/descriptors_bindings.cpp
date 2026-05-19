@@ -5,111 +5,125 @@
 #include <occ/descriptors/promolecule_shape.h>
 #include <occ/descriptors/steinhardt.h>
 
-namespace sol {
-template <>
-struct is_automagical<occ::descriptors::PointwiseDistanceDistribution>
-    : std::false_type {};
-template <>
-struct is_automagical<occ::descriptors::Steinhardt> : std::false_type {};
-template <>
-struct is_container<occ::descriptors::PointwiseDistanceDistribution>
-    : std::false_type {};
-template <>
-struct is_container<occ::descriptors::Steinhardt> : std::false_type {};
-} // namespace sol
-
 namespace occ::lua_bindings {
 
 using namespace occ::descriptors;
 using occ::crystal::Crystal;
+namespace lb = luabridge;
 
-void register_descriptors_bindings(sol::state_view, sol::table &m) {
-  m.new_usertype<PointwiseDistanceDistributionConfig>(
-      "PDDConfig",
-      sol::call_constructor,
-      sol::factories([]() { return PointwiseDistanceDistributionConfig{}; }),
-      "lexsort", &PointwiseDistanceDistributionConfig::lexsort,
-      "collapse", &PointwiseDistanceDistributionConfig::collapse,
-      "collapse_tol", &PointwiseDistanceDistributionConfig::collapse_tol,
-      "return_groups",
-      &PointwiseDistanceDistributionConfig::return_groups);
+void register_descriptors_bindings(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
 
-  m.new_usertype<PointwiseDistanceDistribution>(
-      "PDD",
-      sol::call_constructor,
-      sol::factories(
-          [](const Crystal &c, int k) {
-            return PointwiseDistanceDistribution(c, k);
-          },
-          [](const Crystal &c, int k,
-             const PointwiseDistanceDistributionConfig &cfg) {
-            return PointwiseDistanceDistribution(c, k, cfg);
-          }),
-      "weights",
-      sol::readonly_property(
-          [](const PointwiseDistanceDistribution &p, sol::this_state s) {
-            return p.weights();
-          }),
-      "distances",
-      sol::readonly_property(
-          [](const PointwiseDistanceDistribution &p, sol::this_state s) {
-            return p.distances();
-          }),
-      "average_minimum_distance",
-      &PointwiseDistanceDistribution::average_minimum_distance,
-      "matrix",
-      [](const PointwiseDistanceDistribution &p, sol::this_state s) {
-        return p.matrix();
-      },
-      "size", &PointwiseDistanceDistribution::size,
-      "k", &PointwiseDistanceDistribution::k,
-      // groups() returns Eigen::MatrixXi (int matrix), not a std::vector —
-      // use mat_to_table, which handles any Eigen::MatrixBase.
-      "groups",
-      sol::readonly_property(
-          [](const PointwiseDistanceDistribution &p, sol::this_state s) {
-            return p.groups();
-          }));
+        .beginClass<PointwiseDistanceDistributionConfig>("PDDConfig")
+          .addConstructor<void (*)()>()
+          .addPropertyReadWrite(
+              "lexsort", &PointwiseDistanceDistributionConfig::lexsort)
+          .addPropertyReadWrite(
+              "collapse", &PointwiseDistanceDistributionConfig::collapse)
+          .addPropertyReadWrite(
+              "collapse_tol",
+              &PointwiseDistanceDistributionConfig::collapse_tol)
+          .addPropertyReadWrite(
+              "return_groups",
+              &PointwiseDistanceDistributionConfig::return_groups)
+        .endClass()
 
-  m.new_usertype<Steinhardt>(
-      "Steinhardt",
-      sol::call_constructor, sol::constructors<Steinhardt(size_t)>(),
-      "compute_q",
-      [](Steinhardt &st, const sol::table &positions, sol::this_state s) {
-        return st.compute_q(table_to_mat3n(positions));
-      },
-      "compute_w",
-      [](Steinhardt &st, const sol::table &positions, sol::this_state s) {
-        return st.compute_w(table_to_mat3n(positions));
-      },
-      "compute_averaged_q",
-      [](Steinhardt &st, const sol::table &positions,
-         sol::optional<double> radius, sol::this_state s) {
-        return vec_to_table(s, st.compute_averaged_q(table_to_mat3n(positions),
-                                                       radius.value_or(6.0)));
-      },
-      "compute_averaged_w",
-      [](Steinhardt &st, const sol::table &positions,
-         sol::optional<double> radius, sol::this_state s) {
-        return vec_to_table(s, st.compute_averaged_w(table_to_mat3n(positions),
-                                                       radius.value_or(6.0)));
-      },
-      "precompute_wigner3j_coefficients",
-      &Steinhardt::precompute_wigner3j_coefficients,
-      "size", &Steinhardt::size,
-      "nlm", &Steinhardt::nlm);
+        .beginClass<PointwiseDistanceDistribution>("PDD")
+          // Two construction shapes — split into a canonical constructor
+          // and a static factory for the configured variant.
+          .addConstructor<void (*)(const Crystal &, int)>()
+          .addStaticFunction(
+              "new_with_config",
+              +[](const Crystal &c, int k,
+                  const PointwiseDistanceDistributionConfig &cfg) {
+                return new PointwiseDistanceDistribution(c, k, cfg);
+              })
+          .addProperty("weights",
+                       +[](const PointwiseDistanceDistribution *p) -> occ::Vec { return p->weights(); })
+          .addProperty("distances",
+                       +[](const PointwiseDistanceDistribution *p) -> occ::Mat { return p->distances(); })
+          .addProperty(
+              "average_minimum_distance",
+              &PointwiseDistanceDistribution::average_minimum_distance)
+          .addProperty("matrix",
+                       +[](const PointwiseDistanceDistribution *p) -> occ::Mat { return p->matrix(); })
+          .addProperty("size", &PointwiseDistanceDistribution::size)
+          .addProperty("k", &PointwiseDistanceDistribution::k)
+          // groups() returns Eigen::MatrixXi — mat_to_table handles any
+          // Eigen::MatrixBase.
+          .addFunction("groups",
+                       +[](const PointwiseDistanceDistribution *p,
+                           lua_State *S) {
+                         return mat_to_table(S, p->groups());
+                       })
+        .endClass()
 
-  m.new_usertype<PromoleculeDensityShape::InterpolatorParameters>(
-      "PromoleculeInterpolatorParameters",
-      sol::call_constructor,
-      sol::factories(
-          []() { return PromoleculeDensityShape::InterpolatorParameters{}; }),
-      "num_points",
-      &PromoleculeDensityShape::InterpolatorParameters::num_points,
-      "domain_lower",
-      &PromoleculeDensityShape::InterpolatorParameters::domain_lower,
-      "domain_upper",
-      &PromoleculeDensityShape::InterpolatorParameters::domain_upper);
+        .beginClass<Steinhardt>("Steinhardt")
+          .addConstructor<void (*)(size_t)>()
+          .addFunction("compute_q",
+                       +[](Steinhardt *st, const lb::LuaRef &positions,
+                           lua_State *S) {
+                         return vec_to_table(
+                             S, st->compute_q(table_to_mat3n(positions)));
+                       })
+          .addFunction("compute_w",
+                       +[](Steinhardt *st, const lb::LuaRef &positions,
+                           lua_State *S) {
+                         return vec_to_table(
+                             S, st->compute_w(table_to_mat3n(positions)));
+                       })
+          // sol2's optional<double> radius default = 6.0 — split into two
+          // explicit named functions.
+          .addFunction(
+              "compute_averaged_q",
+              +[](Steinhardt *st, const lb::LuaRef &positions, double radius,
+                  lua_State *S) {
+                return vec_to_table(
+                    S, st->compute_averaged_q(table_to_mat3n(positions),
+                                              radius));
+              })
+          .addFunction(
+              "compute_averaged_q_default",
+              +[](Steinhardt *st, const lb::LuaRef &positions, lua_State *S) {
+                return vec_to_table(
+                    S, st->compute_averaged_q(table_to_mat3n(positions), 6.0));
+              })
+          .addFunction(
+              "compute_averaged_w",
+              +[](Steinhardt *st, const lb::LuaRef &positions, double radius,
+                  lua_State *S) {
+                return vec_to_table(
+                    S, st->compute_averaged_w(table_to_mat3n(positions),
+                                              radius));
+              })
+          .addFunction(
+              "compute_averaged_w_default",
+              +[](Steinhardt *st, const lb::LuaRef &positions, lua_State *S) {
+                return vec_to_table(
+                    S, st->compute_averaged_w(table_to_mat3n(positions), 6.0));
+              })
+          .addFunction("precompute_wigner3j_coefficients",
+                       &Steinhardt::precompute_wigner3j_coefficients)
+          .addProperty("size", &Steinhardt::size)
+          .addProperty("nlm", &Steinhardt::nlm)
+        .endClass()
+
+        .beginClass<PromoleculeDensityShape::InterpolatorParameters>(
+            "PromoleculeInterpolatorParameters")
+          .addConstructor<void (*)()>()
+          .addPropertyReadWrite(
+              "num_points",
+              &PromoleculeDensityShape::InterpolatorParameters::num_points)
+          .addPropertyReadWrite(
+              "domain_lower",
+              &PromoleculeDensityShape::InterpolatorParameters::domain_lower)
+          .addPropertyReadWrite(
+              "domain_upper",
+              &PromoleculeDensityShape::InterpolatorParameters::domain_upper)
+        .endClass()
+
+      .endNamespace();
 }
 
 } // namespace occ::lua_bindings

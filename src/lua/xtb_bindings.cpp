@@ -12,216 +12,210 @@ namespace occ::lua_bindings {
 
 using occ::xtb::XtbCalculator;
 using occ::xtb::XtbResult;
+namespace lb = luabridge;
 
-void register_xtb_bindings(sol::state_view lua, sol::table &occ_module) {
-  // ----- XtbResult --------------------------------------------------------
-  // Read-only view of the cached SCC result. Matrices are exposed as Lua
-  // tables (row-major, 1-indexed) so they're easy to inspect from a script
-  // without a separate matrix userdata type.
-  //
-  // sol::this_state is sol2's "magic" parameter: at call time, sol2 injects
-  // the active lua_State* so we don't need to capture a sol::state_view
-  // (which would dangle once register_xtb_bindings returns).
-  occ_module.new_usertype<XtbResult>(
-      "XtbResult", sol::no_constructor,
-      "scc_energy", sol::readonly(&XtbResult::scc_energy),
-      "repulsion_energy", sol::readonly(&XtbResult::repulsion_energy),
-      "dispersion_energy", sol::readonly(&XtbResult::dispersion_energy),
-      "total_energy", sol::readonly(&XtbResult::total_energy),
-      "n_iterations", sol::readonly(&XtbResult::n_iterations),
-      "converged", sol::readonly(&XtbResult::converged),
-      // Vector / matrix fields → Eigen userdata (Vector, Matrix). No
-      // copy at the boundary; mutation through the userdata feeds back
-      // into the result object.
-      "shell_charges",
-      sol::readonly_property([](const XtbResult &r) -> const occ::Vec & {
-        return r.shell_charges;
-      }),
-      "atomic_charges",
-      sol::readonly_property([](const XtbResult &r) -> const occ::Vec & {
-        return r.atomic_charges;
-      }),
-      "orbital_energies",
-      sol::readonly_property([](const XtbResult &r) -> const occ::Vec & {
-        return r.orbital_energies;
-      }),
-      "orbital_occupations",
-      sol::readonly_property([](const XtbResult &r) -> const occ::Vec & {
-        return r.orbital_occupations;
-      }),
-      "density_matrix",
-      sol::readonly_property([](const XtbResult &r) -> const occ::Mat & {
-        return r.density_matrix;
-      }),
-      "overlap_matrix",
-      sol::readonly_property([](const XtbResult &r) -> const occ::Mat & {
-        return r.overlap_matrix;
-      }),
-      "orbital_coefficients",
-      sol::readonly_property([](const XtbResult &r) -> const occ::Mat & {
-        return r.orbital_coefficients;
-      }),
-      sol::meta_function::to_string, [](const XtbResult &r) {
-        return fmt::format(
-            "<XtbResult E={:.10f} Ha (scc={:.6f} rep={:.6f} disp={:.6f}) "
-            "n_iter={} converged={}>",
-            r.total_energy, r.scc_energy, r.repulsion_energy,
-            r.dispersion_energy, r.n_iterations, r.converged);
-      });
+void register_xtb_bindings(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
 
-  // ----- XtbMethod enum ---------------------------------------------------
-  occ_module.new_enum<XtbCalculator::Method>(
-      "XtbMethod", {{"GFN2", XtbCalculator::Method::GFN2}});
+        // ----- XtbResult ----------------------------------------------------
+        // Read-only view of the cached SCC result. Eigen matrices/vectors are
+        // exposed as 1-indexed Lua tables (per eigen_conv.h convention).
+        .beginClass<XtbResult>("XtbResult")
+          .addProperty("scc_energy", &XtbResult::scc_energy)
+          .addProperty("repulsion_energy", &XtbResult::repulsion_energy)
+          .addProperty("dispersion_energy", &XtbResult::dispersion_energy)
+          .addProperty("total_energy", &XtbResult::total_energy)
+          .addProperty("n_iterations", &XtbResult::n_iterations)
+          .addProperty("converged", &XtbResult::converged)
+          // Eigen-typed fields exposed as properties. Return-by-value
+          // (Vec / Mat) puts the userdata on the mutable path so the
+          // row-proxy indexing works on the caller side.
+          .addProperty("shell_charges",
+                       +[](const XtbResult *r) -> Vec { return r->shell_charges; })
+          .addProperty("atomic_charges",
+                       +[](const XtbResult *r) -> Vec { return r->atomic_charges; })
+          .addProperty("orbital_energies",
+                       +[](const XtbResult *r) -> Vec { return r->orbital_energies; })
+          .addProperty("orbital_occupations",
+                       +[](const XtbResult *r) -> Vec { return r->orbital_occupations; })
+          .addProperty("density_matrix",
+                       +[](const XtbResult *r) -> Mat { return r->density_matrix; })
+          .addProperty("overlap_matrix",
+                       +[](const XtbResult *r) -> Mat { return r->overlap_matrix; })
+          .addProperty("orbital_coefficients",
+                       +[](const XtbResult *r) -> Mat { return r->orbital_coefficients; })
+          .addFunction("__tostring", +[](const XtbResult *r) {
+            return fmt::format(
+                "<XtbResult E={:.10f} Ha (scc={:.6f} rep={:.6f} disp={:.6f}) "
+                "n_iter={} converged={}>",
+                r->total_energy, r->scc_energy, r->repulsion_energy,
+                r->dispersion_energy, r->n_iterations, r->converged);
+          })
+        .endClass()
 
-  // ----- XtbCalculator ----------------------------------------------------
-  // XtbCalculator is move-only (owns a unique_ptr<Gfn2Engine>). sol::factories
-  // wraps the constructors as free functions; the right factory is picked by
-  // the argument's userdata type.
-  //
-  // sol::call_constructor exposes them under `()` so Lua callers can write
-  // `occ.XtbCalculator(mol)` to match the Python / JS APIs. We also expose
-  // `.new(mol)` as an alternate.
-  auto factories = sol::factories(
-      [](const occ::core::Molecule &mol) { return XtbCalculator(mol); },
-      [](const occ::core::Dimer &dimer) { return XtbCalculator(dimer); },
-      [](const occ::crystal::Crystal &crystal) {
-        return XtbCalculator(crystal);
-      });
+        // ----- XtbMethod enum -----------------------------------------------
+        .beginNamespace("XtbMethod")
+          .addProperty(
+              "GFN2",
+              +[]() { return static_cast<int>(XtbCalculator::Method::GFN2); })
+        .endNamespace()
 
-  occ_module.new_usertype<XtbCalculator>(
-      "XtbCalculator",
-      sol::call_constructor, factories,
-      "new", factories,
+        // ----- XtbCalculator ------------------------------------------------
+        // XtbCalculator is move-only (owns a unique_ptr<Gfn2Engine>). Three
+        // construction shapes — pick molecule-init as canonical and expose
+        // dimer/crystal init as static factories.
+        .beginClass<XtbCalculator>("XtbCalculator")
+          .addConstructor<void (*)(const occ::core::Molecule &)>()
+          .addStaticFunction(
+              "new_from_dimer",
+              +[](const occ::core::Dimer &dimer) {
+                return new XtbCalculator(dimer);
+              })
+          .addStaticFunction(
+              "new_from_crystal",
+              +[](const occ::crystal::Crystal &crystal) {
+                return new XtbCalculator(crystal);
+              })
 
-      // Identity / topology
-      "method", sol::readonly_property(&XtbCalculator::method),
-      "method_name", sol::readonly_property(&XtbCalculator::method_name),
-      "backend_name", sol::readonly_property(&XtbCalculator::backend_name),
-      "is_periodic", sol::readonly_property(&XtbCalculator::is_periodic),
-      "num_atoms", sol::readonly_property(&XtbCalculator::num_atoms),
-      // Eigen matrices/vectors are now first-class userdata — return them
-      // directly; sol2 pushes them via the registered usertype. Callers
-      // get `pos[1][2]` access (1-indexed), `pos:rows()` / `pos:cols()`,
-      // `print(pos)` pretty repr, and in-place mutation.
-      "atomic_numbers",
-      sol::readonly_property([](const XtbCalculator &c) {
-        return c.atomic_numbers();
-      }),
-      "positions",
-      sol::readonly_property([](const XtbCalculator &c) { return c.positions(); }),
-      "lattice",
-      sol::readonly_property(
-          [](const XtbCalculator &c, sol::this_state s) -> sol::object {
-            if (!c.is_periodic()) return sol::lua_nil;
-            return sol::make_object(s, c.lattice());
-          }),
+          // Identity / topology
+          .addProperty("method", &XtbCalculator::method)
+          .addProperty("method_name", &XtbCalculator::method_name)
+          .addProperty("backend_name", &XtbCalculator::backend_name)
+          .addProperty("is_periodic", &XtbCalculator::is_periodic)
+          .addProperty("num_atoms", &XtbCalculator::num_atoms)
+          // Return Eigen types as non-const copies so callers get the
+          // mutable-userdata path (LuaBridge3 only installs the
+          // row-proxy __index on the non-const metatable).
+          .addProperty("atomic_numbers",
+                       +[](const XtbCalculator *c) -> IVec {
+                         return c->atomic_numbers();
+                       })
+          .addProperty("positions",
+                       +[](const XtbCalculator *c) -> Mat3N {
+                         return c->positions();
+                       })
+          .addFunction("lattice",
+                       +[](const XtbCalculator *c,
+                           lua_State *S) -> lb::LuaRef {
+                         if (!c->is_periodic()) return lb::LuaRef(S);
+                         return mat_to_table(S, c->lattice());
+                       })
 
-      // Configuration (read/write properties — accessor + mutator pairs)
-      "charge",
-      sol::property(&XtbCalculator::charge, &XtbCalculator::set_charge),
-      "num_unpaired_electrons",
-      sol::property(&XtbCalculator::num_unpaired_electrons,
-                    &XtbCalculator::set_num_unpaired_electrons),
-      "max_iterations",
-      sol::property(&XtbCalculator::max_iterations,
-                    &XtbCalculator::set_max_iterations),
-      "temperature",
-      sol::property(&XtbCalculator::temperature,
-                    &XtbCalculator::set_temperature),
-      "mixer_damping",
-      sol::property(&XtbCalculator::mixer_damping,
-                    &XtbCalculator::set_mixer_damping),
-      "include_multipoles",
-      sol::property(&XtbCalculator::include_multipoles,
-                    &XtbCalculator::set_include_multipoles),
-      "include_dispersion",
-      sol::property(&XtbCalculator::include_dispersion,
-                    &XtbCalculator::set_include_dispersion),
-      "kpoints",
-      sol::property(
-          [](const XtbCalculator &c, sol::this_state s) {
-            sol::state_view lua(s);
-            auto k = c.kpoints();
-            sol::table t = lua.create_table(3, 0);
-            t[1] = k[0];
-            t[2] = k[1];
-            t[3] = k[2];
-            return t;
-          },
-          [](XtbCalculator &c, const sol::table &t) {
-            c.set_kpoints(t.get<int>(1), t.get<int>(2), t.get<int>(3));
-          }),
-      "set_solvent", &XtbCalculator::set_solvent,
+          // Configuration — read/write properties
+          .addProperty("charge", &XtbCalculator::charge,
+                       &XtbCalculator::set_charge)
+          .addProperty("num_unpaired_electrons",
+                       &XtbCalculator::num_unpaired_electrons,
+                       &XtbCalculator::set_num_unpaired_electrons)
+          .addProperty("max_iterations", &XtbCalculator::max_iterations,
+                       &XtbCalculator::set_max_iterations)
+          .addProperty("temperature", &XtbCalculator::temperature,
+                       &XtbCalculator::set_temperature)
+          .addProperty("mixer_damping", &XtbCalculator::mixer_damping,
+                       &XtbCalculator::set_mixer_damping)
+          .addProperty("include_multipoles",
+                       &XtbCalculator::include_multipoles,
+                       &XtbCalculator::set_include_multipoles)
+          .addProperty("include_dispersion",
+                       &XtbCalculator::include_dispersion,
+                       &XtbCalculator::set_include_dispersion)
+          .addFunction("get_kpoints",
+                       +[](const XtbCalculator *c, lua_State *S) {
+                         lb::LuaRef t = lb::newTable(S);
+                         auto k = c->kpoints();
+                         t[1] = k[0];
+                         t[2] = k[1];
+                         t[3] = k[2];
+                         return t;
+                       })
+          .addFunction(
+              "set_kpoints",
+              +[](XtbCalculator *c, const lb::LuaRef &t) {
+                c->set_kpoints(static_cast<int>(lua_get_num(t, 1)),
+                               static_cast<int>(lua_get_num(t, 2)),
+                               static_cast<int>(lua_get_num(t, 3)));
+              })
+          .addFunction("set_solvent", &XtbCalculator::set_solvent)
 
-      // Geometry update — typed Eigen parameters. Lua callers pass a
-      // Mat3N userdata (built via `occ.Mat3N({{xs},{ys},{zs}})` or
-      // obtained from another molecule's `.positions`).
-      "update_structure",
-      sol::overload(
-          [](XtbCalculator &c, const occ::Mat3N &positions) {
-            c.update_structure(positions);
-          },
-          [](XtbCalculator &c, const occ::Mat3N &positions,
-             const occ::Mat3 &lattice) {
-            c.update_structure(positions, lattice);
-          }),
+          // Geometry update — sol::overload split; accept tables.
+          .addFunction("update_structure",
+                       +[](XtbCalculator *c, const lb::LuaRef &positions) {
+                         c->update_structure(table_to_mat3n(positions));
+                       })
+          .addFunction("update_structure_with_lattice",
+                       +[](XtbCalculator *c, const lb::LuaRef &positions,
+                           const lb::LuaRef &lattice) {
+                         c->update_structure(table_to_mat3n(positions),
+                                              table_to_mat3(lattice));
+                       })
 
-      // Run + result access. Returning by value keeps the userdata in
-      // Lua's hands instead of pinning the XtbCalculator's internal cache.
-      "single_point",
-      [](XtbCalculator &c) -> XtbResult { return c.single_point(); },
-      "single_point_energy", &XtbCalculator::single_point_energy,
-      "last_result",
-      sol::readonly_property(
-          [](const XtbCalculator &c) -> XtbResult { return c.last_result(); }),
+          // Run + result access
+          .addFunction("single_point",
+                       +[](XtbCalculator *c) -> XtbResult {
+                         return c->single_point();
+                       })
+          .addFunction("single_point_energy",
+                       &XtbCalculator::single_point_energy)
+          .addFunction("last_result",
+                       +[](const XtbCalculator *c) -> XtbResult {
+                         return c->last_result();
+                       })
 
-      // Derived quantities — all Eigen returns now go straight back as
-      // typed userdata.
-      "charges", [](const XtbCalculator &c) { return c.charges(); },
-      "bond_orders",
-      [](const XtbCalculator &c) { return c.bond_orders(); },
-      "total_energy", &XtbCalculator::total_energy,
-      "scc_energy", &XtbCalculator::scc_energy,
-      "repulsion_energy", &XtbCalculator::repulsion_energy,
-      "dispersion_energy", &XtbCalculator::dispersion_energy,
+          // Derived quantities — Eigen returns as userdata.
+          .addProperty("charges",
+                       +[](const XtbCalculator *c) -> Vec { return c->charges(); })
+          .addProperty("bond_orders",
+                       +[](const XtbCalculator *c) -> Mat { return c->bond_orders(); })
+          .addProperty("total_energy", &XtbCalculator::total_energy)
+          .addProperty("scc_energy", &XtbCalculator::scc_energy)
+          .addProperty("repulsion_energy", &XtbCalculator::repulsion_energy)
+          .addProperty("dispersion_energy", &XtbCalculator::dispersion_energy)
 
-      // Gradient. Returns a Mat3N userdata (3 rows = x/y/z,
-      // N cols = atoms). Read with `g[1][j]`.
-      "gradient", [](XtbCalculator &c) { return c.gradient(); },
-      "gradient_numerical",
-      [](XtbCalculator &c, double step) { return c.gradient_numerical(step); },
-      "energy_and_gradient",
-      [](XtbCalculator &c, bool numerical, double step, sol::this_state s) {
-        sol::state_view lua(s);
-        auto [e, g] = c.compute_energy_and_gradient(numerical, step);
-        sol::table out = lua.create_table(0, 2);
-        out["energy"] = e;
-        // sol::table_proxy::operator= can't infer the push path for
-        // usertype-registered Eigen matrices on its own — wrap with
-        // sol::make_object so the right pusher kicks in.
-        out["gradient"] = sol::make_object(s, g);
-        return out;
-      },
+          // Gradient — Mat3N as registered userdata so callers can use
+          // the row-proxy idiom `g[1][j]` for x of atom j.
+          .addFunction("gradient",
+                       +[](XtbCalculator *c) -> Mat3N {
+                         return c->gradient();
+                       })
+          .addFunction("gradient_numerical",
+                       +[](XtbCalculator *c, double step) -> Mat3N {
+                         return c->gradient_numerical(step);
+                       })
+          .addFunction(
+              "energy_and_gradient",
+              +[](XtbCalculator *c, bool numerical, double step,
+                  lua_State *S) {
+                auto [e, g] = c->compute_energy_and_gradient(numerical, step);
+                lb::LuaRef out = lb::newTable(S);
+                out["energy"] = e;
+                out["gradient"] = Mat3N(g);
+                return out;
+              })
 
-      // Hessian / vibrations
-      "hessian",
-      [](XtbCalculator &c, double step) {
-        return c.compute_hessian_numerical(step);
-      },
+          // Hessian / vibrations
+          .addFunction("hessian",
+                       +[](XtbCalculator *c, double step, lua_State *S) {
+                         return mat_to_table(
+                             S, c->compute_hessian_numerical(step));
+                       })
 
-      // Conversion
-      "to_molecule", &XtbCalculator::to_molecule,
-      "to_crystal", &XtbCalculator::to_crystal,
-      "to_wavefunction", &XtbCalculator::to_wavefunction,
+          // Conversion
+          .addFunction("to_molecule", &XtbCalculator::to_molecule)
+          .addFunction("to_crystal", &XtbCalculator::to_crystal)
+          .addFunction("to_wavefunction", &XtbCalculator::to_wavefunction)
 
-      "print_summary", &XtbCalculator::print_summary,
+          .addFunction("print_summary", &XtbCalculator::print_summary)
 
-      sol::meta_function::to_string, [](const XtbCalculator &c) {
-        return fmt::format(
-            "<XtbCalculator method={} backend={} atoms={} periodic={}>",
-            c.method_name(), c.backend_name(), c.num_atoms(),
-            c.is_periodic());
-      });
+          .addFunction("__tostring", +[](const XtbCalculator *c) {
+            return fmt::format(
+                "<XtbCalculator method={} backend={} atoms={} periodic={}>",
+                c->method_name(), c->backend_name(), c->num_atoms(),
+                c->is_periodic());
+          })
+        .endClass()
+
+      .endNamespace();
 }
 
 } // namespace occ::lua_bindings

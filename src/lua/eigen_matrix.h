@@ -1,100 +1,42 @@
 #pragma once
-// Generic Eigen matrix / vector ↔ Lua userdata layer.
+// LuaBridge3 wrappers for the Eigen types exposed to Lua, with enough
+// ergonomics to make the existing examples (examples/lua/*.lua) work
+// without rewriting:
 //
-// Every `Mat`, `Mat3N`, `Mat3`, ..., `Vec`, `IVec`, ... we want exposed to
-// Lua gets registered once via `register_matrix_userdata<T>` /
-// `register_vector_userdata<T>`. The result:
+//   - `m[i][j]` reads / writes through a thin row-proxy userdata
+//   - `m[i] = {a, b, c}` whole-row table assignment
+//   - `v[i]` integer indexing on vectors (read + write)
+//   - `#m` returns rows, `#v` returns size
+//   - constructors from nested Lua tables (matrix) / flat tables (vector)
+//   - `mat:to_table()` / `vec:to_table()` opt-in copy to Lua tables
 //
-//   * binding lambdas can return Eigen values directly — sol2 pushes them
-//     as opaque userdata, no copy through a Lua table;
-//   * binding lambdas can take `const Mat &` / `Mat3N &` / etc. as
-//     parameters — the stack getter below auto-converts from either a
-//     matching userdata or a nested Lua table fallback;
-//   * `pos[i]` returns a row proxy that aliases back into the matrix
-//     storage; `pos[i][j]` reads, `pos[i][j] = x` writes in place;
-//   * `#pos`, `pos:rows()`, `pos:cols()`, `pos:to_table()`, `pos:get(i,j)`,
-//     `pos:set(i,j,x)`, `tostring(pos)` all work;
-//   * Lua 1-indexed throughout (translated to Eigen's 0-indexed at the
-//     boundary).
-//
-// The matrix shape convention is Eigen's: rows are the outer dimension
-// (`pos[1]` = first row), columns are the inner. For Mat3N that's
-// xyz-as-rows, atoms-as-columns — same as numpy when nanobind hands a
-// Mat3N to Python.
+// This is intentionally leaner than the sol2-era version: no sol2-style
+// `is_container` / `is_automagical` opt-outs, no ADL push hooks for
+// Eigen expression templates. Where a binding returns an Eigen
+// expression template (Block, Product, …) the binding-site lambda must
+// materialize to a concrete `Mat3N` / `Vec3` / etc. before returning.
 
 #include "eigen_conv.h"
 #include <fmt/core.h>
-#include <fmt/format.h>
-#include <sstream>
-
 #include <occ/core/format_matrix.h>
+#include <sstream>
+#include <string>
+#include <type_traits>
+
 namespace occ::lua_bindings {
 
 // Thin handle into a parent matrix. The pointer is only safe while the
-// parent matrix's Lua userdata is alive — capturing a row to a variable
-// and then letting the parent get GC'd is undefined. For typical use
-// (`pos[1][2]`, `for j=1,#pos[1] do ... end`) the parent is anchored on
-// the Lua stack so this isn't a footgun.
+// parent's Lua userdata is alive — Lua tables holding both the parent
+// and a row are fine; outliving the parent is undefined.
 template <typename Mat> struct MatrixRow {
   Mat *mat;
   int row; // 0-indexed
 };
 
-// Build an Eigen matrix from a nested 1-indexed Lua table (outer = rows,
-// inner = cols). For fixed-size types, the table dimensions must match.
+namespace eigen_matrix_detail {
+
 template <typename Mat>
-inline Mat table_to_eigen_matrix(const sol::table &t) {
-  using Scalar = typename Mat::Scalar;
-  const int rows = static_cast<int>(t.size());
-  if (rows == 0) return Mat();
-  sol::table first = t.get<sol::table>(1);
-  const int cols = static_cast<int>(first.size());
-
-  Mat m;
-  if constexpr (Mat::RowsAtCompileTime == Eigen::Dynamic ||
-                Mat::ColsAtCompileTime == Eigen::Dynamic) {
-    m.resize(rows, cols);
-  } else {
-    if (rows != Mat::RowsAtCompileTime || cols != Mat::ColsAtCompileTime) {
-      // Cast the Eigen compile-time-traits enums to plain ints before
-      // handing them to fmt — the enum type is `CompileTimeTraits`
-      // which fmt won't format directly.
-      throw std::runtime_error(fmt::format(
-          "table shape ({}×{}) does not match fixed Eigen size ({}×{})",
-          rows, cols, static_cast<int>(Mat::RowsAtCompileTime),
-          static_cast<int>(Mat::ColsAtCompileTime)));
-    }
-  }
-  for (int i = 0; i < rows; ++i) {
-    sol::table row = t.get<sol::table>(i + 1);
-    for (int j = 0; j < cols; ++j) m(i, j) = row.get<Scalar>(j + 1);
-  }
-  return m;
-}
-
-// Build an Eigen vector from a flat 1-indexed Lua table.
-template <typename Vec>
-inline Vec table_to_eigen_vector(const sol::table &t) {
-  using Scalar = typename Vec::Scalar;
-  const int n = static_cast<int>(t.size());
-  Vec v;
-  if constexpr (Vec::SizeAtCompileTime == Eigen::Dynamic) {
-    v.resize(n);
-  } else if (n != Vec::SizeAtCompileTime) {
-    throw std::runtime_error(fmt::format(
-        "table length {} does not match fixed Eigen size {}", n,
-        static_cast<int>(Vec::SizeAtCompileTime)));
-  }
-  for (int i = 0; i < n; ++i) v(i) = t.get<Scalar>(i + 1);
-  return v;
-}
-
-// Pretty-format an Eigen matrix for `tostring(m)` / `print(m)` output.
-// We go through `fmt::runtime` so fmt's constexpr format-string check
-// doesn't try to introspect the Eigen scalar expression type — it gets
-// a plain `double` / `long long` value after the cast.
-template <typename Mat>
-inline std::string format_matrix(const Mat &m, const std::string &kind) {
+inline std::string format_matrix_str(const Mat &m, const std::string &kind) {
   std::ostringstream ss;
   ss << kind << "[" << m.rows() << "x" << m.cols() << "]";
   if (m.size() == 0) return ss.str();
@@ -116,7 +58,7 @@ inline std::string format_matrix(const Mat &m, const std::string &kind) {
 }
 
 template <typename Vec>
-inline std::string format_vector(const Vec &v, const std::string &kind) {
+inline std::string format_vector_str(const Vec &v, const std::string &kind) {
   std::ostringstream ss;
   ss << kind << "[" << v.size() << "] [";
   for (int i = 0; i < v.size(); ++i) {
@@ -132,167 +74,353 @@ inline std::string format_vector(const Vec &v, const std::string &kind) {
   return ss.str();
 }
 
-// Register a matrix usertype and its row-proxy companion. Pass a unique
-// `name` per Eigen instantiation (e.g. "Matrix" for Mat, "Mat3N" for Mat3N).
+// Build a fixed/dynamic Eigen matrix from a nested 1-indexed Lua table.
 template <typename Mat>
-void register_matrix_userdata(sol::table &occ_module,
-                               const std::string &name) {
+inline Mat *build_matrix_from_table(const luabridge::LuaRef &t) {
+  using Scalar = typename Mat::Scalar;
+  Mat *m = new Mat();
+  const int rows = t.length();
+  if (rows == 0) return m;
+  auto first = t[1].template cast<luabridge::LuaRef>();
+  if (!first) {
+    delete m;
+    throw std::runtime_error("matrix constructor: nested table expected");
+  }
+  const int cols = first->length();
+  if constexpr (Mat::RowsAtCompileTime == Eigen::Dynamic ||
+                Mat::ColsAtCompileTime == Eigen::Dynamic) {
+    m->resize(rows, cols);
+  } else if (rows != Mat::RowsAtCompileTime ||
+             cols != Mat::ColsAtCompileTime) {
+    delete m;
+    throw std::runtime_error(
+        "matrix constructor: shape " + std::to_string(rows) + "x" +
+        std::to_string(cols) + " does not match fixed type");
+  }
+  for (int i = 0; i < rows; ++i) {
+    auto row = t[i + 1].template cast<luabridge::LuaRef>();
+    if (!row) {
+      delete m;
+      throw std::runtime_error("matrix constructor: nested table expected");
+    }
+    for (int j = 0; j < cols; ++j) {
+      (*m)(i, j) =
+          static_cast<Scalar>(row->operator[](j + 1).template cast<double>().valueOr(0.0));
+    }
+  }
+  return m;
+}
+
+template <typename Vec>
+inline Vec *build_vector_from_table(const luabridge::LuaRef &t) {
+  using Scalar = typename Vec::Scalar;
+  Vec *v = new Vec();
+  const int n = t.length();
+  if constexpr (Vec::SizeAtCompileTime == Eigen::Dynamic) {
+    v->resize(n);
+  } else if (n != Vec::SizeAtCompileTime) {
+    delete v;
+    throw std::runtime_error(
+        "vector constructor: length " + std::to_string(n) +
+        " does not match fixed type");
+  }
+  for (int i = 0; i < n; ++i) {
+    (*v)(i) =
+        static_cast<Scalar>(t[i + 1].template cast<double>().valueOr(0.0));
+  }
+  return v;
+}
+
+} // namespace eigen_matrix_detail
+
+// Register a matrix type T as a LuaBridge3 class. `name` becomes the
+// script-side identifier (e.g. "Mat3N", "Matrix").
+template <typename Mat>
+void register_matrix_userdata(lua_State *L, const std::string &name) {
   using Scalar = typename Mat::Scalar;
   using Row = MatrixRow<Mat>;
+  namespace lb = luabridge;
 
-  // Row proxy: `pos[i][j]` reads/writes the underlying matrix in place.
-  // 1-indexed in Lua; translated to Eigen's 0-indexed on the C++ side.
-  occ_module.new_usertype<Row>(
-      name + "Row", sol::no_constructor,
-      sol::meta_function::index,
-      [](const Row &r, int j) {
-        if (j < 1 || j > r.mat->cols()) return Scalar{};
-        return (*r.mat)(r.row, j - 1);
-      },
-      sol::meta_function::new_index,
-      [](Row &r, int j, Scalar v) {
-        if (j < 1 || j > r.mat->cols()) {
-          throw std::runtime_error("row index out of range");
-        }
-        (*r.mat)(r.row, j - 1) = v;
-      },
-      sol::meta_function::length,
-      [](const Row &r) { return static_cast<int>(r.mat->cols()); },
-      sol::meta_function::to_string, [name](const Row &r) {
-        std::ostringstream ss;
-        ss << name << "Row[" << (r.row + 1) << "] [";
-        for (int j = 0; j < r.mat->cols(); ++j) {
-          if constexpr (std::is_integral_v<Scalar>) {
-            ss << fmt::format(" {:>10d}", (*r.mat)(r.row, j));
-          } else {
-            ss << fmt::format(" {: 12.6f}",
-                              static_cast<double>((*r.mat)(r.row, j)));
-          }
-        }
-        ss << " ]";
-        return ss.str();
-      });
+  // Row proxy: m[i] returns one of these; m[i][j] reads / writes the
+  // underlying matrix in place. We register MatrixRow<Mat> once per Mat
+  // type — its name is `<MatName>Row`.
+  const std::string row_name = name + "Row";
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+        .template beginClass<Row>(row_name.c_str())
+          .addFunction("__len",
+                       +[](const Row *r) {
+                         return static_cast<int>(r->mat->cols());
+                       })
+          .addIndexMetaMethod(
+              +[](Row &r, const lb::LuaRef &key, lua_State *S) -> lb::LuaRef {
+                int j = -1;
+                if (key.isNumber()) {
+                  j = key.unsafe_cast<int>();
+                } else if (key.isString()) {
+                  try {
+                    j = std::stoi(key.unsafe_cast<std::string>());
+                  } catch (...) {
+                    return lb::LuaRef(S);
+                  }
+                } else {
+                  return lb::LuaRef(S);
+                }
+                if (j < 1 || j > r.mat->cols()) return lb::LuaRef(S);
+                return lb::LuaRef(S, (*r.mat)(r.row, j - 1));
+              })
+          .addNewIndexMetaMethod(
+              +[](Row &r, const lb::LuaRef &key, const lb::LuaRef &value,
+                  lua_State *S) -> lb::LuaRef {
+                int j = -1;
+                if (key.isNumber()) {
+                  j = key.unsafe_cast<int>();
+                } else if (key.isString()) {
+                  try {
+                    j = std::stoi(key.unsafe_cast<std::string>());
+                  } catch (...) {
+                    luaL_error(S, "row index must be integer");
+                    return lb::LuaRef(S);
+                  }
+                } else {
+                  luaL_error(S, "row index must be integer");
+                  return lb::LuaRef(S);
+                }
+                if (j < 1 || j > r.mat->cols()) {
+                  luaL_error(S, "row index out of range");
+                  return lb::LuaRef(S);
+                }
+                (*r.mat)(r.row, j - 1) =
+                    static_cast<Scalar>(value.unsafe_cast<double>());
+                return lb::LuaRef(S);
+              })
+          .addFunction(
+              "__tostring",
+              [row_name](const Row *r) {
+                std::ostringstream ss;
+                ss << row_name << "[" << (r->row + 1) << "] [";
+                for (int j = 0; j < r->mat->cols(); ++j) {
+                  if constexpr (std::is_integral_v<Scalar>) {
+                    ss << fmt::format(" {:>10d}",
+                                      static_cast<long long>((*r->mat)(r->row, j)));
+                  } else {
+                    ss << fmt::format(" {: 12.6f}",
+                                      static_cast<double>((*r->mat)(r->row, j)));
+                  }
+                }
+                ss << " ]";
+                return ss.str();
+              })
+        .endClass()
 
-  // Methods are stored in a separate Lua table that the index lambda
-  // falls through to for string keys (integer keys → row proxy).
-  sol::state_view lua(occ_module.lua_state());
-  sol::table methods = lua.create_table();
-  methods["rows"] = [](const Mat &m) { return static_cast<int>(m.rows()); };
-  methods["cols"] = [](const Mat &m) { return static_cast<int>(m.cols()); };
-  methods["size"] = [](const Mat &m) { return static_cast<int>(m.size()); };
-  methods["get"] = [](const Mat &m, int i, int j) {
-    return m(i - 1, j - 1);
-  };
-  methods["set"] = [](Mat &m, int i, int j, Scalar v) {
-    m(i - 1, j - 1) = v;
-  };
-  methods["fill"] = [](Mat &m, Scalar v) { m.setConstant(v); };
-  methods["zero"] = [](Mat &m) { m.setZero(); };
-  methods["to_table"] = [](const Mat &m, sol::this_state s) {
-    return mat_to_table(s, m);
-  };
-
-  occ_module.new_usertype<Mat>(
-      name,
-      sol::call_constructor,
-      sol::factories(
-          []() { return Mat(); },
-          [](int rows, int cols) { return Mat(rows, cols); },
-          [](const sol::table &t) { return table_to_eigen_matrix<Mat>(t); }),
-      sol::meta_function::index,
-      [methods](Mat &m, sol::object key, sol::this_state s) -> sol::object {
-        sol::state_view lua(s);
-        if (key.is<int>()) {
-          int i = key.as<int>();
-          if (i < 1 || i > m.rows()) return sol::lua_nil;
-          return sol::make_object(lua, Row{&m, i - 1});
-        }
-        return methods[key];
-      },
-      sol::meta_function::new_index,
-      [](Mat &m, sol::object key, sol::object value) {
-        if (!key.is<int>()) {
-          throw std::runtime_error(
-              "matrix assignment expects an integer row index");
-        }
-        const int i = key.as<int>();
-        if (i < 1 || i > m.rows()) {
-          throw std::runtime_error("matrix row index out of range");
-        }
-        // Whole-row assignment: m[i] = {a, b, c}
-        if (!value.is<sol::table>()) {
-          throw std::runtime_error(
-              "matrix row assignment expects a numeric table");
-        }
-        sol::table row = value.as<sol::table>();
-        for (int j = 0; j < m.cols(); ++j) {
-          m(i - 1, j) = row.get<Scalar>(j + 1);
-        }
-      },
-      sol::meta_function::length,
-      [](const Mat &m) { return static_cast<int>(m.rows()); },
-      sol::meta_function::to_string,
-      [name](const Mat &m) { return format_matrix(m, name); });
+        .template beginClass<Mat>(name.c_str())
+          .template addConstructor<void (*)()>()
+          .addStaticFunction(
+              "from_size",
+              +[](int rows, int cols) {
+                if constexpr (Mat::RowsAtCompileTime == Eigen::Dynamic ||
+                              Mat::ColsAtCompileTime == Eigen::Dynamic) {
+                  return new Mat(rows, cols);
+                } else {
+                  if (rows != Mat::RowsAtCompileTime ||
+                      cols != Mat::ColsAtCompileTime) {
+                    throw std::runtime_error(
+                        "fixed-size matrix: shape mismatch");
+                  }
+                  return new Mat();
+                }
+              })
+          .addStaticFunction(
+              "from_table",
+              +[](const lb::LuaRef &t) {
+                return eigen_matrix_detail::build_matrix_from_table<Mat>(t);
+              })
+          .addFunction("rows",
+                       +[](const Mat *m) { return static_cast<int>(m->rows()); })
+          .addFunction("cols",
+                       +[](const Mat *m) { return static_cast<int>(m->cols()); })
+          .addFunction("size",
+                       +[](const Mat *m) { return static_cast<int>(m->size()); })
+          .addFunction("__len",
+                       +[](const Mat *m) { return static_cast<int>(m->rows()); })
+          .addFunction("get",
+                       +[](const Mat *m, int i, int j) {
+                         return (*m)(i - 1, j - 1);
+                       })
+          .addFunction("set",
+                       +[](Mat *m, int i, int j, Scalar v) {
+                         (*m)(i - 1, j - 1) = v;
+                       })
+          .addFunction("fill", +[](Mat *m, Scalar v) { m->setConstant(v); })
+          .addFunction("zero", +[](Mat *m) { m->setZero(); })
+          .addFunction("to_table",
+                       +[](const Mat *m, lua_State *S) {
+                         return mat_to_table(S, *m);
+                       })
+          // LuaBridge3 normalizes __index keys to strings before
+          // dispatching to the fallback (verified empirically — integer
+          // 1 arrives here as LUA_TSTRING "1"). We detect both shapes.
+          .addIndexMetaMethod(
+              +[](Mat &m, const lb::LuaRef &key, lua_State *S) -> lb::LuaRef {
+                int i = -1;
+                if (key.isNumber()) {
+                  i = key.unsafe_cast<int>();
+                } else if (key.isString()) {
+                  try {
+                    i = std::stoi(key.unsafe_cast<std::string>());
+                  } catch (...) {
+                    return lb::LuaRef(S);
+                  }
+                } else {
+                  return lb::LuaRef(S);
+                }
+                if (i < 1 || i > m.rows()) return lb::LuaRef(S);
+                return lb::LuaRef(S, Row{&m, i - 1});
+              })
+          .addNewIndexMetaMethod(
+              +[](Mat &m, const lb::LuaRef &key, const lb::LuaRef &value,
+                  lua_State *S) -> lb::LuaRef {
+                int i = -1;
+                if (key.isNumber()) {
+                  i = key.unsafe_cast<int>();
+                } else if (key.isString()) {
+                  try {
+                    i = std::stoi(key.unsafe_cast<std::string>());
+                  } catch (...) {
+                    luaL_error(S, "matrix row index must be integer");
+                    return lb::LuaRef(S);
+                  }
+                } else {
+                  luaL_error(S, "matrix row index must be integer");
+                  return lb::LuaRef(S);
+                }
+                if (i < 1 || i > m.rows()) {
+                  luaL_error(S, "matrix row index out of range");
+                  return lb::LuaRef(S);
+                }
+                if (!value.isTable()) {
+                  luaL_error(S,
+                              "matrix row assignment expects a numeric table");
+                  return lb::LuaRef(S);
+                }
+                for (int j = 0; j < m.cols(); ++j) {
+                  m(i - 1, j) = static_cast<Scalar>(
+                      value[j + 1].template cast<double>().valueOr(0.0));
+                }
+                return lb::LuaRef(S);
+              })
+          .addFunction(
+              "__tostring",
+              [name](const Mat *m) {
+                return eigen_matrix_detail::format_matrix_str(*m, name);
+              })
+        .endClass()
+      .endNamespace();
 }
 
-// Vector counterpart — scalar at integer keys, write via `v[i] = x`.
 template <typename Vec>
-void register_vector_userdata(sol::table &occ_module,
-                               const std::string &name) {
+void register_vector_userdata(lua_State *L, const std::string &name) {
   using Scalar = typename Vec::Scalar;
+  namespace lb = luabridge;
 
-  sol::state_view lua(occ_module.lua_state());
-  sol::table methods = lua.create_table();
-  methods["size"] = [](const Vec &v) { return static_cast<int>(v.size()); };
-  methods["get"] = [](const Vec &v, int i) { return v(i - 1); };
-  methods["set"] = [](Vec &v, int i, Scalar x) { v(i - 1) = x; };
-  methods["fill"] = [](Vec &v, Scalar x) { v.setConstant(x); };
-  methods["zero"] = [](Vec &v) { v.setZero(); };
-  methods["to_table"] = [](const Vec &v, sol::this_state s) {
-    return vec_to_table(s, v);
-  };
-  methods["sum"] = [](const Vec &v) { return v.sum(); };
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+        .template beginClass<Vec>(name.c_str())
+          .template addConstructor<void (*)()>()
+          .addStaticFunction(
+              "from_size",
+              +[](int n) {
+                if constexpr (Vec::SizeAtCompileTime == Eigen::Dynamic) {
+                  return new Vec(n);
+                } else {
+                  if (n != Vec::SizeAtCompileTime) {
+                    throw std::runtime_error(
+                        "fixed-size vector: length mismatch");
+                  }
+                  return new Vec();
+                }
+              })
+          .addStaticFunction(
+              "from_table",
+              +[](const lb::LuaRef &t) {
+                return eigen_matrix_detail::build_vector_from_table<Vec>(t);
+              })
+          .addFunction("size",
+                       +[](const Vec *v) { return static_cast<int>(v->size()); })
+          .addFunction("__len",
+                       +[](const Vec *v) { return static_cast<int>(v->size()); })
+          .addFunction("get", +[](const Vec *v, int i) { return (*v)(i - 1); })
+          .addFunction("set",
+                       +[](Vec *v, int i, Scalar x) { (*v)(i - 1) = x; })
+          .addFunction("fill", +[](Vec *v, Scalar x) { v->setConstant(x); })
+          .addFunction("zero", +[](Vec *v) { v->setZero(); })
+          .addFunction("to_table",
+                       +[](const Vec *v, lua_State *S) {
+                         return vec_to_table(S, *v);
+                       })
+          .addFunction("sum", +[](const Vec *v) { return v->sum(); })
+          .addIndexMetaMethod(
+              +[](Vec &v, const lb::LuaRef &key, lua_State *S) -> lb::LuaRef {
+                int i = -1;
+                if (key.isNumber()) {
+                  i = key.unsafe_cast<int>();
+                } else if (key.isString()) {
+                  try {
+                    i = std::stoi(key.unsafe_cast<std::string>());
+                  } catch (...) {
+                    return lb::LuaRef(S);
+                  }
+                } else {
+                  return lb::LuaRef(S);
+                }
+                if (i < 1 || i > v.size()) return lb::LuaRef(S);
+                return lb::LuaRef(S, v(i - 1));
+              })
+          .addNewIndexMetaMethod(
+              +[](Vec &v, const lb::LuaRef &key, const lb::LuaRef &value,
+                  lua_State *S) -> lb::LuaRef {
+                int i = -1;
+                if (key.isNumber()) {
+                  i = key.unsafe_cast<int>();
+                } else if (key.isString()) {
+                  try {
+                    i = std::stoi(key.unsafe_cast<std::string>());
+                  } catch (...) {
+                    luaL_error(S, "vector index must be integer");
+                    return lb::LuaRef(S);
+                  }
+                } else {
+                  luaL_error(S, "vector index must be integer");
+                  return lb::LuaRef(S);
+                }
+                if (i < 1 || i > v.size()) {
+                  luaL_error(S, "vector index out of range");
+                  return lb::LuaRef(S);
+                }
+                v(i - 1) = static_cast<Scalar>(value.unsafe_cast<double>());
+                return lb::LuaRef(S);
+              })
+          .addFunction(
+              "__tostring",
+              [name](const Vec *v) {
+                return eigen_matrix_detail::format_vector_str(*v, name);
+              })
+        .endClass()
+      .endNamespace();
+
+  // Floating-point only conveniences. Re-open the same class to add
+  // norm/mean — LuaBridge3 merges the registrations.
   if constexpr (std::is_floating_point_v<Scalar>) {
-    methods["norm"] = [](const Vec &v) { return v.norm(); };
-    methods["mean"] = [](const Vec &v) { return v.mean(); };
+    lb::getGlobalNamespace(L)
+        .beginNamespace("occ")
+          .template beginClass<Vec>(name.c_str())
+            .addFunction("norm", +[](const Vec *v) { return v->norm(); })
+            .addFunction("mean", +[](const Vec *v) { return v->mean(); })
+          .endClass()
+        .endNamespace();
   }
-
-  occ_module.new_usertype<Vec>(
-      name,
-      sol::call_constructor,
-      sol::factories(
-          []() { return Vec(); },
-          [](int n) { return Vec(n); },
-          [](const sol::table &t) { return table_to_eigen_vector<Vec>(t); }),
-      sol::meta_function::index,
-      [methods](Vec &v, sol::object key, sol::this_state s) -> sol::object {
-        sol::state_view lua(s);
-        if (key.is<int>()) {
-          int i = key.as<int>();
-          if (i < 1 || i > v.size()) return sol::lua_nil;
-          return sol::make_object(lua, v(i - 1));
-        }
-        return methods[key];
-      },
-      sol::meta_function::new_index,
-      [](Vec &v, int i, Scalar x) {
-        if (i < 1 || i > v.size()) {
-          throw std::runtime_error("vector index out of range");
-        }
-        v(i - 1) = x;
-      },
-      sol::meta_function::length,
-      [](const Vec &v) { return static_cast<int>(v.size()); },
-      sol::meta_function::to_string,
-      [name](const Vec &v) { return format_vector(v, name); });
 }
 
-// Register every Eigen matrix / vector type we expose to Lua. Called
-// once during `open_occ_module`. Adding a new occ type means adding one
-// line here.
-void register_eigen_matrix_types(sol::table &occ_module);
+void register_eigen_matrix_types(lua_State *L);
 
 } // namespace occ::lua_bindings
-
-// The `is_automagical` / `is_container` opt-outs for `Eigen::Matrix` live
-// in eigen_conv.h (included above) so every binding file sees them.

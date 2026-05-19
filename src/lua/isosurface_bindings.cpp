@@ -6,199 +6,314 @@
 #include <occ/isosurface/volume_calculator.h>
 #include <occ/isosurface/volume_data.h>
 
-namespace sol {
-template <>
-struct is_automagical<occ::isosurface::Isosurface> : std::false_type {};
-template <>
-struct is_automagical<occ::isosurface::IsosurfaceCalculator>
-    : std::false_type {};
-template <>
-struct is_automagical<occ::isosurface::IsosurfaceProperties>
-    : std::false_type {};
-template <>
-struct is_automagical<occ::isosurface::VolumeCalculator> : std::false_type {};
-template <>
-struct is_automagical<occ::isosurface::VolumeData> : std::false_type {};
-template <>
-struct is_automagical<occ::isosurface::ElectronDensityFunctor>
-    : std::false_type {};
-template <>
-struct is_automagical<occ::isosurface::ElectricPotentialFunctor>
-    : std::false_type {};
-template <>
-struct is_automagical<occ::isosurface::ElectricPotentialFunctorPC>
-    : std::false_type {};
-} // namespace sol
-
 namespace occ::lua_bindings {
 
 using namespace occ::isosurface;
+namespace lb = luabridge;
 
-void register_isosurface_bindings(sol::state_view, sol::table &m) {
-  m.new_enum<SurfaceKind>(
-      "SurfaceKind",
-      {{"PromoleculeDensity", SurfaceKind::PromoleculeDensity},
-       {"Hirshfeld", SurfaceKind::Hirshfeld},
-       {"EEQ_ESP", SurfaceKind::EEQ_ESP},
-       {"ElectronDensity", SurfaceKind::ElectronDensity},
-       {"ESP", SurfaceKind::ESP},
-       {"SpinDensity", SurfaceKind::SpinDensity},
-       {"DeformationDensity", SurfaceKind::DeformationDensity},
-       {"Orbital", SurfaceKind::Orbital},
-       {"CrystalVoid", SurfaceKind::CrystalVoid}});
+void register_isosurface_bindings(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
 
-  m.new_enum<PropertyKind>(
-      "PropertyKind", {{"Dnorm", PropertyKind::Dnorm},
-                        {"Dint_norm", PropertyKind::Dint_norm},
-                        {"Dext_norm", PropertyKind::Dext_norm},
-                        {"Dint", PropertyKind::Dint},
-                        {"Dext", PropertyKind::Dext},
-                        {"FragmentPatch", PropertyKind::FragmentPatch},
-                        {"ShapeIndex", PropertyKind::ShapeIndex},
-                        {"Curvedness", PropertyKind::Curvedness},
-                        {"EEQ_ESP", PropertyKind::EEQ_ESP},
-                        {"PromoleculeDensity", PropertyKind::PromoleculeDensity},
-                        {"ESP", PropertyKind::ESP},
-                        {"ElectronDensity", PropertyKind::ElectronDensity},
-                        {"SpinDensity", PropertyKind::SpinDensity},
-                        {"DeformationDensity", PropertyKind::DeformationDensity},
-                        {"Orbital", PropertyKind::Orbital}});
+        // Enums — LuaBridge3 doesn't have a dedicated enum binding;
+        // expose values as a sub-namespace of int properties.
+        .beginNamespace("SurfaceKind")
+          .addProperty(
+              "PromoleculeDensity",
+              +[]() { return static_cast<int>(SurfaceKind::PromoleculeDensity); })
+          .addProperty(
+              "Hirshfeld",
+              +[]() { return static_cast<int>(SurfaceKind::Hirshfeld); })
+          .addProperty("EEQ_ESP",
+                       +[]() { return static_cast<int>(SurfaceKind::EEQ_ESP); })
+          .addProperty(
+              "ElectronDensity",
+              +[]() { return static_cast<int>(SurfaceKind::ElectronDensity); })
+          .addProperty("ESP",
+                       +[]() { return static_cast<int>(SurfaceKind::ESP); })
+          .addProperty(
+              "SpinDensity",
+              +[]() { return static_cast<int>(SurfaceKind::SpinDensity); })
+          .addProperty("DeformationDensity",
+                       +[]() {
+                         return static_cast<int>(
+                             SurfaceKind::DeformationDensity);
+                       })
+          .addProperty("Orbital",
+                       +[]() { return static_cast<int>(SurfaceKind::Orbital); })
+          .addProperty(
+              "CrystalVoid",
+              +[]() { return static_cast<int>(SurfaceKind::CrystalVoid); })
+        .endNamespace()
 
-  m.new_usertype<IsosurfaceProperties>(
-      "IsosurfaceProperties",
-      sol::call_constructor,
-      sol::factories([]() { return IsosurfaceProperties{}; }),
-      "has_property", &IsosurfaceProperties::has_property,
-      "count", &IsosurfaceProperties::count);
+        .beginNamespace("PropertyKind")
+          .addProperty("Dnorm",
+                       +[]() { return static_cast<int>(PropertyKind::Dnorm); })
+          .addProperty(
+              "Dint_norm",
+              +[]() { return static_cast<int>(PropertyKind::Dint_norm); })
+          .addProperty(
+              "Dext_norm",
+              +[]() { return static_cast<int>(PropertyKind::Dext_norm); })
+          .addProperty("Dint",
+                       +[]() { return static_cast<int>(PropertyKind::Dint); })
+          .addProperty("Dext",
+                       +[]() { return static_cast<int>(PropertyKind::Dext); })
+          .addProperty(
+              "FragmentPatch",
+              +[]() { return static_cast<int>(PropertyKind::FragmentPatch); })
+          .addProperty(
+              "ShapeIndex",
+              +[]() { return static_cast<int>(PropertyKind::ShapeIndex); })
+          .addProperty(
+              "Curvedness",
+              +[]() { return static_cast<int>(PropertyKind::Curvedness); })
+          .addProperty(
+              "EEQ_ESP",
+              +[]() { return static_cast<int>(PropertyKind::EEQ_ESP); })
+          .addProperty("PromoleculeDensity",
+                       +[]() {
+                         return static_cast<int>(
+                             PropertyKind::PromoleculeDensity);
+                       })
+          .addProperty("ESP",
+                       +[]() { return static_cast<int>(PropertyKind::ESP); })
+          .addProperty(
+              "ElectronDensity",
+              +[]() { return static_cast<int>(PropertyKind::ElectronDensity); })
+          .addProperty(
+              "SpinDensity",
+              +[]() { return static_cast<int>(PropertyKind::SpinDensity); })
+          .addProperty("DeformationDensity",
+                       +[]() {
+                         return static_cast<int>(
+                             PropertyKind::DeformationDensity);
+                       })
+          .addProperty(
+              "Orbital",
+              +[]() { return static_cast<int>(PropertyKind::Orbital); })
+        .endNamespace()
 
-  m.new_usertype<Isosurface>(
-      "Isosurface",
-      sol::call_constructor, sol::factories([]() { return Isosurface{}; }),
-      "save",
-      [](const Isosurface &iso, const std::string &filename,
-         sol::optional<bool> binary) {
-        occ::io::write_ply_mesh(filename, iso, binary.value_or(true));
-      });
+        .beginClass<IsosurfaceProperties>("IsosurfaceProperties")
+          .addConstructor<void (*)()>()
+          .addFunction("has_property", &IsosurfaceProperties::has_property)
+          .addProperty("count", &IsosurfaceProperties::count)
+        .endClass()
 
-  m.new_usertype<IsosurfaceGenerationParameters>(
-      "IsosurfaceGenerationParameters",
-      sol::call_constructor,
-      sol::factories([]() { return IsosurfaceGenerationParameters{}; }),
-      "isovalue", &IsosurfaceGenerationParameters::isovalue,
-      "separation", &IsosurfaceGenerationParameters::separation,
-      "background_density",
-      &IsosurfaceGenerationParameters::background_density,
-      "surface_orbital_index",
-      &IsosurfaceGenerationParameters::surface_orbital_index,
-      "flip_normals", &IsosurfaceGenerationParameters::flip_normals,
-      "binary_output", &IsosurfaceGenerationParameters::binary_output,
-      "surface_kind", &IsosurfaceGenerationParameters::surface_kind);
+        .beginClass<Isosurface>("Isosurface")
+          .addConstructor<void (*)()>()
+          // sol::optional<bool> binary default = true; split into two named
+          // functions.
+          .addFunction(
+              "save",
+              +[](const Isosurface *iso, const std::string &filename,
+                  bool binary) {
+                occ::io::write_ply_mesh(filename, *iso, binary);
+              })
+          .addFunction(
+              "save_default",
+              +[](const Isosurface *iso, const std::string &filename) {
+                occ::io::write_ply_mesh(filename, *iso, true);
+              })
+        .endClass()
 
-  m.new_usertype<IsosurfaceCalculator>(
-      "IsosurfaceCalculator",
-      sol::call_constructor,
-      sol::factories([]() { return IsosurfaceCalculator{}; }),
-      "set_molecule", &IsosurfaceCalculator::set_molecule,
-      "set_environment", &IsosurfaceCalculator::set_environment,
-      "set_wavefunction", &IsosurfaceCalculator::set_wavefunction,
-      "set_crystal", &IsosurfaceCalculator::set_crystal,
-      "set_parameters", &IsosurfaceCalculator::set_parameters,
-      "validate", &IsosurfaceCalculator::validate,
-      "compute", &IsosurfaceCalculator::compute,
-      "isosurface", &IsosurfaceCalculator::isosurface,
-      "requires_crystal", &IsosurfaceCalculator::requires_crystal,
-      "requires_wavefunction", &IsosurfaceCalculator::requires_wavefunction,
-      "requires_environment", &IsosurfaceCalculator::requires_environment,
-      "have_crystal", &IsosurfaceCalculator::have_crystal,
-      "have_wavefunction", &IsosurfaceCalculator::have_wavefunction,
-      "have_environment", &IsosurfaceCalculator::have_environment,
-      "error_message", &IsosurfaceCalculator::error_message);
+        .beginClass<IsosurfaceGenerationParameters>(
+            "IsosurfaceGenerationParameters")
+          .addConstructor<void (*)()>()
+          .addPropertyReadWrite("isovalue",
+                                &IsosurfaceGenerationParameters::isovalue)
+          .addPropertyReadWrite("separation",
+                                &IsosurfaceGenerationParameters::separation)
+          .addPropertyReadWrite(
+              "background_density",
+              &IsosurfaceGenerationParameters::background_density)
+          .addPropertyReadWrite(
+              "surface_orbital_index",
+              &IsosurfaceGenerationParameters::surface_orbital_index)
+          .addPropertyReadWrite("flip_normals",
+                                &IsosurfaceGenerationParameters::flip_normals)
+          .addPropertyReadWrite("binary_output",
+                                &IsosurfaceGenerationParameters::binary_output)
+          .addProperty(
+              "surface_kind",
+              +[](const IsosurfaceGenerationParameters *p) {
+                return static_cast<int>(p->surface_kind);
+              },
+              +[](IsosurfaceGenerationParameters *p, int v) {
+                p->surface_kind = static_cast<SurfaceKind>(v);
+              })
+        .endClass()
 
-  m.new_enum<VolumePropertyKind>(
-      "VolumePropertyKind",
-      {{"ElectronDensity", VolumePropertyKind::ElectronDensity},
-       {"ElectronDensityAlpha", VolumePropertyKind::ElectronDensityAlpha},
-       {"ElectronDensityBeta", VolumePropertyKind::ElectronDensityBeta},
-       {"ElectricPotential", VolumePropertyKind::ElectricPotential},
-       {"EEQ_ESP", VolumePropertyKind::EEQ_ESP},
-       {"PromoleculeDensity", VolumePropertyKind::PromoleculeDensity},
-       {"DeformationDensity", VolumePropertyKind::DeformationDensity},
-       {"XCDensity", VolumePropertyKind::XCDensity},
-       {"CrystalVoid", VolumePropertyKind::CrystalVoid}});
+        .beginClass<IsosurfaceCalculator>("IsosurfaceCalculator")
+          .addConstructor<void (*)()>()
+          .addFunction("set_molecule", &IsosurfaceCalculator::set_molecule)
+          .addFunction("set_environment",
+                       &IsosurfaceCalculator::set_environment)
+          .addFunction("set_wavefunction",
+                       &IsosurfaceCalculator::set_wavefunction)
+          .addFunction("set_crystal", &IsosurfaceCalculator::set_crystal)
+          .addFunction("set_parameters", &IsosurfaceCalculator::set_parameters)
+          .addFunction("validate", &IsosurfaceCalculator::validate)
+          .addFunction("compute", &IsosurfaceCalculator::compute)
+          .addProperty("isosurface", &IsosurfaceCalculator::isosurface)
+          .addProperty("requires_crystal",
+                       &IsosurfaceCalculator::requires_crystal)
+          .addProperty("requires_wavefunction",
+                       &IsosurfaceCalculator::requires_wavefunction)
+          .addProperty("requires_environment",
+                       &IsosurfaceCalculator::requires_environment)
+          .addProperty("have_crystal", &IsosurfaceCalculator::have_crystal)
+          .addProperty("have_wavefunction",
+                       &IsosurfaceCalculator::have_wavefunction)
+          .addProperty("have_environment",
+                       &IsosurfaceCalculator::have_environment)
+          .addProperty("error_message", &IsosurfaceCalculator::error_message)
+        .endClass()
 
-  m.new_enum<SpinConstraint>("SpinConstraint",
-                              {{"Total", SpinConstraint::Total},
-                               {"Alpha", SpinConstraint::Alpha},
-                               {"Beta", SpinConstraint::Beta}});
+        .beginNamespace("VolumePropertyKind")
+          .addProperty("ElectronDensity",
+                       +[]() {
+                         return static_cast<int>(
+                             VolumePropertyKind::ElectronDensity);
+                       })
+          .addProperty("ElectronDensityAlpha",
+                       +[]() {
+                         return static_cast<int>(
+                             VolumePropertyKind::ElectronDensityAlpha);
+                       })
+          .addProperty("ElectronDensityBeta",
+                       +[]() {
+                         return static_cast<int>(
+                             VolumePropertyKind::ElectronDensityBeta);
+                       })
+          .addProperty("ElectricPotential",
+                       +[]() {
+                         return static_cast<int>(
+                             VolumePropertyKind::ElectricPotential);
+                       })
+          .addProperty(
+              "EEQ_ESP",
+              +[]() { return static_cast<int>(VolumePropertyKind::EEQ_ESP); })
+          .addProperty("PromoleculeDensity",
+                       +[]() {
+                         return static_cast<int>(
+                             VolumePropertyKind::PromoleculeDensity);
+                       })
+          .addProperty("DeformationDensity",
+                       +[]() {
+                         return static_cast<int>(
+                             VolumePropertyKind::DeformationDensity);
+                       })
+          .addProperty(
+              "XCDensity",
+              +[]() { return static_cast<int>(VolumePropertyKind::XCDensity); })
+          .addProperty("CrystalVoid",
+                       +[]() {
+                         return static_cast<int>(
+                             VolumePropertyKind::CrystalVoid);
+                       })
+        .endNamespace()
 
-  m.new_usertype<VolumeGenerationParameters>(
-      "VolumeGenerationParameters",
-      sol::call_constructor,
-      sol::factories([]() { return VolumeGenerationParameters{}; }),
-      "property", &VolumeGenerationParameters::property,
-      "spin", &VolumeGenerationParameters::spin,
-      "functional", &VolumeGenerationParameters::functional,
-      "mo_number", &VolumeGenerationParameters::mo_number,
-      "value_threshold", &VolumeGenerationParameters::value_threshold,
-      "buffer_distance", &VolumeGenerationParameters::buffer_distance,
-      "crystal_filename", &VolumeGenerationParameters::crystal_filename,
-      "adaptive_bounds", &VolumeGenerationParameters::adaptive_bounds);
+        .beginNamespace("SpinConstraint")
+          .addProperty("Total",
+                       +[]() { return static_cast<int>(SpinConstraint::Total); })
+          .addProperty("Alpha",
+                       +[]() { return static_cast<int>(SpinConstraint::Alpha); })
+          .addProperty("Beta",
+                       +[]() { return static_cast<int>(SpinConstraint::Beta); })
+        .endNamespace()
 
-  m.new_usertype<VolumeData>(
-      "VolumeData", sol::no_constructor,
-      "name", sol::readonly(&VolumeData::name),
-      "property", sol::readonly(&VolumeData::property),
-      "nx", &VolumeData::nx,
-      "ny", &VolumeData::ny,
-      "nz", &VolumeData::nz,
-      "total_points", &VolumeData::total_points,
-      // Flattened (k-fastest) data for downstream reshape.
-      "get_data",
-      [](const VolumeData &v, sol::this_state s) {
-        sol::state_view lua(s);
-        sol::table out =
-            lua.create_table(static_cast<int>(v.total_points()), 0);
-        int idx = 1;
-        for (int i = 0; i < v.nx(); ++i) {
-          for (int j = 0; j < v.ny(); ++j) {
-            for (int k = 0; k < v.nz(); ++k) {
-              out[idx++] = v.data(i, j, k);
-            }
-          }
-        }
-        return out;
-      });
+        .beginClass<VolumeGenerationParameters>("VolumeGenerationParameters")
+          .addConstructor<void (*)()>()
+          // Enum-typed fields are bridged through int — Lua scripts
+          // pass `occ.VolumePropertyKind.X` which we expose as int.
+          .addProperty(
+              "property",
+              +[](const VolumeGenerationParameters *p) {
+                return static_cast<int>(p->property);
+              },
+              +[](VolumeGenerationParameters *p, int v) {
+                p->property = static_cast<VolumePropertyKind>(v);
+              })
+          .addProperty(
+              "spin",
+              +[](const VolumeGenerationParameters *p) {
+                return static_cast<int>(p->spin);
+              },
+              +[](VolumeGenerationParameters *p, int v) {
+                p->spin = static_cast<SpinConstraint>(v);
+              })
+          .addPropertyReadWrite("functional",
+                                &VolumeGenerationParameters::functional)
+          .addPropertyReadWrite("mo_number",
+                                &VolumeGenerationParameters::mo_number)
+          .addPropertyReadWrite("value_threshold",
+                                &VolumeGenerationParameters::value_threshold)
+          .addPropertyReadWrite("buffer_distance",
+                                &VolumeGenerationParameters::buffer_distance)
+          .addPropertyReadWrite("crystal_filename",
+                                &VolumeGenerationParameters::crystal_filename)
+          .addPropertyReadWrite("adaptive_bounds",
+                                &VolumeGenerationParameters::adaptive_bounds)
+        .endClass()
 
-  m.new_usertype<VolumeCalculator>(
-      "VolumeCalculator",
-      sol::call_constructor,
-      sol::factories([]() { return VolumeCalculator{}; }),
-      "set_wavefunction", &VolumeCalculator::set_wavefunction,
-      "set_molecule", &VolumeCalculator::set_molecule,
-      "compute_volume", &VolumeCalculator::compute_volume,
-      "volume_as_cube_string", &VolumeCalculator::volume_as_cube_string);
+        .beginClass<VolumeData>("VolumeData")
+          .addProperty("name", &VolumeData::name)
+          .addProperty("property", &VolumeData::property)
+          .addProperty("nx", &VolumeData::nx)
+          .addProperty("ny", &VolumeData::ny)
+          .addProperty("nz", &VolumeData::nz)
+          .addProperty("total_points", &VolumeData::total_points)
+          // Flattened (k-fastest) data for downstream reshape.
+          .addFunction("get_data",
+                       +[](const VolumeData *v, lua_State *S) {
+                         lb::LuaRef out = lb::newTable(S);
+                         int idx = 1;
+                         for (int i = 0; i < v->nx(); ++i) {
+                           for (int j = 0; j < v->ny(); ++j) {
+                             for (int k = 0; k < v->nz(); ++k) {
+                               out[idx++] = v->data(i, j, k);
+                             }
+                           }
+                         }
+                         return out;
+                       })
+        .endClass()
 
-  // Convenience generators
-  m.set_function("generate_electron_density_cube",
-                 [](const occ::qm::Wavefunction &wfn, int nx, int ny, int nz) {
-                   VolumeCalculator calc;
-                   calc.set_wavefunction(wfn);
-                   VolumeGenerationParameters params;
-                   params.property = VolumePropertyKind::ElectronDensity;
-                   params.steps = {nx, ny, nz};
-                   return calc.volume_as_cube_string(
-                       calc.compute_volume(params));
-                 });
-  m.set_function("generate_esp_cube",
-                 [](const occ::qm::Wavefunction &wfn, int nx, int ny, int nz) {
-                   VolumeCalculator calc;
-                   calc.set_wavefunction(wfn);
-                   VolumeGenerationParameters params;
-                   params.property = VolumePropertyKind::ElectricPotential;
-                   params.steps = {nx, ny, nz};
-                   return calc.volume_as_cube_string(
-                       calc.compute_volume(params));
-                 });
+        .beginClass<VolumeCalculator>("VolumeCalculator")
+          .addConstructor<void (*)()>()
+          .addFunction("set_wavefunction", &VolumeCalculator::set_wavefunction)
+          .addFunction("set_molecule", &VolumeCalculator::set_molecule)
+          .addFunction("compute_volume", &VolumeCalculator::compute_volume)
+          .addFunction("volume_as_cube_string",
+                       &VolumeCalculator::volume_as_cube_string)
+        .endClass()
+
+        // Convenience generators
+        .addFunction("generate_electron_density_cube",
+                     +[](const occ::qm::Wavefunction &wfn, int nx, int ny,
+                         int nz) {
+                       VolumeCalculator calc;
+                       calc.set_wavefunction(wfn);
+                       VolumeGenerationParameters params;
+                       params.property = VolumePropertyKind::ElectronDensity;
+                       params.steps = {nx, ny, nz};
+                       return calc.volume_as_cube_string(
+                           calc.compute_volume(params));
+                     })
+        .addFunction("generate_esp_cube",
+                     +[](const occ::qm::Wavefunction &wfn, int nx, int ny,
+                         int nz) {
+                       VolumeCalculator calc;
+                       calc.set_wavefunction(wfn);
+                       VolumeGenerationParameters params;
+                       params.property = VolumePropertyKind::ElectricPotential;
+                       params.steps = {nx, ny, nz};
+                       return calc.volume_as_cube_string(
+                           calc.compute_volume(params));
+                     })
+
+      .endNamespace();
 }
 
 } // namespace occ::lua_bindings

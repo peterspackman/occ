@@ -11,19 +11,23 @@
 
 -- 1. Constructing matrices and vectors
 print("---- construction ----")
-local m = occ.Mat3({{1, 2, 3},
-                    {4, 5, 6},
-                    {7, 8, 9}})              -- fixed 3×3
+-- LuaBridge3 doesn't auto-overload constructors; nested-table /
+-- explicit-size construction goes through `.from_table` / `.from_size`
+-- static factories. Bare `occ.Mat3()` still gives a default-constructed
+-- instance.
+local m = occ.Mat3.from_table({{1, 2, 3},
+                               {4, 5, 6},
+                               {7, 8, 9}})    -- fixed 3×3
 print(m)                                      -- pretty-prints with rows
 print("rows:", m:rows(), "cols:", m:cols(), "size:", m:size())
 
-local dynamic = occ.Matrix(2, 4)               -- empty 2×4 MatrixXd
+local dynamic = occ.Matrix.from_size(2, 4)    -- empty 2×4 MatrixXd
 dynamic:fill(0)
 dynamic[1][3] = 7.5
 print("\ndynamic matrix after [1][3] = 7.5:")
 print(dynamic)
 
-local v = occ.Vector({1.5, 2.5, 3.5, 4.5})    -- 1-D
+local v = occ.Vector.from_table({1.5, 2.5, 3.5, 4.5})   -- 1-D
 print("\nvector:", tostring(v))
 print("v:sum() =", v:sum(), "   v:norm() =", v:norm())
 
@@ -68,9 +72,9 @@ print("\ngradient (Mat3N):")
 print(g)
 
 -- 5. Convert back to a nested Lua table when you really need one
--- (e.g. for JSON serialization). The reverse is `occ.Mat3N(t)`.
+-- (e.g. for JSON serialization). The reverse is `occ.Mat3N.from_table(t)`.
 local t = pos:to_table()
 print("\nas Lua table:", type(t), "row 1 =", t[1][1], t[1][2], t[1][3])
 
-local pos2 = occ.Mat3N(t)
+local pos2 = occ.Mat3N.from_table(t)
 print("round-trip pos2[1][1]:", pos2[1][1])

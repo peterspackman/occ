@@ -8,182 +8,199 @@
 #include <occ/driver/dma_driver.h>
 #include <occ/qm/wavefunction.h>
 
-namespace sol {
-template <> struct is_automagical<occ::dma::Mult> : std::false_type {};
-template <> struct is_automagical<occ::dma::DMASites> : std::false_type {};
-template <> struct is_automagical<occ::dma::DMAResult> : std::false_type {};
-template <>
-struct is_automagical<occ::dma::DMACalculator> : std::false_type {};
-template <>
-struct is_automagical<occ::dma::LinearMultipoleCalculator>
-    : std::false_type {};
-template <>
-struct is_automagical<occ::driver::DMADriver> : std::false_type {};
-} // namespace sol
-
 namespace occ::lua_bindings {
 
 using namespace occ::dma;
+namespace lb = luabridge;
 
-void register_dma_bindings(sol::state_view, sol::table &m) {
-  m.new_usertype<Mult>(
-      "Mult",
-      sol::call_constructor,
-      sol::factories([]() { return Mult{}; },
-                     [](int max_rank) { return Mult(max_rank); }),
-      "max_rank", &Mult::max_rank,
-      "q",
-      sol::property(
-          [](const Mult &mp, sol::this_state s) {
-            return mp.q;
-          },
-          [](Mult &mp, const sol::table &t) { mp.q = table_to_vecx(t); }),
-      "num_components", &Mult::num_components,
-      "to_string", &Mult::to_string,
-      "get_multipole",
-      [](const Mult &mp, int l, int mm) { return mp.get_multipole(l, mm); },
-      "get_component",
-      [](const Mult &mp, const std::string &name) {
-        return mp.get_component(name);
-      },
-      sol::meta_function::to_string, [](const Mult &mp) {
-        return fmt::format("<Mult max_rank={} components={}>", mp.max_rank,
-                           mp.num_components());
-      });
+void register_dma_bindings(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
 
-  m.set_function("component_name_to_lm", &Mult::component_name_to_lm);
+        .beginClass<Mult>("Mult")
+          // Two construction shapes — split into a default constructor and
+          // a static factory for the rank-typed variant.
+          .addConstructor<void (*)()>()
+          .addStaticFunction("new_with_rank",
+                             +[](int max_rank) { return new Mult(max_rank); })
+          .addPropertyReadWrite("max_rank", &Mult::max_rank)
+          // q is a Vec — expose as method-style getter/setter going through
+          // Lua tables. Property getters can't reliably accept lua_State*.
+          .addProperty("get_q",
+                       +[](const Mult *mp) -> occ::Vec { return mp->q; })
+          .addFunction("set_q",
+                       +[](Mult *mp, const lb::LuaRef &t) {
+                         mp->q = table_to_vecx(t);
+                       })
+          .addProperty("num_components", &Mult::num_components)
+          .addFunction("to_string", &Mult::to_string)
+          .addFunction(
+              "get_multipole",
+              +[](const Mult *mp, int l, int mm) {
+                return mp->get_multipole(l, mm);
+              })
+          .addFunction(
+              "get_component",
+              +[](const Mult *mp, const std::string &name) {
+                return mp->get_component(name);
+              })
+          .addFunction("__tostring", +[](const Mult *mp) {
+            return fmt::format("<Mult max_rank={} components={}>",
+                               mp->max_rank, mp->num_components());
+          })
+        .endClass()
 
-  m.new_usertype<DMASettings>(
-      "DMASettings",
-      sol::call_constructor, sol::factories([]() { return DMASettings{}; }),
-      "max_rank", &DMASettings::max_rank,
-      "big_exponent", &DMASettings::big_exponent,
-      "include_nuclei", &DMASettings::include_nuclei,
-      sol::meta_function::to_string, [](const DMASettings &s) {
-        return fmt::format("<DMASettings max_rank={} big_exponent={:.2f} "
-                           "include_nuclei={}>",
-                           s.max_rank, s.big_exponent,
-                           s.include_nuclei ? "true" : "false");
-      });
+        .addFunction("component_name_to_lm", &Mult::component_name_to_lm)
 
-  m.new_usertype<DMAResult>(
-      "DMAResult",
-      sol::call_constructor, sol::factories([]() { return DMAResult{}; }),
-      "max_rank", &DMAResult::max_rank,
-      "multipoles",
-      sol::readonly_property(
-          [](const DMAResult &r) { return sol::as_table(r.multipoles); }),
-      sol::meta_function::to_string, [](const DMAResult &r) {
-        return fmt::format("<DMAResult max_rank={} num_sites={}>",
-                           r.max_rank, r.multipoles.size());
-      });
+        .beginClass<DMASettings>("DMASettings")
+          .addConstructor<void (*)()>()
+          .addPropertyReadWrite("max_rank", &DMASettings::max_rank)
+          .addPropertyReadWrite("big_exponent", &DMASettings::big_exponent)
+          .addPropertyReadWrite("include_nuclei", &DMASettings::include_nuclei)
+          .addFunction("__tostring", +[](const DMASettings *s) {
+            return fmt::format("<DMASettings max_rank={} big_exponent={:.2f} "
+                               "include_nuclei={}>",
+                               s->max_rank, s->big_exponent,
+                               s->include_nuclei ? "true" : "false");
+          })
+        .endClass()
 
-  m.new_usertype<DMASites>(
-      "DMASites",
-      sol::call_constructor, sol::factories([]() { return DMASites{}; }),
-      "size", &DMASites::size,
-      "num_atoms", &DMASites::num_atoms,
-      "atoms",
-      sol::readonly_property(
-          [](const DMASites &s) { return sol::as_table(s.atoms); }),
-      "name",
-      sol::readonly_property(
-          [](const DMASites &s) { return sol::as_table(s.name); }),
-      "positions",
-      sol::readonly_property([](const DMASites &s, sol::this_state st) {
-        return mat_to_table(st, s.positions);
-      }),
-      "atom_indices",
-      sol::readonly_property([](const DMASites &s, sol::this_state st) {
-        return vec_to_table(st, s.atom_indices);
-      }),
-      "radii",
-      sol::readonly_property([](const DMASites &s, sol::this_state st) {
-        return vec_to_table(st, s.radii);
-      }),
-      "limits",
-      sol::readonly_property([](const DMASites &s, sol::this_state st) {
-        return vec_to_table(st, s.limits);
-      }),
-      sol::meta_function::to_string, [](const DMASites &s) {
-        return fmt::format("<DMASites num_sites={} num_atoms={}>", s.size(),
-                           s.num_atoms());
-      });
+        .beginClass<DMAResult>("DMAResult")
+          .addConstructor<void (*)()>()
+          .addProperty("max_rank", &DMAResult::max_rank)
+          .addFunction("multipoles",
+                       +[](const DMAResult *r, lua_State *S) {
+                         lb::LuaRef t = lb::newTable(S);
+                         for (size_t i = 0; i < r->multipoles.size(); ++i) {
+                           t[static_cast<int>(i + 1)] = r->multipoles[i];
+                         }
+                         return t;
+                       })
+          .addFunction("__tostring", +[](const DMAResult *r) {
+            return fmt::format("<DMAResult max_rank={} num_sites={}>",
+                               r->max_rank, r->multipoles.size());
+          })
+        .endClass()
 
-  m.new_usertype<DMACalculator>(
-      "DMACalculator",
-      sol::call_constructor,
-      sol::constructors<DMACalculator(const occ::qm::Wavefunction &)>(),
-      "update_settings", &DMACalculator::update_settings,
-      "settings", &DMACalculator::settings,
-      "set_radius_for_element", &DMACalculator::set_radius_for_element,
-      "set_limit_for_element", &DMACalculator::set_limit_for_element,
-      "sites", &DMACalculator::sites,
-      "compute_multipoles", &DMACalculator::compute_multipoles,
-      "compute_total_multipoles", &DMACalculator::compute_total_multipoles,
-      sol::meta_function::to_string, [](const DMACalculator &c) {
-        return fmt::format("<DMACalculator num_sites={} max_rank={}>",
-                           c.sites().size(), c.settings().max_rank);
-      });
+        .beginClass<DMASites>("DMASites")
+          .addConstructor<void (*)()>()
+          .addProperty("size", &DMASites::size)
+          .addProperty("num_atoms", &DMASites::num_atoms)
+          .addFunction("atoms",
+                       +[](const DMASites *s, lua_State *S) {
+                         lb::LuaRef t = lb::newTable(S);
+                         for (size_t i = 0; i < s->atoms.size(); ++i) {
+                           t[static_cast<int>(i + 1)] = s->atoms[i];
+                         }
+                         return t;
+                       })
+          .addFunction("name",
+                       +[](const DMASites *s, lua_State *S) {
+                         lb::LuaRef t = lb::newTable(S);
+                         for (size_t i = 0; i < s->name.size(); ++i) {
+                           t[static_cast<int>(i + 1)] = s->name[i];
+                         }
+                         return t;
+                       })
+          .addProperty("positions",
+                       +[](const DMASites *s) -> occ::Mat3N { return s->positions; })
+          .addProperty("atom_indices",
+                       +[](const DMASites *s) -> occ::IVec { return s->atom_indices; })
+          .addProperty("radii",
+                       +[](const DMASites *s) -> occ::Vec { return s->radii; })
+          .addProperty("limits",
+                       +[](const DMASites *s) -> occ::IVec { return s->limits; })
+          .addFunction("__tostring", +[](const DMASites *s) {
+            return fmt::format("<DMASites num_sites={} num_atoms={}>",
+                               s->size(), s->num_atoms());
+          })
+        .endClass()
 
-  m.new_usertype<LinearDMASettings>(
-      "LinearDMASettings",
-      sol::call_constructor,
-      sol::factories([]() { return LinearDMASettings{}; }),
-      "max_rank", &LinearDMASettings::max_rank,
-      "include_nuclei", &LinearDMASettings::include_nuclei,
-      "use_slices", &LinearDMASettings::use_slices,
-      "tolerance", &LinearDMASettings::tolerance,
-      "default_radius", &LinearDMASettings::default_radius,
-      "hydrogen_radius", &LinearDMASettings::hydrogen_radius);
+        .beginClass<DMACalculator>("DMACalculator")
+          .addConstructor<void (*)(const occ::qm::Wavefunction &)>()
+          .addFunction("update_settings", &DMACalculator::update_settings)
+          .addProperty("settings", &DMACalculator::settings)
+          .addFunction("set_radius_for_element",
+                       &DMACalculator::set_radius_for_element)
+          .addFunction("set_limit_for_element",
+                       &DMACalculator::set_limit_for_element)
+          .addProperty("sites", &DMACalculator::sites)
+          .addFunction("compute_multipoles", &DMACalculator::compute_multipoles)
+          .addFunction("compute_total_multipoles",
+                       &DMACalculator::compute_total_multipoles)
+          .addFunction("__tostring", +[](const DMACalculator *c) {
+            return fmt::format("<DMACalculator num_sites={} max_rank={}>",
+                               c->sites().size(), c->settings().max_rank);
+          })
+        .endClass()
 
-  m.new_usertype<LinearMultipoleCalculator>(
-      "LinearMultipoleCalculator",
-      sol::call_constructor,
-      sol::factories(
-          [](const occ::qm::Wavefunction &w) {
-            return LinearMultipoleCalculator(w, LinearDMASettings{});
-          },
-          [](const occ::qm::Wavefunction &w, const LinearDMASettings &s) {
-            return LinearMultipoleCalculator(w, s);
-          }),
-      "calculate", &LinearMultipoleCalculator::calculate);
+        .beginClass<LinearDMASettings>("LinearDMASettings")
+          .addConstructor<void (*)()>()
+          .addPropertyReadWrite("max_rank", &LinearDMASettings::max_rank)
+          .addPropertyReadWrite("include_nuclei",
+                                &LinearDMASettings::include_nuclei)
+          .addPropertyReadWrite("use_slices", &LinearDMASettings::use_slices)
+          .addPropertyReadWrite("tolerance", &LinearDMASettings::tolerance)
+          .addPropertyReadWrite("default_radius",
+                                &LinearDMASettings::default_radius)
+          .addPropertyReadWrite("hydrogen_radius",
+                                &LinearDMASettings::hydrogen_radius)
+        .endClass()
 
-  m.new_usertype<occ::driver::DMAConfig>(
-      "DMAConfig",
-      sol::call_constructor,
-      sol::factories([]() { return occ::driver::DMAConfig{}; }),
-      "wavefunction_filename", &occ::driver::DMAConfig::wavefunction_filename,
-      "punch_filename", &occ::driver::DMAConfig::punch_filename,
-      "settings", &occ::driver::DMAConfig::settings,
-      "write_punch", &occ::driver::DMAConfig::write_punch);
+        .beginClass<LinearMultipoleCalculator>("LinearMultipoleCalculator")
+          // Two construction shapes — default settings vs explicit.
+          .addConstructor<void (*)(const occ::qm::Wavefunction &,
+                                    const LinearDMASettings &)>()
+          .addStaticFunction(
+              "new_default_settings",
+              +[](const occ::qm::Wavefunction &w) {
+                return new LinearMultipoleCalculator(w, LinearDMASettings{});
+              })
+          .addFunction("calculate", &LinearMultipoleCalculator::calculate)
+        .endClass()
 
-  m.new_usertype<occ::driver::DMADriver::DMAOutput>(
-      "DMAOutput", sol::no_constructor,
-      "result", &occ::driver::DMADriver::DMAOutput::result,
-      "sites", &occ::driver::DMADriver::DMAOutput::sites);
+        .beginClass<occ::driver::DMAConfig>("DMAConfig")
+          .addConstructor<void (*)()>()
+          .addPropertyReadWrite("wavefunction_filename",
+                                &occ::driver::DMAConfig::wavefunction_filename)
+          .addPropertyReadWrite("punch_filename",
+                                &occ::driver::DMAConfig::punch_filename)
+          .addPropertyReadWrite("settings", &occ::driver::DMAConfig::settings)
+          .addPropertyReadWrite("write_punch",
+                                &occ::driver::DMAConfig::write_punch)
+        .endClass()
 
-  m.new_usertype<occ::driver::DMADriver>(
-      "DMADriver",
-      sol::call_constructor,
-      sol::factories(
-          []() { return occ::driver::DMADriver{}; },
-          [](const occ::driver::DMAConfig &c) {
-            return occ::driver::DMADriver(c);
-          }),
-      "set_config", &occ::driver::DMADriver::set_config,
-      "config", &occ::driver::DMADriver::config,
-      "run",
-      sol::overload(
-          [](occ::driver::DMADriver &d) { return d.run(); },
-          [](occ::driver::DMADriver &d, const occ::qm::Wavefunction &w) {
-            return d.run(w);
-          }));
+        .beginClass<occ::driver::DMADriver::DMAOutput>("DMAOutput")
+          .addProperty("result", &occ::driver::DMADriver::DMAOutput::result)
+          .addProperty("sites", &occ::driver::DMADriver::DMAOutput::sites)
+        .endClass()
 
-  m.set_function("dma_generate_punch_file",
-                 &occ::driver::DMADriver::generate_punch_file);
-  m.set_function("dma_write_punch_file",
-                 &occ::driver::DMADriver::write_punch_file);
+        .beginClass<occ::driver::DMADriver>("DMADriver")
+          // Default + config-init constructors.
+          .addConstructor<void (*)()>()
+          .addStaticFunction(
+              "new_with_config",
+              +[](const occ::driver::DMAConfig &c) {
+                return new occ::driver::DMADriver(c);
+              })
+          .addFunction("set_config", &occ::driver::DMADriver::set_config)
+          .addProperty("config", &occ::driver::DMADriver::config)
+          // sol::overload split: parameterless vs wavefunction-driven run.
+          .addFunction("run",
+                       +[](occ::driver::DMADriver *d) { return d->run(); })
+          .addFunction(
+              "run_with_wavefunction",
+              +[](occ::driver::DMADriver *d, const occ::qm::Wavefunction &w) {
+                return d->run(w);
+              })
+        .endClass()
+
+        .addFunction("dma_generate_punch_file",
+                     &occ::driver::DMADriver::generate_punch_file)
+        .addFunction("dma_write_punch_file",
+                     &occ::driver::DMADriver::write_punch_file)
+
+      .endNamespace();
 }
 
 } // namespace occ::lua_bindings

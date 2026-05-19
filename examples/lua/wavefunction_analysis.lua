@@ -27,13 +27,13 @@ end
 
 -- Mulliken (population-based) and CHELPG (potential-fitted) charges.
 io.write("\nMulliken charges:")
-for _, q in ipairs(wfn:mulliken_charges()) do
+for _, q in ipairs(wfn.mulliken_charges) do
     io.write(string.format(" %+.4f", q))
 end
 io.write("\n")
 
 io.write("CHELPG   charges:")
-for _, q in ipairs(wfn:chelpg_charges()) do
+for _, q in ipairs(wfn.chelpg_charges) do
     io.write(string.format(" %+.4f", q))
 end
 io.write("\n")

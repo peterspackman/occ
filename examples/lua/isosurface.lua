@@ -34,7 +34,7 @@ for _, sep in ipairs({1.0, 0.5, 0.25, 0.1, 0.05}) do
     calc:set_molecule(mol)
     calc:compute()
 
-    local surf = calc:isosurface()
+    local surf = calc.isosurface
     surf:save(string.format("example.%s.ply", tostring(sep)))
 
     local t2 = os.clock()

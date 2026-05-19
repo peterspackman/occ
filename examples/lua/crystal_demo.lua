@@ -7,19 +7,19 @@ local cif_path = arg[1] or "examples/external_energy/acenaphthene.cif"
 local crystal = occ.crystal_from_cif_file(cif_path)
 print("Crystal:", tostring(crystal))
 
-local cell = crystal:unit_cell()
+local cell = crystal.unit_cell
 print(string.format("Cell  : %s   %.4f × %.4f × %.4f Å",
     cell.cell_type, cell.a, cell.b, cell.c))
 print(string.format("Angles: α=%.2f° β=%.2f° γ=%.2f°",
     math.deg(cell.alpha), math.deg(cell.beta), math.deg(cell.gamma)))
 print(string.format("Volume: %.3f Å³,  Density: %.3f g/cm³",
-    cell.volume, crystal:density()))
+    cell.volume, crystal.density))
 
-local sg = crystal:space_group()
+local sg = crystal.space_group
 print(string.format("Space group : %s  (No. %d, %d symmetry ops)",
-    sg.symbol, sg:number(), #sg.symmetry_operations))
+    sg.symbol, sg.number, #sg:symmetry_operations()))
 
-local asym = crystal:asymmetric_unit()
+local asym = crystal.asymmetric_unit
 print(string.format("Asym unit   : %d atoms  (%s)", #asym, tostring(asym)))
 
 local uc_mols = crystal:unit_cell_molecules()
@@ -29,7 +29,7 @@ local uniq_mols = crystal:symmetry_unique_molecules()
 print(string.format("Symmetry-unique mols: %d", #uniq_mols))
 for i, mol in ipairs(uniq_mols) do
     print(string.format("  mol %d: %d atoms, molar mass %.3f g/mol",
-        i, #mol, mol:molar_mass()))
+        i, #mol, mol.molar_mass))
 end
 
 -- A few free-function checks

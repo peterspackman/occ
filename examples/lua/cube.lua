@@ -55,7 +55,7 @@ params.adaptive_bounds = true   -- auto-size around atoms
 
 local vol = calc:compute_volume(params)
 print(string.format("\nVolumeData: %dx%dx%d = %d total points",
-    vol:nx(), vol:ny(), vol:nz(), vol:total_points()))
+    vol.nx, vol.ny, vol.nz, vol.total_points))
 
 do
     local cube = calc:volume_as_cube_string(vol)

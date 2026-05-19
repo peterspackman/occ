@@ -1,222 +1,165 @@
 #pragma once
+// Lua ↔ Eigen glue for LuaBridge3 bindings. Eigen matrices and vectors
+// cross the boundary as 1-indexed Lua tables (we don't expose them as
+// LuaBridge userdata — see [[feedback-luabridge-priorities]]).
+//
+// Convention:
+//   - Vec is a flat 1-indexed table {a, b, c, ...}
+//   - Mat is row-major nested tables (outer = rows, inner = cols)
+//   - Mat3N is 3×N (3 outer rows = x/y/z, N inner = atoms) — same
+//     orientation numpy gets from occpy
+//
+// Lua 5.4 headers ship without an `extern "C"` wrapper, and LuaBridge3
+// enforces "Lua headers must be included prior to LuaBridge ones".
+// Pull them in here so every binding TU that includes this header gets
+// the order right automatically.
+
+extern "C" {
+#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+}
+#include <LuaBridge/LuaBridge.h>
+// Vector.h provides Stack<std::vector<T>> push/get so bindings can
+// return STL vectors directly (e.g. Molecule::atoms() returning
+// `std::vector<Atom>`). Pull it in centrally so every binding TU gets
+// the support without per-file include.
+#include <LuaBridge/Vector.h>
 #include <occ/core/linear_algebra.h>
-#include <sol/sol.hpp>
-
-// Eigen::Matrix (since 3.4) provides begin()/end(), which sol2's automatic
-// container detection latches onto via `meta::has_begin_end_v`. The
-// container path then tries to build iterator machinery that fails to
-// compile because Eigen iterators dereference to a *reference type* that
-// sol2's `decltype(*it)` plumbing can't decompose ("cannot form a reference
-// to void"). We never want sol2 to expose Eigen matrices as Lua containers
-// — `vec_to_table` / `mat_to_table` already do explicit conversion — so
-// opt every Eigen::Matrix specialization out.
-//
-// We also have to opt `as_container_t<Eigen::Matrix<...>>` out: sol2's
-// automagic enrollment unconditionally instantiates a `pairs` registration
-// of the form `u_c_launch<as_container_t<T>>` for *every* usertype T (see
-// usertype_core.hpp:152), and when ADL hunts for `sol_lua_get` on that
-// type it tries to build the `as_container_t<Eigen::Matrix>::iter`
-// machinery — same void cascade. The opt-out tells sol2 "treat this as an
-// opaque value, never as a container".
-namespace sol {
-template <typename Scalar, int Rows, int Cols, int Options, int MaxRows,
-          int MaxCols>
-struct is_container<
-    Eigen::Matrix<Scalar, Rows, Cols, Options, MaxRows, MaxCols>>
-    : std::false_type {};
-template <typename Scalar, int Rows, int Cols, int Options, int MaxRows,
-          int MaxCols>
-struct is_container<
-    const Eigen::Matrix<Scalar, Rows, Cols, Options, MaxRows, MaxCols>>
-    : std::false_type {};
-template <typename Scalar, int Rows, int Cols, int Options, int MaxRows,
-          int MaxCols>
-struct is_container<sol::as_container_t<
-    Eigen::Matrix<Scalar, Rows, Cols, Options, MaxRows, MaxCols>>>
-    : std::false_type {};
-// Also opt every Eigen::Matrix specialization out of sol2's "automagic"
-// usertype enrollment — when binding code RETURNS an Eigen matrix sol2
-// would otherwise try to set up pairs/call-operator metamethods on it,
-// triggering the same Eigen-iterator void cascade. We register the
-// matrix types as usertypes manually via `register_matrix_userdata` in
-// eigen_matrix.h.
-template <typename Scalar, int Rows, int Cols, int O, int MR, int MC>
-struct is_automagical<Eigen::Matrix<Scalar, Rows, Cols, O, MR, MC>>
-    : std::false_type {};
-} // namespace sol
-
-// ----- Eigen expression-template pusher -----------------------------------
-//
-// Most occ methods that return matrices materialize them into a concrete
-// `Mat`/`Mat3N`/etc. type (which sol2 then pushes via the registered
-// usertype). But several accessor-style methods in occ are declared as
-// `inline auto rotation() const { return m_seitz.block<3,3>(0,0); }` —
-// their return type is an Eigen *expression* (Block, Product, etc.), not
-// a concrete Matrix. sol2 sees an unknown type, falls back to automagic +
-// container probing, and hits the "cannot form a reference to void"
-// cascade because Eigen iterators don't satisfy sol2's `decltype(*it)`.
-//
-// Rather than chase every such site with `-> Mat3` annotations, we tell
-// sol2 how to push an Eigen expression by evaluating it first: the
-// concrete type is `Eigen::internal::eval<Expr>::type`, which the
-// registered usertype pusher then handles.
-
-// Use the ADL-based customization hook (`sol_lua_push` in the same
-// namespace as the type) rather than a partial specialization of
-// `unqualified_pusher` — the latter is ambiguous with sol2's existing
-// container-detected specialization. Putting the hook in namespace
-// Eigen means ADL on any Eigen::Product / Block / etc. picks it up
-// before sol2 falls back to its default machinery.
-namespace Eigen {
-
-namespace occ_lua_detail {
-template <typename E>
-inline int push_via_eval(lua_State *L, const E &expr) {
-  using Eval = typename Eigen::internal::eval<E>::type;
-  return sol::stack::push<Eval>(L, Eval(expr));
-}
-} // namespace occ_lua_detail
-
-template <typename Lhs, typename Rhs, int Option>
-inline int sol_lua_push(sol::types<Eigen::Product<Lhs, Rhs, Option>>,
-                         lua_State *L,
-                         const Eigen::Product<Lhs, Rhs, Option> &expr) {
-  return occ_lua_detail::push_via_eval(L, expr);
-}
-
-template <typename XprType, int BR, int BC, bool IP>
-inline int
-sol_lua_push(sol::types<Eigen::Block<XprType, BR, BC, IP>>, lua_State *L,
-              const Eigen::Block<XprType, BR, BC, IP> &expr) {
-  return occ_lua_detail::push_via_eval(L, expr);
-}
-
-template <typename UnaryOp, typename XprType>
-inline int sol_lua_push(sol::types<Eigen::CwiseUnaryOp<UnaryOp, XprType>>,
-                         lua_State *L,
-                         const Eigen::CwiseUnaryOp<UnaryOp, XprType> &expr) {
-  return occ_lua_detail::push_via_eval(L, expr);
-}
-
-template <typename BinaryOp, typename Lhs, typename Rhs>
-inline int sol_lua_push(
-    sol::types<Eigen::CwiseBinaryOp<BinaryOp, Lhs, Rhs>>, lua_State *L,
-    const Eigen::CwiseBinaryOp<BinaryOp, Lhs, Rhs> &expr) {
-  return occ_lua_detail::push_via_eval(L, expr);
-}
-
-template <typename XprType, int Direction>
-inline int sol_lua_push(sol::types<Eigen::Reverse<XprType, Direction>>,
-                         lua_State *L,
-                         const Eigen::Reverse<XprType, Direction> &expr) {
-  return occ_lua_detail::push_via_eval(L, expr);
-}
-
-} // namespace Eigen
+#include <stdexcept>
+#include <string>
 
 namespace occ::lua_bindings {
 
-// Convert an Eigen vector to a 1-indexed Lua table. Takes `sol::this_state`
-// so callers can use it directly inside binding lambdas without having to
-// capture a sol::state_view (which would dangle once the registrar
-// function returns).
-template <typename Derived>
-sol::table vec_to_table(sol::this_state s,
-                        const Eigen::MatrixBase<Derived> &v) {
-  sol::state_view lua(s);
-  sol::table t = lua.create_table(static_cast<int>(v.size()), 0);
-  for (Eigen::Index i = 0; i < v.size(); ++i) {
-    t[i + 1] = v(i);
+// ---- table → Eigen ---------------------------------------------------------
+
+inline double lua_get_num(const luabridge::LuaRef &t, int i) {
+  auto v = t[i].template cast<double>();
+  if (!v) {
+    throw std::runtime_error(
+        "expected number at table index " + std::to_string(i));
   }
-  return t;
+  return *v;
 }
 
-// Convert an Eigen matrix to a row-major table-of-tables (1-indexed).
-template <typename Derived>
-sol::table mat_to_table(sol::this_state s,
-                        const Eigen::MatrixBase<Derived> &m) {
-  sol::state_view lua(s);
-  sol::table t = lua.create_table(static_cast<int>(m.rows()), 0);
-  for (Eigen::Index i = 0; i < m.rows(); ++i) {
-    sol::table row = lua.create_table(static_cast<int>(m.cols()), 0);
-    for (Eigen::Index j = 0; j < m.cols(); ++j) {
-      row[j + 1] = m(i, j);
-    }
-    t[i + 1] = row;
+inline luabridge::LuaRef lua_get_table(const luabridge::LuaRef &t, int i) {
+  auto v = t[i].template cast<luabridge::LuaRef>();
+  if (!v) {
+    throw std::runtime_error(
+        "expected nested table at index " + std::to_string(i));
   }
-  return t;
+  return *v;
 }
 
-// Pull a 1-indexed numeric table into a fixed-size Eigen vector.
-template <int N> Eigen::Matrix<double, N, 1> table_to_vec(const sol::table &t) {
-  Eigen::Matrix<double, N, 1> v;
-  for (int i = 0; i < N; ++i) v(i) = t.get<double>(i + 1);
-  return v;
-}
-
-// Pull a 1-indexed numeric table into a dynamic-size Eigen vector.
-inline Vec table_to_vecx(const sol::table &t) {
-  const int n = static_cast<int>(t.size());
+inline Vec table_to_vecx(const luabridge::LuaRef &t) {
+  const int n = t.length();
   Vec v(n);
-  for (int i = 0; i < n; ++i) v(i) = t.get<double>(i + 1);
+  for (int i = 0; i < n; ++i) v(i) = lua_get_num(t, i + 1);
   return v;
 }
 
-// Mat3N convention in Lua: 3×N column-major, matching the underlying
-// Eigen storage and the Python (numpy) view. `t[1]` / `t[2]` / `t[3]`
-// are the x / y / z rows; `t[1][j]` is x of atom j. The earlier N×3
-// "atoms-as-rows" attempt hit a fatal ambiguity for 3-atom systems
-// (gradients silently got transposed on round-trip), so we go with the
-// Eigen-native shape and use the generic `mat_to_table` everywhere.
+template <int N>
+inline Eigen::Matrix<double, N, 1>
+table_to_vec(const luabridge::LuaRef &t) {
+  Eigen::Matrix<double, N, 1> v;
+  for (int i = 0; i < N; ++i) v(i) = lua_get_num(t, i + 1);
+  return v;
+}
 
-// Pull a 3×N nested table (3 outer rows of N inner) back into a Mat3N.
-// Empty table → 3×0. Throws if any inner row's length disagrees.
-inline Mat3N table_to_mat3n(const sol::table &t) {
-  const int rows = static_cast<int>(t.size());
+inline Vec3 table_to_vec3(const luabridge::LuaRef &t) {
+  return Vec3(lua_get_num(t, 1), lua_get_num(t, 2), lua_get_num(t, 3));
+}
+
+inline IVec3 table_to_ivec3(const luabridge::LuaRef &t) {
+  return IVec3(static_cast<int>(lua_get_num(t, 1)),
+               static_cast<int>(lua_get_num(t, 2)),
+               static_cast<int>(lua_get_num(t, 3)));
+}
+
+inline Mat3 table_to_mat3(const luabridge::LuaRef &t) {
+  Mat3 m;
+  for (int i = 0; i < 3; ++i) {
+    luabridge::LuaRef row = lua_get_table(t, i + 1);
+    for (int j = 0; j < 3; ++j) m(i, j) = lua_get_num(row, j + 1);
+  }
+  return m;
+}
+
+inline Mat4 table_to_mat4(const luabridge::LuaRef &t) {
+  Mat4 m;
+  for (int i = 0; i < 4; ++i) {
+    luabridge::LuaRef row = lua_get_table(t, i + 1);
+    for (int j = 0; j < 4; ++j) m(i, j) = lua_get_num(row, j + 1);
+  }
+  return m;
+}
+
+inline Mat3N table_to_mat3n(const luabridge::LuaRef &t) {
+  const int rows = t.length();
   if (rows == 0) return Mat3N(3, 0);
   if (rows != 3) {
     throw std::runtime_error(
         "expected a 3×N table (rows = x/y/z, columns = atoms); got " +
         std::to_string(rows) + " outer rows");
   }
-  sol::table first = t.get<sol::table>(1);
-  const int n = static_cast<int>(first.size());
+  luabridge::LuaRef first = lua_get_table(t, 1);
+  const int n = first.length();
   Mat3N m(3, n);
   for (int i = 0; i < 3; ++i) {
-    sol::table row = t.get<sol::table>(i + 1);
-    for (int j = 0; j < n; ++j) m(i, j) = row.get<double>(j + 1);
+    luabridge::LuaRef row = lua_get_table(t, i + 1);
+    for (int j = 0; j < n; ++j) m(i, j) = lua_get_num(row, j + 1);
   }
   return m;
 }
 
-// Pull a 3×3 row-major table into a Mat3.
-inline Mat3 table_to_mat3(const sol::table &t) {
-  Mat3 m;
-  for (int i = 0; i < 3; ++i) {
-    sol::table row = t.get<sol::table>(i + 1);
-    for (int j = 0; j < 3; ++j) m(i, j) = row.get<double>(j + 1);
+// Generic nested-table → fixed/dynamic Eigen matrix. Outer = rows.
+template <typename Mat>
+inline Mat table_to_eigen_matrix(const luabridge::LuaRef &t) {
+  using Scalar = typename Mat::Scalar;
+  const int rows = t.length();
+  if (rows == 0) return Mat();
+  luabridge::LuaRef first = lua_get_table(t, 1);
+  const int cols = first.length();
+
+  Mat m;
+  if constexpr (Mat::RowsAtCompileTime == Eigen::Dynamic ||
+                Mat::ColsAtCompileTime == Eigen::Dynamic) {
+    m.resize(rows, cols);
+  } else if (rows != Mat::RowsAtCompileTime ||
+             cols != Mat::ColsAtCompileTime) {
+    throw std::runtime_error(
+        "table shape (" + std::to_string(rows) + "x" +
+        std::to_string(cols) + ") does not match fixed Eigen size");
+  }
+  for (int i = 0; i < rows; ++i) {
+    luabridge::LuaRef row = lua_get_table(t, i + 1);
+    for (int j = 0; j < cols; ++j) {
+      m(i, j) = static_cast<Scalar>(lua_get_num(row, j + 1));
+    }
   }
   return m;
 }
 
-// Pull a 4×4 row-major table into a Mat4.
-inline Mat4 table_to_mat4(const sol::table &t) {
-  Mat4 m;
-  for (int i = 0; i < 4; ++i) {
-    sol::table row = t.get<sol::table>(i + 1);
-    for (int j = 0; j < 4; ++j) m(i, j) = row.get<double>(j + 1);
+// ---- Eigen → table ---------------------------------------------------------
+
+template <typename Derived>
+inline luabridge::LuaRef vec_to_table(lua_State *L,
+                                      const Eigen::MatrixBase<Derived> &v) {
+  luabridge::LuaRef t = luabridge::newTable(L);
+  for (Eigen::Index i = 0; i < v.size(); ++i) t[i + 1] = v(i);
+  return t;
+}
+
+template <typename Derived>
+inline luabridge::LuaRef mat_to_table(lua_State *L,
+                                      const Eigen::MatrixBase<Derived> &m) {
+  luabridge::LuaRef t = luabridge::newTable(L);
+  for (Eigen::Index i = 0; i < m.rows(); ++i) {
+    luabridge::LuaRef row = luabridge::newTable(L);
+    for (Eigen::Index j = 0; j < m.cols(); ++j) row[j + 1] = m(i, j);
+    t[i + 1] = row;
   }
-  return m;
-}
-
-// Pull a 1-indexed 3-element table into a Vec3.
-inline Vec3 table_to_vec3(const sol::table &t) {
-  return Vec3(t.get<double>(1), t.get<double>(2), t.get<double>(3));
-}
-
-// Pull a 1-indexed 3-element integer table into an IVec3.
-inline IVec3 table_to_ivec3(const sol::table &t) {
-  return IVec3(t.get<int>(1), t.get<int>(2), t.get<int>(3));
+  return t;
 }
 
 } // namespace occ::lua_bindings

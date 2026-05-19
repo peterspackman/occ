@@ -60,10 +60,10 @@ config.cg_radius = 3.8
 -- alongside the input.
 local result = occ.calculate_crystal_growth_energies(config)
 
-for i, mol_res in ipairs(result.molecule_results) do
+for i, mol_res in ipairs(result:molecule_results()) do
     print(string.format("molecule %d", i - 1))
-    print("Total energy = ", mol_res:total_energy())
-    for _, d in ipairs(mol_res.dimer_results) do
+    print("Total energy = ", mol_res.total_energy)
+    for _, d in ipairs(mol_res:dimer_results()) do
         print(string.format("Dimer %s energies (u=%d)",
             d.dimer.name, d.unique_idx))
         for k, v in pairs(d:energy_components()) do

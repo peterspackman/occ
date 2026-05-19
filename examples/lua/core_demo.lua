@@ -27,19 +27,19 @@ local water = occ.Molecule(
      { 0.01878821, -0.02171049,  0.00986248}})  -- z
 water.name = "water"
 print(string.format("Molecule : %s, %d atoms, molar mass %.3f g/mol",
-    water.name, #water, water:molar_mass()))
+    water.name, #water, water.molar_mass))
 
-local com = water:center_of_mass()
+local com = water.center_of_mass
 print(string.format("COM      : [% .4f, % .4f, % .4f]", com[1], com[2], com[3]))
 
--- Atomic numbers as a Lua table
+-- Atomic numbers as a Vec userdata; ipairs walks via __index for 1..n.
 io.write("Z list   :")
-for _, z in ipairs(water:atomic_numbers()) do io.write(string.format(" %d", z)) end
+for _, z in ipairs(water.atomic_numbers) do io.write(string.format(" %d", z)) end
 io.write("\n")
 
 -- Translate a copy
 local shifted = water:translated({1.0, 0.0, 0.0})
-local shifted_com = shifted:center_of_mass()
+local shifted_com = shifted.center_of_mass
 print(string.format("Shifted  : [% .4f, % .4f, % .4f]",
     shifted_com[1], shifted_com[2], shifted_com[3]))
 
