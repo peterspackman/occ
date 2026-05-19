@@ -11,6 +11,7 @@ target_link_libraries(occ_solvent
     PUBLIC
     occ_core
     occ_dft
+    occ_io
     occ_scrf
 )
 target_include_directories(occ_solvent PUBLIC 
