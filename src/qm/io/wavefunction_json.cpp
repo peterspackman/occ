@@ -2,7 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/io/eigen_json.h>
-#include <occ/io/gto_json.h>
+#include <occ/gto/json.h>
 #include <occ/io/json_basis.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/mo.h>

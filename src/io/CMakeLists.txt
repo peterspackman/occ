@@ -9,7 +9,6 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/dftb_gen.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/engrad.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gmf.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/gto_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/periodic_grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/grid_settings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface_json.cpp"
