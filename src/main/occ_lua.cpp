@@ -244,7 +244,7 @@ void collect_keys(lua_State *L, const std::string &partial, bool method_call,
   }
 }
 
-thread_local lua_State *t_active_lua = nullptr;
+lua_State *t_active_lua = nullptr;
 
 void completion_callback(const char *buf, linenoiseCompletions *lc) {
   if (!t_active_lua) return;
