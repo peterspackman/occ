@@ -1,0 +1,10 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/anisotropic.h" name="/home/runner/work/occ/occ/include/occ/xtb/anisotropic.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,176,60"/>
+<area shape="rect" id="Node000002" href="$gfn2__engine_8h.html" title=" " alt="" coords="5,211,176,265"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="70,73,57,109,53,135,57,162,66,187,77,209,72,212,61,189,52,163,48,135,52,107,65,71"/>
+<area shape="rect" id="Node000004" href="$multipole__ewald_8h.html" title=" " alt="" coords="67,108,237,163"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="116,70,138,107,134,109,112,73"/>
+<area shape="rect" id="Node000003" href="$xtb__calculator_8h.html" title=" " alt="" coords="5,313,176,368"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="93,279,93,313,88,313,88,279"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="131,176,109,212,104,209,127,173"/>
+</map>

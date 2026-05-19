@@ -1,0 +1,11 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/gfn2_parameters.h" name="/home/runner/work/occ/occ/include/occ/xtb/gfn2_parameters.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="128,5,299,60"/>
+<area shape="rect" id="Node000002" href="$gfn2__engine_8h.html" title=" " alt="" coords="5,108,176,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,71,124,110,121,106,169,67"/>
+<area shape="rect" id="Node000003" href="$xtb__calculator_8h.html" title=" " alt="" coords="128,211,299,265"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="216,74,216,210,211,210,211,74"/>
+<area shape="rect" id="Node000004" href="$gfn2__periodic__calculator_8h.html" title=" " alt="" coords="251,108,447,163"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="261,66,315,106,312,110,258,70"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="135,169,183,209,180,213,132,174"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="304,173,251,213,247,208,301,169"/>
+</map>

@@ -1,0 +1,21 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/periodic_gamma.h" name="/home/runner/work/occ/occ/include/occ/xtb/periodic_gamma.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="127,5,298,60"/>
+<area shape="rect" id="Node000002" href="$atom_8h.html" title=" " alt="" coords="53,181,180,207"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,62,133,171,129,168,195,59"/>
+<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="24,255,209,280"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="165,62,132,84,98,112,67,145,43,182,41,200,49,217,64,233,83,246,80,250,61,237,45,220,36,201,38,180,62,141,94,108,129,80,162,58"/>
+<area shape="rect" id="Node000006" href="$periodic_8h.html" title=" " alt="" coords="199,108,336,133"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="232,59,255,95,250,98,227,62"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="407,181,469,207"/>
+<area shape="poly" id="edge11_Node000001_Node000008" title=" " alt="" coords="270,58,310,80,350,106,389,138,420,169,416,173,385,142,347,110,307,84,267,62"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="119,207,119,241,114,241,114,207"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,328,97,353"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="108,282,73,320,69,316,104,279"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="121,328,245,353"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="130,279,165,316,161,320,126,282"/>
+<area shape="poly" id="edge8_Node000006_Node000002" title=" " alt="" coords="244,136,155,178,153,173,242,131"/>
+<area shape="poly" id="edge9_Node000006_Node000003" title=" " alt="" coords="293,131,316,146,338,164,351,185,351,197,345,208,325,224,294,236,216,255,215,250,293,231,323,219,341,205,346,196,346,187,334,167,313,150,290,136"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="204,181,331,207"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="270,134,270,168,265,168,265,134"/>
+<area shape="poly" id="edge10_Node000006_Node000008" title=" " alt="" coords="296,131,399,174,397,178,294,136"/>
+</map>

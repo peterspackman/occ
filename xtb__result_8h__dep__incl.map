@@ -1,0 +1,14 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/xtb_result.h" name="/home/runner/work/occ/occ/include/occ/xtb/xtb_result.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="264,5,435,60"/>
+<area shape="rect" id="Node000002" href="$scc_8h.html" title=" " alt="" coords="188,108,375,148"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="324,73,297,110,293,106,320,70"/>
+<area shape="rect" id="Node000004" href="$xtb__calculator_8h.html" title=" " alt="" coords="196,299,367,353"/>
+<area shape="poly" id="edge7_Node000001_Node000004" title=" " alt="" coords="393,68,429,106,460,153,470,178,475,203,473,228,462,252,443,274,420,291,368,313,366,308,417,286,440,270,458,249,468,227,470,203,465,179,455,155,425,110,389,71"/>
+<area shape="rect" id="Node000003" href="$gfn2__engine_8h.html" title=" " alt="" coords="5,196,176,251"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="232,156,146,198,143,194,229,152"/>
+<area shape="poly" id="edge6_Node000002_Node000004" title=" " alt="" coords="259,160,241,197,236,223,241,250,251,275,264,297,259,300,246,277,236,251,231,223,236,195,255,158"/>
+<area shape="rect" id="Node000005" href="$gfn2__periodic__calculator_8h.html" title=" " alt="" coords="251,196,447,251"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="305,157,332,194,328,197,301,160"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="153,255,233,296,230,301,151,259"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="326,264,301,300,297,297,322,261"/>
+</map>

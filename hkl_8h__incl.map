@@ -1,12 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/crystal/hkl.h" name="/home/runner/work/occ/occ/include/occ/crystal/hkl.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,215,45"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,167,95,192"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="99,47,72,94,56,154,51,152,68,92,94,44"/>
-<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="83,93,268,119"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="128,44,159,81,155,84,124,47"/>
-<area shape="poly" id="edge5_Node000003_Node000002" title=" " alt="" coords="157,121,84,162,81,157,154,116"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="121,167,224,192"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="178,119,176,153,171,153,172,119"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="248,167,372,192"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="198,116,277,158,275,162,196,121"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="25,5,235,45"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,93,95,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,47,74,85,70,82,109,44"/>
+<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="119,93,304,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="152,44,191,82,187,85,148,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="99,167,191,192"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="202,121,167,158,163,155,198,117"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="215,167,339,192"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="224,117,259,155,255,158,220,121"/>
 </map>

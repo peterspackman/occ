@@ -1,0 +1,36 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/solvation_interface.h" name="/home/runner/work/occ/occ/include/occ/xtb/solvation_interface.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="899,5,1069,60"/>
+<area shape="rect" id="Node000002" href="$solvent__surface_8h.html" title=" " alt="" coords="417,108,613,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="886,58,614,116,612,110,885,52"/>
+<area shape="rect" id="Node000008" href="$cpcmx_8h.html" title=" " alt="" coords="715,108,885,163"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="926,69,850,110,847,105,923,64"/>
+<area shape="rect" id="Node000009" href="$gfn2__engine_8h.html" title=" " alt="" coords="960,313,1131,368"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="995,73,1043,312,1037,313,989,74"/>
+<area shape="rect" id="Node000010" href="$xtb__calculator_8h.html" title=" " alt="" coords="1168,416,1339,471"/>
+<area shape="poly" id="edge13_Node000001_Node000010" title=" " alt="" coords="967,74,941,136,921,214,917,254,920,294,930,332,950,366,963,378,983,389,1038,407,1104,421,1168,430,1167,436,1103,426,1037,412,981,394,960,382,946,370,925,334,915,295,912,254,916,213,936,134,962,72"/>
+<area shape="rect" id="Node000011" href="$smd__xtb_8h.html" title=" " alt="" coords="1289,108,1460,163"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="1083,56,1278,105,1290,109,1289,114,1277,111,1082,61"/>
+<area shape="rect" id="Node000012" href="$xtb__result_8h.html" title=" " alt="" coords="1095,108,1265,163"/>
+<area shape="poly" id="edge14_Node000001_Node000012" title=" " alt="" coords="1048,64,1130,106,1128,110,1046,69"/>
+<area shape="rect" id="Node000003" href="$cg__json_8h.html" title=" " alt="" coords="237,211,408,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="454,171,374,213,371,208,452,167"/>
+<area shape="rect" id="Node000004" href="$distance__partition_8h.html" title=" " alt="" coords="483,211,685,265"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="543,173,568,209,564,212,538,176"/>
+<area shape="rect" id="Node000005" href="$crystal__growth_8h.html" title=" " alt="" coords="499,313,669,368"/>
+<area shape="poly" id="edge8_Node000002_Node000005" title=" " alt="" coords="488,176,477,197,469,219,467,242,473,264,494,291,522,311,519,315,491,294,468,267,461,243,464,218,472,195,484,173"/>
+<area shape="rect" id="Node000006" href="$smd__solvation_8h.html" title=" " alt="" coords="709,211,885,265"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="602,165,725,208,723,213,600,170"/>
+<area shape="rect" id="Node000007" href="$solvation__types_8h.html" title=" " alt="" coords="5,211,213,265"/>
+<area shape="poly" id="edge7_Node000002_Node000007" title=" " alt="" coords="404,167,214,214,213,208,403,162"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="587,279,587,313,581,313,581,279"/>
+<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="731,273,641,316,638,311,729,269"/>
+<area shape="poly" id="edge11_Node000009_Node000010" title=" " alt="" coords="1113,371,1200,414,1198,418,1111,376"/>
+<area shape="poly" id="edge20_Node000012_Node000010" title=" " alt="" coords="1261,166,1294,185,1324,209,1349,233,1366,255,1378,280,1389,313,1396,341,1395,355,1389,369,1364,398,1333,418,1330,414,1361,394,1384,367,1390,353,1391,342,1384,314,1374,282,1362,258,1345,237,1321,213,1291,190,1259,171"/>
+<area shape="rect" id="Node000013" href="$scc_8h.html" title=" " alt="" coords="1124,218,1311,258"/>
+<area shape="poly" id="edge15_Node000012_Node000013" title=" " alt="" coords="1197,175,1213,217,1208,218,1192,177"/>
+<area shape="poly" id="edge16_Node000013_Node000009" title=" " alt="" coords="1175,267,1092,315,1089,311,1172,263"/>
+<area shape="poly" id="edge19_Node000013_Node000010" title=" " alt="" coords="1303,261,1338,282,1365,312,1372,327,1374,341,1365,369,1343,397,1315,418,1312,414,1339,393,1360,367,1369,340,1367,328,1360,315,1334,286,1300,266"/>
+<area shape="rect" id="Node000014" href="$gfn2__periodic__calculator_8h.html" title=" " alt="" coords="1155,313,1351,368"/>
+<area shape="poly" id="edge17_Node000013_Node000014" title=" " alt="" coords="1231,270,1246,312,1241,314,1226,272"/>
+<area shape="poly" id="edge18_Node000014_Node000010" title=" " alt="" coords="1256,382,1256,416,1251,416,1251,382"/>
+</map>

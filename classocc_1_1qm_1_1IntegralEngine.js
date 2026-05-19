@@ -1,6 +1,7 @@
 var classocc_1_1qm_1_1IntegralEngine =
 [
     [ "IntegralResult", "structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult.html", "structocc_1_1qm_1_1IntegralEngine_1_1IntegralResult" ],
+    [ "NoShellPairs", "structocc_1_1qm_1_1IntegralEngine_1_1NoShellPairs.html", null ],
     [ "AtomList", "classocc_1_1qm_1_1IntegralEngine.html#a9013e97ef12a5c4382fd09ba70c4859c", null ],
     [ "IntEnv", "classocc_1_1qm_1_1IntegralEngine.html#a6f28294ee07d96ac95b936c701a80464", null ],
     [ "Op", "classocc_1_1qm_1_1IntegralEngine.html#a607e7b0038a9b1dace0f34c992f232f8", null ],
@@ -8,7 +9,9 @@ var classocc_1_1qm_1_1IntegralEngine =
     [ "ShellList", "classocc_1_1qm_1_1IntegralEngine.html#a258ba56c84633fd533b698e0142889b6", null ],
     [ "ShellPairList", "classocc_1_1qm_1_1IntegralEngine.html#a743c7f2a53bfd4a836b05c1a46837741", null ],
     [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html#ab3d4ca565fa8f7799d0dc3b7d9ab0608", null ],
+    [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html#a1d7e49d802e45f633ecef0fa264f5951", null ],
     [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html#a7feb3c814b66a92b5042da4a92fe046f", null ],
+    [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html#acb69fa9b6c5b3f77b8195675b73db951", null ],
     [ "aobasis", "classocc_1_1qm_1_1IntegralEngine.html#a2f864123540496e01992002c1ddf5ad0", null ],
     [ "auxbasis", "classocc_1_1qm_1_1IntegralEngine.html#ac4e26a93e80679ca6a5fdd9d0bd94d07", null ],
     [ "clear_auxiliary_basis", "classocc_1_1qm_1_1IntegralEngine.html#a9f96201524d59530b76d2aceaf83e8e7", null ],
@@ -37,6 +40,7 @@ var classocc_1_1qm_1_1IntegralEngine =
     [ "have_effective_core_potentials", "classocc_1_1qm_1_1IntegralEngine.html#ac2c23d3299a0d5bff011b47fd7ced30d", null ],
     [ "is_spherical", "classocc_1_1qm_1_1IntegralEngine.html#a97139a28b53e9d18f007d41c7cbebaf3", null ],
     [ "multipole", "classocc_1_1qm_1_1IntegralEngine.html#a5885786950e68966a7a917b999361085", null ],
+    [ "multipole_operator_grad", "classocc_1_1qm_1_1IntegralEngine.html#a7bce7df6c244fad1c9321a89db0c0349", null ],
     [ "nbf", "classocc_1_1qm_1_1IntegralEngine.html#ad2bf55e1bbd4739f0f8095781662fe8f", null ],
     [ "nbf_aux", "classocc_1_1qm_1_1IntegralEngine.html#a78721dcc709af86cb6b99d589447850a", null ],
     [ "nsh", "classocc_1_1qm_1_1IntegralEngine.html#abfa34f89f94c60194e5582272c3a8699", null ],

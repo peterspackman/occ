@@ -98,6 +98,7 @@ $(document).ready(function(){initNavTree('eeq_8h.html',''); initResizable(); });
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">eeq.h File Reference</div></div>
@@ -107,9 +108,17 @@ $(document).ready(function(){initNavTree('eeq_8h.html',''); initResizable(); });
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for eeq.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="eeq_8h__incl.svg" width="375" height="198"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="eeq_8h__incl.svg" width="251" height="198"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1charges_1_1EeqWithGradient.html">occ::core::charges::EeqWithGradient</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">EEQ partial charges + their derivative wrt nuclear positions.  <a href="structocc_1_1core_1_1charges_1_1EeqWithGradient.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1charges_1_1EeqEwaldData.html">occ::core::charges::EeqEwaldData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespaceocc" id="r_namespaceocc"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html">occ</a></td></tr>
@@ -128,6 +137,14 @@ Functions</h2></td></tr>
 <tr class="memitem:a7458ef40901e8bc1cf3e10327619ce50" id="r_a7458ef40901e8bc1cf3e10327619ce50"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core_1_1charges.html#a7458ef40901e8bc1cf3e10327619ce50">occ::core::charges::eeq_partial_charges</a> (const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;positions, double charge=0.0)</td></tr>
 <tr class="memdesc:a7458ef40901e8bc1cf3e10327619ce50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the atomic partial charges of atoms at provided positions, constraining the net charge, using the EEQ method described in <a href="https://dx.doi.org/10.1063/1.5090222">https://dx.doi.org/10.1063/1.5090222</a>.  <br /></td></tr>
 <tr class="separator:a7458ef40901e8bc1cf3e10327619ce50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeba391b442ea1de97adfeae31d14e765" id="r_aeba391b442ea1de97adfeae31d14e765"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1charges_1_1EeqWithGradient.html">EeqWithGradient</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core_1_1charges.html#aeba391b442ea1de97adfeae31d14e765">occ::core::charges::eeq_partial_charges_and_gradient</a> (const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;positions_angstrom, double charge=0.0)</td></tr>
+<tr class="separator:aeba391b442ea1de97adfeae31d14e765"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5aa98c6ef194208540b553149bf40682" id="r_a5aa98c6ef194208540b553149bf40682"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1charges_1_1EeqEwaldData.html">EeqEwaldData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core_1_1charges.html#a5aa98c6ef194208540b553149bf40682">occ::core::charges::build_eeq_ewald_data</a> (const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">occ::Mat3</a> &amp;lattice_bohr, double tol=1e-10, double alpha_user=0.0)</td></tr>
+<tr class="separator:a5aa98c6ef194208540b553149bf40682"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8fab87d6a8472ce54b1b66648fa28dda" id="r_a8fab87d6a8472ce54b1b66648fa28dda"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core_1_1charges.html#a8fab87d6a8472ce54b1b66648fa28dda">occ::core::charges::eeq_coordination_numbers_periodic</a> (const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;positions_angstrom, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">occ::Mat3</a> &amp;lattice_angstrom, double cutoff_angstrom=25.0)</td></tr>
+<tr class="separator:a8fab87d6a8472ce54b1b66648fa28dda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac189a93c42448f57b6b94fb921a95299" id="r_ac189a93c42448f57b6b94fb921a95299"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core_1_1charges.html#ac189a93c42448f57b6b94fb921a95299">occ::core::charges::eeq_partial_charges_periodic</a> (const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;positions_angstrom, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">occ::Mat3</a> &amp;lattice_angstrom, double total_charge=0.0, double tol=1e-10)</td></tr>
+<tr class="separator:ac189a93c42448f57b6b94fb921a95299"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

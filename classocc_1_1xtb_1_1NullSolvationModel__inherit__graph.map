@@ -1,0 +1,5 @@
+<map id="occ::xtb::NullSolvationModel" name="occ::xtb::NullSolvationModel">
+<area shape="rect" id="Node000001" title="No&#45;op solvation model — preserves gas&#45;phase numbers." alt="" coords="5,79,213,104"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1xtb_1_1XtbSolvationModel.html" title="Abstract interface for an implicit&#45;solvent contribution to a GFN&#45;xTB SCC." alt="" coords="7,5,211,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,44,112,79,107,79,107,44"/>
+</map>

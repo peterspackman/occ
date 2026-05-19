@@ -72,6 +72,7 @@ var namespaceocc =
     ] ],
     [ "qm", "namespaceocc_1_1qm.html", "namespaceocc_1_1qm" ],
     [ "scf", "namespaceocc_1_1scf.html", null ],
+    [ "scrf", "namespaceocc_1_1scrf.html", "namespaceocc_1_1scrf" ],
     [ "sht", "namespaceocc_1_1sht.html", "namespaceocc_1_1sht" ],
     [ "slater", "namespaceocc_1_1slater.html", "namespaceocc_1_1slater" ],
     [ "solvent", "namespaceocc_1_1solvent.html", "namespaceocc_1_1solvent" ],

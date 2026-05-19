@@ -147,8 +147,9 @@ Public Attributes</h2></td></tr>
 <tr class="separator:ac8eebdfa38a523c251c49ee3f6432a88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39cf759690e9ce1b854e080b733f6db0" id="r_a39cf759690e9ce1b854e080b733f6db0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCFContext.html#a39cf759690e9ce1b854e080b733f6db0">mo</a></td></tr>
 <tr class="separator:a39cf759690e9ce1b854e080b733f6db0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ada05490f69b6ea36583dc405c73e71f8" id="r_ada05490f69b6ea36583dc405c73e71f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb">PointChargeList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCFContext.html#ada05490f69b6ea36583dc405c73e71f8">point_charges</a></td></tr>
-<tr class="separator:ada05490f69b6ea36583dc405c73e71f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90b9866d17c0eed1b76212961b1ae25c" id="r_a90b9866d17c0eed1b76212961b1ae25c"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCFContext.html#a90b9866d17c0eed1b76212961b1ae25c">external_potential_label</a></td></tr>
+<tr class="memdesc:a90b9866d17c0eed1b76212961b1ae25c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Energy-key suffix for the active external-potential contribution; empty when none is set.  <br /></td></tr>
+<tr class="separator:a90b9866d17c0eed1b76212961b1ae25c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="aa4407713312927456ab12cec62e241f6" name="aa4407713312927456ab12cec62e241f6"></a>
@@ -176,6 +177,23 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a90b9866d17c0eed1b76212961b1ae25c" name="a90b9866d17c0eed1b76212961b1ae25c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90b9866d17c0eed1b76212961b1ae25c">&#9670;&#160;</a></span>external_potential_label</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::qm::SCFContext::external_potential_label</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Energy-key suffix for the active external-potential contribution; empty when none is set. </p>
+<p>When non-empty, <a class="el" href="structocc_1_1qm_1_1SCF.html">SCF</a> reports <code>nuclear.&lt;label&gt;</code> / <code>electronic.&lt;label&gt;</code> and folds them into <code>total</code>. </p>
 
 </div>
 </div>
@@ -313,20 +331,6 @@ Public Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classocc_1_1qm_1_1CanonicalOrthogonalizer.html">CanonicalOrthogonalizer</a> occ::qm::SCFContext::orthogonalizer</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ada05490f69b6ea36583dc405c73e71f8" name="ada05490f69b6ea36583dc405c73e71f8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ada05490f69b6ea36583dc405c73e71f8">&#9670;&#160;</a></span>point_charges</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb">PointChargeList</a> occ::qm::SCFContext::point_charges</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -4,13 +4,12 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,62,125,100,121,96,163,58"/>
 <area shape="rect" id="Node000003" href="$hkl_8h.html" title=" " alt="" coords="221,108,349,133"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="223,58,264,96,260,100,219,62"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="180,255,269,280"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="277,135,262,156,247,182,237,213,231,242,225,241,232,211,242,180,257,154,273,132"/>
-<area shape="rect" id="Node000005" href="$linear__algebra_8h.html" title=" " alt="" coords="257,181,443,207"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="297,132,332,169,328,173,293,135"/>
-<area shape="poly" id="edge7_Node000005_Node000004" title=" " alt="" coords="331,209,258,250,256,245,329,204"/>
-<area shape="rect" id="Node000006" title=" " alt="" coords="296,255,399,280"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="352,207,351,241,346,241,347,207"/>
-<area shape="rect" id="Node000007" title=" " alt="" coords="423,255,547,280"/>
-<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="373,204,452,246,449,250,370,209"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="159,181,248,207"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="273,135,229,174,225,170,270,131"/>
+<area shape="rect" id="Node000005" href="$linear__algebra_8h.html" title=" " alt="" coords="272,181,457,207"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="299,131,343,170,340,174,296,135"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="252,255,344,280"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="356,209,320,246,316,243,352,205"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="368,255,492,280"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="377,205,412,243,408,246,373,209"/>
 </map>

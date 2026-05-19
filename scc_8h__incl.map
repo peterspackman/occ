@@ -1,0 +1,27 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/scc.h" name="/home/runner/work/occ/occ/include/occ/xtb/scc.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="77,5,263,45"/>
+<area shape="rect" id="Node000002" href="$atom_8h.html" title=" " alt="" coords="5,167,132,192"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="159,47,86,157,82,154,155,44"/>
+<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="128,313,313,339"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="176,45,219,299,214,300,171,46"/>
+<area shape="rect" id="Node000006" href="$xtb__result_8h.html" title=" " alt="" coords="256,93,407,119"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="210,43,296,85,294,90,207,48"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="81,191,153,263,198,303,194,307,150,267,78,194"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="109,387,201,412"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="212,341,177,378,173,375,208,337"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="225,387,349,412"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="234,337,269,375,265,378,230,341"/>
+<area shape="poly" id="edge7_Node000006_Node000003" title=" " alt="" coords="315,121,289,141,266,168,249,202,237,237,226,300,220,299,232,236,244,200,261,165,285,137,311,117"/>
+<area shape="rect" id="Node000007" href="$solvation__interface_8h.html" title=" " alt="" coords="275,167,486,192"/>
+<area shape="poly" id="edge8_Node000006_Node000007" title=" " alt="" coords="342,117,367,154,363,157,337,121"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="453,313,527,339"/>
+<area shape="poly" id="edge15_Node000006_Node000009" title=" " alt="" coords="403,116,456,131,512,155,539,171,563,190,584,213,600,239,604,251,603,263,590,283,568,299,542,311,539,306,565,294,586,279,598,261,599,252,596,241,580,216,559,194,536,176,510,160,455,136,402,121"/>
+<area shape="poly" id="edge9_Node000007_Node000003" title=" " alt="" coords="364,194,298,242,267,274,240,304,236,301,263,270,295,238,361,190"/>
+<area shape="rect" id="Node000008" href="$surfaces_8h.html" title=" " alt="" coords="309,240,452,265"/>
+<area shape="poly" id="edge10_Node000007_Node000008" title=" " alt="" coords="383,192,383,226,378,226,378,192"/>
+<area shape="poly" id="edge13_Node000007_Node000009" title=" " alt="" coords="406,190,437,210,465,238,481,269,489,299,484,301,476,271,461,242,433,214,403,194"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="527,240,586,265"/>
+<area shape="poly" id="edge14_Node000007_Node000010" title=" " alt="" coords="410,190,516,232,514,237,408,194"/>
+<area shape="poly" id="edge11_Node000008_Node000003" title=" " alt="" coords="356,268,260,310,258,305,354,263"/>
+<area shape="poly" id="edge12_Node000008_Node000009" title=" " alt="" coords="400,263,462,303,459,308,397,268"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="occ::xtb::XtbSolvationModel" name="occ::xtb::XtbSolvationModel">
+<area shape="rect" id="Node000001" title="Abstract interface for an implicit&#45;solvent contribution to a GFN&#45;xTB SCC." alt="" coords="5,70,209,95"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1xtb_1_1CpcmXSolvationModel.html" title="CPCM&#45;X (xtb&#45;flavoured CPCM) implicit&#45;solvent model." alt="" coords="269,5,457,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="177,64,273,43,274,48,178,70"/>
+<area shape="rect" id="Node000003" href="$classocc_1_1xtb_1_1NullSolvationModel.html" title="No&#45;op solvation model — preserves gas&#45;phase numbers." alt="" coords="259,70,467,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="223,80,258,80,258,85,223,85"/>
+<area shape="rect" id="Node000004" href="$classocc_1_1xtb_1_1SmdSolvationModel.html" title="SMD (&quot;Solvation Model based on Density&quot;) for GFN&#45;xTB." alt="" coords="257,119,468,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="187,95,297,117,296,122,186,101"/>
+</map>

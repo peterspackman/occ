@@ -26,7 +26,10 @@ var searchData=
   ['multipole_2eh_23',['multipole.h',['../multipole_8h.html',1,'']]],
   ['multipole_5fcalculator_2eh_24',['multipole_calculator.h',['../multipole__calculator_8h.html',1,'']]],
   ['multipole_5fcoarsening_2eh_25',['multipole_coarsening.h',['../multipole__coarsening_8h.html',1,'']]],
-  ['multipole_5finteractions_2eh_26',['multipole_interactions.h',['../multipole__interactions_8h.html',1,'']]],
-  ['multipole_5fshifter_2eh_27',['multipole_shifter.h',['../multipole__shifter_8h.html',1,'']]],
-  ['multipole_5fsource_2eh_28',['multipole_source.h',['../multipole__source_8h.html',1,'']]]
+  ['multipole_5fdamping_2eh_26',['multipole_damping.h',['../multipole__damping_8h.html',1,'']]],
+  ['multipole_5fewald_2eh_27',['multipole_ewald.h',['../multipole__ewald_8h.html',1,'']]],
+  ['multipole_5finteractions_2eh_28',['multipole_interactions.h',['../multipole__interactions_8h.html',1,'']]],
+  ['multipole_5fints_2eh_29',['multipole_ints.h',['../multipole__ints_8h.html',1,'']]],
+  ['multipole_5fshifter_2eh_30',['multipole_shifter.h',['../multipole__shifter_8h.html',1,'']]],
+  ['multipole_5fsource_2eh_31',['multipole_source.h',['../multipole__source_8h.html',1,'']]]
 ];

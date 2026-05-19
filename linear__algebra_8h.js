@@ -62,6 +62,5 @@ var linear__algebra_8h =
     [ "Vec2", "linear__algebra_8h.html#a87f795a8761276115f79bf88e7ff6514", null ],
     [ "Vec3", "linear__algebra_8h.html#ae42d4cdd65ae47e7067b39d66ce2e0e1", null ],
     [ "Vec4", "linear__algebra_8h.html#ae89d745b26c15115153317e5d90b6e93", null ],
-    [ "Vec6", "linear__algebra_8h.html#a8165087ef72495abb134eb0a03ea6ec2", null ],
-    [ "format_matrix", "linear__algebra_8h.html#a1628129daf6f63dc508b04725802fceb", null ]
+    [ "Vec6", "linear__algebra_8h.html#a8165087ef72495abb134eb0a03ea6ec2", null ]
 ];

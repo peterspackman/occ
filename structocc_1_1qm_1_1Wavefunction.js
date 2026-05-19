@@ -34,6 +34,7 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "H", "structocc_1_1qm_1_1Wavefunction.html#ad0e4e1c4f93b97a3e479d3dbba47ef05", null ],
     [ "have_energies", "structocc_1_1qm_1_1Wavefunction.html#a48f460b0d8e26971d2581c87266bdc37", null ],
     [ "have_xdm_parameters", "structocc_1_1qm_1_1Wavefunction.html#a5067ecbabf35f2c6242c5f395a58c9e0", null ],
+    [ "have_xtb_data", "structocc_1_1qm_1_1Wavefunction.html#a4c4b4d69aba922b6fc12893d8f6f809d", null ],
     [ "J", "structocc_1_1qm_1_1Wavefunction.html#a100a4122899d164a9281b1f93ac8c674", null ],
     [ "K", "structocc_1_1qm_1_1Wavefunction.html#a3bf373b971cdcf5ca14c713095dfcd38", null ],
     [ "method", "structocc_1_1qm_1_1Wavefunction.html#a9001d6c21cef7d1b62976cab5c69a4cf", null ],
@@ -48,5 +49,11 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "xdm_free_volumes", "structocc_1_1qm_1_1Wavefunction.html#a4bf4d041cd116f44076b95f63adfa1e0", null ],
     [ "xdm_moments", "structocc_1_1qm_1_1Wavefunction.html#a5df841fc2fffdab81434015d2be081b2", null ],
     [ "xdm_polarizabilities", "structocc_1_1qm_1_1Wavefunction.html#a5b3b64147fd6ae2fd88d8f0bab4493bf", null ],
-    [ "xdm_volumes", "structocc_1_1qm_1_1Wavefunction.html#aaf7128bc1ccbb72f1a7ca8d37a53129a", null ]
+    [ "xdm_volumes", "structocc_1_1qm_1_1Wavefunction.html#aaf7128bc1ccbb72f1a7ca8d37a53129a", null ],
+    [ "xtb_atomic_charges", "structocc_1_1qm_1_1Wavefunction.html#a12a42c27c289004df490b2805bdc477d", null ],
+    [ "xtb_converged", "structocc_1_1qm_1_1Wavefunction.html#a2ee57edb4a1cd3640c1ab22bea6efa87", null ],
+    [ "xtb_dispersion_energy", "structocc_1_1qm_1_1Wavefunction.html#aef9f81811cece20ad92bbd43fba23eba", null ],
+    [ "xtb_n_iterations", "structocc_1_1qm_1_1Wavefunction.html#a48187136cd8278649e0cd2b515ae8e78", null ],
+    [ "xtb_repulsion_energy", "structocc_1_1qm_1_1Wavefunction.html#ab9f708406cfa54edea68118a1111434f", null ],
+    [ "xtb_scc_energy", "structocc_1_1qm_1_1Wavefunction.html#af4ec9d7ddd1b3784bc068cde85d80dc8", null ]
 ];

@@ -1,0 +1,17 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/solvation_interface.h" name="/home/runner/work/occ/occ/include/occ/xtb/solvation_interface.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="163,5,334,60"/>
+<area shape="rect" id="Node000002" href="$linear__algebra_8h.html" title=" " alt="" coords="24,181,209,207"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="167,62,136,82,112,109,107,123,105,138,110,168,105,169,100,138,102,122,108,107,133,78,165,58"/>
+<area shape="rect" id="Node000005" href="$surfaces_8h.html" title=" " alt="" coords="123,108,265,133"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="234,62,211,98,207,95,230,59"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="250,181,325,207"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="263,59,279,107,288,167,283,168,274,109,258,61"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="341,108,399,133"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="287,58,344,98,341,102,284,62"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,255,97,280"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="108,209,73,246,69,243,104,205"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="121,255,245,280"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="130,205,165,243,161,246,126,209"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="183,135,141,174,138,170,180,131"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="211,131,263,171,260,175,207,135"/>
+</map>

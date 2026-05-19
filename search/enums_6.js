@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['jsonformat_0',['JsonFormat',['../namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3',1,'occ::io']]]
+  ['identifier_0',['Identifier',['../classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb',1,'occ::dft::DensityFunctional']]]
 ];

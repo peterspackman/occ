@@ -186,6 +186,12 @@ Functions</h2></td></tr>
 <tr class="separator:ac958b5b6a7a122e54cde06349179f66c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48533d39bf477dcc431b1993ff46f20e" id="r_a48533d39bf477dcc431b1993ff46f20e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a48533d39bf477dcc431b1993ff46f20e">exchange_matching_forward_reverse_pairs</a> (const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a64bcd1ba7c2106300d03ef64064822f3">crystal::CrystalDimers::MoleculeNeighbors</a> &amp;neighbors, std::vector&lt; <a class="el" href="classocc_1_1cg_1_1SolvationContribution.html">SolvationContribution</a> &gt; &amp;energy_contribution)</td></tr>
 <tr class="separator:a48533d39bf477dcc431b1993ff46f20e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8506668fa23aea463684053dcf3be5c3" id="r_a8506668fa23aea463684053dcf3be5c3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a8506668fa23aea463684053dcf3be5c3">from_scrf_surfaces</a> (const <a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html">occ::scrf::SolvationSurfaces</a> &amp;scrf_surfaces)</td></tr>
+<tr class="memdesc:a8506668fa23aea463684053dcf3be5c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter from the unified <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> per-element bundle (produced by both the xTB and HF/DFT pipelines after Phase 3) to the cg shape consumed by <code><a class="el" href="classocc_1_1cg_1_1SolventSurfacePartitioner.html">SolventSurfacePartitioner</a></code> and the JSON writers.  <br /></td></tr>
+<tr class="separator:a8506668fa23aea463684053dcf3be5c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4469c1385b66591eccdf33f53a9254f5" id="r_a4469c1385b66591eccdf33f53a9254f5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a4469c1385b66591eccdf33f53a9254f5">from_xtb_surfaces</a> (const <a class="el" href="namespaceocc_1_1xtb.html#a8fbf5c7bcb0c65b514d24d94fd56c497">occ::xtb::SolvationSurfaces</a> &amp;xtb_surfaces)</td></tr>
+<tr class="memdesc:a4469c1385b66591eccdf33f53a9254f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Backwards-compatible alias.  <br /></td></tr>
+<tr class="separator:a4469c1385b66591eccdf33f53a9254f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a2efdad243923360f192e3e2d5d48bfb0" name="a2efdad243923360f192e3e2d5d48bfb0"></a>
@@ -396,6 +402,56 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8506668fa23aea463684053dcf3be5c3" name="a8506668fa23aea463684053dcf3be5c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8506668fa23aea463684053dcf3be5c3">&#9670;&#160;</a></span>from_scrf_surfaces()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a> occ::cg::from_scrf_surfaces </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html">occ::scrf::SolvationSurfaces</a> &amp;&#160;</td>
+          <td class="paramname"><em>scrf_surfaces</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adapter from the unified <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> per-element bundle (produced by both the xTB and HF/DFT pipelines after Phase 3) to the cg shape consumed by <code><a class="el" href="classocc_1_1cg_1_1SolventSurfacePartitioner.html">SolventSurfacePartitioner</a></code> and the JSON writers. </p>
+<p>Behaviour: • <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurface.html#a5a2eb366ebfbeb5372e53576f6044633">scrf::SolvationSurface.energies</a></code> carries the full per-element ES contribution <code>½ σ_i · φ_total_i</code> — identical algebraically to the legacy <code>nuc_i + elec_i + pol_i</code> per-element decomposition — so it flows straight into <code>coulomb.energies</code> and <code>electronic_energies</code> stays zero. The cg partitioner sums <code>coulomb.energies(i) + electronic_energies(i)</code> per element anyway, see <code>distance_partition.cpp:108</code>. • CPCM-X has no CDS branch (<code>scrf_surfaces.cds == std::nullopt</code>); the returned <code>cds</code> surface comes out empty. • <code>total_solvation_energy</code> is set to <code>scrf_surfaces.total_energy()</code>; the remaining DFT-flavoured fields (<code>electronic_contribution</code>, <code>gas_phase_contribution</code>, <code>free_energy_correction</code>) stay at their default zero — the DFT caller fills them in via <code>SMDCalculator::calculate_free_energy_components</code>. </p>
+
+</div>
+</div>
+<a id="a4469c1385b66591eccdf33f53a9254f5" name="a4469c1385b66591eccdf33f53a9254f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4469c1385b66591eccdf33f53a9254f5">&#9670;&#160;</a></span>from_xtb_surfaces()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a> occ::cg::from_xtb_surfaces </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc_1_1xtb.html#a8fbf5c7bcb0c65b514d24d94fd56c497">occ::xtb::SolvationSurfaces</a> &amp;&#160;</td>
+          <td class="paramname"><em>xtb_surfaces</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Backwards-compatible alias. </p>
+<p><code><a class="el" href="namespaceocc_1_1xtb.html#a8fbf5c7bcb0c65b514d24d94fd56c497">occ::xtb::SolvationSurfaces</a></code> is a type alias for <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> (Phase 2), so this just forwards. </p>
 
 </div>
 </div>

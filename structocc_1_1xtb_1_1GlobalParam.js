@@ -1,0 +1,25 @@
+var structocc_1_1xtb_1_1GlobalParam =
+[
+    [ "a1", "structocc_1_1xtb_1_1GlobalParam.html#af43d46030b064f3b43b8a00f137237f4", null ],
+    [ "a2", "structocc_1_1xtb_1_1GlobalParam.html#a5fec0a45431e78f89eb8a63cc3b0fcb3", null ],
+    [ "aesdmp3", "structocc_1_1xtb_1_1GlobalParam.html#afdeb0fe9da3a3d0310c64a0a69d755cf", null ],
+    [ "aesdmp5", "structocc_1_1xtb_1_1GlobalParam.html#a33a2e7d82cfa97de78e182e31d413acc", null ],
+    [ "aesexp", "structocc_1_1xtb_1_1GlobalParam.html#a7500d9ced3e44d7ada7a86b68cae6849", null ],
+    [ "aesrmax", "structocc_1_1xtb_1_1GlobalParam.html#af556fba61e5878ac3997e6135d018d3c", null ],
+    [ "aesshift", "structocc_1_1xtb_1_1GlobalParam.html#a33d1e86e6ae85862b65074125f8a6cb3", null ],
+    [ "alphaj", "structocc_1_1xtb_1_1GlobalParam.html#a406e89f10017aaeb1c467290e0cd7bd9", null ],
+    [ "enscale", "structocc_1_1xtb_1_1GlobalParam.html#a74babf0e4f72a65fca278d2dcbe1f1d3", null ],
+    [ "enscale4", "structocc_1_1xtb_1_1GlobalParam.html#a62952b3a2b63429bb4ad58413ddf0cb7", null ],
+    [ "gam3shell", "structocc_1_1xtb_1_1GlobalParam.html#accd83ad9fbf4745be4d1e413dd90bbc9", null ],
+    [ "ipeashift_au", "structocc_1_1xtb_1_1GlobalParam.html#ade9e7ea0d8cee4dec83e3c66f46eac27", null ],
+    [ "kdiff", "structocc_1_1xtb_1_1GlobalParam.html#a3711f46bb669d78853e5d45682660fdf", null ],
+    [ "kexp", "structocc_1_1xtb_1_1GlobalParam.html#a01d65dd57a0a10aaf551b30fa8af8af8", null ],
+    [ "kexplight", "structocc_1_1xtb_1_1GlobalParam.html#a6f7442703971ad8fa34352f653200fc4", null ],
+    [ "kpd", "structocc_1_1xtb_1_1GlobalParam.html#a2e6fa5890bbac9035c83a5672333d79a", null ],
+    [ "ksd", "structocc_1_1xtb_1_1GlobalParam.html#ac4dc59e76e236407041f98500b3ee3c7", null ],
+    [ "kshell", "structocc_1_1xtb_1_1GlobalParam.html#a64420b3e3fa8e4b82965335b34c793f5", null ],
+    [ "ksp", "structocc_1_1xtb_1_1GlobalParam.html#a79f78112deb431db3ef3738f0d3964c7", null ],
+    [ "s6", "structocc_1_1xtb_1_1GlobalParam.html#af7d9c71871af4d6d05b03652eaa81167", null ],
+    [ "s8", "structocc_1_1xtb_1_1GlobalParam.html#abfcd9b83c2019972cd71e213fbe8538c", null ],
+    [ "s9", "structocc_1_1xtb_1_1GlobalParam.html#aeefb662348ed1b25003f6fa0f31434bc", null ]
+];

@@ -30,6 +30,10 @@ var annotated_dup =
         [ "SolventSurfacePartitioner", "classocc_1_1cg_1_1SolventSurfacePartitioner.html", "classocc_1_1cg_1_1SolventSurfacePartitioner" ]
       ] ],
       [ "core", "namespaceocc_1_1core.html", [
+        [ "charges", "namespaceocc_1_1core_1_1charges.html", [
+          [ "EeqEwaldData", "structocc_1_1core_1_1charges_1_1EeqEwaldData.html", "structocc_1_1core_1_1charges_1_1EeqEwaldData" ],
+          [ "EeqWithGradient", "structocc_1_1core_1_1charges_1_1EeqWithGradient.html", "structocc_1_1core_1_1charges_1_1EeqWithGradient" ]
+        ] ],
         [ "diis", "namespaceocc_1_1core_1_1diis.html", [
           [ "DIIS", "classocc_1_1core_1_1diis_1_1DIIS.html", "classocc_1_1core_1_1diis_1_1DIIS" ]
         ] ],
@@ -126,7 +130,11 @@ var annotated_dup =
         [ "VoronoiPartition", "classocc_1_1dft_1_1VoronoiPartition.html", "classocc_1_1dft_1_1VoronoiPartition" ]
       ] ],
       [ "disp", "namespaceocc_1_1disp.html", [
-        [ "D4Dispersion", "classocc_1_1disp_1_1D4Dispersion.html", "classocc_1_1disp_1_1D4Dispersion" ]
+        [ "D3Damping", "structocc_1_1disp_1_1D3Damping.html", "structocc_1_1disp_1_1D3Damping" ],
+        [ "D3Dispersion", "classocc_1_1disp_1_1D3Dispersion.html", "classocc_1_1disp_1_1D3Dispersion" ],
+        [ "D4Damping", "structocc_1_1disp_1_1D4Damping.html", "structocc_1_1disp_1_1D4Damping" ],
+        [ "D4Dispersion", "classocc_1_1disp_1_1D4Dispersion.html", "classocc_1_1disp_1_1D4Dispersion" ],
+        [ "D4Scaling", "structocc_1_1disp_1_1D4Scaling.html", "structocc_1_1disp_1_1D4Scaling" ]
       ] ],
       [ "dma", "namespaceocc_1_1dma.html", [
         [ "AnalyticalIntegrator", "classocc_1_1dma_1_1AnalyticalIntegrator.html", "classocc_1_1dma_1_1AnalyticalIntegrator" ],
@@ -393,12 +401,14 @@ var annotated_dup =
         [ "EspFunctor", "structocc_1_1main_1_1EspFunctor.html", "structocc_1_1main_1_1EspFunctor" ],
         [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
         [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
+        [ "LuaConfig", "structocc_1_1main_1_1LuaConfig.html", "structocc_1_1main_1_1LuaConfig" ],
         [ "MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", "structocc_1_1main_1_1MultiplicityValidator" ],
         [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
         [ "PromolDensityFunctor", "structocc_1_1main_1_1PromolDensityFunctor.html", "structocc_1_1main_1_1PromolDensityFunctor" ],
         [ "RoptSettings", "structocc_1_1main_1_1RoptSettings.html", "structocc_1_1main_1_1RoptSettings" ],
         [ "SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", "structocc_1_1main_1_1SpinorbitalKindValidator" ],
         [ "SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", "structocc_1_1main_1_1SurfaceCutsConfig" ],
+        [ "TbConfig", "structocc_1_1main_1_1TbConfig.html", "structocc_1_1main_1_1TbConfig" ],
         [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ]
       ] ],
       [ "mults", "namespaceocc_1_1mults.html", [
@@ -533,7 +543,7 @@ var annotated_dup =
         [ "MP2OrbitalSpec", "structocc_1_1qm_1_1MP2OrbitalSpec.html", "structocc_1_1qm_1_1MP2OrbitalSpec" ],
         [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
         [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
-        [ "PointChargeCorrectedProcedure", "classocc_1_1qm_1_1PointChargeCorrectedProcedure.html", "classocc_1_1qm_1_1PointChargeCorrectedProcedure" ],
+        [ "PointChargePotential", "structocc_1_1qm_1_1PointChargePotential.html", "structocc_1_1qm_1_1PointChargePotential" ],
         [ "PostHFMethod", "classocc_1_1qm_1_1PostHFMethod.html", "classocc_1_1qm_1_1PostHFMethod" ],
         [ "SCF", "structocc_1_1qm_1_1SCF.html", "structocc_1_1qm_1_1SCF" ],
         [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
@@ -543,7 +553,16 @@ var annotated_dup =
         [ "SpatialHierarchySettings", "structocc_1_1qm_1_1SpatialHierarchySettings.html", "structocc_1_1qm_1_1SpatialHierarchySettings" ],
         [ "SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html", "classocc_1_1qm_1_1SplitRIJ" ],
         [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ],
-        [ "WolfSumCorrectedProcedure", "classocc_1_1qm_1_1WolfSumCorrectedProcedure.html", "classocc_1_1qm_1_1WolfSumCorrectedProcedure" ]
+        [ "WolfPointChargePotential", "structocc_1_1qm_1_1WolfPointChargePotential.html", "structocc_1_1qm_1_1WolfPointChargePotential" ]
+      ] ],
+      [ "scrf", "namespaceocc_1_1scrf.html", [
+        [ "detail", "namespaceocc_1_1scrf_1_1detail.html", [
+          [ "CosmoResponse", "structocc_1_1scrf_1_1detail_1_1CosmoResponse.html", "structocc_1_1scrf_1_1detail_1_1CosmoResponse" ]
+        ] ],
+        [ "Options", "structocc_1_1scrf_1_1Options.html", "structocc_1_1scrf_1_1Options" ],
+        [ "ReactionFieldEngine", "classocc_1_1scrf_1_1ReactionFieldEngine.html", "classocc_1_1scrf_1_1ReactionFieldEngine" ],
+        [ "SolvationSurface", "structocc_1_1scrf_1_1SolvationSurface.html", "structocc_1_1scrf_1_1SolvationSurface" ],
+        [ "SolvationSurfaces", "structocc_1_1scrf_1_1SolvationSurfaces.html", "structocc_1_1scrf_1_1SolvationSurfaces" ]
       ] ],
       [ "sht", "namespaceocc_1_1sht.html", [
         [ "AssocLegendreP", "classocc_1_1sht_1_1AssocLegendreP.html", "classocc_1_1sht_1_1AssocLegendreP" ],
@@ -575,8 +594,41 @@ var annotated_dup =
         [ "XDMAtomList", "structocc_1_1xdm_1_1XDMAtomList.html", "structocc_1_1xdm_1_1XDMAtomList" ]
       ] ],
       [ "xtb", "namespaceocc_1_1xtb.html", [
+        [ "AnisotropicEnergy", "structocc_1_1xtb_1_1AnisotropicEnergy.html", "structocc_1_1xtb_1_1AnisotropicEnergy" ],
+        [ "AnisotropicPairGradient", "structocc_1_1xtb_1_1AnisotropicPairGradient.html", "structocc_1_1xtb_1_1AnisotropicPairGradient" ],
+        [ "AnisotropicPotentials", "structocc_1_1xtb_1_1AnisotropicPotentials.html", "structocc_1_1xtb_1_1AnisotropicPotentials" ],
+        [ "CammMoments", "structocc_1_1xtb_1_1CammMoments.html", "structocc_1_1xtb_1_1CammMoments" ],
+        [ "CGenSolveResult", "structocc_1_1xtb_1_1CGenSolveResult.html", "structocc_1_1xtb_1_1CGenSolveResult" ],
+        [ "CMatTriple", "structocc_1_1xtb_1_1CMatTriple.html", "structocc_1_1xtb_1_1CMatTriple" ],
+        [ "CoordinationNumbersWithGradient", "structocc_1_1xtb_1_1CoordinationNumbersWithGradient.html", "structocc_1_1xtb_1_1CoordinationNumbersWithGradient" ],
+        [ "CpcmXOptions", "structocc_1_1xtb_1_1CpcmXOptions.html", "structocc_1_1xtb_1_1CpcmXOptions" ],
+        [ "CpcmXSolvationModel", "classocc_1_1xtb_1_1CpcmXSolvationModel.html", "classocc_1_1xtb_1_1CpcmXSolvationModel" ],
+        [ "DampedCoulomb", "structocc_1_1xtb_1_1DampedCoulomb.html", "structocc_1_1xtb_1_1DampedCoulomb" ],
+        [ "ElementParam", "structocc_1_1xtb_1_1ElementParam.html", "structocc_1_1xtb_1_1ElementParam" ],
+        [ "EwaldGammaData", "structocc_1_1xtb_1_1EwaldGammaData.html", "structocc_1_1xtb_1_1EwaldGammaData" ],
+        [ "Gfn2Engine", "classocc_1_1xtb_1_1Gfn2Engine.html", "classocc_1_1xtb_1_1Gfn2Engine" ],
+        [ "Gfn2Parameters", "classocc_1_1xtb_1_1Gfn2Parameters.html", "classocc_1_1xtb_1_1Gfn2Parameters" ],
+        [ "GlobalParam", "structocc_1_1xtb_1_1GlobalParam.html", "structocc_1_1xtb_1_1GlobalParam" ],
+        [ "KPoint", "structocc_1_1xtb_1_1KPoint.html", "structocc_1_1xtb_1_1KPoint" ],
+        [ "LatticeImage", "structocc_1_1xtb_1_1LatticeImage.html", "structocc_1_1xtb_1_1LatticeImage" ],
+        [ "MultipolePairTensors", "structocc_1_1xtb_1_1MultipolePairTensors.html", "structocc_1_1xtb_1_1MultipolePairTensors" ],
+        [ "MultipoleRadiiWithGradient", "structocc_1_1xtb_1_1MultipoleRadiiWithGradient.html", "structocc_1_1xtb_1_1MultipoleRadiiWithGradient" ],
+        [ "NullSolvationModel", "classocc_1_1xtb_1_1NullSolvationModel.html", "classocc_1_1xtb_1_1NullSolvationModel" ],
+        [ "PeriodicMultipoleAO", "structocc_1_1xtb_1_1PeriodicMultipoleAO.html", "structocc_1_1xtb_1_1PeriodicMultipoleAO" ],
+        [ "PeriodicMultipoleAOBlocks", "structocc_1_1xtb_1_1PeriodicMultipoleAOBlocks.html", "structocc_1_1xtb_1_1PeriodicMultipoleAOBlocks" ],
+        [ "PeriodicSccOptions", "structocc_1_1xtb_1_1PeriodicSccOptions.html", "structocc_1_1xtb_1_1PeriodicSccOptions" ],
+        [ "PeriodicSystem", "structocc_1_1xtb_1_1PeriodicSystem.html", "structocc_1_1xtb_1_1PeriodicSystem" ],
+        [ "RepulsionEnergyGradient", "structocc_1_1xtb_1_1RepulsionEnergyGradient.html", "structocc_1_1xtb_1_1RepulsionEnergyGradient" ],
+        [ "SccOptions", "structocc_1_1xtb_1_1SccOptions.html", "structocc_1_1xtb_1_1SccOptions" ],
+        [ "ShellParam", "structocc_1_1xtb_1_1ShellParam.html", "structocc_1_1xtb_1_1ShellParam" ],
+        [ "ShellTable", "structocc_1_1xtb_1_1ShellTable.html", "structocc_1_1xtb_1_1ShellTable" ],
+        [ "SmdSolvationModel", "classocc_1_1xtb_1_1SmdSolvationModel.html", "classocc_1_1xtb_1_1SmdSolvationModel" ],
+        [ "StoNgFit", "structocc_1_1xtb_1_1StoNgFit.html", "structocc_1_1xtb_1_1StoNgFit" ],
         [ "TbliteCalculator", "classocc_1_1xtb_1_1TbliteCalculator.html", "classocc_1_1xtb_1_1TbliteCalculator" ],
-        [ "XTBCalculator", "classocc_1_1xtb_1_1XTBCalculator.html", "classocc_1_1xtb_1_1XTBCalculator" ]
+        [ "XtbCalculator", "classocc_1_1xtb_1_1XtbCalculator.html", "classocc_1_1xtb_1_1XtbCalculator" ],
+        [ "XTBCalculator", "classocc_1_1xtb_1_1XTBCalculator.html", "classocc_1_1xtb_1_1XTBCalculator" ],
+        [ "XtbResult", "structocc_1_1xtb_1_1XtbResult.html", "structocc_1_1xtb_1_1XtbResult" ],
+        [ "XtbSolvationModel", "classocc_1_1xtb_1_1XtbSolvationModel.html", "classocc_1_1xtb_1_1XtbSolvationModel" ]
       ] ],
       [ "MatSix", "structocc_1_1MatSix.html", "structocc_1_1MatSix" ],
       [ "MatTriple", "structocc_1_1MatTriple.html", "structocc_1_1MatTriple" ]

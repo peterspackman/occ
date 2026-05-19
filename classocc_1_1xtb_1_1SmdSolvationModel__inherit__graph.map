@@ -1,0 +1,5 @@
+<map id="occ::xtb::SmdSolvationModel" name="occ::xtb::SmdSolvationModel">
+<area shape="rect" id="Node000001" title="SMD (&quot;Solvation Model based on Density&quot;) for GFN&#45;xTB." alt="" coords="5,79,216,104"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1xtb_1_1XtbSolvationModel.html" title="Abstract interface for an implicit&#45;solvent contribution to a GFN&#45;xTB SCC." alt="" coords="9,5,213,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,44,113,79,108,79,108,44"/>
+</map>

@@ -54,6 +54,8 @@ var searchData=
   ['multipoleconfig_51',['MultipoleConfig',['../structocc_1_1mults_1_1MultipoleConfig.html',1,'occ::mults']]],
   ['multipoleesp_52',['MultipoleESP',['../classocc_1_1mults_1_1MultipoleESP.html',1,'occ::mults']]],
   ['multipoleinteractions_53',['MultipoleInteractions',['../classocc_1_1mults_1_1MultipoleInteractions.html',1,'occ::mults']]],
-  ['multipoleshifter_54',['MultipoleShifter',['../classocc_1_1dma_1_1MultipoleShifter.html',1,'occ::dma']]],
-  ['multipolesource_55',['MultipoleSource',['../classocc_1_1mults_1_1MultipoleSource.html',1,'occ::mults']]]
+  ['multipolepairtensors_54',['MultipolePairTensors',['../structocc_1_1xtb_1_1MultipolePairTensors.html',1,'occ::xtb']]],
+  ['multipoleradiiwithgradient_55',['MultipoleRadiiWithGradient',['../structocc_1_1xtb_1_1MultipoleRadiiWithGradient.html',1,'occ::xtb']]],
+  ['multipoleshifter_56',['MultipoleShifter',['../classocc_1_1dma_1_1MultipoleShifter.html',1,'occ::dma']]],
+  ['multipolesource_57',['MultipoleSource',['../classocc_1_1mults_1_1MultipoleSource.html',1,'occ::mults']]]
 ];

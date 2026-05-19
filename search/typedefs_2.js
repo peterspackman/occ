@@ -6,7 +6,7 @@ var searchData=
   ['cgenergies_3',['CGEnergies',['../namespaceocc_1_1cg.html#a2efdad243923360f192e3e2d5d48bfb0',1,'occ::cg']]],
   ['cgenergycomponents_4',['CGEnergyComponents',['../namespaceocc_1_1cg.html#a3855b410636d4421f6f9f75415acae22',1,'occ::cg']]],
   ['clock_5ft_5',['clock_t',['../namespaceocc_1_1timing.html#a569e4ae0cf6bae02ad21601b764f6518',1,'occ::timing']]],
-  ['cmat_6',['CMat',['../namespaceocc.html#abcae3213d0f169e3e6fc03865b017066',1,'occ']]],
+  ['cmat_6',['cmat',['../namespaceocc.html#abcae3213d0f169e3e6fc03865b017066',1,'occ::CMat'],['../namespaceocc_1_1xtb.html#ae5d7938f4ec5ef02b1c8346a86b9246a',1,'occ::xtb::CMat']]],
   ['cmat3_7',['CMat3',['../namespaceocc.html#af52f8e368b5574abdfd32e8c343039bc',1,'occ']]],
   ['cmat3n_8',['CMat3N',['../namespaceocc.html#aa26ae83cf7327efd7b3d55093ea81579',1,'occ']]],
   ['cmat4_9',['CMat4',['../namespaceocc.html#aa5c29e0e7237c99bd49cd10c12771a4d',1,'occ']]],

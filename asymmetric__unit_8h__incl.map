@@ -3,18 +3,16 @@
 <area shape="rect" id="Node000002" href="$element_8h.html" title=" " alt="" coords="56,108,203,133"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="170,62,146,98,142,95,165,59"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="5,181,64,207"/>
-<area shape="poly" id="edge9_Node000001_Node000003" title=" " alt="" coords="105,62,72,82,46,109,36,138,34,168,29,168,30,137,42,107,69,78,102,58"/>
+<area shape="poly" id="edge8_Node000001_Node000003" title=" " alt="" coords="105,62,72,82,46,109,36,138,34,168,29,168,30,137,42,107,69,78,102,58"/>
 <area shape="rect" id="Node000004" title=" " alt="" coords="101,181,163,207"/>
-<area shape="poly" id="edge10_Node000001_Node000004" title=" " alt="" coords="205,59,220,95,222,115,217,135,197,159,173,177,170,173,194,155,212,132,217,115,215,96,200,61"/>
+<area shape="poly" id="edge9_Node000001_Node000004" title=" " alt="" coords="205,59,220,95,222,115,217,135,197,159,173,177,170,173,194,155,212,132,217,115,215,96,200,61"/>
 <area shape="rect" id="Node000005" href="$linear__algebra_8h.html" title=" " alt="" coords="194,181,379,207"/>
-<area shape="poly" id="edge8_Node000001_Node000005" title=" " alt="" coords="205,59,238,107,276,168,271,171,234,109,201,62"/>
+<area shape="poly" id="edge7_Node000001_Node000005" title=" " alt="" coords="205,59,238,107,276,168,271,171,234,109,201,62"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="116,135,63,175,60,171,113,131"/>
 <area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="132,134,134,168,128,168,127,134"/>
 <area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="156,131,250,173,248,178,154,136"/>
-<area shape="rect" id="Node000006" title=" " alt="" coords="98,255,201,280"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="266,209,185,251,183,246,263,204"/>
-<area shape="rect" id="Node000007" title=" " alt="" coords="225,255,349,280"/>
-<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="289,207,289,241,284,241,284,207"/>
-<area shape="rect" id="Node000008" title=" " alt="" coords="373,255,462,280"/>
-<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="309,204,385,246,383,250,306,209"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="175,255,267,280"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="278,209,243,246,239,243,274,205"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="291,255,415,280"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="300,205,335,243,331,246,296,209"/>
 </map>

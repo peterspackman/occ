@@ -13,7 +13,6 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "engrad.h", "engrad_8h.html", "engrad_8h" ],
     [ "gmf.h", "gmf_8h.html", "gmf_8h" ],
     [ "grid_settings.h", "grid__settings_8h.html", "grid__settings_8h" ],
-    [ "gto_json.h", "gto__json_8h.html", "gto__json_8h" ],
     [ "isosurface_json.h", "isosurface__json_8h.html", "isosurface__json_8h" ],
     [ "json_basis.h", "io_2json__basis_8h.html", null ],
     [ "kmcpp.h", "kmcpp_8h.html", "kmcpp_8h" ],
@@ -24,7 +23,6 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "periodic_grid.h", "periodic__grid_8h.html", "periodic__grid_8h" ],
     [ "ply.h", "ply_8h.html", "ply_8h" ],
     [ "shelxfile.h", "shelxfile_8h.html", "shelxfile_8h" ],
-    [ "solvent_json.h", "solvent__json_8h.html", "solvent__json_8h" ],
     [ "structure_format.h", "structure__format_8h.html", "structure__format_8h" ],
     [ "tinyply.h", "tinyply_8h.html", "tinyply_8h" ],
     [ "xyz.h", "xyz_8h.html", "xyz_8h" ]

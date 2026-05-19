@@ -13,10 +13,12 @@ var dir_887d2295614e9dc3eeb401126e7efc97 =
     [ "occ_elat.h", "occ__elat_8h.html", "occ__elat_8h" ],
     [ "occ_embed.h", "occ__embed_8h.html", "occ__embed_8h" ],
     [ "occ_isosurface.h", "occ__isosurface_8h.html", "occ__isosurface_8h" ],
+    [ "occ_lua.h", "occ__lua_8h.html", "occ__lua_8h" ],
     [ "occ_pair.h", "occ__pair_8h.html", "occ__pair_8h" ],
     [ "occ_ropt.h", "occ__ropt_8h.html", "occ__ropt_8h" ],
     [ "occ_scf.h", "occ__scf_8h.html", "occ__scf_8h" ],
     [ "occ_surface_cuts.h", "occ__surface__cuts_8h.html", "occ__surface__cuts_8h" ],
+    [ "occ_tb.h", "occ__tb_8h.html", "occ__tb_8h" ],
     [ "point_functors.h", "main_2point__functors_8h.html", "main_2point__functors_8h" ],
     [ "properties.h", "properties_8h.html", "properties_8h" ],
     [ "version.h", "version_8h.html", "version_8h" ]

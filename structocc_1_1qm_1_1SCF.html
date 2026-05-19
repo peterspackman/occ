@@ -150,10 +150,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a4ca25c7e1a96889ce610bb3c9fafd2cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c7cdaa92d0d9c083773c2cac4a3fd31" id="r_a3c7cdaa92d0d9c083773c2cac4a3fd31"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#a3c7cdaa92d0d9c083773c2cac4a3fd31">compute_sap_guess</a> ()</td></tr>
 <tr class="separator:a3c7cdaa92d0d9c083773c2cac4a3fd31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae7e3cf1865971a4f3e5e79a0c79a65c" id="r_aae7e3cf1865971a4f3e5e79a0c79a65c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#aae7e3cf1865971a4f3e5e79a0c79a65c">set_point_charges</a> (const <a class="el" href="namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb">PointChargeList</a> &amp;charges)</td></tr>
-<tr class="separator:aae7e3cf1865971a4f3e5e79a0c79a65c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19bf47dab9dcdf497eacda8d46cdbfe5" id="r_a19bf47dab9dcdf497eacda8d46cdbfe5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#a19bf47dab9dcdf497eacda8d46cdbfe5">set_external_potential</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;V_ext)</td></tr>
-<tr class="separator:a19bf47dab9dcdf497eacda8d46cdbfe5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dbf0c106a9ef152702cc333c9e7d93a" id="r_a5dbf0c106a9ef152702cc333c9e7d93a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#a5dbf0c106a9ef152702cc333c9e7d93a">set_external_potential</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;V_ext_single, double nuclear_energy, std::string_view label)</td></tr>
+<tr class="memdesc:a5dbf0c106a9ef152702cc333c9e7d93a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic external-potential entry point.  <br /></td></tr>
+<tr class="separator:a5dbf0c106a9ef152702cc333c9e7d93a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef378c625faaf2ccd118e9a83fda657f" id="r_aef378c625faaf2ccd118e9a83fda657f"><td class="memTemplParams" colspan="2">template&lt;typename Model &gt; <br />
+requires ExternalPotential&lt;Model, Procedure&gt;</td></tr>
+<tr class="memitem:aef378c625faaf2ccd118e9a83fda657f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#aef378c625faaf2ccd118e9a83fda657f">set_external_potential</a> (const Model &amp;model)</td></tr>
+<tr class="memdesc:aef378c625faaf2ccd118e9a83fda657f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience overload: takes any <code>ExternalPotential</code> model and forwards the matrix/energy/label it produces.  <br /></td></tr>
+<tr class="separator:aef378c625faaf2ccd118e9a83fda657f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a094bcbca4c3028994918ec31a6f26c" id="r_a1a094bcbca4c3028994918ec31a6f26c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#a1a094bcbca4c3028994918ec31a6f26c">update_scf_energy</a> (bool incremental)</td></tr>
 <tr class="separator:a1a094bcbca4c3028994918ec31a6f26c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a208dcf3d747e343bdbd048bc12c05ed1" id="r_a208dcf3d747e343bdbd048bc12c05ed1"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#a208dcf3d747e343bdbd048bc12c05ed1">scf_kind</a> () const</td></tr>
@@ -530,8 +534,8 @@ template&lt;SCFMethod P&gt; </div>
 
 </div>
 </div>
-<a id="a19bf47dab9dcdf497eacda8d46cdbfe5" name="a19bf47dab9dcdf497eacda8d46cdbfe5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a19bf47dab9dcdf497eacda8d46cdbfe5">&#9670;&#160;</a></span>set_external_potential()</h2>
+<a id="a5dbf0c106a9ef152702cc333c9e7d93a" name="a5dbf0c106a9ef152702cc333c9e7d93a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5dbf0c106a9ef152702cc333c9e7d93a">&#9670;&#160;</a></span>set_external_potential() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -542,11 +546,64 @@ template&lt;SCFMethod P&gt; </div>
           <td class="memname">void <a class="el" href="structocc_1_1qm_1_1SCF.html">occ::qm::SCF</a>&lt; P &gt;::set_external_potential </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
-          <td class="paramname"><em>V_ext</em></td><td>)</td>
+          <td class="paramname"><em>V_ext_single</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>nuclear_energy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>label</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Generic external-potential entry point. </p>
+<p><code>V_ext_single</code> is a single <code>nbf x nbf</code> one-electron operator in the AO basis — <a class="el" href="structocc_1_1qm_1_1SCF.html">SCF</a> expands it into the correct spin block(s) of <code>ctx.V_ext</code>. Records <code>nuclear.&lt;label&gt;</code> and arranges <code>electronic.&lt;label&gt;</code> to be updated each iteration. Pass any matrix and energy you like; the caller's choice of <code>label</code> ends up in the final energy report. </p>
+
+</div>
+</div>
+<a id="aef378c625faaf2ccd118e9a83fda657f" name="aef378c625faaf2ccd118e9a83fda657f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef378c625faaf2ccd118e9a83fda657f">&#9670;&#160;</a></span>set_external_potential() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;SCFMethod Procedure&gt; </div>
+<div class="memtemplate">
+template&lt;typename Model &gt; <br />
+requires ExternalPotential&lt;Model, Procedure&gt;</div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="structocc_1_1qm_1_1SCF.html">occ::qm::SCF</a>&lt; Procedure &gt;::set_external_potential </td>
+          <td>(</td>
+          <td class="paramtype">const Model &amp;&#160;</td>
+          <td class="paramname"><em>model</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Convenience overload: takes any <code>ExternalPotential</code> model and forwards the matrix/energy/label it produces. </p>
+<p>The model must satisfy <code>ExternalPotential&lt;Model, Procedure&gt;</code> from <code>&lt;<a class="el" href="external__potential_8h.html">occ/qm/external_potential.h</a>&gt;</code>. </p>
 
 </div>
 </div>
@@ -583,26 +640,6 @@ template&lt;SCFMethod P&gt; </div>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>m</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aae7e3cf1865971a4f3e5e79a0c79a65c" name="aae7e3cf1865971a4f3e5e79a0c79a65c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae7e3cf1865971a4f3e5e79a0c79a65c">&#9670;&#160;</a></span>set_point_charges()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;SCFMethod P&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="structocc_1_1qm_1_1SCF.html">occ::qm::SCF</a>&lt; P &gt;::set_point_charges </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb">PointChargeList</a> &amp;&#160;</td>
-          <td class="paramname"><em>charges</em></td><td>)</td>
           <td></td>
         </tr>
       </table>

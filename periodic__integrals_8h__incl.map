@@ -1,0 +1,23 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/periodic_integrals.h" name="/home/runner/work/occ/occ/include/occ/xtb/periodic_integrals.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="138,5,309,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,84,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="170,62,82,104,80,100,168,58"/>
+<area shape="rect" id="Node000003" href="$atom_8h.html" title=" " alt="" coords="160,181,287,207"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="226,60,226,168,221,168,221,60"/>
+<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="131,255,316,280"/>
+<area shape="poly" id="edge6_Node000001_Node000004" title=" " alt="" coords="207,62,176,115,161,148,150,182,147,194,150,206,167,228,189,245,185,250,163,232,145,208,142,194,145,181,156,146,171,113,203,59"/>
+<area shape="rect" id="Node000007" href="$periodic_8h.html" title=" " alt="" coords="305,108,443,133"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="271,58,343,99,340,103,268,62"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="513,181,576,207"/>
+<area shape="poly" id="edge12_Node000001_Node000009" title=" " alt="" coords="310,49,383,72,457,106,497,136,528,169,524,172,493,140,454,110,381,77,308,54"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="226,207,226,241,221,241,221,207"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="112,328,204,353"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="215,282,180,320,176,316,211,279"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="228,328,352,353"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="236,279,272,316,268,320,232,282"/>
+<area shape="poly" id="edge9_Node000007_Node000003" title=" " alt="" coords="351,136,262,178,259,173,349,131"/>
+<area shape="poly" id="edge10_Node000007_Node000004" title=" " alt="" coords="399,131,423,146,445,164,458,185,458,197,452,208,432,224,401,236,323,255,322,250,399,231,429,219,448,205,452,196,452,187,441,167,420,150,396,136"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="311,181,437,207"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="377,134,377,168,371,168,371,134"/>
+<area shape="poly" id="edge11_Node000007_Node000009" title=" " alt="" coords="402,131,505,174,503,178,400,136"/>
+</map>

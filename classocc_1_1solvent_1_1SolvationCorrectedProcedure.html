@@ -178,10 +178,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a8b8a97dbd4493a6f34ff9957ac8dce01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a338336affd2fe3499d87c02073c66d7c" id="r_a338336affd2fe3499d87c02073c66d7c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a338336affd2fe3499d87c02073c66d7c">surface_polarization_energy_elements</a> () const</td></tr>
 <tr class="separator:a338336affd2fe3499d87c02073c66d7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a12d91879fcb25c761317a5c2e38ef12f" id="r_a12d91879fcb25c761317a5c2e38ef12f"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a12d91879fcb25c761317a5c2e38ef12f">surface_nuclear_energy_elements</a> () const</td></tr>
-<tr class="separator:a12d91879fcb25c761317a5c2e38ef12f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f76c2f9926d860b59b2993ea1570894" id="r_a6f76c2f9926d860b59b2993ea1570894"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a6f76c2f9926d860b59b2993ea1570894">surface_electronic_energy_elements</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo) const</td></tr>
-<tr class="separator:a6f76c2f9926d860b59b2993ea1570894"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51e333eaa034ca72d861c0d277520ddf" id="r_a51e333eaa034ca72d861c0d277520ddf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html">occ::scrf::SolvationSurfaces</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a51e333eaa034ca72d861c0d277520ddf">solvation_surfaces</a> () const</td></tr>
+<tr class="memdesc:a51e333eaa034ca72d861c0d277520ddf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-element decomposition in the unified <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> shape (same one consumed by cg, same one produced by the xTB pipeline).  <br /></td></tr>
+<tr class="separator:a51e333eaa034ca72d861c0d277520ddf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad394ad372baa75fcc3d3901e3a447e83" id="r_ad394ad372baa75fcc3d3901e3a447e83"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html">occ::scrf::ReactionFieldEngine</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#ad394ad372baa75fcc3d3901e3a447e83">engine</a> () const</td></tr>
+<tr class="separator:ad394ad372baa75fcc3d3901e3a447e83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a55a4f56f1f5ca0531ea2cdf78838b9" id="r_a2a55a4f56f1f5ca0531ea2cdf78838b9"><td class="memTemplParams" colspan="2">template&lt;unsigned int order = 1&gt; </td></tr>
 <tr class="memitem:a2a55a4f56f1f5ca0531ea2cdf78838b9"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a2a55a4f56f1f5ca0531ea2cdf78838b9">compute_electronic_multipole_matrices</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;o={0.0, 0.0, 0.0}) const</td></tr>
 <tr class="separator:a2a55a4f56f1f5ca0531ea2cdf78838b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -721,6 +722,33 @@ template&lt;typename Proc &gt; </div>
 
 </div>
 </div>
+<a id="ad394ad372baa75fcc3d3901e3a447e83" name="ad394ad372baa75fcc3d3901e3a447e83"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad394ad372baa75fcc3d3901e3a447e83">&#9670;&#160;</a></span>engine()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Proc &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html">occ::scrf::ReactionFieldEngine</a> &amp; <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::engine </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a52776113cdd6d9aaf672f525aef84b9f" name="a52776113cdd6d9aaf672f525aef84b9f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a52776113cdd6d9aaf672f525aef84b9f">&#9670;&#160;</a></span>frozen_electrons()</h2>
 
@@ -968,6 +996,35 @@ template&lt;typename Proc &gt; </div>
 
 </div>
 </div>
+<a id="a51e333eaa034ca72d861c0d277520ddf" name="a51e333eaa034ca72d861c0d277520ddf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51e333eaa034ca72d861c0d277520ddf">&#9670;&#160;</a></span>solvation_surfaces()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Proc &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html">occ::scrf::SolvationSurfaces</a> <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::solvation_surfaces </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Per-element decomposition in the unified <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> shape (same one consumed by cg, same one produced by the xTB pipeline). </p>
+
+</div>
+</div>
 <a id="aad4af5545e973d0d14ff3b9e0bc42584" name="aad4af5545e973d0d14ff3b9e0bc42584"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aad4af5545e973d0d14ff3b9e0bc42584">&#9670;&#160;</a></span>supports_incremental_fock_build()</h2>
 
@@ -1062,61 +1119,6 @@ template&lt;typename Proc &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">auto <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::surface_cds_energy_elements </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a6f76c2f9926d860b59b2993ea1570894" name="a6f76c2f9926d860b59b2993ea1570894"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6f76c2f9926d860b59b2993ea1570894">&#9670;&#160;</a></span>surface_electronic_energy_elements()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Proc &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::surface_electronic_energy_elements </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
-          <td class="paramname"><em>mo</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a12d91879fcb25c761317a5c2e38ef12f" name="a12d91879fcb25c761317a5c2e38ef12f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a12d91879fcb25c761317a5c2e38ef12f">&#9670;&#160;</a></span>surface_nuclear_energy_elements()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Proc &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::surface_nuclear_energy_elements </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>

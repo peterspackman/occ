@@ -6,5 +6,7 @@ var searchData=
   ['neighcrysaxisinfo_3',['NeighcrysAxisInfo',['../structocc_1_1core_1_1NeighcrysAxisInfo.html',1,'occ::core']]],
   ['netwriter_4',['NetWriter',['../classocc_1_1io_1_1crystalgrower_1_1NetWriter.html',1,'occ::io::crystalgrower']]],
   ['nonlocalcorrelationfunctional_5',['NonLocalCorrelationFunctional',['../classocc_1_1dft_1_1NonLocalCorrelationFunctional.html',1,'occ::dft']]],
-  ['numpyarray_6',['NumpyArray',['../structocc_1_1core_1_1numpy_1_1NumpyArray.html',1,'occ::core::numpy']]]
+  ['noshellpairs_6',['NoShellPairs',['../structocc_1_1qm_1_1IntegralEngine_1_1NoShellPairs.html',1,'occ::qm::IntegralEngine']]],
+  ['nullsolvationmodel_7',['NullSolvationModel',['../classocc_1_1xtb_1_1NullSolvationModel.html',1,'occ::xtb']]],
+  ['numpyarray_8',['NumpyArray',['../structocc_1_1core_1_1numpy_1_1NumpyArray.html',1,'occ::core::numpy']]]
 ];

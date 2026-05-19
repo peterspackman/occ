@@ -158,6 +158,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a92b445d6f8c74f3951a35ea00dc3053a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a5356f6237872b443beb313a1a0f2fa" id="r_a7a5356f6237872b443beb313a1a0f2fa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a7a5356f6237872b443beb313a1a0f2fa">num_atoms</a> () const</td></tr>
 <tr class="separator:a7a5356f6237872b443beb313a1a0f2fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ff30f2a11def599f656a1c4901ede4c" id="r_a2ff30f2a11def599f656a1c4901ede4c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a2ff30f2a11def599f656a1c4901ede4c">save_integrals</a> (bool enable=true)</td></tr>
+<tr class="separator:a2ff30f2a11def599f656a1c4901ede4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8daeddeb710d9d132ed96e654fcd2c3" id="r_ab8daeddeb710d9d132ed96e654fcd2c3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#ab8daeddeb710d9d132ed96e654fcd2c3">num_orbitals</a> () const</td></tr>
+<tr class="separator:ab8daeddeb710d9d132ed96e654fcd2c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f1c10238501f3514a828916f7bf15bb" id="r_a1f1c10238501f3514a828916f7bf15bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a1f1c10238501f3514a828916f7bf15bb">overlap</a> () const</td></tr>
+<tr class="separator:a1f1c10238501f3514a828916f7bf15bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a184af6be9a5aa417a51b39d3d0311a55" id="r_a184af6be9a5aa417a51b39d3d0311a55"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a184af6be9a5aa417a51b39d3d0311a55">hamiltonian</a> () const</td></tr>
+<tr class="separator:a184af6be9a5aa417a51b39d3d0311a55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57ecc34169d10d9c4f5d6fae1d8a725e" id="r_a57ecc34169d10d9c4f5d6fae1d8a725e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a57ecc34169d10d9c4f5d6fae1d8a725e">update_structure</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;<a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#aeb4fae836262441913c01f941dbb8600">positions</a>)</td></tr>
 <tr class="separator:a57ecc34169d10d9c4f5d6fae1d8a725e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2b86e4a9ee00d06ee09e5ce253892859" id="r_a2b86e4a9ee00d06ee09e5ce253892859"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#a2b86e4a9ee00d06ee09e5ce253892859">update_structure</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;<a class="el" href="classocc_1_1xtb_1_1TbliteCalculator.html#aeb4fae836262441913c01f941dbb8600">positions</a>, const <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a> &amp;lattice)</td></tr>
@@ -412,6 +420,23 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a184af6be9a5aa417a51b39d3d0311a55" name="a184af6be9a5aa417a51b39d3d0311a55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a184af6be9a5aa417a51b39d3d0311a55">&#9670;&#160;</a></span>hamiltonian()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::xtb::TbliteCalculator::hamiltonian </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="aee41b572a9128719fc929dc95e53bf86" name="aee41b572a9128719fc929dc95e53bf86"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aee41b572a9128719fc929dc95e53bf86">&#9670;&#160;</a></span>lattice_vectors()</h2>
 
@@ -462,6 +487,40 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ab8daeddeb710d9d132ed96e654fcd2c3" name="ab8daeddeb710d9d132ed96e654fcd2c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8daeddeb710d9d132ed96e654fcd2c3">&#9670;&#160;</a></span>num_orbitals()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::xtb::TbliteCalculator::num_orbitals </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1f1c10238501f3514a828916f7bf15bb" name="a1f1c10238501f3514a828916f7bf15bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f1c10238501f3514a828916f7bf15bb">&#9670;&#160;</a></span>overlap()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::xtb::TbliteCalculator::overlap </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="aeb4fae836262441913c01f941dbb8600" name="aeb4fae836262441913c01f941dbb8600"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aeb4fae836262441913c01f941dbb8600">&#9670;&#160;</a></span>positions()</h2>
 
@@ -483,6 +542,24 @@ Public Member Functions</h2></td></tr>
 <span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2ff30f2a11def599f656a1c4901ede4c" name="a2ff30f2a11def599f656a1c4901ede4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ff30f2a11def599f656a1c4901ede4c">&#9670;&#160;</a></span>save_integrals()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::xtb::TbliteCalculator::save_integrals </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enable</em> = <code>true</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
 </div><div class="memdoc">
 
 </div>

@@ -1,0 +1,12 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/gamma.h" name="/home/runner/work/occ/occ/include/occ/xtb/gamma.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="213,5,384,60"/>
+<area shape="rect" id="Node000002" href="$gfn2__engine_8h.html" title=" " alt="" coords="5,108,176,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="233,68,146,110,144,106,231,63"/>
+<area shape="rect" id="Node000004" href="$gfn2__periodic__calculator_8h.html" title=" " alt="" coords="201,108,397,163"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="301,74,301,108,296,108,296,74"/>
+<area shape="rect" id="Node000005" href="$h0__gradient_8h.html" title=" " alt="" coords="421,108,592,163"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="366,63,454,106,451,110,364,68"/>
+<area shape="rect" id="Node000003" href="$xtb__calculator_8h.html" title=" " alt="" coords="109,211,280,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="130,170,169,209,166,212,126,174"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="263,174,224,212,220,209,260,170"/>
+</map>

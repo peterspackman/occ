@@ -5,7 +5,7 @@
 <area shape="rect" id="Node000007" href="$site__index_8h.html" title=" " alt="" coords="294,108,469,133"/>
 <area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="384,60,384,94,379,94,379,60"/>
 <area shape="rect" id="Node000013" title=" " alt="" coords="493,108,555,133"/>
-<area shape="poly" id="edge14_Node000001_Node000013" title=" " alt="" coords="426,58,495,99,492,103,424,62"/>
+<area shape="poly" id="edge13_Node000001_Node000013" title=" " alt="" coords="426,58,495,99,492,103,424,62"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="273,181,463,207"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="233,131,330,173,328,178,230,136"/>
 <area shape="rect" id="Node000004" title=" " alt="" coords="5,181,80,207"/>
@@ -17,13 +17,12 @@
 <area shape="poly" id="edge7_Node000007_Node000003" title=" " alt="" coords="382,134,375,168,370,167,377,133"/>
 <area shape="rect" id="Node000008" href="$hkl_8h.html" title=" " alt="" coords="488,181,616,207"/>
 <area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="410,131,513,174,511,178,408,136"/>
-<area shape="rect" id="Node000009" title=" " alt="" coords="447,328,537,353"/>
-<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="545,208,529,230,514,256,504,286,498,315,493,314,499,285,510,254,524,227,540,205"/>
-<area shape="rect" id="Node000010" href="$linear__algebra_8h.html" title=" " alt="" coords="525,255,710,280"/>
-<area shape="poly" id="edge10_Node000008_Node000010" title=" " alt="" coords="565,205,599,243,596,246,561,209"/>
-<area shape="poly" id="edge13_Node000010_Node000009" title=" " alt="" coords="599,282,526,323,523,319,596,278"/>
-<area shape="rect" id="Node000011" title=" " alt="" coords="563,328,666,353"/>
-<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="620,280,618,315,613,314,614,280"/>
-<area shape="rect" id="Node000012" title=" " alt="" coords="690,328,814,353"/>
-<area shape="poly" id="edge12_Node000010_Node000012" title=" " alt="" coords="640,278,719,319,717,324,638,282"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="426,255,515,280"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="541,209,496,248,492,244,537,205"/>
+<area shape="rect" id="Node000010" href="$linear__algebra_8h.html" title=" " alt="" coords="539,255,725,280"/>
+<area shape="poly" id="edge10_Node000008_Node000010" title=" " alt="" coords="567,205,611,244,607,248,563,209"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="519,328,611,353"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="623,282,587,320,584,316,619,279"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="635,328,759,353"/>
+<area shape="poly" id="edge12_Node000010_Node000012" title=" " alt="" coords="645,279,679,316,676,320,641,282"/>
 </map>

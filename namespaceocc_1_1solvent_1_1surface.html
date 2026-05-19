@@ -111,8 +111,9 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab61ed1203478ce52410badabeda7fd7a" id="r_ab61ed1203478ce52410badabeda7fd7a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1solvent_1_1surface_1_1Surface.html">Surface</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1surface.html#ab61ed1203478ce52410badabeda7fd7a">solvent_surface</a> (const Vec &amp;radii, const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a> &amp;atomic_numbers, const Mat3N &amp;positions, double solvent_radius_angs=0.4)</td></tr>
-<tr class="separator:ab61ed1203478ce52410badabeda7fd7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a610465e63c5eba21db4cd2ba282f2b7a" id="r_a610465e63c5eba21db4cd2ba282f2b7a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1solvent_1_1surface_1_1Surface.html">Surface</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1surface.html#a610465e63c5eba21db4cd2ba282f2b7a">solvent_surface</a> (const Vec &amp;radii, const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a> &amp;atomic_numbers, const Mat3N &amp;positions, double solvent_radius_angs=0.4, bool axis_aligned=true, double smoothing_width_bohr=0.0)</td></tr>
+<tr class="memdesc:a610465e63c5eba21db4cd2ba282f2b7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build an atom-centered Lebedev cavity surface.  <br /></td></tr>
+<tr class="separator:a610465e63c5eba21db4cd2ba282f2b7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c804f320cbbdb26d5fb19deba8acc4b" id="r_a0c804f320cbbdb26d5fb19deba8acc4b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1surface.html#a0c804f320cbbdb26d5fb19deba8acc4b">nearest_atom_index</a> (const Mat3N &amp;atom_positions, const Mat3N &amp;element_centers)</td></tr>
 <tr class="separator:a0c804f320cbbdb26d5fb19deba8acc4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -145,8 +146,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ab61ed1203478ce52410badabeda7fd7a" name="ab61ed1203478ce52410badabeda7fd7a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab61ed1203478ce52410badabeda7fd7a">&#9670;&#160;</a></span>solvent_surface()</h2>
+<a id="a610465e63c5eba21db4cd2ba282f2b7a" name="a610465e63c5eba21db4cd2ba282f2b7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a610465e63c5eba21db4cd2ba282f2b7a">&#9670;&#160;</a></span>solvent_surface()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -173,7 +174,19 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>solvent_radius_angs</em> = <code>0.4</code>&#160;</td>
+          <td class="paramname"><em>solvent_radius_angs</em> = <code>0.4</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>axis_aligned</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>smoothing_width_bohr</em> = <code>0.0</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -182,6 +195,12 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Build an atom-centered Lebedev cavity surface. </p>
+<p><code>axis_aligned = true</code> (default) preserves the legacy behaviour of pre-rotating the molecule into its principal-axes frame before placing the Lebedev grid — fine for energy-only callers (SMD HF/DFT pipeline). For analytical gradients, set <code>axis_aligned = false</code> so each cavity point sits rigidly on its parent atom; otherwise the global rotation chain <code>∂axes/∂R</code> breaks the frozen-cavity assumption in <code>cosmo::gradient</code>.</p>
+<p><code>smoothing_width_bohr = 0</code> (default) uses the legacy boolean mask (point is either fully included or fully dropped). With <code>smoothing_width_bohr &gt; 0</code>, each cavity point gets a continuous weight in [0, 1]: </p><pre class="fragment">weight_j = Π_{k ≠ atom_j} smoothstep(|r_j − R_k|, r_k, w)
+smoothstep(d, t, w) = ½ (1 + erf((d − t)/w))
+</pre><p> Distances are measured between the post-shift cavity vertex and atom centres so the gradient code can reconstruct the same weights from <code>surface.vertices</code> and atom radii. Areas are multiplied by the weight and points whose weight falls below 1e-10 are dropped. This makes the cavity, and any energy derived from it, C∞ with respect to atomic positions — required for clean analytical gradients. </p>
 
 </div>
 </div>

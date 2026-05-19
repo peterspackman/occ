@@ -14,6 +14,7 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "elastic_tensor.h", "elastic__tensor_8h.html", "elastic__tensor_8h" ],
     [ "element.h", "element_8h.html", "element_8h" ],
     [ "energy_components.h", "energy__components_8h.html", "energy__components_8h" ],
+    [ "format_matrix.h", "format__matrix_8h.html", "format__matrix_8h" ],
     [ "fraction.h", "fraction_8h.html", "fraction_8h" ],
     [ "gensqrtinv.h", "gensqrtinv_8h.html", "gensqrtinv_8h" ],
     [ "graph.h", "graph_8h.html", "graph_8h" ],

@@ -45,6 +45,8 @@ var namespaceocc_1_1cg =
       [ "ElectronDensity", "namespaceocc_1_1cg.html#ae284280e2614fc31a1eba564be91dd6cad47101755289809d537b90d5f1737add", null ]
     ] ],
     [ "exchange_matching_forward_reverse_pairs", "namespaceocc_1_1cg.html#a48533d39bf477dcc431b1993ff46f20e", null ],
+    [ "from_scrf_surfaces", "namespaceocc_1_1cg.html#a8506668fa23aea463684053dcf3be5c3", null ],
+    [ "from_xtb_surfaces", "namespaceocc_1_1cg.html#a4469c1385b66591eccdf33f53a9254f5", null ],
     [ "NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE", "namespaceocc_1_1cg.html#ac958b5b6a7a122e54cde06349179f66c", null ],
     [ "NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE", "namespaceocc_1_1cg.html#aaa52a885ee62a9b4a7c5abae12521453", null ]
 ];

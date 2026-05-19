@@ -1,0 +1,16 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/periodic.h" name="/home/runner/work/occ/occ/include/occ/xtb/periodic.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="185,5,355,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,132,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="210,63,109,105,107,100,207,58"/>
+<area shape="rect" id="Node000003" href="$atom_8h.html" title=" " alt="" coords="156,108,283,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="257,61,236,97,231,95,252,59"/>
+<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="177,181,363,207"/>
+<area shape="poly" id="edge6_Node000001_Node000004" title=" " alt="" coords="286,60,297,94,299,114,298,134,285,170,280,168,293,133,294,114,292,96,281,61"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="359,108,421,133"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="308,58,364,98,361,102,305,62"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="230,132,256,169,252,172,226,135"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="159,255,251,280"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="261,209,226,246,223,243,257,205"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="275,255,399,280"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="283,205,318,243,315,246,279,209"/>
+</map>

@@ -10,13 +10,14 @@ var searchData=
   ['dimermappingtable_7',['DimerMappingTable',['../namespaceocc_1_1cg.html#a0dfeb00c945a2636ceca813dda43172a',1,'occ::cg']]],
   ['dimerresults_8',['DimerResults',['../namespaceocc_1_1cg.html#a999cd08c97d17040789562269d22d453',1,'occ::cg']]],
   ['dipole_9',['Dipole',['../structocc_1_1core_1_1Multipole.html#af3c48eb12303f014d0d1dfe3e3295b61',1,'occ::core::Multipole']]],
-  ['dmat_10',['DMat',['../namespaceocc.html#a031760bbc5e156e4424d656b148ad8be',1,'occ']]],
-  ['dmat3_11',['DMat3',['../namespaceocc.html#a0c8c72b8d78d9a66702bf90612630ef9',1,'occ']]],
-  ['dmat3n_12',['DMat3N',['../namespaceocc.html#aa287e90e840e3d599bd48fed94737f42',1,'occ']]],
-  ['dmat4_13',['DMat4',['../namespaceocc.html#acc82d57aae5873da63f62979bf0f6cd9',1,'occ']]],
-  ['dmatn3_14',['DMatN3',['../namespaceocc.html#a525119ee1f63c093737bfedd08f71e46',1,'occ']]],
-  ['dmatrm_15',['DMatRM',['../namespaceocc.html#aa25e99581dd6d9cb6fdfc2e54124f91c',1,'occ']]],
-  ['duration_5ft_16',['duration_t',['../namespaceocc_1_1timing.html#a477674a5f397a1fbcbefec4bd9b46eef',1,'occ::timing']]],
-  ['dvec_17',['DVec',['../namespaceocc.html#a25e6d9f9e73d3092648893f1f82dfe84',1,'occ']]],
-  ['dvec3_18',['DVec3',['../namespaceocc.html#aaa95daaf253e9ad55dab6e885a94bd1e',1,'occ']]]
+  ['dipolegradao_10',['DipoleGradAO',['../namespaceocc_1_1xtb.html#ab3b3cc6f6c40c45ce9f8614342272c90',1,'occ::xtb']]],
+  ['dmat_11',['DMat',['../namespaceocc.html#a031760bbc5e156e4424d656b148ad8be',1,'occ']]],
+  ['dmat3_12',['DMat3',['../namespaceocc.html#a0c8c72b8d78d9a66702bf90612630ef9',1,'occ']]],
+  ['dmat3n_13',['DMat3N',['../namespaceocc.html#aa287e90e840e3d599bd48fed94737f42',1,'occ']]],
+  ['dmat4_14',['DMat4',['../namespaceocc.html#acc82d57aae5873da63f62979bf0f6cd9',1,'occ']]],
+  ['dmatn3_15',['DMatN3',['../namespaceocc.html#a525119ee1f63c093737bfedd08f71e46',1,'occ']]],
+  ['dmatrm_16',['DMatRM',['../namespaceocc.html#aa25e99581dd6d9cb6fdfc2e54124f91c',1,'occ']]],
+  ['duration_5ft_17',['duration_t',['../namespaceocc_1_1timing.html#a477674a5f397a1fbcbefec4bd9b46eef',1,'occ::timing']]],
+  ['dvec_18',['DVec',['../namespaceocc.html#a25e6d9f9e73d3092648893f1f82dfe84',1,'occ']]],
+  ['dvec3_19',['DVec3',['../namespaceocc.html#aaa95daaf253e9ad55dab6e885a94bd1e',1,'occ']]]
 ];

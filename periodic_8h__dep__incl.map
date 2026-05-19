@@ -1,0 +1,26 @@
+<map id="/home/runner/work/occ/occ/include/occ/xtb/periodic.h" name="/home/runner/work/occ/occ/include/occ/xtb/periodic.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="155,5,325,60"/>
+<area shape="rect" id="Node000002" href="$anisotropic_8h.html" title=" " alt="" coords="93,211,264,265"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="222,73,207,109,193,163,184,211,179,210,187,162,201,107,217,71"/>
+<area shape="rect" id="Node000004" href="$xtb__calculator_8h.html" title=" " alt="" coords="165,519,336,573"/>
+<area shape="poly" id="edge15_Node000001_Node000004" title=" " alt="" coords="158,68,106,97,58,134,38,156,22,181,12,208,8,237,8,342,12,373,24,402,42,427,65,450,119,488,176,516,174,521,117,493,61,454,38,431,19,404,7,375,3,342,3,236,7,206,17,178,33,153,54,130,104,92,156,63"/>
+<area shape="rect" id="Node000005" href="$multipole__ewald_8h.html" title=" " alt="" coords="43,313,213,368"/>
+<area shape="poly" id="edge8_Node000001_Node000005" title=" " alt="" coords="196,71,165,98,134,131,105,170,84,212,78,238,84,265,94,289,109,312,104,314,90,292,79,266,73,238,79,210,101,167,130,128,161,94,192,67"/>
+<area shape="rect" id="Node000006" href="$gfn2__periodic__calculator_8h.html" title=" " alt="" coords="534,211,730,265"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="312,63,400,106,588,208,586,213,397,110,310,68"/>
+<area shape="rect" id="Node000007" href="$periodic__gamma_8h.html" title=" " alt="" coords="525,108,696,163"/>
+<area shape="poly" id="edge9_Node000001_Node000007" title=" " alt="" coords="339,58,526,108,524,113,338,63"/>
+<area shape="rect" id="Node000008" href="$periodic__integrals_8h.html" title=" " alt="" coords="216,108,387,163"/>
+<area shape="poly" id="edge11_Node000001_Node000008" title=" " alt="" coords="265,70,288,107,283,109,261,73"/>
+<area shape="rect" id="Node000003" href="$gfn2__engine_8h.html" title=" " alt="" coords="165,416,336,471"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="208,275,228,312,243,367,251,415,246,416,238,368,223,314,204,278"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="162,279,144,314,139,312,157,276"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="253,484,253,519,248,519,248,484"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="172,375,220,414,217,418,169,379"/>
+<area shape="poly" id="edge7_Node000006_Node000004" title=" " alt="" coords="592,276,350,473,287,521,284,516,346,469,589,272"/>
+<area shape="poly" id="edge10_Node000007_Node000006" title=" " alt="" coords="622,175,629,210,624,211,616,177"/>
+<area shape="poly" id="edge12_Node000008_Node000002" title=" " alt="" coords="260,174,212,213,209,209,257,169"/>
+<area shape="poly" id="edge14_Node000008_Node000003" title=" " alt="" coords="297,176,258,416,252,415,292,176"/>
+<area shape="rect" id="Node000009" href="$camm_8h.html" title=" " alt="" coords="339,211,509,265"/>
+<area shape="poly" id="edge13_Node000008_Node000009" title=" " alt="" coords="346,169,394,209,390,213,342,174"/>
+</map>
