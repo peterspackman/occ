@@ -1,6 +1,6 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
-#include <occ/io/solvent_json.h>
+#include <occ/solvent/json.h>
 #include <occ/solvent/smd_parameters.h>
 #include <string>
 

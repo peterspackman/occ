@@ -1,5 +1,6 @@
 add_library(occ_solvent
     "${CMAKE_CURRENT_SOURCE_DIR}/draco.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parameters.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_correction.cpp"
@@ -11,7 +12,6 @@ target_link_libraries(occ_solvent
     PUBLIC
     occ_core
     occ_dft
-    occ_io
     occ_scrf
 )
 target_include_directories(occ_solvent PUBLIC 
