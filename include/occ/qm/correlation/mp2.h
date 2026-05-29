@@ -1,8 +1,8 @@
 #pragma once
 #include <cstddef>
 #include <map>
+#include <occ/qm/correlation/post_hf_method.h>
 #include <occ/qm/integral_engine_df.h>
-#include <occ/qm/post_hf_method.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 namespace occ::qm {
@@ -37,6 +37,11 @@ public:
   // Set algorithm choice
   void set_algorithm(Algorithm alg) { m_algorithm = alg; }
   Algorithm algorithm() const { return m_algorithm; }
+
+  // Approximate peak-memory budget (bytes) for the RI-MP2 B-tensor blocks.
+  // Controls the occupied block size; smaller budget => more, smaller blocks.
+  void set_memory_budget(size_t bytes) { m_memory_budget = bytes; }
+  size_t memory_budget() const { return m_memory_budget; }
 
   struct Results {
     double same_spin_correlation = 0.0;
@@ -88,6 +93,7 @@ private:
   size_t m_max_virtuals = SIZE_MAX;
   double m_e_min = -1.5;
   double m_e_max = 1000.0;
+  size_t m_memory_budget = size_t(1) << 30; // 1 GiB default
   Algorithm m_algorithm = Conventional;
   std::unique_ptr<IntegralEngineDF> m_df_engine;
 };

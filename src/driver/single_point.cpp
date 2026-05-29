@@ -7,8 +7,8 @@
 #include <occ/xtb/xtb_calculator.h>
 #include <occ/driver/single_point.h>
 #include <occ/io/occ_input.h>
+#include <occ/qm/correlation/mp2.h>
 #include <occ/qm/gradients.h>
-#include <occ/qm/mp2.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/solvent/solvation_correction.h>

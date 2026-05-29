@@ -17,7 +17,7 @@
 #include <occ/qm/mo.h>
 #include <occ/qm/split_ri_j.h>
 #include <occ/qm/auto_aux_basis.h>
-#include <occ/qm/mo_integral_engine.h>
+#include <occ/qm/correlation/mo_integral_engine.h>
 #include <occ/qm/oniom.h>
 #include <occ/qm/partitioning.h>
 #include <occ/qm/scf.h>
