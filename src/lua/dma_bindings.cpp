@@ -24,12 +24,10 @@ void register_dma_bindings(lua_State *L) {
       .addStaticFunction(
           "new_with_rank", +[](int max_rank) { return new Mult(max_rank); })
       .addPropertyReadWrite("max_rank", &Mult::max_rank)
-      // q is a Vec — expose as method-style getter/setter going through
-      // Lua tables. Property getters can't reliably accept lua_State*.
+      // q is a Vec — getter returns Eigen userdata, setter accepts
+      // either a Vec userdata or a Lua table via table_to_vecx.
       .addProperty(
-          "get_q", +[](const Mult *mp) -> occ::Vec { return mp->q; })
-      .addFunction(
-          "set_q",
+          "q", +[](const Mult *mp) -> occ::Vec { return mp->q; },
           +[](Mult *mp, const lb::LuaRef &t) { mp->q = table_to_vecx(t); })
       .addProperty("num_components", &Mult::num_components)
       .addFunction("to_string", &Mult::to_string)
@@ -90,24 +88,8 @@ void register_dma_bindings(lua_State *L) {
       .addConstructor<void (*)()>()
       .addProperty("size", &DMASites::size)
       .addProperty("num_atoms", &DMASites::num_atoms)
-      .addFunction(
-          "atoms",
-          +[](const DMASites *s, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            for (size_t i = 0; i < s->atoms.size(); ++i) {
-              t[static_cast<int>(i + 1)] = s->atoms[i];
-            }
-            return t;
-          })
-      .addFunction(
-          "name",
-          +[](const DMASites *s, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            for (size_t i = 0; i < s->name.size(); ++i) {
-              t[static_cast<int>(i + 1)] = s->name[i];
-            }
-            return t;
-          })
+      .addProperty("atoms", &DMASites::atoms)
+      .addProperty("name", &DMASites::name)
       .addProperty(
           "positions",
           +[](const DMASites *s) -> occ::Mat3N { return s->positions; })

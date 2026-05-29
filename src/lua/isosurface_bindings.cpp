@@ -1,5 +1,6 @@
 #include "isosurface_bindings.h"
 #include "eigen_conv.h"
+#include "enum_stacks.h"
 #include <fmt/core.h>
 #include <occ/io/ply.h>
 #include <occ/isosurface/isosurface.h>
@@ -15,76 +16,11 @@ void register_isosurface_bindings(lua_State *L) {
   lb::getGlobalNamespace(L)
       .beginNamespace("occ")
 
-      // Enums — LuaBridge3 doesn't have a dedicated enum binding;
-      // expose values as a sub-namespace of int properties.
-      .beginNamespace("SurfaceKind")
-      .addProperty(
-          "PromoleculeDensity",
-          +[]() { return static_cast<int>(SurfaceKind::PromoleculeDensity); })
-      .addProperty(
-          "Hirshfeld",
-          +[]() { return static_cast<int>(SurfaceKind::Hirshfeld); })
-      .addProperty(
-          "EEQ_ESP", +[]() { return static_cast<int>(SurfaceKind::EEQ_ESP); })
-      .addProperty(
-          "ElectronDensity",
-          +[]() { return static_cast<int>(SurfaceKind::ElectronDensity); })
-      .addProperty(
-          "ESP", +[]() { return static_cast<int>(SurfaceKind::ESP); })
-      .addProperty(
-          "SpinDensity",
-          +[]() { return static_cast<int>(SurfaceKind::SpinDensity); })
-      .addProperty(
-          "DeformationDensity",
-          +[]() { return static_cast<int>(SurfaceKind::DeformationDensity); })
-      .addProperty(
-          "Orbital", +[]() { return static_cast<int>(SurfaceKind::Orbital); })
-      .addProperty(
-          "CrystalVoid",
-          +[]() { return static_cast<int>(SurfaceKind::CrystalVoid); })
-      .endNamespace()
-
-      .beginNamespace("PropertyKind")
-      .addProperty(
-          "Dnorm", +[]() { return static_cast<int>(PropertyKind::Dnorm); })
-      .addProperty(
-          "Dint_norm",
-          +[]() { return static_cast<int>(PropertyKind::Dint_norm); })
-      .addProperty(
-          "Dext_norm",
-          +[]() { return static_cast<int>(PropertyKind::Dext_norm); })
-      .addProperty(
-          "Dint", +[]() { return static_cast<int>(PropertyKind::Dint); })
-      .addProperty(
-          "Dext", +[]() { return static_cast<int>(PropertyKind::Dext); })
-      .addProperty(
-          "FragmentPatch",
-          +[]() { return static_cast<int>(PropertyKind::FragmentPatch); })
-      .addProperty(
-          "ShapeIndex",
-          +[]() { return static_cast<int>(PropertyKind::ShapeIndex); })
-      .addProperty(
-          "Curvedness",
-          +[]() { return static_cast<int>(PropertyKind::Curvedness); })
-      .addProperty(
-          "EEQ_ESP", +[]() { return static_cast<int>(PropertyKind::EEQ_ESP); })
-      .addProperty(
-          "PromoleculeDensity",
-          +[]() { return static_cast<int>(PropertyKind::PromoleculeDensity); })
-      .addProperty(
-          "ESP", +[]() { return static_cast<int>(PropertyKind::ESP); })
-      .addProperty(
-          "ElectronDensity",
-          +[]() { return static_cast<int>(PropertyKind::ElectronDensity); })
-      .addProperty(
-          "SpinDensity",
-          +[]() { return static_cast<int>(PropertyKind::SpinDensity); })
-      .addProperty(
-          "DeformationDensity",
-          +[]() { return static_cast<int>(PropertyKind::DeformationDensity); })
-      .addProperty(
-          "Orbital", +[]() { return static_cast<int>(PropertyKind::Orbital); })
-      .endNamespace()
+      // Enums round-trip through luabridge::Stack<E> (see enum_stacks.h);
+      // value lists are defined once in enum_defs.h.
+      OCC_LUA_ENUM_NAMESPACE("SurfaceKind", OCC_ENUM_SurfaceKind)
+      OCC_LUA_ENUM_NAMESPACE("PropertyKind", OCC_ENUM_PropertyKind)
+      OCC_LUA_ENUM_NAMESPACE("OrbitalReference", OCC_ENUM_OrbitalReference)
 
       .beginClass<IsosurfaceProperties>("IsosurfaceProperties")
       .addConstructor<void (*)()>()
@@ -95,16 +31,15 @@ void register_isosurface_bindings(lua_State *L) {
       .beginClass<Isosurface>("Isosurface")
       .addConstructor<void (*)()>()
       // sol::optional<bool> binary default = true; split into two named
-      // functions.
+      // functions. Use a LuaRef for the optional `binary` arg so the
+      // default fires when omitted (a plain `bool` would silently
+      // decode-as-false and write ASCII).
       .addFunction(
           "save",
-          +[](const Isosurface *iso, const std::string &filename, bool binary) {
-            occ::io::write_ply_mesh(filename, *iso, binary);
-          })
-      .addFunction(
-          "save_default",
-          +[](const Isosurface *iso, const std::string &filename) {
-            occ::io::write_ply_mesh(filename, *iso, true);
+          +[](const Isosurface *iso, const std::string &filename,
+              const lb::LuaRef &binary) {
+            const bool b = binary.isNil() ? true : binary.unsafe_cast<bool>();
+            occ::io::write_ply_mesh(filename, *iso, b);
           })
       .endClass()
 
@@ -117,21 +52,31 @@ void register_isosurface_bindings(lua_State *L) {
                             &IsosurfaceGenerationParameters::separation)
       .addPropertyReadWrite("background_density",
                             &IsosurfaceGenerationParameters::background_density)
-      .addPropertyReadWrite(
-          "surface_orbital_index",
-          &IsosurfaceGenerationParameters::surface_orbital_index)
+      // surface_orbital_index is OrbitalIndex (a struct with an inner
+      // enum); we expose its scalar fields through getters/setters so
+      // Lua can write `p.surface_orbital_offset = 1`.
+      .addProperty(
+          "surface_orbital_offset",
+          +[](const IsosurfaceGenerationParameters *p) {
+            return p->surface_orbital_index.offset;
+          },
+          +[](IsosurfaceGenerationParameters *p, int v) {
+            p->surface_orbital_index.offset = v;
+          })
+      .addProperty(
+          "surface_orbital_reference",
+          +[](const IsosurfaceGenerationParameters *p) {
+            return p->surface_orbital_index.reference;
+          },
+          +[](IsosurfaceGenerationParameters *p, OrbitalIndex::Reference r) {
+            p->surface_orbital_index.reference = r;
+          })
       .addPropertyReadWrite("flip_normals",
                             &IsosurfaceGenerationParameters::flip_normals)
       .addPropertyReadWrite("binary_output",
                             &IsosurfaceGenerationParameters::binary_output)
-      .addProperty(
-          "surface_kind",
-          +[](const IsosurfaceGenerationParameters *p) {
-            return static_cast<int>(p->surface_kind);
-          },
-          +[](IsosurfaceGenerationParameters *p, int v) {
-            p->surface_kind = static_cast<SurfaceKind>(v);
-          })
+      .addPropertyReadWrite("surface_kind",
+                            &IsosurfaceGenerationParameters::surface_kind)
       .endClass()
 
       .beginClass<IsosurfaceCalculator>("IsosurfaceCalculator")
@@ -156,77 +101,13 @@ void register_isosurface_bindings(lua_State *L) {
       .addProperty("error_message", &IsosurfaceCalculator::error_message)
       .endClass()
 
-      .beginNamespace("VolumePropertyKind")
-      .addProperty(
-          "ElectronDensity",
-          +[]() {
-            return static_cast<int>(VolumePropertyKind::ElectronDensity);
-          })
-      .addProperty(
-          "ElectronDensityAlpha",
-          +[]() {
-            return static_cast<int>(VolumePropertyKind::ElectronDensityAlpha);
-          })
-      .addProperty(
-          "ElectronDensityBeta",
-          +[]() {
-            return static_cast<int>(VolumePropertyKind::ElectronDensityBeta);
-          })
-      .addProperty(
-          "ElectricPotential",
-          +[]() {
-            return static_cast<int>(VolumePropertyKind::ElectricPotential);
-          })
-      .addProperty(
-          "EEQ_ESP",
-          +[]() { return static_cast<int>(VolumePropertyKind::EEQ_ESP); })
-      .addProperty(
-          "PromoleculeDensity",
-          +[]() {
-            return static_cast<int>(VolumePropertyKind::PromoleculeDensity);
-          })
-      .addProperty(
-          "DeformationDensity",
-          +[]() {
-            return static_cast<int>(VolumePropertyKind::DeformationDensity);
-          })
-      .addProperty(
-          "XCDensity",
-          +[]() { return static_cast<int>(VolumePropertyKind::XCDensity); })
-      .addProperty(
-          "CrystalVoid",
-          +[]() { return static_cast<int>(VolumePropertyKind::CrystalVoid); })
-      .endNamespace()
-
-      .beginNamespace("SpinConstraint")
-      .addProperty(
-          "Total", +[]() { return static_cast<int>(SpinConstraint::Total); })
-      .addProperty(
-          "Alpha", +[]() { return static_cast<int>(SpinConstraint::Alpha); })
-      .addProperty(
-          "Beta", +[]() { return static_cast<int>(SpinConstraint::Beta); })
-      .endNamespace()
+      OCC_LUA_ENUM_NAMESPACE("VolumePropertyKind", OCC_ENUM_VolumePropertyKind)
+      OCC_LUA_ENUM_NAMESPACE("SpinConstraint", OCC_ENUM_SpinConstraint)
 
       .beginClass<VolumeGenerationParameters>("VolumeGenerationParameters")
       .addConstructor<void (*)()>()
-      // Enum-typed fields are bridged through int — Lua scripts
-      // pass `occ.VolumePropertyKind.X` which we expose as int.
-      .addProperty(
-          "property",
-          +[](const VolumeGenerationParameters *p) {
-            return static_cast<int>(p->property);
-          },
-          +[](VolumeGenerationParameters *p, int v) {
-            p->property = static_cast<VolumePropertyKind>(v);
-          })
-      .addProperty(
-          "spin",
-          +[](const VolumeGenerationParameters *p) {
-            return static_cast<int>(p->spin);
-          },
-          +[](VolumeGenerationParameters *p, int v) {
-            p->spin = static_cast<SpinConstraint>(v);
-          })
+      .addPropertyReadWrite("property", &VolumeGenerationParameters::property)
+      .addPropertyReadWrite("spin", &VolumeGenerationParameters::spin)
       .addPropertyReadWrite("functional",
                             &VolumeGenerationParameters::functional)
       .addPropertyReadWrite("mo_number", &VolumeGenerationParameters::mo_number)

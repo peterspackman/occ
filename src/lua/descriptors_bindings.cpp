@@ -56,11 +56,10 @@ void register_descriptors_bindings(lua_State *L) {
           })
       .addProperty("size", &PointwiseDistanceDistribution::size)
       .addProperty("k", &PointwiseDistanceDistribution::k)
-      // groups() returns Eigen::MatrixXi — mat_to_table handles any
-      // Eigen::MatrixBase.
-      .addFunction(
-          "groups", +[](const PointwiseDistanceDistribution *p,
-                        lua_State *S) { return mat_to_table(S, p->groups()); })
+      .addProperty(
+          "groups", +[](const PointwiseDistanceDistribution *p) -> occ::IMat {
+            return p->groups();
+          })
       .endClass()
 
       .beginClass<Steinhardt>("Steinhardt")

@@ -17,15 +17,15 @@ print(string.format("Volume: %.3f Å³,  Density: %.3f g/cm³",
 
 local sg = crystal.space_group
 print(string.format("Space group : %s  (No. %d, %d symmetry ops)",
-    sg.symbol, sg.number, #sg:symmetry_operations()))
+    sg.symbol, sg.number, #sg.symmetry_operations))
 
 local asym = crystal.asymmetric_unit
 print(string.format("Asym unit   : %d atoms  (%s)", #asym, tostring(asym)))
 
-local uc_mols = crystal:unit_cell_molecules()
+local uc_mols = crystal.unit_cell_molecules
 print(string.format("Unit-cell molecules: %d", #uc_mols))
 
-local uniq_mols = crystal:symmetry_unique_molecules()
+local uniq_mols = crystal.symmetry_unique_molecules
 print(string.format("Symmetry-unique mols: %d", #uniq_mols))
 for i, mol in ipairs(uniq_mols) do
     print(string.format("  mol %d: %d atoms, molar mass %.3f g/mol",

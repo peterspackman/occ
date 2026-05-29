@@ -1,5 +1,6 @@
 #include "dft_bindings.h"
 #include "eigen_conv.h"
+#include "enum_stacks.h"
 #include <fmt/core.h>
 #include <occ/dft/dft.h>
 #include <occ/qm/external_potential.h>

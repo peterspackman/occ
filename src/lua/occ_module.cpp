@@ -49,7 +49,15 @@ void register_module_level_helpers(lua_State *L) {
       .addFunction(
           "log_debug", +[](const std::string &msg) { occ::log::debug(msg); })
       .addFunction(
-          "set_num_threads", +[](int n) { occ::parallel::set_num_threads(n); })
+          "set_num_threads",
+          +[](int n) {
+            if (n < 1) {
+              throw std::runtime_error(
+                  "set_num_threads: thread count must be >= 1, got " +
+                  std::to_string(n));
+            }
+            occ::parallel::set_num_threads(n);
+          })
       .addFunction(
           "set_data_directory",
           +[](const std::string &s) { occ::set_data_directory(s); })
@@ -90,14 +98,53 @@ local function _not_private(k)
   return k:sub(1, 1) ~= "_" and k ~= "class_cast"
 end
 
--- LuaBridge3 puts instance methods on mt.__index (a table). For sol2-
--- backed objects (none should exist post-migration, but be defensive) it
--- put them on mt directly. Falling back to mt if __index is not a table
--- means this works either way.
-local function _method_source(mt)
-  local idx = rawget(mt, "__index")
-  if type(idx) == "table" then return idx end
-  return mt
+-- LuaBridge3 instance metatables hold methods at string keys, and
+-- store property getters/setters in sub-tables keyed by a lightuserdata
+-- pointer (see Source/LuaBridge/detail/ClassInfo.h). The propget/propset
+-- sub-tables are *plain* string->function maps. Identify them by that
+-- shape, but reject any table that also has a non-string key: the
+-- const-table (reachable via constKey) is likewise string->function but
+-- additionally holds lightuserdata keys (typeKey, propgetKey, ...), and
+-- without this guard its const *method* names would leak into the
+-- property list. (Unioning the propset table is harmless — every
+-- writable property also has a getter, so it contributes no new names.)
+local function _is_propget_table(v)
+  if type(v) ~= "table" then return false end
+  local n = 0
+  for kk, vv in pairs(v) do
+    if type(kk) ~= "string" then return false end
+    if type(vv) ~= "function" then return false end
+    n = n + 1
+  end
+  return n > 0
+end
+
+local function _collect_properties(mt)
+  local seen = {}
+  for k, v in pairs(mt) do
+    if type(k) ~= "string" and _is_propget_table(v) then
+      for kk, _ in pairs(v) do
+        if type(kk) == "string" and _not_private(kk) then
+          seen[kk] = true
+        end
+      end
+    end
+  end
+  local out = {}
+  for k, _ in pairs(seen) do table.insert(out, k) end
+  table.sort(out)
+  return out
+end
+
+local function _collect_methods(mt)
+  local out = {}
+  for k, v in pairs(mt) do
+    if type(k) == "string" and type(v) == "function" and _not_private(k) then
+      table.insert(out, k)
+    end
+  end
+  table.sort(out)
+  return out
 end
 
 -- LuaBridge3's namespace tables reject writes, so we install help / pp
@@ -108,7 +155,7 @@ local function _help(obj)
   if obj == nil then
     print("occ Lua API")
     print("  help(occ)        list members of the occ namespace")
-    print("  help(obj)        list methods on a userdata or table")
+    print("  help(obj)        list methods/properties on a userdata or table")
     print("  Tab              complete identifiers / methods")
     print("  Examples:")
     print("    mol = occ.load_molecule('water.xyz')")
@@ -125,17 +172,32 @@ local function _help(obj)
       return
     end
     print(tostring(obj))
-    local tname = rawget(mt, "__type") or rawget(mt, "__name") or "?"
-    print(string.format("type     : %s", tname))
-    local src = _method_source(mt)
-    local keys = _sorted_keys(src, _not_private)
-    if #keys == 0 then
-      print("methods  : (none discovered)")
-    else
-      print(string.format("methods  : (%d)", #keys))
-      for _, k in ipairs(keys) do
-        print("  :" .. k)
+    -- LuaBridge3 stores the registered class name under the
+    -- lightuserdata typeKey (Source/LuaBridge/detail/ClassInfo.h),
+    -- which we can't construct from Lua. It is the only metatable
+    -- entry whose value is a bare string (everything else is a
+    -- function, table, or the options integer), so the lone
+    -- string-valued entry is the typename.
+    local tname = "?"
+    for k, v in pairs(mt) do
+      if type(k) ~= "string" and type(v) == "string" then
+        tname = v
+        break
       end
+    end
+    print(string.format("type      : %s", tname))
+    local methods = _collect_methods(mt)
+    local props = _collect_properties(mt)
+    if #props > 0 then
+      print(string.format("properties: (%d)", #props))
+      for _, k in ipairs(props) do print("  ." .. k) end
+    end
+    if #methods > 0 then
+      print(string.format("methods   : (%d)", #methods))
+      for _, k in ipairs(methods) do print("  :" .. k) end
+    end
+    if #props == 0 and #methods == 0 then
+      print("(no methods or properties discovered)")
     end
   elseif t == "table" then
     print(tostring(obj))

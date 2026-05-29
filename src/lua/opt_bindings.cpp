@@ -1,5 +1,6 @@
 #include "opt_bindings.h"
 #include "eigen_conv.h"
+#include "enum_stacks.h"
 #include <fmt/core.h>
 #include <occ/core/molecule.h>
 #include <occ/opt/angle_coordinate.h>
@@ -21,13 +22,7 @@ void register_opt_bindings(lua_State *L) {
       .beginNamespace("occ")
       .beginNamespace("opt")
 
-      .beginNamespace("BondCoordinateType")
-      .addProperty(
-          "COVALENT",
-          +[]() { return static_cast<int>(BondCoordinate::Type::COVALENT); })
-      .addProperty(
-          "VDW", +[]() { return static_cast<int>(BondCoordinate::Type::VDW); })
-      .endNamespace()
+      OCC_LUA_ENUM_NAMESPACE("BondCoordinateType", OCC_ENUM_BondCoordinateType)
 
       .beginClass<BondCoordinate>("BondCoordinate")
       // Two construction shapes — default COVALENT vs explicit type.
@@ -234,15 +229,11 @@ void register_opt_bindings(lua_State *L) {
                                 table_to_vecx(gradient)};
           })
       .addProperty(
-          "get_q", +[](const OptPoint *p) -> occ::Vec { return p->q; })
-      .addFunction(
-          "set_q",
+          "q", +[](const OptPoint *p) -> occ::Vec { return p->q; },
           +[](OptPoint *p, const lb::LuaRef &t) { p->q = table_to_vecx(t); })
       .addPropertyReadWrite("E", &OptPoint::E)
       .addProperty(
-          "get_g", +[](const OptPoint *p) -> occ::Vec { return p->g; })
-      .addFunction(
-          "set_g",
+          "g", +[](const OptPoint *p) -> occ::Vec { return p->g; },
           +[](OptPoint *p, const lb::LuaRef &t) { p->g = table_to_vecx(t); })
       .addFunction(
           "__tostring",

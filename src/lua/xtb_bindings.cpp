@@ -1,5 +1,6 @@
 #include "xtb_bindings.h"
 #include "eigen_conv.h"
+#include "enum_stacks.h"
 #include <fmt/core.h>
 #include <occ/core/dimer.h>
 #include <occ/core/molecule.h>
@@ -64,11 +65,7 @@ void register_xtb_bindings(lua_State *L) {
       .endClass()
 
       // ----- XtbMethod enum -----------------------------------------------
-      .beginNamespace("XtbMethod")
-      .addProperty(
-          "GFN2",
-          +[]() { return static_cast<int>(XtbCalculator::Method::GFN2); })
-      .endNamespace()
+      OCC_LUA_ENUM_NAMESPACE("XtbMethod", OCC_ENUM_XtbMethod)
 
       // ----- XtbCalculator ------------------------------------------------
       // XtbCalculator is move-only (owns a unique_ptr<Gfn2Engine>). Three

@@ -54,6 +54,22 @@ void register_cg_bindings(lua_State *L) {
                             &LatticeConvergenceSettings::crystal_filename)
       .addPropertyReadWrite("output_json_filename",
                             &LatticeConvergenceSettings::output_json_filename)
+      .addPropertyReadWrite("write_all_pairs",
+                            &LatticeConvergenceSettings::write_all_pairs)
+      .addPropertyReadWrite("spherical_basis",
+                            &LatticeConvergenceSettings::spherical_basis)
+      .addPropertyReadWrite("charge_string",
+                            &LatticeConvergenceSettings::charge_string)
+      .addPropertyReadWrite("multiplicity_string",
+                            &LatticeConvergenceSettings::multiplicity_string)
+      .addPropertyReadWrite("external_command",
+                            &LatticeConvergenceSettings::external_command)
+      .addPropertyReadWrite("normalize_hydrogens",
+                            &LatticeConvergenceSettings::normalize_hydrogens)
+      .addPropertyReadWrite("run_elastic_fitting",
+                            &LatticeConvergenceSettings::run_elastic_fitting)
+      .addPropertyReadWrite("elastic_output_file",
+                            &LatticeConvergenceSettings::elastic_output_file)
       .endClass()
 
       .beginClass<CGConfig>("CrystalGrowthConfig")
@@ -61,9 +77,28 @@ void register_cg_bindings(lua_State *L) {
       .addPropertyReadWrite("lattice_settings", &CGConfig::lattice_settings)
       .addPropertyReadWrite("cg_radius", &CGConfig::cg_radius)
       .addPropertyReadWrite("solvent", &CGConfig::solvent)
+      .addPropertyReadWrite("charge_string", &CGConfig::charge_string)
       .addPropertyReadWrite("wavefunction_choice",
                             &CGConfig::wavefunction_choice)
+      // Keep `num_surface_energies` for the existing alias to max_facets
+      // (matches the CLI's --surface-energies); also bind the C++ name
+      // for callers using the model identifier.
+      .addPropertyReadWrite("max_facets", &CGConfig::max_facets)
       .addPropertyReadWrite("num_surface_energies", &CGConfig::max_facets)
+      .addPropertyReadWrite("write_dump_files", &CGConfig::write_dump_files)
+      .addPropertyReadWrite("spherical", &CGConfig::spherical)
+      .addPropertyReadWrite("write_kmcpp_file", &CGConfig::write_kmcpp_file)
+      .addPropertyReadWrite("use_xtb", &CGConfig::use_xtb)
+      .addPropertyReadWrite("dry_run", &CGConfig::dry_run)
+      .addPropertyReadWrite("asymmetric_solvent_contribution",
+                            &CGConfig::asymmetric_solvent_contribution)
+      .addPropertyReadWrite("gamma_point_molecules",
+                            &CGConfig::gamma_point_molecules)
+      .addPropertyReadWrite("xtb_solvation_model",
+                            &CGConfig::xtb_solvation_model)
+      .addPropertyReadWrite("list_solvents", &CGConfig::list_solvents)
+      .addPropertyReadWrite("crystal_is_atomic",
+                            &CGConfig::crystal_is_atomic)
       .endClass()
 
       .beginClass<DimerSolventTerm>("DimerSolventTerm")

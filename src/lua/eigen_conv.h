@@ -51,27 +51,67 @@ inline luabridge::LuaRef lua_get_table(const luabridge::LuaRef &t, int i) {
   return *v;
 }
 
+// Try to decode `t` as an Eigen userdata of type T (Vec / Mat3N / etc.).
+// Returns true and writes to *out on success. Used by every table_to_X
+// helper so callers can pass either a Lua table OR a userdata of the
+// matching Eigen type (e.g. mol.positions → mol:translated(...) round
+// trip).
+template <typename T>
+inline bool try_userdata_to_eigen(const luabridge::LuaRef &t, T *out) {
+  if (!t.isUserdata())
+    return false;
+  auto r = t.template cast<T>();
+  if (!r)
+    return false;
+  *out = *r;
+  return true;
+}
+
 inline Vec table_to_vecx(const luabridge::LuaRef &t) {
+  Vec v;
+  if (try_userdata_to_eigen<Vec>(t, &v))
+    return v;
   const int n = t.length();
-  Vec v(n);
+  v.resize(n);
   for (int i = 0; i < n; ++i)
     v(i) = lua_get_num(t, i + 1);
+  return v;
+}
+
+// Integer counterpart of table_to_vecx — accepts an IVec userdata or a
+// plain Lua array of numbers (e.g. a list of atomic numbers).
+inline IVec table_to_ivec(const luabridge::LuaRef &t) {
+  IVec v;
+  if (try_userdata_to_eigen<IVec>(t, &v))
+    return v;
+  const int n = t.length();
+  v.resize(n);
+  for (int i = 0; i < n; ++i)
+    v(i) = static_cast<int>(lua_get_num(t, i + 1));
   return v;
 }
 
 template <int N>
 inline Eigen::Matrix<double, N, 1> table_to_vec(const luabridge::LuaRef &t) {
   Eigen::Matrix<double, N, 1> v;
+  if (try_userdata_to_eigen<Eigen::Matrix<double, N, 1>>(t, &v))
+    return v;
   for (int i = 0; i < N; ++i)
     v(i) = lua_get_num(t, i + 1);
   return v;
 }
 
 inline Vec3 table_to_vec3(const luabridge::LuaRef &t) {
+  Vec3 v;
+  if (try_userdata_to_eigen<Vec3>(t, &v))
+    return v;
   return Vec3(lua_get_num(t, 1), lua_get_num(t, 2), lua_get_num(t, 3));
 }
 
 inline IVec3 table_to_ivec3(const luabridge::LuaRef &t) {
+  IVec3 v;
+  if (try_userdata_to_eigen<IVec3>(t, &v))
+    return v;
   return IVec3(static_cast<int>(lua_get_num(t, 1)),
                static_cast<int>(lua_get_num(t, 2)),
                static_cast<int>(lua_get_num(t, 3)));
@@ -79,6 +119,8 @@ inline IVec3 table_to_ivec3(const luabridge::LuaRef &t) {
 
 inline Mat3 table_to_mat3(const luabridge::LuaRef &t) {
   Mat3 m;
+  if (try_userdata_to_eigen<Mat3>(t, &m))
+    return m;
   for (int i = 0; i < 3; ++i) {
     luabridge::LuaRef row = lua_get_table(t, i + 1);
     for (int j = 0; j < 3; ++j)
@@ -89,6 +131,8 @@ inline Mat3 table_to_mat3(const luabridge::LuaRef &t) {
 
 inline Mat4 table_to_mat4(const luabridge::LuaRef &t) {
   Mat4 m;
+  if (try_userdata_to_eigen<Mat4>(t, &m))
+    return m;
   for (int i = 0; i < 4; ++i) {
     luabridge::LuaRef row = lua_get_table(t, i + 1);
     for (int j = 0; j < 4; ++j)
@@ -98,6 +142,9 @@ inline Mat4 table_to_mat4(const luabridge::LuaRef &t) {
 }
 
 inline Mat3N table_to_mat3n(const luabridge::LuaRef &t) {
+  Mat3N m;
+  if (try_userdata_to_eigen<Mat3N>(t, &m))
+    return m;
   const int rows = t.length();
   if (rows == 0)
     return Mat3N(3, 0);
@@ -108,7 +155,7 @@ inline Mat3N table_to_mat3n(const luabridge::LuaRef &t) {
   }
   luabridge::LuaRef first = lua_get_table(t, 1);
   const int n = first.length();
-  Mat3N m(3, n);
+  m.resize(3, n);
   for (int i = 0; i < 3; ++i) {
     luabridge::LuaRef row = lua_get_table(t, i + 1);
     for (int j = 0; j < n; ++j)

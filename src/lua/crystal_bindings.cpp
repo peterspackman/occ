@@ -91,8 +91,8 @@ void register_symmetry_operation(lua_State *L) {
       .addProperty("is_identity", &SymmetryOperation::is_identity)
       .addFunction(
           "apply",
-          +[](const SymmetryOperation *op, lua_State *S,
-              const lb::LuaRef &positions) {
+          +[](const SymmetryOperation *op, const lb::LuaRef &positions,
+              lua_State *S) {
             return mat_to_table(S, op->apply(table_to_mat3n(positions)));
           })
       .addProperty(
@@ -105,7 +105,7 @@ void register_symmetry_operation(lua_State *L) {
           })
       .addFunction(
           "cartesian_rotation",
-          +[](const SymmetryOperation *op, lua_State *S, const UnitCell &cell) {
+          +[](const SymmetryOperation *op, const UnitCell &cell, lua_State *S) {
             return mat_to_table(S, op->cartesian_rotation(cell));
           })
       .addProperty(
@@ -116,8 +116,8 @@ void register_symmetry_operation(lua_State *L) {
       .addProperty("has_translation", &SymmetryOperation::has_translation)
       .addFunction(
           "__call",
-          +[](const SymmetryOperation *op, lua_State *S,
-              const lb::LuaRef &positions) {
+          +[](const SymmetryOperation *op, const lb::LuaRef &positions,
+              lua_State *S) {
             return mat_to_table(S, (*op)(table_to_mat3n(positions)));
           })
       .addFunction(
@@ -168,12 +168,13 @@ void register_spacegroup(lua_State *L) {
       .addProperty("short_name", &SpaceGroup::short_name)
       // Vector-returning getter — LuaBridge3 property-getter
       // specialization doesn't accept const std::vector<T>&; leave as
-      // a method.
-      .addFunction("symmetry_operations", &SpaceGroup::symmetry_operations)
+      // Zero-arg accessor — expose as a property so `sg.symmetry_operations`
+      // yields the list directly instead of a function reference.
+      .addProperty("symmetry_operations", &SpaceGroup::symmetry_operations)
       .addProperty("has_H_R_choice", &SpaceGroup::has_H_R_choice)
       .addFunction(
           "apply_all_symmetry_operations",
-          +[](const SpaceGroup *sg, lua_State *S, const lb::LuaRef &positions) {
+          +[](const SpaceGroup *sg, const lb::LuaRef &positions, lua_State *S) {
             auto p =
                 sg->apply_all_symmetry_operations(table_to_mat3n(positions));
             lb::LuaRef out = lb::newTable(S);
@@ -183,7 +184,7 @@ void register_spacegroup(lua_State *L) {
           })
       .addFunction(
           "apply_rotations",
-          +[](const SpaceGroup *sg, lua_State *S, const lb::LuaRef &positions) {
+          +[](const SpaceGroup *sg, const lb::LuaRef &positions, lua_State *S) {
             auto p = sg->apply_rotations(table_to_mat3n(positions));
             lb::LuaRef out = lb::newTable(S);
             out["indices"] = vec_to_table(S, p.first);
@@ -230,20 +231,16 @@ void register_asymmetric_unit(lua_State *L) {
             return new AsymmetricUnit(table_to_mat3n(positions), z, labels);
           })
       .addProperty(
-          "get_positions",
-          +[](const AsymmetricUnit *a) -> occ::Mat3N { return a->positions; })
-      .addFunction(
-          "set_positions",
+          "positions",
+          +[](const AsymmetricUnit *a) -> occ::Mat3N { return a->positions; },
           +[](AsymmetricUnit *a, const lb::LuaRef &t) {
             a->positions = table_to_mat3n(t);
           })
       .addProperty(
-          "get_atomic_numbers",
+          "atomic_numbers",
           +[](const AsymmetricUnit *a) -> occ::IVec {
             return a->atomic_numbers;
-          })
-      .addFunction(
-          "set_atomic_numbers",
+          },
           +[](AsymmetricUnit *a, const lb::LuaRef &t) {
             const int n = t.length();
             IVec z(n);
@@ -253,18 +250,14 @@ void register_asymmetric_unit(lua_State *L) {
             a->atomic_numbers = z;
           })
       .addProperty(
-          "get_occupations",
-          +[](const AsymmetricUnit *a) -> occ::Vec { return a->occupations; })
-      .addFunction(
-          "set_occupations",
+          "occupations",
+          +[](const AsymmetricUnit *a) -> occ::Vec { return a->occupations; },
           +[](AsymmetricUnit *a, const lb::LuaRef &t) {
             a->occupations = table_to_vecx(t);
           })
       .addProperty(
-          "get_charges",
-          +[](const AsymmetricUnit *a) -> occ::Vec { return a->charges; })
-      .addFunction(
-          "set_charges",
+          "charges",
+          +[](const AsymmetricUnit *a) -> occ::Vec { return a->charges; },
           +[](AsymmetricUnit *a, const lb::LuaRef &t) {
             a->charges = table_to_vecx(t);
           })
@@ -335,19 +328,19 @@ void register_unitcell(lua_State *L) {
       // Product expression templates — materialize via `-> Mat3N`.
       .addFunction(
           "to_cartesian",
-          +[](const UnitCell *c, lua_State *S, const lb::LuaRef &frac) {
+          +[](const UnitCell *c, const lb::LuaRef &frac, lua_State *S) {
             occ::Mat3N out = c->to_cartesian(table_to_mat3n(frac));
             return mat_to_table(S, out);
           })
       .addFunction(
           "to_fractional",
-          +[](const UnitCell *c, lua_State *S, const lb::LuaRef &cart) {
+          +[](const UnitCell *c, const lb::LuaRef &cart, lua_State *S) {
             occ::Mat3N out = c->to_fractional(table_to_mat3n(cart));
             return mat_to_table(S, out);
           })
       .addFunction(
           "to_reciprocal",
-          +[](const UnitCell *c, lua_State *S, const lb::LuaRef &v) {
+          +[](const UnitCell *c, const lb::LuaRef &v, lua_State *S) {
             occ::Mat3N out = c->to_reciprocal(table_to_mat3n(v));
             return mat_to_table(S, out);
           })
@@ -397,15 +390,17 @@ void register_crystal(lua_State *L) {
       .beginClass<Crystal>("Crystal")
       .addConstructor<void (*)(const AsymmetricUnit &, const SpaceGroup &,
                                const UnitCell &)>()
-      // The vector-returning getters fail at runtime when bound as
-      // properties under LuaBridge3 (Stack<vector<T>&> trips up).
-      // Keep them as methods.
-      .addFunction("symmetry_unique_molecules",
+      // Zero-arg vector-returning getters are exposed as properties:
+      // LuaBridge3 pushes the const std::vector<T>& as a Lua table via
+      // Stack<std::vector<T>> (LuaBridge/Vector.h, pulled in through
+      // eigen_conv.h). The *_dimers accessors stay methods because they
+      // take a distance-tolerance argument.
+      .addProperty("symmetry_unique_molecules",
                    &Crystal::symmetry_unique_molecules)
       .addFunction("symmetry_unique_dimers", &Crystal::symmetry_unique_dimers)
       .addProperty("unit_cell", &Crystal::unit_cell)
-      .addFunction("unit_cell_molecules", &Crystal::unit_cell_molecules)
-      .addFunction("unit_cell_atoms", &Crystal::unit_cell_atoms)
+      .addProperty("unit_cell_molecules", &Crystal::unit_cell_molecules)
+      .addProperty("unit_cell_atoms", &Crystal::unit_cell_atoms)
       .addFunction("unit_cell_dimers", &Crystal::unit_cell_dimers)
       .addFunction(
           "atom_surroundings",
@@ -435,15 +430,15 @@ void register_crystal(lua_State *L) {
       .addFunction("asymmetric_unit_atom_surroundings",
                    &Crystal::asymmetric_unit_atom_surroundings)
       .addProperty("num_sites", &Crystal::num_sites)
-      .addFunction("labels", &Crystal::labels)
+      .addProperty("labels", &Crystal::labels)
       .addFunction(
           "to_fractional",
-          +[](const Crystal *c, lua_State *S, const lb::LuaRef &cart) {
+          +[](const Crystal *c, const lb::LuaRef &cart, lua_State *S) {
             return mat_to_table(S, c->to_fractional(table_to_mat3n(cart)));
           })
       .addFunction(
           "to_cartesian",
-          +[](const Crystal *c, lua_State *S, const lb::LuaRef &frac) {
+          +[](const Crystal *c, const lb::LuaRef &frac, lua_State *S) {
             return mat_to_table(S, c->to_cartesian(table_to_mat3n(frac)));
           })
       .addProperty("volume", &Crystal::volume)
@@ -519,29 +514,8 @@ void register_crystal_region_and_dimers(lua_State *L) {
 
       .beginClass<CrystalDimers>("CrystalDimers")
       .addProperty("radius", &CrystalDimers::radius)
-      .addFunction(
-          "unique_dimers",
-          +[](const CrystalDimers *c, lua_State *S) {
-            lb::LuaRef out = lb::newTable(S);
-            for (size_t i = 0; i < c->unique_dimers.size(); ++i) {
-              out[static_cast<int>(i + 1)] = c->unique_dimers[i];
-            }
-            return out;
-          })
-      .addFunction(
-          "molecule_neighbors",
-          +[](const CrystalDimers *c, lua_State *S) {
-            lb::LuaRef out = lb::newTable(S);
-            const auto &mn = c->molecule_neighbors;
-            for (size_t i = 0; i < mn.size(); ++i) {
-              lb::LuaRef inner = lb::newTable(S);
-              for (size_t j = 0; j < mn[i].size(); ++j) {
-                inner[static_cast<int>(j + 1)] = mn[i][j];
-              }
-              out[static_cast<int>(i + 1)] = inner;
-            }
-            return out;
-          })
+      .addProperty("unique_dimers", &CrystalDimers::unique_dimers)
+      .addProperty("molecule_neighbors", &CrystalDimers::molecule_neighbors)
       .endClass()
       .endNamespace();
 }
@@ -587,8 +561,8 @@ void register_site_and_dimer_index(lua_State *L) {
                    &DimerMappingTable::symmetry_unique_dimer)
       .addFunction("symmetry_related_dimers",
                    &DimerMappingTable::symmetry_related_dimers)
-      .addFunction("unique_dimers", &DimerMappingTable::unique_dimers)
-      .addFunction("symmetry_unique_dimers",
+      .addProperty("unique_dimers", &DimerMappingTable::unique_dimers)
+      .addProperty("symmetry_unique_dimers",
                    &DimerMappingTable::symmetry_unique_dimers)
       .addFunction("dimer_positions", &DimerMappingTable::dimer_positions)
       .addFunction(
@@ -635,10 +609,8 @@ void register_surface(lua_State *L) {
       .addProperty("bulk", &SurfaceCutResult::bulk)
       .addProperty("depth_scale", &SurfaceCutResult::depth_scale)
       .addProperty(
-          "get_basis",
-          +[](const SurfaceCutResult *r) -> occ::Mat3 { return r->basis; })
-      .addFunction(
-          "set_basis",
+          "basis",
+          +[](const SurfaceCutResult *r) -> occ::Mat3 { return r->basis; },
           +[](SurfaceCutResult *r, const lb::LuaRef &t) {
             r->basis = table_to_mat3(t);
           })
@@ -694,7 +666,7 @@ void register_surface(lua_State *L) {
       .addProperty("dipole", &Surface::dipole)
       .addFunction(
           "basis_matrix",
-          +[](const Surface *s, lua_State *S, double depth_scale) {
+          +[](const Surface *s, double depth_scale, lua_State *S) {
             return mat_to_table(S, s->basis_matrix(depth_scale));
           })
       .addProperty(

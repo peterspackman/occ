@@ -1,5 +1,7 @@
 #include "qm_bindings.h"
 #include "eigen_conv.h"
+#include "enum_stacks.h"
+#include <filesystem>
 #include <fmt/core.h>
 #include <occ/core/element.h>
 #include <occ/core/molecule.h>
@@ -59,17 +61,7 @@ void register_enums_and_small_types(lua_State *L) {
   lb::getGlobalNamespace(L)
       .beginNamespace("occ")
 
-      .beginNamespace("SpinorbitalKind")
-      .addProperty(
-          "Restricted",
-          +[]() { return static_cast<int>(SpinorbitalKind::Restricted); })
-      .addProperty(
-          "Unrestricted",
-          +[]() { return static_cast<int>(SpinorbitalKind::Unrestricted); })
-      .addProperty(
-          "General",
-          +[]() { return static_cast<int>(SpinorbitalKind::General); })
-      .endNamespace()
+      OCC_LUA_ENUM_NAMESPACE("SpinorbitalKind", OCC_ENUM_SpinorbitalKind)
 
       .beginNamespace("Operator")
       .addProperty(
@@ -102,12 +94,12 @@ void register_enums_and_small_types(lua_State *L) {
       .beginClass<JKPair>("JKPair")
       .addConstructor<void (*)()>()
       .addProperty(
-          "get_J", +[](const JKPair *p) -> Mat { return p->J; })
+          "J", +[](const JKPair *p) -> Mat { return p->J; })
       .addFunction(
           "set_J", +[](JKPair *p,
                        const lb::LuaRef &t) { p->J = table_to_square_mat(t); })
       .addProperty(
-          "get_K", +[](const JKPair *p) -> Mat { return p->K; })
+          "K", +[](const JKPair *p) -> Mat { return p->K; })
       .addFunction(
           "set_K", +[](JKPair *p,
                        const lb::LuaRef &t) { p->K = table_to_square_mat(t); })
@@ -145,83 +137,18 @@ void register_basis(lua_State *L) {
       .endClass()
 
       .beginClass<AOBasis>("AOBasis")
-      .addFunction(
-          "shells",
-          +[](const AOBasis *b, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &shells = b->shells();
-            for (size_t i = 0; i < shells.size(); ++i) {
-              t[static_cast<int>(i + 1)] = shells[i];
-            }
-            return t;
-          })
+      // Zero-arg accessors as properties — LuaBridge3 pushes std::vector<T>
+      // as a Lua table directly via Stack<vector<T>> (LuaBridge/Vector.h).
+      .addProperty("shells", &AOBasis::shells)
       .addFunction("set_pure", &AOBasis::set_pure)
       .addProperty("size", &AOBasis::size)
       .addProperty("nbf", &AOBasis::nbf)
-      .addFunction(
-          "atoms",
-          +[](const AOBasis *b, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &atoms = b->atoms();
-            for (size_t i = 0; i < atoms.size(); ++i) {
-              t[static_cast<int>(i + 1)] = atoms[i];
-            }
-            return t;
-          })
-      .addFunction(
-          "first_bf",
-          +[](const AOBasis *b, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &v = b->first_bf();
-            for (size_t i = 0; i < v.size(); ++i) {
-              t[static_cast<int>(i + 1)] = v[i];
-            }
-            return t;
-          })
-      .addFunction(
-          "bf_to_shell",
-          +[](const AOBasis *b, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &v = b->bf_to_shell();
-            for (size_t i = 0; i < v.size(); ++i) {
-              t[static_cast<int>(i + 1)] = v[i];
-            }
-            return t;
-          })
-      .addFunction(
-          "bf_to_atom",
-          +[](const AOBasis *b, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &v = b->bf_to_atom();
-            for (size_t i = 0; i < v.size(); ++i) {
-              t[static_cast<int>(i + 1)] = v[i];
-            }
-            return t;
-          })
-      .addFunction(
-          "shell_to_atom",
-          +[](const AOBasis *b, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &v = b->shell_to_atom();
-            for (size_t i = 0; i < v.size(); ++i) {
-              t[static_cast<int>(i + 1)] = v[i];
-            }
-            return t;
-          })
-      .addFunction(
-          "atom_to_shell",
-          +[](const AOBasis *b, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &v = b->atom_to_shell();
-            for (size_t i = 0; i < v.size(); ++i) {
-              lb::LuaRef inner = lb::newTable(S);
-              for (size_t j = 0; j < v[i].size(); ++j) {
-                inner[static_cast<int>(j + 1)] = v[i][j];
-              }
-              t[static_cast<int>(i + 1)] = inner;
-            }
-            return t;
-          })
+      .addProperty("atoms", &AOBasis::atoms)
+      .addProperty("first_bf", &AOBasis::first_bf)
+      .addProperty("bf_to_shell", &AOBasis::bf_to_shell)
+      .addProperty("bf_to_atom", &AOBasis::bf_to_atom)
+      .addProperty("shell_to_atom", &AOBasis::shell_to_atom)
+      .addProperty("atom_to_shell", &AOBasis::atom_to_shell)
       .addProperty("l_max", &AOBasis::l_max)
       .addProperty("name", &AOBasis::name)
       // `evaluate` had a sol::optional<int> defaulted to 0; split into
@@ -295,23 +222,26 @@ void register_mo_and_wfn(lua_State *L) {
       .endClass()
 
       .beginClass<Wavefunction>("Wavefunction")
-      .addFunction(
-          "atoms",
-          +[](const Wavefunction *w, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            for (size_t i = 0; i < w->atoms.size(); ++i) {
-              t[static_cast<int>(i + 1)] = w->atoms[i];
-            }
-            return t;
-          })
+      .addProperty("atoms", &Wavefunction::atoms)
+      // Return a non-const reference so the Lua userdata aliases the
+      // wavefunction's own member: mutating methods (e.g.
+      // AOBasis::set_pure) persist back to the wavefunction, and we
+      // avoid deep-copying MolecularOrbitals / AOBasis on every access.
+      // A non-const lvalue ref also lands on the MUTABLE metatable — a
+      // `const &` would give a const-userdata view where non-const
+      // methods are invisible (see feedback-luabridge-quirks item 2).
+      // The getter must take `const C*` (LuaBridge3's only free-function
+      // getter shape), so const_cast back to reach the mutable member;
+      // the Lua-side wavefunction the user holds is itself mutable.
       .addProperty(
           "molecular_orbitals",
-          +[](const Wavefunction *w) -> const MolecularOrbitals & {
-            return w->mo;
+          +[](const Wavefunction *w) -> MolecularOrbitals & {
+            return const_cast<Wavefunction *>(w)->mo;
           })
       .addProperty(
-          "basis",
-          +[](const Wavefunction *w) -> const AOBasis & { return w->basis; })
+          "basis", +[](const Wavefunction *w) -> AOBasis & {
+            return const_cast<Wavefunction *>(w)->basis;
+          })
       .addProperty("charge", &Wavefunction::charge)
       .addProperty("multiplicity", &Wavefunction::multiplicity)
       .addProperty(
@@ -356,7 +286,7 @@ void register_mo_and_wfn(lua_State *L) {
           })
       .addFunction(
           "electron_density_default",
-          +[](const Wavefunction *wfn, lua_State *S, const lb::LuaRef &points) {
+          +[](const Wavefunction *wfn, const lb::LuaRef &points, lua_State *S) {
             return mat_to_table(S, occ::density::evaluate_density_on_grid(
                                        *wfn, table_to_mat3n(points), 0));
           })
@@ -382,15 +312,26 @@ void register_mo_and_wfn(lua_State *L) {
       .endClass()
 
       .addFunction("Wavefunction_load", &Wavefunction::load)
+      // The reader constructors silently produce empty results when
+      // given a non-existent path; raise from the Lua side so the user
+      // gets a useful error instead of an empty Wavefunction.
       .addFunction(
           "Wavefunction_from_fchk",
           +[](const std::string &filename) {
+            if (!std::filesystem::exists(filename)) {
+              throw std::runtime_error(
+                  "Wavefunction_from_fchk: file not found: " + filename);
+            }
             auto reader = occ::io::FchkReader(filename);
             return Wavefunction(reader);
           })
       .addFunction(
           "Wavefunction_from_molden",
           +[](const std::string &filename) {
+            if (!std::filesystem::exists(filename)) {
+              throw std::runtime_error(
+                  "Wavefunction_from_molden: file not found: " + filename);
+            }
             auto reader = occ::io::MoldenReader(filename);
             return Wavefunction(reader);
           })
@@ -473,16 +414,17 @@ void register_hf_and_scf(lua_State *L) {
       // sol::optional<double> alpha → split.
       .addFunction(
           "point_charge_interaction_matrix",
-          +[](HartreeFock *hf, lua_State *S,
-              const std::vector<occ::core::PointCharge> &charges,
-              double alpha) {
+          +[](HartreeFock *hf,
+              const std::vector<occ::core::PointCharge> &charges, double alpha,
+              lua_State *S) {
             return mat_to_table(
                 S, hf->compute_point_charge_interaction_matrix(charges, alpha));
           })
       .addFunction(
           "point_charge_interaction_matrix_default",
-          +[](HartreeFock *hf, lua_State *S,
-              const std::vector<occ::core::PointCharge> &charges) {
+          +[](HartreeFock *hf,
+              const std::vector<occ::core::PointCharge> &charges,
+              lua_State *S) {
             return mat_to_table(
                 S, hf->compute_point_charge_interaction_matrix(charges, 1e16));
           })
@@ -514,7 +456,7 @@ void register_hf_and_scf(lua_State *L) {
           })
       .addFunction(
           "overlap_matrix_for_basis",
-          +[](HartreeFock *hf, lua_State *S, const AOBasis &other) {
+          +[](HartreeFock *hf, const AOBasis &other, lua_State *S) {
             return mat_to_table(S, hf->compute_overlap_matrix_for_basis(other));
           })
       // nuclear_repulsion_energy is inherited from SCFMethodBase; LB3's
@@ -535,14 +477,14 @@ void register_hf_and_scf(lua_State *L) {
       .addFunction("set_precision", &HartreeFock::set_precision)
       .addFunction(
           "coulomb_matrix",
-          +[](const HartreeFock *hf, lua_State *S,
-              const MolecularOrbitals &mo) {
+          +[](const HartreeFock *hf, const MolecularOrbitals &mo,
+              lua_State *S) {
             return mat_to_table(S, hf->compute_J(mo));
           })
       .addFunction(
           "fock_matrix",
-          +[](const HartreeFock *hf, lua_State *S,
-              const MolecularOrbitals &mo) {
+          +[](const HartreeFock *hf, const MolecularOrbitals &mo,
+              lua_State *S) {
             return mat_to_table(S, hf->compute_fock(mo));
           })
       .addFunction(
@@ -588,7 +530,7 @@ void register_external_potentials(lua_State *L) {
       .addProperty("charges", &PointChargePotential::charges)
       .addFunction(
           "compute_potential_matrix",
-          +[](const PointChargePotential *pot, lua_State *S, HartreeFock &hf) {
+          +[](const PointChargePotential *pot, HartreeFock &hf, lua_State *S) {
             return mat_to_table(S, pot->compute_potential_matrix(hf));
           })
       .addFunction(
@@ -625,8 +567,8 @@ void register_external_potentials(lua_State *L) {
       .addProperty("cutoff", &WolfPointChargePotential::cutoff)
       .addFunction(
           "compute_potential_matrix",
-          +[](const WolfPointChargePotential *pot, lua_State *S,
-              HartreeFock &hf) {
+          +[](const WolfPointChargePotential *pot, HartreeFock &hf,
+              lua_State *S) {
             return mat_to_table(S, pot->compute_potential_matrix(hf));
           })
       .addFunction(
@@ -763,15 +705,15 @@ void register_integral_engines(lua_State *L) {
       // sol::optional<bool> use_shellpair → split.
       .addFunction(
           "one_electron_operator",
-          +[](const IntegralEngine *e, lua_State *S, int op,
-              bool use_shellpair) {
+          +[](const IntegralEngine *e, int op, bool use_shellpair,
+              lua_State *S) {
             return mat_to_table(
                 S, e->one_electron_operator(static_cast<cint::Operator>(op),
                                             use_shellpair));
           })
       .addFunction(
           "one_electron_operator_default",
-          +[](const IntegralEngine *e, lua_State *S, int op) {
+          +[](const IntegralEngine *e, int op, lua_State *S) {
             return mat_to_table(S, e->one_electron_operator(
                                        static_cast<cint::Operator>(op), true));
           })
@@ -794,20 +736,7 @@ void register_integral_engines(lua_State *L) {
           })
       .endClass()
 
-      .beginNamespace("OrbitalSmearingKind")
-      .addProperty(
-          "None_",
-          +[]() { return static_cast<int>(OrbitalSmearing::Kind::None); })
-      .addProperty(
-          "Fermi",
-          +[]() { return static_cast<int>(OrbitalSmearing::Kind::Fermi); })
-      .addProperty(
-          "Gaussian",
-          +[]() { return static_cast<int>(OrbitalSmearing::Kind::Gaussian); })
-      .addProperty(
-          "Linear",
-          +[]() { return static_cast<int>(OrbitalSmearing::Kind::Linear); })
-      .endNamespace()
+      OCC_LUA_ENUM_NAMESPACE("OrbitalSmearingKind", OCC_ENUM_OrbitalSmearingKind)
 
       .beginClass<OrbitalSmearing>("OrbitalSmearing")
       .addConstructor<void (*)()>()
@@ -842,17 +771,8 @@ void register_integral_engines(lua_State *L) {
           })
       .endClass()
 
-      .beginNamespace("IntegralEngineDFPolicy")
-      .addProperty(
-          "Choose",
-          +[]() { return static_cast<int>(IntegralEngineDF::Policy::Choose); })
-      .addProperty(
-          "Direct",
-          +[]() { return static_cast<int>(IntegralEngineDF::Policy::Direct); })
-      .addProperty(
-          "Stored",
-          +[]() { return static_cast<int>(IntegralEngineDF::Policy::Stored); })
-      .endNamespace()
+      OCC_LUA_ENUM_NAMESPACE("IntegralEngineDFPolicy",
+                             OCC_ENUM_IntegralEngineDFPolicy)
 
       .beginClass<IntegralEngineDF>("IntegralEngineDF")
       .addConstructor<void (*)(const std::vector<Atom> &,
@@ -885,7 +805,15 @@ void register_integral_engines(lua_State *L) {
 
       .beginClass<occ::gto::GTOValues>("GTOValues")
       .addConstructor<void (*)()>()
-      .addFunction("reserve", &occ::gto::GTOValues::reserve)
+      .addFunction(
+          "reserve",
+          +[](occ::gto::GTOValues *g, size_t nbf, size_t npts,
+              const lb::LuaRef &deriv_order) {
+            const int d = deriv_order.isNumber()
+                              ? deriv_order.unsafe_cast<int>()
+                              : 0;
+            g->reserve(nbf, npts, d);
+          })
       .addFunction("set_zero", &occ::gto::GTOValues::set_zero)
       .addProperty(
           "phi", +[](const occ::gto::GTOValues *g) -> Mat { return g->phi; })
@@ -926,7 +854,7 @@ void register_vibrational_free_functions(lua_State *L) {
 
       .addFunction(
           "eigenvalues_to_frequencies_cm",
-          +[](lua_State *S, const lb::LuaRef &eigenvalues) {
+          +[](const lb::LuaRef &eigenvalues, lua_State *S) {
             Vec ev = table_to_vecx(eigenvalues);
             return vec_to_table(S,
                                 occ::core::eigenvalues_to_frequencies_cm(ev));
@@ -934,7 +862,7 @@ void register_vibrational_free_functions(lua_State *L) {
 
       .addFunction(
           "frequencies_cm_to_hartree",
-          +[](lua_State *S, const lb::LuaRef &freqs_cm) {
+          +[](const lb::LuaRef &freqs_cm, lua_State *S) {
             Vec f = table_to_vecx(freqs_cm);
             return vec_to_table(S, occ::core::frequencies_cm_to_hartree(f));
           })

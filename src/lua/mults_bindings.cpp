@@ -1,5 +1,6 @@
 #include "mults_bindings.h"
 #include "eigen_conv.h"
+#include "enum_stacks.h"
 #include <fmt/core.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/structure_format.h>
@@ -30,48 +31,24 @@ void register_mults_bindings(lua_State *L) {
   lb::getGlobalNamespace(L)
       .beginNamespace("occ")
 
-      // Enums — LuaBridge3 doesn't have a dedicated enum binding;
-      // expose the values as a plain Lua table.
-      .beginNamespace("ForceFieldType")
-      .addProperty(
-          "None_", +[]() { return static_cast<int>(ForceFieldType::None); })
-      .addProperty(
-          "LennardJones",
-          +[]() { return static_cast<int>(ForceFieldType::LennardJones); })
-      .addProperty(
-          "BuckinghamDE",
-          +[]() { return static_cast<int>(ForceFieldType::BuckinghamDE); })
-      .addProperty(
-          "Custom", +[]() { return static_cast<int>(ForceFieldType::Custom); })
-      .endNamespace()
-
-      .beginNamespace("OptimizationMethod")
-      .addProperty(
-          "MSTMIN",
-          +[]() { return static_cast<int>(OptimizationMethod::MSTMIN); })
-      .addProperty(
-          "LBFGS",
-          +[]() { return static_cast<int>(OptimizationMethod::LBFGS); })
-      .addProperty(
-          "TrustRegion",
-          +[]() { return static_cast<int>(OptimizationMethod::TrustRegion); })
-      .endNamespace()
+      // Enums round-trip through luabridge::Stack<E> (see enum_stacks.h),
+      // so values pushed here decay to lua_Integer and the binding side
+      // decodes them back to the enum on the way in. Value lists live in
+      // enum_defs.h (shared with the Stack specializations).
+      OCC_LUA_ENUM_NAMESPACE("ForceFieldType", OCC_ENUM_ForceFieldType)
+      OCC_LUA_ENUM_NAMESPACE("OptimizationMethod", OCC_ENUM_OptimizationMethod)
 
       .beginClass<MoleculeState>("MoleculeState")
       .addConstructor<void (*)()>()
       .addProperty(
-          "get_position",
-          +[](const MoleculeState *s) -> occ::Vec3 { return s->position; })
-      .addFunction(
-          "set_position",
+          "position",
+          +[](const MoleculeState *s) -> occ::Vec3 { return s->position; },
           +[](MoleculeState *s, const lb::LuaRef &t) {
             s->position = table_to_vec3(t);
           })
       .addProperty(
-          "get_angle_axis",
-          +[](const MoleculeState *s) -> occ::Vec3 { return s->angle_axis; })
-      .addFunction(
-          "set_angle_axis",
+          "angle_axis",
+          +[](const MoleculeState *s) -> occ::Vec3 { return s->angle_axis; },
           +[](MoleculeState *s, const lb::LuaRef &t) {
             s->angle_axis = table_to_vec3(t);
           })
@@ -119,12 +96,18 @@ void register_mults_bindings(lua_State *L) {
 
       .beginClass<CrystalEnergySetup>("CrystalEnergySetup")
       .addConstructor<void (*)()>()
+      .addPropertyReadWrite("force_field", &CrystalEnergySetup::force_field)
       .addPropertyReadWrite("cutoff_radius", &CrystalEnergySetup::cutoff_radius)
       .addPropertyReadWrite("use_ewald", &CrystalEnergySetup::use_ewald)
       .addPropertyReadWrite("ewald_accuracy",
                             &CrystalEnergySetup::ewald_accuracy)
+      .addPropertyReadWrite("ewald_eta", &CrystalEnergySetup::ewald_eta)
+      .addPropertyReadWrite("ewald_kmax", &CrystalEnergySetup::ewald_kmax)
       .addPropertyReadWrite("max_interaction_order",
                             &CrystalEnergySetup::max_interaction_order)
+      .addPropertyReadWrite("taper_on", &CrystalEnergySetup::taper_on)
+      .addPropertyReadWrite("taper_off", &CrystalEnergySetup::taper_off)
+      .addPropertyReadWrite("taper_order", &CrystalEnergySetup::taper_order)
       .endClass()
 
       .beginClass<CrystalEnergy>("CrystalEnergy")
@@ -172,6 +155,68 @@ void register_mults_bindings(lua_State *L) {
                             &CrystalOptimizerSettings::max_interaction_order)
       .addPropertyReadWrite("external_pressure_gpa",
                             &CrystalOptimizerSettings::external_pressure_gpa)
+      // Engine / DOF
+      .addPropertyReadWrite("use_cartesian_engine",
+                            &CrystalOptimizerSettings::use_cartesian_engine)
+      .addPropertyReadWrite("use_symmetry",
+                            &CrystalOptimizerSettings::use_symmetry)
+      .addPropertyReadWrite("constrain_cell_strain_by_lattice",
+                            &CrystalOptimizerSettings::constrain_cell_strain_by_lattice)
+      .addPropertyReadWrite("fix_first_translation",
+                            &CrystalOptimizerSettings::fix_first_translation)
+      .addPropertyReadWrite("fix_first_rotation",
+                            &CrystalOptimizerSettings::fix_first_rotation)
+      // L-BFGS
+      .addPropertyReadWrite("lbfgs_memory",
+                            &CrystalOptimizerSettings::lbfgs_memory)
+      // MSTMIN tuning
+      .addPropertyReadWrite("max_displacement",
+                            &CrystalOptimizerSettings::max_displacement)
+      .addPropertyReadWrite("mst_step_tolerance",
+                            &CrystalOptimizerSettings::mst_step_tolerance)
+      .addPropertyReadWrite("mst_rotation_scale",
+                            &CrystalOptimizerSettings::mst_rotation_scale)
+      .addPropertyReadWrite("mst_cell_scale",
+                            &CrystalOptimizerSettings::mst_cell_scale)
+      .addPropertyReadWrite("max_hessian_updates",
+                            &CrystalOptimizerSettings::max_hessian_updates)
+      .addPropertyReadWrite("mst_max_line_search",
+                            &CrystalOptimizerSettings::mst_max_line_search)
+      .addPropertyReadWrite("mst_max_line_search_restarts",
+                            &CrystalOptimizerSettings::mst_max_line_search_restarts)
+      .addPropertyReadWrite("mst_max_function_evaluations",
+                            &CrystalOptimizerSettings::mst_max_function_evaluations)
+      .addPropertyReadWrite("mst_line_search_report_interval",
+                            &CrystalOptimizerSettings::mst_line_search_report_interval)
+      // Trust region
+      .addPropertyReadWrite("trust_region_radius",
+                            &CrystalOptimizerSettings::trust_region_radius)
+      .addPropertyReadWrite("hessian_update_interval",
+                            &CrystalOptimizerSettings::hessian_update_interval)
+      .addPropertyReadWrite("require_exact_hessian",
+                            &CrystalOptimizerSettings::require_exact_hessian)
+      // I/O
+      .addPropertyReadWrite("trajectory_file",
+                            &CrystalOptimizerSettings::trajectory_file)
+      // Ewald
+      .addPropertyReadWrite("ewald_accuracy",
+                            &CrystalOptimizerSettings::ewald_accuracy)
+      .addPropertyReadWrite("ewald_eta", &CrystalOptimizerSettings::ewald_eta)
+      .addPropertyReadWrite("ewald_kmax",
+                            &CrystalOptimizerSettings::ewald_kmax)
+      // Adaptive neighbor list
+      .addPropertyReadWrite("adaptive_neighbor_rebuild",
+                            &CrystalOptimizerSettings::adaptive_neighbor_rebuild)
+      .addPropertyReadWrite("neighbor_rebuild_displacement",
+                            &CrystalOptimizerSettings::neighbor_rebuild_displacement)
+      .addPropertyReadWrite("neighbor_rebuild_rotation",
+                            &CrystalOptimizerSettings::neighbor_rebuild_rotation)
+      .addPropertyReadWrite("neighbor_rebuild_cell_strain",
+                            &CrystalOptimizerSettings::neighbor_rebuild_cell_strain)
+      .addPropertyReadWrite("neighbor_rebuild_interval",
+                            &CrystalOptimizerSettings::neighbor_rebuild_interval)
+      .addPropertyReadWrite("freeze_neighbors_during_linesearch",
+                            &CrystalOptimizerSettings::freeze_neighbors_during_linesearch)
       .endClass()
 
       .beginClass<CrystalOptimizerResult>("CrystalOptimizerResult")
@@ -180,6 +225,8 @@ void register_mults_bindings(lua_State *L) {
                    &CrystalOptimizerResult::electrostatic_energy)
       .addProperty("repulsion_dispersion_energy",
                    &CrystalOptimizerResult::repulsion_dispersion_energy)
+      .addProperty("pressure_volume_energy",
+                   &CrystalOptimizerResult::pressure_volume_energy)
       .addProperty("initial_energy", &CrystalOptimizerResult::initial_energy)
       .addProperty("iterations", &CrystalOptimizerResult::iterations)
       .addProperty("function_evaluations",
