@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <cstddef>
 #include <map>
 #include <occ/qm/correlation/post_hf_method.h>
@@ -71,7 +72,13 @@ public:
 private:
   double compute_conventional_mp2_energy();
   double compute_ri_mp2_energy();
+  double compute_unrestricted_conventional_energy();
+  double compute_unrestricted_ri_energy();
   std::pair<size_t, size_t> get_active_orbital_ranges() const;
+  // Active (n_frozen, n_occ_active, n_virt_active) for one spin channel given
+  // its occupied count and its orbital-energy vector (length n_ao).
+  std::array<size_t, 3> spin_active_ranges(size_t n_occ_spin,
+                                           Eigen::Ref<const Vec> eps) const;
 
   void log_frozen_core_info(size_t n_occ_total, size_t n_occ_active,
                             const Vec &orbital_energies) const;

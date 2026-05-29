@@ -54,6 +54,12 @@ public:
   inline const Eigen::LLT<Mat> &coulomb_metric() const { return V_LLt; }
   void compute_stored_integrals();
 
+  /// Integral-direct density-fitting B tensor for the given MO coefficient
+  /// blocks: B(i*nR + a, P) = Σ_μν C_left(μ,i) C_right(ν,a) (μν|P), streamed
+  /// without materializing the dense (μν|P) store. Returns (nL*nR x naux).
+  Mat build_b_direct(Eigen::Ref<const Mat> C_left,
+                     Eigen::Ref<const Mat> C_right) const;
+
 private:
   inline size_t num_rows() const {
     const auto &aobasis = m_ao_engine.aobasis();

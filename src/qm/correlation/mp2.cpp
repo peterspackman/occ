@@ -6,6 +6,7 @@
 #include <occ/qm/correlation/df_integrals.h>
 #include <occ/qm/correlation/mp2.h>
 #include <occ/qm/integral_engine.h>
+#include <occ/qm/opmatrix.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 namespace occ::qm {
@@ -32,6 +33,48 @@ inline void accumulate_mp2_pair(const Mat &K, double eps_i, double eps_j,
       ss -= kab * kba * inv;
     }
   }
+}
+
+// Opposite-spin (αβ) energy for one (iα, jβ) pair: K(a,b) = (iα aα | jβ bβ),
+// a indexing α-virtuals, b indexing β-virtuals.  Returns Σ_ab K(a,b)²/D.
+inline double os_pair_energy(const Mat &K, double eps_i, double eps_j,
+                             const Vec &eps_va, const Vec &eps_vb) {
+  const Eigen::Index va = eps_va.size();
+  const Eigen::Index vb = eps_vb.size();
+  const double eij = eps_i + eps_j;
+  double e = 0.0;
+  for (Eigen::Index a = 0; a < va; ++a) {
+    const double eija = eij - eps_va(a);
+    for (Eigen::Index b = 0; b < vb; ++b) {
+      const double denom = eija - eps_vb(b);
+      if (std::abs(denom) < 1e-12)
+        continue;
+      const double kab = K(a, b);
+      e += kab * kab / denom;
+    }
+  }
+  return e;
+}
+
+// Same-spin (σσ) energy for one (i, j) pair, both spin σ: K(a,b) = (ia|jb).
+// Returns ¼ Σ_ab [(ia|jb)-(ib|ja)]²/D; the caller sums over the full i,j and
+// a,b ranges (the ¼ accounts for the ordered double counting).
+inline double ss_pair_energy(const Mat &K, double eps_i, double eps_j,
+                             const Vec &eps_v) {
+  const Eigen::Index v = eps_v.size();
+  const double eij = eps_i + eps_j;
+  double e = 0.0;
+  for (Eigen::Index a = 0; a < v; ++a) {
+    const double eija = eij - eps_v(a);
+    for (Eigen::Index b = 0; b < v; ++b) {
+      const double denom = eija - eps_v(b);
+      if (std::abs(denom) < 1e-12)
+        continue;
+      const double m = K(a, b) - K(b, a);
+      e += 0.25 * m * m / denom;
+    }
+  }
+  return e;
 }
 } // namespace
 
@@ -155,8 +198,11 @@ double MP2::compute_ri_mp2_energy() {
   }
 
   constexpr auto R = SpinorbitalKind::Restricted;
+  if (m_mo.kind == SpinorbitalKind::Unrestricted) {
+    return compute_unrestricted_ri_energy();
+  }
   if (m_mo.kind != R) {
-    throw std::runtime_error("Unrestricted/general RI-MP2 is not implemented");
+    throw std::runtime_error("General RI-MP2 is not implemented");
   }
 
   const auto active_ranges = get_active_orbital_ranges();
@@ -179,7 +225,7 @@ double MP2::compute_ri_mp2_energy() {
   const Vec eps_o = eps.segment(n_frozen, n_occ_active);
   const Vec eps_v = eps.segment(n_occ_total, n_virt_active);
 
-  DFIntegrals df(*m_df_engine);
+  DFIntegrals df(*m_df_engine, m_memory_budget);
   const size_t naux = df.naux();
   const Eigen::Index v = static_cast<Eigen::Index>(n_virt_active);
 
@@ -252,9 +298,11 @@ double MP2::compute_ri_mp2_energy() {
 
 double MP2::compute_conventional_mp2_energy() {
   constexpr auto R = SpinorbitalKind::Restricted;
+  if (m_mo.kind == SpinorbitalKind::Unrestricted) {
+    return compute_unrestricted_conventional_energy();
+  }
   if (m_mo.kind != R) {
-    throw std::runtime_error(
-        "Unrestricted/general conventional MP2 is not implemented");
+    throw std::runtime_error("General conventional MP2 is not implemented");
   }
 
   const auto active_ranges = get_active_orbital_ranges();
@@ -412,6 +460,242 @@ void MP2::store_results(size_t n_occ_total, size_t n_virt_total,
   m_results.n_total_virt = n_virt_total;
   m_results.e_min_used = m_e_min;
   m_results.e_max_used = m_e_max;
+}
+
+std::array<size_t, 3>
+MP2::spin_active_ranges(size_t n_occ_spin, Eigen::Ref<const Vec> eps) const {
+  const size_t nbf = m_mo.n_ao;
+  const size_t n_virt_total = nbf - n_occ_spin;
+
+  size_t n_frozen_energy = 0;
+  for (size_t i = 0; i < n_occ_spin; ++i)
+    if (eps(static_cast<Eigen::Index>(i)) < m_e_min)
+      ++n_frozen_energy;
+  size_t n_frozen = std::min(std::max(m_n_frozen_core, n_frozen_energy),
+                             n_occ_spin == 0 ? 0 : n_occ_spin);
+  const size_t n_occ_active = n_occ_spin - n_frozen;
+
+  size_t n_virt_active = 0;
+  for (size_t a = 0; a < n_virt_total; ++a) {
+    const double ve = eps(static_cast<Eigen::Index>(n_occ_spin + a));
+    if (ve <= m_e_max && ve <= m_virtual_cutoff &&
+        n_virt_active < m_max_virtuals)
+      ++n_virt_active;
+    else if (ve > m_e_max)
+      break;
+  }
+  return {n_frozen, n_occ_active, n_virt_active};
+}
+
+double MP2::compute_unrestricted_ri_energy() {
+  const size_t nbf = m_mo.n_ao;
+  const Vec eps_a = m_mo.energies.head(static_cast<Eigen::Index>(nbf));
+  const Vec eps_b =
+      m_mo.energies.segment(static_cast<Eigen::Index>(nbf),
+                            static_cast<Eigen::Index>(nbf));
+  const Mat Ca = block::a(m_mo.C); // nbf x nbf (alpha)
+  const Mat Cb = block::b(m_mo.C); // nbf x nbf (beta)
+
+  const auto ra = spin_active_ranges(m_mo.n_alpha, eps_a);
+  const auto rb = spin_active_ranges(m_mo.n_beta, eps_b);
+  const size_t oa = ra[1], vaa = ra[2];
+  const size_t ob = rb[1], vab = rb[2];
+
+  const Mat Coa = Ca.middleCols(ra[0], oa);
+  const Mat Cva = Ca.middleCols(m_mo.n_alpha, vaa);
+  const Mat Cob = Cb.middleCols(rb[0], ob);
+  const Mat Cvb = Cb.middleCols(m_mo.n_beta, vab);
+  const Vec eoa = eps_a.segment(static_cast<Eigen::Index>(ra[0]), oa);
+  const Vec eva = eps_a.segment(static_cast<Eigen::Index>(m_mo.n_alpha), vaa);
+  const Vec eob = eps_b.segment(static_cast<Eigen::Index>(rb[0]), ob);
+  const Vec evb = eps_b.segment(static_cast<Eigen::Index>(m_mo.n_beta), vab);
+
+  occ::log::debug("UHF RI-MP2: active occ (a/b) {}/{}, virt {}/{}", oa, ob, vaa,
+                  vab);
+
+  DFIntegrals df(*m_df_engine, m_memory_budget);
+  const bool have_a = (oa > 0 && vaa > 0);
+  const bool have_b = (ob > 0 && vab > 0);
+  // Metric-folded B tensors per spin (minimal DF object, o*v*naux each).
+  Mat Ba = have_a ? df.build_b_tilde(Coa, Cva) : Mat();
+  Mat Bb = have_b ? df.build_b_tilde(Cob, Cvb) : Mat();
+
+  const Eigen::Index VA = static_cast<Eigen::Index>(vaa);
+  const Eigen::Index VB = static_cast<Eigen::Index>(vab);
+
+  struct Acc {
+    double ss = 0.0;
+    double os = 0.0;
+  };
+  occ::parallel::thread_local_storage<Acc> acc_local;
+
+  occ::timing::start(occ::timing::category::mp2_energy);
+  // Same-spin αα and opposite-spin αβ are both driven by the α-occupied loop.
+  if (have_a) {
+    occ::parallel::parallel_for(size_t(0), oa, [&](size_t i) {
+      auto &acc = acc_local.local();
+      const auto Bi = Ba.middleRows(static_cast<Eigen::Index>(i) * VA, VA);
+      for (size_t j = 0; j < oa; ++j) {
+        const auto Bj = Ba.middleRows(static_cast<Eigen::Index>(j) * VA, VA);
+        const Mat K = Bi * Bj.transpose(); // (iα aα|jα bα)
+        acc.ss += ss_pair_energy(K, eoa(static_cast<Eigen::Index>(i)),
+                                 eoa(static_cast<Eigen::Index>(j)), eva);
+      }
+      if (have_b) {
+        for (size_t j = 0; j < ob; ++j) {
+          const auto Bj = Bb.middleRows(static_cast<Eigen::Index>(j) * VB, VB);
+          const Mat K = Bi * Bj.transpose(); // (iα aα|jβ bβ)
+          acc.os += os_pair_energy(K, eoa(static_cast<Eigen::Index>(i)),
+                                   eob(static_cast<Eigen::Index>(j)), eva, evb);
+        }
+      }
+    });
+  }
+  // Same-spin ββ.
+  if (have_b) {
+    occ::parallel::parallel_for(size_t(0), ob, [&](size_t i) {
+      auto &acc = acc_local.local();
+      const auto Bi = Bb.middleRows(static_cast<Eigen::Index>(i) * VB, VB);
+      for (size_t j = 0; j < ob; ++j) {
+        const auto Bj = Bb.middleRows(static_cast<Eigen::Index>(j) * VB, VB);
+        const Mat K = Bi * Bj.transpose(); // (iβ aβ|jβ bβ)
+        acc.ss += ss_pair_energy(K, eob(static_cast<Eigen::Index>(i)),
+                                 eob(static_cast<Eigen::Index>(j)), evb);
+      }
+    });
+  }
+  occ::timing::stop(occ::timing::category::mp2_energy);
+
+  double ss = 0.0, os = 0.0;
+  for (const auto &a : acc_local) {
+    ss += a.ss;
+    os += a.os;
+  }
+  m_results.same_spin_correlation = ss;
+  m_results.opposite_spin_correlation = os;
+  return ss + os;
+}
+
+double MP2::compute_unrestricted_conventional_energy() {
+  using T3 = Eigen::Tensor<double, 3>;
+  const Eigen::Index N = static_cast<Eigen::Index>(m_mo.n_ao);
+  const size_t nbf = m_mo.n_ao;
+  const Vec eps_a = m_mo.energies.head(static_cast<Eigen::Index>(nbf));
+  const Vec eps_b =
+      m_mo.energies.segment(static_cast<Eigen::Index>(nbf),
+                            static_cast<Eigen::Index>(nbf));
+  const Mat Ca = block::a(m_mo.C);
+  const Mat Cb = block::b(m_mo.C);
+
+  const auto ra = spin_active_ranges(m_mo.n_alpha, eps_a);
+  const auto rb = spin_active_ranges(m_mo.n_beta, eps_b);
+  const size_t oa = ra[1], vaa = ra[2];
+  const size_t ob = rb[1], vab = rb[2];
+
+  const Mat Coa = Ca.middleCols(ra[0], oa);
+  const Mat Cva = Ca.middleCols(m_mo.n_alpha, vaa);
+  const Mat Cob = Cb.middleCols(rb[0], ob);
+  const Mat Cvb = Cb.middleCols(m_mo.n_beta, vab);
+  const Vec eoa = eps_a.segment(static_cast<Eigen::Index>(ra[0]), oa);
+  const Vec eva = eps_a.segment(static_cast<Eigen::Index>(m_mo.n_alpha), vaa);
+  const Vec eob = eps_b.segment(static_cast<Eigen::Index>(rb[0]), ob);
+  const Vec evb = eps_b.segment(static_cast<Eigen::Index>(m_mo.n_beta), vab);
+
+  Eigen::TensorMap<const Eigen::Tensor<double, 2>> CvA(
+      Cva.data(), N, static_cast<Eigen::Index>(vaa));
+  Eigen::TensorMap<const Eigen::Tensor<double, 2>> CvB(
+      Cvb.data(), N, static_cast<Eigen::Index>(vab));
+  Eigen::TensorMap<const Eigen::Tensor<double, 2>> CoA(
+      Coa.data(), N, static_cast<Eigen::Index>(oa));
+  Eigen::TensorMap<const Eigen::Tensor<double, 2>> CoB(
+      Cob.data(), N, static_cast<Eigen::Index>(ob));
+  const Eigen::array<Eigen::IndexPair<int>, 1> con0 = {
+      Eigen::IndexPair<int>(0, 0)};
+  const Eigen::array<Eigen::IndexPair<int>, 1> con1 = {
+      Eigen::IndexPair<int>(1, 0)};
+  const Eigen::Index VA = static_cast<Eigen::Index>(vaa);
+  const Eigen::Index VB = static_cast<Eigen::Index>(vab);
+
+  const int nthreads = std::max(1, occ::parallel::get_num_threads());
+  const size_t bytes_per_i = static_cast<size_t>(N) * N * N * sizeof(double);
+  const size_t denom_bytes =
+      static_cast<size_t>(nthreads + 1) * std::max<size_t>(1, bytes_per_i);
+  const size_t block = std::max<size_t>(1, m_memory_budget / denom_bytes);
+
+  struct Acc {
+    double ss = 0.0;
+    double os = 0.0;
+  };
+  occ::parallel::thread_local_storage<Acc> acc_local;
+
+  occ::timing::start(occ::timing::category::mp2_energy);
+  // α-occupied drives same-spin αα and opposite-spin αβ.
+  if (oa > 0 && vaa > 0) {
+    for (size_t Istart = 0; Istart < oa; Istart += block) {
+      const Eigen::Index bI =
+          static_cast<Eigen::Index>(std::min(block, oa - Istart));
+      const Eigen::Tensor<double, 4> H1 = m_ao_engine->ao_direct_half_transform(
+          Coa.middleCols(static_cast<Eigen::Index>(Istart), bI));
+      occ::parallel::parallel_for(Eigen::Index(0), bI, [&](Eigen::Index il) {
+        auto &acc = acc_local.local();
+        const double ei = eoa(static_cast<Eigen::Index>(Istart) + il);
+        T3 H1_i = H1.chip(il, 0);
+        T3 t2 = H1_i.contract(CvA, con0); // ν→aα : (ρ,σ,aα)
+        // αα
+        {
+          T3 t3 = t2.contract(CvA, con1); // σ→bα : (ρ,aα,bα)
+          T3 Kt = t3.contract(CoA, con0); // ρ→jα : (aα,bα,jα)
+          for (Eigen::Index j = 0; j < static_cast<Eigen::Index>(oa); ++j) {
+            Eigen::Map<const Mat> K(Kt.data() + static_cast<size_t>(j) * VA * VA,
+                                    VA, VA);
+            acc.ss += ss_pair_energy(K, ei, eoa(j), eva);
+          }
+        }
+        // αβ
+        if (ob > 0 && vab > 0) {
+          T3 t3 = t2.contract(CvB, con1); // σ→bβ : (ρ,aα,bβ)
+          T3 Kt = t3.contract(CoB, con0); // ρ→jβ : (aα,bβ,jβ)
+          for (Eigen::Index j = 0; j < static_cast<Eigen::Index>(ob); ++j) {
+            Eigen::Map<const Mat> K(Kt.data() + static_cast<size_t>(j) * VA * VB,
+                                    VA, VB);
+            acc.os += os_pair_energy(K, ei, eob(j), eva, evb);
+          }
+        }
+      });
+    }
+  }
+  // β-occupied drives same-spin ββ.
+  if (ob > 0 && vab > 0) {
+    for (size_t Istart = 0; Istart < ob; Istart += block) {
+      const Eigen::Index bI =
+          static_cast<Eigen::Index>(std::min(block, ob - Istart));
+      const Eigen::Tensor<double, 4> H1 = m_ao_engine->ao_direct_half_transform(
+          Cob.middleCols(static_cast<Eigen::Index>(Istart), bI));
+      occ::parallel::parallel_for(Eigen::Index(0), bI, [&](Eigen::Index il) {
+        auto &acc = acc_local.local();
+        const double ei = eob(static_cast<Eigen::Index>(Istart) + il);
+        T3 H1_i = H1.chip(il, 0);
+        T3 t2 = H1_i.contract(CvB, con0); // ν→aβ : (ρ,σ,aβ)
+        T3 t3 = t2.contract(CvB, con1);   // σ→bβ : (ρ,aβ,bβ)
+        T3 Kt = t3.contract(CoB, con0);   // ρ→jβ : (aβ,bβ,jβ)
+        for (Eigen::Index j = 0; j < static_cast<Eigen::Index>(ob); ++j) {
+          Eigen::Map<const Mat> K(Kt.data() + static_cast<size_t>(j) * VB * VB,
+                                  VB, VB);
+          acc.ss += ss_pair_energy(K, ei, eob(j), evb);
+        }
+      });
+    }
+  }
+  occ::timing::stop(occ::timing::category::mp2_energy);
+
+  double ss = 0.0, os = 0.0;
+  for (const auto &a : acc_local) {
+    ss += a.ss;
+    os += a.os;
+  }
+  m_results.same_spin_correlation = ss;
+  m_results.opposite_spin_correlation = os;
+  return ss + os;
 }
 
 } // namespace occ::qm

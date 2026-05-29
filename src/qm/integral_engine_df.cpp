@@ -97,6 +97,53 @@ void IntegralEngineDF::compute_stored_integrals() {
   occ::timing::stop(occ::timing::category::df);
 }
 
+Mat IntegralEngineDF::build_b_direct(Eigen::Ref<const Mat> C_left,
+                                     Eigen::Ref<const Mat> C_right) const {
+  // Integral-direct density-fitting B tensor:
+  //   B(i*nR + a, P) = Σ_μν C_left(μ,i) C_right(ν,a) (μν|P)
+  // computed by streaming the 3-center integrals (no dense (μν|P) store). The
+  // kernel parallelizes over auxiliary shells, so each thread writes a disjoint
+  // set of B columns — no thread-local accumulation needed.
+  const Eigen::Index nL = C_left.cols();
+  const Eigen::Index nR = C_right.cols();
+  const Eigen::Index naux = static_cast<Eigen::Index>(m_aux_engine.nbf());
+
+  Mat B = Mat::Zero(nL * nR, naux);
+
+  auto lambda = [&](const IntegralResult &args) {
+    const Eigen::Index nmu = args.dims[0];
+    const Eigen::Index nnu = args.dims[1];
+    const Eigen::Index nP = args.dims[2];
+    const auto Cl_mu = C_left.middleRows(args.bf[0], nmu);  // nmu x nL
+    const auto Cr_nu = C_right.middleRows(args.bf[1], nnu); // nnu x nR
+    const bool offdiag = (args.bf[0] != args.bf[1]);
+    const auto Cl_nu = C_left.middleRows(args.bf[1], nnu);
+    const auto Cr_mu = C_right.middleRows(args.bf[0], nmu);
+
+    for (Eigen::Index pp = 0; pp < nP; ++pp) {
+      Eigen::Map<const Mat> M(args.buffer + pp * nmu * nnu, nmu, nnu); // μ x ν
+      Eigen::Map<Mat> Bview(B.col(args.bf[2] + pp).data(), nR, nL);    // a x i
+      // (μν|P) contribution
+      Bview.noalias() += Cr_nu.transpose() * (M.transpose() * Cl_mu);
+      // (νμ|P) contribution (canonical shellpairs only store μ≥ν)
+      if (offdiag)
+        Bview.noalias() += Cr_mu.transpose() * (M * Cl_nu);
+    }
+  };
+
+  occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
+  if (m_ao_engine.is_spherical()) {
+    detail::compute_three_center_integrals_tbb<ShellKind::Spherical>(
+        lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
+        m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt);
+  } else {
+    detail::compute_three_center_integrals_tbb<ShellKind::Cartesian>(
+        lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
+        m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt);
+  }
+  return B;
+}
+
 Mat IntegralEngineDF::exchange(const MolecularOrbitals &mo) {
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;

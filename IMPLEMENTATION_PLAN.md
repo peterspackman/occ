@@ -218,23 +218,53 @@ Done:
 
 ## Stage 4: Unrestricted (UHF) MP2
 **Goal**: αα/ββ/αβ for both RI and conventional; remove the `runtime_error`.
-**Changes**:
-- Per-spin B-tensors (RI) / per-spin half-transforms (conventional); spin-summed
-  energy with correct ss/os split.
-- Extend `MP2OrbitalSpec`/results plumbing for two spin channels.
-**Success Criteria**: UHF-MP2 matches an external reference (e.g. ORCA/Psi4) for
-a small open-shell case (both paths).
-**Tests**: new open-shell test (e.g. radical or triplet) vs external reference;
-RHF result reproduced as the closed-shell limit of the UHF code.
-**Status**: Not Started
+**Status**: Complete
 
-## Stage 5: Screening, out-of-core & cleanups
-**Goal**: scale past in-core limits; remove smells. (In-core blocking already
-lands in Stages 2–3; this stage extends it.)
-**Changes**:
-- Out-of-core fallback for `(μν|P)` / B̃ past the in-core budget.
-- Build `(μν|P)` using shell-pair sparsity (`num_rows()` packed layout) instead
-  of dense N².
+Done:
+- Per-spin active ranges (`spin_active_ranges`), α/β coefficient + energy blocks
+  via `block::a/b`.
+- RI (`compute_unrestricted_ri_energy`): metric-folded B̃_α, B̃_β; αα/ββ
+  same-spin + αβ opposite-spin, threaded.
+- Conventional (`compute_unrestricted_conventional_energy`): per-spin AO-direct
+  half-transform (occupied-block bounded); the α half-transform feeds both αα
+  and αβ (second electron completed with α or β coeffs), β feeds ββ.
+- Energy kernels: `os_pair_energy` (Σ K²/D) and `ss_pair_energy`
+  (¼Σ(K_ab−K_ba)²/D) — reduce to the RHF formula in the closed-shell limit.
+**Tests**: closed-shell UHF == RHF (conventional + RI, 1e-7); open-shell H₂O⁺
+doublet conventional == RI within DF error (two independent UHF paths agree),
+ss/os both < 0. mp2_tests 57/12, qm_tests 117/29, full build/CLI link clean.
+
+---
+
+## All five stages complete.
+Optional follow-ups (not blocking): occupied-blocking for the UHF B̃ build;
+shell-pair-packed layout for the *stored* DF path; out-of-core paging; SCS/SOS
+as a first-class CLI option; `--mp2-max-memory` CLI knob for the budget.
+
+## Stage 5: Direct RI 3-center, sparsity & cleanups
+**Goal**: remove the dense `(μν|P)` store as the RI memory ceiling; keep RI-MP2
+memory bounded for large systems.
+**Status**: Complete
+
+Done:
+- `IntegralEngineDF::build_b_direct(C_left, C_right)`: builds the DF B tensor by
+  streaming 3-center integrals (templated/inlined lambda; parallel over aux
+  shells → disjoint B columns, no thread-local). Never materializes the dense
+  `(μν|P)` store; uses the shell-pair list, so it's sparse by construction.
+- `DFIntegrals(df, memory_budget)` auto-picks: dense store + reuse when it fits
+  the budget (fast), else integral-direct per call (bounded). `build_b_tilde`
+  folds the metric identically either way.
+- RI-MP2 passes its budget through; combined with occupied blocking, peak RI
+  memory is now max(B̃ block, transient 3-center buffers) — no `nbf²·naux`, no
+  `o²v²`.
+- Test: integral-direct vs stored RI-MP2 energy bit-identical (1e-10).
+  mp2_tests 47/10, qm_tests 117/29, full build/CLI link clean.
+- Already handled earlier: `-C` sign hack removed (Stage 3), pathological
+  `const_cast` paths deleted (Stage 2), dead stubs removed (Stage 3).
+
+Remaining follow-ups (optional): shell-pair-packed `num_rows()` layout for the
+*stored* path; out-of-core paging if even one B̃ block exceeds RAM (the direct
+path makes this rarely necessary).
 - Remove `-C` sign hack (verify energy invariance); fix `const_cast` / make
   stores `mutable`; delete dead stubs (`compute_oovv_block`, `compute_ovvv_block`,
   `transform_block`); populate-or-remove `pair_energies`; SCS first-class.

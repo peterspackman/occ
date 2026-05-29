@@ -498,6 +498,16 @@ TEST_CASE("RI-MP2 (B-tensor) correctness", "[mp2][ri]") {
     INFO("1 thread: " << e1 << "  " << nthreads << " threads: " << e2);
     REQUIRE_THAT(e2, WithinAbs(e1, 1e-10));
   }
+
+  SECTION("integral-direct 3-center matches stored") {
+    // Default budget keeps the dense (μν|P) store; a sub-store budget forces
+    // the integral-direct B build (no store) but still allows a full block.
+    double e_stored = run_ri([](occ::qm::MP2 &) {});
+    double e_direct =
+        run_ri([](occ::qm::MP2 &m) { m.set_memory_budget(800 * 1024); });
+    INFO("stored: " << e_stored << "  direct: " << e_direct);
+    REQUIRE_THAT(e_direct, WithinAbs(e_stored, 1e-10));
+  }
 }
 
 TEST_CASE("RI-MP2 H2 STO-3G energy", "[mp2][ri]") {
@@ -530,4 +540,90 @@ TEST_CASE("RI-MP2 H2 STO-3G energy", "[mp2][ri]") {
   double tolerance = 1e-4; // DF typically accurate to ~1e-4
 
   REQUIRE_THAT(ri_corr_energy, WithinAbs(expected_corr, tolerance));
+}
+
+// Helper: water geometry in Bohr (shared by the UHF tests below).
+static std::vector<occ::core::Atom> uhf_water_atoms() {
+  return {{8, -0.7021961 * occ::units::ANGSTROM_TO_BOHR,
+           -0.0560603 * occ::units::ANGSTROM_TO_BOHR,
+           0.0099423 * occ::units::ANGSTROM_TO_BOHR},
+          {1, -1.0221932 * occ::units::ANGSTROM_TO_BOHR,
+           0.8467758 * occ::units::ANGSTROM_TO_BOHR,
+           -0.0114887 * occ::units::ANGSTROM_TO_BOHR},
+          {1, 0.2575211 * occ::units::ANGSTROM_TO_BOHR,
+           0.0421215 * occ::units::ANGSTROM_TO_BOHR,
+           0.0052190 * occ::units::ANGSTROM_TO_BOHR}};
+}
+
+TEST_CASE("UHF MP2 closed-shell limit equals RHF", "[mp2][uhf]") {
+  // A closed-shell system solved unrestricted must reproduce the restricted
+  // MP2 energy exactly (validates the αα/ββ/αβ formulas in the RHF limit).
+  auto atoms = uhf_water_atoms();
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(false);
+  auto aux = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux.set_kind(basis.kind());
+
+  occ::qm::HartreeFock hf_r(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf_r(hf_r);
+  double ehf_r = scf_r.compute_scf_energy();
+
+  occ::qm::HartreeFock hf_u(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf_u(hf_u,
+                                           occ::qm::SpinorbitalKind::Unrestricted);
+  double ehf_u = scf_u.compute_scf_energy();
+  REQUIRE_THAT(ehf_u, WithinAbs(ehf_r, 1e-6));
+
+  auto corr = [](auto &mp2) {
+    mp2.set_frozen_core_auto();
+    return mp2.compute_correlation_energy();
+  };
+
+  occ::qm::MP2 conv_r(basis, scf_r.ctx.mo, ehf_r);
+  occ::qm::MP2 conv_u(basis, scf_u.ctx.mo, ehf_u);
+  double ec_r = corr(conv_r), ec_u = corr(conv_u);
+  INFO("conventional RHF: " << ec_r << "  UHF: " << ec_u);
+  REQUIRE_THAT(ec_u, WithinAbs(ec_r, 1e-7));
+
+  occ::qm::MP2 ri_r(basis, aux, scf_r.ctx.mo, ehf_r);
+  occ::qm::MP2 ri_u(basis, aux, scf_u.ctx.mo, ehf_u);
+  double er_r = corr(ri_r), er_u = corr(ri_u);
+  INFO("RI RHF: " << er_r << "  UHF: " << er_u);
+  REQUIRE_THAT(er_u, WithinAbs(er_r, 1e-7));
+}
+
+TEST_CASE("UHF MP2 open-shell: conventional vs RI", "[mp2][uhf]") {
+  // H2O+ doublet (9 electrons): genuinely open-shell (n_alpha != n_beta).
+  auto atoms = uhf_water_atoms();
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(false);
+  auto aux = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux.set_kind(basis.kind());
+
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf,
+                                         occ::qm::SpinorbitalKind::Unrestricted);
+  scf.set_charge_multiplicity(1, 2);
+  double ehf = scf.compute_scf_energy();
+  REQUIRE(scf.ctx.converged);
+  REQUIRE(scf.ctx.mo.n_alpha != scf.ctx.mo.n_beta);
+
+  occ::qm::MP2 conv(basis, scf.ctx.mo, ehf);
+  conv.set_frozen_core_auto();
+  double e_conv = conv.compute_correlation_energy();
+
+  occ::qm::MP2 ri(basis, aux, scf.ctx.mo, ehf);
+  ri.set_frozen_core_auto();
+  double e_ri = ri.compute_correlation_energy();
+
+  INFO("open-shell conventional: " << e_conv << "  RI: " << e_ri);
+  REQUIRE(e_conv < 0.0);
+  // Two independent UHF implementations agree within DF error.
+  REQUIRE_THAT(e_ri, WithinAbs(e_conv, 3e-3));
+
+  const auto &r = conv.results();
+  REQUIRE_THAT(r.same_spin_correlation + r.opposite_spin_correlation,
+               WithinAbs(e_conv, 1e-10));
+  REQUIRE(r.same_spin_correlation < 0.0);
+  REQUIRE(r.opposite_spin_correlation < 0.0);
 }
