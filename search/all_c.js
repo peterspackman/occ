@@ -80,7 +80,7 @@ var searchData=
   ['leaf_5fweights_77',['leaf_weights',['../classocc_1_1qm_1_1SpatialGridHierarchy.html#a7ff277332d623bb4efc117863d9e3e3e',1,'occ::qm::SpatialGridHierarchy']]],
   ['leaves_78',['leaves',['../structocc_1_1geometry_1_1LinearHashedOctree.html#a28d52223aa8718096eb5ceae7f68ec78',1,'occ::geometry::LinearHashedOctree::leaves'],['../classocc_1_1qm_1_1SpatialGridHierarchy.html#a21b3066e5867010586e9b91dd73f9196',1,'occ::qm::SpatialGridHierarchy::leaves()']]],
   ['lebedev_79',['lebedev',['../namespaceocc_1_1dft_1_1grid.html#a3353768834541038f7e0d6efd4905137',1,'occ::dft::grid']]],
-  ['lebedev_2eh_80',['lebedev.h',['../dft_2lebedev_8h.html',1,'(Global Namespace)'],['../numint_2lebedev_8h.html',1,'(Global Namespace)']]],
+  ['lebedev_2eh_80',['lebedev.h',['../numint_2lebedev_8h.html',1,'(Global Namespace)'],['../dft_2lebedev_8h.html',1,'(Global Namespace)']]],
   ['lebedev_5fgrid_5flevels_81',['lebedev_grid_levels',['../namespaceocc_1_1dft.html#afe5b60f5c95720630ce9b842de705f17',1,'occ::dft']]],
   ['left_82',['left',['../structocc_1_1io_1_1ColumnConfiguration.html#a4a716f316700673552677ffd2c5e1b5fa811882fecd5c7618d7099ebbd39ea254',1,'occ::io::ColumnConfiguration::left'],['../structocc_1_1io_1_1ColumnConfiguration_1_1Border.html#a0749faab2f125909f360f02051825f35',1,'occ::io::ColumnConfiguration::Border::left'],['../structocc_1_1io_1_1RowConfiguration_1_1Border.html#a41d9f0dbc902fe450f734c0f7e0c9da0',1,'occ::io::RowConfiguration::Border::left'],['../classocc_1_1core_1_1opt_1_1LineSearch.html#af9ab108f76993dbd3cddf5b38977d75c',1,'occ::core::opt::LineSearch::left()']]],
   ['legendre_2eh_83',['legendre.h',['../legendre_8h.html',1,'']]],

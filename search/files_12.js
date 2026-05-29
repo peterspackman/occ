@@ -40,7 +40,7 @@ var searchData=
   ['split_5fri_5fj_2eh_37',['split_ri_j.h',['../split__ri__j_8h.html',1,'']]],
   ['standard_5fbonds_2eh_38',['standard_bonds.h',['../standard__bonds_8h.html',1,'']]],
   ['steinhardt_2eh_39',['steinhardt.h',['../steinhardt_8h.html',1,'']]],
-  ['sto3g_5fbasis_2eh_40',['sto3g_basis.h',['../gto_2sto3g__basis_8h.html',1,'(Global Namespace)'],['../qm_2sto3g__basis_8h.html',1,'(Global Namespace)']]],
+  ['sto3g_5fbasis_2eh_40',['sto3g_basis.h',['../qm_2sto3g__basis_8h.html',1,'(Global Namespace)'],['../gto_2sto3g__basis_8h.html',1,'(Global Namespace)']]],
   ['sto_5fng_2eh_41',['sto_ng.h',['../sto__ng_8h.html',1,'']]],
   ['stockholder_5fweight_2eh_42',['stockholder_weight.h',['../stockholder__weight_8h.html',1,'']]],
   ['strain_5fad_2eh_43',['strain_ad.h',['../strain__ad_8h.html',1,'']]],
