@@ -584,12 +584,24 @@ TEST_CASE("UHF MP2 closed-shell limit equals RHF", "[mp2][uhf]") {
   double ec_r = corr(conv_r), ec_u = corr(conv_u);
   INFO("conventional RHF: " << ec_r << "  UHF: " << ec_u);
   REQUIRE_THAT(ec_u, WithinAbs(ec_r, 1e-7));
+  // The restricted ss/os decomposition is physical, so the spin components
+  // match the UHF αα+ββ / αβ split (and same-spin is negative).
+  REQUIRE_THAT(conv_u.results().same_spin_correlation,
+               WithinAbs(conv_r.results().same_spin_correlation, 1e-7));
+  REQUIRE_THAT(conv_u.results().opposite_spin_correlation,
+               WithinAbs(conv_r.results().opposite_spin_correlation, 1e-7));
+  REQUIRE(conv_r.results().same_spin_correlation < 0.0);
+  REQUIRE(conv_r.results().opposite_spin_correlation < 0.0);
 
   occ::qm::MP2 ri_r(basis, aux, scf_r.ctx.mo, ehf_r);
   occ::qm::MP2 ri_u(basis, aux, scf_u.ctx.mo, ehf_u);
   double er_r = corr(ri_r), er_u = corr(ri_u);
   INFO("RI RHF: " << er_r << "  UHF: " << er_u);
   REQUIRE_THAT(er_u, WithinAbs(er_r, 1e-7));
+  REQUIRE_THAT(ri_u.results().same_spin_correlation,
+               WithinAbs(ri_r.results().same_spin_correlation, 1e-7));
+  REQUIRE_THAT(ri_u.results().opposite_spin_correlation,
+               WithinAbs(ri_r.results().opposite_spin_correlation, 1e-7));
 }
 
 TEST_CASE("UHF MP2 open-shell: conventional vs RI", "[mp2][uhf]") {
@@ -626,4 +638,40 @@ TEST_CASE("UHF MP2 open-shell: conventional vs RI", "[mp2][uhf]") {
                WithinAbs(e_conv, 1e-10));
   REQUIRE(r.same_spin_correlation < 0.0);
   REQUIRE(r.opposite_spin_correlation < 0.0);
+
+  // UHF RI occupied-blocking is exact: a 1-byte budget forces per-spin blocking
+  // (and the integral-direct B build) yet reproduces the in-core energy.
+  occ::qm::MP2 ri_blocked(basis, aux, scf.ctx.mo, ehf);
+  ri_blocked.set_frozen_core_auto();
+  ri_blocked.set_memory_budget(1);
+  double e_ri_blocked = ri_blocked.compute_correlation_energy();
+  INFO("RI default: " << e_ri << "  RI blocked: " << e_ri_blocked);
+  REQUIRE_THAT(e_ri_blocked, WithinAbs(e_ri, 1e-9));
+}
+
+TEST_CASE("MP2 spin-component scaling (SCS/SOS)", "[mp2]") {
+  std::vector<occ::core::Atom> h2_atoms{{1, 0.0, 0.0, 0.0},
+                                        {1, 0.0, 0.0, 1.4}};
+  auto basis = occ::gto::AOBasis::load(h2_atoms, "def2-svp");
+  basis.set_pure(false);
+
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  double ehf = scf.compute_scf_energy();
+
+  occ::qm::MP2 mp2(basis, scf.ctx.mo, ehf);
+  mp2.set_scs_parameters(1.0 / 3.0, 6.0 / 5.0); // SCS-MP2
+  mp2.compute_correlation_energy();
+  const auto &r = mp2.results();
+  REQUIRE_THAT(r.scs_mp2_correlation,
+               WithinAbs(r.same_spin_correlation / 3.0 +
+                             1.2 * r.opposite_spin_correlation,
+                         1e-12));
+
+  occ::qm::MP2 sos(basis, scf.ctx.mo, ehf);
+  sos.set_scs_parameters(0.0, 1.3); // SOS-MP2
+  sos.compute_correlation_energy();
+  const auto &rs = sos.results();
+  REQUIRE_THAT(rs.scs_mp2_correlation,
+               WithinAbs(1.3 * rs.opposite_spin_correlation, 1e-12));
 }

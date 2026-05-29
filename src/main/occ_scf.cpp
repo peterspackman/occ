@@ -176,6 +176,11 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                   "Cholesky threshold for auto auxiliary basis (default: 1e-4)");
   scf->add_option("--ri-basis", config->basis.ri_basis,
                   "RI basis set for MP2 calculations");
+  scf->add_option("--mp2-max-memory", config->method.mp2_max_memory_gb,
+                  "MP2 memory budget in GiB (controls occupied blocking and "
+                  "whether the dense 3-center store is used; default: 1.0)");
+  scf->add_option("--mp2-spin-scaling", config->method.mp2_spin_scaling,
+                  "MP2 spin-component scaling: none | scs | sos");
   scf->add_flag("--spherical", config->basis.spherical,
                 "use spherical basis sets");
 

@@ -309,33 +309,52 @@ Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
   // Set automatic frozen core
   mp2.set_frozen_core_auto();
 
-  // RI-MP2 uses stored integrals
+  // Memory budget (GiB -> bytes) controls occupied blocking and whether the
+  // dense 3-center store is used.
+  mp2.set_memory_budget(static_cast<size_t>(config.method.mp2_max_memory_gb *
+                                            1024.0 * 1024.0 * 1024.0));
+
+  // Optional spin-component scaling.
+  const std::string &scaling = config.method.mp2_spin_scaling;
+  const bool scaled = (scaling == "scs" || scaling == "sos");
+  if (scaling == "scs") {
+    mp2.set_scs_parameters(1.0 / 3.0, 6.0 / 5.0); // Grimme SCS-MP2
+  } else if (scaling == "sos") {
+    mp2.set_scs_parameters(0.0, 1.3); // Grimme SOS-MP2
+  } else if (scaling != "none" && !scaling.empty()) {
+    occ::log::warn("Unknown --mp2-spin-scaling '{}', using unscaled MP2",
+                   scaling);
+  }
 
   // Compute MP2 correlation energy
   double correlation_energy = mp2.compute_correlation_energy();
-  double total_mp2_energy = scf_wfn.energy.total + correlation_energy;
+  const auto &results = mp2.results();
+  const double used_corr =
+      scaled ? results.scs_mp2_correlation : correlation_energy;
+  double total_mp2_energy = scf_wfn.energy.total + used_corr;
 
   occ::log::info("SCF energy:                       {: 20.12f}",
                  scf_wfn.energy.total);
   occ::log::info("MP2 correlation energy:           {: 20.12f}",
                  correlation_energy);
+  occ::log::info("  same-spin:                      {: 20.12f}",
+                 results.same_spin_correlation);
+  occ::log::info("  opposite-spin:                  {: 20.12f}",
+                 results.opposite_spin_correlation);
+  if (scaled) {
+    occ::log::info("{}-MP2 correlation energy:        {: 20.12f}",
+                   scaling == "scs" ? "SCS" : "SOS",
+                   results.scs_mp2_correlation);
+  }
   occ::log::info("MP2 total energy:                 {: 20.12f}",
                  total_mp2_energy);
-
-  const auto &results = mp2.results();
-  occ::log::debug("Same-spin correlation:            {: 20.12f}",
-                  results.same_spin_correlation);
-  occ::log::debug("Opposite-spin correlation:        {: 20.12f}",
-                  results.opposite_spin_correlation);
-  occ::log::debug("SCS-MP2 correlation energy:       {: 20.12f}",
-                  results.scs_mp2_correlation);
-  occ::log::debug("SCS-MP2 total energy:             {: 20.12f}",
-                  scf_wfn.energy.total + results.scs_mp2_correlation);
 
   // Create modified wavefunction with MP2 energy
   Wavefunction mp2_wfn = scf_wfn;
   mp2_wfn.energy.total = total_mp2_energy;
-  mp2_wfn.method = "MP2";
+  mp2_wfn.method = scaling == "scs"   ? "SCS-MP2"
+                   : scaling == "sos" ? "SOS-MP2"
+                                      : "MP2";
 
   return mp2_wfn;
 }

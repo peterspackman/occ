@@ -54,6 +54,8 @@ struct MethodInput {
   bool use_cosx{false}; // Use COSX seminumerical exchange
   COSXGridLevel cosx_grid_level{COSXGridLevel::Grid1}; // COSX grid quality
   COSXSettings cosx; // COSX settings
+  double mp2_max_memory_gb{1.0}; // MP2 B-tensor / half-transform memory budget
+  std::string mp2_spin_scaling{"none"}; // MP2 spin scaling: none | scs | sos
 };
 
 struct BasisSetInput {

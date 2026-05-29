@@ -15,6 +15,12 @@ namespace {
 // Accumulate the restricted MP2 same-spin/opposite-spin energy for one (i,j)
 // occupied pair, given K(a,b) = (ia|jb). `factor` lets callers exploit the
 // i<->j summand symmetry (2 for off-diagonal pairs, 1 otherwise).
+//
+// Physical spin-component decomposition (consistent with the UHF αβ / αα+ββ
+// split, so SCS/SOS scaling is correct):
+//   E_OS = Σ K(a,b)² / D
+//   E_SS = Σ [K(a,b)² - K(a,b)K(b,a)] / D
+// The total E_OS + E_SS = Σ [2K² - K_ab K_ba]/D is the usual closed-shell MP2.
 inline void accumulate_mp2_pair(const Mat &K, double eps_i, double eps_j,
                                 const Vec &eps_v, double factor, double &ss,
                                 double &os) {
@@ -29,8 +35,8 @@ inline void accumulate_mp2_pair(const Mat &K, double eps_i, double eps_j,
       const double kab = K(a, b);
       const double kba = K(b, a);
       const double inv = factor / denom;
-      os += 2.0 * kab * kab * inv;
-      ss -= kab * kba * inv;
+      os += kab * kab * inv;
+      ss += (kab * kab - kab * kba) * inv;
     }
   }
 }
@@ -514,11 +520,9 @@ double MP2::compute_unrestricted_ri_energy() {
                   vab);
 
   DFIntegrals df(*m_df_engine, m_memory_budget);
+  const size_t naux = df.naux();
   const bool have_a = (oa > 0 && vaa > 0);
   const bool have_b = (ob > 0 && vab > 0);
-  // Metric-folded B tensors per spin (minimal DF object, o*v*naux each).
-  Mat Ba = have_a ? df.build_b_tilde(Coa, Cva) : Mat();
-  Mat Bb = have_b ? df.build_b_tilde(Cob, Cvb) : Mat();
 
   const Eigen::Index VA = static_cast<Eigen::Index>(vaa);
   const Eigen::Index VB = static_cast<Eigen::Index>(vab);
@@ -529,41 +533,80 @@ double MP2::compute_unrestricted_ri_energy() {
   };
   occ::parallel::thread_local_storage<Acc> acc_local;
 
+  // Occupied block size for one spin: hold at most two metric-folded B blocks.
+  auto occ_block = [&](size_t v) {
+    const size_t bytes = std::max<size_t>(1, v * naux * sizeof(double));
+    return std::max<size_t>(1, m_memory_budget / (2 * bytes));
+  };
+
+  // Same-spin (σσ): blocked over occupied with i>=j symmetry (factor 2 for
+  // off-diagonal pairs). ss_pair_energy carries the ¼ for the a,b ordering.
+  auto same_spin = [&](const Mat &Co, const Mat &Cv, const Vec &eo,
+                       const Vec &ev, size_t o, Eigen::Index V) {
+    if (o == 0 || V == 0)
+      return;
+    const size_t blk = std::min(occ_block(static_cast<size_t>(V)), o);
+    for (size_t Istart = 0; Istart < o; Istart += blk) {
+      const size_t bI = std::min(blk, o - Istart);
+      const Mat B_I = df.build_b_tilde(Co.middleCols(Istart, bI), Cv);
+      for (size_t Jstart = 0; Jstart <= Istart; Jstart += blk) {
+        const size_t bJ = std::min(blk, o - Jstart);
+        const bool diag = (Jstart == Istart);
+        Mat B_J_store;
+        if (!diag)
+          B_J_store = df.build_b_tilde(Co.middleCols(Jstart, bJ), Cv);
+        const Mat &B_J = diag ? B_I : B_J_store;
+        occ::parallel::parallel_for(size_t(0), bI, [&](size_t il) {
+          auto &acc = acc_local.local();
+          const size_t i_glob = Istart + il;
+          const auto Bi = B_I.middleRows(static_cast<Eigen::Index>(il) * V, V);
+          const size_t jl_max = diag ? il : (bJ - 1);
+          for (size_t jl = 0; jl <= jl_max; ++jl) {
+            const size_t j_glob = Jstart + jl;
+            const double factor = (i_glob == j_glob) ? 1.0 : 2.0;
+            const auto Bj = B_J.middleRows(static_cast<Eigen::Index>(jl) * V, V);
+            const Mat K = Bi * Bj.transpose();
+            acc.ss += factor * ss_pair_energy(K,
+                                              eo(static_cast<Eigen::Index>(i_glob)),
+                                              eo(static_cast<Eigen::Index>(j_glob)),
+                                              ev);
+          }
+        });
+      }
+    }
+  };
+
+  // Opposite-spin (αβ): blocked over α-occ (outer) and β-occ (inner), full sum.
+  auto opp_spin = [&]() {
+    if (!have_a || !have_b)
+      return;
+    const size_t blkA = std::min(occ_block(vaa), oa);
+    const size_t blkB = std::min(occ_block(vab), ob);
+    for (size_t Ia = 0; Ia < oa; Ia += blkA) {
+      const size_t bIa = std::min(blkA, oa - Ia);
+      const Mat BA = df.build_b_tilde(Coa.middleCols(Ia, bIa), Cva);
+      for (size_t Jb = 0; Jb < ob; Jb += blkB) {
+        const size_t bJb = std::min(blkB, ob - Jb);
+        const Mat BB = df.build_b_tilde(Cob.middleCols(Jb, bJb), Cvb);
+        occ::parallel::parallel_for(size_t(0), bIa, [&](size_t il) {
+          auto &acc = acc_local.local();
+          const auto Bi = BA.middleRows(static_cast<Eigen::Index>(il) * VA, VA);
+          for (size_t jl = 0; jl < bJb; ++jl) {
+            const auto Bj = BB.middleRows(static_cast<Eigen::Index>(jl) * VB, VB);
+            const Mat K = Bi * Bj.transpose(); // (iα aα|jβ bβ)
+            acc.os += os_pair_energy(K, eoa(static_cast<Eigen::Index>(Ia + il)),
+                                     eob(static_cast<Eigen::Index>(Jb + jl)), eva,
+                                     evb);
+          }
+        });
+      }
+    }
+  };
+
   occ::timing::start(occ::timing::category::mp2_energy);
-  // Same-spin αα and opposite-spin αβ are both driven by the α-occupied loop.
-  if (have_a) {
-    occ::parallel::parallel_for(size_t(0), oa, [&](size_t i) {
-      auto &acc = acc_local.local();
-      const auto Bi = Ba.middleRows(static_cast<Eigen::Index>(i) * VA, VA);
-      for (size_t j = 0; j < oa; ++j) {
-        const auto Bj = Ba.middleRows(static_cast<Eigen::Index>(j) * VA, VA);
-        const Mat K = Bi * Bj.transpose(); // (iα aα|jα bα)
-        acc.ss += ss_pair_energy(K, eoa(static_cast<Eigen::Index>(i)),
-                                 eoa(static_cast<Eigen::Index>(j)), eva);
-      }
-      if (have_b) {
-        for (size_t j = 0; j < ob; ++j) {
-          const auto Bj = Bb.middleRows(static_cast<Eigen::Index>(j) * VB, VB);
-          const Mat K = Bi * Bj.transpose(); // (iα aα|jβ bβ)
-          acc.os += os_pair_energy(K, eoa(static_cast<Eigen::Index>(i)),
-                                   eob(static_cast<Eigen::Index>(j)), eva, evb);
-        }
-      }
-    });
-  }
-  // Same-spin ββ.
-  if (have_b) {
-    occ::parallel::parallel_for(size_t(0), ob, [&](size_t i) {
-      auto &acc = acc_local.local();
-      const auto Bi = Bb.middleRows(static_cast<Eigen::Index>(i) * VB, VB);
-      for (size_t j = 0; j < ob; ++j) {
-        const auto Bj = Bb.middleRows(static_cast<Eigen::Index>(j) * VB, VB);
-        const Mat K = Bi * Bj.transpose(); // (iβ aβ|jβ bβ)
-        acc.ss += ss_pair_energy(K, eob(static_cast<Eigen::Index>(i)),
-                                 eob(static_cast<Eigen::Index>(j)), evb);
-      }
-    });
-  }
+  same_spin(Coa, Cva, eoa, eva, oa, VA); // αα
+  same_spin(Cob, Cvb, eob, evb, ob, VB); // ββ
+  opp_spin();                            // αβ
   occ::timing::stop(occ::timing::category::mp2_energy);
 
   double ss = 0.0, os = 0.0;

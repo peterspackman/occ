@@ -237,9 +237,27 @@ ss/os both < 0. mp2_tests 57/12, qm_tests 117/29, full build/CLI link clean.
 ---
 
 ## All five stages complete.
-Optional follow-ups (not blocking): occupied-blocking for the UHF B̃ build;
-shell-pair-packed layout for the *stored* DF path; out-of-core paging; SCS/SOS
-as a first-class CLI option; `--mp2-max-memory` CLI knob for the budget.
+
+### Follow-ups done
+- **`--mp2-max-memory <GiB>`** CLI option → `MethodInput.mp2_max_memory_gb` →
+  `MP2::set_memory_budget` in `run_mp2_method`. Controls occupied blocking and
+  the direct/stored DF choice (default 1 GiB).
+- **`--mp2-spin-scaling none|scs|sos`** CLI option: SCS (1/3, 6/5) and SOS
+  (0, 1.3) presets; the scaled energy becomes the total and the method is
+  reported as SCS-MP2 / SOS-MP2.
+- **Fixed a latent bug**: the restricted ss/os decomposition was non-physical
+  (`os=2K²/D`, `ss=−K_ab K_ba/D`) — correct total but wrong components, so the
+  old SCS-MP2 was wrong. Now physical (`os=ΣK²/D`, `ss=Σ(K²−K_ab K_ba)/D`),
+  matching the UHF αβ / αα+ββ split. Verified: closed-shell UHF components ==
+  RHF components; same-spin negative; SOS == 1.3·OS.
+- **UHF RI occupied-blocking**: per-spin blocked B̃ build (same-spin triangular
+  i≥j; αβ nested α/β blocks) — memory bounded by budget, verified exact vs
+  in-core (1e-9).
+
+### Still deferred (low value given the above)
+- Shell-pair-packed layout for the *stored* DF path (the direct path already
+  avoids the dense store).
+- Out-of-core paging (rarely needed now that nothing scales as N⁴ / o²v²).
 
 ## Stage 5: Direct RI 3-center, sparsity & cleanups
 **Goal**: remove the dense `(μν|P)` store as the RI memory ceiling; keep RI-MP2
