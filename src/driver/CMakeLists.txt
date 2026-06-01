@@ -15,6 +15,7 @@ target_link_libraries(occ_driver
     occ_dft
     occ_qm
     occ_correlation
+    occ_cc
     occ_dma
     occ_solvent
     occ_crystal

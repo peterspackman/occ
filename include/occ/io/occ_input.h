@@ -56,6 +56,16 @@ struct MethodInput {
   COSXSettings cosx; // COSX settings
   double mp2_max_memory_gb{1.0}; // MP2 B-tensor / half-transform memory budget
   std::string mp2_spin_scaling{"none"}; // MP2 spin scaling: none | scs | sos
+  std::string ccsd_backend{"exact"};    // CCSD integral backend: exact | df | thc
+  double ccsd_max_memory_gb{1.0};       // CCSD integral-build memory budget
+  int ccsd_frozen_core{-1};             // -1 auto (chemical core), 0 none, N freeze N
+  // THC rank = c * nbf. c~6 gives sub-mHa CCSD(T) vs DF across systems and is
+  // the accuracy/cost sweet spot; the error floors there (higher c is slower,
+  // ~c^2, and no more accurate -- the LS-THC metric is ill-conditioned).
+  double ccsd_thc_c_isdf{6.0};
+  std::string ccsd_thc_method{"cholesky"}; // THC ISDF selector: cholesky | qr
+  int ccsd_thc_grid_angular{110};          // THC candidate-grid max angular pts
+  double ccsd_thc_grid_radial{1e-7};       // THC candidate-grid radial precision
 };
 
 struct BasisSetInput {

@@ -119,6 +119,24 @@ const char *category_name(category cat) {
     return "DMA total";
   case post_hf:
     return "Post-HF methods";
+  case cc_ao2mo:
+    return "CC exact AO->MO transform";
+  case thc_factorize:
+    return "THC factorization (total)";
+  case thc_grid:
+    return "THC grid + AO collocation";
+  case thc_select:
+    return "THC ISDF point selection";
+  case thc_bbuild:
+    return "THC DF reference B build";
+  case thc_fit:
+    return "THC LS-THC core fit";
+  case ccsd:
+    return "CCSD amplitude solve";
+  case ccsd_ladder:
+    return "CCSD vvvv ladder";
+  case ccsd_triples:
+    return "CCSD(T) triples";
   case cosx:
     return "COSX seminumerical exchange";
   case crystal_energy:
@@ -194,6 +212,15 @@ void print_timings() {
       dma_grid_int,
       dma_total,
       post_hf,
+      cc_ao2mo,
+      thc_factorize,
+      thc_grid,
+      thc_select,
+      thc_bbuild,
+      thc_fit,
+      ccsd,
+      ccsd_ladder,
+      ccsd_triples,
       cosx,
       crystal_energy,
       optimization,

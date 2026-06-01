@@ -10,6 +10,8 @@ enum class MethodKind {
   HF,
   DFT,
   MP2,
+  CCSD,
+  CCSD_T,
   GFN2,
 };
 
@@ -82,6 +84,14 @@ inline qm::SpinorbitalKind determine_spinorbital_kind(const std::string &name,
     else
       return qm::SpinorbitalKind::Restricted;
   }
+  case MethodKind::CCSD:
+  case MethodKind::CCSD_T: {
+    // Restricted closed-shell only; an unrestricted reference is flagged later.
+    if (lc[0] == 'u' || multiplicity > 1)
+      return qm::SpinorbitalKind::Unrestricted;
+    else
+      return qm::SpinorbitalKind::Restricted;
+  }
   }
 }
 
@@ -94,6 +104,12 @@ inline MethodKind method_kind_from_string(const std::string &name) {
   if (lc == "mp2" || lc == "rmp2" || lc == "ump2" || lc == "moller-plesset" ||
       lc == "moller plesset") {
     return MethodKind::MP2;
+  }
+  if (lc == "ccsd(t)" || lc == "ccsd-t" || lc == "ccsdt" || lc == "rccsd(t)") {
+    return MethodKind::CCSD_T;
+  }
+  if (lc == "ccsd" || lc == "rccsd") {
+    return MethodKind::CCSD;
   }
   if (lc == "gfn2" || lc == "gfn2-xtb" || lc == "gfn2_xtb") {
     return MethodKind::GFN2;

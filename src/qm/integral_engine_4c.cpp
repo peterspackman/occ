@@ -429,6 +429,62 @@ IntegralEngine::four_center_integrals_tensor(const Mat &Schwarz) const {
   return result;
 }
 
+Mat IntegralEngine::four_center_integrals_packed(const Mat &Schwarz) const {
+  using Result = IntegralEngine::IntegralResult<4>;
+  const size_t n_ao = nbf();
+  const size_t npair = n_ao * (n_ao + 1) / 2;
+  constexpr auto op = cint::Operator::coulomb;
+
+  occ::log::info("Computing packed AO integrals ({} pairs, {} threads)", npair,
+                 occ::parallel::get_num_threads());
+
+  Mat A = Mat::Zero(static_cast<Eigen::Index>(npair),
+                    static_cast<Eigen::Index>(npair));
+  // Canonical pair index for a<=b: b(b+1)/2 + a.
+  auto pack = [](size_t a, size_t b) {
+    return (a <= b) ? (b * (b + 1) / 2 + a) : (a * (a + 1) / 2 + b);
+  };
+
+  // Each unique shell quartet is produced once, so distinct (P,Q) matrix
+  // elements are written by distinct threads -> no reduction / locking needed
+  // (same contract as four_center_integrals_tensor).
+  auto f = [&A, &pack](const Result &args) {
+    for (auto f3 = 0, f0123 = 0; f3 != args.dims[3]; ++f3) {
+      const auto bf3 = f3 + args.bf[3];
+      for (auto f2 = 0; f2 != args.dims[2]; ++f2) {
+        const auto bf2 = f2 + args.bf[2];
+        for (auto f1 = 0; f1 != args.dims[1]; ++f1) {
+          const auto bf1 = f1 + args.bf[1];
+          for (auto f0 = 0; f0 != args.dims[0]; ++f0, ++f0123) {
+            const auto bf0 = f0 + args.bf[0];
+            const auto value = args.buffer[f0123];
+            if (std::abs(value) > 1e-12) {
+              const Eigen::Index P =
+                  static_cast<Eigen::Index>(pack(bf0, bf1));
+              const Eigen::Index Q =
+                  static_cast<Eigen::Index>(pack(bf2, bf3));
+              A(P, Q) = value;
+              A(Q, P) = value;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  occ::timing::start(occ::timing::category::ints4c2e);
+  Mat Dnorm;
+  if (is_spherical()) {
+    detail::evaluate_four_center_tbb<op, Shell::Kind::Spherical>(
+        f, m_env, m_aobasis, m_shellpairs, Dnorm, Schwarz, m_precision);
+  } else {
+    detail::evaluate_four_center_tbb<op, Shell::Kind::Cartesian>(
+        f, m_env, m_aobasis, m_shellpairs, Dnorm, Schwarz, m_precision);
+  }
+  occ::timing::stop(occ::timing::category::ints4c2e);
+  return A;
+}
+
 Eigen::Tensor<double, 4>
 IntegralEngine::ao_direct_half_transform(const Mat &C,
                                          const Mat &Schwarz) const {

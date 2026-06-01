@@ -181,6 +181,25 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                   "whether the dense 3-center store is used; default: 1.0)");
   scf->add_option("--mp2-spin-scaling", config->method.mp2_spin_scaling,
                   "MP2 spin-component scaling: none | scs | sos");
+  scf->add_option("--ccsd-backend", config->method.ccsd_backend,
+                  "CCSD(T) integral backend: exact | df | thc (df/thc reuse "
+                  "--ri-basis, default def2-universal-jkfit)");
+  scf->add_option("--ccsd-max-memory", config->method.ccsd_max_memory_gb,
+                  "CCSD(T) integral-build memory budget in GiB (default: 1.0)");
+  scf->add_option("--ccsd-frozen-core", config->method.ccsd_frozen_core,
+                  "CCSD(T) frozen core orbitals: -1 auto (chemical core, "
+                  "default), 0 all-electron, N freeze N lowest");
+  scf->add_option("--ccsd-thc-c", config->method.ccsd_thc_c_isdf,
+                  "THC interpolation rank = c * nbf for --ccsd-backend thc "
+                  "(default: 6 = sub-mHa sweet spot; cost ~ c^2)");
+  scf->add_option("--ccsd-thc-method", config->method.ccsd_thc_method,
+                  "THC ISDF point selector: cholesky | qr (default: cholesky)");
+  scf->add_option("--ccsd-thc-grid-angular", config->method.ccsd_thc_grid_angular,
+                  "THC candidate-grid max angular points (default: 110; raise "
+                  "for a finer ISDF grid)");
+  scf->add_option("--ccsd-thc-grid-radial", config->method.ccsd_thc_grid_radial,
+                  "THC candidate-grid radial precision (default: 1e-7; lower = "
+                  "more radial points)");
   scf->add_flag("--spherical", config->basis.spherical,
                 "use spherical basis sets");
 
