@@ -1,3 +1,4 @@
+#include <array>
 #include <atomic>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
@@ -5,171 +6,161 @@
 #include <occ/qm/cc/triples.h>
 #include <vector>
 
-// Restricted (T) -- a direct port of the thc_cct reference rtriples.py
-// (PySCF ccsd_t_slow). Loops over virtual triples (a>=b>=c); per triple it
-// builds only O(nocc^3) tensors, so the O(o^3 v^3) triples array is never
-// formed. Canonical reference assumed (f_vo = 0), so the disconnected term
-// keeps only the t1 (vvoo) contribution.
+// Restricted (T). Loops over virtual triples (a>=b>=c); per triple only
+// O(nocc^3) tensors are built, so the O(o^3 v^3) triples array is never formed.
+// Canonical reference assumed (f_vo = 0), so the disconnected term keeps only
+// the t1 (vvoo) contribution.
+//
+// Layout follows PySCF's production kernel (pyscf/lib/cc/ccsd_t.c): both GEMMs
+// emit w in [i,j,k] (k-fastest) CONTIGUOUS order, so the per-ordering fold is a
+// contiguous read + indexed scatter in tight raw-pointer loops -- the energy
+// contraction is then ~9 vectorisable passes over the o^3 working set instead
+// of the strided Eigen element accesses (operator() on (i,k*o+j)) that ran the
+// bookkeeping at ~40 cycles/element. The GEMM that dominates (particle term) is
+// also cast as M=o^2 (fat) rather than M=o (skinny), ~1.7x faster on BLAS.
 
 namespace occ::qm::cc {
 
 namespace {
-
 using occ::Mat;
 using T2 = Eigen::Tensor<double, 2>;
-using T3 = Eigen::Tensor<double, 3>;
 using T4 = Eigen::Tensor<double, 4>;
-using Sh3 = Eigen::array<int, 3>;
-
-// r3(w) = 4 w + w(jki) + w(kij) - 2 w(kji) - 2 w(ikj) - 2 w(jik)
-T3 r3(const T3 &w) {
-  return w * 4.0 + w.shuffle(Sh3{1, 2, 0}) + w.shuffle(Sh3{2, 0, 1}) -
-         w.shuffle(Sh3{2, 1, 0}) * 2.0 - w.shuffle(Sh3{0, 2, 1}) * 2.0 -
-         w.shuffle(Sh3{1, 0, 2}) * 2.0;
-}
-
-// sum_ijk w[perm] * z
-inline double dot3(const T3 &w, const Sh3 &perm, const T3 &z) {
-  const Eigen::Tensor<double, 0> s = (w.shuffle(perm) * z).sum();
-  return s(0);
-}
-
-// index permutations (label of w against fixed "ijk" of z)
-constexpr Sh3 P_ijk{0, 1, 2};
-constexpr Sh3 P_ikj{0, 2, 1};
-constexpr Sh3 P_jik{1, 0, 2};
-constexpr Sh3 P_jki{2, 0, 1};
-constexpr Sh3 P_kij{1, 2, 0};
-constexpr Sh3 P_kji{2, 1, 0};
-
 } // namespace
 
 double ccsd_t(const T2 &t1, const T4 &t2, const CCIntegrals &e) {
   occ::timing::start(occ::timing::category::ccsd_triples);
   const int o = e.nocc, v = e.nvir;
+  const int oo = o * o;
+  const int ooo = oo * o;
   const Vec &mo_e = e.mo_energy;
 
-  // Precompute contiguous matrix slices so each triple's get_w is two BLAS
-  // GEMMs with no per-call copies. (The tensor chip/contract path is
-  // overhead-bound for the small o^3 intermediates.) Footprint is the same
-  // order as the ovvv / ovov blocks.
-  const int oo = o * o;
+  // Contiguous matrix slices, laid out so each ordering's two GEMMs land in
+  // [i,j,k] (k-fastest) order:
+  //   cache1[i,j,k] = sum_f t2kjf[j*o+k, f] vvovT[f, i]      (oo x v)*(v x o)
+  //   cache2[i,j,k] = sum_m t2km[k, m]      voooT[m, i*o+j]  (o  x o)*(o x oo)
+  //   v[i,j,k]      = vvoo[i, j] t1(k, c)
   const size_t vv = static_cast<size_t>(v) * v;
-  std::vector<Mat> vvov_slc(vv); // [a*v+b](i,f)      = (ia|fb) = ovvv(i,a,f,b)
-  std::vector<Mat> vvoo_slc(vv); // [a*v+b](i,j)      = (ia|jb) = ovov(i,a,j,b)
-  std::vector<Mat> t2bc_slc(vv); // [b*v+c](m,k)      = t2(m,k,b,c)
-  for (int a = 0; a < v; ++a)
-    for (int b = 0; b < v; ++b) {
-      Mat sv(o, v), so(o, o), st(o, o);
-      for (int i = 0; i < o; ++i) {
-        for (int f = 0; f < v; ++f)
-          sv(i, f) = e.ovvv(i, a, f, b);
-        for (int j = 0; j < o; ++j)
-          so(i, j) = e.ovov(i, a, j, b);
-      }
-      for (int m = 0; m < o; ++m)
-        for (int k = 0; k < o; ++k)
-          st(m, k) = t2(m, k, a, b);
-      vvov_slc[a * v + b] = std::move(sv);
-      vvoo_slc[a * v + b] = std::move(so);
-      t2bc_slc[a * v + b] = std::move(st);
-    }
-  std::vector<Mat> vooo_slc(v);  // [a](i*o+j, m)     = (ia|jm) = ovoo(i,a,j,m)
-  std::vector<Mat> t2T_slc(v);   // [c](f, k*o+j)     = t2(k,j,c,f)
-  for (int a = 0; a < v; ++a) {
-    Mat m(oo, o);
-    for (int i = 0; i < o; ++i)
-      for (int j = 0; j < o; ++j)
-        for (int mm = 0; mm < o; ++mm)
-          m(i * o + j, mm) = e.ovoo(i, a, j, mm);
-    vooo_slc[a] = std::move(m);
-  }
+  std::vector<Mat> t2kjf_slc(v);     // [c](j*o+k, f)  = t2(k,j,c,f)
+  std::vector<Mat> vvovT_slc(vv);    // [a*v+b](f, i)  = ovvv(i,a,f,b)
+  std::vector<Mat> t2km_slc(vv);     // [b*v+c](k, m)  = t2(m,k,b,c)
+  std::vector<Mat> voooT_slc(v);     // [a](m, i*o+j)  = ovoo(i,a,j,m)
+  std::vector<Mat> vvoo_slc(vv);     // [a*v+b](i, j)  = ovov(i,a,j,b)
   for (int c = 0; c < v; ++c) {
-    Mat m(v, oo);
-    for (int f = 0; f < v; ++f)
-      for (int k = 0; k < o; ++k)
-        for (int j = 0; j < o; ++j)
-          m(f, k * o + j) = t2(k, j, c, f);
-    t2T_slc[c] = std::move(m);
-  }
-
-  T3 eijk(o, o, o);
-  for (int i = 0; i < o; ++i)
+    Mat m(oo, v);
     for (int j = 0; j < o; ++j)
       for (int k = 0; k < o; ++k)
-        eijk(i, j, k) = mo_e(i) + mo_e(j) + mo_e(k);
+        for (int f = 0; f < v; ++f)
+          m(j * o + k, f) = t2(k, j, c, f);
+    t2kjf_slc[c] = std::move(m);
+  }
+  for (int a = 0; a < v; ++a) {
+    Mat m(o, oo);
+    for (int mm = 0; mm < o; ++mm)
+      for (int i = 0; i < o; ++i)
+        for (int j = 0; j < o; ++j)
+          m(mm, i * o + j) = e.ovoo(i, a, j, mm);
+    voooT_slc[a] = std::move(m);
+  }
+  for (int a = 0; a < v; ++a)
+    for (int b = 0; b < v; ++b) {
+      Mat sv(v, o), so(o, o), st(o, o);
+      for (int f = 0; f < v; ++f)
+        for (int i = 0; i < o; ++i)
+          sv(f, i) = e.ovvv(i, a, f, b);
+      for (int i = 0; i < o; ++i)
+        for (int j = 0; j < o; ++j)
+          so(i, j) = e.ovov(i, a, j, b);
+      for (int k = 0; k < o; ++k)
+        for (int mm = 0; mm < o; ++mm)
+          st(k, mm) = t2(mm, k, a, b);
+      vvovT_slc[a * v + b] = std::move(sv);
+      vvoo_slc[a * v + b] = std::move(so);
+      t2km_slc[a * v + b] = std::move(st);
+    }
 
-  auto get_w = [&](int a, int b, int c) -> T3 {
-    const Mat g1 = vvov_slc[a * v + b] * t2T_slc[c]; // (o x o^2): [i, k*o+j]
-    const Mat g2 = vooo_slc[a] * t2bc_slc[b * v + c]; // (o^2 x o): [i*o+j, k]
-    T3 w(o, o, o);
-    for (int i = 0; i < o; ++i)
-      for (int j = 0; j < o; ++j)
-        for (int k = 0; k < o; ++k)
-          w(i, j, k) = g1(i, k * o + j) - g2(i * o + j, k);
-    return w;
-  };
-  auto get_v = [&](int a, int b, int c) -> T3 {
-    const Mat &vvoo_ab = vvoo_slc[a * v + b]; // (i,j)
-    // v(i,j,k) = (ia|jb) t1(k,c); f_vo = 0 (canonical) drops the t2 term.
-    T3 out(o, o, o);
-    for (int i = 0; i < o; ++i)
-      for (int j = 0; j < o; ++j)
-        for (int k = 0; k < o; ++k)
-          out(i, j, k) = vvoo_ab(i, j) * t1(k, c);
-    return out;
-  };
+  std::vector<double> eijk(ooo);
+  for (int i = 0, n = 0; i < o; ++i)
+    for (int j = 0; j < o; ++j)
+      for (int k = 0; k < o; ++k, ++n)
+        eijk[n] = mo_e(i) + mo_e(j) + mo_e(k);
+
+  // Six permutation index maps (PySCF _make_permute_indices): ordering tau
+  // scatters its w/v into w0/v0 at pidx[tau][ijk], folding all six orderings.
+  std::array<std::vector<int>, 6> pidx;
+  for (auto &p : pidx)
+    p.resize(ooo);
+  for (int i = 0, m = 0; i < o; ++i)
+    for (int j = 0; j < o; ++j)
+      for (int k = 0; k < o; ++k, ++m) {
+        pidx[0][m] = i * oo + j * o + k;
+        pidx[1][m] = i * oo + k * o + j;
+        pidx[2][m] = j * oo + i * o + k;
+        pidx[3][m] = k * oo + i * o + j;
+        pidx[4][m] = j * oo + k * o + i;
+        pidx[5][m] = k * oo + j * o + i;
+      }
 
   // Parallelize over the outer virtual index a; each (a,b<=a,c<=b) triple is
-  // independent. TBB work-stealing balances the triangular load. For non-trivial
-  // sizes report progress (the (T) step is O(nocc^3 nvir^4)).
+  // independent and TBB work-stealing balances the triangular load.
   const bool report = v >= 40;
   std::atomic<int> completed{0};
   occ::parallel::thread_local_storage<double> et_local(0.0);
   occ::parallel::parallel_for(size_t(0), static_cast<size_t>(v), [&](size_t au) {
     const int a = static_cast<int>(au);
     double &et = et_local.local();
-    {
-      for (int b = 0; b <= a; ++b) {
-        for (int c = 0; c <= b; ++c) {
-        T3 d3 = eijk - eijk.constant(mo_e(o + a) + mo_e(o + b) + mo_e(o + c));
-        if (a == c)
-          d3 = d3 * 6.0;
-        else if (a == b || b == c)
-          d3 = d3 * 2.0;
+    std::vector<double> w0(ooo), v0(ooo), z0(ooo), c1(ooo), c2(ooo);
 
-        const T3 wabc = get_w(a, b, c), wacb = get_w(a, c, b);
-        const T3 wbac = get_w(b, a, c), wbca = get_w(b, c, a);
-        const T3 wcab = get_w(c, a, b), wcba = get_w(c, b, a);
-        const T3 vabc = get_v(a, b, c), vacb = get_v(a, c, b);
-        const T3 vbac = get_v(b, a, c), vbca = get_v(b, c, a);
-        const T3 vcab = get_v(c, a, b), vcba = get_v(c, b, a);
-        const T3 zabc = r3(wabc + vabc * 0.5) / d3;
-        const T3 zacb = r3(wacb + vacb * 0.5) / d3;
-        const T3 zbac = r3(wbac + vbac * 0.5) / d3;
-        const T3 zbca = r3(wbca + vbca * 0.5) / d3;
-        const T3 zcab = r3(wcab + vcab * 0.5) / d3;
-        const T3 zcba = r3(wcba + vcba * 0.5) / d3;
-
-        et += dot3(wabc, P_ijk, zabc) + dot3(wacb, P_ikj, zabc) +
-              dot3(wbac, P_jik, zabc) + dot3(wbca, P_jki, zabc) +
-              dot3(wcab, P_kij, zabc) + dot3(wcba, P_kji, zabc);
-        et += dot3(wacb, P_ijk, zacb) + dot3(wabc, P_ikj, zacb) +
-              dot3(wcab, P_jik, zacb) + dot3(wcba, P_jki, zacb) +
-              dot3(wbac, P_kij, zacb) + dot3(wbca, P_kji, zacb);
-        et += dot3(wbac, P_ijk, zbac) + dot3(wbca, P_ikj, zbac) +
-              dot3(wabc, P_jik, zbac) + dot3(wacb, P_jki, zbac) +
-              dot3(wcba, P_kij, zbac) + dot3(wcab, P_kji, zbac);
-        et += dot3(wbca, P_ijk, zbca) + dot3(wbac, P_ikj, zbca) +
-              dot3(wcba, P_jik, zbca) + dot3(wcab, P_jki, zbca) +
-              dot3(wabc, P_kij, zbca) + dot3(wacb, P_kji, zbca);
-        et += dot3(wcab, P_ijk, zcab) + dot3(wcba, P_ikj, zcab) +
-              dot3(wacb, P_jik, zcab) + dot3(wabc, P_jki, zcab) +
-              dot3(wbca, P_kij, zcab) + dot3(wbac, P_kji, zcab);
-        et += dot3(wcba, P_ijk, zcba) + dot3(wcab, P_ikj, zcba) +
-              dot3(wbca, P_jik, zcba) + dot3(wbac, P_jki, zcba) +
-              dot3(wacb, P_kij, zcba) + dot3(wabc, P_kji, zcba);
+    // accumulate ordering (A,B,C)'s connected (w) and disconnected (v) pieces
+    // into w0/v0 via the permutation index idx. Both GEMMs are written in
+    // [i,j,k] contiguous order, so c1/c2 are read contiguously.
+    auto accum = [&](int A, int B, int C, const int *idx) {
+      Eigen::Map<Mat>(c1.data(), oo, o).noalias() =
+          t2kjf_slc[C] * vvovT_slc[A * v + B];        // (oo x o): w1[ijk]
+      Eigen::Map<Mat>(c2.data(), o, oo).noalias() =
+          t2km_slc[B * v + C] * voooT_slc[A];         // (o x oo): w2[ijk]
+      const double *vvoo = vvoo_slc[A * v + B].data(); // (o x o): [i + j*o]
+      const double *t1c = t1.data() + static_cast<size_t>(C) * o;
+      for (int i = 0, n = 0; i < o; ++i)
+        for (int j = 0; j < o; ++j) {
+          const double vij = vvoo[i + j * o];
+          for (int k = 0; k < o; ++k, ++n) {
+            w0[idx[n]] += c1[n] - c2[n];
+            v0[idx[n]] += vij * t1c[k];
+          }
         }
+    };
+
+    for (int b = 0; b <= a; ++b) {
+      for (int c = 0; c <= b; ++c) {
+        std::fill(w0.begin(), w0.end(), 0.0);
+        std::fill(v0.begin(), v0.end(), 0.0);
+        accum(a, b, c, pidx[0].data());
+        accum(a, c, b, pidx[1].data());
+        accum(b, a, c, pidx[2].data());
+        accum(b, c, a, pidx[3].data());
+        accum(c, a, b, pidx[4].data());
+        accum(c, b, a, pidx[5].data());
+
+        // u = w0 + 0.5 v0 (stored back into v0), then z0 = r3(u):
+        //   z0[ijk] = 4u[ijk] + u[jki] + u[kij] - 2u[kji] - 2u[ikj] - 2u[jik]
+        for (int n = 0; n < ooo; ++n)
+          v0[n] = w0[n] + 0.5 * v0[n];
+        const double *u = v0.data();
+        for (int i = 0; i < o; ++i)
+          for (int j = 0; j < o; ++j)
+            for (int k = 0; k < o; ++k)
+              z0[i * oo + j * o + k] =
+                  4.0 * u[i * oo + j * o + k] + u[j * oo + k * o + i] +
+                  u[k * oo + i * o + j] - 2.0 * u[k * oo + j * o + i] -
+                  2.0 * u[i * oo + k * o + j] - 2.0 * u[j * oo + i * o + k];
+
+        const double eabc = mo_e(o + a) + mo_e(o + b) + mo_e(o + c);
+        const double fac =
+            (a == c) ? (1.0 / 6.0) : ((a == b || b == c) ? 0.5 : 1.0);
+        double s = 0.0;
+        for (int n = 0; n < ooo; ++n)
+          s += w0[n] * z0[n] / (eijk[n] - eabc);
+        et += fac * s;
       }
     }
     if (report) {
