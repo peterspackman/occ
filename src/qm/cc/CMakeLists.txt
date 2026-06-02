@@ -5,6 +5,7 @@ add_library(occ_cc
     "${CMAKE_CURRENT_SOURCE_DIR}/triples.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/uccsd_so.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/uintegrals.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/utriples.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/uccsd.cpp"
     ${OCC_CC_INCLUDE_FILES}
 )

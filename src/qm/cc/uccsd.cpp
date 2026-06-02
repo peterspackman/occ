@@ -3,8 +3,8 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/qm/cc/uccsd.h>
-#include <occ/qm/cc/uccsd_so.h> // uccsd_t_via_so
 #include <occ/qm/cc/uintegrals.h>
+#include <occ/qm/cc/utriples.h> // native spin-adapted (T)
 #include <unsupported/Eigen/CXX11/Tensor>
 
 // Spin-adapted unrestricted CCSD -- a faithful port of PySCF cc/uccsd.py
@@ -578,13 +578,11 @@ UCCIntegrals build_eris(const AOBasis &basis, const AOBasis *aux,
 UCCSDResult run(const AOBasis &basis, const AOBasis *aux,
                 const MolecularOrbitals &mo, const UCCSDOptions &opts) {
   Amps amps;
-  UCCSDResult res = run_uccsd(build_eris(basis, aux, mo, opts), opts, amps);
+  const UCCIntegrals e = build_eris(basis, aux, mo, opts);
+  UCCSDResult res = run_uccsd(e, opts, amps);
   if (opts.with_triples) {
-    occ::timing::start(occ::timing::category::ccsd_triples);
-    res.e_triples =
-        uccsd_t_via_so(basis, mo, opts.n_frozen, amps.t1a, amps.t1b, amps.t2aa,
-                       amps.t2ab, amps.t2bb);
-    occ::timing::stop(occ::timing::category::ccsd_triples);
+    res.e_triples = uccsd_t(e, amps.t1a, amps.t1b, amps.t2aa, amps.t2ab,
+                            amps.t2bb);
     occ::log::info("UCCSD(T) correction: {:.12f}", res.e_triples);
   }
   return res;
