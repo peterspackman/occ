@@ -3,6 +3,7 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/qm/cc/ccsd.h>
+#include <occ/qm/cc/gemm.h> // pcon2 (parallel 2-index contraction)
 
 // Restricted closed-shell CCSD, a direct port of the thc_cct reference
 // rccsd.py (PySCF/Hirata RCCSD equations). The O(V^4) vvvv ladder term goes
@@ -88,22 +89,22 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
   const T4 X_ovoo_t1 = ovoo.contract(t1, IA<1>{ip(1, 1)}); // (l/k, k/l, i/j, j/i)
   T4 Woooo = X_ovoo_t1.shuffle(Sh4{1, 0, 2, 3});           // "lcki,jc"
   Woooo += X_ovoo_t1.shuffle(Sh4{0, 1, 3, 2});             // "kclj,ic"
-  Woooo += ovov.contract(tau, IA<2>{ip(1, 2), ip(3, 3)});  // kcld,ijcd
+  Woooo += pcon2(ovov, 1, 3, tau, 2, 3);                   // kcld,ijcd
   Woooo += oooo.shuffle(Sh4{0, 2, 1, 3});                  // (ki|lj)
 
   // Wvoov(a,k,i,c)
   T4 Wvoov = ovvv.contract(t1, IA<1>{ip(3, 1)}).shuffle(Sh4{2, 0, 3, 1}); // kcad,id
   Wvoov -= ovoo.contract(t1, IA<1>{ip(2, 0)}).shuffle(Sh4{3, 0, 2, 1});   // kcli,la
   Wvoov += ovvo.shuffle(Sh4{2, 0, 3, 1});                                 // (kc|ai)
-  Wvoov -= ovov.contract(z4, IA<2>{ip(0, 1), ip(1, 2)}).shuffle(Sh4{3, 0, 2, 1});       // ldkc,ilda (0.5 t2 + t1t1)
-  Wvoov -= 0.5 * ovov.contract(t2, IA<2>{ip(0, 1), ip(3, 3)}).shuffle(Sh4{3, 1, 2, 0}); // lckd,ilad
-  Wvoov += ovov.contract(t2, IA<2>{ip(0, 1), ip(1, 3)}).shuffle(Sh4{3, 0, 2, 1});       // ldkc,ilad
+  Wvoov -= pcon2(ovov, 0, 1, z4, 1, 2).shuffle(Sh4{3, 0, 2, 1});       // ldkc,ilda (0.5 t2 + t1t1)
+  Wvoov -= 0.5 * pcon2(ovov, 0, 3, t2, 1, 3).shuffle(Sh4{3, 1, 2, 0}); // lckd,ilad
+  Wvoov += pcon2(ovov, 0, 1, t2, 1, 3).shuffle(Sh4{3, 0, 2, 1});       // ldkc,ilad
 
   // Wvovo(a,k,c,i)
   T4 Wvovo = ovvv.contract(t1, IA<1>{ip(1, 1)}).shuffle(Sh4{1, 0, 2, 3}); // kdac,id
   Wvovo -= ovoo.contract(t1, IA<1>{ip(0, 0)}).shuffle(Sh4{3, 1, 0, 2});   // lcki,la
   Wvovo += oovv.shuffle(Sh4{2, 0, 3, 1});                                 // (ki|ac)
-  Wvovo -= ovov.contract(z4, IA<2>{ip(0, 1), ip(3, 2)}).shuffle(Sh4{3, 1, 0, 2}); // lckd,ilda (0.5 t2 + t1t1)
+  Wvovo -= pcon2(ovov, 0, 3, z4, 1, 2).shuffle(Sh4{3, 1, 0, 2}); // lckd,ilda (0.5 t2 + t1t1)
 
   // --- T1 residual --------------------------------------------------------
   T2 r1 = t1.contract(Fvv, IA<1>{ip(1, 1)});         // ac,ic
@@ -135,15 +136,15 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
 
   // --- T2 residual --------------------------------------------------------
   T4 r2 = ovov.shuffle(Sh4{0, 2, 1, 3}); // (ia|jb) -> (i,j,a,b)
-  r2 += Woooo.contract(tau, IA<2>{ip(0, 0), ip(1, 1)}); // klij,klab
+  r2 += pcon2(Woooo, 0, 1, tau, 0, 1); // klij,klab
   occ::timing::start(occ::timing::category::ccsd_ladder);
   r2 += e.ladder(tau); // vvvv ladder
   occ::timing::stop(occ::timing::category::ccsd_ladder);
   {
-    const T4 b1 = ovvv.contract(tau, IA<2>{ip(1, 3), ip(3, 2)})
+    const T4 b1 = pcon2(ovvv, 1, 3, tau, 3, 2)
                       .shuffle(Sh4{2, 3, 1, 0}); // kdac,ijcd -> (i,j,a,k)
     r2 -= b1.contract(t1, IA<1>{ip(3, 0)});      // ijak,kb
-    const T4 b2 = ovvv.contract(tau, IA<2>{ip(1, 2), ip(3, 3)})
+    const T4 b2 = pcon2(ovvv, 1, 3, tau, 2, 3)
                       .shuffle(Sh4{2, 3, 1, 0}); // kcbd,ijcd -> (i,j,b,k)
     r2 -= b2.contract(t1, IA<1>{ip(3, 0)}).shuffle(Sh4{0, 1, 3, 2}); // ijbk,ka
   }
@@ -156,19 +157,19 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
     r2 -= sym_ijab(tmp);
   }
   {
-    T4 tmp = 2.0 * Wvoov.contract(t2, IA<2>{ip(1, 0), ip(3, 2)})
+    T4 tmp = 2.0 * pcon2(Wvoov, 1, 3, t2, 0, 2)
                        .shuffle(Sh4{1, 2, 0, 3}); // akic,kjcb
-    tmp -= Wvovo.contract(t2, IA<2>{ip(1, 0), ip(2, 2)})
+    tmp -= pcon2(Wvovo, 1, 2, t2, 0, 2)
                .shuffle(Sh4{1, 2, 0, 3}); // akci,kjcb
     r2 += sym_ijab(tmp);
   }
   {
-    const T4 tmp = Wvoov.contract(t2, IA<2>{ip(1, 0), ip(3, 3)})
+    const T4 tmp = pcon2(Wvoov, 1, 3, t2, 0, 3)
                        .shuffle(Sh4{1, 2, 0, 3}); // akic,kjbc
     r2 -= sym_ijab(tmp);
   }
   {
-    const T4 tmp = Wvovo.contract(t2, IA<2>{ip(1, 0), ip(2, 3)})
+    const T4 tmp = pcon2(Wvovo, 1, 2, t2, 0, 3)
                        .shuffle(Sh4{1, 2, 3, 0}); // bkci,kjac
     r2 -= sym_ijab(tmp);
   }
