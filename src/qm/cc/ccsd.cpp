@@ -70,8 +70,8 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
   Foo -= ovov.contract(tau, IA<3>{ip(1, 3), ip(2, 1), ip(3, 2)});
 
   // Fvv(a,c) = -2 (kc|ld) tau(klad) + (kd|lc) tau(klad)
-  T2 Fvv = -2.0 * tau.contract(ovov, IA<3>{ip(0, 0), ip(1, 2), ip(3, 3)});
-  Fvv += tau.contract(ovov, IA<3>{ip(0, 0), ip(1, 2), ip(3, 1)});
+  T2 Fvv = -2.0 * pcon<4, 4, 3>(tau, ovov, IA<3>{ip(0, 0), ip(1, 2), ip(3, 3)});
+  Fvv += pcon<4, 4, 3>(tau, ovov, IA<3>{ip(0, 0), ip(1, 2), ip(3, 1)});
 
   // --- L intermediates ----------------------------------------------------
   // Loo(k,i) = Foo + 2 (lc|ki) t1(lc) - (kc|li) t1(lc)
@@ -93,7 +93,8 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
   Woooo += oooo.shuffle(Sh4{0, 2, 1, 3});                  // (ki|lj)
 
   // Wvoov(a,k,i,c)
-  T4 Wvoov = ovvv.contract(t1, IA<1>{ip(3, 1)}).shuffle(Sh4{2, 0, 3, 1}); // kcad,id
+  T4 Wvoov = pcon<4, 2, 1>(ovvv, t1, IA<1>{ip(3, 1)})
+                 .shuffle(Sh4{2, 0, 3, 1}); // kcad,id
   Wvoov -= ovoo.contract(t1, IA<1>{ip(2, 0)}).shuffle(Sh4{3, 0, 2, 1});   // kcli,la
   Wvoov += ovvo.shuffle(Sh4{2, 0, 3, 1});                                 // (kc|ai)
   Wvoov -= pcon2(ovov, 0, 1, z4, 1, 2).shuffle(Sh4{3, 0, 2, 1});       // ldkc,ilda (0.5 t2 + t1t1)
@@ -101,7 +102,8 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
   Wvoov += pcon2(ovov, 0, 1, t2, 1, 3).shuffle(Sh4{3, 0, 2, 1});       // ldkc,ilad
 
   // Wvovo(a,k,c,i)
-  T4 Wvovo = ovvv.contract(t1, IA<1>{ip(1, 1)}).shuffle(Sh4{1, 0, 2, 3}); // kdac,id
+  T4 Wvovo = pcon<4, 2, 1>(ovvv, t1, IA<1>{ip(1, 1)})
+                 .shuffle(Sh4{1, 0, 2, 3}); // kdac,id
   Wvovo -= ovoo.contract(t1, IA<1>{ip(0, 0)}).shuffle(Sh4{3, 1, 0, 2});   // lcki,la
   Wvovo += oovv.shuffle(Sh4{2, 0, 3, 1});                                 // (ki|ac)
   Wvovo -= pcon2(ovov, 0, 3, z4, 1, 2).shuffle(Sh4{3, 1, 0, 2}); // lckd,ilda (0.5 t2 + t1t1)
@@ -117,8 +119,10 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
   }
   r1 += 2.0 * ovvo.contract(t1, IA<2>{ip(0, 0), ip(1, 1)}).shuffle(Sh2{1, 0}); // kcai,kc
   r1 -= oovv.contract(t1, IA<2>{ip(0, 0), ip(3, 1)});                          // kiac,kc
-  r1 += 2.0 * ovvv.contract(t2, IA<3>{ip(0, 1), ip(1, 3), ip(3, 2)}).shuffle(Sh2{1, 0}); // kdac,ikcd
-  r1 -= ovvv.contract(t2, IA<3>{ip(0, 1), ip(1, 2), ip(3, 3)}).shuffle(Sh2{1, 0});       // kcad,ikcd
+  r1 += 2.0 * pcon<4, 4, 3>(ovvv, t2, IA<3>{ip(0, 1), ip(1, 3), ip(3, 2)})
+                  .shuffle(Sh2{1, 0}); // kdac,ikcd
+  r1 -= pcon<4, 4, 3>(ovvv, t2, IA<3>{ip(0, 1), ip(1, 2), ip(3, 3)})
+            .shuffle(Sh2{1, 0}); // kcad,ikcd
   {
     const T2 y = ovvv.contract(t1, IA<2>{ip(0, 0), ip(1, 1)}); // (a,c)
     r1 += 2.0 * t1.contract(y, IA<1>{ip(1, 1)});               // kdac,kd,ic
@@ -149,7 +153,8 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
     r2 -= b2.contract(t1, IA<1>{ip(3, 0)}).shuffle(Sh4{0, 1, 3, 2}); // ijbk,ka
   }
   {
-    const T4 tmp = Lvv.contract(t2, IA<1>{ip(1, 2)}).shuffle(Sh4{1, 2, 0, 3}); // ac,ijcb
+    const T4 tmp = pcon<2, 4, 1>(Lvv, t2, IA<1>{ip(1, 2)})
+                       .shuffle(Sh4{1, 2, 0, 3}); // ac,ijcb
     r2 += sym_ijab(tmp);
   }
   {
