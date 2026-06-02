@@ -67,12 +67,21 @@ double uccsd_t(const UCCIntegrals &e, const T2 &t1a, const T2 &t1b,
 
   double et = 0.0;
 
+  // 10% progress ticks for the outer loop of a spin case (only when worthwhile).
+  auto tick = [](const char *label, std::atomic<int> &done, int n) {
+    if (n < 40)
+      return;
+    const int d = done.fetch_add(1) + 1;
+    if ((100 * d) / n / 10 > (100 * (d - 1)) / n / 10)
+      occ::log::info("  (T) {} {:3d}%", label, ((100 * d) / n / 10) * 10);
+  };
+
   // ===================== same-spin: aaa / bbb ============================
   // Loops over all virtual triples (a,b,c); per triple builds W_p[ijk] for the
   // six virtual permutations p of (a,b,c) via GEMMs, then applies p6/r6.
-  auto same_spin = [&](const T4 &t2, const T4 &ovvv, const T4 &ovoo,
-                       const T4 &ovov, const T2 &t1, int o, int v,
-                       const Vec &ev, const T3 &eo3) -> double {
+  auto same_spin = [&](const char *label, const T4 &t2, const T4 &ovvv,
+                       const T4 &ovoo, const T4 &ovov, const T2 &t1, int o,
+                       int v, const Vec &ev, const T3 &eo3) -> double {
     // contiguous slices for the get_w GEMMs
     const int oo = o * o;
     std::vector<Mat> T2A(v);          // [a](i*o+j, e) = t2(i,j,a,e)
@@ -129,7 +138,6 @@ double uccsd_t(const UCCIntegrals &e, const T2 &t1a, const T2 &t1b,
     };
 
     std::atomic<int> done{0};
-    const bool report = v >= 40;
     occ::parallel::thread_local_storage<double> acc(0.0);
     occ::parallel::parallel_for(size_t(0), static_cast<size_t>(v), [&](size_t au) {
       const int a = static_cast<int>(au);
@@ -156,11 +164,7 @@ double uccsd_t(const UCCIntegrals &e, const T2 &t1a, const T2 &t1b,
                 d3(i, j, k) = eo3(i, j, k) - evv;
           s += dot3(p6 / d3, r6);
         }
-      if (report) {
-        const int d = done.fetch_add(1) + 1;
-        if ((100 * d) / v / 10 > (100 * (d - 1)) / v / 10)
-          occ::log::info("  (T) same-spin {:3d}%", ((100 * d) / v / 10) * 10);
-      }
+      tick(label, done, v);
     });
     double s = 0.0;
     for (double x : acc)
@@ -168,8 +172,8 @@ double uccsd_t(const UCCIntegrals &e, const T2 &t1a, const T2 &t1b,
     return s * 0.25;
   };
 
-  et += same_spin(t2aa, e.ovvv, e.ovoo, e.ovov, t1a, oa, va, eva, eo3a);
-  et += same_spin(t2bb, e.OVVV, e.OVOO, e.OVOV, t1b, ob, vb, evb, eo3b);
+  et += same_spin("aaa", t2aa, e.ovvv, e.ovoo, e.ovov, t1a, oa, va, eva, eo3a);
+  et += same_spin("bbb", t2bb, e.OVVV, e.OVOO, e.OVOV, t1b, ob, vb, evb, eo3b);
 
   // ===================== baa  (I beta-occ; j,k alpha-occ) =================
   // W(A,b,c)[I,j,k]; loop over (A,b,c); r needs W at (A,b,c) and (A,c,b).
@@ -194,6 +198,7 @@ double uccsd_t(const UCCIntegrals &e, const T2 &t1a, const T2 &t1b,
       W -= t2aa_bc.contract(OVoo_A, IA<1>{ip(1, 2)}).shuffle(Sh3{1, 0, 2});
       return W;
     };
+    std::atomic<int> done{0};
     occ::parallel::thread_local_storage<double> acc(0.0);
     occ::parallel::parallel_for(size_t(0), static_cast<size_t>(vb), [&](size_t Au) {
       const int A = static_cast<int>(Au);
@@ -215,6 +220,7 @@ double uccsd_t(const UCCIntegrals &e, const T2 &t1a, const T2 &t1b,
                 s += num * r(I, j, k) / d3;
               }
         }
+      tick("baa", done, vb);
     });
     double s = 0.0;
     for (double x : acc)
@@ -245,6 +251,7 @@ double uccsd_t(const UCCIntegrals &e, const T2 &t1a, const T2 &t1b,
       W -= t2bb_bc.contract(ovOO_a, IA<1>{ip(1, 2)}).shuffle(Sh3{1, 0, 2});
       return W;
     };
+    std::atomic<int> done{0};
     occ::parallel::thread_local_storage<double> acc(0.0);
     occ::parallel::parallel_for(size_t(0), static_cast<size_t>(va), [&](size_t au) {
       const int a = static_cast<int>(au);
@@ -266,6 +273,7 @@ double uccsd_t(const UCCIntegrals &e, const T2 &t1a, const T2 &t1b,
                 s += num * r(i, j, k) / d3;
               }
         }
+      tick("bba", done, va);
     });
     double s = 0.0;
     for (double x : acc)
