@@ -181,6 +181,18 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                   "whether the dense 3-center store is used; default: 1.0)");
   scf->add_option("--mp2-spin-scaling", config->method.mp2_spin_scaling,
                   "MP2 spin-component scaling: none | scs | sos");
+  scf->add_option("--mp2-backend", config->method.mp2_backend,
+                  "MP2 integral backend: auto (RI if --ri-basis else "
+                  "conventional) | thc (LS-THC-MP2; reuses --ri-basis, default "
+                  "def2-universal-jkfit)");
+  scf->add_option("--mp2-thc-c", config->method.mp2_thc_c_isdf,
+                  "THC interpolation rank = c * nbf for --mp2-backend thc "
+                  "(default: 6)");
+  scf->add_option("--mp2-thc-method", config->method.mp2_thc_method,
+                  "MP2 THC ISDF point selector: cholesky | qr (default: cholesky)");
+  scf->add_option("--mp2-laplace-points", config->method.mp2_laplace_points,
+                  "Laplace quadrature points for the THC-MP2 denominator "
+                  "(default: 14)");
   scf->add_option("--ccsd-backend", config->method.ccsd_backend,
                   "CCSD(T) integral backend: exact | df | thc (df/thc reuse "
                   "--ri-basis, default def2-universal-jkfit)");

@@ -28,8 +28,8 @@ std::vector<int> pivoted_cholesky_points(const Mat &W, int target, double tol) {
     d(g) = n2 * n2; // (||W_g||²)² since X1 == X2 == W
   }
   const double dmax0 = d.maxCoeff();
-  const int maxk =
-      (target > 0) ? std::min<int>(target, static_cast<int>(ng)) : static_cast<int>(ng);
+  const int maxk = (target > 0) ? std::min<int>(target, static_cast<int>(ng))
+                                : static_cast<int>(ng);
   const double thresh = (target > 0) ? -1.0 : tol * dmax0;
 
   Mat L(ng, std::max(1, maxk));
@@ -76,13 +76,14 @@ T4 finish_transform(const T4 &H, const Mat &Cq, const Mat &Cr, const Mat &Cs) {
   // index p (each slice is independent). Store with p as the *outer* index so
   // each thread writes a contiguous block (no false sharing), then shuffle.
   T4 tmp(nq, nr, ns, nL);
-  occ::parallel::parallel_for(size_t(0), static_cast<size_t>(nL), [&](size_t p) {
-    const Eigen::Index pi = static_cast<Eigen::Index>(p);
-    const T3 Hp = H.chip(pi, 0);     // [ν, ρ, σ]
-    const T3 a = Hp.contract(Tq, c00); // [ρ, σ, q]
-    const T3 b = a.contract(Tr, c00);  // [σ, q, r]
-    tmp.chip(pi, 3) = b.contract(Ts, c00); // [q, r, s]
-  });
+  occ::parallel::parallel_for(
+      size_t(0), static_cast<size_t>(nL), [&](size_t p) {
+        const Eigen::Index pi = static_cast<Eigen::Index>(p);
+        const T3 Hp = H.chip(pi, 0);           // [ν, ρ, σ]
+        const T3 a = Hp.contract(Tq, c00);     // [ρ, σ, q]
+        const T3 b = a.contract(Tr, c00);      // [σ, q, r]
+        tmp.chip(pi, 3) = b.contract(Ts, c00); // [q, r, s]
+      });
   return tmp.shuffle(Eigen::array<int, 4>{3, 0, 1, 2}); // (p, q, r, s)
 }
 
@@ -141,26 +142,14 @@ std::vector<int> select_isdf_points(const Mat &coll, IsdfMethod method,
   return sel;
 }
 
-Mat fit_core(const Mat &X, const Mat &B, double reg, ThcRegType reg_type,
-             double *condition_out, int *n_kept_out) {
-  const Eigen::Index nmo = X.rows();
-  const Eigen::Index npt = X.cols();
+namespace {
 
-  // E(P, p*nmo+q) = X(p,P) X(q,P) -- the pair collocation, row-major over (p,q)
-  // to match the B tensor's row layout (p*nmo+q).
-  Mat E(npt, nmo * nmo);
-  for (Eigen::Index P = 0; P < npt; ++P)
-    for (Eigen::Index p = 0; p < nmo; ++p) {
-      const double xp = X(p, P);
-      for (Eigen::Index q = 0; q < nmo; ++q)
-        E(P, p * nmo + q) = xp * X(q, P);
-    }
-
-  const Mat EBt = E * B;               // (npt x naux): E Bᵀ
-  const Mat G = X.transpose() * X;     // (npt x npt): orbital Gram
-  const Mat S = G.cwiseProduct(G);     // LS-THC metric (Hadamard square)
-  const Mat R = EBt * EBt.transpose(); // (npt x npt): E M Eᵀ via DF
-
+// Regularised inverse of the (ill-conditioned) symmetric LS-THC metric S:
+// Eig drops eigenvalues below reg*lambda_max (truncated pinv); Tikhonov shifts
+// by reg*lambda_max. Reports the condition number and #eigenvalues kept.
+Mat reg_inverse(const Mat &S, double reg, ThcRegType reg_type,
+                double *condition_out, int *n_kept_out) {
+  const Eigen::Index npt = S.rows();
   Eigen::SelfAdjointEigenSolver<Mat> es(S);
   const Vec w = es.eigenvalues();
   const Mat &U = es.eigenvectors();
@@ -189,11 +178,63 @@ Mat fit_core(const Mat &X, const Mat &B, double reg, ThcRegType reg_type,
   }
   if (n_kept_out)
     *n_kept_out = kept;
+  return U * dinv.asDiagonal() * U.transpose();
+}
 
-  const Mat Sinv = U * dinv.asDiagonal() * U.transpose();
+// V = Sinv R Sinv, symmetrised (the LS-THC normal-equation solution).
+Mat solve_core(const Mat &S, const Mat &R, double reg, ThcRegType reg_type,
+               double *condition_out, int *n_kept_out) {
+  const Mat Sinv = reg_inverse(S, reg, reg_type, condition_out, n_kept_out);
   Mat V = Sinv * R * Sinv;
-  V = 0.5 * (V + V.transpose()); // symmetric in exact arithmetic; enforce
-  return V;
+  return 0.5 * (V + V.transpose()); // symmetric in exact arithmetic; enforce
+}
+
+} // namespace
+
+Mat fit_core(const Mat &X, const Mat &B, double reg, ThcRegType reg_type,
+             double *condition_out, int *n_kept_out) {
+  const Eigen::Index nmo = X.rows();
+  const Eigen::Index npt = X.cols();
+
+  // E(P, p*nmo+q) = X(p,P) X(q,P) -- the pair collocation, row-major over (p,q)
+  // to match the B tensor's row layout (p*nmo+q).
+  Mat E(npt, nmo * nmo);
+  for (Eigen::Index P = 0; P < npt; ++P)
+    for (Eigen::Index p = 0; p < nmo; ++p) {
+      const double xp = X(p, P);
+      for (Eigen::Index q = 0; q < nmo; ++q)
+        E(P, p * nmo + q) = xp * X(q, P);
+    }
+
+  const Mat EBt = E * B;               // (npt x naux): E Bᵀ
+  const Mat G = X.transpose() * X;     // (npt x npt): orbital Gram
+  const Mat S = G.cwiseProduct(G);     // LS-THC metric (Hadamard square)
+  const Mat R = EBt * EBt.transpose(); // (npt x npt): E M Eᵀ via DF
+  return solve_core(S, R, reg, reg_type, condition_out, n_kept_out);
+}
+
+Mat fit_core_ov(const Mat &Xo, const Mat &Xv, const Mat &B_ov, double reg,
+                ThcRegType reg_type, double *condition_out, int *n_kept_out) {
+  const Eigen::Index o = Xo.rows();
+  const Eigen::Index v = Xv.rows();
+  const Eigen::Index npt = Xo.cols();
+
+  // E(P, i*v+a) = Xo(i,P) Xv(a,P) -- the occ-virt pair collocation, matching
+  // B_ov's row layout (i*v+a). Only o*v columns (vs nmo^2 for fit_core).
+  Mat E(npt, o * v);
+  for (Eigen::Index P = 0; P < npt; ++P)
+    for (Eigen::Index i = 0; i < o; ++i) {
+      const double xi = Xo(i, P);
+      for (Eigen::Index a = 0; a < v; ++a)
+        E(P, i * v + a) = xi * Xv(a, P);
+    }
+
+  const Mat EBt = E * B_ov;            // (npt x naux)
+  const Mat Go = Xo.transpose() * Xo;  // (npt x npt): occ Gram
+  const Mat Gv = Xv.transpose() * Xv;  // (npt x npt): virt Gram
+  const Mat S = Go.cwiseProduct(Gv);   // ov LS-THC metric
+  const Mat R = EBt * EBt.transpose(); // (npt x npt)
+  return solve_core(S, R, reg, reg_type, condition_out, n_kept_out);
 }
 
 Eigen::Tensor<double, 4> reconstruct_eri(const Mat &X, const Mat &V) {
@@ -206,8 +247,8 @@ Eigen::Tensor<double, 4> reconstruct_eri(const Mat &X, const Mat &V) {
       for (Eigen::Index q = 0; q < nmo; ++q)
         E(P, p * nmo + q) = xp * X(q, P);
     }
-  const Mat W = V * E;               // W(P, rs) = Σ_Q V(P,Q) E(Q, rs)
-  const Mat A = E.transpose() * W;   // A(pq, rs) = (pq|rs)
+  const Mat W = V * E;             // W(P, rs) = Σ_Q V(P,Q) E(Q, rs)
+  const Mat A = E.transpose() * W; // A(pq, rs) = (pq|rs)
   T4 out(nmo, nmo, nmo, nmo);
   for (Eigen::Index p = 0; p < nmo; ++p)
     for (Eigen::Index q = 0; q < nmo; ++q)
@@ -226,8 +267,7 @@ Eigen::Tensor<double, 4> mo_eri_general(const IntegralEngine &engine,
   const Eigen::Index nq = C_q.cols(), nr = C_r.cols(), ns = C_s.cols();
   T4 out(nL, nq, nr, ns);
 
-  const size_t per =
-      static_cast<size_t>(nao) * nao * nao * sizeof(double);
+  const size_t per = static_cast<size_t>(nao) * nao * nao * sizeof(double);
   Eigen::Index blk = std::max<Eigen::Index>(
       1, static_cast<Eigen::Index>(budget / std::max<size_t>(1, 4 * per)));
   blk = std::min(blk, nL);
@@ -255,10 +295,9 @@ double reconstruction_error(const AOBasis &basis, const MolecularOrbitals &mo,
   return std::sqrt(dn(0)) / std::sqrt(en(0));
 }
 
-ThcFactors build_thc_from_B(const AOBasis &basis, const MolecularOrbitals &mo,
-                            const ThcOptions &opts, const Mat &B) {
+Mat thc_select_collocation(const AOBasis &basis, const MolecularOrbitals &mo,
+                           const ThcOptions &opts) {
   namespace tc = occ::timing;
-  tc::start(tc::category::thc_factorize);
   const Mat &C = mo.C;
   const Eigen::Index nmo = C.cols();
 
@@ -276,8 +315,8 @@ ThcFactors build_thc_from_B(const AOBasis &basis, const MolecularOrbitals &mo,
   const Vec wts = gp.weights();  // npts
 
   const occ::gto::GTOValues vals = occ::gto::evaluate_basis(basis, pts, 0);
-  const Mat &phi = vals.phi;     // npts x nbf
-  const Mat mo_grid = phi * C;   // npts x nmo
+  const Mat &phi = vals.phi;   // npts x nbf
+  const Mat mo_grid = phi * C; // npts x nmo
 
   const Vec sqw = wts.array().abs().sqrt();
   const Mat sel_w = (opts.select_basis == ThcSelectBasis::AO)
@@ -290,7 +329,8 @@ ThcFactors build_thc_from_B(const AOBasis &basis, const MolecularOrbitals &mo,
   if (opts.n_isdf > 0)
     target = opts.n_isdf;
   else if (opts.c_isdf > 0)
-    target = static_cast<int>(std::llround(opts.c_isdf * static_cast<double>(nselfun)));
+    target = static_cast<int>(
+        std::llround(opts.c_isdf * static_cast<double>(nselfun)));
 
   // Cap the rank at the MO pair-space size nmo(nmo+1)/2: selecting more points
   // than that cannot add independent THC terms, only makes the LS-THC metric
@@ -313,19 +353,27 @@ ThcFactors build_thc_from_B(const AOBasis &basis, const MolecularOrbitals &mo,
   Mat X(nmo, nsel);
   for (int k = 0; k < nsel; ++k)
     X.col(k) = mo_grid.row(sel[k]).transpose();
+  occ::log::debug("THC: {} interpolation points from {} grid candidates "
+                  "({} funcs)",
+                  nsel, pts.cols(), nselfun);
+  return X;
+}
+
+ThcFactors build_thc_from_B(const AOBasis &basis, const MolecularOrbitals &mo,
+                            const ThcOptions &opts, const Mat &B) {
+  namespace tc = occ::timing;
+  tc::start(tc::category::thc_factorize);
+  ThcFactors f;
+  f.X = thc_select_collocation(basis, mo, opts);
+  f.n_isdf = static_cast<int>(f.X.cols());
 
   // --- robust LS-THC core fit -------------------------------------------
   tc::start(tc::category::thc_fit);
-  ThcFactors f;
-  f.X = std::move(X);
-  f.n_isdf = nsel;
   f.V = fit_core(f.X, B, opts.reg, opts.reg_type, &f.metric_condition,
                  &f.metric_n_kept);
   tc::stop(tc::category::thc_fit);
-  occ::log::debug(
-      "THC: {} interpolation points from {} grid candidates ({} funcs), metric "
-      "cond={:.3e}, kept {}/{}",
-      nsel, pts.cols(), nselfun, f.metric_condition, f.metric_n_kept, nsel);
+  occ::log::debug("THC: metric cond={:.3e}, kept {}/{}", f.metric_condition,
+                  f.metric_n_kept, f.n_isdf);
   tc::stop(tc::category::thc_factorize);
   return f;
 }
@@ -356,7 +404,8 @@ Mat reg_pinv(const Mat &S, double reg) {
   return U * d.asDiagonal() * U.transpose();
 }
 
-// (E B) where E(P, p*nmo+q) = X(p,P) X(q,P) -- pair collocation times DF tensor.
+// (E B) where E(P, p*nmo+q) = X(p,P) X(q,P) -- pair collocation times DF
+// tensor.
 Mat pair_coll_B(const Mat &X, const Mat &B) {
   const Eigen::Index nmo = X.rows(), npt = X.cols();
   Mat E(npt, nmo * nmo);
@@ -402,8 +451,8 @@ UThcFactors build_uthc(const AOBasis &basis, const Mat &Ca, const Mat &Cb,
     target = static_cast<int>(
         std::llround(opts.c_isdf * static_cast<double>(phi.cols())));
   // cap at the smaller spin's MO pair-space rank to keep both metrics solvable
-  const int pair_rank = static_cast<int>(
-      std::min(nmoa * (nmoa + 1) / 2, nmob * (nmob + 1) / 2));
+  const int pair_rank =
+      static_cast<int>(std::min(nmoa * (nmoa + 1) / 2, nmob * (nmob + 1) / 2));
   if (target > pair_rank)
     target = pair_rank;
 

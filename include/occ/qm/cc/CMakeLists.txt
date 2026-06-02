@@ -1,6 +1,8 @@
 set(OCC_CC_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/gemm.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/thc.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/laplace.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/thc_mp2.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/integrals.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/ccsd.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/triples.h"

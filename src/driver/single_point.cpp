@@ -10,6 +10,7 @@
 #include <occ/qm/cc/ccsd.h>
 #include <occ/qm/cc/integrals.h>
 #include <occ/qm/cc/triples.h>
+#include <occ/qm/cc/thc_mp2.h>
 #include <occ/qm/cc/uccsd.h>
 #include <occ/qm/correlation/mp2.h>
 #include <occ/qm/gradients.h>
@@ -293,8 +294,89 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
 Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
                             const OccInput &config) {
   using occ::qm::MP2;
+  namespace cc = occ::qm::cc;
 
   occ::log::info("{:=^72s}", "  MP2 Calculation  ");
+
+  // THC-MP2 backend (LS-THC: Laplace denominator + THC factors). Lives in
+  // occ_cc as a free function (the MP2 class is in occ_correlation, which occ_cc
+  // depends on, so it can't host THC). Fills same/opposite spin so SCS/SOS work.
+  if (occ::util::to_lower_copy(config.method.mp2_backend) == "thc") {
+    const std::string auxname = config.basis.ri_basis.empty()
+                                    ? "def2-universal-jkfit"
+                                    : config.basis.ri_basis;
+    occ::log::info("Method: THC-MP2 (auxiliary basis: {})", auxname);
+    auto aux = load_basis_set(config.geometry.molecule(), auxname,
+                              config.basis.spherical);
+
+    cc::ThcMP2Options opts;
+    opts.thc.c_isdf = config.method.mp2_thc_c_isdf;
+    const std::string sel = occ::util::to_lower_copy(config.method.mp2_thc_method);
+    opts.thc.method =
+        (sel == "qr") ? cc::IsdfMethod::QR : cc::IsdfMethod::Cholesky;
+    opts.n_laplace = config.method.mp2_laplace_points;
+    opts.memory_budget = static_cast<size_t>(
+        config.method.mp2_max_memory_gb * 1024.0 * 1024.0 * 1024.0);
+    opts.thc.memory_budget = opts.memory_budget;
+    int n_frozen = cc::num_frozen_core(scf_wfn.basis);
+    n_frozen = std::max(
+        0, std::min(n_frozen, static_cast<int>(scf_wfn.mo.n_alpha) - 1));
+    opts.n_frozen = n_frozen;
+
+    // SOS-MP2 uses only the opposite-spin energy, so skip the same-spin
+    // exchange entirely -> the whole calculation is the O(P^3) cubic Coulomb
+    // path (the genuinely fast, large-system THC win).
+    const std::string &scaling = config.method.mp2_spin_scaling;
+    const bool scaled = (scaling == "scs" || scaling == "sos");
+    double c_ss = 1.0, c_os = 1.0;
+    if (scaling == "scs") {
+      c_ss = 1.0 / 3.0;
+      c_os = 6.0 / 5.0;
+    } else if (scaling == "sos") {
+      c_ss = 0.0;
+      c_os = 1.3;
+      opts.opposite_spin_only = true;
+    } else if (scaling != "none" && !scaling.empty()) {
+      occ::log::warn("Unknown --mp2-spin-scaling '{}', using unscaled MP2",
+                     scaling);
+    }
+    occ::log::info("THC rank c = {}, ISDF selector = {}, Laplace points = {}, "
+                   "frozen core = {}{}",
+                   opts.thc.c_isdf, sel == "qr" ? "qr" : "cholesky",
+                   opts.n_laplace, n_frozen,
+                   opts.opposite_spin_only ? " [opposite-spin only]" : "");
+
+    const auto r = cc::thc_mp2(scf_wfn.basis, aux, scf_wfn.mo, opts);
+
+    const double scaled_corr = c_ss * r.same_spin + c_os * r.opposite_spin;
+    const double used_corr = scaled ? scaled_corr : r.total;
+    const double total_energy = scf_wfn.energy.total + used_corr;
+
+    occ::log::info(
+        "THC-MP2: {} interpolation points, {} Laplace points (max rel err "
+        "{:.2e})",
+        r.n_isdf, r.n_laplace, r.laplace_max_rel_error);
+    occ::log::info("SCF energy:                       {: 20.12f}",
+                   scf_wfn.energy.total);
+    if (!opts.opposite_spin_only) {
+      occ::log::info("MP2 correlation energy:           {: 20.12f}", r.total);
+      occ::log::info("  same-spin:                      {: 20.12f}",
+                     r.same_spin);
+    }
+    occ::log::info("  opposite-spin:                  {: 20.12f}",
+                   r.opposite_spin);
+    if (scaled)
+      occ::log::info("{}-MP2 correlation energy:        {: 20.12f}",
+                     scaling == "scs" ? "SCS" : "SOS", scaled_corr);
+    occ::log::info("MP2 total energy:                 {: 20.12f}", total_energy);
+
+    Wavefunction mp2_wfn = scf_wfn;
+    mp2_wfn.energy.total = total_energy;
+    mp2_wfn.method = scaling == "scs"   ? "SCS-THC-MP2"
+                     : scaling == "sos" ? "SOS-THC-MP2"
+                                        : "THC-MP2";
+    return mp2_wfn;
+  }
 
   MP2 mp2 = [&]() {
     if (!config.basis.ri_basis.empty()) {

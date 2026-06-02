@@ -56,6 +56,13 @@ struct MethodInput {
   COSXSettings cosx; // COSX settings
   double mp2_max_memory_gb{1.0}; // MP2 B-tensor / half-transform memory budget
   std::string mp2_spin_scaling{"none"}; // MP2 spin scaling: none | scs | sos
+  // MP2 integral backend: "auto" keeps the current behaviour (RI-MP2 when an
+  // ri_basis is given, else conventional); "thc" uses LS-THC-MP2 (Laplace
+  // denominator + THC factors), reusing the THC options below.
+  std::string mp2_backend{"auto"};
+  double mp2_thc_c_isdf{6.0};               // THC rank = c * nbf
+  std::string mp2_thc_method{"cholesky"};   // THC ISDF selector: cholesky | qr
+  int mp2_laplace_points{14};               // Laplace quadrature points
   std::string ccsd_backend{"exact"};    // CCSD integral backend: exact | df | thc
   double ccsd_max_memory_gb{1.0};       // CCSD integral-build memory budget
   int ccsd_frozen_core{-1};             // -1 auto (chemical core), 0 none, N freeze N

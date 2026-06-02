@@ -37,9 +37,10 @@ struct ThcOptions {
   // far slower for any non-tiny basis, at matching accuracy.
   IsdfMethod method{IsdfMethod::Cholesky};
   ThcSelectBasis select_basis{ThcSelectBasis::AO};
-  int n_isdf{-1};     ///< absolute point count; <=0 -> use c_isdf / tol
-  double c_isdf{6.0}; ///< count = round(c_isdf * n_select); ~6 = sub-mHa sweet spot
-  double tol{1e-4};   ///< ISDF rank cut (fallback when neither count is set)
+  int n_isdf{-1}; ///< absolute point count; <=0 -> use c_isdf / tol
+  double c_isdf{
+      6.0}; ///< count = round(c_isdf * n_select); ~6 = sub-mHa sweet spot
+  double tol{1e-4}; ///< ISDF rank cut (fallback when neither count is set)
   // Candidate-grid density. The grid is only a pool of interpolation-point
   // candidates -- it needs spatial coverage, not DFT-integration accuracy -- so
   // it is kept deliberately coarse (selection cost scales linearly with npts).
@@ -50,13 +51,14 @@ struct ThcOptions {
   size_t memory_budget{size_t(1) << 30}; ///< bytes, for the DF B-tensor build
 };
 
-/// THC factors for the spatial MOs: (pq|rs) ~ sum_PQ X(p,P) X(q,P) V(P,Q) X(r,Q) X(s,Q).
+/// THC factors for the spatial MOs: (pq|rs) ~ sum_PQ X(p,P) X(q,P) V(P,Q)
+/// X(r,Q) X(s,Q).
 struct ThcFactors {
-  Mat X;                     ///< (nmo x n_isdf): MO value at each interp. point
-  Mat V;                     ///< (n_isdf x n_isdf): fitted core
-  int n_isdf{0};             ///< number of interpolation points selected
+  Mat X;         ///< (nmo x n_isdf): MO value at each interp. point
+  Mat V;         ///< (n_isdf x n_isdf): fitted core
+  int n_isdf{0}; ///< number of interpolation points selected
   double metric_condition{0.0}; ///< condition number of the LS-THC metric S
-  int metric_n_kept{0};      ///< eigenvalues retained in the regularised inverse
+  int metric_n_kept{0}; ///< eigenvalues retained in the regularised inverse
 };
 
 /// Build THC factors (X, V) for the spatial MOs of `mo`.
@@ -76,7 +78,8 @@ ThcFactors build_thc_from_B(const AOBasis &basis, const MolecularOrbitals &mo,
 /// give Xa, Xb. Three cores are fitted against the shared DF reference: the
 /// same-spin Vaa, Vbb and the cross core Vab (so (pq|RS) with p,q alpha and R,S
 /// beta ~ sum_PQ Xa(p,P)Xa(q,P) Vab(P,Q) Xb(R,Q)Xb(S,Q)). `Ba`/`Bb` are the
-/// per-spin metric-folded DF tensors build_b_tilde(Ca,Ca) / build_b_tilde(Cb,Cb).
+/// per-spin metric-folded DF tensors build_b_tilde(Ca,Ca) /
+/// build_b_tilde(Cb,Cb).
 struct UThcFactors {
   Mat Xa, Xb;        ///< (nmoa x n_isdf), (nmob x n_isdf)
   Mat Vaa, Vbb, Vab; ///< (n_isdf x n_isdf) fitted cores
@@ -92,12 +95,33 @@ UThcFactors build_uthc(const AOBasis &basis, const Mat &Ca, const Mat &Cb,
 std::vector<int> select_isdf_points(const Mat &coll, IsdfMethod method,
                                     int target, double tol);
 
+/// Point-selection half of build_thc: select ISDF interpolation points (AO- or
+/// MO-based per opts.select_basis, geometry-only) and return the MO collocation
+/// X (nmo x n_isdf) = MO value at each selected point. The caller then fits the
+/// core: fit_core over all pairs (CCSD), or fit_core_ov over the occ-virt block
+/// (MP2).
+Mat thc_select_collocation(const AOBasis &basis, const MolecularOrbitals &mo,
+                           const ThcOptions &opts);
+
 /// Regularised least-squares THC core fit. `B` is the metric-folded DF tensor
-/// (nmo^2 x naux) with row p*nmo+q, so (pq|rs) = sum_A B(p*nmo+q,A) B(r*nmo+s,A).
+/// (nmo^2 x naux) with row p*nmo+q, so (pq|rs) = sum_A B(p*nmo+q,A)
+/// B(r*nmo+s,A).
 Mat fit_core(const Mat &X, const Mat &B, double reg, ThcRegType reg_type,
              double *condition_out = nullptr, int *n_kept_out = nullptr);
 
-/// THC-reconstructed chemist integrals (pq|rs) as a dense nmo^4 tensor (testing).
+/// LS-THC core fit restricted to the occupied-virtual block -- the only
+/// integrals MP2 needs. Fits V so (ia|jb) ~ sum_PQ Xo(i,P)Xv(a,P) V(P,Q)
+/// Xo(j,Q)Xv(b,Q). `Xo` (o x P) / `Xv` (v x P) are the occ/virt rows of the THC
+/// collocation; `B_ov` is the metric-folded DF tensor for the ov pairs
+/// (o*v x naux, row i*v+a) = build_b_tilde(C_occ, C_virt). Metric is the ov
+/// Gram S = (Xo^T Xo) o (Xv^T Xv). Much cheaper (o*v << nmo^2) and more
+/// accurate for MP2 than the all-pairs fit_core.
+Mat fit_core_ov(const Mat &Xo, const Mat &Xv, const Mat &B_ov, double reg,
+                ThcRegType reg_type, double *condition_out = nullptr,
+                int *n_kept_out = nullptr);
+
+/// THC-reconstructed chemist integrals (pq|rs) as a dense nmo^4 tensor
+/// (testing).
 Eigen::Tensor<double, 4> reconstruct_eri(const Mat &X, const Mat &V);
 
 /// Semidirect AO->MO transform (chemist (pq|rs)) for arbitrary MO coefficient

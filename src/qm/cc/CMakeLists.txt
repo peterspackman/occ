@@ -1,5 +1,7 @@
 add_library(occ_cc
     "${CMAKE_CURRENT_SOURCE_DIR}/thc.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/laplace.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/thc_mp2.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integrals.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ccsd.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/triples.cpp"
