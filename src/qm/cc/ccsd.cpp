@@ -31,7 +31,25 @@ T4 t1t1_outer(const T2 &t1) {
 }
 
 // P(ij,ab): x + x.transpose(1,0,3,2)
-T4 sym_ijab(const T4 &x) { return x + x.shuffle(Sh4{1, 0, 3, 2}); }
+// out(i,j,a,b) = x(i,j,a,b) + x(j,i,b,a), parallelised (Eigen's shuffle+add is
+// serial and is called for every T2 residual term).
+T4 sym_ijab(const T4 &x) {
+  const Eigen::Index o = x.dimension(0), v = x.dimension(2);
+  const Eigen::Index oo = o * o, oov = oo * v;
+  T4 out(o, o, v, v);
+  const double *xd = x.data();
+  double *od = out.data();
+  occ::parallel::parallel_for(size_t(0), static_cast<size_t>(v), [&](size_t bu) {
+    const Eigen::Index b = static_cast<Eigen::Index>(bu);
+    for (Eigen::Index a = 0; a < v; ++a)
+      for (Eigen::Index j = 0; j < o; ++j)
+        for (Eigen::Index i = 0; i < o; ++i)
+          od[i + j * o + a * oo + b * oov] =
+              xd[i + j * o + a * oo + b * oov] +
+              xd[j + i * o + b * oo + a * oov];
+  });
+  return out;
+}
 
 } // namespace
 
@@ -55,6 +73,7 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
   const int o = e.nocc, v = e.nvir;
   const T4 &oooo = e.oooo, &ooov = e.ooov, &oovv = e.oovv, &ovoo = e.ovoo;
   const T4 &ovov = e.ovov, &ovvo = e.ovvo, &ovvv = e.ovvv;
+
 
   const T4 tt = t1t1_outer(t1);    // t1(i,a) t1(j,b) -> (i,j,a,b)
   const T4 tau = t2 + tt;          // make_tau
@@ -138,6 +157,7 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
     r1 += y2.contract(t1, IA<1>{ip(1, 0)});                     // likc,lc,ka
   }
 
+
   // --- T2 residual --------------------------------------------------------
   T4 r2 = ovov.shuffle(Sh4{0, 2, 1, 3}); // (ia|jb) -> (i,j,a,b)
   r2 += pcon2(Woooo, 0, 1, tau, 0, 1); // klij,klab
@@ -158,7 +178,7 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
     r2 += sym_ijab(tmp);
   }
   {
-    const T4 tmp = Loo.contract(t2, IA<1>{ip(0, 0)}); // ki,kjab -> (i,j,a,b)
+    const T4 tmp = pcon<2, 4, 1>(Loo, t2, IA<1>{ip(0, 0)}); // ki,kjab
     r2 -= sym_ijab(tmp);
   }
   {
@@ -180,18 +200,23 @@ std::pair<T2, T4> update_amps(const T2 &t1, const T4 &t2,
   }
   {
     // tmp2(a,b,i,c) = -(ki|bc) t1(ka) + (ia|cb form) ovvv[i,a,c,b]
-    T4 tmp2 = -1.0 * oovv.contract(t1, IA<1>{ip(0, 0)}).shuffle(Sh4{3, 1, 0, 2});
+    T4 tmp2 =
+        -1.0 * pcon<4, 2, 1>(oovv, t1, IA<1>{ip(0, 0)}).shuffle(Sh4{3, 1, 0, 2});
     tmp2 += ovvv.shuffle(Sh4{1, 3, 0, 2}); // ovvv.transpose(1,3,0,2)
-    const T4 tmp = tmp2.contract(t1, IA<1>{ip(3, 1)}).shuffle(Sh4{2, 3, 0, 1}); // abic,jc
+    const T4 tmp = pcon<4, 2, 1>(tmp2, t1, IA<1>{ip(3, 1)})
+                       .shuffle(Sh4{2, 3, 0, 1}); // abic,jc
     r2 += sym_ijab(tmp);
   }
   {
     // tmp2(a,k,i,j) = (kc|ai) t1(jc) + ooov.transpose(3,1,2,0)
-    T4 tmp2 = ovvo.contract(t1, IA<1>{ip(1, 1)}).shuffle(Sh4{1, 0, 2, 3});
+    T4 tmp2 =
+        pcon<4, 2, 1>(ovvo, t1, IA<1>{ip(1, 1)}).shuffle(Sh4{1, 0, 2, 3});
     tmp2 += ooov.shuffle(Sh4{3, 1, 2, 0});
-    const T4 tmp = tmp2.contract(t1, IA<1>{ip(1, 0)}).shuffle(Sh4{1, 2, 0, 3}); // akij,kb
+    const T4 tmp = pcon<4, 2, 1>(tmp2, t1, IA<1>{ip(1, 0)})
+                       .shuffle(Sh4{1, 2, 0, 3}); // akij,kb
     r2 -= sym_ijab(tmp);
   }
+
 
   // --- divide by denominators --------------------------------------------
   const Vec &mo_e = e.mo_energy;

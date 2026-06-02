@@ -14,21 +14,32 @@
 
 namespace occ::qm::cc {
 
-/// C(m x n) = A(m x k) * B(k x n), parallelised over disjoint output-column
-/// blocks of C (each a single Eigen GEMM). With accumulate, C += A*B. With
-/// transA, A is passed as (k x m) and A^T*B is formed. Output columns are
-/// disjoint across threads, so the concurrent writes are race-free.
+/// C(m x n) = A(m x k) * B(k x n). With accumulate, C += A*B. With transA, A is
+/// passed as (k x m) and A^T*B is formed.
 ///
-/// NB even with EIGEN_USE_BLAS we parallelise here: Apple Accelerate's dgemm
-/// runs each call on a single core (one AMX unit) for these matrix sizes, so the
-/// multi-core speedup comes from TBB over the blocks, each block a single-core
-/// BLAS GEMM -- not from BLAS threading internally (it doesn't, by default).
+/// Whether to parallelise here depends on the GEMM backend:
+///  - On Apple with Accelerate, the GEMM runs on the AMX matrix co-processor,
+///    which is shared per CPU cluster: one dgemm already saturates it (measured:
+///    8 concurrent dgemms = 1.2x one) and a single AMX call (~346 GFLOP/s) beats
+///    Eigen NEON on all 8 cores (~237). So issue exactly ONE call -- TBB-blocking
+///    would only spawn contending AMX calls.
+///  - Everywhere else (Linux default has no system BLAS; we do not assume a
+///    Linux BLAS is threaded) the underlying GEMM is single-threaded (Eigen's own
+///    NEON/AVX, ~52 GFLOP/s), so we parallelise over output blocks of the larger
+///    dimension ourselves (measured ~4.6x on 8 cores).
 inline void pgemm(Eigen::Ref<occ::Mat> C, Eigen::Ref<const occ::Mat> A,
                   Eigen::Ref<const occ::Mat> B, bool accumulate = false,
                   bool transA = false) {
   const Eigen::Index m = C.rows(), n = C.cols();
   if (m == 0 || n == 0)
     return;
+#if defined(__APPLE__) && defined(EIGEN_USE_BLAS)
+  if (transA)
+    accumulate ? (C.noalias() += A.transpose() * B)
+               : (C.noalias() = A.transpose() * B);
+  else
+    accumulate ? (C.noalias() += A * B) : (C.noalias() = A * B);
+#else
   auto colblock = [&](Eigen::Index j0, Eigen::Index jb) {
     auto Cb = C.middleCols(j0, jb);
     const auto Bb = B.middleCols(j0, jb);
@@ -49,12 +60,10 @@ inline void pgemm(Eigen::Ref<occ::Mat> C, Eigen::Ref<const occ::Mat> A,
   };
   const Eigen::Index nt =
       std::max<Eigen::Index>(1, occ::parallel::get_num_threads());
-  // Block whichever output dimension is larger so we always get enough blocks;
-  // each block is one single-core BLAS GEMM, parallelised across cores by TBB.
-  const Eigen::Index dim = std::max(m, n);
+  const Eigen::Index dim = std::max(m, n); // block the larger output dimension
   const Eigen::Index bs = std::max<Eigen::Index>(64, (dim + nt - 1) / nt);
   const size_t nblk = static_cast<size_t>((dim + bs - 1) / bs);
-  if (nblk <= 1) { // too small to be worth the TBB split
+  if (nblk <= 1) {
     colblock(0, n);
     return;
   }
@@ -64,6 +73,7 @@ inline void pgemm(Eigen::Ref<occ::Mat> C, Eigen::Ref<const occ::Mat> A,
     const Eigen::Index bb = std::min(bs, dim - b0);
     rows ? rowblock(b0, bb) : colblock(b0, bb);
   });
+#endif
 }
 
 /// View a contiguous (column-major) 4-tensor's data as an (r x c) matrix.
