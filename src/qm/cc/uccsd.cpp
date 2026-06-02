@@ -2,6 +2,7 @@
 #include <occ/core/diis.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
+#include <occ/qm/cc/gemm.h> // pcon2 (parallel 2-index contraction)
 #include <occ/qm/cc/uccsd.h>
 #include <occ/qm/cc/uintegrals.h>
 #include <occ/qm/cc/utriples.h> // native spin-adapted (T)
@@ -128,7 +129,7 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
     wovvo += ovvv.contract(t1a, IA<1>{ip(3, 1)}).shuffle(Sh4{0, 2, 1, 3}); // jf,mebf->mbej
     u1a += 0.5 * t2aa.contract(ovvv, IA<3>{ip(0, 0), ip(2, 1), ip(3, 3)}); // mief,meaf->ia
     u2aa += t1a.contract(ovvv, IA<1>{ip(1, 2)}).shuffle(Sh4{0, 1, 3, 2});  // ie,mbea->imab
-    const T4 tmp = tauaa.contract(ovvv, IA<2>{ip(2, 1), ip(3, 3)});        // ijef,mebf->ijmb
+    const T4 tmp = pcon2(tauaa, 2, 3, ovvv, 1, 3);        // ijef,mebf->ijmb
     u2aa -= 0.5 * tmp.contract(t1a, IA<1>{ip(2, 0)}).shuffle(Sh4{0, 1, 3, 2}); // ijmb,ma->ijab
   }
   // OVVV (beta) ------------------------------------------------------------
@@ -138,7 +139,7 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
     wOVVO += OVVV.contract(t1b, IA<1>{ip(3, 1)}).shuffle(Sh4{0, 2, 1, 3});
     u1b += 0.5 * t2bb.contract(OVVV, IA<3>{ip(0, 0), ip(2, 1), ip(3, 3)});
     u2bb += t1b.contract(OVVV, IA<1>{ip(1, 2)}).shuffle(Sh4{0, 1, 3, 2});
-    const T4 tmp = taubb.contract(OVVV, IA<2>{ip(2, 1), ip(3, 3)});
+    const T4 tmp = pcon2(taubb, 2, 3, OVVV, 1, 3);
     u2bb -= 0.5 * tmp.contract(t1b, IA<1>{ip(2, 0)}).shuffle(Sh4{0, 1, 3, 2});
   }
   // ovVV (alpha occ/vir, beta vir) ----------------------------------------
@@ -149,7 +150,7 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
     woVVo += (-t1a).contract(ovVV, IA<1>{ip(1, 1)}).shuffle(Sh4{1, 2, 3, 0}); // jf,mfBE->mBEj
     u1b += t2ab.contract(ovVV, IA<3>{ip(0, 0), ip(2, 1), ip(3, 3)});       // mIeF,meAF->IA
     u2ab += t1b.contract(ovVV, IA<1>{ip(1, 2)}).shuffle(Sh4{1, 0, 2, 3}); // IE,maEB->mIaB
-    const T4 tmp = tauab.contract(ovVV, IA<2>{ip(2, 1), ip(3, 3)});       // iJeF,meBF->iJmB
+    const T4 tmp = pcon2(tauab, 2, 3, ovVV, 1, 3);       // iJeF,meBF->iJmB
     u2ab -= tmp.contract(t1a, IA<1>{ip(2, 0)}).shuffle(Sh4{0, 1, 3, 2});  // iJmB,ma->iJaB
   }
   // OVvv (beta occ/vir, alpha vir) ----------------------------------------
@@ -160,7 +161,7 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
     wOvvO += (-t1b).contract(OVvv, IA<1>{ip(1, 1)}).shuffle(Sh4{1, 2, 3, 0}); // JF,MFbe->MbeJ
     u1a += t2ab.contract(OVvv, IA<3>{ip(1, 0), ip(3, 1), ip(2, 3)});      // iMfE,MEaf->ia
     u2ab += t1a.contract(OVvv, IA<1>{ip(1, 2)}).shuffle(Sh4{0, 1, 3, 2}); // ie,MBea->iMaB
-    const T4 tmp = tauab.contract(OVvv, IA<2>{ip(2, 3), ip(3, 1)});       // iJeF,MFbe->iJMb
+    const T4 tmp = pcon2(tauab, 2, 3, OVvv, 3, 1);       // iJeF,MFbe->iJMb
     u2ab -= tmp.contract(t1b, IA<1>{ip(2, 0)});                           // iJMb,MA->iJbA
   }
 
@@ -170,8 +171,8 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
     T4 W0 = ovoo.contract(t1a, IA<1>{ip(1, 1)}).shuffle(Sh4{1, 0, 2, 3}); // je,nemi->mnij
     T4 Woooo = W0 - W0.shuffle(Sh4{0, 1, 3, 2});
     Woooo += e.oooo.shuffle(Sh4{0, 2, 1, 3});
-    Woooo += 0.5 * ovov.contract(tauaa, IA<2>{ip(1, 2), ip(3, 3)}); // ijef,menf->mnij
-    u2aa += 0.5 * Woooo.contract(tauaa, IA<2>{ip(0, 0), ip(1, 1)}); // mnab,mnij->ijab
+    Woooo += 0.5 * pcon2(ovov, 1, 3, tauaa, 2, 3); // ijef,menf->mnij
+    u2aa += 0.5 * pcon2(Woooo, 0, 1, tauaa, 0, 1); // mnab,mnij->ijab
   }
   // ovoo (alpha) -----------------------------------------------------------
   {
@@ -189,9 +190,9 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
     Fooa += 0.5 * ovov.contract(tilaa, IA<3>{ip(1, 2), ip(2, 1), ip(3, 3)}); // inef,menf->mi
     Fova += ovov.contract(t1a, IA<2>{ip(2, 0), ip(3, 1)});                   // nf,menf->me
     u2aa += 0.5 * ovov.shuffle(Sh4{0, 2, 1, 3});
-    wovvo -= 0.5 * ovov.contract(t2aa, IA<2>{ip(2, 1), ip(3, 2)})
+    wovvo -= 0.5 * pcon2(ovov, 2, 3, t2aa, 1, 2)
                        .shuffle(Sh4{0, 3, 1, 2}); // jnfb,menf->mbej
-    woVvO += 0.5 * ovov.contract(t2ab, IA<2>{ip(2, 0), ip(3, 2)})
+    woVvO += 0.5 * pcon2(ovov, 2, 3, t2ab, 0, 2)
                        .shuffle(Sh4{0, 3, 1, 2}); // nJfB,menf->mBeJ
     const T4 tmpaa =
         ovov.contract(t1a, IA<1>{ip(3, 1)}).shuffle(Sh4{0, 2, 1, 3}); // jf,menf->mnej
@@ -203,8 +204,8 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
     T4 W0 = OVOO.contract(t1b, IA<1>{ip(1, 1)}).shuffle(Sh4{1, 0, 2, 3});
     T4 WOOOO = W0 - W0.shuffle(Sh4{0, 1, 3, 2});
     WOOOO += e.OOOO.shuffle(Sh4{0, 2, 1, 3});
-    WOOOO += 0.5 * OVOV.contract(taubb, IA<2>{ip(1, 2), ip(3, 3)});
-    u2bb += 0.5 * WOOOO.contract(taubb, IA<2>{ip(0, 0), ip(1, 1)});
+    WOOOO += 0.5 * pcon2(OVOV, 1, 3, taubb, 2, 3);
+    u2bb += 0.5 * pcon2(WOOOO, 0, 1, taubb, 0, 1);
   }
   // OVOO (beta) ------------------------------------------------------------
   {
@@ -222,9 +223,9 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
     Foob += 0.5 * OVOV.contract(tilbb, IA<3>{ip(1, 2), ip(2, 1), ip(3, 3)});
     Fovb += OVOV.contract(t1b, IA<2>{ip(2, 0), ip(3, 1)});
     u2bb += 0.5 * OVOV.shuffle(Sh4{0, 2, 1, 3});
-    wOVVO -= 0.5 * OVOV.contract(t2bb, IA<2>{ip(2, 1), ip(3, 2)})
+    wOVVO -= 0.5 * pcon2(OVOV, 2, 3, t2bb, 1, 2)
                        .shuffle(Sh4{0, 3, 1, 2}); // jnfb,menf->mbej
-    wOvVo += 0.5 * OVOV.contract(t2ab, IA<2>{ip(2, 1), ip(3, 3)})
+    wOvVo += 0.5 * pcon2(OVOV, 2, 3, t2ab, 1, 3)
                        .shuffle(Sh4{0, 3, 1, 2}); // jNbF,MENF->MbEj
     const T4 tmpbb =
         OVOV.contract(t1b, IA<1>{ip(3, 1)}).shuffle(Sh4{0, 2, 1, 3});
@@ -251,8 +252,8 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
   // ovOV (mixed) -----------------------------------------------------------
   {
     const T4 &ovOV = e.ovOV;
-    WoOoO += ovOV.contract(tauab, IA<2>{ip(1, 2), ip(3, 3)}); // iJeF,meNF->mNiJ
-    u2ab += WoOoO.contract(tauab, IA<2>{ip(0, 0), ip(1, 1)}); // mNaB,mNiJ->iJaB
+    WoOoO += pcon2(ovOV, 1, 3, tauab, 2, 3); // iJeF,meNF->mNiJ
+    u2ab += pcon2(WoOoO, 0, 1, tauab, 0, 1); // mNaB,mNiJ->iJaB
     const T4 tilab = tau_ab(t2ab, t1a, t1b, 0.5);
     Fvva -= tilab.contract(ovOV, IA<3>{ip(0, 0), ip(1, 2), ip(3, 3)});     // mNaF,meNF->ae
     Fvvb -= tilab.contract(ovOV, IA<3>{ip(0, 0), ip(2, 1), ip(1, 2)});     // nMfA,nfME->AE
@@ -261,17 +262,17 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
     Fova += ovOV.contract(t1b, IA<2>{ip(2, 0), ip(3, 1)});                 // NF,meNF->me
     Fovb += t1a.contract(ovOV, IA<2>{ip(0, 0), ip(1, 1)});                 // nf,nfME->ME
     u2ab += ovOV.shuffle(Sh4{0, 2, 1, 3});
-    wovvo += 0.5 * ovOV.contract(t2ab, IA<2>{ip(2, 1), ip(3, 3)})
+    wovvo += 0.5 * pcon2(ovOV, 2, 3, t2ab, 1, 3)
                        .shuffle(Sh4{0, 3, 1, 2}); // jNbF,meNF->mbej
-    wOVVO += 0.5 * ovOV.contract(t2ab, IA<2>{ip(0, 0), ip(1, 2)})
+    wOVVO += 0.5 * pcon2(ovOV, 0, 1, t2ab, 0, 2)
                        .shuffle(Sh4{0, 3, 1, 2}); // nJfB,nfME->MBEJ
-    wOvVo -= 0.5 * ovOV.contract(t2aa, IA<2>{ip(0, 1), ip(1, 2)})
+    wOvVo -= 0.5 * pcon2(ovOV, 0, 1, t2aa, 1, 2)
                        .shuffle(Sh4{0, 3, 1, 2}); // jnfb,nfME->MbEj
-    woVvO -= 0.5 * ovOV.contract(t2bb, IA<2>{ip(2, 1), ip(3, 2)})
+    woVvO -= 0.5 * pcon2(ovOV, 2, 3, t2bb, 1, 2)
                        .shuffle(Sh4{0, 3, 1, 2}); // JNFB,meNF->mBeJ
-    woVVo += 0.5 * ovOV.contract(t2ab, IA<2>{ip(1, 2), ip(2, 1)})
+    woVVo += 0.5 * pcon2(ovOV, 1, 2, t2ab, 2, 1)
                        .shuffle(Sh4{0, 3, 1, 2}); // jNfB,mfNE->mBEj
-    wOvvO += 0.5 * ovOV.contract(t2ab, IA<2>{ip(0, 0), ip(3, 3)})
+    wOvvO += 0.5 * pcon2(ovOV, 0, 3, t2ab, 0, 3)
                        .shuffle(Sh4{1, 3, 0, 2}); // nJbF,neMF->MbeJ
     const T4 tmpabab =
         ovOV.contract(t1b, IA<1>{ip(3, 1)}).shuffle(Sh4{0, 2, 1, 3}); // JF,meNF->mNeJ
@@ -331,25 +332,25 @@ Amps update_amps(const Amps &a, const UCCIntegrals &e) {
   }
 
   // ring terms -------------------------------------------------------------
-  u2aa += 2.0 * t2aa.contract(wovvo, IA<2>{ip(1, 0), ip(3, 2)})
+  u2aa += 2.0 * pcon2(t2aa, 1, 3, wovvo, 0, 2)
                     .shuffle(Sh4{0, 3, 1, 2}); // imae,mbej->ijab
-  u2aa += 2.0 * t2ab.contract(wOvVo, IA<2>{ip(1, 0), ip(3, 2)})
+  u2aa += 2.0 * pcon2(t2ab, 1, 3, wOvVo, 0, 2)
                     .shuffle(Sh4{0, 3, 1, 2}); // iMaE,MbEj->ijab
-  u2bb += 2.0 * t2bb.contract(wOVVO, IA<2>{ip(1, 0), ip(3, 2)})
+  u2bb += 2.0 * pcon2(t2bb, 1, 3, wOVVO, 0, 2)
                     .shuffle(Sh4{0, 3, 1, 2});
-  u2bb += 2.0 * t2ab.contract(woVvO, IA<2>{ip(0, 0), ip(2, 2)})
+  u2bb += 2.0 * pcon2(t2ab, 0, 2, woVvO, 0, 2)
                     .shuffle(Sh4{0, 3, 1, 2}); // mIeA,mBeJ->IJAB
-  u2ab += t2aa.contract(woVvO, IA<2>{ip(1, 0), ip(3, 2)})
+  u2ab += pcon2(t2aa, 1, 3, woVvO, 0, 2)
               .shuffle(Sh4{0, 3, 1, 2}); // imae,mBeJ->iJaB
-  u2ab += t2ab.contract(wOVVO, IA<2>{ip(1, 0), ip(3, 2)})
+  u2ab += pcon2(t2ab, 1, 3, wOVVO, 0, 2)
               .shuffle(Sh4{0, 3, 1, 2}); // iMaE,MBEJ->iJaB
-  u2ab += t2ab.contract(wOvvO, IA<2>{ip(1, 0), ip(2, 2)})
+  u2ab += pcon2(t2ab, 1, 2, wOvvO, 0, 2)
               .shuffle(Sh4{0, 3, 2, 1}); // iMeA,MbeJ->iJbA
-  u2ab += t2bb.contract(wOvVo, IA<2>{ip(1, 0), ip(3, 2)})
+  u2ab += pcon2(t2bb, 1, 3, wOvVo, 0, 2)
               .shuffle(Sh4{3, 0, 2, 1}); // IMAE,MbEj->jIbA
-  u2ab += t2ab.contract(wovvo, IA<2>{ip(0, 0), ip(2, 2)})
+  u2ab += pcon2(t2ab, 0, 2, wovvo, 0, 2)
               .shuffle(Sh4{3, 0, 2, 1}); // mIeA,mbej->jIbA
-  u2ab += t2ab.contract(woVVo, IA<2>{ip(0, 0), ip(3, 2)})
+  u2ab += pcon2(t2ab, 0, 3, woVVo, 0, 2)
               .shuffle(Sh4{3, 0, 1, 2}); // mIaE,mBEj->jIaB
   // Ftmp terms -------------------------------------------------------------
   {
