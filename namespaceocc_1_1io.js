@@ -98,6 +98,12 @@ var namespaceocc_1_1io =
       [ "NWChem", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a929a60543a3d798bb289678dcbebcb2b", null ],
       [ "NumGrid", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a5268eb265372a3bf6d86e32e9af2a1cd", null ]
     ] ],
+    [ "RIPolicy", "namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50", [
+      [ "Auto", "namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50a06b9281e396db002010bde1de57262eb", null ],
+      [ "None", "namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50a6adf97f83acf6453d4a6a4b1070f3754", null ],
+      [ "JK", "namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50a5c3116796f5ff62adaf85580801f3fa4", null ],
+      [ "COSX", "namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50a10c345bee68b3e25f63042a252e2fd5f", null ]
+    ] ],
     [ "build", "namespaceocc_1_1io.html#a0b4154c8ab12aa7b60925e2a2b6acbe2", null ],
     [ "build", "namespaceocc_1_1io.html#a0b19dda27e50ff77a11e8e61654b1569", null ],
     [ "calculate_radial_points_orca", "namespaceocc_1_1io.html#a330f6aeba4c4dfe310e9ebfd2e9d771a", null ],

@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1SymmetryMapping_1_1UCMoleculeInfo.html" target="_top" xlink:title="Information about how a UC molecule relates to its independent representative.">
+<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1SymmetryMapping_1_1IndependentMoleculeInfo.html" target="_top" xlink:title="DOF and projection info for each independent molecule.">
 <polygon fill="white" stroke="#666666" points="166,-30 0,-30 0,0 166,0 166,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::mults::SymmetryMapping</text>
-<text text-anchor="middle" x="83" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">::UCMoleculeInfo</text>
+<text text-anchor="middle" x="83" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">::IndependentMoleculeInfo</text>
 </a>
 </g>
 </g>

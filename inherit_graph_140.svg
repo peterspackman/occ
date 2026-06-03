@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1elastic__fit_1_1FittingSettings.html" target="_top" xlink:title=" ">
+<g id="a_Node000000"><a xlink:href="structocc_1_1elastic__fit_1_1FittingResults.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="123,-30 0,-30 0,0 123,0 123,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::elastic_fit::Fitting</text>
-<text text-anchor="middle" x="61.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Settings</text>
+<text text-anchor="middle" x="61.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Results</text>
 </a>
 </g>
 </g>

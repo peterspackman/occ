@@ -152,6 +152,7 @@ var annotated_dup =
         [ "MultipoleShifter", "classocc_1_1dma_1_1MultipoleShifter.html", "classocc_1_1dma_1_1MultipoleShifter" ]
       ] ],
       [ "driver", "namespaceocc_1_1driver.html", [
+        [ "AccelerationPlan", "structocc_1_1driver_1_1AccelerationPlan.html", "structocc_1_1driver_1_1AccelerationPlan" ],
         [ "AssignedEnergy", "structocc_1_1driver_1_1AssignedEnergy.html", "structocc_1_1driver_1_1AssignedEnergy" ],
         [ "CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator" ],
         [ "CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", "classocc_1_1driver_1_1CrystalGrowthCalculator" ],
@@ -503,6 +504,20 @@ var annotated_dup =
         [ "SpeciesData", "structocc_1_1opt_1_1SpeciesData.html", "structocc_1_1opt_1_1SpeciesData" ]
       ] ],
       [ "qm", "namespaceocc_1_1qm.html", [
+        [ "cc", "namespaceocc_1_1qm_1_1cc.html", [
+          [ "CCIntegrals", "structocc_1_1qm_1_1cc_1_1CCIntegrals.html", "structocc_1_1qm_1_1cc_1_1CCIntegrals" ],
+          [ "CCSDOptions", "structocc_1_1qm_1_1cc_1_1CCSDOptions.html", "structocc_1_1qm_1_1cc_1_1CCSDOptions" ],
+          [ "CCSDResult", "structocc_1_1qm_1_1cc_1_1CCSDResult.html", "structocc_1_1qm_1_1cc_1_1CCSDResult" ],
+          [ "LaplaceGrid", "structocc_1_1qm_1_1cc_1_1LaplaceGrid.html", "structocc_1_1qm_1_1cc_1_1LaplaceGrid" ],
+          [ "ThcFactors", "structocc_1_1qm_1_1cc_1_1ThcFactors.html", "structocc_1_1qm_1_1cc_1_1ThcFactors" ],
+          [ "ThcMP2Options", "structocc_1_1qm_1_1cc_1_1ThcMP2Options.html", "structocc_1_1qm_1_1cc_1_1ThcMP2Options" ],
+          [ "ThcMP2Result", "structocc_1_1qm_1_1cc_1_1ThcMP2Result.html", "structocc_1_1qm_1_1cc_1_1ThcMP2Result" ],
+          [ "ThcOptions", "structocc_1_1qm_1_1cc_1_1ThcOptions.html", "structocc_1_1qm_1_1cc_1_1ThcOptions" ],
+          [ "UCCIntegrals", "structocc_1_1qm_1_1cc_1_1UCCIntegrals.html", "structocc_1_1qm_1_1cc_1_1UCCIntegrals" ],
+          [ "UCCSDOptions", "structocc_1_1qm_1_1cc_1_1UCCSDOptions.html", "structocc_1_1qm_1_1cc_1_1UCCSDOptions" ],
+          [ "UCCSDResult", "structocc_1_1qm_1_1cc_1_1UCCSDResult.html", "structocc_1_1qm_1_1cc_1_1UCCSDResult" ],
+          [ "UThcFactors", "structocc_1_1qm_1_1cc_1_1UThcFactors.html", "structocc_1_1qm_1_1cc_1_1UThcFactors" ]
+        ] ],
         [ "cint", "namespaceocc_1_1qm_1_1cint.html", [
           [ "impl", "namespaceocc_1_1qm_1_1cint_1_1impl.html", [
             [ "AtomInfo", "structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo.html", "structocc_1_1qm_1_1cint_1_1impl_1_1AtomInfo" ],
@@ -523,6 +538,7 @@ var annotated_dup =
         [ "CanonicalOrthogonalizer", "classocc_1_1qm_1_1CanonicalOrthogonalizer.html", "classocc_1_1qm_1_1CanonicalOrthogonalizer" ],
         [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
         [ "ConvergenceAccelerator", "classocc_1_1qm_1_1ConvergenceAccelerator.html", "classocc_1_1qm_1_1ConvergenceAccelerator" ],
+        [ "DFIntegrals", "classocc_1_1qm_1_1DFIntegrals.html", "classocc_1_1qm_1_1DFIntegrals" ],
         [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
         [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
         [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
@@ -530,7 +546,6 @@ var annotated_dup =
         [ "GridBoundingSphere", "structocc_1_1qm_1_1GridBoundingSphere.html", "structocc_1_1qm_1_1GridBoundingSphere" ],
         [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
         [ "HessianEvaluator", "classocc_1_1qm_1_1HessianEvaluator.html", "classocc_1_1qm_1_1HessianEvaluator" ],
-        [ "IndexRange", "structocc_1_1qm_1_1IndexRange.html", "structocc_1_1qm_1_1IndexRange" ],
         [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
         [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
         [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
@@ -538,9 +553,6 @@ var annotated_dup =
         [ "MOIntegralEngine", "classocc_1_1qm_1_1MOIntegralEngine.html", "classocc_1_1qm_1_1MOIntegralEngine" ],
         [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
         [ "MP2", "classocc_1_1qm_1_1MP2.html", "classocc_1_1qm_1_1MP2" ],
-        [ "MP2Components", "structocc_1_1qm_1_1MP2Components.html", "structocc_1_1qm_1_1MP2Components" ],
-        [ "MP2OrbitalInfo", "structocc_1_1qm_1_1MP2OrbitalInfo.html", "structocc_1_1qm_1_1MP2OrbitalInfo" ],
-        [ "MP2OrbitalSpec", "structocc_1_1qm_1_1MP2OrbitalSpec.html", "structocc_1_1qm_1_1MP2OrbitalSpec" ],
         [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
         [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
         [ "PointChargePotential", "structocc_1_1qm_1_1PointChargePotential.html", "structocc_1_1qm_1_1PointChargePotential" ],

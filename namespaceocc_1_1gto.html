@@ -160,6 +160,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ac4b9e8f6f7804bcc83aff81e73776956" id="r_ac4b9e8f6f7804bcc83aff81e73776956"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1gto.html#ac4b9e8f6f7804bcc83aff81e73776956">evaluate_basis_for_shells</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;basis, <a class="el" href="namespaceocc.html#a437f3d1ad27db4224c05f4772b08269c">Mat3NConstRef</a> grid_pts, <a class="el" href="structocc_1_1gto_1_1GTOValues.html">GTOValues</a> &amp;gto_values, int max_derivative, const std::vector&lt; size_t &gt; &amp;shell_indices)</td></tr>
 <tr class="memdesc:ac4b9e8f6f7804bcc83aff81e73776956"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate basis functions for a subset of shells only shell_indices: list of shell indices to evaluate Output gto_values will have full nbf columns but only the specified shells populated.  <br /></td></tr>
 <tr class="separator:ac4b9e8f6f7804bcc83aff81e73776956"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73bef8f4dfe66644619efed3982567c8" id="r_a73bef8f4dfe66644619efed3982567c8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1gto_1_1GTOValues.html">GTOValues</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1gto.html#a73bef8f4dfe66644619efed3982567c8">evaluate_basis_subset</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;basis, <a class="el" href="namespaceocc.html#a437f3d1ad27db4224c05f4772b08269c">Mat3NConstRef</a> grid_pts, int max_derivative, const std::vector&lt; int &gt; &amp;shell_indices)</td></tr>
+<tr class="memdesc:a73bef8f4dfe66644619efed3982567c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate basis functions for a subset of shells, PACKED into a compact <a class="el" href="structocc_1_1gto_1_1GTOValues.html">GTOValues</a> whose columns span only those shells: phi is (npts x nbf_local) with nbf_local = sum of the subset's shell sizes, laid out in the order of <code>shell_indices</code>.  <br /></td></tr>
+<tr class="separator:a73bef8f4dfe66644619efed3982567c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2d65cc19680d96d4df02b1ba8c6c763" id="r_af2d65cc19680d96d4df02b1ba8c6c763"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1gto.html#af2d65cc19680d96d4df02b1ba8c6c763">evaluate_decay_cutoff</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;basis, double threshold=1e-12)</td></tr>
 <tr class="separator:af2d65cc19680d96d4df02b1ba8c6c763"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8702b9c41d76242f587f408121509927" id="r_a8702b9c41d76242f587f408121509927"><td class="memTemplParams" colspan="2">template&lt;int angular_momentum&gt; </td></tr>
@@ -549,6 +552,49 @@ template&lt;int angular_momentum&gt; </div>
 </div><div class="memdoc">
 
 <p>Evaluate basis functions for a subset of shells only shell_indices: list of shell indices to evaluate Output gto_values will have full nbf columns but only the specified shells populated. </p>
+
+</div>
+</div>
+<a id="a73bef8f4dfe66644619efed3982567c8" name="a73bef8f4dfe66644619efed3982567c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73bef8f4dfe66644619efed3982567c8">&#9670;&#160;</a></span>evaluate_basis_subset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1gto_1_1GTOValues.html">GTOValues</a> occ::gto::evaluate_basis_subset </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc.html#a437f3d1ad27db4224c05f4772b08269c">Mat3NConstRef</a>&#160;</td>
+          <td class="paramname"><em>grid_pts</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>max_derivative</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>shell_indices</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Evaluate basis functions for a subset of shells, PACKED into a compact <a class="el" href="structocc_1_1gto_1_1GTOValues.html">GTOValues</a> whose columns span only those shells: phi is (npts x nbf_local) with nbf_local = sum of the subset's shell sizes, laid out in the order of <code>shell_indices</code>. </p>
+<p>Pass <code>shell_indices</code> ascending so the local bf layout matches ascending global bf order (makes gather/scatter contiguous). Used for block-sparse DFT XC integration where most basis functions are negligible over a spatially-localized grid batch. </p>
 
 </div>
 </div>

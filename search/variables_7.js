@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['g_0',['g',['../structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313',1,'occ::scrf::detail::CosmoResponse::G'],['../structocc_1_1opt_1_1OptPoint.html#a2022f77f410ad41cc743c7969da36d2f',1,'occ::opt::OptPoint::g'],['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html#a7f2403ee2bea2b9bc761f71ef89b3022',1,'occ::mults::EwaldLatticeCache::GVector::G']]],
+  ['g_0',['g',['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html#a7f2403ee2bea2b9bc761f71ef89b3022',1,'occ::mults::EwaldLatticeCache::GVector::G'],['../structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313',1,'occ::scrf::detail::CosmoResponse::G'],['../structocc_1_1opt_1_1OptPoint.html#a2022f77f410ad41cc743c7969da36d2f',1,'occ::opt::OptPoint::g']]],
   ['g_5fcm3_5fto_5fkg_5fm3_1',['G_CM3_TO_KG_M3',['../namespaceocc_1_1units.html#a061dda57ae5c9464607558dbddd71218',1,'occ::units']]],
   ['g_5fcoeffs_2',['g_coeffs',['../structocc_1_1xtb_1_1EwaldGammaData.html#a55b4cea7f4fbe6a933217f061c505c9a',1,'occ::xtb::EwaldGammaData']]],
   ['g_5fvectors_3',['g_vectors',['../structocc_1_1xtb_1_1EwaldGammaData.html#ad1daf989a4bdd7af802459fedae11a61',1,'occ::xtb::EwaldGammaData::g_vectors'],['../structocc_1_1mults_1_1EwaldLatticeCache.html#a472c357f4687cea28c97a05cab42e4b2',1,'occ::mults::EwaldLatticeCache::g_vectors']]],
@@ -40,11 +40,13 @@ var searchData=
   ['gradient_5ftol_37',['gradient_tol',['../structocc_1_1mults_1_1TrustRegionSettings.html#a542f3059144532b5882ae631546c6bde',1,'occ::mults::TrustRegionSettings::gradient_tol'],['../structocc_1_1mults_1_1LBFGSSettings.html#adbc21db542f3804e7a79a471d27f4d5a',1,'occ::mults::LBFGSSettings::gradient_tol'],['../structocc_1_1mults_1_1MSTMINSettings.html#af5e60b4fca7ace68819da4ebd7eb5cdb',1,'occ::mults::MSTMINSettings::gradient_tol']]],
   ['gradient_5ftolerance_38',['gradient_tolerance',['../structocc_1_1mults_1_1CrystalOptimizerSettings.html#a27f4c59e027f74b68a99bf57fcba8398',1,'occ::mults::CrystalOptimizerSettings::gradient_tolerance'],['../structocc_1_1main_1_1RoptSettings.html#acc4c3da0146a83368367575205020ed1',1,'occ::main::RoptSettings::gradient_tolerance'],['../structocc_1_1io_1_1Settings.html#aec40ecf6cfda6e58f67dfb921f677766',1,'occ::io::Settings::gradient_tolerance']]],
   ['grid_39',['grid',['../structocc_1_1elastic__fit_1_1MonkhorstPack.html#a0828017f15e0e14e28f0ea75b8c7fd15',1,'occ::elastic_fit::MonkhorstPack']]],
-  ['grid_5fspacing_40',['grid_spacing',['../structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html#ad3e104507d489577a5920419a4f6f2d2',1,'occ::io::AdaptiveGridBounds::Parameters']]],
-  ['grid_5ftype_41',['grid_type',['../structocc_1_1io_1_1GridFileHeader.html#a2a8a6a27e772e261347b2b3c20f0c8fa',1,'occ::io::GridFileHeader']]],
-  ['grow_5flimit_42',['grow_limit',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9',1,'occ::core::opt::Bracket1D']]],
-  ['gtol_43',['gtol',['../structocc_1_1mults_1_1LBFGSSettings.html#a87b589b00eb60432c1fb400d0aad281f',1,'occ::mults::LBFGSSettings']]],
-  ['gulp_5ffile_44',['gulp_file',['../structocc_1_1elastic__fit_1_1FittingSettings.html#a8b07688b16a343d981e41e27b0b3e129',1,'occ::elastic_fit::FittingSettings::gulp_file'],['../structocc_1_1main_1_1EFSettings.html#a47703384f1119ec08221cb0d7a9f4d7b',1,'occ::main::EFSettings::gulp_file']]],
-  ['gulp_5fscale_45',['gulp_scale',['../structocc_1_1elastic__fit_1_1FittingSettings.html#aa9477b13e19c35af8434509ea0c6579e',1,'occ::elastic_fit::FittingSettings::gulp_scale'],['../structocc_1_1main_1_1EFSettings.html#a5ed89bb9a82b15f1c243433e9d5ee5c6',1,'occ::main::EFSettings::gulp_scale']]],
-  ['gulp_5fstrings_46',['gulp_strings',['../structocc_1_1elastic__fit_1_1FittingResults.html#abdabe8bc2119d1dcb555653b19c9e38f',1,'occ::elastic_fit::FittingResults']]]
+  ['grid_5fmax_5fangular_40',['grid_max_angular',['../structocc_1_1qm_1_1cc_1_1ThcOptions.html#aff380a4e98cb78c17abfb6ad2fbfed70',1,'occ::qm::cc::ThcOptions']]],
+  ['grid_5fradial_5fprecision_41',['grid_radial_precision',['../structocc_1_1qm_1_1cc_1_1ThcOptions.html#a8ae8d938086a7b6fcd7ec9591697e849',1,'occ::qm::cc::ThcOptions']]],
+  ['grid_5fspacing_42',['grid_spacing',['../structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html#ad3e104507d489577a5920419a4f6f2d2',1,'occ::io::AdaptiveGridBounds::Parameters']]],
+  ['grid_5ftype_43',['grid_type',['../structocc_1_1io_1_1GridFileHeader.html#a2a8a6a27e772e261347b2b3c20f0c8fa',1,'occ::io::GridFileHeader']]],
+  ['grow_5flimit_44',['grow_limit',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9',1,'occ::core::opt::Bracket1D']]],
+  ['gtol_45',['gtol',['../structocc_1_1mults_1_1LBFGSSettings.html#a87b589b00eb60432c1fb400d0aad281f',1,'occ::mults::LBFGSSettings']]],
+  ['gulp_5ffile_46',['gulp_file',['../structocc_1_1elastic__fit_1_1FittingSettings.html#a8b07688b16a343d981e41e27b0b3e129',1,'occ::elastic_fit::FittingSettings::gulp_file'],['../structocc_1_1main_1_1EFSettings.html#a47703384f1119ec08221cb0d7a9f4d7b',1,'occ::main::EFSettings::gulp_file']]],
+  ['gulp_5fscale_47',['gulp_scale',['../structocc_1_1elastic__fit_1_1FittingSettings.html#aa9477b13e19c35af8434509ea0c6579e',1,'occ::elastic_fit::FittingSettings::gulp_scale'],['../structocc_1_1main_1_1EFSettings.html#a5ed89bb9a82b15f1c243433e9d5ee5c6',1,'occ::main::EFSettings::gulp_scale']]],
+  ['gulp_5fstrings_48',['gulp_strings',['../structocc_1_1elastic__fit_1_1FittingResults.html#abdabe8bc2119d1dcb555653b19c9e38f',1,'occ::elastic_fit::FittingResults']]]
 ];

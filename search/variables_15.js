@@ -26,7 +26,7 @@ var searchData=
   ['use_5fasymmetric_5fpartition_23',['use_asymmetric_partition',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6d0620e67f1d034d53b640406231d8ba',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
   ['use_5fbody_5fframe_24',['use_body_frame',['../structocc_1_1mults_1_1CoordinateSystem.html#a4cc93666f50e9ee876a6b875a33f71f2',1,'occ::mults::CoordinateSystem']]],
   ['use_5fcartesian_5fengine_25',['use_cartesian_engine',['../structocc_1_1mults_1_1CrystalOptimizerSettings.html#aef46904aeb6ca2a499054369e8178d42',1,'occ::mults::CrystalOptimizerSettings']]],
-  ['use_5fcosx_26',['use_cosx',['../structocc_1_1io_1_1MethodInput.html#a8f8a94fdde03c074e4bf9a456ca70187',1,'occ::io::MethodInput']]],
+  ['use_5fcosx_26',['use_cosx',['../structocc_1_1driver_1_1AccelerationPlan.html#a8bdf78171671cccdec98c55e7e39ad34',1,'occ::driver::AccelerationPlan::use_cosx'],['../structocc_1_1io_1_1MethodInput.html#a8f8a94fdde03c074e4bf9a456ca70187',1,'occ::io::MethodInput::use_cosx']]],
   ['use_5fcrystal_5fpolarization_27',['use_crystal_polarization',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ac4af5c391c9ecef826297882d32984c8',1,'occ::driver::CrystalGrowthCalculatorOptions']]],
   ['use_5fdiagonal_5fscaling_28',['use_diagonal_scaling',['../structocc_1_1mults_1_1TrustRegionSettings.html#a90b5bcae9de4fceb774af2c92d0727a3',1,'occ::mults::TrustRegionSettings']]],
   ['use_5fdirect_5fdf_5fkernels_29',['use_direct_df_kernels',['../structocc_1_1io_1_1MethodInput.html#a09955bc2468788a1e58fe9bc70651f1a',1,'occ::io::MethodInput']]],

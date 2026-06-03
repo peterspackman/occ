@@ -23,6 +23,7 @@ var namespaceocc_1_1gto =
     [ "evaluate_basis", "namespaceocc_1_1gto.html#a0fce5060a8f75d8a17961c290e4cbbe2", null ],
     [ "evaluate_basis", "namespaceocc_1_1gto.html#ae429db3b396e75d3053bd91de61cae36", null ],
     [ "evaluate_basis_for_shells", "namespaceocc_1_1gto.html#ac4b9e8f6f7804bcc83aff81e73776956", null ],
+    [ "evaluate_basis_subset", "namespaceocc_1_1gto.html#a73bef8f4dfe66644619efed3982567c8", null ],
     [ "evaluate_decay_cutoff", "namespaceocc_1_1gto.html#af2d65cc19680d96d4df02b1ba8c6c763", null ],
     [ "from_json", "namespaceocc_1_1gto.html#a36433632f81c37b256a3b27c983b4ed1", null ],
     [ "gto_norm", "namespaceocc_1_1gto.html#a3f271fab30b29e2ef076f40eaee0f663", null ],

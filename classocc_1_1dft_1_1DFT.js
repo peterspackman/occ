@@ -48,6 +48,8 @@ var classocc_1_1dft_1_1DFT =
     [ "post_scf_nlc_correction", "classocc_1_1dft_1_1DFT.html#af02d6a465080aa7a2f8b8a1947c3d24a", null ],
     [ "range_separated_parameters", "classocc_1_1dft_1_1DFT.html#a27c7379a38a9cf5228468482678178f9", null ],
     [ "set_block_size", "classocc_1_1dft_1_1DFT.html#a26eb0b91333db93be1ad28fa5fbc74eb", null ],
+    [ "set_cosx_exchange", "classocc_1_1dft_1_1DFT.html#a35b675efac242875cce4f35dfd2126e6", null ],
+    [ "set_cosx_settings", "classocc_1_1dft_1_1DFT.html#a641073ec59491876616874b954f294db", null ],
     [ "set_coulomb_method", "classocc_1_1dft_1_1DFT.html#ab50d3f8e1465eba4645da932436fb6a7", null ],
     [ "set_density_fitting_basis", "classocc_1_1dft_1_1DFT.html#a346ba254b9ca9b0db93031104437787c", null ],
     [ "set_density_fitting_policy", "classocc_1_1dft_1_1DFT.html#a5219c663b82922ae4b8138e1a3e31006", null ],
@@ -55,10 +57,12 @@ var classocc_1_1dft_1_1DFT =
     [ "set_method", "classocc_1_1dft_1_1DFT.html#abb30ad8fddfa487ad5973303f283e7b6", null ],
     [ "set_nlc_grid", "classocc_1_1dft_1_1DFT.html#abaac3e729cff5765fc00fcd63ee99d8a", null ],
     [ "set_precision", "classocc_1_1dft_1_1DFT.html#aba711c566435ce5b9b858c6133800d02", null ],
+    [ "set_xc_screening_threshold", "classocc_1_1dft_1_1DFT.html#acfee83a78294ef995c300e57dddad1a4", null ],
     [ "supports_incremental_fock_build", "classocc_1_1dft_1_1DFT.html#aa42b20881dc0bdb097c9f677803305ec", null ],
     [ "update_core_hamiltonian", "classocc_1_1dft_1_1DFT.html#a45b6bac4a630b7fc16b259dc96d1a67c", null ],
     [ "update_scf_energy", "classocc_1_1dft_1_1DFT.html#ae27c4e061d8d6cdea857d96358c492cd", null ],
     [ "usual_scf_energy", "classocc_1_1dft_1_1DFT.html#a104737a357429abc647b281804526ac6", null ],
     [ "with_new_basis", "classocc_1_1dft_1_1DFT.html#ab322e85f89de16b8a05e5893a0a4dcc2", null ],
-    [ "wolf_point_charge_interaction_energy", "classocc_1_1dft_1_1DFT.html#ae3f4f2456e998e97d472f36e08f5fd85", null ]
+    [ "wolf_point_charge_interaction_energy", "classocc_1_1dft_1_1DFT.html#ae3f4f2456e998e97d472f36e08f5fd85", null ],
+    [ "xc_screening_threshold", "classocc_1_1dft_1_1DFT.html#a895f7f51feca6af28f9bdddc740de872", null ]
 ];

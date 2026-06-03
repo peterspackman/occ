@@ -123,6 +123,7 @@ var menudata={children:[
 {text:"d",url:"namespacemembers_enum.html#index_d"},
 {text:"f",url:"namespacemembers_enum.html#index_f"},
 {text:"g",url:"namespacemembers_enum.html#index_g"},
+{text:"i",url:"namespacemembers_enum.html#index_i"},
 {text:"j",url:"namespacemembers_enum.html#index_j"},
 {text:"l",url:"namespacemembers_enum.html#index_l"},
 {text:"m",url:"namespacemembers_enum.html#index_m"},
@@ -150,6 +151,7 @@ var menudata={children:[
 {text:"p",url:"namespacemembers_eval.html#index_p"},
 {text:"r",url:"namespacemembers_eval.html#index_r"},
 {text:"s",url:"namespacemembers_eval.html#index_s"},
+{text:"t",url:"namespacemembers_eval.html#index_t"},
 {text:"u",url:"namespacemembers_eval.html#index_u"},
 {text:"x",url:"namespacemembers_eval.html#index_x"}]}]}]},
 {text:"Concepts",url:"concepts.html"},
@@ -259,6 +261,7 @@ var menudata={children:[
 {text:"q",url:"functions_type.html#index_q"},
 {text:"r",url:"functions_type.html#index_r"},
 {text:"s",url:"functions_type.html#index_s"},
+{text:"t",url:"functions_type.html#index_t"},
 {text:"v",url:"functions_type.html#index_v"}]},
 {text:"Enumerations",url:"functions_enum.html"},
 {text:"Enumerator",url:"functions_eval.html",children:[

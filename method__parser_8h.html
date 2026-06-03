@@ -101,18 +101,21 @@ $(document).ready(function(){initNavTree('method__parser_8h.html',''); initResiz
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">method_parser.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="util_8h.html">occ/core/util.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;array&gt;</code><br />
+<code>#include &lt;<a class="el" href="util_8h.html">occ/core/util.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="spinorbital_8h.html">occ/qm/spinorbital.h</a>&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
+<code>#include &lt;string_view&gt;</code><br />
 <code>#include &lt;utility&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for method_parser.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="method__parser_8h__incl.svg" width="1028" height="359"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="method__parser_8h__incl.svg" width="1150" height="359"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -126,25 +129,47 @@ Namespaces</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceocc_1_1driver" id="r_namespaceocc_1_1driver"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html">occ::driver</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceocc_1_1driver_1_1impl" id="r_namespaceocc_1_1driver_1_1impl"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver_1_1impl.html">occ::driver::impl</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a4f703dc6567193263b605f59f16c1ef5" id="r_a4f703dc6567193263b605f59f16c1ef5"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5">occ::driver::MethodKind</a> { <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a498ab1ea4aab0295389f6c51484cca6c">occ::driver::HF</a>
+<tr class="memitem:a4f703dc6567193263b605f59f16c1ef5" id="r_a4f703dc6567193263b605f59f16c1ef5"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5">occ::driver::MethodKind</a> { <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a498ab1ea4aab0295389f6c51484cca6c">occ::driver::HF</a>
 , <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5acca8fc743f62bb262491fb02b5c0fd73">occ::driver::DFT</a>
 , <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5ae7e417b5fd5de0693bf7dd10c0b8c54f">occ::driver::MP2</a>
+, <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">occ::driver::CCSD</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a1c96d102ca7fbfcca58afcda757ea2fa">occ::driver::CCSD_T</a>
 , <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5ac532b38d13102b9dcefa2e631fd44912">occ::driver::GFN2</a>
+<br />
  }</td></tr>
 <tr class="separator:a4f703dc6567193263b605f59f16c1ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ac133bffda4b4d2343fa7f332b2cbbc87" id="r_ac133bffda4b4d2343fa7f332b2cbbc87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5">MethodKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver_1_1impl.html#ac133bffda4b4d2343fa7f332b2cbbc87">occ::driver::impl::classify</a> (const std::string &amp;lowercased_base)</td></tr>
+<tr class="separator:ac133bffda4b4d2343fa7f332b2cbbc87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a85a57442c0a1cb87a3cdcea1ba5704" id="r_a7a85a57442c0a1cb87a3cdcea1ba5704"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver_1_1impl.html#a7a85a57442c0a1cb87a3cdcea1ba5704">occ::driver::impl::is_correlation</a> (<a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5">MethodKind</a> k)</td></tr>
+<tr class="separator:a7a85a57442c0a1cb87a3cdcea1ba5704"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24f9cb2b46c52b30bb395807c4a899b1" id="r_a24f9cb2b46c52b30bb395807c4a899b1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1driver_1_1MethodSpec.html">MethodSpec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver_1_1impl.html#a24f9cb2b46c52b30bb395807c4a899b1">occ::driver::impl::split_and_classify</a> (const std::string &amp;name)</td></tr>
+<tr class="separator:a24f9cb2b46c52b30bb395807c4a899b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06b5eb876a13190e85ce890f06198dea" id="r_a06b5eb876a13190e85ce890f06198dea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1driver_1_1MethodSpec.html">MethodSpec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a06b5eb876a13190e85ce890f06198dea">occ::driver::parse_method_string</a> (const std::string &amp;method_string)</td></tr>
-<tr class="memdesc:a06b5eb876a13190e85ce890f06198dea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse method string to separate base method and dispersion type.  <br /></td></tr>
+<tr class="memdesc:a06b5eb876a13190e85ce890f06198dea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a method string into base method, dispersion, kind and backend.  <br /></td></tr>
 <tr class="separator:a06b5eb876a13190e85ce890f06198dea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af7e85c393d3f038f7e8b65afa85e6013" id="r_af7e85c393d3f038f7e8b65afa85e6013"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">qm::SpinorbitalKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#af7e85c393d3f038f7e8b65afa85e6013">occ::driver::determine_spinorbital_kind</a> (const std::string &amp;name, int multiplicity, <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5">MethodKind</a> method_kind)</td></tr>
-<tr class="separator:af7e85c393d3f038f7e8b65afa85e6013"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a504c89def5003baf6ace3599fc4bdc8e" id="r_a504c89def5003baf6ace3599fc4bdc8e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5">MethodKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a504c89def5003baf6ace3599fc4bdc8e">occ::driver::method_kind_from_string</a> (const std::string &amp;name)</td></tr>
 <tr class="separator:a504c89def5003baf6ace3599fc4bdc8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7e85c393d3f038f7e8b65afa85e6013" id="r_af7e85c393d3f038f7e8b65afa85e6013"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">qm::SpinorbitalKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#af7e85c393d3f038f7e8b65afa85e6013">occ::driver::determine_spinorbital_kind</a> (const std::string &amp;name, int multiplicity, <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5">MethodKind</a> method_kind)</td></tr>
+<tr class="separator:af7e85c393d3f038f7e8b65afa85e6013"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a2bed9a3a2d7b4186ccb4b86c27013cff" id="r_a2bed9a3a2d7b4186ccb4b86c27013cff"><td class="memItemLeft" align="right" valign="top">constexpr std::array&lt; std::string_view, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver_1_1impl.html#a2bed9a3a2d7b4186ccb4b86c27013cff">occ::driver::impl::dispersion_suffixes</a></td></tr>
+<tr class="separator:a2bed9a3a2d7b4186ccb4b86c27013cff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11050dc4dced732a3a79e2de784cabb4" id="r_a11050dc4dced732a3a79e2de784cabb4"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver_1_1impl.html#a11050dc4dced732a3a79e2de784cabb4">occ::driver::impl::backend_prefixes</a></td></tr>
+<tr class="separator:a11050dc4dced732a3a79e2de784cabb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44f93cd22c2f905d3817ff8f32759c53" id="r_a44f93cd22c2f905d3817ff8f32759c53"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver_1_1impl.html#a44f93cd22c2f905d3817ff8f32759c53">occ::driver::impl::method_aliases</a></td></tr>
+<tr class="separator:a44f93cd22c2f905d3817ff8f32759c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

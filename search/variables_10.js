@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['p_0',['p',['../structocc_1_1ints_1_1ECoeffs1D.html#a2aa6c20b50460e8cb700aa1ddffefb80',1,'occ::ints::ECoeffs1D::P'],['../structocc_1_1ints_1_1ECoeffs1DDynamic.html#a3e2f4e181cfdd977afcb36b37068ec4c',1,'occ::ints::ECoeffs1DDynamic::p'],['../structocc_1_1ints_1_1PrimitivePairData.html#a9b0498b9a2de5121970e87cb24deef5e',1,'occ::ints::PrimitivePairData::p'],['../structocc_1_1core_1_1KalmanEstimator.html#a9e1c43d2837dd34874b5782a8ea1b03b',1,'occ::core::KalmanEstimator::P']]],
+  ['p_0',['p',['../structocc_1_1ints_1_1PrimitivePairData.html#a9b0498b9a2de5121970e87cb24deef5e',1,'occ::ints::PrimitivePairData::p'],['../structocc_1_1core_1_1KalmanEstimator.html#a9e1c43d2837dd34874b5782a8ea1b03b',1,'occ::core::KalmanEstimator::P'],['../structocc_1_1ints_1_1ECoeffs1D.html#a2aa6c20b50460e8cb700aa1ddffefb80',1,'occ::ints::ECoeffs1D::P'],['../structocc_1_1ints_1_1ECoeffs1DDynamic.html#a3e2f4e181cfdd977afcb36b37068ec4c',1,'occ::ints::ECoeffs1DDynamic::p']]],
   ['p_5fdata_5fbuffer_1',['p_data_buffer',['../structocc_1_1core_1_1numpy_1_1NumpyArray.html#a08c65bb4ea3242cabd63598977d8b17b',1,'occ::core::numpy::NumpyArray']]],
   ['pa_5fto_5fgpa_2',['PA_TO_GPA',['../namespaceocc_1_1units.html#abb13a2190f2c77a4f2cbc3f02d7f8c47',1,'occ::units']]],
   ['pad_3',['pad',['../structocc_1_1io_1_1ColumnConfiguration.html#ab07bd79b05d8c70df7e5659935dfd6ae',1,'occ::io::ColumnConfiguration']]],
@@ -30,7 +30,7 @@ var searchData=
   ['point_5fcharge_5ffilename_27',['point_charge_filename',['../structocc_1_1io_1_1GeometryInput.html#ae5be26813872d9110d402d81adf3b0f7',1,'occ::io::GeometryInput']]],
   ['point_5fcharges_28',['point_charges',['../structocc_1_1io_1_1GeometryInput.html#a40d024feeb0229737680e41271fb4db0',1,'occ::io::GeometryInput::point_charges'],['../structocc_1_1io_1_1PointChargeFileReader.html#a6fa98db3228e6bcdd747ef6bceefa123',1,'occ::io::PointChargeFileReader::point_charges']]],
   ['point_5findex_29',['point_index',['../structocc_1_1geometry_1_1Facet.html#a4a08e52dc3ca73e773f4bb1bb50259e4',1,'occ::geometry::Facet']]],
-  ['points_30',['points',['../structocc_1_1dft_1_1RadialGrid.html#a3ee41b0c7f65417708fcdc27c911a186',1,'occ::dft::RadialGrid::points'],['../structocc_1_1dft_1_1AtomGrid.html#a3b8fc99090905e8bed82283a3cd37107',1,'occ::dft::AtomGrid::points']]],
+  ['points_30',['points',['../structocc_1_1dft_1_1RadialGrid.html#a3ee41b0c7f65417708fcdc27c911a186',1,'occ::dft::RadialGrid::points'],['../structocc_1_1dft_1_1AtomGrid.html#a3b8fc99090905e8bed82283a3cd37107',1,'occ::dft::AtomGrid::points'],['../structocc_1_1qm_1_1cc_1_1LaplaceGrid.html#a9ecff6fdabc3c121da82242384a50b3d',1,'occ::qm::cc::LaplaceGrid::points']]],
   ['points_5ffilename_31',['points_filename',['../structocc_1_1isosurface_1_1VolumeGenerationParameters.html#ad6e447083502dbde3dc52c846e5575d2',1,'occ::isosurface::VolumeGenerationParameters::points_filename'],['../structocc_1_1main_1_1CubeConfig.html#a9d826e685e73603cb9113239afc412be',1,'occ::main::CubeConfig::points_filename']]],
   ['polariz_32',['polariz',['../structocc_1_1xtb_1_1AnisotropicEnergy.html#ad625a011681a20fd2e1a20aec5d27871',1,'occ::xtb::AnisotropicEnergy']]],
   ['polarizabilities_33',['polarizabilities',['../structocc_1_1xdm_1_1XDMAtomList.html#ad27b3f49e16b6b24616769f7460d92b4',1,'occ::xdm::XDMAtomList']]],

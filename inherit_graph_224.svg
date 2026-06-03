@@ -11,9 +11,9 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="classocc_1_1io_1_1CifWriter.html" target="_top" xlink:title="Writer class for crystallographic information files (CIF)">
+<g id="a_Node000000"><a xlink:href="classocc_1_1io_1_1CifParser.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="98,-19 0,-19 0,0 98,0 98,-19"/>
-<text text-anchor="middle" x="49" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">occ::io::CifWriter</text>
+<text text-anchor="middle" x="49" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">occ::io::CifParser</text>
 </a>
 </g>
 </g>

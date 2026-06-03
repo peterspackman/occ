@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['q_0',['q',['../structocc_1_1dma_1_1Mult.html#a5acbfbae9387c9756ee7b8f23ed88550',1,'occ::dma::Mult::q'],['../structocc_1_1core_1_1KalmanEstimator.html#a90355d10c072bd3ee9127218dbacce30',1,'occ::core::KalmanEstimator::Q'],['../structocc_1_1opt_1_1OptPoint.html#a912811ab2a63f71b8ead25c0cf897840',1,'occ::opt::OptPoint::q']]],
+  ['q_0',['q',['../structocc_1_1opt_1_1OptPoint.html#a912811ab2a63f71b8ead25c0cf897840',1,'occ::opt::OptPoint::q'],['../structocc_1_1dma_1_1Mult.html#a5acbfbae9387c9756ee7b8f23ed88550',1,'occ::dma::Mult::q'],['../structocc_1_1core_1_1KalmanEstimator.html#a90355d10c072bd3ee9127218dbacce30',1,'occ::core::KalmanEstimator::Q']]],
   ['q00_1',['q00',['../structocc_1_1dma_1_1Mult.html#a4c4c4e4bd6a81b84cfefe9af5a347e40',1,'occ::dma::Mult::Q00() const'],['../structocc_1_1dma_1_1Mult.html#a7b1ca03f1330e831cc1a9f879d3faa4b',1,'occ::dma::Mult::Q00()']]],
   ['q10_2',['q10',['../structocc_1_1dma_1_1Mult.html#a560b2c5416884b7ebbb5138cac2f00cb',1,'occ::dma::Mult::Q10() const'],['../structocc_1_1dma_1_1Mult.html#a3de8642c9a4b82969a979312ef318237',1,'occ::dma::Mult::Q10()']]],
   ['q11c_3',['q11c',['../structocc_1_1dma_1_1Mult.html#aa14e13fd56c32f4a25abf90995f888b1',1,'occ::dma::Mult::Q11c() const'],['../structocc_1_1dma_1_1Mult.html#aade8c1263a2162bbfb7b27e64c9abfb0',1,'occ::dma::Mult::Q11c()']]],
@@ -132,7 +132,7 @@ var searchData=
   ['qcschematopology_129',['QCSchemaTopology',['../structocc_1_1io_1_1QCSchemaTopology.html',1,'occ::io']]],
   ['qm_20module_130',['QM Module',['../md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindings.html#autotoc_md20',1,'']]],
   ['qp_131',['qp',['../structocc_1_1xtb_1_1CammMoments.html#a283feb7c7d8067c3e01162a0acc0add0',1,'occ::xtb::CammMoments']]],
-  ['qr_132',['QR',['../namespaceocc_1_1elastic__fit.html#ac3e8c91ec2f8e6a091ce339e4f700e97a66c35cd8077f7e1db5faefbc048a646a',1,'occ::elastic_fit']]],
+  ['qr_132',['qr',['../namespaceocc_1_1qm_1_1cc.html#af7d3c977e3150a5a3beabfceb4ce75e7a66c35cd8077f7e1db5faefbc048a646a',1,'occ::qm::cc::QR'],['../namespaceocc_1_1elastic__fit.html#ac3e8c91ec2f8e6a091ce339e4f700e97a66c35cd8077f7e1db5faefbc048a646a',1,'occ::elastic_fit::QR']]],
   ['quad_5fkernel_133',['quad_kernel',['../structocc_1_1xtb_1_1ElementParam.html#aaca4439fa597d7953e16d0a95c30840c',1,'occ::xtb::ElementParam']]],
   ['quadrature_2eh_134',['quadrature.h',['../quadrature_8h.html',1,'']]],
   ['quadrupole_135',['quadrupole',['../structocc_1_1io_1_1SiteMultipoles.html#aed62aeb885111fcfe6bb31b4807c84fb',1,'occ::io::SiteMultipoles::quadrupole'],['../namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa4a00b7f9940a3aba263c61a41def14bd',1,'occ::qm::cint::quadrupole'],['../structocc_1_1core_1_1Multipole.html#adf1de0d6cb980103be5a0caa764fda9d',1,'occ::core::Multipole::Quadrupole'],['../structocc_1_1core_1_1Multipole.html#ad9926f94e904e9de454786d60e36f4a8',1,'occ::core::Multipole::quadrupole() const']]],

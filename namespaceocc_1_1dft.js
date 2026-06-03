@@ -11,7 +11,7 @@ var namespaceocc_1_1dft =
     ] ],
     [ "kernels", "namespaceocc_1_1dft_1_1kernels.html", [
       [ "process_grid_block", "namespaceocc_1_1dft_1_1kernels.html#a23f38da6be835f354e5277134b01d915", null ],
-      [ "process_grid_block_gradient", "namespaceocc_1_1dft_1_1kernels.html#a74f4e95d017a10d9c99c82c69d7cbff3", null ]
+      [ "process_grid_block_gradient", "namespaceocc_1_1dft_1_1kernels.html#ad0b60e4ac2bc66905f74c17abc776615", null ]
     ] ],
     [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
     [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],

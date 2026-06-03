@@ -1,5 +1,6 @@
 var dir_ebd379896397d727b5a519429e0506e7 =
 [
+    [ "acceleration.h", "acceleration_8h.html", "acceleration_8h" ],
     [ "crystal_growth.h", "crystal__growth_8h.html", "crystal__growth_8h" ],
     [ "dma_driver.h", "dma__driver_8h.html", "dma__driver_8h" ],
     [ "geometry_optimization.h", "geometry__optimization_8h.html", "geometry__optimization_8h" ],

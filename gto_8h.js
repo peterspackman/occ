@@ -11,6 +11,7 @@ var gto_8h =
     [ "evaluate_basis", "gto_8h.html#a0fce5060a8f75d8a17961c290e4cbbe2", null ],
     [ "evaluate_basis", "gto_8h.html#ae429db3b396e75d3053bd91de61cae36", null ],
     [ "evaluate_basis_for_shells", "gto_8h.html#ac4b9e8f6f7804bcc83aff81e73776956", null ],
+    [ "evaluate_basis_subset", "gto_8h.html#a73bef8f4dfe66644619efed3982567c8", null ],
     [ "evaluate_decay_cutoff", "gto_8h.html#af2d65cc19680d96d4df02b1ba8c6c763", null ],
     [ "num_subshells", "gto_8h.html#a724938450948b41d035c2112d20f0e88", null ],
     [ "shell_component_labels", "gto_8h.html#ae0f4c6fdf0ed23a01156d3948805699b", null ],

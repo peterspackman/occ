@@ -17,6 +17,7 @@ var namespaceocc_1_1qm =
       [ "bb", "namespaceocc_1_1qm_1_1block.html#ae68c2c4e25487aa8f74a6be0afcbb579", null ],
       [ "bb", "namespaceocc_1_1qm_1_1block.html#a0bc0a924c072a5951d3fab6ee085b317", null ]
     ] ],
+    [ "cc", "namespaceocc_1_1qm_1_1cc.html", "namespaceocc_1_1qm_1_1cc" ],
     [ "cint", "namespaceocc_1_1qm_1_1cint.html", "namespaceocc_1_1qm_1_1cint" ],
     [ "cosx", "namespaceocc_1_1qm_1_1cosx.html", "namespaceocc_1_1qm_1_1cosx" ],
     [ "guess", "namespaceocc_1_1qm_1_1guess.html", [
@@ -46,6 +47,7 @@ var namespaceocc_1_1qm =
     [ "CanonicalOrthogonalizer", "classocc_1_1qm_1_1CanonicalOrthogonalizer.html", "classocc_1_1qm_1_1CanonicalOrthogonalizer" ],
     [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
     [ "ConvergenceAccelerator", "classocc_1_1qm_1_1ConvergenceAccelerator.html", "classocc_1_1qm_1_1ConvergenceAccelerator" ],
+    [ "DFIntegrals", "classocc_1_1qm_1_1DFIntegrals.html", "classocc_1_1qm_1_1DFIntegrals" ],
     [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
     [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
     [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
@@ -53,7 +55,6 @@ var namespaceocc_1_1qm =
     [ "GridBoundingSphere", "structocc_1_1qm_1_1GridBoundingSphere.html", "structocc_1_1qm_1_1GridBoundingSphere" ],
     [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
     [ "HessianEvaluator", "classocc_1_1qm_1_1HessianEvaluator.html", "classocc_1_1qm_1_1HessianEvaluator" ],
-    [ "IndexRange", "structocc_1_1qm_1_1IndexRange.html", "structocc_1_1qm_1_1IndexRange" ],
     [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
     [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
     [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
@@ -61,9 +62,6 @@ var namespaceocc_1_1qm =
     [ "MOIntegralEngine", "classocc_1_1qm_1_1MOIntegralEngine.html", "classocc_1_1qm_1_1MOIntegralEngine" ],
     [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
     [ "MP2", "classocc_1_1qm_1_1MP2.html", "classocc_1_1qm_1_1MP2" ],
-    [ "MP2Components", "structocc_1_1qm_1_1MP2Components.html", "structocc_1_1qm_1_1MP2Components" ],
-    [ "MP2OrbitalInfo", "structocc_1_1qm_1_1MP2OrbitalInfo.html", "structocc_1_1qm_1_1MP2OrbitalInfo" ],
-    [ "MP2OrbitalSpec", "structocc_1_1qm_1_1MP2OrbitalSpec.html", "structocc_1_1qm_1_1MP2OrbitalSpec" ],
     [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
     [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
     [ "PointChargePotential", "structocc_1_1qm_1_1PointChargePotential.html", "structocc_1_1qm_1_1PointChargePotential" ],
@@ -84,7 +82,6 @@ var namespaceocc_1_1qm =
     [ "HessianMatrix", "namespaceocc_1_1qm.html#aa8bb245cfcce8ea42381f7dc22329952", null ],
     [ "PointChargeList", "namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb", null ],
     [ "ShellPairList", "namespaceocc_1_1qm.html#a2ecc83c9e5a744d19b7987d0dc0e52f7", null ],
-    [ "Tensor4D", "namespaceocc_1_1qm.html#aaede53ed6341f3101ea1f4c5cae9b4b9", null ],
     [ "CoulombMethod", "namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4ca", [
       [ "Traditional", "namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caa1bfbcce75c3c9a52a464d4cb0984488a", null ],
       [ "SplitRIJ", "namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caae8170441f7460d522a29a1988d225775", null ]
@@ -99,12 +96,17 @@ var namespaceocc_1_1qm =
       [ "D4", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba2521dc256a4368da87585c936b451dd7", null ],
       [ "XDM", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba8fdbb506111f5675e109c02bbb0deabb", null ]
     ] ],
+    [ "FittingKind", "namespaceocc_1_1qm.html#a0cbb6b7b200e84020e9a90de49d3cdd9", [
+      [ "JK", "namespaceocc_1_1qm.html#a0cbb6b7b200e84020e9a90de49d3cdd9a5c3116796f5ff62adaf85580801f3fa4", null ],
+      [ "Correlation", "namespaceocc_1_1qm.html#a0cbb6b7b200e84020e9a90de49d3cdd9a5f750c3076b1c419d3d1684019d36b16", null ]
+    ] ],
     [ "SpinorbitalKind", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4", [
       [ "Restricted", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a7eb505a798e7bd90ce15f4467154e837", null ],
       [ "Unrestricted", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a637317163a8a9d4712705b6bb0ae5799", null ],
       [ "General", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a0da9cfa44fd984f48640ab63a399399d", null ]
     ] ],
     [ "chelpg_charges", "namespaceocc_1_1qm.html#a44d0c2cc10936b5fce7b0f4086155b6e", null ],
+    [ "cosx_nbf_crossover", "namespaceocc_1_1qm.html#acc64228bb1558331b90be2793c89b2a7", null ],
     [ "expectation", "namespaceocc_1_1qm.html#a7f9747809d33a47c63c971414cfb7321", null ],
     [ "expectation", "namespaceocc_1_1qm.html#a2a982da10e9beee254cd5401c9e3028a", null ],
     [ "from_json", "namespaceocc_1_1qm.html#aea99ff092d8022a134859b02bc81a705", null ],
@@ -116,6 +118,7 @@ var namespaceocc_1_1qm =
     [ "merge_basis_sets", "namespaceocc_1_1qm.html#a096777b12f35eca1e096b98cb195817c", null ],
     [ "merge_molecular_orbitals", "namespaceocc_1_1qm.html#ac09cf4fe46928c8b388e9b9253147cf6", null ],
     [ "mulliken_partition", "namespaceocc_1_1qm.html#abbd3ff1729602847daf45753f527aa15", null ],
+    [ "resolve_fitting_basis", "namespaceocc_1_1qm.html#a879a0c61d5547c7ddd07c0c8c42f9f6e", null ],
     [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ],
     [ "spinorbital_kind_to_string", "namespaceocc_1_1qm.html#acc9a0510ac1c6ace69ae9cf3da07c4a8", null ],
     [ "to_json", "namespaceocc_1_1qm.html#af56a1ad02bf6c763085926a57c0c60f4", null ],

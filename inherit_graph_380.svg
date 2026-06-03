@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1InteractionTensorBatch.html" target="_top" xlink:title="SOA interaction tensor batch: BatchSize tensors stored interleaved.">
+<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1InteractionTensor.html" target="_top" xlink:title="Cartesian interaction tensor T_{tuv} = d^{t+u+v}/dx^t dy^u dz^v (1/R)">
 <polygon fill="white" stroke="#666666" points="157,-30 0,-30 0,0 157,0 157,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::mults::InteractionTensor</text>
-<text text-anchor="middle" x="78.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Batch&lt; MaxL, BatchSize &gt;</text>
+<text text-anchor="middle" x="78.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">&lt; MaxL &gt;</text>
 </a>
 </g>
 </g>
