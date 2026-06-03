@@ -22,15 +22,15 @@ T4 slice_block(const T4 &G, int nocc, int q0, int qn, int r0, int rn, int s0,
 }
 
 // Unpack a (np*nq x nr*ns) matrix product of two B blocks into a chemist tensor
-// out(p,q,r,s) = M(p*nq+q, r*ns+s) -- matches DFIntegrals' row layout left*nR+r.
+// result(p,q,r,s) = M(p*nq+q, r*ns+s) -- matches DFIntegrals' row layout left*nR+r.
 T4 unpack(const Mat &M, int np, int nq, int nr, int ns) {
-  T4 out(np, nq, nr, ns);
+  T4 result(np, nq, nr, ns);
   for (int p = 0; p < np; ++p)
     for (int q = 0; q < nq; ++q)
       for (int r = 0; r < nr; ++r)
         for (int s = 0; s < ns; ++s)
-          out(p, q, r, s) = M(p * nq + q, r * ns + s);
-  return out;
+          result(p, q, r, s) = M(p * nq + q, r * ns + s);
+  return result;
 }
 
 // Drop the lowest n_frozen occupied orbitals from the correlation space by
@@ -236,7 +236,7 @@ static CCIntegrals df_blocks(DFIntegrals &df, const MolecularOrbitals &mo) {
         (*B3)(a, c, P) = Bvv(a * v + c, P);
 
   e.ladder = [B3, o, v](const T4 &tau) -> T4 {
-    T4 out(o, o, v, v);
+    T4 result(o, o, v, v);
     const Eigen::array<Eigen::IndexPair<int>, 1> c1 = {
         Eigen::IndexPair<int>(1, 0)}; // contract c
     const Eigen::array<Eigen::IndexPair<int>, 2> Pd = {
@@ -253,9 +253,9 @@ static CCIntegrals df_blocks(DFIntegrals &df, const MolecularOrbitals &mo) {
       const Eigen::Tensor<double, 2> Lij = M.contract(*B3, Pd);
       for (int a = 0; a < v; ++a)
         for (int b = 0; b < v; ++b)
-          out(i, j, a, b) = Lij(a, b);
+          result(i, j, a, b) = Lij(a, b);
     });
-    return out;
+    return result;
   };
   return e;
 }
@@ -326,7 +326,7 @@ CCIntegrals thc_eris(const AOBasis &basis, const AOBasis &aux_basis,
   e.ladder = [Xv_sh, V_sh, o, v](const T4 &tau) -> T4 {
     const Mat &Xvm = *Xv_sh; // (v x P)
     const Mat &Vm = *V_sh;   // (P x P)
-    T4 out(o, o, v, v);
+    T4 result(o, o, v, v);
     occ::parallel::parallel_for(size_t(0), static_cast<size_t>(o) * o,
                                 [&](size_t ij) {
       const int i = static_cast<int>(ij / o);
@@ -340,9 +340,9 @@ CCIntegrals thc_eris(const AOBasis &basis, const AOBasis &aux_basis,
       const Mat L = Xvm * M * Xvm.transpose();     // (v x v)
       for (int a = 0; a < v; ++a)
         for (int b = 0; b < v; ++b)
-          out(i, j, a, b) = L(a, b);
+          result(i, j, a, b) = L(a, b);
     });
-    return out;
+    return result;
   };
   return e;
 }
