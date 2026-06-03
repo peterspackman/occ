@@ -87,25 +87,26 @@ T4 mo_transform_packed(const Mat &A, const Mat &Cp, const Mat &Cq,
   Mat T1t = T1.transpose(); // (npair x np*nq), contiguous columns for phase 2
   T1.resize(0, 0);
 
-  // Phase 2 (ket): OUT(rs, pq) = Cr^T unpack(T1t[:,pq]) Cs, parallel over pq.
+  // Phase 2 (ket): T2(rs, pq) = Cr^T unpack(T1t[:,pq]) Cs, parallel over pq.
+  // (named T2, not OUT: "OUT" is an empty SAL macro in the Windows headers.)
   const Eigen::Index npq = static_cast<Eigen::Index>(np) * nq;
-  Mat OUT(static_cast<Eigen::Index>(nr) * ns, npq);
+  Mat T2(static_cast<Eigen::Index>(nr) * ns, npq);
   occ::parallel::parallel_for(size_t(0), static_cast<size_t>(npq),
                               [&](size_t pq) {
     Mat M(n, n);
     unpack(T1t.col(static_cast<Eigen::Index>(pq)).data(), M);
-    Eigen::Map<Mat>(OUT.col(static_cast<Eigen::Index>(pq)).data(), nr, ns)
+    Eigen::Map<Mat>(T2.col(static_cast<Eigen::Index>(pq)).data(), nr, ns)
         .noalias() = Cr.transpose() * M * Cs;
   });
   T1t.resize(0, 0);
 
-  T4 out(np, nq, nr, ns); // out(p,q,r,s) = OUT(r+nr*s, p+np*q)
+  T4 result(np, nq, nr, ns); // result(p,q,r,s) = T2(r+nr*s, p+np*q)
   for (int s = 0; s < ns; ++s)
     for (int r = 0; r < nr; ++r)
       for (int q = 0; q < nq; ++q)
         for (int p = 0; p < np; ++p)
-          out(p, q, r, s) = OUT(r + nr * s, p + np * q);
-  return out;
+          result(p, q, r, s) = T2(r + nr * s, p + np * q);
+  return result;
 }
 
 } // namespace
