@@ -6,6 +6,7 @@ add_library(occ_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/cint_interface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ediis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/adiis.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/fitting_basis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gradients.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/guess_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"

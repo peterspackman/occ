@@ -44,11 +44,26 @@ struct COSXSettings {
   double f_threshold{1e-10};          // F-intermediate threshold
 };
 
+// Acceleration policy for SCF two-electron integrals (density fitting / COSX).
+//   Auto - choose automatically (ORCA-style): density-fit the Coulomb term, and
+//          for exact exchange (HF / hybrid DFT) use DF-K below a basis-function
+//          crossover and seminumerical COSX above it.
+//   None - conventional 4-center integrals (no DF, no COSX).
+//   JK   - force density fitting for both J and K.
+//   COSX - force DF for J and seminumerical COSX for K (exact exchange only).
+enum class RIPolicy { Auto, None, JK, COSX };
+
 struct MethodInput {
   std::string name{"rhf"};
   GridSettings dft_grid;
   double integral_precision{1e-12};
+  // DFT XC integration: per-grid-batch shell screening tolerance (the |phi|
+  // decay cutoff used to drop negligible basis functions over a spatial
+  // batch). Larger = more aggressive screening / faster, less accurate. <=0
+  // disables screening (dense XC build).
+  double dft_xc_screening_threshold{1e-10};
   double orbital_smearing_sigma{0.0};
+  RIPolicy ri_policy{RIPolicy::Auto}; // Automatic DF/COSX selection (see RIPolicy)
   bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
   bool use_split_ri_j{false}; // Use Split-RI-J for Coulomb matrix (Neese 2003)
   bool use_cosx{false}; // Use COSX seminumerical exchange

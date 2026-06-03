@@ -88,6 +88,35 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
       app.add_subcommand("scf", "Perform an SCF on a molecular geometry");
   scf->fallthrough();
 
+  // Advanced / rarely-needed tuning flags are assigned to this group, which is
+  // hidden from `occ scf --help` (an empty CLI11 group name suppresses an option
+  // from help). They are still parsed, so existing scripts keep working, and
+  // `occ scf --help-expert` reveals them.
+  const std::string kHidden = "";
+
+  // Named groups so `--help` reads as labelled sections rather than one flat
+  // list. (Options left in the default group appear under "Options".)
+  const std::string gDF = "Density fitting / acceleration";
+  const std::string gMP2 = "MP2";
+  const std::string gCC = "Coupled cluster";
+  const std::string gSolv = "Solvation & dispersion";
+  const std::string gOpt = "Geometry optimization & frequencies";
+
+  // Reveal the hidden tuning options (move them into a visible group) and print
+  // the full help. trigger_on_parse() runs the callback during parsing, so it
+  // works without the otherwise-required input file.
+  scf->add_flag_function(
+         "--help-expert",
+         [scf](std::int64_t) {
+           for (const auto *opt : scf->get_options()) {
+             if (opt->get_group().empty())
+               const_cast<CLI::Option *>(opt)->group("Expert (advanced tuning)");
+           }
+           throw CLI::CallForHelp();
+         },
+         "show advanced / expert tuning options and exit")
+      ->trigger_on_parse();
+
   CLI::Option *input_option =
       scf->add_option("input,--geometry-filename,--geometry_filename",
                       config->filename, "input file");
@@ -121,19 +150,55 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
 
   scf->add_option("--integral-precision,--integral_precision",
                   config->method.integral_precision,
-                  "cutoff for integral screening");
+                  "cutoff for integral screening")
+      ->group(kHidden);
+
+  // SCF acceleration policy (density fitting / COSX selection)
+  scf->add_option("--ri", config->method.ri_policy,
+                  "SCF acceleration: auto (default; DF-J everywhere, DF-K below "
+                  "and COSX above an nbf crossover for exact exchange) | none "
+                  "(conventional) | jk (force DF) | cosx (force DF-J + COSX-K)")
+      ->transform(CLI::CheckedTransformer(
+          std::map<std::string, occ::io::RIPolicy>{
+              {"auto", occ::io::RIPolicy::Auto},
+              {"none", occ::io::RIPolicy::None},
+              {"off", occ::io::RIPolicy::None},
+              {"conventional", occ::io::RIPolicy::None},
+              {"jk", occ::io::RIPolicy::JK},
+              {"j", occ::io::RIPolicy::JK},
+              {"ri", occ::io::RIPolicy::JK},
+              {"cosx", occ::io::RIPolicy::COSX},
+              {"rijcosx", occ::io::RIPolicy::COSX},
+          },
+          CLI::ignore_case))
+      ->option_text("auto|none|jk|cosx")
+      ->group(gDF);
+
+  // Auxiliary basis sets. Defaults are chosen automatically from the orbital
+  // basis (see share/basis/fitting_defaults.json) when these are left unset.
+  scf->add_option("--aux,-d,--df-basis,--density_fitting_basis",
+                  config->basis.df_name,
+                  "SCF (J/K) auxiliary basis; 'auto' generates one. Default: "
+                  "matched to the orbital basis.")
+      ->group(gDF);
+  scf->add_option("--corr-aux,--ri-basis", config->basis.ri_basis,
+                  "correlation (RI/C) auxiliary basis for MP2/CCSD. Default: "
+                  "matched to the orbital basis.")
+      ->group(gDF);
+
+  // --- hidden tuning knobs (still parsed) ---
   scf->add_flag("--direct-df,--use-direct-df-kernels,--use_direct_df_kernels",
                 config->method.use_direct_df_kernels,
-                "use direct density fitting kernels (recompute integrals each iteration)");
-  scf->add_flag("--split-ri-j,--split_ri_j",
-                config->method.use_split_ri_j,
-                "use Split-RI-J for Coulomb matrix (Neese 2003, faster for large systems)");
-
-  // COSX seminumerical exchange
+                "use direct density fitting kernels (recompute integrals each iteration)")
+      ->group(kHidden);
+  scf->add_flag("--split-ri-j,--split_ri_j", config->method.use_split_ri_j,
+                "use Split-RI-J for Coulomb matrix (Neese 2003)")
+      ->group(kHidden);
   scf->add_flag("--cosx", config->method.use_cosx,
-                "use COSX seminumerical exchange (faster for large systems)");
+                "force COSX seminumerical exchange (see --ri cosx)")
+      ->group(kHidden);
   scf->add_option("--cosx-grid", config->method.cosx_grid_level,
-                  "COSX grid level: 0=Grid1 (fast), 1=Grid2, 2=Grid3 (accurate)")
+                  "COSX grid level: 1=Grid1 (fast), 2=Grid2, 3=Grid3 (accurate)")
       ->transform(CLI::CheckedTransformer(
           std::map<std::string, occ::io::COSXGridLevel>{
               {"1", occ::io::COSXGridLevel::Grid1},
@@ -143,81 +208,103 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
               {"grid2", occ::io::COSXGridLevel::Grid2},
               {"grid3", occ::io::COSXGridLevel::Grid3},
           },
-          CLI::ignore_case));
-
-  // COSX settings
+          CLI::ignore_case))
+      ->group(kHidden);
   scf->add_option("--cosx-screen-threshold", config->method.cosx.screen_threshold,
-                  "COSX shell screening threshold (default 1e-4, looser = more screening)");
+                  "COSX shell screening threshold (default 1e-4)")
+      ->group(kHidden);
   scf->add_option("--cosx-margin", config->method.cosx.margin,
-                  "COSX geometric margin in Bohr (default 1.0)");
+                  "COSX geometric margin in Bohr (default 1.0)")
+      ->group(kHidden);
   scf->add_option("--cosx-f-threshold", config->method.cosx.f_threshold,
-                  "COSX F-intermediate threshold (default 1e-10)");
+                  "COSX F-intermediate threshold (default 1e-10)")
+      ->group(kHidden);
+  scf->add_option("--df-auto-threshold", config->basis.df_auto_threshold,
+                  "Cholesky threshold for the 'auto' auxiliary basis (default: 1e-4)")
+      ->group(kHidden);
 
-  // dft grid
+  // dft grid (hidden)
+  scf->add_option("--xc-screen-threshold,--xc_screen_threshold",
+                  config->method.dft_xc_screening_threshold,
+                  "DFT XC per-batch shell screening tolerance (default 1e-10, "
+                  "larger = more screening/faster, <=0 disables)")
+      ->group(kHidden);
   scf->add_option("--dft-grid-max-angular,--dft_grid_max_angular",
                   config->method.dft_grid.max_angular_points,
-                  "maximum angular grid points for DFT integration");
+                  "maximum angular grid points for DFT integration")
+      ->group(kHidden);
   scf->add_option("--dft-grid-min-angular,--dft_grid_min_angular",
                   config->method.dft_grid.min_angular_points,
-                  "minimum angular grid points for DFT integration");
+                  "minimum angular grid points for DFT integration")
+      ->group(kHidden);
   scf->add_option("--dft-grid-radial-precision,--dft_grid_radial_precision",
                   config->method.dft_grid.radial_precision,
-                  "radial precision for DFT integration");
+                  "radial precision for DFT integration")
+      ->group(kHidden);
   scf->add_option(
-      "--dft-grid-reduce-light-elements,--dft_grid_reduce_light_elements",
-      config->method.dft_grid.reduced_first_row_element_grid,
-      "radial precision for DFT integration");
-
-  // basis set
-  scf->add_option("-d,--df-basis,--density_fitting_basis",
-                  config->basis.df_name,
-                  "auxiliary basis set name (or 'auto' for automatic generation)");
-  scf->add_option("--df-auto-threshold", config->basis.df_auto_threshold,
-                  "Cholesky threshold for auto auxiliary basis (default: 1e-4)");
-  scf->add_option("--ri-basis", config->basis.ri_basis,
-                  "RI basis set for MP2 calculations");
-  scf->add_option("--mp2-max-memory", config->method.mp2_max_memory_gb,
-                  "MP2 memory budget in GiB (controls occupied blocking and "
-                  "whether the dense 3-center store is used; default: 1.0)");
-  scf->add_option("--mp2-spin-scaling", config->method.mp2_spin_scaling,
-                  "MP2 spin-component scaling: none | scs | sos");
+         "--dft-grid-reduce-light-elements,--dft_grid_reduce_light_elements",
+         config->method.dft_grid.reduced_first_row_element_grid,
+         "use a reduced radial grid for first-row elements")
+      ->group(kHidden);
   scf->add_option("--mp2-backend", config->method.mp2_backend,
                   "MP2 integral backend: auto (RI if --ri-basis else "
-                  "conventional) | thc (LS-THC-MP2; reuses --ri-basis, default "
-                  "def2-universal-jkfit)");
+                  "conventional) | ri/df (RI-MP2) | thc (LS-THC-MP2). The method "
+                  "name may also request it, e.g. ri-mp2 / thc-mp2. RI/THC use "
+                  "--ri-basis, else a matched correlation aux is chosen.")
+      ->group(gMP2);
+  scf->add_option("--mp2-spin-scaling", config->method.mp2_spin_scaling,
+                  "MP2 spin-component scaling: none | scs | sos")
+      ->group(gMP2);
+  scf->add_option("--mp2-max-memory", config->method.mp2_max_memory_gb,
+                  "MP2 memory budget in GiB (controls occupied blocking and "
+                  "whether the dense 3-center store is used; default: 1.0)")
+      ->group(gMP2);
   scf->add_option("--mp2-thc-c", config->method.mp2_thc_c_isdf,
                   "THC interpolation rank = c * nbf for --mp2-backend thc "
-                  "(default: 6)");
+                  "(default: 6)")
+      ->group(kHidden);
   scf->add_option("--mp2-thc-method", config->method.mp2_thc_method,
-                  "MP2 THC ISDF point selector: cholesky | qr (default: cholesky)");
+                  "MP2 THC ISDF point selector: cholesky | qr (default: cholesky)")
+      ->group(kHidden);
   scf->add_option("--mp2-laplace-points", config->method.mp2_laplace_points,
                   "Laplace quadrature points for the THC-MP2 denominator "
-                  "(default: 14)");
+                  "(default: 14)")
+      ->group(kHidden);
   scf->add_option("--ccsd-backend", config->method.ccsd_backend,
-                  "CCSD(T) integral backend: exact | df | thc (df/thc reuse "
-                  "--ri-basis, default def2-universal-jkfit)");
-  scf->add_option("--ccsd-max-memory", config->method.ccsd_max_memory_gb,
-                  "CCSD(T) integral-build memory budget in GiB (default: 1.0)");
+                  "CCSD(T) integral backend: exact | df (= ri) | thc. The method "
+                  "name may also request it, e.g. ri-ccsd(t) / thc-ccsd(t). "
+                  "df/thc use --ri-basis, else a matched correlation aux is "
+                  "chosen.")
+      ->group(gCC);
   scf->add_option("--ccsd-frozen-core", config->method.ccsd_frozen_core,
                   "CCSD(T) frozen core orbitals: -1 auto (chemical core, "
-                  "default), 0 all-electron, N freeze N lowest");
+                  "default), 0 all-electron, N freeze N lowest")
+      ->group(gCC);
+  scf->add_option("--ccsd-max-memory", config->method.ccsd_max_memory_gb,
+                  "CCSD(T) integral-build memory budget in GiB (default: 1.0)")
+      ->group(gCC);
   scf->add_option("--ccsd-thc-c", config->method.ccsd_thc_c_isdf,
                   "THC interpolation rank = c * nbf for --ccsd-backend thc "
-                  "(default: 6 = sub-mHa sweet spot; cost ~ c^2)");
+                  "(default: 6 = sub-mHa sweet spot; cost ~ c^2)")
+      ->group(kHidden);
   scf->add_option("--ccsd-thc-method", config->method.ccsd_thc_method,
-                  "THC ISDF point selector: cholesky | qr (default: cholesky)");
+                  "THC ISDF point selector: cholesky | qr (default: cholesky)")
+      ->group(kHidden);
   scf->add_option("--ccsd-thc-grid-angular", config->method.ccsd_thc_grid_angular,
                   "THC candidate-grid max angular points (default: 110; raise "
-                  "for a finer ISDF grid)");
+                  "for a finer ISDF grid)")
+      ->group(kHidden);
   scf->add_option("--ccsd-thc-grid-radial", config->method.ccsd_thc_grid_radial,
                   "THC candidate-grid radial precision (default: 1e-7; lower = "
-                  "more radial points)");
+                  "more radial points)")
+      ->group(kHidden);
   scf->add_flag("--spherical", config->basis.spherical,
                 "use spherical basis sets");
 
   scf->add_option("--orbital-smearing-sigma,--orbital_smearing_sigma",
                   config->method.orbital_smearing_sigma,
-                  "Orbital smearing sigma");
+                  "Orbital smearing sigma")
+      ->group(kHidden);
   // point charges
   CLI::Option *pc_option = scf->add_option(
       "--point-charges,--point_charge_file",
@@ -226,60 +313,78 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
 
   // Solvation
   scf->add_option("-s,--solvent,--solvent_name", config->solvent.solvent_name,
-                  "Solvent name");
+                  "Solvent name")
+      ->group(gSolv);
   scf->add_option("-f,--solvent-file,--solvent_file",
                   config->solvent.output_surface_filename,
-                  "file to write solvent surface");
+                  "file to write solvent surface")
+      ->group(gSolv);
   scf->add_flag("--solvent-radii-scaling,--solvent_radii_scaling,--draco",
-                config->solvent.radii_scaling, "use DRACO for radii scaling");
+                config->solvent.radii_scaling, "use DRACO for radii scaling")
+      ->group(gSolv);
   // XDM
   scf->add_flag("--xdm", config->dispersion.evaluate_correction,
-                "use XDM dispersion correction");
+                "use XDM dispersion correction")
+      ->group(gSolv);
   scf->add_option("--xdm-a1,--xdm_a1", config->dispersion.xdm_a1,
-                  "a1 parameter for XDM");
+                  "a1 parameter for XDM")
+      ->group(kHidden);
   scf->add_option("--xdm-a2,--xdm_a2", config->dispersion.xdm_a2,
-                  "a2 parameter for XDM");
+                  "a2 parameter for XDM")
+      ->group(kHidden);
 
   scf->add_option("--chelpg,", config->chelpg_filename,
                   "Filename for CHELPG charges");
 
   // Optimization convergence criteria
-  scf->add_option("--opt-gradient-max,--opt_gradient_max", 
+  scf->add_option("--opt-gradient-max,--opt_gradient_max",
                   config->optimization.gradient_max,
-                  "Maximum gradient component for convergence (Ha/Angstrom)");
-  scf->add_option("--opt-gradient-rms,--opt_gradient_rms", 
+                  "Maximum gradient component for convergence (Ha/Angstrom)")
+      ->group(gOpt);
+  scf->add_option("--opt-gradient-rms,--opt_gradient_rms",
                   config->optimization.gradient_rms,
-                  "RMS gradient for convergence (Ha/Angstrom)");
-  scf->add_option("--opt-step-max,--opt_step_max", 
+                  "RMS gradient for convergence (Ha/Angstrom)")
+      ->group(gOpt);
+  scf->add_option("--opt-step-max,--opt_step_max",
                   config->optimization.step_max,
-                  "Maximum displacement for convergence (Angstrom)");
-  scf->add_option("--opt-step-rms,--opt_step_rms", 
+                  "Maximum displacement for convergence (Angstrom)")
+      ->group(gOpt);
+  scf->add_option("--opt-step-rms,--opt_step_rms",
                   config->optimization.step_rms,
-                  "RMS displacement for convergence (Angstrom)");
-  scf->add_option("--opt-energy-change,--opt_energy_change", 
+                  "RMS displacement for convergence (Angstrom)")
+      ->group(gOpt);
+  scf->add_option("--opt-energy-change,--opt_energy_change",
                   config->optimization.energy_change,
-                  "Energy change threshold for convergence (Hartree)");
-  scf->add_flag("--opt-use-energy,--opt_use_energy", 
+                  "Energy change threshold for convergence (Hartree)")
+      ->group(gOpt);
+  scf->add_flag("--opt-use-energy,--opt_use_energy",
                 config->optimization.use_energy_criterion,
-                "Use energy change as convergence criterion");
-  scf->add_option("--opt-max-iterations,--opt_max_iterations", 
+                "Use energy change as convergence criterion")
+      ->group(gOpt);
+  scf->add_option("--opt-max-iterations,--opt_max_iterations",
                   config->optimization.max_iterations,
-                  "Maximum number of optimization steps");
-  scf->add_option("--opt-gradient-precision,--opt_gradient_precision", 
+                  "Maximum number of optimization steps")
+      ->group(gOpt);
+  scf->add_option("--opt-gradient-precision,--opt_gradient_precision",
                   config->optimization.gradient_integral_precision,
-                  "Final gradient integral precision");
-  scf->add_option("--opt-early-gradient-precision,--opt_early_gradient_precision", 
+                  "Final gradient integral precision")
+      ->group(kHidden);
+  scf->add_option("--opt-early-gradient-precision,--opt_early_gradient_precision",
                   config->optimization.early_gradient_integral_precision,
-                  "Looser gradient integral precision for early steps");
-  scf->add_option("--opt-tight-threshold,--opt_tight_threshold", 
+                  "Looser gradient integral precision for early steps")
+      ->group(kHidden);
+  scf->add_option("--opt-tight-threshold,--opt_tight_threshold",
                   config->optimization.tight_gradient_threshold,
-                  "Energy change threshold to switch to tight gradient precision (Hartree)");
-  scf->add_flag("--opt-write-wavefunctions,--opt_write_wavefunctions", 
+                  "Energy change threshold to switch to tight gradient precision (Hartree)")
+      ->group(kHidden);
+  scf->add_flag("--opt-write-wavefunctions,--opt_write_wavefunctions",
                 config->optimization.write_wavefunction_steps,
-                "Write wavefunction at each optimization step");
-  scf->add_flag("--frequencies,--freq", 
+                "Write wavefunction at each optimization step")
+      ->group(gOpt);
+  scf->add_flag("--frequencies,--freq",
                 config->optimization.compute_frequencies,
-                "Compute vibrational frequencies after geometry optimization");
+                "Compute vibrational frequencies after geometry optimization")
+      ->group(gOpt);
 
   scf->callback([config]() { run_scf_subcommand(*config); });
   return scf;

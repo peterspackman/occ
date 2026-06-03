@@ -1,4 +1,5 @@
 #include <occ/driver/vibrational_analysis.h>
+#include <occ/driver/acceleration.h>
 #include <occ/driver/method_parser.h>
 #include <occ/core/data_directory.h>
 #include <occ/core/log.h>
@@ -52,17 +53,10 @@ Mat compute_hessian_for_method(const Molecule &m, const occ::gto::AOBasis &basis
       return T(basis);
   }();
 
-  if (!config.basis.df_name.empty()) {
-    proc.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
-    // Only override DF policy if user explicitly requests direct
-    if (config.method.use_direct_df_kernels) {
-      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-    }
-    // Enable Split-RI-J if requested
-    if (config.method.use_split_ri_j) {
-      proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
-    }
-  }
+  // Density fitting (same policy as the single-point energy driver), but never
+  // COSX: it has no analytic gradient, and the finite-difference Hessian is
+  // built from exact-integral gradients.
+  apply_acceleration(proc, basis.nbf(), config, /*allow_cosx=*/false);
 
   occ::log::debug("Spinorbital kind: {}", spinorbital_kind_to_string(SK));
   occ::log::trace("Setting integral precision: {}", config.method.integral_precision);

@@ -17,6 +17,10 @@
 #include <occ/qm/mo.h>
 #include <occ/qm/split_ri_j.h>
 #include <occ/qm/auto_aux_basis.h>
+#include <occ/core/data_directory.h>
+#include <occ/driver/acceleration.h>
+#include <occ/driver/method_parser.h>
+#include <occ/qm/fitting_basis.h>
 #include <occ/qm/correlation/mo_integral_engine.h>
 #include <occ/qm/oniom.h>
 #include <occ/qm/partitioning.h>
@@ -1607,6 +1611,220 @@ TEST_CASE("Auto auxiliary basis generation", "[auto-aux]") {
 
     REQUIRE(J.norm() > 0);
     REQUIRE(J.rows() == static_cast<int>(basis.nbf()));
+  }
+}
+
+#ifndef OCC_DATA_DIR
+#define OCC_DATA_DIR "share"
+#endif
+
+using occ::qm::FittingKind;
+using occ::qm::resolve_fitting_basis;
+
+TEST_CASE("resolve_fitting_basis maps orbital basis to auxiliary basis",
+          "[fitting_basis]") {
+  // Point the resolver at the in-tree share/ so the test is independent of how
+  // OCC_DATA_PATH is set in the environment.
+  occ::set_data_directory(OCC_DATA_DIR);
+
+  SECTION("correlation fitting picks the matched RIFIT basis") {
+    REQUIRE(resolve_fitting_basis("cc-pvdz", FittingKind::Correlation) ==
+            "cc-pvdz-rifit");
+    REQUIRE(resolve_fitting_basis("cc-pvtz", FittingKind::Correlation) ==
+            "cc-pvtz-rifit");
+    REQUIRE(resolve_fitting_basis("cc-pvqz", FittingKind::Correlation) ==
+            "cc-pvqz-rifit");
+    REQUIRE(resolve_fitting_basis("def2-svp", FittingKind::Correlation) ==
+            "def2-svp-rifit");
+    REQUIRE(resolve_fitting_basis("def2-tzvp", FittingKind::Correlation) ==
+            "def2-tzvp-rifit");
+    REQUIRE(resolve_fitting_basis("def2-tzvpp", FittingKind::Correlation) ==
+            "def2-tzvpp-rifit");
+  }
+
+  SECTION("matching is case-insensitive") {
+    REQUIRE(resolve_fitting_basis("cc-pVTZ", FittingKind::Correlation) ==
+            "cc-pvtz-rifit");
+    REQUIRE(resolve_fitting_basis("DEF2-TZVP", FittingKind::Correlation) ==
+            "def2-tzvp-rifit");
+  }
+
+  SECTION("JK fitting uses a matched basis where available, else universal") {
+    REQUIRE(resolve_fitting_basis("cc-pvtz", FittingKind::JK) ==
+            "cc-pvtz-jkfit");
+    // def2-tzvp has no explicit jk entry -> the universal default
+    REQUIRE(resolve_fitting_basis("def2-tzvp", FittingKind::JK) ==
+            "def2-universal-jkfit");
+  }
+
+  SECTION("unknown orbital basis falls back to the defaults") {
+    REQUIRE(resolve_fitting_basis("6-31g", FittingKind::JK) ==
+            "def2-universal-jkfit");
+    REQUIRE(resolve_fitting_basis("6-31g", FittingKind::Correlation) ==
+            "def2-tzvp-rifit");
+  }
+}
+
+using occ::driver::MethodKind;
+using occ::driver::method_kind_from_string;
+using occ::driver::parse_method_string;
+
+TEST_CASE("parse_method_string splits dispersion and classifies kind",
+          "[method_parser]") {
+  SECTION("dispersion suffixes are split off the base") {
+    auto pbe = parse_method_string("pbe-d4");
+    REQUIRE(pbe.base_method == "pbe");
+    REQUIRE(pbe.dispersion == "d4");
+    REQUIRE(pbe.kind == MethodKind::DFT);
+
+    auto b3lyp = parse_method_string("b3lyp-xdm");
+    REQUIRE(b3lyp.base_method == "b3lyp");
+    REQUIRE(b3lyp.dispersion == "xdm");
+    REQUIRE(b3lyp.kind == MethodKind::DFT);
+
+    auto plain = parse_method_string("pbe");
+    REQUIRE(plain.base_method == "pbe");
+    REQUIRE(plain.dispersion.empty());
+  }
+
+  SECTION("dispersion baked into a functional name is preserved") {
+    // "-d" is not a recognised dispersion suffix, so it stays in the base.
+    auto b97d = parse_method_string("b97-d");
+    REQUIRE(b97d.base_method == "b97-d");
+    REQUIRE(b97d.dispersion.empty());
+    REQUIRE(b97d.kind == MethodKind::DFT);
+  }
+
+  SECTION("method families are classified") {
+    REQUIRE(method_kind_from_string("hf") == MethodKind::HF);
+    REQUIRE(method_kind_from_string("uhf") == MethodKind::HF);
+    REQUIRE(method_kind_from_string("ghf") == MethodKind::HF);
+    REQUIRE(method_kind_from_string("mp2") == MethodKind::MP2);
+    REQUIRE(method_kind_from_string("ump2") == MethodKind::MP2);
+    REQUIRE(method_kind_from_string("ccsd") == MethodKind::CCSD);
+    REQUIRE(method_kind_from_string("uccsd") == MethodKind::CCSD);
+    REQUIRE(method_kind_from_string("ccsd(t)") == MethodKind::CCSD_T);
+    REQUIRE(method_kind_from_string("ccsd-t") == MethodKind::CCSD_T);
+    REQUIRE(method_kind_from_string("ccsdt") == MethodKind::CCSD_T);
+    REQUIRE(method_kind_from_string("uccsd(t)") == MethodKind::CCSD_T);
+    REQUIRE(method_kind_from_string("gfn2") == MethodKind::GFN2);
+    REQUIRE(method_kind_from_string("gfn2-xtb") == MethodKind::GFN2);
+    // anything unrecognised is treated as a DFT functional
+    REQUIRE(method_kind_from_string("wb97x") == MethodKind::DFT);
+    REQUIRE(method_kind_from_string("b3lyp") == MethodKind::DFT);
+  }
+
+  SECTION("classification is case-insensitive and after dispersion strip") {
+    REQUIRE(method_kind_from_string("HF") == MethodKind::HF);
+    REQUIRE(method_kind_from_string("CCSD(T)") == MethodKind::CCSD_T);
+    // regression: HF + dispersion must classify as HF, not DFT
+    auto hfd4 = parse_method_string("hf-d4");
+    REQUIRE(hfd4.base_method == "hf");
+    REQUIRE(hfd4.dispersion == "d4");
+    REQUIRE(hfd4.kind == MethodKind::HF);
+    // a dispersion-suffixed DFT functional still resolves to DFT
+    REQUIRE(method_kind_from_string("b3lyp-d4") == MethodKind::DFT);
+  }
+
+  SECTION("ri-/df-/thc- prefixes select a correlation backend") {
+    auto ri = parse_method_string("ri-ccsd(t)");
+    REQUIRE(ri.kind == MethodKind::CCSD_T);
+    REQUIRE(ri.base_method == "ccsd(t)");
+    REQUIRE(ri.backend == "df");
+
+    auto rit = parse_method_string("ri-ccsd-t");
+    REQUIRE(rit.kind == MethodKind::CCSD_T);
+    REQUIRE(rit.backend == "df");
+
+    auto thc = parse_method_string("thc-mp2");
+    REQUIRE(thc.kind == MethodKind::MP2);
+    REQUIRE(thc.base_method == "mp2");
+    REQUIRE(thc.backend == "thc");
+
+    auto df = parse_method_string("df-ccsd");
+    REQUIRE(df.kind == MethodKind::CCSD);
+    REQUIRE(df.backend == "df");
+
+    // bare method carries no backend override
+    REQUIRE(parse_method_string("ccsd(t)").backend.empty());
+    REQUIRE(parse_method_string("mp2").backend.empty());
+
+    // a prefix on a non-correlation method is treated as part of the name
+    auto rihf = parse_method_string("ri-hf");
+    REQUIRE(rihf.backend.empty());
+    REQUIRE(rihf.kind == MethodKind::DFT); // "ri-hf" is not a known method
+  }
+}
+
+using occ::driver::plan_acceleration;
+using occ::io::RIPolicy;
+
+TEST_CASE("plan_acceleration applies the ORCA-style policy", "[acceleration]") {
+  occ::set_data_directory(OCC_DATA_DIR);
+  const int crossover = occ::qm::cosx_nbf_crossover();
+  const std::size_t small = static_cast<std::size_t>(crossover) - 1;
+  const std::size_t large = static_cast<std::size_t>(crossover) + 1;
+
+  SECTION("Auto density-fits the Coulomb term for a pure GGA, no COSX") {
+    auto p = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large,
+                               /*exact_exchange=*/0.0, "", false);
+    REQUIRE(p.df_basis == "def2-universal-jkfit");
+    REQUIRE_FALSE(p.use_cosx);
+  }
+
+  SECTION("Auto uses DF-K below the crossover for exact exchange") {
+    auto hf = plan_acceleration(RIPolicy::Auto, "cc-pvtz", small,
+                                /*exact_exchange=*/1.0, "", false);
+    REQUIRE(hf.df_basis == "cc-pvtz-jkfit");
+    REQUIRE_FALSE(hf.use_cosx);
+  }
+
+  SECTION("Auto switches to COSX above the crossover for exact exchange") {
+    auto hf = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large,
+                                /*exact_exchange=*/1.0, "", false);
+    REQUIRE(hf.df_basis == "def2-universal-jkfit");
+    REQUIRE(hf.use_cosx);
+
+    // hybrid DFT (nonzero exact exchange) behaves like HF
+    auto hyb = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large,
+                                 /*exact_exchange=*/0.2, "", false);
+    REQUIRE(hyb.use_cosx);
+  }
+
+  SECTION("explicit user settings win over Auto") {
+    // user-specified DF basis is respected and COSX is not auto-added
+    auto p = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large, 1.0,
+                               "my-aux", false);
+    REQUIRE(p.df_basis == "my-aux");
+    REQUIRE_FALSE(p.use_cosx);
+    // user --cosx alone keeps DF off (conventional J + COSX K)
+    auto c = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large, 1.0, "",
+                               true);
+    REQUIRE(c.df_basis.empty());
+    REQUIRE(c.use_cosx);
+  }
+
+  SECTION("None is conventional unless the user forces DF/COSX") {
+    auto p = plan_acceleration(RIPolicy::None, "def2-tzvp", large, 1.0, "",
+                               false);
+    REQUIRE(p.df_basis.empty());
+    REQUIRE_FALSE(p.use_cosx);
+  }
+
+  SECTION("JK forces DF and never COSX; COSX forces DF-J + COSX-K") {
+    auto jk = plan_acceleration(RIPolicy::JK, "cc-pvtz", large, 1.0, "", false);
+    REQUIRE(jk.df_basis == "cc-pvtz-jkfit");
+    REQUIRE_FALSE(jk.use_cosx);
+
+    auto cosx = plan_acceleration(RIPolicy::COSX, "def2-tzvp", small, 1.0, "",
+                                  false);
+    REQUIRE(cosx.df_basis == "def2-universal-jkfit");
+    REQUIRE(cosx.use_cosx);
+
+    // COSX requested but pure GGA -> no exact exchange to replace
+    auto gga = plan_acceleration(RIPolicy::COSX, "def2-tzvp", large, 0.0, "",
+                                 false);
+    REQUIRE_FALSE(gga.use_cosx);
   }
 }
 

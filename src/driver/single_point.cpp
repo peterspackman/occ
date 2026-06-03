@@ -3,6 +3,7 @@
 #include <occ/core/data_directory.h>
 #include <occ/dft/dft.h>
 #include <occ/disp/d4.h>
+#include <occ/driver/acceleration.h>
 #include <occ/driver/method_parser.h>
 #include <occ/xtb/xtb_calculator.h>
 #include <occ/driver/single_point.h>
@@ -13,6 +14,7 @@
 #include <occ/qm/cc/thc_mp2.h>
 #include <occ/qm/cc/uccsd.h>
 #include <occ/qm/correlation/mp2.h>
+#include <occ/qm/fitting_basis.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
@@ -106,32 +108,10 @@ Wavefunction run_method(Molecule &m, const occ::gto::AOBasis &basis,
       return T(basis);
   }();
 
-  if (!config.basis.df_name.empty()) {
-    proc.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
-    // Only override DF policy if user explicitly requests direct
-    // Otherwise, leave at Policy::Choose which intelligently selects based on memory
-    if (config.method.use_direct_df_kernels) {
-      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-    }
-    // Enable Split-RI-J if requested
-    if (config.method.use_split_ri_j) {
-      proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
-    }
-  }
+  apply_acceleration(proc, basis.nbf(), config);
 
-  // Enable COSX seminumerical exchange if requested (HF only)
-  if constexpr (std::is_same<T, HartreeFock>::value) {
-    if (config.method.use_cosx) {
-      proc.set_cosx_exchange(config.method.cosx_grid_level);
-      // Set COSX settings
-      occ::qm::cosx::Settings cosx_settings;
-      cosx_settings.screen_threshold = config.method.cosx.screen_threshold;
-      cosx_settings.margin = config.method.cosx.margin;
-      cosx_settings.f_threshold = config.method.cosx.f_threshold;
-      proc.set_cosx_settings(cosx_settings);
-      occ::log::info("Using COSX seminumerical exchange ({})",
-                     occ::io::cosx_grid_level_to_string(config.method.cosx_grid_level));
-    }
+  if constexpr (std::is_same<T, DFT>::value) {
+    proc.set_xc_screening_threshold(config.method.dft_xc_screening_threshold);
   }
 
   occ::log::info("Spinorbital kind: {}", spinorbital_kind_to_string(SK));
@@ -228,17 +208,8 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
 
   if constexpr (std::is_same<T, DFT>::value) {
     DFT ks(config.method.name, wfn.basis, config.method.dft_grid);
-    if (!config.basis.df_name.empty()) {
-      ks.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
-      // Only override DF policy if user explicitly requests direct
-      if (config.method.use_direct_df_kernels) {
-        ks.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-      }
-      // Enable Split-RI-J if requested
-      if (config.method.use_split_ri_j) {
-        ks.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
-      }
-    }
+    ks.set_xc_screening_threshold(config.method.dft_xc_screening_threshold);
+    apply_acceleration(ks, wfn.basis.nbf(), config);
     ks.set_system_charge(config.electronic.charge);
     SolvationCorrectedProcedure<DFT> proc_solv(ks, config.solvent.solvent_name,
                                                config.solvent.radii_scaling);
@@ -254,29 +225,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
   } else {
     T proc(wfn.basis);
     proc.set_system_charge(config.electronic.charge);
-    if (!config.basis.df_name.empty()) {
-      proc.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
-      // Only override DF policy if user explicitly requests direct
-      if (config.method.use_direct_df_kernels) {
-        proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-      }
-      // Enable Split-RI-J if requested
-      if (config.method.use_split_ri_j) {
-        proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
-      }
-    }
-    // Enable COSX seminumerical exchange if requested (HF only)
-    if constexpr (std::is_same<T, HartreeFock>::value) {
-      if (config.method.use_cosx) {
-        proc.set_cosx_exchange(config.method.cosx_grid_level);
-        // Set COSX settings
-        occ::qm::cosx::Settings cosx_settings;
-        cosx_settings.screen_threshold = config.method.cosx.screen_threshold;
-        cosx_settings.margin = config.method.cosx.margin;
-        cosx_settings.f_threshold = config.method.cosx.f_threshold;
-        proc.set_cosx_settings(cosx_settings);
-      }
-    }
+    apply_acceleration(proc, wfn.basis.nbf(), config);
     SolvationCorrectedProcedure<T> proc_solv(proc, config.solvent.solvent_name,
                                              config.solvent.radii_scaling);
     SCF<SolvationCorrectedProcedure<T>> scf(proc_solv, SK);
@@ -298,13 +247,30 @@ Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
 
   occ::log::info("{:=^72s}", "  MP2 Calculation  ");
 
+  // Resolve the effective MP2 backend. Method-name prefixes ("ri-mp2",
+  // "thc-mp2") select a backend when --mp2-backend is left at "auto"; "ri"/"df"
+  // are synonyms for RI-MP2. An RI aux basis is resolved when RI is requested
+  // without an explicit --ri-basis.
+  const auto mspec = parse_method_string(config.method.name);
+  std::string mp2_backend = occ::util::to_lower_copy(config.method.mp2_backend);
+  if (mp2_backend == "auto" && !mspec.backend.empty())
+    mp2_backend = mspec.backend;
+  if (mp2_backend == "ri")
+    mp2_backend = "df";
+  std::string ri_basis = config.basis.ri_basis;
+  if (ri_basis.empty() && mp2_backend == "df")
+    ri_basis = occ::qm::resolve_fitting_basis(
+        config.basis.name, occ::qm::FittingKind::Correlation);
+
   // THC-MP2 backend (LS-THC: Laplace denominator + THC factors). Lives in
   // occ_cc as a free function (the MP2 class is in occ_correlation, which occ_cc
   // depends on, so it can't host THC). Fills same/opposite spin so SCS/SOS work.
-  if (occ::util::to_lower_copy(config.method.mp2_backend) == "thc") {
-    const std::string auxname = config.basis.ri_basis.empty()
-                                    ? "def2-universal-jkfit"
-                                    : config.basis.ri_basis;
+  if (mp2_backend == "thc") {
+    const std::string auxname =
+        config.basis.ri_basis.empty()
+            ? occ::qm::resolve_fitting_basis(config.basis.name,
+                                             occ::qm::FittingKind::Correlation)
+            : config.basis.ri_basis;
     occ::log::info("Method: THC-MP2 (auxiliary basis: {})", auxname);
     auto aux = load_basis_set(config.geometry.molecule(), auxname,
                               config.basis.spherical);
@@ -379,12 +345,10 @@ Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
   }
 
   MP2 mp2 = [&]() {
-    if (!config.basis.ri_basis.empty()) {
-      occ::log::info("Method: RI-MP2 (auxiliary basis: {})",
-                     config.basis.ri_basis);
-      auto aux_basis =
-          load_basis_set(config.geometry.molecule(), config.basis.ri_basis,
-                         config.basis.spherical);
+    if (!ri_basis.empty()) {
+      occ::log::info("Method: RI-MP2 (auxiliary basis: {})", ri_basis);
+      auto aux_basis = load_basis_set(config.geometry.molecule(), ri_basis,
+                                      config.basis.spherical);
       return MP2(scf_wfn.basis, aux_basis, scf_wfn.mo, scf_wfn.energy.total);
     } else {
       occ::log::info("Method: Conventional MP2");
@@ -456,14 +420,24 @@ Wavefunction run_ccsd_method(const Wavefunction &scf_wfn, const OccInput &config
   int n_frozen0 = fc_auto0 ? cc::num_frozen_core(scf_wfn.basis)
                            : config.method.ccsd_frozen_core;
 
+  // Resolve the effective CCSD backend. Method-name prefixes ("ri-ccsd(t)",
+  // "thc-ccsd(t)") select a backend when --ccsd-backend is left at its default
+  // ("exact"); "ri" and "df" are synonyms for density fitting.
+  const auto mspec = parse_method_string(config.method.name);
+  std::string backend = occ::util::to_lower_copy(config.method.ccsd_backend);
+  if (backend.empty())
+    backend = "exact";
+  if (backend == "ri")
+    backend = "df";
+  if (backend == "exact" && !mspec.backend.empty())
+    backend = mspec.backend;
+
   if (open_shell) {
     // Open shell uses the spin-adapted unrestricted CCSD(T) (exact / df / thc).
     occ::log::info("{:=^72s}",
                    with_triples ? "  UHF CCSD(T) Calculation  "
                                 : "  UHF CCSD Calculation  ");
-    std::string be = occ::util::to_lower_copy(config.method.ccsd_backend);
-    if (be.empty())
-      be = "exact";
+    const std::string &be = backend;
     const size_t nocc_min = std::min(scf_wfn.mo.n_alpha, scf_wfn.mo.n_beta);
     n_frozen0 = std::max(0, std::min(n_frozen0, static_cast<int>(nocc_min) - 1));
     occ::log::info("Backend: {}", be);
@@ -491,9 +465,11 @@ Wavefunction run_ccsd_method(const Wavefunction &scf_wfn, const OccInput &config
                      "use df or thc for larger systems.");
       r = cc::uccsd(scf_wfn.basis, scf_wfn.mo, uopts);
     } else {
-      const std::string auxname = config.basis.ri_basis.empty()
-                                      ? "def2-universal-jkfit"
-                                      : config.basis.ri_basis;
+      const std::string auxname =
+          config.basis.ri_basis.empty()
+              ? occ::qm::resolve_fitting_basis(config.basis.name,
+                                               occ::qm::FittingKind::Correlation)
+              : config.basis.ri_basis;
       occ::log::info("Auxiliary basis: {}", auxname);
       auto aux = load_basis_set(config.geometry.molecule(), auxname,
                                 config.basis.spherical);
@@ -524,9 +500,6 @@ Wavefunction run_ccsd_method(const Wavefunction &scf_wfn, const OccInput &config
                                           : "  CCSD Calculation  ";
   occ::log::info("{:=^72s}", label);
 
-  std::string backend = occ::util::to_lower_copy(config.method.ccsd_backend);
-  if (backend.empty())
-    backend = "exact";
   const size_t budget = static_cast<size_t>(config.method.ccsd_max_memory_gb *
                                             1024.0 * 1024.0 * 1024.0);
   occ::log::info("Backend: {}", backend);
@@ -547,9 +520,11 @@ Wavefunction run_ccsd_method(const Wavefunction &scf_wfn, const OccInput &config
                      "use df or thc for larger systems.");
       return cc::exact_eris(scf_wfn.basis, scf_wfn.mo, n_frozen, budget);
     }
-    const std::string auxname = config.basis.ri_basis.empty()
-                                    ? "def2-universal-jkfit"
-                                    : config.basis.ri_basis;
+    const std::string auxname =
+        config.basis.ri_basis.empty()
+            ? occ::qm::resolve_fitting_basis(config.basis.name,
+                                             occ::qm::FittingKind::Correlation)
+            : config.basis.ri_basis;
     occ::log::info("Auxiliary basis: {}", auxname);
     auto aux = load_basis_set(config.geometry.molecule(), auxname,
                               config.basis.spherical);

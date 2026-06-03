@@ -169,6 +169,17 @@ void evaluate_basis_for_shells(const gto::AOBasis &basis, Mat3NConstRef grid_pts
                                GTOValues &gto_values, int max_derivative,
                                const std::vector<size_t> &shell_indices);
 
+/// Evaluate basis functions for a subset of shells, PACKED into a compact
+/// GTOValues whose columns span only those shells: phi is (npts x nbf_local)
+/// with nbf_local = sum of the subset's shell sizes, laid out in the order of
+/// `shell_indices`. Pass `shell_indices` ascending so the local bf layout
+/// matches ascending global bf order (makes gather/scatter contiguous). Used
+/// for block-sparse DFT XC integration where most basis functions are
+/// negligible over a spatially-localized grid batch.
+GTOValues evaluate_basis_subset(const gto::AOBasis &basis,
+                                Mat3NConstRef grid_pts, int max_derivative,
+                                const std::vector<int> &shell_indices);
+
 Vec evaluate_decay_cutoff(const gto::AOBasis &basis, double threshold = 1e-12);
 
 template <int angular_momentum>
