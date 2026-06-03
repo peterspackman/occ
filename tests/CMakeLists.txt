@@ -87,7 +87,8 @@ add_executable(qm_tests
     "${CMAKE_CURRENT_SOURCE_DIR}/qm_tests.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/qm_benchmarks.cpp"
 )
-target_link_libraries(qm_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
+target_link_libraries(qm_tests PRIVATE occ_qm occ_correlation Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(qm_tests PRIVATE OCC_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
 catch_discover_tests(qm_tests)
 
 add_executable(qm_gradient_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_gradient_tests.cpp")
@@ -98,9 +99,16 @@ add_executable(qm_hessian_tests "${CMAKE_CURRENT_SOURCE_DIR}/qm_hessian_tests.cp
 target_link_libraries(qm_hessian_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(qm_hessian_tests)
 
-add_executable(mp2_tests "${CMAKE_CURRENT_SOURCE_DIR}/mp2_tests.cpp")
-target_link_libraries(mp2_tests PRIVATE occ_qm Catch2::Catch2WithMain Threads::Threads)
+add_executable(mp2_tests
+    "${CMAKE_CURRENT_SOURCE_DIR}/mp2_tests.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/mp2_benchmarks.cpp"
+)
+target_link_libraries(mp2_tests PRIVATE occ_qm occ_correlation Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(mp2_tests)
+
+add_executable(cc_tests "${CMAKE_CURRENT_SOURCE_DIR}/cc_tests.cpp")
+target_link_libraries(cc_tests PRIVATE occ_qm occ_cc occ_correlation Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(cc_tests)
 
 add_executable(sht_tests "${CMAKE_CURRENT_SOURCE_DIR}/sht_tests.cpp")
 target_link_libraries(sht_tests PRIVATE occ_sht Catch2::Catch2WithMain Threads::Threads)

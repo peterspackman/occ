@@ -664,6 +664,35 @@ TEST_CASE("LDA gradient HF", "[dft_gradient]") {
   REQUIRE(occ::util::all_close(expected, gradient, 1e-3, 1e-3));
 }
 
+TEST_CASE("DFT XC screening matches dense (gradient)", "[dft_gradient][screening]") {
+  // Water; GGA exercises the deriv-2 collocation + GGA gradient kernel.
+  occ::Mat3N pos(3, 3);
+  pos << 0.0, 0.0, 0.0, 0.0, 1.43, -1.43, 0.0, 1.11, 1.11;
+  occ::IVec atomic_numbers(3);
+  atomic_numbers << 8, 1, 1;
+  occ::core::Molecule mol(atomic_numbers, pos);
+
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "def2-svp");
+  basis.set_pure(true);
+  occ::dft::DFT dft("pbe", basis);
+
+  occ::qm::SCF<occ::dft::DFT> scf(dft);
+  scf.compute_scf_energy();
+  auto mo = scf.molecular_orbitals();
+
+  dft.set_xc_screening_threshold(1e-10);
+  occ::qm::GradientEvaluator<occ::dft::DFT> ev_screened(dft);
+  occ::Mat3N g_screened = ev_screened(mo);
+
+  dft.set_xc_screening_threshold(0.0); // disable -> dense XC build
+  occ::qm::GradientEvaluator<occ::dft::DFT> ev_dense(dft);
+  occ::Mat3N g_dense = ev_dense(mo);
+
+  fmt::print("screened-vs-dense gradient max abs diff: {:.3e}\n",
+             (g_screened - g_dense).cwiseAbs().maxCoeff());
+  REQUIRE(occ::util::all_close(g_screened, g_dense, 1e-8, 1e-8));
+}
+
 TEST_CASE("DFT gradient for water", "[dft_gradient]") {
   // Set up a water molecule and basis
   occ::Vec3 O{0.0, 0.0, 0.0};

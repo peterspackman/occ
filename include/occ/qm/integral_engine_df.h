@@ -2,7 +2,6 @@
 #include <Eigen/Cholesky>
 #include <Eigen/IterativeLinearSolvers>
 #include <occ/qm/integral_engine.h>
-#include <occ/qm/mp2_components.h>
 #include <occ/qm/split_ri_j.h>
 
 namespace occ::qm {
@@ -51,15 +50,15 @@ public:
   inline const IntegralEngine &ao_engine() const { return m_ao_engine; }
   inline const IntegralEngine &aux_engine() const { return m_aux_engine; }
   inline const Mat &integral_store() const { return m_integral_store; }
+  /// Cholesky factorization of the Coulomb metric V=(P|Q), V = L Lᵀ.
+  inline const Eigen::LLT<Mat> &coulomb_metric() const { return V_LLt; }
   void compute_stored_integrals();
 
-  // Compute full AO integral tensor using DF approximation
-  Eigen::Tensor<double, 4> four_center_integrals_tensor() const;
-
-  // DF-MP2 computation using stored 3-center integrals
-  MP2Components compute_df_mp2_energy(const MolecularOrbitals &mo,
-                                      const Vec &orbital_energies,
-                                      const MP2OrbitalSpec &orbital_spec) const;
+  /// Integral-direct density-fitting B tensor for the given MO coefficient
+  /// blocks: B(i*nR + a, P) = Σ_μν C_left(μ,i) C_right(ν,a) (μν|P), streamed
+  /// without materializing the dense (μν|P) store. Returns (nL*nR x naux).
+  Mat build_b_direct(Eigen::Ref<const Mat> C_left,
+                     Eigen::Ref<const Mat> C_right) const;
 
 private:
   inline size_t num_rows() const {

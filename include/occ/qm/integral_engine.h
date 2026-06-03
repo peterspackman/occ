@@ -211,6 +211,20 @@ public:
   Eigen::Tensor<double, 4>
   four_center_integrals_tensor(const Mat &Schwarz = Mat()) const;
 
+  /// Unique AO 2-electron integrals as a packed symmetric matrix A(P,Q) =
+  /// (μν|λσ), where P = canonical pair index of (μ≤ν) and Q of (λ≤σ). Built in a
+  /// single AO pass (8-fold-symmetric storage: ~npair²/2 unique vs nao⁴), the
+  /// GEMM-friendly form for in-core four-index transforms.
+  Mat four_center_integrals_packed(const Mat &Schwarz = Mat()) const;
+
+  /// AO-direct first-quarter MO transform. Returns the half-transformed
+  /// integrals H(i, ν, ρ, σ) = Σ_μ C(μ,i) (μν|ρσ) for the coefficient block
+  /// C (nbf x nblk), streaming shell quartets with an inlined contraction so
+  /// the full N⁴ tensor is never materialized. Used by AO-direct correlation
+  /// methods; the inner loop is templated (not a std::function) for speed.
+  Eigen::Tensor<double, 4>
+  ao_direct_half_transform(const Mat &C, const Mat &Schwarz = Mat()) const;
+
   // Helper function to access integrals with 8-fold symmetry from canonical
   // storage
   static double

@@ -1,0 +1,25 @@
+{
+  "description": "Default auxiliary (fitting) basis sets per orbital basis. 'jk' is the Coulomb(+exchange) fitting basis used for SCF density fitting; 'corr' is the correlation (RI/C) fitting basis used for RI-MP2 / DF-CCSD. Names are matched case-insensitively against the orbital basis name. Entries may omit a key, in which case the corresponding default below is used. Unknown orbital bases fall back to the defaults.",
+  "scf_jk_default": "def2-universal-jkfit",
+  "corr_default": "def2-tzvp-rifit",
+  "policy": {
+    "description": "Thresholds for the automatic (--ri auto) acceleration policy.",
+    "cosx_nbf_crossover": 600
+  },
+  "map": {
+    "cc-pvdz":    { "corr": "cc-pvdz-rifit" },
+    "cc-pvtz":    { "jk": "cc-pvtz-jkfit", "corr": "cc-pvtz-rifit" },
+    "cc-pvqz":    { "jk": "cc-pvqz-jkfit", "corr": "cc-pvqz-rifit" },
+    "cc-pv5z":    { "jk": "cc-pv5z-jkfit", "corr": "cc-pvqz-rifit" },
+    "def2-sv(p)": { "corr": "def2-svp-rifit" },
+    "def2-svp":   { "corr": "def2-svp-rifit" },
+    "def2-svpd":  { "corr": "def2-svp-rifit" },
+    "def2-tzvp":  { "corr": "def2-tzvp-rifit" },
+    "def2-tzvpd": { "corr": "def2-tzvp-rifit" },
+    "def2-tzvpp": { "corr": "def2-tzvpp-rifit" },
+    "def2-tzvppd":{ "corr": "def2-tzvpp-rifit" },
+    "def2-mtzvpp":{ "corr": "def2-tzvpp-rifit" },
+    "def2-qzvp":  { "corr": "def2-tzvpp-rifit" },
+    "def2-qzvpp": { "corr": "def2-tzvpp-rifit" }
+  }
+}

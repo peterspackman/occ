@@ -67,7 +67,14 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(BUILD_DOCS "Build documentation using Doxygen" OFF)
     option(USE_MLX "Use Apple MLX library for GPU offloading (WIP)" OFF)
     option(USE_SYSTEM_LIBXC "Use LibXC installed on system" OFF)
-    option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
+    # On Apple, default to the system BLAS (Accelerate): it is always present
+    # and its threaded dgemm (AMX on Apple Silicon) accelerates Eigen via
+    # EIGEN_USE_BLAS -- big win for the coupled-cluster GEMMs. Opt-in elsewhere.
+    if(APPLE)
+        option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" ON)
+    else()
+        option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
+    endif()
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" OFF)
     option(USE_SYSTEM_TBB "Use TBB installed on system" OFF)
     option(USE_QCINT "Use SIMD optimised qcint rather than libcint" OFF)

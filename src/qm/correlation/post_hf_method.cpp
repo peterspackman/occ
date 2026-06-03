@@ -1,5 +1,5 @@
 #include <occ/core/log.h>
-#include <occ/qm/post_hf_method.h>
+#include <occ/qm/correlation/post_hf_method.h>
 
 namespace occ::qm {
 

@@ -17,6 +17,7 @@
 #include <occ/qm/hf.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/spinorbital.h>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -53,6 +54,18 @@ public:
 
   inline void set_coulomb_method(qm::CoulombMethod method) {
     m_hf.set_coulomb_method(method);
+  }
+
+  // Seminumerical (COSX) exchange for the exact-exchange (hybrid) component.
+  // DFT computes its exact exchange via m_hf.compute_JK, which routes K through
+  // the COSX engine when one is set, so this just forwards to the HF object.
+  inline void
+  set_cosx_exchange(occ::io::COSXGridLevel level = occ::io::COSXGridLevel::Grid1) {
+    m_hf.set_cosx_exchange(level);
+  }
+
+  inline void set_cosx_settings(const occ::qm::cosx::Settings &settings) {
+    m_hf.set_cosx_settings(settings);
   }
 
   inline void set_precision(double precision) { m_hf.set_precision(precision); }
@@ -205,11 +218,6 @@ public:
     occ::timing::start(occ::timing::category::dft_xc);
 
     const auto &molecular_grid = m_grid.get_molecular_grid_points();
-    const auto &all_points = molecular_grid.points();
-    const auto &all_weights = molecular_grid.weights();
-    const size_t npt_total = all_points.cols();
-
-    occ::log::debug("Processing {} grid points with adaptive blocking", npt_total);
 
     // Consolidated thread-local storage with better alignment
     struct ThreadLocalData {
@@ -217,41 +225,153 @@ public:
       double energy_local{0.0};
       double alpha_density_local{0.0};
       double beta_density_local{0.0};
-      
+
       ThreadLocalData(size_t rows, size_t cols) : K_local(Mat::Zero(rows, cols)) {}
     };
-    
+
     occ::parallel::thread_local_storage<ThreadLocalData> thread_data(
         [K_rows, K_cols]() { return ThreadLocalData(K_rows, K_cols); }
     );
 
-    // Let TBB determine optimal grain size based on work complexity
-    const size_t min_points_per_chunk = std::max(size_t(32), nbf / 4);
-    const size_t max_chunks = nthreads * 8; // Allow good work stealing
-    size_t adaptive_grain = std::max(min_points_per_chunk, 
-                                   npt_total / max_chunks);
+    // Dense (full-nbf) path: used for unrestricted, and as a screening-off
+    // fallback (set OCC_XC_NO_SCREEN=1) for benchmarking / regression checks.
+    auto run_dense = [&]() {
+      const auto &all_points = molecular_grid.points();
+      const auto &all_weights = molecular_grid.weights();
+      const size_t npt_total = all_points.cols();
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, npt_total, adaptive_grain),
-        [&](const tbb::blocked_range<size_t> &range) {
+      occ::log::debug("Processing {} grid points with adaptive blocking",
+                      npt_total);
+
+      // Let TBB determine optimal grain size based on work complexity
+      const size_t min_points_per_chunk = std::max(size_t(32), nbf / 4);
+      const size_t max_chunks = nthreads * 8; // Allow good work stealing
+      size_t adaptive_grain =
+          std::max(min_points_per_chunk, npt_total / max_chunks);
+
+      tbb::parallel_for(
+          tbb::blocked_range<size_t>(0, npt_total, adaptive_grain),
+          [&](const tbb::blocked_range<size_t> &range) {
             const size_t l = range.begin();
             const size_t u = range.end();
             const size_t npt = u - l;
 
-            if (npt == 0) return;
+            if (npt == 0)
+              return;
 
             const auto &pts_block = all_points.middleCols(l, npt);
             const auto &weights_block = all_weights.segment(l, npt);
 
-            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, derivative_order);
+            auto gto_vals =
+                occ::gto::evaluate_basis(basis, pts_block, derivative_order);
             auto &data = thread_data.local();
 
             kernels::process_grid_block<derivative_order, spinorbital_kind>(
-                D2, gto_vals, pts_block, weights_block, funcs, 
-                data.K_local, data.energy_local, data.alpha_density_local, 
+                D2, gto_vals, pts_block, weights_block, funcs, data.K_local,
+                data.energy_local, data.alpha_density_local,
                 data.beta_density_local, m_density_threshold);
-        }
-    );
+          });
+    };
+
+    const bool use_screen = (m_xc_screening_threshold > 0.0) &&
+                            (std::getenv("OCC_XC_NO_SCREEN") == nullptr);
+    if (!use_screen) {
+      run_dense();
+    } else {
+      // ---- block-sparse screened path (restricted & unrestricted) ---------
+      // Iterate spatially-compact grid batches (Morton-ordered leaves with a
+      // precomputed bounding sphere). For each batch keep only the shells whose
+      // decay radius (|phi| > screening threshold) reaches the batch sphere,
+      // then run collocation + density + Vxc on the compact (nbf_local)
+      // matrices and scatter back into K. Shrinks the AMX-bound GEMMs from nbf
+      // to nbf_local (-> constant for large systems): the lever that helps an
+      // AMX-bound kernel, and it restores thread-scaling by shrinking the
+      // non-scaling GEMM fraction.
+      constexpr int nspin =
+          (spinorbital_kind == SpinorbitalKind::Unrestricted) ? 2 : 1;
+      const auto &shells = basis.shells();
+      const auto &first_bf = basis.first_bf();
+      const size_t nsh = basis.nsh();
+      const Vec extents =
+          occ::gto::evaluate_decay_cutoff(basis, m_xc_screening_threshold);
+      const auto &hier = molecular_grid.get_hierarchy();
+      const auto &spts = hier.sorted_points();
+      const auto &swts = hier.sorted_weights();
+      const size_t nleaves = hier.num_leaves();
+      occ::log::debug("Processing {} grid points in {} spatial leaves "
+                      "(screening tol {:.0e})",
+                      spts.cols(), nleaves, m_xc_screening_threshold);
+
+      tbb::parallel_for(
+          tbb::blocked_range<size_t>(0, nleaves),
+          [&](const tbb::blocked_range<size_t> &range) {
+            auto &data = thread_data.local();
+            for (size_t li = range.begin(); li != range.end(); ++li) {
+              const auto &leaf = hier.leaves()[li];
+              if (leaf.count == 0)
+                continue;
+              auto pts_block = spts.middleCols(leaf.offset, leaf.count);
+
+              // significant shells for this batch (ascending shell order)
+              std::vector<int> sig;
+              sig.reserve(nsh);
+              for (size_t s = 0; s < nsh; ++s) {
+                double dist = (shells[s].origin - leaf.bounds.center).norm();
+                if (dist - extents(s) < leaf.bounds.radius)
+                  sig.push_back(static_cast<int>(s));
+              }
+              if (sig.empty())
+                continue;
+
+              // packed local bf segments (g0 = global first bf, l0 = local)
+              struct Seg {
+                int g0, l0, len;
+              };
+              int nbf_local = 0;
+              std::vector<Seg> segs;
+              segs.reserve(sig.size());
+              for (int s : sig) {
+                int len = static_cast<int>(shells[s].size());
+                segs.push_back({first_bf[s], nbf_local, len});
+                nbf_local += len;
+              }
+
+              // gather D_local from D2 per spin block. D2 has nbf columns for
+              // both R and U; spin block sp occupies rows [sp*nbf, ...) in D2
+              // and [sp*nbf_local, ...) in the packed local matrix.
+              Mat Dloc(nspin * nbf_local, nbf_local);
+              for (int sp = 0; sp < nspin; ++sp) {
+                const int goff = sp * static_cast<int>(nbf);
+                const int loff = sp * nbf_local;
+                for (const auto &a : segs)
+                  for (const auto &b : segs)
+                    Dloc.block(loff + a.l0, b.l0, a.len, b.len) =
+                        D2.block(goff + a.g0, b.g0, a.len, b.len);
+              }
+
+              auto gto_vals = occ::gto::evaluate_basis_subset(
+                  basis, pts_block, derivative_order, sig);
+
+              Mat Kblk = Mat::Zero(nspin * nbf_local, nbf_local);
+              kernels::process_grid_block<derivative_order, spinorbital_kind>(
+                  Dloc, gto_vals, pts_block,
+                  swts.segment(leaf.offset, leaf.count), funcs, Kblk,
+                  data.energy_local, data.alpha_density_local,
+                  data.beta_density_local, m_density_threshold);
+
+              // scatter Kblk into the thread-local K, per spin block
+              for (int sp = 0; sp < nspin; ++sp) {
+                const int goff = sp * static_cast<int>(nbf);
+                const int loff = sp * nbf_local;
+                for (const auto &a : segs)
+                  for (const auto &b : segs)
+                    data.K_local.block(goff + a.g0, b.g0, a.len, b.len)
+                        .noalias() +=
+                        Kblk.block(loff + a.l0, b.l0, a.len, b.len);
+              }
+            }
+          });
+    }
 
     // Efficient reduction with vectorized operations where possible
     for (const auto &data : thread_data) {
@@ -260,7 +380,7 @@ public:
         total_density_a += data.alpha_density_local;
         total_density_b += data.beta_density_local;
     }
-    
+
     occ::timing::stop(occ::timing::category::dft_xc);
 
     occ::log::debug("Total density: alpha = {} beta = {}", total_density_a,
@@ -467,6 +587,17 @@ public:
 
   inline void set_block_size(size_t blocksize) { m_blocksize = blocksize; }
 
+  /// Per-grid-batch shell screening tolerance for the XC build: the |phi|
+  /// decay cutoff used to drop negligible basis functions over a spatial batch.
+  /// Larger = more aggressive screening / faster, less accurate. <=0 disables
+  /// screening (dense XC build).
+  inline void set_xc_screening_threshold(double t) {
+    m_xc_screening_threshold = t;
+  }
+  inline double xc_screening_threshold() const {
+    return m_xc_screening_threshold;
+  }
+
 private:
   template <int derivative_order, SpinorbitalKind spinorbital_kind>
   Mat3N compute_xc_gradient_impl(const MolecularOrbitals &mo,
@@ -492,48 +623,125 @@ private:
     occ::timing::start(occ::timing::category::dft_gradient);
 
     const auto &molecular_grid = m_grid.get_molecular_grid_points();
-    const auto &all_points = molecular_grid.points();
-    const auto &all_weights = molecular_grid.weights();
-    const size_t npt_total = all_points.cols();
-
-    occ::log::debug("Processing {} grid points for gradient with adaptive blocking", npt_total);
 
     // Thread-local storage for gradients
     occ::parallel::thread_local_storage<Mat3N> gradients_local(
         [natoms]() { return Mat3N::Zero(3, natoms); }
     );
 
-    // Adaptive grain size for gradient computation (typically needs larger chunks)
-    const size_t min_points_per_chunk = std::max(size_t(64), nbf / 2);
-    const size_t max_chunks = nthreads * 6; // Slightly fewer chunks for gradient work
-    size_t adaptive_grain = std::max(min_points_per_chunk, 
-                                   npt_total / max_chunks);
+    // Gradients need one more derivative than the functional order:
+    // LDA -> 1st derivs, GGA/MGGA -> 2nd derivs.
+    const int max_deriv = (derivative_order == 0) ? 1 : 2;
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, npt_total, adaptive_grain),
-        [&](const tbb::blocked_range<size_t> &range) {
+    auto run_dense = [&]() {
+      const auto &all_points = molecular_grid.points();
+      const auto &all_weights = molecular_grid.weights();
+      const size_t npt_total = all_points.cols();
+
+      occ::log::debug(
+          "Processing {} grid points for gradient with adaptive blocking",
+          npt_total);
+
+      const size_t min_points_per_chunk = std::max(size_t(64), nbf / 2);
+      const size_t max_chunks = nthreads * 6;
+      size_t adaptive_grain =
+          std::max(min_points_per_chunk, npt_total / max_chunks);
+
+      tbb::parallel_for(
+          tbb::blocked_range<size_t>(0, npt_total, adaptive_grain),
+          [&](const tbb::blocked_range<size_t> &range) {
             const size_t l = range.begin();
             const size_t u = range.end();
             const size_t npt = u - l;
-
-            if (npt == 0) return;
-
+            if (npt == 0)
+              return;
             const auto &pts_block = all_points.middleCols(l, npt);
             const auto &weights_block = all_weights.segment(l, npt);
-
-            // For gradients, we need derivatives of basis functions
-            // LDA (deriv=0): need 1st derivatives -> max_deriv = 1
-            // GGA (deriv=1): need 2nd derivatives -> max_deriv = 2
-            // MGGA (deriv=2): need 2nd derivatives -> max_deriv = 2
-            int max_deriv = (derivative_order == 0) ? 1 : 2;
-            auto gto_vals = occ::gto::evaluate_basis(basis, pts_block, max_deriv);
+            auto gto_vals =
+                occ::gto::evaluate_basis(basis, pts_block, max_deriv);
             auto &local_gradient = gradients_local.local();
+            kernels::process_grid_block_gradient<derivative_order,
+                                                 spinorbital_kind>(
+                D, gto_vals, pts_block, weights_block, funcs, local_gradient,
+                m_density_threshold, basis.bf_to_atom());
+          });
+    };
 
-            kernels::process_grid_block_gradient<derivative_order, spinorbital_kind>(
-                D, gto_vals, pts_block, weights_block, funcs,
-                local_gradient, m_density_threshold, basis);
-        }
-    );
+    const bool use_screen = (m_xc_screening_threshold > 0.0) &&
+                            (std::getenv("OCC_XC_NO_SCREEN") == nullptr);
+    if (!use_screen) {
+      run_dense();
+    } else {
+      // ---- block-sparse screened gradient (restricted & unrestricted) -----
+      constexpr int nspin =
+          (spinorbital_kind == SpinorbitalKind::Unrestricted) ? 2 : 1;
+      const auto &shells = basis.shells();
+      const auto &first_bf = basis.first_bf();
+      const auto &shell_to_atom = basis.shell_to_atom();
+      const size_t nsh = basis.nsh();
+      const Vec extents =
+          occ::gto::evaluate_decay_cutoff(basis, m_xc_screening_threshold);
+      const auto &hier = molecular_grid.get_hierarchy();
+      const auto &spts = hier.sorted_points();
+      const auto &swts = hier.sorted_weights();
+      const size_t nleaves = hier.num_leaves();
+
+      tbb::parallel_for(
+          tbb::blocked_range<size_t>(0, nleaves),
+          [&](const tbb::blocked_range<size_t> &range) {
+            auto &local_gradient = gradients_local.local();
+            for (size_t li = range.begin(); li != range.end(); ++li) {
+              const auto &leaf = hier.leaves()[li];
+              if (leaf.count == 0)
+                continue;
+              auto pts_block = spts.middleCols(leaf.offset, leaf.count);
+
+              std::vector<int> sig;
+              sig.reserve(nsh);
+              for (size_t s = 0; s < nsh; ++s) {
+                double dist = (shells[s].origin - leaf.bounds.center).norm();
+                if (dist - extents(s) < leaf.bounds.radius)
+                  sig.push_back(static_cast<int>(s));
+              }
+              if (sig.empty())
+                continue;
+
+              struct Seg {
+                int g0, l0, len;
+              };
+              int nbf_local = 0;
+              std::vector<Seg> segs;
+              segs.reserve(sig.size());
+              std::vector<int> local_bf_to_atom;
+              for (int s : sig) {
+                int len = static_cast<int>(shells[s].size());
+                segs.push_back({first_bf[s], nbf_local, len});
+                for (int k = 0; k < len; ++k)
+                  local_bf_to_atom.push_back(shell_to_atom[s]);
+                nbf_local += len;
+              }
+
+              Mat Dloc(nspin * nbf_local, nbf_local);
+              for (int sp = 0; sp < nspin; ++sp) {
+                const int goff = sp * static_cast<int>(nbf);
+                const int loff = sp * nbf_local;
+                for (const auto &a : segs)
+                  for (const auto &b : segs)
+                    Dloc.block(loff + a.l0, b.l0, a.len, b.len) =
+                        D.block(goff + a.g0, b.g0, a.len, b.len);
+              }
+
+              auto gto_vals = occ::gto::evaluate_basis_subset(
+                  basis, pts_block, max_deriv, sig);
+
+              kernels::process_grid_block_gradient<derivative_order,
+                                                   spinorbital_kind>(
+                  Dloc, gto_vals, pts_block,
+                  swts.segment(leaf.offset, leaf.count), funcs, local_gradient,
+                  m_density_threshold, local_bf_to_atom);
+            }
+          });
+    }
 
     // Efficient gradient reduction
     for (const auto &local_gradient : gradients_local) {
@@ -554,6 +762,7 @@ private:
   mutable double m_exchange_energy{0.0};
   mutable double m_nlc_energy{0.0};
   double m_density_threshold{1e-10};
+  double m_xc_screening_threshold{1e-10};
   RangeSeparatedParameters m_rs_params;
   size_t m_blocksize{64};
 };

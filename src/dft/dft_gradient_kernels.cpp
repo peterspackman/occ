@@ -475,7 +475,7 @@ void process_grid_block_gradient(const Mat &D, const GTOValues &gto_vals,
                                  const Vec &weights_block,
                                  const std::vector<DensityFunctional> &funcs,
                                  Mat3N &gradient, double density_threshold,
-                                 const AOBasis &basis) {
+                                 const std::vector<int> &bf_to_atom) {
   const size_t npt = points_block.cols();
   const size_t nbf = gto_vals.phi.cols();
   const size_t natoms = gradient.cols();
@@ -514,8 +514,7 @@ void process_grid_block_gradient(const Mat &D, const GTOValues &gto_vals,
   // Apply weights to XC potential
   res.weight_by(weights_block);
 
-  // Map basis functions to atoms
-  const auto &bf_to_atom = basis.bf_to_atom();
+  // bf_to_atom maps each column of gto_vals.phi to its global atom index.
 
   // For restricted case
   if constexpr (spinorbital_kind == SpinorbitalKind::Restricted) {
@@ -598,33 +597,33 @@ template void process_grid_block_gradient<0, R>(
     const Mat &D, const GTOValues &gto_vals,
     Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
     const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
-    double density_threshold, const AOBasis &basis);
+    double density_threshold, const std::vector<int> &bf_to_atom);
 
 template void process_grid_block_gradient<1, R>(
     const Mat &D, const GTOValues &gto_vals,
     Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
     const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
-    double density_threshold, const AOBasis &basis);
+    double density_threshold, const std::vector<int> &bf_to_atom);
 
 template void process_grid_block_gradient<2, R>(
     const Mat &D, const GTOValues &gto_vals,
     Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
     const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
-    double density_threshold, const AOBasis &basis);
+    double density_threshold, const std::vector<int> &bf_to_atom);
 template void process_grid_block_gradient<0, U>(
     const Mat &D, const GTOValues &gto_vals,
     Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
     const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
-    double density_threshold, const AOBasis &basis);
+    double density_threshold, const std::vector<int> &bf_to_atom);
 template void process_grid_block_gradient<1, U>(
     const Mat &D, const GTOValues &gto_vals,
     Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
     const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
-    double density_threshold, const AOBasis &basis);
+    double density_threshold, const std::vector<int> &bf_to_atom);
 template void process_grid_block_gradient<2, U>(
     const Mat &D, const GTOValues &gto_vals,
     Eigen::Ref<const Mat3N> points_block, const Vec &weights_block,
     const std::vector<DensityFunctional> &funcs, Mat3N &gradient,
-    double density_threshold, const AOBasis &basis);
+    double density_threshold, const std::vector<int> &bf_to_atom);
 
 } // namespace occ::dft::kernels

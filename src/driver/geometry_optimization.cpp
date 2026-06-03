@@ -4,6 +4,7 @@
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
 #include <occ/disp/d4.h>
+#include <occ/driver/acceleration.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/vibrational_analysis.h>
 #include <occ/driver/method_parser.h>
@@ -52,17 +53,10 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
       return T(basis);
   }();
 
-  if (!config.basis.df_name.empty()) {
-    proc.set_density_fitting_basis(config.basis.df_name, config.basis.df_auto_threshold);
-    // Only override DF policy if user explicitly requests direct
-    if (config.method.use_direct_df_kernels) {
-      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-    }
-    // Enable Split-RI-J if requested
-    if (config.method.use_split_ri_j) {
-      proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
-    }
-  }
+  // Density fitting (same policy as the single-point energy driver), but never
+  // COSX: it has no analytic gradient, and the optimiser drives the exact
+  // gradient to zero, so DF energy + exact gradient is only a small mismatch.
+  apply_acceleration(proc, basis.nbf(), config, /*allow_cosx=*/false);
 
   occ::log::info("Spinorbital kind: {}", spinorbital_kind_to_string(SK));
 

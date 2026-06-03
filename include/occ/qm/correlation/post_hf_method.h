@@ -1,8 +1,8 @@
 #pragma once
 #include <memory>
+#include <occ/qm/correlation/mo_integral_engine.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/mo_integral_engine.h>
 #include <occ/gto/shell.h>
 
 namespace occ::qm {

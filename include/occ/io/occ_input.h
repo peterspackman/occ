@@ -44,16 +44,50 @@ struct COSXSettings {
   double f_threshold{1e-10};          // F-intermediate threshold
 };
 
+// Acceleration policy for SCF two-electron integrals (density fitting / COSX).
+//   Auto - choose automatically (ORCA-style): density-fit the Coulomb term, and
+//          for exact exchange (HF / hybrid DFT) use DF-K below a basis-function
+//          crossover and seminumerical COSX above it.
+//   None - conventional 4-center integrals (no DF, no COSX).
+//   JK   - force density fitting for both J and K.
+//   COSX - force DF for J and seminumerical COSX for K (exact exchange only).
+enum class RIPolicy { Auto, None, JK, COSX };
+
 struct MethodInput {
   std::string name{"rhf"};
   GridSettings dft_grid;
   double integral_precision{1e-12};
+  // DFT XC integration: per-grid-batch shell screening tolerance (the |phi|
+  // decay cutoff used to drop negligible basis functions over a spatial
+  // batch). Larger = more aggressive screening / faster, less accurate. <=0
+  // disables screening (dense XC build).
+  double dft_xc_screening_threshold{1e-10};
   double orbital_smearing_sigma{0.0};
+  RIPolicy ri_policy{RIPolicy::Auto}; // Automatic DF/COSX selection (see RIPolicy)
   bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
   bool use_split_ri_j{false}; // Use Split-RI-J for Coulomb matrix (Neese 2003)
   bool use_cosx{false}; // Use COSX seminumerical exchange
   COSXGridLevel cosx_grid_level{COSXGridLevel::Grid1}; // COSX grid quality
   COSXSettings cosx; // COSX settings
+  double mp2_max_memory_gb{1.0}; // MP2 B-tensor / half-transform memory budget
+  std::string mp2_spin_scaling{"none"}; // MP2 spin scaling: none | scs | sos
+  // MP2 integral backend: "auto" keeps the current behaviour (RI-MP2 when an
+  // ri_basis is given, else conventional); "thc" uses LS-THC-MP2 (Laplace
+  // denominator + THC factors), reusing the THC options below.
+  std::string mp2_backend{"auto"};
+  double mp2_thc_c_isdf{6.0};               // THC rank = c * nbf
+  std::string mp2_thc_method{"cholesky"};   // THC ISDF selector: cholesky | qr
+  int mp2_laplace_points{14};               // Laplace quadrature points
+  std::string ccsd_backend{"exact"};    // CCSD integral backend: exact | df | thc
+  double ccsd_max_memory_gb{1.0};       // CCSD integral-build memory budget
+  int ccsd_frozen_core{-1};             // -1 auto (chemical core), 0 none, N freeze N
+  // THC rank = c * nbf. c~6 gives sub-mHa CCSD(T) vs DF across systems and is
+  // the accuracy/cost sweet spot; the error floors there (higher c is slower,
+  // ~c^2, and no more accurate -- the LS-THC metric is ill-conditioned).
+  double ccsd_thc_c_isdf{6.0};
+  std::string ccsd_thc_method{"cholesky"}; // THC ISDF selector: cholesky | qr
+  int ccsd_thc_grid_angular{110};          // THC candidate-grid max angular pts
+  double ccsd_thc_grid_radial{1e-7};       // THC candidate-grid radial precision
 };
 
 struct BasisSetInput {

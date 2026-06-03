@@ -209,6 +209,83 @@ void evaluate_basis_for_shells(const gto::AOBasis &basis, Mat3NConstRef grid_pts
   occ::timing::stop(occ::timing::category::gto);
 }
 
+GTOValues evaluate_basis_subset(const gto::AOBasis &basis,
+                                Mat3NConstRef grid_pts, int max_derivative,
+                                const std::vector<int> &shell_indices) {
+  occ::timing::start(occ::timing::category::gto);
+  size_t npts = grid_pts.cols();
+  size_t nbf_local = 0;
+  for (int shell_idx : shell_indices)
+    nbf_local += basis[shell_idx].size();
+
+  GTOValues gto_values;
+  gto_values.reserve(nbf_local, npts, max_derivative);
+  // No set_zero: gg_collocation writes every (point, component) entry, and we
+  // only allocate columns for shells we evaluate.
+
+  bool spherical = (basis.kind() == gto::Shell::Kind::Spherical);
+  int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
+  const double *xyz = grid_pts.data();
+  long int xyz_stride = 3;
+
+  size_t bf = 0; // local (packed) basis-function offset
+  for (int shell_idx : shell_indices) {
+    occ::timing::start(occ::timing::category::gto_shell);
+    const auto &sh = basis[shell_idx];
+    const double *coeffs = sh.contraction_coefficients.data();
+    const double *alpha = sh.exponents.data();
+    const double *center = sh.origin.data();
+    int L = sh.l;
+    double fac = common_fac(L, spherical);
+    double *output = gto_values.phi.col(bf).data();
+
+    if (max_derivative == 0) {
+      gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs,
+                     alpha, center, order, output);
+      gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
+    } else if (max_derivative == 1) {
+      double *x_out = gto_values.phi_x.col(bf).data();
+      double *y_out = gto_values.phi_y.col(bf).data();
+      double *z_out = gto_values.phi_z.col(bf).data();
+      gg_collocation_deriv1(L, npts, xyz, xyz_stride, sh.num_primitives(),
+                            coeffs, alpha, center, order, output, x_out, y_out,
+                            z_out);
+      gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_x.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_y.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_z.block(0, bf, npts, sh.size()) *= fac;
+    } else if (max_derivative == 2) {
+      double *x_out = gto_values.phi_x.col(bf).data();
+      double *y_out = gto_values.phi_y.col(bf).data();
+      double *z_out = gto_values.phi_z.col(bf).data();
+      double *xx_out = gto_values.phi_xx.col(bf).data();
+      double *xy_out = gto_values.phi_xy.col(bf).data();
+      double *xz_out = gto_values.phi_xz.col(bf).data();
+      double *yy_out = gto_values.phi_yy.col(bf).data();
+      double *yz_out = gto_values.phi_yz.col(bf).data();
+      double *zz_out = gto_values.phi_zz.col(bf).data();
+      gg_collocation_deriv2(L, npts, xyz, xyz_stride, sh.num_primitives(),
+                            coeffs, alpha, center, order, output, x_out, y_out,
+                            z_out, xx_out, xy_out, xz_out, yy_out, yz_out,
+                            zz_out);
+      gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_x.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_y.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_z.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_xx.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_xy.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_xz.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_yy.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_yz.block(0, bf, npts, sh.size()) *= fac;
+      gto_values.phi_zz.block(0, bf, npts, sh.size()) *= fac;
+    }
+    occ::timing::stop(occ::timing::category::gto_shell);
+    bf += sh.size();
+  }
+  occ::timing::stop(occ::timing::category::gto);
+  return gto_values;
+}
+
 Mat cartesian_to_spherical_transformation_matrix(int l) {
   Mat result = Mat::Zero(num_subshells(false, l), num_subshells(true, l));
   switch (l) {

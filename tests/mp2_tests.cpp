@@ -7,10 +7,12 @@
 #include <occ/core/util.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine_df.h>
+#include <occ/qm/correlation/mo_integral_engine.h>
+#include <occ/qm/correlation/mp2.h>
+#include <occ/core/parallel.h>
 #include <occ/qm/mo.h>
-#include <occ/qm/mo_integral_engine.h>
-#include <occ/qm/mp2.h>
 #include <occ/qm/scf.h>
+#include <thread>
 #include <vector>
 
 using Catch::Matchers::WithinAbs;
@@ -301,19 +303,62 @@ TEST_CASE("MO integral transformation", "[mo_transform]") {
   INFO("  (01|01) = " << integral_0101);
   INFO("  (11|11) = " << integral_1111);
 
-  // Also check what we get from the ovov block
-  auto ovov_block = mo_engine.compute_ovov_block();
-  INFO("ovov_block dimensions: " << ovov_block.rows() << "x"
-                                 << ovov_block.cols());
+  // compute_mo_eri must respect 8-fold permutational symmetry of (ij|kl).
+  REQUIRE_THAT(integral_0001,
+               WithinAbs(mo_engine.compute_mo_eri(0, 0, 1, 0), 1e-12));
+  REQUIRE_THAT(integral_0001,
+               WithinAbs(mo_engine.compute_mo_eri(0, 1, 0, 0), 1e-12));
+  REQUIRE_THAT(integral_0001,
+               WithinAbs(mo_engine.compute_mo_eri(1, 0, 0, 0), 1e-12));
+  // Diagonal Coulomb integrals are positive.
+  REQUIRE(integral_0000 > 0.0);
+  REQUIRE(integral_0101 > 0.0);
+  REQUIRE(integral_1111 > 0.0);
+}
 
-  if (ovov_block.size() > 0) {
-    double ovov_00 =
-        ovov_block(0, 0); // This should be (01|01) in (ov|ov) notation
+TEST_CASE("Conventional MP2 (AO-direct) memory and threads", "[mp2]") {
+  std::vector<occ::core::Atom> water_atoms{
+      {8, -0.7021961 * occ::units::ANGSTROM_TO_BOHR,
+       -0.0560603 * occ::units::ANGSTROM_TO_BOHR,
+       0.0099423 * occ::units::ANGSTROM_TO_BOHR},
+      {1, -1.0221932 * occ::units::ANGSTROM_TO_BOHR,
+       0.8467758 * occ::units::ANGSTROM_TO_BOHR,
+       -0.0114887 * occ::units::ANGSTROM_TO_BOHR},
+      {1, 0.2575211 * occ::units::ANGSTROM_TO_BOHR,
+       0.0421215 * occ::units::ANGSTROM_TO_BOHR,
+       0.0052190 * occ::units::ANGSTROM_TO_BOHR}};
 
-    INFO("ovov_block(0,0) = " << ovov_00 << " [should be (01|01)]");
+  auto basis = occ::gto::AOBasis::load(water_atoms, "def2-svp");
+  basis.set_pure(false);
 
-    // The ovov block should match the (01|01) direct computation
-    REQUIRE_THAT(integral_0101, WithinAbs(ovov_00, 1e-12));
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  double hf_energy = scf.compute_scf_energy();
+  REQUIRE(scf.ctx.converged);
+
+  auto run = [&](auto configure) {
+    occ::qm::MP2 mp2(basis, scf.ctx.mo, hf_energy);
+    mp2.set_frozen_core_auto();
+    configure(mp2);
+    return mp2.compute_correlation_energy();
+  };
+
+  SECTION("memory-budget blocking is exact") {
+    double e_full = run([](occ::qm::MP2 &) {});
+    // A 1-byte budget forces the smallest occupied block (fully AO-direct).
+    double e_block = run([](occ::qm::MP2 &m) { m.set_memory_budget(1); });
+    INFO("full: " << e_full << "  blocked: " << e_block);
+    REQUIRE_THAT(e_block, WithinAbs(e_full, 1e-10));
+  }
+
+  SECTION("thread-count invariance") {
+    occ::parallel::set_num_threads(1);
+    double e1 = run([](occ::qm::MP2 &) {});
+    unsigned int nthreads = std::max(2u, std::thread::hardware_concurrency());
+    occ::parallel::set_num_threads(static_cast<int>(nthreads));
+    double e2 = run([](occ::qm::MP2 &) {});
+    INFO("1 thread: " << e1 << "  " << nthreads << " threads: " << e2);
+    REQUIRE_THAT(e2, WithinAbs(e1, 1e-10));
   }
 }
 
@@ -389,123 +434,80 @@ TEST_CASE("MP2 H2 def2-SVP energy", "[mp2]") {
   REQUIRE_THAT(total_mp2_energy, WithinAbs(ref_total_energy, 5e-4));
 }
 
-TEST_CASE("DF tensor comparison", "[mp2][ri]") {
-  // Simple H2 molecule test
-  std::vector<occ::core::Atom> h2_atoms{
-      {1, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.4} // Bohr
+TEST_CASE("RI-MP2 (B-tensor) correctness", "[mp2][ri]") {
+  // Water / def2-SVP with a def2 auxiliary basis.
+  std::vector<occ::core::Atom> water_atoms{
+      {8, -0.7021961 * occ::units::ANGSTROM_TO_BOHR,
+       -0.0560603 * occ::units::ANGSTROM_TO_BOHR,
+       0.0099423 * occ::units::ANGSTROM_TO_BOHR},
+      {1, -1.0221932 * occ::units::ANGSTROM_TO_BOHR,
+       0.8467758 * occ::units::ANGSTROM_TO_BOHR,
+       -0.0114887 * occ::units::ANGSTROM_TO_BOHR},
+      {1, 0.2575211 * occ::units::ANGSTROM_TO_BOHR,
+       0.0421215 * occ::units::ANGSTROM_TO_BOHR,
+       0.0052190 * occ::units::ANGSTROM_TO_BOHR}};
+
+  auto basis = occ::gto::AOBasis::load(water_atoms, "def2-svp");
+  basis.set_pure(false);
+  auto aux_basis = occ::gto::AOBasis::load(water_atoms, "def2-universal-jkfit");
+  aux_basis.set_kind(basis.kind());
+
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  double hf_energy = scf.compute_scf_energy();
+  REQUIRE(scf.ctx.converged);
+
+  auto run_ri = [&](auto configure) {
+    occ::qm::MP2 ri(basis, aux_basis, scf.ctx.mo, hf_energy);
+    ri.set_frozen_core_auto();
+    configure(ri);
+    return ri.compute_correlation_energy();
   };
 
-  auto basis = occ::gto::AOBasis::load(h2_atoms, "sto-3g");
-  auto aux_basis = occ::gto::AOBasis::load(h2_atoms, "def2-tzvp-rifit");
-  basis.set_pure(false); // Use cartesian for simplicity
+  SECTION("matches conventional MP2 within DF error") {
+    occ::qm::MP2 conv(basis, scf.ctx.mo, hf_energy);
+    conv.set_frozen_core_auto();
+    double e_conv = conv.compute_correlation_energy();
 
-  INFO("DF tensor comparison test");
-  INFO("Primary basis functions: " << basis.nbf());
-  INFO("Auxiliary basis functions: " << aux_basis.nbf());
+    occ::qm::MP2 ri(basis, aux_basis, scf.ctx.mo, hf_energy);
+    ri.set_frozen_core_auto();
+    double e_ri = ri.compute_correlation_energy();
+    INFO("conventional: " << e_conv << "  RI: " << e_ri);
+    REQUIRE_THAT(e_ri, WithinAbs(e_conv, 2e-3));
 
-  // Create conventional integral engine
-  occ::qm::IntegralEngine conv_engine(basis);
-  auto conv_tensor = conv_engine.four_center_integrals_tensor();
-
-  // Create DF integral engine
-  const auto &atoms = basis.atoms();
-  const auto &ao_shells = basis.shells();
-  const auto &aux_shells = aux_basis.shells();
-  occ::qm::IntegralEngineDF df_engine(atoms, ao_shells, aux_shells);
-  auto df_tensor = df_engine.four_center_integrals_tensor();
-
-  const size_t nbf = basis.nbf();
-  // Calculate number of unique integrals: (N(N+1)/2)*(N(N+1)/2+1)/2
-  size_t n_pairs = nbf * (nbf + 1) / 2;
-  size_t n_unique = n_pairs * (n_pairs + 1) / 2;
-  INFO("Comparing " << n_unique << " symmetry-unique integrals (out of "
-                    << nbf * nbf * nbf * nbf << " total)");
-
-  // Compare integrals with strict tolerances appropriate for quantum chemistry
-  // Only check symmetry-unique integrals (8-fold symmetry: ijkl = jikl = ijlk =
-  // jilk = klij = lkij = klji = lkji)
-  double max_abs_diff = 0.0;
-  double max_rel_diff = 0.0;
-  double total_conv = 0.0;
-  double total_df = 0.0;
-  size_t count = 0;
-  size_t failures = 0;
-
-  for (size_t i = 0; i < nbf; ++i) {
-    for (size_t j = 0; j <= i; ++j) { // j <= i
-      for (size_t k = 0; k < nbf; ++k) {
-        for (size_t l = 0; l <= k; ++l) { // l <= k
-          // Additional constraint: ij >= kl to avoid double counting
-          size_t ij = i * (i + 1) / 2 + j;
-          size_t kl = k * (k + 1) / 2 + l;
-          if (ij < kl)
-            continue;
-          double conv_val = conv_tensor(i, j, k, l);
-          double df_val = df_tensor(i, j, k, l);
-          double abs_diff = std::abs(conv_val - df_val);
-
-          // For significant integrals, check both absolute and relative errors
-          if (std::abs(conv_val) > 1e-10) {
-            max_abs_diff = std::max(max_abs_diff, abs_diff);
-            total_conv += std::abs(conv_val);
-            total_df += std::abs(df_val);
-            count++;
-
-            // Use relative error for large integrals, absolute error for small
-            // ones
-            double tolerance;
-            bool use_relative = std::abs(conv_val) > 1e-6;
-
-            if (use_relative) {
-              double rel_diff = abs_diff / std::abs(conv_val);
-              max_rel_diff = std::max(max_rel_diff, rel_diff);
-              tolerance = 1e-6; // 0.0001% relative error for large integrals
-
-              if (rel_diff > tolerance) {
-                failures++;
-                if (failures <= 5) { // Report first few failures
-                  INFO("Relative error failure at ("
-                       << i << "," << j << "," << k << "," << l << "): "
-                       << "conv=" << conv_val << ", df=" << df_val
-                       << ", rel_err=" << rel_diff << " (tol=" << tolerance
-                       << ")");
-                }
-              }
-            } else {
-              tolerance = 1e-8; // Absolute error for small integrals
-
-              if (abs_diff > tolerance) {
-                failures++;
-                if (failures <= 5) { // Report first few failures
-                  INFO("Absolute error failure at ("
-                       << i << "," << j << "," << k << "," << l << "): "
-                       << "conv=" << conv_val << ", df=" << df_val
-                       << ", abs_err=" << abs_diff << " (tol=" << tolerance
-                       << ")");
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    // same/opposite spin components must sum to the total correlation energy
+    const auto &r = ri.results();
+    REQUIRE_THAT(r.same_spin_correlation + r.opposite_spin_correlation,
+                 WithinAbs(e_ri, 1e-12));
   }
 
-  double overall_rel_error =
-      (count > 0) ? std::abs(total_conv - total_df) / total_conv : 0.0;
+  SECTION("memory-budget blocking is exact") {
+    double e_full = run_ri([](occ::qm::MP2 &) {});
+    // A 1-byte budget forces the smallest possible occupied block size.
+    double e_block = run_ri([](occ::qm::MP2 &m) { m.set_memory_budget(1); });
+    INFO("full: " << e_full << "  blocked: " << e_block);
+    REQUIRE_THAT(e_block, WithinAbs(e_full, 1e-10));
+  }
 
-  INFO("Max absolute difference: " << max_abs_diff);
-  INFO("Max relative difference: " << max_rel_diff);
-  INFO("Total conventional norm: " << total_conv);
-  INFO("Total DF norm: " << total_df);
-  INFO("Overall relative error: " << overall_rel_error);
-  INFO("Significant integrals compared: " << count);
-  INFO("Tolerance failures: " << failures);
+  SECTION("thread-count invariance") {
+    occ::parallel::set_num_threads(1);
+    double e1 = run_ri([](occ::qm::MP2 &) {});
+    unsigned int nthreads = std::max(2u, std::thread::hardware_concurrency());
+    occ::parallel::set_num_threads(static_cast<int>(nthreads));
+    double e2 = run_ri([](occ::qm::MP2 &) {});
+    INFO("1 thread: " << e1 << "  " << nthreads << " threads: " << e2);
+    REQUIRE_THAT(e2, WithinAbs(e1, 1e-10));
+  }
 
-  // Reasonable tolerances for DF approximation
-  REQUIRE(max_abs_diff < 1e-4); // DF typically accurate to ~1e-4 to 1e-5
-  REQUIRE(max_rel_diff < 1e-4); // 0.01% relative tolerance for large integrals
-  REQUIRE(overall_rel_error < 1e-4); // 0.01% overall accuracy
+  SECTION("integral-direct 3-center matches stored") {
+    // Default budget keeps the dense (μν|P) store; a sub-store budget forces
+    // the integral-direct B build (no store) but still allows a full block.
+    double e_stored = run_ri([](occ::qm::MP2 &) {});
+    double e_direct =
+        run_ri([](occ::qm::MP2 &m) { m.set_memory_budget(800 * 1024); });
+    INFO("stored: " << e_stored << "  direct: " << e_direct);
+    REQUIRE_THAT(e_direct, WithinAbs(e_stored, 1e-10));
+  }
 }
 
 TEST_CASE("RI-MP2 H2 STO-3G energy", "[mp2][ri]") {
@@ -538,4 +540,138 @@ TEST_CASE("RI-MP2 H2 STO-3G energy", "[mp2][ri]") {
   double tolerance = 1e-4; // DF typically accurate to ~1e-4
 
   REQUIRE_THAT(ri_corr_energy, WithinAbs(expected_corr, tolerance));
+}
+
+// Helper: water geometry in Bohr (shared by the UHF tests below).
+static std::vector<occ::core::Atom> uhf_water_atoms() {
+  return {{8, -0.7021961 * occ::units::ANGSTROM_TO_BOHR,
+           -0.0560603 * occ::units::ANGSTROM_TO_BOHR,
+           0.0099423 * occ::units::ANGSTROM_TO_BOHR},
+          {1, -1.0221932 * occ::units::ANGSTROM_TO_BOHR,
+           0.8467758 * occ::units::ANGSTROM_TO_BOHR,
+           -0.0114887 * occ::units::ANGSTROM_TO_BOHR},
+          {1, 0.2575211 * occ::units::ANGSTROM_TO_BOHR,
+           0.0421215 * occ::units::ANGSTROM_TO_BOHR,
+           0.0052190 * occ::units::ANGSTROM_TO_BOHR}};
+}
+
+TEST_CASE("UHF MP2 closed-shell limit equals RHF", "[mp2][uhf]") {
+  // A closed-shell system solved unrestricted must reproduce the restricted
+  // MP2 energy exactly (validates the αα/ββ/αβ formulas in the RHF limit).
+  auto atoms = uhf_water_atoms();
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(false);
+  auto aux = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux.set_kind(basis.kind());
+
+  occ::qm::HartreeFock hf_r(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf_r(hf_r);
+  double ehf_r = scf_r.compute_scf_energy();
+
+  occ::qm::HartreeFock hf_u(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf_u(hf_u,
+                                           occ::qm::SpinorbitalKind::Unrestricted);
+  double ehf_u = scf_u.compute_scf_energy();
+  REQUIRE_THAT(ehf_u, WithinAbs(ehf_r, 1e-6));
+
+  auto corr = [](auto &mp2) {
+    mp2.set_frozen_core_auto();
+    return mp2.compute_correlation_energy();
+  };
+
+  occ::qm::MP2 conv_r(basis, scf_r.ctx.mo, ehf_r);
+  occ::qm::MP2 conv_u(basis, scf_u.ctx.mo, ehf_u);
+  double ec_r = corr(conv_r), ec_u = corr(conv_u);
+  INFO("conventional RHF: " << ec_r << "  UHF: " << ec_u);
+  REQUIRE_THAT(ec_u, WithinAbs(ec_r, 1e-7));
+  // The restricted ss/os decomposition is physical, so the spin components
+  // match the UHF αα+ββ / αβ split (and same-spin is negative).
+  REQUIRE_THAT(conv_u.results().same_spin_correlation,
+               WithinAbs(conv_r.results().same_spin_correlation, 1e-7));
+  REQUIRE_THAT(conv_u.results().opposite_spin_correlation,
+               WithinAbs(conv_r.results().opposite_spin_correlation, 1e-7));
+  REQUIRE(conv_r.results().same_spin_correlation < 0.0);
+  REQUIRE(conv_r.results().opposite_spin_correlation < 0.0);
+
+  occ::qm::MP2 ri_r(basis, aux, scf_r.ctx.mo, ehf_r);
+  occ::qm::MP2 ri_u(basis, aux, scf_u.ctx.mo, ehf_u);
+  double er_r = corr(ri_r), er_u = corr(ri_u);
+  INFO("RI RHF: " << er_r << "  UHF: " << er_u);
+  REQUIRE_THAT(er_u, WithinAbs(er_r, 1e-7));
+  REQUIRE_THAT(ri_u.results().same_spin_correlation,
+               WithinAbs(ri_r.results().same_spin_correlation, 1e-7));
+  REQUIRE_THAT(ri_u.results().opposite_spin_correlation,
+               WithinAbs(ri_r.results().opposite_spin_correlation, 1e-7));
+}
+
+TEST_CASE("UHF MP2 open-shell: conventional vs RI", "[mp2][uhf]") {
+  // H2O+ doublet (9 electrons): genuinely open-shell (n_alpha != n_beta).
+  auto atoms = uhf_water_atoms();
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(false);
+  auto aux = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux.set_kind(basis.kind());
+
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf,
+                                         occ::qm::SpinorbitalKind::Unrestricted);
+  scf.set_charge_multiplicity(1, 2);
+  double ehf = scf.compute_scf_energy();
+  REQUIRE(scf.ctx.converged);
+  REQUIRE(scf.ctx.mo.n_alpha != scf.ctx.mo.n_beta);
+
+  occ::qm::MP2 conv(basis, scf.ctx.mo, ehf);
+  conv.set_frozen_core_auto();
+  double e_conv = conv.compute_correlation_energy();
+
+  occ::qm::MP2 ri(basis, aux, scf.ctx.mo, ehf);
+  ri.set_frozen_core_auto();
+  double e_ri = ri.compute_correlation_energy();
+
+  INFO("open-shell conventional: " << e_conv << "  RI: " << e_ri);
+  REQUIRE(e_conv < 0.0);
+  // Two independent UHF implementations agree within DF error.
+  REQUIRE_THAT(e_ri, WithinAbs(e_conv, 3e-3));
+
+  const auto &r = conv.results();
+  REQUIRE_THAT(r.same_spin_correlation + r.opposite_spin_correlation,
+               WithinAbs(e_conv, 1e-10));
+  REQUIRE(r.same_spin_correlation < 0.0);
+  REQUIRE(r.opposite_spin_correlation < 0.0);
+
+  // UHF RI occupied-blocking is exact: a 1-byte budget forces per-spin blocking
+  // (and the integral-direct B build) yet reproduces the in-core energy.
+  occ::qm::MP2 ri_blocked(basis, aux, scf.ctx.mo, ehf);
+  ri_blocked.set_frozen_core_auto();
+  ri_blocked.set_memory_budget(1);
+  double e_ri_blocked = ri_blocked.compute_correlation_energy();
+  INFO("RI default: " << e_ri << "  RI blocked: " << e_ri_blocked);
+  REQUIRE_THAT(e_ri_blocked, WithinAbs(e_ri, 1e-9));
+}
+
+TEST_CASE("MP2 spin-component scaling (SCS/SOS)", "[mp2]") {
+  std::vector<occ::core::Atom> h2_atoms{{1, 0.0, 0.0, 0.0},
+                                        {1, 0.0, 0.0, 1.4}};
+  auto basis = occ::gto::AOBasis::load(h2_atoms, "def2-svp");
+  basis.set_pure(false);
+
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  double ehf = scf.compute_scf_energy();
+
+  occ::qm::MP2 mp2(basis, scf.ctx.mo, ehf);
+  mp2.set_scs_parameters(1.0 / 3.0, 6.0 / 5.0); // SCS-MP2
+  mp2.compute_correlation_energy();
+  const auto &r = mp2.results();
+  REQUIRE_THAT(r.scs_mp2_correlation,
+               WithinAbs(r.same_spin_correlation / 3.0 +
+                             1.2 * r.opposite_spin_correlation,
+                         1e-12));
+
+  occ::qm::MP2 sos(basis, scf.ctx.mo, ehf);
+  sos.set_scs_parameters(0.0, 1.3); // SOS-MP2
+  sos.compute_correlation_energy();
+  const auto &rs = sos.results();
+  REQUIRE_THAT(rs.scs_mp2_correlation,
+               WithinAbs(1.3 * rs.opposite_spin_correlation, 1e-12));
 }
