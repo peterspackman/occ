@@ -87,6 +87,22 @@ public:
 
   Mat compute_J(const MolecularOrbitals &mo, const Mat &Schwarz = Mat()) const;
 
+  // Exchange-only (K) build. Avoids the wasted Coulomb build when only K is
+  // needed, e.g. the long-range term of a range-separated hybrid.
+  Mat compute_K(const MolecularOrbitals &mo, const Mat &Schwarz = Mat()) const;
+
+  // Coulomb plus the HF exact-exchange contribution of a (range-separated)
+  // hybrid. Returns J (full 1/r Coulomb) and
+  //   K = (alpha + beta) * K[1/r] - beta * K[erf(omega*r)/r].
+  // Chooses the cheapest build for the active engine: a single fused COSX grid
+  // sweep where possible, otherwise only the nonzero-weight operators (so a
+  // pure long-range-corrected functional never builds the full-range K). Not
+  // const: it briefly toggles the range-separation omega on the engines.
+  JKPair coulomb_and_range_separated_exchange(const MolecularOrbitals &mo,
+                                              double omega, double alpha,
+                                              double beta,
+                                              const Mat &Schwarz = Mat());
+
   MatTriple compute_J_gradient(const MolecularOrbitals &mo,
                                const Mat &Schwarz = Mat()) const;
 
@@ -159,6 +175,9 @@ public:
     m_engine.set_range_separated_omega(omega);
     if (m_df_engine) {
       (*m_df_engine).set_range_separated_omega(omega);
+    }
+    if (m_cosx_engine) {
+      m_cosx_engine->set_range_separated_omega(omega);
     }
   }
 

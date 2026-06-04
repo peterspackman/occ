@@ -439,17 +439,15 @@ public:
     double exchange_factor = exact_exchange_factor();
     RangeSeparatedParameters rs = range_separated_parameters();
     if (rs.omega != 0.0) {
-      // range separated hybrid
-      qm::JKPair jk_short_range = m_hf.compute_JK(mo, Schwarz);
-      jk.J = jk_short_range.J;
-
-      m_hf.set_range_separated_omega(rs.omega);
-      qm::JKPair jk_long_range = m_hf.compute_JK(mo, Schwarz);
-      Mat Khf = jk_short_range.K * (rs.alpha + rs.beta) +
-                jk_long_range.K * (-rs.beta);
-      exc = -expectation(mo.kind, mo.D, Khf);
-      jk.K.noalias() += Khf;
-      m_hf.set_range_separated_omega(0.0);
+      // Range-separated hybrid: the DFT (libxc) exchange already covers the
+      // range-complement part; HF supplies the exact-exchange part
+      //   K_HF = (alpha+beta)*K[1/r] - beta*K[erf(omega*r)/r],
+      // and owns the choice of the most efficient build for it.
+      qm::JKPair jk_hf = m_hf.coulomb_and_range_separated_exchange(
+          mo, rs.omega, rs.alpha, rs.beta, Schwarz);
+      jk.J = jk_hf.J;
+      exc = -expectation(mo.kind, mo.D, jk_hf.K);
+      jk.K.noalias() += jk_hf.K;
     } else if (exchange_factor != 0.0) {
       // global hybrid
       qm::JKPair jk_hf = m_hf.compute_JK(mo, Schwarz);

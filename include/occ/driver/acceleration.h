@@ -103,9 +103,11 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
     range_separated = proc.range_separated_parameters().omega != 0.0;
   }
   const bool has_exact_exchange = exchange_factor != 0.0 || range_separated;
-  // COSX cannot handle range separation, so a range-separated hybrid keeps its
-  // exact exchange on DF (ineligible for the COSX crossover in the plan).
-  const double cosx_exchange = range_separated ? 0.0 : exchange_factor;
+  // COSX now supports range separation (long-range erf exchange), so a
+  // range-separated hybrid is eligible for the COSX crossover. Treat it as
+  // having exact exchange even when the short-range fraction is zero (e.g.
+  // LC-omegaPBE), since the long-range exact exchange still needs a K build.
+  const double cosx_exchange = range_separated ? 1.0 : exchange_factor;
 
   AccelerationPlan accel = plan_acceleration(
       config.method.ri_policy, config.basis.name, nbf, cosx_exchange,

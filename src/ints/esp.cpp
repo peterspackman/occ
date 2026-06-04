@@ -63,7 +63,8 @@ struct ShellPairHolder {
     virtual void evaluate(const Eigen::Ref<const Mat3N<T>>& C,
                           const T* boys_table,
                           Eigen::Ref<MatRM<T>> integrals,
-                          Eigen::Ref<MatRM<T>> workspace) const = 0;
+                          Eigen::Ref<MatRM<T>> workspace,
+                          T omega) const = 0;
     virtual void evaluate_overlap(T* integrals) const = 0;
 
     // Screening support: pair center and extent based on most diffuse primitive
@@ -107,7 +108,8 @@ struct ShellPairHolderCartesian : ShellPairHolder<T> {
     void evaluate(const Eigen::Ref<const Mat3N<T>>& C,
                   const T* boys_table,
                   Eigen::Ref<MatRM<T>> integrals,
-                  Eigen::Ref<MatRM<T>> workspace) const override {
+                  Eigen::Ref<MatRM<T>> workspace,
+                  T omega) const override {
         constexpr int L = LA + LB;
         constexpr int nab_val = ncart(LA) * ncart(LB);
         constexpr int nherm_val = nhermsum(L);
@@ -121,7 +123,8 @@ struct ShellPairHolderCartesian : ShellPairHolder<T> {
                 boys_table, prim.p, npts,
                 prim.Px, prim.Py, prim.Pz,
                 C,
-                workspace);
+                workspace,
+                omega);
 
             Eigen::Map<const MatRM<T>> E_matrix(prim.E_matrix.data(), nab_val, nherm_val);
             integrals.noalias() += prim.prefactor * workspace * E_matrix.transpose();
@@ -188,7 +191,8 @@ struct ShellPairHolderSpherical : ShellPairHolder<T> {
     void evaluate(const Eigen::Ref<const Mat3N<T>>& C,
                   const T* boys_table,
                   Eigen::Ref<MatRM<T>> integrals,
-                  Eigen::Ref<MatRM<T>> workspace) const override {
+                  Eigen::Ref<MatRM<T>> workspace,
+                  T omega) const override {
         constexpr int L = LA + LB;
         constexpr int nherm_val = nhermsum(L);
 
@@ -201,7 +205,8 @@ struct ShellPairHolderSpherical : ShellPairHolder<T> {
                 boys_table, prim.p, npts,
                 prim.Px, prim.Py, prim.Pz,
                 C,
-                workspace);
+                workspace,
+                omega);
 
             // E_matrix is already [nab_sph, nherm]
             Eigen::Map<const MatRM<T>> E_matrix(prim.E_matrix.data(), nab_sph, nherm_val);
@@ -417,13 +422,14 @@ template <typename T>
 void ESPEvaluator<T>::evaluate(size_t shell_idx,
                                 const Eigen::Ref<const Mat3N>& C,
                                 Eigen::Ref<MatRM> integrals,
-                                Eigen::Ref<MatRM> workspace) {
+                                Eigen::Ref<MatRM> workspace,
+                                T omega) {
     if (shell_idx >= impl_->shell_pairs.size()) {
         throw std::out_of_range("Invalid shell pair index");
     }
 
     const auto& sp = impl_->shell_pairs[shell_idx];
-    sp->evaluate(C, impl_->boys_table, integrals, workspace);
+    sp->evaluate(C, impl_->boys_table, integrals, workspace, omega);
 }
 
 template <typename T>

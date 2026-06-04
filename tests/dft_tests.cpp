@@ -368,6 +368,243 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
   occ::timing::print_timings();
 }
 
+TEST_CASE("COSX long-range (range-separated) exchange vs exact",
+          "[cosx][range-separated]") {
+  std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
+                                     {1, -1.93166418, 1.60017351, -0.02171049},
+                                     {1, 0.48664409, 0.07959806, 0.00986248}};
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+  basis.set_pure(false);
+  auto hf = occ::qm::HartreeFock(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  scf.compute_scf_energy();
+  const auto &mo = scf.ctx.mo;
+
+  const double omega = 0.3;
+
+  // Exact 4-center references via libcint (omega > 0 = long-range erf operator)
+  occ::qm::IntegralEngine engine(basis);
+  auto jk_full =
+      engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Restricted, mo);
+  engine.set_range_separated_omega(omega);
+  auto jk_lr =
+      engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Restricted, mo);
+
+  // The long-range exchange must be strictly smaller in magnitude than the
+  // full-Coulomb exchange (erf attenuates).
+  REQUIRE(jk_lr.K.cwiseAbs().maxCoeff() < jk_full.K.cwiseAbs().maxCoeff());
+
+  // COSX full-Coulomb and long-range exchange on the same grid
+  occ::io::GridSettings settings = occ::io::GridSettings::for_sgx(110);
+
+  occ::qm::cosx::SemiNumericalExchange sgx_full(basis, settings);
+  sgx_full.set_use_esp(true);  // ESP path (as used in production via HartreeFock)
+  occ::Mat K_full = sgx_full.compute_K(mo);
+  double err_full = (K_full - jk_full.K).array().cwiseAbs().maxCoeff();
+
+  occ::qm::cosx::SemiNumericalExchange sgx_lr(basis, settings);
+  sgx_lr.set_use_esp(true);
+  sgx_lr.set_range_separated_omega(omega);
+  occ::Mat K_lr = sgx_lr.compute_K(mo);
+  double err_lr = (K_lr - jk_lr.K).array().cwiseAbs().maxCoeff();
+
+  fmt::print("COSX K max error vs exact: full={:.3e}  long-range={:.3e}\n",
+             err_full, err_lr);
+
+  // The range-separated build is correct if its grid error is no worse than
+  // the full-Coulomb grid error (the erf operator is smoother, so this is a
+  // conservative bound). This isolates RS correctness from absolute grid
+  // quality.
+  REQUIRE(err_lr < std::max(2.0 * err_full, 1e-4));
+}
+
+TEST_CASE("COSX fused range-separated vs two-call",
+          "[cosx][rsbench][.]") {
+  // Benzene (Angstrom), a medium system where COSX is meaningful.
+  occ::IVec nums(12);
+  nums << 6, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1;
+  occ::Mat3N pos(3, 12);
+  pos << 0.00000, 1.20897, 1.20897, 0.00000, -1.20897, -1.20897, 0.00000,
+      2.14800, 2.14800, 0.00000, -2.14800, -2.14800, // x
+      1.39600, 0.69800, -0.69800, -1.39600, -0.69800, 0.69800, 2.48000,
+      1.24000, -1.24000, -2.48000, -1.24000, 1.24000, // y
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;             // z
+  occ::core::Molecule mol(nums, pos);
+
+  auto basis = occ::gto::AOBasis::load(mol.atoms(), "def2-svp");
+  basis.set_pure(true);
+  auto hf = occ::qm::HartreeFock(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  scf.compute_scf_energy();
+  const auto &mo = scf.ctx.mo;
+
+  occ::io::GridSettings settings = occ::io::GridSettings::for_sgx(110);
+  occ::qm::cosx::SemiNumericalExchange sgx(basis, settings);
+  sgx.set_use_esp(true);
+
+  // ωB97X-style coefficients (both operators genuinely needed).
+  const double alpha = 1.0, beta = -0.842294, omega = 0.3;
+
+  auto two_call = [&]() {
+    sgx.set_range_separated_omega(0.0);
+    occ::Mat Kf = sgx.compute_K(mo);
+    sgx.set_range_separated_omega(omega);
+    occ::Mat Klr = sgx.compute_K(mo);
+    sgx.set_range_separated_omega(0.0);
+    return occ::Mat((alpha + beta) * Kf - beta * Klr);
+  };
+  auto fused = [&]() {
+    return sgx.compute_K_range_separated(mo, alpha, beta, omega);
+  };
+
+  // Correctness: fused must equal the two-call combination.
+  occ::Mat K_two = two_call();
+  occ::Mat K_fused = fused();
+  double diff = (K_two - K_fused).array().cwiseAbs().maxCoeff();
+  fmt::print("fused vs two-call max |dK|: {:.3e}\n", diff);
+  REQUIRE(diff < 1e-10);
+
+  // Timing (warm up once, then time a loop in a single interval each).
+  const int reps = 5;
+  two_call();
+  fused();
+  occ::timing::StopWatch<2> sw;
+  sw.start(0);
+  for (int i = 0; i < reps; ++i)
+    two_call();
+  sw.stop(0);
+  sw.start(1);
+  for (int i = 0; i < reps; ++i)
+    fused();
+  sw.stop(1);
+  double t_two = sw.read(0) / reps, t_fused = sw.read(1) / reps;
+  fmt::print("benzene/def2-svp nbf={}  COSX RSH K: two-call={:.4f}s  "
+             "fused={:.4f}s  speedup={:.2f}x\n",
+             basis.nbf(), t_two, t_fused, t_two / t_fused);
+}
+
+TEST_CASE("wB97X range-separated SCF: COSX exchange matches exact",
+          "[cosx][range-separated][scf]") {
+  occ::Vec3 O{0.000000000, 0.000000000, 0.117176000};
+  occ::Vec3 H1{0.000000000, 0.755453000, -0.468704000};
+  occ::Vec3 H2{0.000000000, -0.755453000, -0.468704000};
+  occ::Mat3N pos(3, 3);
+  pos << O(0), H1(0), H2(0), O(1), H1(1), H2(1), O(2), H1(2), H2(2);
+  occ::IVec atomic_numbers(3);
+  atomic_numbers << 8, 1, 1;
+  occ::core::Molecule mol(atomic_numbers, pos);
+
+  // Reference: exact 4-center wB97X (range separation handled by libcint).
+  double e_exact;
+  {
+    auto basis = occ::gto::AOBasis::load(mol.atoms(), "6-31G");
+    basis.set_pure(true);
+    occ::dft::DFT dft("wb97x", basis);
+    REQUIRE(dft.range_separated_parameters().omega != 0.0);
+    occ::qm::SCF<occ::dft::DFT> scf(dft);
+    e_exact = scf.compute_scf_energy();
+  }
+
+  // COSX: both the full-range and long-range exact-exchange builds are
+  // evaluated seminumerically (exercises the refactored RSH orchestration).
+  double e_cosx;
+  {
+    auto basis = occ::gto::AOBasis::load(mol.atoms(), "6-31G");
+    basis.set_pure(true);
+    occ::dft::DFT dft("wb97x", basis);
+    dft.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+    occ::qm::SCF<occ::dft::DFT> scf(dft);
+    e_cosx = scf.compute_scf_energy();
+  }
+
+  fmt::print("wB97X/6-31G  E(exact)={:.8f}  E(COSX)={:.8f}  dE={:.2e}\n",
+             e_exact, e_cosx, e_cosx - e_exact);
+  REQUIRE(std::abs(e_cosx - e_exact) < 2e-4);
+}
+
+TEST_CASE("wB97X open-shell (UKS) range-separated: COSX matches exact",
+          "[cosx][range-separated][unrestricted][scf]") {
+  // OH radical (doublet) - genuine open shell (alpha != beta density).
+  std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.8324}};
+
+  auto run = [&](bool use_cosx) {
+    auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+    basis.set_pure(true);
+    occ::dft::DFT dft("wb97x", basis);
+    if (use_cosx)
+      dft.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+    occ::qm::SCF<occ::dft::DFT> scf(dft, occ::qm::SpinorbitalKind::Unrestricted);
+    scf.set_charge_multiplicity(0, 2); // neutral doublet
+    return scf.compute_scf_energy();
+  };
+
+  double e_exact = run(false);
+  double e_cosx = run(true); // fused unrestricted RS path (per-spin single sweep)
+  fmt::print("UKS wB97X/6-31G OH:  E(exact)={:.8f}  E(COSX)={:.8f}  dE={:.2e}\n",
+             e_exact, e_cosx, e_cosx - e_exact);
+  REQUIRE(std::abs(e_cosx - e_exact) < 2e-4);
+}
+
+TEST_CASE("COSX geometric screening robust for diffuse basis",
+          "[cosx][diffuse][screening]") {
+  // Augmented (diffuse) basis: the geometric screen must not drop the
+  // long-extent diffuse pairs. Compare screened COSX K against exact.
+  std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
+                                     {1, -1.93166418, 1.60017351, -0.02171049},
+                                     {1, 0.48664409, 0.07959806, 0.00986248}};
+  auto basis = occ::gto::AOBasis::load(atoms, "aug-pcseg-1");
+  basis.set_pure(true);
+  auto hf = occ::qm::HartreeFock(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  scf.compute_scf_energy();
+  const auto &mo = scf.ctx.mo;
+
+  occ::qm::IntegralEngine engine(basis);
+  auto jk =
+      engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Restricted, mo);
+
+  occ::qm::cosx::SemiNumericalExchange sgx(
+      basis, occ::io::GridSettings::for_sgx(110));
+  sgx.set_use_esp(true);
+  occ::Mat K = sgx.compute_K(mo);
+  double err = (K - jk.K).array().cwiseAbs().maxCoeff();
+  fmt::print("COSX aug-pcseg-1 (nbf={}) K error vs exact: {:.3e}\n",
+             (int)basis.nbf(), err);
+  // Diffuse functions need finer grids for COSX; the point is that screening
+  // does not inflate this beyond the normal grid error.
+  REQUIRE(err < 1e-3);
+}
+
+TEST_CASE("COSX scaling probe", "[cosx][scaling][.]") {
+  for (int n : {2, 4, 8, 16}) {
+    std::vector<occ::core::Atom> atoms;
+    for (int i = 0; i < n; ++i) {
+      double z = i * 8.0; // well-separated water molecules (8 bohr apart)
+      atoms.push_back({8, 0.0, 0.0, z});
+      atoms.push_back({1, 0.0, 1.43, z + 1.1});
+      atoms.push_back({1, 0.0, -1.43, z + 1.1});
+    }
+    auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+    basis.set_pure(true);
+    auto hf = occ::qm::HartreeFock(basis);
+    occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+    scf.compute_scf_energy();
+    auto mo = scf.ctx.mo;
+
+    occ::qm::cosx::SemiNumericalExchange sgx(
+        basis, occ::io::GridSettings::for_sgx(110));
+    sgx.set_use_esp(true);
+    sgx.compute_K(mo); // warm up / precompute pairs
+    occ::timing::StopWatch<1> sw;
+    sw.start(0);
+    for (int r = 0; r < 3; ++r)
+      sgx.compute_K(mo);
+    sw.stop(0);
+    fmt::print("n_water={:2d}  nbf={:4d}  COSX K build={:.4f}s\n", n,
+               (int)basis.nbf(), sw.read(0) / 3);
+  }
+}
+
 TEST_CASE("H2 VV10 from ORCA wavefunction") {
 
   const char *h2_molden_content = R"(

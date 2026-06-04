@@ -452,6 +452,28 @@ size_t SemiNumericalExchange::num_atoms() const {
   return m_grid.get_molecular_grid_points().num_atoms();
 }
 
+void SemiNumericalExchange::prepare_screening() const {
+  if (!m_shell_pair_map.empty())
+    return;
+
+  precompute_significant_shell_pairs(m_basis, m_engine.shellpairs(),
+                                     *m_esp_evaluator, m_shell_pair_map,
+                                     m_significant_pairs);
+
+  // Cache per-pair geometry (center, extent) for per-batch geometric screening.
+  // ESP shell-pair indices are assigned sequentially [0, num_shell_pairs).
+  const size_t np = m_esp_evaluator->num_shell_pairs();
+  m_pair_centers.resize(3, np);
+  m_pair_extents.resize(np);
+  for (size_t i = 0; i < np; ++i) {
+    auto c = m_esp_evaluator->pair_center(i);
+    m_pair_centers(0, i) = c[0];
+    m_pair_centers(1, i) = c[1];
+    m_pair_centers(2, i) = c[2];
+    m_pair_extents(i) = m_esp_evaluator->pair_extent(i);
+  }
+}
+
 // =============================================================================
 // Spinorbital dispatch for compute_K
 // =============================================================================
@@ -459,6 +481,15 @@ size_t SemiNumericalExchange::num_atoms() const {
 Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
                                      double precision,
                                      const Mat &Schwarz) const {
+  // Range separation is only wired through the ESP integral path. The legacy
+  // (non-ESP) path computes full-Coulomb integrals only, so honour the request
+  // by failing fast rather than silently returning the wrong operator.
+  if (m_omega != 0.0 && !m_use_esp) {
+    throw std::runtime_error(
+        "COSX range-separated exchange (omega != 0) requires ESP mode; call "
+        "set_use_esp(true)");
+  }
+
   occ::timing::start(occ::timing::category::cosx);
 
   Mat K;
@@ -486,12 +517,7 @@ Mat SemiNumericalExchange::compute_K_restricted(const qm::MolecularOrbitals &mo,
                                                  double precision) const {
   // Use ESP-based approach if enabled
   if (m_use_esp) {
-    // Precompute shell pairs if not already done
-    if (m_shell_pair_map.empty()) {
-      precompute_significant_shell_pairs(m_basis, m_engine.shellpairs(),
-                                         *m_esp_evaluator, m_shell_pair_map,
-                                         m_significant_pairs);
-    }
+    prepare_screening();
 
     // D2 = 2 * D, then project: D2q = S^{-1} * D2
     Mat D2 = 2.0 * mo.D;
@@ -593,12 +619,7 @@ Mat SemiNumericalExchange::compute_K_unrestricted(const qm::MolecularOrbitals &m
 
   // Use ESP-based approach if enabled
   if (m_use_esp) {
-    // Precompute shell pairs if not already done
-    if (m_shell_pair_map.empty()) {
-      precompute_significant_shell_pairs(m_basis, m_engine.shellpairs(),
-                                         *m_esp_evaluator, m_shell_pair_map,
-                                         m_significant_pairs);
-    }
+    prepare_screening();
 
     // Extract alpha and beta density blocks: D is (2*nbf, nbf)
     // UHF stores Da = 0.5 * Ca*Ca^T. Multiply by 2 to get true density Ca*Ca^T.
@@ -640,12 +661,7 @@ Mat SemiNumericalExchange::compute_K_general(const qm::MolecularOrbitals &mo,
 
   // Use ESP-based approach if enabled
   if (m_use_esp) {
-    // Precompute shell pairs if not already done
-    if (m_shell_pair_map.empty()) {
-      precompute_significant_shell_pairs(m_basis, m_engine.shellpairs(),
-                                         *m_esp_evaluator, m_shell_pair_map,
-                                         m_significant_pairs);
-    }
+    prepare_screening();
 
     // Extract 4 density blocks: D is (2*nbf, 2*nbf)
     // General D is stored with factor 0.5, so multiply by 2 to get true density
@@ -690,10 +706,20 @@ Mat SemiNumericalExchange::compute_K_general(const qm::MolecularOrbitals &mo,
 // Core K computation for a projected density matrix
 // =============================================================================
 
-Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
-                                                  double precision) const {
-  const size_t nbf = m_basis.nbf();
-  const auto &basis = m_basis;
+namespace {
+
+// Shared seminumerical-exchange grid sweep. `fill_v` populates the per
+// shell-pair operator integrals (the V buffer); the grid batching, basis-value
+// evaluation, density contraction, screening and back-contraction are shared
+// between the single- and dual-operator (range-separated) exchange builds.
+template <typename FillV>
+Mat seminumerical_exchange_sweep(
+    const gto::AOBasis &basis, const std::vector<AtomGrid> &atom_grids,
+    const ankerl::unordered_dense::map<size_t, size_t> &shell_pair_map,
+    const occ::ints::ESPEvaluator<double> &esp, const Mat3N &pair_centers,
+    const Vec &pair_extents, double margin, const Mat &D2q, double precision,
+    FillV &&fill_v) {
+  const size_t nbf = basis.nbf();
   const auto &shells = basis.shells();
   const auto &first_bf = basis.first_bf();
   constexpr size_t BLOCKSIZE = 128;
@@ -709,8 +735,8 @@ Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
   };
   std::vector<BatchInfo> batches;
 
-  for (size_t atom_idx = 0; atom_idx < m_atom_grids.size(); ++atom_idx) {
-    const auto& atom_grid = m_atom_grids[atom_idx];
+  for (size_t atom_idx = 0; atom_idx < atom_grids.size(); ++atom_idx) {
+    const auto& atom_grid = atom_grids[atom_idx];
     const size_t npt_total = atom_grid.points.cols();
     const size_t num_blocks = (npt_total + BLOCKSIZE - 1) / BLOCKSIZE;
 
@@ -736,11 +762,18 @@ Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
   // Process batches in parallel
   occ::parallel::parallel_for(size_t(0), batches.size(), [&](size_t batch_idx) {
     const auto& batch = batches[batch_idx];
-    const auto& atom_grid = m_atom_grids[batch.atom_idx];
+    const auto& atom_grid = atom_grids[batch.atom_idx];
 
     auto pts_block = atom_grid.points.middleCols(batch.start, batch.count);
     auto weights_block = atom_grid.weights.segment(batch.start, batch.count);
     Eigen::Index npt = batch.count;
+
+    // Bounding sphere of this grid batch (for per-batch geometric screening).
+    occ::Vec3 batch_center = pts_block.rowwise().mean();
+    double batch_radius = 0.0;
+    for (Eigen::Index c = 0; c < npt; ++c)
+      batch_radius =
+          std::max(batch_radius, (pts_block.col(c) - batch_center).norm());
 
     // Quick screening using traditional evaluation
     occ::gto::GTOValues ao;
@@ -760,7 +793,14 @@ Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
     auto& integrals = esp_integrals_local.local();
 
     // Process all shell pairs sequentially within this batch
-    for (const auto& [pair_idx, esp_idx] : m_shell_pair_map) {
+    for (const auto& [pair_idx, esp_idx] : shell_pair_map) {
+      // Geometric screen: skip pairs whose density region cannot reach this
+      // batch (their basis functions are negligible at the batch grid points).
+      if ((pair_centers.col(esp_idx) - batch_center).norm() -
+              pair_extents(esp_idx) >=
+          batch_radius + margin)
+        continue;
+
       auto [p, q] = pair_index_to_shells(pair_idx);
 
       int bf_p = first_bf[p];
@@ -775,8 +815,8 @@ Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
       }
       if (max_D < density_threshold) continue;
 
-      int nab = m_esp_evaluator->nab(esp_idx);
-      int nherm = m_esp_evaluator->nherm(esp_idx);
+      int nab = esp.nab(esp_idx);
+      int nherm = esp.nherm(esp_idx);
 
       // Resize buffers if needed
       if (workspace.rows() != npt || workspace.cols() != nherm) {
@@ -786,7 +826,8 @@ Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
         integrals.resize(npt, nab);
       }
 
-      m_esp_evaluator->evaluate(esp_idx, pts_block, integrals, workspace);
+      // Build the per-shell-pair operator integrals (V) into `integrals`.
+      fill_v(esp_idx, pts_block, npt, nab, integrals, workspace);
 
       // Contract integrals with Fg and accumulate into Gg
       for (Eigen::Index pt = 0; pt < npt; pt++) {
@@ -809,6 +850,93 @@ Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
   }
 
   return K;
+}
+
+} // namespace
+
+Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
+                                                 double precision) const {
+  using MatRM =
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+  return seminumerical_exchange_sweep(
+      m_basis, m_atom_grids, m_shell_pair_map, *m_esp_evaluator, m_pair_centers,
+      m_pair_extents, m_settings.margin, D2q, precision,
+      [this](std::size_t esp_idx, const auto &pts, Eigen::Index /*npt*/,
+             int /*nab*/, MatRM &V, MatRM &ws) {
+        m_esp_evaluator->evaluate(esp_idx, pts, V, ws, m_omega);
+      });
+}
+
+Mat SemiNumericalExchange::compute_K_range_separated(
+    const qm::MolecularOrbitals &mo, double alpha, double beta, double omega,
+    double precision) const {
+  if (!m_use_esp) {
+    throw std::runtime_error(
+        "COSX fused range-separated exchange requires ESP mode");
+  }
+
+  occ::timing::start(occ::timing::category::cosx);
+
+  prepare_screening();
+
+  // K_HF = (alpha + beta) * K[1/r] - beta * K[erf(omega*r)/r], evaluated in a
+  // single grid sweep per (spin) density block.
+  const double w_full = alpha + beta;
+  const double w_lr = -beta;
+  Mat result;
+
+  switch (mo.kind) {
+  case SpinorbitalKind::Restricted: {
+    Mat D2q = m_overlap_projector * (2.0 * mo.D);
+    Mat K = compute_K_fused_rs_for_density(D2q, precision, w_full, w_lr, omega);
+    result = 0.25 * (K + K.transpose());
+    break;
+  }
+  case SpinorbitalKind::Unrestricted: {
+    const size_t nbf = m_basis.nbf();
+    Mat Daq = m_overlap_projector * (2.0 * qm::block::a(mo.D));
+    Mat Dbq = m_overlap_projector * (2.0 * qm::block::b(mo.D));
+    Mat Ka = compute_K_fused_rs_for_density(Daq, precision, w_full, w_lr, omega);
+    Mat Kb = compute_K_fused_rs_for_density(Dbq, precision, w_full, w_lr, omega);
+    Ka = 0.5 * (Ka + Ka.transpose());
+    Kb = 0.5 * (Kb + Kb.transpose());
+    result = Mat(2 * nbf, nbf);
+    qm::block::a(result) = Ka;
+    qm::block::b(result) = Kb;
+    break;
+  }
+  default:
+    occ::timing::stop(occ::timing::category::cosx);
+    throw std::runtime_error("COSX fused range-separated exchange supports "
+                             "restricted and unrestricted spinorbitals only");
+  }
+
+  occ::timing::stop(occ::timing::category::cosx);
+  return result;
+}
+
+// Fused full + long-range exchange: one shared grid sweep, two analytic
+// operators. Evaluates the ESP integral for both the full Coulomb (omega = 0)
+// and long-range (erf) operators per shell pair and contracts their weighted
+// combination V = w_full*V[1/r] + w_lr*V[erf].
+Mat SemiNumericalExchange::compute_K_fused_rs_for_density(
+    const Mat &D2q, double precision, double w_full, double w_lr,
+    double omega) const {
+  using MatRM =
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+  occ::parallel::thread_local_storage<MatRM> lr_local;
+  return seminumerical_exchange_sweep(
+      m_basis, m_atom_grids, m_shell_pair_map, *m_esp_evaluator, m_pair_centers,
+      m_pair_extents, m_settings.margin, D2q, precision,
+      [&, w_full, w_lr, omega](std::size_t esp_idx, const auto &pts,
+                               Eigen::Index npt, int nab, MatRM &V, MatRM &ws) {
+        m_esp_evaluator->evaluate(esp_idx, pts, V, ws, 0.0);
+        MatRM &V_lr = lr_local.local();
+        if (V_lr.rows() != npt || V_lr.cols() != nab)
+          V_lr.resize(npt, nab);
+        m_esp_evaluator->evaluate(esp_idx, pts, V_lr, ws, omega);
+        V.array() = w_full * V.array() + w_lr * V_lr.array();
+      });
 }
 
 } // namespace occ::qm::cosx

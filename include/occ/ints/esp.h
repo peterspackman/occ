@@ -60,10 +60,13 @@ public:
     /// @param C          Grid point coordinates [3 x npts] column-major
     /// @param integrals  Output buffer [npts x nab] row-major
     /// @param workspace  External workspace buffer [npts x nherm] row-major
+    /// @param omega      Range-separation parameter: 0 = full Coulomb (1/r),
+    ///                   omega > 0 = long-range erf(omega*r)/r operator
     void evaluate(size_t shell_idx,
                   const Eigen::Ref<const Mat3N>& C,
                   Eigen::Ref<MatRM> integrals,
-                  Eigen::Ref<MatRM> workspace);
+                  Eigen::Ref<MatRM> workspace,
+                  T omega = T(0));
 
     /// Get required workspace size for a shell pair
     size_t workspace_size(size_t shell_idx, int npts) const;

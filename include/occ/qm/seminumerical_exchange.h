@@ -109,6 +109,18 @@ public:
                 double precision = std::numeric_limits<double>::epsilon(),
                 const occ::Mat &Schwarz = occ::Mat()) const;
 
+  /// Fused range-separated exchange: builds the full Hartree-Fock exchange
+  /// matrix of a range-separated hybrid,
+  ///     K = (alpha+beta)*K[1/r] - beta*K[erf(omega*r)/r],
+  /// in a SINGLE grid sweep. The grid-point basis values, density contraction,
+  /// shell-pair screening and final back-contraction are shared between the two
+  /// operators; only the analytic ESP integral is evaluated twice per shell
+  /// pair. Equivalent to compute_K(full) and compute_K(long-range) combined,
+  /// but without duplicating the per-batch overhead. (Restricted only.)
+  Mat compute_K_range_separated(
+      const qm::MolecularOrbitals &mo, double alpha, double beta, double omega,
+      double precision = std::numeric_limits<double>::epsilon()) const;
+
   Mat compute_overlap_matrix() const;
 
   const auto &engine() const { return m_engine; }
@@ -124,6 +136,13 @@ public:
   /// Configuration settings
   void set_settings(const Settings &settings);
   const Settings &settings() const { return m_settings; }
+
+  /// Range-separation parameter for the exchange operator.
+  /// omega == 0 (default): full Coulomb 1/r exchange.
+  /// omega  > 0: long-range erf(omega*r)/r exchange (for range-separated
+  /// hybrids). The short-range part is obtained as K_full - K_long_range.
+  void set_range_separated_omega(double omega) { m_omega = omega; }
+  double range_separated_omega() const { return m_omega; }
 
   /// Get grid information
   size_t num_grid_points() const;
@@ -143,6 +162,16 @@ private:
   // Returns (nbf x nbf) exchange matrix
   Mat compute_K_for_density(const Mat &D2q, double precision) const;
 
+  // Fused full + long-range K for a projected density matrix: accumulates
+  // w_full * K[1/r] + w_lr * K[erf(omega*r)/r] in a single grid sweep.
+  Mat compute_K_fused_rs_for_density(const Mat &D2q, double precision,
+                                     double w_full, double w_lr,
+                                     double omega) const;
+
+  // Precompute the significant shell-pair list and the per-pair geometry used
+  // for per-batch geometric screening. Idempotent (only runs once).
+  void prepare_screening() const;
+
   std::vector<occ::core::Atom> m_atoms;
   gto::AOBasis m_basis;
   MolecularGrid m_grid;
@@ -159,10 +188,19 @@ private:
   mutable ankerl::unordered_dense::map<size_t, size_t> m_shell_pair_map;  // flat_idx -> ESP idx
   mutable std::vector<std::pair<size_t, size_t>> m_significant_pairs;  // (p, q) list
 
+  // Per-pair geometry (indexed by ESP shell-pair index) for per-batch geometric
+  // screening: pair overlap-region center and the radius beyond which the pair
+  // density is negligible.
+  mutable Mat3N m_pair_centers;
+  mutable Vec m_pair_extents;
+
   // Shell extents for screening (calculated with screen_threshold, not shell extent threshold)
   Vec m_screening_extents;
 
   // Configuration settings
   Settings m_settings;
+
+  // Range-separation parameter (0 = full Coulomb exchange)
+  double m_omega{0.0};
 };
 } // namespace occ::qm::cosx

@@ -249,6 +249,63 @@ JKPair HartreeFock::compute_JK(const MolecularOrbitals &mo,
   }
 }
 
+Mat HartreeFock::compute_K(const MolecularOrbitals &mo,
+                           const Mat &Schwarz) const {
+  // Exchange-only build, routed per engine. Used by the range-separated path
+  // to build the long-range K without also computing an unused J matrix.
+  if (m_cosx_engine) {
+    // COSX provides K directly (J is handled by the regular/DF engine).
+    return m_cosx_engine->compute_K(mo);
+  } else if (m_df_engine) {
+    return m_df_engine->exchange(mo);
+  } else {
+    // The exact engine has no exchange-only entry point; take K from the
+    // fused build (J is computed but discarded - the exact path is not the
+    // target for large range-separated hybrids).
+    return m_engine.coulomb_and_exchange(mo.kind, mo, Schwarz).K;
+  }
+}
+
+JKPair HartreeFock::coulomb_and_range_separated_exchange(
+    const MolecularOrbitals &mo, double omega, double alpha, double beta,
+    const Mat &Schwarz) {
+  const double w_full = alpha + beta; // weight on K[1/r]
+  const double w_lr = -beta;          // weight on K[erf(omega*r)/r]
+
+  JKPair result;
+
+  // Fastest path: COSX evaluates both operators in a single grid sweep
+  // (restricted and unrestricted; the general spinorbital case falls through).
+  if (m_cosx_engine &&
+      (mo.kind == SpinorbitalKind::Restricted ||
+       mo.kind == SpinorbitalKind::Unrestricted) &&
+      w_full != 0.0 && w_lr != 0.0) {
+    result.J = compute_J(mo, Schwarz);
+    result.K = m_cosx_engine->compute_K_range_separated(mo, alpha, beta, omega);
+    return result;
+  }
+
+  // General path: the Coulomb term always uses the full 1/r operator; build
+  // only the exchange operators that carry a nonzero weight.
+  if (w_full != 0.0) {
+    JKPair full = compute_JK(mo, Schwarz); // J and K[1/r] together
+    result.J = full.J;
+    result.K = w_full * full.K;
+  } else {
+    result.J = compute_J(mo, Schwarz);
+    result.K = Mat::Zero(result.J.rows(), result.J.cols());
+  }
+
+  if (w_lr != 0.0) {
+    set_range_separated_omega(omega);
+    Mat K_lr = compute_K(mo, Schwarz);
+    set_range_separated_omega(0.0);
+    result.K.noalias() += w_lr * K_lr;
+  }
+
+  return result;
+}
+
 std::vector<JKPair>
 HartreeFock::compute_JK_list(const std::vector<MolecularOrbitals> &mos,
                              const Mat &Schwarz) const {

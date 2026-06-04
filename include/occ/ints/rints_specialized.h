@@ -1451,32 +1451,51 @@ template <typename T, int L, typename BoysParams = BoysParamsDefault>
 void compute_r_ints_batch_direct(const T* boys_table, T p, int npts,
                                   T Px, T Py, T Pz,
                                   const Eigen::Ref<const Eigen::Matrix<T, 3, Eigen::Dynamic>>& C,
-                                  Eigen::Ref<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> R_out) {
+                                  Eigen::Ref<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> R_out,
+                                  T omega = T(0)) {
     // Compute PC = P - C using Eigen vectorization
     using Vec = Eigen::Array<T, Eigen::Dynamic, 1>;
     Vec PCx = Px - C.row(0).array().transpose();
     Vec PCy = Py - C.row(1).array().transpose();
     Vec PCz = Pz - C.row(2).array().transpose();
 
+    // Range-separated (long-range, erf(omega*r)/r) operator support.
+    // The erf-attenuated nuclear/ESP integral is the standard Gaussian-charge
+    // substitution: use an effective exponent p_eff = p*omega^2/(p+omega^2) in
+    // the Hermite-Coulomb recursion and scale the resulting R-integrals by
+    // sqrt(omega^2/(p+omega^2)). omega == 0 recovers the full Coulomb operator
+    // (an exact no-op, so all existing callers are unaffected).
+    T p_used = p;
+    T rs_scale = T(1);
+    if (omega > T(0)) {
+        const T w2 = omega * omega;
+        rs_scale = w2 / (p + w2);
+        p_used = p * rs_scale;
+    }
+
     // Use Eigen-vectorized kernels for L=0-4
     if constexpr (L == 0) {
-        compute_r_ints_L0_eigen<T, BoysParams>(boys_table, p, npts, PCx, PCy, PCz, R_out);
+        compute_r_ints_L0_eigen<T, BoysParams>(boys_table, p_used, npts, PCx, PCy, PCz, R_out);
     } else if constexpr (L == 1) {
-        compute_r_ints_L1_eigen<T, BoysParams>(boys_table, p, npts, PCx, PCy, PCz, R_out);
+        compute_r_ints_L1_eigen<T, BoysParams>(boys_table, p_used, npts, PCx, PCy, PCz, R_out);
     } else if constexpr (L == 2) {
-        compute_r_ints_L2_eigen<T, BoysParams>(boys_table, p, npts, PCx, PCy, PCz, R_out);
+        compute_r_ints_L2_eigen<T, BoysParams>(boys_table, p_used, npts, PCx, PCy, PCz, R_out);
     } else if constexpr (L == 3) {
-        compute_r_ints_L3_eigen<T, BoysParams>(boys_table, p, npts, PCx, PCy, PCz, R_out);
+        compute_r_ints_L3_eigen<T, BoysParams>(boys_table, p_used, npts, PCx, PCy, PCz, R_out);
     } else if constexpr (L == 4) {
-        compute_r_ints_L4_eigen<T, BoysParams>(boys_table, p, npts, PCx, PCy, PCz, R_out);
+        compute_r_ints_L4_eigen<T, BoysParams>(boys_table, p_used, npts, PCx, PCy, PCz, R_out);
     } else if constexpr (L == 6) {
-        compute_r_ints_L6_eigen<T, BoysParams>(boys_table, p, npts, PCx, PCy, PCz, R_out);
+        compute_r_ints_L6_eigen<T, BoysParams>(boys_table, p_used, npts, PCx, PCy, PCz, R_out);
     } else {
         // For L=5, L>=7, use the point-by-point batched kernel
         compute_r_ints_batch<T, L, BoysParams>(
-            boys_table, p, npts,
+            boys_table, p_used, npts,
             PCx.data(), PCy.data(), PCz.data(),
             R_out.data());
+    }
+
+    if (omega > T(0)) {
+        R_out.array() *= std::sqrt(rs_scale);
     }
 }
 
