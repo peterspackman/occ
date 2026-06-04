@@ -2,7 +2,7 @@ var searchData=
 [
   ['f_5fepsilon_0',['f_epsilon',['../classocc_1_1xtb_1_1CpcmXSolvationModel.html#a12013f2e3746b50275c239f2524c09ce',1,'occ::xtb::CpcmXSolvationModel::f_epsilon()'],['../classocc_1_1scrf_1_1ReactionFieldEngine.html#ae8c03d13e794b628c56c00db8102794d',1,'occ::scrf::ReactionFieldEngine::f_epsilon()']]],
   ['f_5fxmin_1',['f_xmin',['../classocc_1_1core_1_1opt_1_1LineSearch.html#a8dbdfacd8dc811298f259e7efc3285fd',1,'occ::core::opt::LineSearch']]],
-  ['face_2',['face',['../structquickhull_1_1MeshBuilder_1_1Face.html#a0cc6bd92e9e56592613a4376c3bab0c0',1,'quickhull::MeshBuilder::Face::Face()'],['../classocc_1_1geometry_1_1HalfEdgeMesh.html#a60720137ad7c7d4a76ef996272712ed2',1,'occ::geometry::HalfEdgeMesh::face(int h) const']]],
+  ['face_2',['face',['../classocc_1_1geometry_1_1HalfEdgeMesh.html#a60720137ad7c7d4a76ef996272712ed2',1,'occ::geometry::HalfEdgeMesh::face()'],['../structquickhull_1_1MeshBuilder_1_1Face.html#a0cc6bd92e9e56592613a4376c3bab0c0',1,'quickhull::MeshBuilder::Face::Face()']]],
   ['face_5fhalfedge_3',['face_halfedge',['../classocc_1_1geometry_1_1HalfEdgeMesh.html#af87271aae9535f04918d29e719ce8af8',1,'occ::geometry::HalfEdgeMesh']]],
   ['face_5fnormal_4',['face_normal',['../namespaceocc_1_1isosurface_1_1impl.html#a4da3e8b93d35df7a0608026b0a031e47',1,'occ::isosurface::impl']]],
   ['faces_5',['faces',['../classocc_1_1geometry_1_1IcosphereMesh.html#a0e32f97df4a7f21f6eda10b52e35263d',1,'occ::geometry::IcosphereMesh']]],

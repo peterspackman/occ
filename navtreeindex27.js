@@ -1,5 +1,15 @@
 var NAVTREEINDEX27 =
 {
+"log_8h.html#a66577304c29dd81bdf616afe7012241f":[6,0,1,0,1,24,9],
+"log_8h.html#a79b620a5ca62b9eb751d26cfcd1b3e09":[6,0,1,0,1,24,3],
+"log_8h.html#a7f2eb616d28c01add413655cf928b31a":[6,0,1,0,1,24,1],
+"log_8h.html#aad09f46f1dc45a40f0896a8706942e11":[6,0,1,0,1,24,6],
+"log_8h.html#ad5351942c65d96bdb0b37a77c58c2ec3":[6,0,1,0,1,24,5],
+"log_8h.html#adbec07d16d7f4b3e10721adce78cc55d":[6,0,1,0,1,24,2],
+"log_8h.html#aecb2928fbc0d97a6514cffdf198b1d3e":[6,0,1,0,1,24,8],
+"logsumexp_8h.html":[6,0,1,0,14,11],
+"macros_8h.html":[6,0,1,0,1,25],
+"macros_8h.html#a977ed134d162150ea585a992d17914d2":[6,0,1,0,1,25,0],
 "main_2point__functors_8h.html":[6,0,1,0,15,19],
 "main_2point__functors_8h.html#a28fb2b00851f8aa959f1188eb702d21d":[6,0,1,0,15,19,8],
 "main_2point__functors_8h.html#a9154bffbc00f2a7302ceae3d043c3c2d":[6,0,1,0,15,19,10],
@@ -183,8 +193,8 @@ var NAVTREEINDEX27 =
 "namespacemembers_enum.html":[3,1,4],
 "namespacemembers_eval.html":[3,1,5],
 "namespacemembers_f.html":[3,1,0,6],
-"namespacemembers_func.html":[3,1,1,0],
 "namespacemembers_func.html":[3,1,1],
+"namespacemembers_func.html":[3,1,1,0],
 "namespacemembers_func_b.html":[3,1,1,1],
 "namespacemembers_func_c.html":[3,1,1,2],
 "namespacemembers_func_d.html":[3,1,1,3],
@@ -239,15 +249,5 @@ var NAVTREEINDEX27 =
 "namespaceocc.html#a152273807a66bf06678e613ceffb24c8":[3,0,2,83],
 "namespaceocc.html#a1628129daf6f63dc508b04725802fceb":[3,0,2,96],
 "namespaceocc.html#a1c36353e752d77ead2a53790410bfaee":[3,0,2,65],
-"namespaceocc.html#a223c31d3958c15f46692ca64b5a47e0e":[3,0,2,98],
-"namespaceocc.html#a22e6fea5025901b5dee48e48a69dcce3":[3,0,2,66],
-"namespaceocc.html#a24fc356bbdefdca4157997750ee02964":[3,0,2,88],
-"namespaceocc.html#a25e6d9f9e73d3092648893f1f82dfe84":[3,0,2,50],
-"namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820":[3,0,2,85],
-"namespaceocc.html#a2be511c632e07bd3b62cfa0005ce443d":[3,0,2,87],
-"namespaceocc.html#a341ac2fb4470f9a4c562ca9e01e0bb9b":[3,0,2,42],
-"namespaceocc.html#a3eed54aee57bdfb65e9acf64c9fa07f1":[3,0,2,41],
-"namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1":[3,0,2,71],
-"namespaceocc.html#a42d884160a85b77b0c6e02723c4e42b1":[3,0,2,76],
-"namespaceocc.html#a437f3d1ad27db4224c05f4772b08269c":[3,0,2,74]
+"namespaceocc.html#a223c31d3958c15f46692ca64b5a47e0e":[3,0,2,98]
 };

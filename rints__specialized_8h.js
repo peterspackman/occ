@@ -3,7 +3,7 @@ var rints__specialized_8h =
     [ "OCC_GPU_ENABLED", "rints__specialized_8h.html#afd2ab66cc5830fbd8861b245e3873900", null ],
     [ "OCC_GPU_INLINE", "rints__specialized_8h.html#a3c4cd504b3f0f548533a1109f7a8f84c", null ],
     [ "compute_r_ints_batch", "rints__specialized_8h.html#afdc9a694504d3f7d57011c7f16995e4d", null ],
-    [ "compute_r_ints_batch_direct", "rints__specialized_8h.html#a58e8cd9d9f714c243ea0b8f1b44be528", null ],
+    [ "compute_r_ints_batch_direct", "rints__specialized_8h.html#a5d472236f59eb317733fe35df13358ac", null ],
     [ "compute_r_ints_L0_batch", "rints__specialized_8h.html#a65ddaf88bacf263df21404315b172668", null ],
     [ "compute_r_ints_L0_eigen", "rints__specialized_8h.html#a3f9a34062473f7ae1bdd709f1dcd29b0", null ],
     [ "compute_r_ints_L1_batch", "rints__specialized_8h.html#a08e29f6036a47102d834579e2e762e98", null ],

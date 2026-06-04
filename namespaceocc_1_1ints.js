@@ -58,7 +58,7 @@ var namespaceocc_1_1ints =
     [ "compute_r_ints_3c_L5", "namespaceocc_1_1ints.html#a3334b25156cfe55f51320bd569920def", null ],
     [ "compute_r_ints_3c_L6", "namespaceocc_1_1ints.html#a48398e7a324db6a8f7c2b74bf9253b77", null ],
     [ "compute_r_ints_batch", "namespaceocc_1_1ints.html#afdc9a694504d3f7d57011c7f16995e4d", null ],
-    [ "compute_r_ints_batch_direct", "namespaceocc_1_1ints.html#a58e8cd9d9f714c243ea0b8f1b44be528", null ],
+    [ "compute_r_ints_batch_direct", "namespaceocc_1_1ints.html#a5d472236f59eb317733fe35df13358ac", null ],
     [ "compute_r_ints_dynamic", "namespaceocc_1_1ints.html#a780d470839bbd6ac9420fe52711577d9", null ],
     [ "compute_r_ints_L0_batch", "namespaceocc_1_1ints.html#a65ddaf88bacf263df21404315b172668", null ],
     [ "compute_r_ints_L0_eigen", "namespaceocc_1_1ints.html#a3f9a34062473f7ae1bdd709f1dcd29b0", null ],
