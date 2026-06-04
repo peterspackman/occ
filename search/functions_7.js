@@ -2,7 +2,7 @@ var searchData=
 [
   ['h0_0',['h0',['../classocc_1_1xtb_1_1Gfn2Engine.html#a5def284dccd604346211ee6c64fa5232',1,'occ::xtb::Gfn2Engine']]],
   ['h0_5fscc_5fgradient_1',['h0_scc_gradient',['../namespaceocc_1_1xtb.html#ab55bd46377c1c5d8306c881155d0924d',1,'occ::xtb']]],
-  ['halfedgemesh_2',['HalfEdgeMesh',['../classquickhull_1_1HalfEdgeMesh.html#a39c068f72403abd3d39a73ad53d4e5c2',1,'quickhull::HalfEdgeMesh']]],
+  ['halfedgemesh_2',['halfedgemesh',['../classocc_1_1geometry_1_1HalfEdgeMesh.html#ab96c06e93dfd6e0e143d7e4db5ca52e7',1,'occ::geometry::HalfEdgeMesh::HalfEdgeMesh()'],['../classquickhull_1_1HalfEdgeMesh.html#a39c068f72403abd3d39a73ad53d4e5c2',1,'quickhull::HalfEdgeMesh::HalfEdgeMesh()']]],
   ['hamiltonian_3',['hamiltonian',['../classocc_1_1xtb_1_1TbliteCalculator.html#a184af6be9a5aa417a51b39d3d0311a55',1,'occ::xtb::TbliteCalculator']]],
   ['hartreefock_4',['HartreeFock',['../classocc_1_1qm_1_1HartreeFock.html#a626f4e045b22ec9fdd77167f6a6c73d1',1,'occ::qm::HartreeFock']]],
   ['has_5fangular_5fregions_5',['has_angular_regions',['../structocc_1_1io_1_1GridSettings.html#a1ca1e45140539c3c225f44b5bae78378',1,'occ::io::GridSettings']]],

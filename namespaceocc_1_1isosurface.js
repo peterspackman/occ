@@ -7,9 +7,19 @@ var namespaceocc_1_1isosurface =
       [ "pack_vkey", "namespaceocc_1_1isosurface_1_1cell__caps__impl.html#acc2494776e9d839337ecf9a5ca0cface", null ]
     ] ],
     [ "impl", "namespaceocc_1_1isosurface_1_1impl.html", [
-      [ "remap_vertices", "namespaceocc_1_1isosurface_1_1impl.html#a380a10dfef8ea64e1e86698d1886fd52", null ]
+      [ "collapse_short_edges", "namespaceocc_1_1isosurface_1_1impl.html#a139832472ec9af6aaba141d36eb930f8", null ],
+      [ "edge_key", "namespaceocc_1_1isosurface_1_1impl.html#aa31307f619421d1a0f4ebdabdb0b5eab", null ],
+      [ "face_normal", "namespaceocc_1_1isosurface_1_1impl.html#a4da3e8b93d35df7a0608026b0a031e47", null ],
+      [ "flip_sweep", "namespaceocc_1_1isosurface_1_1impl.html#a913f88832b1f207f9d7f2a9fedcf550c", null ],
+      [ "local_gradient", "namespaceocc_1_1isosurface_1_1impl.html#a3b6bbbf3ebc588f91837ed3608bfafbc", null ],
+      [ "project_to_isosurface", "namespaceocc_1_1isosurface_1_1impl.html#a22ddd4496d04bbacf20944dfd056c3fc", null ],
+      [ "relax_sweep", "namespaceocc_1_1isosurface_1_1impl.html#a0c39af02f95279e4ece26d63257eaa55", null ],
+      [ "remap_vertices", "namespaceocc_1_1isosurface_1_1impl.html#a380a10dfef8ea64e1e86698d1886fd52", null ],
+      [ "tri_min_angle", "namespaceocc_1_1isosurface_1_1impl.html#a620bc36eb90e37086c373336d853383f", null ],
+      [ "vert_at", "namespaceocc_1_1isosurface_1_1impl.html#ad54d9f1c75b2dc02fb7bbe12cddfea44", null ]
     ] ],
     [ "pfimpl", "namespaceocc_1_1isosurface_1_1pfimpl.html", "namespaceocc_1_1isosurface_1_1pfimpl" ],
+    [ "AngleStats", "structocc_1_1isosurface_1_1AngleStats.html", "structocc_1_1isosurface_1_1AngleStats" ],
     [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
     [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
     [ "BatchFunctor", "classocc_1_1isosurface_1_1BatchFunctor.html", "classocc_1_1isosurface_1_1BatchFunctor" ],
@@ -36,8 +46,10 @@ var namespaceocc_1_1isosurface =
     [ "Point_DeformationDensityFunctor", "structocc_1_1isosurface_1_1Point__DeformationDensityFunctor.html", "structocc_1_1isosurface_1_1Point__DeformationDensityFunctor" ],
     [ "Point_ElectronDensityFunctor", "structocc_1_1isosurface_1_1Point__ElectronDensityFunctor.html", "structocc_1_1isosurface_1_1Point__ElectronDensityFunctor" ],
     [ "PromolDensityFunctor", "structocc_1_1isosurface_1_1PromolDensityFunctor.html", "structocc_1_1isosurface_1_1PromolDensityFunctor" ],
+    [ "QualityParams", "structocc_1_1isosurface_1_1QualityParams.html", "structocc_1_1isosurface_1_1QualityParams" ],
     [ "RadiusMetric", "classocc_1_1isosurface_1_1RadiusMetric.html", "classocc_1_1isosurface_1_1RadiusMetric" ],
     [ "RInvFunc", "structocc_1_1isosurface_1_1RInvFunc.html", "structocc_1_1isosurface_1_1RInvFunc" ],
+    [ "SharpRefineParams", "structocc_1_1isosurface_1_1SharpRefineParams.html", "structocc_1_1isosurface_1_1SharpRefineParams" ],
     [ "StockholderWeightFunctor", "classocc_1_1isosurface_1_1StockholderWeightFunctor.html", "classocc_1_1isosurface_1_1StockholderWeightFunctor" ],
     [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
     [ "VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", "classocc_1_1isosurface_1_1VoidSurfaceFunctor" ],
@@ -120,15 +132,19 @@ var namespaceocc_1_1isosurface =
     [ "calculate_curvature", "namespaceocc_1_1isosurface.html#a97c3d0a1a1f5ef1230dd6db686b24200", null ],
     [ "calculate_curvature", "namespaceocc_1_1isosurface.html#a3770fbe091fed343b7379fa56c5a96cc", null ],
     [ "default_properties", "namespaceocc_1_1isosurface.html#ab16fc330a28219f949bbbe9bed9fb603", null ],
+    [ "improve_mesh_quality", "namespaceocc_1_1isosurface.html#a3d420fa20f880bec69ea3f65bead46b3", null ],
     [ "make_batch_functor", "namespaceocc_1_1isosurface.html#a83e50fe4bb35393c8c5706d07102c456", null ],
     [ "parse_orbital_descriptions", "namespaceocc_1_1isosurface.html#a267f8184e8787dde6427b13ac51581b8", null ],
     [ "property_from_string", "namespaceocc_1_1isosurface.html#a82cec8a629edd7bcc651ad95d2331491", null ],
     [ "property_requires_environment", "namespaceocc_1_1isosurface.html#a529ef317795829ea851f9db5d7fa4d8c", null ],
     [ "property_requires_wavefunction", "namespaceocc_1_1isosurface.html#a3c826ad443591442e528b0116f973564", null ],
     [ "property_to_string", "namespaceocc_1_1isosurface.html#a380d4163da6f54871ea8cce2fc43db49", null ],
+    [ "refine_sharp_edges", "namespaceocc_1_1isosurface.html#a554628bcfb48c98820586eb6c086daf1", null ],
     [ "surface_from_string", "namespaceocc_1_1isosurface.html#a830e391f7c8f0b99b6dd6079b6c02493", null ],
     [ "surface_properties_to_compute", "namespaceocc_1_1isosurface.html#ae6f7648352d29bf20d093b236737e41b", null ],
     [ "surface_requires_environment", "namespaceocc_1_1isosurface.html#afdbaf322f650a4439d4b0663a7fd6329", null ],
     [ "surface_requires_wavefunction", "namespaceocc_1_1isosurface.html#aead59b74d110c97231623fa4896006ed", null ],
-    [ "surface_to_string", "namespaceocc_1_1isosurface.html#a98487ca783bb5210cb390fb21adfd871", null ]
+    [ "surface_to_string", "namespaceocc_1_1isosurface.html#a98487ca783bb5210cb390fb21adfd871", null ],
+    [ "triangle_angle_stats", "namespaceocc_1_1isosurface.html#adb02e89ce591a22e8e92e510f0ee97ba", null ],
+    [ "weld_vertices", "namespaceocc_1_1isosurface.html#a405d60de29fdd39813119368e9c6ddbc", null ]
 ];

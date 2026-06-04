@@ -1,44 +1,42 @@
 <map id="occ::io::OccInput" name="occ::io::OccInput">
-<area shape="rect" id="Node000001" title=" " alt="" coords="977,322,1107,347"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1io_1_1DriverInput.html" title=" " alt="" coords="666,11,811,37"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="825,13,859,15,893,21,926,33,955,51,983,82,1005,118,1021,157,1032,197,1042,270,1044,321,1038,322,1037,271,1026,198,1016,158,1000,120,979,85,952,55,923,37,892,26,858,20,825,18"/>
-<area shape="rect" id="Node000003" href="$structocc_1_1io_1_1RuntimeInput.html" title=" " alt="" coords="659,61,819,86"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="833,63,865,66,897,72,927,83,955,101,979,125,999,154,1014,185,1025,218,1038,278,1043,321,1037,322,1033,279,1020,219,1009,187,994,157,975,128,952,105,925,88,895,77,864,71,833,68"/>
-<area shape="rect" id="Node000004" href="$structocc_1_1io_1_1ElectronInput.html" title=" " alt="" coords="659,110,818,135"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="832,116,896,126,927,137,955,154,975,172,992,194,1017,241,1033,287,1041,321,1036,322,1028,288,1013,243,988,196,971,176,952,158,924,142,894,131,831,121"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="295,110,417,135"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="430,120,659,120,659,125,430,125"/>
-<area shape="rect" id="Node000006" href="$structocc_1_1io_1_1GeometryInput.html" title=" " alt="" coords="271,189,441,214"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="455,192,485,191,665,188,743,194,843,208,901,215,926,221,955,235,981,255,1004,278,1035,320,1031,323,1000,281,977,259,952,240,924,226,900,220,842,213,743,200,665,194,485,196,455,197"/>
-<area shape="rect" id="Node000019" href="$structocc_1_1io_1_1IsosurfaceInput.html" title=" " alt="" coords="653,223,825,249"/>
-<area shape="poly" id="edge19_Node000019_Node000006" title=" " alt="" coords="439,214,486,220,653,231,652,237,485,225,438,219"/>
-<area shape="rect" id="Node000007" href="$structocc_1_1io_1_1PairInput.html" title=" " alt="" coords="674,273,803,298"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="817,292,954,312,989,319,988,325,953,317,817,297"/>
-<area shape="rect" id="Node000008" href="$structocc_1_1io_1_1MethodInput.html" title=" " alt="" coords="661,322,816,347"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="830,332,977,332,977,337,830,337"/>
-<area shape="rect" id="Node000009" href="$structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation." alt="" coords="280,297,432,322"/>
-<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="446,313,661,327,661,332,446,318"/>
-<area shape="rect" id="Node000010" title=" " alt="" coords="5,297,65,322"/>
-<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="79,307,280,307,280,312,79,312"/>
-<area shape="rect" id="Node000011" href="$structocc_1_1io_1_1COSXSettings.html" title=" " alt="" coords="275,346,437,371"/>
-<area shape="poly" id="edge10_Node000008_Node000011" title=" " alt="" coords="451,358,529,357,610,352,668,345,669,350,611,357,529,362,451,363"/>
-<area shape="rect" id="Node000012" href="$structocc_1_1io_1_1BasisSetInput.html" title=" " alt="" coords="658,371,819,397"/>
-<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="833,370,953,352,988,345,989,350,954,357,834,376"/>
-<area shape="rect" id="Node000013" href="$structocc_1_1io_1_1SolventInput.html" title=" " alt="" coords="661,421,816,446"/>
-<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="829,419,891,405,952,386,991,366,1022,345,1025,350,993,371,954,390,892,410,830,424"/>
-<area shape="rect" id="Node000014" href="$structocc_1_1io_1_1DispersionCorrectionInput.html" title=" " alt="" coords="635,471,843,511"/>
-<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="855,471,905,455,952,432,978,413,1000,389,1031,346,1035,349,1004,392,981,416,955,437,907,460,857,476"/>
-<area shape="rect" id="Node000015" href="$structocc_1_1io_1_1CrystalInput.html" title=" " alt="" coords="663,535,814,561"/>
-<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="827,538,892,521,923,507,952,489,984,454,1008,414,1025,376,1035,347,1040,348,1030,378,1013,417,988,458,955,493,926,512,894,526,828,543"/>
-<area shape="rect" id="Node000016" href="$structocc_1_1crystal_1_1AsymmetricUnit.html" title="A class representing an asymmetric unit of a crystal structure." alt="" coords="251,486,461,511"/>
-<area shape="poly" id="edge15_Node000015_Node000016" title=" " alt="" coords="476,509,611,525,663,533,663,538,610,531,475,514"/>
-<area shape="rect" id="Node000017" href="$classocc_1_1crystal_1_1SpaceGroup.html" title="This class represents a space group." alt="" coords="265,535,447,561"/>
-<area shape="poly" id="edge16_Node000015_Node000017" title=" " alt="" coords="461,545,663,545,663,551,461,551"/>
-<area shape="rect" id="Node000018" href="$classocc_1_1crystal_1_1UnitCell.html" title="This class represents a unit cell of a crystal lattice." alt="" coords="278,585,434,610"/>
-<area shape="poly" id="edge17_Node000015_Node000018" title=" " alt="" coords="447,585,610,565,663,558,663,563,611,571,448,590"/>
-<area shape="poly" id="edge18_Node000001_Node000019" title=" " alt="" coords="839,248,897,261,954,280,993,299,1024,319,1021,324,990,304,952,285,895,267,838,253"/>
-<area shape="rect" id="Node000020" href="$structocc_1_1io_1_1OutputInput.html" title=" " alt="" coords="664,585,813,610"/>
-<area shape="poly" id="edge20_Node000001_Node000020" title=" " alt="" coords="827,595,892,581,924,568,952,550,974,527,992,501,1017,442,1031,387,1037,347,1042,348,1036,388,1022,444,996,503,978,531,955,554,926,573,894,587,828,600"/>
-<area shape="rect" id="Node000021" href="$structocc_1_1io_1_1OptimizationInput.html" title=" " alt="" coords="644,634,833,659"/>
-<area shape="poly" id="edge21_Node000001_Node000021" title=" " alt="" coords="847,648,903,636,929,625,952,609,978,579,999,545,1015,507,1025,468,1036,397,1038,347,1044,348,1041,398,1031,470,1020,509,1004,547,983,582,955,613,931,629,904,641,848,653"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="732,322,861,347"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1io_1_1DriverInput.html" title=" " alt="" coords="421,11,566,37"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="580,13,613,15,648,21,680,33,710,51,738,82,760,118,776,157,786,197,797,270,798,321,793,322,792,271,781,198,770,158,755,120,734,85,706,55,678,37,646,26,613,20,580,18"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1io_1_1RuntimeInput.html" title=" " alt="" coords="413,61,573,86"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="588,63,619,66,651,72,682,83,710,101,734,125,754,154,769,185,780,218,793,278,797,321,792,322,788,279,775,219,764,187,749,157,730,128,706,105,680,88,650,77,618,71,587,68"/>
+<area shape="rect" id="Node000004" href="$structocc_1_1io_1_1ElectronInput.html" title=" " alt="" coords="414,110,573,135"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="587,116,650,126,681,137,710,154,730,172,747,194,772,241,788,287,796,321,791,322,783,288,767,243,742,196,726,176,706,158,679,142,649,131,586,121"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="50,110,171,135"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="185,120,414,120,414,125,185,125"/>
+<area shape="rect" id="Node000006" href="$structocc_1_1io_1_1GeometryInput.html" title=" " alt="" coords="25,189,196,214"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="210,192,240,191,419,188,498,194,598,208,656,215,680,221,709,235,736,255,758,278,790,320,785,323,754,281,732,259,707,240,678,226,655,220,597,213,497,200,419,194,240,196,210,197"/>
+<area shape="rect" id="Node000018" href="$structocc_1_1io_1_1IsosurfaceInput.html" title=" " alt="" coords="407,223,579,249"/>
+<area shape="poly" id="edge18_Node000018_Node000006" title=" " alt="" coords="193,214,240,220,407,231,407,237,240,225,193,219"/>
+<area shape="rect" id="Node000007" href="$structocc_1_1io_1_1PairInput.html" title=" " alt="" coords="429,273,558,298"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="572,292,708,312,744,319,743,325,708,317,571,297"/>
+<area shape="rect" id="Node000008" href="$structocc_1_1io_1_1MethodInput.html" title=" " alt="" coords="416,322,571,347"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="585,332,732,332,732,337,585,337"/>
+<area shape="rect" id="Node000009" href="$structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation." alt="" coords="35,297,187,322"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="201,313,416,327,416,332,200,318"/>
+<area shape="rect" id="Node000010" href="$structocc_1_1io_1_1COSXSettings.html" title=" " alt="" coords="30,346,191,371"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="205,357,365,351,416,345,417,350,366,356,205,362"/>
+<area shape="rect" id="Node000011" href="$structocc_1_1io_1_1BasisSetInput.html" title=" " alt="" coords="413,371,574,397"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="588,370,708,352,743,345,744,350,708,357,588,376"/>
+<area shape="rect" id="Node000012" href="$structocc_1_1io_1_1SolventInput.html" title=" " alt="" coords="416,421,571,446"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="584,419,645,405,707,386,745,366,777,345,780,350,748,371,709,390,647,410,585,424"/>
+<area shape="rect" id="Node000013" href="$structocc_1_1io_1_1DispersionCorrectionInput.html" title=" " alt="" coords="389,471,597,511"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="610,471,660,455,707,432,732,413,755,389,786,346,790,349,759,392,736,416,709,437,662,460,611,476"/>
+<area shape="rect" id="Node000014" href="$structocc_1_1io_1_1CrystalInput.html" title=" " alt="" coords="418,535,569,561"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="582,538,646,521,678,507,706,489,738,454,763,414,779,376,789,347,794,348,784,378,767,417,743,458,710,493,680,512,648,526,583,543"/>
+<area shape="rect" id="Node000015" href="$structocc_1_1crystal_1_1AsymmetricUnit.html" title="A class representing an asymmetric unit of a crystal structure." alt="" coords="5,486,216,511"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="230,509,366,525,418,533,417,538,365,531,230,514"/>
+<area shape="rect" id="Node000016" href="$classocc_1_1crystal_1_1SpaceGroup.html" title="This class represents a space group." alt="" coords="19,535,202,561"/>
+<area shape="poly" id="edge15_Node000014_Node000016" title=" " alt="" coords="215,545,418,545,418,551,215,551"/>
+<area shape="rect" id="Node000017" href="$classocc_1_1crystal_1_1UnitCell.html" title="This class represents a unit cell of a crystal lattice." alt="" coords="33,585,189,610"/>
+<area shape="poly" id="edge16_Node000014_Node000017" title=" " alt="" coords="202,585,365,565,417,558,418,563,366,571,203,590"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="594,248,651,261,709,280,747,299,779,319,776,324,745,304,707,285,650,267,592,253"/>
+<area shape="rect" id="Node000019" href="$structocc_1_1io_1_1OutputInput.html" title=" " alt="" coords="419,585,568,610"/>
+<area shape="poly" id="edge19_Node000001_Node000019" title=" " alt="" coords="581,595,647,581,678,568,706,550,728,527,746,501,772,442,786,387,792,347,797,348,791,388,777,444,751,503,732,531,710,554,681,573,649,587,582,600"/>
+<area shape="rect" id="Node000020" href="$structocc_1_1io_1_1OptimizationInput.html" title=" " alt="" coords="399,634,588,659"/>
+<area shape="poly" id="edge20_Node000001_Node000020" title=" " alt="" coords="601,648,657,636,683,625,706,609,733,579,754,545,769,507,780,468,791,397,793,347,798,348,796,398,785,470,774,509,759,547,737,582,710,613,686,629,659,641,603,653"/>
 </map>

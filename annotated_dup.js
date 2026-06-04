@@ -185,18 +185,21 @@ var annotated_dup =
         [ "mc", "namespaceocc_1_1geometry_1_1mc.html", [
           [ "impl", "namespaceocc_1_1geometry_1_1mc_1_1impl.html", [
             [ "Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge" ],
+            [ "EdgeCrossing", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing" ],
             [ "EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash" ],
             [ "has_basis_transform", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html", null ],
             [ "has_basis_transform< T, std::void_t< decltype(std::declval< T >().basis_transform())> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform_3_01T_00_01std_1_1void__t_3_01declt2cec5ff47cede2234f4d8b7c5c4da8f3.html", null ],
             [ "has_batch_evaluate", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ],
-            [ "has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ]
+            [ "has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ],
+            [ "has_point_evaluate", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate.html", null ],
+            [ "has_point_evaluate< T, std::void_t< decltype(std::declval< const T & >()(std::declval< const FVec3 & >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate_3_01T_00_01std_1_1void__t_3_01decltydd3f0790f5deda28bdbab41371fbc688.html", null ]
           ] ],
           [ "LinearHashedMarchingCubes", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes" ],
           [ "MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", "structocc_1_1geometry_1_1mc_1_1MarchingCubes" ]
         ] ],
         [ "Facet", "structocc_1_1geometry_1_1Facet.html", "structocc_1_1geometry_1_1Facet" ],
+        [ "HalfEdgeMesh", "classocc_1_1geometry_1_1HalfEdgeMesh.html", "classocc_1_1geometry_1_1HalfEdgeMesh" ],
         [ "IcosphereMesh", "classocc_1_1geometry_1_1IcosphereMesh.html", "classocc_1_1geometry_1_1IcosphereMesh" ],
-        [ "IndexCache", "structocc_1_1geometry_1_1IndexCache.html", "structocc_1_1geometry_1_1IndexCache" ],
         [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
         [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
         [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ],
@@ -346,6 +349,7 @@ var annotated_dup =
           [ "AtomInterpolator", "structocc_1_1isosurface_1_1pfimpl_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1pfimpl_1_1AtomInterpolator" ],
           [ "InterpolatorParams", "structocc_1_1isosurface_1_1pfimpl_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1pfimpl_1_1InterpolatorParams" ]
         ] ],
+        [ "AngleStats", "structocc_1_1isosurface_1_1AngleStats.html", "structocc_1_1isosurface_1_1AngleStats" ],
         [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
         [ "AxisAlignedBoundingBox", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html", "structocc_1_1isosurface_1_1AxisAlignedBoundingBox" ],
         [ "BatchFunctor", "classocc_1_1isosurface_1_1BatchFunctor.html", "classocc_1_1isosurface_1_1BatchFunctor" ],
@@ -372,8 +376,10 @@ var annotated_dup =
         [ "Point_DeformationDensityFunctor", "structocc_1_1isosurface_1_1Point__DeformationDensityFunctor.html", "structocc_1_1isosurface_1_1Point__DeformationDensityFunctor" ],
         [ "Point_ElectronDensityFunctor", "structocc_1_1isosurface_1_1Point__ElectronDensityFunctor.html", "structocc_1_1isosurface_1_1Point__ElectronDensityFunctor" ],
         [ "PromolDensityFunctor", "structocc_1_1isosurface_1_1PromolDensityFunctor.html", "structocc_1_1isosurface_1_1PromolDensityFunctor" ],
+        [ "QualityParams", "structocc_1_1isosurface_1_1QualityParams.html", "structocc_1_1isosurface_1_1QualityParams" ],
         [ "RadiusMetric", "classocc_1_1isosurface_1_1RadiusMetric.html", "classocc_1_1isosurface_1_1RadiusMetric" ],
         [ "RInvFunc", "structocc_1_1isosurface_1_1RInvFunc.html", "structocc_1_1isosurface_1_1RInvFunc" ],
+        [ "SharpRefineParams", "structocc_1_1isosurface_1_1SharpRefineParams.html", "structocc_1_1isosurface_1_1SharpRefineParams" ],
         [ "StockholderWeightFunctor", "classocc_1_1isosurface_1_1StockholderWeightFunctor.html", "classocc_1_1isosurface_1_1StockholderWeightFunctor" ],
         [ "SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", "structocc_1_1isosurface_1_1SurfaceCurvature" ],
         [ "VoidSurfaceFunctor", "classocc_1_1isosurface_1_1VoidSurfaceFunctor.html", "classocc_1_1isosurface_1_1VoidSurfaceFunctor" ],

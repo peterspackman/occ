@@ -1,14 +1,19 @@
 var namespaceocc_1_1geometry_1_1mc_1_1impl =
 [
     [ "Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge" ],
+    [ "EdgeCrossing", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing" ],
     [ "EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash" ],
     [ "has_basis_transform", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html", null ],
     [ "has_basis_transform< T, std::void_t< decltype(std::declval< T >().basis_transform())> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform_3_01T_00_01std_1_1void__t_3_01declt2cec5ff47cede2234f4d8b7c5c4da8f3.html", null ],
     [ "has_batch_evaluate", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ],
     [ "has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ],
+    [ "has_point_evaluate", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate.html", null ],
+    [ "has_point_evaluate< T, std::void_t< decltype(std::declval< const T & >()(std::declval< const FVec3 & >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate_3_01T_00_01std_1_1void__t_3_01decltydd3f0790f5deda28bdbab41371fbc688.html", null ],
+    [ "eval_point", "namespaceocc_1_1geometry_1_1mc_1_1impl.html#ac755aebf4aefd66b395f571f71a536b9", null ],
     [ "get_offset", "namespaceocc_1_1geometry_1_1mc_1_1impl.html#af21221977d61e288ddba8a816749fca5", null ],
     [ "interpolate", "namespaceocc_1_1geometry_1_1mc_1_1impl.html#a18252dc104a0feefd61c7126dbc79f5e", null ],
     [ "march_cube", "namespaceocc_1_1geometry_1_1mc_1_1impl.html#ab84d90947c9a8a551a5873fd338d064a", null ],
+    [ "refine_and_emit", "namespaceocc_1_1geometry_1_1mc_1_1impl.html#a3028a7b5506abeb46acc53cbc8c7c2df", null ],
     [ "CUBE_REMAP", "namespaceocc_1_1geometry_1_1mc_1_1impl.html#a6e74c476e0c320cc74fb2d36b1df8dae", null ],
     [ "sqrt_3", "namespaceocc_1_1geometry_1_1mc_1_1impl.html#a9a78b86dbf25c5dec2943f5b0f8dfc71", null ]
 ];

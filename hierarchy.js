@@ -11,6 +11,7 @@ var hierarchy =
     [ "occ::io::AdpData", "structocc_1_1io_1_1AdpData.html", null ],
     [ "occ::dma::AnalyticalIntegrator", "classocc_1_1dma_1_1AnalyticalIntegrator.html", null ],
     [ "occ::opt::AngleCoordinate", "classocc_1_1opt_1_1AngleCoordinate.html", null ],
+    [ "occ::isosurface::AngleStats", "structocc_1_1isosurface_1_1AngleStats.html", null ],
     [ "occ::xtb::AnisotropicEnergy", "structocc_1_1xtb_1_1AnisotropicEnergy.html", null ],
     [ "occ::xtb::AnisotropicPairGradient", "structocc_1_1xtb_1_1AnisotropicPairGradient.html", null ],
     [ "occ::xtb::AnisotropicPotentials", "structocc_1_1xtb_1_1AnisotropicPotentials.html", null ],
@@ -167,6 +168,7 @@ var hierarchy =
     [ "occ::ints::ECoeffs3D< T, LA, LB >", "structocc_1_1ints_1_1ECoeffs3D.html", null ],
     [ "occ::gto::io::ECPShell", "structocc_1_1gto_1_1io_1_1ECPShell.html", null ],
     [ "occ::geometry::mc::impl::Edge", "structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html", null ],
+    [ "occ::geometry::mc::impl::EdgeCrossing", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html", null ],
     [ "occ::geometry::mc::impl::EdgeHash", "structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html", null ],
     [ "occ::qm::EDIIS", "classocc_1_1qm_1_1EDIIS.html", null ],
     [ "occ::isosurface::EEQEspFunctor", "structocc_1_1isosurface_1_1EEQEspFunctor.html", null ],
@@ -223,7 +225,8 @@ var hierarchy =
     [ "std::false_type", null, [
       [ "occ::core::numpy::impl::is_complex< T >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex.html", null ],
       [ "occ::geometry::mc::impl::has_basis_transform< T, typename >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html", null ],
-      [ "occ::geometry::mc::impl::has_batch_evaluate< T, typename >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ]
+      [ "occ::geometry::mc::impl::has_batch_evaluate< T, typename >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html", null ],
+      [ "occ::geometry::mc::impl::has_point_evaluate< T, typename >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate.html", null ]
     ] ],
     [ "occ::descriptors::FastNeighborFinder< MaxK >", "classocc_1_1descriptors_1_1FastNeighborFinder.html", null ],
     [ "occ::io::FchkReader::FchkBasis", "structocc_1_1io_1_1FchkReader_1_1FchkBasis.html", null ],
@@ -261,6 +264,7 @@ var hierarchy =
     [ "occ::mults::EwaldLatticeCache::GVector", "structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html", null ],
     [ "quickhull::HalfEdgeMesh< FloatType, IndexType >::HalfEdge", "structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html", null ],
     [ "quickhull::MeshBuilder< T >::HalfEdge", "structquickhull_1_1MeshBuilder_1_1HalfEdge.html", null ],
+    [ "occ::geometry::HalfEdgeMesh", "classocc_1_1geometry_1_1HalfEdgeMesh.html", null ],
     [ "quickhull::HalfEdgeMesh< FloatType, IndexType >", "classquickhull_1_1HalfEdgeMesh.html", null ],
     [ "occ::mults::kernel_detail::HermiteAddTable< MaxL >", "structocc_1_1mults_1_1kernel__detail_1_1HermiteAddTable.html", null ],
     [ "occ::qm::HessianEvaluator< Proc >", "classocc_1_1qm_1_1HessianEvaluator.html", null ],
@@ -269,7 +273,6 @@ var hierarchy =
     [ "occ::geometry::IcosphereMesh", "classocc_1_1geometry_1_1IcosphereMesh.html", null ],
     [ "occ::io::IndependentMolecule", "structocc_1_1io_1_1IndependentMolecule.html", null ],
     [ "occ::mults::SymmetryMapping::IndependentMoleculeInfo", "structocc_1_1mults_1_1SymmetryMapping_1_1IndependentMoleculeInfo.html", null ],
-    [ "occ::geometry::IndexCache", "structocc_1_1geometry_1_1IndexCache.html", null ],
     [ "occ::io::kmcpp::InputWriter", "classocc_1_1io_1_1kmcpp_1_1InputWriter.html", null ],
     [ "occ::qm::IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", null ],
     [ "occ::qm::IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", null ],
@@ -305,7 +308,6 @@ var hierarchy =
     [ "occ::interaction::LatticeEnergyCalculator", "classocc_1_1interaction_1_1LatticeEnergyCalculator.html", null ],
     [ "occ::interaction::LatticeEnergyResult", "structocc_1_1interaction_1_1LatticeEnergyResult.html", null ],
     [ "occ::xtb::LatticeImage", "structocc_1_1xtb_1_1LatticeImage.html", null ],
-    [ "occ::geometry::IndexCache::Layer", "structocc_1_1geometry_1_1IndexCache_1_1Layer.html", null ],
     [ "occ::mults::LBFGS", "classocc_1_1mults_1_1LBFGS.html", null ],
     [ "occ::mults::LBFGSResult", "structocc_1_1mults_1_1LBFGSResult.html", null ],
     [ "occ::mults::LBFGSSettings", "structocc_1_1mults_1_1LBFGSSettings.html", null ],
@@ -461,6 +463,7 @@ var hierarchy =
     [ "occ::io::QCSchemaModel", "structocc_1_1io_1_1QCSchemaModel.html", null ],
     [ "occ::io::QCSchemaReader", "classocc_1_1io_1_1QCSchemaReader.html", null ],
     [ "occ::io::QCSchemaTopology", "structocc_1_1io_1_1QCSchemaTopology.html", null ],
+    [ "occ::isosurface::QualityParams", "structocc_1_1isosurface_1_1QualityParams.html", null ],
     [ "quickhull::QuickHull< FloatType >", "classquickhull_1_1QuickHull.html", null ],
     [ "occ::dft::RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", null ],
     [ "occ::isosurface::RadiusMetric", "classocc_1_1isosurface_1_1RadiusMetric.html", null ],
@@ -485,7 +488,6 @@ var hierarchy =
     [ "occ::ints::RIntsDynamic< T >", "structocc_1_1ints_1_1RIntsDynamic.html", null ],
     [ "occ::isosurface::RInvFunc", "structocc_1_1isosurface_1_1RInvFunc.html", null ],
     [ "occ::main::RoptSettings", "structocc_1_1main_1_1RoptSettings.html", null ],
-    [ "occ::geometry::IndexCache::Row", "structocc_1_1geometry_1_1IndexCache_1_1Row.html", null ],
     [ "occ::io::RowConfiguration", "structocc_1_1io_1_1RowConfiguration.html", null ],
     [ "occ::io::RuntimeInput", "structocc_1_1io_1_1RuntimeInput.html", null ],
     [ "occ::xtb::SccOptions", "structocc_1_1xtb_1_1SccOptions.html", null ],
@@ -507,6 +509,7 @@ var hierarchy =
     [ "occ::mults::SFunctionTerm", "structocc_1_1mults_1_1SFunctionTerm.html", null ],
     [ "occ::mults::SFunctionTermList", "structocc_1_1mults_1_1SFunctionTermList.html", null ],
     [ "occ::mults::SFunctionTermListBuilder", "classocc_1_1mults_1_1SFunctionTermListBuilder.html", null ],
+    [ "occ::isosurface::SharpRefineParams", "structocc_1_1isosurface_1_1SharpRefineParams.html", null ],
     [ "occ::gto::Shell", "structocc_1_1gto_1_1Shell.html", null ],
     [ "occ::slater::Shell", "classocc_1_1slater_1_1Shell.html", null ],
     [ "occ::qm::cosx::ShellLists", "structocc_1_1qm_1_1cosx_1_1ShellLists.html", null ],
@@ -579,7 +582,8 @@ var hierarchy =
     [ "std::true_type", null, [
       [ "occ::core::numpy::impl::is_complex< std::complex< T > >", "structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html", null ],
       [ "occ::geometry::mc::impl::has_basis_transform< T, std::void_t< decltype(std::declval< T >().basis_transform())> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform_3_01T_00_01std_1_1void__t_3_01declt2cec5ff47cede2234f4d8b7c5c4da8f3.html", null ],
-      [ "occ::geometry::mc::impl::has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ]
+      [ "occ::geometry::mc::impl::has_batch_evaluate< T, std::void_t< decltype(std::declval< T >().batch(std::declval< Eigen::Ref< const FMat3N > >(), std::declval< Eigen::Ref< FVec > >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html", null ],
+      [ "occ::geometry::mc::impl::has_point_evaluate< T, std::void_t< decltype(std::declval< const T & >()(std::declval< const FVec3 & >()))> >", "structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate_3_01T_00_01std_1_1void__t_3_01decltydd3f0790f5deda28bdbab41371fbc688.html", null ]
     ] ],
     [ "occ::mults::TrustRegion", "classocc_1_1mults_1_1TrustRegion.html", null ],
     [ "occ::mults::TrustRegionResult", "structocc_1_1mults_1_1TrustRegionResult.html", null ],

@@ -1,14 +1,16 @@
 var searchData=
 [
   ['halfedge_0',['halfedge',['../structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html',1,'quickhull::HalfEdgeMesh&lt; FloatType, IndexType &gt;::HalfEdge'],['../structquickhull_1_1MeshBuilder_1_1HalfEdge.html',1,'quickhull::MeshBuilder&lt; T &gt;::HalfEdge']]],
-  ['halfedgemesh_1',['HalfEdgeMesh',['../classquickhull_1_1HalfEdgeMesh.html',1,'quickhull']]],
+  ['halfedgemesh_1',['halfedgemesh',['../classocc_1_1geometry_1_1HalfEdgeMesh.html',1,'occ::geometry::HalfEdgeMesh'],['../classquickhull_1_1HalfEdgeMesh.html',1,'quickhull::HalfEdgeMesh&lt; FloatType, IndexType &gt;']]],
   ['hartreefock_2',['HartreeFock',['../classocc_1_1qm_1_1HartreeFock.html',1,'occ::qm']]],
   ['has_5fbasis_5ftransform_3',['has_basis_transform',['../structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html',1,'occ::geometry::mc::impl']]],
   ['has_5fbasis_5ftransform_3c_20t_2c_20std_3a_3avoid_5ft_3c_20decltype_28std_3a_3adeclval_3c_20t_20_3e_28_29_2ebasis_5ftransform_28_29_29_3e_20_3e_4',['has_basis_transform&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().basis_transform())&gt; &gt;',['../structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform_3_01T_00_01std_1_1void__t_3_01declt2cec5ff47cede2234f4d8b7c5c4da8f3.html',1,'occ::geometry::mc::impl']]],
   ['has_5fbatch_5fevaluate_5',['has_batch_evaluate',['../structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html',1,'occ::geometry::mc::impl']]],
   ['has_5fbatch_5fevaluate_3c_20t_2c_20std_3a_3avoid_5ft_3c_20decltype_28std_3a_3adeclval_3c_20t_20_3e_28_29_2ebatch_28std_3a_3adeclval_3c_20eigen_3a_3aref_3c_20const_20fmat3n_20_3e_20_3e_28_29_2c_20std_3a_3adeclval_3c_20eigen_3a_3aref_3c_20fvec_20_3e_20_3e_28_29_29_29_3e_20_3e_6',['has_batch_evaluate&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().batch(std::declval&lt; Eigen::Ref&lt; const FMat3N &gt; &gt;(), std::declval&lt; Eigen::Ref&lt; FVec &gt; &gt;()))&gt; &gt;',['../structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html',1,'occ::geometry::mc::impl']]],
-  ['hermiteaddtable_7',['HermiteAddTable',['../structocc_1_1mults_1_1kernel__detail_1_1HermiteAddTable.html',1,'occ::mults::kernel_detail']]],
-  ['hessianevaluator_8',['HessianEvaluator',['../classocc_1_1qm_1_1HessianEvaluator.html',1,'occ::qm']]],
-  ['hirshfeldpartition_9',['HirshfeldPartition',['../classocc_1_1dft_1_1HirshfeldPartition.html',1,'occ::dft']]],
-  ['hkl_10',['HKL',['../structocc_1_1crystal_1_1HKL.html',1,'occ::crystal']]]
+  ['has_5fpoint_5fevaluate_7',['has_point_evaluate',['../structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate.html',1,'occ::geometry::mc::impl']]],
+  ['has_5fpoint_5fevaluate_3c_20t_2c_20std_3a_3avoid_5ft_3c_20decltype_28std_3a_3adeclval_3c_20const_20t_20_26_20_3e_28_29_28std_3a_3adeclval_3c_20const_20fvec3_20_26_20_3e_28_29_29_29_3e_20_3e_8',['has_point_evaluate&lt; T, std::void_t&lt; decltype(std::declval&lt; const T &amp; &gt;()(std::declval&lt; const FVec3 &amp; &gt;()))&gt; &gt;',['../structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate_3_01T_00_01std_1_1void__t_3_01decltydd3f0790f5deda28bdbab41371fbc688.html',1,'occ::geometry::mc::impl']]],
+  ['hermiteaddtable_9',['HermiteAddTable',['../structocc_1_1mults_1_1kernel__detail_1_1HermiteAddTable.html',1,'occ::mults::kernel_detail']]],
+  ['hessianevaluator_10',['HessianEvaluator',['../classocc_1_1qm_1_1HessianEvaluator.html',1,'occ::qm']]],
+  ['hirshfeldpartition_11',['HirshfeldPartition',['../classocc_1_1dft_1_1HirshfeldPartition.html',1,'occ::dft']]],
+  ['hkl_12',['HKL',['../structocc_1_1crystal_1_1HKL.html',1,'occ::crystal']]]
 ];

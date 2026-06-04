@@ -65,7 +65,8 @@ var searchData=
   ['load_5fsap_5fbasis_62',['load_sap_basis',['../classocc_1_1gto_1_1AOBasis.html#ae3cc12f50774dd43b2bb4491e4ff7c02',1,'occ::gto::AOBasis']]],
   ['load_5fslaterbasis_63',['load_slaterbasis',['../namespaceocc_1_1slater.html#aa4a21c8f522e0903b93f679007b7faae',1,'occ::slater']]],
   ['load_5fwavefunction_64',['load_wavefunction',['../namespaceocc_1_1interaction.html#a09bfb2f8b77b94b050f32c8d64f97130',1,'occ::interaction']]],
-  ['log_5fsummary_65',['log_summary',['../structocc_1_1core_1_1VibrationalModes.html#ad14a11b06542d9cafe325a67cb7c351b',1,'occ::core::VibrationalModes']]],
-  ['logsumexpfunctor_66',['LogSumExpFunctor',['../classocc_1_1isosurface_1_1LogSumExpFunctor.html#a9cfd31caecef2fe64106f0465cceddf3',1,'occ::isosurface::LogSumExpFunctor']]],
-  ['longitudinal_5facoustic_5fvelocity_67',['longitudinal_acoustic_velocity',['../classocc_1_1core_1_1ElasticTensor.html#ad8ae98c85508c4021c833bb58d67c99c',1,'occ::core::ElasticTensor']]]
+  ['local_5fgradient_65',['local_gradient',['../namespaceocc_1_1isosurface_1_1impl.html#a3b6bbbf3ebc588f91837ed3608bfafbc',1,'occ::isosurface::impl']]],
+  ['log_5fsummary_66',['log_summary',['../structocc_1_1core_1_1VibrationalModes.html#ad14a11b06542d9cafe325a67cb7c351b',1,'occ::core::VibrationalModes']]],
+  ['logsumexpfunctor_67',['LogSumExpFunctor',['../classocc_1_1isosurface_1_1LogSumExpFunctor.html#a9cfd31caecef2fe64106f0465cceddf3',1,'occ::isosurface::LogSumExpFunctor']]],
+  ['longitudinal_5facoustic_5fvelocity_68',['longitudinal_acoustic_velocity',['../classocc_1_1core_1_1ElasticTensor.html#ad8ae98c85508c4021c833bb58d67c99c',1,'occ::core::ElasticTensor']]]
 ];

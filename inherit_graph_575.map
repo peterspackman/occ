@@ -1,3 +1,11 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classtinyply_1_1Buffer.html" title=" " alt="" coords="5,5,119,31"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,125,124,150"/>
+<area shape="rect" id="Node000001" href="$structocc_1_1core_1_1numpy_1_1impl_1_1is__complex.html" title=" " alt="" coords="185,5,354,45"/>
+<area shape="poly" id="edge27_Node000000_Node000001" title=" " alt="" coords="89,113,126,83,171,55,198,43,200,48,173,60,129,88,92,117"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html" title=" " alt="" coords="172,70,367,125"/>
+<area shape="poly" id="edge28_Node000000_Node000002" title=" " alt="" coords="137,121,171,114,172,119,138,126"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html" title=" " alt="" coords="175,149,364,203"/>
+<area shape="poly" id="edge29_Node000000_Node000003" title=" " alt="" coords="138,148,175,155,174,161,137,154"/>
+<area shape="rect" id="Node000004" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate.html" title=" " alt="" coords="176,227,363,282"/>
+<area shape="poly" id="edge30_Node000000_Node000004" title=" " alt="" coords="93,156,130,185,173,212,198,225,196,230,171,217,127,189,90,161"/>
 </map>

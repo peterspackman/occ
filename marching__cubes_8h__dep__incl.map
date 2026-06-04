@@ -1,5 +1,12 @@
 <map id="/home/runner/work/occ/occ/include/occ/geometry/marching_cubes.h" name="/home/runner/work/occ/occ/include/occ/geometry/marching_cubes.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,197,60"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="224,5,416,60"/>
 <area shape="rect" id="Node000002" href="$linear__hashed__marching__cubes_8h.html" title=" " alt="" coords="5,108,197,177"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,74,104,108,99,108,99,74"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="256,69,171,110,168,105,253,64"/>
+<area shape="rect" id="Node000003" href="$projection_8h.html" title=" " alt="" coords="222,115,418,170"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="323,74,323,115,317,115,317,74"/>
+<area shape="rect" id="Node000005" href="$refine__sharp_8h.html" title=" " alt="" coords="358,225,554,280"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="391,66,414,84,433,107,447,136,455,168,460,225,455,226,450,169,442,138,428,109,410,88,387,70"/>
+<area shape="rect" id="Node000004" href="$improve__quality_8h.html" title=" " alt="" coords="138,225,334,280"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="293,183,259,227,254,223,289,180"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="366,177,424,223,421,227,362,181"/>
 </map>

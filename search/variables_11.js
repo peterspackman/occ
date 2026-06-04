@@ -6,5 +6,9 @@ var searchData=
   ['qp_3',['qp',['../structocc_1_1xtb_1_1CammMoments.html#a283feb7c7d8067c3e01162a0acc0add0',1,'occ::xtb::CammMoments']]],
   ['quad_5fkernel_4',['quad_kernel',['../structocc_1_1xtb_1_1ElementParam.html#aaca4439fa597d7953e16d0a95c30840c',1,'occ::xtb::ElementParam']]],
   ['quadrupole_5',['quadrupole',['../structocc_1_1io_1_1SiteMultipoles.html#aed62aeb885111fcfe6bb31b4807c84fb',1,'occ::io::SiteMultipoles']]],
-  ['quaternion_6',['quaternion',['../structocc_1_1mults_1_1RigidBodyState.html#ad3971ea0f250fd9b699d8975f514caec',1,'occ::mults::RigidBodyState']]]
+  ['quality_5fcollapse_5fratio_6',['quality_collapse_ratio',['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#a1573ee240c14a53c0f283e6a7665534b',1,'occ::isosurface::IsosurfaceGenerationParameters::quality_collapse_ratio'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a036eb40db01731d15258ad46d5811fe1',1,'occ::main::IsosurfaceConfig::quality_collapse_ratio']]],
+  ['quality_5ffeature_5fangle_7',['quality_feature_angle',['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#ab00ac403057f5da03b57704abc251c5e',1,'occ::isosurface::IsosurfaceGenerationParameters::quality_feature_angle'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a1e3e544cf9ff588f700f98ba71ccefe1',1,'occ::main::IsosurfaceConfig::quality_feature_angle']]],
+  ['quality_5fiterations_8',['quality_iterations',['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#afc103147a4c639a81be0abcd43403891',1,'occ::isosurface::IsosurfaceGenerationParameters']]],
+  ['quality_5frelaxation_9',['quality_relaxation',['../structocc_1_1isosurface_1_1IsosurfaceGenerationParameters.html#a77250560a940180fd61a76238c5d8a26',1,'occ::isosurface::IsosurfaceGenerationParameters::quality_relaxation'],['../structocc_1_1main_1_1IsosurfaceConfig.html#a60e88d92ccb52aa4fa8c0ce7cee7a6f3',1,'occ::main::IsosurfaceConfig::quality_relaxation']]],
+  ['quaternion_10',['quaternion',['../structocc_1_1mults_1_1RigidBodyState.html#ad3971ea0f250fd9b699d8975f514caec',1,'occ::mults::RigidBodyState']]]
 ];

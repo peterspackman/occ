@@ -1,9 +1,7 @@
 <map id="occ::io::MethodInput" name="occ::io::MethodInput">
-<area shape="rect" id="Node000001" title=" " alt="" coords="95,211,249,236"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation." alt="" coords="5,123,157,148"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,156,161,208,158,212,102,160"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="51,5,111,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="84,44,84,123,79,123,79,44"/>
-<area shape="rect" id="Node000004" href="$structocc_1_1io_1_1COSXSettings.html" title=" " alt="" coords="182,123,343,148"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="242,160,186,212,183,208,239,156"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="95,93,249,119"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1io_1_1GridSettings.html" title="Extended settings for Becke grid generation." alt="" coords="5,5,157,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,38,161,91,158,95,102,42"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1io_1_1COSXSettings.html" title=" " alt="" coords="182,5,343,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="242,42,186,95,183,91,239,38"/>
 </map>

@@ -1,9 +1,9 @@
 var dir_f71aeec53af52887bf7238294c17f1a6 =
 [
     [ "convex_hull.h", "convex__hull_8h.html", "convex__hull_8h" ],
+    [ "half_edge.h", "half__edge_8h.html", "half__edge_8h" ],
     [ "half_edge_mesh.h", "half__edge__mesh_8h.html", "half__edge__mesh_8h" ],
     [ "icosphere_mesh.h", "icosphere__mesh_8h.html", "icosphere__mesh_8h" ],
-    [ "index_cache.h", "index__cache_8h.html", "index__cache_8h" ],
     [ "linear_hashed_marching_cubes.h", "linear__hashed__marching__cubes_8h.html", "linear__hashed__marching__cubes_8h" ],
     [ "linear_hashed_octree.h", "linear__hashed__octree_8h.html", "linear__hashed__octree_8h" ],
     [ "marching_cubes.h", "marching__cubes_8h.html", "marching__cubes_8h" ],

@@ -1,8 +1,5 @@
 <map id="occ::qm::cc::ThcMP2Options" name="occ::qm::cc::ThcMP2Options">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,181,209,207"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1qm_1_1cc_1_1ThcOptions.html" title=" " alt="" coords="177,93,353,119"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="233,128,130,183,127,179,230,123"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="32,5,92,31"/>
-<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="57,44,51,80,51,99,55,118,74,153,97,179,93,183,70,156,50,120,46,100,46,79,52,43"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,34,238,91,236,96,101,39"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,93,209,119"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1qm_1_1cc_1_1ThcOptions.html" title=" " alt="" coords="19,5,195,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,45,110,93,105,93,105,45"/>
 </map>

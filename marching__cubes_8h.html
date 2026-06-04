@@ -107,21 +107,22 @@ $(document).ready(function(){initNavTree('marching__cubes_8h.html',''); initResi
 <div class="contents">
 <div class="textblock"><code>#include &lt;Eigen/Geometry&gt;</code><br />
 <code>#include &lt;Eigen/LU&gt;</code><br />
+<code>#include &lt;ankerl/unordered_dense.h&gt;</code><br />
 <code>#include &lt;array&gt;</code><br />
+<code>#include &lt;cmath&gt;</code><br />
 <code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="timings_8h.html">occ/core/timings.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="index__cache_8h.html">occ/geometry/index_cache.h</a>&gt;</code><br />
 <code>#include &lt;type_traits&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for marching_cubes.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="marching__cubes_8h__incl.svg" width="1046" height="227"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="marching__cubes_8h__incl.svg" width="1202" height="212"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="marching__cubes_8h__dep__incl.svg" width="203" height="183"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="marching__cubes_8h__dep__incl.svg" width="560" height="286"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -133,6 +134,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html">occ::geometry::mc::impl::has_basis_transform&lt; T, typename &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform_3_01T_00_01std_1_1void__t_3_01declt2cec5ff47cede2234f4d8b7c5c4da8f3.html">occ::geometry::mc::impl::has_basis_transform&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().basis_transform())&gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate.html">occ::geometry::mc::impl::has_point_evaluate&lt; T, typename &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate_3_01T_00_01std_1_1void__t_3_01decltydd3f0790f5deda28bdbab41371fbc688.html">occ::geometry::mc::impl::has_point_evaluate&lt; T, std::void_t&lt; decltype(std::declval&lt; const T &amp; &gt;()(std::declval&lt; const FVec3 &amp; &gt;()))&gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html">occ::geometry::mc::impl::EdgeCrossing</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1MarchingCubes.html">occ::geometry::mc::MarchingCubes</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -161,6 +168,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a18252dc104a0feefd61c7126dbc79f5e" id="r_a18252dc104a0feefd61c7126dbc79f5e"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a18252dc104a0feefd61c7126dbc79f5e"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1geometry_1_1mc_1_1impl.html#a18252dc104a0feefd61c7126dbc79f5e">occ::geometry::mc::impl::interpolate</a> (T a, T b, float t)</td></tr>
 <tr class="separator:a18252dc104a0feefd61c7126dbc79f5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac755aebf4aefd66b395f571f71a536b9" id="r_ac755aebf4aefd66b395f571f71a536b9"><td class="memTemplParams" colspan="2">template&lt;typename S &gt; </td></tr>
+<tr class="memitem:ac755aebf4aefd66b395f571f71a536b9"><td class="memTemplItemLeft" align="right" valign="top">float&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1geometry_1_1mc_1_1impl.html#ac755aebf4aefd66b395f571f71a536b9">occ::geometry::mc::impl::eval_point</a> (const S &amp;source, const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;p)</td></tr>
+<tr class="separator:ac755aebf4aefd66b395f571f71a536b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3028a7b5506abeb46acc53cbc8c7c2df" id="r_a3028a7b5506abeb46acc53cbc8c7c2df"><td class="memTemplParams" colspan="2">template&lt;typename S , typename E &gt; </td></tr>
+<tr class="memitem:a3028a7b5506abeb46acc53cbc8c7c2df"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1geometry_1_1mc_1_1impl.html#a3028a7b5506abeb46acc53cbc8c7c2df">occ::geometry::mc::impl::refine_and_emit</a> (const S &amp;source, const std::vector&lt; <a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html">EdgeCrossing</a> &gt; &amp;crossings, float isovalue, int steps, E &amp;extract_fn)</td></tr>
+<tr class="separator:a3028a7b5506abeb46acc53cbc8c7c2df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>

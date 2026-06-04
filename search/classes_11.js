@@ -9,7 +9,7 @@ var searchData=
   ['referencedata_6',['ReferenceData',['../structocc_1_1gto_1_1io_1_1ReferenceData.html',1,'occ::gto::io']]],
   ['referenceenergies_7',['ReferenceEnergies',['../structocc_1_1io_1_1ReferenceEnergies.html',1,'occ::io']]],
   ['repulsionenergygradient_8',['RepulsionEnergyGradient',['../structocc_1_1xtb_1_1RepulsionEnergyGradient.html',1,'occ::xtb']]],
-  ['result_9',['result',['../structocc_1_1cg_1_1SMDCalculator_1_1Result.html',1,'occ::cg::SMDCalculator::Result'],['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html',1,'occ::dft::DensityFunctional::Result'],['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html',1,'occ::dft::NonLocalCorrelationFunctional::Result'],['../structocc_1_1solvent_1_1COSMO_1_1Result.html',1,'occ::solvent::COSMO::Result']]],
+  ['result_9',['result',['../structocc_1_1solvent_1_1COSMO_1_1Result.html',1,'occ::solvent::COSMO::Result'],['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html',1,'occ::dft::NonLocalCorrelationFunctional::Result'],['../structocc_1_1dft_1_1DensityFunctional_1_1Result.html',1,'occ::dft::DensityFunctional::Result'],['../structocc_1_1cg_1_1SMDCalculator_1_1Result.html',1,'occ::cg::SMDCalculator::Result']]],
   ['results_10',['Results',['../structocc_1_1qm_1_1MP2_1_1Results.html',1,'occ::qm::MP2']]],
   ['rigidbodydynamics_11',['RigidBodyDynamics',['../classocc_1_1mults_1_1RigidBodyDynamics.html',1,'occ::mults']]],
   ['rigidbodyforceresult_12',['RigidBodyForceResult',['../structocc_1_1mults_1_1RigidBodyForceResult.html',1,'occ::mults']]],
@@ -20,7 +20,6 @@ var searchData=
   ['rintsdynamic_17',['RIntsDynamic',['../structocc_1_1ints_1_1RIntsDynamic.html',1,'occ::ints']]],
   ['rinvfunc_18',['RInvFunc',['../structocc_1_1isosurface_1_1RInvFunc.html',1,'occ::isosurface']]],
   ['roptsettings_19',['RoptSettings',['../structocc_1_1main_1_1RoptSettings.html',1,'occ::main']]],
-  ['row_20',['Row',['../structocc_1_1geometry_1_1IndexCache_1_1Row.html',1,'occ::geometry::IndexCache']]],
-  ['rowconfiguration_21',['RowConfiguration',['../structocc_1_1io_1_1RowConfiguration.html',1,'occ::io']]],
-  ['runtimeinput_22',['RuntimeInput',['../structocc_1_1io_1_1RuntimeInput.html',1,'occ::io']]]
+  ['rowconfiguration_20',['RowConfiguration',['../structocc_1_1io_1_1RowConfiguration.html',1,'occ::io']]],
+  ['runtimeinput_21',['RuntimeInput',['../structocc_1_1io_1_1RuntimeInput.html',1,'occ::io']]]
 ];

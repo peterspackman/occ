@@ -109,6 +109,8 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1geometry_1_1mc_1_1impl
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1Edge.html">Edge</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html">EdgeCrossing</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeHash.html">EdgeHash</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html">has_basis_transform</a></td></tr>
@@ -118,6 +120,10 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html">has_batch_evaluate</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html">has_batch_evaluate&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().batch(std::declval&lt; Eigen::Ref&lt; const FMat3N &gt; &gt;(), std::declval&lt; Eigen::Ref&lt; FVec &gt; &gt;()))&gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate.html">has_point_evaluate</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate_3_01T_00_01std_1_1void__t_3_01decltydd3f0790f5deda28bdbab41371fbc688.html">has_point_evaluate&lt; T, std::void_t&lt; decltype(std::declval&lt; const T &amp; &gt;()(std::declval&lt; const FVec3 &amp; &gt;()))&gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -130,6 +136,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a18252dc104a0feefd61c7126dbc79f5e" id="r_a18252dc104a0feefd61c7126dbc79f5e"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a18252dc104a0feefd61c7126dbc79f5e"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1geometry_1_1mc_1_1impl.html#a18252dc104a0feefd61c7126dbc79f5e">interpolate</a> (T a, T b, float t)</td></tr>
 <tr class="separator:a18252dc104a0feefd61c7126dbc79f5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac755aebf4aefd66b395f571f71a536b9" id="r_ac755aebf4aefd66b395f571f71a536b9"><td class="memTemplParams" colspan="2">template&lt;typename S &gt; </td></tr>
+<tr class="memitem:ac755aebf4aefd66b395f571f71a536b9"><td class="memTemplItemLeft" align="right" valign="top">float&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1geometry_1_1mc_1_1impl.html#ac755aebf4aefd66b395f571f71a536b9">eval_point</a> (const S &amp;source, const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;p)</td></tr>
+<tr class="separator:ac755aebf4aefd66b395f571f71a536b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3028a7b5506abeb46acc53cbc8c7c2df" id="r_a3028a7b5506abeb46acc53cbc8c7c2df"><td class="memTemplParams" colspan="2">template&lt;typename S , typename E &gt; </td></tr>
+<tr class="memitem:a3028a7b5506abeb46acc53cbc8c7c2df"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1geometry_1_1mc_1_1impl.html#a3028a7b5506abeb46acc53cbc8c7c2df">refine_and_emit</a> (const S &amp;source, const std::vector&lt; <a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html">EdgeCrossing</a> &gt; &amp;crossings, float isovalue, int steps, E &amp;extract_fn)</td></tr>
+<tr class="separator:a3028a7b5506abeb46acc53cbc8c7c2df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -139,6 +151,44 @@ Variables</h2></td></tr>
 <tr class="separator:a9a78b86dbf25c5dec2943f5b0f8dfc71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="ac755aebf4aefd66b395f571f71a536b9" name="ac755aebf4aefd66b395f571f71a536b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac755aebf4aefd66b395f571f71a536b9">&#9670;&#160;</a></span>eval_point()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename S &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">float occ::geometry::mc::impl::eval_point </td>
+          <td>(</td>
+          <td class="paramtype">const S &amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>p</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="af21221977d61e288ddba8a816749fca5" name="af21221977d61e288ddba8a816749fca5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af21221977d61e288ddba8a816749fca5">&#9670;&#160;</a></span>get_offset()</h2>
 
@@ -230,6 +280,54 @@ template&lt;typename E &gt; </div>
           <td></td>
           <td class="paramtype">E &amp;&#160;</td>
           <td class="paramname"><em>edge_func</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3028a7b5506abeb46acc53cbc8c7c2df" name="a3028a7b5506abeb46acc53cbc8c7c2df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3028a7b5506abeb46acc53cbc8c7c2df">&#9670;&#160;</a></span>refine_and_emit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename S , typename E &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::geometry::mc::impl::refine_and_emit </td>
+          <td>(</td>
+          <td class="paramtype">const S &amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html">EdgeCrossing</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>crossings</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>isovalue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>steps</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">E &amp;&#160;</td>
+          <td class="paramname"><em>extract_fn</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

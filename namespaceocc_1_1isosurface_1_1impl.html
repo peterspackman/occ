@@ -108,8 +108,358 @@ Functions</h2></td></tr>
 <tr class="memitem:a380a10dfef8ea64e1e86698d1886fd52" id="r_a380a10dfef8ea64e1e86698d1886fd52"><td class="memTemplParams" colspan="2">template&lt;class Func &gt; </td></tr>
 <tr class="memitem:a380a10dfef8ea64e1e86698d1886fd52"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a380a10dfef8ea64e1e86698d1886fd52">remap_vertices</a> (const Func &amp;f, const std::vector&lt; float &gt; &amp;v, std::vector&lt; float &gt; &amp;dest)</td></tr>
 <tr class="separator:a380a10dfef8ea64e1e86698d1886fd52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad54d9f1c75b2dc02fb7bbe12cddfea44" id="r_ad54d9f1c75b2dc02fb7bbe12cddfea44"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#ad54d9f1c75b2dc02fb7bbe12cddfea44">vert_at</a> (const std::vector&lt; float &gt; &amp;V, int i)</td></tr>
+<tr class="separator:ad54d9f1c75b2dc02fb7bbe12cddfea44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a620bc36eb90e37086c373336d853383f" id="r_a620bc36eb90e37086c373336d853383f"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a620bc36eb90e37086c373336d853383f">tri_min_angle</a> (const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;a, const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;b, const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;c)</td></tr>
+<tr class="separator:a620bc36eb90e37086c373336d853383f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4da3e8b93d35df7a0608026b0a031e47" id="r_a4da3e8b93d35df7a0608026b0a031e47"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a4da3e8b93d35df7a0608026b0a031e47">face_normal</a> (const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;a, const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;b, const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;c)</td></tr>
+<tr class="separator:a4da3e8b93d35df7a0608026b0a031e47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa31307f619421d1a0f4ebdabdb0b5eab" id="r_aa31307f619421d1a0f4ebdabdb0b5eab"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#aa31307f619421d1a0f4ebdabdb0b5eab">edge_key</a> (int a, int b)</td></tr>
+<tr class="separator:aa31307f619421d1a0f4ebdabdb0b5eab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a913f88832b1f207f9d7f2a9fedcf550c" id="r_a913f88832b1f207f9d7f2a9fedcf550c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a913f88832b1f207f9d7f2a9fedcf550c">flip_sweep</a> (<a class="el" href="classocc_1_1geometry_1_1HalfEdgeMesh.html">occ::geometry::HalfEdgeMesh</a> &amp;mesh, const std::vector&lt; float &gt; &amp;V, float feat_cos)</td></tr>
+<tr class="separator:a913f88832b1f207f9d7f2a9fedcf550c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c39af02f95279e4ece26d63257eaa55" id="r_a0c39af02f95279e4ece26d63257eaa55"><td class="memTemplParams" colspan="2">template&lt;typename Func &gt; </td></tr>
+<tr class="memitem:a0c39af02f95279e4ece26d63257eaa55"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a0c39af02f95279e4ece26d63257eaa55">relax_sweep</a> (const Func &amp;func, float iso, const <a class="el" href="classocc_1_1geometry_1_1HalfEdgeMesh.html">occ::geometry::HalfEdgeMesh</a> &amp;mesh, std::vector&lt; float &gt; &amp;V, float feat_cos, float lambda, int proj_steps)</td></tr>
+<tr class="separator:a0c39af02f95279e4ece26d63257eaa55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a139832472ec9af6aaba141d36eb930f8" id="r_a139832472ec9af6aaba141d36eb930f8"><td class="memTemplParams" colspan="2">template&lt;typename Func &gt; </td></tr>
+<tr class="memitem:a139832472ec9af6aaba141d36eb930f8"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a139832472ec9af6aaba141d36eb930f8">collapse_short_edges</a> (const Func &amp;func, float iso, std::vector&lt; float &gt; &amp;V, std::vector&lt; float &gt; &amp;N, std::vector&lt; float &gt; &amp;C, std::vector&lt; uint32_t &gt; &amp;F, float ratio)</td></tr>
+<tr class="separator:a139832472ec9af6aaba141d36eb930f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b6bbbf3ebc588f91837ed3608bfafbc" id="r_a3b6bbbf3ebc588f91837ed3608bfafbc"><td class="memTemplParams" colspan="2">template&lt;typename Func &gt; </td></tr>
+<tr class="memitem:a3b6bbbf3ebc588f91837ed3608bfafbc"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a3b6bbbf3ebc588f91837ed3608bfafbc">local_gradient</a> (const Func &amp;func, const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;p)</td></tr>
+<tr class="separator:a3b6bbbf3ebc588f91837ed3608bfafbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22ddd4496d04bbacf20944dfd056c3fc" id="r_a22ddd4496d04bbacf20944dfd056c3fc"><td class="memTemplParams" colspan="2">template&lt;typename Func &gt; </td></tr>
+<tr class="memitem:a22ddd4496d04bbacf20944dfd056c3fc"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1isosurface_1_1impl.html#a22ddd4496d04bbacf20944dfd056c3fc">project_to_isosurface</a> (const Func &amp;func, <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> p, float iso, int steps)</td></tr>
+<tr class="separator:a22ddd4496d04bbacf20944dfd056c3fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a139832472ec9af6aaba141d36eb930f8" name="a139832472ec9af6aaba141d36eb930f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a139832472ec9af6aaba141d36eb930f8">&#9670;&#160;</a></span>collapse_short_edges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Func &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::isosurface::impl::collapse_short_edges </td>
+          <td>(</td>
+          <td class="paramtype">const Func &amp;&#160;</td>
+          <td class="paramname"><em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>iso</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>V</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>N</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>C</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; uint32_t &gt; &amp;&#160;</td>
+          <td class="paramname"><em>F</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>ratio</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa31307f619421d1a0f4ebdabdb0b5eab" name="aa31307f619421d1a0f4ebdabdb0b5eab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa31307f619421d1a0f4ebdabdb0b5eab">&#9670;&#160;</a></span>edge_key()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t occ::isosurface::impl::edge_key </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4da3e8b93d35df7a0608026b0a031e47" name="a4da3e8b93d35df7a0608026b0a031e47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4da3e8b93d35df7a0608026b0a031e47">&#9670;&#160;</a></span>face_normal()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> occ::isosurface::impl::face_normal </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>c</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a913f88832b1f207f9d7f2a9fedcf550c" name="a913f88832b1f207f9d7f2a9fedcf550c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a913f88832b1f207f9d7f2a9fedcf550c">&#9670;&#160;</a></span>flip_sweep()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::isosurface::impl::flip_sweep </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classocc_1_1geometry_1_1HalfEdgeMesh.html">occ::geometry::HalfEdgeMesh</a> &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>V</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>feat_cos</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3b6bbbf3ebc588f91837ed3608bfafbc" name="a3b6bbbf3ebc588f91837ed3608bfafbc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b6bbbf3ebc588f91837ed3608bfafbc">&#9670;&#160;</a></span>local_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Func &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> occ::isosurface::impl::local_gradient </td>
+          <td>(</td>
+          <td class="paramtype">const Func &amp;&#160;</td>
+          <td class="paramname"><em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>p</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a22ddd4496d04bbacf20944dfd056c3fc" name="a22ddd4496d04bbacf20944dfd056c3fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22ddd4496d04bbacf20944dfd056c3fc">&#9670;&#160;</a></span>project_to_isosurface()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Func &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> occ::isosurface::impl::project_to_isosurface </td>
+          <td>(</td>
+          <td class="paramtype">const Func &amp;&#160;</td>
+          <td class="paramname"><em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a>&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>iso</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>steps</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0c39af02f95279e4ece26d63257eaa55" name="a0c39af02f95279e4ece26d63257eaa55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c39af02f95279e4ece26d63257eaa55">&#9670;&#160;</a></span>relax_sweep()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Func &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::isosurface::impl::relax_sweep </td>
+          <td>(</td>
+          <td class="paramtype">const Func &amp;&#160;</td>
+          <td class="paramname"><em>func</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>iso</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1geometry_1_1HalfEdgeMesh.html">occ::geometry::HalfEdgeMesh</a> &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>V</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>feat_cos</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>lambda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>proj_steps</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a380a10dfef8ea64e1e86698d1886fd52" name="a380a10dfef8ea64e1e86698d1886fd52"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a380a10dfef8ea64e1e86698d1886fd52">&#9670;&#160;</a></span>remap_vertices()</h2>
 
@@ -142,6 +492,84 @@ template&lt;class Func &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a620bc36eb90e37086c373336d853383f" name="a620bc36eb90e37086c373336d853383f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a620bc36eb90e37086c373336d853383f">&#9670;&#160;</a></span>tri_min_angle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">float occ::isosurface::impl::tri_min_angle </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>c</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad54d9f1c75b2dc02fb7bbe12cddfea44" name="ad54d9f1c75b2dc02fb7bbe12cddfea44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad54d9f1c75b2dc02fb7bbe12cddfea44">&#9670;&#160;</a></span>vert_at()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae99d3dff4cdb5b881b62a79561d31f41">FVec3</a> occ::isosurface::impl::vert_at </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>V</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>i</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

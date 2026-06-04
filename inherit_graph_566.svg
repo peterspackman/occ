@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structquickhull_1_1MeshBuilder_1_1Face.html" target="_top" xlink:title=" ">
+<g id="a_Node000000"><a xlink:href="classquickhull_1_1MeshBuilder.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="128,-30 0,-30 0,0 128,0 128,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">quickhull::MeshBuilder</text>
-<text text-anchor="middle" x="64" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">&lt; T &gt;::Face</text>
+<text text-anchor="middle" x="64" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">&lt; FloatType &gt;</text>
 </a>
 </g>
 </g>
