@@ -12,6 +12,13 @@ struct IsosurfaceConfig {
   std::string environment_filename{""};
   size_t max_depth{4};
   double separation{0.2};
+  int edge_refinement_steps{2};
+  int refine_sharp{0};
+  double refine_sharp_angle{30.0};
+  int improve_quality{0};
+  double quality_feature_angle{30.0};
+  double quality_relaxation{0.0};
+  double quality_collapse_ratio{0.0};
   std::vector<double> isovalues{0.02};
   double background_density{0.0};
   bool use_hashed_mc{false};

@@ -64,6 +64,20 @@ struct IsosurfaceGenerationParameters {
   double separation{1.0}; // in Bohr by default
   double background_density{0.0};
   float power{2.0};
+  // Number of regula-falsi root-finding steps used to refine each marching
+  // cubes vertex along its edge (0 = classic linear interpolation).
+  int edge_refinement_steps{2};
+  // Adaptive refinement of sharp convex creases/corners: number of passes
+  // (0 = off) and the dihedral angle (degrees) above which an edge is refined.
+  int refine_sharp_passes{0};
+  float refine_sharp_angle{30.0f};
+  // Feature-preserving edge-flip passes to improve triangle quality (slivers).
+  int quality_iterations{0};
+  float quality_feature_angle{30.0f};
+  // Tangential relaxation factor used in the quality pass (0 = flips only).
+  float quality_relaxation{0.0f};
+  // Collapse edges shorter than this fraction of the median (0 = no collapse).
+  float quality_collapse_ratio{0.0f};
   OrbitalIndex surface_orbital_index;
   std::vector<OrbitalIndex> property_orbital_indices;
   bool flip_normals{false};

@@ -1,11 +1,14 @@
 #include <Eigen/Geometry>
+#include <cmath>
 #include <fmt/core.h>
 #include <occ/core/eeq.h>
 #include <occ/core/kdtree.h>
 #include <occ/geometry/marching_cubes.h>
 #include <occ/isosurface/cell_caps.h>
 #include <occ/isosurface/curvature.h>
+#include <occ/isosurface/improve_quality.h>
 #include <occ/isosurface/isosurface.h>
+#include <occ/isosurface/refine_sharp.h>
 
 namespace occ::isosurface {
 
@@ -57,7 +60,9 @@ Isosurface convert_to_isosurface(
 }
 
 template <bool AddCaps = false, typename F>
-Isosurface extract_surface(F &func, float isovalue, bool flip = false) {
+Isosurface extract_surface(F &func, float isovalue, int edge_refinement_steps,
+                           const SharpRefineParams &sharp,
+                           const QualityParams &quality, bool flip = false) {
   occ::timing::StopWatch sw;
   auto cubes = func.cubes_per_side();
   occ::log::info("Begin marching cubes with dimensions: {}x{}x{}", cubes(0),
@@ -77,6 +82,13 @@ Isosurface extract_surface(F &func, float isovalue, bool flip = false) {
   if (mc.flip_normals)
     occ::log::debug("Negative isovalue provided, will flip normals");
 
+  // Refine vertex placement by root-finding the true field along each edge,
+  // instead of linear interpolation between the corner values.
+  mc.edge_refinement_steps = edge_refinement_steps;
+  if (edge_refinement_steps > 0)
+    occ::log::debug("Edge root-finding refinement: {} step(s)",
+                    edge_refinement_steps);
+
   std::vector<float> vertices;
   std::vector<float> normals;
   std::vector<float> curvature;
@@ -92,6 +104,56 @@ Isosurface extract_surface(F &func, float isovalue, bool flip = false) {
   if (vertices.size() < 3) {
     throw std::runtime_error(
         "Invalid isosurface encountered, not enough vertices?");
+  }
+
+  // Adaptive refinement of sharp convex creases/corners that marching cubes
+  // flat-cuts: split high-dihedral edges and project the new vertices onto the
+  // true level set. Runs in MC-local coordinates so the functor is native; new
+  // vertices flow through capping and property computation like any other.
+  if (sharp.passes > 0) {
+    refine_sharp_edges(func, isovalue, sharp, vertices, normals, curvature,
+                       faces);
+    occ::log::info("After sharp refinement: {} vertices, {} faces",
+                   vertices.size() / 3, faces.size() / 3);
+  }
+
+  // Improve triangle shapes via feature-preserving edge flips (topology only;
+  // vertices/attributes untouched). Logs the min-angle distribution shift.
+  if (quality.iterations > 0) {
+    const bool dbg = spdlog::should_log(spdlog::level::debug);
+    AngleStats before;
+    if (dbg)
+      before = triangle_angle_stats(vertices, faces);
+    improve_mesh_quality(func, isovalue, quality, vertices, normals, curvature,
+                         faces);
+    if (dbg) {
+      AngleStats after = triangle_angle_stats(vertices, faces);
+      occ::log::debug("Mesh quality min-angle: min {:.1f}->{:.1f} deg, p05 "
+                      "{:.1f}->{:.1f}, slivers<30deg {:.1f}%->{:.1f}%",
+                      before.min_deg, after.min_deg, before.p05_deg,
+                      after.p05_deg, 100 * before.frac_below_30,
+                      100 * after.frac_below_30);
+    }
+  }
+
+  // Debug diagnostic: how far the placed vertices sit from the true level set,
+  // as mean/max |f - isovalue|. Vertices are still in MC-local coordinates
+  // here, matching what the functor expects. Costs one field evaluation per
+  // vertex, so it is gated on debug logging and runs after the extraction
+  // timing/num_calls have been recorded.
+  if (spdlog::should_log(spdlog::level::debug)) {
+    const size_t nverts = vertices.size() / 3;
+    double sum = 0.0, mx = 0.0;
+    for (size_t i = 0; i < nverts; i++) {
+      FVec3 p(vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]);
+      float r =
+          std::fabs(occ::geometry::mc::impl::eval_point(func, p) - isovalue);
+      sum += r;
+      if (r > mx)
+        mx = r;
+    }
+    occ::log::debug("Vertex level-set residual |f-iso|: mean {:.3e} max {:.3e}",
+                    nverts ? sum / nverts : 0.0, mx);
   }
 
   // Cap generation works in MC's local (here, fractional) coordinates. The
@@ -381,16 +443,23 @@ FVec IsosurfaceCalculator::compute_surface_property(PropertyKind prop) const {
 void IsosurfaceCalculator::compute_isosurface() {
   double isovalue = m_params.isovalue;
   const double separation = m_params.separation;
+  const int refine = m_params.edge_refinement_steps;
+  const SharpRefineParams sharp{m_params.refine_sharp_passes,
+                                m_params.refine_sharp_angle, 3};
+  const QualityParams quality{m_params.quality_iterations,
+                              m_params.quality_feature_angle,
+                              m_params.quality_relaxation,
+                              m_params.quality_collapse_ratio, 2};
   switch (m_params.surface_kind) {
   case SurfaceKind::ESP: {
     auto func = MCElectricPotentialFunctor(m_wavefunction, separation);
-    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality);
     m_isosurface.description = "ESP";
     break;
   }
   case SurfaceKind::ElectronDensity: {
     auto func = MCElectronDensityFunctor(m_wavefunction, separation);
-    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality);
     m_isosurface.description = "Electron Density";
     break;
   }
@@ -405,7 +474,8 @@ void IsosurfaceCalculator::compute_isosurface() {
     // surface is viewed from the empty side — opposite convention to a
     // promolecule surface. Triangle winding is unchanged, so volumes and
     // cap orientation are unaffected.
-    m_isosurface = extract_surface<true>(func, isovalue, /*flip=*/false);
+    m_isosurface = extract_surface<true>(func, isovalue, refine, sharp, quality,
+                                         /*flip=*/false);
     m_isosurface.description = "Void";
     break;
   }
@@ -413,7 +483,7 @@ void IsosurfaceCalculator::compute_isosurface() {
     auto func = StockholderWeightFunctor(m_molecule, m_environment, separation);
     func.set_background_density(m_params.background_density);
     isovalue = 0.5f;
-    m_isosurface = extract_surface(func, isovalue); // Hirshfeld always uses 0.5
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality); // Hirshfeld always uses 0.5
     m_isosurface.description = "Hirshfeld";
     break;
   }
@@ -421,7 +491,7 @@ void IsosurfaceCalculator::compute_isosurface() {
     auto metric = RadiusMetric(RadiusMetric::RadiusKind::VDW);
     auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
     isovalue = 0.0f;
-    m_isosurface = extract_surface(func, isovalue); // LSE always uses 0.0
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality); // LSE always uses 0.0
     m_isosurface.description = "VDWLogSumExp";
     break;
   }
@@ -429,7 +499,7 @@ void IsosurfaceCalculator::compute_isosurface() {
     auto metric = RadiusMetric(RadiusMetric::RadiusKind::Unit);
     auto func = LogSumExpFunctor(metric, m_molecule, m_environment, separation);
     isovalue = 0.0f;
-    m_isosurface = extract_surface(func, isovalue); // LSE always uses 0.0
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality); // LSE always uses 0.0
     m_isosurface.description = "SoftVoronoi";
     break;
   }
@@ -438,7 +508,7 @@ void IsosurfaceCalculator::compute_isosurface() {
     auto func = GenericStockholderWeightFunctor(wfunc, m_molecule,
                                                 m_environment, separation);
     isovalue = 0.5f;
-    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality);
     m_isosurface.description = "HS-Rinv";
     break;
   }
@@ -447,14 +517,14 @@ void IsosurfaceCalculator::compute_isosurface() {
     auto func = GenericStockholderWeightFunctor(wfunc, m_molecule,
                                                 m_environment, separation);
     isovalue = 0.5f;
-    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality);
     m_isosurface.description = "HS-Exp";
     break;
   }
   case SurfaceKind::PromoleculeDensity: {
     auto func = MCPromoleculeDensityFunctor(m_molecule, separation);
     func.set_isovalue(isovalue);
-    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality);
     m_isosurface.description = "Promolecule Density";
     break;
   }
@@ -462,7 +532,7 @@ void IsosurfaceCalculator::compute_isosurface() {
     auto func =
         MCDeformationDensityFunctor(m_molecule, m_wavefunction, separation);
     func.set_isovalue(isovalue);
-    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality);
     m_isosurface.description = "Deformation Density";
     break;
   }
@@ -473,14 +543,14 @@ void IsosurfaceCalculator::compute_isosurface() {
     occ::log::info("Surface orbital index = {}", orbital_index);
     auto func =
         MCElectronDensityFunctor(m_wavefunction, separation, orbital_index);
-    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality);
     m_isosurface.description =
         fmt::format("Orbital {}", m_params.surface_orbital_index.format());
     break;
   }
   case SurfaceKind::VolumeGrid: {
     auto func = VolumeGridFunctor(m_grid, separation);
-    m_isosurface = extract_surface(func, isovalue);
+    m_isosurface = extract_surface(func, isovalue, refine, sharp, quality);
     m_isosurface.description = "Volume Grid";
     break;
   }

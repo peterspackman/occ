@@ -31,6 +31,13 @@ generate_parameter_combinations(const IsosurfaceConfig &config) {
   IsosurfaceGenerationParameters base;
   base.surface_kind = config.surface_type();
   base.separation = config.separation;
+  base.edge_refinement_steps = config.edge_refinement_steps;
+  base.refine_sharp_passes = config.refine_sharp;
+  base.refine_sharp_angle = config.refine_sharp_angle;
+  base.quality_iterations = config.improve_quality;
+  base.quality_feature_angle = config.quality_feature_angle;
+  base.quality_relaxation = config.quality_relaxation;
+  base.quality_collapse_ratio = config.quality_collapse_ratio;
   base.property_orbital_indices = config.orbital_indices;
   base.properties = config.surface_properties();
   base.power = config.power;
@@ -174,6 +181,33 @@ CLI::App *add_isosurface_subcommand(CLI::App &app) {
   iso->add_option("--max-depth", config->max_depth, "Maximum voxel depth");
   iso->add_option("--separation", config->separation,
                   "targt voxel separation (Angstrom)");
+  iso->add_option("--edge-refine", config->edge_refinement_steps,
+                  "edge root-finding steps to refine vertex placement "
+                  "(0 = classic linear interpolation)")
+      ->capture_default_str();
+  iso->add_option("--refine-sharp", config->refine_sharp,
+                  "passes of adaptive refinement at sharp convex creases/"
+                  "corners (0 = off); projects new vertices onto the surface")
+      ->capture_default_str();
+  iso->add_option("--refine-sharp-angle", config->refine_sharp_angle,
+                  "dihedral angle (deg) above which an edge is refined")
+      ->capture_default_str();
+  iso->add_option("--improve-quality", config->improve_quality,
+                  "feature-preserving edge-flip passes to reduce slivers "
+                  "(0 = off); topology only, vertices unchanged")
+      ->capture_default_str();
+  iso->add_option("--quality-feature-angle", config->quality_feature_angle,
+                  "dihedral angle (deg) above which an edge is treated as a "
+                  "feature and never flipped")
+      ->capture_default_str();
+  iso->add_option("--quality-relax", config->quality_relaxation,
+                  "tangential relaxation factor in the quality pass "
+                  "(0 = flips only; ~0.5 redistributes vertices)")
+      ->capture_default_str();
+  iso->add_option("--quality-collapse", config->quality_collapse_ratio,
+                  "collapse edges shorter than this fraction of the median "
+                  "edge length to remove needle slivers (0 = off; ~0.5)")
+      ->capture_default_str();
 
   iso->add_option("--isovalue", config->isovalues,
                   "target isovalue(s)")

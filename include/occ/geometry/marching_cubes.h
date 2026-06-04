@@ -1,10 +1,11 @@
 #pragma once
 #include <Eigen/Geometry>
 #include <Eigen/LU>
+#include <ankerl/unordered_dense.h>
 #include <array>
+#include <cmath>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/timings.h>
-#include <occ/geometry/index_cache.h>
 #include <type_traits>
 #include <vector>
 
@@ -32,6 +33,17 @@ template <typename T>
 struct has_basis_transform<
     T, std::void_t<decltype(std::declval<T>().basis_transform())>>
     : std::true_type {};
+
+// Detects a scalar point-evaluation operator()(FVec3) on the functor. When
+// present it is used for cheap single-point sampling during edge root finding;
+// functors that only expose batch() fall back to a 1-column batch call.
+template <typename T, typename = void>
+struct has_point_evaluate : std::false_type {};
+
+template <typename T>
+struct has_point_evaluate<
+    T, std::void_t<decltype(std::declval<const T &>()(
+           std::declval<const FVec3 &>()))>> : std::true_type {};
 
 } // namespace impl
 
@@ -75,6 +87,97 @@ template <typename T> T interpolate(T a, T b, float t) {
   return a * (1.0 - t) + b * t;
 }
 
+// Single-point evaluation of the source field, preferring a scalar
+// operator()(FVec3) when available and otherwise falling back to a 1-column
+// batch() call (so it works for every marching-cubes functor).
+template <typename S>
+inline float eval_point(const S &source, const FVec3 &p) {
+  if constexpr (has_point_evaluate<S>::value) {
+    return source(p);
+  } else {
+    FMat3N pos(3, 1);
+    pos.col(0) = p;
+    FVec out(1);
+    source.batch(pos, out);
+    return out(0);
+  }
+}
+
+// A deferred edge crossing: everything needed to place one vertex once its
+// refined offset along the edge is known. Recorded during the topology march
+// so that all crossings can be root-found together in one batched pass.
+struct EdgeCrossing {
+  FVec3 cu, cv;             // edge endpoint positions (MC-local coordinates)
+  float gu, gv;             // (field - isovalue) at the endpoints
+  FVec3 grad_u, grad_v;     // finite-difference gradients at the endpoints
+  FMat3 hess_u, hess_v;     // finite-difference Hessians at the endpoints
+};
+
+// Batched edge root finding: refine every crossing's offset with `steps`
+// synchronized safeguarded regula-falsi (Illinois) iterations, evaluating all
+// candidate points for a given step in a single batch() call (falling back to
+// scalar operator() for functors that only expose point evaluation). The
+// initial offset equals get_offset() exactly, so step 0 reproduces classic
+// linear interpolation and each extra step strictly improves on it. Vertices
+// are then emitted in index order via extract_fn.
+template <typename S, typename E>
+void refine_and_emit(const S &source, const std::vector<EdgeCrossing> &crossings,
+                     float isovalue, int steps, E &extract_fn) {
+  const size_t N = crossings.size();
+  if (N == 0)
+    return;
+
+  std::vector<float> off(N), a(N, 0.0f), b(N, 1.0f), ga(N), gb(N);
+  for (size_t i = 0; i < N; i++) {
+    ga[i] = crossings[i].gu;
+    gb[i] = crossings[i].gv;
+    const float denom = gb[i] - ga[i];
+    off[i] = (denom == 0.0f) ? 0.5f : (-ga[i] / denom); // == get_offset()
+  }
+
+  FMat3N pts(3, N);
+  FVec vals(N);
+  for (int s = 0; s < steps; s++) {
+    for (size_t i = 0; i < N; i++)
+      pts.col(i) = interpolate(crossings[i].cu, crossings[i].cv, off[i]);
+
+    if constexpr (has_batch_evaluate<S>::value) {
+      source.batch(pts, vals);
+    } else {
+      for (size_t i = 0; i < N; i++) {
+        FVec3 p = pts.col(i);
+        vals(i) = source(p);
+      }
+    }
+
+    for (size_t i = 0; i < N; i++) {
+      const float gt = vals(i) - isovalue;
+      if (gt == 0.0f)
+        continue;
+      if (std::signbit(gt) == std::signbit(ga[i])) {
+        a[i] = off[i];
+        ga[i] = gt;
+        gb[i] *= 0.5f; // Illinois down-weight of the stale endpoint
+      } else {
+        b[i] = off[i];
+        gb[i] = gt;
+        ga[i] *= 0.5f;
+      }
+      const float denom = gb[i] - ga[i];
+      if (denom != 0.0f)
+        off[i] = (a[i] * gb[i] - b[i] * ga[i]) / denom;
+    }
+  }
+
+  for (size_t i = 0; i < N; i++) {
+    const auto &c = crossings[i];
+    FVec3 vertex = interpolate(c.cu, c.cv, off[i]);
+    FVec3 gradient = interpolate(c.grad_u, c.grad_v, off[i]);
+    FMat3 hessian = interpolate(c.hess_u, c.hess_v, off[i]);
+    extract_fn(vertex, gradient, hessian);
+  }
+}
+
 } // namespace impl
 
 struct MarchingCubes {
@@ -87,6 +190,11 @@ struct MarchingCubes {
   FMat3N layer_positions;
 
   bool flip_normals{false};
+
+  // Number of regula-falsi refinement steps applied to each edge crossing.
+  // 0 (default) keeps the classic linear interpolation; >0 root-finds the
+  // true field along the edge for more accurate vertex placement.
+  int edge_refinement_steps{0};
 
   std::array<FMat, 4> layers;
 
@@ -122,7 +230,7 @@ struct MarchingCubes {
   }
 
   MarchingCubes(size_t s) : size_x(s), size_y(s), size_z(s) {
-    for (int i = 0; i < layers.size(); i++) {
+    for (size_t i = 0; i < layers.size(); i++) {
       layers[i] = FMat::Zero(size_x, size_y);
     }
     set_origin_and_side_lengths(origin, lengths);
@@ -130,7 +238,7 @@ struct MarchingCubes {
 
   MarchingCubes(size_t x, size_t y, size_t z)
       : size_x(x), size_y(y), size_z(z) {
-    for (int i = 0; i < layers.size(); i++) {
+    for (size_t i = 0; i < layers.size(); i++) {
       layers[i] = FMat::Zero(size_x, size_y);
     }
     set_origin_and_side_lengths(origin, lengths);
@@ -147,30 +255,6 @@ struct MarchingCubes {
     };
 
     extract_impl(source, fn, indices);
-  }
-
-  template <typename S>
-  void extract_with_normals(const S &source, std::vector<float> &vertices,
-                            std::vector<uint32_t> &indices,
-                            std::vector<float> &normals) {
-    int sign = flip_normals ? 1 : -1;
-    auto fn = [sign, &vertices, &source, &normals](const FVec3 &vertex,
-                                                   const FVec3 &gradient,
-                                                   const FMat3 &hessian) {
-      vertices.push_back(vertex[0]);
-      vertices.push_back(vertex[1]);
-      vertices.push_back(vertex[2]);
-
-      occ::timing::start(occ::timing::isosurface_normals);
-      // Normalize the gradient and use it as the normal
-      FVec3 normal = sign * gradient.normalized();
-      normals.push_back(normal[0]);
-      normals.push_back(normal[1]);
-      normals.push_back(normal[2]);
-      occ::timing::stop(occ::timing::isosurface_normals);
-    };
-
-    occ::timing::stop(occ::timing::isosurface_normals);
   }
 
   template <typename S>
@@ -250,8 +334,30 @@ private:
     std::array<FVec3, 8> vertex_gradients;
     std::array<FMat3, 8> vertex_hessians;
 
-    IndexCache index_cache(size_x, size_y);
+    // Map each canonical grid edge (lower node's linear index * 3 + axis) to
+    // the vertex placed on it, so every shared edge yields exactly one vertex
+    // and the output is watertight by construction. (The old rolling IndexCache
+    // shared only a subset of edges, duplicating ~half the vertices.)
+    ankerl::unordered_dense::map<uint64_t, uint32_t> edge_vertices;
     uint32_t index = 0;
+
+    auto grid_edge_key = [&](size_t cx, size_t cy, size_t cz,
+                             size_t edge) -> uint64_t {
+      const auto &eu = CORNERS[EDGE_CONNECTION[edge][0]];
+      const auto &ev = CORNERS[EDGE_CONNECTION[edge][1]];
+      const size_t ux = cx + eu[0], uy = cy + eu[1], uz = cz + eu[2];
+      const size_t vx = cx + ev[0], vy = cy + ev[1], vz = cz + ev[2];
+      const size_t lx = ux < vx ? ux : vx, ly = uy < vy ? uy : vy,
+                   lz = uz < vz ? uz : vz;
+      const uint64_t dir = (ux != vx) ? 0 : ((uy != vy) ? 1 : 2);
+      const uint64_t node =
+          (static_cast<uint64_t>(lz) * size_y + ly) * size_x + lx;
+      return node * 3 + dir;
+    };
+
+    // Only populated when edge_refinement_steps > 0; one record per unique
+    // vertex (in index order) for the batched root-finding pass below.
+    std::vector<EdgeCrossing> crossings;
 
     for (size_t z = 0; z < size_less_one_z; z++) {
       occ::timing::start(occ::timing::isosurface_function);
@@ -379,17 +485,19 @@ private:
             values[i] = values[i] - isovalue;
           }
           auto fn = [&](size_t edge) {
-            const uint32_t cached_index = index_cache.get(x, y, edge);
-            if (cached_index > 0) {
-              indices.push_back(cached_index);
-            } else {
-              size_t u = EDGE_CONNECTION[edge][0];
-              size_t v = EDGE_CONNECTION[edge][1];
+            const uint64_t key = grid_edge_key(x, y, z, edge);
+            if (auto it = edge_vertices.find(key); it != edge_vertices.end()) {
+              indices.push_back(it->second);
+              return;
+            }
+            const size_t u = EDGE_CONNECTION[edge][0];
+            const size_t v = EDGE_CONNECTION[edge][1];
 
-              index_cache.put(x, y, edge, index);
-              indices.push_back(index);
-              index += 1;
+            edge_vertices.emplace(key, index);
+            indices.push_back(index);
+            index += 1;
 
+            if (edge_refinement_steps == 0) {
               float offset = get_offset(values[u], values[v]);
               FVec3 vertex = interpolate(corners[u], corners[v], offset);
               FVec3 gradient =
@@ -397,16 +505,24 @@ private:
               FMat3 hessian =
                   interpolate(vertex_hessians[u], vertex_hessians[v], offset);
               extract_fn(vertex, gradient, hessian);
+            } else {
+              // Defer geometry; root-find all crossings together after the
+              // march so expensive functors evaluate in batches.
+              crossings.push_back(EdgeCrossing{
+                  corners[u], corners[v], values[u], values[v],
+                  vertex_gradients[u], vertex_gradients[v],
+                  vertex_hessians[u], vertex_hessians[v]});
             }
           };
 
           march_cube(values, fn);
-          index_cache.advance_cell();
         }
-        index_cache.advance_row();
       }
-      index_cache.advance_layer();
     }
+
+    if (edge_refinement_steps > 0)
+      refine_and_emit(source, crossings, isovalue, edge_refinement_steps,
+                      extract_fn);
   }
 };
 
