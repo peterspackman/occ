@@ -57,6 +57,7 @@ struct MethodInput {
   std::string name{"rhf"};
   GridSettings dft_grid;
   double integral_precision{1e-12};
+  int scf_maxiter{100}; // Maximum number of SCF iterations
   // DFT XC integration: per-grid-batch shell screening tolerance (the |phi|
   // decay cutoff used to drop negligible basis functions over a spatial
   // batch). Larger = more aggressive screening / faster, less accurate. <=0

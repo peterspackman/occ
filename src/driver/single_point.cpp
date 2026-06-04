@@ -121,6 +121,7 @@ Wavefunction run_method(Molecule &m, const occ::gto::AOBasis &basis,
   proc.set_precision(config.method.integral_precision);
 
   SCF<T> scf(proc, SK);
+  scf.maxiter = config.method.scf_maxiter;
   occ::log::trace("Setting system charge: {}", config.electronic.charge);
   occ::log::trace("Setting system multiplicity: {}",
                   config.electronic.multiplicity);
@@ -214,6 +215,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
     SolvationCorrectedProcedure<DFT> proc_solv(ks, config.solvent.solvent_name,
                                                config.solvent.radii_scaling);
     SCF<SolvationCorrectedProcedure<DFT>> scf(proc_solv, SK);
+    scf.maxiter = config.method.scf_maxiter;
     scf.set_charge_multiplicity(config.electronic.charge,
                                 config.electronic.multiplicity);
     scf.convergence_settings.incremental_fock_threshold = 0.0;
@@ -229,6 +231,7 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
     SolvationCorrectedProcedure<T> proc_solv(proc, config.solvent.solvent_name,
                                              config.solvent.radii_scaling);
     SCF<SolvationCorrectedProcedure<T>> scf(proc_solv, SK);
+    scf.maxiter = config.method.scf_maxiter;
     scf.set_charge_multiplicity(config.electronic.charge,
                                 config.electronic.multiplicity);
     scf.set_initial_guess_from_wfn(wfn);

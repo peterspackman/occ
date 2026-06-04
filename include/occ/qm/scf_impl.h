@@ -565,13 +565,20 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
     log::flush();
     total_time += time_elapsed.count();
 
-  } while (!convergence_settings.energy_and_commutator_converged(ediff_rel,
-                                                                 diis_error) &&
-           (iter < maxiter));
-  log::info("{} spinorbital SCF energy converged after {:.5f} seconds",
-            scf_kind(), total_time);
-  log::info("{}", ctx.energy.to_string());
-  ctx.converged = true;
+    ctx.converged = convergence_settings.energy_and_commutator_converged(
+        ediff_rel, diis_error);
+  } while (!ctx.converged && (iter < maxiter));
+
+  if (ctx.converged) {
+    log::info("{} spinorbital SCF energy converged after {:.5f} seconds",
+              scf_kind(), total_time);
+    log::info("{}", ctx.energy.to_string());
+  } else {
+    log::error("{} spinorbital SCF did not converge after {} iterations "
+               "({:.5f} seconds): |dE|/E={:.3e}, max|FDS-SDF|={:.3e}",
+               scf_kind(), iter, total_time, ediff_rel, diis_error);
+    log::info("last energies (not converged):\n{}", ctx.energy.to_string());
+  }
   return ctx.energy["total"];
 }
 } // namespace occ::qm

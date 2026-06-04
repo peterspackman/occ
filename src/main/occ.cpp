@@ -1,4 +1,5 @@
 #include <CLI/App.hpp>
+#include <occ/core/bondgraph.h>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
@@ -51,6 +52,14 @@ int main(int argc, char *argv[]) {
   verbosity_option->default_val(2);
   verbosity_option->run_callback_for_default();
   verbosity_option->force_callback();
+
+  // covalent bond tolerance: added to the sum of covalent radii (in Angstrom)
+  // when assigning connectivity during automatic bond detection
+  app.add_option("--bond-tolerance,--bond_tolerance",
+                 occ::core::covalent_bond_tolerance,
+                 "covalent bond tolerance in Angstrom, added to the sum of "
+                 "covalent radii when assigning bonds")
+      ->capture_default_str();
 
   // add all the subcommands here
   auto *cg = occ::main::add_cg_subcommand(app);

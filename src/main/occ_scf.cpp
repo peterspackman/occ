@@ -153,6 +153,11 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                   "cutoff for integral screening")
       ->group(kHidden);
 
+  scf->add_option("--scf-maxiter,--scf_maxiter,--maxiter",
+                  config->method.scf_maxiter,
+                  "maximum number of SCF iterations")
+      ->check(CLI::PositiveNumber);
+
   // SCF acceleration policy (density fitting / COSX selection)
   scf->add_option("--ri", config->method.ri_policy,
                   "SCF acceleration: auto (default; DF-J everywhere, DF-K below "
@@ -176,7 +181,7 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
 
   // Auxiliary basis sets. Defaults are chosen automatically from the orbital
   // basis (see share/basis/fitting_defaults.json) when these are left unset.
-  scf->add_option("--aux,-d,--df-basis,--density_fitting_basis",
+  scf->add_option("--aux,-d,--df-basis,--df_basis,--density_fitting_basis",
                   config->basis.df_name,
                   "SCF (J/K) auxiliary basis; 'auto' generates one. Default: "
                   "matched to the orbital basis.")

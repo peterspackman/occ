@@ -16,8 +16,6 @@
 // for the performance refactor (see IMPLEMENTATION_PLAN.md). They are tagged
 // [.benchmark] so they are hidden by default; run explicitly with, e.g.:
 //   ./build/tests/mp2_tests "[mp2-bench]"
-// For a per-step breakdown (AO ints / transform / energy) of a single run, set
-//   OCC_LOG_LEVEL=DEBUG
 // which makes the transform and energy stages log their individual durations.
 
 using occ::qm::HartreeFock;
