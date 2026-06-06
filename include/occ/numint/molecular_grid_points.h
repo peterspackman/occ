@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace occ::dft {
+namespace occ::numint {
 
 /**
  * @brief Class for storing and managing molecular grid points
@@ -147,4 +147,4 @@ private:
   mutable std::optional<occ::numint::SpatialGridHierarchy> m_hierarchy; ///< Cached spatial hierarchy
 };
 
-} // namespace occ::dft
+} // namespace occ::numint

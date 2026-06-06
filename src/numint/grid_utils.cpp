@@ -8,7 +8,7 @@
 #include <occ/numint/lebedev.h>
 #include <stdexcept>
 
-namespace occ::dft {
+namespace occ::numint {
 
 // Available Lebedev grid levels
 const std::array<uint_fast16_t, 33> lebedev_grid_levels{
@@ -755,4 +755,4 @@ AtomGrid generate_atom_grid(size_t atomic_number, const GridSettings &settings,
   occ::timing::stop(occ::timing::category::grid_init);
   return result;
 }
-} // namespace occ::dft
+} // namespace occ::numint

@@ -3,7 +3,7 @@
 #include <cmath>
 #include <occ/numint/grid_types.h>
 
-namespace occ::dft {
+namespace occ::numint {
 
 /**
  * @brief Array of available Lebedev grid levels
@@ -255,4 +255,4 @@ AtomGrid generate_atom_grid(size_t atomic_number, const GridSettings &settings,
                             double alpha_max = 0.0, int l_max = 0,
                             const Vec &alpha_min = Vec());
 
-} // namespace occ::dft
+} // namespace occ::numint

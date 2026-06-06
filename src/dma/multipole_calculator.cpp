@@ -461,12 +461,12 @@ void MultipoleCalculator::process_electronic_contributions(
 
   double etol = 36.0; // Threshold for density calculation
 
-  dft::GridSettings grid_settings;
+  occ::numint::GridSettings grid_settings;
   grid_settings.max_angular_points = 590;
   grid_settings.radial_points = 80;
   grid_settings.treutler_alrichs_adjustment = false;
 
-  auto grid_gen = dft::MolecularGrid(m_basis, grid_settings);
+  auto grid_gen = occ::numint::MolecularGrid(m_basis, grid_settings);
   grid_gen.set_atomic_radii(m_sites.radii);
   grid_gen.populate_molecular_grid_points();
 

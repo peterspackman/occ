@@ -35,12 +35,12 @@ using occ::Vec;
 class DFT : public qm::SCFMethodBase {
 
 public:
-  DFT(const std::string &, const gto::AOBasis &, const GridSettings & = {});
+  DFT(const std::string &, const gto::AOBasis &, const occ::numint::GridSettings & = {});
   inline const auto &aobasis() const { return m_hf.aobasis(); }
   inline auto nbf() const { return m_hf.nbf(); }
 
-  void set_integration_grid(const GridSettings & = {});
-  void set_nlc_grid(const gto::AOBasis &basis, const GridSettings &settings = {110, 50, 50, 1e-7, false});
+  void set_integration_grid(const occ::numint::GridSettings & = {});
+  void set_nlc_grid(const gto::AOBasis &basis, const occ::numint::GridSettings &settings = {110, 50, 50, 1e-7, false});
 
   inline void
   set_density_fitting_basis(const std::string &density_fitting_basis,
@@ -752,7 +752,7 @@ private:
 
   std::string m_method_string{"svwn5"};
   occ::qm::HartreeFock m_hf;
-  MolecularGrid m_grid;
+  occ::numint::MolecularGrid m_grid;
   DFTMethod m_method;
   NonLocalCorrelationFunctional m_nlc;
   mutable double m_two_electron_energy{0.0};

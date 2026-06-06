@@ -17,7 +17,7 @@ int DFT::density_derivative() const {
 }
 
 DFT::DFT(const std::string &method, const AOBasis &basis,
-         const GridSettings &grid_settings)
+         const occ::numint::GridSettings &grid_settings)
     : SCFMethodBase(basis.atoms()), m_hf(basis), m_grid(basis, grid_settings) {
 
   update_electron_count();
@@ -87,10 +87,10 @@ void DFT::set_method(const std::string &method_string) {
   }
 }
 
-void DFT::set_integration_grid(const GridSettings &settings) {
+void DFT::set_integration_grid(const occ::numint::GridSettings &settings) {
   const auto &atoms = m_hf.aobasis().atoms();
   if (settings != m_grid.settings()) {
-    m_grid = MolecularGrid(m_hf.aobasis(), settings);
+    m_grid = occ::numint::MolecularGrid(m_hf.aobasis(), settings);
   }
 
   occ::log::debug("start calculating grid points... ");
@@ -115,7 +115,7 @@ void DFT::set_integration_grid(const GridSettings &settings) {
   }
 }
 
-void DFT::set_nlc_grid(const qm::AOBasis &basis, const GridSettings &settings) {
+void DFT::set_nlc_grid(const qm::AOBasis &basis, const occ::numint::GridSettings &settings) {
   m_nlc.set_integration_grid(basis, settings);
 }
 

@@ -230,7 +230,7 @@ static gto::AOBasis prepare_basis_with_cutoffs(const gto::AOBasis &basis) {
 }
 
 SemiNumericalExchange::SemiNumericalExchange(const gto::AOBasis &basis,
-                                             const GridSettings &settings)
+                                             const occ::numint::GridSettings &settings)
     : m_atoms(basis.atoms()),
       m_basis(prepare_basis_with_cutoffs(basis)),
       m_grid(m_basis, settings),
@@ -714,7 +714,7 @@ namespace {
 // between the single- and dual-operator (range-separated) exchange builds.
 template <typename FillV>
 Mat seminumerical_exchange_sweep(
-    const gto::AOBasis &basis, const std::vector<AtomGrid> &atom_grids,
+    const gto::AOBasis &basis, const std::vector<occ::numint::AtomGrid> &atom_grids,
     const ankerl::unordered_dense::map<size_t, size_t> &shell_pair_map,
     const occ::ints::ESPEvaluator<double> &esp, const Mat3N &pair_centers,
     const Vec &pair_extents, double margin, const Mat &D2q, double precision,

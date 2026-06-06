@@ -34,7 +34,7 @@ public:
   NonLocalCorrelationFunctional();
   void set_parameters(const Parameters &params);
   void set_integration_grid(const gto::AOBasis &basis,
-                            const GridSettings &settings = {
+                            const occ::numint::GridSettings &settings = {
                                 110, 50, 50, 1e-7,
                                 false}); // don't reduce H by default
 
@@ -45,6 +45,6 @@ private:
   Result vv10(const gto::AOBasis &, const qm::MolecularOrbitals &mo);
   GradientResult vv10_gradient(const gto::AOBasis &, const qm::MolecularOrbitals &mo) const;
   Parameters m_params;
-  std::vector<AtomGrid> m_nlc_atom_grids;
+  std::vector<occ::numint::AtomGrid> m_nlc_atom_grids;
 };
 } // namespace occ::dft

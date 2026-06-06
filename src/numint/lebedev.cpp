@@ -5384,7 +5384,7 @@ int make_angular_grid_5810(
   return N;
 }
 
-namespace occ::dft::grid {
+namespace occ::numint::grid {
 
 Eigen::Matrix<double, Eigen::Dynamic, 4, Eigen::RowMajor>
 lebedev(int num_points) {
@@ -5639,4 +5639,4 @@ int nearest_grid_level_below(int num_points) {
   // second biggest grid we have
   return 5294;
 }
-} // namespace occ::dft::grid
+} // namespace occ::numint::grid

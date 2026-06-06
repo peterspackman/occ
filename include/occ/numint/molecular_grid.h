@@ -4,7 +4,7 @@
 #include <occ/numint/molecular_grid_points.h>
 #include <occ/gto/shell.h>
 
-namespace occ::dft {
+namespace occ::numint {
 
 using occ::gto::AOBasis;
 
@@ -135,4 +135,4 @@ private:
   Mat m_alpha_min; ///< Minimum exponents
 };
 
-} // namespace occ::dft
+} // namespace occ::numint

@@ -21,9 +21,9 @@ struct Settings {
 };
 
 // Import grid types from occ::dft namespace
-using occ::dft::MolecularGrid;
-using occ::dft::AtomGrid;
-using occ::dft::GridSettings;
+using occ::numint::MolecularGrid;
+using occ::numint::AtomGrid;
+using occ::numint::GridSettings;
 
 struct GridBatchInfo {
     occ::Vec3 center;      // Centroid of grid points in batch
@@ -104,7 +104,7 @@ ShellLists build_shell_lists(
 class SemiNumericalExchange {
 
 public:
-  SemiNumericalExchange(const gto::AOBasis &, const GridSettings & = {});
+  SemiNumericalExchange(const gto::AOBasis &, const occ::numint::GridSettings & = {});
   Mat compute_K(const qm::MolecularOrbitals &mo,
                 double precision = std::numeric_limits<double>::epsilon(),
                 const occ::Mat &Schwarz = occ::Mat()) const;
@@ -150,7 +150,7 @@ public:
   size_t num_atoms() const;
 
   /// Get the underlying molecular grid
-  const MolecularGrid& grid() const { return m_grid; }
+  const occ::numint::MolecularGrid& grid() const { return m_grid; }
 
 private:
   // Spinorbital-specific compute_K implementations
@@ -174,10 +174,10 @@ private:
 
   std::vector<occ::core::Atom> m_atoms;
   gto::AOBasis m_basis;
-  MolecularGrid m_grid;
+  occ::numint::MolecularGrid m_grid;
   mutable occ::qm::IntegralEngine m_engine;
 
-  std::vector<AtomGrid> m_atom_grids;
+  std::vector<occ::numint::AtomGrid> m_atom_grids;
   Mat m_overlap;
   Mat m_numerical_overlap, m_overlap_projector;
 

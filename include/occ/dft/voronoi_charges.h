@@ -98,8 +98,8 @@ private:
                               const Eigen::VectorXi &atomic_numbers) const;
 
   occ::gto::AOBasis m_basis;
-  occ::dft::MolecularGrid m_grid;
-  std::vector<occ::dft::AtomGrid> m_atom_grids;
+  occ::numint::MolecularGrid m_grid;
+  std::vector<occ::numint::AtomGrid> m_atom_grids;
   Mat m_density_matrix;
   Vec m_voronoi_charges;
   Vec m_atom_volumes;

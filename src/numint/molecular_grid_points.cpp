@@ -1,6 +1,6 @@
 #include <occ/numint/molecular_grid_points.h>
 
-namespace occ::dft {
+namespace occ::numint {
 
 MolecularGridPoints::MolecularGridPoints(
     const Mat3N &points, const Vec &weights,
@@ -120,4 +120,4 @@ const occ::numint::SpatialGridHierarchy& MolecularGridPoints::get_hierarchy(
   return m_hierarchy.value();
 }
 
-} // namespace occ::dft
+} // namespace occ::numint

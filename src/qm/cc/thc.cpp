@@ -308,7 +308,7 @@ Mat thc_select_collocation(const AOBasis &basis, const MolecularOrbitals &mo,
   gs.min_angular_points =
       std::min<size_t>(50, static_cast<size_t>(opts.grid_max_angular));
   gs.radial_precision = opts.grid_radial_precision;
-  occ::dft::MolecularGrid grid(basis, gs);
+  occ::numint::MolecularGrid grid(basis, gs);
   grid.populate_molecular_grid_points();
   const auto &gp = grid.get_molecular_grid_points();
   const Mat3N pts = gp.points(); // 3 x npts
@@ -432,7 +432,7 @@ UThcFactors build_uthc(const AOBasis &basis, const Mat &Ca, const Mat &Cb,
   gs.min_angular_points =
       std::min<size_t>(50, static_cast<size_t>(opts.grid_max_angular));
   gs.radial_precision = opts.grid_radial_precision;
-  occ::dft::MolecularGrid grid(basis, gs);
+  occ::numint::MolecularGrid grid(basis, gs);
   grid.populate_molecular_grid_points();
   const auto &gp = grid.get_molecular_grid_points();
   const Mat3N pts = gp.points();

@@ -6,7 +6,7 @@
 #include <occ/numint/grid_utils.h>
 #include <occ/numint/molecular_grid.h>
 
-namespace occ::dft {
+namespace occ::numint {
 
 MolecularGrid::MolecularGrid(const AOBasis &basis, const GridSettings &settings,
                              RadialGridMethod method)
@@ -298,4 +298,4 @@ void MolecularGrid::set_atomic_radii(const Vec &radii) {
   m_atomic_radii = radii;
 }
 
-} // namespace occ::dft
+} // namespace occ::numint

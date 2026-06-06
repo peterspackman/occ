@@ -1,6 +1,6 @@
 #include <occ/numint/grid_types.h>
 
-namespace occ::dft {
+namespace occ::numint {
 
 RadialGrid::RadialGrid(size_t num_points)
     : points(num_points), weights(num_points) {
@@ -12,4 +12,4 @@ AtomGrid::AtomGrid(size_t num_points)
   // Memory allocation only, no initialization
 }
 
-} // namespace occ::dft
+} // namespace occ::numint

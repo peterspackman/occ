@@ -15,9 +15,9 @@ using PointsRef = Eigen::Ref<const Mat3N>;
 NonLocalCorrelationFunctional::NonLocalCorrelationFunctional() {}
 
 void NonLocalCorrelationFunctional::set_integration_grid(
-    const gto::AOBasis &basis, const GridSettings &settings) {
+    const gto::AOBasis &basis, const occ::numint::GridSettings &settings) {
   m_nlc_atom_grids.clear();
-  MolecularGrid nlc_grid(basis, settings);
+  occ::numint::MolecularGrid nlc_grid(basis, settings);
 
   for (size_t i = 0; i < basis.atoms().size(); i++) {
     m_nlc_atom_grids.push_back(nlc_grid.get_partitioned_atom_grid(i));
@@ -195,7 +195,7 @@ Vec grad_rho(Eigen::Ref<const Mat> rho) {
 // This computes ∂Φ(r,r')/∂R_atom where Φ is the VV10 kernel
 Mat3N compute_vv10_grid_displacement_gradient(
     ArrayConstRef rho, ArrayConstRef grad_rho, PointsRef points,
-    ArrayConstRef weights, const std::vector<AtomGrid> &atom_grids,
+    ArrayConstRef weights, const std::vector<occ::numint::AtomGrid> &atom_grids,
     const NonLocalCorrelationFunctional::Parameters &params) {
 
   using Array = Eigen::ArrayXd;

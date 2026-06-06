@@ -4,7 +4,7 @@
 #include <occ/numint/grid_settings.h>
 #include <vector>
 
-namespace occ::dft {
+namespace occ::numint {
 
 /**
  * @brief Enumeration of available partition functions for atomic weight
@@ -31,9 +31,6 @@ enum class RadialGridMethod {
   GaussChebyshev,  ///< Gauss-Chebyshev method
   EulerMaclaurin   ///< Gauss-Chebyshev method
 };
-
-using occ::numint::GridSettings;
-using occ::numint::PruningScheme;
 
 /**
  * @brief Structure to hold radial grid data
@@ -92,4 +89,4 @@ struct AtomGrid {
   Vec weights;                    ///< Integration weights for each point
 };
 
-} // namespace occ::dft
+} // namespace occ::numint

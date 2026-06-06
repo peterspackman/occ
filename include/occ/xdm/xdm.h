@@ -48,8 +48,8 @@ private:
   void populate_polarizabilities();
 
   occ::gto::AOBasis m_basis;
-  occ::dft::MolecularGrid m_grid;
-  std::vector<occ::dft::AtomGrid> m_atom_grids;
+  occ::numint::MolecularGrid m_grid;
+  std::vector<occ::numint::AtomGrid> m_atom_grids;
   std::vector<occ::slater::Basis> m_slater_basis;
   Mat m_density_matrix;
   Mat m_moments;
