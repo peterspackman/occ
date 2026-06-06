@@ -5,7 +5,7 @@
 #include <nanobind/stl/vector.h>
 #include <occ/cg/interaction_mapper.h>
 #include <occ/interaction/pair_energy.h>
-#include <occ/main/occ_cg.h>
+#include <occ/driver/cg_runner.h>
 
 using namespace nb::literals;
 using occ::cg::CrystalGrowthResult;
@@ -14,7 +14,7 @@ using occ::cg::DimerSolventTerm;
 using occ::cg::InteractionMapper;
 using occ::cg::MoleculeResult;
 using occ::interaction::LatticeConvergenceSettings;
-using occ::main::CGConfig;
+using occ::driver::CGConfig;
 
 template <typename K, typename V>
 inline nb::dict

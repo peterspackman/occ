@@ -53,6 +53,14 @@ CPMAddPackage(
 )
 
 
+# Header-only CLI11 doesn't emit the ConfigBase/Formatter vtables into a
+# linkable location, which breaks executables in a shared-library build (the
+# App ctor in occ.cpp references them). Default to precompiled CLI11 there.
+# Set as a cache default before CPMAddPackage so CLI11's own option() picks it
+# up; users can still override with -DCLI11_PRECOMPILED=OFF.
+if(BUILD_SHARED_LIBS AND NOT DEFINED CLI11_PRECOMPILED)
+    set(CLI11_PRECOMPILED ON CACHE BOOL "Precompile CLI11 (needed for shared-lib executable linking)")
+endif()
 CPMAddPackage(
     NAME CLI11
     GITHUB_REPOSITORY "CLIUtils/CLI11"
@@ -169,7 +177,7 @@ CPMAddPackage(
     OPTIONS
         "BUILD_TESTING OFF"
         "ENABLE_XHOST ${ENABLE_HOST_OPT}"
-        "BUILD_FPIC ${WITH_PYTHON_BINDINGS}"
+        "BUILD_FPIC ${OCC_ENABLE_PIC}"
         "CMAKE_POLICY_VERSION_MINIMUM 3.5"
 )
 add_library(Libxc::xc INTERFACE IMPORTED GLOBAL) 

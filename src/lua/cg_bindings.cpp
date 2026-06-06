@@ -3,7 +3,7 @@
 #include <fmt/core.h>
 #include <occ/cg/interaction_mapper.h>
 #include <occ/interaction/pair_energy.h>
-#include <occ/main/occ_cg.h>
+#include <occ/driver/cg_runner.h>
 
 namespace occ::lua_bindings {
 
@@ -13,7 +13,7 @@ using occ::cg::DimerSolventTerm;
 using occ::cg::InteractionMapper;
 using occ::cg::MoleculeResult;
 using occ::interaction::LatticeConvergenceSettings;
-using occ::main::CGConfig;
+using occ::driver::CGConfig;
 namespace lb = luabridge;
 
 namespace {
@@ -182,8 +182,8 @@ void register_cg_bindings(lua_State *L) {
 
       .addFunction(
           "calculate_crystal_growth_energies",
-          +[](const occ::main::CGConfig &config) {
-            return occ::main::run_cg(config);
+          +[](const occ::driver::CGConfig &config) {
+            return occ::driver::run_cg(config);
           })
 
       .endNamespace();

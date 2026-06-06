@@ -5,6 +5,7 @@ add_library(occ_numint
     "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecular_grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/molecular_grid_points.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/spatial_grid_hierarchy.cpp"
     ${OCC_NUMINT_INCLUDE_FILES}
 )
 

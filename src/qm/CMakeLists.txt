@@ -26,7 +26,6 @@ add_library(occ_qm
     "${CMAKE_CURRENT_SOURCE_DIR}/scf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/scf_method.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/seminumerical_exchange.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/spatial_grid_hierarchy.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/split_ri_j.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/conversion.cpp"

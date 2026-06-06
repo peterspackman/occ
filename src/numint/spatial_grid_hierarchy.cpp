@@ -1,4 +1,4 @@
-#include <occ/qm/spatial_grid_hierarchy.h>
+#include <occ/numint/spatial_grid_hierarchy.h>
 #include <algorithm>
 #include <numeric>
 

@@ -3,9 +3,9 @@
 #include <occ/crystal/surface.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/gmf.h>
-#include <occ/main/crystal_surface_energy.h>
+#include <occ/driver/crystal_surface_energy.h>
 
-namespace occ::main {
+namespace occ::driver {
 
 using occ::crystal::Crystal;
 using occ::crystal::CrystalDimers;
@@ -149,4 +149,4 @@ void to_json(nlohmann::json &j,
   }
   j["facets"] = facets;
 }
-} // namespace occ::main
+} // namespace occ::driver

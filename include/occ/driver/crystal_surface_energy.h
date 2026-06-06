@@ -4,7 +4,7 @@
 #include <occ/crystal/hkl.h>
 #include <string>
 
-namespace occ::main {
+namespace occ::driver {
 
 struct FacetEnergies {
   occ::crystal::HKL hkl;
@@ -29,4 +29,4 @@ calculate_crystal_surface_energies(const std::string &filename,
 void to_json(nlohmann::json &j, const FacetEnergies &);
 void to_json(nlohmann::json &j, const CrystalSurfaceEnergies &);
 
-} // namespace occ::main
+} // namespace occ::driver

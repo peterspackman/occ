@@ -4,7 +4,7 @@
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
 #include <occ/qm/seminumerical_exchange.h>
-#include <occ/qm/spatial_grid_hierarchy.h>
+#include <occ/numint/spatial_grid_hierarchy.h>
 #include <occ/gto/gto.h>
 #include <occ/ints/boys.h>
 

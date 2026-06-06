@@ -1,5 +1,5 @@
 #pragma once
-#include <occ/qm/wavefunction.h>
+#include <occ/core/linear_algebra.h>
 #include <string>
 #include <vector>
 
@@ -41,10 +41,11 @@ struct NeighcrysAxisInfo {
 class MolecularAxisCalculator {
 public:
     /**
-     * @brief Construct a molecular axis calculator
-     * @param wfn The wavefunction to analyze
+     * @brief Construct a molecular axis calculator from molecular geometry
+     * @param positions 3xN Cartesian coordinates (Bohr)
+     * @param atomic_numbers length-N atomic numbers
      */
-    explicit MolecularAxisCalculator(const occ::qm::Wavefunction& wfn);
+    MolecularAxisCalculator(const Mat3N& positions, const IVec& atomic_numbers);
 
     /**
      * @brief Calculate molecular axes using neighcrys method
@@ -102,14 +103,6 @@ public:
     NeighcrysAxisInfo generate_neighcrys_info(const std::vector<int>& axis_atoms) const;
 
     /**
-     * @brief Apply molecular transformation to wavefunction
-     * @param wfn Wavefunction to transform (modified in place)
-     * @param result Axis calculation result containing transformation
-     */
-    static void apply_molecular_transformation(occ::qm::Wavefunction& wfn, 
-                                             const MolecularAxisResult& result);
-
-    /**
      * @brief Write neighcrys-compatible axis file
      * @param filename Output filename
      * @param axis_info Neighcrys axis information
@@ -120,11 +113,12 @@ public:
     /**
      * @brief Write oriented molecule in XYZ format
      * @param filename Output filename
-     * @param wfn Wavefunction (should be oriented)
+     * @param positions 3xN Cartesian coordinates (Bohr; should be oriented)
+     * @param atomic_numbers length-N atomic numbers
      * @param title Optional title for XYZ file
      */
-    static void write_oriented_xyz(const std::string& filename, 
-                                 const occ::qm::Wavefunction& wfn,
+    static void write_oriented_xyz(const std::string& filename,
+                                 const Mat3N& positions, const IVec& atomic_numbers,
                                  const std::string& title = "Oriented molecule from OCC");
 
     /**
@@ -142,7 +136,8 @@ public:
     static AxisMethod string_to_axis_method(const std::string& method_str);
 
 private:
-    const occ::qm::Wavefunction& m_wfn;
+    Mat3N m_positions;
+    IVec m_atomic_numbers;
 };
 
 } // namespace occ::core

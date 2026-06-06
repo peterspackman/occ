@@ -96,6 +96,15 @@ if("${WITH_PYTHON_BINDINGS}")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
+# Whether static targets need position-independent code: required both for the
+# python module (a shared object) and for shared-library builds (static deps
+# get linked into shared occ libraries). Individual static third-party deps and
+# our own explicitly-static targets key their PIC setting off this.
+set(OCC_ENABLE_PIC OFF)
+if(WITH_PYTHON_BINDINGS OR BUILD_SHARED_LIBS)
+    set(OCC_ENABLE_PIC ON)
+endif()
+
 
 
 if("${USE_OPENMP}")

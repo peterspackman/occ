@@ -49,6 +49,7 @@ target_link_libraries(occ_mults PUBLIC
     occ_dma
     occ_sht
     occ_crystal
+    occ_driver
     nlohmann_json::nlohmann_json
 )
 

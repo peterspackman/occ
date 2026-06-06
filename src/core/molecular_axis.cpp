@@ -12,15 +12,16 @@
 
 namespace occ::core {
 
-MolecularAxisCalculator::MolecularAxisCalculator(const occ::qm::Wavefunction& wfn) 
-    : m_wfn(wfn) {}
+MolecularAxisCalculator::MolecularAxisCalculator(const Mat3N& positions,
+                                                 const IVec& atomic_numbers)
+    : m_positions(positions), m_atomic_numbers(atomic_numbers) {}
 
 Vec3 MolecularAxisCalculator::center_of_mass() const {
     Vec3 com = Vec3::Zero();
     double total_mass = 0.0;
     
-    auto positions = m_wfn.positions();
-    auto atomic_numbers = m_wfn.atomic_numbers();
+    auto positions = m_positions;
+    auto atomic_numbers = m_atomic_numbers;
     
     for (int i = 0; i < positions.cols(); i++) {
         double mass = Element(atomic_numbers[i]).mass();
@@ -36,7 +37,7 @@ MolecularAxisResult MolecularAxisCalculator::calculate_neighcrys_axes(const std:
         throw std::runtime_error("Neighcrys axis method requires exactly 3 atom indices");
     }
     
-    auto positions = m_wfn.positions();
+    auto positions = m_positions;
     int atom_a = axis_atoms[0];
     int atom_b = axis_atoms[1]; 
     int atom_c = axis_atoms[2];
@@ -81,7 +82,7 @@ MolecularAxisResult MolecularAxisCalculator::calculate_neighcrys_axes(const std:
 }
 
 MolecularAxisResult MolecularAxisCalculator::calculate_pca_axes() const {
-    auto positions = m_wfn.positions();
+    auto positions = m_positions;
     Vec3 com = center_of_mass();
     
     // Center positions at center of mass
@@ -107,8 +108,8 @@ MolecularAxisResult MolecularAxisCalculator::calculate_pca_axes() const {
 }
 
 MolecularAxisResult MolecularAxisCalculator::calculate_moi_axes() const {
-    auto positions = m_wfn.positions();
-    auto atomic_numbers = m_wfn.atomic_numbers();
+    auto positions = m_positions;
+    auto atomic_numbers = m_atomic_numbers;
     Vec3 com = center_of_mass();
     
     // Center positions at center of mass
@@ -172,7 +173,7 @@ MolecularAxisResult MolecularAxisCalculator::calculate_axes(AxisMethod method,
 
 std::vector<std::string> MolecularAxisCalculator::generate_neighcrys_labels() const {
     std::vector<std::string> labels;
-    auto atomic_numbers = m_wfn.atomic_numbers();
+    auto atomic_numbers = m_atomic_numbers;
     
     // Count occurrences of each element
     std::unordered_map<int, int> element_counts;
@@ -202,7 +203,7 @@ std::vector<std::string> MolecularAxisCalculator::generate_neighcrys_labels() co
 }
 
 int MolecularAxisCalculator::calculate_bond_separation(int atom_i, int atom_j) const {
-    auto positions = m_wfn.positions();
+    auto positions = m_positions;
     Vec3 pos_i = positions.col(atom_i);
     Vec3 pos_j = positions.col(atom_j);
     double distance = (pos_i - pos_j).norm() * units::BOHR_TO_ANGSTROM;
@@ -228,7 +229,7 @@ NeighcrysAxisInfo MolecularAxisCalculator::generate_neighcrys_info(const std::ve
             calculate_bond_separation(atom_a, atom_b),
             calculate_bond_separation(atom_a, atom_c)
         };
-    } else if (m_wfn.positions().cols() >= 3) {
+    } else if (m_positions.cols() >= 3) {
         // Default to first 3 atoms
         info.axis_atoms = {0, 1, 2};
         info.separations = {
@@ -240,13 +241,7 @@ NeighcrysAxisInfo MolecularAxisCalculator::generate_neighcrys_info(const std::ve
     return info;
 }
 
-void MolecularAxisCalculator::apply_molecular_transformation(occ::qm::Wavefunction& wfn, 
-                                                           const MolecularAxisResult& result) {
-    Vec3 translation = -result.center_of_mass;
-    wfn.apply_transformation(result.axes, translation);
-}
-
-void MolecularAxisCalculator::write_neighcrys_axis_file(const std::string& filename, 
+void MolecularAxisCalculator::write_neighcrys_axis_file(const std::string& filename,
                                                       const NeighcrysAxisInfo& axis_info) {
     std::ofstream axis_file(filename);
     if (!axis_file.is_open()) {
@@ -280,16 +275,16 @@ void MolecularAxisCalculator::write_neighcrys_axis_file(const std::string& filen
     axis_file.close();
 }
 
-void MolecularAxisCalculator::write_oriented_xyz(const std::string& filename, 
-                                                const occ::qm::Wavefunction& wfn,
+void MolecularAxisCalculator::write_oriented_xyz(const std::string& filename,
+                                                const Mat3N& positions_bohr,
+                                                const IVec& atomic_numbers,
                                                 const std::string& title) {
     std::ofstream xyz(filename);
     if (!xyz.is_open()) {
         throw std::runtime_error(fmt::format("Failed to open XYZ file: {}", filename));
     }
-    
-    auto positions = wfn.positions() * units::BOHR_TO_ANGSTROM;
-    auto atomic_numbers = wfn.atomic_numbers();
+
+    Mat3N positions = positions_bohr * units::BOHR_TO_ANGSTROM;
     
     xyz << positions.cols() << "\n";
     xyz << title << "\n";

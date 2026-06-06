@@ -34,7 +34,8 @@ DMADriver::DMAOutput DMADriver::run(const occ::qm::Wavefunction& wfn) {
         occ::log::info("Applying molecular orientation using {} method", m_config.axis_method);
         
         // Create molecular axis calculator
-        occ::core::MolecularAxisCalculator axis_calc(oriented_wfn);
+        occ::core::MolecularAxisCalculator axis_calc(oriented_wfn.positions(),
+                                                     oriented_wfn.atomic_numbers());
         occ::core::AxisMethod method = string_to_axis_method(m_config.axis_method);
         
         // Calculate molecular axes
@@ -62,8 +63,8 @@ DMADriver::DMAOutput DMADriver::run(const occ::qm::Wavefunction& wfn) {
             }
         }
         
-        // Apply transformation
-        occ::core::MolecularAxisCalculator::apply_molecular_transformation(oriented_wfn, axis_result);
+        // Apply transformation (rotate/translate the wavefunction in place)
+        oriented_wfn.apply_transformation(axis_result.axes, -axis_result.center_of_mass);
         
         occ::log::debug("Applied rotation matrix (det = {}):\n{}", 
                         axis_result.determinant, format_matrix(axis_result.axes));
@@ -74,7 +75,8 @@ DMADriver::DMAOutput DMADriver::run(const occ::qm::Wavefunction& wfn) {
         if (m_config.write_oriented_xyz || !m_config.oriented_xyz_filename.empty()) {
             std::string xyz_filename = m_config.oriented_xyz_filename.empty() ? 
                                      "oriented.xyz" : m_config.oriented_xyz_filename;
-            occ::core::MolecularAxisCalculator::write_oriented_xyz(xyz_filename, oriented_wfn);
+            occ::core::MolecularAxisCalculator::write_oriented_xyz(
+                xyz_filename, oriented_wfn.positions(), oriented_wfn.atomic_numbers());
             occ::log::info("Wrote oriented molecule to: {}", xyz_filename);
         }
         
@@ -140,7 +142,8 @@ DMADriver::DMAOutput DMADriver::run(const occ::qm::Wavefunction& wfn) {
             axis_atoms_for_file = {0, 1, 2};
         }
         
-        occ::core::MolecularAxisCalculator axis_calc(oriented_wfn);
+        occ::core::MolecularAxisCalculator axis_calc(oriented_wfn.positions(),
+                                                     oriented_wfn.atomic_numbers());
         auto axis_info = axis_calc.generate_neighcrys_info(axis_atoms_for_file);
         occ::core::MolecularAxisCalculator::write_neighcrys_axis_file(axis_filename, axis_info);
         occ::log::info("Wrote neighcrys axis file to: {}", axis_filename);

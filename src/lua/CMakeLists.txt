@@ -39,7 +39,6 @@ target_link_libraries(occ_lua_bindings
     occ_dma
     occ_isosurface
     occ_mults
-    occ_main
     occ_driver
     fmt::fmt
 )

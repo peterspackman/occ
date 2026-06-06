@@ -17,7 +17,7 @@
 #include <occ/core/data_directory.h>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
-#include <occ/main/occ_cg.h>
+#include <occ/driver/cg_runner.h>
 #include <occ/gto/shell.h>
 
 #define STRINGIFY(x) #x
@@ -54,8 +54,8 @@ NB_MODULE(_occpy, m) {
 
   // Add the main calculation function
   m.def("calculate_crystal_growth_energies",
-        [](const occ::main::CGConfig &config) {
-          return occ::main::run_cg(config);
+        [](const occ::driver::CGConfig &config) {
+          return occ::driver::run_cg(config);
         });
 
 #ifdef VERSION_INFO
