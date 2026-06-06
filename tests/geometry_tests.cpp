@@ -14,7 +14,7 @@
 #include <occ/geometry/quickhull.h>
 #include <occ/geometry/volume_grid.h>
 #include <occ/geometry/wulff.h>
-#include <occ/io/obj.h>
+#include <occ/isosurface/obj.h>
 #include <random>
 
 // Marching Cubes

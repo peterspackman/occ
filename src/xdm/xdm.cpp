@@ -8,6 +8,7 @@
 #include <occ/gto/gto.h>
 #include <occ/xdm/becke_hole.h>
 #include <occ/xdm/xdm.h>
+#include <occ/xdm/xdm_parameters.h>
 
 using occ::Mat;
 using occ::Mat3N;
@@ -493,5 +494,34 @@ template void XDM::populate_moments_impl<occ::qm::SpinorbitalKind::Restricted>(
     const occ::qm::MolecularOrbitals &mo);
 template void XDM::populate_moments_impl<occ::qm::SpinorbitalKind::Unrestricted>(
     const occ::qm::MolecularOrbitals &mo);
+
+std::pair<double, Mat3N>
+xdm_dispersion_gradient(const occ::gto::AOBasis &basis,
+                        const occ::qm::MolecularOrbitals &mo, int charge,
+                        const std::string &functional,
+                        const std::optional<XDM::Parameters> &params_override) {
+  XDM::Parameters params;
+  if (params_override.has_value()) {
+    params = params_override.value();
+    occ::log::debug("Using user-specified XDM parameters: a1={:.4f}, a2={:.4f}",
+                    params.a1, params.a2);
+  } else {
+    auto params_opt = get_xdm_parameters(functional);
+    params = params_opt.value_or(XDM::Parameters{0.7, 1.4});
+    if (!params_opt.has_value()) {
+      occ::log::warn("XDM parameters not found for functional '{}', using "
+                     "defaults (a1={:.4f}, a2={:.4f})",
+                     functional, params.a1, params.a2);
+    } else {
+      occ::log::debug("XDM parameters for '{}': a1={:.4f}, a2={:.4f}",
+                      functional, params.a1, params.a2);
+    }
+  }
+
+  XDM xdm(basis, charge, params);
+  double e_xdm = xdm.energy(mo);
+  const Mat3N &grad_xdm = xdm.forces(mo);
+  return {e_xdm, grad_xdm};
+}
 
 } // namespace occ::xdm

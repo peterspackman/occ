@@ -56,7 +56,7 @@ target_link_libraries(disp_tests PRIVATE occ_disp Catch2::Catch2WithMain Threads
 catch_discover_tests(disp_tests)
 
 add_executable(geometry_tests "${CMAKE_CURRENT_SOURCE_DIR}/geometry_tests.cpp")
-target_link_libraries(geometry_tests PRIVATE occ_geometry occ_io Catch2::Catch2WithMain Threads::Threads)
+target_link_libraries(geometry_tests PRIVATE occ_geometry occ_io occ_isosurface Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(geometry_tests)
 
 add_executable(gto_tests "${CMAKE_CURRENT_SOURCE_DIR}/gto_tests.cpp")
@@ -64,7 +64,7 @@ target_link_libraries(gto_tests PRIVATE occ_gto occ_dft Catch2::Catch2WithMain T
 catch_discover_tests(gto_tests)
 
 add_executable(io_tests "${CMAKE_CURRENT_SOURCE_DIR}/io_tests.cpp")
-target_link_libraries(io_tests PRIVATE occ_io Catch2::Catch2WithMain Threads::Threads)
+target_link_libraries(io_tests PRIVATE occ_io occ_isosurface Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(io_tests)
 
 add_executable(structure_format_test "${CMAKE_CURRENT_SOURCE_DIR}/structure_format_test.cpp")
@@ -76,7 +76,7 @@ target_link_libraries(io_periodic_grid_tests PRIVATE occ_io occ_dft Catch2::Catc
 catch_discover_tests(io_periodic_grid_tests)
 
 add_executable(wavefunction_io_tests "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_io_tests.cpp")
-target_link_libraries(wavefunction_io_tests PRIVATE occ_io Catch2::Catch2WithMain Threads::Threads)
+target_link_libraries(wavefunction_io_tests PRIVATE occ_io occ_qm Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(wavefunction_io_tests)
 
 add_executable(interaction_tests "${CMAKE_CURRENT_SOURCE_DIR}/interaction_tests.cpp")

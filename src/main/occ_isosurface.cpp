@@ -5,7 +5,7 @@
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
 #include <occ/io/cifparser.h>
-#include <occ/io/ply.h>
+#include <occ/isosurface/ply.h>
 #include <occ/io/xyz.h>
 #include <occ/isosurface/isosurface.h>
 #include <occ/main/occ_isosurface.h>

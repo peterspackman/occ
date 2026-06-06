@@ -3,7 +3,7 @@
 #include <emscripten/em_js.h>
 #include <emscripten/val.h>
 #include <occ/dft/dft.h>
-#include <occ/io/grid_settings.h>
+#include <occ/numint/grid_settings.h>
 #include <occ/qm/external_potential.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/hessians.h>

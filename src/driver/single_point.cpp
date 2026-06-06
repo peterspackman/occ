@@ -179,7 +179,7 @@ Wavefunction run_method(Molecule &m, const occ::gto::AOBasis &basis,
         xdm_params = xdm::XDM::Parameters{config.dispersion.xdm_a1, config.dispersion.xdm_a2};
       }
 
-      auto [e_xdm, grad_xdm] = qm::impl::compute_xdm_dispersion(
+      auto [e_xdm, grad_xdm] = xdm::xdm_dispersion_gradient(
           wfn.basis, wfn.mo, config.electronic.charge, method_spec.base_method, xdm_params);
 
       log::info("XDM dispersion correction:       {: 20.12f}", e_xdm);

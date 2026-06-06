@@ -2,7 +2,7 @@
 #include "eigen_conv.h"
 #include "enum_stacks.h"
 #include <fmt/core.h>
-#include <occ/io/ply.h>
+#include <occ/isosurface/ply.h>
 #include <occ/isosurface/isosurface.h>
 #include <occ/isosurface/volume_calculator.h>
 #include <occ/isosurface/volume_data.h>

@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <occ/core/linear_algebra.h>
-#include <occ/io/grid_settings.h>
+#include <occ/numint/grid_settings.h>
 #include <vector>
 
 namespace occ::dft {

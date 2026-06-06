@@ -3,6 +3,9 @@
 #include <occ/qm/mo.h>
 #include <occ/gto/shell.h>
 #include <occ/slater/slaterbasis.h>
+#include <optional>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace occ::xdm {
@@ -69,5 +72,20 @@ std::tuple<double, Mat3N, Mat3N>
 xdm_dispersion_interaction_energy(const XDMAtomList &atom_info_a,
                                   const XDMAtomList &atom_info_b,
                                   const XDM::Parameters &params = {});
+
+/**
+ * @brief Compute the XDM dispersion energy and nuclear gradient for a
+ * wavefunction.
+ *
+ * Self-contained entry point intended to be injected into
+ * occ::qm::GradientEvaluator as a dispersion callback, so that occ_qm does not
+ * depend on occ_xdm. If @p params is empty, functional-specific parameters are
+ * looked up (falling back to a1=0.7, a2=1.4).
+ */
+std::pair<double, Mat3N>
+xdm_dispersion_gradient(const occ::gto::AOBasis &basis,
+                        const occ::qm::MolecularOrbitals &mo, int charge,
+                        const std::string &functional,
+                        const std::optional<XDM::Parameters> &params = std::nullopt);
 
 } // namespace occ::xdm

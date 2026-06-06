@@ -5,7 +5,10 @@ add_library(occ_isosurface
     "${CMAKE_CURRENT_SOURCE_DIR}/electric_potential.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/electron_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/isosurface_json.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/obj.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/orbital_index.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ply.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/promolecule_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/stockholder_weight.cpp"
@@ -17,7 +20,7 @@ add_library(occ_isosurface
 )
 
 target_link_libraries(occ_isosurface
-    PUBLIC 
+    PUBLIC
     occ_core
     occ_qm
     occ_dft
@@ -25,7 +28,9 @@ target_link_libraries(occ_isosurface
     occ_slater
     occ_geometry
     occ_gto
+    occ_io
     Threads::Threads
+    nlohmann_json::nlohmann_json
     unordered_dense::unordered_dense
 )
 target_include_directories(occ_isosurface PUBLIC 

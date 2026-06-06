@@ -4,13 +4,13 @@
 #include <occ/core/element.h>
 #include <occ/core/molecule.h>
 #include <occ/core/point_charge.h>
+#include <occ/core/spinorbital.h>
 #include <occ/crystal/crystal.h>
-#include <occ/io/grid_settings.h>
-#include <occ/qm/spinorbital.h>
+#include <occ/numint/grid_settings.h>
 
 namespace occ::io {
 using occ::core::Element;
-using occ::qm::SpinorbitalKind;
+using occ::core::SpinorbitalKind;
 
 using Position = std::array<double, 3>;
 using PointChargeList = std::vector<occ::core::PointCharge>;

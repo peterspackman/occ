@@ -35,7 +35,6 @@ target_link_libraries(occ_xtb
     occ_qm
     occ_dft
     occ_disp
-    occ_scrf
     occ_solvent
 )
 

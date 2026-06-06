@@ -149,7 +149,7 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
         xdm_params = xdm::XDM::Parameters{config.dispersion.xdm_a1, config.dispersion.xdm_a2};
       }
 
-      auto [e_xdm, grad_xdm] = qm::impl::compute_xdm_dispersion(
+      auto [e_xdm, grad_xdm] = xdm::xdm_dispersion_gradient(
           wfn.basis, wfn.mo, config.electronic.charge, method_spec.base_method, xdm_params);
 
       log::info("XDM dispersion correction:       {: 20.12f}", e_xdm);
@@ -177,7 +177,16 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
       if (config.dispersion.xdm_a1 != 1.0 || config.dispersion.xdm_a2 != 1.0) {
         xdm_params = xdm::XDM::Parameters{config.dispersion.xdm_a1, config.dispersion.xdm_a2};
       }
-      eval.set_dispersion_xdm(method_spec.base_method, xdm_params);
+      // XDM lives in occ_xdm (above occ_qm), so inject it as a dispersion
+      // callback rather than coupling the gradient evaluator to it directly.
+      const std::string xdm_functional = method_spec.base_method;
+      eval.set_dispersion_callback(
+          [xdm_functional, xdm_params](const occ::gto::AOBasis &basis,
+                                       const occ::qm::MolecularOrbitals &mo,
+                                       int charge) {
+            return occ::xdm::xdm_dispersion_gradient(basis, mo, charge,
+                                                     xdm_functional, xdm_params);
+          });
       occ::log::info("XDM dispersion gradient enabled for functional: {}",
                      method_spec.base_method);
     }

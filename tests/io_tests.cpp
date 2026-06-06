@@ -10,9 +10,9 @@
 #include <occ/io/dftb_gen.h>
 #include <occ/io/eigen_json.h>
 #include <occ/io/gmf.h>
-#include <occ/io/isosurface_json.h>
+#include <occ/isosurface/isosurface_json.h>
 #include <occ/qm/io/orca_json.h>
-#include <occ/io/ply.h>
+#include <occ/isosurface/ply.h>
 #include <occ/qm/io/qcschema.h>
 #include <occ/io/shelxfile.h>
 #include <occ/io/cifparser.h>

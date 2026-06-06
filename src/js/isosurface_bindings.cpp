@@ -3,7 +3,7 @@
 #include <emscripten/val.h>
 #include <occ/core/molecule.h>
 #include <occ/io/cube.h>
-#include <occ/io/isosurface_json.h>
+#include <occ/isosurface/isosurface_json.h>
 #include <occ/isosurface/isosurface.h>
 #include <occ/isosurface/surface_types.h>
 #include <occ/qm/wavefunction.h>

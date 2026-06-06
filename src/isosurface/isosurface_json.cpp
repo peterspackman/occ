@@ -1,6 +1,6 @@
 #include <fstream>
 #include <occ/io/eigen_json.h>
-#include <occ/io/isosurface_json.h>
+#include <occ/isosurface/isosurface_json.h>
 
 namespace occ::io {
 

@@ -4,7 +4,7 @@
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
-#include <occ/io/ply.h>
+#include <occ/isosurface/ply.h>
 #include <occ/isosurface/isosurface.h>
 #include <occ/isosurface/volume_calculator.h>
 #include <occ/isosurface/volume_data.h>

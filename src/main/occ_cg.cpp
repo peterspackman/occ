@@ -19,7 +19,7 @@
 #include <occ/io/kmcpp.h>
 #include <occ/io/load_geometry.h>
 #include <occ/io/occ_input.h>
-#include <occ/io/ply.h>
+#include <occ/isosurface/ply.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/io/xyz.h>
 #include <occ/main/crystal_surface_energy.h>

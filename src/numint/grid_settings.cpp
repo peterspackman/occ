@@ -2,7 +2,7 @@
 #include <cctype>
 #include <cmath>
 #include <fmt/format.h>
-#include <occ/io/grid_settings.h>
+#include <occ/numint/grid_settings.h>
 #include <stdexcept>
 
 namespace occ::io {

@@ -6,9 +6,9 @@ add_library(occ_xdm
 )
 
 target_link_libraries(occ_xdm
-    PUBLIC 
+    PUBLIC
     occ_qm
-    occ_dft
+    occ_numint
     occ_slater
 )
 target_include_directories(occ_xdm PUBLIC 

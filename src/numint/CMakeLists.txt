@@ -1,4 +1,5 @@
 add_library(occ_numint
+    "${CMAKE_CURRENT_SOURCE_DIR}/grid_settings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/grid_types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/grid_utils.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lebedev.cpp"
@@ -11,7 +12,6 @@ target_link_libraries(occ_numint
     PUBLIC
     occ_core
     occ_gto
-    occ_io
 )
 target_include_directories(occ_numint PUBLIC
     ${OCC_INCLUDE_DIR}

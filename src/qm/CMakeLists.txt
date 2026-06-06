@@ -47,7 +47,7 @@ target_link_libraries(occ_qm
     occ_ints
     occ_numint
     occ_disp
-    occ_xdm
+    occ_io
     nlohmann_json::nlohmann_json
     libcint::libcint
     libecpint_static

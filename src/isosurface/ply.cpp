@@ -2,7 +2,7 @@
 #include <fmt/ostream.h>
 #include <nlohmann/json.hpp>
 #include <occ/core/timings.h>
-#include <occ/io/ply.h>
+#include <occ/isosurface/ply.h>
 #include <occ/io/tinyply.h>
 
 using occ::isosurface::Isosurface;

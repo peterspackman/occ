@@ -9,7 +9,7 @@
 #include <occ/io/cifparser.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
-#include <occ/io/ply.h>
+#include <occ/isosurface/ply.h>
 #include <occ/isosurface/isosurface.h>
 #include <occ/main/occ_elastic.h>
 

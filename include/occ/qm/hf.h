@@ -2,7 +2,7 @@
 #include <occ/core/energy_components.h>
 #include <occ/core/multipole.h>
 #include <occ/core/point_charge.h>
-#include <occ/io/grid_settings.h>
+#include <occ/numint/grid_settings.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
 #include <occ/qm/mo.h>

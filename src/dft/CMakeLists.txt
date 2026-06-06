@@ -18,6 +18,7 @@ target_link_libraries(occ_dft
     occ_qm
     occ_io
     occ_numint
+    occ_slater
     Libxc::xc
 )
 target_include_directories(occ_dft PUBLIC 

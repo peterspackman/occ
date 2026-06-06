@@ -1,5 +1,5 @@
 #include <fmt/os.h>
-#include <occ/io/obj.h>
+#include <occ/isosurface/obj.h>
 
 namespace occ::io {
 

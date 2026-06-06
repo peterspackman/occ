@@ -10,14 +10,10 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/engrad.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gmf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/periodic_grid.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/grid_settings.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/isosurface_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/kmcpp.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/load_geometry.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/obj.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_input.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/pc.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/ply.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/shelxfile.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/structure_format.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/tinyply.cpp"
@@ -26,12 +22,12 @@ add_library(occ_io
 )
 
 target_link_libraries(occ_io
-    PUBLIC 
+    PUBLIC
     occ_core
     occ_crystal
-    occ_isosurface
-    occ_solvent
-    occ_qm
+    occ_geometry
+    occ_gto
+    occ_numint
     gemmi::gemmi
     nlohmann_json::nlohmann_json
 )
