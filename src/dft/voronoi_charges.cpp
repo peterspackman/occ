@@ -57,7 +57,7 @@ inline void voronoi_kernel_unrestricted(Eigen::Ref<const Mat> r,
 
 VoronoiPartition::VoronoiPartition(const occ::gto::AOBasis &basis, int charge,
                                    double temperature, bool use_vdw_radii,
-                                   const occ::io::GridSettings &grid_settings)
+                                   const occ::numint::GridSettings &grid_settings)
     : m_basis(basis), m_grid(basis, grid_settings), m_charge(charge),
       m_temperature(temperature), m_use_vdw_radii(use_vdw_radii) {
 
@@ -282,7 +282,7 @@ void VoronoiPartition::compute_voronoi_weights(
 Vec calculate_voronoi_charges(const occ::gto::AOBasis &basis,
                               const occ::qm::MolecularOrbitals &mo, int charge,
                               double temperature, bool use_vdw_radii,
-                              const occ::io::GridSettings &grid_settings) {
+                              const occ::numint::GridSettings &grid_settings) {
   VoronoiPartition voronoi(basis, charge, temperature, use_vdw_radii,
                            grid_settings);
   return voronoi.calculate(mo);

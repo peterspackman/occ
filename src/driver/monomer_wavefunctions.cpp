@@ -5,11 +5,11 @@
 #include <occ/interaction/pairinteraction.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/io/wavefunction_json.h>
-#include <occ/main/monomer_wavefunctions.h>
+#include <occ/driver/monomer_wavefunctions.h>
 
 namespace fs = std::filesystem;
 
-namespace occ::main {
+namespace occ::driver {
 
 using occ::core::Element;
 using occ::core::Molecule;
@@ -94,4 +94,4 @@ WavefunctionList calculate_wavefunctions(const std::string &basename,
   }
   return wavefunctions;
 }
-} // namespace occ::main
+} // namespace occ::driver

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <numeric>
 
-namespace occ::qm {
+namespace occ::numint {
 
 namespace {
 
@@ -146,4 +146,4 @@ GridBoundingSphere SpatialGridHierarchy::compute_bounding_sphere(
     return sphere;
 }
 
-} // namespace occ::qm
+} // namespace occ::numint

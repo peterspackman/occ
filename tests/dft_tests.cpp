@@ -15,7 +15,7 @@
 #include <occ/numint/molecular_grid.h>
 #include <occ/dft/nonlocal_correlation.h>
 #include <occ/dft/seminumerical_exchange.h>
-#include <occ/dft/spatial_grid_hierarchy.h>
+#include <occ/numint/spatial_grid_hierarchy.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/gradients.h>
@@ -330,7 +330,7 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
   occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
   double e = scf.compute_scf_energy();
 
-  occ::io::GridSettings settings = occ::io::GridSettings::for_sgx(50);
+  occ::numint::GridSettings settings = occ::numint::GridSettings::for_sgx(50);
   fmt::print("Construct\n");
   occ::dft::cosx::SemiNumericalExchange sgx(basis, settings);
   fmt::print("Construct done\n");
@@ -395,7 +395,7 @@ TEST_CASE("COSX long-range (range-separated) exchange vs exact",
   REQUIRE(jk_lr.K.cwiseAbs().maxCoeff() < jk_full.K.cwiseAbs().maxCoeff());
 
   // COSX full-Coulomb and long-range exchange on the same grid
-  occ::io::GridSettings settings = occ::io::GridSettings::for_sgx(110);
+  occ::numint::GridSettings settings = occ::numint::GridSettings::for_sgx(110);
 
   occ::qm::cosx::SemiNumericalExchange sgx_full(basis, settings);
   sgx_full.set_use_esp(true);  // ESP path (as used in production via HartreeFock)
@@ -438,7 +438,7 @@ TEST_CASE("COSX fused range-separated vs two-call",
   scf.compute_scf_energy();
   const auto &mo = scf.ctx.mo;
 
-  occ::io::GridSettings settings = occ::io::GridSettings::for_sgx(110);
+  occ::numint::GridSettings settings = occ::numint::GridSettings::for_sgx(110);
   occ::qm::cosx::SemiNumericalExchange sgx(basis, settings);
   sgx.set_use_esp(true);
 
@@ -512,7 +512,7 @@ TEST_CASE("wB97X range-separated SCF: COSX exchange matches exact",
     auto basis = occ::gto::AOBasis::load(mol.atoms(), "6-31G");
     basis.set_pure(true);
     occ::dft::DFT dft("wb97x", basis);
-    dft.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+    dft.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
     occ::qm::SCF<occ::dft::DFT> scf(dft);
     e_cosx = scf.compute_scf_energy();
   }
@@ -532,7 +532,7 @@ TEST_CASE("wB97X open-shell (UKS) range-separated: COSX matches exact",
     basis.set_pure(true);
     occ::dft::DFT dft("wb97x", basis);
     if (use_cosx)
-      dft.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+      dft.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
     occ::qm::SCF<occ::dft::DFT> scf(dft, occ::qm::SpinorbitalKind::Unrestricted);
     scf.set_charge_multiplicity(0, 2); // neutral doublet
     return scf.compute_scf_energy();
@@ -564,7 +564,7 @@ TEST_CASE("COSX geometric screening robust for diffuse basis",
       engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Restricted, mo);
 
   occ::qm::cosx::SemiNumericalExchange sgx(
-      basis, occ::io::GridSettings::for_sgx(110));
+      basis, occ::numint::GridSettings::for_sgx(110));
   sgx.set_use_esp(true);
   occ::Mat K = sgx.compute_K(mo);
   double err = (K - jk.K).array().cwiseAbs().maxCoeff();
@@ -592,7 +592,7 @@ TEST_CASE("COSX scaling probe", "[cosx][scaling][.]") {
     auto mo = scf.ctx.mo;
 
     occ::qm::cosx::SemiNumericalExchange sgx(
-        basis, occ::io::GridSettings::for_sgx(110));
+        basis, occ::numint::GridSettings::for_sgx(110));
     sgx.set_use_esp(true);
     sgx.compute_K(mo); // warm up / precompute pairs
     occ::timing::StopWatch<1> sw;
@@ -1101,7 +1101,7 @@ TEST_CASE("COSX shell extents", "[cosx][screening]") {
   auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
 
   // Create SemiNumericalExchange instance with COSX-appropriate grid
-  occ::io::GridSettings settings = occ::io::GridSettings::for_sgx(50);
+  occ::numint::GridSettings settings = occ::numint::GridSettings::for_sgx(50);
   occ::dft::cosx::SemiNumericalExchange sgx(basis, settings);
 
   // Verify that shell extents are populated in the engine's basis
@@ -1285,7 +1285,7 @@ TEST_CASE("SHARK-style shell list screening", "[cosx][shark][screening]") {
 }
 
 TEST_CASE("SpatialGridHierarchy Morton ordering", "[spatial][hierarchy]") {
-    using namespace occ::dft;
+    using namespace occ::numint;
 
     // Create test points in a grid pattern
     const int n = 1000;
@@ -1363,6 +1363,7 @@ TEST_CASE("SpatialGridHierarchy Morton ordering", "[spatial][hierarchy]") {
 
 TEST_CASE("SpatialGridHierarchy with real grid", "[spatial][hierarchy]") {
     using namespace occ::dft;
+    using namespace occ::numint;
     using namespace occ::qm;
     using occ::core::Atom;
 
@@ -1375,7 +1376,7 @@ TEST_CASE("SpatialGridHierarchy with real grid", "[spatial][hierarchy]") {
 
     auto basis = AOBasis::load(atoms, "def2-svp");
 
-    occ::io::GridSettings settings;
+    occ::numint::GridSettings settings;
     settings.max_angular_points = 50;
     settings.radial_precision = 1e-5;
 
@@ -1400,6 +1401,7 @@ TEST_CASE("SpatialGridHierarchy with real grid", "[spatial][hierarchy]") {
 
 TEST_CASE("MolecularGridPoints hierarchy integration", "[spatial][hierarchy]") {
     using namespace occ::dft;
+    using namespace occ::numint;
     using namespace occ::qm;
     using occ::core::Atom;
 
@@ -1412,7 +1414,7 @@ TEST_CASE("MolecularGridPoints hierarchy integration", "[spatial][hierarchy]") {
 
     auto basis = AOBasis::load(atoms, "def2-svp");
 
-    occ::io::GridSettings settings;
+    occ::numint::GridSettings settings;
     settings.max_angular_points = 50;
     settings.radial_precision = 1e-5;
 
@@ -1470,7 +1472,7 @@ TEST_CASE("HartreeFock with COSX exchange", "[hf][cosx]") {
         occ::qm::HartreeFock hf(basis);
         REQUIRE_FALSE(hf.using_cosx());
 
-        hf.set_cosx_exchange(occ::io::COSXGridLevel::Grid1);
+        hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid1);
         REQUIRE(hf.using_cosx());
 
         fmt::print("COSX enabled successfully\n");
@@ -1484,7 +1486,7 @@ TEST_CASE("HartreeFock with COSX exchange", "[hf][cosx]") {
 
         // COSX HF with Grid3 (finest)
         occ::qm::HartreeFock hf_cosx(basis);
-        hf_cosx.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+        hf_cosx.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
         occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx);
         double e_cosx = scf_cosx.compute_scf_energy();
 
@@ -1502,16 +1504,16 @@ TEST_CASE("HartreeFock with COSX exchange", "[hf][cosx]") {
         double e_exact = scf_exact.compute_scf_energy();
 
         // Test all grid levels
-        for (auto level : {occ::io::COSXGridLevel::Grid1,
-                           occ::io::COSXGridLevel::Grid2,
-                           occ::io::COSXGridLevel::Grid3}) {
+        for (auto level : {occ::numint::COSXGridLevel::Grid1,
+                           occ::numint::COSXGridLevel::Grid2,
+                           occ::numint::COSXGridLevel::Grid3}) {
             occ::qm::HartreeFock hf_cosx(basis);
             hf_cosx.set_cosx_exchange(level);
             occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx);
             double e_cosx = scf_cosx.compute_scf_energy();
 
             fmt::print("Energy (COSX {}): {:.10f} Hartree (error: {:.6e})\n",
-                       occ::io::cosx_grid_level_to_string(level),
+                       occ::numint::cosx_grid_level_to_string(level),
                        e_cosx, std::abs(e_exact - e_cosx));
 
             // All grid levels should give reasonable results (< 10 mHartree)
@@ -1536,7 +1538,7 @@ TEST_CASE("UHF with COSX exchange", "[uhf][cosx]") {
 
         // RHF with COSX Grid3
         occ::qm::HartreeFock hf_cosx(basis);
-        hf_cosx.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+        hf_cosx.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
         occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx, occ::qm::SpinorbitalKind::Restricted);
         double e_cosx = scf_cosx.compute_scf_energy();
 
@@ -1556,7 +1558,7 @@ TEST_CASE("UHF with COSX exchange", "[uhf][cosx]") {
 
         // UHF with COSX Grid3
         occ::qm::HartreeFock hf_cosx(basis);
-        hf_cosx.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+        hf_cosx.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
         occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx, occ::qm::SpinorbitalKind::Unrestricted);
         double e_cosx = scf_cosx.compute_scf_energy();
 
@@ -1586,7 +1588,7 @@ TEST_CASE("GHF with COSX exchange", "[ghf][cosx]") {
 
         // GHF with COSX Grid3
         occ::qm::HartreeFock hf_cosx(basis);
-        hf_cosx.set_cosx_exchange(occ::io::COSXGridLevel::Grid3);
+        hf_cosx.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
         occ::qm::SCF<occ::qm::HartreeFock> scf_cosx(hf_cosx, occ::qm::SpinorbitalKind::General);
         double e_cosx = scf_cosx.compute_scf_energy();
 

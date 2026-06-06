@@ -35,7 +35,7 @@ public:
   void set_density_fitting_basis(const std::string &, double auto_aux_threshold = 1e-4);
   void set_density_fitting_policy(IntegralEngineDF::Policy policy);
   void set_coulomb_method(CoulombMethod method);
-  void set_cosx_exchange(occ::io::COSXGridLevel level = occ::io::COSXGridLevel::Grid1);
+  void set_cosx_exchange(occ::numint::COSXGridLevel level = occ::numint::COSXGridLevel::Grid1);
   void set_cosx_settings(const occ::qm::cosx::Settings &settings);
 
   inline bool using_cosx() const { return m_cosx_engine != nullptr; }

@@ -13,7 +13,7 @@ namespace occ::lua_bindings {
 
 using occ::dft::DFT;
 using occ::gto::AOBasis;
-using occ::io::GridSettings;
+using occ::numint::GridSettings;
 using occ::qm::MolecularOrbitals;
 using occ::qm::SCF;
 using occ::qm::SpinorbitalKind;

@@ -1,6 +1,6 @@
 #pragma once
 #include <occ/numint/grid_types.h>
-#include <occ/dft/spatial_grid_hierarchy.h>
+#include <occ/numint/spatial_grid_hierarchy.h>
 #include <optional>
 #include <stdexcept>
 #include <utility>
@@ -120,10 +120,10 @@ public:
    * provides batch access with precomputed bounding spheres.
    *
    * @param settings Configuration for hierarchy construction
-   * @return const SpatialGridHierarchy& Reference to the cached hierarchy
+   * @return const occ::numint::SpatialGridHierarchy& Reference to the cached hierarchy
    */
-  const SpatialGridHierarchy& get_hierarchy(
-      const SpatialHierarchySettings& settings = {}) const;
+  const occ::numint::SpatialGridHierarchy& get_hierarchy(
+      const occ::numint::SpatialHierarchySettings& settings = {}) const;
 
   /**
    * @brief Check if hierarchy has been built
@@ -144,7 +144,7 @@ private:
   Vec m_weights;  ///< All weights (N)
   std::vector<std::pair<size_t, size_t>>
       m_atom_blocks; ///< (offset, size) for each atom
-  mutable std::optional<SpatialGridHierarchy> m_hierarchy; ///< Cached spatial hierarchy
+  mutable std::optional<occ::numint::SpatialGridHierarchy> m_hierarchy; ///< Cached spatial hierarchy
 };
 
 } // namespace occ::dft

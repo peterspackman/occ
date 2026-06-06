@@ -2,7 +2,7 @@
 #include <occ/core/molecule.h>
 #include <occ/qm/wavefunction.h>
 
-namespace occ::main {
+namespace occ::driver {
 using WavefunctionList = std::vector<occ::qm::Wavefunction>;
 using MoleculeList = std::vector<occ::core::Molecule>;
 
@@ -20,4 +20,4 @@ void compute_monomer_energies(const std::string &basename,
                               WavefunctionList &wavefunctions,
                               const std::string &model_name);
 
-} // namespace occ::main
+} // namespace occ::driver

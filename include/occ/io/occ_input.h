@@ -55,7 +55,7 @@ enum class RIPolicy { Auto, None, JK, COSX };
 
 struct MethodInput {
   std::string name{"rhf"};
-  GridSettings dft_grid;
+  occ::numint::GridSettings dft_grid;
   double integral_precision{1e-12};
   int scf_maxiter{100}; // Maximum number of SCF iterations
   // DFT XC integration: per-grid-batch shell screening tolerance (the |phi|
@@ -68,7 +68,7 @@ struct MethodInput {
   bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
   bool use_split_ri_j{false}; // Use Split-RI-J for Coulomb matrix (Neese 2003)
   bool use_cosx{false}; // Use COSX seminumerical exchange
-  COSXGridLevel cosx_grid_level{COSXGridLevel::Grid1}; // COSX grid quality
+  occ::numint::COSXGridLevel cosx_grid_level{occ::numint::COSXGridLevel::Grid1}; // COSX grid quality
   COSXSettings cosx; // COSX settings
   double mp2_max_memory_gb{1.0}; // MP2 B-tensor / half-transform memory budget
   std::string mp2_spin_scaling{"none"}; // MP2 spin scaling: none | scs | sos

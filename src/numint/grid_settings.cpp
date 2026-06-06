@@ -5,7 +5,7 @@
 #include <occ/numint/grid_settings.h>
 #include <stdexcept>
 
-namespace occ::io {
+namespace occ::numint {
 
 // ORCA IntAcc values for COSX grids (from Table 2.47)
 constexpr double COSX_INT_ACC_GRID1 = 3.816;
@@ -223,4 +223,4 @@ void print_cosx_grid_summary(const GridSettings& settings, COSXGridLevel level,
   fmt::print("\n");
 }
 
-} // namespace occ::io
+} // namespace occ::numint

@@ -60,7 +60,7 @@ public:
   // DFT computes its exact exchange via m_hf.compute_JK, which routes K through
   // the COSX engine when one is set, so this just forwards to the HF object.
   inline void
-  set_cosx_exchange(occ::io::COSXGridLevel level = occ::io::COSXGridLevel::Grid1) {
+  set_cosx_exchange(occ::numint::COSXGridLevel level = occ::numint::COSXGridLevel::Grid1) {
     m_hf.set_cosx_exchange(level);
   }
 

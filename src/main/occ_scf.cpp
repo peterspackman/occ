@@ -205,13 +205,13 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   scf->add_option("--cosx-grid", config->method.cosx_grid_level,
                   "COSX grid level: 1=Grid1 (fast), 2=Grid2, 3=Grid3 (accurate)")
       ->transform(CLI::CheckedTransformer(
-          std::map<std::string, occ::io::COSXGridLevel>{
-              {"1", occ::io::COSXGridLevel::Grid1},
-              {"2", occ::io::COSXGridLevel::Grid2},
-              {"3", occ::io::COSXGridLevel::Grid3},
-              {"grid1", occ::io::COSXGridLevel::Grid1},
-              {"grid2", occ::io::COSXGridLevel::Grid2},
-              {"grid3", occ::io::COSXGridLevel::Grid3},
+          std::map<std::string, occ::numint::COSXGridLevel>{
+              {"1", occ::numint::COSXGridLevel::Grid1},
+              {"2", occ::numint::COSXGridLevel::Grid2},
+              {"3", occ::numint::COSXGridLevel::Grid3},
+              {"grid1", occ::numint::COSXGridLevel::Grid1},
+              {"grid2", occ::numint::COSXGridLevel::Grid2},
+              {"grid3", occ::numint::COSXGridLevel::Grid3},
           },
           CLI::ignore_case))
       ->group(kHidden);

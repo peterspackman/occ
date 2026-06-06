@@ -141,7 +141,7 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
     if (has_exact_exchange) {
       if (accel.use_cosx)
         occ::log::info("Exchange (K): seminumerical exchange (COSX, {})",
-                       occ::io::cosx_grid_level_to_string(
+                       occ::numint::cosx_grid_level_to_string(
                            config.method.cosx_grid_level));
       else if (!accel.df_basis.empty())
         occ::log::info("Exchange (K): density fitting [{}]", accel.df_basis);

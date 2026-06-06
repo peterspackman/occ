@@ -303,7 +303,7 @@ Mat thc_select_collocation(const AOBasis &basis, const MolecularOrbitals &mo,
 
   // --- candidate grid + AO/MO collocation -------------------------------
   tc::start(tc::category::thc_grid);
-  occ::io::GridSettings gs;
+  occ::numint::GridSettings gs;
   gs.max_angular_points = static_cast<size_t>(opts.grid_max_angular);
   gs.min_angular_points =
       std::min<size_t>(50, static_cast<size_t>(opts.grid_max_angular));
@@ -427,7 +427,7 @@ UThcFactors build_uthc(const AOBasis &basis, const Mat &Ca, const Mat &Cb,
 
   // candidate grid + AO collocation (orbital-independent point selection)
   tc::start(tc::category::thc_grid);
-  occ::io::GridSettings gs;
+  occ::numint::GridSettings gs;
   gs.max_angular_points = static_cast<size_t>(opts.grid_max_angular);
   gs.min_angular_points =
       std::min<size_t>(50, static_cast<size_t>(opts.grid_max_angular));

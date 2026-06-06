@@ -586,7 +586,7 @@ AtomGrid generate_atom_grid(size_t atomic_number, const GridSettings &settings,
   size_t n_radial;
   if (settings.int_acc > 0) {
     // ORCA-style IntAcc-based radial point count
-    n_radial = occ::io::calculate_radial_points_orca(settings.int_acc, atomic_number);
+    n_radial = occ::numint::calculate_radial_points_orca(settings.int_acc, atomic_number);
     occ::log::debug("IntAcc {:.3f}: {} radial points for Z={}",
                     settings.int_acc, n_radial, atomic_number);
   } else {

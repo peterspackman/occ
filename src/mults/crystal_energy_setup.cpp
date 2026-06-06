@@ -6,7 +6,7 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/driver/dma_driver.h>
-#include <occ/main/monomer_wavefunctions.h>
+#include <occ/driver/monomer_wavefunctions.h>
 #include <Eigen/LU>
 #include <Eigen/Geometry>
 #include <set>
@@ -539,7 +539,7 @@ compute_multipoles(occ::crystal::Crystal &crystal,
     std::string energy_model = config.method;
     // The calculate_wavefunctions function expects the full model string
     // which maps to method + basis internally
-    auto wavefunctions = occ::main::calculate_wavefunctions(
+    auto wavefunctions = occ::driver::calculate_wavefunctions(
         config.basename, molecules, energy_model, false);
 
     std::vector<MultipoleSource> sources;

@@ -472,7 +472,7 @@ TEST_CASE("wB97X-V gradient water (VV10)", "[dft][vv10][wb97xv][gradient]") {
   //
   // Increase NLC grid quality to better match PySCF:
   // Target: ~19000-20000 NLC grid points to match PySCF nlcgrids.level=2
-  occ::io::GridSettings nlc_grid_settings;
+  occ::numint::GridSettings nlc_grid_settings;
   nlc_grid_settings.max_angular_points = 302;  // Increase angular points
   nlc_grid_settings.min_angular_points = 194;   // Increase minimum angular points
   nlc_grid_settings.radial_points = 75;         // Increase radial points

@@ -9,7 +9,7 @@
 
 namespace occ::dft {
 
-using occ::io::GridQuality;
+using occ::numint::GridQuality;
 
 /**
  * @brief Class implementing Voronoi atomic charge analysis using LogSumExp
@@ -37,8 +37,8 @@ public:
   VoronoiPartition(
       const occ::gto::AOBasis &basis, int charge = 0, double temperature = 0.1,
       bool use_vdw_radii = false,
-      const occ::io::GridSettings &grid_settings =
-          occ::io::GridSettings::from_grid_quality(GridQuality::Coarse));
+      const occ::numint::GridSettings &grid_settings =
+          occ::numint::GridSettings::from_grid_quality(GridQuality::Coarse));
 
   /**
    * @brief Calculate Voronoi charges for a given set of molecular orbitals
@@ -123,7 +123,7 @@ private:
 Vec calculate_voronoi_charges(
     const occ::gto::AOBasis &basis, const occ::qm::MolecularOrbitals &mo,
     int charge = 0, double temperature = 0.1, bool use_vdw_radii = false,
-    const occ::io::GridSettings &grid_settings =
-        occ::io::GridSettings::from_grid_quality(GridQuality::Coarse));
+    const occ::numint::GridSettings &grid_settings =
+        occ::numint::GridSettings::from_grid_quality(GridQuality::Coarse));
 
 } // namespace occ::dft

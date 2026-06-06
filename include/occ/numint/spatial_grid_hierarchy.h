@@ -2,7 +2,7 @@
 #include <occ/core/linear_algebra.h>
 #include <vector>
 
-namespace occ::qm {
+namespace occ::numint {
 
 /// Bounding sphere for a group of grid points
 struct GridBoundingSphere {
@@ -78,4 +78,4 @@ private:
     SpatialHierarchySettings m_settings;
 };
 
-} // namespace occ::qm
+} // namespace occ::numint

@@ -59,8 +59,8 @@ void HartreeFock::set_coulomb_method(CoulombMethod method) {
   }
 }
 
-void HartreeFock::set_cosx_exchange(occ::io::COSXGridLevel level) {
-  auto settings = occ::io::GridSettings::for_cosx(level);
+void HartreeFock::set_cosx_exchange(occ::numint::COSXGridLevel level) {
+  auto settings = occ::numint::GridSettings::for_cosx(level);
   m_cosx_engine = std::make_unique<occ::qm::cosx::SemiNumericalExchange>(
       m_engine.aobasis(), settings);
   m_cosx_engine->set_use_esp(true);  // Use ESP-based COSX

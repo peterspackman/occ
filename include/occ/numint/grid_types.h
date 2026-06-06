@@ -32,8 +32,8 @@ enum class RadialGridMethod {
   EulerMaclaurin   ///< Gauss-Chebyshev method
 };
 
-using occ::io::GridSettings;
-using occ::io::PruningScheme;
+using occ::numint::GridSettings;
+using occ::numint::PruningScheme;
 
 /**
  * @brief Structure to hold radial grid data

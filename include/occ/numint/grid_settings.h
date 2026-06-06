@@ -2,7 +2,7 @@
 #include <array>
 #include <string>
 
-namespace occ::io {
+namespace occ::numint {
 
 /**
  * @brief Enumeration of available angular pruning schemes
@@ -176,4 +176,4 @@ size_t calculate_radial_points_orca(double int_acc, size_t atomic_number, double
 void print_cosx_grid_summary(const GridSettings& settings, COSXGridLevel level,
                              size_t num_points, size_t num_batches, size_t num_atoms);
 
-} // namespace occ::io
+} // namespace occ::numint

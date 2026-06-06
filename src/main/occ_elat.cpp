@@ -17,7 +17,7 @@
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/eigen_json.h>
-#include <occ/main/monomer_wavefunctions.h>
+#include <occ/driver/monomer_wavefunctions.h>
 #include <occ/main/occ_elat.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/elastic_fit/elastic_fitting.h>
@@ -200,9 +200,9 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
     energy_model =
         std::make_unique<ExternalEnergyModel>(c, settings.external_command);
   } else {
-    wfns = occ::main::calculate_wavefunctions(
+    wfns = occ::driver::calculate_wavefunctions(
         basename, molecules, settings.model_name, settings.spherical_basis);
-    occ::main::compute_monomer_energies(basename, wfns, settings.model_name);
+    occ::driver::compute_monomer_energies(basename, wfns, settings.model_name);
 
     auto ce_model = std::make_unique<CEEnergyModel>(c, wfns, wfns);
     ce_model->set_model_name(settings.model_name);

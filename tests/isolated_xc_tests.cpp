@@ -246,7 +246,7 @@ TEST_CASE_METHOD(WaterHFFixture, "Isolated XC component - r2SCAN (default grid)"
 
 TEST_CASE_METHOD(WaterHFFixture, "Isolated XC component - r2SCAN (fine grid)", "[isolated][r2scan][xc][fine]") {
     // Create DFT object with r2SCAN using VeryFine grid for accurate comparison
-    auto grid_settings = occ::io::GridSettings::from_grid_quality(occ::io::GridQuality::VeryFine);
+    auto grid_settings = occ::numint::GridSettings::from_grid_quality(occ::numint::GridQuality::VeryFine);
     occ::dft::DFT dft("r2scan", basis, grid_settings);
 
     // Compute Fock matrix to get XC energy
