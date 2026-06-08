@@ -291,6 +291,12 @@ optimization_step_driver(const OccInput &config, const Molecule &m,
           "Not implemented: MP2 gradients for geometry optimization");
       break;
     }
+    case MethodKind::CCSD:
+    case MethodKind::CCSD_T: {
+      throw std::runtime_error(
+          "Not implemented: coupled-cluster gradients for geometry optimization");
+      break;
+    }
     case MethodKind::GFN2: {
       return run_gfn2_for_optimization(m, config, gfn2_cache);
     }

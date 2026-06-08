@@ -18,6 +18,13 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+# Emit compile_commands.json so clangd/IDE tooling sees our include paths and
+# compile flags. Only when occ is the top-level project (don't override a
+# parent that embeds occ via add_subdirectory/FetchContent).
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+endif()
+
 if(SKBUILD)
     set(WITH_PYTHON_BINDINGS ON)
 endif()

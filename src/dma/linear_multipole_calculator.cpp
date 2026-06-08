@@ -1,4 +1,3 @@
-#pragma once
 #include <cmath>
 #include <occ/core/log.h>
 #include <occ/dma/add_qlm.h>
