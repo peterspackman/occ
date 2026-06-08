@@ -11,6 +11,7 @@
 
 using namespace emscripten;
 using namespace occ::dft;
+using namespace occ::numint;
 using namespace occ::qm;
 using namespace occ::io;
 
