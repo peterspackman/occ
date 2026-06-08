@@ -13,8 +13,8 @@ var searchData=
   ['gradients_2eh_10',['gradients.h',['../gradients_8h.html',1,'']]],
   ['graph_2eh_11',['graph.h',['../graph_8h.html',1,'']]],
   ['grid_5fsettings_2eh_12',['grid_settings.h',['../grid__settings_8h.html',1,'']]],
-  ['grid_5ftypes_2eh_13',['grid_types.h',['../numint_2grid__types_8h.html',1,'(Global Namespace)'],['../dft_2grid__types_8h.html',1,'(Global Namespace)']]],
-  ['grid_5futils_2eh_14',['grid_utils.h',['../numint_2grid__utils_8h.html',1,'(Global Namespace)'],['../dft_2grid__utils_8h.html',1,'(Global Namespace)']]],
+  ['grid_5ftypes_2eh_13',['grid_types.h',['../grid__types_8h.html',1,'']]],
+  ['grid_5futils_2eh_14',['grid_utils.h',['../grid__utils_8h.html',1,'']]],
   ['gto_2eh_15',['gto.h',['../gto_8h.html',1,'']]],
   ['guess_5fdensity_2eh_16',['guess_density.h',['../guess__density_8h.html',1,'']]]
 ];

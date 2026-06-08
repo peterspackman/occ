@@ -16,7 +16,7 @@ var searchData=
   ['unique_5fdimers_13',['unique_dimers',['../structocc_1_1crystal_1_1CrystalDimers.html#a31462415705ef86536f7d6d40488dc50',1,'occ::crystal::CrystalDimers']]],
   ['unique_5fidx_14',['unique_idx',['../structocc_1_1cg_1_1DimerResult.html#ad30bddaaef0561c336d8d53f26815132',1,'occ::cg::DimerResult']]],
   ['unique_5findex_15',['unique_index',['../structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html#a58cd5e96b9493e73fecc8543c11596b1',1,'occ::crystal::CrystalDimers::SymmetryRelatedDimer']]],
-  ['unique_5finteraction_5fenergies_16',['unique_interaction_energies',['../structocc_1_1main_1_1CrystalSurfaceEnergies.html#a58649b6a0a8c9e5f16166d9ad1b875b3',1,'occ::main::CrystalSurfaceEnergies']]],
+  ['unique_5finteraction_5fenergies_16',['unique_interaction_energies',['../structocc_1_1driver_1_1CrystalSurfaceEnergies.html#a7ac0962f1c7b57522467d94c5d5e22d7',1,'occ::driver::CrystalSurfaceEnergies']]],
   ['unit_5fcell_17',['unit_cell',['../structocc_1_1io_1_1CrystalInput.html#ac7c38c56c8c868e0d9d10285cb160a86',1,'occ::io::CrystalInput::unit_cell'],['../structocc_1_1mults_1_1CrystalEnergySetup.html#a825b82be4317f7bbf2272ab18fee8d15',1,'occ::mults::CrystalEnergySetup::unit_cell']]],
   ['unit_5fcell_5fonly_18',['unit_cell_only',['../structocc_1_1isosurface_1_1VolumeGenerationParameters.html#ab0b6536acd41540069de2130e70e293e',1,'occ::isosurface::VolumeGenerationParameters::unit_cell_only'],['../structocc_1_1main_1_1CubeConfig.html#a740c631ec4cc8e872df0afc3ac17d0d1',1,'occ::main::CubeConfig::unit_cell_only']]],
   ['unpaired_5felectrons_19',['unpaired_electrons',['../structocc_1_1xtb_1_1SccOptions.html#a0e699e0482a59844c4c5f6df9f86848c',1,'occ::xtb::SccOptions']]],
@@ -38,5 +38,5 @@ var searchData=
   ['use_5fsplit_5fri_5fj_35',['use_split_ri_j',['../structocc_1_1io_1_1MethodInput.html#ac4f8e39d20562f462f7bb2b5e8c1e2e3',1,'occ::io::MethodInput']]],
   ['use_5fsymmetry_36',['use_symmetry',['../structocc_1_1mults_1_1CrystalOptimizerSettings.html#a69deac38441806b7cc0996b3fec1ccdf',1,'occ::mults::CrystalOptimizerSettings']]],
   ['use_5fwolf_5fsum_37',['use_wolf_sum',['../structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6081c8847f494a57e98ee22db394bb20',1,'occ::driver::CrystalGrowthCalculatorOptions::use_wolf_sum'],['../structocc_1_1main_1_1EmbedConfig.html#acd55ea13ed1a701cd2381a5090451e1f',1,'occ::main::EmbedConfig::use_wolf_sum']]],
-  ['use_5fxtb_38',['use_xtb',['../structocc_1_1main_1_1CGConfig.html#a094ff8304cb6532897bb2deca08924bc',1,'occ::main::CGConfig']]]
+  ['use_5fxtb_38',['use_xtb',['../structocc_1_1driver_1_1CGConfig.html#ab162733d7d336ec655877b2978b4b863',1,'occ::driver::CGConfig']]]
 ];

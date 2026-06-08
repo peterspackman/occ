@@ -123,6 +123,9 @@ Functions</h2></td></tr>
 <tr class="separator:a74b21052ae1b6350a3098f2403dea2b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd14e46c74705f0a7827c57fd260c14f" id="r_acd14e46c74705f0a7827c57fd260c14f"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#acd14e46c74705f0a7827c57fd260c14f">xdm_dispersion_interaction_energy</a> (const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;atom_info_a, const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;atom_info_b, const <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &amp;params={})</td></tr>
 <tr class="separator:acd14e46c74705f0a7827c57fd260c14f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cbb54b603bbafeeaa52c0857d5c19f8" id="r_a8cbb54b603bbafeeaa52c0857d5c19f8"><td class="memItemLeft" align="right" valign="top">std::pair&lt; double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#a8cbb54b603bbafeeaa52c0857d5c19f8">xdm_dispersion_gradient</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge, const std::string &amp;functional, const std::optional&lt; <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &gt; &amp;params=std::nullopt)</td></tr>
+<tr class="memdesc:a8cbb54b603bbafeeaa52c0857d5c19f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the <a class="el" href="classocc_1_1xdm_1_1XDM.html">XDM</a> dispersion energy and nuclear gradient for a wavefunction.  <br /></td></tr>
+<tr class="separator:a8cbb54b603bbafeeaa52c0857d5c19f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8de29a8aea1cead89ed4d33cac8ca74" id="r_af8de29a8aea1cead89ed4d33cac8ca74"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#af8de29a8aea1cead89ed4d33cac8ca74">get_xdm_parameters</a> (const std::string &amp;functional)</td></tr>
 <tr class="memdesc:af8de29a8aea1cead89ed4d33cac8ca74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get functional-specific <a class="el" href="classocc_1_1xdm_1_1XDM.html">XDM</a> damping parameters.  <br /></td></tr>
 <tr class="separator:af8de29a8aea1cead89ed4d33cac8ca74"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -301,6 +304,55 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8cbb54b603bbafeeaa52c0857d5c19f8" name="a8cbb54b603bbafeeaa52c0857d5c19f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8cbb54b603bbafeeaa52c0857d5c19f8">&#9670;&#160;</a></span>xdm_dispersion_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt; double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt; occ::xdm::xdm_dispersion_gradient </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>charge</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>functional</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::optional&lt; <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>params</em> = <code>std::nullopt</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Compute the <a class="el" href="classocc_1_1xdm_1_1XDM.html">XDM</a> dispersion energy and nuclear gradient for a wavefunction. </p>
+<p>Self-contained entry point intended to be injected into <a class="el" href="classocc_1_1qm_1_1GradientEvaluator.html">occ::qm::GradientEvaluator</a> as a dispersion callback, so that occ_qm does not depend on occ_xdm. If <code>params</code> is empty, functional-specific parameters are looked up (falling back to a1=0.7, a2=1.4). </p>
 
 </div>
 </div>

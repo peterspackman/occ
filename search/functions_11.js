@@ -1,7 +1,7 @@
 var searchData=
 [
   ['r_0',['r',['../classocc_1_1mults_1_1SFunctions.html#a418ff62b447aee06c2545f207df1637d',1,'occ::mults::SFunctions::r()'],['../classocc_1_1mults_1_1SFunctionEvaluator.html#ad557428ede3f2dc98ccd224bd3986d57',1,'occ::mults::SFunctionEvaluator::r()']]],
-  ['radialgrid_1',['radialgrid',['../structocc_1_1dft_1_1RadialGrid.html#a52cc4bb445853078a39a1dfb78f713c0',1,'occ::dft::RadialGrid::RadialGrid()=default'],['../structocc_1_1dft_1_1RadialGrid.html#a82dcd518d53ff732bfe4610598e54ae3',1,'occ::dft::RadialGrid::RadialGrid(size_t num_points)']]],
+  ['radialgrid_1',['radialgrid',['../structocc_1_1numint_1_1RadialGrid.html#a6fd1e4afe6d240463d14c727aa3490bb',1,'occ::numint::RadialGrid::RadialGrid()=default'],['../structocc_1_1numint_1_1RadialGrid.html#aa9287c085a809c5944215f2a9023c062',1,'occ::numint::RadialGrid::RadialGrid(size_t num_points)']]],
   ['radians_2',['radians',['../namespaceocc_1_1units.html#a642ce36788de7fab7975748d7951c62e',1,'occ::units']]],
   ['radiusmetric_3',['RadiusMetric',['../classocc_1_1isosurface_1_1RadiusMetric.html#ac0e522c592d4b25a7f1f8dd2d9e1352e',1,'occ::isosurface::RadiusMetric']]],
   ['range_5fseparated_5fomega_4',['range_separated_omega',['../classocc_1_1qm_1_1HartreeFock.html#ab9677090d7e348386c5dea31a77cde7a',1,'occ::qm::HartreeFock::range_separated_omega()'],['../classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html#af80fc6ad11f7f202ada3d58b15466b49',1,'occ::qm::cint::IntegralEnvironment::range_separated_omega()'],['../classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a0cfefec7a1b56851e5c91f41a5bdf464',1,'occ::qm::cosx::SemiNumericalExchange::range_separated_omega()'],['../classocc_1_1qm_1_1IntegralEngine.html#ad209475e84d6b9169f7fc6ecea01b290',1,'occ::qm::IntegralEngine::range_separated_omega()']]],
@@ -101,8 +101,8 @@ var searchData=
   ['rotational_5fsymmetries_98',['rotational_symmetries',['../classocc_1_1core_1_1MolecularPointGroup.html#a8552ecea1121db1b9c1c8cf2981958b5',1,'occ::core::MolecularPointGroup']]],
   ['rotoreflection_99',['rotoreflection',['../structocc_1_1core_1_1SymOp.html#aadc7c156d855bbb153c63cf59b7708bf',1,'occ::core::SymOp']]],
   ['run_100',['run',['../classocc_1_1driver_1_1DMADriver.html#abe3285ecab733538f8e34d186ef75802',1,'occ::driver::DMADriver::run(const occ::qm::Wavefunction &amp;wfn)'],['../classocc_1_1driver_1_1DMADriver.html#aa51c5420f841599e47be89e13b3e45ae',1,'occ::driver::DMADriver::run()']]],
-  ['run_5fcg_101',['run_cg',['../namespaceocc_1_1main.html#a5cc7e41d5aa002684734b4610a2d2ce5',1,'occ::main']]],
-  ['run_5fcg_5fsubcommand_102',['run_cg_subcommand',['../namespaceocc_1_1main.html#aa3e66b684794acfcab5f0c1b58aee3e1',1,'occ::main']]],
+  ['run_5fcg_101',['run_cg',['../namespaceocc_1_1driver.html#a7694b64538d99dde2da027e9b9fb651b',1,'occ::driver']]],
+  ['run_5fcg_5fsubcommand_102',['run_cg_subcommand',['../namespaceocc_1_1main.html#a4f45de1659f29ce03f7bf87d74b7c7d4',1,'occ::main']]],
   ['run_5fcharge_5fonly_103',['run_charge_only',['../classocc_1_1xtb_1_1Gfn2Engine.html#a6fbde2a7c78a9b2dc9f99879e1ad3c6d',1,'occ::xtb::Gfn2Engine']]],
   ['run_5fcharge_5fonly_5fperiodic_5fscc_104',['run_charge_only_periodic_scc',['../namespaceocc_1_1xtb.html#a081c5584370d6a4c3c54fc9ba36e0c4d',1,'occ::xtb']]],
   ['run_5fcharge_5fonly_5fscc_105',['run_charge_only_scc',['../namespaceocc_1_1xtb.html#aa6240bbf02429313269d9852011855e6',1,'occ::xtb']]],

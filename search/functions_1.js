@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['b_0',['b',['../classocc_1_1core_1_1Dimer.html#a5a8f59b341deafc6ff1a8f514e535bd3',1,'occ::core::Dimer::b()'],['../classocc_1_1scrf_1_1ReactionFieldEngine.html#a8264a3186281b933ff42d518ef1fed47',1,'occ::scrf::ReactionFieldEngine::B()'],['../namespaceocc_1_1qm_1_1block.html#a8e30bdd60ab03b0261b10a6b259d1555',1,'occ::qm::block::b(Eigen::DenseBase&lt; Derived &gt; &amp;mat)'],['../namespaceocc_1_1qm_1_1block.html#afbb8aa30b83b8f77c1eca03e3247c620',1,'occ::qm::block::b(const Eigen::DenseBase&lt; Derived &gt; &amp;mat)'],['../classocc_1_1crystal_1_1UnitCell.html#a02f3ca3750c633457f670818b737fe4f',1,'occ::crystal::UnitCell::b() const']]],
+  ['b_0',['b',['../classocc_1_1crystal_1_1UnitCell.html#a02f3ca3750c633457f670818b737fe4f',1,'occ::crystal::UnitCell::b()'],['../classocc_1_1core_1_1Dimer.html#a5a8f59b341deafc6ff1a8f514e535bd3',1,'occ::core::Dimer::b()'],['../namespaceocc_1_1qm_1_1block.html#a8e30bdd60ab03b0261b10a6b259d1555',1,'occ::qm::block::b(Eigen::DenseBase&lt; Derived &gt; &amp;mat)'],['../namespaceocc_1_1qm_1_1block.html#afbb8aa30b83b8f77c1eca03e3247c620',1,'occ::qm::block::b(const Eigen::DenseBase&lt; Derived &gt; &amp;mat)'],['../classocc_1_1scrf_1_1ReactionFieldEngine.html#a8264a3186281b933ff42d518ef1fed47',1,'occ::scrf::ReactionFieldEngine::B()']]],
   ['b_5fstar_5fvector_1',['b_star_vector',['../classocc_1_1crystal_1_1UnitCell.html#acc04fbb8801ce45a83b23eb6dceefa74',1,'occ::crystal::UnitCell']]],
   ['b_5fvector_2',['b_vector',['../classocc_1_1crystal_1_1UnitCell.html#a06b1fd1201903afb2d85538bda5fa148',1,'occ::crystal::UnitCell::b_vector()'],['../classocc_1_1crystal_1_1Surface.html#a5bde95bd4bac14605bc71955a91d8bd2',1,'occ::crystal::Surface::b_vector()']]],
   ['ba_3',['ba',['../namespaceocc_1_1qm_1_1block.html#a7a087fa968f4430d7c80411c6282612c',1,'occ::qm::block::ba(const Eigen::DenseBase&lt; Derived &gt; &amp;mat)'],['../namespaceocc_1_1qm_1_1block.html#abbe5bdfb997c4155bf290f3dd1b18d1d',1,'occ::qm::block::ba(Eigen::DenseBase&lt; Derived &gt; &amp;mat)']]],
@@ -20,7 +20,7 @@ var searchData=
   ['becke_5fhole_5fbr89_17',['becke_hole_br89',['../namespaceocc_1_1xdm.html#adc1b870f50b1fd8768323a3d27429b71',1,'occ::xdm']]],
   ['becke_5fhole_5fbr89_5fanalytic_18',['becke_hole_br89_analytic',['../namespaceocc_1_1xdm.html#a4dc2a59d4c2e827c51dbc8c4df698294',1,'occ::xdm']]],
   ['becke_5fhole_5fbr89_5fnewton_19',['becke_hole_br89_newton',['../namespaceocc_1_1xdm.html#a70cd0761aeaa63039c9e5419a7b344e1',1,'occ::xdm']]],
-  ['becke_5fpartition_20',['becke_partition',['../namespaceocc_1_1dft.html#a70f62dce121c6fab7f4453e6b394ff34',1,'occ::dft']]],
+  ['becke_5fpartition_20',['becke_partition',['../namespaceocc_1_1numint.html#af0c252f9ffa8088e782df8f16e6b3b7d',1,'occ::numint']]],
   ['begin_21',['begin',['../structocc_1_1elastic__fit_1_1MonkhorstPack.html#ad543544a5e95fa2ae178536eea083f41',1,'occ::elastic_fit::MonkhorstPack']]],
   ['bernyoptimizer_22',['BernyOptimizer',['../structocc_1_1opt_1_1BernyOptimizer.html#af79f8bca3462a051646896ebec486a6c',1,'occ::opt::BernyOptimizer']]],
   ['beta_23',['beta',['../classocc_1_1crystal_1_1UnitCell.html#aa22cef1464064ac17f163db3d17dddd3',1,'occ::crystal::UnitCell::beta()'],['../core_2opmatrix_8h.html#adff2ac04a289a00b32da24ad8a4aa8b6',1,'beta():&#160;opmatrix.h']]],

@@ -104,20 +104,23 @@ $(document).ready(function(){initNavTree('xdm_8h.html',''); initResizable(); });
   <div class="headertitle"><div class="title">xdm.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="numint_2molecular__grid_8h.html">occ/numint/molecular_grid.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="molecular__grid_8h.html">occ/numint/molecular_grid.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="mo_8h.html">occ/qm/mo.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="shell_8h.html">occ/gto/shell.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="slaterbasis_8h.html">occ/slater/slaterbasis.h</a>&gt;</code><br />
+<code>#include &lt;optional&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;utility&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for xdm.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="xdm_8h__incl.svg" width="2351" height="623"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="xdm_8h__incl.svg" width="2091" height="535"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="xdm_8h__dep__incl.svg" width="432" height="242"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="xdm_8h__dep__incl.svg" width="214" height="154"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -142,6 +145,9 @@ Functions</h2></td></tr>
 <tr class="separator:a74b21052ae1b6350a3098f2403dea2b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd14e46c74705f0a7827c57fd260c14f" id="r_acd14e46c74705f0a7827c57fd260c14f"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#acd14e46c74705f0a7827c57fd260c14f">occ::xdm::xdm_dispersion_interaction_energy</a> (const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;atom_info_a, const <a class="el" href="structocc_1_1xdm_1_1XDMAtomList.html">XDMAtomList</a> &amp;atom_info_b, const <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &amp;params={})</td></tr>
 <tr class="separator:acd14e46c74705f0a7827c57fd260c14f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cbb54b603bbafeeaa52c0857d5c19f8" id="r_a8cbb54b603bbafeeaa52c0857d5c19f8"><td class="memItemLeft" align="right" valign="top">std::pair&lt; double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xdm.html#a8cbb54b603bbafeeaa52c0857d5c19f8">occ::xdm::xdm_dispersion_gradient</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">occ::qm::MolecularOrbitals</a> &amp;mo, int charge, const std::string &amp;functional, const std::optional&lt; <a class="el" href="structocc_1_1xdm_1_1XDM_1_1Parameters.html">XDM::Parameters</a> &gt; &amp;params=std::nullopt)</td></tr>
+<tr class="memdesc:a8cbb54b603bbafeeaa52c0857d5c19f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the <a class="el" href="classocc_1_1xdm_1_1XDM.html">XDM</a> dispersion energy and nuclear gradient for a wavefunction.  <br /></td></tr>
+<tr class="separator:a8cbb54b603bbafeeaa52c0857d5c19f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

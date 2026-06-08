@@ -11,7 +11,7 @@ var searchData=
   ['tikhonov_8',['Tikhonov',['../namespaceocc_1_1qm_1_1cc.html#a4de9cc67ec3a398329b03287730789fca88b941ce532cae56ba7678e6f283afbe',1,'occ::qm::cc']]],
   ['total_9',['total',['../namespaceocc_1_1isosurface.html#ae0568101b819c30a4333eec98499134ca96b0141273eabab320119c467cdcaf17',1,'occ::isosurface::Total'],['../namespaceocc_1_1main.html#a9154bffbc00f2a7302ceae3d043c3c2da96b0141273eabab320119c467cdcaf17',1,'occ::main::Total']]],
   ['traditional_10',['Traditional',['../namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caa1bfbcce75c3c9a52a464d4cb0984488a',1,'occ::qm']]],
-  ['treutleralrichs_11',['TreutlerAlrichs',['../namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba77cea6534c4bcad9a30a10b5e13cabdd',1,'occ::dft']]],
+  ['treutleralrichs_11',['TreutlerAlrichs',['../namespaceocc_1_1numint.html#adfae001d345ff26f124a72c71d63856fa77cea6534c4bcad9a30a10b5e13cabdd',1,'occ::numint']]],
   ['trilinear_12',['Trilinear',['../namespaceocc_1_1isosurface.html#a3bfca79de404665c574b4878df53d40ea969a7b6f1f3951ef293b3ff281dc293d',1,'occ::isosurface']]],
   ['trustregion_13',['TrustRegion',['../namespaceocc_1_1mults.html#a198c950304fb59ccda34dec880870d63a8cf89eaf893a926bc54730f9256ca6f9',1,'occ::mults']]],
   ['trustregionbfgs_14',['TrustRegionBFGS',['../namespaceocc_1_1mults.html#a198c950304fb59ccda34dec880870d63ab06013befe14db68052504fcfc365070',1,'occ::mults']]]

@@ -6,7 +6,7 @@ var searchData=
   ['fa_3',['fa',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a1c093b79a7db65e370044e33274784b2',1,'occ::core::opt::Bracket1D']]],
   ['face_5fclass_4',['face_class',['../structocc_1_1isosurface_1_1CellCapClassification.html#aec726b274b3b1807e41cf385ba93390d',1,'occ::isosurface::CellCapClassification']]],
   ['faces_5',['faces',['../structocc_1_1isosurface_1_1Isosurface.html#a92e9b109622ae2a7f688421b352764ad',1,'occ::isosurface::Isosurface']]],
-  ['facets_6',['facets',['../structocc_1_1main_1_1CrystalSurfaceEnergies.html#a507c999748edd845aa56eb2d017082d6',1,'occ::main::CrystalSurfaceEnergies']]],
+  ['facets_6',['facets',['../structocc_1_1driver_1_1CrystalSurfaceEnergies.html#a6aa413f14a4b5c0928dd3c995842735c',1,'occ::driver::CrystalSurfaceEnergies']]],
   ['factor_7',['factor',['../structocc_1_1dft_1_1FuncComponent.html#a28ad09529131f73440a1fd985c309452',1,'occ::dft::FuncComponent']]],
   ['fb_8',['fb',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a9f0a93393fdf7a4c36153e96a4323394',1,'occ::core::opt::Bracket1D']]],
   ['fc_9',['fc',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#ac10a80b0968fdde8d4f53511d564bd15',1,'occ::core::opt::Bracket1D']]],

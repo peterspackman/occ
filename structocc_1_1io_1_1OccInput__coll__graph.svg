@@ -173,9 +173,9 @@
 <!-- Node9 -->
 <g id="Node000009" class="node">
 <title>Node9</title>
-<g id="a_Node000009"><a xlink:href="structocc_1_1io_1_1GridSettings.html" target="_top" xlink:title="Extended settings for Becke grid generation.">
-<polygon fill="white" stroke="#666666" points="136,-272 22,-272 22,-253 136,-253 136,-272"/>
-<text text-anchor="middle" x="79" y="-260" font-family="Helvetica,sans-Serif" font-size="10.00">occ::io::GridSettings</text>
+<g id="a_Node000009"><a xlink:href="structocc_1_1numint_1_1GridSettings.html" target="_top" xlink:title="Extended settings for Becke grid generation.">
+<polygon fill="white" stroke="#666666" points="149,-272 9,-272 9,-253 149,-253 149,-272"/>
+<text text-anchor="middle" x="79" y="-260" font-family="Helvetica,sans-Serif" font-size="10.00">occ::numint::GridSettings</text>
 </a>
 </g>
 </g>
@@ -183,8 +183,8 @@
 <g id="edge8_Node000008_Node000009" class="edge">
 <title>Node9&#45;&gt;Node8</title>
 <g id="a_edge8_Node000008_Node000009"><a xlink:title=" ">
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M146.48,-258.07C195.41,-254.81 261.25,-250.42 307.83,-247.31"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="146.05,-254.59 136.31,-258.75 146.52,-261.57 146.05,-254.59"/>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M159.53,-257.2C206.65,-254.06 265.27,-250.15 307.82,-247.31"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="159.1,-253.72 149.35,-257.88 159.57,-260.7 159.1,-253.72"/>
 </a>
 </g>
 <text text-anchor="middle" x="223" y="-258.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> dft_grid</text>

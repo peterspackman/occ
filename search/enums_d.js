@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['radialgridmethod_0',['RadialGridMethod',['../namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b',1,'occ::dft']]],
+  ['radialgridmethod_0',['RadialGridMethod',['../namespaceocc_1_1numint.html#adfae001d345ff26f124a72c71d63856f',1,'occ::numint']]],
   ['radii_1',['Radii',['../structocc_1_1scrf_1_1Options.html#a0b9411a28016afa046f22632a68ef2cb',1,'occ::scrf::Options']]],
   ['radiuskind_2',['RadiusKind',['../classocc_1_1isosurface_1_1RadiusMetric.html#aa64744e03a919ce49762b023f568afca',1,'occ::isosurface::RadiusMetric']]],
   ['reference_3',['Reference',['../structocc_1_1isosurface_1_1OrbitalIndex.html#a7de04a530b8bbf2e95cca3ed9992f6f8',1,'occ::isosurface::OrbitalIndex']]],

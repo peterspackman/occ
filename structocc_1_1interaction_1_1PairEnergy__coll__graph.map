@@ -8,12 +8,14 @@
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="485,29,575,45,615,52,614,57,574,50,484,34"/>
 <area shape="rect" id="Node000005" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="305,55,501,80"/>
 <area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="515,65,599,65,599,70,515,70"/>
-<area shape="rect" id="Node000006" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="5,55,192,80"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="206,65,305,65,305,70,206,70"/>
-<area shape="rect" id="Node000007" href="$structocc_1_1qm_1_1Energy.html" title=" " alt="" coords="340,104,467,129"/>
-<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="480,101,574,85,614,77,615,83,575,90,481,106"/>
-<area shape="rect" id="Node000008" href="$structocc_1_1interaction_1_1CEParameterizedModel.html" title=" " alt="" coords="847,111,1088,151"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="1102,129,1185,129,1185,134,1102,134"/>
-<area shape="rect" id="Node000009" href="$structocc_1_1interaction_1_1CEEnergyComponents.html" title=" " alt="" coords="871,175,1063,215"/>
-<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1076,171,1220,141,1222,147,1077,176"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="38,31,159,56"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="173,46,305,57,305,62,173,52"/>
+<area shape="rect" id="Node000007" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="5,80,192,105"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="206,82,281,75,305,73,305,79,282,81,206,87"/>
+<area shape="rect" id="Node000008" href="$structocc_1_1qm_1_1Energy.html" title=" " alt="" coords="340,104,467,129"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="480,101,574,85,614,77,615,83,575,90,481,106"/>
+<area shape="rect" id="Node000009" href="$structocc_1_1interaction_1_1CEParameterizedModel.html" title=" " alt="" coords="847,111,1088,151"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1102,129,1185,129,1185,134,1102,134"/>
+<area shape="rect" id="Node000010" href="$structocc_1_1interaction_1_1CEEnergyComponents.html" title=" " alt="" coords="871,175,1063,215"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="1076,171,1220,141,1222,147,1077,176"/>
 </map>

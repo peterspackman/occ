@@ -1,11 +1,11 @@
 var classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange =
 [
-    [ "SemiNumericalExchange", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a4505595c8c6d293034a315f7e83760a1", null ],
+    [ "SemiNumericalExchange", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#aad7c56af759bb8fb24628db4b8897eb3", null ],
     [ "compute_K", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a84569b4bc4febb96db25f0dcf21f36c1", null ],
     [ "compute_K_range_separated", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a42b2cd06910186c9d7dfdae0ba63bd9b", null ],
     [ "compute_overlap_matrix", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a1fb2727fc170d7815ad04015c7ff0a47", null ],
     [ "engine", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a9d6af426acdddd53a585753e8dc74538", null ],
-    [ "grid", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a0e30024fb7c9a704bccabdcbbd74ad49", null ],
+    [ "grid", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a1bd2fc718c9a55fcf63d4ee8d803b833", null ],
     [ "num_atoms", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a6bb7837399b8758683c6e0cb5158ab74", null ],
     [ "num_batches", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a1a05bdc5d6c63392022a03739de2d750", null ],
     [ "num_grid_points", "classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a4fdd3c2580915d0db48d07b750004210", null ],

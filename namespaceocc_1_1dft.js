@@ -1,11 +1,6 @@
 var namespaceocc_1_1dft =
 [
     [ "cosx", "namespaceocc_1_1dft_1_1cosx.html", null ],
-    [ "grid", "namespaceocc_1_1dft_1_1grid.html", [
-      [ "lebedev", "namespaceocc_1_1dft_1_1grid.html#a3353768834541038f7e0d6efd4905137", null ],
-      [ "nearest_grid_level_at_or_above", "namespaceocc_1_1dft_1_1grid.html#a35ca3f6b79d4da7d209380fa0109f2e9", null ],
-      [ "nearest_grid_level_below", "namespaceocc_1_1dft_1_1grid.html#accdc0c00d40221660ffedd9b63270087", null ]
-    ] ],
     [ "impl", "namespaceocc_1_1dft_1_1impl.html", [
       [ "set_params", "namespaceocc_1_1dft_1_1impl.html#a575287e1722269d11bda582e4938d0db", null ]
     ] ],
@@ -13,64 +8,25 @@ var namespaceocc_1_1dft =
       [ "process_grid_block", "namespaceocc_1_1dft_1_1kernels.html#a23f38da6be835f354e5277134b01d915", null ],
       [ "process_grid_block_gradient", "namespaceocc_1_1dft_1_1kernels.html#ad0b60e4ac2bc66905f74c17abc776615", null ]
     ] ],
-    [ "AtomGrid", "structocc_1_1dft_1_1AtomGrid.html", "structocc_1_1dft_1_1AtomGrid" ],
     [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html", "classocc_1_1dft_1_1DensityFunctional" ],
     [ "DFT", "classocc_1_1dft_1_1DFT.html", "classocc_1_1dft_1_1DFT" ],
     [ "DFTMethod", "structocc_1_1dft_1_1DFTMethod.html", "structocc_1_1dft_1_1DFTMethod" ],
     [ "FuncComponent", "structocc_1_1dft_1_1FuncComponent.html", "structocc_1_1dft_1_1FuncComponent" ],
     [ "HirshfeldPartition", "classocc_1_1dft_1_1HirshfeldPartition.html", "classocc_1_1dft_1_1HirshfeldPartition" ],
     [ "MethodDefinition", "structocc_1_1dft_1_1MethodDefinition.html", "structocc_1_1dft_1_1MethodDefinition" ],
-    [ "MolecularGrid", "classocc_1_1dft_1_1MolecularGrid.html", "classocc_1_1dft_1_1MolecularGrid" ],
-    [ "MolecularGridPoints", "classocc_1_1dft_1_1MolecularGridPoints.html", "classocc_1_1dft_1_1MolecularGridPoints" ],
     [ "NonLocalCorrelationFunctional", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html", "classocc_1_1dft_1_1NonLocalCorrelationFunctional" ],
-    [ "PartitionMethod", "structocc_1_1dft_1_1PartitionMethod.html", "structocc_1_1dft_1_1PartitionMethod" ],
-    [ "RadialGrid", "structocc_1_1dft_1_1RadialGrid.html", "structocc_1_1dft_1_1RadialGrid" ],
     [ "RangeSeparatedParameters", "structocc_1_1dft_1_1RangeSeparatedParameters.html", "structocc_1_1dft_1_1RangeSeparatedParameters" ],
     [ "VoronoiPartition", "classocc_1_1dft_1_1VoronoiPartition.html", "classocc_1_1dft_1_1VoronoiPartition" ],
     [ "dfid", "namespaceocc_1_1dft.html#a85d3cc3d9e5f9f2d739ccb6568ff6f28", null ],
     [ "PointChargeList", "namespaceocc_1_1dft.html#a150d1d7afb286c7d1ae56289ee2a24f9", null ],
-    [ "PartitionFunction", "namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426a", [
-      [ "Becke", "namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa18cf5657f88a943304168f3fe466545b", null ],
-      [ "StratmannScuseria", "namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67", null ]
-    ] ],
-    [ "RadialGridMethod", "namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665b", [
-      [ "LMG", "namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6", null ],
-      [ "TreutlerAlrichs", "namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba77cea6534c4bcad9a30a10b5e13cabdd", null ],
-      [ "MuraKnowles", "namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba8cee0af70e8d2d88ac69efe492c97e87", null ],
-      [ "Becke", "namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba18cf5657f88a943304168f3fe466545b", null ],
-      [ "GaussChebyshev", "namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba8ac9622fa8f9e2af16386dd39aacae30", null ],
-      [ "EulerMaclaurin", "namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba94990b9464f3ad9966403813a14e16e1", null ]
-    ] ],
-    [ "angular_point_count", "namespaceocc_1_1dft.html#a39d3943f5b0df7c453d8d8c32ae84c0e", null ],
-    [ "becke_partition", "namespaceocc_1_1dft.html#a70f62dce121c6fab7f4453e6b394ff34", null ],
-    [ "calculate_atomic_grid_weights", "namespaceocc_1_1dft.html#a59c8bf90625e774d2c48be0109605014", null ],
     [ "calculate_hirshfeld_charges", "namespaceocc_1_1dft.html#a73599737489f46d634245c5985292f30", null ],
     [ "calculate_hirshfeld_multipoles", "namespaceocc_1_1dft.html#a179b373127772122365cdae68cf147ad", null ],
-    [ "calculate_interatomic_distances", "namespaceocc_1_1dft.html#a3e9d07ef0c0e331145f365e099a4873c", null ],
-    [ "calculate_voronoi_charges", "namespaceocc_1_1dft.html#ab25c3494c58366bbc9ccf6a5a387c6de", null ],
+    [ "calculate_voronoi_charges", "namespaceocc_1_1dft.html#ab46dd6d047711d38cfd44e353343b64e", null ],
     [ "create_dft_method_from_definition", "namespaceocc_1_1dft.html#a42fcb81f45e1d3f7cc6b9ed8c044a63a", null ],
     [ "dfid_to_string", "namespaceocc_1_1dft.html#a70f0a7522541ba34eecfed52b8460f6e", null ],
     [ "export_method_definitions", "namespaceocc_1_1dft.html#ac203cc9206e770c0f96f08d25836ee8f", null ],
-    [ "generate_atom_grid", "namespaceocc_1_1dft.html#a1b1bb46fb5a7dc21d731ba273ef4cef5", null ],
-    [ "generate_becke_radial_grid", "namespaceocc_1_1dft.html#a48abc2172605dbc65f9f0efb7d88b2c2", null ],
-    [ "generate_euler_maclaurin_radial_grid", "namespaceocc_1_1dft.html#a3e215f6f737ffaa6018143b0c5b902ff", null ],
-    [ "generate_gauss_chebyshev_m3_radial_grid", "namespaceocc_1_1dft.html#ae4fcfb2291c644aa0fc05d030e8714f4", null ],
-    [ "generate_gauss_chebyshev_radial_grid", "namespaceocc_1_1dft.html#ada7d5e515dc2a7751aa8476373e59d0d", null ],
-    [ "generate_lmg_radial_grid", "namespaceocc_1_1dft.html#a159cd74b910ba2119d21641aeb683755", null ],
-    [ "generate_mura_knowles_radial_grid", "namespaceocc_1_1dft.html#a9520536a6dd8ed259e1e7c818bfc317f", null ],
-    [ "generate_treutler_alrichs_radial_grid", "namespaceocc_1_1dft.html#a8900e894dfe2f28ad918387924d3f192", null ],
-    [ "get_atomic_radius", "namespaceocc_1_1dft.html#a9e7880f0c92086b310c9cfb67f801641", null ],
     [ "get_dft_method", "namespaceocc_1_1dft.html#aa623fba569469a5cf78a36d0422777cc", null ],
-    [ "lmg_h", "namespaceocc_1_1dft.html#ab1fe459345ca79fda03ffaa7ddf0613a", null ],
-    [ "lmg_inner", "namespaceocc_1_1dft.html#adfbee220b86d3fd92a242fd2be8d1768", null ],
-    [ "lmg_outer", "namespaceocc_1_1dft.html#aeb21dd4fb472004a50373c903ca95b2c", null ],
     [ "load_method_definitions", "namespaceocc_1_1dft.html#ac3d77f2637405f982902fe69f7a7ba26", null ],
-    [ "nearest_grid_level_at_or_above", "namespaceocc_1_1dft.html#a3c93f1dbd05800b2e7eba53c76b31c37", null ],
-    [ "nearest_grid_level_below", "namespaceocc_1_1dft.html#a9ee1087de2bec951deaeee34dc207792", null ],
-    [ "prune_numgrid_scheme", "namespaceocc_1_1dft.html#ac74028a17834ef26b4b6d7f6ffc1ff8f", null ],
-    [ "prune_nwchem_scheme", "namespaceocc_1_1dft.html#a745a35502e5e94d8ca308186272b206f", null ],
-    [ "prune_orca_scheme", "namespaceocc_1_1dft.html#a5f76ff16ca079cb6b4ee0cdad89601a0", null ],
-    [ "stratmann_scuseria_partition", "namespaceocc_1_1dft.html#a1a75a2c74a0e0e0749e0203348834597", null ],
     [ "string_to_dfid", "namespaceocc_1_1dft.html#afe5388e43d56ab12eb9c74a230b0a4fe", null ],
     [ "xc_potential_matrix", "namespaceocc_1_1dft.html#a1b07d66d6a706b5c97d4565076539e9c", null ],
     [ "xc_potential_matrix< Restricted, 0 >", "namespaceocc_1_1dft.html#a52594b3c2950d444c5fe4edbf057bf64", null ],
@@ -78,6 +34,5 @@ var namespaceocc_1_1dft =
     [ "xc_potential_matrix< Restricted, 2 >", "namespaceocc_1_1dft.html#a7a222b7ce9df98531eeeafb9ad1feeb3", null ],
     [ "xc_potential_matrix< Unrestricted, 0 >", "namespaceocc_1_1dft.html#a20654cb027dfc9b307f3c12c0a4b1a9f", null ],
     [ "xc_potential_matrix< Unrestricted, 1 >", "namespaceocc_1_1dft.html#a0f9bc77776e89d8bf4ea65677f0639a5", null ],
-    [ "xc_potential_matrix< Unrestricted, 2 >", "namespaceocc_1_1dft.html#a13f24b9204a53c944f36e5d0a2e759af", null ],
-    [ "lebedev_grid_levels", "namespaceocc_1_1dft.html#afe5b60f5c95720630ce9b842de705f17", null ]
+    [ "xc_potential_matrix< Unrestricted, 2 >", "namespaceocc_1_1dft.html#a13f24b9204a53c944f36e5d0a2e759af", null ]
 ];

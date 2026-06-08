@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['radialgrid_0',['RadialGrid',['../structocc_1_1dft_1_1RadialGrid.html',1,'occ::dft']]],
+  ['radialgrid_0',['RadialGrid',['../structocc_1_1numint_1_1RadialGrid.html',1,'occ::numint']]],
   ['radiusmetric_1',['RadiusMetric',['../classocc_1_1isosurface_1_1RadiusMetric.html',1,'occ::isosurface']]],
   ['rangeseparatedparameters_2',['RangeSeparatedParameters',['../structocc_1_1dft_1_1RangeSeparatedParameters.html',1,'occ::dft']]],
   ['ray_3',['Ray',['../structquickhull_1_1Ray.html',1,'quickhull']]],

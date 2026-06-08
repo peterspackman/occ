@@ -40,6 +40,7 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "progress.h", "progress_8h.html", "progress_8h" ],
     [ "quasirandom.h", "quasirandom_8h.html", "quasirandom_8h" ],
     [ "rotor.h", "rotor_8h.html", "rotor_8h" ],
+    [ "spinorbital.h", "core_2spinorbital_8h.html", "core_2spinorbital_8h" ],
     [ "table.h", "table_8h.html", "table_8h" ],
     [ "timings.h", "timings_8h.html", "timings_8h" ],
     [ "units.h", "units_8h.html", "units_8h" ],

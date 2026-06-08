@@ -138,9 +138,9 @@
 <!-- Node8 -->
 <g id="Node000008" class="node">
 <title>Node8</title>
-<g id="a_Node000008"><a xlink:href="structocc_1_1qm_1_1OrbitalSmearing.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="304,-316 164,-316 164,-297 304,-297 304,-316"/>
-<text text-anchor="middle" x="234" y="-304" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::OrbitalSmearing</text>
+<g id="a_Node000008"><a xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="212.5,-316 121.5,-316 121.5,-297 212.5,-297 212.5,-316"/>
+<text text-anchor="middle" x="167" y="-304" font-family="Helvetica,sans-Serif" font-size="10.00">SpinorbitalKind</text>
 </a>
 </g>
 </g>
@@ -148,25 +148,44 @@
 <g id="edge7_Node000007_Node000008" class="edge">
 <title>Node8&#45;&gt;Node7</title>
 <g id="a_edge7_Node000007_Node000008"><a xlink:title=" ">
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M234,-286.58C234,-274.63 234,-259.72 234,-250.41"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="230.5,-286.87 234,-296.87 237.5,-286.87 230.5,-286.87"/>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M183.4,-289.83C196.38,-277.44 214.02,-260.59 224.68,-250.41"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="180.85,-287.43 176.04,-296.87 185.68,-292.49 180.85,-287.43"/>
 </a>
 </g>
-<text text-anchor="middle" x="258.5" y="-271" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> smearing</text>
+<text text-anchor="middle" x="217.5" y="-271" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> kind</text>
 </g>
 <!-- Node9 -->
 <g id="Node000009" class="node">
 <title>Node9</title>
-<g id="a_Node000009"><a xlink:href="structocc_1_1qm_1_1Energy.html" target="_top" xlink:title=" ">
+<g id="a_Node000009"><a xlink:href="structocc_1_1qm_1_1OrbitalSmearing.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="371,-316 231,-316 231,-297 371,-297 371,-316"/>
+<text text-anchor="middle" x="301" y="-304" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::OrbitalSmearing</text>
+</a>
+</g>
+</g>
+<!-- Node9&#45;&gt;Node7 -->
+<g id="edge8_Node000007_Node000009" class="edge">
+<title>Node9&#45;&gt;Node7</title>
+<g id="a_edge8_Node000007_Node000009"><a xlink:title=" ">
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M284.6,-289.83C271.62,-277.44 253.98,-260.59 243.32,-250.41"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="282.32,-292.49 291.96,-296.87 287.15,-287.43 282.32,-292.49"/>
+</a>
+</g>
+<text text-anchor="middle" x="296.5" y="-271" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> smearing</text>
+</g>
+<!-- Node10 -->
+<g id="Node000010" class="node">
+<title>Node10</title>
+<g id="a_Node000010"><a xlink:href="structocc_1_1qm_1_1Energy.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="420.5,-250 325.5,-250 325.5,-231 420.5,-231 420.5,-250"/>
 <text text-anchor="middle" x="373" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::Energy</text>
 </a>
 </g>
 </g>
-<!-- Node9&#45;&gt;Node5 -->
-<g id="edge8_Node000005_Node000009" class="edge">
-<title>Node9&#45;&gt;Node5</title>
-<g id="a_edge8_Node000005_Node000009"><a xlink:title=" ">
+<!-- Node10&#45;&gt;Node5 -->
+<g id="edge9_Node000005_Node000010" class="edge">
+<title>Node10&#45;&gt;Node5</title>
+<g id="a_edge9_Node000005_Node000010"><a xlink:title=" ">
 <path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M346.75,-226.37C318.72,-212.36 275.12,-190.56 251.18,-178.59"/>
 <polygon fill="#9a32cd" stroke="#9a32cd" points="345.45,-229.64 355.96,-230.98 348.58,-223.38 345.45,-229.64"/>
 </a>

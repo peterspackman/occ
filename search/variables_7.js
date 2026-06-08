@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['g_0',['g',['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html#a7f2403ee2bea2b9bc761f71ef89b3022',1,'occ::mults::EwaldLatticeCache::GVector::G'],['../structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313',1,'occ::scrf::detail::CosmoResponse::G'],['../structocc_1_1opt_1_1OptPoint.html#a2022f77f410ad41cc743c7969da36d2f',1,'occ::opt::OptPoint::g']]],
+  ['g_0',['g',['../structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313',1,'occ::scrf::detail::CosmoResponse::G'],['../structocc_1_1opt_1_1OptPoint.html#a2022f77f410ad41cc743c7969da36d2f',1,'occ::opt::OptPoint::g'],['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html#a7f2403ee2bea2b9bc761f71ef89b3022',1,'occ::mults::EwaldLatticeCache::GVector::G']]],
   ['g_5fcm3_5fto_5fkg_5fm3_1',['G_CM3_TO_KG_M3',['../namespaceocc_1_1units.html#a061dda57ae5c9464607558dbddd71218',1,'occ::units']]],
   ['g_5fcoeffs_2',['g_coeffs',['../structocc_1_1xtb_1_1EwaldGammaData.html#a55b4cea7f4fbe6a933217f061c505c9a',1,'occ::xtb::EwaldGammaData']]],
   ['g_5fvectors_3',['g_vectors',['../structocc_1_1xtb_1_1EwaldGammaData.html#ad1daf989a4bdd7af802459fedae11a61',1,'occ::xtb::EwaldGammaData::g_vectors'],['../structocc_1_1mults_1_1EwaldLatticeCache.html#a472c357f4687cea28c97a05cab42e4b2',1,'occ::mults::EwaldLatticeCache::g_vectors']]],
@@ -11,7 +11,7 @@ var searchData=
   ['gamma_8',['gamma',['../structocc_1_1ints_1_1AuxPrimitiveData.html#ad1cd8edd58996e14a00c40d36e91fa15',1,'occ::ints::AuxPrimitiveData::gamma'],['../structocc_1_1io_1_1CellData.html#ab6d1e9fabaaa499b49d84b2b7449166e',1,'occ::io::CellData::gamma'],['../structocc_1_1io_1_1CrystalData.html#a7a851dbfc4a360a69eaa3005a93067a5',1,'occ::io::CrystalData::gamma'],['../structocc_1_1solvent_1_1SMDSolventParameters.html#a884e449aa53fd9aa97e2b2b08c536edc',1,'occ::solvent::SMDSolventParameters::gamma']]],
   ['gamma1_9',['gamma1',['../structocc_1_1mults_1_1TrustRegionSettings.html#a2c1f1ed581fe1e42bdca6492d35fc754',1,'occ::mults::TrustRegionSettings']]],
   ['gamma2_10',['gamma2',['../structocc_1_1mults_1_1TrustRegionSettings.html#aed1f14c0dac19f866dd56433786c6204',1,'occ::mults::TrustRegionSettings']]],
-  ['gamma_5fpoint_5fmolecules_11',['gamma_point_molecules',['../structocc_1_1main_1_1CGConfig.html#a39f4a3d506d2798231f20e3f5c4ab6ce',1,'occ::main::CGConfig']]],
+  ['gamma_5fpoint_5fmolecules_11',['gamma_point_molecules',['../structocc_1_1driver_1_1CGConfig.html#a009bf2fbbd0cf0b121dec37cdd449b58',1,'occ::driver::CGConfig']]],
   ['gamma_5frcut_12',['gamma_rcut',['../structocc_1_1xtb_1_1EwaldGammaData.html#a18ce852ee7734ec35de3c9545054dc9a',1,'occ::xtb::EwaldGammaData']]],
   ['gas_5fphase_5fcontribution_13',['gas_phase_contribution',['../structocc_1_1cg_1_1SMDSolventSurfaces.html#ab023455e74672fb2d8f676ce885360e2',1,'occ::cg::SMDSolventSurfaces']]],
   ['gaussian_14',['gaussian',['../structocc_1_1isosurface_1_1SurfaceCurvature.html#ae05f6a9ce4acf0a1663bf9e99bbbf464',1,'occ::isosurface::SurfaceCurvature']]],

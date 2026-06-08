@@ -112,9 +112,9 @@ $(document).ready(function(){initNavTree('classocc_1_1core_1_1MolecularAxisCalcu
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a3347aa5f24339a1838d8e6d3b43bdec7" id="r_a3347aa5f24339a1838d8e6d3b43bdec7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularAxisCalculator.html#a3347aa5f24339a1838d8e6d3b43bdec7">MolecularAxisCalculator</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;wfn)</td></tr>
-<tr class="memdesc:a3347aa5f24339a1838d8e6d3b43bdec7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a molecular axis calculator.  <br /></td></tr>
-<tr class="separator:a3347aa5f24339a1838d8e6d3b43bdec7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf74f8c4da6fb85b4bbd96282b74b736" id="r_acf74f8c4da6fb85b4bbd96282b74b736"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularAxisCalculator.html#acf74f8c4da6fb85b4bbd96282b74b736">MolecularAxisCalculator</a> (const Mat3N &amp;positions, const IVec &amp;atomic_numbers)</td></tr>
+<tr class="memdesc:acf74f8c4da6fb85b4bbd96282b74b736"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a molecular axis calculator from molecular geometry.  <br /></td></tr>
+<tr class="separator:acf74f8c4da6fb85b4bbd96282b74b736"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa841e662ceb7130b7e03b03380f5e8fa" id="r_aa841e662ceb7130b7e03b03380f5e8fa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1MolecularAxisResult.html">MolecularAxisResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularAxisCalculator.html#aa841e662ceb7130b7e03b03380f5e8fa">calculate_neighcrys_axes</a> (const std::vector&lt; int &gt; &amp;axis_atoms) const</td></tr>
 <tr class="memdesc:aa841e662ceb7130b7e03b03380f5e8fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate molecular axes using neighcrys method.  <br /></td></tr>
 <tr class="separator:aa841e662ceb7130b7e03b03380f5e8fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -142,15 +142,12 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aa875dd0df26cc22124434f00ee6fef67" id="r_aa875dd0df26cc22124434f00ee6fef67"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularAxisCalculator.html#aa875dd0df26cc22124434f00ee6fef67">apply_molecular_transformation</a> (<a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;wfn, const <a class="el" href="structocc_1_1core_1_1MolecularAxisResult.html">MolecularAxisResult</a> &amp;result)</td></tr>
-<tr class="memdesc:aa875dd0df26cc22124434f00ee6fef67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply molecular transformation to wavefunction.  <br /></td></tr>
-<tr class="separator:aa875dd0df26cc22124434f00ee6fef67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02a7492dc6c50f7048979a27740a794f" id="r_a02a7492dc6c50f7048979a27740a794f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularAxisCalculator.html#a02a7492dc6c50f7048979a27740a794f">write_neighcrys_axis_file</a> (const std::string &amp;filename, const <a class="el" href="structocc_1_1core_1_1NeighcrysAxisInfo.html">NeighcrysAxisInfo</a> &amp;axis_info)</td></tr>
 <tr class="memdesc:a02a7492dc6c50f7048979a27740a794f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write neighcrys-compatible axis file.  <br /></td></tr>
 <tr class="separator:a02a7492dc6c50f7048979a27740a794f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52b13d5576ad452beb5dbaa13a751d0d" id="r_a52b13d5576ad452beb5dbaa13a751d0d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularAxisCalculator.html#a52b13d5576ad452beb5dbaa13a751d0d">write_oriented_xyz</a> (const std::string &amp;filename, const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;wfn, const std::string &amp;title=&quot;Oriented molecule from OCC&quot;)</td></tr>
-<tr class="memdesc:a52b13d5576ad452beb5dbaa13a751d0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write oriented molecule in XYZ format.  <br /></td></tr>
-<tr class="separator:a52b13d5576ad452beb5dbaa13a751d0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9f88dd2c44b93ec1b7e30d50f3ca69b" id="r_ad9f88dd2c44b93ec1b7e30d50f3ca69b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularAxisCalculator.html#ad9f88dd2c44b93ec1b7e30d50f3ca69b">write_oriented_xyz</a> (const std::string &amp;filename, const Mat3N &amp;positions, const IVec &amp;atomic_numbers, const std::string &amp;title=&quot;Oriented molecule from OCC&quot;)</td></tr>
+<tr class="memdesc:ad9f88dd2c44b93ec1b7e30d50f3ca69b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write oriented molecule in XYZ format.  <br /></td></tr>
+<tr class="separator:ad9f88dd2c44b93ec1b7e30d50f3ca69b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af615d2ed0129d03c1b29233ea4cb44ee" id="r_af615d2ed0129d03c1b29233ea4cb44ee"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1MolecularAxisCalculator.html#af615d2ed0129d03c1b29233ea4cb44ee">axis_method_to_string</a> (<a class="el" href="namespaceocc_1_1core.html#a36515067f147def3d0afc6c9ffb41b2f">AxisMethod</a> method)</td></tr>
 <tr class="memdesc:af615d2ed0129d03c1b29233ea4cb44ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert AxisMethod enum to string.  <br /></td></tr>
 <tr class="separator:af615d2ed0129d03c1b29233ea4cb44ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -161,61 +158,23 @@ Static Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Molecular axis calculator class. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a3347aa5f24339a1838d8e6d3b43bdec7" name="a3347aa5f24339a1838d8e6d3b43bdec7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3347aa5f24339a1838d8e6d3b43bdec7">&#9670;&#160;</a></span>MolecularAxisCalculator()</h2>
+<a id="acf74f8c4da6fb85b4bbd96282b74b736" name="acf74f8c4da6fb85b4bbd96282b74b736"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf74f8c4da6fb85b4bbd96282b74b736">&#9670;&#160;</a></span>MolecularAxisCalculator()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">occ::core::MolecularAxisCalculator::MolecularAxisCalculator </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;&#160;</td>
-          <td class="paramname"><em>wfn</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Construct a molecular axis calculator. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">wfn</td><td>The wavefunction to analyze </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a id="aa875dd0df26cc22124434f00ee6fef67" name="aa875dd0df26cc22124434f00ee6fef67"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa875dd0df26cc22124434f00ee6fef67">&#9670;&#160;</a></span>apply_molecular_transformation()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void occ::core::MolecularAxisCalculator::apply_molecular_transformation </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;&#160;</td>
-          <td class="paramname"><em>wfn</em>, </td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>positions</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structocc_1_1core_1_1MolecularAxisResult.html">MolecularAxisResult</a> &amp;&#160;</td>
-          <td class="paramname"><em>result</em>&#160;</td>
+          <td class="paramtype">const IVec &amp;&#160;</td>
+          <td class="paramname"><em>atomic_numbers</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -223,24 +182,20 @@ Static Public Member Functions</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Apply molecular transformation to wavefunction. </p>
+<p>Construct a molecular axis calculator from molecular geometry. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">wfn</td><td>Wavefunction to transform (modified in place) </td></tr>
-    <tr><td class="paramname">result</td><td>Axis calculation result containing transformation </td></tr>
+    <tr><td class="paramname">positions</td><td>3xN Cartesian coordinates (Bohr) </td></tr>
+    <tr><td class="paramname">atomic_numbers</td><td>length-N atomic numbers </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a id="af615d2ed0129d03c1b29233ea4cb44ee" name="af615d2ed0129d03c1b29233ea4cb44ee"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af615d2ed0129d03c1b29233ea4cb44ee">&#9670;&#160;</a></span>axis_method_to_string()</h2>
 
@@ -566,8 +521,8 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a52b13d5576ad452beb5dbaa13a751d0d" name="a52b13d5576ad452beb5dbaa13a751d0d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a52b13d5576ad452beb5dbaa13a751d0d">&#9670;&#160;</a></span>write_oriented_xyz()</h2>
+<a id="ad9f88dd2c44b93ec1b7e30d50f3ca69b" name="ad9f88dd2c44b93ec1b7e30d50f3ca69b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9f88dd2c44b93ec1b7e30d50f3ca69b">&#9670;&#160;</a></span>write_oriented_xyz()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -584,8 +539,14 @@ Static Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;&#160;</td>
-          <td class="paramname"><em>wfn</em>, </td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>positions</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const IVec &amp;&#160;</td>
+          <td class="paramname"><em>atomic_numbers</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -610,7 +571,8 @@ Static Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">filename</td><td>Output filename </td></tr>
-    <tr><td class="paramname">wfn</td><td>Wavefunction (should be oriented) </td></tr>
+    <tr><td class="paramname">positions</td><td>3xN Cartesian coordinates (Bohr; should be oriented) </td></tr>
+    <tr><td class="paramname">atomic_numbers</td><td>length-N atomic numbers </td></tr>
     <tr><td class="paramname">title</td><td>Optional title for XYZ file </td></tr>
   </table>
   </dd>

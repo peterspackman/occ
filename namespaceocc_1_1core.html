@@ -296,6 +296,12 @@ Enumerations</h2></td></tr>
 , <a class="el" href="namespaceocc_1_1core.html#ab8b12b4d6899a9a9bec8c3024fa366f6a5206560a306a2e085a437fd258eb57ce">V</a>
  }</td></tr>
 <tr class="separator:ab8b12b4d6899a9a9bec8c3024fa366f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3af0c5c2ee6a3580eba6e1338efa0406" id="r_a3af0c5c2ee6a3580eba6e1338efa0406"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406">SpinorbitalKind</a> { <a class="el" href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406a88a7224cbd336625fbcc1d66d6a8b04b">Restricted</a>
+, <a class="el" href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406a99fc205ab9717bdfa73f4696f622fb33">Unrestricted</a>
+, <a class="el" href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406a674aa7e048c3d0b40ecd0dcdb5b7ce71">General</a>
+ }</td></tr>
+<tr class="memdesc:a3af0c5c2ee6a3580eba6e1338efa0406"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spin treatment for molecular orbitals / SCF.  <a href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406">More...</a><br /></td></tr>
+<tr class="separator:a3af0c5c2ee6a3580eba6e1338efa0406"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -359,6 +365,10 @@ Functions</h2></td></tr>
 <tr class="memitem:abeb0483db6e31121318847e734ed6cf5" id="r_abeb0483db6e31121318847e734ed6cf5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#abeb0483db6e31121318847e734ed6cf5">quasirandom_kgf</a> (size_t ndims, size_t count, size_t seed=0)</td></tr>
 <tr class="memdesc:abeb0483db6e31121318847e734ed6cf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate an D dimensional Korobov type quasi-random vector based on the generalized Fibonacci sequence.  <br /></td></tr>
 <tr class="separator:abeb0483db6e31121318847e734ed6cf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcd95445a6daa5e169a0560d80443fca" id="r_adcd95445a6daa5e169a0560d80443fca"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#adcd95445a6daa5e169a0560d80443fca">get_spinorbital_kind_from_string</a> (const std::string &amp;s, <a class="el" href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406">SpinorbitalKind</a> &amp;sk)</td></tr>
+<tr class="separator:adcd95445a6daa5e169a0560d80443fca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdf5d50ba5a772f08326985f6a2f3144" id="r_acdf5d50ba5a772f08326985f6a2f3144"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#acdf5d50ba5a772f08326985f6a2f3144">spinorbital_kind_to_string</a> (const <a class="el" href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406">SpinorbitalKind</a> &amp;sk)</td></tr>
+<tr class="separator:acdf5d50ba5a772f08326985f6a2f3144"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a315aadb90ab4f853b2fb3d2101ca514b" id="r_a315aadb90ab4f853b2fb3d2101ca514b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1VibrationalModes.html">VibrationalModes</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a315aadb90ab4f853b2fb3d2101ca514b">compute_vibrational_modes</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;hessian, const Vec &amp;masses, const Mat3N &amp;positions=Mat3N(), bool project_tr_rot=false)</td></tr>
 <tr class="memdesc:a315aadb90ab4f853b2fb3d2101ca514b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform vibrational frequency analysis on a Hessian matrix.  <br /></td></tr>
 <tr class="separator:a315aadb90ab4f853b2fb3d2101ca514b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -668,6 +678,28 @@ template&lt;typename NumericType &gt; </div>
 <tr><td class="fieldname"><a id="a116490d5f388f6e526b65a85d1c7e8a5add7536794b63bf90eccfd37f9b147d7f" name="a116490d5f388f6e526b65a85d1c7e8a5add7536794b63bf90eccfd37f9b147d7f"></a>I&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a116490d5f388f6e526b65a85d1c7e8a5a88c76da6f1765be3b493b1a553401488" name="a116490d5f388f6e526b65a85d1c7e8a5a88c76da6f1765be3b493b1a553401488"></a>Ih&#160;</td><td class="fielddoc"><p>icosahedral, dodecahedral </p>
 </td></tr>
+</table>
+
+</div>
+</div>
+<a id="a3af0c5c2ee6a3580eba6e1338efa0406" name="a3af0c5c2ee6a3580eba6e1338efa0406"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3af0c5c2ee6a3580eba6e1338efa0406">&#9670;&#160;</a></span>SpinorbitalKind</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406">occ::core::SpinorbitalKind</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Spin treatment for molecular orbitals / SCF. </p>
+<p>Unscoped enum: the enumerators are intentionally usable unqualified within the enclosing namespace. The canonical definition lives here (occ_core) so that low-level consumers (e.g. input/config structs) can reference it without depending on occ_qm; <a class="el" href="namespaceocc_1_1qm.html" title="quantum mechanics/quantum chemistry functionality including Hartree-Fock and more">occ::qm</a> re-exports the type and enumerators for backwards compatibility (see <a class="el" href="qm_2spinorbital_8h.html">occ/qm/spinorbital.h</a>). </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a3af0c5c2ee6a3580eba6e1338efa0406a88a7224cbd336625fbcc1d66d6a8b04b" name="a3af0c5c2ee6a3580eba6e1338efa0406a88a7224cbd336625fbcc1d66d6a8b04b"></a>Restricted&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3af0c5c2ee6a3580eba6e1338efa0406a99fc205ab9717bdfa73f4696f622fb33" name="a3af0c5c2ee6a3580eba6e1338efa0406a99fc205ab9717bdfa73f4696f622fb33"></a>Unrestricted&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3af0c5c2ee6a3580eba6e1338efa0406a674aa7e048c3d0b40ecd0dcdb5b7ce71" name="a3af0c5c2ee6a3580eba6e1338efa0406a674aa7e048c3d0b40ecd0dcdb5b7ce71"></a>General&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -1183,6 +1215,42 @@ template&lt;unsigned int order = 0&gt; </div>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="adcd95445a6daa5e169a0560d80443fca" name="adcd95445a6daa5e169a0560d80443fca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adcd95445a6daa5e169a0560d80443fca">&#9670;&#160;</a></span>get_spinorbital_kind_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::core::get_spinorbital_kind_from_string </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406">SpinorbitalKind</a> &amp;&#160;</td>
+          <td class="paramname"><em>sk</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -1720,6 +1788,32 @@ template&lt;typename AtomIterator &gt; </div>
   </td>
   <td class="mlabels-right">
 <span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acdf5d50ba5a772f08326985f6a2f3144" name="acdf5d50ba5a772f08326985f6a2f3144"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acdf5d50ba5a772f08326985f6a2f3144">&#9670;&#160;</a></span>spinorbital_kind_to_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const char * occ::core::spinorbital_kind_to_string </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406">SpinorbitalKind</a> &amp;&#160;</td>
+          <td class="paramname"><em>sk</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">

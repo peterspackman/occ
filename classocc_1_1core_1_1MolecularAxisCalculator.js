@@ -1,6 +1,6 @@
 var classocc_1_1core_1_1MolecularAxisCalculator =
 [
-    [ "MolecularAxisCalculator", "classocc_1_1core_1_1MolecularAxisCalculator.html#a3347aa5f24339a1838d8e6d3b43bdec7", null ],
+    [ "MolecularAxisCalculator", "classocc_1_1core_1_1MolecularAxisCalculator.html#acf74f8c4da6fb85b4bbd96282b74b736", null ],
     [ "calculate_axes", "classocc_1_1core_1_1MolecularAxisCalculator.html#a7c9e86b952cecbb9f79aa83b9a6794ad", null ],
     [ "calculate_bond_separation", "classocc_1_1core_1_1MolecularAxisCalculator.html#adcd7ff7acae9a7ad811e0f579a890fb9", null ],
     [ "calculate_moi_axes", "classocc_1_1core_1_1MolecularAxisCalculator.html#ada77a99c063f680637aa780c20ac6c7d", null ],

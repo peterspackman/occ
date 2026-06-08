@@ -2,7 +2,7 @@ var searchData=
 [
   ['face_0',['face',['../structquickhull_1_1MeshBuilder_1_1Face.html',1,'quickhull::MeshBuilder&lt; T &gt;::Face'],['../structquickhull_1_1HalfEdgeMesh_1_1Face.html',1,'quickhull::HalfEdgeMesh&lt; FloatType, IndexType &gt;::Face']]],
   ['facet_1',['facet',['../structocc_1_1geometry_1_1Facet.html',1,'occ::geometry::Facet'],['../structocc_1_1io_1_1GMFWriter_1_1Facet.html',1,'occ::io::GMFWriter::Facet']]],
-  ['facetenergies_2',['FacetEnergies',['../structocc_1_1main_1_1FacetEnergies.html',1,'occ::main']]],
+  ['facetenergies_2',['FacetEnergies',['../structocc_1_1driver_1_1FacetEnergies.html',1,'occ::driver']]],
   ['fastneighborfinder_3',['FastNeighborFinder',['../classocc_1_1descriptors_1_1FastNeighborFinder.html',1,'occ::descriptors']]],
   ['fchkbasis_4',['FchkBasis',['../structocc_1_1io_1_1FchkReader_1_1FchkBasis.html',1,'occ::io::FchkReader']]],
   ['fchkreader_5',['FchkReader',['../classocc_1_1io_1_1FchkReader.html',1,'occ::io']]],

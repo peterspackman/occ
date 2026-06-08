@@ -15,7 +15,7 @@ var searchData=
   ['electrondensityalpha_12',['ElectronDensityAlpha',['../namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172ae4a5648c0000e47002d5d8da523369b5',1,'occ::isosurface']]],
   ['electrondensitybeta_13',['ElectronDensityBeta',['../namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172af748802216b517731e9d2d0d4945403e',1,'occ::isosurface']]],
   ['esp_14',['esp',['../namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726a3e30ce90c5b1d89ae09b7d4c73d8e172',1,'occ::isosurface::ESP'],['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba3e30ce90c5b1d89ae09b7d4c73d8e172',1,'occ::isosurface::ESP']]],
-  ['eulermaclaurin_15',['EulerMaclaurin',['../namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665ba94990b9464f3ad9966403813a14e16e1',1,'occ::dft']]],
+  ['eulermaclaurin_15',['EulerMaclaurin',['../namespaceocc_1_1numint.html#adfae001d345ff26f124a72c71d63856fa94990b9464f3ad9966403813a14e16e1',1,'occ::numint']]],
   ['exchange_16',['Exchange',['../classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6a7753113027c1a63a110303250eb7ff08',1,'occ::dft::DensityFunctional']]],
   ['exchangecorrelation_17',['ExchangeCorrelation',['../classocc_1_1dft_1_1DensityFunctional.html#ade16814a7513d682a01e7d9ba185fee6ad70335725b5322e861182cbce89d3196',1,'occ::dft::DensityFunctional']]]
 ];

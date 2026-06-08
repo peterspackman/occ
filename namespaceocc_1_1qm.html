@@ -155,12 +155,6 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1GradientEvaluator.html">GradientEvaluator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1GridBatchLeaf.html">GridBatchLeaf</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leaf node containing grid point batch.  <a href="structocc_1_1qm_1_1GridBatchLeaf.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1GridBoundingSphere.html">GridBoundingSphere</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bounding sphere for a group of grid points.  <a href="structocc_1_1qm_1_1GridBoundingSphere.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html">HartreeFock</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HessianEvaluator.html">HessianEvaluator</a></td></tr>
@@ -198,12 +192,6 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1SCFMethodBase.html">SCFMethodBase</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1SpatialGridHierarchy.html">SpatialGridHierarchy</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spatial hierarchy for molecular grid points using Morton ordering.  <a href="classocc_1_1qm_1_1SpatialGridHierarchy.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SpatialHierarchySettings.html">SpatialHierarchySettings</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuration for hierarchy construction.  <a href="structocc_1_1qm_1_1SpatialHierarchySettings.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1SplitRIJ.html">SplitRIJ</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Split-RI-J: Coulomb matrix via Hermite Gaussian basis (Neese 2003)  <a href="classocc_1_1qm_1_1SplitRIJ.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -229,6 +217,9 @@ Concepts</h2></td></tr>
 Typedefs</h2></td></tr>
 <tr class="memitem:a0c56c4d6028bbf6ac60ba72a0c4c70eb" id="r_a0c56c4d6028bbf6ac60ba72a0c4c70eb"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb">PointChargeList</a> = std::vector&lt; <a class="el" href="classocc_1_1core_1_1PointCharge.html">occ::core::PointCharge</a> &gt;</td></tr>
 <tr class="separator:a0c56c4d6028bbf6ac60ba72a0c4c70eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af128e085de56d26183e2908f087e103a" id="r_af128e085de56d26183e2908f087e103a"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#af128e085de56d26183e2908f087e103a">DispersionGradientFunc</a> = std::function&lt; std::pair&lt; double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &gt;(const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">AOBasis</a> &amp;, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;, int)&gt;</td></tr>
+<tr class="memdesc:af128e085de56d26183e2908f087e103a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback that computes a dispersion energy and nuclear gradient for the given basis / orbitals / charge.  <br /></td></tr>
+<tr class="separator:af128e085de56d26183e2908f087e103a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa8bb245cfcce8ea42381f7dc22329952" id="r_aa8bb245cfcce8ea42381f7dc22329952"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aa8bb245cfcce8ea42381f7dc22329952">HessianMatrix</a> = <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a></td></tr>
 <tr class="separator:aa8bb245cfcce8ea42381f7dc22329952"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ecc83c9e5a744d19b7987d0dc0e52f7" id="r_a2ecc83c9e5a744d19b7987d0dc0e52f7"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a2ecc83c9e5a744d19b7987d0dc0e52f7">ShellPairList</a> = std::vector&lt; std::vector&lt; size_t &gt; &gt;</td></tr>
@@ -242,7 +233,6 @@ Enumerations</h2></td></tr>
 <tr class="separator:a0cbb6b7b200e84020e9a90de49d3cdd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c3f3ed928cbff80d1742c0ded1e98db" id="r_a5c3f3ed928cbff80d1742c0ded1e98db"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98db">DispersionType</a> { <a class="el" href="namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba6adf97f83acf6453d4a6a4b1070f3754">None</a>
 , <a class="el" href="namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba2521dc256a4368da87585c936b451dd7">D4</a>
-, <a class="el" href="namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba8fdbb506111f5675e109c02bbb0deabb">XDM</a>
  }</td></tr>
 <tr class="separator:a5c3f3ed928cbff80d1742c0ded1e98db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab76983d7f2f4d9156c8ccebb15d6a4ca" id="r_ab76983d7f2f4d9156c8ccebb15d6a4ca"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4ca">CoulombMethod</a> { <a class="el" href="namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caa1bfbcce75c3c9a52a464d4cb0984488a">Traditional</a>
@@ -256,11 +246,6 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:aed277318daf206bcae7523f0c4f9cacc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Strategy for DIIS extrapolation during SCF.  <a href="namespaceocc_1_1qm.html#aed277318daf206bcae7523f0c4f9cacc">More...</a><br /></td></tr>
 <tr class="separator:aed277318daf206bcae7523f0c4f9cacc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af7593c3db0168047bf727de310e0eeb4" id="r_af7593c3db0168047bf727de310e0eeb4"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> { <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a7eb505a798e7bd90ce15f4467154e837">Restricted</a>
-, <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a637317163a8a9d4712705b6bb0ae5799">Unrestricted</a>
-, <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a0da9cfa44fd984f48640ab63a399399d">General</a>
- }</td></tr>
-<tr class="separator:af7593c3db0168047bf727de310e0eeb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -269,11 +254,11 @@ Functions</h2></td></tr>
 <tr class="separator:a25a9715eed17d1bec6120971166e7f53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a44d0c2cc10936b5fce7b0f4086155b6e" id="r_a44d0c2cc10936b5fce7b0f4086155b6e"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a44d0c2cc10936b5fce7b0f4086155b6e">chelpg_charges</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;wfn)</td></tr>
 <tr class="separator:a44d0c2cc10936b5fce7b0f4086155b6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7f9747809d33a47c63c971414cfb7321" id="r_a7f9747809d33a47c63c971414cfb7321"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> kind, typename TA &gt; </td></tr>
+<tr class="memitem:a7f9747809d33a47c63c971414cfb7321" id="r_a7f9747809d33a47c63c971414cfb7321"><td class="memTemplParams" colspan="2">template&lt;SpinorbitalKind kind, typename TA &gt; </td></tr>
 <tr class="memitem:a7f9747809d33a47c63c971414cfb7321"><td class="memTemplItemLeft" align="right" valign="top">TA::Scalar&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a7f9747809d33a47c63c971414cfb7321">expectation</a> (const TA &amp;left, const TA &amp;right)</td></tr>
 <tr class="separator:a7f9747809d33a47c63c971414cfb7321"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a982da10e9beee254cd5401c9e3028a" id="r_a2a982da10e9beee254cd5401c9e3028a"><td class="memTemplParams" colspan="2">template&lt;typename TA &gt; </td></tr>
-<tr class="memitem:a2a982da10e9beee254cd5401c9e3028a"><td class="memTemplItemLeft" align="right" valign="top">TA::Scalar&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a2a982da10e9beee254cd5401c9e3028a">expectation</a> (<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> sk, const TA &amp;left, const TA &amp;right)</td></tr>
+<tr class="memitem:a2a982da10e9beee254cd5401c9e3028a"><td class="memTemplItemLeft" align="right" valign="top">TA::Scalar&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a2a982da10e9beee254cd5401c9e3028a">expectation</a> (SpinorbitalKind sk, const TA &amp;left, const TA &amp;right)</td></tr>
 <tr class="separator:a2a982da10e9beee254cd5401c9e3028a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a879a0c61d5547c7ddd07c0c8c42f9f6e" id="r_a879a0c61d5547c7ddd07c0c8c42f9f6e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a879a0c61d5547c7ddd07c0c8c42f9f6e">resolve_fitting_basis</a> (const std::string &amp;orbital_basis_name, <a class="el" href="namespaceocc_1_1qm.html#a0cbb6b7b200e84020e9a90de49d3cdd9">FittingKind</a> kind)</td></tr>
 <tr class="separator:a879a0c61d5547c7ddd07c0c8c42f9f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -291,17 +276,13 @@ Functions</h2></td></tr>
 <tr class="separator:a8d1edae606af42cd4f3f5bad5bb13bd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbd3ff1729602847daf45753f527aa15" id="r_abbd3ff1729602847daf45753f527aa15"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#abbd3ff1729602847daf45753f527aa15">mulliken_partition</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">AOBasis</a> &amp;basis, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt; op)</td></tr>
 <tr class="separator:abbd3ff1729602847daf45753f527aa15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8a55dbc14f641aaa3c836398faeb519" id="r_ac8a55dbc14f641aaa3c836398faeb519"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> sk, <a class="el" href="structocc_1_1gto_1_1Shell.html#a6198e1cb0bfa5b74e6d9e5673cf662f6">Shell::Kind</a> kind&gt; </td></tr>
+<tr class="memitem:ac8a55dbc14f641aaa3c836398faeb519" id="r_ac8a55dbc14f641aaa3c836398faeb519"><td class="memTemplParams" colspan="2">template&lt;SpinorbitalKind sk, <a class="el" href="structocc_1_1gto_1_1Shell.html#a6198e1cb0bfa5b74e6d9e5673cf662f6">Shell::Kind</a> kind&gt; </td></tr>
 <tr class="memitem:ac8a55dbc14f641aaa3c836398faeb519"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519">shellblock_norm</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">AOBasis</a> &amp;basis, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;matrix) noexcept</td></tr>
 <tr class="separator:ac8a55dbc14f641aaa3c836398faeb519"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:affbc8f01fc592caa8b8095e3357c8693" id="r_affbc8f01fc592caa8b8095e3357c8693"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#affbc8f01fc592caa8b8095e3357c8693">get_spinorbital_kind_from_string</a> (const std::string &amp;s, <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> &amp;sk)</td></tr>
-<tr class="separator:affbc8f01fc592caa8b8095e3357c8693"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc9a0510ac1c6ace69ae9cf3da07c4a8" id="r_acc9a0510ac1c6ace69ae9cf3da07c4a8"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#acc9a0510ac1c6ace69ae9cf3da07c4a8">spinorbital_kind_to_string</a> (const <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> &amp;sk)</td></tr>
-<tr class="separator:acc9a0510ac1c6ace69ae9cf3da07c4a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adb09bba283593dd336a2fbce44d4e2c2" id="r_adb09bba283593dd336a2fbce44d4e2c2"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> kind&gt; </td></tr>
+<tr class="memitem:adb09bba283593dd336a2fbce44d4e2c2" id="r_adb09bba283593dd336a2fbce44d4e2c2"><td class="memTemplParams" colspan="2">template&lt;SpinorbitalKind kind&gt; </td></tr>
 <tr class="memitem:adb09bba283593dd336a2fbce44d4e2c2"><td class="memTemplItemLeft" align="right" valign="top">constexpr std::pair&lt; size_t, size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#adb09bba283593dd336a2fbce44d4e2c2">matrix_dimensions</a> (size_t nbf)</td></tr>
 <tr class="separator:adb09bba283593dd336a2fbce44d4e2c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeedc0a37f48c77f349319facd5aaff08" id="r_aeedc0a37f48c77f349319facd5aaff08"><td class="memItemLeft" align="right" valign="top">constexpr std::pair&lt; size_t, size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aeedc0a37f48c77f349319facd5aaff08">matrix_dimensions</a> (<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> kind, size_t nbf)</td></tr>
+<tr class="memitem:aeedc0a37f48c77f349319facd5aaff08" id="r_aeedc0a37f48c77f349319facd5aaff08"><td class="memItemLeft" align="right" valign="top">constexpr std::pair&lt; size_t, size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aeedc0a37f48c77f349319facd5aaff08">matrix_dimensions</a> (SpinorbitalKind kind, size_t nbf)</td></tr>
 <tr class="separator:aeedc0a37f48c77f349319facd5aaff08"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
@@ -319,6 +300,23 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>quantum mechanics/quantum chemistry functionality including Hartree-Fock and more </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="af128e085de56d26183e2908f087e103a" name="af128e085de56d26183e2908f087e103a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af128e085de56d26183e2908f087e103a">&#9670;&#160;</a></span>DispersionGradientFunc</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceocc_1_1qm.html#af128e085de56d26183e2908f087e103a">occ::qm::DispersionGradientFunc</a> = typedef std::function&lt;std::pair&lt;double, <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&gt;( const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">AOBasis</a> &amp;, const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;, int)&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Callback that computes a dispersion energy and nuclear gradient for the given basis / orbitals / charge. </p>
+<p>Used to inject corrections (e.g. XDM) that live in libraries above occ_qm, so occ_qm need not depend on them. </p>
+
+</div>
+</div>
 <a id="aa8bb245cfcce8ea42381f7dc22329952" name="aa8bb245cfcce8ea42381f7dc22329952"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa8bb245cfcce8ea42381f7dc22329952">&#9670;&#160;</a></span>HessianMatrix</h2>
 
@@ -446,7 +444,6 @@ Variables</h2></td></tr>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a5c3f3ed928cbff80d1742c0ded1e98dba6adf97f83acf6453d4a6a4b1070f3754" name="a5c3f3ed928cbff80d1742c0ded1e98dba6adf97f83acf6453d4a6a4b1070f3754"></a>None&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a5c3f3ed928cbff80d1742c0ded1e98dba2521dc256a4368da87585c936b451dd7" name="a5c3f3ed928cbff80d1742c0ded1e98dba2521dc256a4368da87585c936b451dd7"></a>D4&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a5c3f3ed928cbff80d1742c0ded1e98dba8fdbb506111f5675e109c02bbb0deabb" name="a5c3f3ed928cbff80d1742c0ded1e98dba8fdbb506111f5675e109c02bbb0deabb"></a>XDM&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -473,25 +470,6 @@ Variables</h2></td></tr>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a0cbb6b7b200e84020e9a90de49d3cdd9a5c3116796f5ff62adaf85580801f3fa4" name="a0cbb6b7b200e84020e9a90de49d3cdd9a5c3116796f5ff62adaf85580801f3fa4"></a>JK&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a0cbb6b7b200e84020e9a90de49d3cdd9a5f750c3076b1c419d3d1684019d36b16" name="a0cbb6b7b200e84020e9a90de49d3cdd9a5f750c3076b1c419d3d1684019d36b16"></a>Correlation&#160;</td><td class="fielddoc"></td></tr>
-</table>
-
-</div>
-</div>
-<a id="af7593c3db0168047bf727de310e0eeb4" name="af7593c3db0168047bf727de310e0eeb4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af7593c3db0168047bf727de310e0eeb4">&#9670;&#160;</a></span>SpinorbitalKind</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">occ::qm::SpinorbitalKind</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="af7593c3db0168047bf727de310e0eeb4a7eb505a798e7bd90ce15f4467154e837" name="af7593c3db0168047bf727de310e0eeb4a7eb505a798e7bd90ce15f4467154e837"></a>Restricted&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="af7593c3db0168047bf727de310e0eeb4a637317163a8a9d4712705b6bb0ae5799" name="af7593c3db0168047bf727de310e0eeb4a637317163a8a9d4712705b6bb0ae5799"></a>Unrestricted&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="af7593c3db0168047bf727de310e0eeb4a0da9cfa44fd984f48640ab63a399399d" name="af7593c3db0168047bf727de310e0eeb4a0da9cfa44fd984f48640ab63a399399d"></a>General&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -538,7 +516,7 @@ Variables</h2></td></tr>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> kind, typename TA &gt; </div>
+template&lt;SpinorbitalKind kind, typename TA &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">TA::Scalar occ::qm::expectation </td>
@@ -573,7 +551,7 @@ template&lt;typename TA &gt; </div>
         <tr>
           <td class="memname">TA::Scalar occ::qm::expectation </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a>&#160;</td>
+          <td class="paramtype">SpinorbitalKind&#160;</td>
           <td class="paramname"><em>sk</em>, </td>
         </tr>
         <tr>
@@ -663,49 +641,13 @@ template&lt;typename TA &gt; </div>
 
 </div>
 </div>
-<a id="affbc8f01fc592caa8b8095e3357c8693" name="affbc8f01fc592caa8b8095e3357c8693"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#affbc8f01fc592caa8b8095e3357c8693">&#9670;&#160;</a></span>get_spinorbital_kind_from_string()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool occ::qm::get_spinorbital_kind_from_string </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> &amp;&#160;</td>
-          <td class="paramname"><em>sk</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="adb09bba283593dd336a2fbce44d4e2c2" name="adb09bba283593dd336a2fbce44d4e2c2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adb09bba283593dd336a2fbce44d4e2c2">&#9670;&#160;</a></span>matrix_dimensions() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> kind&gt; </div>
+template&lt;SpinorbitalKind kind&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -739,7 +681,7 @@ template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de
         <tr>
           <td class="memname">constexpr std::pair&lt; size_t, size_t &gt; occ::qm::matrix_dimensions </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a>&#160;</td>
+          <td class="paramtype">SpinorbitalKind&#160;</td>
           <td class="paramname"><em>kind</em>, </td>
         </tr>
         <tr>
@@ -933,7 +875,7 @@ template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> sk, <a class="el" href="structocc_1_1gto_1_1Shell.html#a6198e1cb0bfa5b74e6d9e5673cf662f6">Shell::Kind</a> kind&gt; </div>
+template&lt;SpinorbitalKind sk, <a class="el" href="structocc_1_1gto_1_1Shell.html#a6198e1cb0bfa5b74e6d9e5673cf662f6">Shell::Kind</a> kind&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -959,32 +901,6 @@ template&lt;<a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de
   </td>
   <td class="mlabels-right">
 <span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="acc9a0510ac1c6ace69ae9cf3da07c4a8" name="acc9a0510ac1c6ace69ae9cf3da07c4a8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc9a0510ac1c6ace69ae9cf3da07c4a8">&#9670;&#160;</a></span>spinorbital_kind_to_string()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">constexpr const char * occ::qm::spinorbital_kind_to_string </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4">SpinorbitalKind</a> &amp;&#160;</td>
-          <td class="paramname"><em>sk</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">

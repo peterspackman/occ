@@ -78,9 +78,9 @@
 <!-- Node5 -->
 <g id="Node000005" class="node">
 <title>Node5</title>
-<g id="a_Node000005"><a xlink:href="structocc_1_1qm_1_1OrbitalSmearing.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="262.5,-228 122.5,-228 122.5,-209 262.5,-209 262.5,-228"/>
-<text text-anchor="middle" x="192.5" y="-216" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::OrbitalSmearing</text>
+<g id="a_Node000005"><a xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="171,-228 80,-228 80,-209 171,-209 171,-228"/>
+<text text-anchor="middle" x="125.5" y="-216" font-family="Helvetica,sans-Serif" font-size="10.00">SpinorbitalKind</text>
 </a>
 </g>
 </g>
@@ -88,63 +88,82 @@
 <g id="edge4_Node000004_Node000005" class="edge">
 <title>Node5&#45;&gt;Node4</title>
 <g id="a_edge4_Node000004_Node000005"><a xlink:title=" ">
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M192.5,-198.58C192.5,-186.63 192.5,-171.72 192.5,-162.41"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="189,-198.87 192.5,-208.87 196,-198.87 189,-198.87"/>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M141.9,-201.83C154.88,-189.44 172.52,-172.59 183.18,-162.41"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="139.35,-199.43 134.54,-208.87 144.18,-204.49 139.35,-199.43"/>
 </a>
 </g>
-<text text-anchor="middle" x="217" y="-183" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> smearing</text>
+<text text-anchor="middle" x="176" y="-183" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> kind</text>
 </g>
 <!-- Node6 -->
 <g id="Node000006" class="node">
 <title>Node6</title>
-<g id="a_Node000006"><a xlink:href="structocc_1_1qm_1_1Energy.html" target="_top" xlink:title=" ">
+<g id="a_Node000006"><a xlink:href="structocc_1_1qm_1_1OrbitalSmearing.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="329.5,-228 189.5,-228 189.5,-209 329.5,-209 329.5,-228"/>
+<text text-anchor="middle" x="259.5" y="-216" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::OrbitalSmearing</text>
+</a>
+</g>
+</g>
+<!-- Node6&#45;&gt;Node4 -->
+<g id="edge5_Node000004_Node000006" class="edge">
+<title>Node6&#45;&gt;Node4</title>
+<g id="a_edge5_Node000004_Node000006"><a xlink:title=" ">
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M243.1,-201.83C230.12,-189.44 212.48,-172.59 201.82,-162.41"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="240.82,-204.49 250.46,-208.87 245.65,-199.43 240.82,-204.49"/>
+</a>
+</g>
+<text text-anchor="middle" x="255" y="-183" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> smearing</text>
+</g>
+<!-- Node7 -->
+<g id="Node000007" class="node">
+<title>Node7</title>
+<g id="a_Node000007"><a xlink:href="structocc_1_1qm_1_1Energy.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="379,-162 284,-162 284,-143 379,-143 379,-162"/>
 <text text-anchor="middle" x="331.5" y="-150" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::Energy</text>
 </a>
 </g>
 </g>
-<!-- Node6&#45;&gt;Node2 -->
-<g id="edge5_Node000002_Node000006" class="edge">
-<title>Node6&#45;&gt;Node2</title>
-<g id="a_edge5_Node000002_Node000006"><a xlink:title=" ">
+<!-- Node7&#45;&gt;Node2 -->
+<g id="edge6_Node000002_Node000007" class="edge">
+<title>Node7&#45;&gt;Node2</title>
+<g id="a_edge6_Node000002_Node000007"><a xlink:title=" ">
 <path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M318.69,-134.77C309.29,-122.49 296.89,-106.3 289.32,-96.41"/>
 <polygon fill="#9a32cd" stroke="#9a32cd" points="316.03,-137.06 324.89,-142.87 321.59,-132.8 316.03,-137.06"/>
 </a>
 </g>
 <text text-anchor="middle" x="329" y="-117" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> energy</text>
 </g>
-<!-- Node7 -->
-<g id="Node000007" class="node">
-<title>Node7</title>
-<g id="a_Node000007"><a xlink:href="classocc_1_1dft_1_1DFT.html" target="_top" xlink:title=" ">
+<!-- Node8 -->
+<g id="Node000008" class="node">
+<title>Node8</title>
+<g id="a_Node000008"><a xlink:href="classocc_1_1dft_1_1DFT.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="484,-96 407,-96 407,-77 484,-77 484,-96"/>
 <text text-anchor="middle" x="445.5" y="-84" font-family="Helvetica,sans-Serif" font-size="10.00">occ::dft::DFT</text>
 </a>
 </g>
 </g>
-<!-- Node7&#45;&gt;Node1 -->
-<g id="edge6_Node000001_Node000007" class="edge">
-<title>Node7&#45;&gt;Node1</title>
-<g id="a_edge6_Node000001_Node000007"><a xlink:title=" ">
+<!-- Node8&#45;&gt;Node1 -->
+<g id="edge7_Node000001_Node000008" class="edge">
+<title>Node8&#45;&gt;Node1</title>
+<g id="a_edge7_Node000001_Node000008"><a xlink:title=" ">
 <path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M424.32,-71.21C406.52,-59.19 381.2,-42.11 363.45,-30.14"/>
 <polygon fill="#9a32cd" stroke="#9a32cd" points="422.62,-74.29 432.87,-76.98 426.54,-68.48 422.62,-74.29"/>
 </a>
 </g>
 <text text-anchor="middle" x="411" y="-51" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> ks</text>
 </g>
-<!-- Node8 -->
-<g id="Node000008" class="node">
-<title>Node8</title>
-<g id="a_Node000008"><a xlink:href="classocc_1_1qm_1_1SCFMethodBase.html" target="_top" xlink:title=" ">
+<!-- Node9 -->
+<g id="Node000009" class="node">
+<title>Node9</title>
+<g id="a_Node000009"><a xlink:href="classocc_1_1qm_1_1SCFMethodBase.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="537.5,-162 397.5,-162 397.5,-143 537.5,-143 537.5,-162"/>
 <text text-anchor="middle" x="467.5" y="-150" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::SCFMethodBase</text>
 </a>
 </g>
 </g>
-<!-- Node8&#45;&gt;Node7 -->
-<g id="edge7_Node000007_Node000008" class="edge">
-<title>Node8&#45;&gt;Node7</title>
-<g id="a_edge7_Node000007_Node000008"><a xlink:title=" ">
+<!-- Node9&#45;&gt;Node8 -->
+<g id="edge8_Node000008_Node000009" class="edge">
+<title>Node9&#45;&gt;Node8</title>
+<g id="a_edge8_Node000008_Node000009"><a xlink:title=" ">
 <path fill="none" stroke="#63b8ff" d="M461.25,-133.32C457.1,-121.24 451.83,-105.91 448.56,-96.41"/>
 <polygon fill="#63b8ff" stroke="#63b8ff" points="457.97,-134.55 464.53,-142.87 464.59,-132.27 457.97,-134.55"/>
 </a>

@@ -7,5 +7,6 @@ var namespaceocc_1_1xdm =
     [ "becke_hole_br89_newton", "namespaceocc_1_1xdm.html#a70cd0761aeaa63039c9e5419a7b344e1", null ],
     [ "get_xdm_parameters", "namespaceocc_1_1xdm.html#af8de29a8aea1cead89ed4d33cac8ca74", null ],
     [ "xdm_dispersion_energy", "namespaceocc_1_1xdm.html#a74b21052ae1b6350a3098f2403dea2b6", null ],
+    [ "xdm_dispersion_gradient", "namespaceocc_1_1xdm.html#a8cbb54b603bbafeeaa52c0857d5c19f8", null ],
     [ "xdm_dispersion_interaction_energy", "namespaceocc_1_1xdm.html#acd14e46c74705f0a7827c57fd260c14f", null ]
 ];

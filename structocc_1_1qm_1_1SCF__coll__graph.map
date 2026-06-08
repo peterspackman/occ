@@ -10,12 +10,14 @@
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="569,79,690,94,757,103,756,108,689,99,568,84"/>
 <area shape="rect" id="Node000006" href="$classocc_1_1core_1_1EnergyComponents.html" title="Storage class for components of energy, separated by the dot character." alt="" coords="339,104,553,129"/>
 <area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="567,114,756,114,756,119,567,119"/>
-<area shape="rect" id="Node000007" title=" " alt="" coords="5,95,212,135"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="226,113,338,114,338,119,226,118"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="5,93,212,133"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="226,111,338,113,338,118,226,117"/>
 <area shape="rect" id="Node000008" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="348,157,544,183"/>
 <area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="553,153,689,134,756,125,757,130,690,139,554,158"/>
-<area shape="rect" id="Node000009" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="15,160,202,185"/>
-<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="216,169,348,168,348,173,216,174"/>
-<area shape="rect" id="Node000010" href="$classocc_1_1qm_1_1ConvergenceAccelerator.html" title="Encapsulates SCF convergence acceleration strategies (CDIIS, EDIIS, ADIIS)" alt="" coords="715,153,955,179"/>
-<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="968,157,1058,147,1149,131,1198,117,1241,102,1243,107,1200,123,1150,137,1058,152,969,162"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="48,157,169,183"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="183,167,348,167,348,173,183,173"/>
+<area shape="rect" id="Node000010" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="15,207,202,232"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="209,202,358,180,359,185,210,207"/>
+<area shape="rect" id="Node000011" href="$classocc_1_1qm_1_1ConvergenceAccelerator.html" title="Encapsulates SCF convergence acceleration strategies (CDIIS, EDIIS, ADIIS)" alt="" coords="715,153,955,179"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="968,157,1058,147,1149,131,1198,117,1241,102,1243,107,1200,123,1150,137,1058,152,969,162"/>
 </map>

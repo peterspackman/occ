@@ -21,9 +21,9 @@ var searchData=
   ['splitrij_18',['SplitRIJ',['../namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caae8170441f7460d522a29a1988d225775',1,'occ::qm']]],
   ['squareroot_19',['SquareRoot',['../namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35a70da9110621ed7cd7e701b83a93d129e',1,'occ::core']]],
   ['stability_20',['STABILITY',['../classocc_1_1io_1_1FchkWriter.html#adef69bf2291f5e23817021844e874db1ac0ee4f662236410d78de56e32adf7a43',1,'occ::io::FchkWriter']]],
-  ['standard_21',['Standard',['../namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b',1,'occ::io']]],
+  ['standard_21',['Standard',['../namespaceocc_1_1numint.html#a8ef6c8c9aa080a9b6ed2a5435ea506a7aeb6d8ae6f20283755b339c0dc273988b',1,'occ::numint']]],
   ['steinhardt_22',['Steinhardt',['../structocc_1_1main_1_1DescribeConfig.html#ac91ac77089e90af7c50e74ac1a56bbfaa51f1f8de2cd3a22e548e17e9a419b0f8',1,'occ::main::DescribeConfig']]],
   ['stored_23',['Stored',['../classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710da8ca3074133a77a7a6fb965a9b08ac3c2',1,'occ::qm::IntegralEngineDF']]],
-  ['stratmannscuseria_24',['StratmannScuseria',['../namespaceocc_1_1dft.html#a2618fed7e4e7c22b65e2bb79357d426aa055277b7e830275ea0c18440dc783c67',1,'occ::dft']]],
+  ['stratmannscuseria_24',['StratmannScuseria',['../namespaceocc_1_1numint.html#a8946bc323d1808ed23151b97866785e6a055277b7e830275ea0c18440dc783c67',1,'occ::numint']]],
   ['svd_25',['SVD',['../namespaceocc_1_1elastic__fit.html#ac3e8c91ec2f8e6a091ce339e4f700e97a595e2d2f1a68ede96e96f849a85370bc',1,'occ::elastic_fit']]]
 ];

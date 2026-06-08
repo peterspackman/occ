@@ -5,28 +5,28 @@
  -->
 <!-- Title: /home/runner/work/occ/occ/include/occ/interaction/lattice_convergence_settings.h Pages: 1 -->
 <svg width="450pt" height="357pt"
- viewBox="0.00 0.00 449.50 357.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ viewBox="0.00 0.00 450.00 357.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 353)">
 <title>/home/runner/work/occ/occ/include/occ/interaction/lattice_convergence_settings.h</title>
 <!-- Node1 -->
 <g id="Node000001" class="node">
 <title>Node1</title>
 <g id="a_Node000001"><a xlink:title=" ">
-<polygon fill="#999999" stroke="#666666" points="317,-349 146,-349 146,-308 317,-308 317,-349"/>
-<text text-anchor="start" x="154" y="-337" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
-<text text-anchor="start" x="154" y="-326" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/interaction</text>
-<text text-anchor="middle" x="231.5" y="-315" font-family="Helvetica,sans-Serif" font-size="10.00">/lattice_convergence_settings.h</text>
+<polygon fill="#999999" stroke="#666666" points="306.5,-349 135.5,-349 135.5,-308 306.5,-308 306.5,-349"/>
+<text text-anchor="start" x="143.5" y="-337" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
+<text text-anchor="start" x="143.5" y="-326" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/interaction</text>
+<text text-anchor="middle" x="221" y="-315" font-family="Helvetica,sans-Serif" font-size="10.00">/lattice_convergence_settings.h</text>
 </a>
 </g>
 </g>
 <!-- Node2 -->
 <g id="Node000002" class="node">
 <title>Node2</title>
-<g id="a_Node000002"><a xlink:href="lattice__energy_8h.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="149,-272 0,-272 0,-231 149,-231 149,-272"/>
+<g id="a_Node000002"><a xlink:href="cg__runner_8h.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="128,-272 0,-272 0,-231 128,-231 128,-272"/>
 <text text-anchor="start" x="8" y="-260" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
-<text text-anchor="start" x="8" y="-249" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/interaction</text>
-<text text-anchor="middle" x="74.5" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00">/lattice_energy.h</text>
+<text text-anchor="start" x="8" y="-249" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/driver</text>
+<text text-anchor="middle" x="64" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00">/cg_runner.h</text>
 </a>
 </g>
 </g>
@@ -34,59 +34,59 @@
 <g id="edge1_Node000001_Node000002" class="edge">
 <title>Node1&#45;&gt;Node2</title>
 <g id="a_edge1_Node000001_Node000002"><a xlink:title=" ">
-<path fill="none" stroke="#63b8ff" d="M181.44,-303.59C160.13,-293.41 135.6,-281.69 115.41,-272.04"/>
-<polygon fill="#63b8ff" stroke="#63b8ff" points="180.13,-306.84 190.66,-307.99 183.15,-300.52 180.13,-306.84"/>
+<path fill="none" stroke="#63b8ff" d="M170.94,-303.59C149.63,-293.41 125.1,-281.69 104.91,-272.04"/>
+<polygon fill="#63b8ff" stroke="#63b8ff" points="169.63,-306.84 180.16,-307.99 172.65,-300.52 169.63,-306.84"/>
 </a>
 </g>
 </g>
-<!-- Node6 -->
-<g id="Node000006" class="node">
-<title>Node6</title>
-<g id="a_Node000006"><a xlink:href="occ__cg_8h.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="295.5,-272 167.5,-272 167.5,-231 295.5,-231 295.5,-272"/>
-<text text-anchor="start" x="175.5" y="-260" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
-<text text-anchor="start" x="175.5" y="-249" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/main</text>
-<text text-anchor="middle" x="231.5" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00">/occ_cg.h</text>
+<!-- Node4 -->
+<g id="Node000004" class="node">
+<title>Node4</title>
+<g id="a_Node000004"><a xlink:href="lattice__energy_8h.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="295.5,-272 146.5,-272 146.5,-231 295.5,-231 295.5,-272"/>
+<text text-anchor="start" x="154.5" y="-260" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
+<text text-anchor="start" x="154.5" y="-249" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/interaction</text>
+<text text-anchor="middle" x="221" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00">/lattice_energy.h</text>
 </a>
 </g>
 </g>
-<!-- Node1&#45;&gt;Node6 -->
-<g id="edge5_Node000001_Node000006" class="edge">
-<title>Node1&#45;&gt;Node6</title>
-<g id="a_edge5_Node000001_Node000006"><a xlink:title=" ">
-<path fill="none" stroke="#63b8ff" d="M231.5,-297.69C231.5,-289.08 231.5,-279.9 231.5,-272.07"/>
-<polygon fill="#63b8ff" stroke="#63b8ff" points="228,-297.79 231.5,-307.79 235,-297.79 228,-297.79"/>
+<!-- Node1&#45;&gt;Node4 -->
+<g id="edge3_Node000001_Node000004" class="edge">
+<title>Node1&#45;&gt;Node4</title>
+<g id="a_edge3_Node000001_Node000004"><a xlink:title=" ">
+<path fill="none" stroke="#63b8ff" d="M221,-297.69C221,-289.08 221,-279.9 221,-272.07"/>
+<polygon fill="#63b8ff" stroke="#63b8ff" points="217.5,-297.79 221,-307.79 224.5,-297.79 217.5,-297.79"/>
 </a>
 </g>
 </g>
-<!-- Node7 -->
-<g id="Node000007" class="node">
-<title>Node7</title>
-<g id="a_Node000007"><a xlink:href="occ__elat_8h.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="441.5,-272 313.5,-272 313.5,-231 441.5,-231 441.5,-272"/>
-<text text-anchor="start" x="321.5" y="-260" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
-<text text-anchor="start" x="321.5" y="-249" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/main</text>
-<text text-anchor="middle" x="377.5" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00">/occ_elat.h</text>
+<!-- Node8 -->
+<g id="Node000008" class="node">
+<title>Node8</title>
+<g id="a_Node000008"><a xlink:href="occ__elat_8h.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="442,-272 314,-272 314,-231 442,-231 442,-272"/>
+<text text-anchor="start" x="322" y="-260" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
+<text text-anchor="start" x="322" y="-249" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/main</text>
+<text text-anchor="middle" x="378" y="-238" font-family="Helvetica,sans-Serif" font-size="10.00">/occ_elat.h</text>
 </a>
 </g>
 </g>
-<!-- Node1&#45;&gt;Node7 -->
-<g id="edge6_Node000001_Node000007" class="edge">
-<title>Node1&#45;&gt;Node7</title>
-<g id="a_edge6_Node000001_Node000007"><a xlink:title=" ">
-<path fill="none" stroke="#63b8ff" d="M278.59,-303.31C298.27,-293.2 320.85,-281.6 339.46,-272.04"/>
-<polygon fill="#63b8ff" stroke="#63b8ff" points="276.77,-300.31 269.48,-307.99 279.97,-306.53 276.77,-300.31"/>
+<!-- Node1&#45;&gt;Node8 -->
+<g id="edge7_Node000001_Node000008" class="edge">
+<title>Node1&#45;&gt;Node8</title>
+<g id="a_edge7_Node000001_Node000008"><a xlink:title=" ">
+<path fill="none" stroke="#63b8ff" d="M271.06,-303.59C292.37,-293.41 316.9,-281.69 337.09,-272.04"/>
+<polygon fill="#63b8ff" stroke="#63b8ff" points="269.35,-300.52 261.84,-307.99 272.37,-306.84 269.35,-300.52"/>
 </a>
 </g>
 </g>
 <!-- Node3 -->
 <g id="Node000003" class="node">
 <title>Node3</title>
-<g id="a_Node000003"><a xlink:href="interaction__json_8h.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="149,-195 0,-195 0,-154 149,-154 149,-195"/>
+<g id="a_Node000003"><a xlink:href="occ__cg_8h.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="128,-195 0,-195 0,-154 128,-154 128,-195"/>
 <text text-anchor="start" x="8" y="-183" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
-<text text-anchor="start" x="8" y="-172" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/interaction</text>
-<text text-anchor="middle" x="74.5" y="-161" font-family="Helvetica,sans-Serif" font-size="10.00">/interaction_json.h</text>
+<text text-anchor="start" x="8" y="-172" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/main</text>
+<text text-anchor="middle" x="64" y="-161" font-family="Helvetica,sans-Serif" font-size="10.00">/occ_cg.h</text>
 </a>
 </g>
 </g>
@@ -94,39 +94,19 @@
 <g id="edge2_Node000002_Node000003" class="edge">
 <title>Node2&#45;&gt;Node3</title>
 <g id="a_edge2_Node000002_Node000003"><a xlink:title=" ">
-<path fill="none" stroke="#63b8ff" d="M74.5,-220.69C74.5,-212.08 74.5,-202.9 74.5,-195.07"/>
-<polygon fill="#63b8ff" stroke="#63b8ff" points="71,-220.79 74.5,-230.79 78,-220.79 71,-220.79"/>
-</a>
-</g>
-</g>
-<!-- Node4 -->
-<g id="Node000004" class="node">
-<title>Node4</title>
-<g id="a_Node000004"><a xlink:href="elastic__fitting_8h.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="139,-118 10,-118 10,-77 139,-77 139,-118"/>
-<text text-anchor="start" x="18" y="-106" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
-<text text-anchor="start" x="18" y="-95" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/elastic</text>
-<text text-anchor="middle" x="74.5" y="-84" font-family="Helvetica,sans-Serif" font-size="10.00">_fit/elastic_fitting.h</text>
-</a>
-</g>
-</g>
-<!-- Node3&#45;&gt;Node4 -->
-<g id="edge3_Node000003_Node000004" class="edge">
-<title>Node3&#45;&gt;Node4</title>
-<g id="a_edge3_Node000003_Node000004"><a xlink:title=" ">
-<path fill="none" stroke="#63b8ff" d="M74.5,-143.69C74.5,-135.08 74.5,-125.9 74.5,-118.07"/>
-<polygon fill="#63b8ff" stroke="#63b8ff" points="71,-143.79 74.5,-153.79 78,-143.79 71,-143.79"/>
+<path fill="none" stroke="#63b8ff" d="M64,-220.69C64,-212.08 64,-202.9 64,-195.07"/>
+<polygon fill="#63b8ff" stroke="#63b8ff" points="60.5,-220.79 64,-230.79 67.5,-220.79 60.5,-220.79"/>
 </a>
 </g>
 </g>
 <!-- Node5 -->
 <g id="Node000005" class="node">
 <title>Node5</title>
-<g id="a_Node000005"><a xlink:href="elastic__fit__json_8h.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="139,-41 10,-41 10,0 139,0 139,-41"/>
-<text text-anchor="start" x="18" y="-29" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
-<text text-anchor="start" x="18" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/elastic</text>
-<text text-anchor="middle" x="74.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">_fit/elastic_fit_json.h</text>
+<g id="a_Node000005"><a xlink:href="interaction__json_8h.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="295.5,-195 146.5,-195 146.5,-154 295.5,-154 295.5,-195"/>
+<text text-anchor="start" x="154.5" y="-183" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
+<text text-anchor="start" x="154.5" y="-172" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/interaction</text>
+<text text-anchor="middle" x="221" y="-161" font-family="Helvetica,sans-Serif" font-size="10.00">/interaction_json.h</text>
 </a>
 </g>
 </g>
@@ -134,8 +114,48 @@
 <g id="edge4_Node000004_Node000005" class="edge">
 <title>Node4&#45;&gt;Node5</title>
 <g id="a_edge4_Node000004_Node000005"><a xlink:title=" ">
-<path fill="none" stroke="#63b8ff" d="M74.5,-66.69C74.5,-58.08 74.5,-48.9 74.5,-41.07"/>
-<polygon fill="#63b8ff" stroke="#63b8ff" points="71,-66.79 74.5,-76.79 78,-66.79 71,-66.79"/>
+<path fill="none" stroke="#63b8ff" d="M221,-220.69C221,-212.08 221,-202.9 221,-195.07"/>
+<polygon fill="#63b8ff" stroke="#63b8ff" points="217.5,-220.79 221,-230.79 224.5,-220.79 217.5,-220.79"/>
+</a>
+</g>
+</g>
+<!-- Node6 -->
+<g id="Node000006" class="node">
+<title>Node6</title>
+<g id="a_Node000006"><a xlink:href="elastic__fitting_8h.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="285.5,-118 156.5,-118 156.5,-77 285.5,-77 285.5,-118"/>
+<text text-anchor="start" x="164.5" y="-106" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
+<text text-anchor="start" x="164.5" y="-95" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/elastic</text>
+<text text-anchor="middle" x="221" y="-84" font-family="Helvetica,sans-Serif" font-size="10.00">_fit/elastic_fitting.h</text>
+</a>
+</g>
+</g>
+<!-- Node5&#45;&gt;Node6 -->
+<g id="edge5_Node000005_Node000006" class="edge">
+<title>Node5&#45;&gt;Node6</title>
+<g id="a_edge5_Node000005_Node000006"><a xlink:title=" ">
+<path fill="none" stroke="#63b8ff" d="M221,-143.69C221,-135.08 221,-125.9 221,-118.07"/>
+<polygon fill="#63b8ff" stroke="#63b8ff" points="217.5,-143.79 221,-153.79 224.5,-143.79 217.5,-143.79"/>
+</a>
+</g>
+</g>
+<!-- Node7 -->
+<g id="Node000007" class="node">
+<title>Node7</title>
+<g id="a_Node000007"><a xlink:href="elastic__fit__json_8h.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="285.5,-41 156.5,-41 156.5,0 285.5,0 285.5,-41"/>
+<text text-anchor="start" x="164.5" y="-29" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
+<text text-anchor="start" x="164.5" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/elastic</text>
+<text text-anchor="middle" x="221" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">_fit/elastic_fit_json.h</text>
+</a>
+</g>
+</g>
+<!-- Node6&#45;&gt;Node7 -->
+<g id="edge6_Node000006_Node000007" class="edge">
+<title>Node6&#45;&gt;Node7</title>
+<g id="a_edge6_Node000006_Node000007"><a xlink:title=" ">
+<path fill="none" stroke="#63b8ff" d="M221,-66.69C221,-58.08 221,-48.9 221,-41.07"/>
+<polygon fill="#63b8ff" stroke="#63b8ff" points="217.5,-66.79 221,-76.79 224.5,-66.79 217.5,-66.79"/>
 </a>
 </g>
 </g>

@@ -54,6 +54,7 @@ var namespaceocc =
     [ "log", "namespaceocc_1_1log.html", "namespaceocc_1_1log" ],
     [ "main", "namespaceocc_1_1main.html", "namespaceocc_1_1main" ],
     [ "mults", "namespaceocc_1_1mults.html", "namespaceocc_1_1mults" ],
+    [ "numint", "namespaceocc_1_1numint.html", "namespaceocc_1_1numint" ],
     [ "opt", "namespaceocc_1_1opt.html", "namespaceocc_1_1opt" ],
     [ "parallel", "namespaceocc_1_1parallel.html", [
       [ "thread_local_storage", "namespaceocc_1_1parallel.html#a02331d2d0c473690c8cf5bd86f6a7d8f", null ],

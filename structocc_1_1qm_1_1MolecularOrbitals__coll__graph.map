@@ -1,5 +1,7 @@
 <map id="occ::qm::MolecularOrbitals" name="occ::qm::MolecularOrbitals">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,93,201,119"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="10,5,197,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,45,106,93,101,93,101,45"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="57,93,253,119"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,127,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,38,145,91,141,95,86,42"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="151,5,338,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="225,42,170,95,166,91,221,38"/>
 </map>

@@ -34,8 +34,7 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "scf_method.h", "scf__method_8h.html", "scf__method_8h" ],
     [ "seminumerical_exchange.h", "qm_2seminumerical__exchange_8h.html", "qm_2seminumerical__exchange_8h" ],
     [ "shellblock_norm.h", "shellblock__norm_8h.html", "shellblock__norm_8h" ],
-    [ "spatial_grid_hierarchy.h", "qm_2spatial__grid__hierarchy_8h.html", "qm_2spatial__grid__hierarchy_8h" ],
-    [ "spinorbital.h", "spinorbital_8h.html", "spinorbital_8h" ],
+    [ "spinorbital.h", "qm_2spinorbital_8h.html", "qm_2spinorbital_8h" ],
     [ "split_ri_j.h", "split__ri__j_8h.html", "split__ri__j_8h" ],
     [ "sto3g_basis.h", "qm_2sto3g__basis_8h.html", "qm_2sto3g__basis_8h" ],
     [ "wavefunction.h", "wavefunction_8h.html", "wavefunction_8h" ]

@@ -98,9 +98,9 @@
 <!-- Node6 -->
 <g id="Node000006" class="node">
 <title>Node6</title>
-<g id="a_Node000006"><a xlink:href="structocc_1_1qm_1_1OrbitalSmearing.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="140,-120.5 0,-120.5 0,-101.5 140,-101.5 140,-120.5"/>
-<text text-anchor="middle" x="70" y="-108.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::OrbitalSmearing</text>
+<g id="a_Node000006"><a xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="115.5,-138.5 24.5,-138.5 24.5,-119.5 115.5,-119.5 115.5,-138.5"/>
+<text text-anchor="middle" x="70" y="-126.5" font-family="Helvetica,sans-Serif" font-size="10.00">SpinorbitalKind</text>
 </a>
 </g>
 </g>
@@ -108,58 +108,57 @@
 <g id="edge5_Node000005_Node000006" class="edge">
 <title>Node6&#45;&gt;Node5</title>
 <g id="a_edge5_Node000005_Node000006"><a xlink:title=" ">
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M150.41,-111C174.61,-111 201.08,-111 224.81,-111"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="150.19,-107.5 140.19,-111 150.19,-114.5 150.19,-107.5"/>
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M125.93,-124.63C155.63,-122.27 192.69,-119.33 224.76,-116.78"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="125.44,-121.16 115.75,-125.44 125.99,-128.14 125.44,-121.16"/>
 </a>
 </g>
-<text text-anchor="middle" x="182.5" y="-114" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> smearing</text>
+<text text-anchor="middle" x="182.5" y="-124" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> kind</text>
 </g>
 <!-- Node7 -->
 <g id="Node000007" class="node">
 <title>Node7</title>
-<g id="a_Node000007"><a xlink:href="structocc_1_1qm_1_1Energy.html" target="_top" xlink:title=" ">
+<g id="a_Node000007"><a xlink:href="structocc_1_1qm_1_1OrbitalSmearing.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="140,-101.5 0,-101.5 0,-82.5 140,-82.5 140,-101.5"/>
+<text text-anchor="middle" x="70" y="-89.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::OrbitalSmearing</text>
+</a>
+</g>
+</g>
+<!-- Node7&#45;&gt;Node5 -->
+<g id="edge6_Node000005_Node000007" class="edge">
+<title>Node7&#45;&gt;Node5</title>
+<g id="a_edge6_Node000005_Node000007"><a xlink:title=" ">
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M150.38,-98.32C168.96,-99.83 188.68,-101.45 207,-103 212.82,-103.49 218.84,-104.01 224.89,-104.53"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="150.44,-94.81 140.19,-97.5 149.88,-101.79 150.44,-94.81"/>
+</a>
+</g>
+<text text-anchor="middle" x="182.5" y="-106" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> smearing</text>
+</g>
+<!-- Node8 -->
+<g id="Node000008" class="node">
+<title>Node8</title>
+<g id="a_Node000008"><a xlink:href="structocc_1_1qm_1_1Energy.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="346,-83.5 251,-83.5 251,-64.5 346,-64.5 346,-83.5"/>
 <text text-anchor="middle" x="298.5" y="-71.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::Energy</text>
 </a>
 </g>
 </g>
-<!-- Node7&#45;&gt;Node3 -->
-<g id="edge6_Node000003_Node000007" class="edge">
-<title>Node7&#45;&gt;Node3</title>
-<g id="a_edge6_Node000003_Node000007"><a xlink:title=" ">
+<!-- Node8&#45;&gt;Node3 -->
+<g id="edge7_Node000003_Node000008" class="edge">
+<title>Node8&#45;&gt;Node3</title>
+<g id="a_edge7_Node000003_Node000008"><a xlink:title=" ">
 <path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M356.06,-83.61C378.2,-87.41 403.8,-91.85 427,-96 436.71,-97.74 447.08,-99.63 457.03,-101.46"/>
 <polygon fill="#9a32cd" stroke="#9a32cd" points="356.6,-80.15 346.15,-81.91 355.42,-87.05 356.6,-80.15"/>
 </a>
 </g>
 <text text-anchor="middle" x="408.5" y="-99" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> energy</text>
 </g>
-<!-- Node8 -->
-<g id="Node000008" class="node">
-<title>Node8</title>
-<g id="a_Node000008"><a xlink:href="structocc_1_1interaction_1_1CEParameterizedModel.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="812,-78 631,-78 631,-48 812,-48 812,-78"/>
-<text text-anchor="start" x="639" y="-66" font-family="Helvetica,sans-Serif" font-size="10.00">occ::interaction::CEParameterized</text>
-<text text-anchor="middle" x="721.5" y="-55" font-family="Helvetica,sans-Serif" font-size="10.00">Model</text>
-</a>
-</g>
-</g>
-<!-- Node8&#45;&gt;Node1 -->
-<g id="edge7_Node000001_Node000008" class="edge">
-<title>Node8&#45;&gt;Node1</title>
-<g id="a_edge7_Node000001_Node000008"><a xlink:title=" ">
-<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M822.27,-63C843.22,-63 864.95,-63 884.74,-63"/>
-<polygon fill="#9a32cd" stroke="#9a32cd" points="822.06,-59.5 812.06,-63 822.06,-66.5 822.06,-59.5"/>
-</a>
-</g>
-<text text-anchor="middle" x="848.5" y="-66" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> model</text>
-</g>
 <!-- Node9 -->
 <g id="Node000009" class="node">
 <title>Node9</title>
-<g id="a_Node000009"><a xlink:href="structocc_1_1interaction_1_1CEEnergyComponents.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#666666" points="793.5,-30 649.5,-30 649.5,0 793.5,0 793.5,-30"/>
-<text text-anchor="start" x="657.5" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::interaction::CEEnergy</text>
-<text text-anchor="middle" x="721.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Components</text>
+<g id="a_Node000009"><a xlink:href="structocc_1_1interaction_1_1CEParameterizedModel.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="812,-78 631,-78 631,-48 812,-48 812,-78"/>
+<text text-anchor="start" x="639" y="-66" font-family="Helvetica,sans-Serif" font-size="10.00">occ::interaction::CEParameterized</text>
+<text text-anchor="middle" x="721.5" y="-55" font-family="Helvetica,sans-Serif" font-size="10.00">Model</text>
 </a>
 </g>
 </g>
@@ -167,6 +166,26 @@
 <g id="edge8_Node000001_Node000009" class="edge">
 <title>Node9&#45;&gt;Node1</title>
 <g id="a_edge8_Node000001_Node000009"><a xlink:title=" ">
+<path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M822.27,-63C843.22,-63 864.95,-63 884.74,-63"/>
+<polygon fill="#9a32cd" stroke="#9a32cd" points="822.06,-59.5 812.06,-63 822.06,-66.5 822.06,-59.5"/>
+</a>
+</g>
+<text text-anchor="middle" x="848.5" y="-66" font-family="Helvetica,sans-Serif" font-size="10.00" fill="grey"> model</text>
+</g>
+<!-- Node10 -->
+<g id="Node000010" class="node">
+<title>Node10</title>
+<g id="a_Node000010"><a xlink:href="structocc_1_1interaction_1_1CEEnergyComponents.html" target="_top" xlink:title=" ">
+<polygon fill="white" stroke="#666666" points="793.5,-30 649.5,-30 649.5,0 793.5,0 793.5,-30"/>
+<text text-anchor="start" x="657.5" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::interaction::CEEnergy</text>
+<text text-anchor="middle" x="721.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Components</text>
+</a>
+</g>
+</g>
+<!-- Node10&#45;&gt;Node1 -->
+<g id="edge9_Node000001_Node000010" class="edge">
+<title>Node10&#45;&gt;Node1</title>
+<g id="a_edge9_Node000001_Node000010"><a xlink:title=" ">
 <path fill="none" stroke="#9a32cd" stroke-dasharray="5,2" d="M803.66,-31.51C839.74,-38.84 880.93,-47.22 911.75,-53.49"/>
 <polygon fill="#9a32cd" stroke="#9a32cd" points="804.12,-28.03 793.63,-29.47 802.73,-34.89 804.12,-28.03"/>
 </a>

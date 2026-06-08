@@ -1,5 +1,5 @@
 var voronoi__charges_8h =
 [
     [ "occ::dft::VoronoiPartition", "classocc_1_1dft_1_1VoronoiPartition.html", "classocc_1_1dft_1_1VoronoiPartition" ],
-    [ "calculate_voronoi_charges", "voronoi__charges_8h.html#ab25c3494c58366bbc9ccf6a5a387c6de", null ]
+    [ "calculate_voronoi_charges", "voronoi__charges_8h.html#ab46dd6d047711d38cfd44e353343b64e", null ]
 ];

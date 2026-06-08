@@ -44,7 +44,7 @@ var searchData=
   ['linear_41',['linear',['../structocc_1_1qm_1_1OrbitalSmearing.html#a26515ea8a13c53b346bfdd953513c0dca32a843da6ea40ab3b17a3421ccdf671b',1,'occ::qm::OrbitalSmearing::Linear'],['../namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35acfbaf4c160987f5ac229af3f525afb36',1,'occ::core::Linear'],['../namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6a47dca7f6bec6de240a2ddf49d0b85a5f',1,'occ::core::rotor::Linear']]],
   ['lj_42',['LJ',['../namespaceocc_1_1elastic__fit.html#a2bc5d23df97676c1c631687652ef45bda388d9e1171b3e4aeae9adc4e26ca15ae',1,'occ::elastic_fit']]],
   ['lj_5fa_43',['LJ_A',['../namespaceocc_1_1elastic__fit.html#a2bc5d23df97676c1c631687652ef45bda684cce8e597d42fa061d1369dc222171',1,'occ::elastic_fit']]],
-  ['lmg_44',['LMG',['../namespaceocc_1_1dft.html#a14030e150f120f90476ca21d1d5e665bac6acc5eb0596138dc4ae5a2c3108bbb6',1,'occ::dft']]],
+  ['lmg_44',['LMG',['../namespaceocc_1_1numint.html#adfae001d345ff26f124a72c71d63856fac6acc5eb0596138dc4ae5a2c3108bbb6',1,'occ::numint']]],
   ['log_45',['Log',['../namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35a2b2df24d50ce1857a720db0836d538b8',1,'occ::core']]],
   ['lst_46',['LST',['../classocc_1_1io_1_1FchkWriter.html#adef69bf2291f5e23817021844e874db1a9ee00d0786f3f3e8803edf6e8416946d',1,'occ::io::FchkWriter']]],
   ['lu_47',['LU',['../namespaceocc_1_1elastic__fit.html#ac3e8c91ec2f8e6a091ce339e4f700e97a920d0c66f3d2ad926a6d590a5d244bd9',1,'occ::elastic_fit']]],

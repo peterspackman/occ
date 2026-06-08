@@ -28,8 +28,7 @@ var namespaceocc_1_1qm =
     [ "impl", "namespaceocc_1_1qm_1_1impl.html", [
       [ "accumulate1", "namespaceocc_1_1qm_1_1impl.html#a90d330aae8695310847c6faf75fb6a1d", null ],
       [ "accumulate2", "namespaceocc_1_1qm_1_1impl.html#a62eb74092482256f843a653357ad87e7", null ],
-      [ "compute_d4_dispersion", "namespaceocc_1_1qm_1_1impl.html#ae467f65ead72114675c1d0a9a6673b09", null ],
-      [ "compute_xdm_dispersion", "namespaceocc_1_1qm_1_1impl.html#a31916adeeed2bd8263d7e399ef3e6df3", null ]
+      [ "compute_d4_dispersion", "namespaceocc_1_1qm_1_1impl.html#ae467f65ead72114675c1d0a9a6673b09", null ]
     ] ],
     [ "orb", "namespaceocc_1_1qm_1_1orb.html", [
       [ "density_matrix_general", "namespaceocc_1_1qm_1_1orb.html#abae4c82b14dce142db3c9c0968487092", null ],
@@ -51,8 +50,6 @@ var namespaceocc_1_1qm =
     [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
     [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
     [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
-    [ "GridBatchLeaf", "structocc_1_1qm_1_1GridBatchLeaf.html", "structocc_1_1qm_1_1GridBatchLeaf" ],
-    [ "GridBoundingSphere", "structocc_1_1qm_1_1GridBoundingSphere.html", "structocc_1_1qm_1_1GridBoundingSphere" ],
     [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
     [ "HessianEvaluator", "classocc_1_1qm_1_1HessianEvaluator.html", "classocc_1_1qm_1_1HessianEvaluator" ],
     [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
@@ -70,8 +67,6 @@ var namespaceocc_1_1qm =
     [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
     [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
     [ "SCFMethodBase", "classocc_1_1qm_1_1SCFMethodBase.html", "classocc_1_1qm_1_1SCFMethodBase" ],
-    [ "SpatialGridHierarchy", "classocc_1_1qm_1_1SpatialGridHierarchy.html", "classocc_1_1qm_1_1SpatialGridHierarchy" ],
-    [ "SpatialHierarchySettings", "structocc_1_1qm_1_1SpatialHierarchySettings.html", "structocc_1_1qm_1_1SpatialHierarchySettings" ],
     [ "SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html", "classocc_1_1qm_1_1SplitRIJ" ],
     [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ],
     [ "WolfPointChargePotential", "structocc_1_1qm_1_1WolfPointChargePotential.html", "structocc_1_1qm_1_1WolfPointChargePotential" ],
@@ -79,6 +74,7 @@ var namespaceocc_1_1qm =
     [ "SCFMethod", "conceptocc_1_1qm_1_1SCFMethod.html", null ],
     [ "DensityFittingMethod", "conceptocc_1_1qm_1_1DensityFittingMethod.html", null ],
     [ "PointChargeMethod", "conceptocc_1_1qm_1_1PointChargeMethod.html", null ],
+    [ "DispersionGradientFunc", "namespaceocc_1_1qm.html#af128e085de56d26183e2908f087e103a", null ],
     [ "HessianMatrix", "namespaceocc_1_1qm.html#aa8bb245cfcce8ea42381f7dc22329952", null ],
     [ "PointChargeList", "namespaceocc_1_1qm.html#a0c56c4d6028bbf6ac60ba72a0c4c70eb", null ],
     [ "ShellPairList", "namespaceocc_1_1qm.html#a2ecc83c9e5a744d19b7987d0dc0e52f7", null ],
@@ -93,17 +89,11 @@ var namespaceocc_1_1qm =
     ] ],
     [ "DispersionType", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98db", [
       [ "None", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba6adf97f83acf6453d4a6a4b1070f3754", null ],
-      [ "D4", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba2521dc256a4368da87585c936b451dd7", null ],
-      [ "XDM", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba8fdbb506111f5675e109c02bbb0deabb", null ]
+      [ "D4", "namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba2521dc256a4368da87585c936b451dd7", null ]
     ] ],
     [ "FittingKind", "namespaceocc_1_1qm.html#a0cbb6b7b200e84020e9a90de49d3cdd9", [
       [ "JK", "namespaceocc_1_1qm.html#a0cbb6b7b200e84020e9a90de49d3cdd9a5c3116796f5ff62adaf85580801f3fa4", null ],
       [ "Correlation", "namespaceocc_1_1qm.html#a0cbb6b7b200e84020e9a90de49d3cdd9a5f750c3076b1c419d3d1684019d36b16", null ]
-    ] ],
-    [ "SpinorbitalKind", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4", [
-      [ "Restricted", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a7eb505a798e7bd90ce15f4467154e837", null ],
-      [ "Unrestricted", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a637317163a8a9d4712705b6bb0ae5799", null ],
-      [ "General", "namespaceocc_1_1qm.html#af7593c3db0168047bf727de310e0eeb4a0da9cfa44fd984f48640ab63a399399d", null ]
     ] ],
     [ "chelpg_charges", "namespaceocc_1_1qm.html#a44d0c2cc10936b5fce7b0f4086155b6e", null ],
     [ "cosx_nbf_crossover", "namespaceocc_1_1qm.html#acc64228bb1558331b90be2793c89b2a7", null ],
@@ -111,7 +101,6 @@ var namespaceocc_1_1qm =
     [ "expectation", "namespaceocc_1_1qm.html#a2a982da10e9beee254cd5401c9e3028a", null ],
     [ "from_json", "namespaceocc_1_1qm.html#aea99ff092d8022a134859b02bc81a705", null ],
     [ "generate_auto_aux", "namespaceocc_1_1qm.html#a25a9715eed17d1bec6120971166e7f53", null ],
-    [ "get_spinorbital_kind_from_string", "namespaceocc_1_1qm.html#affbc8f01fc592caa8b8095e3357c8693", null ],
     [ "matrix_dimensions", "namespaceocc_1_1qm.html#adb09bba283593dd336a2fbce44d4e2c2", null ],
     [ "matrix_dimensions", "namespaceocc_1_1qm.html#aeedc0a37f48c77f349319facd5aaff08", null ],
     [ "merge_atoms", "namespaceocc_1_1qm.html#a8d1edae606af42cd4f3f5bad5bb13bd4", null ],
@@ -120,7 +109,6 @@ var namespaceocc_1_1qm =
     [ "mulliken_partition", "namespaceocc_1_1qm.html#abbd3ff1729602847daf45753f527aa15", null ],
     [ "resolve_fitting_basis", "namespaceocc_1_1qm.html#a879a0c61d5547c7ddd07c0c8c42f9f6e", null ],
     [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ],
-    [ "spinorbital_kind_to_string", "namespaceocc_1_1qm.html#acc9a0510ac1c6ace69ae9cf3da07c4a8", null ],
     [ "to_json", "namespaceocc_1_1qm.html#af56a1ad02bf6c763085926a57c0c60f4", null ],
     [ "is_scf_method_v", "namespaceocc_1_1qm.html#af7275368e99175434508cc27a5d3659c", null ],
     [ "supports_density_fitting_v", "namespaceocc_1_1qm.html#adaccff0ae547b4b5613387ec864850cf", null ],

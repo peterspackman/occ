@@ -119,6 +119,11 @@ var namespaceocc_1_1core =
       [ "I", "namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5add7536794b63bf90eccfd37f9b147d7f", null ],
       [ "Ih", "namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a88c76da6f1765be3b493b1a553401488", null ]
     ] ],
+    [ "SpinorbitalKind", "namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406", [
+      [ "Restricted", "namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406a88a7224cbd336625fbcc1d66d6a8b04b", null ],
+      [ "Unrestricted", "namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406a99fc205ab9717bdfa73f4696f622fb33", null ],
+      [ "General", "namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406a674aa7e048c3d0b40ecd0dcdb5b7ce71", null ]
+    ] ],
     [ "chemical_formula", "namespaceocc_1_1core.html#a92246b981947e4e0f8af40db12185a2b", null ],
     [ "compute_multipoles", "namespaceocc_1_1core.html#a9ef36df550be7b8380e0fc954abdeb53", null ],
     [ "compute_vibrational_modes", "namespaceocc_1_1core.html#a77c032dde221f4d73319b5db710ade64", null ],
@@ -136,6 +141,7 @@ var namespaceocc_1_1core =
     [ "from_json", "namespaceocc_1_1core.html#a9f197daa6f9b876aa2e0879aeab14563", null ],
     [ "gensqrtinv", "namespaceocc_1_1core.html#ab25be21637f89ed6ac96910483c65e51", null ],
     [ "get_bond_tolerance", "namespaceocc_1_1core.html#a80ea5632e2f6e7ab784b0168c3b67d10", null ],
+    [ "get_spinorbital_kind_from_string", "namespaceocc_1_1core.html#adcd95445a6daa5e169a0560d80443fca", null ],
     [ "inertia_tensor", "namespaceocc_1_1core.html#a9201f84a536bf7194bf669c250db4707", null ],
     [ "label_molecules_by_chemical_formula", "namespaceocc_1_1core.html#a06bd80d9c43fa53a3494e04f9bbb79c6", null ],
     [ "lerp", "namespaceocc_1_1core.html#aec7ecfa2dc83b10e2e48637fdb4726e8", null ],
@@ -152,6 +158,7 @@ var namespaceocc_1_1core =
     [ "quasirandom_kgf", "namespaceocc_1_1core.html#abeb0483db6e31121318847e734ed6cf5", null ],
     [ "rotate_atoms", "namespaceocc_1_1core.html#a8e073a0d2e7882cf21f657c55f73d41c", null ],
     [ "set_bond_tolerance", "namespaceocc_1_1core.html#a062390827251be4cdda8275f26d42230", null ],
+    [ "spinorbital_kind_to_string", "namespaceocc_1_1core.html#acdf5d50ba5a772f08326985f6a2f3144", null ],
     [ "to_json", "namespaceocc_1_1core.html#ab539a0fe1dedd7d494d33ba2aec7157b", null ],
     [ "to_json", "namespaceocc_1_1core.html#ad5c48f070553f2f6bd57719768705bc8", null ],
     [ "total_atomic_mass", "namespaceocc_1_1core.html#aa7cc2ff83621321d05ab7bd860a2bb81", null ],

@@ -2,8 +2,6 @@ var namespaceocc_1_1main =
 [
     [ "pfimpl", "namespaceocc_1_1main_1_1pfimpl.html", "namespaceocc_1_1main_1_1pfimpl" ],
     [ "validator", "namespaceocc_1_1main_1_1validator.html", null ],
-    [ "CGConfig", "structocc_1_1main_1_1CGConfig.html", "structocc_1_1main_1_1CGConfig" ],
-    [ "CrystalSurfaceEnergies", "structocc_1_1main_1_1CrystalSurfaceEnergies.html", "structocc_1_1main_1_1CrystalSurfaceEnergies" ],
     [ "CubeConfig", "structocc_1_1main_1_1CubeConfig.html", "structocc_1_1main_1_1CubeConfig" ],
     [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
     [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
@@ -14,7 +12,6 @@ var namespaceocc_1_1main =
     [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],
     [ "EmbedConfig", "structocc_1_1main_1_1EmbedConfig.html", "structocc_1_1main_1_1EmbedConfig" ],
     [ "EspFunctor", "structocc_1_1main_1_1EspFunctor.html", "structocc_1_1main_1_1EspFunctor" ],
-    [ "FacetEnergies", "structocc_1_1main_1_1FacetEnergies.html", "structocc_1_1main_1_1FacetEnergies" ],
     [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
     [ "LuaConfig", "structocc_1_1main_1_1LuaConfig.html", "structocc_1_1main_1_1LuaConfig" ],
     [ "MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", "structocc_1_1main_1_1MultiplicityValidator" ],
@@ -26,8 +23,6 @@ var namespaceocc_1_1main =
     [ "TbConfig", "structocc_1_1main_1_1TbConfig.html", "structocc_1_1main_1_1TbConfig" ],
     [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ],
     [ "AtomList", "namespaceocc_1_1main.html#a28fb2b00851f8aa959f1188eb702d21d", null ],
-    [ "MoleculeList", "namespaceocc_1_1main.html#aacf219b1a5bc1d456fccd140b29ff763", null ],
-    [ "WavefunctionList", "namespaceocc_1_1main.html#ac85c86d6d9a88925da1c4fd9831a3d05", null ],
     [ "SpinConstraint", "namespaceocc_1_1main.html#a9154bffbc00f2a7302ceae3d043c3c2d", [
       [ "Total", "namespaceocc_1_1main.html#a9154bffbc00f2a7302ceae3d043c3c2da96b0141273eabab320119c467cdcaf17", null ],
       [ "Alpha", "namespaceocc_1_1main.html#a9154bffbc00f2a7302ceae3d043c3c2da6132295fcf5570fb8b0a944ef322a598", null ],
@@ -49,16 +44,11 @@ var namespaceocc_1_1main =
     [ "add_scf_subcommand", "namespaceocc_1_1main.html#ae511686fd65aa890b10a84b0e8b04aa7", null ],
     [ "add_surface_cuts_subcommand", "namespaceocc_1_1main.html#a7a8058df9272536fed16b6029325eb18", null ],
     [ "add_tb_subcommand", "namespaceocc_1_1main.html#a35e2d0acde986a11e755d5edc09131a7", null ],
-    [ "calculate_crystal_surface_energies", "namespaceocc_1_1main.html#a282767a70848f993aa9b5ea8b03ccbc2", null ],
     [ "calculate_dispersion", "namespaceocc_1_1main.html#a5bcdc235883e285c89c65c39072780f5", null ],
     [ "calculate_properties", "namespaceocc_1_1main.html#a0b6643aee3051aa1eea447c1f1225282", null ],
-    [ "calculate_wavefunction", "namespaceocc_1_1main.html#aff03b48a0375593fb2ca7183421d129d", null ],
-    [ "calculate_wavefunctions", "namespaceocc_1_1main.html#ac854257809b5d362970c1d2ca6706e00", null ],
     [ "compute_crystal_face_properties", "namespaceocc_1_1main.html#ab38ec46ca51062894246b862c580c42e", null ],
-    [ "compute_monomer_energies", "namespaceocc_1_1main.html#acfb5af7abecb5e5c5057d9197f174eb0", null ],
     [ "print_header", "namespaceocc_1_1main.html#ae6120cd9d924a194e7f3a1decd5cb6d8", null ],
-    [ "run_cg", "namespaceocc_1_1main.html#a5cc7e41d5aa002684734b4610a2d2ce5", null ],
-    [ "run_cg_subcommand", "namespaceocc_1_1main.html#aa3e66b684794acfcab5f0c1b58aee3e1", null ],
+    [ "run_cg_subcommand", "namespaceocc_1_1main.html#a4f45de1659f29ce03f7bf87d74b7c7d4", null ],
     [ "run_cube_subcommand", "namespaceocc_1_1main.html#a45566c667887d1fe07b48523a1189a09", null ],
     [ "run_describe_subcommand", "namespaceocc_1_1main.html#a6d83b8a52ad8058c79d226ae9862255d", null ],
     [ "run_dimers_subcommand", "namespaceocc_1_1main.html#a5f883983a0b5d4e64d68868752bafe01", null ],
@@ -73,7 +63,5 @@ var namespaceocc_1_1main =
     [ "run_ropt_subcommand", "namespaceocc_1_1main.html#a03d7c48ecc2387cccce5f52aedb13802", null ],
     [ "run_scf_subcommand", "namespaceocc_1_1main.html#aa6e0de5b65ad14e7e280e4005f7291ce", null ],
     [ "run_surface_cuts_subcommand", "namespaceocc_1_1main.html#aae3df6594d05a9ba23c3faa1775bf850", null ],
-    [ "run_tb_subcommand", "namespaceocc_1_1main.html#a0312636d2f94705235b6febc1eb6cdc9", null ],
-    [ "to_json", "namespaceocc_1_1main.html#ae6a3ddcf8fae6544589ec5d41ef77449", null ],
-    [ "to_json", "namespaceocc_1_1main.html#aba21b5380482aa5b17c8fc7a3cb6ca93", null ]
+    [ "run_tb_subcommand", "namespaceocc_1_1main.html#a0312636d2f94705235b6febc1eb6cdc9", null ]
 ];

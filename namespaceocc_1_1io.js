@@ -31,7 +31,6 @@ var namespaceocc_1_1io =
     [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
     [ "GMFWriter", "classocc_1_1io_1_1GMFWriter.html", "classocc_1_1io_1_1GMFWriter" ],
     [ "GridFileHeader", "structocc_1_1io_1_1GridFileHeader.html", "structocc_1_1io_1_1GridFileHeader" ],
-    [ "GridSettings", "structocc_1_1io_1_1GridSettings.html", "structocc_1_1io_1_1GridSettings" ],
     [ "GridSymmetryInfo", "structocc_1_1io_1_1GridSymmetryInfo.html", "structocc_1_1io_1_1GridSymmetryInfo" ],
     [ "IndependentMolecule", "structocc_1_1io_1_1IndependentMolecule.html", "structocc_1_1io_1_1IndependentMolecule" ],
     [ "IsosurfaceInput", "structocc_1_1io_1_1IsosurfaceInput.html", "structocc_1_1io_1_1IsosurfaceInput" ],
@@ -67,11 +66,6 @@ var namespaceocc_1_1io =
     [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ],
     [ "PointChargeList", "namespaceocc_1_1io.html#a2032b9063a04cbcda0dca503cdbf2e7d", null ],
     [ "Position", "namespaceocc_1_1io.html#ab6b5ddc9e2fba0c4afd73066cced9721", null ],
-    [ "COSXGridLevel", "namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951", [
-      [ "Grid1", "namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951a4fb9ddc1e682a98340c1b39ace107417", null ],
-      [ "Grid2", "namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951a6516c42909346ca784c30a013cbbfb04", null ],
-      [ "Grid3", "namespaceocc_1_1io.html#aa0a5a716d33b8f2c39dcc064068ed951a3d8bc33875a50f16aa9f74669cf261d7", null ]
-    ] ],
     [ "GridDataType", "namespaceocc_1_1io.html#acf6bbf5dde01cb1ce7208c847e818f5d", [
       [ "Raw", "namespaceocc_1_1io.html#acf6bbf5dde01cb1ce7208c847e818f5da65e65c8ab0d8609ce12fc68a03cb8e00", null ],
       [ "Indexed", "namespaceocc_1_1io.html#acf6bbf5dde01cb1ce7208c847e818f5dacccd5fd8c8f59fe9373c56b1b951780c", null ]
@@ -80,23 +74,12 @@ var namespaceocc_1_1io =
       [ "GeneralGrid", "namespaceocc_1_1io.html#a5017886cee1b6795932a19248622bfcbac698b6f233f0e2c6a85d9902f5fd3bf2", null ],
       [ "PeriodicGrid", "namespaceocc_1_1io.html#a5017886cee1b6795932a19248622bfcba28908b13f6350c42f5a7d9aff8d3a7f0", null ]
     ] ],
-    [ "GridQuality", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bd", [
-      [ "Coarse", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda1fb282a269a2bc94abc136c0511daa59", null ],
-      [ "Standard", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bdaeb6d8ae6f20283755b339c0dc273988b", null ],
-      [ "Fine", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda5999b8900bb8b90cfa1af137d355ff14", null ],
-      [ "VeryFine", "namespaceocc_1_1io.html#a0049c665b8184e2a6ad982ac5db8d4bda1cdfb5ac70bfa18db750fbc1effea5bf", null ]
-    ] ],
     [ "JsonFormat", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3", [
       [ "JSON", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a0ecd11c1d7a287401d148a23bbd7a2f8", null ],
       [ "UBJSON", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a5eba48b3ea4ede9e7f216c2f5d80184d", null ],
       [ "CBOR", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a6009014cf7f117c0a14c14fdb971e9e8", null ],
       [ "BSON", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3ac3f11a091527e2df921d8d916f13c4d9", null ],
       [ "MSGPACK", "namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94", null ]
-    ] ],
-    [ "PruningScheme", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868", [
-      [ "None", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a6adf97f83acf6453d4a6a4b1070f3754", null ],
-      [ "NWChem", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a929a60543a3d798bb289678dcbebcb2b", null ],
-      [ "NumGrid", "namespaceocc_1_1io.html#a71eabab10243c6e13ea9f1de9cc86868a5268eb265372a3bf6d86e32e9af2a1cd", null ]
     ] ],
     [ "RIPolicy", "namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50", [
       [ "Auto", "namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50a06b9281e396db002010bde1de57262eb", null ],
@@ -106,9 +89,6 @@ var namespaceocc_1_1io =
     ] ],
     [ "build", "namespaceocc_1_1io.html#a0b4154c8ab12aa7b60925e2a2b6acbe2", null ],
     [ "build", "namespaceocc_1_1io.html#a0b19dda27e50ff77a11e8e61654b1569", null ],
-    [ "calculate_radial_points_orca", "namespaceocc_1_1io.html#a330f6aeba4c4dfe310e9ebfd2e9d771a", null ],
-    [ "cosx_grid_int_acc", "namespaceocc_1_1io.html#a8b8157f6dd5904bf65275bb9f752d1ec", null ],
-    [ "cosx_grid_level_to_string", "namespaceocc_1_1io.html#a26de6fbf1181af03e6b4ba5c108601bb", null ],
     [ "from_json", "namespaceocc_1_1io.html#a8ecf2b848dc81cdc263090ae0e6c9b34", null ],
     [ "from_json", "namespaceocc_1_1io.html#a02b3b3e75ea7fd936a443c279045e74e", null ],
     [ "from_json", "namespaceocc_1_1io.html#a0438f4799abf07f15d22e71a5adac661", null ],
@@ -120,9 +100,6 @@ var namespaceocc_1_1io =
     [ "from_json", "namespaceocc_1_1io.html#a00c49560d37f6422ead389d652f76b34", null ],
     [ "from_json", "namespaceocc_1_1io.html#a3688a822d05b83af02cf4882214ae295", null ],
     [ "from_json", "namespaceocc_1_1io.html#a8555a9b363c00bdcc23bfa8cdc2fbc02", null ],
-    [ "get_grid_settings", "namespaceocc_1_1io.html#a6d073839ca41dcaa94a727a05838513f", null ],
-    [ "grid_quality_from_string", "namespaceocc_1_1io.html#a1c59135b334b6f9fc88cb74e39d42e7c", null ],
-    [ "grid_quality_to_string", "namespaceocc_1_1io.html#ac80751a7daf50e5d90ef35f2e0c6a95a", null ],
     [ "is_structure_format", "namespaceocc_1_1io.html#af044c06fc5d7ab0340c4a921c3d82944", null ],
     [ "isosurface_to_json", "namespaceocc_1_1io.html#a3f989bea871d753f75479c1ca7d7138f", null ],
     [ "isosurface_to_json_string", "namespaceocc_1_1io.html#ab0c0de62880f19eea350f70a2e5117a2", null ],
@@ -134,7 +111,6 @@ var namespaceocc_1_1io =
     [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ],
     [ "point_charges_from_file", "namespaceocc_1_1io.html#ac7b49e759281fa2bff63c6e075a41559", null ],
     [ "point_charges_from_string", "namespaceocc_1_1io.html#a3903e63674924c2d0b6cf6089690b474", null ],
-    [ "print_cosx_grid_summary", "namespaceocc_1_1io.html#a2addc4d7261ef4a5ce960e7170fc6752", null ],
     [ "read_structure_json", "namespaceocc_1_1io.html#ac30b5849e35117bc2af97b65535af7a3", null ],
     [ "to_json", "namespaceocc_1_1io.html#adc3dc930bf79a3f6c4326be031c60771", null ],
     [ "to_json", "namespaceocc_1_1io.html#a06c363536c85d337aecd9d3759026626", null ],

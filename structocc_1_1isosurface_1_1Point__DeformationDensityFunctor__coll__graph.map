@@ -12,8 +12,10 @@
 <area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="485,51,575,67,615,74,614,79,574,72,484,56"/>
 <area shape="rect" id="Node000007" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="305,77,501,102"/>
 <area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="515,87,599,87,599,92,515,92"/>
-<area shape="rect" id="Node000008" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="5,77,192,102"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="206,87,305,87,305,92,206,92"/>
-<area shape="rect" id="Node000009" href="$structocc_1_1qm_1_1Energy.html" title=" " alt="" coords="340,126,467,151"/>
-<area shape="poly" id="edge8_Node000005_Node000009" title=" " alt="" coords="480,123,574,107,614,99,615,105,575,112,481,128"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="38,53,159,78"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="173,68,305,79,305,84,173,74"/>
+<area shape="rect" id="Node000009" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="5,102,192,127"/>
+<area shape="poly" id="edge8_Node000007_Node000009" title=" " alt="" coords="206,104,281,97,305,95,305,101,282,103,206,109"/>
+<area shape="rect" id="Node000010" href="$structocc_1_1qm_1_1Energy.html" title=" " alt="" coords="340,126,467,151"/>
+<area shape="poly" id="edge9_Node000005_Node000010" title=" " alt="" coords="480,123,574,107,614,99,615,105,575,112,481,128"/>
 </map>
