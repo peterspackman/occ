@@ -445,7 +445,7 @@ void run_scf_subcommand(occ::io::OccInput config) {
   }
 }
 
-Wavefunction run_scf_external(occ::io::OccInput config, bool write_wfn = false) {
+Wavefunction run_scf_external(occ::io::OccInput config, bool write_wfn) {
   occ::main::print_header();
 
   occ::timing::start(occ::timing::category::io);
