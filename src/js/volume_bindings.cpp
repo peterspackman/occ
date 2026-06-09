@@ -22,11 +22,11 @@ void register_volume_bindings() {
         .value("XCDensity", isosurface::VolumePropertyKind::XCDensity)
         .value("CrystalVoid", isosurface::VolumePropertyKind::CrystalVoid);
 
-    // Register SpinConstraint enum
-    enum_<isosurface::SpinConstraint>("SpinConstraint")
-        .value("Total", isosurface::SpinConstraint::Total)
-        .value("Alpha", isosurface::SpinConstraint::Alpha)
-        .value("Beta", isosurface::SpinConstraint::Beta);
+    // Register SpinComponent enum
+    enum_<isosurface::SpinComponent>("SpinComponent")
+        .value("Total", isosurface::SpinComponent::Total)
+        .value("Alpha", isosurface::SpinComponent::Alpha)
+        .value("Beta", isosurface::SpinComponent::Beta);
 
     // Register VolumeGenerationParameters
     class_<isosurface::VolumeGenerationParameters>("VolumeGenerationParameters")
@@ -144,14 +144,14 @@ void register_volume_bindings() {
     // Function to generate MO cube with spin constraint
     function("generateMOCubeWithSpin",
         optional_override([](const qm::Wavefunction &wfn, int mo_index, 
-                           isosurface::SpinConstraint spin, int nx, int ny, int nz) {
+                           isosurface::SpinComponent spin, int nx, int ny, int nz) {
             isosurface::VolumeCalculator calc;
             calc.set_wavefunction(wfn);
             
             isosurface::VolumeGenerationParameters params;
-            if (spin == isosurface::SpinConstraint::Alpha) {
+            if (spin == isosurface::SpinComponent::Alpha) {
                 params.property = isosurface::VolumePropertyKind::ElectronDensityAlpha;
-            } else if (spin == isosurface::SpinConstraint::Beta) {
+            } else if (spin == isosurface::SpinComponent::Beta) {
                 params.property = isosurface::VolumePropertyKind::ElectronDensityBeta;
             } else {
                 params.property = isosurface::VolumePropertyKind::ElectronDensity;

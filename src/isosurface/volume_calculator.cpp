@@ -10,6 +10,8 @@
 
 namespace occ::isosurface {
 
+using namespace occ::isosurface::pointwise;
+
 // Helper function to compute adaptive bounds for any functor and apply user constraints
 template<typename Functor>
 void apply_adaptive_bounds(Functor& func, const VolumeGenerationParameters& params,
@@ -136,13 +138,13 @@ std::string VolumeCalculator::property_to_string(VolumePropertyKind prop) {
     throw std::runtime_error("Unknown property kind");
 }
 
-SpinConstraint VolumeCalculator::spin_from_string(const std::string& name) {
+SpinComponent VolumeCalculator::spin_from_string(const std::string& name) {
     if (name == "both" || name == "total") {
-        return SpinConstraint::Total;
+        return SpinComponent::Total;
     } else if (name == "alpha") {
-        return SpinConstraint::Alpha;
+        return SpinComponent::Alpha;
     } else if (name == "beta") {
-        return SpinConstraint::Beta;
+        return SpinComponent::Beta;
     }
     throw std::runtime_error("Unknown spin constraint: " + name);
 }
@@ -320,12 +322,12 @@ void VolumeCalculator::setup_grid_parameters(VolumeData& volume, const VolumeGen
             case VolumePropertyKind::ElectronDensityAlpha: 
             case VolumePropertyKind::ElectronDensityBeta: {
                 if (m_wavefunction.has_value()) {
-                    Point_ElectronDensityFunctor func(m_wavefunction.value());
+                    ElectronDensityFunctor func(m_wavefunction.value());
                     func.mo_index = params.mo_number;
                     if (params.property == VolumePropertyKind::ElectronDensityAlpha) {
-                        func.spin = SpinConstraint::Alpha;
+                        func.spin = SpinComponent::Alpha;
                     } else if (params.property == VolumePropertyKind::ElectronDensityBeta) {
-                        func.spin = SpinConstraint::Beta;
+                        func.spin = SpinComponent::Beta;
                     }
                     apply_adaptive_bounds(func, params, atoms, volume);
                 }
@@ -350,7 +352,7 @@ void VolumeCalculator::setup_grid_parameters(VolumeData& volume, const VolumeGen
             }
             case VolumePropertyKind::DeformationDensity: {
                 if (m_wavefunction.has_value()) {
-                    Point_DeformationDensityFunctor func(m_wavefunction.value());
+                    DeformationDensityFunctor func(m_wavefunction.value());
                     apply_adaptive_bounds(func, params, atoms, volume);
                 }
                 break;
@@ -464,21 +466,21 @@ void VolumeCalculator::fill_volume_data(VolumeData& volume, const VolumeGenerati
     
     switch (params.property) {
         case VolumePropertyKind::ElectronDensity: {
-            Point_ElectronDensityFunctor func(m_wavefunction.value());
+            ElectronDensityFunctor func(m_wavefunction.value());
             func.mo_index = params.mo_number;
             func(points, values);
             break;
         }
         case VolumePropertyKind::ElectronDensityAlpha: {
-            Point_ElectronDensityFunctor func(m_wavefunction.value());
-            func.spin = SpinConstraint::Alpha;
+            ElectronDensityFunctor func(m_wavefunction.value());
+            func.spin = SpinComponent::Alpha;
             func.mo_index = params.mo_number;
             func(points, values);
             break;
         }
         case VolumePropertyKind::ElectronDensityBeta: {
-            Point_ElectronDensityFunctor func(m_wavefunction.value());
-            func.spin = SpinConstraint::Beta;
+            ElectronDensityFunctor func(m_wavefunction.value());
+            func.spin = SpinComponent::Beta;
             func.mo_index = params.mo_number;
             func(points, values);
             break;
@@ -500,7 +502,7 @@ void VolumeCalculator::fill_volume_data(VolumeData& volume, const VolumeGenerati
             break;
         }
         case VolumePropertyKind::DeformationDensity: {
-            Point_DeformationDensityFunctor func(m_wavefunction.value());
+            DeformationDensityFunctor func(m_wavefunction.value());
             func(points, values);
             break;
         }
@@ -569,21 +571,21 @@ Vec VolumeCalculator::evaluate_at_points(const Mat3N& points, const VolumeGenera
     
     switch (params.property) {
         case VolumePropertyKind::ElectronDensity: {
-            Point_ElectronDensityFunctor func(m_wavefunction.value());
+            ElectronDensityFunctor func(m_wavefunction.value());
             func.mo_index = params.mo_number;
             func(points, result);
             break;
         }
         case VolumePropertyKind::ElectronDensityAlpha: {
-            Point_ElectronDensityFunctor func(m_wavefunction.value());
-            func.spin = SpinConstraint::Alpha;
+            ElectronDensityFunctor func(m_wavefunction.value());
+            func.spin = SpinComponent::Alpha;
             func.mo_index = params.mo_number;
             func(points, result);
             break;
         }
         case VolumePropertyKind::ElectronDensityBeta: {
-            Point_ElectronDensityFunctor func(m_wavefunction.value());
-            func.spin = SpinConstraint::Beta;
+            ElectronDensityFunctor func(m_wavefunction.value());
+            func.spin = SpinComponent::Beta;
             func.mo_index = params.mo_number;
             func(points, result);
             break;
@@ -605,7 +607,7 @@ Vec VolumeCalculator::evaluate_at_points(const Mat3N& points, const VolumeGenera
             break;
         }
         case VolumePropertyKind::DeformationDensity: {
-            Point_DeformationDensityFunctor func(m_wavefunction.value());
+            DeformationDensityFunctor func(m_wavefunction.value());
             func(points, result);
             break;
         }

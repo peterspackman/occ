@@ -209,11 +209,11 @@
   X("XCDensity", OCC_E_VolumePropertyKind::XCDensity)                          \
   X("CrystalVoid", OCC_E_VolumePropertyKind::CrystalVoid)
 
-#define OCC_E_SpinConstraint ::occ::isosurface::SpinConstraint
-#define OCC_ENUM_SpinConstraint(X)                                             \
-  X("Total", OCC_E_SpinConstraint::Total)                                      \
-  X("Alpha", OCC_E_SpinConstraint::Alpha)                                      \
-  X("Beta", OCC_E_SpinConstraint::Beta)
+#define OCC_E_SpinComponent ::occ::isosurface::SpinComponent
+#define OCC_ENUM_SpinComponent(X)                                             \
+  X("Total", OCC_E_SpinComponent::Total)                                      \
+  X("Alpha", OCC_E_SpinComponent::Alpha)                                      \
+  X("Beta", OCC_E_SpinComponent::Beta)
 
 // ---------- consumer: register a value list as a Lua sub-namespace ------
 // Expands inside a LuaBridge builder chain to

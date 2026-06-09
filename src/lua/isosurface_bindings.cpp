@@ -102,7 +102,7 @@ void register_isosurface_bindings(lua_State *L) {
       .endClass()
 
       OCC_LUA_ENUM_NAMESPACE("VolumePropertyKind", OCC_ENUM_VolumePropertyKind)
-      OCC_LUA_ENUM_NAMESPACE("SpinConstraint", OCC_ENUM_SpinConstraint)
+      OCC_LUA_ENUM_NAMESPACE("SpinComponent", OCC_ENUM_SpinComponent)
 
       .beginClass<VolumeGenerationParameters>("VolumeGenerationParameters")
       .addConstructor<void (*)()>()

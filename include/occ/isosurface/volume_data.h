@@ -1,12 +1,18 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
 #include <occ/core/atom.h>
+#include <occ/qm/spinorbital.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <string>
 #include <vector>
 #include <cassert>
 
 namespace occ::isosurface {
+
+// Which spin component of a density to evaluate. The canonical definition lives
+// in occ_qm (it is a QM concept); re-export it here so isosurface call sites and
+// the language bindings can spell it occ::isosurface::SpinComponent.
+using occ::qm::SpinComponent;
 
 // Property types for volume data
 enum class VolumePropertyKind {
@@ -19,13 +25,6 @@ enum class VolumePropertyKind {
     DeformationDensity,   // "deformation_density"
     XCDensity,            // "xc"
     CrystalVoid           // "void" (alias for promolecule with crystal)
-};
-
-// Spin constraint for properties that support it
-enum class SpinConstraint {
-    Total,  // "both" (default)
-    Alpha,  // "alpha"
-    Beta    // "beta"
 };
 
 /**

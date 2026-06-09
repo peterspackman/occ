@@ -1,6 +1,5 @@
 add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/cli_validators.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_elastic.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_isosurface.cpp"
