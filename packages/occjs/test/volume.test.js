@@ -160,7 +160,7 @@ H  0.0000 -0.7572 -0.4692`);
       const cubeString = OCC.generateMOCubeWithSpin(
         wavefunction, 
         homoIndex, 
-        OCC.SpinConstraint.Alpha, 
+        OCC.SpinComponent.Alpha, 
         2, 2, 2
       );
       expect(cubeString).toBeDefined();

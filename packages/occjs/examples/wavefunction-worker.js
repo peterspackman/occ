@@ -396,7 +396,7 @@ async function generateCubeFile(params) {
                 cubeString = Module.generateMOCubeWithSpin(
                     currentWavefunction, 
                     params.moIndex, 
-                    Module.SpinConstraint.Alpha, 
+                    Module.SpinComponent.Alpha, 
                     nx, ny, nz
                 );
                 break;
@@ -413,7 +413,7 @@ async function generateCubeFile(params) {
                 cubeString = Module.generateMOCubeWithSpin(
                     currentWavefunction, 
                     params.moIndex, 
-                    Module.SpinConstraint.Beta, 
+                    Module.SpinComponent.Beta, 
                     nx, ny, nz
                 );
                 break;
