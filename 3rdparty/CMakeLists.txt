@@ -116,6 +116,10 @@ if(NOT "${USE_SYSTEM_EIGEN}")
             INTERFACE "${eigen3_SOURCE_DIR}"
         )
         install(DIRECTORY ${eigen3_SOURCE_DIR}/Eigen DESTINATION include)
+        install(
+            DIRECTORY ${eigen3_SOURCE_DIR}/unsupported/Eigen
+            DESTINATION include/unsupported
+        )
     endif()
 endif()
 
