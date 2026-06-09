@@ -149,9 +149,6 @@ var NAVTREEINDEX26 =
 "io_2json__basis_8h.html":[6,0,1,0,13,12],
 "isosurface_2atom__cell__list_8h.html":[6,0,1,0,14,0],
 "isosurface_2atom__cell__list_8h.html#a327773b30f9835a87f700775bdf98bd8":[6,0,1,0,14,0,0],
-"isosurface_2point__functors_8h.html":[6,0,1,0,14,17],
-"isosurface_2point__functors_8h.html#aa223800c83444c84665865de16045b28":[6,0,1,0,14,17,9],
-"isosurface_2point__functors_8h.html#ae204e804e4727bc8cb19890ab2e38950":[6,0,1,0,14,17,8],
 "isosurface_8h.html":[6,0,1,0,14,10],
 "isosurface_8h.html#a069d1c0243251e90060daf8cb7dc75fc":[6,0,1,0,14,10,5],
 "isosurface_8h.html#ad0741cfba8f9bd491d0c150e4b6dba3d":[6,0,1,0,14,10,4],
@@ -249,5 +246,8 @@ var NAVTREEINDEX26 =
 "linear__algebra_8h.html#a96a6c94f06b8bd220e5edf14b7655e3f":[6,0,1,0,1,23,36],
 "linear__algebra_8h.html#a99704cf50b48af7001fa4157de57c6ce":[6,0,1,0,1,23,34],
 "linear__algebra_8h.html#a9dcff6c717bd7b042c3eaa6af9a69b8b":[6,0,1,0,1,23,40],
-"linear__algebra_8h.html#aa25e99581dd6d9cb6fdfc2e54124f91c":[6,0,1,0,1,23,16]
+"linear__algebra_8h.html#aa25e99581dd6d9cb6fdfc2e54124f91c":[6,0,1,0,1,23,16],
+"linear__algebra_8h.html#aa26ae83cf7327efd7b3d55093ea81579":[6,0,1,0,1,23,6],
+"linear__algebra_8h.html#aa287e90e840e3d599bd48fed94737f42":[6,0,1,0,1,23,13],
+"linear__algebra_8h.html#aa5c29e0e7237c99bd49cd10c12771a4d":[6,0,1,0,1,23,7]
 };

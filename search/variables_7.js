@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['g_0',['g',['../structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313',1,'occ::scrf::detail::CosmoResponse::G'],['../structocc_1_1opt_1_1OptPoint.html#a2022f77f410ad41cc743c7969da36d2f',1,'occ::opt::OptPoint::g'],['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html#a7f2403ee2bea2b9bc761f71ef89b3022',1,'occ::mults::EwaldLatticeCache::GVector::G']]],
+  ['g_0',['g',['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html#a7f2403ee2bea2b9bc761f71ef89b3022',1,'occ::mults::EwaldLatticeCache::GVector::G'],['../structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313',1,'occ::scrf::detail::CosmoResponse::G'],['../structocc_1_1opt_1_1OptPoint.html#a2022f77f410ad41cc743c7969da36d2f',1,'occ::opt::OptPoint::g']]],
   ['g_5fcm3_5fto_5fkg_5fm3_1',['G_CM3_TO_KG_M3',['../namespaceocc_1_1units.html#a061dda57ae5c9464607558dbddd71218',1,'occ::units']]],
   ['g_5fcoeffs_2',['g_coeffs',['../structocc_1_1xtb_1_1EwaldGammaData.html#a55b4cea7f4fbe6a933217f061c505c9a',1,'occ::xtb::EwaldGammaData']]],
   ['g_5fvectors_3',['g_vectors',['../structocc_1_1xtb_1_1EwaldGammaData.html#ad1daf989a4bdd7af802459fedae11a61',1,'occ::xtb::EwaldGammaData::g_vectors'],['../structocc_1_1mults_1_1EwaldLatticeCache.html#a472c357f4687cea28c97a05cab42e4b2',1,'occ::mults::EwaldLatticeCache::g_vectors']]],

@@ -8,7 +8,7 @@ var searchData=
   ['debug_5fpair_5fenergies_5',['debug_pair_energies',['../classocc_1_1mults_1_1CrystalEnergy.html#a4117f3f26bd2727e448aeebad050d625',1,'occ::mults::CrystalEnergy']]],
   ['default_5fproperties_6',['default_properties',['../namespaceocc_1_1isosurface.html#ab16fc330a28219f949bbbe9bed9fb603',1,'occ::isosurface']]],
   ['defaulteps_7',['defaultEps',['../namespacequickhull.html#aed54901ccc77c377d9d2f94ce6a0888c',1,'quickhull']]],
-  ['deformationdensityfunctor_8',['deformationdensityfunctor',['../classocc_1_1isosurface_1_1DeformationDensityFunctor.html#add646be9c1b9441a973b576552e64bf3',1,'occ::isosurface::DeformationDensityFunctor::DeformationDensityFunctor()'],['../structocc_1_1main_1_1DeformationDensityFunctor.html#a5301e50a4281ba0bad0686c58694b3fc',1,'occ::main::DeformationDensityFunctor::DeformationDensityFunctor()']]],
+  ['deformationdensityfunctor_8',['deformationdensityfunctor',['../classocc_1_1isosurface_1_1DeformationDensityFunctor.html#add646be9c1b9441a973b576552e64bf3',1,'occ::isosurface::DeformationDensityFunctor::DeformationDensityFunctor()'],['../structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html#ad06b49d16dec995b192098c36d6aba30',1,'occ::isosurface::pointwise::DeformationDensityFunctor::DeformationDensityFunctor()']]],
   ['degrees_9',['degrees',['../namespaceocc_1_1units.html#a4664c0538bbf375995b667e527af52aa',1,'occ::units']]],
   ['density_10',['density',['../classocc_1_1crystal_1_1Crystal.html#acc053e812a6faa53cb5c3217c4773da1',1,'occ::crystal::Crystal']]],
   ['density_5fand_5fgradient_11',['density_and_gradient',['../classocc_1_1slater_1_1PromoleculeDensity.html#a76329014785ff478f638be192fc715f3',1,'occ::slater::PromoleculeDensity']]],

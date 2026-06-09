@@ -13,7 +13,7 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "compute_density_matrix", "structocc_1_1qm_1_1Wavefunction.html#a3adceb03c27c7d8ef4538239b30e32f7", null ],
     [ "electric_field", "structocc_1_1qm_1_1Wavefunction.html#a2b4175573369c8e98696a18796e214e3", null ],
     [ "electric_potential", "structocc_1_1qm_1_1Wavefunction.html#a010f948b01866ec5d3992b3e4c17cb5e", null ],
-    [ "electron_density", "structocc_1_1qm_1_1Wavefunction.html#ad21d7a1665b3110488107c0bee1995c0", null ],
+    [ "electron_density", "structocc_1_1qm_1_1Wavefunction.html#acd967e4564012f817046f9a9c08e6bf0", null ],
     [ "electron_density_gradient", "structocc_1_1qm_1_1Wavefunction.html#a6574d882427708d9b76eddf66a8f140e", null ],
     [ "electron_density_mo", "structocc_1_1qm_1_1Wavefunction.html#ad359584b249ac59547ab8abc73298640", null ],
     [ "electron_density_mo_gradient", "structocc_1_1qm_1_1Wavefunction.html#ad9c41ce01930b500d91bfd2f7d3138df", null ],

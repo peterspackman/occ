@@ -1,11 +1,6 @@
 var volume__data_8h =
 [
     [ "occ::isosurface::VolumeData", "structocc_1_1isosurface_1_1VolumeData.html", "structocc_1_1isosurface_1_1VolumeData" ],
-    [ "SpinConstraint", "volume__data_8h.html#ae0568101b819c30a4333eec98499134c", [
-      [ "Total", "volume__data_8h.html#ae0568101b819c30a4333eec98499134ca96b0141273eabab320119c467cdcaf17", null ],
-      [ "Alpha", "volume__data_8h.html#ae0568101b819c30a4333eec98499134ca6132295fcf5570fb8b0a944ef322a598", null ],
-      [ "Beta", "volume__data_8h.html#ae0568101b819c30a4333eec98499134ca0b87d66b88c72957dfea8c9605016442", null ]
-    ] ],
     [ "VolumePropertyKind", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172", [
       [ "ElectronDensity", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172ad47101755289809d537b90d5f1737add", null ],
       [ "ElectronDensityAlpha", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172ae4a5648c0000e47002d5d8da523369b5", null ],

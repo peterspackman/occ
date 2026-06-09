@@ -6,7 +6,7 @@ var searchData=
   ['d4dispersion_3',['D4Dispersion',['../classocc_1_1disp_1_1D4Dispersion.html',1,'occ::disp']]],
   ['d4scaling_4',['D4Scaling',['../structocc_1_1disp_1_1D4Scaling.html',1,'occ::disp']]],
   ['dampedcoulomb_5',['DampedCoulomb',['../structocc_1_1xtb_1_1DampedCoulomb.html',1,'occ::xtb']]],
-  ['deformationdensityfunctor_6',['deformationdensityfunctor',['../classocc_1_1isosurface_1_1DeformationDensityFunctor.html',1,'occ::isosurface::DeformationDensityFunctor'],['../structocc_1_1main_1_1DeformationDensityFunctor.html',1,'occ::main::DeformationDensityFunctor']]],
+  ['deformationdensityfunctor_6',['deformationdensityfunctor',['../classocc_1_1isosurface_1_1DeformationDensityFunctor.html',1,'occ::isosurface::DeformationDensityFunctor'],['../structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html',1,'occ::isosurface::pointwise::DeformationDensityFunctor']]],
   ['densityfunctional_7',['DensityFunctional',['../classocc_1_1dft_1_1DensityFunctional.html',1,'occ::dft']]],
   ['derivativetransform_8',['DerivativeTransform',['../classocc_1_1mults_1_1DerivativeTransform.html',1,'occ::mults']]],
   ['describeconfig_9',['DescribeConfig',['../structocc_1_1main_1_1DescribeConfig.html',1,'occ::main']]],

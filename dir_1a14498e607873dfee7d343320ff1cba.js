@@ -17,7 +17,7 @@ var dir_1a14498e607873dfee7d343320ff1cba =
     [ "obj.h", "obj_8h.html", "obj_8h" ],
     [ "orbital_index.h", "orbital__index_8h.html", "orbital__index_8h" ],
     [ "ply.h", "ply_8h.html", "ply_8h" ],
-    [ "point_functors.h", "isosurface_2point__functors_8h.html", "isosurface_2point__functors_8h" ],
+    [ "point_functors.h", "point__functors_8h.html", "point__functors_8h" ],
     [ "projection.h", "projection_8h.html", "projection_8h" ],
     [ "promolecule_density.h", "promolecule__density_8h.html", "promolecule__density_8h" ],
     [ "refine_sharp.h", "refine__sharp_8h.html", "refine__sharp_8h" ],

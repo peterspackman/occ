@@ -22,7 +22,7 @@
 <!-- Node2 -->
 <g id="Node000002" class="node">
 <title>Node2</title>
-<g id="a_Node000002"><a xlink:href="isosurface_2point__functors_8h.html" target="_top" xlink:title=" ">
+<g id="a_Node000002"><a xlink:href="point__functors_8h.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="147,-41 0,-41 0,0 147,0 147,-41"/>
 <text text-anchor="start" x="8" y="-29" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/isosurface</text>

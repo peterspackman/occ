@@ -95,6 +95,11 @@ var namespaceocc_1_1qm =
       [ "JK", "namespaceocc_1_1qm.html#a0cbb6b7b200e84020e9a90de49d3cdd9a5c3116796f5ff62adaf85580801f3fa4", null ],
       [ "Correlation", "namespaceocc_1_1qm.html#a0cbb6b7b200e84020e9a90de49d3cdd9a5f750c3076b1c419d3d1684019d36b16", null ]
     ] ],
+    [ "SpinComponent", "namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1", [
+      [ "Total", "namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1a96b0141273eabab320119c467cdcaf17", null ],
+      [ "Alpha", "namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1a6132295fcf5570fb8b0a944ef322a598", null ],
+      [ "Beta", "namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1a0b87d66b88c72957dfea8c9605016442", null ]
+    ] ],
     [ "chelpg_charges", "namespaceocc_1_1qm.html#a44d0c2cc10936b5fce7b0f4086155b6e", null ],
     [ "cosx_nbf_crossover", "namespaceocc_1_1qm.html#acc64228bb1558331b90be2793c89b2a7", null ],
     [ "expectation", "namespaceocc_1_1qm.html#a7f9747809d33a47c63c971414cfb7321", null ],

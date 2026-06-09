@@ -342,9 +342,13 @@ var annotated_dup =
         [ "XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", "structocc_1_1io_1_1XyzFileReader" ]
       ] ],
       [ "isosurface", "namespaceocc_1_1isosurface.html", [
-        [ "pfimpl", "namespaceocc_1_1isosurface_1_1pfimpl.html", [
-          [ "AtomInterpolator", "structocc_1_1isosurface_1_1pfimpl_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1pfimpl_1_1AtomInterpolator" ],
-          [ "InterpolatorParams", "structocc_1_1isosurface_1_1pfimpl_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1pfimpl_1_1InterpolatorParams" ]
+        [ "pointwise", "namespaceocc_1_1isosurface_1_1pointwise.html", [
+          [ "DeformationDensityFunctor", "structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html", "structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor" ],
+          [ "EEQEspFunctor", "structocc_1_1isosurface_1_1pointwise_1_1EEQEspFunctor.html", "structocc_1_1isosurface_1_1pointwise_1_1EEQEspFunctor" ],
+          [ "ElectronDensityFunctor", "structocc_1_1isosurface_1_1pointwise_1_1ElectronDensityFunctor.html", "structocc_1_1isosurface_1_1pointwise_1_1ElectronDensityFunctor" ],
+          [ "EspFunctor", "structocc_1_1isosurface_1_1pointwise_1_1EspFunctor.html", "structocc_1_1isosurface_1_1pointwise_1_1EspFunctor" ],
+          [ "PromolDensityFunctor", "structocc_1_1isosurface_1_1pointwise_1_1PromolDensityFunctor.html", "structocc_1_1isosurface_1_1pointwise_1_1PromolDensityFunctor" ],
+          [ "XCDensityFunctor", "structocc_1_1isosurface_1_1pointwise_1_1XCDensityFunctor.html", "structocc_1_1isosurface_1_1pointwise_1_1XCDensityFunctor" ]
         ] ],
         [ "AngleStats", "structocc_1_1isosurface_1_1AngleStats.html", "structocc_1_1isosurface_1_1AngleStats" ],
         [ "AtomInterpolator", "structocc_1_1isosurface_1_1AtomInterpolator.html", "structocc_1_1isosurface_1_1AtomInterpolator" ],
@@ -352,11 +356,9 @@ var annotated_dup =
         [ "BatchFunctor", "classocc_1_1isosurface_1_1BatchFunctor.html", "classocc_1_1isosurface_1_1BatchFunctor" ],
         [ "CellCapClassification", "structocc_1_1isosurface_1_1CellCapClassification.html", "structocc_1_1isosurface_1_1CellCapClassification" ],
         [ "DeformationDensityFunctor", "classocc_1_1isosurface_1_1DeformationDensityFunctor.html", "classocc_1_1isosurface_1_1DeformationDensityFunctor" ],
-        [ "EEQEspFunctor", "structocc_1_1isosurface_1_1EEQEspFunctor.html", "structocc_1_1isosurface_1_1EEQEspFunctor" ],
         [ "ElectricPotentialFunctor", "classocc_1_1isosurface_1_1ElectricPotentialFunctor.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctor" ],
         [ "ElectricPotentialFunctorPC", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC.html", "classocc_1_1isosurface_1_1ElectricPotentialFunctorPC" ],
         [ "ElectronDensityFunctor", "classocc_1_1isosurface_1_1ElectronDensityFunctor.html", "classocc_1_1isosurface_1_1ElectronDensityFunctor" ],
-        [ "EspFunctor", "structocc_1_1isosurface_1_1EspFunctor.html", "structocc_1_1isosurface_1_1EspFunctor" ],
         [ "ExpFunc", "structocc_1_1isosurface_1_1ExpFunc.html", "structocc_1_1isosurface_1_1ExpFunc" ],
         [ "GenericStockholderWeightFunctor", "classocc_1_1isosurface_1_1GenericStockholderWeightFunctor.html", "classocc_1_1isosurface_1_1GenericStockholderWeightFunctor" ],
         [ "InterpolatorParams", "structocc_1_1isosurface_1_1InterpolatorParams.html", "structocc_1_1isosurface_1_1InterpolatorParams" ],
@@ -370,9 +372,6 @@ var annotated_dup =
         [ "MCElectronDensityFunctor", "classocc_1_1isosurface_1_1MCElectronDensityFunctor.html", "classocc_1_1isosurface_1_1MCElectronDensityFunctor" ],
         [ "MCPromoleculeDensityFunctor", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor.html", "classocc_1_1isosurface_1_1MCPromoleculeDensityFunctor" ],
         [ "OrbitalIndex", "structocc_1_1isosurface_1_1OrbitalIndex.html", "structocc_1_1isosurface_1_1OrbitalIndex" ],
-        [ "Point_DeformationDensityFunctor", "structocc_1_1isosurface_1_1Point__DeformationDensityFunctor.html", "structocc_1_1isosurface_1_1Point__DeformationDensityFunctor" ],
-        [ "Point_ElectronDensityFunctor", "structocc_1_1isosurface_1_1Point__ElectronDensityFunctor.html", "structocc_1_1isosurface_1_1Point__ElectronDensityFunctor" ],
-        [ "PromolDensityFunctor", "structocc_1_1isosurface_1_1PromolDensityFunctor.html", "structocc_1_1isosurface_1_1PromolDensityFunctor" ],
         [ "QualityParams", "structocc_1_1isosurface_1_1QualityParams.html", "structocc_1_1isosurface_1_1QualityParams" ],
         [ "RadiusMetric", "classocc_1_1isosurface_1_1RadiusMetric.html", "classocc_1_1isosurface_1_1RadiusMetric" ],
         [ "RInvFunc", "structocc_1_1isosurface_1_1RInvFunc.html", "structocc_1_1isosurface_1_1RInvFunc" ],
@@ -383,34 +382,23 @@ var annotated_dup =
         [ "VolumeCalculator", "classocc_1_1isosurface_1_1VolumeCalculator.html", "classocc_1_1isosurface_1_1VolumeCalculator" ],
         [ "VolumeData", "structocc_1_1isosurface_1_1VolumeData.html", "structocc_1_1isosurface_1_1VolumeData" ],
         [ "VolumeGenerationParameters", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html", "structocc_1_1isosurface_1_1VolumeGenerationParameters" ],
-        [ "VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", "classocc_1_1isosurface_1_1VolumeGridFunctor" ],
-        [ "XCDensityFunctor", "structocc_1_1isosurface_1_1XCDensityFunctor.html", "structocc_1_1isosurface_1_1XCDensityFunctor" ]
+        [ "VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", "classocc_1_1isosurface_1_1VolumeGridFunctor" ]
       ] ],
       [ "main", "namespaceocc_1_1main.html", [
-        [ "pfimpl", "namespaceocc_1_1main_1_1pfimpl.html", [
-          [ "AtomInterpolator", "structocc_1_1main_1_1pfimpl_1_1AtomInterpolator.html", "structocc_1_1main_1_1pfimpl_1_1AtomInterpolator" ],
-          [ "InterpolatorParams", "structocc_1_1main_1_1pfimpl_1_1InterpolatorParams.html", "structocc_1_1main_1_1pfimpl_1_1InterpolatorParams" ]
-        ] ],
         [ "CubeConfig", "structocc_1_1main_1_1CubeConfig.html", "structocc_1_1main_1_1CubeConfig" ],
-        [ "DeformationDensityFunctor", "structocc_1_1main_1_1DeformationDensityFunctor.html", "structocc_1_1main_1_1DeformationDensityFunctor" ],
         [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
-        [ "EEQEspFunctor", "structocc_1_1main_1_1EEQEspFunctor.html", "structocc_1_1main_1_1EEQEspFunctor" ],
         [ "EFSettings", "structocc_1_1main_1_1EFSettings.html", "structocc_1_1main_1_1EFSettings" ],
         [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
-        [ "ElectronDensityFunctor", "structocc_1_1main_1_1ElectronDensityFunctor.html", "structocc_1_1main_1_1ElectronDensityFunctor" ],
         [ "EmbedConfig", "structocc_1_1main_1_1EmbedConfig.html", "structocc_1_1main_1_1EmbedConfig" ],
-        [ "EspFunctor", "structocc_1_1main_1_1EspFunctor.html", "structocc_1_1main_1_1EspFunctor" ],
         [ "IsosurfaceConfig", "structocc_1_1main_1_1IsosurfaceConfig.html", "structocc_1_1main_1_1IsosurfaceConfig" ],
         [ "LuaConfig", "structocc_1_1main_1_1LuaConfig.html", "structocc_1_1main_1_1LuaConfig" ],
         [ "MultiplicityValidator", "structocc_1_1main_1_1MultiplicityValidator.html", "structocc_1_1main_1_1MultiplicityValidator" ],
         [ "OccPairInput", "structocc_1_1main_1_1OccPairInput.html", "structocc_1_1main_1_1OccPairInput" ],
-        [ "PromolDensityFunctor", "structocc_1_1main_1_1PromolDensityFunctor.html", "structocc_1_1main_1_1PromolDensityFunctor" ],
         [ "RoptSettings", "structocc_1_1main_1_1RoptSettings.html", "structocc_1_1main_1_1RoptSettings" ],
         [ "SpinorbitalKindValidator", "structocc_1_1main_1_1SpinorbitalKindValidator.html", "structocc_1_1main_1_1SpinorbitalKindValidator" ],
         [ "SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", "structocc_1_1main_1_1SurfaceCutsConfig" ],
-        [ "TbConfig", "structocc_1_1main_1_1TbConfig.html", "structocc_1_1main_1_1TbConfig" ],
-        [ "XCDensityFunctor", "structocc_1_1main_1_1XCDensityFunctor.html", "structocc_1_1main_1_1XCDensityFunctor" ]
+        [ "TbConfig", "structocc_1_1main_1_1TbConfig.html", "structocc_1_1main_1_1TbConfig" ]
       ] ],
       [ "mults", "namespaceocc_1_1mults.html", [
         [ "kernel_detail", "namespaceocc_1_1mults_1_1kernel__detail.html", [

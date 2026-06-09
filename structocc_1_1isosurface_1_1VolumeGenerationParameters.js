@@ -13,7 +13,7 @@ var structocc_1_1isosurface_1_1VolumeGenerationParameters =
     [ "origin", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html#ad5c0ce7496b47aa7d8bb30bf8782240c", null ],
     [ "points_filename", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html#ad6e447083502dbde3dc52c846e5575d2", null ],
     [ "property", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html#a26b2f5646fe82c2c00845619d5210b92", null ],
-    [ "spin", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html#ae3ce6a98ffcca78b5dc37f331db9fd37", null ],
+    [ "spin", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html#adc8bcd51550626dea43d7bb3df742d8d", null ],
     [ "steps", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html#aba9c3a781e33c142828c75e91402fa3b", null ],
     [ "unit_cell_only", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html#ab0b6536acd41540069de2130e70e293e", null ],
     [ "value_threshold", "structocc_1_1isosurface_1_1VolumeGenerationParameters.html#ac2f7148db4ba9cb1c072255d31486d98", null ]

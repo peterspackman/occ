@@ -17,7 +17,7 @@ var searchData=
   ['plane_2eh_14',['plane.h',['../plane_8h.html',1,'']]],
   ['ply_2eh_15',['ply.h',['../ply_8h.html',1,'']]],
   ['point_5fcharge_2eh_16',['point_charge.h',['../point__charge_8h.html',1,'']]],
-  ['point_5ffunctors_2eh_17',['point_functors.h',['../isosurface_2point__functors_8h.html',1,'(Global Namespace)'],['../main_2point__functors_8h.html',1,'(Global Namespace)']]],
+  ['point_5ffunctors_2eh_17',['point_functors.h',['../point__functors_8h.html',1,'']]],
   ['point_5fgroup_2eh_18',['point_group.h',['../point__group_8h.html',1,'']]],
   ['polarization_2eh_19',['polarization.h',['../polarization_8h.html',1,'']]],
   ['polarization_5fpartitioning_2eh_20',['polarization_partitioning.h',['../polarization__partitioning_8h.html',1,'']]],
