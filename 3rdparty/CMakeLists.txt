@@ -168,46 +168,49 @@ if(
 )
     set(LIBCINT_BUILD_TYPE "CMAKE_BUILD_TYPE Release")
 endif()
+if(NOT USE_SYSTEM_LIBCINT)
+    # Add compiler flags to fix the implicit function declaration error
+    set(LIBCINT_C_FLAGS
+        "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE"
+    )
 
-# Add compiler flags to fix the implicit function declaration error
-set(LIBCINT_C_FLAGS
-    "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE"
-)
+    cpmaddpackage(
+        NAME libcint
+        GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
+        GIT_TAG master
+        OPTIONS
+            "WITH_FORTRAN OFF"
+            "WITH_CINT2_INTERFACE OFF"
+            "ENABLE_STATIC ON"
+            "BUILD_SHARED_LIBS OFF"
+            "PYPZPX ON"
+            "BUILD_MARCH_NATIVE ON"
+            "WITH_RANGE_COULOMB ON"
+            "CMAKE_C_FLAGS ${LIBCINT_C_FLAGS}"
+            ${LIBCINT_BUILD_TYPE}
+        VERSION "6.1.2"
+    )
 
-cpmaddpackage(
-    NAME libcint
-    GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
-    GIT_TAG master
-    OPTIONS
-        "WITH_FORTRAN OFF"
-        "WITH_CINT2_INTERFACE OFF"
-        "ENABLE_STATIC ON"
-        "BUILD_SHARED_LIBS OFF"
-        "PYPZPX ON"
-        "BUILD_MARCH_NATIVE ON"
-        "WITH_RANGE_COULOMB ON"
-        "CMAKE_C_FLAGS ${LIBCINT_C_FLAGS}"
-        ${LIBCINT_BUILD_TYPE}
-    VERSION "6.1.2"
-)
+    # Apply the flags to the target after it's created
+    if(TARGET cint)
+        target_compile_options(
+            cint
+            PRIVATE
+                -Wno-implicit-function-declaration
+                -Wno-deprecated-non-prototype
+        )
+    endif()
 
-# Apply the flags to the target after it's created
-if(TARGET cint)
-    target_compile_options(
-        cint
-        PRIVATE -Wno-implicit-function-declaration -Wno-deprecated-non-prototype
+    add_library(libcint::libcint INTERFACE IMPORTED GLOBAL)
+    target_link_libraries(libcint::libcint INTERFACE cint)
+    target_include_directories(
+        libcint::libcint
+        INTERFACE
+            "${libcint_SOURCE_DIR}/include"
+            "${libcint_SOURCE_DIR}/src"
+            "${libcint_BINARY_DIR}/include"
     )
 endif()
-
-add_library(libcint::libcint INTERFACE IMPORTED GLOBAL)
-target_link_libraries(libcint::libcint INTERFACE cint)
-target_include_directories(
-    libcint::libcint
-    INTERFACE
-        "${libcint_SOURCE_DIR}/include"
-        "${libcint_SOURCE_DIR}/src"
-        "${libcint_BINARY_DIR}/include"
-)
 
 if(NOT "${USE_SYSTEM_LIBXC}")
     cpmaddpackage(

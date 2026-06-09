@@ -52,6 +52,7 @@ else()
     option(WITH_LLD "Use lld linker for faster linking (if available)" OFF)
 endif()
 
+option(USE_SYSTEM_LIBCINT "Use libcint installed on system" OFF)
 if(WITH_CCACHE)
     find_program(CCACHE_PROGRAM ccache)
     if(CCACHE_PROGRAM)
