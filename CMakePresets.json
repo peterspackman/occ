@@ -1,0 +1,257 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 23, "patch": 0 },
+
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BUILD_TESTING": "OFF"
+      }
+    },
+
+    {
+      "name": "release-gcc",
+      "displayName": "Release (GCC, static runtime)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_HOST_OPT": "OFF",
+        "BUILD_DOCS": "OFF",
+        "BUILD_TESTING": "OFF",
+        "CMAKE_CXX_FLAGS": "-O2 -march=skylake -static-libgcc -static-libstdc++",
+        "CMAKE_C_FLAGS": "-O2 -march=x86-64-v3 -static-libgcc"
+      }
+    },
+
+    {
+      "name": "release-gcc-testing",
+      "displayName": "Release (GCC, static runtime) + tests",
+      "inherits": "release-gcc",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
+    },
+
+    {
+      "name": "debug-gcc",
+      "displayName": "Debug (GCC)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_HOST_OPT": "OFF",
+        "BUILD_DOCS": "OFF",
+        "CMAKE_CXX_FLAGS": "-O0 -g3 -fno-omit-frame-pointer",
+        "CMAKE_C_FLAGS": "-O0 -g3 -fno-omit-frame-pointer"
+      }
+    },
+
+    {
+      "name": "debug-gcc-testing",
+      "displayName": "Debug (GCC) + tests",
+      "inherits": "debug-gcc",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
+    },
+
+    {
+      "name": "release-clang",
+      "displayName": "Release (Clang, static runtime)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "ENABLE_HOST_OPT": "OFF",
+        "WITH_LLD": "ON",
+        "BUILD_DOCS": "ON",
+        "CMAKE_CXX_FLAGS": "-O2 -march=skylake -static-libgcc -static-libstdc++",
+        "CMAKE_C_FLAGS": "-O2 -march=x86-64-v3 -static-libgcc"
+      }
+    },
+
+    {
+      "name": "release-clang-testing",
+      "displayName": "Release (Clang, static runtime) + tests",
+      "inherits": "release-clang",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
+    },
+
+    {
+      "name": "debug-clang",
+      "displayName": "Debug (Clang)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "ENABLE_HOST_OPT": "OFF",
+        "WITH_LLD": "ON",
+        "BUILD_DOCS": "OFF",
+        "CMAKE_CXX_FLAGS": "-O0 -g3 -fno-omit-frame-pointer",
+        "CMAKE_C_FLAGS": "-O0 -g3 -fno-omit-frame-pointer"
+      }
+    },
+
+    {
+      "name": "debug-clang-testing",
+      "displayName": "Debug (Clang) + tests",
+      "inherits": "debug-clang",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    {
+      "name": "release-gcc",
+      "configurePreset": "release-gcc",
+      "displayName": "Build release-gcc"
+    },
+    {
+      "name": "release-gcc-testing",
+      "configurePreset": "release-gcc-testing",
+      "displayName": "Build release-gcc-testing"
+    },
+    {
+      "name": "debug-gcc",
+      "configurePreset": "debug-gcc",
+      "displayName": "Build debug-gcc"
+    },
+    {
+      "name": "debug-gcc-testing",
+      "configurePreset": "debug-gcc-testing",
+      "displayName": "Build debug-gcc-testing"
+    },
+    {
+      "name": "release-clang",
+      "configurePreset": "release-clang",
+      "displayName": "Build release-clang"
+    },
+    {
+      "name": "release-clang-testing",
+      "configurePreset": "release-clang-testing",
+      "displayName": "Build release-clang-testing"
+    },
+    {
+      "name": "debug-clang",
+      "configurePreset": "debug-clang",
+      "displayName": "Build debug-clang"
+    },
+    {
+      "name": "debug-clang-testing",
+      "configurePreset": "debug-clang-testing",
+      "displayName": "Build debug-clang-testing"
+    }
+  ],
+
+  "testPresets": [
+    {
+      "name": "release-gcc-testing",
+      "configurePreset": "release-gcc-testing",
+      "displayName": "Test release-gcc",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    },
+    {
+      "name": "debug-gcc-testing",
+      "configurePreset": "debug-gcc-testing",
+      "displayName": "Test debug-gcc",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    },
+    {
+      "name": "release-clang-testing",
+      "configurePreset": "release-clang-testing",
+      "displayName": "Test release-clang",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    },
+    {
+      "name": "debug-clang-testing",
+      "configurePreset": "debug-clang-testing",
+      "displayName": "Test debug-clang",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    }
+  ],
+
+  "workflowPresets": [
+    {
+      "name": "release-gcc",
+      "displayName": "Configure + Build (GCC Release)",
+      "steps": [
+        { "type": "configure", "name": "release-gcc" },
+        { "type": "build",     "name": "release-gcc" }
+      ]
+    },
+    {
+      "name": "release-gcc-testing",
+      "displayName": "Configure + Build + Test (GCC Release)",
+      "steps": [
+        { "type": "configure", "name": "release-gcc-testing" },
+        { "type": "build",     "name": "release-gcc-testing" },
+        { "type": "test",      "name": "release-gcc-testing" }
+      ]
+    },
+    {
+      "name": "debug-gcc",
+      "displayName": "Configure + Build (GCC Debug)",
+      "steps": [
+        { "type": "configure", "name": "debug-gcc" },
+        { "type": "build",     "name": "debug-gcc" }
+      ]
+    },
+    {
+      "name": "debug-gcc-testing",
+      "displayName": "Configure + Build + Test (GCC Debug)",
+      "steps": [
+        { "type": "configure", "name": "debug-gcc-testing" },
+        { "type": "build",     "name": "debug-gcc-testing" },
+        { "type": "test",      "name": "debug-gcc-testing" }
+      ]
+    },
+    {
+      "name": "release-clang",
+      "displayName": "Configure + Build (Clang Release)",
+      "steps": [
+        { "type": "configure", "name": "release-clang" },
+        { "type": "build",     "name": "release-clang" }
+      ]
+    },
+    {
+      "name": "release-clang-testing",
+      "displayName": "Configure + Build + Test (Clang Release)",
+      "steps": [
+        { "type": "configure", "name": "release-clang-testing" },
+        { "type": "build",     "name": "release-clang-testing" },
+        { "type": "test",      "name": "release-clang-testing" }
+      ]
+    },
+    {
+      "name": "debug-clang",
+      "displayName": "Configure + Build (Clang Debug)",
+      "steps": [
+        { "type": "configure", "name": "debug-clang" },
+        { "type": "build",     "name": "debug-clang" }
+      ]
+    },
+    {
+      "name": "debug-clang-testing",
+      "displayName": "Configure + Build + Test (Clang Debug)",
+      "steps": [
+        { "type": "configure", "name": "debug-clang-testing" },
+        { "type": "build",     "name": "debug-clang-testing" },
+        { "type": "test",      "name": "debug-clang-testing" }
+      ]
+    }
+  ]
+}
