@@ -1,4 +1,5 @@
-add_library(occ_io_obj
+add_library(
+    occ_io_obj
     OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/basis_g94.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
@@ -22,7 +23,10 @@ add_library(occ_io_obj
     ${OCC_IO_INCLUDE_FILES}
 )
 add_library(occ_io $<TARGET_OBJECTS:occ_io_obj>)
-target_include_directories(occ_io_obj PUBLIC ${OCC_INCLUDE_DIR} ${GEMMI_INCLUDE_DIR})
+target_include_directories(
+    occ_io_obj
+    PUBLIC ${OCC_INCLUDE_DIR} ${GEMMI_INCLUDE_DIR}
+)
 target_link_libraries(
     occ_io_obj
     PUBLIC
@@ -32,6 +36,7 @@ target_link_libraries(
         occ_gto
         occ_numint
         gemmi::gemmi
+        tomlplusplus::tomlplusplus
         nlohmann_json::nlohmann_json
 )
 
@@ -44,6 +49,7 @@ target_link_libraries(
         occ_gto
         occ_numint
         gemmi::gemmi
+        tomlplusplus::tomlplusplus
         nlohmann_json::nlohmann_json
 )
 target_include_directories(
