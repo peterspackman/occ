@@ -22,9 +22,7 @@ add_library(
 target_link_libraries(libocc PUBLIC occ_xtb)
 target_include_directories(
     libocc
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
 )
 set_target_properties(libocc PROPERTIES PREFIX "")
 install(
@@ -35,5 +33,4 @@ install(
     RUNTIME DESTINATION bin
     INCLUDES DESTINATION include
 )
-
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/ DESTINATION include)
