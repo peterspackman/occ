@@ -13,6 +13,7 @@
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/merge.h>
+#include <occ/qm/opmatrix.h>
 #include <occ/qm/orb.h>
 #include <occ/qm/partitioning.h>
 #include <occ/qm/spinorbital.h>
@@ -386,8 +387,25 @@ Vec Wavefunction::mulliken_charges() const {
   return charges;
 }
 
-Vec Wavefunction::electron_density(const Mat3N &pos) const {
-  return occ::density::evaluate_density_on_grid<0>(*this, pos);
+Vec Wavefunction::electron_density(const Mat3N &pos, SpinComponent spin) const {
+  // evaluate_density_on_grid owns the R/U/G dispatch (and throws for general).
+  // Restricted -> total density (length N); unrestricted -> [rho_a; rho_b] (2N).
+  Mat rho = occ::density::evaluate_density_on_grid<0>(*this, pos);
+
+  if (mo.kind == SpinorbitalKind::Unrestricted) {
+    switch (spin) {
+    case SpinComponent::Alpha:
+      return block::a(rho);
+    case SpinComponent::Beta:
+      return block::b(rho);
+    default:
+      return block::a(rho) + block::b(rho);
+    }
+  }
+  // Restricted: alpha and beta are each half of the total density.
+  if (spin != SpinComponent::Total)
+    rho *= 0.5;
+  return rho;
 }
 
 Mat3N Wavefunction::electron_density_gradient(const Mat3N &pos) const {
