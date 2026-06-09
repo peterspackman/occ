@@ -34,3 +34,11 @@ install(
     INCLUDES DESTINATION include
 )
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/ DESTINATION include)
+install(
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../src/3rdparty/gau2grid/gau2grid
+    DESTINATION include
+)
+install(
+    FILES ${CMAKE_CURRENT_SOURCE_DIR}/../src/3rdparty/libecpint/libecpint.hpp
+    DESTINATION include
+)
