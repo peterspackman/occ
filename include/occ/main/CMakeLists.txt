@@ -11,7 +11,6 @@ set(OCC_MAIN_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_lua.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_pair.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_scf.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/version.h"
     PARENT_SCOPE)

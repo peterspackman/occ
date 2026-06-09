@@ -17,6 +17,11 @@ using occ::core::General;
 using occ::core::get_spinorbital_kind_from_string;
 using occ::core::spinorbital_kind_to_string;
 
+// Selects which spin component of a per-spin quantity (e.g. the electron
+// density) to evaluate. For a restricted wavefunction Alpha and Beta are each
+// half of Total; for unrestricted they are the separate spin densities.
+enum class SpinComponent { Total, Alpha, Beta };
+
 template <SpinorbitalKind kind>
 constexpr std::pair<size_t, size_t> matrix_dimensions(size_t nbf) {
   switch (kind) {

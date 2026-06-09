@@ -20,7 +20,7 @@ enum class OutputFormat {
 struct VolumeGenerationParameters {
     // Property selection
     VolumePropertyKind property{VolumePropertyKind::ElectronDensity};
-    SpinConstraint spin{SpinConstraint::Total};
+    SpinComponent spin{SpinComponent::Total};
     std::string functional{"blyp"};
     int mo_number{-1};  // -1 means all MOs
     
@@ -86,7 +86,7 @@ public:
     // String property name conversion (for backward compatibility)
     static VolumePropertyKind property_from_string(const std::string& name);
     static std::string property_to_string(VolumePropertyKind prop);
-    static SpinConstraint spin_from_string(const std::string& name);
+    static SpinComponent spin_from_string(const std::string& name);
     static OutputFormat format_from_string(const std::string& name);
     
     // List all supported properties

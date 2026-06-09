@@ -4,7 +4,7 @@ Tests for volume generation Python bindings
 import numpy as np
 from occpy import (
     Molecule, Atom, AOBasis, HartreeFock,
-    VolumeCalculator, VolumeGenerationParameters, VolumePropertyKind, SpinConstraint,
+    VolumeCalculator, VolumeGenerationParameters, VolumePropertyKind, SpinComponent,
     generate_electron_density_cube, generate_mo_cube, generate_esp_cube
 )
 
@@ -112,10 +112,10 @@ def test_volume_properties():
     assert hasattr(VolumePropertyKind, 'ElectricPotential')
     assert hasattr(VolumePropertyKind, 'CrystalVoid')
     
-    # Test SpinConstraint enum
-    assert hasattr(SpinConstraint, 'Total')
-    assert hasattr(SpinConstraint, 'Alpha')
-    assert hasattr(SpinConstraint, 'Beta')
+    # Test SpinComponent enum
+    assert hasattr(SpinComponent, 'Total')
+    assert hasattr(SpinComponent, 'Alpha')
+    assert hasattr(SpinComponent, 'Beta')
 
 
 if __name__ == "__main__":

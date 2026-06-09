@@ -1,11 +1,9 @@
 #include <occ/core/eeq.h>
-#include <occ/core/element.h>
 #include <occ/core/units.h>
 #include <occ/gto/density.h>
 #include <occ/isosurface/point_functors.h>
-#include <occ/slater/slaterbasis.h>
 
-namespace occ::isosurface {
+namespace occ::isosurface::pointwise {
 
 std::pair<IVec, Mat3N> atom_nums_positions(const AtomList &atoms) {
   IVec n(atoms.size());
@@ -41,130 +39,57 @@ void EEQEspFunctor::operator()(Eigen::Ref<const Mat3N> points,
   }
 }
 
-PromolDensityFunctor::PromolDensityFunctor(const AtomList &a) : atoms(a) {
-
-  auto basis = occ::slater::load_slaterbasis("thakkar");
-  ankerl::unordered_dense::map<int, std::vector<int>> tmp_map;
-  occ::log::debug("Loaded slater basis");
-
-  // TODO handle charges
-  Eigen::Matrix3Xf coordinates(3, atoms.size());
-  for (int i = 0; i < atoms.size(); i++) {
-    coordinates(0, i) = atoms[i].x;
-    coordinates(1, i) = atoms[i].y;
-    coordinates(2, i) = atoms[i].z;
+namespace {
+// Atom coordinates are stored in bohr, which is what
+// slater::PromoleculeDensity's raw constructor expects (the Molecule
+// overload converts from Angstrom). Build it directly from the atom list.
+slater::PromoleculeDensity make_promolecule_density(const AtomList &atoms) {
+  IVec numbers(atoms.size());
+  FMat3N positions(3, atoms.size());
+  for (int i = 0; i < static_cast<int>(atoms.size()); i++) {
+    numbers(i) = atoms[i].atomic_number;
+    positions(0, i) = static_cast<float>(atoms[i].x);
+    positions(1, i) = static_cast<float>(atoms[i].y);
+    positions(2, i) = static_cast<float>(atoms[i].z);
   }
-
-  occ::log::debug("Built coordinates");
-
-  for (size_t i = 0; i < atoms.size(); i++) {
-    int el = atoms[i].atomic_number;
-    tmp_map[el].push_back(i);
-  }
-  occ::log::debug("Built interpolators");
-
-  for (const auto &[el, idxs] : tmp_map) {
-    auto b = basis[occ::core::Element(el).symbol()];
-    auto func = [&b](float x) { return b.rho(std::sqrt(x)); };
-    atom_interpolators.push_back(pfimpl::AtomInterpolator{
-        pfimpl::LinearInterpolatorFloat(func, interpolator_params.domain_lower,
-                                        interpolator_params.domain_upper,
-                                        interpolator_params.num_points),
-        coordinates(Eigen::all, idxs)});
-  }
-
-  for (auto &ai : atom_interpolators) {
-    ai.threshold = ai.interpolator.find_threshold(1e-8);
-  }
-  occ::log::debug("Built atom interpolators");
+  return slater::PromoleculeDensity(numbers, positions);
 }
+} // namespace
+
+PromolDensityFunctor::PromolDensityFunctor(const AtomList &atoms)
+    : promol(make_promolecule_density(atoms)) {}
 
 void PromolDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
                                       Eigen::Ref<Vec> dest) {
-  const int num_points = points.cols();
-  const Eigen::Matrix3Xf points_f = points.cast<float>();
-  
-  // Process all atom interpolators
-  for (const auto &[interp, interp_positions, threshold] : atom_interpolators) {
-    const int num_atoms = interp_positions.cols();
-    
-    // For each atom in this interpolator group
-    for (int atom_idx = 0; atom_idx < num_atoms; atom_idx++) {
-      const Eigen::Vector3f atom_pos = interp_positions.col(atom_idx);
-      
-      // Vectorized distance calculation for all points to this atom
-      const Eigen::RowVectorXf r_squared = 
-          (points_f.colwise() - atom_pos).colwise().squaredNorm();
-      
-      // Process points that are within threshold
-      for (int pt = 0; pt < num_points; pt++) {
-        const float r_sq = r_squared(pt);
-        if (r_sq > threshold) continue;
-        
-        const float rho = interp(r_sq);
-        dest(pt) += rho;
-      }
-    }
+  for (int pt = 0; pt < points.cols(); pt++) {
+    const FVec3 pos = points.col(pt).cast<float>();
+    dest(pt) += promol(pos);
   }
 }
 
-Point_ElectronDensityFunctor::Point_ElectronDensityFunctor(const Wavefunction &w,
-                                               SpinConstraint s)
+ElectronDensityFunctor::ElectronDensityFunctor(const Wavefunction &w,
+                                               SpinComponent s)
     : wfn(w), spin(s) {}
 
-void Point_ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
+void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
                                         Eigen::Ref<Vec> dest) {
-
-  constexpr auto R = qm::SpinorbitalKind::Restricted;
-  constexpr auto U = qm::SpinorbitalKind::Unrestricted;
-  constexpr auto G = qm::SpinorbitalKind::General;
-
-  auto gto_values = occ::gto::evaluate_basis(wfn.basis, points, 0);
-
-  Mat D = 2 * wfn.mo.D;
   if (mo_index >= 0) {
-    D = wfn.mo.density_matrix_single_mo(mo_index);
-  }
-
-  switch (wfn.mo.kind) {
-  case U: {
-    Vec tmp = occ::density::evaluate_density<0, U>(D, gto_values);
-    switch (spin) {
-    case SpinConstraint::Total:
-      dest += qm::block::a(tmp);
-      dest += qm::block::b(tmp);
-      break;
-    case SpinConstraint::Alpha:
-      dest += qm::block::a(tmp);
-      break;
-    case SpinConstraint::Beta:
-      dest += qm::block::b(tmp);
-      break;
-    }
-    break;
-  }
-  case G: {
-    throw std::runtime_error("General case not implemented");
-    break;
-  }
-  default: {
-    Vec tmp = occ::density::evaluate_density<0, R>(D, gto_values);
-    dest += tmp;
-    break;
-  }
+    dest += wfn.electron_density_mo(points, mo_index);
+  } else {
+    dest += wfn.electron_density(points, spin);
   }
 }
 
-Point_DeformationDensityFunctor::Point_DeformationDensityFunctor(const Wavefunction &wfn,
-                                                     SpinConstraint spin)
+DeformationDensityFunctor::DeformationDensityFunctor(const Wavefunction &wfn,
+                                                     SpinComponent spin)
     : pro_func(wfn.atoms), rho_func(wfn, spin) {}
 
-void Point_DeformationDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
+void DeformationDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
                                            Eigen::Ref<Vec> dest) {
   Vec tmp = Vec::Zero(dest.rows(), dest.cols());
   rho_func(points, dest);
   pro_func(points, tmp);
-  if (rho_func.spin != SpinConstraint::Total) {
+  if (rho_func.spin != SpinComponent::Total) {
     dest -= 0.5 * tmp;
   } else {
     dest -= tmp;
@@ -173,7 +98,7 @@ void Point_DeformationDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
 
 XCDensityFunctor::XCDensityFunctor(const Wavefunction &w,
                                    const std::string &functional,
-                                   SpinConstraint s)
+                                   SpinComponent s)
     : wfn(w), ks(functional, w.basis) {}
 
 void XCDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
@@ -209,4 +134,4 @@ void XCDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
   dest += res.exc;
 }
 
-} // namespace occ::isosurface
+} // namespace occ::isosurface::pointwise

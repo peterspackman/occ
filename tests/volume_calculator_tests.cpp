@@ -42,10 +42,10 @@ TEST_CASE("VolumeCalculator property name conversions", "[volume_calculator]") {
     }
     
     SECTION("spin_from_string conversions") {
-        REQUIRE(VolumeCalculator::spin_from_string("both") == SpinConstraint::Total);
-        REQUIRE(VolumeCalculator::spin_from_string("total") == SpinConstraint::Total);
-        REQUIRE(VolumeCalculator::spin_from_string("alpha") == SpinConstraint::Alpha);
-        REQUIRE(VolumeCalculator::spin_from_string("beta") == SpinConstraint::Beta);
+        REQUIRE(VolumeCalculator::spin_from_string("both") == SpinComponent::Total);
+        REQUIRE(VolumeCalculator::spin_from_string("total") == SpinComponent::Total);
+        REQUIRE(VolumeCalculator::spin_from_string("alpha") == SpinComponent::Alpha);
+        REQUIRE(VolumeCalculator::spin_from_string("beta") == SpinComponent::Beta);
         
         REQUIRE_THROWS_WITH(VolumeCalculator::spin_from_string("unknown"), "Unknown spin constraint: unknown");
     }

@@ -17,13 +17,13 @@ using occ::core::Element;
 using occ::core::Molecule;
 using occ::io::Cube;
 using occ::qm::Wavefunction;
-using occ::isosurface::Point_ElectronDensityFunctor;
-using occ::isosurface::EspFunctor;
-using occ::isosurface::EEQEspFunctor;
-using occ::isosurface::PromolDensityFunctor;
-using occ::isosurface::Point_DeformationDensityFunctor;
-using occ::isosurface::XCDensityFunctor;
-using occ::isosurface::SpinConstraint;
+using occ::isosurface::pointwise::ElectronDensityFunctor;
+using occ::isosurface::pointwise::EspFunctor;
+using occ::isosurface::pointwise::EEQEspFunctor;
+using occ::isosurface::pointwise::PromolDensityFunctor;
+using occ::isosurface::pointwise::DeformationDensityFunctor;
+using occ::isosurface::pointwise::XCDensityFunctor;
+using occ::isosurface::SpinComponent;
 
 namespace occ::main {
 
@@ -216,25 +216,25 @@ void evaluate_custom_points(const Wavefunction &wfn, CubeConfig const &config,
     func(points, data);
   } else if (config.property == "deformation_density") {
     require_wfn(config, have_wfn);
-    Point_DeformationDensityFunctor func(wfn);
+    DeformationDensityFunctor func(wfn);
     func(points, data);
   } else if (config.property == "rho" ||
              config.property == "electron_density" ||
              config.property == "density") {
     require_wfn(config, have_wfn);
-    Point_ElectronDensityFunctor func(wfn);
+    ElectronDensityFunctor func(wfn);
     func.mo_index = config.mo_number;
     func(points, data);
   } else if (config.property == "rho_alpha") {
     require_wfn(config, have_wfn);
-    Point_ElectronDensityFunctor func(wfn);
-    func.spin = SpinConstraint::Alpha;
+    ElectronDensityFunctor func(wfn);
+    func.spin = SpinComponent::Alpha;
     func.mo_index = config.mo_number;
     func(points, data);
   } else if (config.property == "rho_beta") {
     require_wfn(config, have_wfn);
-    Point_ElectronDensityFunctor func(wfn);
-    func.spin = SpinConstraint::Beta;
+    ElectronDensityFunctor func(wfn);
+    func.spin = SpinComponent::Beta;
     func.mo_index = config.mo_number;
     func(points, data);
   } else if (config.property == "esp") {

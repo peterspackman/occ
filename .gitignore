@@ -53,6 +53,11 @@ coverage/
 *.cube
 *.pgrid
 *.ply
+*.obj
+
+# mesh debug dumps written by geometry_tests
+verts.txt
+faces.txt
 
 # xtb scratch outputs (when running xtb side-by-side for validation)
 .EDISP

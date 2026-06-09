@@ -180,10 +180,10 @@ nb::module_ register_isosurface_bindings(nb::module_ &m) {
       .value("XCDensity", VolumePropertyKind::XCDensity)
       .value("CrystalVoid", VolumePropertyKind::CrystalVoid);
 
-  nb::enum_<SpinConstraint>(m, "SpinConstraint")
-      .value("Total", SpinConstraint::Total)
-      .value("Alpha", SpinConstraint::Alpha)
-      .value("Beta", SpinConstraint::Beta);
+  nb::enum_<SpinComponent>(m, "SpinComponent")
+      .value("Total", SpinComponent::Total)
+      .value("Alpha", SpinComponent::Alpha)
+      .value("Beta", SpinComponent::Beta);
 
   nb::class_<VolumeGenerationParameters>(m, "VolumeGenerationParameters")
       .def(nb::init<>())
