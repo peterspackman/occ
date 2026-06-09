@@ -1,4 +1,5 @@
 #pragma once
+#include "occ/qm/wavefunction.h"
 #include <CLI/App.hpp>
 #include <occ/io/occ_input.h>
 
