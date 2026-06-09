@@ -1,4 +1,5 @@
-add_library(occ_io
+add_library(occ_io_obj
+    OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/basis_g94.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cifparser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cifwriter.cpp"
@@ -20,20 +21,34 @@ add_library(occ_io
     "${CMAKE_CURRENT_SOURCE_DIR}/xyz.cpp"
     ${OCC_IO_INCLUDE_FILES}
 )
-
-target_link_libraries(occ_io
+add_library(occ_io $<TARGET_OBJECTS:occ_io_obj>)
+target_include_directories(occ_io_obj PUBLIC ${OCC_INCLUDE_DIR} ${GEMMI_INCLUDE_DIR})
+target_link_libraries(
+    occ_io_obj
     PUBLIC
-    occ_core
-    occ_crystal
-    occ_geometry
-    occ_gto
-    occ_numint
-    gemmi::gemmi
-    nlohmann_json::nlohmann_json
+        occ_core
+        occ_crystal
+        occ_geometry
+        occ_gto
+        occ_numint
+        gemmi::gemmi
+        nlohmann_json::nlohmann_json
 )
-target_include_directories(occ_io PUBLIC 
-    ${OCC_INCLUDE_DIR} 
-    ${GEMMI_INCLUDE_DIR}
+
+target_link_libraries(
+    occ_io
+    PUBLIC
+        occ_core
+        occ_crystal
+        occ_geometry
+        occ_gto
+        occ_numint
+        gemmi::gemmi
+        nlohmann_json::nlohmann_json
+)
+target_include_directories(
+    occ_io
+    PUBLIC ${OCC_INCLUDE_DIR} ${GEMMI_INCLUDE_DIR}
 )
 
 target_compile_features(occ_io PUBLIC cxx_std_20)

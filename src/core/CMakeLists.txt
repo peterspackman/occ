@@ -1,4 +1,6 @@
-add_library(occ_core
+add_library(
+    occ_core_obj
+    OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/combinations.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/conditioning_orthogonalizer.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/data_directory.cpp"
@@ -31,50 +33,69 @@ add_library(occ_core
     "${CMAKE_CURRENT_SOURCE_DIR}/vibration.cpp"
     ${OCC_CORE_INCLUDE_FILES}
 )
+add_library(occ_core $<TARGET_OBJECTS:occ_core_obj>)
+target_include_directories(occ_core_obj PUBLIC ${OCC_INCLUDE_DIR})
+
+if("${USE_SYSTEM_BLAS}")
+    target_link_libraries(occ_core_obj PUBLIC ${BLAS_LIBRARIES})
+    target_compile_definitions(occ_core_obj PUBLIC EIGEN_USE_BLAS)
+endif()
+
+if("${USE_OPENMP}")
+    target_link_libraries(occ_core_obj PUBLIC OpenMP::OpenMP_CXX)
+endif()
+
+target_link_libraries(occ_core_obj PUBLIC TBB::tbb)
+
+if(NOT ENABLE_HOST_OPT)
+    target_compile_definitions(occ_core_obj PUBLIC OCC_DISABLE_SIMD)
+endif()
+
+target_link_libraries(
+    occ_core_obj
+    PUBLIC
+        Eigen3::Eigen
+        fmt::fmt
+        LBFGSpp::LBFGSpp
+        scn::scn
+        spdlog::spdlog
+        Threads::Threads
+        unordered_dense::unordered_dense
+        _subprocess
+)
 
 set_source_files_properties(
     "${CMAKE_CURRENT_SOURCE_DIR}/molecular_axis.cpp"
-    PROPERTIES
-    SKIP_UNITY_BUILD_INCLUSION ON
+    PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
 )
 
 if("${USE_SYSTEM_BLAS}")
-    target_link_libraries(occ_core
-	PUBLIC
-	${BLAS_LIBRARIES})
+    target_link_libraries(occ_core PUBLIC ${BLAS_LIBRARIES})
     target_compile_definitions(occ_core PUBLIC EIGEN_USE_BLAS)
 endif()
 
 if("${USE_OPENMP}")
-target_link_libraries(occ_core
-    PUBLIC
-    OpenMP::OpenMP_CXX
-)
+    target_link_libraries(occ_core PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-target_link_libraries(occ_core
-    PUBLIC
-    TBB::tbb
-)
+target_link_libraries(occ_core PUBLIC TBB::tbb)
 
 if(NOT ENABLE_HOST_OPT)
     target_compile_definitions(occ_core PUBLIC OCC_DISABLE_SIMD)
 endif()
 
-target_link_libraries(occ_core
-    PUBLIC 
-    Eigen3::Eigen 
-    fmt::fmt
-    LBFGSpp::LBFGSpp
-    scn::scn
-    spdlog::spdlog
-    Threads::Threads
-    unordered_dense::unordered_dense
-    _subprocess
+target_link_libraries(
+    occ_core
+    PUBLIC
+        Eigen3::Eigen
+        fmt::fmt
+        LBFGSpp::LBFGSpp
+        scn::scn
+        spdlog::spdlog
+        Threads::Threads
+        unordered_dense::unordered_dense
+        _subprocess
 )
-target_include_directories(occ_core PUBLIC 
-    ${OCC_INCLUDE_DIR} 
-)
+target_include_directories(occ_core PUBLIC ${OCC_INCLUDE_DIR})
 
 target_compile_features(occ_core PUBLIC cxx_std_20)
-

@@ -1,4 +1,6 @@
-add_library(occ_main
+add_library(
+    occ_main_obj
+    OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/cli_validators.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/point_functors.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/properties.cpp"
@@ -21,38 +23,69 @@ add_library(occ_main
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp"
     ${OCC_MAIN_INCLUDE_FILES}
 )
-
-target_link_libraries(occ_main
-    PUBLIC
-    occ_core
-    occ_xtb
-    occ_qm
-    occ_dft
-    occ_disp
-    occ_dma
-    occ_driver
-    occ_solvent
-    occ_interaction
-    occ_isosurface
-    occ_crystal
-    occ_slater
-    occ_geometry
-    occ_gto
-    occ_sht
-    occ_descriptors
-    occ_cg
-    occ_elastic_fit
-    occ_mults
-    CLI11::CLI11
+add_library(occ_main $<TARGET_OBJECTS:occ_main_obj>)
+target_include_directories(
+    occ_main_obj
+    PUBLIC ${OCC_INCLUDE_DIR} ${GEMMI_INCLUDE_DIR}
 )
-target_include_directories(occ_main PUBLIC 
-    ${OCC_INCLUDE_DIR} 
-    ${GEMMI_INCLUDE_DIR}
+target_link_libraries(
+    occ_main_obj
+    PUBLIC
+        occ_core
+        occ_xtb
+        occ_qm
+        occ_dft
+        occ_disp
+        occ_dma
+        occ_driver
+        occ_solvent
+        occ_interaction
+        occ_isosurface
+        occ_crystal
+        occ_slater
+        occ_geometry
+        occ_gto
+        occ_sht
+        occ_descriptors
+        occ_cg
+        occ_elastic_fit
+        occ_mults
+        CLI11::CLI11
+)
+
+target_link_libraries(
+    occ_main
+    PUBLIC
+        occ_core
+        occ_xtb
+        occ_qm
+        occ_dft
+        occ_disp
+        occ_dma
+        occ_driver
+        occ_solvent
+        occ_interaction
+        occ_isosurface
+        occ_crystal
+        occ_slater
+        occ_geometry
+        occ_gto
+        occ_sht
+        occ_descriptors
+        occ_cg
+        occ_elastic_fit
+        occ_mults
+        CLI11::CLI11
+)
+target_include_directories(
+    occ_main
+    PUBLIC ${OCC_INCLUDE_DIR} ${GEMMI_INCLUDE_DIR}
 )
 
 target_compile_features(occ_main PUBLIC cxx_std_20)
 
 if("${WITH_LUA_BINDINGS}")
+    target_link_libraries(occ_main_obj PUBLIC occ_lua_bindings)
     target_link_libraries(occ_main PUBLIC occ_lua_bindings)
     target_compile_definitions(occ_main PUBLIC OCC_HAVE_LUA)
     # linenoise powers the interactive REPL when stdin is a tty. Skipped
@@ -64,57 +97,47 @@ if("${WITH_LUA_BINDINGS}")
     endif()
 endif()
 
-add_executable(xdm EXCLUDE_FROM_ALL 
-    "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp")
-target_link_libraries(xdm
-    PUBLIC
-    occ_main
-    occ_xdm
-)
+add_executable(xdm EXCLUDE_FROM_ALL "${CMAKE_CURRENT_SOURCE_DIR}/xdm.cpp")
+target_link_libraries(xdm PUBLIC occ_main occ_xdm)
 
-set_target_properties(xdm
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+set_target_properties(
+    xdm
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
 add_executable(occ "${CMAKE_CURRENT_SOURCE_DIR}/occ.cpp")
-target_link_libraries(occ
-    PUBLIC
-    occ_main
-)
-set_target_properties(occ
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+target_link_libraries(occ PUBLIC occ_main)
+set_target_properties(
+    occ
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
 # Use for GCC time report when compiling occ
 # target_compile_options(occ PRIVATE "-ftime-report")
 
-add_executable(make_radial_interpolators EXCLUDE_FROM_ALL
-    "${CMAKE_CURRENT_SOURCE_DIR}/make_radial_interpolators.cpp")
+add_executable(
+    make_radial_interpolators
+    EXCLUDE_FROM_ALL
+    "${CMAKE_CURRENT_SOURCE_DIR}/make_radial_interpolators.cpp"
+)
 target_link_libraries(make_radial_interpolators PUBLIC occ_slater)
-set_target_properties(make_radial_interpolators
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+set_target_properties(
+    make_radial_interpolators
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-add_executable(occ-mlx EXCLUDE_FROM_ALL 
-    "${CMAKE_CURRENT_SOURCE_DIR}/mlx.cpp")
-target_link_libraries(occ-mlx
-    PUBLIC
-    mlx
-    Eigen3::Eigen
-)
+add_executable(occ-mlx EXCLUDE_FROM_ALL "${CMAKE_CURRENT_SOURCE_DIR}/mlx.cpp")
+target_link_libraries(occ-mlx PUBLIC mlx Eigen3::Eigen)
 target_compile_features(occ-mlx PUBLIC cxx_std_20)
 
-add_executable(make_atomic_pair_potentials EXCLUDE_FROM_ALL 
-    "${CMAKE_CURRENT_SOURCE_DIR}/make_atomic_pair_potentials.cpp")
-target_link_libraries(make_atomic_pair_potentials 
-    PUBLIC
-    occ_main
+add_executable(
+    make_atomic_pair_potentials
+    EXCLUDE_FROM_ALL
+    "${CMAKE_CURRENT_SOURCE_DIR}/make_atomic_pair_potentials.cpp"
 )
+target_link_libraries(make_atomic_pair_potentials PUBLIC occ_main)
 target_compile_features(make_atomic_pair_potentials PUBLIC cxx_std_20)
-set_target_properties(make_atomic_pair_potentials 
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+set_target_properties(
+    make_atomic_pair_potentials
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )

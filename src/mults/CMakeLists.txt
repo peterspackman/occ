@@ -1,4 +1,5 @@
-add_library(occ_mults
+add_library(occ_mults_obj
+    OBJECT
     rotation.cpp
     sfunctions.cpp
     sfunctions_s1.cpp
@@ -38,28 +39,48 @@ add_library(occ_mults
     crystal_strain.cpp
     ewald_sum.cpp
 )
-
-target_include_directories(occ_mults PUBLIC 
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+add_library(occ_mults $<TARGET_OBJECTS:occ_mults_obj>)
+target_include_directories(
+    occ_mults_obj
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(
+    occ_mults_obj
+    PUBLIC
+        occ_core
+        occ_dma
+        occ_sht
+        occ_crystal
+        occ_driver
+        nlohmann_json::nlohmann_json
 )
 
-target_link_libraries(occ_mults PUBLIC
-    occ_core
-    occ_dma
-    occ_sht
-    occ_crystal
-    occ_driver
-    nlohmann_json::nlohmann_json
+target_include_directories(
+    occ_mults
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(
+    occ_mults
+    PUBLIC
+        occ_core
+        occ_dma
+        occ_sht
+        occ_crystal
+        occ_driver
+        nlohmann_json::nlohmann_json
 )
 
 target_compile_features(occ_mults PUBLIC cxx_std_20)
 
-set_target_properties(occ_mults PROPERTIES
-    EXPORT_NAME mults
-)
+set_target_properties(occ_mults PROPERTIES EXPORT_NAME mults)
 
-install(TARGETS occ_mults
+install(
+    TARGETS occ_mults
     EXPORT occTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
