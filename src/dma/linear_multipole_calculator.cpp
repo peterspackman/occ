@@ -5,6 +5,9 @@
 #include <occ/dma/linear_multipole_calculator.h>
 #include <occ/dma/linear_multipole_shifter.h>
 #include <occ/gto/shell_order.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif    
 
 namespace occ::dma {
 

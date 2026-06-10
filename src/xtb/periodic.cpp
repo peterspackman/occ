@@ -6,6 +6,9 @@
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/unitcell.h>
 #include <occ/xtb/periodic.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif    
 
 namespace occ::xtb {
 

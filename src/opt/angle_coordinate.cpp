@@ -10,6 +10,9 @@
 #include <occ/opt/angle_coordinate.h>
 #include <occ/core/units.h>
 #include <cmath>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif    
 
 namespace occ::opt {
 

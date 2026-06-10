@@ -8,6 +8,9 @@
 #include <occ/gto/shell.h>
 #include <occ/gto/io/json_basis.h>
 #include <occ/gto/sto3g_basis.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif    
 #ifndef M_2_SQRTPI
 #define M_2_SQRTPI 1.1283791670955125585606993
 #endif

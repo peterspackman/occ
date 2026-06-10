@@ -18,6 +18,9 @@
 #include <occ/opt/species_data.h>
 #include <stack>
 #include <tuple>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif    
 
 namespace occ::opt {
 
