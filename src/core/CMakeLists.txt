@@ -90,6 +90,7 @@ target_link_libraries(
     PUBLIC
         Eigen3::Eigen
         fmt::fmt
+        libecpint_static
         LBFGSpp::LBFGSpp
         scn::scn
         spdlog::spdlog
