@@ -31,10 +31,10 @@ namespace libecpint {
 
 	RadialIntegral::RadialIntegral() {}
 
-	void RadialIntegral::init(int maxL, double tol, int small, int large) {
+	void RadialIntegral::init(int maxL, double tol, int m_small, int large) {
 		bigGrid.initGrid(large, ONEPOINT);
 		primGrid.initGrid(128, ONEPOINT); 
-		smallGrid.initGrid(small, TWOPOINT);
+		smallGrid.initGrid(m_small, TWOPOINT);
 		smallGrid.transformZeroInf();
 	
 		bessie.init(maxL, 1600, 200, tol);

@@ -160,7 +160,7 @@ namespace libecpint {
 		* @param small - the maximum number of quadrature points for the small integration grid (default 256, minimum recommended)
 		* @param large - the maximum number of quadrature points for the large integration grid (default 1024, minimum recommended)
 		*/
-		void init(int maxL, double tol = 1e-15, int small = 256, int large = 1024);
+		void init(int maxL, double tol = 1e-15, int m_small = 256, int large = 1024); // There is a macro in MSVC called small
 
     /// struct to store all parameters needed in both type 1 and 2 integrations
 		struct Parameters {
