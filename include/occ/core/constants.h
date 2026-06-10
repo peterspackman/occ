@@ -45,5 +45,7 @@ template <class T> constexpr T molar_mass_constant = T(0.99999999965e-3);
 template <class T> constexpr T celsius = T(273.15);
 
 template <class T> constexpr T boltzmann = T(1.38066244e-23);
-
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif    
 } // namespace occ::constants
