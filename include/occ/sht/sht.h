@@ -1,4 +1,5 @@
 #pragma once
+#include <libecpint/mathutil.hpp>
 #include <occ/3rdparty/pocketfft.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/timings.h>

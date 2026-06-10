@@ -2,6 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/descriptors/steinhardt.h>
 #include <occ/sht/wigner3j.h>
+#include <libecpint/mathutil.hpp>
 
 using occ::sht::wigner3j_single;
 

@@ -87,7 +87,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define POCKETFFT_NOINLINE
 #define POCKETFFT_RESTRICT
 #endif
-
+#include <exception>
 namespace pocketfft {
 
 namespace detail {
@@ -172,11 +172,16 @@ template <> struct VLEN<double> {
 
 #if __cplusplus >= 201703L && !defined __MINGW32__
 inline void *aligned_alloc(size_t align, size_t size) {
-  // aligned_alloc() requires that the requested size is a multiple of "align"
-  void *ptr = ::aligned_alloc(align, (size + align - 1) & (~(align - 1)));
-  if (!ptr)
-    throw std::bad_alloc();
-  return ptr;
+    void *p;
+  #ifdef _MSC_VER
+    p = _aligned_malloc(size, align);
+  #else
+    p = ::aligned_alloc(align, size);
+  #endif
+    if (!p)
+      throw std::bad_alloc();
+    return p;
+
 }
 inline void aligned_dealloc(void *ptr) { free(ptr); }
 #else // portable emulation

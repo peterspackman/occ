@@ -1,4 +1,5 @@
 #include <occ/core/log.h>
+#include <libecpint/mathutil.hpp>
 #include <occ/isosurface/curvature.h>
 
 namespace occ::isosurface {
