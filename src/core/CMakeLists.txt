@@ -61,6 +61,7 @@ target_link_libraries(
         spdlog::spdlog
         Threads::Threads
         unordered_dense::unordered_dense
+        libecpint_static
         _subprocess
 )
 
