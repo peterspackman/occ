@@ -209,9 +209,11 @@ endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")
 # don't use install commands from third party
-add_subdirectory(3rdparty EXCLUDE_FROM_ALL)
 if(BUILD_UNIFIED_LIB)
+    add_subdirectory(3rdparty)
     add_subdirectory(libocc)
+else()
+    add_subdirectory(3rdparty EXCLUDE_FROM_ALL)
 endif()
 add_subdirectory(include)
 add_subdirectory(src)
