@@ -81,3 +81,7 @@ install(
     FILES ${CMAKE_CURRENT_SOURCE_DIR}/../src/3rdparty/libecpint/libecpint.hpp
     DESTINATION include
 )
+install(
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../src/3rdparty/libecpint/libecpint
+    DESTINATION include
+)
