@@ -2,6 +2,9 @@
 #include <array>
 #include <cmath>
 #include <memory>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif    
 
 // GPU portability macros
 #if defined(__CUDACC__) || defined(__HIPCC__)

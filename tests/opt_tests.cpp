@@ -11,6 +11,9 @@
 #include <occ/opt/internal_coordinates.h>
 #include <occ/opt/linear_search.h>
 #include <occ/opt/species_data.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif    
 
 using namespace occ::opt;
 
