@@ -52,6 +52,9 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
       "must have geometric centroids in the range [0,1) (default: true)");
   cg->add_option("--surface-energies", config->max_facets,
                  "Calculate surface energies and write .gmf morphology files");
+  cg->add_flag("--morphology", config->compute_morphology,
+               "Compute particle size/shape-dependent (surface/edge/corner) "
+               "energies; implies --surface-energies");
   cg->add_flag("--list-available-solvents", config->list_solvents,
                "List available solvents and exit");
   cg->fallthrough();

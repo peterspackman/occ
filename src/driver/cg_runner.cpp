@@ -6,6 +6,8 @@
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/dft/dft.h>
 #include <occ/driver/crystal_growth.h>
+#include <occ/driver/crystal_morphology.h>
+#include <optional>
 #include <occ/geometry/wulff.h>
 #include <occ/interaction/disp.h>
 #include <occ/interaction/polarization.h>
@@ -99,11 +101,10 @@ inline void write_wulff(const std::string &filename,
     hkl(2, f) = facet.hkl.l;
     energies(f) = facet.energy;
   }
+  // (hkl) plane normal in cartesian is reciprocal * hkl; rotations are
+  // applied in (direct) fractional coordinates
   const auto &R = s.crystal.unit_cell().reciprocal();
-  const auto &RI = s.crystal.unit_cell().direct().transpose();
-
-  // convert to cartesian, then to fractional
-  occ::Mat3N hkl_frac = s.crystal.to_fractional(RI * hkl);
+  occ::Mat3N hkl_frac = s.crystal.to_fractional(R * hkl);
 
   auto [symop_id, expanded_hkl_frac] = sg.apply_rotations(hkl_frac);
   occ::Vec expanded_energies =
@@ -201,7 +202,7 @@ serialize_cg_results(nlohmann::json &j, const Options &opts,
 }
 
 template <typename Calculator>
-inline void compute_and_serialize_surface_cuts(
+inline CrystalSurfaceEnergies compute_and_serialize_surface_cuts(
     Calculator &calc, nlohmann::json &j, const Options &opts,
     const CrystalDimers &uc_dimers, const CrystalDimers &uc_dimers_vacuum,
     int max_facets) {
@@ -243,6 +244,7 @@ inline void compute_and_serialize_surface_cuts(
   j["solvated"] = solvated_energies;
 
   occ::log::info("Appending surface energies to json output");
+  return surface_energies;
 }
 
 template <class Calculator>
@@ -327,9 +329,25 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
 
   nlohmann::json surface_cuts_json;
 
-  if (config.max_facets > 0) {
-    compute_and_serialize_surface_cuts(calc, surface_cuts_json, opts, uc_dimers,
-                                       uc_dimers_vacuum, config.max_facets);
+  // --morphology needs surface energies; default the facet count if unset.
+  int n_facets = config.max_facets;
+  if (config.compute_morphology && n_facets <= 0) {
+    n_facets = 80;
+    occ::log::info("--morphology: computing {} surface energies", n_facets);
+  }
+
+  std::optional<CrystalSurfaceEnergies> surface_energies;
+  if (n_facets > 0) {
+    surface_energies = compute_and_serialize_surface_cuts(
+        calc, surface_cuts_json, opts, uc_dimers, uc_dimers_vacuum, n_facets);
+  }
+
+  nlohmann::json morphology_json;
+  if (config.compute_morphology && surface_energies) {
+    occ::log::info("Computing particle size/shape-dependent energies");
+    auto morphology = compute_crystal_morphology(calc.crystal(), uc_dimers,
+                                                 *surface_energies, result);
+    to_json(morphology_json, morphology);
   }
 
   auto cg_interaction_labels =
@@ -343,6 +361,9 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
 
   if (!surface_cuts_json.is_null()) {
     results_json["surface_cuts"] = surface_cuts_json;
+  }
+  if (!morphology_json.is_null()) {
+    results_json["morphology"] = morphology_json;
   }
 
   std::ofstream dest(

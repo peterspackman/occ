@@ -12,6 +12,7 @@ struct CGConfig {
   std::string wavefunction_choice{"gas"};
   double cg_radius{3.8};
   int max_facets{0};
+  bool compute_morphology{false};
   bool write_dump_files{false};
   bool spherical{false};
   bool write_kmcpp_file{false};

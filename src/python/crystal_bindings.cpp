@@ -9,6 +9,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/crystal/surface.h>
+#include <occ/geometry/wulff.h>
 #include <occ/io/cifparser.h>
 
 using namespace nb::literals;
@@ -293,7 +294,7 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
 
   nb::class_<SiteIndex>(m, "SiteIndex")
       .def_ro("offset", &SiteIndex::offset)
-      .def_ro("hkl", &SiteIndex::offset)
+      .def_ro("hkl", &SiteIndex::hkl)
       .def("__repr__", [](const SiteIndex &s) {
         return fmt::format("<SiteIndex {} [{} {} {}]>", s.offset, s.hkl.h,
                            s.hkl.k, s.hkl.l);
@@ -400,6 +401,46 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
   // Add the free function for generating surfaces
   m.def("generate_surfaces", &generate_surfaces, "crystal"_a,
         "params"_a = CrystalSurfaceGenerationParameters{});
+
+  using occ::geometry::WulffConstruction;
+  nb::class_<occ::geometry::Facet>(m, "WulffFacet")
+      .def_ro("energy", &occ::geometry::Facet::energy)
+      .def_ro("normal", &occ::geometry::Facet::normal)
+      .def_ro("label", &occ::geometry::Facet::label)
+      .def_ro("dual", &occ::geometry::Facet::dual)
+      .def_ro("point_index", &occ::geometry::Facet::point_index)
+      .def("__repr__", [](const occ::geometry::Facet &f) {
+        return fmt::format("<WulffFacet '{}' energy={:.4f}>", f.label,
+                           f.energy);
+      });
+
+  nb::class_<occ::geometry::WulffEdge>(m, "WulffEdge")
+      .def_ro("facet_a", &occ::geometry::WulffEdge::facet_a)
+      .def_ro("facet_b", &occ::geometry::WulffEdge::facet_b)
+      .def_ro("length", &occ::geometry::WulffEdge::length);
+
+  nb::class_<WulffConstruction>(m, "WulffConstruction")
+      .def(nb::init<const occ::Mat3N &, const occ::Vec &,
+                    const std::vector<std::string> &>(),
+           "facet_normals"_a, "facet_energies"_a,
+           "facet_labels"_a = std::vector<std::string>{},
+           "Build the equilibrium (Wulff) shape from facet normals (3xN, "
+           "cartesian) and energies (N)")
+      .def("vertices", &WulffConstruction::vertices,
+           "Vertices of the Wulff polyhedron (3xV)")
+      .def("triangles", &WulffConstruction::triangles,
+           "Triangle vertex indices (3xT)")
+      .def("facets", &WulffConstruction::facets,
+           "The (deduplicated) facets making up the Wulff shape")
+      .def("facet_area", &WulffConstruction::facet_area, "i"_a)
+      .def("facet_areas", &WulffConstruction::facet_areas)
+      .def("total_area", &WulffConstruction::total_area)
+      .def("edges", &WulffConstruction::edges,
+           "Edges (active-facet pairs sharing two vertices) with lengths")
+      .def("__repr__", [](const WulffConstruction &w) {
+        return fmt::format("<WulffConstruction n_facets={} n_vertices={}>",
+                           w.facets().size(), w.vertices().cols());
+      });
 
   return m;
 }

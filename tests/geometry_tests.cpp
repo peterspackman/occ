@@ -252,6 +252,25 @@ TEST_CASE("Wulff", "[geometry]") {
   REQUIRE(wulff.vertices().cols() == 28);
   REQUIRE(wulff.triangles().cols() == 52);
 
+  // geometry accessors used by the morphology driver
+  REQUIRE(wulff.total_area() > 0.0);
+  double summed = 0.0;
+  for (size_t i = 0; i < wulff.facets().size(); ++i)
+    summed += wulff.facet_area(i);
+  REQUIRE(summed == Catch::Approx(wulff.total_area()));
+  REQUIRE(wulff.facet_areas().sum() == Catch::Approx(wulff.total_area()));
+
+  // Euler characteristic V - E + F == 2 for the closed polyhedron
+  size_t n_active = 0;
+  for (const auto &f : wulff.facets())
+    if (!f.point_index.empty())
+      n_active++;
+  auto edges = wulff.edges();
+  int V = wulff.vertices().cols();
+  REQUIRE(V - static_cast<int>(edges.size()) + static_cast<int>(n_active) == 2);
+  for (const auto &e : edges)
+    REQUIRE(e.length > 0.0);
+
   /*
   // an example of how to save the mesh to file
   occ::io::IsosurfaceMesh io_mesh;
@@ -259,6 +278,38 @@ TEST_CASE("Wulff", "[geometry]") {
   io_mesh.faces = wulff.triangles();
   occ::io::write_obj_file("wulff.obj", io_mesh, {});
   */
+}
+
+TEST_CASE("Wulff octahedron", "[geometry]") {
+  // Regular octahedron: every corner is 4-valent, so the dual hull
+  // triangulation produces coincident Wulff vertices that must be merged
+  // for facet polygons, edges and corners to come out right.
+  occ::Mat3N directions(3, 8);
+  occ::Vec energies = occ::Vec::Ones(8);
+  int c = 0;
+  for (int sx : {-1, 1})
+    for (int sy : {-1, 1})
+      for (int sz : {-1, 1})
+        directions.col(c++) = occ::Vec3(sx, sy, sz).normalized();
+
+  auto wulff = occ::geometry::WulffConstruction(directions, energies);
+
+  REQUIRE(wulff.vertices().cols() == 6);
+
+  size_t n_active = 0;
+  for (const auto &f : wulff.facets())
+    if (!f.point_index.empty())
+      n_active++;
+  REQUIRE(n_active == 8);
+
+  auto edges = wulff.edges();
+  REQUIRE(edges.size() == 12);
+  REQUIRE(6 - static_cast<int>(edges.size()) + static_cast<int>(n_active) == 2);
+
+  // support distance 1 -> edge length sqrt(6), total area 12*sqrt(3)
+  for (const auto &e : edges)
+    REQUIRE(e.length == Catch::Approx(std::sqrt(6.0)));
+  REQUIRE(wulff.total_area() == Catch::Approx(12.0 * std::sqrt(3.0)));
 }
 
 using namespace quickhull;

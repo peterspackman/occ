@@ -346,6 +346,20 @@ TEST_CASE("Crystal Surface construction", "[crystal, surface]") {
   REQUIRE(surf321.area() == Catch::Approx(177.2256));
 }
 
+TEST_CASE("Facet normal is the reciprocal lattice vector", "[crystal, surface]") {
+  // Guards the convention used by write_wulff and the morphology driver:
+  // the cartesian normal of plane (hkl) is reciprocal() * hkl. Checked
+  // against Surface::normal_vector, which builds the normal geometrically
+  // from in-plane lattice vectors.
+  Crystal a = acetic_acid_crystal();
+  const occ::Mat3 recip = a.unit_cell().reciprocal();
+  for (HKL hkl : {HKL{0, 1, 1}, HKL{1, 1, 0}, HKL{3, 2, 1}, HKL{1, 0, 2}}) {
+    occ::Vec3 g = (recip * occ::Vec3(hkl.h, hkl.k, hkl.l)).normalized();
+    occ::Vec3 n = Surface(hkl, a).normal_vector();
+    REQUIRE(std::abs(g.dot(n)) == Catch::Approx(1.0));
+  }
+}
+
 TEST_CASE("Crystal surface generation (dhkl order)", "[crystal, surface]") {
   Crystal a = acetic_acid_crystal();
   occ::timing::StopWatch sw;
