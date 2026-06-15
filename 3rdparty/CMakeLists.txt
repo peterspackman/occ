@@ -1,20 +1,20 @@
 set(CMAKE_UNITY_BUILD OFF)
 
-cpmaddpackage(
+CPMAddPackage(
     NAME fmt
     GITHUB_REPOSITORY "fmtlib/fmt"
     VERSION "11.1.0"
     GIT_TAG "11.1.0"
 )
 
-cpmaddpackage(
+CPMAddPackage(
     NAME spdlog
     GITHUB_REPOSITORY "gabime/spdlog"
     OPTIONS "SPDLOG_FMT_EXTERNAL ON" "SPDLOG_INSTALL ON"
     VERSION "1.x"
 )
 
-cpmaddpackage(
+CPMAddPackage(
     NAME tomlplusplus
     GITHUB_REPOSITORY "marzer/tomlplusplus"
     VERSION "3.4.0"
@@ -38,7 +38,7 @@ if(NOT "${USE_SYSTEM_TBB}")
         )
     endif()
 
-    cpmaddpackage(
+    CPMAddPackage(
         NAME oneTBB
         GITHUB_REPOSITORY "uxlfoundation/oneTBB"
         VERSION "2022.2.0"
@@ -46,7 +46,7 @@ if(NOT "${USE_SYSTEM_TBB}")
     )
 endif()
 
-cpmaddpackage(
+CPMAddPackage(
     NAME unordered_dense
     GITHUB_REPOSITORY "martinus/unordered_dense"
     VERSION "4.5.0"
@@ -58,7 +58,7 @@ if(unordered_dense_ADDED)
     )
 endif()
 
-cpmaddpackage(
+CPMAddPackage(
     NAME scnlib
     GITHUB_REPOSITORY "eliaskosunen/scnlib"
     VERSION "4.0.1"
@@ -77,7 +77,7 @@ if(BUILD_SHARED_LIBS AND NOT DEFINED CLI11_PRECOMPILED)
         "Precompile CLI11 (needed for shared-lib executable linking)"
     )
 endif()
-cpmaddpackage(
+CPMAddPackage(
     NAME CLI11
     GITHUB_REPOSITORY "CLIUtils/CLI11"
     VERSION "2.4.2"
@@ -87,13 +87,13 @@ if(CLI11_ADDED)
 endif()
 
 if("${USE_MLX}")
-    cpmaddpackage(
+    CPMAddPackage(
         NAME mlx
         GITHUB_REPOSITORY "ml-explore/mlx"
         VERSION "0.6.0"
     )
 else()
-    cpmaddpackage(
+    CPMAddPackage(
         NAME "nlohmann_json"
         GITHUB_REPOSITORY "nlohmann/json"
         VERSION "3.11.3"
@@ -102,7 +102,7 @@ else()
 endif()
 
 if(NOT "${USE_SYSTEM_EIGEN}")
-    cpmaddpackage(
+    CPMAddPackage(
         NAME eigen3
         URL "https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip"
         DOWNLOAD_ONLY YES  # Eigen CMakelists.txt not intended for library use
@@ -123,7 +123,7 @@ if(NOT "${USE_SYSTEM_EIGEN}")
     endif()
 endif()
 
-cpmaddpackage(
+CPMAddPackage(
     NAME gemmi
     GITHUB_REPOSITORY project-gemmi/gemmi
     VERSION "0.6.5"
@@ -140,7 +140,7 @@ if("${gemmi_ADDED}")
     install(DIRECTORY ${gemmi_SOURCE_DIR}/include/ DESTINATION include)
 endif()
 
-cpmaddpackage(
+CPMAddPackage(
     NAME LBFGSpp
     GITHUB_REPOSITORY yixuan/LBFGSpp
     GIT_TAG master
@@ -174,7 +174,7 @@ if(NOT USE_SYSTEM_LIBCINT)
         "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE"
     )
 
-    cpmaddpackage(
+    CPMAddPackage(
         NAME libcint
         GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
         GIT_TAG master
@@ -213,7 +213,7 @@ if(NOT USE_SYSTEM_LIBCINT)
 endif()
 
 if(NOT "${USE_SYSTEM_LIBXC}")
-    cpmaddpackage(
+    CPMAddPackage(
         NAME Libxc
         URL "https://gitlab.com/libxc/libxc/-/archive/6.2.2/libxc-6.2.2.tar.gz"
         OPTIONS
@@ -234,7 +234,7 @@ if(NOT "${USE_SYSTEM_LIBXC}")
 endif()
 
 if("${WITH_PYTHON_BINDINGS}")
-    cpmaddpackage(
+    CPMAddPackage(
         NAME nanobind
         GITHUB_REPOSITORY "wjakob/nanobind"
         GIT_TAG "v2.9.2"
@@ -245,7 +245,7 @@ if("${WITH_LUA_BINDINGS}")
     # Upstream Lua ships only a Makefile, so fetch the source and build a
     # plain static library ourselves. Keeping it in-tree avoids depending on
     # a third-party CMake fork.
-    cpmaddpackage(
+    CPMAddPackage(
         NAME lua
         GITHUB_REPOSITORY "lua/lua"
         GIT_TAG "v5.4.7"
@@ -314,7 +314,7 @@ if("${WITH_LUA_BINDINGS}")
     # (~50% wall-time and ~67% backend-codegen reduction on the
     # interaction_bindings PoC). Lua-headers must be included BEFORE
     # LuaBridge ones; eigen_conv.h handles that for every binding TU.
-    cpmaddpackage(
+    CPMAddPackage(
         NAME LuaBridge3
         GITHUB_REPOSITORY "kunitoki/LuaBridge3"
         GIT_TAG "3.0-rc11"
@@ -337,7 +337,7 @@ if("${WITH_LUA_BINDINGS}")
     # entirely and fall back to stdin-slurp, so we only fetch the source
     # on non-Windows platforms.
     if(NOT WIN32)
-        cpmaddpackage(
+        CPMAddPackage(
             NAME linenoise
             GITHUB_REPOSITORY "antirez/linenoise"
             GIT_TAG "1.0"
