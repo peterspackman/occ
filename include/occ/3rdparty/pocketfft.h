@@ -172,18 +172,23 @@ template <> struct VLEN<double> {
 
 #if __cplusplus >= 201703L && !defined __MINGW32__
 inline void *aligned_alloc(size_t align, size_t size) {
-    void *p;
-  #ifdef _MSC_VER
-    p = _aligned_malloc(size, align);
-  #else
-    p = ::aligned_alloc(align, size);
-  #endif
-    if (!p)
-      throw std::bad_alloc();
-    return p;
-
+  void *p;
+#ifdef _MSC_VER
+  p = _aligned_malloc(size, align);
+#else
+  p = ::aligned_alloc(align, (size + align - 1) & (~(align - 1)));
+#endif
+  if (!p)
+    throw std::bad_alloc();
+  return p;
 }
-inline void aligned_dealloc(void *ptr) { free(ptr); }
+inline void aligned_dealloc(void *ptr) {
+#ifdef _MSC_VER
+  _aligned_free(ptr);
+#else
+  free(ptr);
+#endif
+}
 #else // portable emulation
 inline void *aligned_alloc(size_t align, size_t size) {
   align = std::max(align, alignof(max_align_t));
