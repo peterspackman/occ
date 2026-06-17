@@ -1,9 +1,7 @@
 #include <Eigen/LU>
 #include <cmath>
 #include <occ/scrf/cosmo_kernel.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>    
 
 namespace occ::scrf::detail {
 
@@ -146,7 +144,7 @@ Mat3N cosmo_gradient_frozen(const Mat3N &atom_positions_bohr,
   //   contribution to ∂E/∂R_c: (1/(2 f(ε))) Σ_i σ_i² ∂A_ii/∂R_c
   //                          = -(1/(4 f(ε))) Σ_i σ_i² A_ii ∂ln(weight_i)/∂R_c
   if (smoothing_width_bohr > 0.0 && atom_radii_bohr.size() == natom) {
-    const double sqrt_pi = std::sqrt(M_PI);
+    const double sqrt_pi = std::sqrt(std::numbers::pi_v<double>);
     for (Eigen::Index i = 0; i < ncav; ++i) {
       const int atom_i = cavity_atom_index(i);
       // A_ii = 1.07·√(4π/area_i) = 3.793051240937804 / √area_i

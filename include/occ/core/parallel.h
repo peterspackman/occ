@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <memory>
+#include <numbers>
 #include <occ/core/timings.h>
 #include <thread>
 #include <type_traits>

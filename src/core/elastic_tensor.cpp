@@ -124,7 +124,7 @@ ElasticTensor::shear_modulus_minmax(CartesianDirection n) const {
   double max_v = std::numeric_limits<double>::lowest();
 
   const int num_steps = 360;
-  const double step = 2 * M_PI / num_steps;
+  const double step = 2 * std::numbers::pi_v<double> / num_steps;
 
   for (int i = 0; i < num_steps; ++i) {
     double angle = i * step;
@@ -170,7 +170,7 @@ ElasticTensor::poisson_ratio_minmax(CartesianDirection n) const {
   double max_poisson = std::numeric_limits<double>::lowest();
 
   const int num_steps = 360;
-  const double step = 2 * M_PI / num_steps;
+  const double step = 2 * std::numbers::pi_v<double> / num_steps;
 
   for (int i = 0; i < num_steps; ++i) {
     double angle = i * step;
@@ -185,7 +185,7 @@ ElasticTensor::poisson_ratio_minmax(CartesianDirection n) const {
 double ElasticTensor::average_poisson_ratio_direction(CartesianDirection dir,
                                                       int num_samples) const {
   double sum_poisson = 0.0;
-  const double step = 2 * M_PI / num_samples;
+  const double step = 2 * std::numbers::pi_v<double> / num_samples;
 
   for (int i = 0; i < num_samples; ++i) {
     double angle = i * step;

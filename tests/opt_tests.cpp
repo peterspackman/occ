@@ -11,9 +11,8 @@
 #include <occ/opt/internal_coordinates.h>
 #include <occ/opt/linear_search.h>
 #include <occ/opt/species_data.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>
+    
 
 using namespace occ::opt;
 
@@ -720,7 +719,7 @@ TEST_CASE("Species Data Validation", "[species_data][validation]") {
 
     // Hexagon geometry
     for (int i = 0; i < 6; i++) {
-      double angle = i * M_PI / 3.0;
+      double angle = i * std::numbers::pi_v<double> / 3.0;
       positions.col(i) =
           occ::Vec3(r * cos(angle), r * sin(angle), 0.0); // C atoms
       positions.col(i + 6) = occ::Vec3((r + rh) * cos(angle),

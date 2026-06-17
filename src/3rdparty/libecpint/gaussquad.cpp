@@ -83,11 +83,11 @@ namespace libecpint {
 		// Therefore x_(maxN + 1 - i) = -x_i
 		// and w_(maxN + 1 - i) = w_i
 		// Meaning that we only have to calculate half the weights and abscissae
-		double z1 = M_PI / ((double)(maxN + 1));
+		double z1 = std::numbers::pi_v<double> / ((double)(maxN + 1));
 		double c1 = cos(z1); double s1 = sin(z1);
 		double zi, si, ci, zi1, si1, ci1; //z_i, s_i, c_i, z_(i+1), s_(i+1), c_(i+1)
 		zi1 = z1; si1 = s1; ci1 = c1;
-		double o23pi = 2.0 / (3.0 * M_PI); // Convenient
+		double o23pi = 2.0 / (3.0 * std::numbers::pi_v<double>); // Convenient
 		double s2; //si * si
 		for (int n = 0; n < M; n++) {
 			// First update zi, si, ci

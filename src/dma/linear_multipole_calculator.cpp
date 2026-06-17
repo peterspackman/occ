@@ -5,9 +5,7 @@
 #include <occ/dma/linear_multipole_calculator.h>
 #include <occ/dma/linear_multipole_shifter.h>
 #include <occ/gto/shell_order.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>    
 
 namespace occ::dma {
 
@@ -469,7 +467,7 @@ void LinearMultipoleCalculator::process_primitive_pair(
 void LinearMultipoleCalculator::calculate_slice_integrals(
     double aa, int la, int lb, double za, double zb, double z1, double z2,
     Eigen::Tensor<double, 3> &gz, bool &skip) const {
-  const double rtpi = std::sqrt(M_PI);
+  const double rtpi = std::sqrt(std::numbers::pi_v<double>);
 
   // Calculate v = sqrt(aa) and scaling factor t = rtpi/v
   double v = std::sqrt(aa);

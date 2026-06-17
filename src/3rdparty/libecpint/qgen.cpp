@@ -31,7 +31,7 @@ namespace libecpint {
 	namespace qgen {
 		void rolled_up(const int lam, const int LA, const int LB, const ThreeIndex<double> &radials, const FiveIndex<double> &CA, const FiveIndex<double> &CB, const TwoIndex<double> &SA, const TwoIndex<double> &SB, const AngularIntegral &angint, ThreeIndex<double> &values)
 		{
-			double prefac = 16.0 * M_PI * M_PI;
+			double prefac = 16.0 * std::numbers::pi_v<double> * std::numbers::pi_v<double>;
 			int L = LA + LB;
 
 			int z1, z2, w_m, w_l, w_lm;
@@ -134,7 +134,7 @@ namespace libecpint {
 		}
 
 		void rolled_up_special(const int lam, const int LA, const int LB, const ThreeIndex<double>& radials, const FiveIndex<double>& CB, const TwoIndex<double>& SB, const AngularIntegral& angint, ThreeIndex<double>& values) {
-			double prefac = 8.0 * M_PI * std::sqrt(M_PI);
+			double prefac = 8.0 * std::numbers::pi_v<double> * std::sqrt(std::numbers::pi_v<double>);
 			int L = LA + LB;
 
 			int z1, z2;

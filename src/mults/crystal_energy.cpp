@@ -11,9 +11,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>    
 
 namespace occ::mults {
 
@@ -497,7 +495,7 @@ void CrystalEnergy::ensure_ewald_params_initialized() const {
         const double G_max =
             2.0 * m_ewald_alpha_fixed * std::sqrt(-std::log(m_ewald_accuracy));
         m_ewald_kmax_fixed = std::max(
-            1, static_cast<int>(std::ceil(G_max * min_len / (2.0 * M_PI))));
+            1, static_cast<int>(std::ceil(G_max * min_len / (2.0 * std::numbers::pi_v<double>))));
     }
 
     m_ewald_params_initialized = true;

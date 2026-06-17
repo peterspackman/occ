@@ -56,7 +56,7 @@ Vec AssocLegendreP::evaluate_batch(double x) const {
 }
 
 double AssocLegendreP::amm(size_t m) {
-  const double pi4 = 4 * M_PI;
+  const double pi4 = 4 * std::numbers::pi_v<double>;
   double result{1.0};
   for (int k = 1; k <= m; k++) {
     result *= (2.0 * k + 1.0) / (2.0 * k);

@@ -275,7 +275,7 @@ namespace libecpint {
 		double besselValue1 = bessie.upper_bound(kA * P, l1);
 		double besselValue2 = bessie.upper_bound(kB * P, l2);
 		double Fres = FAST_POW[N](P) * std::exp(-n * P * P - a * zA * zA - b * zB * zB) * besselValue1 * besselValue2;
-		return (0.5 * std::sqrt(M_PI/p) * Fres * (1.0 + std::erf(std::sqrt(p)*P)));
+		return (0.5 * std::sqrt(std::numbers::pi_v<double>/p) * Fres * (1.0 + std::erf(std::sqrt(p)*P)));
 	}
 
 	void RadialIntegral::type2(

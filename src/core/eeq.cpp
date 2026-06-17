@@ -136,7 +136,7 @@ Vec eeq_coordination_numbers(const IVec &atomic_numbers,
 
 Mat build_A_matrix(const IVec &atomic_numbers, const Mat3N &positions) {
   const int N = atomic_numbers.rows();
-  const double sqrt_pi_fac = std::sqrt(2.0 / M_PI);
+  const double sqrt_pi_fac = std::sqrt(2.0 / std::numbers::pi_v<double>);
   Mat A = Mat::Zero(N + 1, N + 1);
   for (int i = 0; i < N; i++) {
     const int ni = atomic_numbers(i);

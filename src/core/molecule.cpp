@@ -218,7 +218,7 @@ double Molecule::translational_free_energy(double temperature) const {
   constexpr double NA = occ::constants::avogadro<double>;
   constexpr double h = occ::constants::planck<double>;
   const double factor =
-      1.5 * std::log(2 * M_PI / (h * h)) +
+      1.5 * std::log(2 * std::numbers::pi_v<double> / (h * h)) +
       1.5 * std::log(occ::constants::molar_mass_constant<double>) -
       0.5 * std::log(NA) + 2.5 * std::log(kB) - std::log(1e5);
 

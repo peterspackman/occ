@@ -27,7 +27,7 @@ auto nacl_crystal() {
   positions << 0.00000, 0.50000, 0.00000, 0.50000, 0.00000, 0.50000;
   AsymmetricUnit asym = AsymmetricUnit(positions, nums, labels);
   SpaceGroup sg(1);
-  UnitCell cell = occ::crystal::rhombohedral_cell(3.9598, M_PI / 3);
+  UnitCell cell = occ::crystal::rhombohedral_cell(3.9598, std::numbers::pi_v<double> / 3);
   return Crystal(asym, sg, cell);
 }
 

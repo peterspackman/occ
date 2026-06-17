@@ -2,9 +2,7 @@
 #include <occ/mults/rigid_body.h>
 #include <occ/mults/rotation.h>
 #include <cmath>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>    
 
 namespace occ::mults {
 
@@ -54,7 +52,7 @@ Vec3 RigidBodyState::get_euler_angles() {
             // When beta = 0: alpha and gamma are not uniquely determined
             // Convention: Set alpha = 0 and solve for gamma (prefer gamma for z-rotations)
             alpha = 0.0;
-            if (beta < M_PI / 2) {
+            if (beta < std::numbers::pi_v<double> / 2) {
                 // beta near 0
                 gamma = std::atan2(R(1, 0), R(0, 0));
             } else {
@@ -67,7 +65,7 @@ Vec3 RigidBodyState::get_euler_angles() {
 
         // Normalize angles to [0, 2π) to provide consistent output
         // This is important for tracking accumulated rotations
-        const double two_pi = 2.0 * M_PI;
+        const double two_pi = 2.0 * std::numbers::pi_v<double>;
         if (alpha < 0.0) alpha += two_pi;
         if (gamma < 0.0) gamma += two_pi;
         if (alpha >= two_pi) alpha -= two_pi;

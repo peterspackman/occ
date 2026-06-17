@@ -894,7 +894,7 @@ void run_ropt_subcommand(const RoptSettings &settings) {
             // Rotation angle from trace: cos(theta) = (tr(R_delta) - 1) / 2
             double trace = R_delta.trace();
             double cos_theta = std::clamp((trace - 1.0) / 2.0, -1.0, 1.0);
-            double rot_angle_deg = std::acos(cos_theta) * 180.0 / M_PI;
+            double rot_angle_deg = std::acos(cos_theta) * 180.0 / std::numbers::pi_v<double>;
 
             // Atom RMSD for this molecule (if geometry available)
             double mol_rmsd = 0.0;

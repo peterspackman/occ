@@ -2,9 +2,7 @@
 #include <libecpint/mathutil.hpp>
 #include <occ/core/log.h>
 #include <occ/sht/quadrature.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>    
 
 namespace occ::sht {
 
@@ -24,7 +22,7 @@ void gauss_legendre_quadrature(Vec &roots, Vec &weights, int N) {
     int iteration_count = 10;
     // initial guess
     double z = (1.0 - (N - 1) / (8.0 * N * N * N)) *
-               std::cos((M_PI * (4 * i + 3)) / (4.0 * N + 2));
+               std::cos((std::numbers::pi_v<double> * (4 * i + 3)) / (4.0 * N + 2));
     do {
       point1 = z;   // P_1
       point0 = 1.0; // P_0

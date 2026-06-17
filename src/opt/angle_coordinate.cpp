@@ -10,9 +10,7 @@
 #include <occ/opt/angle_coordinate.h>
 #include <occ/core/units.h>
 #include <cmath>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>    
 
 namespace occ::opt {
 
@@ -59,11 +57,11 @@ occ::Mat3N AngleCoordinate::gradient(const occ::Mat3N &coords) const {
   
   occ::Mat3N grad(3, 3);
 
-  if (std::abs(phi) > M_PI - 1e-6) {
-    grad.col(0) = (M_PI - phi) / (2 * v1.squaredNorm()) * v1;
+  if (std::abs(phi) > std::numbers::pi_v<double> - 1e-6) {
+    grad.col(0) = (std::numbers::pi_v<double> - phi) / (2 * v1.squaredNorm()) * v1;
     grad.col(1) = (1.0 / v1.norm() - 1.0 / v2.norm()) *
-                             (M_PI - phi) / (2 * v1.norm()) * v1;
-    grad.col(2) = (M_PI - phi) / (2 * v2.squaredNorm()) * v2;
+                             (std::numbers::pi_v<double> - phi) / (2 * v1.norm()) * v1;
+    grad.col(2) = (std::numbers::pi_v<double> - phi) / (2 * v2.squaredNorm()) * v2;
   } else {
     double cot_phi = std::cos(phi) / std::sin(phi); // 1 / np.tan(phi)
     double sin_phi = std::sin(phi);

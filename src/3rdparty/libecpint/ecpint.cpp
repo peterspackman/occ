@@ -26,7 +26,7 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
-#include "mathutil.hpp"
+#include "libecpint/mathutil.hpp"
 #include "qgen.hpp"
 #include <cassert>
 
@@ -149,7 +149,7 @@ namespace libecpint {
 							}
 						}
 
-						values(na, nb) *= 4.0 * M_PI;
+						values(na, nb) *= 4.0 * std::numbers::pi_v<double>;
 						nb++;
 					}
 				}
@@ -176,7 +176,7 @@ namespace libecpint {
 		if (data.A_on_ecp && data.B_on_ecp) {
 
 			// Both on ECP, simplest case - see Shaw2017 supplementary material
-			double prefactor = 4.0 * M_PI;
+			double prefactor = 4.0 * std::numbers::pi_v<double>;
 			int npA = shellA.nprimitive();
 			int npB = shellB.nprimitive();
 			int npC = U.getN();
@@ -338,7 +338,7 @@ namespace libecpint {
 				ztilde = atilde + btilde + g.a;
 				Tk = Tk_0 / ztilde;
 				Tk = Tk > 1 ? 0.5 * std::exp(Tk) / Tk : SINH_1;
-				ab_bound += std::abs(g.d) * FAST_POW[3](std::sqrt(M_PI/g.a)) * std::exp(xp / ztilde) * Tk;
+				ab_bound += std::abs(g.d) * FAST_POW[3](std::sqrt(std::numbers::pi_v<double>/g.a)) * std::exp(xp / ztilde) * Tk;
 			}
 			ab_bound *= std::exp(-atilde*data.A2 -btilde*data.B2);
 			results[l] = (2*l+1)*(2*l+1)* a_bound * b_bound * ab_bound;

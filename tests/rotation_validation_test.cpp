@@ -28,7 +28,7 @@ TEST_CASE("Body-to-lab rotation: Simple dipole examples", "[mults][rotation][val
         dipole_body.Q11s() = 0.0; // y component
 
         // 90 degree rotation around y-axis (beta = 90 deg in ZYZ convention)
-        double beta = M_PI / 2.0;
+        double beta = std::numbers::pi_v<double> / 2.0;
         Mat3 R = rotation_utils::euler_to_rotation(0.0, beta, 0.0);
 
         Mult dipole_lab = rotated_multipole(dipole_body, R);
@@ -48,7 +48,7 @@ TEST_CASE("Body-to-lab rotation: Simple dipole examples", "[mults][rotation][val
         dipole_body.Q11s() = 0.0; // y component
 
         // 90 degree rotation around z-axis (alpha = 90 deg)
-        double alpha = M_PI / 2.0;
+        double alpha = std::numbers::pi_v<double> / 2.0;
         Mat3 R = rotation_utils::euler_to_rotation(alpha, 0.0, 0.0);
 
         Mult dipole_lab = rotated_multipole(dipole_body, R);
@@ -98,7 +98,7 @@ TEST_CASE("Body-to-lab rotation: Interaction energy invariance", "[mults][rotati
         d2_body.Q11s() = 0.0;
 
         // Rotate both by 90 deg around y to point along x
-        double beta = M_PI / 2.0;
+        double beta = std::numbers::pi_v<double> / 2.0;
         Mat3 R = rotation_utils::euler_to_rotation(0.0, beta, 0.0);
 
         Mult d1_rotated = rotated_multipole(d1_body, R);
@@ -130,7 +130,7 @@ TEST_CASE("Body-to-lab rotation: Complex water multipoles", "[mults][rotation][v
         water_body.Q22s() = 0.0;
 
         // Arbitrary rotation
-        Mat3 R = rotation_utils::euler_to_rotation(M_PI/6, M_PI/4, M_PI/3);
+        Mat3 R = rotation_utils::euler_to_rotation(std::numbers::pi_v<double>/6, std::numbers::pi_v<double>/4, std::numbers::pi_v<double>/3);
 
         Mult water_lab = rotated_multipole(water_body, R);
 
@@ -164,8 +164,8 @@ TEST_CASE("Body-to-lab rotation: Rotation composition", "[mults][rotation][valid
         dipole.Q11s() = 0.3;
 
         // Two rotations
-        Mat3 R1 = rotation_utils::euler_to_rotation(M_PI/7, M_PI/5, M_PI/9);
-        Mat3 R2 = rotation_utils::euler_to_rotation(M_PI/11, M_PI/13, M_PI/17);
+        Mat3 R1 = rotation_utils::euler_to_rotation(std::numbers::pi_v<double>/7, std::numbers::pi_v<double>/5, std::numbers::pi_v<double>/9);
+        Mat3 R2 = rotation_utils::euler_to_rotation(std::numbers::pi_v<double>/11, std::numbers::pi_v<double>/13, std::numbers::pi_v<double>/17);
 
         // Apply sequentially
         Mult step1 = rotated_multipole(dipole, R1);
@@ -201,9 +201,9 @@ TEST_CASE("Cartesian rotation vs Wigner D: all ranks",
         double alpha, beta, gamma;
     };
     RotCase rotations[] = {
-        {"90 deg about z",     M_PI / 2,  0,        0},
-        {"90 deg about y",     0,         M_PI / 2, 0},
-        {"45 deg all axes",    M_PI / 4,  M_PI / 4, M_PI / 4},
+        {"90 deg about z",     std::numbers::pi_v<double> / 2,  0,        0},
+        {"90 deg about y",     0,         std::numbers::pi_v<double> / 2, 0},
+        {"45 deg all axes",    std::numbers::pi_v<double> / 4,  std::numbers::pi_v<double> / 4, std::numbers::pi_v<double> / 4},
         {"arbitrary 1",        0.7,       0.4,      -0.3},
         {"arbitrary 2",        -0.5,      0.8,      1.2},
         {"near-gimbal",        1.0,       0.01,     2.0},

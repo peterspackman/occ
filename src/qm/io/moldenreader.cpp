@@ -198,7 +198,7 @@ inline occ::gto::Shell parse_molden_shell(const std::array<double, 3> &position,
   }
 
   {
-    double pi2_34 = pow(2 * M_PI, 0.75);
+    double pi2_34 = pow(2 * std::numbers::pi_v<double>, 0.75);
     double norm = 0.0;
     for (size_t i = 0; i < coeffs.size(); i++) {
       size_t j;

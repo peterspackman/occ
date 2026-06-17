@@ -219,9 +219,9 @@ PeriodicGrid PeriodicGrid::from_cube(const Cube &cube, GridFormat format) {
     Vec3 b = cube.basis.col(1).normalized();
     Vec3 c = cube.basis.col(2).normalized();
 
-    grid.cell_parameters[3] = std::acos(b.dot(c)) * 180.0 / M_PI;  // alpha
-    grid.cell_parameters[4] = std::acos(a.dot(c)) * 180.0 / M_PI;  // beta
-    grid.cell_parameters[5] = std::acos(a.dot(b)) * 180.0 / M_PI;  // gamma
+    grid.cell_parameters[3] = std::acos(b.dot(c)) * 180.0 / std::numbers::pi_v<double>;  // alpha
+    grid.cell_parameters[4] = std::acos(a.dot(c)) * 180.0 / std::numbers::pi_v<double>;  // beta
+    grid.cell_parameters[5] = std::acos(a.dot(b)) * 180.0 / std::numbers::pi_v<double>;  // gamma
 
     if (format == GridFormat::PeriodicGrid) {
         grid.reduce_general_to_periodic();

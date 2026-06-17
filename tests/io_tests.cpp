@@ -266,7 +266,7 @@ TEST_CASE("crystal_json", "[write,read]") {
 
   SECTION("UnitCell") {
     using occ::crystal::UnitCell;
-    UnitCell s(3.0, 2.0, 1.0, M_PI / 2, M_PI / 2, M_PI / 2);
+    UnitCell s(3.0, 2.0, 1.0, std::numbers::pi_v<double> / 2, std::numbers::pi_v<double> / 2, std::numbers::pi_v<double> / 2);
     nlohmann::json j;
     j["uc"] = s;
     auto d = j["uc"].get<UnitCell>();
@@ -796,7 +796,7 @@ END
     REQUIRE_THAT(uc.a(), Catch::Matchers::WithinRel(34.4501, 1e-3));
     REQUIRE_THAT(uc.b(), Catch::Matchers::WithinRel(34.4501, 1e-3));
     REQUIRE_THAT(uc.c(), Catch::Matchers::WithinRel(11.2367, 1e-3));
-    REQUIRE_THAT(uc.gamma(), Catch::Matchers::WithinRel(120.0 * M_PI / 180.0, 1e-3));
+    REQUIRE_THAT(uc.gamma(), Catch::Matchers::WithinRel(120.0 * std::numbers::pi_v<double> / 180.0, 1e-3));
 
     // Check space group detection
     INFO("R3c detected space group: " << sg.symbol());

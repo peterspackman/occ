@@ -103,7 +103,7 @@ TEST_CASE("Spherical GTO rotations") {
   using occ::util::all_close;
 
   SECTION("Closed form z-axis rotation") {
-    double alpha = M_PI / 4.0;
+    double alpha = std::numbers::pi_v<double> / 4.0;
     Eigen::Quaterniond rz(Eigen::AngleAxisd(alpha, Eigen::Vector3d::UnitZ()));
 
     Mat3 rotation_matrix = rz.normalized().toRotationMatrix();

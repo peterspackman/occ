@@ -22,7 +22,7 @@
  *      WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "mathutil.hpp"
+#include "libecpint/mathutil.hpp"
 #include <iostream>
 
 namespace libecpint {

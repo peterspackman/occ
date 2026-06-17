@@ -3,9 +3,7 @@
 #include <occ/xtb/sto_ng.h>
 #include <stdexcept>
 #include <utility>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>    
 namespace occ::xtb {
 namespace detail {
 
@@ -124,7 +122,7 @@ StoNgFit slater_to_gauss(int ng, int n, int l, double zeta, bool normalize) {
     // Cartesian-Gaussian primitive normalization, matching xtb's
     // slaterToGauss with norm = .true.:
     //   c_i *= (2 alpha_i / pi)^(3/4) * (4 alpha_i)^(l/2) / sqrt((2l - 1)!!)
-    constexpr double two_over_pi = 2.0 / M_PI;
+    constexpr double two_over_pi = 2.0 / std::numbers::pi_v<double>;
     const double inv_sqrt_dfact = 1.0 / std::sqrt(dfact_2lm1[l]);
     for (int i = 0; i < ng; ++i) {
       const double a = fit.alpha[i];

@@ -23,15 +23,15 @@ TEST_CASE("SHT Analysis complex function", "[sht]") {
   occ::sht::SHT sht(4);
   occ::CMat values = sht.values_on_grid_complex(func);
   occ::CVec expected(sht.nlm());
-  expected << std::sqrt(4 * M_PI), // 0 0
-      std::complex<double>(std::sqrt(2 * M_PI / 3),
-                           0.3 * std::sqrt(2 * M_PI / 3)), // 1 -1
-      0.01 * std::sqrt(4 * M_PI / 3.0),                    // 1 0
-      std::complex<double>(-std::sqrt(2 * M_PI / 3),
-                           0.3 * std::sqrt(2 * M_PI / 3)), // 1 1
+  expected << std::sqrt(4 * std::numbers::pi_v<double>), // 0 0
+      std::complex<double>(std::sqrt(2 * std::numbers::pi_v<double> / 3),
+                           0.3 * std::sqrt(2 * std::numbers::pi_v<double> / 3)), // 1 -1
+      0.01 * std::sqrt(4 * std::numbers::pi_v<double> / 3.0),                    // 1 0
+      std::complex<double>(-std::sqrt(2 * std::numbers::pi_v<double> / 3),
+                           0.3 * std::sqrt(2 * std::numbers::pi_v<double> / 3)), // 1 1
       0.0,                                                 // 2 -2
       0.0,                                                 // 2 -1
-      0.1 * std::sqrt(16 * M_PI / 5.0),                    // 2  0
+      0.1 * std::sqrt(16 * std::numbers::pi_v<double> / 5.0),                    // 2  0
       0.0,                                                 // 2  1
       0.0,                                                 // 2  2
       0.0,                                                 // 3 -3
@@ -43,13 +43,13 @@ TEST_CASE("SHT Analysis complex function", "[sht]") {
       0.0,                                                 // 3  3
       0.0,                                                 // 4 -4
       0.0,                                                 // 4 -3
-      std::complex<double>(0.5 * std::sqrt(2 * M_PI / 5.0),
-                           0.05 * std::sqrt(2.0 * M_PI / 5.0)), // 4 -2
+      std::complex<double>(0.5 * std::sqrt(2 * std::numbers::pi_v<double> / 5.0),
+                           0.05 * std::sqrt(2.0 * std::numbers::pi_v<double> / 5.0)), // 4 -2
       0.0,                                                      // 4 -1
       0.0,                                                      // 4  0
       0.0,                                                      // 4  1
-      std::complex<double>(0.5 * std::sqrt(2 * M_PI / 5.0),
-                           -0.05 * std::sqrt(2.0 * M_PI / 5.0)), // 4  2
+      std::complex<double>(0.5 * std::sqrt(2 * std::numbers::pi_v<double> / 5.0),
+                           -0.05 * std::sqrt(2.0 * std::numbers::pi_v<double> / 5.0)), // 4  2
       0.0,                                                       // 4  3
       0.0;                                                       // 4  4
                                                                  //
@@ -66,20 +66,20 @@ TEST_CASE("SHT Analysis real function", "[sht]") {
   occ::Mat values = sht.values_on_grid_real(func);
   occ::CVec expected(sht.nplm());
 
-  expected << std::sqrt(4 * M_PI),      // 0  0
-      0.01 * std::sqrt(4 * M_PI / 3.0), // 1  0
-      0.1 * std::sqrt(16 * M_PI / 5.0), // 2  0
+  expected << std::sqrt(4 * std::numbers::pi_v<double>),      // 0  0
+      0.01 * std::sqrt(4 * std::numbers::pi_v<double> / 3.0), // 1  0
+      0.1 * std::sqrt(16 * std::numbers::pi_v<double> / 5.0), // 2  0
       0.0,                              // 3  0
       0.0,                              // 4  0
-      std::complex<double>(-std::sqrt(2 * M_PI / 3),
-                           0.3 * std::sqrt(2 * M_PI / 3)), // 1 1
+      std::complex<double>(-std::sqrt(2 * std::numbers::pi_v<double> / 3),
+                           0.3 * std::sqrt(2 * std::numbers::pi_v<double> / 3)), // 1 1
       0.0,                                                 // 2  1
       0.0,                                                 // 3  1
       0.0,                                                 // 4  1
       0.0,                                                 // 2  2
       0.0,                                                 // 3  2
-      std::complex<double>(0.5 * std::sqrt(2 * M_PI / 5.0),
-                           -0.05 * std::sqrt(2.0 * M_PI / 5.0)), // 4  2
+      std::complex<double>(0.5 * std::sqrt(2 * std::numbers::pi_v<double> / 5.0),
+                           -0.05 * std::sqrt(2.0 * std::numbers::pi_v<double> / 5.0)), // 4  2
       0.0,                                                       // 3  3
       0.0,                                                       // 4  3
       0.0;                                                       // 4  4
@@ -118,7 +118,7 @@ TEST_CASE("Spherical harmonics") {
     REQUIRE_THAT(a.imag(), WithinAbs(b.imag(), 1e-12));
   };
   SECTION("Angular") {
-    occ::CVec eval = sph.evaluate(M_PI / 4, M_PI / 4);
+    occ::CVec eval = sph.evaluate(std::numbers::pi_v<double> / 4, std::numbers::pi_v<double> / 4);
     cmp(eval(0), cplx(0.28209479177387814, 0.0));
     cmp(eval(1), cplx(0.17274707473566775, -0.17274707473566772));
     cmp(eval(2), cplx(0.34549414947133544, 0));

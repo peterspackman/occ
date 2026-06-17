@@ -55,7 +55,7 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
   for (size_t i = 0; i < N; i++) {
     const double rs = ri(i);
     const double r = use_smooth ? rs : (rs + solvent_radius);
-    const double surface_area = 4 * M_PI * rs * rs;
+    const double surface_area = 4 * std::numbers::pi_v<double> * rs * rs;
     tmp_areas.segment(i * npts, npts).array() =
         grid.col(3).array() * surface_area;
     auto vblock = tmp_vertices.block(0, i * npts, 3, npts);

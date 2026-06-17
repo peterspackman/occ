@@ -11,7 +11,7 @@ double common_fac(int l, bool spherical) {
   case 1:
     return 0.488602511902919921;
   default:
-    return spherical ? std::sqrt((2 * l + 1) / (4 * M_PI)) : 1.0;
+    return spherical ? std::sqrt((2 * l + 1) / (4 * std::numbers::pi_v<double>)) : 1.0;
   }
 }
 

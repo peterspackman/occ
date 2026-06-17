@@ -8,9 +8,7 @@
 #include <occ/gto/shell.h>
 #include <occ/gto/io/json_basis.h>
 #include <occ/gto/sto3g_basis.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>    
 #ifndef M_2_SQRTPI
 #define M_2_SQRTPI 1.1283791670955125585606993
 #endif
@@ -30,7 +28,7 @@ double psi4_primitive_normalization(int n, double alpha) {
   double z = std::pow(g, tmp1);
   double normg =
       std::sqrt((pow(2.0, n) * z) /
-                (M_PI * std::sqrt(M_PI) * occ::util::double_factorial_2n_1(n)));
+                (std::numbers::pi_v<double> * std::sqrt(std::numbers::pi_v<double>) * occ::util::double_factorial_2n_1(n)));
   return normg;
 }
 
@@ -163,7 +161,7 @@ Mat Shell::coeffs_normalized_for_libecpint() const {
   }
 
   double tmp =
-      ((2.0 * M_PI / M_2_SQRTPI) * occ::util::double_factorial_2n_1(l)) /
+      ((2.0 * std::numbers::pi_v<double> / M_2_SQRTPI) * occ::util::double_factorial_2n_1(l)) /
       std::pow(2.0, l);
   double norm = std::sqrt(1.0 / (tmp * e_sum));
 
@@ -189,7 +187,7 @@ void Shell::incorporate_shell_norm() {
 
 void Shell::normalize_charge_distribution_primitives() {
   for (size_t i = 0; i < num_primitives(); i++) {
-    double n = 1.0 / (2 * std::sqrt(M_PI) * gint(2, exponents(i)));
+    double n = 1.0 / (2 * std::sqrt(std::numbers::pi_v<double>) * gint(2, exponents(i)));
     contraction_coefficients.row(i).array() *= n;
   }
 }

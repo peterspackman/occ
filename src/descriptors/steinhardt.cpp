@@ -42,7 +42,7 @@ Vec Steinhardt::compute_q(Eigen::Ref<const Mat3N> positions) {
       ql += std::norm(qlm(idx));
       idx++;
     }
-    ql = std::sqrt((4.0 * M_PI / (2.0 * l + 1.0)) * ql);
+    ql = std::sqrt((4.0 * std::numbers::pi_v<double> / (2.0 * l + 1.0)) * ql);
     q(l) += ql;
   }
   return q;

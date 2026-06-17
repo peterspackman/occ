@@ -77,9 +77,9 @@ TEST_CASE("RigidBodyState - Orientation conversions", "[rigid_body][state]") {
     RigidBodyState rb("test", 0, Vec3::Zero(), 1.0);
 
     SECTION("Euler to quaternion") {
-        double alpha = M_PI / 4;
-        double beta = M_PI / 3;
-        double gamma = M_PI / 6;
+        double alpha = std::numbers::pi_v<double> / 4;
+        double beta = std::numbers::pi_v<double> / 3;
+        double gamma = std::numbers::pi_v<double> / 6;
 
         rb.set_euler_angles(alpha, beta, gamma);
 
@@ -93,9 +93,9 @@ TEST_CASE("RigidBodyState - Orientation conversions", "[rigid_body][state]") {
     }
 
     SECTION("Quaternion to Euler and back") {
-        double alpha = M_PI / 4;
-        double beta = M_PI / 3;
-        double gamma = M_PI / 6;
+        double alpha = std::numbers::pi_v<double> / 4;
+        double beta = std::numbers::pi_v<double> / 3;
+        double gamma = std::numbers::pi_v<double> / 6;
 
         rb.set_euler_angles(alpha, beta, gamma);
         Vec3 euler_recovered = rb.get_euler_angles();
@@ -486,22 +486,22 @@ TEST_CASE("Angle-axis representation", "[rigid_body][angle_axis]") {
     }
 
     SECTION("90 degree rotation about z-axis") {
-        Eigen::AngleAxisd aa(M_PI/2, Vec3::UnitZ());
+        Eigen::AngleAxisd aa(std::numbers::pi_v<double>/2, Vec3::UnitZ());
         RigidBodyState state;
         state.set_quaternion(Eigen::Quaterniond(aa));
 
         Vec3 p = state.get_angle_axis();
-        REQUIRE(p.norm() == Approx(M_PI/2).epsilon(1e-6));
+        REQUIRE(p.norm() == Approx(std::numbers::pi_v<double>/2).epsilon(1e-6));
         REQUIRE(p.normalized().isApprox(Vec3::UnitZ(), 1e-6));
     }
 
     SECTION("90 degree rotation about x-axis") {
-        Eigen::AngleAxisd aa(M_PI/2, Vec3::UnitX());
+        Eigen::AngleAxisd aa(std::numbers::pi_v<double>/2, Vec3::UnitX());
         RigidBodyState state;
         state.set_quaternion(Eigen::Quaterniond(aa));
 
         Vec3 p = state.get_angle_axis();
-        REQUIRE(p.norm() == Approx(M_PI/2).epsilon(1e-6));
+        REQUIRE(p.norm() == Approx(std::numbers::pi_v<double>/2).epsilon(1e-6));
         REQUIRE(p.normalized().isApprox(Vec3::UnitX(), 1e-6));
     }
 
@@ -557,19 +557,19 @@ TEST_CASE("Angle-axis representation", "[rigid_body][angle_axis]") {
     }
 
     SECTION("Maximum rotation (pi radians)") {
-        Vec3 p_max = M_PI * Vec3::UnitX();
+        Vec3 p_max = std::numbers::pi_v<double> * Vec3::UnitX();
 
         RigidBodyState state;
         state.set_angle_axis(p_max);
         Vec3 p_back = state.get_angle_axis();
 
-        REQUIRE(p_back.norm() == Approx(M_PI).epsilon(1e-6));
+        REQUIRE(p_back.norm() == Approx(std::numbers::pi_v<double>).epsilon(1e-6));
     }
 
     SECTION("Rotation about arbitrary axis at pi radians") {
         Vec3 axis(1, 1, 0);
         axis.normalize();
-        Vec3 p_orig = M_PI * axis;
+        Vec3 p_orig = std::numbers::pi_v<double> * axis;
 
         RigidBodyState state;
         state.set_angle_axis(p_orig);
@@ -1490,7 +1490,7 @@ TEST_CASE("Angle-axis gradient validation - zero-energy cases", "[rigid_body][gr
 
         // Specific orientations that give zero energy
         Vec3 euler1(0.0, 0.0, 0.0);  // Identity rotation
-        Vec3 euler2(M_PI, 0.0, 0.0);  // 180° rotation around x-axis
+        Vec3 euler2(std::numbers::pi_v<double>, 0.0, 0.0);  // 180° rotation around x-axis
 
         // Compute analytical gradient
         TorqueResult torque1 = TorqueCalculation::compute_torque_analytical(

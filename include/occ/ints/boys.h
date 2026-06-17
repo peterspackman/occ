@@ -2,9 +2,7 @@
 #include <array>
 #include <cmath>
 #include <memory>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif    
+#include <numbers>    
 
 // GPU portability macros
 #if defined(__CUDACC__) || defined(__HIPCC__)
@@ -213,7 +211,7 @@ public:
 
         std::array<double, N> nodes;
         for (int k = 0; k < N; ++k) {
-            nodes[k] = std::cos(((2 * k + 1) * M_PI) / (2.0 * N)) / 2.0;
+            nodes[k] = std::cos(((2 * k + 1) * std::numbers::pi_v<double>) / (2.0 * N)) / 2.0;
         }
 
         std::array<std::array<double, N>, N> T_poly{};

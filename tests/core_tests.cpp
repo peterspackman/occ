@@ -162,13 +162,13 @@ TEST_CASE("Molecule rotation & translation", "[molecule]") {
   Molecule m(nums, pos);
 
   Eigen::Affine3d rotation360;
-  rotation360 = Eigen::AngleAxis<double>(M_PI * 2, occ::Vec3(0, 1, 0));
+  rotation360 = Eigen::AngleAxis<double>(std::numbers::pi_v<double> * 2, occ::Vec3(0, 1, 0));
 
   m.rotate(rotation360);
   REQUIRE(all_close(pos, m.positions()));
 
   Eigen::Affine3d rotation180;
-  rotation180 = Eigen::AngleAxis<double>(M_PI, occ::Vec3(1, 0, 0));
+  rotation180 = Eigen::AngleAxis<double>(std::numbers::pi_v<double>, occ::Vec3(1, 0, 0));
   auto expected_pos = pos;
   expected_pos.bottomRows(2).array() *= -1;
   m.rotate(rotation180);
@@ -897,7 +897,7 @@ TEST_CASE("Elastic tensor rotation invariance", "[elastic_tensor][rotation]") {
   double original_lc_x = elastic.linear_compressibility(test_dir);
 
   SECTION("Rotation around z-axis by 45 degrees") {
-    double angle = M_PI / 4.0;
+    double angle = std::numbers::pi_v<double> / 4.0;
     Eigen::Matrix3d R = Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()).toRotationMatrix();
 
     auto rotated_c = elastic.rotate_voigt_stiffness(R);
@@ -926,7 +926,7 @@ TEST_CASE("Elastic tensor rotation invariance", "[elastic_tensor][rotation]") {
   }
 
   SECTION("Rotation around x-axis by 90 degrees") {
-    double angle = M_PI / 2.0;
+    double angle = std::numbers::pi_v<double> / 2.0;
     Eigen::Matrix3d R = Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX()).toRotationMatrix();
 
     auto rotated_c = elastic.rotate_voigt_stiffness(R);
@@ -961,7 +961,7 @@ TEST_CASE("Elastic tensor rotation invariance", "[elastic_tensor][rotation]") {
   }
 
   SECTION("Double rotation returns to original") {
-    double angle = M_PI / 3.0;
+    double angle = std::numbers::pi_v<double> / 3.0;
     Eigen::Matrix3d R = Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()).toRotationMatrix();
 
     // Rotate, then rotate back
