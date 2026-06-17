@@ -123,7 +123,7 @@ namespace libecpint {
 	int RadialIntegral::integrate(
       const int maxL, const int gridSize, const TwoIndex<double> &intValues, GCQuadrature &grid,
       std::vector<double> &values, const int start, const int end, const int offset, const int skip) const {
-		std::function<double(double, const std::vector<double>, int)> intgd = integrand;
+		std::function<double(double, const std::vector<double>&, int)> intgd = integrand;
 		values.assign(maxL+1, 0.0);
 		int test;
 		std::vector<double> params(gridSize);
@@ -283,7 +283,7 @@ namespace libecpint {
       const int N, const ECP &U, const GaussianShell &shellA, const GaussianShell &shellB,
       const ShellPairData &data, const Parameters & parameters, TwoIndex<double> &values) const {
 
-		std::function<double(double, const std::vector<double>, int)> intgd = integrand;
+		std::function<double(double, const std::vector<double>&, int)> intgd = integrand;
 
 		int npA = shellA.nprimitive();
 		int npB = shellB.nprimitive();

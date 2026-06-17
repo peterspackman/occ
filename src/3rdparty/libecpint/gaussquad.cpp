@@ -114,7 +114,7 @@ namespace libecpint {
 
 	// Perform the GC integration on the function f
 	std::pair<double, bool> GCQuadrature::integrate(
-	    std::function<double(double, const std::vector<double>, int)> &f, const std::vector<double> params,
+	    std::function<double(double, const std::vector<double>&, int)> &f, const std::vector<double> params,
 	    const double tolerance, const int start, const int end) const {
 		bool converged = false; // 0 for converged, -1 for not converged
 

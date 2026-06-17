@@ -151,7 +151,7 @@ namespace libecpint {
 		for (int j = i; j < gridSize; j++)
 			Ftab[j] = 0.0;
 
-		std::function<double(double, const std::vector<double>, int)> intgd = RadialIntegral::integrand;
+		std::function<double(double, const std::vector<double>&, int)> intgd = RadialIntegral::integrand;
 
 		// There should be no instances where this fails, so no backup plan to large grid, but return check just in case
 		return transformedGrid.integrate(intgd, Ftab, 1e-12, 0, primGrid.getN() - 1);

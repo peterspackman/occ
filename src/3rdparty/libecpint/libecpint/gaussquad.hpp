@@ -93,7 +93,7 @@ namespace libecpint {
 		* @returns the integral (first) and true if integration converged, false otherwise (second)
 		*/
 		std::pair<double, bool> integrate(
-		    std::function<double(double, const std::vector<double>, int)> &f,
+		    std::function<double(double, const std::vector<double>&, int)> &f,
 		    const std::vector<double> params, double tolerance, int start, int end) const;
 
 		/**
