@@ -130,7 +130,7 @@ std::u16string utf8_to_utf16(const std::string &string) {
   wchar_t *wstring = new wchar_t[r];
   if (wstring == NULL) {
     SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-    return NULL;
+    return {};
   }
 
   // Now we pass our allocated string and its size as the last two arguments
@@ -139,7 +139,7 @@ std::u16string utf8_to_utf16(const std::string &string) {
   r = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), size, wstring, r);
   if (r == 0) {
     delete[] wstring;
-    return NULL;
+    return {};
   }
   std::u16string result((char16_t *)wstring, r - 1);
   delete[] wstring;
@@ -168,7 +168,7 @@ std::string utf16_to_utf8(const std::u16string &wstring) {
   char *string = new char[r];
   if (string == nullptr) {
     SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-    return NULL;
+    return "";
   }
 
   // Now we pass our allocated string and its size as the last two arguments
@@ -178,7 +178,7 @@ std::string utf16_to_utf8(const std::u16string &wstring) {
                           r, NULL, NULL);
   if (r == 0) {
     delete[] string;
-    return NULL;
+    return {};
   }
   std::string result(string, r - 1);
   delete[] string;
@@ -203,7 +203,7 @@ std::string utf16_to_utf8(const std::wstring &wstring) {
   char *string = new char[r];
   if (string == nullptr) {
     SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-    return NULL;
+    return {};
   }
 
   // Now we pass our allocated string and its size as the last two arguments
@@ -213,7 +213,7 @@ std::string utf16_to_utf8(const std::wstring &wstring) {
                           r, NULL, NULL);
   if (r == 0) {
     delete[] string;
-    return NULL;
+    return {};
   }
   std::string result(string, r - 1);
   delete[] string;

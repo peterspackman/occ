@@ -195,3 +195,40 @@ add_executable(mults_tests
 target_link_libraries(mults_tests PRIVATE occ_mults Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(mults_tests PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 catch_discover_tests(mults_tests)
+
+add_custom_target(all_tests ALL
+    DEPENDS
+        core_tests
+        crystal_tests
+        dft_tests
+        dft_gradient_tests
+        isolated_xc_tests
+        disp_tests
+        geometry_tests
+        gto_tests
+        io_tests
+        structure_format_test
+        io_periodic_grid_tests
+        wavefunction_io_tests
+        interaction_tests
+        qm_tests
+        qm_gradient_tests
+        qm_hessian_tests
+        mp2_tests
+        cc_tests
+        sht_tests
+        slater_tests
+        descriptors_tests
+        solvent_tests
+        xdm_tests
+        xtb_tests
+        xtb_native_tests
+        xtb_wavefunction_io_tests
+        cg_tests
+        dma_tests
+        volume_calculator_tests
+        mesh_quality_tests
+        opt_tests
+        ints_tests
+        mults_tests
+)

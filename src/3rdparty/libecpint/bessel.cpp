@@ -1,4 +1,4 @@
-/* 
+/*
  *      Copyright (c) 2020 Robert Shaw
  *		This file is a part of Libecpint.
  *
@@ -43,7 +43,7 @@ namespace libecpint {
 		N = _N > 0 ? _N : 1;
 		order = _order > 0 ? _order : 1;
 		scale = N/16.0;
-	
+
 		// Allocate arrays
 
 		K=std::vector<std::vector<double>>(N+1,std::vector<double>(lMax + TAYLOR_CUT + 1,0.0));
@@ -59,12 +59,12 @@ namespace libecpint {
 	int BesselFunction::tabulate(const double accuracy) {
 		int retval = 0; // 0 for success, -1 for not converged
 		// Series expansion for bessel function, K, is given by:
-		// K_l(z) ~ z^l sum_{j=0 to infty} F_j(z) / (2j + 2l + 1)!! 
+		// K_l(z) ~ z^l sum_{j=0 to infty} F_j(z) / (2j + 2l + 1)!!
 		// where F_j(z) = e^(-z) * (z^2/2)^j / j!
 		int lmax = lMax + TAYLOR_CUT;
-	
-		double F[order + 1]; // F_j above
-	
+
+		std::vector<double> F(order + 1); // F_j above
+
 		K[0][0] = 1.0;
 		double z, z2; // z and z^2 / 2
 		double ratio; // F_j(z) / (2j+1)!!
@@ -72,21 +72,21 @@ namespace libecpint {
 			// Calculate K(z) at equally spaced points z = 16/N to 16
 			z = i / (N/16.0);
 			z2 = z * z / 2.0;
-		
+
 			F[0] = exp(-z);
 			ratio = F[0] / DFAC[0];
 			K[i][0] = ratio;
-		
+
 			// Series expansion for K_0(z)
 			int l = order;
 			int j;
 			for (j = 1; j <= l; j++) {
-			
+
 				if (ratio < accuracy) {
 					// Reached convergence
 					break;
-				} 
-			
+				}
+
 				F[j] = F[j-1] * z2 / ((double)j);
 				ratio = F[j] / DFAC[2*j+1];
 				K[i][0] += ratio;
@@ -97,33 +97,33 @@ namespace libecpint {
 			z2 = z;
 			for (l=1; l<=lmax; l++) {
 				ratio = 0;
-				for (int m=0; m < j; m++) ratio += F[m]/DFAC[2*l + 2*m + 1]; 
+				for (int m=0; m < j; m++) ratio += F[m]/DFAC[2*l + 2*m + 1];
 				K[i][l] = z2 * ratio;
-				z2 *= z; 
+				z2 *= z;
 			}
-	
+
 		}
-	
+
 		// Determine coefficients for derivative recurrence
 		for (int i = 1; i<lmax; i++) C[i] = i/(2.0*i + 1.0);
-		
+
 		// Determine the necessary derivatives from
 		// K_l^(n+1) = C_l K_(l-1)^(n) + (C_l + 1/(2l+1))K_(l+1)^(n) - K_l^(n)
 		for (int ix = 0; ix < N+1; ix++) {
 			// Copy K values into dK
 			for (int l = 0; l <= lMax+TAYLOR_CUT; l++)
 				dK[ix][0][l] = K[ix][l];
-	    	
+
 			// Then the rest
-			for (int n = 1; n < TAYLOR_CUT+1; n++) { 
+			for (int n = 1; n < TAYLOR_CUT+1; n++) {
 				dK[ix][n][0] = dK[ix][n-1][1] - dK[ix][n-1][0];
-				for (int l = 1; l <= lMax + TAYLOR_CUT - n; l++) 
+				for (int l = 1; l <= lMax + TAYLOR_CUT - n; l++)
 					dK[ix][n][l] = C[l]*dK[ix][n-1][l-1] + (C[l] + 1.0/(2.0*l + 1.0))*dK[ix][n-1][l+1] - dK[ix][n-1][l];
 			}
 		}
-	
+
 		return retval;
-	}	
+	}
 
 	// Get an upper bound for M_l(z)
 	double BesselFunction::upper_bound(const double z, const int L) const {
@@ -142,15 +142,15 @@ namespace libecpint {
 			std::cout << "Asked for " << maxL << " but only initialised to maximum L = " << lMax << "\n";
 			maxL = lMax;
 		}
-	
+
 		// Set K_0(z) = 1.0, and K_l(z) = 0.0 (for l != 0) if z <= 0
 		if (z <= 0) values[0] = 1.0;
 		// Zeroth order case
 		// K_l(z) ~ (1-z)*z^l / (2l + 1)!!
-		else if (z < SMALL) { 
+		else if (z < SMALL) {
 			values[0] = 1.0 - z;
 			for (int l = 1; l <= maxL; l++) values[l] = values[l-1]*z/(2.0*l+1.0);
-		} 
+		}
 		// Large z case
 		// K_l(z) ~ R_l(-z)/(2z)
 		// where R_l(z) = sum_{k=0 to l} T_l,k(z)
@@ -169,41 +169,41 @@ namespace libecpint {
 				}
 				values[l] *= Rl;
 			}
-		} 
-		// SMALL < z < 16 
+		}
+		// SMALL < z < 16
 		// Use Taylor series around pretabulated values in class
 		// 5 terms is usually sufficient for machine accuracy
 		else {
 			// Index of abscissa z in table
 			int ix = std::floor(z * scale + 0.5);
 			double dz = z - ix/scale; // z - z0
-		
+
 			if (fabs(dz) < 1e-12) { // z is one of the tabulated points
 				for (int l = 0; l <= maxL; l++) values[l] = K[ix][l];
 			} else {
-		
+
 				// Calculate (dz)^n/n! terms just once
 				double dzn[TAYLOR_CUT+1];
 				dzn[0] = 1.0;
 				for (int n = 1; n < TAYLOR_CUT + 1; n++)
 					dzn[n] = dzn[n-1] * dz / ((double) n);
-		
+
 				// Now tabulate the values through Taylor seris
 				// K(z) ~ sum_{n=0 to 5} K^(n)(z0)(z-z0)^n / n!
 				for (int l = 0; l <= maxL; l++) {
 					values[l] = 0.0;
 					for (int n = 0; n < TAYLOR_CUT+1; n++)
-						values[l] += dzn[n] * dK[ix][n][l]; 
+						values[l] += dzn[n] * dK[ix][n][l];
 				}
 			}
 		}
 	}
-	
+
 	// Calculate a modified spherical bessel function value at a point for only a single L
 	// method the same as in calculate for multiple L, but with efficiencies
 	double BesselFunction::calculate(const double z, const int L) const {
 		double value = 0.0;
-		
+
 		if (z <= 0) value = 1.0;
 		else if (z < SMALL) {
 			value = 1.0 - z;
@@ -223,11 +223,11 @@ namespace libecpint {
 			double dz = z - ix/scale; // z - z0
 			double dzn = 1.0;
 			for (int n = 0; n < TAYLOR_CUT+1; n++) {
-				value += dzn * dK[ix][n][L]; 
+				value += dzn * dK[ix][n][L];
 				dzn *= dz / (n+1);
 			}
 		}
-		
+
 		return value;
 	}
 }

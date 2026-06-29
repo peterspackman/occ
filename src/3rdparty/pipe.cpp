@@ -2,9 +2,9 @@
 #include <cstdint>
 #include <stdexcept>
 #include <thread>
-#include <unistd.h>
 #include <vector>
 #ifndef _WIN32
+#include <unistd.h>
 #include <cerrno>
 #include <fcntl.h>
 #endif

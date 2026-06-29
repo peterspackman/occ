@@ -256,7 +256,7 @@ TEST_CASE("PDD and AMD descriptors", "[pdd][amd]") {
     atomic_numbers << 1; // Hydrogen for simplicity
     
     AsymmetricUnit asym_unit(positions, atomic_numbers);
-    UnitCell unit_cell(1.0, 1.0, 1.0, M_PI/2, M_PI/2, M_PI/2); // Cubic unit cell (angles in radians)
+    UnitCell unit_cell(1.0, 1.0, 1.0, std::numbers::pi_v<double>/2, std::numbers::pi_v<double>/2, std::numbers::pi_v<double>/2); // Cubic unit cell (angles in radians)
     SpaceGroup space_group(1); // P1
     
     Crystal crystal(asym_unit, space_group, unit_cell);
@@ -289,7 +289,7 @@ TEST_CASE("PDD and AMD descriptors", "[pdd][amd]") {
     atomic_numbers << 1, 1, 1, 1; // All hydrogen
     
     AsymmetricUnit asym_unit(positions, atomic_numbers);
-    UnitCell unit_cell(1.0, 1.0, 1.0, M_PI/2, M_PI/2, M_PI/2);
+    UnitCell unit_cell(1.0, 1.0, 1.0, std::numbers::pi_v<double>/2, std::numbers::pi_v<double>/2, std::numbers::pi_v<double>/2);
     SpaceGroup space_group(1); // P1
     
     Crystal crystal(asym_unit, space_group, unit_cell);
@@ -310,7 +310,7 @@ TEST_CASE("PDD and AMD descriptors", "[pdd][amd]") {
     atomic_numbers << 1;
     
     AsymmetricUnit asym_unit(positions, atomic_numbers);
-    UnitCell unit_cell(1.0, 1.0, 1.0, M_PI/2, M_PI/2, M_PI/2);
+    UnitCell unit_cell(1.0, 1.0, 1.0, std::numbers::pi_v<double>/2, std::numbers::pi_v<double>/2, std::numbers::pi_v<double>/2);
     SpaceGroup space_group(1);
     
     Crystal crystal(asym_unit, space_group, unit_cell);
@@ -343,7 +343,7 @@ TEST_CASE("PDD and AMD descriptors", "[pdd][amd]") {
     atomic_numbers << 1, 1;
     
     AsymmetricUnit asym_unit(positions, atomic_numbers);
-    UnitCell unit_cell(1.0, 1.0, 1.0, M_PI/2, M_PI/2, M_PI/2);
+    UnitCell unit_cell(1.0, 1.0, 1.0, std::numbers::pi_v<double>/2, std::numbers::pi_v<double>/2, std::numbers::pi_v<double>/2);
     SpaceGroup space_group(1);
     
     Crystal crystal(asym_unit, space_group, unit_cell);

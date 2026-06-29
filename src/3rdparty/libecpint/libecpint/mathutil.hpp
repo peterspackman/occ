@@ -35,9 +35,7 @@
 #include <cmath>
 #include "multiarr.hpp"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include <numbers>
 
 #ifndef M_EULER
 #define M_EULER 2.71828182845904523536

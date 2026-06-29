@@ -52,7 +52,7 @@ SHT::SHT(size_t lm)
       m_fft_shape({m_nphi}), m_plm(lm) {
   m_phi = Vec(m_nphi);
   for (size_t i = 0; i < m_nphi; i++) {
-    m_phi(i) = (2 * M_PI * i) / m_nphi;
+    m_phi(i) = (2 * std::numbers::pi_v<double> * i) / m_nphi;
   }
 
   m_ntheta = m_lmax + 1;
@@ -80,7 +80,7 @@ CVec SHT::analysis_real(const Mat &values) {
     pocketfft::r2c(m_fft_shape, m_fft_stride, m_fft_stride, m_fft_axes,
                    pocketfft::FORWARD,
                    reinterpret_cast<const double *>(m_fft_work_array.data()),
-                   m_fft_work_array.data(), 4 * M_PI / m_nphi);
+                   m_fft_work_array.data(), 4 * std::numbers::pi_v<double> / m_nphi);
 
     m_plm.evaluate_batch(ct, m_plm_work_array);
 
@@ -155,7 +155,7 @@ CVec SHT::analysis_cplx(const CMat &values) {
     m_fft_work_array = values.col(itheta);
     pocketfft::c2c(m_fft_shape, m_fft_stride, m_fft_stride, m_fft_axes,
                    pocketfft::FORWARD, m_fft_work_array.data(),
-                   m_fft_work_array.data(), 4 * M_PI / m_nphi);
+                   m_fft_work_array.data(), 4 * std::numbers::pi_v<double> / m_nphi);
 
     m_plm.evaluate_batch(ct, m_plm_work_array);
 

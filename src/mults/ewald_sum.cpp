@@ -3,6 +3,7 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <cmath>
+#include <numbers>
 
 namespace occ::mults {
 
@@ -52,13 +53,13 @@ EwaldLatticeCache build_ewald_lattice_cache(
 
     double alpha_bohr = params.alpha * occ::units::BOHR_TO_ANGSTROM;
     cache.alpha_bohr = alpha_bohr;
-    cache.two_alpha_over_sqrt_pi = 2.0 * alpha_bohr / std::sqrt(M_PI);
+    cache.two_alpha_over_sqrt_pi = 2.0 * alpha_bohr / std::sqrt(std::numbers::pi_v<double>);
 
     Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
     double volume_bohr = unit_cell.volume() *
         std::pow(occ::units::ANGSTROM_TO_BOHR, 3);
-    Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
-    cache.four_pi_over_vol = 4.0 * M_PI / volume_bohr;
+    Mat3 B_bohr = 2.0 * std::numbers::pi_v<double> * A_bohr.inverse().transpose();
+    cache.four_pi_over_vol = 4.0 * std::numbers::pi_v<double> / volume_bohr;
 
     double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
     int kmax = params.kmax;
@@ -136,7 +137,7 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
                                             : alpha * occ::units::BOHR_TO_ANGSTROM;
     const double two_alpha_over_sqrt_pi = lattice_cache
         ? lattice_cache->two_alpha_over_sqrt_pi
-        : 2.0 * alpha_bohr / std::sqrt(M_PI);
+        : 2.0 * alpha_bohr / std::sqrt(std::numbers::pi_v<double>);
 
     occ::log::debug("Ewald correction: alpha = {:.4f} /Ang ({:.6f} /Bohr), kmax = {}",
                     alpha, alpha_bohr, kmax);
@@ -249,7 +250,7 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
         const auto erfj = [&](const Jet2& a) {
             Jet2 out;
             const double ev = std::erf(a.v);
-            const double fp = 2.0 / std::sqrt(M_PI) * std::exp(-a.v * a.v);
+            const double fp = 2.0 / std::sqrt(std::numbers::pi_v<double>) * std::exp(-a.v * a.v);
             const double fpp = -2.0 * a.v * fp;
             out.v = ev;
             out.g = fp * a.g;
@@ -336,8 +337,8 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
                        - erf_kr * inv_r3;
         // c = Hessian radial coefficient
         const double c = -4.0 * alpha_bohr * alpha_bohr * alpha_bohr
-                            / std::sqrt(M_PI) * exp_kr2 * inv_r2
-                       - 6.0 * alpha_bohr / std::sqrt(M_PI) * exp_kr2 * inv_r4
+                            / std::sqrt(std::numbers::pi_v<double>) * exp_kr2 * inv_r2
+                       - 6.0 * alpha_bohr / std::sqrt(std::numbers::pi_v<double>) * exp_kr2 * inv_r4
                        + 3.0 * erf_kr * inv_r5;
 
         const double qa = sa.charge, qb = sb.charge;
@@ -473,7 +474,7 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
         Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
         const double volume_bohr = unit_cell.volume() *
             std::pow(occ::units::ANGSTROM_TO_BOHR, 3);
-        four_pi_over_vol = 4.0 * M_PI / volume_bohr;
+        four_pi_over_vol = 4.0 * std::numbers::pi_v<double> / volume_bohr;
     }
 
     std::vector<double> cos_phase(n_sites), sin_phase(n_sites), mu_dot_G(n_sites);
@@ -565,7 +566,7 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
         }
     } else {
         Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
-        Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
+        Mat3 B_bohr = 2.0 * std::numbers::pi_v<double> * A_bohr.inverse().transpose();
         const double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
         for (int hx = -kmax; hx <= kmax; ++hx) {
             for (int hy = -kmax; hy <= kmax; ++hy) {
@@ -582,9 +583,9 @@ EwaldResultWithHessian compute_ewald_correction_with_hessian(
     }
 
     const double alpha3 = alpha_bohr * alpha_bohr * alpha_bohr;
-    const double self_dipole_coeff = 2.0 * alpha3 / (3.0 * std::sqrt(M_PI));
+    const double self_dipole_coeff = 2.0 * alpha3 / (3.0 * std::sqrt(std::numbers::pi_v<double>));
     for (size_t k = 0; k < n_sites; ++k) {
-        energy_ha -= (alpha_bohr / std::sqrt(M_PI)) *
+        energy_ha -= (alpha_bohr / std::sqrt(std::numbers::pi_v<double>)) *
             isites[k].charge * isites[k].charge;
         if (params.include_dipole) {
             energy_ha -= self_dipole_coeff * isites[k].dipole.squaredNorm();

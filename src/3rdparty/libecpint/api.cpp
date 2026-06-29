@@ -170,7 +170,7 @@ namespace libecpint {
 		TwoIndex<double> tempValues;
 		int nshells = shells.size();
 	
-		double thresh = FAST_POW[maxLB+3]((maxLB+3.0)/min_alpha)*FAST_POW[3](M_PI/(2*maxLB+3.0));
+		double thresh = FAST_POW[maxLB+3]((maxLB+3.0)/min_alpha)*FAST_POW[3](std::numbers::pi_v<double>/(2*maxLB+3.0));
 		thresh /= FAST_POW[maxLB](2.0*M_EULER);
 		thresh = TWO_C_TOLERANCE / std::sqrt(thresh);
 		

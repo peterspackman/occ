@@ -1,4 +1,5 @@
 #include <cmath>
+#include <libecpint/mathutil.hpp>
 #include <occ/xdm/becke_hole.h>
 
 namespace occ::xdm {
@@ -32,7 +33,7 @@ double becke_hole_br89_analytic(double rho, double Q, double norm) {
   constexpr double B = 2.085749716493756;
 
   constexpr double third2 = 2.0 / 3.0;
-  const double y = third2 * std::pow(M_PI * rho / norm, third2) * rho / Q;
+  const double y = third2 * std::pow(std::numbers::pi_v<double> * rho / norm, third2) * rho / Q;
   double x = 0.0;
   if (y <= 0) {
     const double g = -std::atan(alpha1 * y + alpha2) + alpha3;
@@ -61,7 +62,7 @@ double becke_hole_br89_analytic(double rho, double Q, double norm) {
   }
   const double expo = std::exp(-x);
   const double prefac = rho / expo;
-  const double alf = std::pow(8.0 * M_PI * prefac / norm, 1.0 / 3.0);
+  const double alf = std::pow(8.0 * std::numbers::pi_v<double> * prefac / norm, 1.0 / 3.0);
   return x / alf;
 }
 
@@ -69,7 +70,7 @@ double becke_hole_br89_newton(double rho, double quad, double hnorm) {
   double x1{0}, f{0}, df{0};
   double third2 = 2.0 / 3.0;
   double x = 0.0;
-  const double rhs = third2 * std::pow(M_PI * rho / hnorm, third2) * rho / quad;
+  const double rhs = third2 * std::pow(std::numbers::pi_v<double> * rho / hnorm, third2) * rho / quad;
   double x0 = 2.0;
   double shift = (rhs > 0) ? 1.0 : -1.0;
   bool initialized = false;
@@ -100,7 +101,7 @@ double becke_hole_br89_newton(double rho, double quad, double hnorm) {
   x = x1;
   const double expo = std::exp(-x);
   const double prefac = rho / expo;
-  const double alf = std::pow(8.0 * M_PI * prefac / hnorm, 1.0 / 3.0);
+  const double alf = std::pow(8.0 * std::numbers::pi_v<double> * prefac / hnorm, 1.0 / 3.0);
   return x / alf;
 }
 

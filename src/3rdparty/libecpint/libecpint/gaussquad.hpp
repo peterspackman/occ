@@ -1,4 +1,4 @@
-/* 
+/*
  *      Copyright (c) 2020 Robert Shaw
  *		This file is a part of Libecpint.
  *
@@ -36,11 +36,11 @@ namespace libecpint {
 		TWOPOINT  ///< Described in Perez93
 	};
 
-	/** 
+	/**
 	* \class GCQuadrature
 	* \brief Performs adaptive Gauss-Chebyshev quadrature of the second kind for any given function.
-	* 
-	* Stores the weights and abscissae for the quadrature, and provides two different methods to integrate on [-1, 1] 
+	*
+	* Stores the weights and abscissae for the quadrature, and provides two different methods to integrate on [-1, 1]
 	* Also contains means to transform the region of integration to [0, infinity) and [rmin, rmax]
 	*
 	* REFERENCES:
@@ -53,28 +53,28 @@ namespace libecpint {
 	private:
 		int maxN; ///< Maximum number of points to use in quadrature
 		int M; 	///< Index of midpoint
-	
+
 		std::vector<double> x; ///< Weights
 		std::vector<double> w; ///< Abscissae
- 
+
 		double I; ///< Integral value
-	
+
 		GCTYPE t; ///< Algorithm type to be used
-	
-		/// Worker function for integration routines, should not be called directly.	
-		double sumTerms(const std::function<double(double, const double*, int)> &f,
-                  const double *p, int limit, int start, int end, int shift, int skip) const;
+
+		/// Worker function for integration routines, should not be called directly.
+		double sumTerms(const std::function<double(double, const std::vector<double>, int)> &f,
+                  const std::vector<double>& p, int limit, int start, int end, int shift, int skip) const;
 
 	public:
-		
+
 		/// Default constructor, creates empty object
 		GCQuadrature();
-		
+
 		/// Copy constructor, carbon copies all members
 		GCQuadrature(const GCQuadrature &other);
-	
+
 		/**
-		* Intialises the integration grid to the given number of points, and integration type. 
+		* Intialises the integration grid to the given number of points, and integration type.
 		* ONEPOINT will choose N = 2^n - 1 closest to the given number of points, whilst
 		* TWOPOINT will choose N= 3*2^n - 1 in the same way.
 		*
@@ -82,9 +82,9 @@ namespace libecpint {
 		* @param t - the algorithm to be used (ONEPOINT / TWOPOINT)
 		*/
 		void initGrid(int points, GCTYPE t);
-	
+
 		/**
-		* Integrates the given function (over [-1, 1] by default) to within the given tolerance. 
+		* Integrates the given function (over [-1, 1] by default) to within the given tolerance.
 		* @param f - the function to be integrated
 		* @param params - array of parameters for the function to be integrated
 		* @param tolerance - change below which convergenced is considered to be achieved
@@ -93,26 +93,26 @@ namespace libecpint {
 		* @returns the integral (first) and true if integration converged, false otherwise (second)
 		*/
 		std::pair<double, bool> integrate(
-		    std::function<double(double, const double*, int)> &f,
-		    const double *params, double tolerance, int start, int end) const;
-	
+		    std::function<double(double, const std::vector<double>&, int)> &f,
+		    const std::vector<double> params, double tolerance, int start, int end) const;
+
 		/**
 		* Transforms the region of integration to [0, inf) using the logarithmic transformation of Krack98
 		*/
 		void transformZeroInf();
-		
+
 		/**
-		* Transforms region of integration to [rmin, rmax] using the linear transformation from Flores06, assuming 
+		* Transforms region of integration to [rmin, rmax] using the linear transformation from Flores06, assuming
 		* a Gaussian envelope. rmin/rmax are the distances from the centre of the envelope such that the integrand is effectively zero.
 		* @param z - the exponent of the Gaussian envelope
 		* @param p - the centre of the Gaussian envelope
 		*/
 		void transformRMinMax(double z, double p);  // Transfromation from [-1, 1] to [rmin, rmax] from Flores06
 		void untransformRMinMax(double z, double p);
-	
+
 		/// @return the maximum number of quadrature points
 		int getN() const { return maxN; }
-	
+
 		/// @return a reference to the abscissae
     std::vector<double>& getX() { return x; }
     const std::vector<double>& getX() const { return x; }

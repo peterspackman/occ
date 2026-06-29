@@ -53,7 +53,7 @@ TEST_CASE("Multipole rotation - Euler angles", "[mults][rotation]") {
   }
 
   SECTION("90 degree rotation around z") {
-    double pi_2 = M_PI / 2.0;
+    double pi_2 = std::numbers::pi_v<double> / 2.0;
     Mat3 rot_z = rotation_utils::euler_to_rotation(pi_2, 0, 0);
 
     Vec3 x_axis(1, 0, 0);
@@ -74,7 +74,7 @@ TEST_CASE("Multipole rotation - axis-angle", "[mults][rotation]") {
 
   SECTION("180 degree rotation around z") {
     Vec3 z_axis(0, 0, 1);
-    Mat3 rot_z_180 = rotation_utils::axis_angle_to_rotation(z_axis, M_PI);
+    Mat3 rot_z_180 = rotation_utils::axis_angle_to_rotation(z_axis, std::numbers::pi_v<double>);
 
     Vec3 x_axis(1, 0, 0);
     Vec3 rotated_x = rot_z_180 * x_axis;
@@ -100,7 +100,7 @@ TEST_CASE("Multipole rotation - Wigner D-matrix basics", "[mults][rotation]") {
 
   SECTION("D-matrix is orthogonal") {
     // 45 degree rotation around z axis
-    double angle = M_PI / 4.0;
+    double angle = std::numbers::pi_v<double> / 4.0;
     Mat3 rot = rotation_utils::axis_angle_to_rotation(Vec3(0, 0, 1), angle);
 
     for (int lmax = 1; lmax <= 2; lmax++) {
@@ -122,7 +122,7 @@ TEST_CASE("Multipole rotation - simple multipole objects",
     monopole.Q00() = 1.5;
 
     // Arbitrary rotation
-    Mat3 rot = rotation_utils::axis_angle_to_rotation(Vec3(1, 1, 1), M_PI / 3);
+    Mat3 rot = rotation_utils::axis_angle_to_rotation(Vec3(1, 1, 1), std::numbers::pi_v<double> / 3);
 
     Mult rotated = rotated_multipole(monopole, rot);
 
@@ -138,7 +138,7 @@ TEST_CASE("Multipole rotation - simple multipole objects",
 
     // 90 degree rotation around z-axis should leave Q10 unchanged
     Mat3 rot_z =
-        rotation_utils::axis_angle_to_rotation(Vec3(0, 0, 1), M_PI / 2);
+        rotation_utils::axis_angle_to_rotation(Vec3(0, 0, 1), std::numbers::pi_v<double> / 2);
 
     Mult rotated = rotated_multipole(dipole, rot_z);
 
@@ -191,8 +191,8 @@ TEST_CASE("Multipole rotation - water molecule validation",
     water_oxygen.Q44s() = 0.0;      // hexadecapole (xxxy-xyyy)
 
     // Test that rotation composition works: R2 * R1 = R3
-    Mat3 R1 = rotation_utils::euler_to_rotation(M_PI / 6, M_PI / 4, M_PI / 3);
-    Mat3 R2 = rotation_utils::euler_to_rotation(M_PI / 5, M_PI / 7, M_PI / 9);
+    Mat3 R1 = rotation_utils::euler_to_rotation(std::numbers::pi_v<double> / 6, std::numbers::pi_v<double> / 4, std::numbers::pi_v<double> / 3);
+    Mat3 R2 = rotation_utils::euler_to_rotation(std::numbers::pi_v<double> / 5, std::numbers::pi_v<double> / 7, std::numbers::pi_v<double> / 9);
     Mat3 R3 = R2 * R1;
 
     // Apply rotations in sequence vs composed

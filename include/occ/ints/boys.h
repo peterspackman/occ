@@ -2,6 +2,7 @@
 #include <array>
 #include <cmath>
 #include <memory>
+#include <numbers>    
 
 // GPU portability macros
 #if defined(__CUDACC__) || defined(__HIPCC__)
@@ -200,14 +201,17 @@ public:
     static constexpr int N = Order + 1;
 
     static std::unique_ptr<double[], void(*)(double*)> generate() {
+        double* table_ptr = static_cast<double*>(
+            ::operator new[](TableSize * sizeof(double), std::align_val_t{ 64 })
+            );
         auto table = std::unique_ptr<double[], void(*)(double*)>(
-            new (std::align_val_t{64}) double[TableSize],
-            [](double* p) { operator delete[](p, std::align_val_t{64}); }
+            table_ptr,
+            [](double* p) { ::operator delete[](p, std::align_val_t{ 64 }); }
         );
 
         std::array<double, N> nodes;
         for (int k = 0; k < N; ++k) {
-            nodes[k] = std::cos(((2 * k + 1) * M_PI) / (2.0 * N)) / 2.0;
+            nodes[k] = std::cos(((2 * k + 1) * std::numbers::pi_v<double>) / (2.0 * N)) / 2.0;
         }
 
         std::array<std::array<double, N>, N> T_poly{};

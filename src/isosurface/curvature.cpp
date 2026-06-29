@@ -1,4 +1,5 @@
 #include <occ/core/log.h>
+#include <libecpint/mathutil.hpp>
 #include <occ/isosurface/curvature.h>
 
 namespace occ::isosurface {
@@ -20,7 +21,7 @@ FVec make_vertex_curvedness(const FVec &k1, const FVec &k2) {
   }
 
   // Apply logarithmic scaling
-  float fac = 2.0f / M_PI;
+  float fac = 2.0f / std::numbers::pi_v<double>;
   curvedness = fac * curvedness.array().log();
 
   return curvedness;
@@ -58,7 +59,7 @@ SurfaceCurvature calculate_curvature(const FVec &mean, const FVec &gaussian) {
     } else {
       float mx = std::max(result.k1(i), result.k2(i));
       float mn = std::min(result.k1(i), result.k2(i));
-      result.shape_index(i) = -2.0 / M_PI * std::atan((mx + mn) / (mx - mn));
+      result.shape_index(i) = -2.0 / std::numbers::pi_v<double> * std::atan((mx + mn) / (mx - mn));
     }
   }
   occ::log::debug("Shape index range: {} {} {}", result.shape_index.minCoeff(),

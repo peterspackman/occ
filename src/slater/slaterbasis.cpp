@@ -14,7 +14,7 @@ namespace occ::slater {
 using occ::IVec;
 using occ::Mat;
 using occ::Vec;
-constexpr double inv_pi_4 = 1.0 / (4 * M_PI);
+constexpr double inv_pi_4 = 1.0 / (4 * std::numbers::pi_v<double>);
 
 Shell::Shell() : m_occupation(1), m_n(1), m_z(1), m_c(1, 1) {
   m_occupation.setConstant(1);

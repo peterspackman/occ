@@ -31,10 +31,10 @@ namespace libecpint {
 
 	RadialIntegral::RadialIntegral() {}
 
-	void RadialIntegral::init(int maxL, double tol, int small, int large) {
+	void RadialIntegral::init(int maxL, double tol, int m_small, int large) {
 		bigGrid.initGrid(large, ONEPOINT);
 		primGrid.initGrid(128, ONEPOINT); 
-		smallGrid.initGrid(small, TWOPOINT);
+		smallGrid.initGrid(m_small, TWOPOINT);
 		smallGrid.transformZeroInf();
 	
 		bessie.init(maxL, 1600, 200, tol);
@@ -65,7 +65,7 @@ namespace libecpint {
 	}
 
 	// Assumes that p is the pretabulated integrand at the abscissae
-	double RadialIntegral::integrand(const double r, const double *p, const int ix) {
+	double RadialIntegral::integrand(const double r, const std::vector<double>& p, const int ix) {
 		return p[ix];
 	}
 
@@ -86,7 +86,7 @@ namespace libecpint {
 		P2.assign(npA, npB, 0.0);
 		K.assign(npA, npB, 0.0);
 
-		double Pvec[3];
+		std::vector<double> Pvec(3);
 		double zetaA, zetaB;
 		for (int a = 0; a < npA; a++) {
 			zetaA = shellA.exp(a);
@@ -108,7 +108,7 @@ namespace libecpint {
 	}
 
 	void RadialIntegral::buildU(
-	    const ECP &U, const int l, const int N, const GCQuadrature &grid, double *Utab) const {
+	    const ECP &U, const int l, const int N, const GCQuadrature &grid, std::vector<double> &Utab) const {
 		int gridSize = grid.getN();
     const std::vector<double> &gridPoints = grid.getX();
 	
@@ -123,10 +123,10 @@ namespace libecpint {
 	int RadialIntegral::integrate(
       const int maxL, const int gridSize, const TwoIndex<double> &intValues, GCQuadrature &grid,
       std::vector<double> &values, const int start, const int end, const int offset, const int skip) const {
-		std::function<double(double, const double*, int)> intgd = integrand;
+		std::function<double(double, const std::vector<double>&, int)> intgd = integrand;
 		values.assign(maxL+1, 0.0);
 		int test;
-		double params[gridSize];
+		std::vector<double> params(gridSize);
 		for (int i = 0; i < start; i++) params[i] = 0.0;
 		for (int i = end+1; i < gridSize; i++) params[i] = 0.0;
 		for (int l = offset; l <= maxL; l+=skip) {
@@ -183,7 +183,7 @@ namespace libecpint {
 				auto end = gridSize - 1;
 			
 				// Build U and bessel tabs
-				double Utab[gridSize];
+				std::vector<double> Utab(gridSize);
 				buildU(U, U.getL(), N, newGrid, Utab);
 				buildBessel(gridPoints, gridSize, maxL, besselValues, 2.0*p(a,b)*P(a,b));
 			
@@ -275,15 +275,15 @@ namespace libecpint {
 		double besselValue1 = bessie.upper_bound(kA * P, l1);
 		double besselValue2 = bessie.upper_bound(kB * P, l2);
 		double Fres = FAST_POW[N](P) * std::exp(-n * P * P - a * zA * zA - b * zB * zB) * besselValue1 * besselValue2;
-		return (0.5 * std::sqrt(M_PI/p) * Fres * (1.0 + std::erf(std::sqrt(p)*P)));
+		return (0.5 * std::sqrt(std::numbers::pi_v<double>/p) * Fres * (1.0 + std::erf(std::sqrt(p)*P)));
 	}
 
 	void RadialIntegral::type2(
       const int l, const int l1start, int l1end, const int l2start, int l2end,
       const int N, const ECP &U, const GaussianShell &shellA, const GaussianShell &shellB,
       const ShellPairData &data, const Parameters & parameters, TwoIndex<double> &values) const {
-	
-		std::function<double(double, const double*, int)> intgd = integrand;
+
+		std::function<double(double, const std::vector<double>&, int)> intgd = integrand;
 
 		int npA = shellA.nprimitive();
 		int npB = shellB.nprimitive();
@@ -304,8 +304,8 @@ namespace libecpint {
 		// Reset grid starting points
 		const auto start = 0;
 		const auto end = gridSize-1;
-	
-		double Utab[gridSize];
+
+		std::vector<double> Utab(gridSize);
 		buildU(U, l, N, smallGrid, Utab);
 		values.assign(l1end+1, l2end+1, 0.0);
 	
@@ -320,7 +320,7 @@ namespace libecpint {
 		// Build the integrals
 		bool foundStart, tooSmall;
 		std::vector<int> tests((l1end +1) * (l2end+1));
-		double params[gridSize]; 
+		std::vector<double> params(gridSize);
 		bool failed = false;
 		int ix = 0;
 		for (int l1 = 0; l1 <= l1end; l1++) {
@@ -359,20 +359,20 @@ namespace libecpint {
 					const auto end = gridSize - 1;
 			
 					// Build U and bessel tabs
-					double Utab2[gridSize];
+					std::vector<double> Utab2(gridSize);
 					buildU(U, l, N, newGrid, Utab2);
 					buildBessel(gridPoints2, gridSize, l1end, Fa, 2.0*zeta_a*A);
 					buildBessel(gridPoints2, gridSize, l2end, Fb, 2.0*zeta_b*B);
-				
-					double Xvals[gridSize];
+
+					std::vector<double> Xvals(gridSize);
 					double ria, rib;
 					for (int i = 0; i < gridSize; i++) {
 						ria = gridPoints2[i] - A;
 						rib = gridPoints2[i] - B;
 						Xvals[i] = std::exp(-zeta_a*ria*ria -zeta_b*rib*rib) * Utab2[i];
 					}
-				
-					double params2[gridSize]; 
+
+					std::vector<double> params2(gridSize);
 					ix = 0;
 					for (int l1 = 0; l1 <= l1end; l1++) {
 						int l2start = (l1 + N) % 2; 

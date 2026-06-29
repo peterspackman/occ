@@ -298,12 +298,12 @@ CEModelCrystalGrowthCalculator::CEModelCrystalGrowthCalculator(
 void CEModelCrystalGrowthCalculator::dipole_correction() {
   auto dipoles = calculate_net_dipole(m_gas_phase_wavefunctions, m_full_dimers);
   double V =
-      4.0 * M_PI * m_outer_radius * m_outer_radius * m_outer_radius / 3.0;
+      4.0 * std::numbers::pi_v<double> * m_outer_radius * m_outer_radius * m_outer_radius / 3.0;
   for (int i = 0; i < dipoles.size(); i++) {
     const auto &dipole = dipoles[i];
     occ::log::debug("Net dipole for molecule shell {} = ({:.3f} {:.3f} {:.3f})",
                     i, dipole(0), dipole(1), dipole(2));
-    double e = -2 * M_PI * dipole.squaredNorm() / (3 * V) *
+    double e = -2 * std::numbers::pi_v<double> * dipole.squaredNorm() / (3 * V) *
                occ::units::AU_TO_KJ_PER_MOL;
     occ::log::debug("Energy = {:.6f} kJ/mol ({:.3f} per molecule)", e,
                     e / (2 * m_full_dimers.molecule_neighbors[i].size()));

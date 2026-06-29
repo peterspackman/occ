@@ -12,6 +12,7 @@
 #include <occ/opt/dihedral_coordinate.h>
 #include <occ/core/units.h>
 #include <cmath>
+#include <numbers>    
 
 namespace occ::opt {
 
@@ -90,7 +91,7 @@ occ::Mat3N DihedralCoordinate::gradient(const occ::Mat3N &coords) const {
   occ::Mat3N grad(3, 4);
 
   // Lines 164-174 - case abs(phi) > pi - 1e-6
-  if (std::abs(phi) > M_PI - 1e-6) {
+  if (std::abs(phi) > std::numbers::pi_v<double> - 1e-6) {
     occ::Vec3 g = cross(w, a1);
     g = g / g.norm();
     double A = v1.dot(ew) / w.norm();

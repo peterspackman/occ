@@ -10,6 +10,7 @@
 #include <occ/gto/shell.h>
 #include <string>
 #include <vector>
+#include <numbers>
 
 namespace occ::gto {
 
@@ -100,7 +101,7 @@ inline double cartesian_normalization_factor(int l, int m, int n) {
                 (double_factorial_2n_1(l) * double_factorial_2n_1(m) *
                  double_factorial_2n_1(n)));
   if (angular_momenta > 1) {
-    result /= 2 * std::sqrt(M_PI / (2 * angular_momenta + 1));
+    result /= 2 * std::sqrt(std::numbers::pi_v<double> / (2 * angular_momenta + 1));
   }
   return result;
 }

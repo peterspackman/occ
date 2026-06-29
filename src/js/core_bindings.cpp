@@ -17,6 +17,7 @@
 #include <occ/core/point_charge.h>
 #include <occ/core/point_group.h>
 #include <occ/io/xyz.h>
+#include <numbers>
 
 using namespace emscripten;
 using namespace occ::core;
@@ -611,7 +612,7 @@ void register_core_bindings() {
              // Generate points on a sphere
              for (int i = 0; i < num_points; ++i) {
                double theta =
-                   (static_cast<double>(i) / num_points) * 2.0 * M_PI;
+                   (static_cast<double>(i) / num_points) * 2.0 * std::numbers::pi_v<double>;
                Vec3 direction(std::cos(theta), std::sin(theta),
                               0.0); // For 2D visualization in xy plane
 

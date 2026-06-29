@@ -6,6 +6,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/unitcell.h>
 #include <occ/xtb/periodic.h>
+#include <numbers>    
 
 namespace occ::xtb {
 
@@ -79,7 +80,7 @@ PeriodicSystem PeriodicSystem::from_crystal(const crystal::Crystal &c) {
 Mat3 PeriodicSystem::reciprocal_bohr() const {
   // 2π × (A^-1)^T, with A having columns a, b, c.
   Mat3 b = lattice_bohr.inverse().transpose();
-  return 2.0 * M_PI * b;
+  return 2.0 * std::numbers::pi_v<double> * b;
 }
 
 } // namespace occ::xtb

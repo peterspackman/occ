@@ -1,4 +1,5 @@
 #include <catch2/catch_all.hpp>
+#include <libecpint/mathutil.hpp>
 #include <fmt/core.h>
 #include <nlohmann/json.hpp>
 #include <occ/core/linear_algebra.h>
@@ -10,6 +11,8 @@
 #include <occ/opt/internal_coordinates.h>
 #include <occ/opt/linear_search.h>
 #include <occ/opt/species_data.h>
+#include <numbers>
+    
 
 using namespace occ::opt;
 
@@ -716,7 +719,7 @@ TEST_CASE("Species Data Validation", "[species_data][validation]") {
 
     // Hexagon geometry
     for (int i = 0; i < 6; i++) {
-      double angle = i * M_PI / 3.0;
+      double angle = i * std::numbers::pi_v<double> / 3.0;
       positions.col(i) =
           occ::Vec3(r * cos(angle), r * sin(angle), 0.0); // C atoms
       positions.col(i + 6) = occ::Vec3((r + rh) * cos(angle),

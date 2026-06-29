@@ -59,7 +59,7 @@ namespace libecpint {
 		double tolerance;
 	
 		/// This integrand simply returns the pretabulated integrand values stored in p given an index ix
-		static double integrand(double r, const double *p, int ix);
+		static double integrand(double r, const std::vector<double>& p, int ix);
 
 		/**
 		* Builds a matrix of Bessel at the given points up to the given maximum angular momentum. 
@@ -81,8 +81,8 @@ namespace libecpint {
 		* @param grid - the quadrature grid to be used
 		* @param Utab - the array to put the values into.
 		*/
-		void buildU(const ECP &U, const int l, const int N, const GCQuadrature &grid, double *Utab) const;
-	
+		void buildU(const ECP &U, const int l, const int N, const GCQuadrature &grid, std::vector<double>& Utab) const;
+
 		/**
 		* Tabulate the F function values for the default mode of calculating type 2 integrals.
 		* @param shell - the shell of orbital basis functions to tabulate over
@@ -160,7 +160,7 @@ namespace libecpint {
 		* @param small - the maximum number of quadrature points for the small integration grid (default 256, minimum recommended)
 		* @param large - the maximum number of quadrature points for the large integration grid (default 1024, minimum recommended)
 		*/
-		void init(int maxL, double tol = 1e-15, int small = 256, int large = 1024);
+		void init(int maxL, double tol = 1e-15, int m_small = 256, int large = 1024); // There is a macro in MSVC called small
 
     /// struct to store all parameters needed in both type 1 and 2 integrations
 		struct Parameters {

@@ -1,4 +1,5 @@
-add_library(occ_solvent
+add_library(occ_solvent_obj
+    OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/draco.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parameters.cpp"
@@ -14,14 +15,11 @@ add_library(occ_solvent
     "${CMAKE_CURRENT_SOURCE_DIR}/../scrf/reaction_field.cpp"
     ${OCC_SOLVENT_INCLUDE_FILES}
 )
+add_library(occ_solvent $<TARGET_OBJECTS:occ_solvent_obj>)
+target_include_directories(occ_solvent_obj PUBLIC ${OCC_INCLUDE_DIR})
+target_link_libraries(occ_solvent_obj PUBLIC occ_core occ_numint)
 
-target_link_libraries(occ_solvent
-    PUBLIC
-    occ_core
-    occ_numint
-)
-target_include_directories(occ_solvent PUBLIC 
-    ${OCC_INCLUDE_DIR} 
-)
+target_link_libraries(occ_solvent PUBLIC occ_core occ_numint)
+target_include_directories(occ_solvent PUBLIC ${OCC_INCLUDE_DIR})
 
 target_compile_features(occ_solvent PUBLIC cxx_std_20)

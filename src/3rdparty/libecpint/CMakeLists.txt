@@ -141,7 +141,7 @@ add_library(libecpint_static
     "${CMAKE_CURRENT_SOURCE_DIR}/Faddeeva.cpp"
 )
 
-target_compile_features(libecpint_static PUBLIC cxx_std_11)
+target_compile_features(libecpint_static PUBLIC cxx_std_20)
 
 set(OCC_3RDPARTY_LIBECPINT_INCLUDE_DIR
   "${CMAKE_CURRENT_SOURCE_DIR}"

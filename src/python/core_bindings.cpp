@@ -313,9 +313,9 @@ nb::module_ register_core_bindings(nb::module_ &m) {
                 n_theta, std::vector<double>(n_phi));
 
             for (int i = 0; i < n_theta; i++) {
-              theta[i] = M_PI * i / (n_theta - 1);
+              theta[i] = std::numbers::pi_v<double> * i / (n_theta - 1);
               for (int j = 0; j < n_phi; j++) {
-                phi[j] = 2 * M_PI * j / (n_phi - 1);
+                phi[j] = 2 * std::numbers::pi_v<double> * j / (n_phi - 1);
 
                 // Convert to Cartesian coordinates
                 Eigen::Vector3d dir;

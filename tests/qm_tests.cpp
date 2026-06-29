@@ -445,7 +445,7 @@ TEST_CASE("Water 3-21G basis set rotation energy consistency", "[basis]") {
   basis.set_pure(false);
   fmt::print("basis.size() {}\n", basis.size());
   Mat3 rotation =
-      Eigen::AngleAxisd(M_PI / 2, occ::Vec3{0, 1, 0}).toRotationMatrix();
+      Eigen::AngleAxisd(std::numbers::pi_v<double> / 2, occ::Vec3{0, 1, 0}).toRotationMatrix();
   fmt::print("Rotation by:\n{}\n", format_matrix(rotation));
 
   auto hf = HartreeFock(basis);
@@ -1471,7 +1471,7 @@ TEST_CASE("Electric potential MMD vs libcint", "[esp][mmd]") {
   // Generate test grid points around molecule
   occ::Mat3N points(3, 20);
   for (int i = 0; i < 20; i++) {
-    double theta = 2.0 * M_PI * i / 20.0;
+    double theta = 2.0 * std::numbers::pi_v<double> * i / 20.0;
     double r = 3.0;  // 3 Bohr from origin
     points(0, i) = r * std::cos(theta);
     points(1, i) = r * std::sin(theta);

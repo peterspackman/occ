@@ -26,6 +26,7 @@
 #include "bessel.hpp"
 #include "mathutil.hpp"
 #include <cmath>
+#include <numbers>    
 
 namespace libecpint {
 
@@ -33,7 +34,7 @@ namespace libecpint {
 		double value = 0.0;
 		double value1 = FAST_POW[l](2.0) * FAC[l];
 		value1 = 1.0 / value1; 
-		double value2 = (2.0 * l + 1) * FAC[l - m] / (2.0 * M_PI * FAC[l + m]);
+		double value2 = (2.0 * l + 1) * FAC[l - m] / (2.0 * std::numbers::pi_v<double> * FAC[l + m]);
 		value2 = std::sqrt(value2); 
 		value = value1 * value2;
 		return value;
@@ -107,7 +108,7 @@ namespace libecpint {
 	ThreeIndex<double> AngularIntegral::Pijk(const int maxI) const {
 		int dim = maxI+1;
 		ThreeIndex<double> values(dim, dim, dim);
-		double pi4 = 4.0*M_PI;
+		double pi4 = 4.0*std::numbers::pi_v<double>;
 	
 		values(0, 0, 0) = pi4;
 		for (int i = 1; i <= maxI; i++) {

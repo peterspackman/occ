@@ -236,14 +236,7 @@ void Wavefunction::save(FchkWriter &fchk) {
 
   // nuclear charges
   occ::IVec nums = atomic_numbers();
-  occ::Vec atomic_prop = nums.cast<double>();
-  if (have_ecps) {
-    // set nuclear charges to include ecp
-    const auto &ecp_electrons = basis.ecp_electrons();
-    for (int i = 0; i < atoms.size(); i++) {
-      atomic_prop(i) -= ecp_electrons[i];
-    }
-  }
+  occ::Vec atomic_prop = nuclear_charges(nums);
   fchk.set_vector("Atomic numbers", nums);
   fchk.set_vector("Nuclear charges", atomic_prop);
   fchk.set_vector("Current cartesian coordinates", positions());
@@ -347,7 +340,8 @@ void Wavefunction::save(FchkWriter &fchk) {
   }
 
   // TODO fix this is wrong
-  fchk.set_scalar("Virial ratio", -2 * energy.total / energy.kinetic);
+  // Does this works?
+  fchk.set_scalar("Virial ratio", - (energy.total - energy.kinetic) / energy.kinetic);
   fchk.set_scalar("SCF ratio", energy.total);
   fchk.set_scalar("Total ratio", energy.total);
 

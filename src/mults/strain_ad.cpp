@@ -4,6 +4,7 @@
 #include <occ/core/units.h>
 #include <array>
 #include <cmath>
+#include <numbers>    
 
 namespace occ::mults {
 
@@ -96,7 +97,7 @@ AD6 ad6_exp(const AD6& a) {
 AD6 ad6_erf(const AD6& a) {
     AD6 out;
     const double ev = std::erf(a.v);
-    const double fp = 2.0 / std::sqrt(M_PI) * std::exp(-a.v * a.v);
+    const double fp = 2.0 / std::sqrt(std::numbers::pi_v<double>) * std::exp(-a.v * a.v);
     const double fpp = -2.0 * a.v * fp;
     out.v = ev;
     out.g = fp * a.g;
@@ -243,7 +244,7 @@ AD6R3 ad6r3_erf(const AD6R3& a) {
     out.v = ad6_erf(a.v);
     const AD6 fprime = ad6_mul_scalar(
         ad6_exp(ad6_mul_scalar(ad6_mul(a.v, a.v), -1.0)),
-        2.0 / std::sqrt(M_PI));
+        2.0 / std::sqrt(std::numbers::pi_v<double>));
     for (int k = 0; k < 3; ++k) {
         out.d[k] = ad6_mul(fprime, a.d[k]);
     }
@@ -346,7 +347,7 @@ EwaldExplicitStrainTerms compute_ewald_explicit_strain_terms(
                                             : params.alpha * occ::units::BOHR_TO_ANGSTROM;
     const double two_alpha_over_sqrt_pi = lattice_cache
         ? lattice_cache->two_alpha_over_sqrt_pi
-        : 2.0 * alpha_bohr / std::sqrt(M_PI);
+        : 2.0 * alpha_bohr / std::sqrt(std::numbers::pi_v<double>);
 
     AD6 E_total = ad6_constant(0.0);
     const bool use_taper = (taper != nullptr && taper->is_valid());
@@ -496,7 +497,7 @@ EwaldExplicitStrainTerms compute_ewald_explicit_strain_terms(
                          ad6_mul(G[2], G[2]));
         const double beta = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
         AD6 coeff = ad6_div(ad6_exp(ad6_mul_scalar(G2, -beta)), G2);
-        AD6 pref = ad6_mul_scalar(ad6_mul(invV, coeff), 2.0 * M_PI);
+        AD6 pref = ad6_mul_scalar(ad6_mul(invV, coeff), 2.0 * std::numbers::pi_v<double>);
 
         AD6 Sq_re = ad6_constant(0.0), Sq_im = ad6_constant(0.0);
         AD6 Smu_re = ad6_constant(0.0), Smu_im = ad6_constant(0.0);
@@ -541,7 +542,7 @@ EwaldExplicitStrainTerms compute_ewald_explicit_strain_terms(
         }
     } else {
         Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
-        Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
+        Mat3 B_bohr = 2.0 * std::numbers::pi_v<double> * A_bohr.inverse().transpose();
         double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
         for (int hx = -params.kmax; hx <= params.kmax; ++hx) {
             for (int hy = -params.kmax; hy <= params.kmax; ++hy) {
@@ -675,7 +676,7 @@ EwaldExplicitStrainTerms compute_ewald_explicit_strain_terms(
                              ad6_mul(G[2], G[2]));
             const double beta = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
             AD6 coeff = ad6_div(ad6_exp(ad6_mul_scalar(G2, -beta)), G2);
-            AD6 pref_force = ad6_mul_scalar(ad6_mul(invV, coeff), 4.0 * M_PI);
+            AD6 pref_force = ad6_mul_scalar(ad6_mul(invV, coeff), 4.0 * std::numbers::pi_v<double>);
 
             const size_t n_sites = isites.size();
             std::vector<AD6> cos_phase(n_sites), sin_phase(n_sites), mu_dot_G(n_sites);
@@ -736,7 +737,7 @@ EwaldExplicitStrainTerms compute_ewald_explicit_strain_terms(
             }
         } else {
             Mat3 A_bohr = unit_cell.direct() * occ::units::ANGSTROM_TO_BOHR;
-            Mat3 B_bohr = 2.0 * M_PI * A_bohr.inverse().transpose();
+            Mat3 B_bohr = 2.0 * std::numbers::pi_v<double> * A_bohr.inverse().transpose();
             const double inv_4alpha2 = 1.0 / (4.0 * alpha_bohr * alpha_bohr);
             for (int hx = -params.kmax; hx <= params.kmax; ++hx) {
                 for (int hy = -params.kmax; hy <= params.kmax; ++hy) {

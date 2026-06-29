@@ -8,6 +8,7 @@
 #include <occ/isosurface/projection.h>
 #include <utility>
 #include <vector>
+#include <numbers>    
 
 namespace occ::isosurface {
 
@@ -38,7 +39,7 @@ void refine_sharp_edges(const Func &func, float isovalue,
   weld_vertices(V, N, C, F);
 
   const float cos_thresh =
-      std::cos(double(params.angle_threshold_deg) * M_PI / 180.0);
+      std::cos(double(params.angle_threshold_deg) * std::numbers::pi_v<double> / 180.0);
 
   // Normals are computed in MC-local space; map them to cartesian for
   // non-orthogonal functors (e.g. void surfaces on a skewed lattice).

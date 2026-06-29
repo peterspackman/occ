@@ -117,7 +117,7 @@ Vec eigenvalues_to_frequencies_cm(const Vec &eigenvalues) {
     // sqrt(Hartree/AMU) / Bohr = sqrt(J/kg) / m = 1/s (angular frequency)
     // Then convert to wavenumber: ν̃ = ω / (2πc)
     const double conversion = std::sqrt(units::AU_TO_JOULE / units::AMU_TO_KG) / 
-                             (units::BOHR_TO_METER * 2.0 * M_PI * units::SPEED_OF_LIGHT_CM_PER_S);
+                             (units::BOHR_TO_METER * 2.0 * std::numbers::pi_v<double> * units::SPEED_OF_LIGHT_CM_PER_S);
     
     for (int i = 0; i < eigenvalues.size(); i++) {
         double eigenval = eigenvalues[i];

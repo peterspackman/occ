@@ -7,6 +7,7 @@
 #include <occ/numint/grid_utils.h>
 #include <occ/numint/lebedev.h>
 #include <stdexcept>
+#include <numbers>
 
 namespace occ::numint {
 
@@ -336,9 +337,9 @@ IVec prune_orca_scheme(size_t atomic_number,
 RadialGrid generate_gauss_chebyshev_radial_grid(size_t num_points) {
   RadialGrid result(num_points);
   result.points.setLinSpaced(num_points, 1, num_points * 2 - 1);
-  result.points.array() *= M_PI / (2 * num_points);
+  result.points.array() *= std::numbers::pi_v<double> / (2 * num_points);
   result.points.array() = result.points.array().cos();
-  result.weights.setConstant(M_PI / num_points);
+  result.weights.setConstant(std::numbers::pi_v<double> / num_points);
   return result;
 }
 
@@ -355,7 +356,7 @@ RadialGrid generate_gauss_chebyshev_m3_radial_grid(size_t num_points,
   // Generate Gauss-Chebyshev second kind points: x_k = cos(k*pi/(n+1))
   // for k = 1, ..., n
   for (size_t k = 1; k <= num_points; k++) {
-    double theta = M_PI * k / (num_points + 1);
+    double theta = std::numbers::pi_v<double> * k / (num_points + 1);
     double x = std::cos(theta);
 
     // M3 mapping: r = (xi / ln2) * ln(2 / (1-x))
@@ -365,7 +366,7 @@ RadialGrid generate_gauss_chebyshev_m3_radial_grid(size_t num_points,
     // For M3: dr/dx = xi / (ln2 * (1-x))
     // Gauss-Chebyshev second kind weight: w_k = pi/(n+1) * sin^2(theta)
     double sin_theta = std::sin(theta);
-    double gc_weight = M_PI / (num_points + 1) * sin_theta * sin_theta;
+    double gc_weight = std::numbers::pi_v<double> / (num_points + 1) * sin_theta * sin_theta;
     double drdx = xi / (ln2 * (1.0 - x));
     double weight = gc_weight * drdx;
 
@@ -453,11 +454,11 @@ double lmg_h(const double max_error, const int l, const double guess) {
   (f > max_error) ? (sign = -1.0) : (sign = 1.0);
 
   while (std::fabs(h_old - h) > 1e-14) {
-    c0 = 4.0 * std::sqrt(2.0) * M_PI;
+    c0 = 4.0 * std::sqrt(2.0) * std::numbers::pi_v<double>;
     cm = tgamma(3.0 / 2.0) / tgamma((m + 3.0) / 2.0);
     p0 = 1.0 / h;
-    e0 = std::exp(-M_PI * M_PI / (2.0 * h));
-    pm = std::pow(M_PI / h, m / 2.0);
+    e0 = std::exp(-std::numbers::pi_v<double> * std::numbers::pi_v<double> / (2.0 * h));
+    pm = std::pow(std::numbers::pi_v<double> / h, m / 2.0);
     rd0 = c0 * p0 * e0;
     f = cm * pm * rd0;
 
@@ -557,7 +558,7 @@ RadialGrid generate_becke_radial_grid(size_t num_points, double rm) {
 // Treutler-Alrichs [JCP 102, 346 (1995) - doi:10.1063/1.469408] M4 quadrature
 RadialGrid generate_treutler_alrichs_radial_grid(size_t num_points) {
   RadialGrid result(num_points);
-  double step = M_PI / (num_points + 1);
+  double step = std::numbers::pi_v<double> / (num_points + 1);
   double ln2 = 1 / std::log(2);
   for (size_t i = 1; i <= num_points; i++) {
     double x = cos(i * step);
@@ -675,7 +676,7 @@ AtomGrid generate_atom_grid(size_t atomic_number, const GridSettings &settings,
   } // end else (non-COSX path)
 
   // Apply 4π factor to weights for angular integration
-  radial.weights.array() *= 4 * M_PI;
+  radial.weights.array() *= 4 * std::numbers::pi_v<double>;
 
   // Determine number of angular points, potentially with reduced grid for H, He
   int max_angular = settings.max_angular_points;

@@ -3,6 +3,7 @@
 #include <occ/core/linear_algebra.h>
 #include <occ/dma/quadrature.h>
 #include <stdexcept>
+#include <numbers>    
 
 namespace occ::dma {
 
@@ -100,7 +101,7 @@ std::pair<Vec, Vec> compute_gauss_hermite(int n) {
   }
 
   // Calculate weights using formula w_i = sqrt(π)/[H'_n(x_i)]²
-  const double sqrt_pi = std::sqrt(M_PI);
+  const double sqrt_pi = std::sqrt(std::numbers::pi_v<double>);
   for (int i = 0; i < n; i++) {
     double x = points(i);
     double p0 = 1.0;

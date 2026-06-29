@@ -9,6 +9,7 @@
 #include <occ/isosurface/mesh_utils.h>
 #include <occ/isosurface/projection.h>
 #include <vector>
+#include <numbers>    
 
 namespace occ::isosurface {
 
@@ -51,7 +52,7 @@ inline uint64_t edge_key(int a, int b) {
 // (folding a non-convex quad). Topology only; vertices are untouched.
 inline int flip_sweep(occ::geometry::HalfEdgeMesh &mesh,
                       const std::vector<float> &V, float feat_cos) {
-  const float floor_rad = 1.0f * float(M_PI) / 180.0f;
+  const float floor_rad = 1.0f * float(std::numbers::pi_v<double>) / 180.0f;
   int flips = 0;
   for (int e = 0; e < mesh.n_halfedges(); e++) {
     if (mesh.is_boundary(e) || e > mesh.twin(e))
@@ -328,7 +329,7 @@ inline AngleStats triangle_angle_stats(const std::vector<float> &V,
     mins.push_back(impl::tri_min_angle(impl::vert_at(V, F[3 * f]),
                                        impl::vert_at(V, F[3 * f + 1]),
                                        impl::vert_at(V, F[3 * f + 2])) *
-                   180.0f / float(M_PI));
+                   180.0f / float(std::numbers::pi_v<double>));
   AngleStats s;
   s.nfaces = int(mins.size());
   if (mins.empty())
@@ -356,7 +357,7 @@ void improve_mesh_quality(const Func &func, float isovalue,
     return;
   weld_vertices(V, N, C, F);
   const float feat_cos =
-      std::cos(double(params.feature_angle_deg) * M_PI / 180.0);
+      std::cos(double(params.feature_angle_deg) * std::numbers::pi_v<double> / 180.0);
 
   int total_flips = 0, total_moved = 0, total_collapsed = 0;
   for (int it = 0; it < params.iterations; it++) {

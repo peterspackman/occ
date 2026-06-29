@@ -18,6 +18,7 @@
 #include <occ/opt/species_data.h>
 #include <stack>
 #include <tuple>
+#include <numbers>    
 
 namespace occ::opt {
 
@@ -42,7 +43,7 @@ std::vector<DihedralCoordinate> get_dihedrals_for_bond(
     const MaskMat &bond_matrix,         // Full bond matrix (covalent + VdW)
     bool superweak = false) {
 
-  const double linearity_threshold = 5.0 * M_PI / 180.0; // linearity threshold
+  const double linearity_threshold = 5.0 * std::numbers::pi_v<double> / 180.0; // linearity threshold
   std::vector<DihedralCoordinate> dihedrals;
 
   int center_0, center_1;
@@ -69,7 +70,7 @@ std::vector<DihedralCoordinate> get_dihedrals_for_bond(
   for (int nl : neigh_l) {
     AngleCoordinate angle_l(nl, center_0, center_1);
     double ang = angle_l(positions);
-    if (ang >= linearity_threshold && ang < M_PI - linearity_threshold) {
+    if (ang >= linearity_threshold && ang < std::numbers::pi_v<double> - linearity_threshold) {
       nonlinear_l.push_back(nl);
     }
   }
@@ -77,7 +78,7 @@ std::vector<DihedralCoordinate> get_dihedrals_for_bond(
   for (int nr : neigh_r) {
     AngleCoordinate angle_r(center_0, center_1, nr);
     double ang = angle_r(positions);
-    if (ang >= linearity_threshold && ang < M_PI - linearity_threshold) {
+    if (ang >= linearity_threshold && ang < std::numbers::pi_v<double> - linearity_threshold) {
       nonlinear_r.push_back(nr);
     }
   }
@@ -304,7 +305,7 @@ void InternalCoordinates::build_angle_coordinates() {
       for (size_t i2 = i1 + 1; i2 < neighbors.size(); i2++) {
         AngleCoordinate angle(neighbors[i1], j, neighbors[i2]);
         // condition: angle > pi/4
-        if (angle(m_positions) > M_PI / 4) {
+        if (angle(m_positions) > std::numbers::pi_v<double> / 4) {
           m_angles.push_back(angle);
         }
       }
@@ -444,18 +445,18 @@ Vec InternalCoordinates::to_vector_with_template(const Mat3N &positions,
       int dihedral_idx = i - m_bonds.size() - m_angles.size();
 
       // Check for 2π discontinuity: if abs(abs(diff) - 2π) < π/2
-      if (std::abs(std::abs(diff) - 2.0 * M_PI) < M_PI / 2.0) {
+      if (std::abs(std::abs(diff) - 2.0 * std::numbers::pi_v<double>) < std::numbers::pi_v<double> / 2.0) {
         // Unwrap 2π jump
         double old_val = q(i);
-        q(i) -= 2.0 * M_PI * std::copysign(1.0, diff);
+        q(i) -= 2.0 * std::numbers::pi_v<double> * std::copysign(1.0, diff);
         occ::log::trace("  Dihedral {} unwrapped 2π: {:.8f} -> {:.8f}",
                         dihedral_idx, old_val, q(i));
       }
       // Check for π discontinuity: elif abs(abs(diff) - π) < π/2
-      else if (std::abs(std::abs(diff) - M_PI) < M_PI / 2.0) {
+      else if (std::abs(std::abs(diff) - std::numbers::pi_v<double>) < std::numbers::pi_v<double> / 2.0) {
         // Dihedral flipped by π
         double old_val = q(i);
-        q(i) -= M_PI * std::copysign(1.0, diff);
+        q(i) -= std::numbers::pi_v<double> * std::copysign(1.0, diff);
         swapped_dihedrals.push_back(dihedral_idx);
         occ::log::trace("  Dihedral {} flipped by π: {:.8f} -> {:.8f}",
                         dihedral_idx, old_val, q(i));
@@ -535,7 +536,7 @@ Vec InternalCoordinates::to_vector_with_template(const Mat3N &positions,
     if (should_swap) {
       // Swap angle: q[i] = 2π - q[i]
       double old_val = q(coord_idx);
-      q(coord_idx) = 2.0 * M_PI - q(coord_idx);
+      q(coord_idx) = 2.0 * std::numbers::pi_v<double> - q(coord_idx);
       occ::log::trace("  Angle {} swapped: {:.8f} -> {:.8f}", angle_idx,
                       old_val, q(coord_idx));
     }
