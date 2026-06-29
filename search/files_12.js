@@ -36,7 +36,7 @@ var searchData=
   ['spatial_5fgrid_5fhierarchy_2eh_33',['spatial_grid_hierarchy.h',['../spatial__grid__hierarchy_8h.html',1,'']]],
   ['species_5fdata_2eh_34',['species_data.h',['../species__data_8h.html',1,'']]],
   ['spherical_5fharmonics_2eh_35',['spherical_harmonics.h',['../spherical__harmonics_8h.html',1,'']]],
-  ['spinorbital_2eh_36',['spinorbital.h',['../qm_2spinorbital_8h.html',1,'(Global Namespace)'],['../core_2spinorbital_8h.html',1,'(Global Namespace)']]],
+  ['spinorbital_2eh_36',['spinorbital.h',['../core_2spinorbital_8h.html',1,'(Global Namespace)'],['../qm_2spinorbital_8h.html',1,'(Global Namespace)']]],
   ['split_5fri_5fj_2eh_37',['split_ri_j.h',['../split__ri__j_8h.html',1,'']]],
   ['standard_5fbonds_2eh_38',['standard_bonds.h',['../standard__bonds_8h.html',1,'']]],
   ['steinhardt_2eh_39',['steinhardt.h',['../steinhardt_8h.html',1,'']]],

@@ -204,6 +204,10 @@ Functions</h2></td></tr>
 <tr class="separator:ae511686fd65aa890b10a84b0e8b04aa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6e0de5b65ad14e7e280e4005f7291ce" id="r_aa6e0de5b65ad14e7e280e4005f7291ce"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#aa6e0de5b65ad14e7e280e4005f7291ce">run_scf_subcommand</a> (<a class="el" href="structocc_1_1io_1_1OccInput.html">occ::io::OccInput</a> config)</td></tr>
 <tr class="separator:aa6e0de5b65ad14e7e280e4005f7291ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a696e8d3cc65b1c7e4c9bf7c517b2e706" id="r_a696e8d3cc65b1c7e4c9bf7c517b2e706"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a696e8d3cc65b1c7e4c9bf7c517b2e706">read_input_file</a> (const std::string &amp;filename, <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;config)</td></tr>
+<tr class="separator:a696e8d3cc65b1c7e4c9bf7c517b2e706"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a640588d16f48b5e0b22aa76154a8415e" id="r_a640588d16f48b5e0b22aa76154a8415e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a640588d16f48b5e0b22aa76154a8415e">run_scf_external</a> (<a class="el" href="structocc_1_1io_1_1OccInput.html">occ::io::OccInput</a> config, bool write_wfn=false)</td></tr>
+<tr class="separator:a640588d16f48b5e0b22aa76154a8415e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a8058df9272536fed16b6029325eb18" id="r_a7a8058df9272536fed16b6029325eb18"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a7a8058df9272536fed16b6029325eb18">add_surface_cuts_subcommand</a> (CLI::App &amp;app)</td></tr>
 <tr class="separator:a7a8058df9272536fed16b6029325eb18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae3df6594d05a9ba23c3faa1775bf850" id="r_aae3df6594d05a9ba23c3faa1775bf850"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#aae3df6594d05a9ba23c3faa1775bf850">run_surface_cuts_subcommand</a> (<a class="el" href="structocc_1_1main_1_1SurfaceCutsConfig.html">SurfaceCutsConfig</a>)</td></tr>
@@ -617,6 +621,34 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a696e8d3cc65b1c7e4c9bf7c517b2e706" name="a696e8d3cc65b1c7e4c9bf7c517b2e706"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a696e8d3cc65b1c7e4c9bf7c517b2e706">&#9670;&#160;</a></span>read_input_file()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::main::read_input_file </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;&#160;</td>
+          <td class="paramname"><em>config</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a4f45de1659f29ce03f7bf87d74b7c7d4" name="a4f45de1659f29ce03f7bf87d74b7c7d4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4f45de1659f29ce03f7bf87d74b7c7d4">&#9670;&#160;</a></span>run_cg_subcommand()</h2>
 
@@ -845,6 +877,34 @@ Functions</h2></td></tr>
           <td class="paramtype">const <a class="el" href="structocc_1_1main_1_1RoptSettings.html">RoptSettings</a> &amp;&#160;</td>
           <td class="paramname"><em>settings</em></td><td>)</td>
           <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a640588d16f48b5e0b22aa76154a8415e" name="a640588d16f48b5e0b22aa76154a8415e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a640588d16f48b5e0b22aa76154a8415e">&#9670;&#160;</a></span>run_scf_external()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> occ::main::run_scf_external </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1io_1_1OccInput.html">occ::io::OccInput</a>&#160;</td>
+          <td class="paramname"><em>config</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>write_wfn</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -24,5 +24,6 @@ var occ__input_8h =
       [ "COSX", "occ__input_8h.html#a894c92adce9e11c8a1b87d617a658b50a10c345bee68b3e25f63042a252e2fd5f", null ]
     ] ],
     [ "build", "occ__input_8h.html#a0b4154c8ab12aa7b60925e2a2b6acbe2", null ],
-    [ "build", "occ__input_8h.html#a0b19dda27e50ff77a11e8e61654b1569", null ]
+    [ "build", "occ__input_8h.html#a0b19dda27e50ff77a11e8e61654b1569", null ],
+    [ "read_occ_input_file", "occ__input_8h.html#a07c95c9bffbe9589594766bee0c72c95", null ]
 ];

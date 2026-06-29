@@ -35,6 +35,7 @@ var namespaceocc_1_1main =
     [ "calculate_properties", "namespaceocc_1_1main.html#a0b6643aee3051aa1eea447c1f1225282", null ],
     [ "compute_crystal_face_properties", "namespaceocc_1_1main.html#ab38ec46ca51062894246b862c580c42e", null ],
     [ "print_header", "namespaceocc_1_1main.html#ae6120cd9d924a194e7f3a1decd5cb6d8", null ],
+    [ "read_input_file", "namespaceocc_1_1main.html#a696e8d3cc65b1c7e4c9bf7c517b2e706", null ],
     [ "run_cg_subcommand", "namespaceocc_1_1main.html#a4f45de1659f29ce03f7bf87d74b7c7d4", null ],
     [ "run_cube_subcommand", "namespaceocc_1_1main.html#a45566c667887d1fe07b48523a1189a09", null ],
     [ "run_describe_subcommand", "namespaceocc_1_1main.html#a6d83b8a52ad8058c79d226ae9862255d", null ],
@@ -48,6 +49,7 @@ var namespaceocc_1_1main =
     [ "run_lua_subcommand", "namespaceocc_1_1main.html#aa3a7f383a60a53ee4849930ec816952e", null ],
     [ "run_pair_subcommand", "namespaceocc_1_1main.html#a608fdd74696cf1352fcd7d9ec6879158", null ],
     [ "run_ropt_subcommand", "namespaceocc_1_1main.html#a03d7c48ecc2387cccce5f52aedb13802", null ],
+    [ "run_scf_external", "namespaceocc_1_1main.html#a640588d16f48b5e0b22aa76154a8415e", null ],
     [ "run_scf_subcommand", "namespaceocc_1_1main.html#aa6e0de5b65ad14e7e280e4005f7291ce", null ],
     [ "run_surface_cuts_subcommand", "namespaceocc_1_1main.html#aae3df6594d05a9ba23c3faa1775bf850", null ],
     [ "run_tb_subcommand", "namespaceocc_1_1main.html#a0312636d2f94705235b6febc1eb6cdc9", null ]

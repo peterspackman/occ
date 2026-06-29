@@ -111,6 +111,7 @@ var namespaceocc_1_1io =
     [ "molecule_from_xyz_string", "namespaceocc_1_1io.html#a9e545a9864ef7cba94ea648e321f9899", null ],
     [ "point_charges_from_file", "namespaceocc_1_1io.html#ac7b49e759281fa2bff63c6e075a41559", null ],
     [ "point_charges_from_string", "namespaceocc_1_1io.html#a3903e63674924c2d0b6cf6089690b474", null ],
+    [ "read_occ_input_file", "namespaceocc_1_1io.html#a07c95c9bffbe9589594766bee0c72c95", null ],
     [ "read_structure_json", "namespaceocc_1_1io.html#ac30b5849e35117bc2af97b65535af7a3", null ],
     [ "to_json", "namespaceocc_1_1io.html#adc3dc930bf79a3f6c4326be031c60771", null ],
     [ "to_json", "namespaceocc_1_1io.html#a06c363536c85d337aecd9d3759026626", null ],

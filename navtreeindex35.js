@@ -1,5 +1,11 @@
 var NAVTREEINDEX35 =
 {
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a8b847cfae498e96e3fa08a56cb42b838":[6,0,1,0,1,36,3,2],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5a94f5a64e61ba849a9213f6b6f62b151d":[6,0,1,0,1,36,3,26],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5aa1d6f48030ed59e7372531b3555f8e31":[6,0,1,0,1,36,3,43],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5aa3deb6e481689f1d3303caecb8a6c401":[6,0,1,0,1,36,3,22],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5aa92c5ff6e57ac12e7428f0eb33d9318a":[6,0,1,0,1,36,3,16],
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5aafb0fced528eaac5fe170b763cda5975":[6,0,1,0,1,36,3,44],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5ab1522194d726a396729c3148c2b3a0bd":[6,0,1,0,1,36,3,27],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5ab5b8bab48ec3cbc973327ecd4b9d9c30":[6,0,1,0,1,36,3,38],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5ab713e6323a68d3ddabf4855826c50148":[6,0,1,0,1,36,3,5],
@@ -243,11 +249,5 @@ var NAVTREEINDEX35 =
 "site__mapping__table_8h.html":[6,0,1,0,2,7],
 "site__mapping__table_8h.html#a6c8e32233a002bf82384eb0e55cd3957":[6,0,1,0,2,7,3],
 "slater_2hirshfeld_8h.html":[6,0,1,0,22,0],
-"slaterbasis_8h.html":[6,0,1,0,22,2],
-"slaterbasis_8h.html#a7fddb23edc34637b1d98367d9003096e":[6,0,1,0,22,2,4],
-"slaterbasis_8h.html#aa4a21c8f522e0903b93f679007b7faae":[6,0,1,0,22,2,3],
-"slaterbasis_8h.html#ae12d0bf0b6ac1dd14469ae9cb162fb98":[6,0,1,0,22,2,2],
-"smd_8h.html":[6,0,1,0,23,4],
-"smd_8h.html#a1236a34143bd75c87fb62f12e4a78905":[6,0,1,0,23,4,5],
-"smd_8h.html#a6bad795c92a19cc5e619555fd3960cb4":[6,0,1,0,23,4,4]
+"slaterbasis_8h.html":[6,0,1,0,22,2]
 };

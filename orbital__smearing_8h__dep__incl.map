@@ -46,10 +46,10 @@
 <area shape="poly" id="edge63_Node000002_Node000051" title=" " alt="" coords="2100,134,1514,152,1122,171,725,199,607,212,606,206,724,193,1122,166,1514,147,2100,129"/>
 <area shape="rect" id="Node000052" href="$wavefunction_8h.html" title=" " alt="" coords="2718,203,2973,243"/>
 <area shape="poly" id="edge65_Node000002_Node000052" title=" " alt="" coords="2314,142,2719,201,2718,206,2314,147"/>
-<area shape="rect" id="Node000084" href="$solvation__correction_8h.html" title=" " alt="" coords="2250,504,2428,559"/>
-<area shape="poly" id="edge81_Node000002_Node000084" title=" " alt="" coords="2210,162,2213,219,2222,294,2240,376,2254,417,2271,455,2288,480,2309,502,2305,506,2284,484,2266,457,2249,418,2235,378,2217,295,2208,220,2205,162"/>
-<area shape="rect" id="Node000085" href="$xdm_8h.html" title=" " alt="" coords="4680,203,4883,243"/>
-<area shape="poly" id="edge83_Node000002_Node000085" title=" " alt="" coords="2315,127,2791,129,3471,138,3828,146,4162,158,4451,174,4669,193,4711,201,4710,206,4668,199,4450,179,4162,163,3828,152,3471,143,2790,134,2315,132"/>
+<area shape="rect" id="Node000085" href="$solvation__correction_8h.html" title=" " alt="" coords="2250,504,2428,559"/>
+<area shape="poly" id="edge81_Node000002_Node000085" title=" " alt="" coords="2210,162,2213,219,2222,294,2240,376,2254,417,2271,455,2288,480,2309,502,2305,506,2284,484,2266,457,2249,418,2235,378,2217,295,2208,220,2205,162"/>
+<area shape="rect" id="Node000086" href="$xdm_8h.html" title=" " alt="" coords="4680,203,4883,243"/>
+<area shape="poly" id="edge83_Node000002_Node000086" title=" " alt="" coords="2315,127,2791,129,3471,138,3828,146,4162,158,4451,174,4669,193,4711,201,4710,206,4668,199,4450,179,4162,163,3828,152,3471,143,2790,134,2315,132"/>
 <area shape="rect" id="Node000004" href="$smd__solvation_8h.html" title=" " alt="" coords="2498,607,2674,661"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="2162,550,2498,613,2497,619,2161,555"/>
 <area shape="rect" id="Node000006" href="$point__functors_8h.html" title=" " alt="" coords="1961,607,2157,661"/>
@@ -131,5 +131,5 @@
 <area shape="rect" id="Node000057" href="$vibrational__analysis_8h.html" title=" " alt="" coords="2699,299,2870,353"/>
 <area shape="poly" id="edge76_Node000052_Node000057" title=" " alt="" coords="2830,256,2803,300,2798,297,2825,254"/>
 <area shape="poly" id="edge75_Node000056_Node000005" title=" " alt="" coords="3286,661,3044,718,3043,713,3285,656"/>
-<area shape="poly" id="edge82_Node000084_Node000004" title=" " alt="" coords="2417,561,2523,604,2521,609,2415,566"/>
+<area shape="poly" id="edge82_Node000085_Node000004" title=" " alt="" coords="2417,561,2523,604,2521,609,2415,566"/>
 </map>
