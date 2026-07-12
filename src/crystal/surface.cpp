@@ -267,7 +267,12 @@ bool Surface::check_systematic_absence(const Crystal &crystal, const HKL &hkl) {
     if (symop.is_identity())
       continue;
 
-    Vec3 df = f - symop.rotation() * f;
+    // Miller indices are covariant: F(h) = exp(2*pi*i h.t) F(R^T h), so the
+    // reflection is only constrained by symops whose *transposed* rotation
+    // leaves h invariant. Using R here instead of R^T gives the wrong
+    // absences in the 14 trigonal/hexagonal groups with c-glides, where R
+    // and R^T have different fixed subspaces.
+    Vec3 df = f - symop.rotation().transpose() * f;
     if (df.squaredNorm() < position_tolerance) {
       Vec3 offset = symop.translation();
       offset.array() *= f.array();
@@ -286,7 +291,11 @@ bool Surface::faces_are_equivalent(const Crystal &crystal, const HKL &hkl1,
   IVec3 b(hkl2.h, hkl2.k, hkl2.l);
   for (const auto &symop : crystal.space_group().symmetry_operations()) {
     Eigen::Matrix3i rot = symop.rotation().cast<int>();
-    IVec3 a_rotated = rot * a;
+    // A face (hkl) maps under (R|t) to (R^T)^-1 h; since the group is closed
+    // under inversion, the orbit of h is its orbit under {R^T}. Applying R
+    // rather than R^T partitions faces incorrectly whenever the lattice basis
+    // is non-orthogonal, i.e. for all 52 trigonal/hexagonal space groups.
+    IVec3 a_rotated = rot.transpose() * a;
     if (b == a_rotated)
       return true;
   }

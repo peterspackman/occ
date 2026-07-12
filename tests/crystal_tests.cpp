@@ -327,6 +327,65 @@ auto acetic_acid_crystal() {
   return Crystal(asym, sg, cell);
 }
 
+// A minimal P6_3/mmc crystal: only the cell and space group matter for the
+// hkl-symmetry tests below.
+auto hexagonal_p63mmc_crystal() {
+  const std::vector<std::string> labels = {"Mg1"};
+  occ::IVec nums(1);
+  nums(0) = occ::core::Element("Mg").atomic_number();
+  occ::Mat positions(1, 3);
+  positions << 0.3333333333, 0.6666666667, 0.25;
+  AsymmetricUnit asym = AsymmetricUnit(positions.transpose(), nums, labels);
+  SpaceGroup sg(194);
+  UnitCell cell = occ::crystal::hexagonal_cell(3.21, 5.21);
+  return Crystal(asym, sg, cell);
+}
+
+TEST_CASE("Systematic absences use the transposed rotation",
+          "[crystal, surface, absence]") {
+  // Miller indices are covariant: F(h) = exp(2*pi*i h.t) F(R^T h), so an
+  // absence requires R^T h == h, not R h == h. The two differ in the 14
+  // trigonal/hexagonal groups with c-glides.
+  //
+  // P6_3/mmc conditions (ITA no. 194): 000l: l = 2n, and hhl: l = 2n.
+  Crystal c = hexagonal_p63mmc_crystal();
+
+  // genuinely absent
+  REQUIRE(Surface::check_systematic_absence(c, HKL{0, 0, 1})); // 6_3 screw
+  REQUIRE(Surface::check_systematic_absence(c, HKL{1, 1, 1})); // c-glide, hhl
+
+  // genuinely present -- (1,0,1) is h0l, which carries no condition.
+  // The old R*h test wrongly reported this one as absent.
+  REQUIRE_FALSE(Surface::check_systematic_absence(c, HKL{1, 0, 1}));
+
+  // controls, unaffected by the fix
+  REQUIRE_FALSE(Surface::check_systematic_absence(c, HKL{0, 0, 2}));
+  REQUIRE_FALSE(Surface::check_systematic_absence(c, HKL{1, 0, 2}));
+  REQUIRE_FALSE(Surface::check_systematic_absence(c, HKL{1, -1, 1}));
+}
+
+TEST_CASE("Face equivalence uses the transposed rotation",
+          "[crystal, surface, absence]") {
+  // A face (hkl) maps to (R^T)^-1 h, so its orbit is taken under {R^T}.
+  // In a hexagonal basis {R} and {R^T} generate different orbits.
+  Crystal c = hexagonal_p63mmc_crystal();
+
+  // The first-order prism {10-10}: (100) (010) (-110) and their negatives.
+  REQUIRE(Surface::faces_are_equivalent(c, HKL{1, 0, 0}, HKL{0, 1, 0}));
+  REQUIRE(Surface::faces_are_equivalent(c, HKL{1, 0, 0}, HKL{-1, 1, 0}));
+
+  // The second-order prism {11-20}: (110) (-1-10) (2-10) ...
+  REQUIRE(Surface::faces_are_equivalent(c, HKL{1, 1, 0}, HKL{-1, -1, 0}));
+  REQUIRE(Surface::faces_are_equivalent(c, HKL{1, 1, 0}, HKL{2, -1, 0}));
+
+  // These are two *distinct* forms. The old R*h test conflated them, and
+  // also missed (-1,1,0) as a member of {10-10}.
+  REQUIRE_FALSE(Surface::faces_are_equivalent(c, HKL{1, 0, 0}, HKL{1, 1, 0}));
+
+  // basal vs prism faces are not equivalent
+  REQUIRE_FALSE(Surface::faces_are_equivalent(c, HKL{0, 0, 1}, HKL{1, 0, 0}));
+}
+
 TEST_CASE("Crystal Surface construction", "[crystal, surface]") {
   Crystal a = acetic_acid_crystal();
   HKL m010{0, 1, 0};
