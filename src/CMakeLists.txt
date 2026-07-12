@@ -85,6 +85,7 @@ endif()
 if(ENABLE_JS_BINDINGS)
 
 set(JS_BINDING_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/js/cg_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/core_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/qm_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/js/dft_bindings.cpp"
