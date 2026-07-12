@@ -17,6 +17,7 @@
 // materialize to a concrete `Mat3N` / `Vec3` / etc. before returning.
 
 #include "eigen_conv.h"
+#include <complex>
 #include <fmt/core.h>
 #include <occ/core/format_matrix.h>
 #include <sstream>
@@ -24,6 +25,32 @@
 #include <type_traits>
 
 namespace occ::lua_bindings {
+
+template <typename T> struct is_std_complex : std::false_type {};
+template <typename T>
+struct is_std_complex<std::complex<T>> : std::true_type {};
+template <typename T>
+inline constexpr bool is_std_complex_v = is_std_complex<T>::value;
+
+/// Read a scalar of type `Scalar` out of a Lua value. Complex scalars accept a
+/// plain number (taken as the real part), a `{re, im}` pair, or a `Complex`
+/// userdata.
+template <typename Scalar>
+inline Scalar scalar_from_luaref(const luabridge::LuaRef &v) {
+  if constexpr (is_std_complex_v<Scalar>) {
+    using Real = typename Scalar::value_type;
+    if (v.isNumber())
+      return Scalar(static_cast<Real>(v.unsafe_cast<double>()), Real{0});
+    if (v.isTable()) {
+      const double re = v[1].template cast<double>().valueOr(0.0);
+      const double im = v[2].template cast<double>().valueOr(0.0);
+      return Scalar(static_cast<Real>(re), static_cast<Real>(im));
+    }
+    return v.unsafe_cast<Scalar>();
+  } else {
+    return static_cast<Scalar>(v.unsafe_cast<double>());
+  }
+}
 
 // Thin handle into a parent matrix. The pointer is only safe while the
 // parent's Lua userdata is alive — Lua tables holding both the parent
@@ -45,7 +72,11 @@ inline std::string format_matrix_str(const Mat &m, const std::string &kind) {
   for (int i = 0; i < m.rows(); ++i) {
     ss << "  [" << (i + 1) << "]";
     for (int j = 0; j < m.cols(); ++j) {
-      if constexpr (std::is_integral_v<typename Mat::Scalar>) {
+      if constexpr (is_std_complex_v<typename Mat::Scalar>) {
+        ss << fmt::format(fmt::runtime(" {: 10.6f}{:+10.6f}i"),
+                          static_cast<double>(m(i, j).real()),
+                          static_cast<double>(m(i, j).imag()));
+      } else if constexpr (std::is_integral_v<typename Mat::Scalar>) {
         ss << fmt::format(fmt::runtime(" {:>10d}"),
                           static_cast<long long>(m(i, j)));
       } else {
@@ -63,7 +94,11 @@ inline std::string format_vector_str(const Vec &v, const std::string &kind) {
   std::ostringstream ss;
   ss << kind << "[" << v.size() << "] [";
   for (int i = 0; i < v.size(); ++i) {
-    if constexpr (std::is_integral_v<typename Vec::Scalar>) {
+    if constexpr (is_std_complex_v<typename Vec::Scalar>) {
+      ss << fmt::format(fmt::runtime(" {: 10.6f}{:+10.6f}i"),
+                        static_cast<double>(v(i).real()),
+                        static_cast<double>(v(i).imag()));
+    } else if constexpr (std::is_integral_v<typename Vec::Scalar>) {
       ss << fmt::format(fmt::runtime(" {:>10d}"), static_cast<long long>(v(i)));
     } else {
       ss << fmt::format(fmt::runtime(" {: 12.6f}"), static_cast<double>(v(i)));
@@ -103,8 +138,8 @@ inline Mat *build_matrix_from_table(const luabridge::LuaRef &t) {
       throw std::runtime_error("matrix constructor: nested table expected");
     }
     for (int j = 0; j < cols; ++j) {
-      (*m)(i, j) = static_cast<Scalar>(
-          row->operator[](j + 1).template cast<double>().valueOr(0.0));
+      (*m)(i, j) = scalar_from_luaref<Scalar>(
+          row->operator[](j + 1).template cast<luabridge::LuaRef>().value());
     }
   }
   return m;
@@ -123,8 +158,8 @@ inline Vec *build_vector_from_table(const luabridge::LuaRef &t) {
                              " does not match fixed type");
   }
   for (int i = 0; i < n; ++i) {
-    (*v)(i) =
-        static_cast<Scalar>(t[i + 1].template cast<double>().valueOr(0.0));
+    (*v)(i) = scalar_from_luaref<Scalar>(
+        t[i + 1].template cast<luabridge::LuaRef>().value());
   }
   return v;
 }
@@ -188,8 +223,7 @@ void register_matrix_userdata(lua_State *L, const std::string &name) {
           luaL_error(S, "row index out of range");
           return lb::LuaRef(S);
         }
-        (*r.mat)(r.row, j - 1) =
-            static_cast<Scalar>(value.unsafe_cast<double>());
+        (*r.mat)(r.row, j - 1) = scalar_from_luaref<Scalar>(value);
         return lb::LuaRef(S);
       })
       .addFunction(
@@ -198,7 +232,11 @@ void register_matrix_userdata(lua_State *L, const std::string &name) {
             std::ostringstream ss;
             ss << row_name << "[" << (r->row + 1) << "] [";
             for (int j = 0; j < r->mat->cols(); ++j) {
-              if constexpr (std::is_integral_v<Scalar>) {
+              if constexpr (is_std_complex_v<Scalar>) {
+                ss << fmt::format(" {: 10.6f}{:+10.6f}i",
+                                  (*r->mat)(r->row, j).real(),
+                                  (*r->mat)(r->row, j).imag());
+              } else if constexpr (std::is_integral_v<Scalar>) {
                 ss << fmt::format(" {:>10d}",
                                   static_cast<long long>((*r->mat)(r->row, j)));
               } else {
@@ -299,8 +337,8 @@ void register_matrix_userdata(lua_State *L, const std::string &name) {
           return lb::LuaRef(S);
         }
         for (int j = 0; j < m.cols(); ++j) {
-          m(i - 1, j) = static_cast<Scalar>(
-              value[j + 1].template cast<double>().valueOr(0.0));
+          m(i - 1, j) = scalar_from_luaref<Scalar>(
+              value[j + 1].template cast<lb::LuaRef>().value());
         }
         return lb::LuaRef(S);
       })
@@ -394,7 +432,7 @@ void register_vector_userdata(lua_State *L, const std::string &name) {
           luaL_error(S, "vector index out of range");
           return lb::LuaRef(S);
         }
-        v(i - 1) = static_cast<Scalar>(value.unsafe_cast<double>());
+        v(i - 1) = scalar_from_luaref<Scalar>(value);
         return lb::LuaRef(S);
       })
       .addFunction("__tostring",
@@ -417,7 +455,36 @@ void register_vector_userdata(lua_State *L, const std::string &name) {
         .endClass()
         .endNamespace();
   }
+
+  // Complex-only conveniences: the componentwise views a caller actually wants
+  // (e.g. |F(hkl)|^2 from a vector of structure factors).
+  if constexpr (is_std_complex_v<Scalar>) {
+    lb::getGlobalNamespace(L)
+        .beginNamespace("occ")
+        .template beginClass<Vec>(name.c_str())
+        .addFunction(
+            "real", +[](const Vec *v) -> occ::Vec { return v->real(); })
+        .addFunction(
+            "imag", +[](const Vec *v) -> occ::Vec { return v->imag(); })
+        .addFunction(
+            "abs",
+            +[](const Vec *v) -> occ::Vec { return v->cwiseAbs(); })
+        .addFunction(
+            "squared_abs",
+            +[](const Vec *v) -> occ::Vec { return v->cwiseAbs2(); })
+        .addFunction(
+            "conjugate", +[](const Vec *v) -> Vec { return v->conjugate(); })
+        .addFunction(
+            "norm", +[](const Vec *v) { return v->norm(); })
+        .endClass()
+        .endNamespace();
+  }
 }
+
+/// Register std::complex<double> as the Lua class `Complex`. Required before
+/// any complex-valued Eigen type can cross the boundary, since LuaBridge needs
+/// a Stack<> for the scalar.
+void register_complex_userdata(lua_State *L);
 
 void register_eigen_matrix_types(lua_State *L);
 
