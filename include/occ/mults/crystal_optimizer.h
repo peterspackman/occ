@@ -261,8 +261,10 @@ public:
 
 private:
     CrystalOptimizerSettings m_settings;
-    CrystalEnergy m_energy;
+    // Declared before m_energy: the setup-based constructor reads the setup
+    // here before std::move-ing it into m_energy.
     crystal::Crystal m_reference_crystal;      ///< Reference crystal for cell strain DOF
+    CrystalEnergy m_energy;
     std::vector<MoleculeState> m_states;        ///< All Z UC molecule states
     std::vector<MoleculeState> m_initial_states;
     std::vector<MoleculeState> m_initial_independent_states;
@@ -368,6 +370,10 @@ private:
 
     /// Initialize cell strain component mask from the reference unit cell.
     void initialize_cell_strain_mask();
+
+    /// Shared constructor tail: build the symmetry mapping, count DOF and pick
+    /// the optimization method. Requires m_states and m_reference_crystal.
+    void finalize_dof_and_symmetry();
 
     /// Apply strain to a crystal and molecular COM positions.
     std::pair<crystal::Crystal, std::vector<MoleculeState>>

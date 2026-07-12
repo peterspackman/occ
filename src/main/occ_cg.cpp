@@ -2,6 +2,7 @@
 #include <memory>
 #include <occ/driver/cg_runner.h>
 #include <occ/main/occ_cg.h>
+#include <occ/mults/dma_cg.h>
 #include <occ/solvent/solvation_correction.h>
 
 namespace occ::main {
@@ -16,7 +17,22 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
   cg->add_option("-r,--radius", config->lattice_settings.max_radius,
                  "maximum radius (Angstroms) for neighbours");
   cg->add_option("-m,--model", config->lattice_settings.model_name,
-                 "energy model");
+                 "energy model for pair interactions:\n"
+                 "  ce-b3lyp (default), ce-hf, ce-1p, ce-2p, ce-5p  "
+                 "CrystalExplorer DFT models\n"
+                 "  gfn1, gfn2 (also gfn2-xtb, ...)                 "
+                 "tight-binding via the in-tree xtb backend\n"
+                 "  williams, dma                                   "
+                 "DMA multipoles + element-based exp-6 (Williams-DE)\n"
+                 "  fit, w99                                        "
+                 "DMA multipoles + typed exp-6 (FIT / Williams-99)");
+  cg->add_option("--dma-model", config->dma_reference.model,
+                 "DMA reference model implying method+basis (default ce-b3lyp); "
+                 "only used by the dma/williams models");
+  cg->add_option("--dma-method", config->dma_reference.method,
+                 "override the DMA reference QM method (default: from --dma-model)");
+  cg->add_option("--dma-basis", config->dma_reference.basis,
+                 "override the DMA reference basis set (default: from --dma-model)");
   cg->add_option(
       "--convergence-threshold,--convergence_threshold",
       config->lattice_settings.energy_tolerance,
@@ -52,6 +68,9 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
       "must have geometric centroids in the range [0,1) (default: true)");
   cg->add_option("--surface-energies", config->max_facets,
                  "Calculate surface energies and write .gmf morphology files");
+  cg->add_flag("--morphology", config->compute_morphology,
+               "Compute particle size/shape-dependent (surface/edge/corner) "
+               "energies; implies --surface-energies");
   cg->add_flag("--list-available-solvents", config->list_solvents,
                "List available solvents and exit");
   cg->fallthrough();
@@ -64,7 +83,7 @@ void run_cg_subcommand(occ::driver::CGConfig const &config) {
     occ::solvent::list_available_solvents();
     return;
   }
-  (void)occ::driver::run_cg(config);
+  (void)occ::mults::run_crystal_growth(config);
 }
 
 } // namespace occ::main

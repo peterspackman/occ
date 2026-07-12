@@ -8,7 +8,6 @@
 #include <occ/interaction/xtb_energy_model.h>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
-#include <occ/xtb/xtb_wrapper.h>
 
 namespace fs = std::filesystem;
 using occ::interaction::CEEnergyModel;

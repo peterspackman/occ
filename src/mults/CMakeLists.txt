@@ -29,6 +29,9 @@ add_library(occ_mults_obj
     mstmin.cpp
     trust_region.cpp
     force_field_params.cpp
+    dimer_interaction.cpp
+    dma_energy_model.cpp
+    dma_cg.cpp
     strain_ad.cpp
     crystal_energy.cpp
     crystal_optimizer.cpp

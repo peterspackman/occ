@@ -6,15 +6,23 @@
 
 namespace occ::xtb {
 
-class XTBCalculator {
+/// External-process GFN1/GFN2 driver: shells out to an `xtb` binary and
+/// exchanges geometry/energy via fixed-name files in the current working
+/// directory.
+///
+/// \warning Not safe for parallel use (the fixed file names race across
+/// threads) and requires `xtb` on PATH. Prefer the in-process \ref
+/// XtbCalculator (xtb_calculator.h); this class is retained for validation
+/// against a reference xtb binary.
+class ExternalXtbCalculator {
 public:
   enum class Method { GFN1, GFN2 };
-  XTBCalculator(const occ::core::Molecule &mol);
-  XTBCalculator(const occ::core::Dimer &dimer);
-  XTBCalculator(const occ::core::Molecule &mol, Method method);
-  XTBCalculator(const occ::core::Dimer &dimer, Method method);
-  XTBCalculator(const occ::crystal::Crystal &crystal);
-  XTBCalculator(const occ::crystal::Crystal &crystal, Method method);
+  ExternalXtbCalculator(const occ::core::Molecule &mol);
+  ExternalXtbCalculator(const occ::core::Dimer &dimer);
+  ExternalXtbCalculator(const occ::core::Molecule &mol, Method method);
+  ExternalXtbCalculator(const occ::core::Dimer &dimer, Method method);
+  ExternalXtbCalculator(const occ::crystal::Crystal &crystal);
+  ExternalXtbCalculator(const occ::crystal::Crystal &crystal, Method method);
 
   double single_point_energy();
   inline const auto &positions() const { return m_positions_bohr; }

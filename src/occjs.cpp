@@ -1,3 +1,4 @@
+#include "js/cg_bindings.h"
 #include "js/core_bindings.h"
 #include "js/qm_bindings.h"
 #include "js/dft_bindings.h"
@@ -32,11 +33,12 @@ EMSCRIPTEN_BINDINGS(occ) {
     register_mults_bindings();
     register_volume_bindings();
     register_xtb_bindings();
+    register_cg_bindings();
 
     // Global utility functions
     // Note: LogLevel enum and logging functions are now registered in core_bindings.cpp
     function("setLogFile", &occ::log::set_log_file);
 
     // Version information
-    constant("version", std::string("0.9.1"));
+    constant("version", std::string("0.9.2"));
 }

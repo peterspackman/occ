@@ -19,6 +19,7 @@
 #include <occ/core/parallel.h>
 #include <occ/driver/cg_runner.h>
 #include <occ/gto/shell.h>
+#include <occ/mults/dma_cg.h>
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -55,12 +56,12 @@ NB_MODULE(_occpy, m) {
   // Add the main calculation function
   m.def("calculate_crystal_growth_energies",
         [](const occ::driver::CGConfig &config) {
-          return occ::driver::run_cg(config);
+          return occ::mults::run_crystal_growth(config);
         });
 
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
-  m.attr("__version__") = "0.9.1";
+  m.attr("__version__") = "0.9.2";
 #endif
 }

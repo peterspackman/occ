@@ -108,6 +108,10 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def("asymmetric_molecule_idx", &Molecule::asymmetric_molecule_idx,
            "Get index of this molecule's asymmetric unit molecule")
       .def("asymmetric_unit_idx", &Molecule::asymmetric_unit_idx)
+      .def("unit_cell_idx", &Molecule::unit_cell_idx,
+           "Per-atom unit cell molecule indices")
+      .def("unit_cell_shift", &Molecule::unit_cell_shift,
+           "Per-atom unit cell (h,k,l) shifts")
       .def("is_equivalent_to", &Molecule::is_equivalent_to)
       .def("cell_shift", &Molecule::cell_shift)
       .def("rotate",
@@ -203,6 +207,15 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def_prop_ro("centroid_distance", &Dimer::centroid_distance)
       .def("symmetry_relation", &Dimer::symmetry_relation)
       .def_prop_rw("name", &Dimer::name, &Dimer::set_name)
+      .def_prop_rw("interaction_id", &Dimer::interaction_id,
+                   &Dimer::set_interaction_id,
+                   "Index identifying which unique interaction this dimer "
+                   "represents")
+      .def("interaction_energy", &Dimer::interaction_energy, "key"_a = "Total",
+           "Get the stored interaction energy (component given by key)")
+      .def("set_interaction_energy", &Dimer::set_interaction_energy, "energy"_a,
+           "key"_a = "Total",
+           "Set the stored interaction energy (component given by key)")
       .def("v_ab_com", &Dimer::v_ab_com);
 
   using occ::Mat6;

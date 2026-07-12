@@ -6,6 +6,8 @@
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/dft/dft.h>
 #include <occ/driver/crystal_growth.h>
+#include <occ/driver/crystal_morphology.h>
+#include <optional>
 #include <occ/geometry/wulff.h>
 #include <occ/interaction/disp.h>
 #include <occ/interaction/polarization.h>
@@ -19,6 +21,7 @@
 #include <occ/isosurface/ply.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/io/xyz.h>
+#include <occ/driver/cg_pipeline.h>
 #include <occ/driver/cg_runner.h>
 #include <occ/driver/crystal_surface_energy.h>
 #include <occ/qm/hf.h>
@@ -99,11 +102,10 @@ inline void write_wulff(const std::string &filename,
     hkl(2, f) = facet.hkl.l;
     energies(f) = facet.energy;
   }
+  // (hkl) plane normal in cartesian is reciprocal * hkl; rotations are
+  // applied in (direct) fractional coordinates
   const auto &R = s.crystal.unit_cell().reciprocal();
-  const auto &RI = s.crystal.unit_cell().direct().transpose();
-
-  // convert to cartesian, then to fractional
-  occ::Mat3N hkl_frac = s.crystal.to_fractional(RI * hkl);
+  occ::Mat3N hkl_frac = s.crystal.to_fractional(R * hkl);
 
   auto [symop_id, expanded_hkl_frac] = sg.apply_rotations(hkl_frac);
   occ::Vec expanded_energies =
@@ -200,9 +202,8 @@ serialize_cg_results(nlohmann::json &j, const Options &opts,
   j["crystal"] = crystal;
 }
 
-template <typename Calculator>
-inline void compute_and_serialize_surface_cuts(
-    Calculator &calc, nlohmann::json &j, const Options &opts,
+inline CrystalSurfaceEnergies compute_and_serialize_surface_cuts(
+    CrystalGrowthCalculator &calc, nlohmann::json &j, const Options &opts,
     const CrystalDimers &uc_dimers, const CrystalDimers &uc_dimers_vacuum,
     int max_facets) {
 
@@ -243,10 +244,10 @@ inline void compute_and_serialize_surface_cuts(
   j["solvated"] = solvated_energies;
 
   occ::log::info("Appending surface energies to json output");
+  return surface_energies;
 }
 
-template <class Calculator>
-CrystalGrowthResult run_cg_impl(CGConfig const &config) {
+CGPreparation prepare_cg(CGConfig const &config) {
   std::string basename =
       fs::path(config.lattice_settings.crystal_filename).stem().string();
   Crystal c_symm =
@@ -256,6 +257,13 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
 
   if (config.crystal_is_atomic) {
     c_symm.set_connectivity_criteria(false);
+  }
+
+  if (c_symm.asymmetric_unit().positions.cols() == 0) {
+    throw std::runtime_error(fmt::format(
+        "No atoms found in '{}' - the structure is empty. Check the input file "
+        "(e.g. a CIF missing its _atom_site loop).",
+        config.lattice_settings.crystal_filename));
   }
 
   Options opts;
@@ -293,11 +301,13 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
     opts.use_crystal_polarization = true;
   }
 
-  auto calc = Calculator(c_symm, opts);
+  return CGPreparation{std::move(c_symm), std::move(opts), std::move(charges)};
+}
 
-  if (charges.size() != 0) {
-    calc.set_molecule_charges(charges);
-  }
+CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
+                                    const Options &opts,
+                                    CGConfig const &config) {
+  const std::string &basename = opts.basename;
 
   calc.init_monomer_energies();
   calc.converge_lattice_energy();
@@ -327,9 +337,25 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
 
   nlohmann::json surface_cuts_json;
 
-  if (config.max_facets > 0) {
-    compute_and_serialize_surface_cuts(calc, surface_cuts_json, opts, uc_dimers,
-                                       uc_dimers_vacuum, config.max_facets);
+  // --morphology needs surface energies; default the facet count if unset.
+  int n_facets = config.max_facets;
+  if (config.compute_morphology && n_facets <= 0) {
+    n_facets = 80;
+    occ::log::info("--morphology: computing {} surface energies", n_facets);
+  }
+
+  std::optional<CrystalSurfaceEnergies> surface_energies;
+  if (n_facets > 0) {
+    surface_energies = compute_and_serialize_surface_cuts(
+        calc, surface_cuts_json, opts, uc_dimers, uc_dimers_vacuum, n_facets);
+  }
+
+  nlohmann::json morphology_json;
+  if (config.compute_morphology && surface_energies) {
+    occ::log::info("Computing particle size/shape-dependent energies");
+    result.morphology = compute_crystal_morphology(calc.crystal(), uc_dimers,
+                                                   *surface_energies, result);
+    to_json(morphology_json, result.morphology);
   }
 
   auto cg_interaction_labels =
@@ -344,6 +370,9 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   if (!surface_cuts_json.is_null()) {
     results_json["surface_cuts"] = surface_cuts_json;
   }
+  if (!morphology_json.is_null()) {
+    results_json["morphology"] = morphology_json;
+  }
 
   std::ofstream dest(
       fmt::format("{}_{}_cg_results.json", opts.basename, opts.solvent));
@@ -351,6 +380,16 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
 
   // calc.dipole_correction();
   return result;
+}
+
+// Thin wrapper: prepare, construct the concrete calculator, run the pipeline.
+template <class Calculator>
+CrystalGrowthResult run_cg_impl(CGConfig const &config) {
+  auto prep = prepare_cg(config);
+  Calculator calc(prep.crystal, prep.opts);
+  if (!prep.charges.empty())
+    calc.set_molecule_charges(prep.charges);
+  return run_cg_pipeline(calc, prep.opts, config);
 }
 
 namespace {

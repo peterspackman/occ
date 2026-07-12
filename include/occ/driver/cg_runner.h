@@ -5,13 +5,23 @@
 
 namespace occ::driver {
 
+/// Reference QM level for the monomer multipoles in the DMA+exp-6 model.
+/// \c model implies \c method and \c basis; non-empty overrides win.
+struct DMAReferenceLevel {
+  std::string model{"ce-b3lyp"};
+  std::string method{""}; ///< empty -> taken from model
+  std::string basis{""};  ///< empty -> taken from model
+};
+
 struct CGConfig {
   interaction::LatticeConvergenceSettings lattice_settings;
   std::string solvent{"water"};
+  DMAReferenceLevel dma_reference;
   std::string charge_string{""};
   std::string wavefunction_choice{"gas"};
   double cg_radius{3.8};
   int max_facets{0};
+  bool compute_morphology{false};
   bool write_dump_files{false};
   bool spherical{false};
   bool write_kmcpp_file{false};

@@ -4,6 +4,9 @@ build-*/
 debug/
 local/
 junk_scripts/
+
+# planning / scratch design docs — kept locally, never committed
+*_PLAN.md
 CMakeLists.txt.user
 .vscode/
 tags

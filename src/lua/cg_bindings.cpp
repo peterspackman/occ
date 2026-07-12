@@ -4,6 +4,7 @@
 #include <occ/cg/interaction_mapper.h>
 #include <occ/interaction/pair_energy.h>
 #include <occ/driver/cg_runner.h>
+#include <occ/mults/dma_cg.h>
 
 namespace occ::lua_bindings {
 
@@ -72,12 +73,22 @@ void register_cg_bindings(lua_State *L) {
                             &LatticeConvergenceSettings::elastic_output_file)
       .endClass()
 
+      .beginClass<occ::driver::DMAReferenceLevel>("DMAReferenceLevel")
+      .addConstructor<void (*)()>()
+      .addPropertyReadWrite("model", &occ::driver::DMAReferenceLevel::model)
+      .addPropertyReadWrite("method", &occ::driver::DMAReferenceLevel::method)
+      .addPropertyReadWrite("basis", &occ::driver::DMAReferenceLevel::basis)
+      .endClass()
+
       .beginClass<CGConfig>("CrystalGrowthConfig")
       .addConstructor<void (*)()>()
       .addPropertyReadWrite("lattice_settings", &CGConfig::lattice_settings)
       .addPropertyReadWrite("cg_radius", &CGConfig::cg_radius)
       .addPropertyReadWrite("solvent", &CGConfig::solvent)
       .addPropertyReadWrite("charge_string", &CGConfig::charge_string)
+      .addPropertyReadWrite("dma_reference", &CGConfig::dma_reference)
+      .addPropertyReadWrite("compute_morphology",
+                            &CGConfig::compute_morphology)
       .addPropertyReadWrite("wavefunction_choice",
                             &CGConfig::wavefunction_choice)
       // Keep `num_surface_energies` for the existing alias to max_facets
@@ -148,6 +159,91 @@ void register_cg_bindings(lua_State *L) {
       .addFunction("energy_component", &MoleculeResult::energy_component)
       .endClass()
 
+      .beginClass<occ::cg::FacetMorphology>("FacetMorphology")
+      .addProperty("hkl", &occ::cg::FacetMorphology::hkl)
+      .addProperty("gamma", &occ::cg::FacetMorphology::gamma)
+      .addProperty("area", &occ::cg::FacetMorphology::area)
+      .endClass()
+
+      .beginClass<occ::cg::EdgeMorphology>("EdgeMorphology")
+      .addProperty("hkl_a", &occ::cg::EdgeMorphology::hkl_a)
+      .addProperty("hkl_b", &occ::cg::EdgeMorphology::hkl_b)
+      .addProperty("length", &occ::cg::EdgeMorphology::length)
+      .addProperty("line_tension", &occ::cg::EdgeMorphology::lambda)
+      .endClass()
+
+      .beginClass<occ::cg::CornerMorphology>("CornerMorphology")
+      .addProperty("count", &occ::cg::CornerMorphology::count)
+      .addProperty("epsilon", &occ::cg::CornerMorphology::epsilon)
+      .addFunction(
+          "hkls",
+          +[](const occ::cg::CornerMorphology *c, lua_State *S) {
+            lb::LuaRef t = lb::newTable(S);
+            for (size_t i = 0; i < c->hkls.size(); ++i) {
+              t[static_cast<int>(i + 1)] = c->hkls[i];
+            }
+            return t;
+          })
+      .endClass()
+
+      .beginClass<occ::cg::ParticleSample>("ParticleSample")
+      .addProperty("size_scale", &occ::cg::ParticleSample::size_scale)
+      .addProperty("n_molecules", &occ::cg::ParticleSample::n_molecules)
+      .addProperty("e_excess", &occ::cg::ParticleSample::e_excess)
+      .addProperty("e_surface", &occ::cg::ParticleSample::e_surface)
+      .addProperty("e_edge", &occ::cg::ParticleSample::e_edge)
+      .addProperty("e_corner", &occ::cg::ParticleSample::e_corner)
+      .addProperty("e_surface_analytic",
+                   &occ::cg::ParticleSample::e_surface_analytic)
+      .addProperty("area", &occ::cg::ParticleSample::area)
+      .addProperty("edge_length", &occ::cg::ParticleSample::edge_length)
+      .addProperty("n_corners", &occ::cg::ParticleSample::n_corners)
+      .endClass()
+
+      .beginClass<occ::cg::MorphologyResult>("MorphologyResult")
+      .addProperty("shape", &occ::cg::MorphologyResult::shape)
+      .addProperty("mu_bulk", &occ::cg::MorphologyResult::mu_bulk)
+      .addProperty("molecular_volume",
+                   &occ::cg::MorphologyResult::molecular_volume)
+      .addFunction("empty", &occ::cg::MorphologyResult::empty)
+      .addFunction(
+          "facets",
+          +[](const occ::cg::MorphologyResult *m, lua_State *S) {
+            lb::LuaRef t = lb::newTable(S);
+            for (size_t i = 0; i < m->facets.size(); ++i) {
+              t[static_cast<int>(i + 1)] = m->facets[i];
+            }
+            return t;
+          })
+      .addFunction(
+          "edges",
+          +[](const occ::cg::MorphologyResult *m, lua_State *S) {
+            lb::LuaRef t = lb::newTable(S);
+            for (size_t i = 0; i < m->edges.size(); ++i) {
+              t[static_cast<int>(i + 1)] = m->edges[i];
+            }
+            return t;
+          })
+      .addFunction(
+          "corners",
+          +[](const occ::cg::MorphologyResult *m, lua_State *S) {
+            lb::LuaRef t = lb::newTable(S);
+            for (size_t i = 0; i < m->corners.size(); ++i) {
+              t[static_cast<int>(i + 1)] = m->corners[i];
+            }
+            return t;
+          })
+      .addFunction(
+          "samples",
+          +[](const occ::cg::MorphologyResult *m, lua_State *S) {
+            lb::LuaRef t = lb::newTable(S);
+            for (size_t i = 0; i < m->samples.size(); ++i) {
+              t[static_cast<int>(i + 1)] = m->samples[i];
+            }
+            return t;
+          })
+      .endClass()
+
       .beginClass<CrystalGrowthResult>("CrystalGrowthResult")
       .addFunction(
           "molecule_results",
@@ -157,6 +253,11 @@ void register_cg_bindings(lua_State *L) {
               t[static_cast<int>(i + 1)] = r->molecule_results[i];
             }
             return t;
+          })
+      .addProperty(
+          "morphology",
+          +[](const CrystalGrowthResult *r) -> const occ::cg::MorphologyResult & {
+            return r->morphology;
           })
       .endClass()
 
@@ -183,7 +284,7 @@ void register_cg_bindings(lua_State *L) {
       .addFunction(
           "calculate_crystal_growth_energies",
           +[](const occ::driver::CGConfig &config) {
-            return occ::driver::run_cg(config);
+            return occ::mults::run_crystal_growth(config);
           })
 
       .endNamespace();

@@ -1,6 +1,9 @@
 #include <Eigen/Geometry>
+#include <algorithm>
+#include <cmath>
 #include <fmt/core.h>
 #include <numeric>
+#include <set>
 #include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
 #include <occ/geometry/quickhull.h>
@@ -137,6 +140,8 @@ void WulffConstruction::extract_wulff_from_dual_hull_simplices(
     facet_c.point_index.push_back(i);
   }
 
+  merge_coincident_vertices();
+
   size_t N = 0;
   for (auto &facet : m_facets) {
     facet.reorder_and_triangulate(m_wulff_vertices);
@@ -159,8 +164,110 @@ void WulffConstruction::extract_wulff_from_dual_hull_simplices(
   }
 }
 
+// The dual hull is triangulated, so a Wulff corner where more than three
+// facets meet is produced once per dual simplex: coincident vertices with
+// distinct indices. Merge them so facet polygons, edges and corners see one
+// vertex per geometric corner.
+void WulffConstruction::merge_coincident_vertices() {
+  const int nv = m_wulff_vertices.cols();
+  if (nv == 0)
+    return;
+  const double tol2 = std::pow(
+      1e-8 * std::max(1.0, m_wulff_vertices.colwise().norm().maxCoeff()), 2);
+
+  std::vector<int> remap(nv);
+  std::vector<int> kept;
+  for (int i = 0; i < nv; ++i) {
+    int found = -1;
+    for (size_t k = 0; k < kept.size(); ++k) {
+      if ((m_wulff_vertices.col(i) - m_wulff_vertices.col(kept[k]))
+              .squaredNorm() < tol2) {
+        found = k;
+        break;
+      }
+    }
+    if (found < 0) {
+      found = kept.size();
+      kept.push_back(i);
+    }
+    remap[i] = found;
+  }
+  if (static_cast<int>(kept.size()) == nv)
+    return;
+
+  Mat3N merged(3, kept.size());
+  for (size_t k = 0; k < kept.size(); ++k)
+    merged.col(k) = m_wulff_vertices.col(kept[k]);
+  m_wulff_vertices = merged;
+
+  for (auto &facet : m_facets) {
+    std::vector<int> updated;
+    for (int idx : facet.point_index) {
+      int v = remap[idx];
+      if (std::find(updated.begin(), updated.end(), v) == updated.end())
+        updated.push_back(v);
+    }
+    if (updated.size() < 3)
+      updated.clear(); // degenerate facet -> inactive
+    facet.point_index = std::move(updated);
+  }
+}
+
 const Mat3N &WulffConstruction::vertices() const { return m_wulff_vertices; }
 
 const IMat3N &WulffConstruction::triangles() const { return m_wulff_triangles; }
+
+double WulffConstruction::facet_area(size_t i) const {
+  const auto &facet = m_facets[i];
+  double area = 0.0;
+  for (int t = 0; t < facet.triangles.cols(); ++t) {
+    const Vec3 v1 = m_wulff_vertices.col(facet.triangles(0, t));
+    const Vec3 v2 = m_wulff_vertices.col(facet.triangles(1, t));
+    const Vec3 v3 = m_wulff_vertices.col(facet.triangles(2, t));
+    area += 0.5 * (v2 - v1).cross(v3 - v1).norm();
+  }
+  return area;
+}
+
+Vec WulffConstruction::facet_areas() const {
+  Vec areas(m_facets.size());
+  for (size_t i = 0; i < m_facets.size(); ++i)
+    areas(i) = facet_area(i);
+  return areas;
+}
+
+double WulffConstruction::total_area() const {
+  double area = 0.0;
+  for (size_t i = 0; i < m_facets.size(); ++i)
+    area += facet_area(i);
+  return area;
+}
+
+std::vector<WulffEdge> WulffConstruction::edges() const {
+  std::vector<WulffEdge> result;
+  // two active facets share an edge if they have exactly two vertices in common
+  for (size_t a = 0; a < m_facets.size(); ++a) {
+    if (m_facets[a].point_index.empty())
+      continue;
+    std::set<int> va(m_facets[a].point_index.begin(),
+                     m_facets[a].point_index.end());
+    for (size_t b = a + 1; b < m_facets.size(); ++b) {
+      if (m_facets[b].point_index.empty())
+        continue;
+      std::vector<int> shared;
+      for (int idx : m_facets[b].point_index) {
+        if (va.count(idx))
+          shared.push_back(idx);
+      }
+      if (shared.size() == 2) {
+        double len =
+            (m_wulff_vertices.col(shared[0]) - m_wulff_vertices.col(shared[1]))
+                .norm();
+        result.push_back(WulffEdge{a, b, shared[0], shared[1], len});
+      }
+    }
+  }
+  return result;
+}
 
 } // namespace occ::geometry

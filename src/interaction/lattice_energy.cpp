@@ -12,6 +12,7 @@
 #include <occ/interaction/wolf.h>
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <mutex>
 
 namespace occ::interaction {
@@ -90,12 +91,21 @@ LatticeEnergyResult LatticeEnergyCalculator::compute() {
   occ::log::info("Found {} symmetry unique dimers within max radius {:.3f}",
                  dimers.size(), m_settings.max_radius);
 
+  // Key the on-disk dimer cache by model so different models never share
+  // cached energies.
+  std::string model_tag = m_settings.model_name;
+  for (char &c : model_tag)
+    if (!std::isalnum(static_cast<unsigned char>(c)) && c != '-' && c != '_')
+      c = '_';
+  const std::string store_name =
+      model_tag.empty() ? fmt::format("{}_dimers", m_basename)
+                        : fmt::format("{}_{}_dimers", m_basename, model_tag);
+
   do {
     previous_lattice_energy = lattice_energy;
 
     // Create energy store for this cycle
-    PairEnergyStore store{PairEnergyStore::Kind::XYZ,
-                          fmt::format("{}_dimers", m_basename)};
+    PairEnergyStore store{PairEnergyStore::Kind::XYZ, store_name};
 
     // Setup progress tracking
     size_t dimers_to_compute = 0;
