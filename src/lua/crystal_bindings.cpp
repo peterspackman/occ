@@ -6,6 +6,7 @@
 #include <occ/core/molecule.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>
+#include <occ/crystal/powder.h>
 #include <occ/crystal/surface.h>
 #include <occ/io/cifparser.h>
 
@@ -735,6 +736,97 @@ void register_surface(lua_State *L) {
 
 } // namespace
 
+// -- powder diffraction ------------------------------------------------------
+
+void register_powder(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+      .beginClass<PowderPeak>("PowderPeak")
+      .addConstructor<void (*)()>()
+      .addProperty("hkl", &PowderPeak::hkl)
+      .addProperty("d", &PowderPeak::d)
+      .addProperty("two_theta", &PowderPeak::two_theta)
+      .addProperty("multiplicity", &PowderPeak::multiplicity)
+      .addProperty("f_squared", &PowderPeak::f_squared)
+      .addProperty("intensity", &PowderPeak::intensity)
+      .addFunction(
+          "__tostring",
+          +[](const PowderPeak *p) {
+            return fmt::format("<PowderPeak [{} {} {}] 2th={:.3f} I={:.3f}>",
+                               p->hkl.h, p->hkl.k, p->hkl.l, p->two_theta,
+                               p->intensity);
+          })
+      .endClass()
+
+      .beginClass<PowderPatternSettings>("PowderPatternSettings")
+      .addConstructor<void (*)()>()
+      .addPropertyReadWrite("wavelength", &PowderPatternSettings::wavelength)
+      .addPropertyReadWrite("two_theta_min",
+                            &PowderPatternSettings::two_theta_min)
+      .addPropertyReadWrite("two_theta_max",
+                            &PowderPatternSettings::two_theta_max)
+      .endClass()
+
+      .beginClass<PowderPattern>("PowderPattern")
+      // Zero-arg accessors exposed as properties, matching the convention
+      // used elsewhere in these bindings.
+      .addProperty("peaks", &PowderPattern::peaks)
+      .addProperty("wavelength", &PowderPattern::wavelength)
+      .addFunction(
+          "normalized_intensities",
+          +[](const PowderPattern *p) -> occ::Vec {
+            return p->normalized_intensities();
+          })
+      .addFunction(
+          "profile",
+          // lua_State* must be the LAST parameter for LuaBridge3 to inject it.
+          +[](const PowderPattern *p, double two_theta_min,
+              double two_theta_max, int num_bins, double fwhm,
+              lua_State *state) -> lb::LuaRef {
+            auto [x, y] = p->profile(two_theta_min, two_theta_max, num_bins,
+                                     fwhm);
+            lb::LuaRef result = lb::newTable(state);
+            result["two_theta"] = x;
+            result["intensity"] = y;
+            return result;
+          })
+      .addFunction(
+          "__len", +[](const PowderPattern *p) { return int(p->size()); })
+      .addFunction(
+          "__tostring",
+          +[](const PowderPattern *p) {
+            return fmt::format("<PowderPattern n_peaks={} lambda={:.4f}>",
+                               p->size(), p->wavelength());
+          })
+      .endClass()
+
+      .addFunction("powder_pattern", &compute_powder_pattern)
+      .addFunction("d_spacing", &d_spacing)
+      .addFunction("unique_reflections", &unique_reflections)
+      .addFunction("structure_factors", &structure_factors)
+      .addFunction("lorentz_polarization", &lorentz_polarization)
+      .endNamespace();
+
+  // Characteristic K-alpha wavelengths, in Angstroms
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+      .beginNamespace("xray_wavelength")
+      .addProperty(
+          "Cu_Ka", +[]() { return xray_wavelength::Cu_Ka; })
+      .addProperty(
+          "Mo_Ka", +[]() { return xray_wavelength::Mo_Ka; })
+      .addProperty(
+          "Co_Ka", +[]() { return xray_wavelength::Co_Ka; })
+      .addProperty(
+          "Cr_Ka", +[]() { return xray_wavelength::Cr_Ka; })
+      .addProperty(
+          "Fe_Ka", +[]() { return xray_wavelength::Fe_Ka; })
+      .addProperty(
+          "Ag_Ka", +[]() { return xray_wavelength::Ag_Ka; })
+      .endNamespace()
+      .endNamespace();
+}
+
 void register_crystal_bindings(lua_State *L) {
   register_hkl(L);
   register_symmetry_operation(L);
@@ -745,6 +837,7 @@ void register_crystal_bindings(lua_State *L) {
   register_crystal_region_and_dimers(L);
   register_site_and_dimer_index(L);
   register_surface(L);
+  register_powder(L);
 }
 
 } // namespace occ::lua_bindings

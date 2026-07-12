@@ -5,6 +5,7 @@
 #include <occ/crystal/asymmetric_unit.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/hkl.h>
+#include <occ/crystal/powder.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/symmetryoperation.h>
 #include <occ/crystal/unitcell.h>
@@ -404,4 +405,71 @@ void register_crystal_bindings() {
              SpaceGroup sg(number);
              return sg.symbol();
            }));
+
+  // Powder diffraction
+  register_vector<PowderPeak>("VectorPowderPeak");
+
+  class_<PowderPeak>("PowderPeak")
+      .constructor<>()
+      .property("hkl", &PowderPeak::hkl)
+      .property("d", &PowderPeak::d)
+      .property("twoTheta", &PowderPeak::two_theta)
+      .property("multiplicity", &PowderPeak::multiplicity)
+      .property("fSquared", &PowderPeak::f_squared)
+      .property("intensity", &PowderPeak::intensity);
+
+  class_<PowderPatternSettings>("PowderPatternSettings")
+      .constructor<>()
+      .property("wavelength", &PowderPatternSettings::wavelength)
+      .property("twoThetaMin", &PowderPatternSettings::two_theta_min)
+      .property("twoThetaMax", &PowderPatternSettings::two_theta_max);
+
+  class_<PowderPattern>("PowderPattern")
+      .function("peaks", optional_override([](const PowderPattern &p) {
+                  return p.peaks();
+                }))
+      .function("wavelength", &PowderPattern::wavelength)
+      .function("size", optional_override(
+                            [](const PowderPattern &p) { return int(p.size()); }))
+      .function("normalizedIntensities",
+                optional_override([](const PowderPattern &p) {
+                  Vec v = p.normalized_intensities();
+                  val result = val::array();
+                  for (Eigen::Index i = 0; i < v.size(); i++)
+                    result.set(int(i), v(i));
+                  return result;
+                }))
+      .function("profile",
+                optional_override([](const PowderPattern &p, double min,
+                                     double max, int num_bins, double fwhm) {
+                  auto [x, y] = p.profile(min, max, num_bins, fwhm);
+                  val xs = val::array(), ys = val::array();
+                  for (Eigen::Index i = 0; i < x.size(); i++) {
+                    xs.set(int(i), x(i));
+                    ys.set(int(i), y(i));
+                  }
+                  val result = val::object();
+                  result.set("twoTheta", xs);
+                  result.set("intensity", ys);
+                  return result;
+                }));
+
+  function("powderPattern",
+           optional_override([](const Crystal &crystal,
+                                const PowderPatternSettings &settings) {
+             return compute_powder_pattern(crystal, settings);
+           }));
+
+  function("dSpacing", optional_override([](const HKL &hkl,
+                                            const UnitCell &cell) {
+             return d_spacing(hkl, cell);
+           }));
+
+  // Characteristic K-alpha wavelengths, in Angstroms
+  constant("XRAY_WAVELENGTH_CU_KA", xray_wavelength::Cu_Ka);
+  constant("XRAY_WAVELENGTH_MO_KA", xray_wavelength::Mo_Ka);
+  constant("XRAY_WAVELENGTH_CO_KA", xray_wavelength::Co_Ka);
+  constant("XRAY_WAVELENGTH_CR_KA", xray_wavelength::Cr_Ka);
+  constant("XRAY_WAVELENGTH_FE_KA", xray_wavelength::Fe_Ka);
+  constant("XRAY_WAVELENGTH_AG_KA", xray_wavelength::Ag_Ka);
 }

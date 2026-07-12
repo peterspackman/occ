@@ -8,6 +8,7 @@
 #include <occ/core/molecule.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>
+#include <occ/crystal/powder.h>
 #include <occ/crystal/surface.h>
 #include <occ/geometry/wulff.h>
 #include <occ/io/cifparser.h>
@@ -441,6 +442,63 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
         return fmt::format("<WulffConstruction n_facets={} n_vertices={}>",
                            w.facets().size(), w.vertices().cols());
       });
+
+  // -- powder diffraction ---------------------------------------------------
+
+  nb::module_ xray = m.def_submodule(
+      "xray_wavelength", "Characteristic K-alpha wavelengths, in Angstroms");
+  xray.attr("Cu_Ka") = xray_wavelength::Cu_Ka;
+  xray.attr("Mo_Ka") = xray_wavelength::Mo_Ka;
+  xray.attr("Co_Ka") = xray_wavelength::Co_Ka;
+  xray.attr("Cr_Ka") = xray_wavelength::Cr_Ka;
+  xray.attr("Fe_Ka") = xray_wavelength::Fe_Ka;
+  xray.attr("Ag_Ka") = xray_wavelength::Ag_Ka;
+
+  nb::class_<PowderPeak>(m, "PowderPeak")
+      .def_ro("hkl", &PowderPeak::hkl)
+      .def_ro("d", &PowderPeak::d, "d-spacing in Angstroms")
+      .def_ro("two_theta", &PowderPeak::two_theta, "Bragg angle in degrees")
+      .def_ro("multiplicity", &PowderPeak::multiplicity)
+      .def_ro("f_squared", &PowderPeak::f_squared, "|F(hkl)|^2")
+      .def_ro("intensity", &PowderPeak::intensity,
+              "multiplicity * |F|^2 * Lorentz-polarization")
+      .def("__repr__", [](const PowderPeak &p) {
+        return fmt::format("<PowderPeak [{} {} {}] 2th={:.3f} I={:.3f}>",
+                           p.hkl.h, p.hkl.k, p.hkl.l, p.two_theta, p.intensity);
+      });
+
+  nb::class_<PowderPatternSettings>(m, "PowderPatternSettings")
+      .def(nb::init<>())
+      .def_rw("wavelength", &PowderPatternSettings::wavelength)
+      .def_rw("two_theta_min", &PowderPatternSettings::two_theta_min)
+      .def_rw("two_theta_max", &PowderPatternSettings::two_theta_max);
+
+  nb::class_<PowderPattern>(m, "PowderPattern")
+      .def_prop_ro("peaks", &PowderPattern::peaks)
+      .def_prop_ro("wavelength", &PowderPattern::wavelength)
+      .def("normalized_intensities", &PowderPattern::normalized_intensities,
+           "Peak intensities rescaled so the strongest peak is 100")
+      .def("profile", &PowderPattern::profile, "two_theta_min"_a,
+           "two_theta_max"_a, "num_bins"_a = 4500, "fwhm"_a = 0.1,
+           "Bin the peaks onto a 2-theta grid and broaden them with a "
+           "Gaussian. Returns (bin centres, intensities).")
+      .def("__len__", &PowderPattern::size)
+      .def("__repr__", [](const PowderPattern &p) {
+        return fmt::format("<PowderPattern n_peaks={} lambda={:.4f}>", p.size(),
+                           p.wavelength());
+      });
+
+  m.def("powder_pattern", &compute_powder_pattern, "crystal"_a,
+        "settings"_a = PowderPatternSettings{},
+        "Simulate a powder X-ray diffraction pattern for a crystal");
+  m.def("d_spacing", &d_spacing, "hkl"_a, "unit_cell"_a,
+        "d-spacing of a reflection, in Angstroms");
+  m.def("unique_reflections", &unique_reflections, "crystal"_a, "d_min"_a,
+        "Symmetry-unique reflections with d >= d_min, with multiplicities");
+  m.def("structure_factors", &structure_factors, "crystal"_a, "reflections"_a,
+        "Structure factors F(hkl) for the given reflections");
+  m.def("lorentz_polarization", &lorentz_polarization, "two_theta"_a,
+        "Lorentz-polarization factor; two_theta in radians");
 
   return m;
 }
