@@ -228,6 +228,79 @@ std::map<std::pair<int,int>, BuckinghamParams> ForceFieldParams::williams_typed_
     return params;
 }
 
+// FIT (Williams/Cox) potential: explicit pairs (no combining rule) over eight
+// atom types, H split into H_F1 (on C) / H_F2 (polar, on N/O). A in eV,
+// rho = 1/B in Angstrom, C in eV*Angstrom^6. Source: mol-cspy fit.pots.
+std::map<std::pair<int,int>, BuckinghamParams> ForceFieldParams::fit_typed_params() {
+    // label indices: 0 H_F1, 1 H_F2, 2 C_F1, 3 N_F1, 4 O_F1, 5 F_F1, 6 ClF1, 7 S_F1
+    struct Pair { int i, j; double A_eV, rho, C_eV; };
+    static const Pair pairs[] = {
+        {2, 2, 3832.147000, 0.277778, 25.286950}, // C_F1 C_F1
+        {2, 3, 3179.514586, 0.271003, 19.006711}, // C_F1 N_F1
+        {2, 4, 3022.850285, 0.264550, 17.160239}, // C_F1 O_F1
+        {2, 0,  689.536726, 0.272480,  5.978972}, // C_F1 H_F1
+        {2, 1,  446.949968, 0.242131,  2.373772}, // C_F1 H_F2
+        {2, 5, 3800.832789, 0.257732, 14.872725}, // C_F1 F_F1
+        {2, 6, 6060.195609, 0.281294, 45.040509}, // C_F1 ClF1
+        {2, 7, 3991.008388, 0.289824, 38.956795}, // C_F1 S_F1
+        {3, 3, 2638.028500, 0.264550, 14.286225}, // N_F1 N_F1
+        {3, 4, 2508.044856, 0.258398, 12.898341}, // N_F1 O_F1
+        {3, 0,  572.105423, 0.265957,  4.494041}, // N_F1 H_F1
+        {3, 1,  370.832315, 0.236967,  1.784224}, // N_F1 H_F2
+        {3, 5, 3153.533331, 0.251889, 11.178951}, // N_F1 F_F1
+        {3, 6, 5028.116179, 0.274348, 33.854298}, // N_F1 ClF1
+        {3, 7, 3311.321142, 0.282456, 29.281528}, // N_F1 S_F1
+        {4, 4, 2384.465900, 0.252525, 11.645288}, // O_F1 O_F1
+        {4, 0,  543.916058, 0.259740,  4.057452}, // O_F1 H_F1
+        {4, 1,  352.560285, 0.232018,  1.610890}, // O_F1 H_F2
+        {4, 5, 2998.149205, 0.246306, 10.092934}, // O_F1 F_F1
+        {4, 6, 4780.365686, 0.267737, 30.565407}, // O_F1 ClF1
+        {4, 7, 3148.162333, 0.275454, 26.436874}, // O_F1 S_F1
+        {0, 0,  124.071675, 0.267380,  1.413698}, // H_F1 H_F1
+        {0, 1,   80.421867, 0.238095,  0.561266}, // H_F1 H_F2
+        {0, 5,  683.902209, 0.253165,  3.516581}, // H_F1 F_F1
+        {0, 6, 1090.440278, 0.275862, 10.649602}, // H_F1 ClF1
+        {0, 7,  718.121424, 0.284062,  9.211139}, // H_F1 S_F1
+        {1, 1,   52.128552, 0.214592,  0.222834}, // H_F2 H_F2
+        {1, 5,  443.297737, 0.226757,  1.396153}, // H_F2 F_F1
+        {1, 6,  706.811152, 0.244798,  4.228105}, // H_F2 ClF1
+        {1, 7,  465.478248, 0.251233,  3.657006}, // H_F2 S_F1
+        {5, 5, 3769.774461, 0.240385,  8.747514}, // F_F1 F_F1
+        {5, 6, 6010.675003, 0.260756, 26.490941}, // F_F1 ClF1
+        {5, 7, 3958.396048, 0.268070, 22.912755}, // F_F1 S_F1
+        {6, 6, 9583.653972, 0.284900, 80.225075}, // ClF1 ClF1
+        {6, 7, 6311.420597, 0.293654, 69.388909}, // ClF1 S_F1
+        {7, 7, 4156.455363, 0.302963, 60.016406}, // S_F1 S_F1
+    };
+    // NEIGHCRYS type codes (from classify_williams_type) for each FIT label.
+    static const std::vector<std::pair<int, std::vector<int>>> codes_for_label = {
+        {0, {501}},                     // H_F1: H on carbon
+        {1, {502, 503, 504, 505}},      // H_F2: polar H (on N/O)
+        {2, {511, 512, 513}},           // C_F1
+        {3, {521, 522, 523, 524}},      // N_F1
+        {4, {531, 532, 533}},           // O_F1
+        {5, {540}},                     // F_F1
+        {6, {541}},                     // ClF1
+        {7, {542}},                     // S_F1
+    };
+
+    const double eV = occ::units::EV_TO_KJ_PER_MOL;
+    BuckinghamParams by_label[8][8];
+    for (const auto& p : pairs) {
+        BuckinghamParams bp{p.A_eV * eV, 1.0 / p.rho, p.C_eV * eV};
+        by_label[p.i][p.j] = bp;
+        by_label[p.j][p.i] = bp;
+    }
+
+    std::map<std::pair<int, int>, BuckinghamParams> params;
+    for (const auto& [li, codes_i] : codes_for_label)
+        for (const auto& [lj, codes_j] : codes_for_label)
+            for (int ci : codes_i)
+                for (int cj : codes_j)
+                    params[{ci, cj}] = by_label[li][lj];
+    return params;
+}
+
 const char* ForceFieldParams::short_range_type_label(int type_code) {
     switch (type_code) {
     case 501: return "H_W1";

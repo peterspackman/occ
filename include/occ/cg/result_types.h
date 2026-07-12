@@ -1,5 +1,6 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
+#include <occ/cg/morphology_types.h>
 #include <occ/core/dimer.h>
 #include <occ/interaction/pairinteraction.h>
 #include <string>
@@ -79,6 +80,9 @@ struct MoleculeResult {
 
 struct CrystalGrowthResult {
   std::vector<MoleculeResult> molecule_results;
+  /// Particle size/shape-dependent energies; empty unless morphology was
+  /// requested (CGConfig::compute_morphology).
+  MorphologyResult morphology;
 };
 
 } // namespace occ::cg

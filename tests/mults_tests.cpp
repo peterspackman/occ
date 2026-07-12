@@ -12,9 +12,13 @@
 #include <occ/mults/sfunction_evaluator.h>
 #include <occ/mults/sfunction_term_builder.h>
 #include <occ/mults/multipole_interactions.h>
+#include <occ/mults/dimer_interaction.h>
+#include <occ/core/units.h>
 #include <fmt/core.h>
+#include <cmath>
 #include <iostream>
 #include <map>
+#include <set>
 #include <algorithm>
 
 using namespace occ;
@@ -11621,4 +11625,141 @@ TEST_CASE("S-function derivatives - finite difference validation Stage 2",
 
         FAIL("Stage 2 validation failed with " << all_failures.size() << " total failures");
     }
+}
+
+TEST_CASE("Dimer interaction (DMA multipoles + exp-6)", "[mults][dimer]") {
+  using occ::dma::Mult;
+  using occ::mults::dimer_interaction_energy;
+  using occ::mults::ForceFieldParams;
+  using occ::mults::MoleculeMultipoles;
+
+  SECTION("Electrostatics: two monopoles reproduce q1*q2/r") {
+    MoleculeMultipoles a, b;
+    Mult qa(0);
+    qa.Q00() = 1.0;
+    Mult qb(0);
+    qb.Q00() = -1.0;
+    a.multipoles = {qa};
+    a.positions = Mat3N::Zero(3, 1);
+    a.atomic_numbers = {1};
+    b.multipoles = {qb};
+    b.positions = Mat3N::Zero(3, 1);
+    b.positions(0, 0) = 2.5; // Bohr
+    b.atomic_numbers = {1};
+
+    ForceFieldParams ff; // empty -> exp-6 skipped, isolates electrostatics
+    auto e = dimer_interaction_energy(a, b, ff);
+    double expect = occ::units::AU_TO_KJ_PER_MOL * (1.0 * -1.0 / 2.5);
+    REQUIRE(e.electrostatic == Catch::Approx(expect).margin(1e-9));
+    REQUIRE(e.repulsion == Catch::Approx(0.0));
+    REQUIRE(e.dispersion == Catch::Approx(0.0));
+    REQUIRE(e.total() == Catch::Approx(expect).margin(1e-9));
+  }
+
+  SECTION("exp-6: two carbons reproduce A*exp(-B r) - C/r^6 (Williams DE)") {
+    const double r_ang = 3.8;
+    MoleculeMultipoles a, b;
+    Mult za(0), zb(0); // zero charge -> no electrostatic contribution
+    a.multipoles = {za};
+    a.positions = Mat3N::Zero(3, 1);
+    a.atomic_numbers = {6};
+    b.multipoles = {zb};
+    b.positions = Mat3N::Zero(3, 1);
+    b.positions(0, 0) = r_ang * occ::units::ANGSTROM_TO_BOHR;
+    b.atomic_numbers = {6};
+
+    auto ff = occ::mults::williams_de_force_field();
+    auto e = dimer_interaction_energy(a, b, ff);
+    // C-C Williams DE: A=369742.2, B=3.60, C=2439.8 (kJ/mol, Angstrom)
+    REQUIRE(e.repulsion ==
+            Catch::Approx(369742.2 * std::exp(-3.60 * r_ang)).epsilon(1e-9));
+    REQUIRE(e.dispersion ==
+            Catch::Approx(-2439.8 / std::pow(r_ang, 6)).epsilon(1e-9));
+    REQUIRE(e.electrostatic == Catch::Approx(0.0).margin(1e-12));
+  }
+
+  SECTION("Symmetry: E(a,b) == E(b,a)") {
+    MoleculeMultipoles a, b;
+    Mult ma(1); // charge + dipole
+    ma.Q00() = 0.4;
+    ma.Q10() = 0.2;
+    Mult mb(1);
+    mb.Q00() = -0.4;
+    mb.Q11c() = 0.1;
+    a.multipoles = {ma};
+    a.positions = Mat3N::Zero(3, 1);
+    a.atomic_numbers = {8};
+    b.multipoles = {mb};
+    b.positions = Mat3N::Zero(3, 1);
+    b.positions(0, 0) = 5.0; // Bohr
+    b.atomic_numbers = {8};
+
+    auto ff = occ::mults::williams_de_force_field();
+    auto eab = dimer_interaction_energy(a, b, ff);
+    auto eba = dimer_interaction_energy(b, a, ff);
+    REQUIRE(eab.total() == Catch::Approx(eba.total()).epsilon(1e-10));
+    REQUIRE(eab.electrostatic == Catch::Approx(eba.electrostatic).epsilon(1e-10));
+  }
+
+  SECTION("exp-6 coverage: missing element pairs are reported") {
+    using occ::mults::missing_exp6_pairs;
+    auto ff = occ::mults::williams_de_force_field(); // H, C, N, O only
+
+    // A pure H/C/N/O system is fully covered (duplicates allowed in input).
+    REQUIRE(missing_exp6_pairs({1, 6, 7, 8, 6, 1}, ff).empty());
+
+    // Add sulfur (Z=16): every pair involving S is missing, HCNO pairs are not.
+    auto missing = missing_exp6_pairs({1, 6, 16}, ff);
+    std::set<std::pair<int, int>> got(missing.begin(), missing.end());
+    REQUIRE(got == std::set<std::pair<int, int>>{{1, 16}, {6, 16}, {16, 16}});
+    REQUIRE(got.count({1, 6}) == 0);
+    REQUIRE(got.count({6, 6}) == 0);
+  }
+
+  SECTION("FIT typed params: unit conversion and Williams-DE heavy-atom match") {
+    const double eV = occ::units::EV_TO_KJ_PER_MOL;
+    const auto fit = ForceFieldParams::fit_typed_params();
+
+    // C_F1-C_F1 (code 511): A,C are eV in fit.pots, rho = 1/B.
+    const auto cc = fit.at({511, 511});
+    REQUIRE(cc.A == Catch::Approx(3832.147 * eV));
+    REQUIRE(cc.B == Catch::Approx(1.0 / 0.277778));
+    REQUIRE(cc.C == Catch::Approx(25.286950 * eV));
+
+    // FIT reproduces the element-based Williams-DE heavy-atom pairs (the FIT and
+    // Williams tables share C/N/O); this pins down that the units are right.
+    const auto de = ForceFieldParams::williams_de_params();
+    REQUIRE(cc.A == Catch::Approx(de.at({6, 6}).A).epsilon(1e-3));
+    REQUIRE(fit.at({521, 521}).A == Catch::Approx(de.at({7, 7}).A).epsilon(1e-3));
+    REQUIRE(fit.at({531, 531}).A == Catch::Approx(de.at({8, 8}).A).epsilon(1e-3));
+  }
+
+  SECTION("FIT typed params: the H_F1/H_F2 split is present") {
+    const double eV = occ::units::EV_TO_KJ_PER_MOL;
+    const auto fit = ForceFieldParams::fit_typed_params();
+
+    // 501 -> H_F1 (H on carbon), 502/503/504/505 -> H_F2 (polar H): different.
+    const auto h11 = fit.at({501, 501}); // H_F1-H_F1
+    const auto h22 = fit.at({502, 502}); // H_F2-H_F2
+    REQUIRE(h11.A == Catch::Approx(124.071675 * eV));
+    REQUIRE(h22.A == Catch::Approx(52.128552 * eV));
+    REQUIRE(h11.A != Catch::Approx(h22.A));
+    // every polar-H sub-code collapses to the same H_F2 parameters
+    REQUIRE(fit.at({504, 504}).A == Catch::Approx(h22.A));
+    REQUIRE(fit.at({505, 505}).A == Catch::Approx(h22.A));
+    // H_F1-H_F2 cross term
+    REQUIRE(fit.at({501, 504}).A == Catch::Approx(80.421867 * eV));
+  }
+
+  SECTION("FIT typing: H on carbon is H_F1, polar H (on O) is H_F2") {
+    // C(0)-H(1) and O(2)-H(3), with C-O bonded (a methanol-like fragment).
+    const std::vector<int> z = {6, 1, 8, 1};
+    const std::vector<Vec3> pos = {Vec3(0, 0, 0), Vec3(-1.0, 0, 0),
+                                   Vec3(1.4, 0, 0), Vec3(2.0, 0.6, 0)};
+    const auto nb = ForceFieldParams::bonded_neighbors(z, pos);
+    REQUIRE(ForceFieldParams::classify_williams_type(1, nb, z) == 501); // H_F1
+    const int hpolar = ForceFieldParams::classify_williams_type(3, nb, z);
+    // 502/503/505 are all H_F2 in the FIT map
+    REQUIRE((hpolar == 502 || hpolar == 503 || hpolar == 505));
+  }
 }

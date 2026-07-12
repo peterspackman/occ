@@ -249,6 +249,7 @@ CrystalEnergySetup from_crystal_and_multipoles(
 
     CrystalEnergySetup setup;
     setup.unit_cell = crystal.unit_cell();
+    setup.reference_crystal = crystal; // retain symmetry for the optimizer
 
     const auto &uc_mols = crystal.unit_cell_molecules();
     int n_mol = static_cast<int>(uc_mols.size());

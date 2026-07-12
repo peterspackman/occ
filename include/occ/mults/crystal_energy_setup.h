@@ -2,17 +2,15 @@
 #include <occ/mults/rigid_molecule.h>
 #include <occ/mults/short_range.h>
 #include <occ/mults/force_field_params.h>
+#include <occ/crystal/crystal.h>
 #include <occ/crystal/unitcell.h>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace occ::io {
 struct StructureInput;
-}
-
-namespace occ::crystal {
-class Crystal;
 }
 
 namespace occ::mults {
@@ -26,6 +24,10 @@ class MultipoleSource;
 struct CrystalEnergySetup {
     crystal::UnitCell unit_cell;
     std::vector<RigidMolecule> molecules; ///< all UC molecules
+
+    /// Original crystal (space group + asymmetric unit) when available; used by
+    /// CrystalOptimizer for symmetry-reduced optimization. Unset -> P1 assumed.
+    std::optional<crystal::Crystal> reference_crystal;
 
     // Short-range parameters (kJ/mol, Angstrom)
     // Element-based: key = (Z1, Z2) with Z1 <= Z2

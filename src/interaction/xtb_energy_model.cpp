@@ -1,15 +1,17 @@
 #include <occ/interaction/xtb_energy_model.h>
-#include <occ/xtb/xtb_wrapper.h>
+#include <occ/xtb/xtb_calculator.h>
 
 namespace occ::interaction {
 
+// Uses the in-process XtbCalculator; the external-process wrapper exchanges
+// fixed-name files in the cwd, which race under parallel dimer evaluation.
 XTBEnergyModel::XTBEnergyModel(const crystal::Crystal &crystal)
     : m_crystal(crystal) {
 
   for (const auto &mol : crystal.symmetry_unique_molecules()) {
-    occ::xtb::XTBCalculator calc(mol);
+    occ::xtb::XtbCalculator calc(mol);
     m_monomer_energies.push_back(calc.single_point_energy());
-    m_partial_charges.push_back(calc.partial_charges());
+    m_partial_charges.push_back(calc.charges());
   }
 }
 
@@ -17,7 +19,7 @@ CEEnergyComponents XTBEnergyModel::compute_energy(const core::Dimer &dimer) {
   core::Molecule mol_A = dimer.a();
   core::Molecule mol_B = dimer.b();
 
-  occ::xtb::XTBCalculator calc_AB(dimer);
+  occ::xtb::XtbCalculator calc_AB(dimer);
   double e_a = m_monomer_energies[mol_A.asymmetric_molecule_idx()];
   double e_b = m_monomer_energies[mol_B.asymmetric_molecule_idx()];
   double e_ab = calc_AB.single_point_energy();

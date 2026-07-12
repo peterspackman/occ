@@ -16,6 +16,19 @@ WavefunctionList calculate_wavefunctions(const std::string &basename,
                                          const std::string &energy_model,
                                          bool spherical);
 
+/// Compute a wavefunction at an explicit method/basis rather than a CE model name.
+occ::qm::Wavefunction calculate_wavefunction(const occ::core::Molecule &mol,
+                                             const std::string &name,
+                                             const std::string &method,
+                                             const std::string &basis,
+                                             bool spherical);
+
+WavefunctionList calculate_wavefunctions(const std::string &basename,
+                                         const MoleculeList &molecules,
+                                         const std::string &method,
+                                         const std::string &basis,
+                                         bool spherical);
+
 void compute_monomer_energies(const std::string &basename,
                               WavefunctionList &wavefunctions,
                               const std::string &model_name);

@@ -2,7 +2,9 @@
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <algorithm>
+#include <bit>
 #include <cmath>
+#include <cstdint>
 #include <map>
 #include <numeric>
 #include <occ/core/log.h>
@@ -374,8 +376,10 @@ MorphologyResult compute_crystal_morphology(
   }
 
   // ---- size-dependent excess energy --------------------------------
-  // Each facet is snapped to its optimal molecular cut (the equilibrium termination),
-  // so a single tiling per size gives the minimum-energy particle - no registry scan.
+  // Each facet is snapped to its optimal molecular cut, so a single tiling per
+  // size gives the minimum-energy termination of this shape. The shape itself
+  // is the surface-only Wulff equilibrium (not re-optimised per size for the
+  // edge/corner terms); supply options.user_shifts for another shape.
   std::map<std::string, double> edge_bucket_best, corner_bucket_best;
   const int64_t n_uc = uc_frac.size();
   double best_s = 0.0;
@@ -386,8 +390,11 @@ MorphologyResult compute_crystal_morphology(
     double e_surf = 0.0, e_edge = 0.0, e_corner = 0.0;
     size_t n_unattributed = 0;
     std::map<std::string, double> edge_bucket, corner_bucket;
-    // attribute each broken bond by which facets the outside neighbour violates
-    // (where the bond exits the particle): 1 -> surface, 2 -> edge, >=3 -> corner.
+    // Decompose each broken bond by inclusion-exclusion over the face planes
+    // its outside neighbour crosses (set S):
+    //   1 = sum_k (-1)^(k+1) * (number of k-subsets of S)
+    // with k = 1 -> surface, k = 2 -> edge, k >= 3 -> corner; this closes
+    // exactly to e_excess.
     for (size_t m = 0; m < cd.uc_idx.size(); ++m) {
       for (const auto &b : bonds[cd.uc_idx[m]]) {
         Eigen::Vector3i ncell = cd.cell[m] + b.shift;
@@ -398,23 +405,36 @@ MorphologyResult compute_crystal_morphology(
         for (size_t f = 0; f < shape.normals.size(); ++f)
           if (shape.normals[f].dot(ncart) > cd.D[f] + 1e-9)
             viol.push_back(f);
-        if (viol.empty()) {
+        const int nv = static_cast<int>(viol.size());
+        if (nv == 0) {
           // outside the cluster but inside every face plane - should not
           // happen with exact integer bookkeeping
           n_unattributed++;
-          e_surf += b.energy;
-        } else if (viol.size() == 1) {
-          e_surf += b.energy;
-        } else if (viol.size() == 2) {
-          e_edge += b.energy;
-          std::string ka = hkl_key(shape.hkls[viol[0]]),
-                      kb = hkl_key(shape.hkls[viol[1]]);
-          if (kb < ka)
-            std::swap(ka, kb);
-          edge_bucket[ka + "|" + kb] += b.energy;
-        } else {
-          e_corner += b.energy;
-          corner_bucket[corner_key(viol)] += b.energy;
+          continue;
+        }
+        // enumerate non-empty subsets of the crossed planes (nv is tiny)
+        for (uint32_t mask = 1; mask < (1u << nv); ++mask) {
+          const int k = std::popcount(mask);
+          const double w = (k & 1) ? b.energy : -b.energy; // (-1)^(k+1)
+          if (k == 1) {
+            e_surf += w;
+          } else if (k == 2) {
+            int lo = std::countr_zero(mask);
+            int hi = std::bit_width(mask) - 1;
+            std::string ka = hkl_key(shape.hkls[viol[lo]]),
+                        kb = hkl_key(shape.hkls[viol[hi]]);
+            if (kb < ka)
+              std::swap(ka, kb);
+            e_edge += w;
+            edge_bucket[ka + "|" + kb] += w;
+          } else {
+            std::vector<int> set;
+            for (int t = 0; t < nv; ++t)
+              if (mask & (1u << t))
+                set.push_back(viol[t]);
+            e_corner += w;
+            corner_bucket[corner_key(set)] += w;
+          }
         }
       }
     }
@@ -467,8 +487,17 @@ MorphologyResult compute_crystal_morphology(
   return result;
 }
 
+} // namespace occ::driver
+
+namespace occ::cg {
+
 void to_json(nlohmann::json &j, const MorphologyResult &m) {
   j["shape"] = m.shape;
+  j["shape_note"] =
+      m.shape == "wulff"
+          ? "Wulff equilibrium shape (minimises surface energy only, the "
+            "large-size limit); all energies are conditioned on this shape."
+          : "User-supplied morphology with fixed facet support distances.";
   j["mu_bulk"] = m.mu_bulk;
   j["molecular_volume"] = m.molecular_volume;
   nlohmann::json facets = nlohmann::json::array();
@@ -478,12 +507,23 @@ void to_json(nlohmann::json &j, const MorphologyResult &m) {
                       {"area", f.area}});
   j["facets"] = facets;
   nlohmann::json edges = nlohmann::json::array();
-  for (const auto &e : m.edges)
+  double lam_len = 0.0, lam_wsum = 0.0;
+  for (const auto &e : m.edges) {
     edges.push_back({{"hkl_a", {e.hkl_a.h, e.hkl_a.k, e.hkl_a.l}},
                      {"hkl_b", {e.hkl_b.h, e.hkl_b.k, e.hkl_b.l}},
                      {"length", e.length},
                      {"lambda", e.lambda}});
+    lam_len += e.length;
+    lam_wsum += e.lambda * e.length;
+  }
   j["edges"] = edges;
+  // Per-(hkl,hkl) lambda is discretization-sensitive; the length-weighted mean
+  // and the per-size e_edge/e_corner totals are the robust quantities.
+  j["edge_line_tension_mean"] = lam_len > 0 ? lam_wsum / lam_len : 0.0;
+  j["edge_corner_note"] =
+      "per-edge lambda / per-corner epsilon vary with Wulff facet "
+      "discretization; use edge_line_tension_mean and the per-size "
+      "e_edge / e_corner totals as the robust quantities";
   nlohmann::json corners = nlohmann::json::array();
   for (const auto &c : m.corners) {
     nlohmann::json hkls = nlohmann::json::array();
@@ -508,4 +548,4 @@ void to_json(nlohmann::json &j, const MorphologyResult &m) {
   j["samples"] = samples;
 }
 
-} // namespace occ::driver
+} // namespace occ::cg

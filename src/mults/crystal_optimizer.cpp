@@ -554,12 +554,20 @@ void accumulate_gradients(
 // New constructor from CrystalEnergySetup
 // ============================================================================
 
+namespace {
+// The setup's original crystal when present, otherwise a bare P1 cell.
+crystal::Crystal reference_from_setup(const CrystalEnergySetup &setup) {
+    if (setup.reference_crystal)
+        return *setup.reference_crystal;
+    return crystal::Crystal(crystal::AsymmetricUnit{}, crystal::SpaceGroup("P1"),
+                            setup.unit_cell);
+}
+} // namespace
+
 CrystalOptimizer::CrystalOptimizer(CrystalEnergySetup setup,
                                    const CrystalOptimizerSettings& settings)
     : m_settings(settings)
-    , m_reference_crystal(crystal::AsymmetricUnit{},
-                          crystal::SpaceGroup("P1"),
-                          setup.unit_cell)
+    , m_reference_crystal(reference_from_setup(setup))
     , m_energy(std::move(setup)) {
 
     m_energy.set_max_interaction_order(settings.max_interaction_order);
@@ -573,37 +581,11 @@ CrystalOptimizer::CrystalOptimizer(CrystalEnergySetup setup,
     m_initial_states = m_states;
     update_neighbor_reference(m_states, Vec6::Zero());
 
-    // Symmetry mode is not supported for the setup path yet.
-    m_settings.use_symmetry = false;
+    // No reference crystal (no atoms) -> symmetry-reduced mode unavailable.
+    if (m_reference_crystal.asymmetric_unit().positions.cols() == 0)
+        m_settings.use_symmetry = false;
 
-    // Compute DOF: all molecules independent
-    int mol0_dof = 0;
-    if (!m_settings.fix_first_translation) mol0_dof += 3;
-    if (!m_settings.fix_first_rotation) mol0_dof += 3;
-    m_num_parameters = mol0_dof + 6 * (m_num_molecules - 1);
-    m_num_molecular_parameters = m_num_parameters;
-
-    if (m_settings.optimize_cell) {
-        initialize_cell_strain_mask();
-        m_active_cell_components.clear();
-        for (int j = 0; j < 6; ++j) {
-            if (m_cell_strain_mask[j] > 0.5) {
-                m_active_cell_components.push_back(j);
-            }
-        }
-        m_num_cell_parameters = static_cast<int>(m_active_cell_components.size());
-        m_num_parameters = m_num_molecular_parameters + m_num_cell_parameters;
-    }
-
-    if (m_settings.method == OptimizationMethod::TrustRegion &&
-        m_settings.require_exact_hessian &&
-        !m_energy.can_compute_exact_hessian()) {
-        occ::log::warn("CrystalOptimizer: exact Hessian unavailable; using MSTMIN");
-        m_settings.method = OptimizationMethod::MSTMIN;
-    }
-
-    occ::log::info("CrystalOptimizer: {} molecules, {} parameters",
-                   m_num_molecules, m_num_parameters);
+    finalize_dof_and_symmetry();
 }
 
 // ============================================================================
@@ -636,12 +618,16 @@ CrystalOptimizer::CrystalOptimizer(const crystal::Crystal& crystal,
     m_initial_states = m_states;
     update_neighbor_reference(m_states, Vec6::Zero());
 
+    finalize_dof_and_symmetry();
+}
+
+void CrystalOptimizer::finalize_dof_and_symmetry() {
     if (m_settings.use_symmetry) {
         // Build symmetry mapping to check if symmetry mode is applicable.
         // Symmetry mode requires the energy calculator to have all Z UC molecules.
         // When the energy calculator works with Z' molecules, it already handles
         // symmetry internally via symmetry_unique_dimers, so we fall back to legacy mode.
-        auto mapping = build_symmetry_mapping(crystal);
+        auto mapping = build_symmetry_mapping(m_reference_crystal);
 
         if (m_num_molecules != mapping.num_uc_molecules) {
             occ::log::info("CrystalOptimizer: energy calculator has {} molecules "
@@ -2407,11 +2393,41 @@ crystal::Crystal CrystalOptimizer::build_optimized_crystal() const {
     const auto& current = m_energy.crystal();
     const auto& ref = m_reference_crystal;
 
-    // If the reference crystal has no atoms (e.g. built from CrystalEnergySetup),
-    // return a minimal crystal with the current unit cell.
+    // No reference crystal (input carried no symmetry): reconstruct a P1
+    // crystal from the optimized rigid-molecule geometries.
     if (ref.asymmetric_unit().positions.cols() == 0) {
-        return crystal::Crystal(crystal::AsymmetricUnit{},
-                                crystal::SpaceGroup("P1"),
+        const auto &geoms = m_energy.molecule_geometry();
+        const size_t nmol = std::min(geoms.size(), m_states.size());
+        int natoms = 0;
+        for (size_t m = 0; m < nmol; ++m)
+            natoms += static_cast<int>(geoms[m].atomic_numbers.size());
+
+        if (natoms == 0) {
+            occ::log::warn("build_optimized_crystal: no atoms available to "
+                           "reconstruct optimized structure");
+            return crystal::Crystal(crystal::AsymmetricUnit{},
+                                    crystal::SpaceGroup("P1"),
+                                    current.unit_cell());
+        }
+
+        Mat3N frac(3, natoms);
+        IVec nums(natoms);
+        int k = 0;
+        for (size_t m = 0; m < nmol; ++m) {
+            const auto &g = geoms[m];
+            const Mat3 R = m_states[m].rotation_matrix();
+            const Vec3 com = m_states[m].position;
+            for (size_t a = 0; a < g.atom_positions.size() &&
+                               a < g.atomic_numbers.size();
+                 ++a) {
+                Vec3 cart = com + R * g.atom_positions[a]; // Angstrom
+                frac.col(k) = current.to_fractional(cart);
+                nums(k) = g.atomic_numbers[a];
+                ++k;
+            }
+        }
+        crystal::AsymmetricUnit asym(frac.leftCols(k), nums.head(k));
+        return crystal::Crystal(asym, crystal::SpaceGroup("P1"),
                                 current.unit_cell());
     }
 

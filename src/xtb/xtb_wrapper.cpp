@@ -69,35 +69,35 @@ void from_json(const nlohmann::json &J, XTBJsonOutput &out) {
   maybe_get("xtb version", out.xtb_version);
 }
 
-XTBCalculator::XTBCalculator(const Molecule &mol)
+ExternalXtbCalculator::ExternalXtbCalculator(const Molecule &mol)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_charge(mol.charge()),
       m_num_unpaired_electrons(mol.multiplicity() - 1) {
   initialize_structure();
 }
 
-XTBCalculator::XTBCalculator(const Molecule &mol, Method method)
+ExternalXtbCalculator::ExternalXtbCalculator(const Molecule &mol, Method method)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_method(method),
       m_charge(mol.charge()), m_num_unpaired_electrons(mol.multiplicity() - 1) {
   initialize_structure();
 }
 
-XTBCalculator::XTBCalculator(const Dimer &mol)
+ExternalXtbCalculator::ExternalXtbCalculator(const Dimer &mol)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_charge(mol.charge()),
       m_num_unpaired_electrons(mol.multiplicity() - 1) {
   initialize_structure();
 }
 
-XTBCalculator::XTBCalculator(const Dimer &mol, Method method)
+ExternalXtbCalculator::ExternalXtbCalculator(const Dimer &mol, Method method)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_method(method),
       m_charge(mol.charge()), m_num_unpaired_electrons(mol.multiplicity() - 1) {
   initialize_structure();
 }
 
-XTBCalculator::XTBCalculator(const Crystal &crystal)
+ExternalXtbCalculator::ExternalXtbCalculator(const Crystal &crystal)
     : m_positions_bohr(crystal.unit_cell_atoms().cart_pos *
                        occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(crystal.unit_cell_atoms().atomic_numbers), m_charge(0),
@@ -108,7 +108,7 @@ XTBCalculator::XTBCalculator(const Crystal &crystal)
   initialize_structure();
 }
 
-XTBCalculator::XTBCalculator(const Crystal &crystal, Method method)
+ExternalXtbCalculator::ExternalXtbCalculator(const Crystal &crystal, Method method)
     : m_positions_bohr(crystal.unit_cell_atoms().cart_pos *
                        occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(crystal.unit_cell_atoms().atomic_numbers),
@@ -119,49 +119,49 @@ XTBCalculator::XTBCalculator(const Crystal &crystal, Method method)
   initialize_structure();
 }
 
-void XTBCalculator::initialize_structure() {
+void ExternalXtbCalculator::initialize_structure() {
   int natoms = m_atomic_numbers.rows();
   m_gradients = Mat3N::Zero(3, natoms);
   m_virial = Mat3::Zero();
 }
 
-void XTBCalculator::update_structure(const Mat3N &new_positions) {
+void ExternalXtbCalculator::update_structure(const Mat3N &new_positions) {
   m_positions_bohr = new_positions;
 }
 
-void XTBCalculator::update_structure(const Mat3N &new_positions,
+void ExternalXtbCalculator::update_structure(const Mat3N &new_positions,
                                      const Mat3 &lattice) {
   m_positions_bohr = new_positions;
   m_lattice_vectors = lattice;
 }
 
-void XTBCalculator::set_charge(double charge) { m_charge = charge; }
+void ExternalXtbCalculator::set_charge(double charge) { m_charge = charge; }
 
-void XTBCalculator::set_num_unpaired_electrons(int n) {
+void ExternalXtbCalculator::set_num_unpaired_electrons(int n) {
   m_num_unpaired_electrons = n;
 }
 
-void XTBCalculator::set_accuracy(double accuracy) { m_accuracy = accuracy; }
+void ExternalXtbCalculator::set_accuracy(double accuracy) { m_accuracy = accuracy; }
 
-void XTBCalculator::set_max_iterations(int iterations) {
+void ExternalXtbCalculator::set_max_iterations(int iterations) {
   m_max_iterations = iterations;
 }
 
-void XTBCalculator::set_temperature(double temp) { m_temperature = temp; }
+void ExternalXtbCalculator::set_temperature(double temp) { m_temperature = temp; }
 
-void XTBCalculator::set_mixer_damping(double damping_factor) {
+void ExternalXtbCalculator::set_mixer_damping(double damping_factor) {
   m_damping_factor = damping_factor;
 }
 
-void XTBCalculator::set_solvent(const std::string &solvent) {
+void ExternalXtbCalculator::set_solvent(const std::string &solvent) {
   m_solvent = solvent;
 }
 
-void XTBCalculator::set_solvation_model(const std::string &model) {
+void ExternalXtbCalculator::set_solvation_model(const std::string &model) {
   m_solvation_model = model;
 }
 
-double XTBCalculator::single_point_energy() {
+double ExternalXtbCalculator::single_point_energy() {
   using subprocess::CalledProcessError;
   using subprocess::CompletedProcess;
   using subprocess::PipeOption;
@@ -207,18 +207,18 @@ double XTBCalculator::single_point_energy() {
   return m_energy;
 }
 
-Vec XTBCalculator::charges() const {
+Vec ExternalXtbCalculator::charges() const {
   Vec chg(num_atoms());
   return chg;
 }
 
-Mat XTBCalculator::bond_orders() const {
+Mat ExternalXtbCalculator::bond_orders() const {
   int natoms = num_atoms();
   Mat bo(natoms, natoms);
   return bo;
 }
 
-Crystal XTBCalculator::to_crystal() const {
+Crystal ExternalXtbCalculator::to_crystal() const {
   occ::crystal::UnitCell uc(m_lattice_vectors * occ::units::BOHR_TO_ANGSTROM);
   occ::crystal::SpaceGroup sg(1);
   occ::crystal::AsymmetricUnit asym(
@@ -227,12 +227,12 @@ Crystal XTBCalculator::to_crystal() const {
   return Crystal(asym, sg, uc);
 }
 
-Molecule XTBCalculator::to_molecule() const {
+Molecule ExternalXtbCalculator::to_molecule() const {
   return Molecule(m_atomic_numbers,
                   m_positions_bohr / occ::units::BOHR_TO_ANGSTROM);
 }
 
-int XTBCalculator::gfn_method() const {
+int ExternalXtbCalculator::gfn_method() const {
   switch (m_method) {
   case Method::GFN1:
     return 1;
@@ -241,7 +241,7 @@ int XTBCalculator::gfn_method() const {
   }
 }
 
-void XTBCalculator::write_input_file(const std::string &dest) {
+void ExternalXtbCalculator::write_input_file(const std::string &dest) {
   std::ofstream of(dest);
   fmt::print(of, "$chrg {}\n", m_charge);
   fmt::print(of, "$spin {}\n", m_num_unpaired_electrons);
@@ -255,7 +255,7 @@ void XTBCalculator::write_input_file(const std::string &dest) {
   fmt::print(of, "$end");
 }
 
-void XTBCalculator::read_json_contents(const std::string &json_filename) {
+void ExternalXtbCalculator::read_json_contents(const std::string &json_filename) {
   std::ifstream json_output_file(json_filename);
   XTBJsonOutput output =
       nlohmann::json::parse(json_output_file).get<XTBJsonOutput>();
@@ -263,7 +263,7 @@ void XTBCalculator::read_json_contents(const std::string &json_filename) {
   m_partial_charges = output.partial_charges;
 }
 
-void XTBCalculator::read_engrad_contents(const std::string &engrad_filename) {
+void ExternalXtbCalculator::read_engrad_contents(const std::string &engrad_filename) {
   io::EngradReader engrad(engrad_filename);
   m_gradients = engrad.gradient();
   m_positions_bohr = engrad.positions();

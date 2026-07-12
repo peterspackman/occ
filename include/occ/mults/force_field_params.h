@@ -75,6 +75,11 @@ public:
     /// Williams typed Buckingham parameters by type code pair (kJ/mol, Angstrom).
     static std::map<std::pair<int,int>, BuckinghamParams> williams_typed_params();
 
+    /// FIT (Williams/Cox) typed Buckingham parameters by NEIGHCRYS type code
+    /// pair (kJ/mol, Angstrom), with the two-hydrogen split (H_F1 = H on
+    /// carbon, H_F2 = polar H on N/O).
+    static std::map<std::pair<int,int>, BuckinghamParams> fit_typed_params();
+
     /// Convert a Williams/NEIGHCRYS type code to a short label (e.g. 512 -> "C_W3").
     static const char* short_range_type_label(int type_code);
 
