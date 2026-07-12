@@ -14,6 +14,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/crystal/muldin.h>
+#include <occ/crystal/powder.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/standard_bonds.h>
 #include <occ/crystal/surface.h>
@@ -384,6 +385,155 @@ TEST_CASE("Face equivalence uses the transposed rotation",
 
   // basal vs prism faces are not equivalent
   REQUIRE_FALSE(Surface::faces_are_equivalent(c, HKL{0, 0, 1}, HKL{1, 0, 0}));
+}
+
+TEST_CASE("d_spacing is the reciprocal of HKL::d", "[crystal, powder]") {
+  // HKL::d(reciprocal()) returns |G| = 1/d, not d. Guard the helper that
+  // exists to stop callers tripping over that.
+  Crystal c = acetic_acid_crystal();
+  const auto &uc = c.unit_cell();
+  for (HKL hkl : {HKL{1, 0, 0}, HKL{0, 1, 1}, HKL{2, 0, 1}, HKL{3, 2, 1}}) {
+    double d = occ::crystal::d_spacing(hkl, uc);
+    REQUIRE(d == Catch::Approx(1.0 / hkl.d(uc.reciprocal())));
+  }
+  // a = 13.31 => d(100) = 13.31 for an orthorhombic cell
+  REQUIRE(occ::crystal::d_spacing(HKL{1, 0, 0}, uc) == Catch::Approx(13.31));
+  REQUIRE(occ::crystal::d_spacing(HKL{0, 1, 0}, uc) == Catch::Approx(4.10));
+}
+
+TEST_CASE("Structure factor of a single atom is its form factor",
+          "[crystal, powder]") {
+  // One carbon at the origin in P1: F(hkl) = f_C(s) for every reflection.
+  occ::IVec nums(1);
+  nums(0) = 6;
+  occ::Mat3N pos(3, 1);
+  pos << 0.0, 0.0, 0.0;
+  Crystal c(AsymmetricUnit(pos, nums, {"C1"}), SpaceGroup(1),
+            occ::crystal::cubic_cell(5.0));
+
+  std::vector<occ::crystal::PowderPeak> refl;
+  for (HKL hkl : {HKL{1, 0, 0}, HKL{1, 1, 0}, HKL{1, 1, 1}, HKL{2, 0, 0}}) {
+    occ::crystal::PowderPeak p;
+    p.hkl = hkl;
+    p.d = occ::crystal::d_spacing(hkl, c.unit_cell());
+    refl.push_back(p);
+  }
+  auto f = occ::crystal::structure_factors(c, refl);
+
+  // IT92 coefficients for carbon: f(s) = sum a_i exp(-b_i s^2) + c
+  const std::array<double, 4> a{2.31, 1.02, 1.5886, 0.865};
+  const std::array<double, 4> b{20.8439, 10.2075, 0.5687, 51.6512};
+  const double cc = 0.2156;
+  for (size_t i = 0; i < refl.size(); i++) {
+    const double stol2 = 1.0 / (4 * refl[i].d * refl[i].d);
+    double expected = cc;
+    for (int j = 0; j < 4; j++)
+      expected += a[j] * std::exp(-b[j] * stol2);
+    REQUIRE(std::abs(f(i)) == Catch::Approx(expected).epsilon(1e-9));
+  }
+}
+
+TEST_CASE("Systematically absent reflections have zero structure factor",
+          "[crystal, powder]") {
+  // Acetic acid is Pna2_1 (no. 33): h00: h = 2n, 0k0: k = 2n, 00l: l = 2n,
+  // h0l: h = 2n, 0kl: k + l = 2n.
+  Crystal c = acetic_acid_crystal();
+  const auto &uc = c.unit_cell();
+
+  auto f_squared = [&](HKL hkl) {
+    std::vector<occ::crystal::PowderPeak> refl(1);
+    refl[0].hkl = hkl;
+    refl[0].d = occ::crystal::d_spacing(hkl, uc);
+    return std::norm(occ::crystal::structure_factors(c, refl)(0));
+  };
+
+  // absent
+  for (HKL hkl : {HKL{1, 0, 0}, HKL{0, 1, 0}, HKL{0, 0, 1}, HKL{1, 0, 1},
+                  HKL{0, 1, 2}}) {
+    REQUIRE(Surface::check_systematic_absence(c, hkl));
+    REQUIRE(f_squared(hkl) < 1e-16);
+  }
+  // present, and genuinely non-zero
+  for (HKL hkl : {HKL{2, 0, 0}, HKL{0, 1, 1}, HKL{2, 0, 1}}) {
+    REQUIRE_FALSE(Surface::check_systematic_absence(c, hkl));
+    REQUIRE(f_squared(hkl) > 1.0);
+  }
+}
+
+TEST_CASE("Powder pattern of acetic acid", "[crystal, powder]") {
+  // Cross-validated against chmpy (itself validated against PLATON). With the
+  // same form factors the two agree to all printed digits; occ uses the
+  // International Tables (IT92) coefficients, chmpy uses Waasmaier-Kirfel.
+  Crystal c = acetic_acid_crystal();
+  occ::crystal::PowderPatternSettings settings; // Cu K-alpha, 5-50 degrees
+  auto pattern = occ::crystal::compute_powder_pattern(c, settings);
+
+  REQUIRE(pattern.wavelength() ==
+          Catch::Approx(occ::crystal::xray_wavelength::Cu_Ka));
+  REQUIRE(pattern.size() == 49);
+
+  // peaks come back sorted by increasing 2*theta
+  for (size_t i = 1; i < pattern.size(); i++)
+    REQUIRE(pattern.peaks()[i].two_theta >=
+            pattern.peaks()[i - 1].two_theta);
+
+  auto norm = pattern.normalized_intensities();
+  // strongest reflection is (201)
+  Eigen::Index strongest;
+  norm.maxCoeff(&strongest);
+  const auto &top = pattern.peaks()[strongest];
+  REQUIRE(top.hkl == HKL{2, 0, 1});
+  REQUIRE(top.d == Catch::Approx(4.3509).margin(1e-4));
+  REQUIRE(top.two_theta == Catch::Approx(20.3951).margin(1e-4));
+  REQUIRE(top.multiplicity == 4);
+  REQUIRE(norm(strongest) == Catch::Approx(100.0));
+
+  // a few more reference peaks: (hkl, d, 2theta, multiplicity, I/I_max)
+  struct Ref {
+    HKL hkl;
+    double d, two_theta;
+    int multiplicity;
+    double intensity;
+  };
+  const std::vector<Ref> refs{
+      {{0, 1, 1}, 3.3383, 26.6822, 4, 97.776},
+      {{2, 1, 0}, 3.4907, 25.4969, 4, 89.425},
+      {{2, 0, 0}, 6.6550, 13.2935, 2, 75.157},
+      {{1, 1, 1}, 3.2380, 27.5247, 8, 65.267},
+      {{2, 1, 1}, 2.9839, 29.9208, 8, 41.070},
+  };
+  for (const auto &ref : refs) {
+    auto it = std::find_if(pattern.peaks().begin(), pattern.peaks().end(),
+                           [&](const occ::crystal::PowderPeak &p) {
+                             return p.hkl == ref.hkl;
+                           });
+    REQUIRE(it != pattern.peaks().end());
+    const size_t i = std::distance(pattern.peaks().begin(), it);
+    REQUIRE(it->d == Catch::Approx(ref.d).margin(1e-4));
+    REQUIRE(it->two_theta == Catch::Approx(ref.two_theta).margin(1e-4));
+    REQUIRE(it->multiplicity == ref.multiplicity);
+    REQUIRE(norm(i) == Catch::Approx(ref.intensity).margin(1e-3));
+  }
+}
+
+TEST_CASE("Powder profile conserves intensity", "[crystal, powder]") {
+  Crystal c = acetic_acid_crystal();
+  auto pattern = occ::crystal::compute_powder_pattern(c, {});
+
+  double total = 0.0;
+  for (const auto &p : pattern.peaks())
+    total += p.intensity;
+
+  // an unbroadened histogram is just a rebinning: it must preserve the sum
+  auto [x_raw, y_raw] = pattern.profile(5.0, 50.0, 4500, 0.0);
+  REQUIRE(y_raw.sum() == Catch::Approx(total));
+
+  // Gaussian broadening is normalized, so it also preserves the sum (up to
+  // the small leakage past the ends of the grid)
+  auto [x, y] = pattern.profile(5.0, 50.0, 4500, 0.1);
+  REQUIRE(x.size() == 4500);
+  REQUIRE(y.sum() == Catch::Approx(total).epsilon(1e-3));
+  REQUIRE(y.maxCoeff() > 0.0);
 }
 
 TEST_CASE("Crystal Surface construction", "[crystal, surface]") {

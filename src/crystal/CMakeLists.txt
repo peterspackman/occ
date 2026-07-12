@@ -6,6 +6,7 @@ add_library(occ_crystal_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/dimer_mapping_table.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hkl.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/muldin.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/powder.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/site_mapping_table.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/standard_bonds.cpp"
