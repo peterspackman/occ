@@ -128,6 +128,40 @@ struct AsymmetricUnit {
    * \return The size of the unit cell, i.e., the number of atoms it contains.
    */
   size_t size() const { return atomic_numbers.size(); }
+
+  /**
+   * \brief Resize every member to hold `n` atoms.
+   *
+   * Members that carry no information of their own are given their neutral
+   * default: occupancy 1, charge 0, zero ADPs. Labels are cleared, since a
+   * meaningful default needs the atomic numbers -- call
+   * `generate_default_labels()` after filling those in.
+   *
+   * Prefer this over resizing `positions` and `atomic_numbers` by hand: the
+   * members are public, so a partial resize silently leaves the rest
+   * inconsistent, and consumers then index out of bounds.
+   */
+  void resize(Eigen::Index n);
+
+  /**
+   * \brief Whether every member is sized consistently with the atom count.
+   */
+  bool is_consistent() const;
+
+  /**
+   * \brief Give any inconsistently sized member its default, sized to the atom
+   * count.
+   *
+   * Idempotent, and a no-op when the asymmetric unit is already consistent.
+   * Because the members are public, code can build an AsymmetricUnit by
+   * default-constructing it and resizing only the members it cares about; this
+   * restores the invariant that the rest of the library relies on. `Crystal`
+   * calls it on construction.
+   *
+   * Does not touch a member that is already correctly sized, so real data is
+   * never overwritten.
+   */
+  void ensure_consistent();
 };
 
 } // namespace occ::crystal

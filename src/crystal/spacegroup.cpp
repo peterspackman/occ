@@ -89,6 +89,14 @@ void SpaceGroup::update_from_sgdata() {
     m_symbol = m_sgdata->hm;
     m_short_name = m_sgdata->short_name();
     m_number = m_sgdata->number;
+    // The symmetry operations belong to the setting too, and are the whole
+    // point of the object. Leaving them alone here meant that anything which
+    // swapped the gemmi pointer and called this -- standard_setting() did --
+    // came back with the right name and number but a symop list left over from
+    // whatever the object was before, i.e. the identity alone.
+    m_symops.clear();
+    for (const auto &op : m_sgdata->operations())
+      m_symops.push_back(SymmetryOperation(op.triplet()));
   }
 }
 
@@ -160,4 +168,45 @@ std::pair<IVec, Mat3N> SpaceGroup::apply_rotations(const Mat3N &frac) const {
   }
   return {generators, transformed};
 }
+
+bool SpaceGroup::is_standard_setting() const {
+  if (m_sgdata == nullptr)
+    return false;
+  return m_sgdata->is_reference_setting();
+}
+
+SpaceGroup SpaceGroup::standard_setting() const {
+  if (m_sgdata == nullptr || m_sgdata->is_reference_setting())
+    return *this;
+  const int n = m_sgdata->number;
+  for (const gemmi::SpaceGroup &sg : gemmi::spacegroup_tables::main) {
+    if (sg.number == n && sg.is_reference_setting()) {
+      SpaceGroup result;
+      result.m_sgdata = &sg;
+      result.update_from_sgdata();
+      return result;
+    }
+  }
+  throw std::runtime_error(
+      fmt::format("no reference setting found for space group {}", n));
+}
+
+std::pair<Mat3, Vec3> SpaceGroup::standard_setting_transform() const {
+  if (m_sgdata == nullptr || m_sgdata->is_reference_setting())
+    return {Mat3::Identity(), Vec3::Zero()};
+
+  // gemmi's basisop b relates the reference setting to this one by conjugation,
+  // op_this = b . op_ref . b^-1. Writing that in the (P, p) convention used for
+  // subgroup transformations, x_std = P^-1 (x - p), gives P = rot(b), p = tran(b).
+  const gemmi::Op basisop = m_sgdata->basisop();
+  Mat3 p_matrix;
+  Vec3 p_shift;
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++)
+      p_matrix(i, j) = static_cast<double>(basisop.rot[i][j]) / gemmi::Op::DEN;
+    p_shift(i) = static_cast<double>(basisop.tran[i]) / gemmi::Op::DEN;
+  }
+  return {p_matrix, p_shift};
+}
+
 } // namespace occ::crystal

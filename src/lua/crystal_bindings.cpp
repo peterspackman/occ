@@ -1,11 +1,14 @@
 #include "crystal_bindings.h"
 #include "eigen_conv.h"
+#include "enum_stacks.h"
 #include <Eigen/LU>
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <occ/core/molecule.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>
+#include <occ/crystal/powder.h>
+#include <occ/crystal/subgroup.h>
 #include <occ/crystal/surface.h>
 #include <occ/io/cifparser.h>
 
@@ -483,6 +486,9 @@ void register_crystal_region_and_dimers(lua_State *L) {
       .beginNamespace("occ")
       .beginClass<CrystalAtomRegion>("CrystalAtomRegion")
       .addProperty(
+          "occupation",
+          +[](const CrystalAtomRegion *r) -> occ::Vec { return r->occupation; })
+      .addProperty(
           "frac_pos",
           +[](const CrystalAtomRegion *r) -> occ::Mat3N { return r->frac_pos; })
       .addProperty(
@@ -735,6 +741,278 @@ void register_surface(lua_State *L) {
 
 } // namespace
 
+// -- powder diffraction ------------------------------------------------------
+
+void register_powder(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+      .beginClass<PowderPeak>("PowderPeak")
+      .addConstructor<void (*)()>()
+      .addProperty("hkl", &PowderPeak::hkl)
+      .addProperty("d", &PowderPeak::d)
+      .addProperty("two_theta", &PowderPeak::two_theta)
+      .addProperty("multiplicity", &PowderPeak::multiplicity)
+      .addProperty("f_squared", &PowderPeak::f_squared)
+      .addProperty("intensity", &PowderPeak::intensity)
+      .addFunction(
+          "__tostring",
+          +[](const PowderPeak *p) {
+            return fmt::format("<PowderPeak [{} {} {}] 2th={:.3f} I={:.3f}>",
+                               p->hkl.h, p->hkl.k, p->hkl.l, p->two_theta,
+                               p->intensity);
+          })
+      .endClass()
+
+      .beginClass<PowderPatternSettings>("PowderPatternSettings")
+      .addConstructor<void (*)()>()
+      .addPropertyReadWrite("wavelength", &PowderPatternSettings::wavelength)
+      .addPropertyReadWrite("two_theta_min",
+                            &PowderPatternSettings::two_theta_min)
+      .addPropertyReadWrite("two_theta_max",
+                            &PowderPatternSettings::two_theta_max)
+      .addPropertyReadWrite("debye_waller",
+                            &PowderPatternSettings::debye_waller)
+      .addPropertyReadWrite("min_f_squared",
+                            &PowderPatternSettings::min_f_squared)
+      .endClass()
+
+      .beginClass<PowderPattern>("PowderPattern")
+      // Zero-arg accessors exposed as properties, matching the convention
+      // used elsewhere in these bindings.
+      .addProperty("peaks", &PowderPattern::peaks)
+      .addProperty("wavelength", &PowderPattern::wavelength)
+      .addFunction(
+          "normalized_intensities",
+          +[](const PowderPattern *p) -> occ::Vec {
+            return p->normalized_intensities();
+          })
+      .addFunction(
+          "profile",
+          // lua_State* must be the LAST parameter for LuaBridge3 to inject it.
+          +[](const PowderPattern *p, double two_theta_min,
+              double two_theta_max, int num_bins, double fwhm,
+              lua_State *state) -> lb::LuaRef {
+            auto [x, y] = p->profile(two_theta_min, two_theta_max, num_bins,
+                                     fwhm);
+            lb::LuaRef result = lb::newTable(state);
+            result["two_theta"] = x;
+            result["intensity"] = y;
+            return result;
+          })
+      .addFunction(
+          "__len", +[](const PowderPattern *p) { return int(p->size()); })
+      .addFunction(
+          "__tostring",
+          +[](const PowderPattern *p) {
+            return fmt::format("<PowderPattern n_peaks={} lambda={:.4f}>",
+                               p->size(), p->wavelength());
+          })
+      .endClass()
+
+      .addFunction("powder_pattern", &compute_powder_pattern)
+      .addFunction("d_spacing", &d_spacing)
+      .addFunction("unique_reflections", &unique_reflections)
+      .addFunction("structure_factors", &structure_factors)
+      .addFunction("lorentz_polarization", &lorentz_polarization)
+      .endNamespace();
+
+  // Characteristic K-alpha wavelengths, in Angstroms
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+      .beginNamespace("xray_wavelength")
+      .addProperty(
+          "Cu_Ka1", +[]() { return xray_wavelength::Cu_Ka1; })
+      .addProperty(
+          "Mo_Ka1", +[]() { return xray_wavelength::Mo_Ka1; })
+      .addProperty(
+          "Cu_Ka", +[]() { return xray_wavelength::Cu_Ka; })
+      .addProperty(
+          "Mo_Ka", +[]() { return xray_wavelength::Mo_Ka; })
+      .addProperty(
+          "Co_Ka", +[]() { return xray_wavelength::Co_Ka; })
+      .addProperty(
+          "Cr_Ka", +[]() { return xray_wavelength::Cr_Ka; })
+      .addProperty(
+          "Fe_Ka", +[]() { return xray_wavelength::Fe_Ka; })
+      .addProperty(
+          "Ag_Ka", +[]() { return xray_wavelength::Ag_Ka; })
+      .endNamespace()
+      .endNamespace();
+}
+
+// -- subgroups ---------------------------------------------------------------
+
+void register_subgroup(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+      .beginClass<MaximalSubgroup>("MaximalSubgroup")
+      .addProperty("parent", &MaximalSubgroup::parent)
+      .addProperty("subgroup", &MaximalSubgroup::subgroup)
+      .addProperty("index", &MaximalSubgroup::index)
+      .addProperty("type", &MaximalSubgroup::type)
+      .addProperty(
+          "basis_transform",
+          +[](const MaximalSubgroup *s) -> occ::Mat3 {
+            return s->basis_transform;
+          })
+      .addProperty(
+          "origin_shift",
+          +[](const MaximalSubgroup *s) -> occ::Vec3 {
+            return s->origin_shift;
+          })
+      .addProperty("is_translationengleiche",
+                   &MaximalSubgroup::is_translationengleiche)
+      .addProperty("is_klassengleiche", &MaximalSubgroup::is_klassengleiche)
+      .addFunction("to_string", &MaximalSubgroup::to_string)
+      .addFunction(
+          "__tostring",
+          +[](const MaximalSubgroup *s) {
+            return fmt::format("<MaximalSubgroup {} -> {} index={} {} [{}]>",
+                               s->parent, s->subgroup, s->index,
+                               s->is_translationengleiche() ? "t" : "k",
+                               s->to_string());
+          })
+      .endClass()
+
+      .beginClass<SubgroupPath>("SubgroupPath")
+      .addProperty("subgroup", &SubgroupPath::subgroup)
+      .addProperty("index", &SubgroupPath::index)
+      .addProperty(
+          "basis_transform",
+          +[](const SubgroupPath *p) -> occ::Mat3 { return p->basis_transform; })
+      .addProperty(
+          "origin_shift",
+          +[](const SubgroupPath *p) -> occ::Vec3 { return p->origin_shift; })
+      .addProperty("steps", &SubgroupPath::steps)
+      .addProperty("is_translationengleiche",
+                   &SubgroupPath::is_translationengleiche)
+      .addProperty(
+          "depth", +[](const SubgroupPath *p) { return int(p->depth()); })
+      .addFunction(
+          "__tostring",
+          +[](const SubgroupPath *p) {
+            return fmt::format("<SubgroupPath -> {} index={} depth={}>",
+                               p->subgroup, p->index, p->depth());
+          })
+      .endClass()
+
+      .beginClass<SubgroupTransform>("SubgroupTransform")
+      .addConstructor<void (*)()>()
+      .addStaticFunction(
+          "from_maximal_subgroup",
+          +[](const MaximalSubgroup &s) { return new SubgroupTransform(s); })
+      .addStaticFunction(
+          "from_path",
+          +[](const SubgroupPath &p) { return new SubgroupTransform(p); })
+      .addProperty("subgroup", &SubgroupTransform::subgroup)
+      .addProperty(
+          "basis_transform",
+          +[](const SubgroupTransform *t) -> occ::Mat3 {
+            return t->basis_transform;
+          })
+      .addProperty(
+          "origin_shift",
+          +[](const SubgroupTransform *t) -> occ::Vec3 {
+            return t->origin_shift;
+          })
+      .addFunction(
+          "__tostring",
+          +[](const SubgroupTransform *t) {
+            return fmt::format("<SubgroupTransform -> SG {}>", t->subgroup);
+          })
+      .endClass()
+
+      .beginClass<ZPrimeSearchParameters>("ZPrimeSearchParameters")
+      .addConstructor<void (*)()>()
+      .addProperty(
+          "target",
+          +[](const ZPrimeSearchParameters *p) {
+            return p->target ? *p->target : 0.0;
+          },
+          // a target of 0 means "unconstrained"
+          +[](ZPrimeSearchParameters *p, double v) {
+            if (v <= 0.0)
+              p->target = std::nullopt;
+            else
+              p->target = v;
+          })
+      .addPropertyReadWrite("max_index", &ZPrimeSearchParameters::max_index)
+      .addPropertyReadWrite("max_depth", &ZPrimeSearchParameters::max_depth)
+      .addPropertyReadWrite("translationengleiche",
+                            &ZPrimeSearchParameters::translationengleiche)
+      .addPropertyReadWrite("klassengleiche",
+                            &ZPrimeSearchParameters::klassengleiche)
+      .addPropertyReadWrite("require_whole_molecules",
+                            &ZPrimeSearchParameters::require_whole_molecules)
+      .endClass()
+
+      .beginClass<SubgroupSearchParameters>("SubgroupSearchParameters")
+      .addConstructor<void (*)()>()
+      .addPropertyReadWrite("max_index", &SubgroupSearchParameters::max_index)
+      .addPropertyReadWrite("max_depth", &SubgroupSearchParameters::max_depth)
+      .addPropertyReadWrite("translationengleiche",
+                            &SubgroupSearchParameters::translationengleiche)
+      .addPropertyReadWrite("klassengleiche",
+                            &SubgroupSearchParameters::klassengleiche)
+      .endClass()
+
+      .addFunction(
+          "to_standard_setting",
+          +[](const Crystal &c) { return to_standard_setting(c); })
+      .addFunction(
+          "with_molecular_asymmetric_unit",
+          +[](const Crystal &c) { return with_molecular_asymmetric_unit(c); })
+      .addFunction(
+          "with_grouped_asymmetric_unit",
+          +[](const Crystal &c, const lb::LuaRef &groups) {
+            const int n = groups.length();
+            occ::IVec g(n);
+            for (int i = 0; i < n; ++i)
+              g(i) = static_cast<int>(lua_get_num(groups, i + 1));
+            return with_grouped_asymmetric_unit(c, g);
+          })
+      .addFunction(
+          "z_prime", &occ::crystal::z_prime)
+      .addFunction("has_whole_molecule_asymmetric_unit",
+                   &has_whole_molecule_asymmetric_unit)
+      .addFunction(
+          "to_subgroup",
+          +[](const Crystal &c, const SubgroupTransform &t) {
+            return to_subgroup(c, t);
+          })
+      .addFunction(
+          "to_subgroup_atomwise",
+          +[](const Crystal &c, const SubgroupTransform &t) {
+            return to_subgroup(c, t, 1e-4, false);
+          })
+      .addFunction(
+          "find_subgroup_for_z_prime",
+          +[](const Crystal &c, const ZPrimeSearchParameters &p,
+              lua_State *S) -> lb::LuaRef {
+            auto result = find_subgroup_for_z_prime(c, p);
+            if (!result)
+              return lb::LuaRef(S); // nil
+            return lb::LuaRef(S, *result);
+          })
+      .addFunction(
+          "maximal_subgroups",
+          +[](int n) { return maximal_subgroups(n); })
+      .addFunction(
+          "maximal_subgroups_of_type",
+          +[](int n, SubgroupType t) { return maximal_subgroups(n, t); })
+      .addFunction(
+          "subgroup_paths",
+          +[](int n, const SubgroupSearchParameters &p) {
+            return subgroup_paths(n, p);
+          })
+      .endNamespace();
+
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+      OCC_LUA_ENUM_NAMESPACE("SubgroupType", OCC_ENUM_SubgroupType)
+      .endNamespace();
+}
+
 void register_crystal_bindings(lua_State *L) {
   register_hkl(L);
   register_symmetry_operation(L);
@@ -745,6 +1023,8 @@ void register_crystal_bindings(lua_State *L) {
   register_crystal_region_and_dimers(L);
   register_site_and_dimer_index(L);
   register_surface(L);
+  register_powder(L);
+  register_subgroup(L);
 }
 
 } // namespace occ::lua_bindings

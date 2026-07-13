@@ -125,6 +125,33 @@ public:
    * resulting `IVec` will have dimension (N*8,) and the `Mat3N` of
    * coordinates will have dimension (3, N*8).
    */
+  /**
+   * \brief Whether this space group is in the standard (ITA reference) setting.
+   *
+   * Space groups have many settings -- P2_1/c, P2_1/a and P2_1/n are all space
+   * group 14 -- and tabulated data (subgroup relations, Wyckoff positions) is
+   * given for the standard one. Structures in the wild often are not.
+   *
+   * \note For the 24 groups with two origin choices (Pnnn, Fddd, ...) the
+   * standard setting is origin choice 2, whereas `SpaceGroup(number)` gives
+   * origin choice 1. Use `standard_setting()` to get the former.
+   */
+  bool is_standard_setting() const;
+
+  /**
+   * \brief This space group in its standard (ITA reference) setting.
+   */
+  SpaceGroup standard_setting() const;
+
+  /**
+   * \brief The change of basis taking this setting to the standard one.
+   *
+   * Returns \f$(P, p)\f$ such that \f$x_{std} = P^{-1}(x - p)\f$, i.e. the same
+   * convention used for subgroup transformations. The identity when this space
+   * group is already in the standard setting.
+   */
+  std::pair<Mat3, Vec3> standard_setting_transform() const;
+
   std::pair<IVec, Mat3N> apply_all_symmetry_operations(const Mat3N &) const;
 
   std::pair<IVec, Mat3N> apply_rotations(const Mat3N &) const;

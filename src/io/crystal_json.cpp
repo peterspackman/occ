@@ -46,6 +46,7 @@ void to_json(nlohmann::json &j, const CrystalAtomRegion &region) {
   j["unit cell offset"] = region.hkl;
   j["atomic numbers"] = region.atomic_numbers.transpose();
   j["symmetry operation"] = region.symop.transpose();
+  j["occupation"] = region.occupation.transpose();
   j["disorder group"] = region.disorder_group.transpose();
 }
 
@@ -60,6 +61,12 @@ void from_json(const nlohmann::json &j, CrystalAtomRegion &region) {
   region.uc_idx = j["unit cell index"].get<IVec>();
   region.atomic_numbers = j["atomic numbers"].get<IVec>();
   region.symop = j["symmetry operation"].get<IVec>();
+  // written only since occupancy became a property of the region; older files
+  // predate it, and a fully occupied site is the right assumption for them
+  if (j.contains("occupation"))
+    region.occupation = j["occupation"].get<Vec>();
+  else
+    region.occupation = Vec::Ones(size);
   region.disorder_group = j["disorder group"].get<IVec>();
 }
 

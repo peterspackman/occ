@@ -26,6 +26,7 @@
 #include <occ/isosurface/orbital_index.h>
 #include <occ/isosurface/surface_types.h>
 #include <occ/isosurface/volume_data.h>
+#include <occ/crystal/subgroup.h>
 #include <occ/mults/crystal_optimizer.h>
 #include <occ/mults/force_field_params.h>
 #include <occ/opt/bond_coordinate.h>
@@ -106,6 +107,12 @@
 #define OCC_ENUM_MoleculeOrder(X)                                              \
   X("AB", OCC_E_MoleculeOrder::AB)                                             \
   X("BA", OCC_E_MoleculeOrder::BA)
+
+// ---------- crystal ------------------------------------------------------
+#define OCC_E_SubgroupType ::occ::crystal::SubgroupType
+#define OCC_ENUM_SubgroupType(X)                                               \
+  X("TRANSLATIONENGLEICHE", OCC_E_SubgroupType::Translationengleiche)          \
+  X("KLASSENGLEICHE", OCC_E_SubgroupType::Klassengleiche)
 
 #define OCC_E_AveragingScheme ::occ::core::ElasticTensor::AveragingScheme
 #define OCC_ENUM_AveragingScheme(X)                                            \

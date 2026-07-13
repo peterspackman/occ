@@ -2,12 +2,15 @@
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <nanobind/eigen/dense.h>
+#include <nanobind/stl/optional.h>
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 #include <occ/core/molecule.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>
+#include <occ/crystal/powder.h>
+#include <occ/crystal/subgroup.h>
 #include <occ/crystal/surface.h>
 #include <occ/geometry/wulff.h>
 #include <occ/io/cifparser.h>
@@ -180,6 +183,8 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
       .def_ro("cart_pos", &CrystalAtomRegion::cart_pos)
       .def_ro("asym_idx", &CrystalAtomRegion::asym_idx)
       .def_ro("atomic_numbers", &CrystalAtomRegion::atomic_numbers)
+      .def_ro("occupation", &CrystalAtomRegion::occupation,
+              "site occupancy of each atom")
       .def_ro("symop", &CrystalAtomRegion::symop)
       .def("size", &CrystalAtomRegion::size)
       .def("__repr__", [](const CrystalAtomRegion &region) {
@@ -441,6 +446,194 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
         return fmt::format("<WulffConstruction n_facets={} n_vertices={}>",
                            w.facets().size(), w.vertices().cols());
       });
+
+  // -- powder diffraction ---------------------------------------------------
+
+  nb::module_ xray = m.def_submodule(
+      "xray_wavelength", "Characteristic K-alpha wavelengths, in Angstroms");
+  xray.attr("Cu_Ka1") = xray_wavelength::Cu_Ka1;
+  xray.attr("Mo_Ka1") = xray_wavelength::Mo_Ka1;
+  xray.attr("Co_Ka1") = xray_wavelength::Co_Ka1;
+  xray.attr("Cr_Ka1") = xray_wavelength::Cr_Ka1;
+  xray.attr("Fe_Ka1") = xray_wavelength::Fe_Ka1;
+  xray.attr("Ag_Ka1") = xray_wavelength::Ag_Ka1;
+  xray.attr("Cu_Ka") = xray_wavelength::Cu_Ka;
+  xray.attr("Mo_Ka") = xray_wavelength::Mo_Ka;
+  xray.attr("Co_Ka") = xray_wavelength::Co_Ka;
+  xray.attr("Cr_Ka") = xray_wavelength::Cr_Ka;
+  xray.attr("Fe_Ka") = xray_wavelength::Fe_Ka;
+  xray.attr("Ag_Ka") = xray_wavelength::Ag_Ka;
+
+  nb::class_<PowderPeak>(m, "PowderPeak")
+      .def_ro("hkl", &PowderPeak::hkl)
+      .def_ro("d", &PowderPeak::d, "d-spacing in Angstroms")
+      .def_ro("two_theta", &PowderPeak::two_theta, "Bragg angle in degrees")
+      .def_ro("multiplicity", &PowderPeak::multiplicity)
+      .def_ro("f_squared", &PowderPeak::f_squared, "|F(hkl)|^2")
+      .def_ro("intensity", &PowderPeak::intensity,
+              "multiplicity * |F|^2 * Lorentz-polarization")
+      .def("__repr__", [](const PowderPeak &p) {
+        return fmt::format("<PowderPeak [{} {} {}] 2th={:.3f} I={:.3f}>",
+                           p.hkl.h, p.hkl.k, p.hkl.l, p.two_theta, p.intensity);
+      });
+
+  nb::class_<PowderPatternSettings>(m, "PowderPatternSettings")
+      .def(nb::init<>())
+      .def_rw("wavelength", &PowderPatternSettings::wavelength)
+      .def_rw("two_theta_min", &PowderPatternSettings::two_theta_min)
+      .def_rw("two_theta_max", &PowderPatternSettings::two_theta_max)
+      .def_rw("debye_waller", &PowderPatternSettings::debye_waller)
+      .def_rw("min_f_squared", &PowderPatternSettings::min_f_squared)
+      .def_rw("max_reflection_box",
+              &PowderPatternSettings::max_reflection_box);
+
+  nb::class_<PowderPattern>(m, "PowderPattern")
+      .def_prop_ro("peaks", &PowderPattern::peaks)
+      .def_prop_ro("wavelength", &PowderPattern::wavelength)
+      .def("normalized_intensities", &PowderPattern::normalized_intensities,
+           "Peak intensities rescaled so the strongest peak is 100")
+      .def("profile", &PowderPattern::profile, "two_theta_min"_a,
+           "two_theta_max"_a, "num_bins"_a = 4500, "fwhm"_a = 0.1,
+           "Bin the peaks onto a 2-theta grid and broaden them with a "
+           "Gaussian. Returns (bin centres, intensities).")
+      .def("__len__", &PowderPattern::size)
+      .def("__repr__", [](const PowderPattern &p) {
+        return fmt::format("<PowderPattern n_peaks={} lambda={:.4f}>", p.size(),
+                           p.wavelength());
+      });
+
+  m.def("powder_pattern", &compute_powder_pattern, "crystal"_a,
+        "settings"_a = PowderPatternSettings{},
+        "Simulate a powder X-ray diffraction pattern for a crystal");
+  m.def("d_spacing", &d_spacing, "hkl"_a, "unit_cell"_a,
+        "d-spacing of a reflection, in Angstroms");
+  m.def("unique_reflections", &unique_reflections, "crystal"_a, "d_min"_a,
+        "Symmetry-unique reflections with d >= d_min, with multiplicities");
+  m.def("structure_factors", &structure_factors, "crystal"_a, "reflections"_a,
+        "debye_waller"_a = true,
+        "Structure factors F(hkl) for the given reflections");
+  m.def("lorentz_polarization", &lorentz_polarization, "two_theta"_a,
+        "Lorentz-polarization factor; two_theta in radians");
+
+  // -- subgroups ------------------------------------------------------------
+
+  nb::enum_<SubgroupType>(m, "SubgroupType")
+      .value("Translationengleiche", SubgroupType::Translationengleiche,
+             "the lattice is kept, point group symmetry is lost")
+      .value("Klassengleiche", SubgroupType::Klassengleiche,
+             "the point group is kept, translations are lost");
+
+  nb::class_<MaximalSubgroup>(m, "MaximalSubgroup")
+      .def_ro("parent", &MaximalSubgroup::parent)
+      .def_ro("subgroup", &MaximalSubgroup::subgroup)
+      .def_ro("index", &MaximalSubgroup::index)
+      .def_ro("type", &MaximalSubgroup::type)
+      .def_ro("basis_transform", &MaximalSubgroup::basis_transform,
+              "basis change P; columns are the new basis vectors")
+      .def_ro("origin_shift", &MaximalSubgroup::origin_shift,
+              "origin shift p, in fractional coordinates of the parent cell")
+      .def_prop_ro("is_translationengleiche",
+                   &MaximalSubgroup::is_translationengleiche)
+      .def_prop_ro("is_klassengleiche", &MaximalSubgroup::is_klassengleiche)
+      .def("to_string", &MaximalSubgroup::to_string)
+      .def("__repr__", [](const MaximalSubgroup &s) {
+        return fmt::format("<MaximalSubgroup {} -> {} index={} {} [{}]>",
+                           s.parent, s.subgroup, s.index,
+                           s.is_translationengleiche() ? "t" : "k",
+                           s.to_string());
+      });
+
+  nb::class_<SubgroupPath>(m, "SubgroupPath")
+      .def_ro("subgroup", &SubgroupPath::subgroup)
+      .def_ro("index", &SubgroupPath::index)
+      .def_ro("basis_transform", &SubgroupPath::basis_transform)
+      .def_ro("origin_shift", &SubgroupPath::origin_shift)
+      .def_ro("steps", &SubgroupPath::steps)
+      .def_prop_ro("is_translationengleiche",
+                   &SubgroupPath::is_translationengleiche)
+      .def_prop_ro("depth", &SubgroupPath::depth)
+      .def("__repr__", [](const SubgroupPath &p) {
+        return fmt::format("<SubgroupPath -> {} index={} depth={}>", p.subgroup,
+                           p.index, p.depth());
+      });
+
+  nb::class_<SubgroupSearchParameters>(m, "SubgroupSearchParameters")
+      .def(nb::init<>())
+      .def_rw("max_index", &SubgroupSearchParameters::max_index)
+      .def_rw("max_depth", &SubgroupSearchParameters::max_depth)
+      .def_rw("translationengleiche",
+              &SubgroupSearchParameters::translationengleiche)
+      .def_rw("klassengleiche", &SubgroupSearchParameters::klassengleiche);
+
+  m.def("maximal_subgroups",
+        nb::overload_cast<int>(&occ::crystal::maximal_subgroups),
+        "space_group_number"_a,
+        "The maximal subgroups of a space group (1-230). Klassengleiche "
+        "relations are tabulated only up to index 9.");
+  m.def("maximal_subgroups",
+        nb::overload_cast<int, SubgroupType>(&occ::crystal::maximal_subgroups),
+        "space_group_number"_a, "type"_a,
+        "The maximal subgroups of a space group, of a given type");
+  m.def("subgroup_paths", &subgroup_paths, "space_group_number"_a,
+        "params"_a = SubgroupSearchParameters{},
+        "All subgroups reachable by traversing the maximal-subgroup graph, "
+        "composing the transformation along each path");
+
+  // -- applying a subgroup to a crystal -------------------------------------
+
+  nb::class_<SubgroupTransform>(m, "SubgroupTransform")
+      .def(nb::init<>())
+      .def(nb::init<const MaximalSubgroup &>())
+      .def(nb::init<const SubgroupPath &>())
+      .def_rw("subgroup", &SubgroupTransform::subgroup)
+      .def_rw("basis_transform", &SubgroupTransform::basis_transform)
+      .def_rw("origin_shift", &SubgroupTransform::origin_shift)
+      .def("__repr__", [](const SubgroupTransform &t) {
+        return fmt::format("<SubgroupTransform -> SG {}>", t.subgroup);
+      });
+
+  nb::class_<ZPrimeSearchParameters>(m, "ZPrimeSearchParameters")
+      .def(nb::init<>())
+      .def_rw("target", &ZPrimeSearchParameters::target,
+              "Z' wanted in the subgroup; None accepts any Z'")
+      .def_rw("max_index", &ZPrimeSearchParameters::max_index)
+      .def_rw("max_depth", &ZPrimeSearchParameters::max_depth)
+      .def_rw("translationengleiche",
+              &ZPrimeSearchParameters::translationengleiche)
+      .def_rw("klassengleiche", &ZPrimeSearchParameters::klassengleiche)
+      .def_rw("require_whole_molecules",
+              &ZPrimeSearchParameters::require_whole_molecules);
+
+  m.def("compose", &occ::crystal::compose, "first"_a, "second"_a,
+        "Compose two subgroup transformations, applied left to right");
+  m.def("to_subgroup", &occ::crystal::to_subgroup, "crystal"_a, "transform"_a,
+        "tolerance"_a = 1e-4, "molecular_asymmetric_unit"_a = true,
+        "Re-describe a crystal in one of its subgroups. The structure is "
+        "unchanged; the asymmetric unit is re-derived under the smaller group.");
+  m.def("to_standard_setting", &occ::crystal::to_standard_setting, "crystal"_a,
+        "tolerance"_a = 1e-4,
+        "Re-describe a crystal in the standard (ITA reference) setting of its "
+        "space group. P2_1/c, P2_1/a and P2_1/n are all space group 14, and the "
+        "subgroup tables are written for the standard setting only.");
+  m.def("with_grouped_asymmetric_unit",
+        &occ::crystal::with_grouped_asymmetric_unit, "crystal"_a, "groups"_a,
+        "tolerance"_a = 1e-4,
+        "Re-choose the asymmetric unit so that atoms sharing a group stay "
+        "together where the symmetry allows");
+  m.def("with_molecular_asymmetric_unit",
+        &occ::crystal::with_molecular_asymmetric_unit, "crystal"_a,
+        "tolerance"_a = 1e-4,
+        "Re-choose the asymmetric unit so that whole molecules stay together");
+  m.def("z_prime", &occ::crystal::z_prime, "crystal"_a,
+        "The number of molecules in the asymmetric unit");
+  m.def("has_whole_molecule_asymmetric_unit",
+        &occ::crystal::has_whole_molecule_asymmetric_unit, "crystal"_a,
+        "True if the asymmetric unit consists of whole molecules");
+  m.def("find_subgroup_for_z_prime", &occ::crystal::find_subgroup_for_z_prime,
+        "crystal"_a, "params"_a = ZPrimeSearchParameters{},
+        "Find a subgroup in which the crystal has the target Z' (by default 1, "
+        "with whole molecules in the asymmetric unit). Returns None if none "
+        "exists within the search bounds.");
 
   return m;
 }

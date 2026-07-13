@@ -5,7 +5,10 @@
 #include <occ/crystal/asymmetric_unit.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/hkl.h>
+#include <occ/crystal/powder.h>
 #include <occ/crystal/spacegroup.h>
+#include <occ/crystal/subgroup.h>
+#include <optional>
 #include <occ/crystal/symmetryoperation.h>
 #include <occ/crystal/unitcell.h>
 #include <occ/io/cifparser.h>
@@ -403,5 +406,193 @@ void register_crystal_bindings() {
   function("parseSpaceGroupSymbol", optional_override([](int number) {
              SpaceGroup sg(number);
              return sg.symbol();
+           }));
+
+  // Powder diffraction
+  register_vector<PowderPeak>("VectorPowderPeak");
+
+  class_<PowderPeak>("PowderPeak")
+      .constructor<>()
+      .property("hkl", &PowderPeak::hkl)
+      .property("d", &PowderPeak::d)
+      .property("twoTheta", &PowderPeak::two_theta)
+      .property("multiplicity", &PowderPeak::multiplicity)
+      .property("fSquared", &PowderPeak::f_squared)
+      .property("intensity", &PowderPeak::intensity);
+
+  class_<PowderPatternSettings>("PowderPatternSettings")
+      .constructor<>()
+      .property("wavelength", &PowderPatternSettings::wavelength)
+      .property("twoThetaMin", &PowderPatternSettings::two_theta_min)
+      .property("twoThetaMax", &PowderPatternSettings::two_theta_max)
+      .property("debyeWaller", &PowderPatternSettings::debye_waller)
+      .property("minFSquared", &PowderPatternSettings::min_f_squared);
+
+  class_<PowderPattern>("PowderPattern")
+      .function("peaks", optional_override([](const PowderPattern &p) {
+                  return p.peaks();
+                }))
+      .function("wavelength", &PowderPattern::wavelength)
+      .function("size", optional_override(
+                            [](const PowderPattern &p) { return int(p.size()); }))
+      .function("normalizedIntensities",
+                optional_override([](const PowderPattern &p) {
+                  Vec v = p.normalized_intensities();
+                  val result = val::array();
+                  for (Eigen::Index i = 0; i < v.size(); i++)
+                    result.set(int(i), v(i));
+                  return result;
+                }))
+      .function("profile",
+                optional_override([](const PowderPattern &p, double min,
+                                     double max, int num_bins, double fwhm) {
+                  auto [x, y] = p.profile(min, max, num_bins, fwhm);
+                  val xs = val::array(), ys = val::array();
+                  for (Eigen::Index i = 0; i < x.size(); i++) {
+                    xs.set(int(i), x(i));
+                    ys.set(int(i), y(i));
+                  }
+                  val result = val::object();
+                  result.set("twoTheta", xs);
+                  result.set("intensity", ys);
+                  return result;
+                }));
+
+  function("powderPattern",
+           optional_override([](const Crystal &crystal,
+                                const PowderPatternSettings &settings) {
+             return compute_powder_pattern(crystal, settings);
+           }));
+
+  function("dSpacing", optional_override([](const HKL &hkl,
+                                            const UnitCell &cell) {
+             return d_spacing(hkl, cell);
+           }));
+
+  // Characteristic K-alpha wavelengths, in Angstroms
+  constant("XRAY_WAVELENGTH_CU_KA1", xray_wavelength::Cu_Ka1);
+  constant("XRAY_WAVELENGTH_CU_KA", xray_wavelength::Cu_Ka);
+  constant("XRAY_WAVELENGTH_MO_KA", xray_wavelength::Mo_Ka);
+  constant("XRAY_WAVELENGTH_CO_KA", xray_wavelength::Co_Ka);
+  constant("XRAY_WAVELENGTH_CR_KA", xray_wavelength::Cr_Ka);
+  constant("XRAY_WAVELENGTH_FE_KA", xray_wavelength::Fe_Ka);
+  constant("XRAY_WAVELENGTH_AG_KA", xray_wavelength::Ag_Ka);
+  // Subgroups
+  enum_<SubgroupType>("SubgroupType")
+      .value("Translationengleiche", SubgroupType::Translationengleiche)
+      .value("Klassengleiche", SubgroupType::Klassengleiche);
+
+  register_vector<MaximalSubgroup>("VectorMaximalSubgroup");
+  register_vector<SubgroupPath>("VectorSubgroupPath");
+
+  class_<MaximalSubgroup>("MaximalSubgroup")
+      .property("parent", &MaximalSubgroup::parent)
+      .property("subgroup", &MaximalSubgroup::subgroup)
+      .property("index", &MaximalSubgroup::index)
+      .property("type", &MaximalSubgroup::type)
+      .function("isTranslationengleiche",
+                &MaximalSubgroup::is_translationengleiche)
+      .function("isKlassengleiche", &MaximalSubgroup::is_klassengleiche)
+      .function("toString", &MaximalSubgroup::to_string)
+      .function("basisTransform",
+                optional_override([](const MaximalSubgroup &s) {
+                  val result = val::global("Float64Array").new_(9);
+                  for (int i = 0; i < 3; ++i)
+                    for (int j = 0; j < 3; ++j)
+                      result.set(i * 3 + j, s.basis_transform(i, j));
+                  return result;
+                }))
+      .function("originShift", optional_override([](const MaximalSubgroup &s) {
+                  val result = val::array();
+                  for (int i = 0; i < 3; ++i)
+                    result.set(i, s.origin_shift(i));
+                  return result;
+                }));
+
+  class_<SubgroupPath>("SubgroupPath")
+      .property("subgroup", &SubgroupPath::subgroup)
+      .property("index", &SubgroupPath::index)
+      .property("steps", &SubgroupPath::steps)
+      .function("isTranslationengleiche",
+                &SubgroupPath::is_translationengleiche)
+      .function("depth", optional_override([](const SubgroupPath &p) {
+                  return int(p.depth());
+                }))
+      .function("basisTransform", optional_override([](const SubgroupPath &p) {
+                  val result = val::global("Float64Array").new_(9);
+                  for (int i = 0; i < 3; ++i)
+                    for (int j = 0; j < 3; ++j)
+                      result.set(i * 3 + j, p.basis_transform(i, j));
+                  return result;
+                }))
+      .function("originShift", optional_override([](const SubgroupPath &p) {
+                  val result = val::array();
+                  for (int i = 0; i < 3; ++i)
+                    result.set(i, p.origin_shift(i));
+                  return result;
+                }));
+
+  class_<SubgroupSearchParameters>("SubgroupSearchParameters")
+      .constructor<>()
+      .property("maxIndex", &SubgroupSearchParameters::max_index)
+      .property("maxDepth", &SubgroupSearchParameters::max_depth)
+      .property("translationengleiche",
+                &SubgroupSearchParameters::translationengleiche)
+      .property("klassengleiche", &SubgroupSearchParameters::klassengleiche);
+
+  function("maximalSubgroups", optional_override([](int n) {
+             return occ::crystal::maximal_subgroups(n);
+           }));
+  function("maximalSubgroupsOfType",
+           optional_override([](int n, SubgroupType t) {
+             return occ::crystal::maximal_subgroups(n, t);
+           }));
+  function("subgroupPaths",
+           optional_override([](int n, const SubgroupSearchParameters &p) {
+             return occ::crystal::subgroup_paths(n, p);
+           }));
+  // Applying a subgroup to a crystal
+  class_<SubgroupTransform>("SubgroupTransform")
+      .constructor<>()
+      .property("subgroup", &SubgroupTransform::subgroup);
+
+  class_<ZPrimeSearchParameters>("ZPrimeSearchParameters")
+      .constructor<>()
+      .property("maxIndex", &ZPrimeSearchParameters::max_index)
+      .property("maxDepth", &ZPrimeSearchParameters::max_depth)
+      .property("translationengleiche",
+                &ZPrimeSearchParameters::translationengleiche)
+      .property("klassengleiche", &ZPrimeSearchParameters::klassengleiche)
+      .property("requireWholeMolecules",
+                &ZPrimeSearchParameters::require_whole_molecules)
+      // a target of 0 means unconstrained
+      .function("setTarget", optional_override([](ZPrimeSearchParameters &p,
+                                                  double v) {
+                  p.target = v > 0.0 ? std::optional<double>(v) : std::nullopt;
+                }));
+
+  function("toSubgroup",
+           optional_override([](const Crystal &c, const SubgroupTransform &t) {
+             return occ::crystal::to_subgroup(c, t);
+           }));
+  function("toStandardSetting", optional_override([](const Crystal &c) {
+             return occ::crystal::to_standard_setting(c);
+           }));
+  function("zPrime", optional_override([](const Crystal &c) {
+             return occ::crystal::z_prime(c);
+           }));
+  function("hasWholeMoleculeAsymmetricUnit",
+           optional_override([](const Crystal &c) {
+             return occ::crystal::has_whole_molecule_asymmetric_unit(c);
+           }));
+  // returns a SubgroupTransform, or throws if none exists
+  function("findSubgroupForZPrime",
+           optional_override([](const Crystal &c,
+                                const ZPrimeSearchParameters &p) {
+             auto result = occ::crystal::find_subgroup_for_z_prime(c, p);
+             if (!result)
+               throw std::runtime_error(
+                   "no subgroup found giving the requested Z'");
+             return *result;
            }));
 }

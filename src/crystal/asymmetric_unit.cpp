@@ -50,6 +50,35 @@ Vec AsymmetricUnit::vdw_radii() const {
   return result;
 }
 
+void AsymmetricUnit::resize(Eigen::Index n) {
+  positions.resize(3, n);
+  atomic_numbers.resize(n);
+  occupations = Vec::Ones(n);
+  charges = Vec::Zero(n);
+  adps = Mat6N::Zero(6, n);
+  labels.clear();
+}
+
+bool AsymmetricUnit::is_consistent() const {
+  const Eigen::Index n = atomic_numbers.size();
+  return positions.cols() == n && occupations.size() == n &&
+         charges.size() == n && adps.cols() == n &&
+         static_cast<Eigen::Index>(labels.size()) == n;
+}
+
+void AsymmetricUnit::ensure_consistent() {
+  const Eigen::Index n = atomic_numbers.size();
+  // Only fill in what is missing -- never overwrite data that is already there.
+  if (occupations.size() != n)
+    occupations = Vec::Ones(n);
+  if (charges.size() != n)
+    charges = Vec::Zero(n);
+  if (adps.cols() != n)
+    adps = Mat6N::Zero(6, n);
+  if (static_cast<Eigen::Index>(labels.size()) != n)
+    generate_default_labels();
+}
+
 std::string AsymmetricUnit::chemical_formula() const {
   std::vector<Element> els;
   for (int i = 0; i < atomic_numbers.size(); i++) {

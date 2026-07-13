@@ -20,6 +20,7 @@ const ankerl::unordered_dense::map<std::string, CifParser::AtomField>
         {"_atom_site_fract_z", AtomField::FracZ},
         {"_atom_site_adp_type", AtomField::AdpType},
         {"_atom_site_u_iso_or_equiv", AtomField::Uiso},
+        {"_atom_site_occupancy", AtomField::Occupancy},
         {"_atom_site_aniso_label", AtomField::AdpLabel},
         {"_atom_site_aniso_u_11", AtomField::AdpU11},
         {"_atom_site_aniso_u_22", AtomField::AdpU22},
@@ -78,6 +79,9 @@ void CifParser::set_atom_data(int index, const std::vector<AtomField> &fields,
       break;
     case Field::Uiso:
       atom.uiso = as_number(value);
+      break;
+    case Field::Occupancy:
+      atom.occupancy = as_number(value);
       break;
     case Field::AdpLabel:
       adp.aniso_label = value;
@@ -308,9 +312,9 @@ CifParser::parse_crystal_from_document(const gemmi::cif::Document &doc) {
     occ::crystal::AsymmetricUnit asym;
     if (num_atoms() > 0) {
       occ::log::debug("Found {} atoms _atom_site data block", num_atoms());
-      asym.atomic_numbers.resize(num_atoms());
-      asym.positions.resize(3, num_atoms());
-      asym.adps = Mat6N::Zero(6, num_atoms());
+      // resize() sizes every member, with neutral defaults for the ones we
+      // don't set below (charge 0, occupancy 1, zero ADPs)
+      asym.resize(num_atoms());
 
       int i = 0;
 
@@ -323,6 +327,7 @@ CifParser::parse_crystal_from_document(const gemmi::cif::Document &doc) {
         asym.atomic_numbers(i) =
             occ::core::Element(atom.element).atomic_number();
         asym.labels.push_back(atom.site_label);
+        asym.occupations(i) = atom.occupancy;
 
         // set Uiso in case we don't have an adp, by default should be 0 anyway;
         asym.adps(0, i) = atom.uiso;

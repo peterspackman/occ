@@ -26,12 +26,17 @@ const CrystalAtomRegion &Crystal::unit_cell_atoms() const {
 }
 
 void Crystal::update_unit_cell_atoms() const {
-  // TODO merge sites
-  constexpr double merge_tolerance = 1e-2;
+  // A real distance, not a fractional one. The tolerance used to be 1e-2 in
+  // fractional coordinates, so its physical size scaled with the cell -- fine at
+  // 10 A, but 0.5 A across a supercell, where it merrily merged distinct atoms.
+  // What this needs to absorb is coordinate rounding on an atom that sits on a
+  // special position, which is a matter of thousandths of an Angstrom.
+  constexpr double merge_tolerance_angstrom = 0.05;
   const auto &pos = m_asymmetric_unit.positions;
   const auto &atoms = m_asymmetric_unit.atomic_numbers;
   const int natom = num_sites();
   const int nsymops = symmetry_operations().size();
+  // the constructor guarantees the asymmetric unit is internally consistent
   Eigen::VectorXd occupation =
       m_asymmetric_unit.occupations.replicate(nsymops, 1);
   Eigen::VectorXi uc_nums = atoms.replicate(nsymops, 1);
@@ -45,17 +50,76 @@ void Crystal::update_unit_cell_atoms() const {
   occ::MaskArray mask(uc_pos.cols());
   mask.setConstant(false);
 
-  for (size_t i = 0; i < uc_pos.cols(); i++) {
-    if ((mask(i)))
-      continue;
-    occ::Vec3 p = uc_pos.col(i);
-    for (size_t j = i + 1; j < uc_pos.cols(); j++) {
-      double dist = (uc_pos.col(j) - p).norm();
-      if (dist < merge_tolerance)
-        mask(j) = true;
-      if (occupation.rows() > 0)
-        occupation(i) += occupation(j);
+  // Merge symmetry images that land on the same position -- an atom on a
+  // special position is mapped onto itself by part of the group. These are the
+  // same atom, so the occupancy is kept, not summed.
+  //
+  // Two atoms from *different* asymmetric unit sites landing on the same
+  // position is a different thing entirely: that is a disordered site, and
+  // merging discards one of them along with its element. We do not model
+  // disorder yet, so at least say so rather than silently dropping scatterers.
+  // A grid over the cell, so this is a linear scan rather than all-pairs. The
+  // cells are at least as large as the tolerance, so a coincident atom can only
+  // be in the same cell or one of the 26 neighbours, and the index wraps to
+  // respect periodicity. All-pairs took 20 s on a 16k-atom supercell.
+  Eigen::Vector3i ncells;
+  for (int i = 0; i < 3; i++) {
+    ncells(i) = std::max(
+        1, std::min(512, static_cast<int>(m_unit_cell.lengths()(i) /
+                                          merge_tolerance_angstrom)));
+  }
+  auto bucket_of = [&](const occ::Vec3 &f, int di, int dj, int dk) {
+    auto w = [](int v, int n) { return ((v % n) + n) % n; };
+    const int i =
+        w(static_cast<int>(std::floor(f(0) * ncells(0))) + di, ncells(0));
+    const int j =
+        w(static_cast<int>(std::floor(f(1) * ncells(1))) + dj, ncells(1));
+    const int k =
+        w(static_cast<int>(std::floor(f(2) * ncells(2))) + dk, ncells(2));
+    return (static_cast<int64_t>(i) * ncells(1) + j) * ncells(2) + k;
+  };
+
+  ankerl::unordered_dense::map<int64_t, std::vector<int>> buckets;
+  int disordered_sites = 0;
+  for (int i = 0; i < uc_pos.cols(); i++) {
+    const occ::Vec3 p = uc_pos.col(i);
+    int match = -1;
+    for (int di = -1; di <= 1 && match < 0; di++) {
+      for (int dj = -1; dj <= 1 && match < 0; dj++) {
+        for (int dk = -1; dk <= 1 && match < 0; dk++) {
+          auto it = buckets.find(bucket_of(p, di, dj, dk));
+          if (it == buckets.end())
+            continue;
+          for (int j : it->second) {
+            // shortest image: positions are wrapped into [0, 1), so 0.9999 and
+            // 0.0001 are neighbours, not a whole cell apart
+            occ::Vec3 df = uc_pos.col(j) - p;
+            for (int k = 0; k < 3; k++)
+              df(k) -= std::round(df(k));
+            if (m_unit_cell.to_cartesian(df).norm() <
+                merge_tolerance_angstrom) {
+              match = j;
+              break;
+            }
+          }
+        }
+      }
     }
+    if (match >= 0) {
+      mask(i) = true;
+      if (asym_idx(match) != asym_idx(i))
+        disordered_sites++;
+    } else {
+      buckets[bucket_of(p, 0, 0, 0)].push_back(i);
+    }
+  }
+  if (disordered_sites > 0) {
+    occ::log::warn("{} atom(s) share a site with an atom from a different "
+                   "asymmetric unit site and have been discarded: this "
+                   "structure looks disordered, and disorder is not modelled. "
+                   "Anything summing over the unit cell (structure factors, "
+                   "powder patterns, densities) is missing those scatterers.",
+                   disordered_sites);
   }
   Eigen::VectorXi idxs(uc_pos.cols() - mask.count());
   Eigen::VectorXi uc_idxs(uc_pos.cols() - mask.count());
@@ -76,6 +140,7 @@ void Crystal::update_unit_cell_atoms() const {
                                         IMat3N::Zero(3, uc_pos_masked.cols()),
                                         idxs.unaryExpr(uc_nums),
                                         idxs.unaryExpr(sym),
+                                        idxs.unaryExpr(occupation),
                                         IVec::Zero(idxs.rows())};
   m_unit_cell_atoms_needs_update = false;
 }
@@ -96,6 +161,7 @@ CrystalAtomRegion Crystal::slab(const HKL &lower, const HKL &upper) const {
   result.uc_idx = uc_atoms.uc_idx.replicate(ncells, 1);
   result.symop = uc_atoms.symop.replicate(ncells, 1);
   result.atomic_numbers = uc_atoms.atomic_numbers.replicate(ncells, 1);
+  result.occupation = uc_atoms.occupation.replicate(ncells, 1);
   result.disorder_group = uc_atoms.disorder_group.replicate(ncells, 1);
   int offset = n_uc;
   for (int h = lower.h; h <= upper.h; h++) {
@@ -177,6 +243,7 @@ CrystalAtomRegion Crystal::atom_surroundings(int asym_idx,
     result.uc_idx(result_idx) = atom_slab.uc_idx(idx);
     result.cart_pos.col(result_idx) = atom_slab.cart_pos.col(idx);
     result.symop(result_idx) = atom_slab.symop(idx);
+    result.occupation(result_idx) = atom_slab.occupation(idx);
     result.disorder_group(result_idx) = atom_slab.disorder_group(idx);
     result_idx++;
   }
@@ -237,6 +304,7 @@ Crystal::asymmetric_unit_atom_surroundings(double radius) const {
       reg.uc_idx(result_idx) = atom_slab.uc_idx(idx);
       reg.cart_pos.col(result_idx) = atom_slab.cart_pos.col(idx);
       reg.symop(result_idx) = atom_slab.symop(idx);
+      reg.occupation(result_idx) = atom_slab.occupation(idx);
       reg.disorder_group(result_idx) = atom_slab.disorder_group(idx);
       result_idx++;
     }
@@ -248,7 +316,13 @@ Crystal::asymmetric_unit_atom_surroundings(double radius) const {
 
 Crystal::Crystal(const AsymmetricUnit &asym, const SpaceGroup &sg,
                  const UnitCell &uc)
-    : m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc) {}
+    : m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc) {
+  // AsymmetricUnit's members are public, and code that default-constructs one
+  // and resizes only the members it cares about (both structure readers used
+  // to) leaves the rest empty. Restore the invariant here, so every Crystal has
+  // a consistent asymmetric unit no matter how it was built.
+  m_asymmetric_unit.ensure_consistent();
+}
 
 const PeriodicBondGraph &Crystal::unit_cell_connectivity() const {
   if (m_unit_cell_connectivity_needs_update)

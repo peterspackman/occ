@@ -104,9 +104,7 @@ ShelxFile::read_crystal_from_string(const std::string &contents) {
     occ::crystal::AsymmetricUnit asym;
     if (num_atoms() > 0) {
       occ::log::debug("Found {} atoms in SHELX file", num_atoms());
-      asym.atomic_numbers.resize(num_atoms());
-      asym.positions.resize(3, num_atoms());
-      asym.adps = Mat6N::Zero(6, num_atoms());
+      asym.resize(num_atoms());
 
       for (size_t i = 0; i < m_atoms.size(); ++i) {
         const auto &atom = m_atoms[i];
@@ -115,6 +113,7 @@ ShelxFile::read_crystal_from_string(const std::string &contents) {
         asym.positions(2, i) = atom.z;
         asym.atomic_numbers(i) =
             occ::core::Element(atom.element).atomic_number();
+        asym.occupations(i) = atom.occupation;
         asym.labels.push_back(atom.label);
 
         // Set default isotropic ADP
