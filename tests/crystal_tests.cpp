@@ -2418,3 +2418,77 @@ TEST_CASE("Partial occupancy changes powder intensities",
   }
   REQUIRE(any_different);
 }
+
+TEST_CASE("AsymmetricUnit enforces its own invariant",
+          "[crystal, asymmetric_unit]") {
+  // The members are public, so code can build an AsymmetricUnit by
+  // default-constructing it and resizing only what it cares about. That used to
+  // leave occupations, charges, adps and labels empty, and consumers indexed
+  // out of bounds. occupations was simply the first field to be read.
+  AsymmetricUnit asym;
+  asym.atomic_numbers.resize(3);
+  asym.atomic_numbers << 6, 8, 1;
+  asym.positions.resize(3, 3);
+  asym.positions << 0.0, 0.1, 0.2, 0.0, 0.1, 0.2, 0.0, 0.1, 0.2;
+
+  REQUIRE_FALSE(asym.is_consistent());
+  REQUIRE(asym.occupations.size() == 0);
+  REQUIRE(asym.charges.size() == 0);
+  REQUIRE(asym.adps.cols() == 0);
+  REQUIRE(asym.labels.empty());
+
+  asym.ensure_consistent();
+
+  REQUIRE(asym.is_consistent());
+  REQUIRE(asym.occupations.size() == 3);
+  REQUIRE(asym.charges.size() == 3);
+  REQUIRE(asym.adps.cols() == 3);
+  REQUIRE(asym.labels.size() == 3);
+  // neutral defaults
+  REQUIRE(asym.occupations.isApproxToConstant(1.0));
+  REQUIRE(asym.charges.isZero());
+  REQUIRE(asym.adps.isZero());
+
+  // idempotent, and it must not clobber data that is already present
+  asym.occupations(1) = 0.5;
+  asym.charges(2) = -1.0;
+  asym.ensure_consistent();
+  REQUIRE(asym.occupations(1) == Catch::Approx(0.5));
+  REQUIRE(asym.charges(2) == Catch::Approx(-1.0));
+}
+
+TEST_CASE("AsymmetricUnit::resize sizes every member",
+          "[crystal, asymmetric_unit]") {
+  AsymmetricUnit asym;
+  asym.resize(4);
+  REQUIRE(asym.positions.cols() == 4);
+  REQUIRE(asym.atomic_numbers.size() == 4);
+  REQUIRE(asym.occupations.size() == 4);
+  REQUIRE(asym.charges.size() == 4);
+  REQUIRE(asym.adps.cols() == 4);
+  REQUIRE(asym.occupations.isApproxToConstant(1.0));
+  REQUIRE(asym.charges.isZero());
+}
+
+TEST_CASE("Crystal repairs an inconsistent asymmetric unit",
+          "[crystal, asymmetric_unit]") {
+  // The Crystal constructor is the choke point: whatever shape the asymmetric
+  // unit arrives in, the crystal must be usable.
+  AsymmetricUnit asym;
+  asym.atomic_numbers.resize(2);
+  asym.atomic_numbers << 6, 8;
+  asym.positions.resize(3, 2);
+  asym.positions << 0.1, 0.3, 0.2, 0.4, 0.15, 0.35;
+  REQUIRE_FALSE(asym.is_consistent());
+
+  Crystal c(asym, SpaceGroup(1), occ::crystal::cubic_cell(6.0));
+  REQUIRE(c.asymmetric_unit().is_consistent());
+  REQUIRE(c.asymmetric_unit().charges.size() == 2);
+  REQUIRE(c.asymmetric_unit().labels.size() == 2);
+
+  // and everything downstream works rather than reading off the end
+  REQUIRE(c.unit_cell_atoms().size() == 2);
+  REQUIRE(c.unit_cell_atoms().occupation.isApproxToConstant(1.0));
+  auto pattern = occ::crystal::compute_powder_pattern(c, {});
+  REQUIRE(pattern.size() > 0);
+}

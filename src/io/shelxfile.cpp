@@ -104,14 +104,7 @@ ShelxFile::read_crystal_from_string(const std::string &contents) {
     occ::crystal::AsymmetricUnit asym;
     if (num_atoms() > 0) {
       occ::log::debug("Found {} atoms in SHELX file", num_atoms());
-      asym.atomic_numbers.resize(num_atoms());
-      asym.positions.resize(3, num_atoms());
-      asym.adps = Mat6N::Zero(6, num_atoms());
-      // as in the CIF reader: default-constructing AsymmetricUnit and resizing
-      // by hand skips these, and leaving them empty breaks anything that reads
-      // an occupancy or a charge
-      asym.occupations = Vec::Ones(num_atoms());
-      asym.charges = Vec::Zero(num_atoms());
+      asym.resize(num_atoms());
 
       for (size_t i = 0; i < m_atoms.size(); ++i) {
         const auto &atom = m_atoms[i];

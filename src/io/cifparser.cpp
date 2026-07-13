@@ -312,14 +312,9 @@ CifParser::parse_crystal_from_document(const gemmi::cif::Document &doc) {
     occ::crystal::AsymmetricUnit asym;
     if (num_atoms() > 0) {
       occ::log::debug("Found {} atoms _atom_site data block", num_atoms());
-      asym.atomic_numbers.resize(num_atoms());
-      asym.positions.resize(3, num_atoms());
-      asym.adps = Mat6N::Zero(6, num_atoms());
-      // AsymmetricUnit's constructors set these, but we bypass them by
-      // default-constructing and resizing; leaving them empty means anything
-      // reading an occupancy or a charge indexes out of bounds.
-      asym.occupations = Vec::Ones(num_atoms());
-      asym.charges = Vec::Zero(num_atoms());
+      // resize() sizes every member, with neutral defaults for the ones we
+      // don't set below (charge 0, occupancy 1, zero ADPs)
+      asym.resize(num_atoms());
 
       int i = 0;
 

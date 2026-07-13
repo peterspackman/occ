@@ -32,14 +32,9 @@ void Crystal::update_unit_cell_atoms() const {
   const auto &atoms = m_asymmetric_unit.atomic_numbers;
   const int natom = num_sites();
   const int nsymops = symmetry_operations().size();
-  // AsymmetricUnit's constructors size occupations to match the atoms, but code
-  // that default-constructs it and resizes the members by hand (the CIF and
-  // SHELX readers used to; tests still do) can leave it empty. Occupancy 1 is
-  // the right default, so fill it in rather than indexing out of bounds.
-  Vec asym_occupations = m_asymmetric_unit.occupations;
-  if (asym_occupations.size() != natom)
-    asym_occupations = Vec::Ones(natom);
-  Eigen::VectorXd occupation = asym_occupations.replicate(nsymops, 1);
+  // the constructor guarantees the asymmetric unit is internally consistent
+  Eigen::VectorXd occupation =
+      m_asymmetric_unit.occupations.replicate(nsymops, 1);
   Eigen::VectorXi uc_nums = atoms.replicate(nsymops, 1);
   Eigen::VectorXi asym_idx =
       Eigen::VectorXi::LinSpaced(natom, 0, natom - 1).replicate(nsymops, 1);
@@ -259,7 +254,13 @@ Crystal::asymmetric_unit_atom_surroundings(double radius) const {
 
 Crystal::Crystal(const AsymmetricUnit &asym, const SpaceGroup &sg,
                  const UnitCell &uc)
-    : m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc) {}
+    : m_asymmetric_unit(asym), m_space_group(sg), m_unit_cell(uc) {
+  // AsymmetricUnit's members are public, and code that default-constructs one
+  // and resizes only the members it cares about (both structure readers used
+  // to) leaves the rest empty. Restore the invariant here, so every Crystal has
+  // a consistent asymmetric unit no matter how it was built.
+  m_asymmetric_unit.ensure_consistent();
+}
 
 const PeriodicBondGraph &Crystal::unit_cell_connectivity() const {
   if (m_unit_cell_connectivity_needs_update)
