@@ -148,8 +148,13 @@ subgroup_paths(int space_group_number,
  * `to_subgroup` actually needs.
  */
 struct SubgroupTransform {
-  /// Space group number of the subgroup
-  int subgroup{1};
+  /// Space group number of the subgroup.
+  ///
+  /// Zero, i.e. invalid, by default: a default-constructed transform is not a
+  /// no-op, and silently defaulting to 1 would mean "descend to P1" -- which
+  /// `to_subgroup` would dutifully do, destroying the symmetry. It fails loudly
+  /// instead.
+  int subgroup{0};
   /// Basis change; columns are the new basis vectors in terms of the old
   Mat3 basis_transform{Mat3::Identity()};
   /// Origin shift, in fractional coordinates of the parent cell

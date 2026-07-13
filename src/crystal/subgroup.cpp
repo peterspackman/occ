@@ -225,6 +225,12 @@ inline double periodic_distance(const Vec3 &a, const Vec3 &b) {
 
 Crystal to_subgroup(const Crystal &crystal, const SubgroupTransform &transform,
                     double tolerance) {
+  if (transform.subgroup < 1 || transform.subgroup > 230)
+    throw std::invalid_argument(fmt::format(
+        "SubgroupTransform has no target space group (got {}); a "
+        "default-constructed transform is not a no-op",
+        transform.subgroup));
+
   const Mat3 &p_matrix = transform.basis_transform;
   const Vec3 &p_shift = transform.origin_shift;
   const double det = p_matrix.determinant();
@@ -426,16 +432,6 @@ find_subgroup_for_z_prime(const Crystal &crystal,
     return true;
   };
 
-  // already there?
-  if (satisfies(crystal))
-    return SubgroupTransform{};
-
-  SubgroupSearchParameters search;
-  search.max_index = params.max_index;
-  search.max_depth = params.max_depth;
-  search.translationengleiche = params.translationengleiche;
-  search.klassengleiche = params.klassengleiche;
-
   // The tabulated transformations are written for the standard setting, but real
   // structures often aren't in it (P2_1/a and P2_1/n are both space group 14).
   // Convert first, and fold the setting change into the transformation we hand
@@ -445,6 +441,20 @@ find_subgroup_for_z_prime(const Crystal &crystal,
   to_standard.subgroup = sg.number();
   std::tie(to_standard.basis_transform, to_standard.origin_shift) =
       sg.standard_setting_transform();
+
+  // Already there: hand back a transformation onto the crystal's *own* space
+  // group, not a default-constructed one. SubgroupTransform defaults to
+  // subgroup 1, so returning that would tell the caller to descend to P1 --
+  // and feeding it to to_subgroup would destroy the symmetry it was asked to
+  // preserve.
+  if (satisfies(crystal))
+    return to_standard;
+
+  SubgroupSearchParameters search;
+  search.max_index = params.max_index;
+  search.max_depth = params.max_depth;
+  search.translationengleiche = params.translationengleiche;
+  search.klassengleiche = params.klassengleiche;
 
   // subgroup_paths returns candidates sorted by increasing index, so the first
   // hit is the least drastic descent that works.

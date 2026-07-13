@@ -2492,3 +2492,37 @@ TEST_CASE("Crystal repairs an inconsistent asymmetric unit",
   auto pattern = occ::crystal::compute_powder_pattern(c, {});
   REQUIRE(pattern.size() > 0);
 }
+
+TEST_CASE("find_subgroup_for_z_prime on a crystal that already qualifies",
+          "[crystal, subgroup, zprime]") {
+  // Regression: the early-return path used to hand back a default-constructed
+  // SubgroupTransform, whose subgroup field defaulted to 1 (P1). Feeding that
+  // to to_subgroup -- the documented usage -- destroyed the symmetry it was
+  // asked to preserve, turning a perfectly good Z' = 1 structure into P1.
+  using occ::crystal::find_subgroup_for_z_prime;
+  using occ::crystal::to_subgroup;
+  using occ::crystal::z_prime;
+  using occ::crystal::ZPrimeSearchParameters;
+  using occ::crystal::SubgroupTransform;
+
+  Crystal acetic = acetic_acid_crystal(); // Pna2_1, Z' = 1, whole molecules
+  REQUIRE(z_prime(acetic) == Catch::Approx(1.0));
+  REQUIRE(occ::crystal::has_whole_molecule_asymmetric_unit(acetic));
+
+  auto transform = find_subgroup_for_z_prime(acetic, ZPrimeSearchParameters{});
+  REQUIRE(transform.has_value());
+
+  // it must point at the crystal's own space group, not P1
+  REQUIRE(transform->subgroup == 33);
+
+  // and applying it must be a no-op, not a descent to P1
+  Crystal child = to_subgroup(acetic, *transform);
+  REQUIRE(child.space_group().number() == 33);
+  REQUIRE(z_prime(child) == Catch::Approx(1.0));
+  REQUIRE(child.asymmetric_unit().size() == acetic.asymmetric_unit().size());
+  REQUIRE(child.volume() == Catch::Approx(acetic.volume()));
+
+  // a default-constructed transform has no target and must fail loudly
+  REQUIRE_THROWS_AS(to_subgroup(acetic, SubgroupTransform{}),
+                    std::invalid_argument);
+}
