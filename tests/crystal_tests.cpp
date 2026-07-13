@@ -1977,12 +1977,21 @@ TEST_CASE("Maximal subgroup rotations lie in the parent",
           "[crystal][subgroup]") {
   // Every rotation of H, mapped back into the parent basis by P R P^-1, must be
   // a rotation of G.
+  //
+  // The SpaceGroup objects must be named locals. `SpaceGroup(sg)` is a temporary
+  // and symmetry_operations() hands back a reference *into* it: binding that to
+  // a reference does not extend the temporary's lifetime (extension applies only
+  // to a temporary bound directly to the reference, not to one whose member a
+  // function returns), and neither does a range-for until C++23. Both spellings
+  // left a dangling reference -- benign on one platform, a failure on another.
   for (int sg : {2, 14, 19, 33, 62, 97, 148, 167, 194, 225, 227}) {
-    const auto &parent_ops = SpaceGroup(sg).symmetry_operations();
+    const SpaceGroup parent(sg);
+    const auto &parent_ops = parent.symmetry_operations();
     for (const auto &sub : maximal_subgroups(sg)) {
       const occ::Mat3 p = sub.basis_transform;
       const occ::Mat3 p_inv = p.inverse();
-      for (const auto &op : SpaceGroup(sub.subgroup).symmetry_operations()) {
+      const SpaceGroup child(sub.subgroup);
+      for (const auto &op : child.symmetry_operations()) {
         occ::Mat3 mapped = p * op.rotation() * p_inv;
         // must be integral
         occ::Mat3 rounded = mapped.array().round();
