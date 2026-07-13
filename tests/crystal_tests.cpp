@@ -17,6 +17,7 @@
 #include <occ/crystal/powder.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/standard_bonds.h>
+#include <occ/crystal/subgroup.h>
 #include <occ/crystal/surface.h>
 #include <occ/crystal/symmetryoperation.h>
 #include <occ/io/cifwriter.h>
@@ -1867,4 +1868,218 @@ TEST_CASE("Hydrogen bond length normalization", "[crystal][normalize]") {
     Vec3 bh_bond = cart_pos.col(1) - cart_pos.col(0);
     CHECK_THAT(bh_bond.norm(), Catch::Matchers::WithinAbs(1.180, 0.001));
   }
+}
+
+// -- subgroups --------------------------------------------------------------
+
+using occ::crystal::MaximalSubgroup;
+using occ::crystal::maximal_subgroups;
+using occ::crystal::SubgroupSearchParameters;
+using occ::crystal::subgroup_paths;
+using occ::crystal::SubgroupType;
+
+TEST_CASE("Maximal subgroups of P2_1/c", "[crystal, subgroup]") {
+  // The textbook case: P2_1/c (14) has three maximal t-subgroups at index 2 --
+  // P-1 (2), P2_1 (4) and Pc (7).
+  auto subs = maximal_subgroups(14, SubgroupType::Translationengleiche);
+  REQUIRE(subs.size() == 3);
+
+  std::vector<int> numbers;
+  for (const auto &s : subs) {
+    numbers.push_back(s.subgroup);
+    REQUIRE(s.parent == 14);
+    REQUIRE(s.index == 2);
+    REQUIRE(s.is_translationengleiche());
+  }
+  std::sort(numbers.begin(), numbers.end());
+  REQUIRE(numbers == std::vector<int>{2, 4, 7});
+
+  // k-subgroups exist too, and are a different (larger) family
+  auto k = maximal_subgroups(14, SubgroupType::Klassengleiche);
+  REQUIRE(k.size() > 0);
+  for (const auto &s : k)
+    REQUIRE(s.is_klassengleiche());
+}
+
+TEST_CASE("SG 97 has its F222 maximal subgroup", "[crystal, subgroup]") {
+  // Point group 422 = D4 has three non-conjugate maximal subgroups, so I422
+  // must have three maximal t-subgroups: I4 (79), I222 (23) and F222 (22).
+  // The upstream table omits F222; we patch it in during generation. This test
+  // guards that patch.
+  auto subs = maximal_subgroups(97, SubgroupType::Translationengleiche);
+  REQUIRE(subs.size() == 3);
+
+  std::vector<int> numbers;
+  for (const auto &s : subs)
+    numbers.push_back(s.subgroup);
+  std::sort(numbers.begin(), numbers.end());
+  REQUIRE(numbers == std::vector<int>{22, 23, 79});
+
+  auto f222 = std::find_if(subs.begin(), subs.end(), [](const MaximalSubgroup &s) {
+    return s.subgroup == 22;
+  });
+  REQUIRE(f222 != subs.end());
+  REQUIRE(f222->index == 2);
+  // a' = a - b, b' = a + b, c' = c, no origin shift
+  occ::Mat3 expected;
+  expected << 1, 1, 0, -1, 1, 0, 0, 0, 1;
+  REQUIRE(all_close(f222->basis_transform, expected));
+  REQUIRE(f222->origin_shift.isZero());
+}
+
+TEST_CASE("Maximal subgroup transformations are consistent",
+          "[crystal, subgroup]") {
+  // The index relation, counting symmetry operations per unit volume:
+  //     n_G * det(P) == n_H * index
+  // Note |H| * index == |G| is NOT valid: for a centred parent the
+  // transformation can go to a primitive cell (det P = 1/2), and for a
+  // klassengleiche relation the cell grows (det P = index).
+  int checked = 0;
+  for (int sg = 1; sg <= 230; sg++) {
+    const double n_g = SpaceGroup(sg).symmetry_operations().size();
+    for (const auto &sub : maximal_subgroups(sg)) {
+      const double n_h = SpaceGroup(sub.subgroup).symmetry_operations().size();
+      const double det = sub.basis_transform.determinant();
+      REQUIRE(n_g * det == Catch::Approx(n_h * sub.index).margin(1e-6));
+      checked++;
+    }
+  }
+  REQUIRE(checked == 8868);
+}
+
+TEST_CASE("det(P) is not the subgroup index", "[crystal, subgroup]") {
+  // Both groups are given in their conventional cells, so
+  //     det(P) = index * (centring of H) / (centring of G)
+  // P2 (2 ops, primitive) has a klassengleiche subgroup C2 (4 ops, C-centred)
+  // at index 2, whose transformation has det(P) = 4, not 2. 712 of the 7764
+  // klassengleiche edges have det(P) != index, so anything relying on
+  // det(P) == index, or on |H| * index == |G|, is wrong.
+  auto subs = maximal_subgroups(3, SubgroupType::Klassengleiche); // P2
+  auto c2 = std::find_if(subs.begin(), subs.end(),
+                         [](const MaximalSubgroup &s) { return s.subgroup == 5; });
+  REQUIRE(c2 != subs.end());
+  REQUIRE(c2->index == 2);
+  REQUIRE(c2->basis_transform.determinant() == Catch::Approx(4.0));
+
+  const double n_g = SpaceGroup(3).symmetry_operations().size();
+  const double n_h = SpaceGroup(5).symmetry_operations().size();
+  REQUIRE(n_g * c2->basis_transform.determinant() ==
+          Catch::Approx(n_h * c2->index));
+}
+
+TEST_CASE("Maximal subgroup rotations lie in the parent",
+          "[crystal, subgroup]") {
+  // Every rotation of H, mapped back into the parent basis by P R P^-1, must be
+  // a rotation of G.
+  for (int sg : {2, 14, 19, 33, 62, 97, 148, 167, 194, 225, 227}) {
+    const auto &parent_ops = SpaceGroup(sg).symmetry_operations();
+    for (const auto &sub : maximal_subgroups(sg)) {
+      const occ::Mat3 p = sub.basis_transform;
+      const occ::Mat3 p_inv = p.inverse();
+      for (const auto &op : SpaceGroup(sub.subgroup).symmetry_operations()) {
+        occ::Mat3 mapped = p * op.rotation() * p_inv;
+        // must be integral
+        occ::Mat3 rounded = mapped.array().round();
+        REQUIRE(all_close(mapped, rounded, 1e-6, 1e-6));
+        // and must be a rotation of the parent
+        bool found = false;
+        for (const auto &parent_op : parent_ops) {
+          if (all_close(parent_op.rotation(), rounded, 1e-6, 1e-6)) {
+            found = true;
+            break;
+          }
+        }
+        REQUIRE(found);
+      }
+    }
+  }
+}
+
+TEST_CASE("Subgroup graph traversal composes transformations",
+          "[crystal, subgroup]") {
+  SubgroupSearchParameters params;
+  params.max_index = 4;
+  params.max_depth = 2;
+  params.klassengleiche = false; // t-subgroups only, so the lattice is kept
+
+  auto paths = subgroup_paths(14, params); // P2_1/c
+  REQUIRE(paths.size() > 0);
+
+  // every path must be reachable, and its index the product of its steps
+  for (const auto &path : paths) {
+    REQUIRE(path.depth() >= 1);
+    REQUIRE(path.depth() <= 2);
+    REQUIRE(path.index <= 4);
+    int product = 1;
+    occ::Mat3 basis = occ::Mat3::Identity();
+    for (const auto &step : path.steps) {
+      product *= step.index;
+      basis = basis * step.basis_transform;
+    }
+    REQUIRE(path.index == product);
+    REQUIRE(all_close(path.basis_transform, basis));
+    REQUIRE(path.is_translationengleiche());
+  }
+
+  // depth 1 reproduces the maximal subgroups
+  int at_index_2 = 0;
+  for (const auto &path : paths)
+    if (path.index == 2)
+      at_index_2++;
+  REQUIRE(at_index_2 == 3); // P-1, P2_1, Pc
+
+  // P2_1/c descends to P1 at index 4 by three different routes -- via P-1, via
+  // P2_1 and via Pc. These are paths, not distinct subgroups: P1 has no origin
+  // constraint, so all three are really the same subgroup reached differently.
+  // The route is meaningful, so all three are reported.
+  int reaches_p1 = 0;
+  for (const auto &p : paths)
+    if (p.subgroup == 1 && p.index == 4)
+      reaches_p1++;
+  REQUIRE(reaches_p1 == 3);
+
+  // results are sorted by (index, subgroup)
+  for (size_t i = 1; i < paths.size(); i++)
+    REQUIRE(paths[i - 1].index <= paths[i].index);
+}
+
+TEST_CASE("Subgroup search parameters are respected", "[crystal, subgroup]") {
+  SubgroupSearchParameters t_only;
+  t_only.klassengleiche = false;
+  t_only.max_index = 2;
+  t_only.max_depth = 1;
+  auto t = subgroup_paths(14, t_only);
+  REQUIRE(t.size() == 3);
+
+  SubgroupSearchParameters k_only;
+  k_only.translationengleiche = false;
+  k_only.max_index = 2;
+  k_only.max_depth = 1;
+  auto k = subgroup_paths(14, k_only);
+  REQUIRE(k.size() > 0);
+  for (const auto &path : k)
+    REQUIRE_FALSE(path.is_translationengleiche());
+
+  // P1 has no t-subgroups (its point group is trivial) but it does have
+  // klassengleiche ones -- every sublattice of the translation lattice.
+  SubgroupSearchParameters p1_t;
+  p1_t.klassengleiche = false;
+  REQUIRE(subgroup_paths(1, p1_t).empty());
+
+  SubgroupSearchParameters p1_k;
+  p1_k.translationengleiche = false;
+  p1_k.max_index = 3;
+  p1_k.max_depth = 1;
+  auto p1 = subgroup_paths(1, p1_k);
+  REQUIRE(p1.size() > 0);
+  for (const auto &path : p1)
+    REQUIRE(path.subgroup == 1); // a sublattice of P1 is still P1
+}
+
+TEST_CASE("Subgroup lookup rejects invalid space groups",
+          "[crystal, subgroup]") {
+  REQUIRE_THROWS_AS(maximal_subgroups(0), std::out_of_range);
+  REQUIRE_THROWS_AS(maximal_subgroups(231), std::out_of_range);
+  REQUIRE_NOTHROW(maximal_subgroups(1));
+  REQUIRE_NOTHROW(maximal_subgroups(230));
 }

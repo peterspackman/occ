@@ -10,6 +10,8 @@ add_library(occ_crystal_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/site_mapping_table.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/spacegroup.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/standard_bonds.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/subgroup.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/subgroup_data.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.cpp"
