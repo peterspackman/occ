@@ -7,6 +7,7 @@
 #include <occ/crystal/hkl.h>
 #include <occ/crystal/powder.h>
 #include <occ/crystal/spacegroup.h>
+#include <occ/crystal/subgroup.h>
 #include <occ/crystal/symmetryoperation.h>
 #include <occ/crystal/unitcell.h>
 #include <occ/io/cifparser.h>
@@ -472,4 +473,78 @@ void register_crystal_bindings() {
   constant("XRAY_WAVELENGTH_CR_KA", xray_wavelength::Cr_Ka);
   constant("XRAY_WAVELENGTH_FE_KA", xray_wavelength::Fe_Ka);
   constant("XRAY_WAVELENGTH_AG_KA", xray_wavelength::Ag_Ka);
+  // Subgroups
+  enum_<SubgroupType>("SubgroupType")
+      .value("Translationengleiche", SubgroupType::Translationengleiche)
+      .value("Klassengleiche", SubgroupType::Klassengleiche);
+
+  register_vector<MaximalSubgroup>("VectorMaximalSubgroup");
+  register_vector<SubgroupPath>("VectorSubgroupPath");
+
+  class_<MaximalSubgroup>("MaximalSubgroup")
+      .property("parent", &MaximalSubgroup::parent)
+      .property("subgroup", &MaximalSubgroup::subgroup)
+      .property("index", &MaximalSubgroup::index)
+      .property("type", &MaximalSubgroup::type)
+      .function("isTranslationengleiche",
+                &MaximalSubgroup::is_translationengleiche)
+      .function("isKlassengleiche", &MaximalSubgroup::is_klassengleiche)
+      .function("toString", &MaximalSubgroup::to_string)
+      .function("basisTransform",
+                optional_override([](const MaximalSubgroup &s) {
+                  val result = val::global("Float64Array").new_(9);
+                  for (int i = 0; i < 3; ++i)
+                    for (int j = 0; j < 3; ++j)
+                      result.set(i * 3 + j, s.basis_transform(i, j));
+                  return result;
+                }))
+      .function("originShift", optional_override([](const MaximalSubgroup &s) {
+                  val result = val::array();
+                  for (int i = 0; i < 3; ++i)
+                    result.set(i, s.origin_shift(i));
+                  return result;
+                }));
+
+  class_<SubgroupPath>("SubgroupPath")
+      .property("subgroup", &SubgroupPath::subgroup)
+      .property("index", &SubgroupPath::index)
+      .property("steps", &SubgroupPath::steps)
+      .function("isTranslationengleiche",
+                &SubgroupPath::is_translationengleiche)
+      .function("depth", optional_override([](const SubgroupPath &p) {
+                  return int(p.depth());
+                }))
+      .function("basisTransform", optional_override([](const SubgroupPath &p) {
+                  val result = val::global("Float64Array").new_(9);
+                  for (int i = 0; i < 3; ++i)
+                    for (int j = 0; j < 3; ++j)
+                      result.set(i * 3 + j, p.basis_transform(i, j));
+                  return result;
+                }))
+      .function("originShift", optional_override([](const SubgroupPath &p) {
+                  val result = val::array();
+                  for (int i = 0; i < 3; ++i)
+                    result.set(i, p.origin_shift(i));
+                  return result;
+                }));
+
+  class_<SubgroupSearchParameters>("SubgroupSearchParameters")
+      .constructor<>()
+      .property("maxIndex", &SubgroupSearchParameters::max_index)
+      .property("maxDepth", &SubgroupSearchParameters::max_depth)
+      .property("translationengleiche",
+                &SubgroupSearchParameters::translationengleiche)
+      .property("klassengleiche", &SubgroupSearchParameters::klassengleiche);
+
+  function("maximalSubgroups", optional_override([](int n) {
+             return occ::crystal::maximal_subgroups(n);
+           }));
+  function("maximalSubgroupsOfType",
+           optional_override([](int n, SubgroupType t) {
+             return occ::crystal::maximal_subgroups(n, t);
+           }));
+  function("subgroupPaths",
+           optional_override([](int n, const SubgroupSearchParameters &p) {
+             return occ::crystal::subgroup_paths(n, p);
+           }));
 }

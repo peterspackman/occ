@@ -1,5 +1,6 @@
 #include "crystal_bindings.h"
 #include "eigen_conv.h"
+#include "enum_stacks.h"
 #include <Eigen/LU>
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
@@ -7,6 +8,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/crystal/powder.h>
+#include <occ/crystal/subgroup.h>
 #include <occ/crystal/surface.h>
 #include <occ/io/cifparser.h>
 
@@ -827,6 +829,91 @@ void register_powder(lua_State *L) {
       .endNamespace();
 }
 
+// -- subgroups ---------------------------------------------------------------
+
+void register_subgroup(lua_State *L) {
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+      .beginClass<MaximalSubgroup>("MaximalSubgroup")
+      .addProperty("parent", &MaximalSubgroup::parent)
+      .addProperty("subgroup", &MaximalSubgroup::subgroup)
+      .addProperty("index", &MaximalSubgroup::index)
+      .addProperty("type", &MaximalSubgroup::type)
+      .addProperty(
+          "basis_transform",
+          +[](const MaximalSubgroup *s) -> occ::Mat3 {
+            return s->basis_transform;
+          })
+      .addProperty(
+          "origin_shift",
+          +[](const MaximalSubgroup *s) -> occ::Vec3 {
+            return s->origin_shift;
+          })
+      .addProperty("is_translationengleiche",
+                   &MaximalSubgroup::is_translationengleiche)
+      .addProperty("is_klassengleiche", &MaximalSubgroup::is_klassengleiche)
+      .addFunction("to_string", &MaximalSubgroup::to_string)
+      .addFunction(
+          "__tostring",
+          +[](const MaximalSubgroup *s) {
+            return fmt::format("<MaximalSubgroup {} -> {} index={} {} [{}]>",
+                               s->parent, s->subgroup, s->index,
+                               s->is_translationengleiche() ? "t" : "k",
+                               s->to_string());
+          })
+      .endClass()
+
+      .beginClass<SubgroupPath>("SubgroupPath")
+      .addProperty("subgroup", &SubgroupPath::subgroup)
+      .addProperty("index", &SubgroupPath::index)
+      .addProperty(
+          "basis_transform",
+          +[](const SubgroupPath *p) -> occ::Mat3 { return p->basis_transform; })
+      .addProperty(
+          "origin_shift",
+          +[](const SubgroupPath *p) -> occ::Vec3 { return p->origin_shift; })
+      .addProperty("steps", &SubgroupPath::steps)
+      .addProperty("is_translationengleiche",
+                   &SubgroupPath::is_translationengleiche)
+      .addProperty(
+          "depth", +[](const SubgroupPath *p) { return int(p->depth()); })
+      .addFunction(
+          "__tostring",
+          +[](const SubgroupPath *p) {
+            return fmt::format("<SubgroupPath -> {} index={} depth={}>",
+                               p->subgroup, p->index, p->depth());
+          })
+      .endClass()
+
+      .beginClass<SubgroupSearchParameters>("SubgroupSearchParameters")
+      .addConstructor<void (*)()>()
+      .addPropertyReadWrite("max_index", &SubgroupSearchParameters::max_index)
+      .addPropertyReadWrite("max_depth", &SubgroupSearchParameters::max_depth)
+      .addPropertyReadWrite("translationengleiche",
+                            &SubgroupSearchParameters::translationengleiche)
+      .addPropertyReadWrite("klassengleiche",
+                            &SubgroupSearchParameters::klassengleiche)
+      .endClass()
+
+      .addFunction(
+          "maximal_subgroups",
+          +[](int n) { return maximal_subgroups(n); })
+      .addFunction(
+          "maximal_subgroups_of_type",
+          +[](int n, SubgroupType t) { return maximal_subgroups(n, t); })
+      .addFunction(
+          "subgroup_paths",
+          +[](int n, const SubgroupSearchParameters &p) {
+            return subgroup_paths(n, p);
+          })
+      .endNamespace();
+
+  lb::getGlobalNamespace(L)
+      .beginNamespace("occ")
+      OCC_LUA_ENUM_NAMESPACE("SubgroupType", OCC_ENUM_SubgroupType)
+      .endNamespace();
+}
+
 void register_crystal_bindings(lua_State *L) {
   register_hkl(L);
   register_symmetry_operation(L);
@@ -838,6 +925,7 @@ void register_crystal_bindings(lua_State *L) {
   register_site_and_dimer_index(L);
   register_surface(L);
   register_powder(L);
+  register_subgroup(L);
 }
 
 } // namespace occ::lua_bindings

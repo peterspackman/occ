@@ -48,6 +48,7 @@ OCC_LUA_DEFINE_ENUM_STACK(OCC_E_OptimizationMethod, OCC_ENUM_OptimizationMethod)
 
 // ---------- core --------------------------------------------------------
 OCC_LUA_DEFINE_ENUM_STACK(OCC_E_MirrorType, OCC_ENUM_MirrorType)
+OCC_LUA_DEFINE_ENUM_STACK(OCC_E_SubgroupType, OCC_ENUM_SubgroupType)
 OCC_LUA_DEFINE_ENUM_STACK(OCC_E_MoleculeOrder, OCC_ENUM_MoleculeOrder)
 OCC_LUA_DEFINE_ENUM_STACK(OCC_E_AveragingScheme, OCC_ENUM_AveragingScheme)
 // PointGroup is now validated like every other enum (previously it skipped

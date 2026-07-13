@@ -9,6 +9,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_mapping_table.h>
 #include <occ/crystal/powder.h>
+#include <occ/crystal/subgroup.h>
 #include <occ/crystal/surface.h>
 #include <occ/geometry/wulff.h>
 #include <occ/io/cifparser.h>
@@ -499,6 +500,70 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
         "Structure factors F(hkl) for the given reflections");
   m.def("lorentz_polarization", &lorentz_polarization, "two_theta"_a,
         "Lorentz-polarization factor; two_theta in radians");
+
+  // -- subgroups ------------------------------------------------------------
+
+  nb::enum_<SubgroupType>(m, "SubgroupType")
+      .value("Translationengleiche", SubgroupType::Translationengleiche,
+             "the lattice is kept, point group symmetry is lost")
+      .value("Klassengleiche", SubgroupType::Klassengleiche,
+             "the point group is kept, translations are lost");
+
+  nb::class_<MaximalSubgroup>(m, "MaximalSubgroup")
+      .def_ro("parent", &MaximalSubgroup::parent)
+      .def_ro("subgroup", &MaximalSubgroup::subgroup)
+      .def_ro("index", &MaximalSubgroup::index)
+      .def_ro("type", &MaximalSubgroup::type)
+      .def_ro("basis_transform", &MaximalSubgroup::basis_transform,
+              "basis change P; columns are the new basis vectors")
+      .def_ro("origin_shift", &MaximalSubgroup::origin_shift,
+              "origin shift p, in fractional coordinates of the parent cell")
+      .def_prop_ro("is_translationengleiche",
+                   &MaximalSubgroup::is_translationengleiche)
+      .def_prop_ro("is_klassengleiche", &MaximalSubgroup::is_klassengleiche)
+      .def("to_string", &MaximalSubgroup::to_string)
+      .def("__repr__", [](const MaximalSubgroup &s) {
+        return fmt::format("<MaximalSubgroup {} -> {} index={} {} [{}]>",
+                           s.parent, s.subgroup, s.index,
+                           s.is_translationengleiche() ? "t" : "k",
+                           s.to_string());
+      });
+
+  nb::class_<SubgroupPath>(m, "SubgroupPath")
+      .def_ro("subgroup", &SubgroupPath::subgroup)
+      .def_ro("index", &SubgroupPath::index)
+      .def_ro("basis_transform", &SubgroupPath::basis_transform)
+      .def_ro("origin_shift", &SubgroupPath::origin_shift)
+      .def_ro("steps", &SubgroupPath::steps)
+      .def_prop_ro("is_translationengleiche",
+                   &SubgroupPath::is_translationengleiche)
+      .def_prop_ro("depth", &SubgroupPath::depth)
+      .def("__repr__", [](const SubgroupPath &p) {
+        return fmt::format("<SubgroupPath -> {} index={} depth={}>", p.subgroup,
+                           p.index, p.depth());
+      });
+
+  nb::class_<SubgroupSearchParameters>(m, "SubgroupSearchParameters")
+      .def(nb::init<>())
+      .def_rw("max_index", &SubgroupSearchParameters::max_index)
+      .def_rw("max_depth", &SubgroupSearchParameters::max_depth)
+      .def_rw("translationengleiche",
+              &SubgroupSearchParameters::translationengleiche)
+      .def_rw("klassengleiche", &SubgroupSearchParameters::klassengleiche);
+
+  m.def("maximal_subgroups",
+        nb::overload_cast<int>(&occ::crystal::maximal_subgroups),
+        "space_group_number"_a,
+        "The maximal subgroups of a space group (1-230). Klassengleiche "
+        "relations are tabulated only up to index 9.");
+  m.def("maximal_subgroups",
+        nb::overload_cast<int, SubgroupType>(&occ::crystal::maximal_subgroups),
+        "space_group_number"_a, "type"_a,
+        "The maximal subgroups of a space group, of a given type");
+  m.def("subgroup_paths", &subgroup_paths, "space_group_number"_a,
+        "params"_a = SubgroupSearchParameters{},
+        "All subgroups reachable by traversing the maximal-subgroup graph, "
+        "composing the transformation along each path");
 
   return m;
 }
