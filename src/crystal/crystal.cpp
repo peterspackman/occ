@@ -49,15 +49,32 @@ void Crystal::update_unit_cell_atoms() const {
   // Merge symmetry images that land on the same position -- an atom on a
   // special position is mapped onto itself by part of the group. These are the
   // same atom, so the occupancy is kept, not summed.
+  //
+  // Two atoms from *different* asymmetric unit sites landing on the same
+  // position is a different thing entirely: that is a disordered site, and
+  // merging discards one of them along with its element. We do not model
+  // disorder yet, so at least say so rather than silently dropping scatterers.
+  int disordered_sites = 0;
   for (size_t i = 0; i < uc_pos.cols(); i++) {
     if ((mask(i)))
       continue;
     occ::Vec3 p = uc_pos.col(i);
     for (size_t j = i + 1; j < uc_pos.cols(); j++) {
       double dist = (uc_pos.col(j) - p).norm();
-      if (dist < merge_tolerance)
+      if (dist < merge_tolerance) {
         mask(j) = true;
+        if (asym_idx(i) != asym_idx(j))
+          disordered_sites++;
+      }
     }
+  }
+  if (disordered_sites > 0) {
+    occ::log::warn("{} atom(s) share a site with an atom from a different "
+                   "asymmetric unit site and have been discarded: this "
+                   "structure looks disordered, and disorder is not modelled. "
+                   "Anything summing over the unit cell (structure factors, "
+                   "powder patterns, densities) is missing those scatterers.",
+                   disordered_sites);
   }
   Eigen::VectorXi idxs(uc_pos.cols() - mask.count());
   Eigen::VectorXi uc_idxs(uc_pos.cols() - mask.count());
