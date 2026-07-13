@@ -885,6 +885,50 @@ void register_subgroup(lua_State *L) {
           })
       .endClass()
 
+      .beginClass<SubgroupTransform>("SubgroupTransform")
+      .addConstructor<void (*)()>()
+      .addProperty("subgroup", &SubgroupTransform::subgroup)
+      .addProperty(
+          "basis_transform",
+          +[](const SubgroupTransform *t) -> occ::Mat3 {
+            return t->basis_transform;
+          })
+      .addProperty(
+          "origin_shift",
+          +[](const SubgroupTransform *t) -> occ::Vec3 {
+            return t->origin_shift;
+          })
+      .addFunction(
+          "__tostring",
+          +[](const SubgroupTransform *t) {
+            return fmt::format("<SubgroupTransform -> SG {}>", t->subgroup);
+          })
+      .endClass()
+
+      .beginClass<ZPrimeSearchParameters>("ZPrimeSearchParameters")
+      .addConstructor<void (*)()>()
+      .addProperty(
+          "target",
+          +[](const ZPrimeSearchParameters *p) {
+            return p->target ? *p->target : 0.0;
+          },
+          // a target of 0 means "unconstrained"
+          +[](ZPrimeSearchParameters *p, double v) {
+            if (v <= 0.0)
+              p->target = std::nullopt;
+            else
+              p->target = v;
+          })
+      .addPropertyReadWrite("max_index", &ZPrimeSearchParameters::max_index)
+      .addPropertyReadWrite("max_depth", &ZPrimeSearchParameters::max_depth)
+      .addPropertyReadWrite("translationengleiche",
+                            &ZPrimeSearchParameters::translationengleiche)
+      .addPropertyReadWrite("klassengleiche",
+                            &ZPrimeSearchParameters::klassengleiche)
+      .addPropertyReadWrite("require_whole_molecules",
+                            &ZPrimeSearchParameters::require_whole_molecules)
+      .endClass()
+
       .beginClass<SubgroupSearchParameters>("SubgroupSearchParameters")
       .addConstructor<void (*)()>()
       .addPropertyReadWrite("max_index", &SubgroupSearchParameters::max_index)
@@ -895,6 +939,27 @@ void register_subgroup(lua_State *L) {
                             &SubgroupSearchParameters::klassengleiche)
       .endClass()
 
+      .addFunction(
+          "to_standard_setting",
+          +[](const Crystal &c) { return to_standard_setting(c); })
+      .addFunction(
+          "z_prime", &occ::crystal::z_prime)
+      .addFunction("has_whole_molecule_asymmetric_unit",
+                   &has_whole_molecule_asymmetric_unit)
+      .addFunction(
+          "to_subgroup",
+          +[](const Crystal &c, const SubgroupTransform &t) {
+            return to_subgroup(c, t);
+          })
+      .addFunction(
+          "find_subgroup_for_z_prime",
+          +[](const Crystal &c, const ZPrimeSearchParameters &p,
+              lua_State *S) -> lb::LuaRef {
+            auto result = find_subgroup_for_z_prime(c, p);
+            if (!result)
+              return lb::LuaRef(S); // nil
+            return lb::LuaRef(S, *result);
+          })
       .addFunction(
           "maximal_subgroups",
           +[](int n) { return maximal_subgroups(n); })

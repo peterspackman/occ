@@ -2,6 +2,7 @@
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <nanobind/eigen/dense.h>
+#include <nanobind/stl/optional.h>
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
@@ -564,6 +565,53 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
         "params"_a = SubgroupSearchParameters{},
         "All subgroups reachable by traversing the maximal-subgroup graph, "
         "composing the transformation along each path");
+
+  // -- applying a subgroup to a crystal -------------------------------------
+
+  nb::class_<SubgroupTransform>(m, "SubgroupTransform")
+      .def(nb::init<>())
+      .def(nb::init<const MaximalSubgroup &>())
+      .def(nb::init<const SubgroupPath &>())
+      .def_rw("subgroup", &SubgroupTransform::subgroup)
+      .def_rw("basis_transform", &SubgroupTransform::basis_transform)
+      .def_rw("origin_shift", &SubgroupTransform::origin_shift)
+      .def("__repr__", [](const SubgroupTransform &t) {
+        return fmt::format("<SubgroupTransform -> SG {}>", t.subgroup);
+      });
+
+  nb::class_<ZPrimeSearchParameters>(m, "ZPrimeSearchParameters")
+      .def(nb::init<>())
+      .def_rw("target", &ZPrimeSearchParameters::target,
+              "Z' wanted in the subgroup; None accepts any Z'")
+      .def_rw("max_index", &ZPrimeSearchParameters::max_index)
+      .def_rw("max_depth", &ZPrimeSearchParameters::max_depth)
+      .def_rw("translationengleiche",
+              &ZPrimeSearchParameters::translationengleiche)
+      .def_rw("klassengleiche", &ZPrimeSearchParameters::klassengleiche)
+      .def_rw("require_whole_molecules",
+              &ZPrimeSearchParameters::require_whole_molecules);
+
+  m.def("compose", &occ::crystal::compose, "first"_a, "second"_a,
+        "Compose two subgroup transformations, applied left to right");
+  m.def("to_subgroup", &occ::crystal::to_subgroup, "crystal"_a, "transform"_a,
+        "tolerance"_a = 1e-4,
+        "Re-describe a crystal in one of its subgroups. The structure is "
+        "unchanged; the asymmetric unit is re-derived under the smaller group.");
+  m.def("to_standard_setting", &occ::crystal::to_standard_setting, "crystal"_a,
+        "tolerance"_a = 1e-4,
+        "Re-describe a crystal in the standard (ITA reference) setting of its "
+        "space group. P2_1/c, P2_1/a and P2_1/n are all space group 14, and the "
+        "subgroup tables are written for the standard setting only.");
+  m.def("z_prime", &occ::crystal::z_prime, "crystal"_a,
+        "The number of molecules in the asymmetric unit");
+  m.def("has_whole_molecule_asymmetric_unit",
+        &occ::crystal::has_whole_molecule_asymmetric_unit, "crystal"_a,
+        "True if the asymmetric unit consists of whole molecules");
+  m.def("find_subgroup_for_z_prime", &occ::crystal::find_subgroup_for_z_prime,
+        "crystal"_a, "params"_a = ZPrimeSearchParameters{},
+        "Find a subgroup in which the crystal has the target Z' (by default 1, "
+        "with whole molecules in the asymmetric unit). Returns None if none "
+        "exists within the search bounds.");
 
   return m;
 }

@@ -8,6 +8,7 @@
 #include <occ/crystal/powder.h>
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/subgroup.h>
+#include <optional>
 #include <occ/crystal/symmetryoperation.h>
 #include <occ/crystal/unitcell.h>
 #include <occ/io/cifparser.h>
@@ -546,5 +547,49 @@ void register_crystal_bindings() {
   function("subgroupPaths",
            optional_override([](int n, const SubgroupSearchParameters &p) {
              return occ::crystal::subgroup_paths(n, p);
+           }));
+  // Applying a subgroup to a crystal
+  class_<SubgroupTransform>("SubgroupTransform")
+      .constructor<>()
+      .property("subgroup", &SubgroupTransform::subgroup);
+
+  class_<ZPrimeSearchParameters>("ZPrimeSearchParameters")
+      .constructor<>()
+      .property("maxIndex", &ZPrimeSearchParameters::max_index)
+      .property("maxDepth", &ZPrimeSearchParameters::max_depth)
+      .property("translationengleiche",
+                &ZPrimeSearchParameters::translationengleiche)
+      .property("klassengleiche", &ZPrimeSearchParameters::klassengleiche)
+      .property("requireWholeMolecules",
+                &ZPrimeSearchParameters::require_whole_molecules)
+      // a target of 0 means unconstrained
+      .function("setTarget", optional_override([](ZPrimeSearchParameters &p,
+                                                  double v) {
+                  p.target = v > 0.0 ? std::optional<double>(v) : std::nullopt;
+                }));
+
+  function("toSubgroup",
+           optional_override([](const Crystal &c, const SubgroupTransform &t) {
+             return occ::crystal::to_subgroup(c, t);
+           }));
+  function("toStandardSetting", optional_override([](const Crystal &c) {
+             return occ::crystal::to_standard_setting(c);
+           }));
+  function("zPrime", optional_override([](const Crystal &c) {
+             return occ::crystal::z_prime(c);
+           }));
+  function("hasWholeMoleculeAsymmetricUnit",
+           optional_override([](const Crystal &c) {
+             return occ::crystal::has_whole_molecule_asymmetric_unit(c);
+           }));
+  // returns a SubgroupTransform, or throws if none exists
+  function("findSubgroupForZPrime",
+           optional_override([](const Crystal &c,
+                                const ZPrimeSearchParameters &p) {
+             auto result = occ::crystal::find_subgroup_for_z_prime(c, p);
+             if (!result)
+               throw std::runtime_error(
+                   "no subgroup found giving the requested Z'");
+             return *result;
            }));
 }
