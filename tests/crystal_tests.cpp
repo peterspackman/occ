@@ -2340,3 +2340,81 @@ TEST_CASE("to_standard_setting preserves the structure",
   Crystal already = to_standard_setting(acetic_acid_crystal());
   REQUIRE(already.space_group().number() == 33);
 }
+
+TEST_CASE("Unit cell atoms carry occupancy", "[crystal, occupancy]") {
+  Crystal c = acetic_acid_crystal();
+  c.asymmetric_unit().occupations.setConstant(1.0);
+  c.asymmetric_unit().occupations(0) = 0.25; // C1 is partially occupied
+
+  // fractional occupancies must survive the trip through the region, not get
+  // truncated to an integer
+  const auto &atoms = c.unit_cell_atoms();
+  REQUIRE(atoms.occupation.size() == static_cast<Eigen::Index>(atoms.size()));
+
+  int partial = 0;
+  for (Eigen::Index i = 0; i < atoms.size(); i++) {
+    if (atoms.asym_idx(i) == 0) {
+      REQUIRE(atoms.occupation(i) == Catch::Approx(0.25));
+      partial++;
+    } else {
+      REQUIRE(atoms.occupation(i) == Catch::Approx(1.0));
+    }
+  }
+  REQUIRE(partial == 4); // Pna2_1 has 4 general positions
+}
+
+TEST_CASE("Occupancy scales the structure factor", "[crystal, occupancy, powder]") {
+  // One carbon at the origin in P1: F = occ * f_C(s), so |F|^2 goes as occ^2.
+  auto single_carbon = [](double occupancy) {
+    occ::IVec nums(1);
+    nums(0) = 6;
+    occ::Mat3N pos(3, 1);
+    pos << 0.0, 0.0, 0.0;
+    AsymmetricUnit asym(pos, nums, {"C1"});
+    asym.occupations(0) = occupancy;
+    return Crystal(asym, SpaceGroup(1), occ::crystal::cubic_cell(5.0));
+  };
+
+  std::vector<occ::crystal::PowderPeak> refl(1);
+  refl[0].hkl = HKL{1, 0, 0};
+
+  auto f_of = [&](double occupancy) {
+    Crystal c = single_carbon(occupancy);
+    refl[0].d = occ::crystal::d_spacing(refl[0].hkl, c.unit_cell());
+    return std::abs(occ::crystal::structure_factors(c, refl)(0));
+  };
+
+  const double full = f_of(1.0);
+  REQUIRE(full > 1.0);
+  REQUIRE(f_of(0.5) == Catch::Approx(0.5 * full));
+  REQUIRE(f_of(0.25) == Catch::Approx(0.25 * full));
+  REQUIRE(f_of(0.0) == Catch::Approx(0.0).margin(1e-12));
+}
+
+TEST_CASE("Partial occupancy changes powder intensities",
+          "[crystal, occupancy, powder]") {
+  Crystal full = acetic_acid_crystal();
+  Crystal depleted = acetic_acid_crystal();
+  // halve the occupancy of both oxygens
+  depleted.asymmetric_unit().occupations(6) = 0.5;
+  depleted.asymmetric_unit().occupations(7) = 0.5;
+
+  auto a = occ::crystal::compute_powder_pattern(full, {});
+  auto b = occ::crystal::compute_powder_pattern(depleted, {});
+
+  // same reflections at the same angles ...
+  REQUIRE(a.size() == b.size());
+  for (size_t i = 0; i < a.size(); i++) {
+    REQUIRE(a.peaks()[i].hkl == b.peaks()[i].hkl);
+    REQUIRE(a.peaks()[i].two_theta ==
+            Catch::Approx(b.peaks()[i].two_theta));
+  }
+
+  // ... but different intensities: removing scatterers must change |F|^2
+  bool any_different = false;
+  for (size_t i = 0; i < a.size(); i++) {
+    if (std::abs(a.peaks()[i].f_squared - b.peaks()[i].f_squared) > 1e-6)
+      any_different = true;
+  }
+  REQUIRE(any_different);
+}

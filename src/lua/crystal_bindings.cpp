@@ -486,6 +486,9 @@ void register_crystal_region_and_dimers(lua_State *L) {
       .beginNamespace("occ")
       .beginClass<CrystalAtomRegion>("CrystalAtomRegion")
       .addProperty(
+          "occupation",
+          +[](const CrystalAtomRegion *r) -> occ::Vec { return r->occupation; })
+      .addProperty(
           "frac_pos",
           +[](const CrystalAtomRegion *r) -> occ::Mat3N { return r->frac_pos; })
       .addProperty(

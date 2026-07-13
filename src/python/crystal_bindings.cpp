@@ -183,6 +183,8 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
       .def_ro("cart_pos", &CrystalAtomRegion::cart_pos)
       .def_ro("asym_idx", &CrystalAtomRegion::asym_idx)
       .def_ro("atomic_numbers", &CrystalAtomRegion::atomic_numbers)
+      .def_ro("occupation", &CrystalAtomRegion::occupation,
+              "site occupancy of each atom")
       .def_ro("symop", &CrystalAtomRegion::symop)
       .def("size", &CrystalAtomRegion::size)
       .def("__repr__", [](const CrystalAtomRegion &region) {

@@ -109,7 +109,6 @@ std::vector<PowderPeak> unique_reflections(const Crystal &crystal,
 CVec structure_factors(const Crystal &crystal,
                        const std::vector<PowderPeak> &reflections) {
   const CrystalAtomRegion &atoms = crystal.unit_cell_atoms();
-  const AsymmetricUnit &asym = crystal.asymmetric_unit();
   const Eigen::Index num_atoms = atoms.size();
   const size_t num_refl = reflections.size();
 
@@ -125,11 +124,6 @@ CVec structure_factors(const Crystal &crystal,
           fmt::format("No X-ray scattering factors available for element Z={}",
                       z));
   }
-
-  // occupancies live on the asymmetric unit; map them through asym_idx
-  Vec occupation(num_atoms);
-  for (Eigen::Index i = 0; i < num_atoms; i++)
-    occupation(i) = asym.occupations(atoms.asym_idx(i));
 
   CVec result = CVec::Zero(num_refl);
 
@@ -147,7 +141,7 @@ CVec structure_factors(const Crystal &crystal,
       for (Eigen::Index i : indices) {
         const double phase =
             2.0 * M_PI * h.dot(atoms.frac_pos.col(i));
-        phase_sum += occupation(i) *
+        phase_sum += atoms.occupation(i) *
                      std::complex<double>(std::cos(phase), std::sin(phase));
       }
       f_total += f * phase_sum;

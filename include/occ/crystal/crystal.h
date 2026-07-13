@@ -76,6 +76,15 @@ struct CrystalAtomRegion {
   IVec symop;
 
   /**
+   * \brief The site occupancy of each atom in the region.
+   *
+   * Taken from the asymmetric unit site each atom is generated from. Symmetry
+   * images of an atom on a special position are merged into a single entry, so
+   * the occupancy is *not* multiplied by the site multiplicity.
+   */
+  Vec occupation;
+
+  /**
    * \brief Disorder group
    */
   IVec disorder_group;
@@ -94,6 +103,7 @@ struct CrystalAtomRegion {
     uc_idx.resize(n);
     atomic_numbers.resize(n);
     symop.resize(n);
+    occupation.resize(n);
     disorder_group.resize(n);
   }
 

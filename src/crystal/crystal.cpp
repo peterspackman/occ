@@ -32,8 +32,14 @@ void Crystal::update_unit_cell_atoms() const {
   const auto &atoms = m_asymmetric_unit.atomic_numbers;
   const int natom = num_sites();
   const int nsymops = symmetry_operations().size();
-  Eigen::VectorXd occupation =
-      m_asymmetric_unit.occupations.replicate(nsymops, 1);
+  // AsymmetricUnit's constructors size occupations to match the atoms, but code
+  // that default-constructs it and resizes the members by hand (the CIF and
+  // SHELX readers used to; tests still do) can leave it empty. Occupancy 1 is
+  // the right default, so fill it in rather than indexing out of bounds.
+  Vec asym_occupations = m_asymmetric_unit.occupations;
+  if (asym_occupations.size() != natom)
+    asym_occupations = Vec::Ones(natom);
+  Eigen::VectorXd occupation = asym_occupations.replicate(nsymops, 1);
   Eigen::VectorXi uc_nums = atoms.replicate(nsymops, 1);
   Eigen::VectorXi asym_idx =
       Eigen::VectorXi::LinSpaced(natom, 0, natom - 1).replicate(nsymops, 1);
@@ -45,6 +51,9 @@ void Crystal::update_unit_cell_atoms() const {
   occ::MaskArray mask(uc_pos.cols());
   mask.setConstant(false);
 
+  // Merge symmetry images that land on the same position -- an atom on a
+  // special position is mapped onto itself by part of the group. These are the
+  // same atom, so the occupancy is kept, not summed.
   for (size_t i = 0; i < uc_pos.cols(); i++) {
     if ((mask(i)))
       continue;
@@ -53,8 +62,6 @@ void Crystal::update_unit_cell_atoms() const {
       double dist = (uc_pos.col(j) - p).norm();
       if (dist < merge_tolerance)
         mask(j) = true;
-      if (occupation.rows() > 0)
-        occupation(i) += occupation(j);
     }
   }
   Eigen::VectorXi idxs(uc_pos.cols() - mask.count());
@@ -76,6 +83,7 @@ void Crystal::update_unit_cell_atoms() const {
                                         IMat3N::Zero(3, uc_pos_masked.cols()),
                                         idxs.unaryExpr(uc_nums),
                                         idxs.unaryExpr(sym),
+                                        idxs.unaryExpr(occupation),
                                         IVec::Zero(idxs.rows())};
   m_unit_cell_atoms_needs_update = false;
 }
@@ -96,6 +104,7 @@ CrystalAtomRegion Crystal::slab(const HKL &lower, const HKL &upper) const {
   result.uc_idx = uc_atoms.uc_idx.replicate(ncells, 1);
   result.symop = uc_atoms.symop.replicate(ncells, 1);
   result.atomic_numbers = uc_atoms.atomic_numbers.replicate(ncells, 1);
+  result.occupation = uc_atoms.occupation.replicate(ncells, 1);
   result.disorder_group = uc_atoms.disorder_group.replicate(ncells, 1);
   int offset = n_uc;
   for (int h = lower.h; h <= upper.h; h++) {
@@ -177,6 +186,7 @@ CrystalAtomRegion Crystal::atom_surroundings(int asym_idx,
     result.uc_idx(result_idx) = atom_slab.uc_idx(idx);
     result.cart_pos.col(result_idx) = atom_slab.cart_pos.col(idx);
     result.symop(result_idx) = atom_slab.symop(idx);
+    result.occupation(result_idx) = atom_slab.occupation(idx);
     result.disorder_group(result_idx) = atom_slab.disorder_group(idx);
     result_idx++;
   }
@@ -237,6 +247,7 @@ Crystal::asymmetric_unit_atom_surroundings(double radius) const {
       reg.uc_idx(result_idx) = atom_slab.uc_idx(idx);
       reg.cart_pos.col(result_idx) = atom_slab.cart_pos.col(idx);
       reg.symop(result_idx) = atom_slab.symop(idx);
+      reg.occupation(result_idx) = atom_slab.occupation(idx);
       reg.disorder_group(result_idx) = atom_slab.disorder_group(idx);
       result_idx++;
     }

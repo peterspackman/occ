@@ -107,6 +107,11 @@ ShelxFile::read_crystal_from_string(const std::string &contents) {
       asym.atomic_numbers.resize(num_atoms());
       asym.positions.resize(3, num_atoms());
       asym.adps = Mat6N::Zero(6, num_atoms());
+      // as in the CIF reader: default-constructing AsymmetricUnit and resizing
+      // by hand skips these, and leaving them empty breaks anything that reads
+      // an occupancy or a charge
+      asym.occupations = Vec::Ones(num_atoms());
+      asym.charges = Vec::Zero(num_atoms());
 
       for (size_t i = 0; i < m_atoms.size(); ++i) {
         const auto &atom = m_atoms[i];
@@ -115,6 +120,7 @@ ShelxFile::read_crystal_from_string(const std::string &contents) {
         asym.positions(2, i) = atom.z;
         asym.atomic_numbers(i) =
             occ::core::Element(atom.element).atomic_number();
+        asym.occupations(i) = atom.occupation;
         asym.labels.push_back(atom.label);
 
         // Set default isotropic ADP
