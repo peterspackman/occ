@@ -18,6 +18,7 @@ struct AtomData {
   double y{0.0};
   double z{0.0};
   double uiso{0.0};
+  double occupancy{1.0};
 };
 
 struct AdpData {
@@ -99,6 +100,7 @@ private:
     FracZ,
     AdpType,
     Uiso,
+    Occupancy,
     AdpLabel,
     AdpU11,
     AdpU22,
