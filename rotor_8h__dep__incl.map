@@ -1,7 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/rotor.h" name="/home/runner/work/occ/occ/include/occ/core/rotor.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,176,60"/>
-<area shape="rect" id="Node000002" href="$point__group_8h.html" title=" " alt="" coords="5,108,176,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,74,93,108,88,108,88,74"/>
-<area shape="rect" id="Node000003" href="$crystal__growth_8h.html" title=" " alt="" coords="5,211,176,265"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="93,176,93,211,88,211,88,176"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="103,5,273,60"/>
+<area shape="rect" id="Node000002" href="$point__group_8h.html" title=" " alt="" coords="103,108,273,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,74,191,108,185,108,185,74"/>
+<area shape="rect" id="Node000003" href="$crystal__growth_8h.html" title=" " alt="" coords="103,211,273,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="191,176,191,211,185,211,185,176"/>
+<area shape="rect" id="Node000004" href="$cg__pipeline_8h.html" title=" " alt="" coords="5,313,176,368"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="155,277,118,315,114,311,151,273"/>
+<area shape="rect" id="Node000005" href="$dma__cg_8h.html" title=" " alt="" coords="200,313,371,368"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="225,273,262,311,258,315,221,277"/>
 </map>

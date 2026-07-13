@@ -1,17 +1,21 @@
 <map id="/home/runner/work/occ/occ/include/occ/interaction/lattice_convergence_settings.h" name="/home/runner/work/occ/occ/include/occ/interaction/lattice_convergence_settings.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="186,5,414,60"/>
-<area shape="rect" id="Node000002" href="$cg__runner_8h.html" title=" " alt="" coords="5,108,176,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="234,68,146,110,144,106,232,63"/>
-<area shape="rect" id="Node000004" href="$lattice__energy_8h.html" title=" " alt="" coords="201,108,399,163"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="303,74,303,108,297,108,297,74"/>
-<area shape="rect" id="Node000008" href="$occ__elat_8h.html" title=" " alt="" coords="424,108,595,163"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="368,63,456,106,454,110,366,68"/>
-<area shape="rect" id="Node000003" href="$occ__cg_8h.html" title=" " alt="" coords="5,211,176,265"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="93,176,93,211,88,211,88,176"/>
-<area shape="rect" id="Node000005" href="$interaction__json_8h.html" title=" " alt="" coords="201,211,399,265"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="303,176,303,211,297,211,297,176"/>
-<area shape="rect" id="Node000006" href="$elastic__fitting_8h.html" title=" " alt="" coords="214,313,386,368"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="303,279,303,313,297,313,297,279"/>
-<area shape="rect" id="Node000007" href="$elastic__fit__json_8h.html" title=" " alt="" coords="214,416,386,471"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="303,382,303,416,297,416,297,382"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="526,5,754,60"/>
+<area shape="rect" id="Node000002" href="$cg__runner_8h.html" title=" " alt="" coords="297,108,468,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="561,67,451,110,449,105,559,62"/>
+<area shape="rect" id="Node000006" href="$lattice__energy_8h.html" title=" " alt="" coords="541,108,739,163"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="643,74,643,108,637,108,637,74"/>
+<area shape="rect" id="Node000010" href="$occ__elat_8h.html" title=" " alt="" coords="764,108,935,163"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="708,63,796,106,794,110,706,68"/>
+<area shape="rect" id="Node000003" href="$cg__pipeline_8h.html" title=" " alt="" coords="5,211,176,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="295,170,168,213,166,208,293,165"/>
+<area shape="rect" id="Node000004" href="$occ__cg_8h.html" title=" " alt="" coords="200,211,371,265"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="350,175,313,212,309,209,346,171"/>
+<area shape="rect" id="Node000005" href="$dma__cg_8h.html" title=" " alt="" coords="395,211,565,265"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="420,171,457,209,453,212,416,175"/>
+<area shape="rect" id="Node000007" href="$interaction__json_8h.html" title=" " alt="" coords="590,211,789,265"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="661,174,679,209,674,212,657,176"/>
+<area shape="rect" id="Node000008" href="$elastic__fitting_8h.html" title=" " alt="" coords="603,313,775,368"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="692,279,692,313,687,313,687,279"/>
+<area shape="rect" id="Node000009" href="$elastic__fit__json_8h.html" title=" " alt="" coords="603,416,775,471"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="692,382,692,416,687,416,687,382"/>
 </map>

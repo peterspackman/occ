@@ -1,6 +1,7 @@
 var wulff_8h =
 [
     [ "occ::geometry::Facet", "structocc_1_1geometry_1_1Facet.html", "structocc_1_1geometry_1_1Facet" ],
+    [ "occ::geometry::WulffEdge", "structocc_1_1geometry_1_1WulffEdge.html", "structocc_1_1geometry_1_1WulffEdge" ],
     [ "occ::geometry::WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ],
     [ "project_to_plane", "wulff_8h.html#a9732049bcf1992f1891ecd54b7b1d31a", null ]
 ];

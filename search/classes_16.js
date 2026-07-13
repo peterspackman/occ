@@ -8,5 +8,6 @@ var searchData=
   ['wolfparameters_5',['WolfParameters',['../structocc_1_1interaction_1_1WolfParameters.html',1,'occ::interaction']]],
   ['wolfpointchargepotential_6',['WolfPointChargePotential',['../structocc_1_1qm_1_1WolfPointChargePotential.html',1,'occ::qm']]],
   ['wolfsum_7',['WolfSum',['../classocc_1_1interaction_1_1WolfSum.html',1,'occ::interaction']]],
-  ['wulffconstruction_8',['WulffConstruction',['../classocc_1_1geometry_1_1WulffConstruction.html',1,'occ::geometry']]]
+  ['wulffconstruction_8',['WulffConstruction',['../classocc_1_1geometry_1_1WulffConstruction.html',1,'occ::geometry']]],
+  ['wulffedge_9',['WulffEdge',['../structocc_1_1geometry_1_1WulffEdge.html',1,'occ::geometry']]]
 ];

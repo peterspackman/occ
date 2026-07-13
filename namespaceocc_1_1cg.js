@@ -14,14 +14,19 @@ var namespaceocc_1_1cg =
       [ "total", "namespaceocc_1_1cg_1_1components.html#a52191a7a043727249b9a432722c9b621", null ]
     ] ],
     [ "ContributionPair", "structocc_1_1cg_1_1ContributionPair.html", "structocc_1_1cg_1_1ContributionPair" ],
+    [ "CornerMorphology", "structocc_1_1cg_1_1CornerMorphology.html", "structocc_1_1cg_1_1CornerMorphology" ],
     [ "CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
     [ "DimerResult", "structocc_1_1cg_1_1DimerResult.html", "structocc_1_1cg_1_1DimerResult" ],
     [ "DimerSolventTerm", "structocc_1_1cg_1_1DimerSolventTerm.html", "structocc_1_1cg_1_1DimerSolventTerm" ],
+    [ "EdgeMorphology", "structocc_1_1cg_1_1EdgeMorphology.html", "structocc_1_1cg_1_1EdgeMorphology" ],
     [ "EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", "structocc_1_1cg_1_1EnergyTotal" ],
+    [ "FacetMorphology", "structocc_1_1cg_1_1FacetMorphology.html", "structocc_1_1cg_1_1FacetMorphology" ],
     [ "InteractionMapper", "classocc_1_1cg_1_1InteractionMapper.html", "classocc_1_1cg_1_1InteractionMapper" ],
     [ "MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", "structocc_1_1cg_1_1MoleculeResult" ],
+    [ "MorphologyResult", "structocc_1_1cg_1_1MorphologyResult.html", "structocc_1_1cg_1_1MorphologyResult" ],
     [ "NeighborAtoms", "structocc_1_1cg_1_1NeighborAtoms.html", "structocc_1_1cg_1_1NeighborAtoms" ],
     [ "NeighborContribution", "structocc_1_1cg_1_1NeighborContribution.html", "structocc_1_1cg_1_1NeighborContribution" ],
+    [ "ParticleSample", "structocc_1_1cg_1_1ParticleSample.html", "structocc_1_1cg_1_1ParticleSample" ],
     [ "SMDCalculator", "classocc_1_1cg_1_1SMDCalculator.html", "classocc_1_1cg_1_1SMDCalculator" ],
     [ "SMDSettings", "structocc_1_1cg_1_1SMDSettings.html", "structocc_1_1cg_1_1SMDSettings" ],
     [ "SMDSolventSurfaces", "structocc_1_1cg_1_1SMDSolventSurfaces.html", "structocc_1_1cg_1_1SMDSolventSurfaces" ],
@@ -48,5 +53,6 @@ var namespaceocc_1_1cg =
     [ "from_scrf_surfaces", "namespaceocc_1_1cg.html#a8506668fa23aea463684053dcf3be5c3", null ],
     [ "from_xtb_surfaces", "namespaceocc_1_1cg.html#a4469c1385b66591eccdf33f53a9254f5", null ],
     [ "NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE", "namespaceocc_1_1cg.html#ac958b5b6a7a122e54cde06349179f66c", null ],
-    [ "NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE", "namespaceocc_1_1cg.html#aaa52a885ee62a9b4a7c5abae12521453", null ]
+    [ "NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE", "namespaceocc_1_1cg.html#aaa52a885ee62a9b4a7c5abae12521453", null ],
+    [ "to_json", "namespaceocc_1_1cg.html#a65ee954505547d7d1ee39969d9c5b169", null ]
 ];

@@ -9,6 +9,7 @@ var structocc_1_1mults_1_1CrystalEnergySetup =
     [ "force_field", "structocc_1_1mults_1_1CrystalEnergySetup.html#a9c88c7bdfbd38fc862a6e11c73f9f9f6", null ],
     [ "max_interaction_order", "structocc_1_1mults_1_1CrystalEnergySetup.html#ac74db6202e0ffdba7639127870feafb2", null ],
     [ "molecules", "structocc_1_1mults_1_1CrystalEnergySetup.html#aef42c38af1c47dbc2163d156abae7c90", null ],
+    [ "reference_crystal", "structocc_1_1mults_1_1CrystalEnergySetup.html#af1aa98c249e898188d3d07cf795dabcc", null ],
     [ "taper_off", "structocc_1_1mults_1_1CrystalEnergySetup.html#a87aef0ea3d58065ed315683e000c9d99", null ],
     [ "taper_on", "structocc_1_1mults_1_1CrystalEnergySetup.html#a8c872ec114903df52de8281d39fd83f4", null ],
     [ "taper_order", "structocc_1_1mults_1_1CrystalEnergySetup.html#a900b4c1b166da2020b8f15a6b7582be8", null ],

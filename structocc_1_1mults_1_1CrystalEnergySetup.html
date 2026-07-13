@@ -121,6 +121,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:aef42c38af1c47dbc2163d156abae7c90" id="r_aef42c38af1c47dbc2163d156abae7c90"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1mults_1_1RigidMolecule.html">RigidMolecule</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1CrystalEnergySetup.html#aef42c38af1c47dbc2163d156abae7c90">molecules</a></td></tr>
 <tr class="memdesc:aef42c38af1c47dbc2163d156abae7c90"><td class="mdescLeft">&#160;</td><td class="mdescRight">all UC molecules  <br /></td></tr>
 <tr class="separator:aef42c38af1c47dbc2163d156abae7c90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1aa98c249e898188d3d07cf795dabcc" id="r_af1aa98c249e898188d3d07cf795dabcc"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classocc_1_1crystal_1_1Crystal.html">crystal::Crystal</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1CrystalEnergySetup.html#af1aa98c249e898188d3d07cf795dabcc">reference_crystal</a></td></tr>
+<tr class="memdesc:af1aa98c249e898188d3d07cf795dabcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Original crystal (space group + asymmetric unit) when available; used by <a class="el" href="classocc_1_1mults_1_1CrystalOptimizer.html" title="Rigid molecule crystal structure optimizer.">CrystalOptimizer</a> for symmetry-reduced optimization.  <br /></td></tr>
+<tr class="separator:af1aa98c249e898188d3d07cf795dabcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0033528dd4dfc91db5027c0d0d65623" id="r_ad0033528dd4dfc91db5027c0d0d65623"><td class="memItemLeft" align="right" valign="top">std::map&lt; std::pair&lt; int, int &gt;, <a class="el" href="structocc_1_1mults_1_1BuckinghamParams.html">BuckinghamParams</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1CrystalEnergySetup.html#ad0033528dd4dfc91db5027c0d0d65623">buckingham_params</a></td></tr>
 <tr class="separator:ad0033528dd4dfc91db5027c0d0d65623"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3cd18ca22a38392f07d3fae0171e02d7" id="r_a3cd18ca22a38392f07d3fae0171e02d7"><td class="memItemLeft" align="right" valign="top">std::map&lt; std::pair&lt; int, int &gt;, <a class="el" href="structocc_1_1mults_1_1BuckinghamParams.html">BuckinghamParams</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1CrystalEnergySetup.html#a3cd18ca22a38392f07d3fae0171e02d7">typed_buckingham</a></td></tr>
@@ -285,6 +288,23 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>all UC molecules </p>
+
+</div>
+</div>
+<a id="af1aa98c249e898188d3d07cf795dabcc" name="af1aa98c249e898188d3d07cf795dabcc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af1aa98c249e898188d3d07cf795dabcc">&#9670;&#160;</a></span>reference_crystal</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;<a class="el" href="classocc_1_1crystal_1_1Crystal.html">crystal::Crystal</a>&gt; occ::mults::CrystalEnergySetup::reference_crystal</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Original crystal (space group + asymmetric unit) when available; used by <a class="el" href="classocc_1_1mults_1_1CrystalOptimizer.html" title="Rigid molecule crystal structure optimizer.">CrystalOptimizer</a> for symmetry-reduced optimization. </p>
+<p>Unset -&gt; P1 assumed. </p>
 
 </div>
 </div>

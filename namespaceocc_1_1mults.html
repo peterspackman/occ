@@ -178,6 +178,18 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1DerivativeTransform.html">DerivativeTransform</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derivative transformation matrices for multipole interactions.  <a href="classocc_1_1mults_1_1DerivativeTransform.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1DimerInteractionEnergy.html">DimerInteractionEnergy</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Components of a classical dimer interaction energy (DMA-multipole electrostatics + exp-6 repulsion/dispersion), all in kJ/mol.  <a href="structocc_1_1mults_1_1DimerInteractionEnergy.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1DMACrystalGrowthCalculator.html">DMACrystalGrowthCalculator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Crystal-growth calculator using a DMA-multipole + exp-6 (Williams) interaction model.  <a href="classocc_1_1mults_1_1DMACrystalGrowthCalculator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1DMAExp6EnergyModel.html">DMAExp6EnergyModel</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">EnergyModelBase using distributed multipoles + exp-6 (Williams), with no induction.  <a href="classocc_1_1mults_1_1DMAExp6EnergyModel.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1DMAMonomer.html">DMAMonomer</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reference (monomer-frame) DMA data for one symmetry-unique molecule.  <a href="structocc_1_1mults_1_1DMAMonomer.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1EnergyForceFields.html">EnergyForceFields</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combined energy+force+fields kernel.  <a href="structocc_1_1mults_1_1EnergyForceFields.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -231,6 +243,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1MoleculeHessianData.html">MoleculeHessianData</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Precomputed data for one molecule in the Hessian computation.  <a href="structocc_1_1mults_1_1MoleculeHessianData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1MoleculeMultipoles.html">MoleculeMultipoles</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">One molecule's oriented (lab-frame) DMA sites, ready for a dimer interaction.  <a href="structocc_1_1mults_1_1MoleculeMultipoles.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1MoleculeState.html">MoleculeState</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">State of a rigid molecule (COM position + orientation).  <a href="structocc_1_1mults_1_1MoleculeState.html#details">More...</a><br /></td></tr>
@@ -477,6 +492,30 @@ Functions</h2></td></tr>
 <tr class="separator:a067235a437358d3987d0c6cceb170420"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaea0f03e22f3b0a1d21bc8114c0d7bb2" id="r_aaea0f03e22f3b0a1d21bc8114c0d7bb2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1mults_1_1CutoffSplineValue.html">CutoffSplineValue</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#aaea0f03e22f3b0a1d21bc8114c0d7bb2">evaluate_cutoff_spline</a> (double r, const <a class="el" href="structocc_1_1mults_1_1CutoffSpline.html">CutoffSpline</a> &amp;spline)</td></tr>
 <tr class="separator:aaea0f03e22f3b0a1d21bc8114c0d7bb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1bfde622f64268eacbce71488013058c" id="r_a1bfde622f64268eacbce71488013058c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1mults_1_1DimerInteractionEnergy.html">DimerInteractionEnergy</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#a1bfde622f64268eacbce71488013058c">dimer_interaction_energy</a> (const <a class="el" href="structocc_1_1mults_1_1MoleculeMultipoles.html">MoleculeMultipoles</a> &amp;a, const <a class="el" href="structocc_1_1mults_1_1MoleculeMultipoles.html">MoleculeMultipoles</a> &amp;b, const <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a> &amp;ff, const <a class="el" href="structocc_1_1mults_1_1MultipoleInteractions_1_1Config.html">MultipoleInteractions::Config</a> &amp;elec_config={})</td></tr>
+<tr class="memdesc:a1bfde622f64268eacbce71488013058c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Classical interaction energy between two molecules from their distributed multipoles plus an element-based exp-6 (Buckingham/Williams) short-range term.  <br /></td></tr>
+<tr class="separator:a1bfde622f64268eacbce71488013058c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56697fb9bf07cc7394f87fbb435a277b" id="r_a56697fb9bf07cc7394f87fbb435a277b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#a56697fb9bf07cc7394f87fbb435a277b">williams_de_force_field</a> ()</td></tr>
+<tr class="memdesc:a56697fb9bf07cc7394f87fbb435a277b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build a <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html" title="Manages force field parameters for short-range interactions.">ForceFieldParams</a> loaded with the built-in element-based Williams DE Buckingham parameters (H, C, N, O).  <br /></td></tr>
+<tr class="separator:a56697fb9bf07cc7394f87fbb435a277b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ce48b4b4603e8ac6e3349b64fdce682" id="r_a9ce48b4b4603e8ac6e3349b64fdce682"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#a9ce48b4b4603e8ac6e3349b64fdce682">fit_force_field</a> ()</td></tr>
+<tr class="memdesc:a9ce48b4b4603e8ac6e3349b64fdce682"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build a <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html" title="Manages force field parameters for short-range interactions.">ForceFieldParams</a> for the FIT (Williams/Cox) typed exp-6 set: typed pair parameters (with the H_F1/H_F2 split) plus the element-based Williams DE table as a fallback for any atom whose type is unparameterised.  <br /></td></tr>
+<tr class="separator:a9ce48b4b4603e8ac6e3349b64fdce682"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab033a01331e42961a1e72fbad9381af0" id="r_ab033a01331e42961a1e72fbad9381af0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#ab033a01331e42961a1e72fbad9381af0">williams_typed_force_field</a> ()</td></tr>
+<tr class="memdesc:ab033a01331e42961a1e72fbad9381af0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build a <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html" title="Manages force field parameters for short-range interactions.">ForceFieldParams</a> for the W99 (Williams 1999) typed exp-6 set, with the element-based Williams DE table as a fallback.  <br /></td></tr>
+<tr class="separator:ab033a01331e42961a1e72fbad9381af0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5a2afd8232873195d8e9a2bccd364c2" id="r_ae5a2afd8232873195d8e9a2bccd364c2"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; int, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#ae5a2afd8232873195d8e9a2bccd364c2">missing_exp6_pairs</a> (const std::vector&lt; int &gt; &amp;elements, const <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a> &amp;ff)</td></tr>
+<tr class="memdesc:ae5a2afd8232873195d8e9a2bccd364c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Among the given element atomic numbers, the unique pairs (Zmin, Zmax) that <code>ff</code> has no exp-6 parameters for.  <br /></td></tr>
+<tr class="separator:ae5a2afd8232873195d8e9a2bccd364c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f628d2a64f8466f0aa34f2e4d6ce679" id="r_a4f628d2a64f8466f0aa34f2e4d6ce679"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#a4f628d2a64f8466f0aa34f2e4d6ce679">model_name_is_dma</a> (const std::string &amp;model_name)</td></tr>
+<tr class="memdesc:a4f628d2a64f8466f0aa34f2e4d6ce679"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if <code>model_name</code> selects the DMA+exp-6 interaction model.  <br /></td></tr>
+<tr class="separator:a4f628d2a64f8466f0aa34f2e4d6ce679"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e80e7e8d3908858a7b96b8aa383691f" id="r_a9e80e7e8d3908858a7b96b8aa383691f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1CrystalGrowthResult.html">occ::cg::CrystalGrowthResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#a9e80e7e8d3908858a7b96b8aa383691f">run_cg_dma</a> (const <a class="el" href="structocc_1_1driver_1_1CGConfig.html">occ::driver::CGConfig</a> &amp;config)</td></tr>
+<tr class="memdesc:a9e80e7e8d3908858a7b96b8aa383691f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run a crystal-growth calculation with the DMA+exp-6 model (reuses the shared occ_driver cg pipeline).  <br /></td></tr>
+<tr class="separator:a9e80e7e8d3908858a7b96b8aa383691f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb68afed0059084b87c8471b5c1ceb4d" id="r_adb68afed0059084b87c8471b5c1ceb4d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1CrystalGrowthResult.html">occ::cg::CrystalGrowthResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#adb68afed0059084b87c8471b5c1ceb4d">run_crystal_growth</a> (const <a class="el" href="structocc_1_1driver_1_1CGConfig.html">occ::driver::CGConfig</a> &amp;config)</td></tr>
+<tr class="memdesc:adb68afed0059084b87c8471b5c1ceb4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unified crystal-growth entry point: dispatches DMA+exp-6 models to <a class="el" href="namespaceocc_1_1mults.html#a9e80e7e8d3908858a7b96b8aa383691f" title="Run a crystal-growth calculation with the DMA+exp-6 model (reuses the shared occ_driver cg pipeline).">run_cg_dma()</a> and everything else to <a class="el" href="namespaceocc_1_1driver.html#a7694b64538d99dde2da027e9b9fb651b">occ::driver::run_cg()</a>.  <br /></td></tr>
+<tr class="separator:adb68afed0059084b87c8471b5c1ceb4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba1632db6c7cd727a7decc3db6ebe21a" id="r_aba1632db6c7cd727a7decc3db6ebe21a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1mults_1_1EwaldLatticeCache.html">EwaldLatticeCache</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#aba1632db6c7cd727a7decc3db6ebe21a">build_ewald_lattice_cache</a> (const <a class="el" href="classocc_1_1crystal_1_1UnitCell.html">crystal::UnitCell</a> &amp;unit_cell, const <a class="el" href="structocc_1_1mults_1_1EwaldParams.html">EwaldParams</a> &amp;params)</td></tr>
 <tr class="memdesc:aba1632db6c7cd727a7decc3db6ebe21a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build an <a class="el" href="structocc_1_1mults_1_1EwaldLatticeCache.html" title="Pre-computed reciprocal lattice vectors and coefficients for Ewald.">EwaldLatticeCache</a> from unit cell and parameters.  <br /></td></tr>
 <tr class="separator:aba1632db6c7cd727a7decc3db6ebe21a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -2320,6 +2359,50 @@ template&lt;int Order&gt; </div>
 
 </div>
 </div>
+<a id="a1bfde622f64268eacbce71488013058c" name="a1bfde622f64268eacbce71488013058c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1bfde622f64268eacbce71488013058c">&#9670;&#160;</a></span>dimer_interaction_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1mults_1_1DimerInteractionEnergy.html">DimerInteractionEnergy</a> occ::mults::dimer_interaction_energy </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1mults_1_1MoleculeMultipoles.html">MoleculeMultipoles</a> &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1mults_1_1MoleculeMultipoles.html">MoleculeMultipoles</a> &amp;&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a> &amp;&#160;</td>
+          <td class="paramname"><em>ff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1mults_1_1MultipoleInteractions_1_1Config.html">MultipoleInteractions::Config</a> &amp;&#160;</td>
+          <td class="paramname"><em>elec_config</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Classical interaction energy between two molecules from their distributed multipoles plus an element-based exp-6 (Buckingham/Williams) short-range term. </p>
+<p>Electrostatics are evaluated in Bohr/Hartree and the exp-6 in the Angstrom/(kJ/mol) Williams convention; the result is reported in kJ/mol.</p>
+<p>Element pairs without exp-6 parameters in <code>ff</code> are skipped (the caller is responsible for ensuring coverage); only the electrostatic term contributes for those pairs. </p>
+
+</div>
+</div>
 <a id="aaea0f03e22f3b0a1d21bc8114c0d7bb2" name="aaea0f03e22f3b0a1d21bc8114c0d7bb2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaea0f03e22f3b0a1d21bc8114c0d7bb2">&#9670;&#160;</a></span>evaluate_cutoff_spline() <span class="overload">[1/2]</span></h2>
 
@@ -2401,6 +2484,26 @@ template&lt;int Order&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9ce48b4b4603e8ac6e3349b64fdce682" name="a9ce48b4b4603e8ac6e3349b64fdce682"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ce48b4b4603e8ac6e3349b64fdce682">&#9670;&#160;</a></span>fit_force_field()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a> occ::mults::fit_force_field </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build a <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html" title="Manages force field parameters for short-range interactions.">ForceFieldParams</a> for the FIT (Williams/Cox) typed exp-6 set: typed pair parameters (with the H_F1/H_F2 split) plus the element-based Williams DE table as a fallback for any atom whose type is unparameterised. </p>
+<p>Atom typing is enabled (callers must populate <a class="el" href="structocc_1_1mults_1_1MoleculeMultipoles.html#a357257dc24b0ff64ab2cf2dfb6d2d12d" title="Optional NEIGHCRYS short-range type codes (one per site) for the typed exp-6 sets (FIT / W99); empty ...">MoleculeMultipoles::type_codes</a>). </p>
 
 </div>
 </div>
@@ -2611,6 +2714,57 @@ template&lt;int Order&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Single-site molecule at origin </dd></dl>
+
+</div>
+</div>
+<a id="ae5a2afd8232873195d8e9a2bccd364c2" name="ae5a2afd8232873195d8e9a2bccd364c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5a2afd8232873195d8e9a2bccd364c2">&#9670;&#160;</a></span>missing_exp6_pairs()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::pair&lt; int, int &gt; &gt; occ::mults::missing_exp6_pairs </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>elements</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a> &amp;&#160;</td>
+          <td class="paramname"><em>ff</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Among the given element atomic numbers, the unique pairs (Zmin, Zmax) that <code>ff</code> has no exp-6 parameters for. </p>
+<p><a class="el" href="namespaceocc_1_1mults.html#a1bfde622f64268eacbce71488013058c" title="Classical interaction energy between two molecules from their distributed multipoles plus an element-...">dimer_interaction_energy()</a> contributes electrostatics only for such pairs, so callers can warn about incomplete repulsion/dispersion coverage. <code>elements</code> may contain duplicates; the result is sorted and de-duplicated. </p>
+
+</div>
+</div>
+<a id="a4f628d2a64f8466f0aa34f2e4d6ce679" name="a4f628d2a64f8466f0aa34f2e4d6ce679"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f628d2a64f8466f0aa34f2e4d6ce679">&#9670;&#160;</a></span>model_name_is_dma()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::mults::model_name_is_dma </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>model_name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>True if <code>model_name</code> selects the DMA+exp-6 interaction model. </p>
 
 </div>
 </div>
@@ -2969,6 +3123,47 @@ template&lt;int MaxL&gt; </div>
 
 </div>
 </div>
+<a id="a9e80e7e8d3908858a7b96b8aa383691f" name="a9e80e7e8d3908858a7b96b8aa383691f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e80e7e8d3908858a7b96b8aa383691f">&#9670;&#160;</a></span>run_cg_dma()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1cg_1_1CrystalGrowthResult.html">occ::cg::CrystalGrowthResult</a> occ::mults::run_cg_dma </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1driver_1_1CGConfig.html">occ::driver::CGConfig</a> &amp;&#160;</td>
+          <td class="paramname"><em>config</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Run a crystal-growth calculation with the DMA+exp-6 model (reuses the shared occ_driver cg pipeline). </p>
+
+</div>
+</div>
+<a id="adb68afed0059084b87c8471b5c1ceb4d" name="adb68afed0059084b87c8471b5c1ceb4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb68afed0059084b87c8471b5c1ceb4d">&#9670;&#160;</a></span>run_crystal_growth()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1cg_1_1CrystalGrowthResult.html">occ::cg::CrystalGrowthResult</a> occ::mults::run_crystal_growth </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1driver_1_1CGConfig.html">occ::driver::CGConfig</a> &amp;&#160;</td>
+          <td class="paramname"><em>config</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Unified crystal-growth entry point: dispatches DMA+exp-6 models to <a class="el" href="namespaceocc_1_1mults.html#a9e80e7e8d3908858a7b96b8aa383691f" title="Run a crystal-growth calculation with the DMA+exp-6 model (reuses the shared occ_driver cg pipeline).">run_cg_dma()</a> and everything else to <a class="el" href="namespaceocc_1_1driver.html#a7694b64538d99dde2da027e9b9fb651b">occ::driver::run_cg()</a>. </p>
+<p>Front-ends (CLI, bindings) should call this. The dispatch lives here because occ_driver must not depend on occ_mults. </p>
+
+</div>
+</div>
 <a id="a256345b11db45d1d3e0e59231f7dd398" name="a256345b11db45d1d3e0e59231f7dd398"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a256345b11db45d1d3e0e59231f7dd398">&#9670;&#160;</a></span>shift_multipole_to_origin()</h2>
 
@@ -3215,6 +3410,45 @@ template&lt;int MaxL&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Square matrix D of size (lmax+1)^2 for transforming multipole components </dd></dl>
+
+</div>
+</div>
+<a id="a56697fb9bf07cc7394f87fbb435a277b" name="a56697fb9bf07cc7394f87fbb435a277b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56697fb9bf07cc7394f87fbb435a277b">&#9670;&#160;</a></span>williams_de_force_field()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a> occ::mults::williams_de_force_field </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build a <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html" title="Manages force field parameters for short-range interactions.">ForceFieldParams</a> loaded with the built-in element-based Williams DE Buckingham parameters (H, C, N, O). </p>
+
+</div>
+</div>
+<a id="ab033a01331e42961a1e72fbad9381af0" name="ab033a01331e42961a1e72fbad9381af0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab033a01331e42961a1e72fbad9381af0">&#9670;&#160;</a></span>williams_typed_force_field()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a> occ::mults::williams_typed_force_field </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build a <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html" title="Manages force field parameters for short-range interactions.">ForceFieldParams</a> for the W99 (Williams 1999) typed exp-6 set, with the element-based Williams DE table as a fallback. </p>
+<p>Atom typing is enabled. </p>
 
 </div>
 </div>

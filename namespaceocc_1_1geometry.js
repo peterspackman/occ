@@ -31,6 +31,7 @@ var namespaceocc_1_1geometry =
     [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ],
     [ "VolumeGrid", "classocc_1_1geometry_1_1VolumeGrid.html", "classocc_1_1geometry_1_1VolumeGrid" ],
     [ "WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ],
+    [ "WulffEdge", "structocc_1_1geometry_1_1WulffEdge.html", "structocc_1_1geometry_1_1WulffEdge" ],
     [ "floating_type", "namespaceocc_1_1geometry.html#acf080699dbc8adfc07ad0f98fa4b5e14", null ],
     [ "integer_type", "namespaceocc_1_1geometry.html#a2dd3b248b105650e26e3fbc372043957", null ],
     [ "project_to_plane", "namespaceocc_1_1geometry.html#a9732049bcf1992f1891ecd54b7b1d31a", null ]

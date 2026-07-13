@@ -116,6 +116,18 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a31dbc4205ac5b4c67424ac11da9930bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a19075d0bcc50359e7e9ec6f93c9c5293" id="r_a19075d0bcc50359e7e9ec6f93c9c5293"><td class="memItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1geometry_1_1WulffConstruction.html#a19075d0bcc50359e7e9ec6f93c9c5293">facets</a> () const</td></tr>
 <tr class="separator:a19075d0bcc50359e7e9ec6f93c9c5293"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3a8fb113a04335dbef6a2dc50d78fed" id="r_af3a8fb113a04335dbef6a2dc50d78fed"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1geometry_1_1WulffConstruction.html#af3a8fb113a04335dbef6a2dc50d78fed">facet_area</a> (size_t i) const</td></tr>
+<tr class="memdesc:af3a8fb113a04335dbef6a2dc50d78fed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Area of facet <code>i</code> (sum of its triangle areas); 0 for inactive facets.  <br /></td></tr>
+<tr class="separator:af3a8fb113a04335dbef6a2dc50d78fed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68d1662765838457d79b4004f89f45cf" id="r_a68d1662765838457d79b4004f89f45cf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1geometry_1_1WulffConstruction.html#a68d1662765838457d79b4004f89f45cf">facet_areas</a> () const</td></tr>
+<tr class="memdesc:a68d1662765838457d79b4004f89f45cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Area of every facet (inactive facets contribute 0).  <br /></td></tr>
+<tr class="separator:a68d1662765838457d79b4004f89f45cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae5c823eafc94b8118718cfa513f123f" id="r_aae5c823eafc94b8118718cfa513f123f"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1geometry_1_1WulffConstruction.html#aae5c823eafc94b8118718cfa513f123f">total_area</a> () const</td></tr>
+<tr class="memdesc:aae5c823eafc94b8118718cfa513f123f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total surface area of the polyhedron.  <br /></td></tr>
+<tr class="separator:aae5c823eafc94b8118718cfa513f123f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a4f2b23b5f0b239a68343521d18ab46" id="r_a1a4f2b23b5f0b239a68343521d18ab46"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1geometry_1_1WulffEdge.html">WulffEdge</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1geometry_1_1WulffConstruction.html#a1a4f2b23b5f0b239a68343521d18ab46">edges</a> () const</td></tr>
+<tr class="memdesc:a1a4f2b23b5f0b239a68343521d18ab46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Edges (active-facet pairs sharing two vertices) with their lengths.  <br /></td></tr>
+<tr class="separator:a1a4f2b23b5f0b239a68343521d18ab46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aafc421bac4476bde28c6b603086d1673" name="aafc421bac4476bde28c6b603086d1673"></a>
@@ -153,6 +165,64 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a1a4f2b23b5f0b239a68343521d18ab46" name="a1a4f2b23b5f0b239a68343521d18ab46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a4f2b23b5f0b239a68343521d18ab46">&#9670;&#160;</a></span>edges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structocc_1_1geometry_1_1WulffEdge.html">WulffEdge</a> &gt; occ::geometry::WulffConstruction::edges </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Edges (active-facet pairs sharing two vertices) with their lengths. </p>
+
+</div>
+</div>
+<a id="af3a8fb113a04335dbef6a2dc50d78fed" name="af3a8fb113a04335dbef6a2dc50d78fed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3a8fb113a04335dbef6a2dc50d78fed">&#9670;&#160;</a></span>facet_area()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::geometry::WulffConstruction::facet_area </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>i</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Area of facet <code>i</code> (sum of its triangle areas); 0 for inactive facets. </p>
+
+</div>
+</div>
+<a id="a68d1662765838457d79b4004f89f45cf" name="a68d1662765838457d79b4004f89f45cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68d1662765838457d79b4004f89f45cf">&#9670;&#160;</a></span>facet_areas()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::geometry::WulffConstruction::facet_areas </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Area of every facet (inactive facets contribute 0). </p>
+
+</div>
+</div>
 <a id="a19075d0bcc50359e7e9ec6f93c9c5293" name="a19075d0bcc50359e7e9ec6f93c9c5293"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a19075d0bcc50359e7e9ec6f93c9c5293">&#9670;&#160;</a></span>facets()</h2>
 
@@ -175,6 +245,25 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aae5c823eafc94b8118718cfa513f123f" name="aae5c823eafc94b8118718cfa513f123f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae5c823eafc94b8118718cfa513f123f">&#9670;&#160;</a></span>total_area()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::geometry::WulffConstruction::total_area </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Total surface area of the polyhedron. </p>
 
 </div>
 </div>

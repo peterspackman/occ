@@ -1,0 +1,7 @@
+<map id="occ::driver::CGPreparation" name="occ::driver::CGPreparation">
+<area shape="rect" id="Node000001" title="Result of loading and configuring a cg run: the crystal, the calculator options and any per&#45;molecule ..." alt="" coords="82,108,274,133"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1crystal_1_1Crystal.html" title="A class representing a crystal structure." alt="" coords="5,13,156,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,46,168,106,164,110,101,49"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html" title=" " alt="" coords="180,5,371,45"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="248,57,192,110,188,106,244,53"/>
+</map>

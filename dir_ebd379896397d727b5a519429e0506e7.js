@@ -1,8 +1,10 @@
 var dir_ebd379896397d727b5a519429e0506e7 =
 [
     [ "acceleration.h", "acceleration_8h.html", "acceleration_8h" ],
+    [ "cg_pipeline.h", "cg__pipeline_8h.html", "cg__pipeline_8h" ],
     [ "cg_runner.h", "cg__runner_8h.html", "cg__runner_8h" ],
     [ "crystal_growth.h", "crystal__growth_8h.html", "crystal__growth_8h" ],
+    [ "crystal_morphology.h", "crystal__morphology_8h.html", "crystal__morphology_8h" ],
     [ "crystal_surface_energy.h", "crystal__surface__energy_8h.html", "crystal__surface__energy_8h" ],
     [ "dma_driver.h", "dma__driver_8h.html", "dma__driver_8h" ],
     [ "geometry_optimization.h", "geometry__optimization_8h.html", "geometry__optimization_8h" ],
