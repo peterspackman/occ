@@ -26,8 +26,12 @@ const CrystalAtomRegion &Crystal::unit_cell_atoms() const {
 }
 
 void Crystal::update_unit_cell_atoms() const {
-  // TODO merge sites
-  constexpr double merge_tolerance = 1e-2;
+  // A real distance, not a fractional one. The tolerance used to be 1e-2 in
+  // fractional coordinates, so its physical size scaled with the cell -- fine at
+  // 10 A, but 0.5 A across a supercell, where it merrily merged distinct atoms.
+  // What this needs to absorb is coordinate rounding on an atom that sits on a
+  // special position, which is a matter of thousandths of an Angstrom.
+  constexpr double merge_tolerance_angstrom = 0.05;
   const auto &pos = m_asymmetric_unit.positions;
   const auto &atoms = m_asymmetric_unit.atomic_numbers;
   const int natom = num_sites();
@@ -54,18 +58,59 @@ void Crystal::update_unit_cell_atoms() const {
   // position is a different thing entirely: that is a disordered site, and
   // merging discards one of them along with its element. We do not model
   // disorder yet, so at least say so rather than silently dropping scatterers.
+  // A grid over the cell, so this is a linear scan rather than all-pairs. The
+  // cells are at least as large as the tolerance, so a coincident atom can only
+  // be in the same cell or one of the 26 neighbours, and the index wraps to
+  // respect periodicity. All-pairs took 20 s on a 16k-atom supercell.
+  Eigen::Vector3i ncells;
+  for (int i = 0; i < 3; i++) {
+    ncells(i) = std::max(
+        1, std::min(512, static_cast<int>(m_unit_cell.lengths()(i) /
+                                          merge_tolerance_angstrom)));
+  }
+  auto bucket_of = [&](const occ::Vec3 &f, int di, int dj, int dk) {
+    auto w = [](int v, int n) { return ((v % n) + n) % n; };
+    const int i =
+        w(static_cast<int>(std::floor(f(0) * ncells(0))) + di, ncells(0));
+    const int j =
+        w(static_cast<int>(std::floor(f(1) * ncells(1))) + dj, ncells(1));
+    const int k =
+        w(static_cast<int>(std::floor(f(2) * ncells(2))) + dk, ncells(2));
+    return (static_cast<int64_t>(i) * ncells(1) + j) * ncells(2) + k;
+  };
+
+  ankerl::unordered_dense::map<int64_t, std::vector<int>> buckets;
   int disordered_sites = 0;
-  for (size_t i = 0; i < uc_pos.cols(); i++) {
-    if ((mask(i)))
-      continue;
-    occ::Vec3 p = uc_pos.col(i);
-    for (size_t j = i + 1; j < uc_pos.cols(); j++) {
-      double dist = (uc_pos.col(j) - p).norm();
-      if (dist < merge_tolerance) {
-        mask(j) = true;
-        if (asym_idx(i) != asym_idx(j))
-          disordered_sites++;
+  for (int i = 0; i < uc_pos.cols(); i++) {
+    const occ::Vec3 p = uc_pos.col(i);
+    int match = -1;
+    for (int di = -1; di <= 1 && match < 0; di++) {
+      for (int dj = -1; dj <= 1 && match < 0; dj++) {
+        for (int dk = -1; dk <= 1 && match < 0; dk++) {
+          auto it = buckets.find(bucket_of(p, di, dj, dk));
+          if (it == buckets.end())
+            continue;
+          for (int j : it->second) {
+            // shortest image: positions are wrapped into [0, 1), so 0.9999 and
+            // 0.0001 are neighbours, not a whole cell apart
+            occ::Vec3 df = uc_pos.col(j) - p;
+            for (int k = 0; k < 3; k++)
+              df(k) -= std::round(df(k));
+            if (m_unit_cell.to_cartesian(df).norm() <
+                merge_tolerance_angstrom) {
+              match = j;
+              break;
+            }
+          }
+        }
       }
+    }
+    if (match >= 0) {
+      mask(i) = true;
+      if (asym_idx(match) != asym_idx(i))
+        disordered_sites++;
+    } else {
+      buckets[bucket_of(p, 0, 0, 0)].push_back(i);
     }
   }
   if (disordered_sites > 0) {

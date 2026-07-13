@@ -898,6 +898,12 @@ void register_subgroup(lua_State *L) {
 
       .beginClass<SubgroupTransform>("SubgroupTransform")
       .addConstructor<void (*)()>()
+      .addStaticFunction(
+          "from_maximal_subgroup",
+          +[](const MaximalSubgroup &s) { return new SubgroupTransform(s); })
+      .addStaticFunction(
+          "from_path",
+          +[](const SubgroupPath &p) { return new SubgroupTransform(p); })
       .addProperty("subgroup", &SubgroupTransform::subgroup)
       .addProperty(
           "basis_transform",
@@ -954,6 +960,18 @@ void register_subgroup(lua_State *L) {
           "to_standard_setting",
           +[](const Crystal &c) { return to_standard_setting(c); })
       .addFunction(
+          "with_molecular_asymmetric_unit",
+          +[](const Crystal &c) { return with_molecular_asymmetric_unit(c); })
+      .addFunction(
+          "with_grouped_asymmetric_unit",
+          +[](const Crystal &c, const lb::LuaRef &groups) {
+            const int n = groups.length();
+            occ::IVec g(n);
+            for (int i = 0; i < n; ++i)
+              g(i) = static_cast<int>(lua_get_num(groups, i + 1));
+            return with_grouped_asymmetric_unit(c, g);
+          })
+      .addFunction(
           "z_prime", &occ::crystal::z_prime)
       .addFunction("has_whole_molecule_asymmetric_unit",
                    &has_whole_molecule_asymmetric_unit)
@@ -961,6 +979,11 @@ void register_subgroup(lua_State *L) {
           "to_subgroup",
           +[](const Crystal &c, const SubgroupTransform &t) {
             return to_subgroup(c, t);
+          })
+      .addFunction(
+          "to_subgroup_atomwise",
+          +[](const Crystal &c, const SubgroupTransform &t) {
+            return to_subgroup(c, t, 1e-4, false);
           })
       .addFunction(
           "find_subgroup_for_z_prime",

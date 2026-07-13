@@ -2767,3 +2767,105 @@ TEST_CASE("standard_setting carries the symmetry operations",
             sg.symmetry_operations().size());
   }
 }
+
+TEST_CASE("Molecular asymmetric unit keeps molecules whole",
+          "[crystal][subgroup][zprime]") {
+  // The asymmetric unit is a choice. Picking one representative per orbit in
+  // whatever order the atoms happen to come in is valid, but it can scatter a
+  // molecule across symmetry images -- so "Z' = 1 with the whole molecule in the
+  // asymmetric unit" was luck rather than construction. Walking the atoms
+  // molecule by molecule makes it a construction.
+  using occ::crystal::find_subgroup_for_z_prime;
+  using occ::crystal::has_whole_molecule_asymmetric_unit;
+  using occ::crystal::to_subgroup;
+  using occ::crystal::with_grouped_asymmetric_unit;
+  using occ::crystal::with_molecular_asymmetric_unit;
+  using occ::crystal::z_prime;
+  using occ::crystal::ZPrimeSearchParameters;
+
+  Crystal benzene = benzene_crystal(); // Pbca, Z' = 1/2
+
+  auto transform = find_subgroup_for_z_prime(benzene, ZPrimeSearchParameters{});
+  REQUIRE(transform.has_value());
+
+  // to_subgroup is molecule-aware by default, so the contract holds without the
+  // caller having to know anything
+  Crystal child = to_subgroup(benzene, *transform);
+  REQUIRE(z_prime(child) == Catch::Approx(1.0));
+  REQUIRE(has_whole_molecule_asymmetric_unit(child));
+  REQUIRE(child.asymmetric_unit().size() == 12);
+
+  // the atom-wise choice is equally valid symmetry, and generates the same
+  // unit cell -- it just isn't chemically useful
+  Crystal atomwise = to_subgroup(benzene, *transform, 1e-4, false);
+  REQUIRE(atomwise.space_group().number() == child.space_group().number());
+  REQUIRE(atomwise.unit_cell_atoms().size() ==
+          child.unit_cell_atoms().size());
+  REQUIRE(atomwise.volume() == Catch::Approx(child.volume()));
+
+  // and it can be repaired after the fact
+  Crystal repaired = with_molecular_asymmetric_unit(atomwise);
+  REQUIRE(has_whole_molecule_asymmetric_unit(repaired));
+  REQUIRE(repaired.unit_cell_atoms().size() ==
+          atomwise.unit_cell_atoms().size());
+  REQUIRE(repaired.volume() == Catch::Approx(atomwise.volume()));
+
+  // the general form: group by anything. Grouping every atom together asks for
+  // as few asymmetric unit "fragments" as possible, which must still generate
+  // exactly the same unit cell.
+  occ::IVec one_group = occ::IVec::Zero(child.unit_cell_atoms().size());
+  Crystal grouped = with_grouped_asymmetric_unit(child, one_group);
+  REQUIRE(grouped.unit_cell_atoms().size() == child.unit_cell_atoms().size());
+
+  // a mis-sized grouping is a programming error, not something to guess at
+  occ::IVec wrong = occ::IVec::Zero(3);
+  REQUIRE_THROWS_AS(with_grouped_asymmetric_unit(child, wrong),
+                    std::invalid_argument);
+}
+
+TEST_CASE("Subgroup transforms survive a large supercell",
+          "[crystal][subgroup]") {
+  // The site matching used to be an all-pairs scan, quadratic in the number of
+  // atoms, and the unit cell merge used a *fractional* tolerance whose physical
+  // size grew with the cell -- so a supercell both took forever and silently
+  // merged distinct atoms. Both are now gridded and the tolerance is a real
+  // distance.
+  using occ::crystal::maximal_subgroups;
+  using occ::crystal::SubgroupTransform;
+  using occ::crystal::SubgroupType;
+  using occ::crystal::to_subgroup;
+
+  Crystal benzene = benzene_crystal();
+  const size_t n0 = benzene.unit_cell_atoms().size();
+
+  // the largest klassengleiche supercell of Pbca that stays in Pbca.
+  // Copy it: maximal_subgroups(n, type) returns the vector by value, so a
+  // pointer into it dangles the moment the temporary dies.
+  MaximalSubgroup biggest;
+  double best_det = 0.0;
+  for (const auto &s : maximal_subgroups(61, SubgroupType::Klassengleiche)) {
+    const double det = s.basis_transform.determinant();
+    if (s.subgroup == 61 && det > best_det) {
+      biggest = s;
+      best_det = det;
+    }
+  }
+  REQUIRE(biggest.subgroup == 61);
+  REQUIRE(best_det > 1.0);
+
+  // two descents: 48 -> 336 -> 2352 atoms
+  Crystal c = to_subgroup(benzene, SubgroupTransform(biggest));
+  REQUIRE(c.unit_cell_atoms().size() ==
+          static_cast<size_t>(std::llround(n0 * best_det)));
+
+  Crystal c2 = to_subgroup(c, SubgroupTransform(biggest));
+  REQUIRE(c2.unit_cell_atoms().size() ==
+          static_cast<size_t>(std::llround(n0 * best_det * best_det)));
+  REQUIRE(c2.volume() ==
+          Catch::Approx(benzene.volume() * best_det * best_det));
+
+  // no atoms lost or duplicated by the merge, at any size
+  REQUIRE(c2.unit_cell_atoms().atomic_numbers.sum() ==
+          std::llround(benzene.unit_cell_atoms().atomic_numbers.sum() *
+                       best_det * best_det));
+}

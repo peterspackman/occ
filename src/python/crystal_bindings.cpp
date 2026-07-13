@@ -607,7 +607,7 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
   m.def("compose", &occ::crystal::compose, "first"_a, "second"_a,
         "Compose two subgroup transformations, applied left to right");
   m.def("to_subgroup", &occ::crystal::to_subgroup, "crystal"_a, "transform"_a,
-        "tolerance"_a = 1e-4,
+        "tolerance"_a = 1e-4, "molecular_asymmetric_unit"_a = true,
         "Re-describe a crystal in one of its subgroups. The structure is "
         "unchanged; the asymmetric unit is re-derived under the smaller group.");
   m.def("to_standard_setting", &occ::crystal::to_standard_setting, "crystal"_a,
@@ -615,6 +615,15 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
         "Re-describe a crystal in the standard (ITA reference) setting of its "
         "space group. P2_1/c, P2_1/a and P2_1/n are all space group 14, and the "
         "subgroup tables are written for the standard setting only.");
+  m.def("with_grouped_asymmetric_unit",
+        &occ::crystal::with_grouped_asymmetric_unit, "crystal"_a, "groups"_a,
+        "tolerance"_a = 1e-4,
+        "Re-choose the asymmetric unit so that atoms sharing a group stay "
+        "together where the symmetry allows");
+  m.def("with_molecular_asymmetric_unit",
+        &occ::crystal::with_molecular_asymmetric_unit, "crystal"_a,
+        "tolerance"_a = 1e-4,
+        "Re-choose the asymmetric unit so that whole molecules stay together");
   m.def("z_prime", &occ::crystal::z_prime, "crystal"_a,
         "The number of molecules in the asymmetric unit");
   m.def("has_whole_molecule_asymmetric_unit",

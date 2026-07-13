@@ -1,5 +1,6 @@
 #include <Eigen/LU>
 #include <algorithm>
+#include <numeric>
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
 #include <occ/core/log.h>
@@ -222,10 +223,73 @@ inline double periodic_distance(const Vec3 &a, const Vec3 &b) {
   return d.norm();
 }
 
+/**
+ * A periodic lookup of fractional positions.
+ *
+ * Both the tiling and the orbit reduction need "is there already a site here?",
+ * and doing it by scanning every accepted site turns each into a quadratic loop.
+ * On a klassengleiche supercell of a few thousand atoms that dominated
+ * everything else -- 2.1 s for a single to_subgroup call on a 2048-atom cell.
+ *
+ * A coarse grid over the unit cell makes it constant time. Cells are much larger
+ * than the match tolerance, so a candidate can only match something in its own
+ * cell or one of the 26 neighbours, and the grid index wraps to respect
+ * periodicity.
+ */
+class SiteGrid {
+public:
+  explicit SiteGrid(double tolerance)
+      : m_n(std::max(1, std::min(64, static_cast<int>(1.0 / std::max(
+                                         tolerance * 4.0, 0.02))))),
+        m_tolerance(tolerance) {}
+
+  /// index of a site within `tolerance` of `frac`, or -1
+  int find(const std::vector<Vec3> &positions, const Vec3 &frac) const {
+    const auto [i, j, k] = cell_of(frac);
+    for (int di = -1; di <= 1; di++) {
+      for (int dj = -1; dj <= 1; dj++) {
+        for (int dk = -1; dk <= 1; dk++) {
+          auto it = m_buckets.find(key(i + di, j + dj, k + dk));
+          if (it == m_buckets.end())
+            continue;
+          for (int idx : it->second) {
+            if (periodic_distance(positions[idx], frac) < m_tolerance)
+              return idx;
+          }
+        }
+      }
+    }
+    return -1;
+  }
+
+  void insert(const Vec3 &frac, int index) {
+    const auto [i, j, k] = cell_of(frac);
+    m_buckets[key(i, j, k)].push_back(index);
+  }
+
+private:
+  std::tuple<int, int, int> cell_of(const Vec3 &frac) const {
+    auto c = [this](double x) {
+      int v = static_cast<int>(std::floor(x * m_n));
+      return ((v % m_n) + m_n) % m_n;
+    };
+    return {c(frac(0)), c(frac(1)), c(frac(2))};
+  }
+
+  int64_t key(int i, int j, int k) const {
+    auto w = [this](int v) { return ((v % m_n) + m_n) % m_n; };
+    return (static_cast<int64_t>(w(i)) * m_n + w(j)) * m_n + w(k);
+  }
+
+  int m_n;
+  double m_tolerance;
+  ankerl::unordered_dense::map<int64_t, std::vector<int>> m_buckets;
+};
+
 } // namespace
 
 Crystal to_subgroup(const Crystal &crystal, const SubgroupTransform &transform,
-                    double tolerance) {
+                    double tolerance, bool molecular_asymmetric_unit) {
   if (transform.subgroup < 1 || transform.subgroup > 230)
     throw std::invalid_argument(fmt::format(
         "SubgroupTransform has no target space group (got {}); a "
@@ -279,24 +343,27 @@ Crystal to_subgroup(const Crystal &crystal, const SubgroupTransform &transform,
   };
   std::vector<Site> sites;
 
+  // Parent atoms are wrapped into [0, 1), so a translation can only contribute
+  // if it lands some of them inside the new cell: t in [lower - 1, upper].
+  SiteGrid grid(tolerance);
+  std::vector<Vec3> site_positions;
+
   for (int h = static_cast<int>(std::floor(lower(0))) - 1;
-       h <= static_cast<int>(std::ceil(upper(0))) + 1; h++) {
+       h <= static_cast<int>(std::ceil(upper(0))); h++) {
     for (int k = static_cast<int>(std::floor(lower(1))) - 1;
-         k <= static_cast<int>(std::ceil(upper(1))) + 1; k++) {
+         k <= static_cast<int>(std::ceil(upper(1))); k++) {
       for (int l = static_cast<int>(std::floor(lower(2))) - 1;
-           l <= static_cast<int>(std::ceil(upper(2))) + 1; l++) {
+           l <= static_cast<int>(std::ceil(upper(2))); l++) {
         const Vec3 translation(h, k, l);
         for (Eigen::Index i = 0; i < n_parent; i++) {
           // into the new basis: x' = P^-1 (x - p)
           const Vec3 x = parent_atoms.frac_pos.col(i) + translation;
           const Vec3 x_new = wrap(p_inverse * (x - p_shift));
 
-          const bool duplicate =
-              std::any_of(sites.begin(), sites.end(), [&](const Site &s) {
-                return periodic_distance(s.frac, x_new) < tolerance;
-              });
-          if (duplicate)
+          if (grid.find(site_positions, x_new) >= 0)
             continue;
+          grid.insert(x_new, static_cast<int>(sites.size()));
+          site_positions.push_back(x_new);
           sites.push_back({x_new, parent_atoms.atomic_numbers(i),
                            static_cast<int>(parent_atoms.asym_idx(i))});
         }
@@ -328,15 +395,11 @@ Crystal to_subgroup(const Crystal &crystal, const SubgroupTransform &transform,
 
     for (const auto &op : subgroup_ops) {
       const Vec3 image = wrap(op.rotation() * sites[i].frac + op.translation());
+      const int j = grid.find(site_positions, image);
       bool matched = false;
-      for (size_t j = 0; j < sites.size(); j++) {
-        if (periodic_distance(sites[j].frac, image) < tolerance) {
-          if (sites[j].element != sites[i].element)
-            continue;
-          assigned[j] = true;
-          matched = true;
-          break;
-        }
+      if (j >= 0 && sites[j].element == sites[i].element) {
+        assigned[j] = true;
+        matched = true;
       }
       if (!matched) {
         // The claimed subgroup symmetry does not hold for this structure. That
@@ -377,7 +440,16 @@ Crystal to_subgroup(const Crystal &crystal, const SubgroupTransform &transform,
 
   AsymmetricUnit asym(positions, numbers, labels);
   asym.occupations = occupations;
-  return Crystal(asym, subgroup_sg, new_cell);
+  Crystal result(asym, subgroup_sg, new_cell);
+
+  // The orbit reduction above takes atoms in whatever order they were tiled in,
+  // which is a valid asymmetric unit but can split a molecule across symmetry
+  // images. Re-choose it molecule by molecule so that a molecule comes through
+  // whole wherever the subgroup allows -- which is the entire point of
+  // descending to Z' = 1.
+  if (molecular_asymmetric_unit)
+    return with_molecular_asymmetric_unit(result, tolerance);
+  return result;
 }
 
 SubgroupTransform compose(const SubgroupTransform &first,
@@ -401,6 +473,98 @@ Crystal to_standard_setting(const Crystal &crystal, double tolerance) {
   transform.basis_transform = p_matrix;
   transform.origin_shift = p_shift;
   return to_subgroup(crystal, transform, tolerance);
+}
+
+Crystal with_grouped_asymmetric_unit(const Crystal &crystal, const IVec &groups,
+                                     double tolerance) {
+  const CrystalAtomRegion &atoms = crystal.unit_cell_atoms();
+  const AsymmetricUnit &asym = crystal.asymmetric_unit();
+  const Eigen::Index n = atoms.size();
+  if (groups.size() != n)
+    throw std::invalid_argument(
+        fmt::format("with_grouped_asymmetric_unit: {} groups for {} unit cell "
+                    "atoms",
+                    groups.size(), n));
+
+  SiteGrid grid(tolerance);
+  std::vector<Vec3> positions(n);
+  for (Eigen::Index i = 0; i < n; i++) {
+    positions[i] = wrap(Vec3(atoms.frac_pos.col(i)));
+    grid.insert(positions[i], static_cast<int>(i));
+  }
+
+  // Visit the atoms group by group. The greedy orbit walk then exhausts one
+  // group before it starts another, so every atom of a group that is not
+  // already the image of an earlier one lands in the asymmetric unit -- i.e. the
+  // group comes through whole unless its own symmetry forbids it.
+  std::vector<Eigen::Index> order(n);
+  std::iota(order.begin(), order.end(), 0);
+  std::stable_sort(order.begin(), order.end(),
+                   [&groups](Eigen::Index a, Eigen::Index b) {
+                     return groups(a) < groups(b);
+                   });
+
+  const auto &ops = crystal.space_group().symmetry_operations();
+  std::vector<bool> assigned(n, false);
+  std::vector<Eigen::Index> representatives;
+
+  for (Eigen::Index i : order) {
+    if (assigned[i])
+      continue;
+    representatives.push_back(i);
+    assigned[i] = true;
+    for (const auto &op : ops) {
+      const Vec3 image = wrap(op.rotation() * positions[i] + op.translation());
+      const int j = grid.find(positions, image);
+      if (j >= 0 && atoms.atomic_numbers(j) == atoms.atomic_numbers(i))
+        assigned[j] = true;
+    }
+  }
+
+  const Eigen::Index n_asym = representatives.size();
+  Mat3N frac(3, n_asym);
+  IVec numbers(n_asym);
+  Vec occupations(n_asym);
+  Mat6N adps = Mat6N::Zero(6, n_asym);
+  std::vector<std::string> labels;
+  labels.reserve(n_asym);
+
+  ankerl::unordered_dense::map<std::string, int> label_counts;
+  for (Eigen::Index i = 0; i < n_asym; i++) {
+    const Eigen::Index site = representatives[i];
+    const Eigen::Index parent = atoms.asym_idx(site);
+    frac.col(i) = positions[site];
+    numbers(i) = atoms.atomic_numbers(site);
+    occupations(i) = atoms.occupation(site);
+    if (asym.adps.cols() == asym.positions.cols())
+      adps.col(i) = SymmetryOperation(atoms.symop(site))
+                        .rotate_adp(asym.adps.col(parent));
+
+    std::string base = asym.labels.empty() || parent >= static_cast<Eigen::Index>(
+                                                  asym.labels.size())
+                           ? fmt::format("{}", numbers(i))
+                           : asym.labels[parent];
+    const int seen = label_counts[base]++;
+    labels.push_back(seen == 0 ? base : fmt::format("{}_{}", base, seen));
+  }
+
+  AsymmetricUnit result(frac, numbers, labels);
+  result.occupations = occupations;
+  result.adps = adps;
+  return Crystal(result, crystal.space_group(), crystal.unit_cell());
+}
+
+Crystal with_molecular_asymmetric_unit(const Crystal &crystal,
+                                       double tolerance) {
+  const CrystalAtomRegion &atoms = crystal.unit_cell_atoms();
+  IVec groups = IVec::Zero(atoms.size());
+  int molecule_index = 0;
+  for (const auto &molecule : crystal.unit_cell_molecules()) {
+    for (int uc_idx : molecule.unit_cell_idx())
+      groups(uc_idx) = molecule_index;
+    molecule_index++;
+  }
+  return with_grouped_asymmetric_unit(crystal, groups, tolerance);
 }
 
 double z_prime(const Crystal &crystal) {

@@ -179,9 +179,16 @@ struct SubgroupTransform {
  * number: because the transformation is tabulated, no symmetry identification is
  * needed.
  *
+ * The asymmetric unit is chosen molecule by molecule, so a molecule comes
+ * through whole wherever the subgroup's symmetry allows it -- see
+ * `with_molecular_asymmetric_unit`. Pass `molecular_asymmetric_unit = false` to
+ * take the cheaper atom-by-atom choice, which is equally valid but can scatter a
+ * molecule across symmetry images.
+ *
  * \param crystal the parent structure
  * \param transform the subgroup relation to apply
  * \param tolerance fractional-coordinate tolerance for matching atoms
+ * \param molecular_asymmetric_unit keep molecules intact in the asymmetric unit
  *
  * \returns the same structure, described in the subgroup
  *
@@ -190,7 +197,8 @@ struct SubgroupTransform {
  *         the subgroup's standard setting disagree)
  */
 Crystal to_subgroup(const Crystal &crystal, const SubgroupTransform &transform,
-                    double tolerance = 1e-4);
+                    double tolerance = 1e-4,
+                    bool molecular_asymmetric_unit = true);
 
 /**
  * \brief Compose two subgroup transformations, applied left to right.
@@ -213,6 +221,45 @@ SubgroupTransform compose(const SubgroupTransform &first,
  * The structure is unchanged; only its description is.
  */
 Crystal to_standard_setting(const Crystal &crystal, double tolerance = 1e-4);
+
+/**
+ * \brief Re-choose a crystal's asymmetric unit so that groups of atoms stay
+ * together.
+ *
+ * The asymmetric unit is a *choice*: any set of atoms that generates the unit
+ * cell exactly once under the space group will do. Picking one representative
+ * per orbit in whatever order the atoms happen to come in is valid but
+ * chemically useless -- it can scatter a molecule across several symmetry
+ * images, so the asymmetric unit is a handful of atoms from here and a handful
+ * from there.
+ *
+ * Walking the atoms group by group instead makes each group land in the
+ * asymmetric unit whole, wherever the symmetry permits it. Where it does not --
+ * a group sitting on a special position, mapped onto itself by part of the
+ * group -- only its own asymmetric part can be taken, which is correct and
+ * unavoidable.
+ *
+ * \param crystal the structure to re-describe (unchanged; only the choice of
+ *        asymmetric unit differs)
+ * \param groups one entry per unit cell atom, in the order of
+ *        `crystal.unit_cell_atoms()`, giving the group that atom belongs to.
+ *        Atoms sharing a value are kept together where symmetry allows.
+ * \param tolerance fractional-coordinate tolerance for matching atoms
+ *
+ * \throws std::invalid_argument if `groups` is not one entry per unit cell atom
+ */
+Crystal with_grouped_asymmetric_unit(const Crystal &crystal, const IVec &groups,
+                                     double tolerance = 1e-4);
+
+/**
+ * \brief Re-choose the asymmetric unit so that whole molecules stay together.
+ *
+ * `with_grouped_asymmetric_unit` with the groups taken from the crystal's own
+ * molecules. This is what makes "Z' = 1 with the whole molecule as the
+ * asymmetric unit" a construction rather than a coincidence.
+ */
+Crystal with_molecular_asymmetric_unit(const Crystal &crystal,
+                                       double tolerance = 1e-4);
 
 /**
  * \brief The number of molecules in the asymmetric unit, Z'.
