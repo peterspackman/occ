@@ -2083,3 +2083,260 @@ TEST_CASE("Subgroup lookup rejects invalid space groups",
   REQUIRE_NOTHROW(maximal_subgroups(1));
   REQUIRE_NOTHROW(maximal_subgroups(230));
 }
+
+TEST_CASE("to_subgroup preserves the structure", "[crystal, subgroup]") {
+  // Descending into a subgroup re-describes the crystal, it does not change it.
+  // The cell volume scales by det(P), the unit cell holds det(P) times as many
+  // atoms, and the asymmetric unit grows because orbits the parent held together
+  // split under the smaller group.
+  using occ::crystal::SubgroupTransform;
+  using occ::crystal::to_subgroup;
+
+  Crystal parent = acetic_acid_crystal(); // Pna2_1 (33), Z = 4
+  const double parent_volume = parent.volume();
+  const size_t parent_uc_atoms = parent.unit_cell_atoms().size();
+  const size_t parent_asym_atoms = parent.asymmetric_unit().size();
+  REQUIRE(parent.space_group().number() == 33);
+
+  for (const auto &sub : maximal_subgroups(33)) {
+    INFO("subgroup " << sub.subgroup << " index " << sub.index << " "
+                     << sub.to_string());
+    Crystal child = to_subgroup(parent, SubgroupTransform(sub));
+    const double det = sub.basis_transform.determinant();
+
+    REQUIRE(child.space_group().number() == sub.subgroup);
+    REQUIRE(child.volume() == Catch::Approx(parent_volume * det).epsilon(1e-9));
+    REQUIRE(child.unit_cell_atoms().size() ==
+            std::llround(parent_uc_atoms * det));
+
+    // the same atoms are still there, in the same numbers
+    REQUIRE(child.asymmetric_unit().size() > 0);
+    REQUIRE(child.unit_cell_atoms().atomic_numbers.sum() ==
+            std::llround(parent.unit_cell_atoms().atomic_numbers.sum() * det));
+  }
+
+  // P2_1 (4) and Pc (7) are index-2 t-subgroups of Pna2_1: same cell, but the
+  // asymmetric unit doubles because the orbit splits.
+  for (int target : {4, 7}) {
+    auto subs = maximal_subgroups(33, SubgroupType::Translationengleiche);
+    auto it = std::find_if(subs.begin(), subs.end(),
+                           [target](const MaximalSubgroup &s) {
+                             return s.subgroup == target;
+                           });
+    REQUIRE(it != subs.end());
+    Crystal child = to_subgroup(parent, SubgroupTransform(*it));
+    REQUIRE(child.volume() == Catch::Approx(parent_volume));
+    REQUIRE(child.asymmetric_unit().size() == 2 * parent_asym_atoms);
+    REQUIRE(child.unit_cell_atoms().size() == parent_uc_atoms);
+  }
+}
+
+TEST_CASE("to_subgroup preserves cartesian geometry", "[crystal, subgroup]") {
+  // The strongest check: every atom of the parent unit cell must still be an
+  // atom of the child, at the same place in space (up to the origin shift and
+  // lattice translations).
+  using occ::crystal::SubgroupTransform;
+  using occ::crystal::to_subgroup;
+
+  Crystal parent = acetic_acid_crystal();
+
+  for (const auto &sub : maximal_subgroups(33)) {
+    INFO("subgroup " << sub.subgroup << " " << sub.to_string());
+    Crystal child = to_subgroup(parent, SubgroupTransform(sub));
+
+    // the origin moved by A * p, in cartesian
+    const occ::Vec3 origin =
+        parent.unit_cell().direct() * sub.origin_shift;
+
+    const auto &child_atoms = child.unit_cell_atoms();
+    const auto &parent_atoms = parent.unit_cell_atoms();
+
+    for (Eigen::Index i = 0; i < parent_atoms.size(); i++) {
+      const occ::Vec3 target =
+          parent.unit_cell().to_cartesian(parent_atoms.frac_pos.col(i)) - origin;
+
+      // find it among the child's atoms, allowing a child lattice translation
+      bool found = false;
+      for (Eigen::Index j = 0; j < child_atoms.size() && !found; j++) {
+        if (child_atoms.atomic_numbers(j) != parent_atoms.atomic_numbers(i))
+          continue;
+        occ::Vec3 delta =
+            child.unit_cell().to_fractional(
+                child.unit_cell().to_cartesian(child_atoms.frac_pos.col(j)) -
+                target);
+        for (int k = 0; k < 3; k++)
+          delta(k) -= std::round(delta(k));
+        if (child.unit_cell().to_cartesian(delta).norm() < 1e-6)
+          found = true;
+      }
+      REQUIRE(found);
+    }
+  }
+}
+
+TEST_CASE("to_subgroup handles klassengleiche supercells",
+          "[crystal, subgroup]") {
+  using occ::crystal::SubgroupTransform;
+  using occ::crystal::to_subgroup;
+
+  Crystal parent = acetic_acid_crystal();
+  auto k = maximal_subgroups(33, SubgroupType::Klassengleiche);
+  REQUIRE(k.size() > 0);
+
+  int supercells = 0;
+  for (const auto &sub : k) {
+    const double det = sub.basis_transform.determinant();
+    if (det < 1.5)
+      continue; // not a cell enlargement
+    Crystal child = to_subgroup(parent, SubgroupTransform(sub));
+    REQUIRE(child.volume() == Catch::Approx(parent.volume() * det));
+    REQUIRE(child.unit_cell_atoms().size() ==
+            std::llround(parent.unit_cell_atoms().size() * det));
+    supercells++;
+  }
+  REQUIRE(supercells > 0);
+}
+
+// Benzene phase I: Pbca, Z = 4, Z' = 1/2. The molecule sits on an inversion
+// centre, so the asymmetric unit holds only half of it (3 C + 3 H).
+auto benzene_crystal() {
+  const std::vector<std::string> labels = {"C1", "C2", "C3", "H1", "H2", "H3"};
+  occ::IVec nums(6);
+  nums << 6, 6, 6, 1, 1, 1;
+  occ::Mat positions(6, 3);
+  positions << -0.05690, 0.13870, -0.00540,
+               -0.13350, 0.04600,  0.12640,
+                0.07740, 0.09250, -0.12950,
+               -0.09760, 0.24470, -0.01770,
+               -0.24090, 0.07940,  0.22180,
+                0.13710, 0.16310, -0.23120;
+  AsymmetricUnit asym(positions.transpose(), nums, labels);
+  return Crystal(asym, SpaceGroup(61),
+                 occ::crystal::orthorhombic_cell(7.440, 9.550, 6.920));
+}
+
+TEST_CASE("Z' of benzene in Pbca is 1/2", "[crystal, subgroup, zprime]") {
+  using occ::crystal::has_whole_molecule_asymmetric_unit;
+  using occ::crystal::z_prime;
+
+  Crystal benzene = benzene_crystal();
+  REQUIRE(benzene.space_group().number() == 61);
+  REQUIRE(benzene.space_group().symmetry_operations().size() == 8);
+  REQUIRE(benzene.unit_cell_molecules().size() == 4);   // Z = 4
+  REQUIRE(z_prime(benzene) == Catch::Approx(0.5));      // Z' = 4/8
+
+  // the asymmetric unit is half a molecule, so it is not chemically meaningful
+  REQUIRE(benzene.asymmetric_unit().size() == 6);
+  REQUIRE(benzene.symmetry_unique_molecules().size() == 1);
+  REQUIRE(benzene.symmetry_unique_molecules()[0].size() == 12);
+  REQUIRE_FALSE(has_whole_molecule_asymmetric_unit(benzene));
+}
+
+TEST_CASE("Find the subgroup giving benzene Z' = 1",
+          "[crystal, subgroup, zprime]") {
+  using occ::crystal::find_subgroup_for_z_prime;
+  using occ::crystal::has_whole_molecule_asymmetric_unit;
+  using occ::crystal::to_subgroup;
+  using occ::crystal::z_prime;
+  using occ::crystal::ZPrimeSearchParameters;
+
+  Crystal benzene = benzene_crystal();
+
+  ZPrimeSearchParameters params; // target Z' = 1, whole molecules, t-subgroups
+  auto transform = find_subgroup_for_z_prime(benzene, params);
+  REQUIRE(transform.has_value());
+
+  Crystal child = to_subgroup(benzene, *transform);
+
+  // Z' = 1 with the whole molecule as the asymmetric unit
+  REQUIRE(z_prime(child) == Catch::Approx(1.0));
+  REQUIRE(has_whole_molecule_asymmetric_unit(child));
+  REQUIRE(child.asymmetric_unit().size() == 12); // a whole benzene
+  REQUIRE(child.symmetry_unique_molecules().size() == 1);
+  REQUIRE(child.symmetry_unique_molecules()[0].size() == 12);
+
+  // and the structure itself is untouched
+  REQUIRE(child.volume() == Catch::Approx(benzene.volume()));
+  REQUIRE(child.unit_cell_molecules().size() == 4); // still Z = 4
+  REQUIRE(child.unit_cell_atoms().size() ==
+          benzene.unit_cell_atoms().size());
+
+  // the subgroup must have dropped the inversion centre the molecule sat on
+  const auto &ops = child.space_group().symmetry_operations();
+  REQUIRE(std::none_of(ops.begin(), ops.end(),
+                       [](const SymmetryOperation &op) {
+                         return op.rotation().isApprox(-occ::Mat3::Identity());
+                       }));
+}
+
+TEST_CASE("Space group standard settings", "[crystal, subgroup, setting]") {
+  // P2_1/c, P2_1/a and P2_1/n are all space group 14; only the first is the
+  // standard setting, and the subgroup tables are written for the standard.
+  REQUIRE(SpaceGroup(14).is_standard_setting());
+  REQUIRE(SpaceGroup("P 1 21/c 1").is_standard_setting());
+  REQUIRE_FALSE(SpaceGroup("P 1 21/a 1").is_standard_setting());
+  REQUIRE_FALSE(SpaceGroup("P 1 21/n 1").is_standard_setting());
+
+  REQUIRE(SpaceGroup("P 1 21/a 1").standard_setting().number() == 14);
+  REQUIRE(SpaceGroup("P 1 21/a 1").standard_setting().is_standard_setting());
+
+  // For the 24 groups with two origin choices, SpaceGroup(number) gives origin
+  // choice 1 but the ITA standard -- the one the tables use -- is choice 2.
+  REQUIRE_FALSE(SpaceGroup(48).is_standard_setting()); // P n n n
+  REQUIRE(SpaceGroup(48).standard_setting().is_standard_setting());
+  REQUIRE(SpaceGroup(48).standard_setting().number() == 48);
+  REQUIRE_FALSE(SpaceGroup(70).is_standard_setting()); // F d d d
+
+  // the standard setting is its own standard setting
+  auto identity = SpaceGroup(14).standard_setting_transform();
+  REQUIRE(all_close(identity.first, occ::Mat3::Identity()));
+  REQUIRE(identity.second.isZero());
+}
+
+TEST_CASE("to_standard_setting preserves the structure",
+          "[crystal, subgroup, setting]") {
+  using occ::crystal::to_standard_setting;
+
+  // build acetic acid's asymmetric unit in a non-standard setting of SG 14
+  const std::vector<std::string> labels = {"C1", "O1"};
+  occ::IVec nums(2);
+  nums << 6, 8;
+  occ::Mat3N pos(3, 2);
+  pos << 0.1, 0.3, 0.2, 0.4, 0.15, 0.35;
+  Crystal alt(AsymmetricUnit(pos, nums, labels), SpaceGroup("P 1 21/n 1"),
+              occ::crystal::monoclinic_cell(8.0, 6.0, 10.0, radians(95.0)));
+  REQUIRE_FALSE(alt.space_group().is_standard_setting());
+
+  Crystal standard = to_standard_setting(alt);
+  REQUIRE(standard.space_group().number() == 14);
+  REQUIRE(standard.space_group().is_standard_setting());
+
+  // same structure: same number of atoms, same volume, same cartesian geometry
+  REQUIRE(standard.volume() == Catch::Approx(alt.volume()));
+  REQUIRE(standard.unit_cell_atoms().size() == alt.unit_cell_atoms().size());
+
+  for (Eigen::Index i = 0; i < alt.unit_cell_atoms().size(); i++) {
+    const occ::Vec3 target = alt.unit_cell().to_cartesian(
+        alt.unit_cell_atoms().frac_pos.col(i));
+    bool found = false;
+    for (Eigen::Index j = 0; j < standard.unit_cell_atoms().size() && !found;
+         j++) {
+      if (standard.unit_cell_atoms().atomic_numbers(j) !=
+          alt.unit_cell_atoms().atomic_numbers(i))
+        continue;
+      occ::Vec3 delta = standard.unit_cell().to_fractional(
+          standard.unit_cell().to_cartesian(
+              standard.unit_cell_atoms().frac_pos.col(j)) -
+          target);
+      for (int k = 0; k < 3; k++)
+        delta(k) -= std::round(delta(k));
+      if (standard.unit_cell().to_cartesian(delta).norm() < 1e-6)
+        found = true;
+    }
+    REQUIRE(found);
+  }
+
+  // already standard -> unchanged
+  Crystal already = to_standard_setting(acetic_acid_crystal());
+  REQUIRE(already.space_group().number() == 33);
+}
