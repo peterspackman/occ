@@ -333,6 +333,7 @@ var hierarchy =
     [ "occ::geometry::mc::MarchingCubes", "structocc_1_1geometry_1_1mc_1_1MarchingCubes.html", null ],
     [ "occ::MatSix", "structocc_1_1MatSix.html", null ],
     [ "occ::MatTriple", "structocc_1_1MatTriple.html", null ],
+    [ "occ::crystal::MaximalSubgroup", "structocc_1_1crystal_1_1MaximalSubgroup.html", null ],
     [ "occ::isosurface::MCDeformationDensityFunctor", "classocc_1_1isosurface_1_1MCDeformationDensityFunctor.html", null ],
     [ "occ::isosurface::MCElectricPotentialFunctor", "classocc_1_1isosurface_1_1MCElectricPotentialFunctor.html", null ],
     [ "occ::isosurface::MCElectronDensityFunctor", "classocc_1_1isosurface_1_1MCElectronDensityFunctor.html", null ],
@@ -458,6 +459,9 @@ var hierarchy =
       [ "occ::elastic_fit::MorseWrapper", "classocc_1_1elastic__fit_1_1MorseWrapper.html", null ]
     ] ],
     [ "occ::io::Potentials", "structocc_1_1io_1_1Potentials.html", null ],
+    [ "occ::crystal::PowderPattern", "classocc_1_1crystal_1_1PowderPattern.html", null ],
+    [ "occ::crystal::PowderPatternSettings", "structocc_1_1crystal_1_1PowderPatternSettings.html", null ],
+    [ "occ::crystal::PowderPeak", "structocc_1_1crystal_1_1PowderPeak.html", null ],
     [ "occ::ints::PrimitivePairData< T >", "structocc_1_1ints_1_1PrimitivePairData.html", null ],
     [ "occ::core::ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", null ],
     [ "occ::isosurface::pointwise::PromolDensityFunctor", "structocc_1_1isosurface_1_1pointwise_1_1PromolDensityFunctor.html", null ],
@@ -561,6 +565,9 @@ var hierarchy =
     [ "occ::mults::StrainedResult", "structocc_1_1mults_1_1StrainedResult.html", null ],
     [ "occ::io::StructureInput", "structocc_1_1io_1_1StructureInput.html", null ],
     [ "occ::io::crystalgrower::StructureWriter", "classocc_1_1io_1_1crystalgrower_1_1StructureWriter.html", null ],
+    [ "occ::crystal::SubgroupPath", "structocc_1_1crystal_1_1SubgroupPath.html", null ],
+    [ "occ::crystal::SubgroupSearchParameters", "structocc_1_1crystal_1_1SubgroupSearchParameters.html", null ],
+    [ "occ::crystal::SubgroupTransform", "structocc_1_1crystal_1_1SubgroupTransform.html", null ],
     [ "occ::crystal::Surface", "classocc_1_1crystal_1_1Surface.html", null ],
     [ "occ::solvent::surface::Surface", "structocc_1_1solvent_1_1surface_1_1Surface.html", null ],
     [ "occ::isosurface::SurfaceCurvature", "structocc_1_1isosurface_1_1SurfaceCurvature.html", null ],
@@ -636,5 +643,6 @@ var hierarchy =
       [ "occ::xtb::NullSolvationModel", "classocc_1_1xtb_1_1NullSolvationModel.html", null ],
       [ "occ::xtb::SmdSolvationModel", "classocc_1_1xtb_1_1SmdSolvationModel.html", null ]
     ] ],
-    [ "occ::io::XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", null ]
+    [ "occ::io::XyzFileReader", "structocc_1_1io_1_1XyzFileReader.html", null ],
+    [ "occ::crystal::ZPrimeSearchParameters", "structocc_1_1crystal_1_1ZPrimeSearchParameters.html", null ]
 ];

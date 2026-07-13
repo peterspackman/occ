@@ -95,6 +95,10 @@ var annotated_dup =
         [ "DimerMappingTable", "classocc_1_1crystal_1_1DimerMappingTable.html", "classocc_1_1crystal_1_1DimerMappingTable" ],
         [ "DimerMappingVertex", "structocc_1_1crystal_1_1DimerMappingVertex.html", "structocc_1_1crystal_1_1DimerMappingVertex" ],
         [ "HKL", "structocc_1_1crystal_1_1HKL.html", "structocc_1_1crystal_1_1HKL" ],
+        [ "MaximalSubgroup", "structocc_1_1crystal_1_1MaximalSubgroup.html", "structocc_1_1crystal_1_1MaximalSubgroup" ],
+        [ "PowderPattern", "classocc_1_1crystal_1_1PowderPattern.html", "classocc_1_1crystal_1_1PowderPattern" ],
+        [ "PowderPatternSettings", "structocc_1_1crystal_1_1PowderPatternSettings.html", "structocc_1_1crystal_1_1PowderPatternSettings" ],
+        [ "PowderPeak", "structocc_1_1crystal_1_1PowderPeak.html", "structocc_1_1crystal_1_1PowderPeak" ],
         [ "ReciprocalAsymmetricUnit", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit.html", "classocc_1_1crystal_1_1ReciprocalAsymmetricUnit" ],
         [ "SiteIndex", "structocc_1_1crystal_1_1SiteIndex.html", "structocc_1_1crystal_1_1SiteIndex" ],
         [ "SiteIndexHash", "structocc_1_1crystal_1_1SiteIndexHash.html", "structocc_1_1crystal_1_1SiteIndexHash" ],
@@ -103,12 +107,16 @@ var annotated_dup =
         [ "SiteMappingVertex", "structocc_1_1crystal_1_1SiteMappingVertex.html", "structocc_1_1crystal_1_1SiteMappingVertex" ],
         [ "SpaceGroup", "classocc_1_1crystal_1_1SpaceGroup.html", "classocc_1_1crystal_1_1SpaceGroup" ],
         [ "StandardBondLengths", "classocc_1_1crystal_1_1StandardBondLengths.html", null ],
+        [ "SubgroupPath", "structocc_1_1crystal_1_1SubgroupPath.html", "structocc_1_1crystal_1_1SubgroupPath" ],
+        [ "SubgroupSearchParameters", "structocc_1_1crystal_1_1SubgroupSearchParameters.html", "structocc_1_1crystal_1_1SubgroupSearchParameters" ],
+        [ "SubgroupTransform", "structocc_1_1crystal_1_1SubgroupTransform.html", "structocc_1_1crystal_1_1SubgroupTransform" ],
         [ "Surface", "classocc_1_1crystal_1_1Surface.html", "classocc_1_1crystal_1_1Surface" ],
         [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", "structocc_1_1crystal_1_1SurfaceCutResult" ],
         [ "SymmetryDimerLabeller", "structocc_1_1crystal_1_1SymmetryDimerLabeller.html", "structocc_1_1crystal_1_1SymmetryDimerLabeller" ],
         [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ],
         [ "SymmetryOperationFormat", "structocc_1_1crystal_1_1SymmetryOperationFormat.html", "structocc_1_1crystal_1_1SymmetryOperationFormat" ],
-        [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ]
+        [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ],
+        [ "ZPrimeSearchParameters", "structocc_1_1crystal_1_1ZPrimeSearchParameters.html", "structocc_1_1crystal_1_1ZPrimeSearchParameters" ]
       ] ],
       [ "descriptors", "namespaceocc_1_1descriptors.html", [
         [ "FastNeighborFinder", "classocc_1_1descriptors_1_1FastNeighborFinder.html", "classocc_1_1descriptors_1_1FastNeighborFinder" ],

@@ -141,6 +141,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a003e16655ab0d025800d4522f86da657" id="r_a003e16655ab0d025800d4522f86da657"><td class="memItemLeft" align="right" valign="top">IVec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalAtomRegion.html#a003e16655ab0d025800d4522f86da657">symop</a></td></tr>
 <tr class="memdesc:a003e16655ab0d025800d4522f86da657"><td class="mdescLeft">&#160;</td><td class="mdescRight">The symmetry operations applied to the atoms in the region, expressed as a vector of size n.  <br /></td></tr>
 <tr class="separator:a003e16655ab0d025800d4522f86da657"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a962aa3a79659e6d9d65dc92fb9f06fb6" id="r_a962aa3a79659e6d9d65dc92fb9f06fb6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalAtomRegion.html#a962aa3a79659e6d9d65dc92fb9f06fb6">occupation</a></td></tr>
+<tr class="memdesc:a962aa3a79659e6d9d65dc92fb9f06fb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">The site occupancy of each atom in the region.  <br /></td></tr>
+<tr class="separator:a962aa3a79659e6d9d65dc92fb9f06fb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c34f603565351aa69d57c9e5fd2b957" id="r_a1c34f603565351aa69d57c9e5fd2b957"><td class="memItemLeft" align="right" valign="top">IVec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1CrystalAtomRegion.html#a1c34f603565351aa69d57c9e5fd2b957">disorder_group</a></td></tr>
 <tr class="memdesc:a1c34f603565351aa69d57c9e5fd2b957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disorder group.  <br /></td></tr>
 <tr class="separator:a1c34f603565351aa69d57c9e5fd2b957"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -310,6 +313,23 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The cell index of this atom. </p>
+
+</div>
+</div>
+<a id="a962aa3a79659e6d9d65dc92fb9f06fb6" name="a962aa3a79659e6d9d65dc92fb9f06fb6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a962aa3a79659e6d9d65dc92fb9f06fb6">&#9670;&#160;</a></span>occupation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::crystal::CrystalAtomRegion::occupation</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The site occupancy of each atom in the region. </p>
+<p>Taken from the asymmetric unit site each atom is generated from. Symmetry images of an atom on a special position are merged into a single entry, so the occupancy is <em>not</em> multiplied by the site multiplicity. </p>
 
 </div>
 </div>

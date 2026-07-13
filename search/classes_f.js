@@ -35,10 +35,13 @@ var searchData=
   ['posthfmethod_32',['PostHFMethod',['../classocc_1_1qm_1_1PostHFMethod.html',1,'occ::qm']]],
   ['potentialbase_33',['PotentialBase',['../classocc_1_1elastic__fit_1_1PotentialBase.html',1,'occ::elastic_fit']]],
   ['potentials_34',['Potentials',['../structocc_1_1io_1_1Potentials.html',1,'occ::io']]],
-  ['primitivepairdata_35',['PrimitivePairData',['../structocc_1_1ints_1_1PrimitivePairData.html',1,'occ::ints']]],
-  ['progresstracker_36',['ProgressTracker',['../classocc_1_1core_1_1ProgressTracker.html',1,'occ::core']]],
-  ['promoldensityfunctor_37',['PromolDensityFunctor',['../structocc_1_1isosurface_1_1pointwise_1_1PromolDensityFunctor.html',1,'occ::isosurface::pointwise']]],
-  ['promoleculedensity_38',['PromoleculeDensity',['../classocc_1_1slater_1_1PromoleculeDensity.html',1,'occ::slater']]],
-  ['promoleculedensityshape_39',['PromoleculeDensityShape',['../structocc_1_1descriptors_1_1PromoleculeDensityShape.html',1,'occ::descriptors']]],
-  ['propertyinfo_40',['PropertyInfo',['../structtinyply_1_1PropertyInfo.html',1,'tinyply']]]
+  ['powderpattern_35',['PowderPattern',['../classocc_1_1crystal_1_1PowderPattern.html',1,'occ::crystal']]],
+  ['powderpatternsettings_36',['PowderPatternSettings',['../structocc_1_1crystal_1_1PowderPatternSettings.html',1,'occ::crystal']]],
+  ['powderpeak_37',['PowderPeak',['../structocc_1_1crystal_1_1PowderPeak.html',1,'occ::crystal']]],
+  ['primitivepairdata_38',['PrimitivePairData',['../structocc_1_1ints_1_1PrimitivePairData.html',1,'occ::ints']]],
+  ['progresstracker_39',['ProgressTracker',['../classocc_1_1core_1_1ProgressTracker.html',1,'occ::core']]],
+  ['promoldensityfunctor_40',['PromolDensityFunctor',['../structocc_1_1isosurface_1_1pointwise_1_1PromolDensityFunctor.html',1,'occ::isosurface::pointwise']]],
+  ['promoleculedensity_41',['PromoleculeDensity',['../classocc_1_1slater_1_1PromoleculeDensity.html',1,'occ::slater']]],
+  ['promoleculedensityshape_42',['PromoleculeDensityShape',['../structocc_1_1descriptors_1_1PromoleculeDensityShape.html',1,'occ::descriptors']]],
+  ['propertyinfo_43',['PropertyInfo',['../structtinyply_1_1PropertyInfo.html',1,'tinyply']]]
 ];

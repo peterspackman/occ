@@ -8,6 +8,7 @@ var structocc_1_1crystal_1_1CrystalAtomRegion =
     [ "disorder_group", "structocc_1_1crystal_1_1CrystalAtomRegion.html#a1c34f603565351aa69d57c9e5fd2b957", null ],
     [ "frac_pos", "structocc_1_1crystal_1_1CrystalAtomRegion.html#a0bb38b9b546fe616a9b7ea045c092b4e", null ],
     [ "hkl", "structocc_1_1crystal_1_1CrystalAtomRegion.html#a646557a8c693243c1aa46643d0472faf", null ],
+    [ "occupation", "structocc_1_1crystal_1_1CrystalAtomRegion.html#a962aa3a79659e6d9d65dc92fb9f06fb6", null ],
     [ "symop", "structocc_1_1crystal_1_1CrystalAtomRegion.html#a003e16655ab0d025800d4522f86da657", null ],
     [ "uc_idx", "structocc_1_1crystal_1_1CrystalAtomRegion.html#ace2d87c43b1cc58b1d12a3a140b34145", null ]
 ];

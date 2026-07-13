@@ -136,6 +136,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a34d14b49d9b97fe31cd84f214984db28" id="r_a34d14b49d9b97fe31cd84f214984db28"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1AsymmetricUnit.html#a34d14b49d9b97fe31cd84f214984db28">size</a> () const</td></tr>
 <tr class="memdesc:a34d14b49d9b97fe31cd84f214984db28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of atoms in the unit cell.  <br /></td></tr>
 <tr class="separator:a34d14b49d9b97fe31cd84f214984db28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0974d9e5f645c80c1d544f0b3b080cb7" id="r_a0974d9e5f645c80c1d544f0b3b080cb7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1AsymmetricUnit.html#a0974d9e5f645c80c1d544f0b3b080cb7">resize</a> (Eigen::Index n)</td></tr>
+<tr class="memdesc:a0974d9e5f645c80c1d544f0b3b080cb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resize every member to hold <code>n</code> atoms.  <br /></td></tr>
+<tr class="separator:a0974d9e5f645c80c1d544f0b3b080cb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a793d6febcd6d865e1f6584fbd1ff2412" id="r_a793d6febcd6d865e1f6584fbd1ff2412"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1AsymmetricUnit.html#a793d6febcd6d865e1f6584fbd1ff2412">is_consistent</a> () const</td></tr>
+<tr class="memdesc:a793d6febcd6d865e1f6584fbd1ff2412"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether every member is sized consistently with the atom count.  <br /></td></tr>
+<tr class="separator:a793d6febcd6d865e1f6584fbd1ff2412"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f9c5431b6b9af2ea810649062d04625" id="r_a6f9c5431b6b9af2ea810649062d04625"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1AsymmetricUnit.html#a6f9c5431b6b9af2ea810649062d04625">ensure_consistent</a> ()</td></tr>
+<tr class="memdesc:a6f9c5431b6b9af2ea810649062d04625"><td class="mdescLeft">&#160;</td><td class="mdescRight">Give any inconsistently sized member its default, sized to the atom count.  <br /></td></tr>
+<tr class="separator:a6f9c5431b6b9af2ea810649062d04625"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -312,6 +321,27 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a6f9c5431b6b9af2ea810649062d04625" name="a6f9c5431b6b9af2ea810649062d04625"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f9c5431b6b9af2ea810649062d04625">&#9670;&#160;</a></span>ensure_consistent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::crystal::AsymmetricUnit::ensure_consistent </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Give any inconsistently sized member its default, sized to the atom count. </p>
+<p>Idempotent, and a no-op when the asymmetric unit is already consistent. Because the members are public, code can build an <a class="el" href="structocc_1_1crystal_1_1AsymmetricUnit.html" title="A class representing an asymmetric unit of a crystal structure.">AsymmetricUnit</a> by default-constructing it and resizing only the members it cares about; this restores the invariant that the rest of the library relies on. <code><a class="el" href="classocc_1_1crystal_1_1Crystal.html" title="A class representing a crystal structure.">Crystal</a></code> calls it on construction.</p>
+<p>Does not touch a member that is already correctly sized, so real data is never overwritten. </p>
+
+</div>
+</div>
 <a id="ac3169830b3e06bec810ddccae1b5ba1a" name="ac3169830b3e06bec810ddccae1b5ba1a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac3169830b3e06bec810ddccae1b5ba1a">&#9670;&#160;</a></span>generate_default_labels()</h2>
 
@@ -329,6 +359,47 @@ Public Attributes</h2></td></tr>
 
 <p>Generates default labels for the atoms in the unit cell. </p>
 <p>The default labels are assigned based on the chemical element of each atom, using the standard one- or two-letter symbol followed by a number. For example, "C1", "N2", "Fe3". </p>
+
+</div>
+</div>
+<a id="a793d6febcd6d865e1f6584fbd1ff2412" name="a793d6febcd6d865e1f6584fbd1ff2412"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a793d6febcd6d865e1f6584fbd1ff2412">&#9670;&#160;</a></span>is_consistent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::crystal::AsymmetricUnit::is_consistent </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether every member is sized consistently with the atom count. </p>
+
+</div>
+</div>
+<a id="a0974d9e5f645c80c1d544f0b3b080cb7" name="a0974d9e5f645c80c1d544f0b3b080cb7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0974d9e5f645c80c1d544f0b3b080cb7">&#9670;&#160;</a></span>resize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::crystal::AsymmetricUnit::resize </td>
+          <td>(</td>
+          <td class="paramtype">Eigen::Index&#160;</td>
+          <td class="paramname"><em>n</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Resize every member to hold <code>n</code> atoms. </p>
+<p>Members that carry no information of their own are given their neutral default: occupancy 1, charge 0, zero ADPs. Labels are cleared, since a meaningful default needs the atomic numbers &ndash; call <code><a class="el" href="structocc_1_1crystal_1_1AsymmetricUnit.html#ac3169830b3e06bec810ddccae1b5ba1a" title="Generates default labels for the atoms in the unit cell.">generate_default_labels()</a></code> after filling those in.</p>
+<p>Prefer this over resizing <code>positions</code> and <code>atomic_numbers</code> by hand: the members are public, so a partial resize silently leaves the rest inconsistent, and consumers then index out of bounds. </p>
 
 </div>
 </div>

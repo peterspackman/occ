@@ -8,9 +8,12 @@ var classocc_1_1crystal_1_1SpaceGroup =
     [ "apply_all_symmetry_operations", "classocc_1_1crystal_1_1SpaceGroup.html#a42dd600370bf39a9f0226edfdf60a3d7", null ],
     [ "apply_rotations", "classocc_1_1crystal_1_1SpaceGroup.html#afac83c7cf8a716b16db1b23293f3ca55", null ],
     [ "has_H_R_choice", "classocc_1_1crystal_1_1SpaceGroup.html#a3216f2dfca408e7ce217319fddb33e73", null ],
+    [ "is_standard_setting", "classocc_1_1crystal_1_1SpaceGroup.html#a31f1e26a3514e50137eed5ed953b8ed9", null ],
     [ "number", "classocc_1_1crystal_1_1SpaceGroup.html#a07f763a7a098f648115fbe2d891469bc", null ],
     [ "reciprocal_asu", "classocc_1_1crystal_1_1SpaceGroup.html#a4fb7dcdb4f921f5b53eecf30eb6abbfb", null ],
     [ "short_name", "classocc_1_1crystal_1_1SpaceGroup.html#ad743296aaa4bf5e5ccdf0bedb53e73a3", null ],
+    [ "standard_setting", "classocc_1_1crystal_1_1SpaceGroup.html#acad6d1a4b675bc7171705288f4b0130b", null ],
+    [ "standard_setting_transform", "classocc_1_1crystal_1_1SpaceGroup.html#ab785d61eaa41bb54ff0e4a53eada0738", null ],
     [ "symbol", "classocc_1_1crystal_1_1SpaceGroup.html#aed742c468f30dfe809e215fab8780a28", null ],
     [ "symmetry_operations", "classocc_1_1crystal_1_1SpaceGroup.html#a541e5c7b4aec7d4fe58ecfd7351f6ad3", null ]
 ];

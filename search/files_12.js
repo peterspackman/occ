@@ -45,8 +45,9 @@ var searchData=
   ['stockholder_5fweight_2eh_42',['stockholder_weight.h',['../stockholder__weight_8h.html',1,'']]],
   ['strain_5fad_2eh_43',['strain_ad.h',['../strain__ad_8h.html',1,'']]],
   ['structure_5fformat_2eh_44',['structure_format.h',['../structure__format_8h.html',1,'']]],
-  ['surface_2eh_45',['surface.h',['../crystal_2surface_8h.html',1,'(Global Namespace)'],['../solvent_2surface_8h.html',1,'(Global Namespace)']]],
-  ['surface_5ftypes_2eh_46',['surface_types.h',['../surface__types_8h.html',1,'']]],
-  ['surfaces_2eh_47',['surfaces.h',['../surfaces_8h.html',1,'']]],
-  ['symmetryoperation_2eh_48',['symmetryoperation.h',['../symmetryoperation_8h.html',1,'']]]
+  ['subgroup_2eh_45',['subgroup.h',['../subgroup_8h.html',1,'']]],
+  ['surface_2eh_46',['surface.h',['../crystal_2surface_8h.html',1,'(Global Namespace)'],['../solvent_2surface_8h.html',1,'(Global Namespace)']]],
+  ['surface_5ftypes_2eh_47',['surface_types.h',['../surface__types_8h.html',1,'']]],
+  ['surfaces_2eh_48',['surfaces.h',['../surfaces_8h.html',1,'']]],
+  ['symmetryoperation_2eh_49',['symmetryoperation.h',['../symmetryoperation_8h.html',1,'']]]
 ];

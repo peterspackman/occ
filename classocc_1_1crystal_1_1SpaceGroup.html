@@ -141,8 +141,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3216f2dfca408e7ce217319fddb33e73" id="r_a3216f2dfca408e7ce217319fddb33e73"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#a3216f2dfca408e7ce217319fddb33e73">has_H_R_choice</a> () const</td></tr>
 <tr class="memdesc:a3216f2dfca408e7ce217319fddb33e73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether this space group has the choice between hexagonal (H) and rhombohedral (R) settings.  <br /></td></tr>
 <tr class="separator:a3216f2dfca408e7ce217319fddb33e73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31f1e26a3514e50137eed5ed953b8ed9" id="r_a31f1e26a3514e50137eed5ed953b8ed9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#a31f1e26a3514e50137eed5ed953b8ed9">is_standard_setting</a> () const</td></tr>
+<tr class="memdesc:a31f1e26a3514e50137eed5ed953b8ed9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply all symmetry operations to a provided set of fractional coordinates, with the identity symop always first.  <br /></td></tr>
+<tr class="separator:a31f1e26a3514e50137eed5ed953b8ed9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acad6d1a4b675bc7171705288f4b0130b" id="r_acad6d1a4b675bc7171705288f4b0130b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html">SpaceGroup</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#acad6d1a4b675bc7171705288f4b0130b">standard_setting</a> () const</td></tr>
+<tr class="memdesc:acad6d1a4b675bc7171705288f4b0130b"><td class="mdescLeft">&#160;</td><td class="mdescRight">This space group in its standard (ITA reference) setting.  <br /></td></tr>
+<tr class="separator:acad6d1a4b675bc7171705288f4b0130b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab785d61eaa41bb54ff0e4a53eada0738" id="r_ab785d61eaa41bb54ff0e4a53eada0738"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a>, <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#ab785d61eaa41bb54ff0e4a53eada0738">standard_setting_transform</a> () const</td></tr>
+<tr class="memdesc:ab785d61eaa41bb54ff0e4a53eada0738"><td class="mdescLeft">&#160;</td><td class="mdescRight">The change of basis taking this setting to the standard one.  <br /></td></tr>
+<tr class="separator:ab785d61eaa41bb54ff0e4a53eada0738"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42dd600370bf39a9f0226edfdf60a3d7" id="r_a42dd600370bf39a9f0226edfdf60a3d7"><td class="memItemLeft" align="right" valign="top">std::pair&lt; IVec, Mat3N &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#a42dd600370bf39a9f0226edfdf60a3d7">apply_all_symmetry_operations</a> (const Mat3N &amp;) const</td></tr>
-<tr class="memdesc:a42dd600370bf39a9f0226edfdf60a3d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply all symmetry operations to a provided set of fractional coordinates, with the identity symop always first.  <br /></td></tr>
 <tr class="separator:a42dd600370bf39a9f0226edfdf60a3d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afac83c7cf8a716b16db1b23293f3ca55" id="r_afac83c7cf8a716b16db1b23293f3ca55"><td class="memItemLeft" align="right" valign="top">std::pair&lt; IVec, Mat3N &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#afac83c7cf8a716b16db1b23293f3ca55">apply_rotations</a> (const Mat3N &amp;) const</td></tr>
 <tr class="separator:afac83c7cf8a716b16db1b23293f3ca55"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -306,9 +314,6 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Apply all symmetry operations to a provided set of fractional coordinates, with the identity symop always first. </p>
-<dl class="section return"><dt>Returns</dt><dd>a pair of <code>IVec</code>, <code>Mat3N</code> corresponding to the integer representation <code><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a36f45c065997cc06351555c67b28e6ca" title="The integer representation of this symop.">SymmetryOperation::to_int</a></code> of the symop applied to each point, and the points after that symop application. If N points were provided and this <a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html" title="This class represents a space group.">SpaceGroup</a> has 8 symmetry operations, then the resulting <code>IVec</code> will have dimension (N*8,) and the <code>Mat3N</code> of coordinates will have dimension (3, N*8). </dd></dl>
-
 </div>
 </div>
 <a id="afac83c7cf8a716b16db1b23293f3ca55" name="afac83c7cf8a716b16db1b23293f3ca55"></a>
@@ -346,6 +351,29 @@ Public Member Functions</h2></td></tr>
 
 <p>Determine whether this space group has the choice between hexagonal (H) and rhombohedral (R) settings. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if there's a choice to be made, false otherwise </dd></dl>
+
+</div>
+</div>
+<a id="a31f1e26a3514e50137eed5ed953b8ed9" name="a31f1e26a3514e50137eed5ed953b8ed9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31f1e26a3514e50137eed5ed953b8ed9">&#9670;&#160;</a></span>is_standard_setting()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::crystal::SpaceGroup::is_standard_setting </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply all symmetry operations to a provided set of fractional coordinates, with the identity symop always first. </p>
+<dl class="section return"><dt>Returns</dt><dd>a pair of <code>IVec</code>, <code>Mat3N</code> corresponding to the integer representation <code><a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html#a36f45c065997cc06351555c67b28e6ca" title="The integer representation of this symop.">SymmetryOperation::to_int</a></code> of the symop applied to each point, and the points after that symop application. If N points were provided and this <a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html" title="This class represents a space group.">SpaceGroup</a> has 8 symmetry operations, then the resulting <code>IVec</code> will have dimension (N*8,) and the <code>Mat3N</code> of coordinates will have dimension (3, N*8).</dd></dl>
+<p>Whether this space group is in the standard (ITA reference) setting.</p>
+<p>Space groups have many settings &ndash; P2_1/c, P2_1/a and P2_1/n are all space group 14 &ndash; and tabulated data (subgroup relations, Wyckoff positions) is given for the standard one. Structures in the wild often are not.</p>
+<dl class="section note"><dt>Note</dt><dd>For the 24 groups with two origin choices (Pnnn, Fddd, ...) the standard setting is origin choice 2, whereas <code>SpaceGroup(number)</code> gives origin choice 1. Use <code><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html#acad6d1a4b675bc7171705288f4b0130b" title="This space group in its standard (ITA reference) setting.">standard_setting()</a></code> to get the former. </dd></dl>
 
 </div>
 </div>
@@ -411,6 +439,45 @@ Public Member Functions</h2></td></tr>
 
 <p>Returns the Hermann-Mauguin (international tables) symbol for this object, shortened e.g P 1 2 1 -&gt; P2. </p>
 <dl class="section return"><dt>Returns</dt><dd>The space group name. </dd></dl>
+
+</div>
+</div>
+<a id="acad6d1a4b675bc7171705288f4b0130b" name="acad6d1a4b675bc7171705288f4b0130b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acad6d1a4b675bc7171705288f4b0130b">&#9670;&#160;</a></span>standard_setting()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1crystal_1_1SpaceGroup.html">SpaceGroup</a> occ::crystal::SpaceGroup::standard_setting </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This space group in its standard (ITA reference) setting. </p>
+
+</div>
+</div>
+<a id="ab785d61eaa41bb54ff0e4a53eada0738" name="ab785d61eaa41bb54ff0e4a53eada0738"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab785d61eaa41bb54ff0e4a53eada0738">&#9670;&#160;</a></span>standard_setting_transform()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt; <a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">Mat3</a>, <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &gt; occ::crystal::SpaceGroup::standard_setting_transform </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The change of basis taking this setting to the standard one. </p>
+<p>Returns \((P, p)\) such that \(x_{std} = P^{-1}(x - p)\), i.e. the same convention used for subgroup transformations. The identity when this space group is already in the standard setting. </p>
 
 </div>
 </div>

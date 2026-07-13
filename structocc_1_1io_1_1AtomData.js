@@ -3,6 +3,7 @@ var structocc_1_1io_1_1AtomData =
     [ "adp_type", "structocc_1_1io_1_1AtomData.html#a23616614304de2a2a51889b8ab2fe840", null ],
     [ "chain_id", "structocc_1_1io_1_1AtomData.html#a2e5a6b2ff88e50a8b9160bd71cbaae42", null ],
     [ "element", "structocc_1_1io_1_1AtomData.html#a7bfe751ff8cb70d495fe08f624c81ed1", null ],
+    [ "occupancy", "structocc_1_1io_1_1AtomData.html#ade4b7bfbf1321f9ae26460df46af973c", null ],
     [ "residue_name", "structocc_1_1io_1_1AtomData.html#a252395b796b1641a9a3e92462f973f9f", null ],
     [ "residue_number", "structocc_1_1io_1_1AtomData.html#acf390e048b718898584e9ec21d341ce7", null ],
     [ "site_label", "structocc_1_1io_1_1AtomData.html#a1a07245b87be52db3a3706e6b802d6f7", null ],

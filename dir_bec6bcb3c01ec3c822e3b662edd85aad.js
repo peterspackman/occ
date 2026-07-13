@@ -6,10 +6,12 @@ var dir_bec6bcb3c01ec3c822e3b662edd85aad =
     [ "dimer_mapping_table.h", "dimer__mapping__table_8h.html", "dimer__mapping__table_8h" ],
     [ "hkl.h", "hkl_8h.html", "hkl_8h" ],
     [ "muldin.h", "muldin_8h.html", "muldin_8h" ],
+    [ "powder.h", "powder_8h.html", "powder_8h" ],
     [ "site_index.h", "site__index_8h.html", "site__index_8h" ],
     [ "site_mapping_table.h", "site__mapping__table_8h.html", "site__mapping__table_8h" ],
     [ "spacegroup.h", "spacegroup_8h.html", "spacegroup_8h" ],
     [ "standard_bonds.h", "standard__bonds_8h.html", "standard__bonds_8h" ],
+    [ "subgroup.h", "subgroup_8h.html", "subgroup_8h" ],
     [ "surface.h", "crystal_2surface_8h.html", "crystal_2surface_8h" ],
     [ "symmetryoperation.h", "symmetryoperation_8h.html", "symmetryoperation_8h" ],
     [ "unitcell.h", "unitcell_8h.html", "unitcell_8h" ]
