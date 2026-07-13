@@ -12,16 +12,32 @@ namespace occ::crystal {
  * \brief Characteristic K-alpha X-ray wavelengths, in Angstroms.
  */
 namespace xray_wavelength {
-inline constexpr double Cu_Ka = 1.5405980;
+/// K-alpha_1 lines
+inline constexpr double Cu_Ka1 = 1.5405980;
+inline constexpr double Mo_Ka1 = 0.7093000;
+inline constexpr double Co_Ka1 = 1.7889650;
+inline constexpr double Cr_Ka1 = 2.2897000;
+inline constexpr double Fe_Ka1 = 1.9360400;
+inline constexpr double Ag_Ka1 = 0.5594180;
+
+/// Intensity-weighted mean of the K-alpha_1 / K-alpha_2 doublet. A real
+/// laboratory source emits both; the doublet is not modelled, so these are the
+/// right choice when comparing against an unstripped measured pattern.
+inline constexpr double Cu_Ka = 1.5418740;
 inline constexpr double Mo_Ka = 0.7107300;
-inline constexpr double Co_Ka = 1.7889650;
-inline constexpr double Cr_Ka = 2.2897000;
+inline constexpr double Co_Ka = 1.7902600;
+inline constexpr double Cr_Ka = 2.2909100;
 inline constexpr double Fe_Ka = 1.9373500;
-inline constexpr double Ag_Ka = 0.5594180;
+inline constexpr double Ag_Ka = 0.5608380;
 } // namespace xray_wavelength
 
 /**
- * \brief A single symmetry-unique powder reflection.
+ * \brief A single powder peak.
+ *
+ * Reflections from different orbits that share a d-spacing are indistinguishable
+ * in a powder experiment and are merged into one peak: silicon's (333) and (511)
+ * both sit at 2*theta = 94.95 degrees, and what is observed is their sum. `hkl`
+ * is then the strongest contributing reflection and `multiplicity` the total.
  */
 struct PowderPeak {
   /// The (symmetry-unique representative) Miller indices
@@ -40,29 +56,45 @@ struct PowderPeak {
 
 struct PowderPatternSettings {
   /// Incident wavelength in Angstroms
-  double wavelength{xray_wavelength::Cu_Ka};
-  /// Lower limit of the 2*theta range, in degrees
+  double wavelength{xray_wavelength::Cu_Ka1};
+  /// Lower limit of the 2*theta range, in degrees. Must be greater than zero:
+  /// the Lorentz factor diverges as 1/theta^2.
   double two_theta_min{5.0};
   /// Upper limit of the 2*theta range, in degrees
   double two_theta_max{50.0};
+  /// Apply Debye-Waller (temperature) factors from the asymmetric unit's ADPs.
+  /// A no-op when the ADPs are zero, so it is safe to leave on. Neglecting it
+  /// overestimates |F|^2 badly at higher angle -- for a structure with
+  /// U ~ 0.07 A^2 the error is already tens of percent by 2*theta = 30 degrees.
+  bool debye_waller{true};
+  /// Reflections whose |F|^2 falls below this are dropped from the peak list.
+  /// Systematically absent reflections have |F|^2 identically zero, and a peak
+  /// list full of them is not a useful product.
+  double min_f_squared{1e-6};
+  /// Refuse to enumerate more than this many points of reciprocal space. Guards
+  /// against a wavelength typo (nanometres for Angstroms, say) asking for a
+  /// hundred billion reflections.
+  long max_reflection_box{50000000};
 };
 
 /**
  * \brief A simulated powder X-ray diffraction pattern.
  *
- * Intensities use neutral-atom X-ray form factors (International Tables 1992)
- * and the Lorentz-polarization factor. No Debye-Waller (temperature) factor
- * and no anomalous dispersion (f', f'') are applied, so relative intensities
- * are most accurate for light atoms away from an absorption edge.
+ * Intensities use neutral-atom X-ray form factors (International Tables 1992),
+ * Debye-Waller factors from the structure's ADPs, and the Lorentz-polarization
+ * factor.
  *
- * Systematically absent reflections need no special handling: their structure
- * factor is identically zero.
+ * Not modelled: anomalous dispersion (f', f''), the K-alpha_1 / K-alpha_2
+ * doublet, preferred orientation, peak asymmetry, and 2*theta-dependent
+ * broadening. Intensities are therefore most reliable for light atoms away from
+ * an absorption edge.
  */
 class PowderPattern {
 public:
   PowderPattern(std::vector<PowderPeak> peaks, double wavelength);
 
-  /// The symmetry-unique peaks, sorted by increasing 2*theta
+  /// The peaks, sorted by increasing 2*theta. Systematically absent reflections
+  /// are not included, and coincident reflections have been merged.
   inline const std::vector<PowderPeak> &peaks() const { return m_peaks; }
   inline double wavelength() const { return m_wavelength; }
   inline size_t size() const { return m_peaks.size(); }
@@ -116,9 +148,16 @@ std::vector<PowderPeak> unique_reflections(const Crystal &crystal,
  * summed over the unit cell atoms, with \f$ s = \sin\theta/\lambda = 1/(2d) \f$.
  */
 CVec structure_factors(const Crystal &crystal,
-                       const std::vector<PowderPeak> &reflections);
+                       const std::vector<PowderPeak> &reflections,
+                       bool debye_waller = true);
 
-/// Lorentz-polarization factor for an unpolarized source; two_theta in radians.
+/// Lorentz-polarization factor for an unpolarized source.
+///
+/// \param two_theta the Bragg angle in **radians** -- note that PowderPeak and
+///        PowderPatternSettings both carry degrees.
+///
+/// Diverges as 1/theta^2 at low angle, which is physical: the Lorentz factor
+/// really does blow up as the Bragg condition degenerates.
 double lorentz_polarization(double two_theta);
 
 /// Compute a powder pattern for the given crystal.

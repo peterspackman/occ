@@ -35,20 +35,28 @@ inline constexpr bool is_std_complex_v = is_std_complex<T>::value;
 /// Read a scalar of type `Scalar` out of a Lua value. Complex scalars accept a
 /// plain number (taken as the real part), a `{re, im}` pair, or a `Complex`
 /// userdata.
+///
+/// Anything unconvertible yields zero. This must not use `unsafe_cast`: that
+/// dereferences a failed `Expected`, which in LuaBridge3 aborts the process
+/// rather than raising a Lua error. Passing a ragged table or a string to
+/// `Matrix.from_table` is a script bug, not grounds for killing the interpreter.
 template <typename Scalar>
 inline Scalar scalar_from_luaref(const luabridge::LuaRef &v) {
   if constexpr (is_std_complex_v<Scalar>) {
     using Real = typename Scalar::value_type;
     if (v.isNumber())
-      return Scalar(static_cast<Real>(v.unsafe_cast<double>()), Real{0});
+      return Scalar(
+          static_cast<Real>(v.template cast<double>().valueOr(0.0)), Real{0});
     if (v.isTable()) {
       const double re = v[1].template cast<double>().valueOr(0.0);
       const double im = v[2].template cast<double>().valueOr(0.0);
       return Scalar(static_cast<Real>(re), static_cast<Real>(im));
     }
-    return v.unsafe_cast<Scalar>();
+    if (auto z = v.template cast<Scalar>())
+      return *z;
+    return Scalar{};
   } else {
-    return static_cast<Scalar>(v.unsafe_cast<double>());
+    return static_cast<Scalar>(v.template cast<double>().valueOr(0.0));
   }
 }
 

@@ -344,7 +344,7 @@ auto hexagonal_p63mmc_crystal() {
 }
 
 TEST_CASE("Systematic absences use the transposed rotation",
-          "[crystal, surface, absence]") {
+          "[crystal][surface][absence]") {
   // Miller indices are covariant: F(h) = exp(2*pi*i h.t) F(R^T h), so an
   // absence requires R^T h == h, not R h == h. The two differ in the 14
   // trigonal/hexagonal groups with c-glides.
@@ -367,7 +367,7 @@ TEST_CASE("Systematic absences use the transposed rotation",
 }
 
 TEST_CASE("Face equivalence uses the transposed rotation",
-          "[crystal, surface, absence]") {
+          "[crystal][surface][absence]") {
   // A face (hkl) maps to (R^T)^-1 h, so its orbit is taken under {R^T}.
   // In a hexagonal basis {R} and {R^T} generate different orbits.
   Crystal c = hexagonal_p63mmc_crystal();
@@ -388,7 +388,7 @@ TEST_CASE("Face equivalence uses the transposed rotation",
   REQUIRE_FALSE(Surface::faces_are_equivalent(c, HKL{0, 0, 1}, HKL{1, 0, 0}));
 }
 
-TEST_CASE("d_spacing is the reciprocal of HKL::d", "[crystal, powder]") {
+TEST_CASE("d_spacing is the reciprocal of HKL::d", "[crystal][powder]") {
   // HKL::d(reciprocal()) returns |G| = 1/d, not d. Guard the helper that
   // exists to stop callers tripping over that.
   Crystal c = acetic_acid_crystal();
@@ -403,7 +403,7 @@ TEST_CASE("d_spacing is the reciprocal of HKL::d", "[crystal, powder]") {
 }
 
 TEST_CASE("Structure factor of a single atom is its form factor",
-          "[crystal, powder]") {
+          "[crystal][powder]") {
   // One carbon at the origin in P1: F(hkl) = f_C(s) for every reflection.
   occ::IVec nums(1);
   nums(0) = 6;
@@ -435,7 +435,7 @@ TEST_CASE("Structure factor of a single atom is its form factor",
 }
 
 TEST_CASE("Systematically absent reflections have zero structure factor",
-          "[crystal, powder]") {
+          "[crystal][powder]") {
   // Acetic acid is Pna2_1 (no. 33): h00: h = 2n, 0k0: k = 2n, 00l: l = 2n,
   // h0l: h = 2n, 0kl: k + l = 2n.
   Crystal c = acetic_acid_crystal();
@@ -461,17 +461,23 @@ TEST_CASE("Systematically absent reflections have zero structure factor",
   }
 }
 
-TEST_CASE("Powder pattern of acetic acid", "[crystal, powder]") {
+TEST_CASE("Powder pattern of acetic acid", "[crystal][powder]") {
   // Cross-validated against chmpy (itself validated against PLATON). With the
   // same form factors the two agree to all printed digits; occ uses the
   // International Tables (IT92) coefficients, chmpy uses Waasmaier-Kirfel.
   Crystal c = acetic_acid_crystal();
+  REQUIRE(c.asymmetric_unit().adps.isZero()); // no ADPs: Debye-Waller is inert
   occ::crystal::PowderPatternSettings settings; // Cu K-alpha, 5-50 degrees
   auto pattern = occ::crystal::compute_powder_pattern(c, settings);
 
   REQUIRE(pattern.wavelength() ==
-          Catch::Approx(occ::crystal::xray_wavelength::Cu_Ka));
-  REQUIRE(pattern.size() == 49);
+          Catch::Approx(occ::crystal::xray_wavelength::Cu_Ka1));
+  // 33, not 49: systematically absent reflections are no longer listed as peaks
+  REQUIRE(pattern.size() == 33);
+  for (const auto &peak : pattern.peaks()) {
+    REQUIRE_FALSE(Surface::check_systematic_absence(c, peak.hkl));
+    REQUIRE(peak.f_squared > 0.0);
+  }
 
   // peaks come back sorted by increasing 2*theta
   for (size_t i = 1; i < pattern.size(); i++)
@@ -517,7 +523,7 @@ TEST_CASE("Powder pattern of acetic acid", "[crystal, powder]") {
   }
 }
 
-TEST_CASE("Powder profile conserves intensity", "[crystal, powder]") {
+TEST_CASE("Powder profile conserves intensity", "[crystal][powder]") {
   Crystal c = acetic_acid_crystal();
   auto pattern = occ::crystal::compute_powder_pattern(c, {});
 
@@ -537,7 +543,7 @@ TEST_CASE("Powder profile conserves intensity", "[crystal, powder]") {
   REQUIRE(y.maxCoeff() > 0.0);
 }
 
-TEST_CASE("Crystal Surface construction", "[crystal, surface]") {
+TEST_CASE("Crystal Surface construction", "[crystal][surface]") {
   Crystal a = acetic_acid_crystal();
   HKL m010{0, 1, 0};
   Surface surf010(m010, a);
@@ -556,7 +562,7 @@ TEST_CASE("Crystal Surface construction", "[crystal, surface]") {
   REQUIRE(surf321.area() == Catch::Approx(177.2256));
 }
 
-TEST_CASE("Facet normal is the reciprocal lattice vector", "[crystal, surface]") {
+TEST_CASE("Facet normal is the reciprocal lattice vector", "[crystal][surface]") {
   // Guards the convention used by write_wulff and the morphology driver:
   // the cartesian normal of plane (hkl) is reciprocal() * hkl. Checked
   // against Surface::normal_vector, which builds the normal geometrically
@@ -570,7 +576,7 @@ TEST_CASE("Facet normal is the reciprocal lattice vector", "[crystal, surface]")
   }
 }
 
-TEST_CASE("Crystal surface generation (dhkl order)", "[crystal, surface]") {
+TEST_CASE("Crystal surface generation (dhkl order)", "[crystal][surface]") {
   Crystal a = acetic_acid_crystal();
   occ::timing::StopWatch sw;
   sw.start();
@@ -592,7 +598,7 @@ TEST_CASE("Crystal surface generation (dhkl order)", "[crystal, surface]") {
   fmt::print("Generation took {} s\n", sw.read());
 }
 
-TEST_CASE("Crystal surface molecules", "[crystal, surface]") {
+TEST_CASE("Crystal surface molecules", "[crystal][surface]") {
   Crystal a = acetic_acid_crystal();
   HKL m011{0, 1, 1};
   Surface surf011(m011, a);
@@ -1878,7 +1884,7 @@ using occ::crystal::SubgroupSearchParameters;
 using occ::crystal::subgroup_paths;
 using occ::crystal::SubgroupType;
 
-TEST_CASE("Maximal subgroups of P2_1/c", "[crystal, subgroup]") {
+TEST_CASE("Maximal subgroups of P2_1/c", "[crystal][subgroup]") {
   // The textbook case: P2_1/c (14) has three maximal t-subgroups at index 2 --
   // P-1 (2), P2_1 (4) and Pc (7).
   auto subs = maximal_subgroups(14, SubgroupType::Translationengleiche);
@@ -1901,7 +1907,7 @@ TEST_CASE("Maximal subgroups of P2_1/c", "[crystal, subgroup]") {
     REQUIRE(s.is_klassengleiche());
 }
 
-TEST_CASE("SG 97 has its F222 maximal subgroup", "[crystal, subgroup]") {
+TEST_CASE("SG 97 has its F222 maximal subgroup", "[crystal][subgroup]") {
   // Point group 422 = D4 has three non-conjugate maximal subgroups, so I422
   // must have three maximal t-subgroups: I4 (79), I222 (23) and F222 (22).
   // The upstream table omits F222; we patch it in during generation. This test
@@ -1928,7 +1934,7 @@ TEST_CASE("SG 97 has its F222 maximal subgroup", "[crystal, subgroup]") {
 }
 
 TEST_CASE("Maximal subgroup transformations are consistent",
-          "[crystal, subgroup]") {
+          "[crystal][subgroup]") {
   // The index relation, counting symmetry operations per unit volume:
   //     n_G * det(P) == n_H * index
   // Note |H| * index == |G| is NOT valid: for a centred parent the
@@ -1947,7 +1953,7 @@ TEST_CASE("Maximal subgroup transformations are consistent",
   REQUIRE(checked == 8868);
 }
 
-TEST_CASE("det(P) is not the subgroup index", "[crystal, subgroup]") {
+TEST_CASE("det(P) is not the subgroup index", "[crystal][subgroup]") {
   // Both groups are given in their conventional cells, so
   //     det(P) = index * (centring of H) / (centring of G)
   // P2 (2 ops, primitive) has a klassengleiche subgroup C2 (4 ops, C-centred)
@@ -1968,7 +1974,7 @@ TEST_CASE("det(P) is not the subgroup index", "[crystal, subgroup]") {
 }
 
 TEST_CASE("Maximal subgroup rotations lie in the parent",
-          "[crystal, subgroup]") {
+          "[crystal][subgroup]") {
   // Every rotation of H, mapped back into the parent basis by P R P^-1, must be
   // a rotation of G.
   for (int sg : {2, 14, 19, 33, 62, 97, 148, 167, 194, 225, 227}) {
@@ -1996,7 +2002,7 @@ TEST_CASE("Maximal subgroup rotations lie in the parent",
 }
 
 TEST_CASE("Subgroup graph traversal composes transformations",
-          "[crystal, subgroup]") {
+          "[crystal][subgroup]") {
   SubgroupSearchParameters params;
   params.max_index = 4;
   params.max_depth = 2;
@@ -2043,7 +2049,7 @@ TEST_CASE("Subgroup graph traversal composes transformations",
     REQUIRE(paths[i - 1].index <= paths[i].index);
 }
 
-TEST_CASE("Subgroup search parameters are respected", "[crystal, subgroup]") {
+TEST_CASE("Subgroup search parameters are respected", "[crystal][subgroup]") {
   SubgroupSearchParameters t_only;
   t_only.klassengleiche = false;
   t_only.max_index = 2;
@@ -2077,14 +2083,14 @@ TEST_CASE("Subgroup search parameters are respected", "[crystal, subgroup]") {
 }
 
 TEST_CASE("Subgroup lookup rejects invalid space groups",
-          "[crystal, subgroup]") {
+          "[crystal][subgroup]") {
   REQUIRE_THROWS_AS(maximal_subgroups(0), std::out_of_range);
   REQUIRE_THROWS_AS(maximal_subgroups(231), std::out_of_range);
   REQUIRE_NOTHROW(maximal_subgroups(1));
   REQUIRE_NOTHROW(maximal_subgroups(230));
 }
 
-TEST_CASE("to_subgroup preserves the structure", "[crystal, subgroup]") {
+TEST_CASE("to_subgroup preserves the structure", "[crystal][subgroup]") {
   // Descending into a subgroup re-describes the crystal, it does not change it.
   // The cell volume scales by det(P), the unit cell holds det(P) times as many
   // atoms, and the asymmetric unit grows because orbits the parent held together
@@ -2131,7 +2137,7 @@ TEST_CASE("to_subgroup preserves the structure", "[crystal, subgroup]") {
   }
 }
 
-TEST_CASE("to_subgroup preserves cartesian geometry", "[crystal, subgroup]") {
+TEST_CASE("to_subgroup preserves cartesian geometry", "[crystal][subgroup]") {
   // The strongest check: every atom of the parent unit cell must still be an
   // atom of the child, at the same place in space (up to the origin shift and
   // lattice translations).
@@ -2175,7 +2181,7 @@ TEST_CASE("to_subgroup preserves cartesian geometry", "[crystal, subgroup]") {
 }
 
 TEST_CASE("to_subgroup handles klassengleiche supercells",
-          "[crystal, subgroup]") {
+          "[crystal][subgroup]") {
   using occ::crystal::SubgroupTransform;
   using occ::crystal::to_subgroup;
 
@@ -2215,7 +2221,7 @@ auto benzene_crystal() {
                  occ::crystal::orthorhombic_cell(7.440, 9.550, 6.920));
 }
 
-TEST_CASE("Z' of benzene in Pbca is 1/2", "[crystal, subgroup, zprime]") {
+TEST_CASE("Z' of benzene in Pbca is 1/2", "[crystal][subgroup][zprime]") {
   using occ::crystal::has_whole_molecule_asymmetric_unit;
   using occ::crystal::z_prime;
 
@@ -2233,7 +2239,7 @@ TEST_CASE("Z' of benzene in Pbca is 1/2", "[crystal, subgroup, zprime]") {
 }
 
 TEST_CASE("Find the subgroup giving benzene Z' = 1",
-          "[crystal, subgroup, zprime]") {
+          "[crystal][subgroup][zprime]") {
   using occ::crystal::find_subgroup_for_z_prime;
   using occ::crystal::has_whole_molecule_asymmetric_unit;
   using occ::crystal::to_subgroup;
@@ -2269,7 +2275,7 @@ TEST_CASE("Find the subgroup giving benzene Z' = 1",
                        }));
 }
 
-TEST_CASE("Space group standard settings", "[crystal, subgroup, setting]") {
+TEST_CASE("Space group standard settings", "[crystal][subgroup][setting]") {
   // P2_1/c, P2_1/a and P2_1/n are all space group 14; only the first is the
   // standard setting, and the subgroup tables are written for the standard.
   REQUIRE(SpaceGroup(14).is_standard_setting());
@@ -2294,7 +2300,7 @@ TEST_CASE("Space group standard settings", "[crystal, subgroup, setting]") {
 }
 
 TEST_CASE("to_standard_setting preserves the structure",
-          "[crystal, subgroup, setting]") {
+          "[crystal][subgroup][setting]") {
   using occ::crystal::to_standard_setting;
 
   // build acetic acid's asymmetric unit in a non-standard setting of SG 14
@@ -2341,7 +2347,7 @@ TEST_CASE("to_standard_setting preserves the structure",
   REQUIRE(already.space_group().number() == 33);
 }
 
-TEST_CASE("Unit cell atoms carry occupancy", "[crystal, occupancy]") {
+TEST_CASE("Unit cell atoms carry occupancy", "[crystal][occupancy]") {
   Crystal c = acetic_acid_crystal();
   c.asymmetric_unit().occupations.setConstant(1.0);
   c.asymmetric_unit().occupations(0) = 0.25; // C1 is partially occupied
@@ -2363,7 +2369,7 @@ TEST_CASE("Unit cell atoms carry occupancy", "[crystal, occupancy]") {
   REQUIRE(partial == 4); // Pna2_1 has 4 general positions
 }
 
-TEST_CASE("Occupancy scales the structure factor", "[crystal, occupancy, powder]") {
+TEST_CASE("Occupancy scales the structure factor", "[crystal][occupancy][powder]") {
   // One carbon at the origin in P1: F = occ * f_C(s), so |F|^2 goes as occ^2.
   auto single_carbon = [](double occupancy) {
     occ::IVec nums(1);
@@ -2392,7 +2398,7 @@ TEST_CASE("Occupancy scales the structure factor", "[crystal, occupancy, powder]
 }
 
 TEST_CASE("Partial occupancy changes powder intensities",
-          "[crystal, occupancy, powder]") {
+          "[crystal][occupancy][powder]") {
   Crystal full = acetic_acid_crystal();
   Crystal depleted = acetic_acid_crystal();
   // halve the occupancy of both oxygens
@@ -2420,7 +2426,7 @@ TEST_CASE("Partial occupancy changes powder intensities",
 }
 
 TEST_CASE("AsymmetricUnit enforces its own invariant",
-          "[crystal, asymmetric_unit]") {
+          "[crystal][asymmetric_unit]") {
   // The members are public, so code can build an AsymmetricUnit by
   // default-constructing it and resizing only what it cares about. That used to
   // leave occupations, charges, adps and labels empty, and consumers indexed
@@ -2458,7 +2464,7 @@ TEST_CASE("AsymmetricUnit enforces its own invariant",
 }
 
 TEST_CASE("AsymmetricUnit::resize sizes every member",
-          "[crystal, asymmetric_unit]") {
+          "[crystal][asymmetric_unit]") {
   AsymmetricUnit asym;
   asym.resize(4);
   REQUIRE(asym.positions.cols() == 4);
@@ -2471,7 +2477,7 @@ TEST_CASE("AsymmetricUnit::resize sizes every member",
 }
 
 TEST_CASE("Crystal repairs an inconsistent asymmetric unit",
-          "[crystal, asymmetric_unit]") {
+          "[crystal][asymmetric_unit]") {
   // The Crystal constructor is the choke point: whatever shape the asymmetric
   // unit arrives in, the crystal must be usable.
   AsymmetricUnit asym;
@@ -2494,7 +2500,7 @@ TEST_CASE("Crystal repairs an inconsistent asymmetric unit",
 }
 
 TEST_CASE("find_subgroup_for_z_prime on a crystal that already qualifies",
-          "[crystal, subgroup, zprime]") {
+          "[crystal][subgroup][zprime]") {
   // Regression: the early-return path used to hand back a default-constructed
   // SubgroupTransform, whose subgroup field defaulted to 1 (P1). Feeding that
   // to to_subgroup -- the documented usage -- destroyed the symmetry it was
@@ -2525,4 +2531,239 @@ TEST_CASE("find_subgroup_for_z_prime on a crystal that already qualifies",
   // a default-constructed transform has no target and must fail loudly
   REQUIRE_THROWS_AS(to_subgroup(acetic, SubgroupTransform{}),
                     std::invalid_argument);
+}
+
+TEST_CASE("Powder profile does not fold peaks below the window into bin 0",
+          "[crystal][powder]") {
+  // Regression: the bin index was computed with static_cast<int>, which
+  // truncates toward zero, so a peak just below the window mapped to bin 0
+  // rather than -1 and the `bin < 0` guard never fired. Every peak below the
+  // requested range was piled onto the first bin, fabricating a huge peak at
+  // the left edge. Profiling a sub-range of a pattern is a normal thing to do.
+  Crystal c = acetic_acid_crystal();
+  auto pattern = occ::crystal::compute_powder_pattern(c, {}); // 5-50 degrees
+
+  double below_20 = 0.0, in_20_30 = 0.0;
+  for (const auto &peak : pattern.peaks()) {
+    if (peak.two_theta < 20.0)
+      below_20 += peak.intensity;
+    else if (peak.two_theta < 30.0)
+      in_20_30 += peak.intensity;
+  }
+  REQUIRE(below_20 > 0.0); // there is intensity below the window to leak in
+
+  auto [x, y] = pattern.profile(20.0, 30.0, 10, 0.0);
+  // Exactly the in-window intensity, and nothing more. Before the fix this sum
+  // was inflated by `below_20`, all of it dumped into the first bin.
+  REQUIRE(y.sum() == Catch::Approx(in_20_30));
+  REQUIRE(y.sum() < in_20_30 + below_20);
+}
+
+TEST_CASE("Debye-Waller attenuates high-angle reflections",
+          "[crystal][powder][adp]") {
+  // Neglecting the temperature factor overestimates |F|^2, and badly: the
+  // attenuation is exp(-B s^2), so it grows with scattering angle.
+  Crystal c = acetic_acid_crystal();
+  c.asymmetric_unit().adps.setZero();
+  c.asymmetric_unit().adps.row(0).setConstant(0.05); // U11
+  c.asymmetric_unit().adps.row(1).setConstant(0.05); // U22
+  c.asymmetric_unit().adps.row(2).setConstant(0.05); // U33  (isotropic, U=0.05)
+
+  occ::crystal::PowderPatternSettings with_dw;
+  with_dw.two_theta_max = 90.0;
+  with_dw.debye_waller = true;
+  occ::crystal::PowderPatternSettings without_dw = with_dw;
+  without_dw.debye_waller = false;
+
+  auto a = occ::crystal::compute_powder_pattern(c, with_dw);
+  auto b = occ::crystal::compute_powder_pattern(c, without_dw);
+  REQUIRE(a.size() == b.size());
+
+  // isotropic U: |F|^2 is scaled by exp(-2 B s^2), B = 8 pi^2 U
+  const double B = 8.0 * occ::units::PI * occ::units::PI * 0.05;
+  bool checked_high_angle = false;
+  for (size_t i = 0; i < a.size(); i++) {
+    REQUIRE(a.peaks()[i].hkl == b.peaks()[i].hkl);
+    const double s2 = 1.0 / (4.0 * a.peaks()[i].d * a.peaks()[i].d);
+    const double expected = std::exp(-2.0 * B * s2);
+    REQUIRE(a.peaks()[i].f_squared / b.peaks()[i].f_squared ==
+            Catch::Approx(expected).epsilon(1e-6));
+    // attenuation must be substantial at high angle, not a rounding effect
+    if (a.peaks()[i].two_theta > 70.0) {
+      REQUIRE(expected < 0.75);
+      checked_high_angle = true;
+    }
+  }
+  REQUIRE(checked_high_angle);
+
+  // and it must be inert when there are no ADPs
+  Crystal plain = acetic_acid_crystal();
+  auto p1 = occ::crystal::compute_powder_pattern(plain, with_dw);
+  auto p2 = occ::crystal::compute_powder_pattern(plain, without_dw);
+  for (size_t i = 0; i < p1.size(); i++)
+    REQUIRE(p1.peaks()[i].f_squared ==
+            Catch::Approx(p2.peaks()[i].f_squared));
+}
+
+TEST_CASE("Coincident reflections are merged into one peak",
+          "[crystal][powder]") {
+  // Silicon (Fd-3m): (333) and (511) have the same d-spacing and are one
+  // observed peak at 2*theta = 94.95 degrees. Reporting them separately
+  // understates it.
+  occ::IVec nums(1);
+  nums(0) = 14;
+  occ::Mat3N pos(3, 1);
+  pos << 0.125, 0.125, 0.125;
+  Crystal si(AsymmetricUnit(pos, nums, {"Si1"}), SpaceGroup("F d -3 m"),
+             occ::crystal::cubic_cell(5.4309));
+
+  occ::crystal::PowderPatternSettings settings;
+  settings.two_theta_max = 100.0;
+  auto pattern = occ::crystal::compute_powder_pattern(si, settings);
+
+  // 2*theta must be strictly increasing: no two peaks at the same angle
+  for (size_t i = 1; i < pattern.size(); i++)
+    REQUIRE(pattern.peaks()[i].two_theta >
+            pattern.peaks()[i - 1].two_theta + 1e-9);
+
+  // (333) has multiplicity 8 and (511) 24; merged they are one peak of 32
+  auto it = std::find_if(pattern.peaks().begin(), pattern.peaks().end(),
+                         [](const occ::crystal::PowderPeak &p) {
+                           return p.multiplicity == 32;
+                         });
+  REQUIRE(it != pattern.peaks().end());
+  REQUIRE(it->two_theta > 94.0);
+  REQUIRE(it->two_theta < 96.0);
+  // intensity == multiplicity * f_squared * Lp must still hold after merging
+  const double lp = occ::crystal::lorentz_polarization(
+      occ::units::radians(it->two_theta));
+  REQUIRE(it->intensity ==
+          Catch::Approx(it->multiplicity * it->f_squared * lp));
+}
+
+TEST_CASE("Powder settings are validated", "[crystal][powder]") {
+  Crystal c = acetic_acid_crystal();
+  using occ::crystal::compute_powder_pattern;
+  using occ::crystal::PowderPatternSettings;
+
+  auto bad = [](auto fn) {
+    PowderPatternSettings s;
+    fn(s);
+    return s;
+  };
+
+  // the Lorentz factor diverges as 1/theta^2, so a range starting at zero lets
+  // the lowest-angle reflection swamp everything
+  REQUIRE_THROWS_AS(
+      compute_powder_pattern(
+          c, bad([](auto &s) { s.two_theta_min = 0.0; })),
+      std::invalid_argument);
+  REQUIRE_THROWS_AS(
+      compute_powder_pattern(
+          c, bad([](auto &s) { s.two_theta_min = -5.0; })),
+      std::invalid_argument);
+  REQUIRE_THROWS_AS(
+      compute_powder_pattern(
+          c, bad([](auto &s) { s.two_theta_max = 180.0; })),
+      std::invalid_argument);
+  REQUIRE_THROWS_AS(
+      compute_powder_pattern(c, bad([](auto &s) { s.wavelength = 0.0; })),
+      std::invalid_argument);
+
+  // a wavelength in nanometres rather than Angstroms asks for an astronomical
+  // number of reflections -- refuse rather than try to allocate it
+  REQUIRE_THROWS_AS(
+      compute_powder_pattern(c, bad([](auto &s) { s.wavelength = 0.0154; })),
+      std::invalid_argument);
+}
+
+TEST_CASE("Laue multiplicities account for every reflection",
+          "[crystal][powder]") {
+  // The real check on the symmetry reduction: the multiplicities of the unique
+  // reflections must add up to the total number of hkl in the resolution
+  // sphere. Covers centred, hexagonal, cubic and triclinic lattices, none of
+  // which the rest of the powder tests touch.
+  struct Case {
+    const char *symbol;
+    UnitCell cell;
+  };
+  const std::vector<Case> cases{
+      {"P 1", occ::crystal::triclinic_cell(5.0, 7.0, 9.0, radians(95.0),
+                                           radians(102.0), radians(115.0))},
+      {"P -1", occ::crystal::triclinic_cell(5.0, 7.0, 9.0, radians(80.0),
+                                            radians(85.0), radians(100.0))},
+      {"P 1 21/c 1", occ::crystal::monoclinic_cell(8.0, 6.0, 10.0,
+                                                   radians(97.0))},
+      {"P n a 21", occ::crystal::orthorhombic_cell(13.3, 4.1, 5.8)},
+      {"F d -3 m", occ::crystal::cubic_cell(5.43)},
+      {"P 63/m m c", occ::crystal::hexagonal_cell(3.21, 5.21)},
+      {"R -3 c", occ::crystal::hexagonal_cell(4.99, 17.06)},
+  };
+
+  const double d_min = 1.2;
+  for (const auto &c : cases) {
+    INFO("space group " << c.symbol);
+    occ::IVec nums(1);
+    nums(0) = 6;
+    occ::Mat3N pos = occ::Mat3N::Zero(3, 1);
+    Crystal crystal(AsymmetricUnit(pos, nums, {"C1"}), SpaceGroup(c.symbol),
+                    c.cell);
+
+    auto refl = occ::crystal::unique_reflections(crystal, d_min);
+    long from_multiplicity = 0;
+    for (const auto &r : refl)
+      from_multiplicity += r.multiplicity;
+
+    // brute force: every hkl in the sphere
+    const HKL limits = c.cell.hkl_limits(d_min);
+    long counted = 0;
+    for (int h = -limits.h; h <= limits.h; h++)
+      for (int k = -limits.k; k <= limits.k; k++)
+        for (int l = -limits.l; l <= limits.l; l++) {
+          if (h == 0 && k == 0 && l == 0)
+            continue;
+          if (occ::crystal::d_spacing(HKL{h, k, l}, c.cell) >= d_min)
+            counted++;
+        }
+    REQUIRE(from_multiplicity == counted);
+  }
+}
+
+TEST_CASE("standard_setting carries the symmetry operations",
+          "[crystal][subgroup][setting]") {
+  // Regression: update_from_sgdata() rebuilt the symbol, short name and number
+  // but not the symmetry operations, so standard_setting() -- which swaps the
+  // gemmi pointer and calls it -- returned an object with the right name and a
+  // symop list of just the identity. to_subgroup() then "reduced" the orbit
+  // under a group of one element, so the asymmetric unit came back as the whole
+  // unit cell and the safety check could never fire.
+  //
+  // These are the 24 groups where SpaceGroup(number) is not the ITA reference
+  // setting (two origin choices), i.e. exactly the ones that took this path.
+  const std::vector<int> origin_choice_groups{
+      48,  50,  59,  68,  70,  85,  86,  88,  125, 126, 129, 130,
+      133, 134, 137, 138, 141, 142, 201, 203, 222, 224, 227, 228};
+
+  for (int n : origin_choice_groups) {
+    INFO("space group " << n);
+    SpaceGroup sg(n);
+    REQUIRE_FALSE(sg.is_standard_setting());
+
+    SpaceGroup standard = sg.standard_setting();
+    REQUIRE(standard.is_standard_setting());
+    REQUIRE(standard.number() == n);
+    // the two settings describe the same group, so the order must match --
+    // and must certainly not be 1
+    REQUIRE(standard.symmetry_operations().size() > 1);
+    REQUIRE(standard.symmetry_operations().size() ==
+            sg.symmetry_operations().size());
+  }
+
+  // and every group's standard setting must have the right order
+  for (int n = 1; n <= 230; n++) {
+    INFO("space group " << n);
+    SpaceGroup sg(n);
+    REQUIRE(sg.standard_setting().symmetry_operations().size() ==
+            sg.symmetry_operations().size());
+  }
 }

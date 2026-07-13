@@ -770,6 +770,10 @@ void register_powder(lua_State *L) {
                             &PowderPatternSettings::two_theta_min)
       .addPropertyReadWrite("two_theta_max",
                             &PowderPatternSettings::two_theta_max)
+      .addPropertyReadWrite("debye_waller",
+                            &PowderPatternSettings::debye_waller)
+      .addPropertyReadWrite("min_f_squared",
+                            &PowderPatternSettings::min_f_squared)
       .endClass()
 
       .beginClass<PowderPattern>("PowderPattern")
@@ -816,6 +820,10 @@ void register_powder(lua_State *L) {
   lb::getGlobalNamespace(L)
       .beginNamespace("occ")
       .beginNamespace("xray_wavelength")
+      .addProperty(
+          "Cu_Ka1", +[]() { return xray_wavelength::Cu_Ka1; })
+      .addProperty(
+          "Mo_Ka1", +[]() { return xray_wavelength::Mo_Ka1; })
       .addProperty(
           "Cu_Ka", +[]() { return xray_wavelength::Cu_Ka; })
       .addProperty(

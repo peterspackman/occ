@@ -103,7 +103,10 @@ struct CrystalAtomRegion {
     uc_idx.resize(n);
     atomic_numbers.resize(n);
     symop.resize(n);
-    occupation.resize(n);
+    // Eigen's resize does not initialise. Everything else here is overwritten by
+    // the caller, but occupancy has a meaningful default and a region that is
+    // only partly filled must not read as garbage.
+    occupation = Vec::Ones(n);
     disorder_group.resize(n);
   }
 

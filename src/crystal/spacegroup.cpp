@@ -89,6 +89,14 @@ void SpaceGroup::update_from_sgdata() {
     m_symbol = m_sgdata->hm;
     m_short_name = m_sgdata->short_name();
     m_number = m_sgdata->number;
+    // The symmetry operations belong to the setting too, and are the whole
+    // point of the object. Leaving them alone here meant that anything which
+    // swapped the gemmi pointer and called this -- standard_setting() did --
+    // came back with the right name and number but a symop list left over from
+    // whatever the object was before, i.e. the identity alone.
+    m_symops.clear();
+    for (const auto &op : m_sgdata->operations())
+      m_symops.push_back(SymmetryOperation(op.triplet()));
   }
 }
 

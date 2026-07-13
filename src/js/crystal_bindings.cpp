@@ -424,7 +424,9 @@ void register_crystal_bindings() {
       .constructor<>()
       .property("wavelength", &PowderPatternSettings::wavelength)
       .property("twoThetaMin", &PowderPatternSettings::two_theta_min)
-      .property("twoThetaMax", &PowderPatternSettings::two_theta_max);
+      .property("twoThetaMax", &PowderPatternSettings::two_theta_max)
+      .property("debyeWaller", &PowderPatternSettings::debye_waller)
+      .property("minFSquared", &PowderPatternSettings::min_f_squared);
 
   class_<PowderPattern>("PowderPattern")
       .function("peaks", optional_override([](const PowderPattern &p) {
@@ -468,6 +470,7 @@ void register_crystal_bindings() {
            }));
 
   // Characteristic K-alpha wavelengths, in Angstroms
+  constant("XRAY_WAVELENGTH_CU_KA1", xray_wavelength::Cu_Ka1);
   constant("XRAY_WAVELENGTH_CU_KA", xray_wavelength::Cu_Ka);
   constant("XRAY_WAVELENGTH_MO_KA", xray_wavelength::Mo_Ka);
   constant("XRAY_WAVELENGTH_CO_KA", xray_wavelength::Co_Ka);

@@ -190,18 +190,24 @@ void Surface::print() const {
       m_depth_vector(0), m_depth_vector(1), m_depth_vector(2), depth());
 }
 
-// Helper function to apply rotation to HKL
-HKL apply_rotation(const SymmetryOperation &symop, const HKL &hkl,
-                   const Crystal &c) {
-  const auto &R = c.unit_cell().reciprocal();
-  const auto &RI = c.unit_cell().direct().transpose();
-
-  Vec3 v(hkl.h, hkl.k, hkl.l);
-  Vec3 hkl_frac = c.to_fractional(RI * v);
-  Vec3 rotated = R * c.to_cartesian(symop.rotation() * v);
-  return HKL{static_cast<int>(std::round(rotated(0))),
-             static_cast<int>(std::round(rotated(1))),
-             static_cast<int>(std::round(rotated(2)))};
+// The image of a face (hkl) under a symmetry operation.
+//
+// A face maps under (R|t) to (R^T)^-1 h, and the group is closed under
+// inversion, so the orbit of h is its orbit under {R^T}. This is exact integer
+// arithmetic.
+//
+// The previous version routed the index through cartesian space as
+// reciprocal * direct * R * h and rounded the result. reciprocal * direct is the
+// identity only when the direct matrix is diagonal -- i.e. only for
+// orthorhombic, tetragonal and cubic cells. For hexagonal and trigonal lattices
+// it produced indices that round to the wrong face, so generate_surfaces both
+// emitted symmetry-equivalent faces as distinct and dropped whole forms: on
+// P6_3/mmc it returned 20 "unique" surfaces of which 16 pairs were equivalent,
+// and lost the primary prism (100) altogether.
+HKL apply_rotation(const SymmetryOperation &symop, const HKL &hkl) {
+  const Eigen::Matrix3i rot = symop.rotation().array().round().cast<int>();
+  const IVec3 image = rot.transpose() * IVec3(hkl.h, hkl.k, hkl.l);
+  return HKL{image(0), image(1), image(2)};
 }
 
 std::vector<Surface>
@@ -217,12 +223,16 @@ generate_surfaces(const Crystal &c,
         int cd = std::gcd(std::gcd(m.h, m.k), std::gcd(m.k, m.l));
         m = HKL{m.h / cd, m.k / cd, m.l / cd};
       }
+      // Every symmetry operation's rotation part maps the face to an equivalent
+      // one: a translation shifts the plane, it does not change which form the
+      // face belongs to. Skipping the operations that carry a translation, as
+      // this used to, throws away most of the orbit in any group built on
+      // screws and glides -- which is most of them -- so equivalent faces were
+      // reported as distinct.
       if (!unique_hkls.contains(m)) {
         bool is_unique = true;
         for (const auto &symop : sg.symmetry_operations()) {
-          if (symop.has_translation())
-            continue;
-          HKL rotated_hkl = apply_rotation(symop, m, c);
+          HKL rotated_hkl = apply_rotation(symop, m);
           if (unique_hkls.contains(rotated_hkl)) {
             is_unique = false;
             break;
@@ -230,11 +240,8 @@ generate_surfaces(const Crystal &c,
         }
         if (is_unique) {
           result.emplace_back(Surface(m, c));
-          for (const auto &symop : sg.symmetry_operations()) {
-            if (symop.has_translation())
-              continue;
-            unique_hkls.insert(apply_rotation(symop, m, c));
-          }
+          for (const auto &symop : sg.symmetry_operations())
+            unique_hkls.insert(apply_rotation(symop, m));
         }
       }
     };

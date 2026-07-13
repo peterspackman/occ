@@ -6,6 +6,7 @@
 #include <occ/core/parallel.h>
 #include <occ/core/units.h>
 #include <occ/crystal/powder.h>
+#include <occ/crystal/symmetryoperation.h>
 #include <stdexcept>
 
 namespace occ::crystal {
@@ -107,8 +108,10 @@ std::vector<PowderPeak> unique_reflections(const Crystal &crystal,
 }
 
 CVec structure_factors(const Crystal &crystal,
-                       const std::vector<PowderPeak> &reflections) {
+                       const std::vector<PowderPeak> &reflections,
+                       bool debye_waller) {
   const CrystalAtomRegion &atoms = crystal.unit_cell_atoms();
+  const AsymmetricUnit &asym = crystal.asymmetric_unit();
   const Eigen::Index num_atoms = atoms.size();
   const size_t num_refl = reflections.size();
 
@@ -125,7 +128,39 @@ CVec structure_factors(const Crystal &crystal,
                       z));
   }
 
+  // Debye-Waller. The anisotropic temperature factor is
+  //
+  //     T(h) = exp(-2 pi^2 sum_ij U_ij h_i h_j a*_i a*_j)
+  //
+  // with U in the crystallographic (fractional) convention, as ADPs are stored.
+  // Folding the reciprocal axis lengths into the tensor once per atom leaves a
+  // plain quadratic form in h to evaluate per reflection.
+  //
+  // Each unit cell atom is a symmetry image of an asymmetric unit site, so its
+  // ADP tensor has to be rotated with it: U' = R U R^T.
+  std::vector<Mat3> adp_tensors;
+  bool any_adp = false;
+  if (debye_waller && asym.adps.cols() == asym.positions.cols() &&
+      !asym.adps.isZero(0.0)) {
+    any_adp = true;
+    const Vec3 astar = crystal.unit_cell().reciprocal().colwise().norm();
+    const Mat3 axis_scale = astar * astar.transpose();
+    adp_tensors.resize(num_atoms);
+    for (Eigen::Index i = 0; i < num_atoms; i++) {
+      const Vec6 u = SymmetryOperation(atoms.symop(i))
+                         .rotate_adp(asym.adps.col(atoms.asym_idx(i)));
+      Mat3 tensor;
+      // stored as (u11, u22, u33, u12, u13, u23)
+      tensor << u(0), u(3), u(4),
+                u(3), u(1), u(5),
+                u(4), u(5), u(2);
+      adp_tensors[i] = tensor.cwiseProduct(axis_scale);
+    }
+  }
+
   CVec result = CVec::Zero(num_refl);
+  constexpr double two_pi = 2.0 * occ::units::PI;
+  constexpr double two_pi_sq = 2.0 * occ::units::PI * occ::units::PI;
 
   occ::parallel::parallel_for(size_t{0}, num_refl, [&](size_t idx) {
     const auto &refl = reflections[idx];
@@ -139,10 +174,12 @@ CVec structure_factors(const Crystal &crystal,
                            .calculate_sf(stol2);
       std::complex<double> phase_sum{0.0, 0.0};
       for (Eigen::Index i : indices) {
-        const double phase =
-            2.0 * M_PI * h.dot(atoms.frac_pos.col(i));
-        phase_sum += atoms.occupation(i) *
-                     std::complex<double>(std::cos(phase), std::sin(phase));
+        const double phase = two_pi * h.dot(atoms.frac_pos.col(i));
+        double weight = atoms.occupation(i);
+        if (any_adp)
+          weight *= std::exp(-two_pi_sq * h.dot(adp_tensors[i] * h));
+        phase_sum +=
+            weight * std::complex<double>(std::cos(phase), std::sin(phase));
       }
       f_total += f * phase_sum;
     }
@@ -179,7 +216,11 @@ std::pair<Vec, Vec> PowderPattern::profile(double two_theta_min,
     centres(i) = two_theta_min + (i + 0.5) * width;
 
   for (const auto &peak : m_peaks) {
-    int bin = static_cast<int>((peak.two_theta - two_theta_min) / width);
+    // std::floor, not a cast: casting truncates toward zero, so a peak just
+    // below the grid gave bin 0 rather than -1 and the guard below never fired.
+    // Every peak below the window was silently piled onto the first bin.
+    const int bin =
+        static_cast<int>(std::floor((peak.two_theta - two_theta_min) / width));
     if (bin < 0 || bin >= num_bins)
       continue;
     counts(bin) += peak.intensity;
@@ -219,13 +260,31 @@ PowderPattern compute_powder_pattern(const Crystal &crystal,
     throw std::invalid_argument("two_theta_max must exceed two_theta_min");
   if (settings.two_theta_max >= 180.0)
     throw std::invalid_argument("two_theta_max must be less than 180 degrees");
+  // The Lorentz factor goes as 1/theta^2, so a range starting at zero lets the
+  // lowest-angle reflection acquire an unbounded intensity and swamp the rest.
+  if (settings.two_theta_min <= 0.0)
+    throw std::invalid_argument("two_theta_min must be greater than zero");
 
   // lambda = 2 d sin(theta)  =>  the largest 2*theta sets the smallest d
   const double theta_max = 0.5 * occ::units::radians(settings.two_theta_max);
   const double d_min = lambda / (2.0 * std::sin(theta_max));
 
+  // A wavelength given in the wrong unit (nanometres, say) makes d_min tiny and
+  // the reflection box astronomically large. Refuse rather than try to allocate
+  // it.
+  const HKL limits = crystal.unit_cell().hkl_limits(d_min);
+  const double box = (2.0 * limits.h + 1.0) * (2.0 * limits.k + 1.0) *
+                     (2.0 * limits.l + 1.0);
+  if (box > static_cast<double>(settings.max_reflection_box)) {
+    throw std::invalid_argument(fmt::format(
+        "d_min of {:.4g} A (wavelength {:.4g} A, 2*theta_max {:.4g} deg) needs "
+        "{:.3g} reciprocal lattice points, over the limit of {}. Check the "
+        "wavelength is in Angstroms.",
+        d_min, lambda, settings.two_theta_max, box, settings.max_reflection_box));
+  }
+
   std::vector<PowderPeak> reflections = unique_reflections(crystal, d_min);
-  const CVec f = structure_factors(crystal, reflections);
+  const CVec f = structure_factors(crystal, reflections, settings.debye_waller);
 
   std::vector<PowderPeak> peaks;
   peaks.reserve(reflections.size());
@@ -240,8 +299,14 @@ PowderPattern compute_powder_pattern(const Crystal &crystal,
         two_theta_deg > settings.two_theta_max)
       continue;
 
-    peak.two_theta = two_theta_deg;
     peak.f_squared = std::norm(f(i));
+    // Systematically absent reflections have |F|^2 identically zero. Listing
+    // them as peaks is noise -- for an F-centred cell most of the list would be
+    // zeros.
+    if (peak.f_squared < settings.min_f_squared)
+      continue;
+
+    peak.two_theta = two_theta_deg;
     peak.intensity =
         peak.multiplicity * peak.f_squared * lorentz_polarization(two_theta);
     peaks.push_back(peak);
@@ -249,10 +314,36 @@ PowderPattern compute_powder_pattern(const Crystal &crystal,
 
   std::sort(peaks.begin(), peaks.end(),
             [](const PowderPeak &a, const PowderPeak &b) {
-              return a.two_theta < b.two_theta;
+              return std::tie(a.two_theta, a.hkl) <
+                     std::tie(b.two_theta, b.hkl);
             });
 
-  return PowderPattern(std::move(peaks), lambda);
+  // Merge reflections that coincide in 2*theta. A powder experiment cannot tell
+  // them apart -- silicon's (333) and (511) both sit at 94.95 degrees, and the
+  // peak that is observed is their sum. Reporting them separately understates
+  // every such peak. The representative hkl is the strongest contributor, and
+  // f_squared is the multiplicity-weighted mean so that
+  // intensity == multiplicity * f_squared * Lp still holds.
+  std::vector<PowderPeak> merged;
+  merged.reserve(peaks.size());
+  for (const PowderPeak &peak : peaks) {
+    if (!merged.empty() &&
+        std::abs(merged.back().d - peak.d) < 1e-9 * std::max(1.0, peak.d)) {
+      PowderPeak &target = merged.back();
+      const double total_weight = target.multiplicity + peak.multiplicity;
+      const double weighted_f2 = target.multiplicity * target.f_squared +
+                                 peak.multiplicity * peak.f_squared;
+      if (peak.intensity > target.intensity)
+        target.hkl = peak.hkl;
+      target.multiplicity = static_cast<int>(total_weight);
+      target.f_squared = weighted_f2 / total_weight;
+      target.intensity += peak.intensity;
+    } else {
+      merged.push_back(peak);
+    }
+  }
+
+  return PowderPattern(std::move(merged), lambda);
 }
 
 } // namespace occ::crystal

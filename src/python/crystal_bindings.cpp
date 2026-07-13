@@ -451,6 +451,12 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
 
   nb::module_ xray = m.def_submodule(
       "xray_wavelength", "Characteristic K-alpha wavelengths, in Angstroms");
+  xray.attr("Cu_Ka1") = xray_wavelength::Cu_Ka1;
+  xray.attr("Mo_Ka1") = xray_wavelength::Mo_Ka1;
+  xray.attr("Co_Ka1") = xray_wavelength::Co_Ka1;
+  xray.attr("Cr_Ka1") = xray_wavelength::Cr_Ka1;
+  xray.attr("Fe_Ka1") = xray_wavelength::Fe_Ka1;
+  xray.attr("Ag_Ka1") = xray_wavelength::Ag_Ka1;
   xray.attr("Cu_Ka") = xray_wavelength::Cu_Ka;
   xray.attr("Mo_Ka") = xray_wavelength::Mo_Ka;
   xray.attr("Co_Ka") = xray_wavelength::Co_Ka;
@@ -475,7 +481,11 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
       .def(nb::init<>())
       .def_rw("wavelength", &PowderPatternSettings::wavelength)
       .def_rw("two_theta_min", &PowderPatternSettings::two_theta_min)
-      .def_rw("two_theta_max", &PowderPatternSettings::two_theta_max);
+      .def_rw("two_theta_max", &PowderPatternSettings::two_theta_max)
+      .def_rw("debye_waller", &PowderPatternSettings::debye_waller)
+      .def_rw("min_f_squared", &PowderPatternSettings::min_f_squared)
+      .def_rw("max_reflection_box",
+              &PowderPatternSettings::max_reflection_box);
 
   nb::class_<PowderPattern>(m, "PowderPattern")
       .def_prop_ro("peaks", &PowderPattern::peaks)
@@ -500,6 +510,7 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
   m.def("unique_reflections", &unique_reflections, "crystal"_a, "d_min"_a,
         "Symmetry-unique reflections with d >= d_min, with multiplicities");
   m.def("structure_factors", &structure_factors, "crystal"_a, "reflections"_a,
+        "debye_waller"_a = true,
         "Structure factors F(hkl) for the given reflections");
   m.def("lorentz_polarization", &lorentz_polarization, "two_theta"_a,
         "Lorentz-polarization factor; two_theta in radians");

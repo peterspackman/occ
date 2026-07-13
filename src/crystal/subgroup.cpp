@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
+#include <occ/core/log.h>
 #include <occ/crystal/subgroup.h>
 #include <stdexcept>
 
@@ -444,11 +445,24 @@ find_subgroup_for_z_prime(const Crystal &crystal,
 
   // Already there: hand back a transformation onto the crystal's *own* space
   // group, not a default-constructed one. SubgroupTransform defaults to
-  // subgroup 1, so returning that would tell the caller to descend to P1 --
-  // and feeding it to to_subgroup would destroy the symmetry it was asked to
-  // preserve.
-  if (satisfies(crystal))
-    return to_standard;
+  // subgroup 0, so returning that would be meaningless -- and it used to
+  // default to 1, which told the caller to descend to P1.
+  //
+  // But this still has to be checked by *applying* it, like any other candidate.
+  // For a crystal in a non-standard setting `to_standard` is not a no-op: it
+  // re-derives the asymmetric unit, and that can destroy the very property we
+  // just verified on the input. The contract is that applying what we return
+  // satisfies the request, so nothing may be returned unvalidated.
+  if (satisfies(crystal)) {
+    try {
+      if (satisfies(to_subgroup(crystal, to_standard, params.tolerance)))
+        return to_standard;
+    } catch (const std::exception &e) {
+      occ::log::debug("subgroup: identity transform failed to apply: {}",
+                      e.what());
+    }
+    // else fall through and look for a genuine descent that does work
+  }
 
   SubgroupSearchParameters search;
   search.max_index = params.max_index;
@@ -458,17 +472,30 @@ find_subgroup_for_z_prime(const Crystal &crystal,
 
   // subgroup_paths returns candidates sorted by increasing index, so the first
   // hit is the least drastic descent that works.
+  int tried = 0, rejected = 0;
   for (const auto &path : subgroup_paths(sg.number(), search)) {
     const SubgroupTransform transform =
         compose(to_standard, SubgroupTransform(path));
     try {
       Crystal candidate = to_subgroup(crystal, transform, params.tolerance);
+      tried++;
       if (satisfies(candidate))
         return transform;
-    } catch (const std::exception &) {
-      // this descent doesn't apply to this structure; try the next
+    } catch (const std::exception &e) {
+      // to_subgroup only throws when the subgroup's symmetry does not in fact
+      // hold, which its own comment calls a bug rather than a property of the
+      // input. Swallowing that silently turns a real bug into an innocuous
+      // "no subgroup found", so at least record it.
+      rejected++;
+      occ::log::debug("subgroup: candidate SG {} (index {}) did not apply: {}",
+                      path.subgroup, path.index, e.what());
       continue;
     }
+  }
+  if (rejected > 0) {
+    occ::log::warn("subgroup search: {} of {} candidates could not be applied "
+                   "to this structure (tolerance {:g}); no subgroup found",
+                   rejected, tried + rejected, params.tolerance);
   }
   return std::nullopt;
 }
