@@ -161,13 +161,27 @@ export class QMCalculation {
 
     const opts = new this.module.CorrelationOptions();
     opts.method = method;
-    if (options.backend !== undefined) opts.backend = options.backend;
-    if (options.auxBasis !== undefined) opts.auxBasis = options.auxBasis;
-    if (options.spinScaling !== undefined) opts.spinScaling = options.spinScaling;
-    if (options.nFrozen !== undefined) opts.nFrozen = options.nFrozen;
-    if (options.maxMemoryGb !== undefined) opts.maxMemoryGb = options.maxMemoryGb;
-    if (options.maxCycle !== undefined) opts.maxCycle = options.maxCycle;
-    if (options.tol !== undefined) opts.tol = options.tol;
+    if (options.backend !== undefined) {
+      opts.backend = options.backend;
+    }
+    if (options.auxBasis !== undefined) {
+      opts.auxBasis = options.auxBasis;
+    }
+    if (options.spinScaling !== undefined) {
+      opts.spinScaling = options.spinScaling;
+    }
+    if (options.nFrozen !== undefined) {
+      opts.nFrozen = options.nFrozen;
+    }
+    if (options.maxMemoryGb !== undefined) {
+      opts.maxMemoryGb = options.maxMemoryGb;
+    }
+    if (options.maxCycle !== undefined) {
+      opts.maxCycle = options.maxCycle;
+    }
+    if (options.tol !== undefined) {
+      opts.tol = options.tol;
+    }
 
     const result = this.module.runCorrelationWithOptions(this.wavefunction, opts);
     this.energy = result.totalEnergy;
