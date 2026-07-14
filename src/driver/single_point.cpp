@@ -4,6 +4,7 @@
 #include <occ/dft/dft.h>
 #include <occ/disp/d4.h>
 #include <occ/driver/acceleration.h>
+#include <occ/driver/correlation.h>
 #include <occ/driver/method_parser.h>
 #include <occ/xtb/xtb_calculator.h>
 #include <occ/driver/single_point.h>
@@ -245,335 +246,54 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
 
 Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
                             const OccInput &config) {
-  using occ::qm::MP2;
-  namespace cc = occ::qm::cc;
+  CorrelationOptions opts;
+  opts.method = config.method.name;
+  opts.backend = config.method.mp2_backend;
+  opts.aux_basis = config.basis.ri_basis;
+  opts.spin_scaling = config.method.mp2_spin_scaling;
+  opts.max_memory_gb = config.method.mp2_max_memory_gb;
+  opts.thc_c_isdf = config.method.mp2_thc_c_isdf;
+  opts.thc_isdf_method = config.method.mp2_thc_method;
+  opts.laplace_points = config.method.mp2_laplace_points;
 
-  occ::log::info("{:=^72s}", "  MP2 Calculation  ");
+  const auto result = run_correlation(scf_wfn, opts);
 
-  // Resolve the effective MP2 backend. Method-name prefixes ("ri-mp2",
-  // "thc-mp2") select a backend when --mp2-backend is left at "auto"; "ri"/"df"
-  // are synonyms for RI-MP2. An RI aux basis is resolved when RI is requested
-  // without an explicit --ri-basis.
-  const auto mspec = parse_method_string(config.method.name);
-  std::string mp2_backend = occ::util::to_lower_copy(config.method.mp2_backend);
-  if (mp2_backend == "auto" && !mspec.backend.empty())
-    mp2_backend = mspec.backend;
-  if (mp2_backend == "ri")
-    mp2_backend = "df";
-  std::string ri_basis = config.basis.ri_basis;
-  if (ri_basis.empty() && mp2_backend == "df")
-    ri_basis = occ::qm::resolve_fitting_basis(
-        config.basis.name, occ::qm::FittingKind::Correlation);
-
-  // THC-MP2 backend (LS-THC: Laplace denominator + THC factors). Lives in
-  // occ_cc as a free function (the MP2 class is in occ_correlation, which occ_cc
-  // depends on, so it can't host THC). Fills same/opposite spin so SCS/SOS work.
-  if (mp2_backend == "thc") {
-    const std::string auxname =
-        config.basis.ri_basis.empty()
-            ? occ::qm::resolve_fitting_basis(config.basis.name,
-                                             occ::qm::FittingKind::Correlation)
-            : config.basis.ri_basis;
-    occ::log::info("Method: THC-MP2 (auxiliary basis: {})", auxname);
-    auto aux = load_basis_set(config.geometry.molecule(), auxname,
-                              config.basis.spherical);
-
-    cc::ThcMP2Options opts;
-    opts.thc.c_isdf = config.method.mp2_thc_c_isdf;
-    const std::string sel = occ::util::to_lower_copy(config.method.mp2_thc_method);
-    opts.thc.method =
-        (sel == "qr") ? cc::IsdfMethod::QR : cc::IsdfMethod::Cholesky;
-    opts.n_laplace = config.method.mp2_laplace_points;
-    opts.memory_budget = static_cast<size_t>(
-        config.method.mp2_max_memory_gb * 1024.0 * 1024.0 * 1024.0);
-    opts.thc.memory_budget = opts.memory_budget;
-    int n_frozen = cc::num_frozen_core(scf_wfn.basis);
-    n_frozen = std::max(
-        0, std::min(n_frozen, static_cast<int>(scf_wfn.mo.n_alpha) - 1));
-    opts.n_frozen = n_frozen;
-
-    // SOS-MP2 uses only the opposite-spin energy, so skip the same-spin
-    // exchange entirely -> the whole calculation is the O(P^3) cubic Coulomb
-    // path (the genuinely fast, large-system THC win).
-    const std::string &scaling = config.method.mp2_spin_scaling;
-    const bool scaled = (scaling == "scs" || scaling == "sos");
-    double c_ss = 1.0, c_os = 1.0;
-    if (scaling == "scs") {
-      c_ss = 1.0 / 3.0;
-      c_os = 6.0 / 5.0;
-    } else if (scaling == "sos") {
-      c_ss = 0.0;
-      c_os = 1.3;
-      opts.opposite_spin_only = true;
-    } else if (scaling != "none" && !scaling.empty()) {
-      occ::log::warn("Unknown --mp2-spin-scaling '{}', using unscaled MP2",
-                     scaling);
-    }
-    occ::log::info("THC rank c = {}, ISDF selector = {}, Laplace points = {}, "
-                   "frozen core = {}{}",
-                   opts.thc.c_isdf, sel == "qr" ? "qr" : "cholesky",
-                   opts.n_laplace, n_frozen,
-                   opts.opposite_spin_only ? " [opposite-spin only]" : "");
-
-    const auto r = cc::thc_mp2(scf_wfn.basis, aux, scf_wfn.mo, opts);
-
-    const double scaled_corr = c_ss * r.same_spin + c_os * r.opposite_spin;
-    const double used_corr = scaled ? scaled_corr : r.total;
-    const double total_energy = scf_wfn.energy.total + used_corr;
-
-    occ::log::info(
-        "THC-MP2: {} interpolation points, {} Laplace points (max rel err "
-        "{:.2e})",
-        r.n_isdf, r.n_laplace, r.laplace_max_rel_error);
-    occ::log::info("SCF energy:                       {: 20.12f}",
-                   scf_wfn.energy.total);
-    if (!opts.opposite_spin_only) {
-      occ::log::info("MP2 correlation energy:           {: 20.12f}", r.total);
-      occ::log::info("  same-spin:                      {: 20.12f}",
-                     r.same_spin);
-    }
-    occ::log::info("  opposite-spin:                  {: 20.12f}",
-                   r.opposite_spin);
-    if (scaled)
-      occ::log::info("{}-MP2 correlation energy:        {: 20.12f}",
-                     scaling == "scs" ? "SCS" : "SOS", scaled_corr);
-    occ::log::info("MP2 total energy:                 {: 20.12f}", total_energy);
-
-    Wavefunction mp2_wfn = scf_wfn;
-    mp2_wfn.energy.total = total_energy;
-    mp2_wfn.method = scaling == "scs"   ? "SCS-THC-MP2"
-                     : scaling == "sos" ? "SOS-THC-MP2"
-                                        : "THC-MP2";
-    return mp2_wfn;
-  }
-
-  MP2 mp2 = [&]() {
-    if (!ri_basis.empty()) {
-      occ::log::info("Method: RI-MP2 (auxiliary basis: {})", ri_basis);
-      auto aux_basis = load_basis_set(config.geometry.molecule(), ri_basis,
-                                      config.basis.spherical);
-      return MP2(scf_wfn.basis, aux_basis, scf_wfn.mo, scf_wfn.energy.total);
-    } else {
-      occ::log::info("Method: Conventional MP2");
-      return MP2(scf_wfn.basis, scf_wfn.mo, scf_wfn.energy.total);
-    }
-  }();
-
-  // Set automatic frozen core
-  mp2.set_frozen_core_auto();
-
-  // Memory budget (GiB -> bytes) controls occupied blocking and whether the
-  // dense 3-center store is used.
-  mp2.set_memory_budget(static_cast<size_t>(config.method.mp2_max_memory_gb *
-                                            1024.0 * 1024.0 * 1024.0));
-
-  // Optional spin-component scaling.
-  const std::string &scaling = config.method.mp2_spin_scaling;
-  const bool scaled = (scaling == "scs" || scaling == "sos");
-  if (scaling == "scs") {
-    mp2.set_scs_parameters(1.0 / 3.0, 6.0 / 5.0); // Grimme SCS-MP2
-  } else if (scaling == "sos") {
-    mp2.set_scs_parameters(0.0, 1.3); // Grimme SOS-MP2
-  } else if (scaling != "none" && !scaling.empty()) {
-    occ::log::warn("Unknown --mp2-spin-scaling '{}', using unscaled MP2",
-                   scaling);
-  }
-
-  // Compute MP2 correlation energy
-  double correlation_energy = mp2.compute_correlation_energy();
-  const auto &results = mp2.results();
-  const double used_corr =
-      scaled ? results.scs_mp2_correlation : correlation_energy;
-  double total_mp2_energy = scf_wfn.energy.total + used_corr;
-
-  occ::log::info("SCF energy:                       {: 20.12f}",
-                 scf_wfn.energy.total);
-  occ::log::info("MP2 correlation energy:           {: 20.12f}",
-                 correlation_energy);
-  occ::log::info("  same-spin:                      {: 20.12f}",
-                 results.same_spin_correlation);
-  occ::log::info("  opposite-spin:                  {: 20.12f}",
-                 results.opposite_spin_correlation);
-  if (scaled) {
-    occ::log::info("{}-MP2 correlation energy:        {: 20.12f}",
-                   scaling == "scs" ? "SCS" : "SOS",
-                   results.scs_mp2_correlation);
-  }
-  occ::log::info("MP2 total energy:                 {: 20.12f}",
-                 total_mp2_energy);
-
-  // Create modified wavefunction with MP2 energy
   Wavefunction mp2_wfn = scf_wfn;
-  mp2_wfn.energy.total = total_mp2_energy;
-  mp2_wfn.method = scaling == "scs"   ? "SCS-MP2"
-                   : scaling == "sos" ? "SOS-MP2"
-                                      : "MP2";
-
+  mp2_wfn.energy.total = result.total_energy;
+  mp2_wfn.method = result.method;
   return mp2_wfn;
 }
 
-Wavefunction run_ccsd_method(const Wavefunction &scf_wfn, const OccInput &config,
-                             bool with_triples) {
-  namespace cc = occ::qm::cc;
-  const bool open_shell = scf_wfn.mo.kind != SpinorbitalKind::Restricted;
+Wavefunction run_ccsd_method(const Wavefunction &scf_wfn,
+                             const OccInput &config, bool with_triples) {
+  CorrelationOptions opts;
+  opts.method = config.method.name;
+  // "exact" is the flag default and is indistinguishable from an explicit
+  // --ccsd-backend exact; treat it as unset so a method-name prefix
+  // ("thc-ccsd(t)") can select the backend, matching the previous behaviour.
+  const auto backend = occ::util::to_lower_copy(config.method.ccsd_backend);
+  opts.backend = (backend.empty() || backend == "exact") ? "auto" : backend;
+  opts.aux_basis = config.basis.ri_basis;
+  opts.n_frozen = config.method.ccsd_frozen_core;
+  opts.max_memory_gb = config.method.ccsd_max_memory_gb;
+  opts.thc_c_isdf = config.method.ccsd_thc_c_isdf;
+  opts.thc_isdf_method = config.method.ccsd_thc_method;
+  opts.thc_grid_angular = config.method.ccsd_thc_grid_angular;
+  opts.thc_grid_radial_precision = config.method.ccsd_thc_grid_radial;
 
-  // Frozen core: -1 = auto (chemical core, the standard CCSD(T) default), 0 =
-  // none (all-electron), N = freeze N lowest occupied orbitals.
-  const bool fc_auto0 = config.method.ccsd_frozen_core < 0;
-  int n_frozen0 = fc_auto0 ? cc::num_frozen_core(scf_wfn.basis)
-                           : config.method.ccsd_frozen_core;
+  auto method_opts = opts;
+  if (!with_triples && parse_method_string(opts.method).kind ==
+                           MethodKind::CCSD_T)
+    method_opts.method = "ccsd";
 
-  // Resolve the effective CCSD backend. Method-name prefixes ("ri-ccsd(t)",
-  // "thc-ccsd(t)") select a backend when --ccsd-backend is left at its default
-  // ("exact"); "ri" and "df" are synonyms for density fitting.
-  const auto mspec = parse_method_string(config.method.name);
-  std::string backend = occ::util::to_lower_copy(config.method.ccsd_backend);
-  if (backend.empty())
-    backend = "exact";
-  if (backend == "ri")
-    backend = "df";
-  if (backend == "exact" && !mspec.backend.empty())
-    backend = mspec.backend;
-
-  if (open_shell) {
-    // Open shell uses the spin-adapted unrestricted CCSD(T) (exact / df / thc).
-    occ::log::info("{:=^72s}",
-                   with_triples ? "  UHF CCSD(T) Calculation  "
-                                : "  UHF CCSD Calculation  ");
-    const std::string &be = backend;
-    const size_t nocc_min = std::min(scf_wfn.mo.n_alpha, scf_wfn.mo.n_beta);
-    n_frozen0 = std::max(0, std::min(n_frozen0, static_cast<int>(nocc_min) - 1));
-    occ::log::info("Backend: {}", be);
-    occ::log::info("Frozen core: {} orbitals ({} electrons){}", n_frozen0,
-                   2 * n_frozen0, fc_auto0 ? " [auto]" : "");
-
-    cc::UCCSDOptions uopts;
-    uopts.backend = be;
-    uopts.n_frozen = n_frozen0;
-    uopts.with_triples = with_triples;
-    uopts.memory_budget = static_cast<size_t>(
-        config.method.ccsd_max_memory_gb * 1024.0 * 1024.0 * 1024.0);
-    uopts.thc.c_isdf = config.method.ccsd_thc_c_isdf;
-    uopts.thc.memory_budget = uopts.memory_budget;
-    uopts.thc.grid_max_angular = config.method.ccsd_thc_grid_angular;
-    uopts.thc.grid_radial_precision = config.method.ccsd_thc_grid_radial;
-    uopts.thc.method =
-        (occ::util::to_lower_copy(config.method.ccsd_thc_method) == "qr")
-            ? cc::IsdfMethod::QR
-            : cc::IsdfMethod::Cholesky;
-
-    cc::UCCSDResult r;
-    if (be == "exact") {
-      occ::log::info("Note: the exact backend stores the O(V^4) vvvv block; "
-                     "use df or thc for larger systems.");
-      r = cc::uccsd(scf_wfn.basis, scf_wfn.mo, uopts);
-    } else {
-      const std::string auxname =
-          config.basis.ri_basis.empty()
-              ? occ::qm::resolve_fitting_basis(config.basis.name,
-                                               occ::qm::FittingKind::Correlation)
-              : config.basis.ri_basis;
-      occ::log::info("Auxiliary basis: {}", auxname);
-      auto aux = load_basis_set(config.geometry.molecule(), auxname,
-                                config.basis.spherical);
-      r = cc::uccsd(scf_wfn.basis, aux, scf_wfn.mo, uopts);
-    }
-    if (!r.converged)
-      occ::log::warn("CCSD did not converge in {} iterations", r.iterations);
-    const double total = scf_wfn.energy.total + r.e_corr + r.e_triples;
-    occ::log::info("SCF energy:                       {: 20.12f}",
-                   scf_wfn.energy.total);
-    occ::log::info("CCSD correlation energy:          {: 20.12f}", r.e_corr);
-    if (with_triples) {
-      occ::log::info("(T) correction:                   {: 20.12f}",
-                     r.e_triples);
-      occ::log::info("CCSD(T) correlation energy:       {: 20.12f}",
-                     r.e_corr + r.e_triples);
-    }
-    occ::log::info("{:<33s} {: 20.12f}",
-                   with_triples ? "CCSD(T) total energy:" : "CCSD total energy:",
-                   total);
-    Wavefunction cc_wfn = scf_wfn;
-    cc_wfn.energy.total = total;
-    cc_wfn.method = with_triples ? "CCSD(T)" : "CCSD";
-    return cc_wfn;
-  }
-
-  const std::string label = with_triples ? "  CCSD(T) Calculation  "
-                                          : "  CCSD Calculation  ";
-  occ::log::info("{:=^72s}", label);
-
-  const size_t budget = static_cast<size_t>(config.method.ccsd_max_memory_gb *
-                                            1024.0 * 1024.0 * 1024.0);
-  occ::log::info("Backend: {}", backend);
-
-  // Frozen core: -1 = auto (chemical core, the standard CCSD(T) default), 0 =
-  // none (all-electron), N = freeze N lowest occupied orbitals.
-  const bool fc_auto = config.method.ccsd_frozen_core < 0;
-  int n_frozen = fc_auto ? cc::num_frozen_core(scf_wfn.basis)
-                         : config.method.ccsd_frozen_core;
-  n_frozen = std::max(0, std::min(n_frozen,
-                                  static_cast<int>(scf_wfn.mo.n_alpha) - 1));
-  occ::log::info("Frozen core: {} orbitals ({} electrons){}", n_frozen,
-                 2 * n_frozen, fc_auto ? " [auto]" : "");
-
-  cc::CCIntegrals eris = [&]() -> cc::CCIntegrals {
-    if (backend == "exact") {
-      occ::log::info("Note: the exact backend stores the O(V^4) vvvv block; "
-                     "use df or thc for larger systems.");
-      return cc::exact_eris(scf_wfn.basis, scf_wfn.mo, n_frozen, budget);
-    }
-    const std::string auxname =
-        config.basis.ri_basis.empty()
-            ? occ::qm::resolve_fitting_basis(config.basis.name,
-                                             occ::qm::FittingKind::Correlation)
-            : config.basis.ri_basis;
-    occ::log::info("Auxiliary basis: {}", auxname);
-    auto aux = load_basis_set(config.geometry.molecule(), auxname,
-                              config.basis.spherical);
-    if (backend == "df")
-      return cc::df_eris(scf_wfn.basis, aux, scf_wfn.mo, n_frozen, budget);
-    if (backend == "thc") {
-      cc::ThcOptions opts;
-      opts.c_isdf = config.method.ccsd_thc_c_isdf;
-      opts.memory_budget = budget;
-      opts.grid_max_angular = config.method.ccsd_thc_grid_angular;
-      opts.grid_radial_precision = config.method.ccsd_thc_grid_radial;
-      const std::string sel =
-          occ::util::to_lower_copy(config.method.ccsd_thc_method);
-      opts.method = (sel == "qr") ? cc::IsdfMethod::QR : cc::IsdfMethod::Cholesky;
-      occ::log::info("THC rank c = {}, ISDF selector = {}", opts.c_isdf,
-                     sel == "qr" ? "qr" : "cholesky");
-      return cc::thc_eris(scf_wfn.basis, aux, scf_wfn.mo, opts, n_frozen, budget);
-    }
-    throw std::runtime_error("Unknown CCSD backend '" + backend +
-                             "' (expected exact | df | thc)");
-  }();
-
-  const cc::CCSDResult res = cc::ccsd(eris);
-  if (!res.converged)
-    occ::log::warn("CCSD did not converge in {} iterations", res.iterations);
-
-  const double et = with_triples ? cc::ccsd_t(res.t1, res.t2, eris) : 0.0;
-  const double total = scf_wfn.energy.total + res.e_corr + et;
-
-  occ::log::info("SCF energy:                       {: 20.12f}",
-                 scf_wfn.energy.total);
-  occ::log::info("CCSD correlation energy:          {: 20.12f}", res.e_corr);
-  if (with_triples) {
-    occ::log::info("(T) correction:                   {: 20.12f}", et);
-    occ::log::info("CCSD(T) correlation energy:       {: 20.12f}",
-                   res.e_corr + et);
-  }
-  occ::log::info("{:<33s} {: 20.12f}",
-                 with_triples ? "CCSD(T) total energy:" : "CCSD total energy:",
-                 total);
+  const auto result = run_correlation(scf_wfn, method_opts);
 
   Wavefunction cc_wfn = scf_wfn;
-  cc_wfn.energy.total = total;
-  cc_wfn.method = with_triples ? "CCSD(T)" : "CCSD";
+  cc_wfn.energy.total = result.total_energy;
+  cc_wfn.method = result.method;
   return cc_wfn;
 }
+
 
 Wavefunction
 single_point_driver(const OccInput &config,
