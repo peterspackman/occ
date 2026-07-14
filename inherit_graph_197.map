@@ -1,3 +1,11 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structocc_1_1interaction_1_1LatticeConvergenceSettings.html" title=" " alt="" coords="5,5,180,45"/>
+<area shape="rect" id="Node000000" href="$classocc_1_1interaction_1_1EnergyModelBase.html" title=" " alt="" coords="5,101,180,141"/>
+<area shape="rect" id="Node000001" href="$classocc_1_1interaction_1_1CEEnergyModel.html" title=" " alt="" coords="235,5,427,45"/>
+<area shape="poly" id="edge15_Node000000_Node000001" title=" " alt="" coords="144,93,227,55,260,43,262,48,229,60,146,98"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1interaction_1_1ExternalEnergyModel.html" title=" " alt="" coords="239,69,423,109"/>
+<area shape="poly" id="edge16_Node000000_Node000002" title=" " alt="" coords="193,105,238,99,239,104,194,110"/>
+<area shape="rect" id="Node000003" href="$classocc_1_1interaction_1_1XTBEnergyModel.html" title=" " alt="" coords="230,133,431,173"/>
+<area shape="poly" id="edge17_Node000000_Node000003" title=" " alt="" coords="194,132,230,137,230,142,193,138"/>
+<area shape="rect" id="Node000004" href="$classocc_1_1mults_1_1DMAExp6EnergyModel.html" title="EnergyModelBase using distributed multipoles + exp&#45;6 (Williams), with no induction." alt="" coords="228,197,433,237"/>
+<area shape="poly" id="edge18_Node000000_Node000004" title=" " alt="" coords="146,145,229,183,262,195,260,200,227,188,144,150"/>
 </map>

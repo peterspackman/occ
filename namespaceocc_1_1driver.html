@@ -125,6 +125,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CGPreparation.html">CGPreparation</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Result of loading and configuring a cg run: the crystal, the calculator options and any per-molecule charges.  <a href="structocc_1_1driver_1_1CGPreparation.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CorrelationOptions.html">CorrelationOptions</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options for a post-HF correlation calculation on a converged SCF wavefunction.  <a href="structocc_1_1driver_1_1CorrelationOptions.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CorrelationResult.html">CorrelationResult</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Result of a post-HF correlation calculation.  <a href="structocc_1_1driver_1_1CorrelationResult.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1driver_1_1CrystalGrowthCalculator.html">CrystalGrowthCalculator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html">CrystalGrowthCalculatorOptions</a></td></tr>
@@ -197,6 +203,9 @@ Functions</h2></td></tr>
 <tr class="separator:aea42beb3f7e608dd644645693b47cd2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7694b64538d99dde2da027e9b9fb651b" id="r_a7694b64538d99dde2da027e9b9fb651b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1CrystalGrowthResult.html">occ::cg::CrystalGrowthResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a7694b64538d99dde2da027e9b9fb651b">run_cg</a> (<a class="el" href="structocc_1_1driver_1_1CGConfig.html">CGConfig</a> const &amp;)</td></tr>
 <tr class="separator:a7694b64538d99dde2da027e9b9fb651b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4aa548e9c40e80857f05d1dccd308b82" id="r_a4aa548e9c40e80857f05d1dccd308b82"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1driver_1_1CorrelationResult.html">CorrelationResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a4aa548e9c40e80857f05d1dccd308b82">run_correlation</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;wfn, const <a class="el" href="structocc_1_1driver_1_1CorrelationOptions.html">CorrelationOptions</a> &amp;opts={})</td></tr>
+<tr class="memdesc:a4aa548e9c40e80857f05d1dccd308b82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run an MP2 / CCSD / <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a> calculation on a converged SCF wavefunction, with the same backend dispatch, auxiliary-basis resolution and frozen-core handling as the CLI.  <br /></td></tr>
+<tr class="separator:a4aa548e9c40e80857f05d1dccd308b82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac7268ab1f985e6e5fd2812789f00d41" id="r_aac7268ab1f985e6e5fd2812789f00d41"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1driver_1_1AssignedEnergy.html">AssignedEnergy</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#aac7268ab1f985e6e5fd2812789f00d41">assign_interaction_terms_to_nearest_neighbours</a> (const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a64bcd1ba7c2106300d03ef64064822f3">crystal::CrystalDimers::MoleculeNeighbors</a> &amp;neighbors, const std::vector&lt; double &gt; &amp;dimer_energies, double cg_radius)</td></tr>
 <tr class="separator:aac7268ab1f985e6e5fd2812789f00d41"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a617654acfd6769077617709485607412" id="r_a617654acfd6769077617709485607412"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">occ::Vec3</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a617654acfd6769077617709485607412">calculate_net_dipole</a> (const <a class="el" href="namespaceocc_1_1driver.html#a4101b59c9be71941ddbc0cb8983a2760">WavefunctionList</a> &amp;wavefunctions, const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">crystal::CrystalDimers</a> &amp;crystal_dimers)</td></tr>
@@ -1075,6 +1084,37 @@ template&lt;typename Proc &gt; </div>
 </div><div class="memdoc">
 
 <p>Run the full crystal-growth pipeline on an already-constructed calculator: monomer energies -&gt; lattice convergence -&gt; molecular surroundings -&gt; surface energies / morphology -&gt; JSON serialization. </p>
+
+</div>
+</div>
+<a id="a4aa548e9c40e80857f05d1dccd308b82" name="a4aa548e9c40e80857f05d1dccd308b82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4aa548e9c40e80857f05d1dccd308b82">&#9670;&#160;</a></span>run_correlation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1driver_1_1CorrelationResult.html">CorrelationResult</a> occ::driver::run_correlation </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;&#160;</td>
+          <td class="paramname"><em>wfn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1driver_1_1CorrelationOptions.html">CorrelationOptions</a> &amp;&#160;</td>
+          <td class="paramname"><em>opts</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Run an MP2 / CCSD / <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a> calculation on a converged SCF wavefunction, with the same backend dispatch, auxiliary-basis resolution and frozen-core handling as the CLI. </p>
+<p>Handles restricted and unrestricted references. </p>
 
 </div>
 </div>

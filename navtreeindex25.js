@@ -1,5 +1,7 @@
 var NAVTREEINDEX25 =
 {
+"dimer__interaction_8h.html#a1bfde622f64268eacbce71488013058c":[6,0,1,0,16,14,2],
+"dimer__interaction_8h.html#a56697fb9bf07cc7394f87fbb435a277b":[6,0,1,0,16,14,5],
 "dimer__interaction_8h.html#a9ce48b4b4603e8ac6e3349b64fdce682":[6,0,1,0,16,14,3],
 "dimer__interaction_8h.html#ab033a01331e42961a1e72fbad9381af0":[6,0,1,0,16,14,6],
 "dimer__interaction_8h.html#ae5a2afd8232873195d8e9a2bccd364c2":[6,0,1,0,16,14,4],
@@ -48,7 +50,7 @@ var NAVTREEINDEX25 =
 "dma__cg_8h.html#a4f628d2a64f8466f0aa34f2e4d6ce679":[6,0,1,0,16,15,1],
 "dma__cg_8h.html#a9e80e7e8d3908858a7b96b8aa383691f":[6,0,1,0,16,15,2],
 "dma__cg_8h.html#adb68afed0059084b87c8471b5c1ceb4d":[6,0,1,0,16,15,3],
-"dma__driver_8h.html":[6,0,1,0,7,6],
+"dma__driver_8h.html":[6,0,1,0,7,7],
 "dma__energy__model_8h.html":[6,0,1,0,16,16],
 "draco_8h.html":[6,0,1,0,23,1],
 "draco_8h.html#a6730930178f0aa7b1c8f43ab1074a09e":[6,0,1,0,23,1,0],
@@ -168,8 +170,8 @@ var NAVTREEINDEX25 =
 "functions_eval_r.html":[5,3,5,11],
 "functions_eval_s.html":[5,3,5,12],
 "functions_f.html":[5,3,0,6],
-"functions_func.html":[5,3,1],
 "functions_func.html":[5,3,1,0],
+"functions_func.html":[5,3,1],
 "functions_func_b.html":[5,3,1,1],
 "functions_func_c.html":[5,3,1,2],
 "functions_func_d.html":[5,3,1,3],
@@ -247,7 +249,5 @@ var NAVTREEINDEX25 =
 "functions_y.html":[5,3,0,25],
 "functions_z.html":[5,3,0,26],
 "functions_~.html":[5,3,0,27],
-"gamma_8h.html":[6,0,1,0,25,6],
-"gamma_8h.html#a1b91774a7949b8566f1ed9fbe018ad7d":[6,0,1,0,25,6,1],
-"gamma_8h.html#a408571ea3570111e63ecf93ed83d4348":[6,0,1,0,25,6,4]
+"gamma_8h.html":[6,0,1,0,25,6]
 };

@@ -1,5 +1,7 @@
 var NAVTREEINDEX28 =
 {
+"multipole__calculator_8h.html":[6,0,1,0,6,7],
+"multipole__coarsening_8h.html":[6,0,1,0,16,24],
 "multipole__coarsening_8h.html#a256345b11db45d1d3e0e59231f7dd398":[6,0,1,0,16,24,2],
 "multipole__coarsening_8h.html#a7e02a756c59bc45856a4cafbf8749e39":[6,0,1,0,16,24,1],
 "multipole__coarsening_8h.html#adfe940cd5eea0299a06df26c799fd112":[6,0,1,0,16,24,0],
@@ -247,7 +249,5 @@ var NAVTREEINDEX28 =
 "namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a88c76da6f1765be3b493b1a553401488":[3,0,2,2,36,51],
 "namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a8b847cfae498e96e3fa08a56cb42b838":[3,0,2,2,36,2],
 "namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a94f5a64e61ba849a9213f6b6f62b151d":[3,0,2,2,36,26],
-"namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5aa1d6f48030ed59e7372531b3555f8e31":[3,0,2,2,36,43],
-"namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5aa3deb6e481689f1d3303caecb8a6c401":[3,0,2,2,36,22],
-"namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5aa92c5ff6e57ac12e7428f0eb33d9318a":[3,0,2,2,36,16]
+"namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5aa1d6f48030ed59e7372531b3555f8e31":[3,0,2,2,36,43]
 };

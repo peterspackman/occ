@@ -1,5 +1,8 @@
 var NAVTREEINDEX35 =
 {
+"orbital__index_8h.html":[6,0,1,0,14,15],
+"orbital__index_8h.html#a267f8184e8787dde6427b13ac51581b8":[6,0,1,0,14,15,1],
+"orbital__smearing_8h.html":[6,0,1,0,19,25],
 "orca__json_8h.html":[6,0,1,0,19,2,5],
 "orient__io_8h.html":[6,0,1,0,16,28],
 "orient__io_8h.html#a80ebf1b82993f2300ccef716febc440b":[6,0,1,0,16,28,2],
@@ -246,8 +249,5 @@ var NAVTREEINDEX35 =
 "quickhull_8h.html#aed54901ccc77c377d9d2f94ce6a0888c":[6,0,1,0,9,12,2],
 "range__separated__parameters_8h.html":[6,0,1,0,4,7],
 "ray_8h.html":[6,0,1,0,9,13],
-"reaction__field_8h.html":[6,0,1,0,20,1],
-"refine__sharp_8h.html":[6,0,1,0,14,20],
-"refine__sharp_8h.html#a554628bcfb48c98820586eb6c086daf1":[6,0,1,0,14,20,1],
-"repulsion_8h.html":[6,0,1,0,25,19]
+"reaction__field_8h.html":[6,0,1,0,20,1]
 };

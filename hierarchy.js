@@ -94,6 +94,8 @@ var hierarchy =
     [ "occ::mults::CoordinateSystem", "structocc_1_1mults_1_1CoordinateSystem.html", null ],
     [ "occ::xtb::CoordinationNumbersWithGradient", "structocc_1_1xtb_1_1CoordinationNumbersWithGradient.html", null ],
     [ "occ::cg::CornerMorphology", "structocc_1_1cg_1_1CornerMorphology.html", null ],
+    [ "occ::driver::CorrelationOptions", "structocc_1_1driver_1_1CorrelationOptions.html", null ],
+    [ "occ::driver::CorrelationResult", "structocc_1_1driver_1_1CorrelationResult.html", null ],
     [ "occ::solvent::COSMO", "classocc_1_1solvent_1_1COSMO.html", null ],
     [ "occ::scrf::detail::CosmoResponse", "structocc_1_1scrf_1_1detail_1_1CosmoResponse.html", null ],
     [ "occ::io::COSXSettings", "structocc_1_1io_1_1COSXSettings.html", null ],

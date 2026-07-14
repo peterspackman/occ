@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1ShortRangeInteraction_1_1ForceAndHessian.html" target="_top" xlink:title="Result structure containing forces and Hessian for both sites.">
+<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1ShortRangeInteraction_1_1AnisotropicResult.html" target="_top" xlink:title="Result from anisotropic repulsion computation.">
 <polygon fill="white" stroke="#666666" points="182,-30 0,-30 0,0 182,0 182,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::mults::ShortRangeInteraction</text>
-<text text-anchor="middle" x="91" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">::ForceAndHessian</text>
+<text text-anchor="middle" x="91" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">::AnisotropicResult</text>
 </a>
 </g>
 </g>

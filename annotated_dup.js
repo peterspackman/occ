@@ -165,6 +165,8 @@ var annotated_dup =
         [ "CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator" ],
         [ "CGConfig", "structocc_1_1driver_1_1CGConfig.html", "structocc_1_1driver_1_1CGConfig" ],
         [ "CGPreparation", "structocc_1_1driver_1_1CGPreparation.html", "structocc_1_1driver_1_1CGPreparation" ],
+        [ "CorrelationOptions", "structocc_1_1driver_1_1CorrelationOptions.html", "structocc_1_1driver_1_1CorrelationOptions" ],
+        [ "CorrelationResult", "structocc_1_1driver_1_1CorrelationResult.html", "structocc_1_1driver_1_1CorrelationResult" ],
         [ "CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", "classocc_1_1driver_1_1CrystalGrowthCalculator" ],
         [ "CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions" ],
         [ "CrystalSurfaceEnergies", "structocc_1_1driver_1_1CrystalSurfaceEnergies.html", "structocc_1_1driver_1_1CrystalSurfaceEnergies" ],
