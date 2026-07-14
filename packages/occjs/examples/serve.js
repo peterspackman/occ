@@ -22,8 +22,15 @@ const server = createServer(async (req, res) => {
   // Use 'credentialless' to allow cross-origin resources without CORP headers
   res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
 
-  let filePath = req.url === '/' ? '/examples/wavefunction_calculator.html' : req.url;
-  filePath = join(rootDir, filePath);
+  // Redirect (rather than alias) the landing page so the document URL sits
+  // under /examples/ and its relative worker/module paths resolve correctly.
+  if (req.url === '/') {
+    res.writeHead(302, { Location: '/examples/wavefunction_calculator.html' });
+    res.end();
+    return;
+  }
+
+  const filePath = join(rootDir, req.url);
 
   try {
     const content = await readFile(filePath);
@@ -33,7 +40,7 @@ const server = createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': contentType });
     res.end(content);
   } catch (err) {
-    res.writeHead(404);
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Not found');
   }
 });

@@ -145,26 +145,68 @@ export class QMCalculation {
   }
 
   /**
-   * Run MP2 calculation
-   * @param {Object} options - MP2 options
-   * @returns {Promise<number>} MP2 energy
+   * Run a post-HF correlation calculation (MP2 / CCSD / CCSD(T)) on the
+   * converged SCF wavefunction. Backend and auxiliary basis are resolved
+   * exactly like the occ CLI.
+   * @param {string} method - e.g. 'mp2', 'ri-mp2', 'ccsd', 'ccsd(t)'
+   * @param {Object} options - optional overrides: backend, auxBasis,
+   *   spinScaling, nFrozen, maxMemoryGb, maxCycle, tol
+   * @returns {Promise<Object>} correlation result (totalEnergy,
+   *   correlationEnergy, triplesCorrection, ...)
    */
-  async runMP2(options = {}) {
+  async runCorrelation(method = 'mp2', options = {}) {
     if (!this.wavefunction) {
-      throw new Error('MP2 calculation requires a reference wavefunction. Run HF or DFT first.');
+      throw new Error('Correlation methods require a reference wavefunction. Run HF or DFT first.');
     }
 
-    const mp2 = new this.module.MP2(this.wavefunction);
-    
-    // Configure options
-    if (options.frozenCore !== undefined) {
-      mp2.setFrozenCore(options.frozenCore);
-    }
-    
-    this.energy = mp2.run();
-    this.method = 'MP2';
-    
-    return this.energy;
+    const opts = new this.module.CorrelationOptions();
+    opts.method = method;
+    if (options.backend !== undefined) opts.backend = options.backend;
+    if (options.auxBasis !== undefined) opts.auxBasis = options.auxBasis;
+    if (options.spinScaling !== undefined) opts.spinScaling = options.spinScaling;
+    if (options.nFrozen !== undefined) opts.nFrozen = options.nFrozen;
+    if (options.maxMemoryGb !== undefined) opts.maxMemoryGb = options.maxMemoryGb;
+    if (options.maxCycle !== undefined) opts.maxCycle = options.maxCycle;
+    if (options.tol !== undefined) opts.tol = options.tol;
+
+    const result = this.module.runCorrelationWithOptions(this.wavefunction, opts);
+    this.energy = result.totalEnergy;
+    this.method = result.method;
+
+    return {
+      method: result.method,
+      scfEnergy: result.scfEnergy,
+      correlationEnergy: result.correlationEnergy,
+      totalEnergy: result.totalEnergy,
+      sameSpin: result.sameSpin,
+      oppositeSpin: result.oppositeSpin,
+      scaledCorrelation: result.scaledCorrelation,
+      ccsdCorrelation: result.ccsdCorrelation,
+      triplesCorrection: result.triplesCorrection,
+      iterations: result.iterations,
+      converged: result.converged,
+      nFrozen: result.nFrozen,
+    };
+  }
+
+  /**
+   * Run MP2 calculation
+   * @param {Object} options - MP2 options (backend, auxBasis, spinScaling, nFrozen, ...)
+   * @returns {Promise<number>} MP2 total energy
+   */
+  async runMP2(options = {}) {
+    const result = await this.runCorrelation(options.method || 'mp2', options);
+    return result.totalEnergy;
+  }
+
+  /**
+   * Run CCSD or CCSD(T)
+   * @param {Object} options - options (triples: true for CCSD(T), backend, nFrozen, ...)
+   * @returns {Promise<Object>} correlation result
+   */
+  async runCCSD(options = {}) {
+    const method = options.triples ? 'ccsd(t)' : 'ccsd';
+    return this.runCorrelation(method, options);
   }
 
   /**

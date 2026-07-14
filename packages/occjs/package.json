@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "module": "dist/index.mjs",
   "bin": {
-    "occ": "./dist/occ.js"
+    "occ": "./dist/occ-cli.mjs"
   },
   "exports": {
     ".": {

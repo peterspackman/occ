@@ -81,11 +81,10 @@ export function createMP2Calculation(referenceCalc, options = {}) {
     throw new Error('MP2 calculation requires a reference wavefunction. Run HF or DFT on the reference calculation first.');
   }
   
-  // Set up MP2-specific default settings
+  // Set up MP2-specific default settings (runCorrelation option names)
   const mp2Options = {
-    frozenCore: options.frozenCore !== undefined ? options.frozenCore : true,
-    useRI: options.useRI !== undefined ? options.useRI : false,
-    spinComponentScaling: options.spinComponentScaling,
+    method: options.useRI ? 'ri-mp2' : 'mp2',
+    ...(options.spinComponentScaling ? { spinScaling: 'scs' } : {}),
     ...options
   };
   

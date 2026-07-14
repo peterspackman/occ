@@ -301,20 +301,45 @@ H  0.6276 -0.6276 -0.6276`);
     }, 30000);
   });
 
-  describe.skip('MP2 Calculations (Not Yet Implemented)', () => {
+  describe('Correlation Calculations', () => {
     it('should run MP2 after HF', async () => {
-      // MP2 bindings not yet implemented
-      expect(true).toBe(true);
-    });
+      const calc = await createQMCalculation(waterMolecule, '6-31g');
+      const hfEnergy = await calc.runHF();
 
-    it('should run MP2 with options', async () => {
-      // MP2 bindings not yet implemented  
-      expect(true).toBe(true);
-    });
+      const mp2Energy = await calc.runMP2();
+      expect(mp2Energy).toBeLessThan(hfEnergy);
+      expect(calc.method).toBe('MP2');
+    }, 60000);
 
-    it('should fail MP2 without reference wavefunction', async () => {
-      // MP2 bindings not yet implemented
-      expect(true).toBe(true);
+    it('should run RI-MP2 with options', async () => {
+      const calc = await createQMCalculation(waterMolecule, '6-31g');
+      await calc.runHF();
+
+      const result = await calc.runCorrelation('ri-mp2');
+      expect(result.method).toBe('RI-MP2');
+      expect(result.correlationEnergy).toBeLessThan(0);
+      expect(result.totalEnergy).toBeCloseTo(
+        result.scfEnergy + result.correlationEnergy, 8
+      );
+    }, 60000);
+
+    it('should run CCSD(T)', async () => {
+      const calc = await createQMCalculation(waterMolecule, '6-31g');
+      await calc.runHF();
+
+      const result = await calc.runCCSD({ triples: true });
+      expect(result.method).toBe('CCSD(T)');
+      expect(result.converged).toBe(true);
+      expect(result.ccsdCorrelation).toBeLessThan(0);
+      expect(result.triplesCorrection).toBeLessThan(0);
+      expect(result.nFrozen).toBe(1);
+    }, 120000);
+
+    it('should fail correlation without reference wavefunction', async () => {
+      const calc = await createQMCalculation(waterMolecule, 'sto-3g');
+      await expect(calc.runCorrelation('mp2')).rejects.toThrow(
+        /reference wavefunction/
+      );
     });
   });
 

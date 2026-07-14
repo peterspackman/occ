@@ -44,6 +44,33 @@ console.log(`Molar mass: ${water.molarMass()} g/mol`);
 - **Isosurface Generation**: Electron density and promolecule density visualization
 - **Custom Logging**: Flexible logging system with callbacks and buffering
 
+## Command-line interface (WASM)
+
+The full `occ` CLI ships as a WebAssembly ES module (`dist/occ.wasm` + `dist/occ.js`).
+
+Under node it runs directly against your working directory (inputs are read
+from, and outputs written to, the current directory):
+
+```bash
+npx occ scf water.xyz "ccsd(t)" 6-31g
+```
+
+Programmatic use (node, browser, or a `{ type: 'module' }` worker):
+
+```js
+import createOccCliModule from '@peterspackman/occjs/cli';
+
+const M = await createOccCliModule({ noInitialRun: true, locateFile: ... });
+M.FS.writeFile('/water.xyz', xyzContents);
+const exitCode = M.callMain(['scf', 'water.xyz', 'ccsd(t)', '6-31g']);
+```
+
+> **Migrating from ≤0.9.x**: `occ.js` used to be a classic script configured
+> through a global `Module` object and loaded with `importScripts()`. It is
+> now a modularized ES module with a default-exported `createOccCliModule`
+> factory — pass your configuration as its argument and spawn workers with
+> `{ type: 'module' }`. See `examples/occ-run-worker.js` for the pattern.
+
 ## Development
 
 ### Building from Source

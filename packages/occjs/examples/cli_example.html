@@ -237,7 +237,7 @@
 
         // Initialize persistent worker
         function initWorker() {
-            worker = new Worker('occ-worker.js');
+            worker = new Worker('occ-worker.js', { type: 'module' });
 
             worker.onmessage = (e) => {
                 handleWorkerMessage(e.data);
@@ -543,7 +543,7 @@
                 });
 
                 getFilesPromise.then((files) => {
-                    const occWorker = new Worker('occ-run-worker.js');
+                    const occWorker = new Worker('occ-run-worker.js', { type: 'module' });
 
                     occWorker.onmessage = (e) => {
                         const { type, text, code, files: outputFiles } = e.data;

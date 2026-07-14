@@ -138,7 +138,16 @@ export async function loadBasisSet(molecule, basisName) {
  */
 export async function wavefunctionFromString(content, format) {
   const Module = await loadOCC();
-  return Module.Wavefunction.fromString(content, format);
+  try {
+    return Module.Wavefunction.fromString(content, format);
+  } catch (e) {
+    // C++ exceptions surface as raw pointers; translate to a readable Error.
+    if (typeof e === 'number' && Module.getExceptionMessage) {
+      const [type, message] = Module.getExceptionMessage(e);
+      throw new Error(`${type}: ${message ?? ''}`);
+    }
+    throw e;
+  }
 }
 
 
