@@ -221,6 +221,10 @@ void register_qm_bindings() {
       .property("molecularOrbitals", &Wavefunction::mo)
       .property("atoms", &Wavefunction::atoms)
       .property("basis", &Wavefunction::basis)
+      .property("totalEnergy",
+                optional_override([](const Wavefunction &wfn) {
+                  return wfn.energy.total;
+                }))
       .function("mullikenCharges", &Wavefunction::mulliken_charges)
       .function("multiplicity", &Wavefunction::multiplicity)
       .function("rotate", &Wavefunction::apply_rotation)
@@ -361,8 +365,13 @@ void register_qm_bindings() {
                         } else if (format == "molden") {
                           auto reader = occ::io::MoldenReader(stream);
                           return Wavefunction(reader);
+                        } else if (format == "json" || format == "owf.json" ||
+                                   format == "owf") {
+                          auto reader = occ::io::JsonWavefunctionReader(stream);
+                          return reader.wavefunction();
                         } else {
-                          throw std::runtime_error("Unsupported format for fromString: " + format);
+                          throw std::runtime_error("Unsupported format for fromString: " + format +
+                                                   " (expected fchk, molden or json)");
                         }
                       }))
       .function("toString", optional_override([](const Wavefunction &wfn) {

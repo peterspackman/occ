@@ -245,6 +245,9 @@ void register_mo_and_wfn(lua_State *L) {
       .addProperty("charge", &Wavefunction::charge)
       .addProperty("multiplicity", &Wavefunction::multiplicity)
       .addProperty(
+          "total_energy",
+          +[](const Wavefunction *w) { return w->energy.total; })
+      .addProperty(
           "mulliken_charges",
           +[](const Wavefunction *w) -> Vec { return w->mulliken_charges(); })
       .addFunction(

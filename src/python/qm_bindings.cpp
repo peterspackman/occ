@@ -117,8 +117,24 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
             mo.n_beta);
       });
 
+  nb::class_<Energy>(m, "Energy")
+      .def_ro("coulomb", &Energy::coulomb)
+      .def_ro("exchange", &Energy::exchange)
+      .def_ro("nuclear_repulsion", &Energy::nuclear_repulsion)
+      .def_ro("nuclear_attraction", &Energy::nuclear_attraction)
+      .def_ro("kinetic", &Energy::kinetic)
+      .def_ro("core", &Energy::core)
+      .def_ro("total", &Energy::total)
+      .def_ro("ecp", &Energy::ecp)
+      .def("__repr__", [](const Energy &e) {
+        return fmt::format("<Energy total={:.10f}>", e.total);
+      });
+
   nb::class_<Wavefunction>(m, "Wavefunction")
       .def_rw("molecular_orbitals", &Wavefunction::mo)
+      .def_ro("energy", &Wavefunction::energy)
+      .def_prop_ro("total_energy",
+                   [](const Wavefunction &wfn) { return wfn.energy.total; })
       .def_ro("atoms", &Wavefunction::atoms)
       .def("mulliken_charges", &Wavefunction::mulliken_charges)
       .def("multiplicity", &Wavefunction::multiplicity)
@@ -185,8 +201,10 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
            &SCFConvergenceSettings::start_incremental_fock);
 
   nb::class_<HF>(m, "HF")
-      .def(nb::init<HartreeFock &>())
-      .def(nb::init<HartreeFock &, SpinorbitalKind>())
+      // SCF<T> stores a reference to the procedure: keep the HartreeFock
+      // object alive as long as the SCF wrapper exists.
+      .def(nb::init<HartreeFock &>(), nb::keep_alive<1, 2>())
+      .def(nb::init<HartreeFock &, SpinorbitalKind>(), nb::keep_alive<1, 2>())
       .def_rw("convergence_settings", &HF::convergence_settings)
       .def("set_charge_multiplicity", &HF::set_charge_multiplicity)
       .def("set_initial_guess", &HF::set_initial_guess_from_wfn)
@@ -257,7 +275,10 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
              SpinorbitalKind kind = SpinorbitalKind::Restricted) {
             return HF(hf, kind);
           },
-          "unrestricted"_a = SpinorbitalKind::Restricted)
+          "unrestricted"_a = SpinorbitalKind::Restricted,
+          // The returned SCF holds a reference to this HartreeFock; without
+          // this, `HartreeFock(basis).scf()` dangles and segfaults later.
+          nb::keep_alive<0, 1>())
       .def("set_precision", &HartreeFock::set_precision)
       .def("coulomb_matrix",
            [](const HartreeFock &hf, const MolecularOrbitals &mo) {
@@ -283,7 +304,8 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
       .def("hessian_evaluator",
            [](HartreeFock &hf) {
              return occ::qm::HessianEvaluator<HartreeFock>(hf);
-           }, "Create a Hessian evaluator for this HF object")
+           }, "Create a Hessian evaluator for this HF object",
+           nb::keep_alive<0, 1>())
       .def("__repr__", [](const HartreeFock &hf) {
         return fmt::format("<HartreeFock ({}, {} atoms)>", hf.aobasis().name(),
                            hf.atoms().size());

@@ -39,8 +39,10 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
   using KS = SCF<DFT>;
 
   nb::class_<KS>(m, "KS")
-      .def(nb::init<DFT &>())
-      .def(nb::init<DFT &, SpinorbitalKind>())
+      // SCF<T> stores a reference to the procedure: keep the DFT object
+      // alive as long as the SCF wrapper exists.
+      .def(nb::init<DFT &>(), nb::keep_alive<1, 2>())
+      .def(nb::init<DFT &, SpinorbitalKind>(), nb::keep_alive<1, 2>())
       .def_rw("convergence_settings", &KS::convergence_settings)
       .def("set_charge_multiplicity", &KS::set_charge_multiplicity)
       .def("set_initial_guess", &KS::set_initial_guess_from_wfn)
@@ -94,7 +96,10 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
           [](DFT &dft, SpinorbitalKind kind = SpinorbitalKind::Restricted) {
             return KS(dft, kind);
           },
-          "unrestricted"_a = SpinorbitalKind::Restricted)
+          "unrestricted"_a = SpinorbitalKind::Restricted,
+          // The returned SCF holds a reference to this DFT; without this,
+          // `DFT("b3lyp", basis).scf()` dangles and segfaults later.
+          nb::keep_alive<0, 1>())
       .def("compute_gradient",
            [](DFT &dft, const MolecularOrbitals &mo) {
              occ::qm::GradientEvaluator<DFT> grad(dft);
@@ -103,7 +108,8 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
       .def("hessian_evaluator",
            [](DFT &dft) {
              return occ::qm::HessianEvaluator<DFT>(dft);
-           }, "Create a Hessian evaluator for this DFT object")
+           }, "Create a Hessian evaluator for this DFT object",
+           nb::keep_alive<0, 1>())
       .def("__repr__", [](const DFT &dft) {
         return fmt::format("<DFT {} ({}, {} atoms)>", dft.method_string(),
                            dft.aobasis().name(), dft.atoms().size());

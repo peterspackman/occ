@@ -1,6 +1,7 @@
 #include "occ_module.h"
 #include "cg_bindings.h"
 #include "core_bindings.h"
+#include "correlation_bindings.h"
 #include "crystal_bindings.h"
 #include "descriptors_bindings.h"
 #include "dft_bindings.h"
@@ -348,6 +349,7 @@ void open_occ_module(lua_State *L) {
   register_core_bindings(L);
   register_crystal_bindings(L);
   register_qm_bindings(L);
+  register_correlation_bindings(L);
   register_dft_bindings(L);
   register_descriptors_bindings(L);
   register_opt_bindings(L);

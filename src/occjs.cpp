@@ -1,5 +1,6 @@
 #include "js/cg_bindings.h"
 #include "js/core_bindings.h"
+#include "js/correlation_bindings.h"
 #include "js/qm_bindings.h"
 #include "js/dft_bindings.h"
 #include "js/opt_bindings.h"
@@ -23,6 +24,7 @@ EMSCRIPTEN_BINDINGS(occ) {
     // Register all binding modules
     register_core_bindings();
     register_qm_bindings();
+    register_correlation_bindings();
     register_dft_bindings();
     register_opt_bindings();
     register_isosurface_bindings();

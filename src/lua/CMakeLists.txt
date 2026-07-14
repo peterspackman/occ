@@ -2,6 +2,7 @@ add_library(occ_lua_bindings STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/occ_module.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/eigen_matrix.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/core_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/correlation_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/crystal_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/qm_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_bindings.cpp"
