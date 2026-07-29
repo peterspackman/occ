@@ -71,9 +71,15 @@ Kind classify(const std::string &filename) {
 
 void run_periodic(const TbConfig &cfg) {
   auto crystal = occ::io::load_crystal(cfg.filename);
+  if (cfg.multiplicity != 1) {
+    throw std::runtime_error(
+        "occ tb: the periodic GFN2 SCC is restricted only; --multiplicity is "
+        "supported for molecular inputs");
+  }
   occ::xtb::XtbCalculator calc(crystal);
   calc.set_charge(cfg.charge);
   calc.set_include_multipoles(cfg.include_multipoles);
+  calc.set_include_dispersion(cfg.include_dispersion);
   if (cfg.kpoints[0] != 1 || cfg.kpoints[1] != 1 || cfg.kpoints[2] != 1) {
     calc.set_kpoints(cfg.kpoints[0], cfg.kpoints[1], cfg.kpoints[2]);
   }
@@ -127,6 +133,7 @@ void run_periodic(const TbConfig &cfg) {
       occ::xtb::XtbCalculator mol_calc(uniq_mols[i]);
       mol_calc.set_charge(cfg.charge);
       mol_calc.set_include_multipoles(cfg.include_multipoles);
+      mol_calc.set_include_dispersion(cfg.include_dispersion);
       const double e_mol = mol_calc.single_point_energy();
       if (!mol_calc.last_result().converged) {
         occ::log::error("Molecular SCC for unique mol {} did not converge.", i);
@@ -202,12 +209,16 @@ void run_molecular(const TbConfig &cfg) {
     input.method.name = "gfn2";
     input.geometry.set_molecule(mol);
     input.electronic.charge = cfg.charge;
+    input.electronic.multiplicity = cfg.multiplicity;
+    input.electronic.spin_polarization = cfg.spin_polarization;
+    input.electronic.electronic_temperature = cfg.electronic_temperature;
     input.filename = cfg.filename;
     occ::log::info("{:-<72s}", "GFN2-xTB molecular optimization ");
     occ::log::info("input          : {}", cfg.filename);
     occ::log::info("atoms          : {}", mol.size());
     occ::log::info("multipoles     : on (analytical gradient)");
     occ::log::info("charge         : {:+.3f} e", cfg.charge);
+    occ::log::info("multiplicity   : {}", cfg.multiplicity);
     occ::log::info("");
     auto wfn = occ::driver::geometry_optimization(input);
     // Save the converged wavefunction at the optimised geometry. The
@@ -221,7 +232,11 @@ void run_molecular(const TbConfig &cfg) {
       occ::core::Molecule opt_mol(wfn.atoms);
       occ::xtb::XtbCalculator opt_calc(opt_mol);
       opt_calc.set_charge(cfg.charge);
+      opt_calc.set_num_unpaired_electrons(cfg.multiplicity - 1);
+      opt_calc.set_spin_polarization(cfg.spin_polarization);
+      opt_calc.set_temperature(cfg.electronic_temperature);
       opt_calc.set_include_multipoles(cfg.include_multipoles);
+      opt_calc.set_include_dispersion(cfg.include_dispersion);
       run_frequencies(opt_calc, cfg);
     }
     return;
@@ -229,12 +244,19 @@ void run_molecular(const TbConfig &cfg) {
 
   occ::xtb::XtbCalculator calc(mol);
   calc.set_charge(cfg.charge);
+  calc.set_num_unpaired_electrons(cfg.multiplicity - 1);
+  calc.set_spin_polarization(cfg.spin_polarization);
+  calc.set_temperature(cfg.electronic_temperature);
   calc.set_include_multipoles(cfg.include_multipoles);
+  calc.set_include_dispersion(cfg.include_dispersion);
   occ::log::info("{:-<72s}", "GFN2-xTB molecular ");
   occ::log::info("input          : {}", cfg.filename);
   occ::log::info("atoms          : {}", calc.num_atoms());
   occ::log::info("multipoles     : {}", cfg.include_multipoles ? "on" : "off");
+  occ::log::info("dispersion     : {}", cfg.include_dispersion ? "on" : "off");
   occ::log::info("charge         : {:+.3f} e", cfg.charge);
+  occ::log::info("multiplicity   : {}{}", cfg.multiplicity,
+                  cfg.multiplicity > 1 ? " (spin-unrestricted)" : "");
 
   const double e_total = calc.single_point_energy();
   if (!calc.last_result().converged) {
@@ -265,6 +287,19 @@ CLI::App *add_tb_subcommand(CLI::App &app) {
                                      "Geometry file (.xyz / .cif / .gen)");
   input_opt->required()->check(CLI::ExistingFile);
   tb->add_option("-c,--charge", cfg->charge, "Net charge (e)");
+  tb->add_option("--multiplicity", cfg->multiplicity,
+                  "Spin multiplicity 2S+1 (default 1). Values above 1 run the "
+                  "spin-unrestricted SCC. Molecular inputs only.")
+      ->check(CLI::PositiveNumber);
+  tb->add_option("--spin-polarization", cfg->spin_polarization,
+                  "Scale on the on-site spin-polarization constants (default "
+                  "1). Pass 0 to reproduce plain `xtb --uhf`, where α and β "
+                  "share one Hamiltonian and differ only in occupation.");
+  tb->add_option("--etemp", cfg->electronic_temperature,
+                  "Electronic temperature in K for Fermi smearing of the "
+                  "orbital occupations (default 300). Raise it if the SCC "
+                  "oscillates on near-degenerate frontier orbitals. "
+                  "Molecular inputs only.");
   tb->add_flag("--no-multipoles{false}", cfg->include_multipoles,
                 "Disable CAMM multipoles + anisotropic ES (charge-only SCC)");
   tb->add_flag("--no-dispersion{false}", cfg->include_dispersion,

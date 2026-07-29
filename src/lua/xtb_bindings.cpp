@@ -53,6 +53,36 @@ void register_xtb_bindings(lua_State *L) {
       .addProperty(
           "orbital_coefficients",
           +[](const XtbResult *r) -> Mat { return r->orbital_coefficients; })
+      // Open-shell channel; the Eigen-typed fields are empty when restricted.
+      .addProperty("unrestricted", &XtbResult::unrestricted)
+      .addProperty("num_unpaired_electrons",
+                   &XtbResult::num_unpaired_electrons)
+      .addProperty("spin_energy", &XtbResult::spin_energy)
+      .addProperty("electronic_entropy_energy",
+                   &XtbResult::electronic_entropy_energy)
+      .addProperty(
+          "shell_magnetization",
+          +[](const XtbResult *r) -> Vec { return r->shell_magnetization; })
+      .addProperty(
+          "atomic_magnetization",
+          +[](const XtbResult *r) -> Vec { return r->atomic_magnetization; })
+      .addProperty(
+          "density_matrix_alpha",
+          +[](const XtbResult *r) -> Mat { return r->density_matrix_alpha; })
+      .addProperty(
+          "density_matrix_beta",
+          +[](const XtbResult *r) -> Mat { return r->density_matrix_beta; })
+      .addProperty("orbital_coefficients_beta",
+                   +[](const XtbResult *r) -> Mat {
+                     return r->orbital_coefficients_beta;
+                   })
+      .addProperty(
+          "orbital_energies_beta",
+          +[](const XtbResult *r) -> Vec { return r->orbital_energies_beta; })
+      .addProperty("orbital_occupations_beta",
+                   +[](const XtbResult *r) -> Vec {
+                     return r->orbital_occupations_beta;
+                   })
       .addFunction(
           "__tostring",
           +[](const XtbResult *r) {
@@ -112,6 +142,9 @@ void register_xtb_bindings(lua_State *L) {
       .addProperty("num_unpaired_electrons",
                    &XtbCalculator::num_unpaired_electrons,
                    &XtbCalculator::set_num_unpaired_electrons)
+      .addProperty("spin_polarization", &XtbCalculator::spin_polarization,
+                   &XtbCalculator::set_spin_polarization)
+      .addProperty("is_unrestricted", &XtbCalculator::is_unrestricted)
       .addProperty("max_iterations", &XtbCalculator::max_iterations,
                    &XtbCalculator::set_max_iterations)
       .addProperty("temperature", &XtbCalculator::temperature,
@@ -168,6 +201,10 @@ void register_xtb_bindings(lua_State *L) {
       .addProperty(
           "charges",
           +[](const XtbCalculator *c) -> Vec { return c->charges(); })
+      .addProperty("atomic_magnetization",
+                   +[](const XtbCalculator *c) -> Vec {
+                     return c->atomic_magnetization();
+                   })
       .addProperty(
           "bond_orders",
           +[](const XtbCalculator *c) -> Mat { return c->bond_orders(); })
@@ -175,6 +212,7 @@ void register_xtb_bindings(lua_State *L) {
       .addProperty("scc_energy", &XtbCalculator::scc_energy)
       .addProperty("repulsion_energy", &XtbCalculator::repulsion_energy)
       .addProperty("dispersion_energy", &XtbCalculator::dispersion_energy)
+      .addProperty("spin_energy", &XtbCalculator::spin_energy)
 
       // Gradient — Mat3N as registered userdata so callers can use
       // the row-proxy idiom `g[1][j]` for x of atom j.
@@ -201,6 +239,10 @@ void register_xtb_bindings(lua_State *L) {
           +[](XtbCalculator *c, double step, lua_State *S) {
             return mat_to_table(S, c->compute_hessian_numerical(step));
           })
+      .addFunction("vibrational_modes",
+                   +[](XtbCalculator *c, double step, bool project_tr_rot) {
+                     return c->compute_vibrational_modes(step, project_tr_rot);
+                   })
 
       // Conversion
       .addFunction("to_molecule", &XtbCalculator::to_molecule)

@@ -211,6 +211,13 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
 // initial guess (warm-start). Constructing fresh each step would discard
 // both, costing 1× full Gfn2Engine construction + ~3 SCC iterations per
 // step.
+void configure(occ::xtb::XtbCalculator &calc, const OccInput &config) {
+  calc.set_charge(config.electronic.charge);
+  calc.set_num_unpaired_electrons(config.electronic.multiplicity - 1);
+  calc.set_spin_polarization(config.electronic.spin_polarization);
+  calc.set_temperature(config.electronic.electronic_temperature);
+}
+
 std::pair<Wavefunction, Mat3N>
 run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
                           std::optional<occ::xtb::XtbCalculator> *cached =
@@ -220,7 +227,7 @@ run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
   if (cached) {
     if (!cached->has_value()) {
       cached->emplace(m);
-      cached->value().set_charge(config.electronic.charge);
+      configure(cached->value(), config);
     } else {
       cached->value().update_structure(m.positions() *
                                         occ::units::ANGSTROM_TO_BOHR);
@@ -228,7 +235,7 @@ run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
     calc_ptr = &cached->value();
   } else {
     local.emplace(m);
-    local->set_charge(config.electronic.charge);
+    configure(*local, config);
     calc_ptr = &local.value();
   }
   auto &calc = *calc_ptr;

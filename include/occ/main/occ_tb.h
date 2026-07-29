@@ -8,6 +8,16 @@ namespace occ::main {
 struct TbConfig {
   std::string filename;        // .xyz / .cif / .gen / .com
   double charge{0.0};
+  // Spin multiplicity 2S+1. Anything above 1 runs the spin-unrestricted SCC.
+  // Molecular only — the periodic SCC is restricted.
+  int multiplicity{1};
+  // Scale on the on-site spin-polarization constants; 0 reproduces plain
+  // `xtb --uhf` (common Fock matrix, α/β differ only in occupation).
+  double spin_polarization{1.0};
+  // Electronic temperature (K) for Fermi smearing of the occupations.
+  // Raising it damps the occupation flip-flop that near-degenerate frontier
+  // orbitals otherwise cause. Molecular only.
+  double electronic_temperature{300.0};
   bool include_multipoles{true};
   bool include_dispersion{true};
   std::vector<int> kpoints{1, 1, 1};

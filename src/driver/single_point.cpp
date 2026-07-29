@@ -322,6 +322,10 @@ single_point_driver(const OccInput &config,
     occ::xtb::XtbCalculator calc(m);
     if (config.electronic.charge != 0.0)
       calc.set_charge(config.electronic.charge);
+    // multiplicity > 1 selects the spin-unrestricted (spin-polarized) SCC.
+    calc.set_num_unpaired_electrons(config.electronic.multiplicity - 1);
+    calc.set_spin_polarization(config.electronic.spin_polarization);
+    calc.set_temperature(config.electronic.electronic_temperature);
     (void)calc.single_point_energy();
     calc.print_summary();
     return calc.to_wavefunction();

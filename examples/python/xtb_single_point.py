@@ -38,7 +38,7 @@ def main():
     print(f"\nGradient (Hartree/Bohr) at E = {energy:.10f} Ha:")
     # gradient is a 3×N numpy array.
     for j in range(gradient.shape[1]):
-        print(f"  atom {j + 1}: {gradient[0, j]:+ .6f} {gradient[1, j]:+ .6f} {gradient[2, j]:+ .6f}")
+        print(f"  atom {j + 1}: {gradient[0, j]:+.6f} {gradient[1, j]:+.6f} {gradient[2, j]:+.6f}")
 
 
 if __name__ == "__main__":

@@ -19,6 +19,10 @@ struct ElectronInput {
   int multiplicity{1};
   double charge{0.0};
   SpinorbitalKind spinorbital_kind{SpinorbitalKind::Restricted};
+  // GFN2-xTB only: scale on the on-site spin-polarization constants, and the
+  // electronic temperature (K) used to smear the orbital occupations.
+  double spin_polarization{1.0};
+  double electronic_temperature{300.0};
 };
 
 struct GeometryInput {

@@ -27,6 +27,21 @@ void register_xtb_bindings() {
       .property("densityMatrix", &XtbResult::density_matrix)
       .property("overlapMatrix", &XtbResult::overlap_matrix)
       .property("orbitalCoefficients", &XtbResult::orbital_coefficients)
+      // Open-shell channel; the matrix/vector fields are empty if restricted.
+      .property("unrestricted", &XtbResult::unrestricted)
+      .property("numUnpairedElectrons", &XtbResult::num_unpaired_electrons)
+      .property("spinEnergy", &XtbResult::spin_energy)
+      .property("electronicEntropyEnergy",
+                &XtbResult::electronic_entropy_energy)
+      .property("shellMagnetization", &XtbResult::shell_magnetization)
+      .property("atomicMagnetization", &XtbResult::atomic_magnetization)
+      .property("densityMatrixAlpha", &XtbResult::density_matrix_alpha)
+      .property("densityMatrixBeta", &XtbResult::density_matrix_beta)
+      .property("orbitalCoefficientsBeta",
+                &XtbResult::orbital_coefficients_beta)
+      .property("orbitalEnergiesBeta", &XtbResult::orbital_energies_beta)
+      .property("orbitalOccupationsBeta",
+                &XtbResult::orbital_occupations_beta)
       .property("nIterations", &XtbResult::n_iterations)
       .property("converged", &XtbResult::converged)
       .function("toString", optional_override([](const XtbResult &r) {
@@ -92,6 +107,9 @@ void register_xtb_bindings() {
       .property("numUnpairedElectrons",
                 &XtbCalculator::num_unpaired_electrons,
                 &XtbCalculator::set_num_unpaired_electrons)
+      .property("spinPolarization", &XtbCalculator::spin_polarization,
+                &XtbCalculator::set_spin_polarization)
+      .function("isUnrestricted", &XtbCalculator::is_unrestricted)
       .property("maxIterations", &XtbCalculator::max_iterations,
                 &XtbCalculator::set_max_iterations)
       .property("temperature", &XtbCalculator::temperature,
@@ -139,11 +157,13 @@ void register_xtb_bindings() {
 
       // Derived quantities
       .function("charges", &XtbCalculator::charges)
+      .function("atomicMagnetization", &XtbCalculator::atomic_magnetization)
       .function("bondOrders", &XtbCalculator::bond_orders)
       .function("totalEnergy", &XtbCalculator::total_energy)
       .function("sccEnergy", &XtbCalculator::scc_energy)
       .function("repulsionEnergy", &XtbCalculator::repulsion_energy)
       .function("dispersionEnergy", &XtbCalculator::dispersion_energy)
+      .function("spinEnergy", &XtbCalculator::spin_energy)
 
       // Gradient
       .function("gradient", &XtbCalculator::gradient)

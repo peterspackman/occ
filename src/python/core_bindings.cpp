@@ -93,6 +93,12 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def("elements", &Molecule::elements)
       .def_prop_ro("positions", &Molecule::positions)
       .def_prop_rw("name", &Molecule::name, &Molecule::set_name)
+      .def_prop_rw("charge", &Molecule::charge, &Molecule::set_charge,
+                   "Net charge in electrons.")
+      .def_prop_rw("multiplicity", &Molecule::multiplicity,
+                   &Molecule::set_multiplicity,
+                   "Spin multiplicity 2S+1. Calculators built from this "
+                   "molecule inherit it.")
       .def_prop_rw("partial_charges", &Molecule::partial_charges,
                    &Molecule::set_partial_charges)
       .def("esp_partial_charges", &Molecule::esp_partial_charges)
@@ -205,6 +211,9 @@ nb::module_ register_core_bindings(nb::module_ &m) {
       .def_prop_ro("nearest_distance", &Dimer::nearest_distance)
       .def_prop_ro("center_of_mass_distance", &Dimer::center_of_mass_distance)
       .def_prop_ro("centroid_distance", &Dimer::centroid_distance)
+      .def_prop_ro("charge", &Dimer::charge, "Sum of the monomer charges.")
+      .def_prop_ro("multiplicity", &Dimer::multiplicity,
+                   "Combined spin multiplicity of the two monomers.")
       .def("symmetry_relation", &Dimer::symmetry_relation)
       .def_prop_rw("name", &Dimer::name, &Dimer::set_name)
       .def_prop_rw("interaction_id", &Dimer::interaction_id,

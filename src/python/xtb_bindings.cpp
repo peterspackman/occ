@@ -39,15 +39,41 @@ nb::module_ register_xtb_bindings(nb::module_ &parent) {
       .def_ro("atomic_charges", &XtbResult::atomic_charges,
               "Per-atom partial charges (Mulliken).")
       .def_ro("orbital_energies", &XtbResult::orbital_energies,
-              "Orbital energies ε at Γ (Hartree).")
+              "Orbital energies ε at Γ (Hartree); α channel when unrestricted.")
       .def_ro("orbital_occupations", &XtbResult::orbital_occupations,
-              "Per-orbital occupations (0..2 for closed shell).")
+              "Per-orbital occupations (0..2 restricted, 0..1 for the α "
+              "channel when unrestricted).")
       .def_ro("density_matrix", &XtbResult::density_matrix,
-              "Density matrix P at Γ (closed-shell, summed over both spins).")
+              "Total density matrix P at Γ (summed over both spins).")
       .def_ro("overlap_matrix", &XtbResult::overlap_matrix,
               "Overlap matrix S at Γ.")
       .def_ro("orbital_coefficients", &XtbResult::orbital_coefficients,
-              "Orbital coefficients C at Γ.")
+              "Orbital coefficients C at Γ; α channel when unrestricted.")
+      .def_ro("unrestricted", &XtbResult::unrestricted,
+              "True if the SCC ran with separate α/β densities.")
+      .def_ro("num_unpaired_electrons", &XtbResult::num_unpaired_electrons,
+              "Nα − Nβ used for this calculation.")
+      .def_ro("spin_energy", &XtbResult::spin_energy,
+              "On-site spin-polarization energy (included in scc_energy).")
+      .def_ro("electronic_entropy_energy",
+              &XtbResult::electronic_entropy_energy,
+              "Electronic −T·S from Fermi smearing (included in scc_energy).")
+      .def_ro("shell_magnetization", &XtbResult::shell_magnetization,
+              "Per-shell magnetization pop(α) − pop(β); empty if restricted.")
+      .def_ro("atomic_magnetization", &XtbResult::atomic_magnetization,
+              "Per-atom magnetization; empty if restricted.")
+      .def_ro("density_matrix_alpha", &XtbResult::density_matrix_alpha,
+              "α-spin density matrix; empty if restricted.")
+      .def_ro("density_matrix_beta", &XtbResult::density_matrix_beta,
+              "β-spin density matrix; empty if restricted.")
+      .def_ro("orbital_coefficients_beta",
+              &XtbResult::orbital_coefficients_beta,
+              "β-spin orbital coefficients; empty if restricted.")
+      .def_ro("orbital_energies_beta", &XtbResult::orbital_energies_beta,
+              "β-spin orbital energies; empty if restricted.")
+      .def_ro("orbital_occupations_beta",
+              &XtbResult::orbital_occupations_beta,
+              "β-spin orbital occupations; empty if restricted.")
       .def_ro("n_iterations", &XtbResult::n_iterations,
               "Number of SCC iterations.")
       .def_ro("converged", &XtbResult::converged,
@@ -114,7 +140,17 @@ nb::module_ register_xtb_bindings(nb::module_ &parent) {
       .def_prop_rw("num_unpaired_electrons",
                    &XtbCalculator::num_unpaired_electrons,
                    &XtbCalculator::set_num_unpaired_electrons,
-                   "Number of unpaired electrons (only 0 supported).")
+                   "Number of unpaired electrons Nα − Nβ (multiplicity − 1). "
+                   "Non-zero runs the spin-unrestricted SCC. Must match the "
+                   "parity of the valence electron count. Periodic "
+                   "calculators are restricted-only.")
+      .def_prop_rw("spin_polarization", &XtbCalculator::spin_polarization,
+                   &XtbCalculator::set_spin_polarization,
+                   "Scale on the on-site spin-polarization constants "
+                   "(default 1). Set to 0 to reproduce plain ``xtb --uhf``, "
+                   "where α and β share one Hamiltonian.")
+      .def_prop_ro("is_unrestricted", &XtbCalculator::is_unrestricted,
+                   "True once a spin-unrestricted SCC has run.")
       .def_prop_rw("max_iterations", &XtbCalculator::max_iterations,
                    &XtbCalculator::set_max_iterations,
                    "Maximum SCC iterations.")
@@ -178,12 +214,16 @@ nb::module_ register_xtb_bindings(nb::module_ &parent) {
       // Derived quantities
       .def_prop_ro("charges", &XtbCalculator::charges,
                    "Per-atom Mulliken charges (length = num_atoms).")
+      .def_prop_ro("atomic_magnetization",
+                   &XtbCalculator::atomic_magnetization,
+                   "Per-atom magnetization (α − β); empty if restricted.")
       .def_prop_ro("bond_orders", &XtbCalculator::bond_orders,
-                   "Wiberg bond-order matrix (N × N).")
+                   "Wiberg bond-order matrix (N × N); molecular only.")
       .def_prop_ro("total_energy", &XtbCalculator::total_energy)
       .def_prop_ro("scc_energy", &XtbCalculator::scc_energy)
       .def_prop_ro("repulsion_energy", &XtbCalculator::repulsion_energy)
       .def_prop_ro("dispersion_energy", &XtbCalculator::dispersion_energy)
+      .def_prop_ro("spin_energy", &XtbCalculator::spin_energy)
 
       // Gradient
       .def("gradient", &XtbCalculator::gradient,
