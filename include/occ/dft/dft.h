@@ -14,6 +14,7 @@
 #include <occ/dft/xc_potential_matrix.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
+#include <occ/qm/scf_method.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/spinorbital.h>
@@ -83,18 +84,11 @@ public:
   double exchange_energy_total() const { return m_exchange_energy; }
 
   bool usual_scf_energy() const { return false; }
-  void update_scf_energy(occ::core::EnergyComponents &energy,
-                         bool incremental) const {
-    if (incremental) {
-      energy["electronic.2e"] += m_two_electron_energy;
-      energy["electronic"] += m_two_electron_energy;
-      energy["electronic.dft_xc"] += exchange_correlation_energy();
-    } else {
-      energy["electronic"] = energy["electronic.1e"];
-      energy["electronic.2e"] = m_two_electron_energy;
-      energy["electronic"] += m_two_electron_energy;
-      energy["electronic.dft_xc"] = exchange_correlation_energy();
-    }
+  void update_scf_energy(occ::core::EnergyComponents &energy) const {
+    energy["electronic"] = energy["electronic.1e"];
+    energy["electronic.2e"] = m_two_electron_energy;
+    energy["electronic"] += m_two_electron_energy;
+    energy["electronic.dft_xc"] = exchange_correlation_energy();
 
     if (m_nlc_energy != 0.0) {
       energy["electronic.nonlocal_correlation"] = m_nlc_energy;
@@ -112,7 +106,11 @@ public:
     }
     energy["total"] = total;
   }
-  bool supports_incremental_fock_build() const { return false; }
+  qm::FockBuildProperties fock_build_properties() const {
+    // The XC contribution is a quadrature over the density itself, so the
+    // two-electron build is not a linear function of D.
+    return {.linear_in_density = false};
+  }
   inline bool have_effective_core_potentials() const {
     return m_hf.have_effective_core_potentials();
   }

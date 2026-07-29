@@ -1828,3 +1828,126 @@ TEST_CASE("plan_acceleration applies the ORCA-style policy", "[acceleration]") {
   }
 }
 
+
+// ============================================================================
+// Incremental Fock builds
+//
+// Once the SCF settles, the Fock matrix is accumulated as F += G(ΔD) instead
+// of being rebuilt from H — cheaper because the density-weighted Schwarz
+// screening sees a small ΔD. It must not change the converged answer, and it
+// must stay switched off for any procedure whose Fock build isn't a linear
+// function of the density alone (DF, COSX, DFT) or whose core Hamiltonian is
+// itself density dependent (implicit solvation).
+// ============================================================================
+
+namespace {
+
+std::vector<occ::core::Atom> incremental_test_atoms() {
+  return {{8, -1.32695761, -0.10593856, 0.01878821},
+          {1, -1.93166418, 1.60017351, -0.02171049},
+          {1, 0.48664409, 0.07959806, 0.00986248}};
+}
+
+struct IncrementalRun {
+  double energy{0.0};
+  int incremental_builds{0};
+  int iterations{0};
+};
+
+// Run an SCF with incremental builds either at the library default or forced
+// off, so the two can be compared directly.
+IncrementalRun run_scf(SpinorbitalKind kind, const std::string &basis_name,
+                       bool allow_incremental) {
+  auto basis = occ::gto::AOBasis::load(incremental_test_atoms(), basis_name);
+  HartreeFock hf(basis);
+  occ::qm::SCF<HartreeFock> scf(hf, kind);
+  scf.convergence_settings.energy_threshold = 1e-10;
+  scf.convergence_settings.commutator_threshold = 1e-8;
+  if (!allow_incremental)
+    scf.convergence_settings.incremental_fock_threshold = 0.0;
+  IncrementalRun r;
+  r.energy = scf.compute_scf_energy();
+  r.incremental_builds = scf.num_incremental_fock_builds;
+  r.iterations = scf.iter;
+  return r;
+}
+
+} // namespace
+
+TEST_CASE("Incremental Fock: engages for conventional HF", "[scf][incremental]") {
+  // Guards the regression this test was written for: the incremental branch
+  // was unreachable, first because it was short-circuited and then because the
+  // default threshold was tighter than the SCF's own convergence criterion.
+  auto run = run_scf(SpinorbitalKind::Restricted, "6-31G", true);
+  INFO("iterations = " << run.iterations);
+  REQUIRE(run.incremental_builds > 0);
+  // ...and not *every* build: the accumulated F is periodically reset.
+  REQUIRE(run.incremental_builds < run.iterations);
+}
+
+TEST_CASE("Incremental Fock: converged energy is unchanged",
+          "[scf][incremental]") {
+  const double tolerance = 1e-9;
+
+  SECTION("restricted") {
+    auto on = run_scf(SpinorbitalKind::Restricted, "6-31G", true);
+    auto off = run_scf(SpinorbitalKind::Restricted, "6-31G", false);
+    REQUIRE(on.incremental_builds > 0);
+    REQUIRE(off.incremental_builds == 0);
+    REQUIRE(on.energy == Catch::Approx(off.energy).margin(tolerance));
+  }
+
+  SECTION("unrestricted") {
+    auto on = run_scf(SpinorbitalKind::Unrestricted, "6-31G", true);
+    auto off = run_scf(SpinorbitalKind::Unrestricted, "6-31G", false);
+    REQUIRE(on.incremental_builds > 0);
+    REQUIRE(on.energy == Catch::Approx(off.energy).margin(tolerance));
+  }
+
+  SECTION("general") {
+    auto on = run_scf(SpinorbitalKind::General, "3-21G", true);
+    auto off = run_scf(SpinorbitalKind::General, "3-21G", false);
+    REQUIRE(on.incremental_builds > 0);
+    REQUIRE(on.energy == Catch::Approx(off.energy).margin(tolerance));
+  }
+
+  SECTION("larger basis") {
+    auto on = run_scf(SpinorbitalKind::Restricted, "cc-pVDZ", true);
+    auto off = run_scf(SpinorbitalKind::Restricted, "cc-pVDZ", false);
+    REQUIRE(on.incremental_builds > 0);
+    REQUIRE(on.energy == Catch::Approx(off.energy).margin(tolerance));
+  }
+}
+
+TEST_CASE("Incremental Fock: disabled when the Fock build isn't incremental-safe",
+          "[scf][incremental]") {
+  auto atoms = incremental_test_atoms();
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+
+  SECTION("density fitting") {
+    HartreeFock hf(basis);
+    hf.set_density_fitting_basis("def2-universal-jkfit");
+    REQUIRE_FALSE(supports_incremental_fock_build(hf.fock_build_properties()));
+    occ::qm::SCF<HartreeFock> scf(hf);
+    REQUIRE(scf.convergence_settings.incremental_fock_threshold == 0.0);
+    (void)scf.compute_scf_energy();
+    REQUIRE(scf.num_incremental_fock_builds == 0);
+  }
+
+  SECTION("COSX") {
+    HartreeFock hf(basis);
+    hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid1);
+    REQUIRE_FALSE(supports_incremental_fock_build(hf.fock_build_properties()));
+    occ::qm::SCF<HartreeFock> scf(hf);
+    REQUIRE(scf.convergence_settings.incremental_fock_threshold == 0.0);
+    (void)scf.compute_scf_energy();
+    REQUIRE(scf.num_incremental_fock_builds == 0);
+  }
+
+  SECTION("conventional HF does support it") {
+    HartreeFock hf(basis);
+    REQUIRE(supports_incremental_fock_build(hf.fock_build_properties()));
+    occ::qm::SCF<HartreeFock> scf(hf);
+    REQUIRE(scf.convergence_settings.incremental_fock_threshold > 0.0);
+  }
+}

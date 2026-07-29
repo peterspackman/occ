@@ -12,7 +12,12 @@ enum class DiisStrategy {
 struct SCFConvergenceSettings {
   double energy_threshold{1e-6};
   double commutator_threshold{1e-5};
-  double incremental_fock_threshold{1e-4};
+  // Start accumulating F += G(ΔD) once the SCF is in the well-behaved regime.
+  // This shares the ADIIS→CDIIS switch point below: earlier than that the
+  // density still swings enough that ΔD is no smaller than D, so incremental
+  // builds screen no better while accumulating drift. Must stay looser than
+  // `commutator_threshold`, or the SCF converges before it can ever engage.
+  double incremental_fock_threshold{1e-2};
 
   // DIIS strategy settings
   DiisStrategy diis_strategy{DiisStrategy::ADIIS_CDIIS};

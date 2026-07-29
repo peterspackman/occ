@@ -45,8 +45,9 @@ DFT DFT::with_new_basis(const AOBasis &new_basis) const {
   
   // Copy DF basis if present
   // Note: This is a limitation - we'd need to store the DF basis name to properly copy it
-  if (!m_hf.supports_incremental_fock_build()) {
-    occ::log::warn("Density fitting basis not preserved in DFT::with_new_basis - needs implementation");
+  if (!m_hf.fock_build_properties().density_screened) {
+    occ::log::warn("Density fitting basis not preserved in "
+                   "DFT::with_new_basis - needs implementation");
   }
   
   return new_dft;

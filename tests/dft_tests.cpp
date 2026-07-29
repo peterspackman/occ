@@ -1602,3 +1602,15 @@ TEST_CASE("GHF with COSX exchange", "[ghf][cosx]") {
     }
 }
 
+
+TEST_CASE("Incremental Fock: DFT opts out because XC is not linear in D",
+          "[scf][incremental]") {
+  std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
+                                     {1, -1.93166418, 1.60017351, -0.02171049},
+                                     {1, 0.48664409, 0.07959806, 0.00986248}};
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+  occ::dft::DFT dft("blyp", basis);
+  auto properties = dft.fock_build_properties();
+  REQUIRE_FALSE(properties.linear_in_density);
+  REQUIRE_FALSE(occ::qm::supports_incremental_fock_build(properties));
+}

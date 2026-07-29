@@ -6,6 +6,7 @@
 #include <occ/core/units.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/mo.h>
+#include <occ/qm/scf_method.h>
 #include <occ/gto/shell.h>
 #include <occ/scrf/reaction_field.h>
 #include <occ/solvent/cosmo.h>
@@ -136,8 +137,12 @@ public:
     m_cds_solvation_energy = m_solvation_model.smd_cds_energy();
   }
 
-  bool supports_incremental_fock_build() const {
-    return m_proc.supports_incremental_fock_build();
+  occ::qm::FockBuildProperties fock_build_properties() const {
+    // `update_core_hamiltonian` folds the apparent surface charge into H every
+    // cycle, so H is not constant no matter what the wrapped method allows.
+    auto properties = m_proc.fock_build_properties();
+    properties.constant_core_hamiltonian = false;
+    return properties;
   }
   inline bool have_effective_core_potentials() const {
     return m_proc.have_effective_core_potentials();
@@ -176,20 +181,12 @@ public:
     return m_proc.nuclear_point_charge_interaction_energy(pc);
   }
 
-  void update_scf_energy(occ::core::EnergyComponents &energy,
-                         bool incremental) const {
-
-    m_proc.update_scf_energy(energy, incremental);
-    if (incremental) {
-      energy["solvation.electronic"] += m_electronic_solvation_energy;
-      energy["solvation.surface"] += m_surface_solvation_energy;
-      energy["solvation.nuclear"] += m_nuclear_solvation_energy;
-    } else {
-      energy["solvation.electronic"] = m_electronic_solvation_energy;
-      energy["solvation.nuclear"] = m_nuclear_solvation_energy;
-      energy["solvation.surface"] = m_surface_solvation_energy;
-      energy["solvation.CDS"] = m_cds_solvation_energy;
-    }
+  void update_scf_energy(occ::core::EnergyComponents &energy) const {
+    m_proc.update_scf_energy(energy);
+    energy["solvation.electronic"] = m_electronic_solvation_energy;
+    energy["solvation.nuclear"] = m_nuclear_solvation_energy;
+    energy["solvation.surface"] = m_surface_solvation_energy;
+    energy["solvation.CDS"] = m_cds_solvation_energy;
     energy["total"] = energy["electronic"] + energy["nuclear.repulsion"] +
                       energy["solvation.nuclear"] +
                       energy["solvation.surface"] + energy["solvation.CDS"];

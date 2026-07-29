@@ -11,7 +11,10 @@
 #include <occ/solvent/draco.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
+#include <occ/solvent/solvation_correction.h>
 #include <occ/solvent/surface.h>
+#include <occ/qm/hf.h>
+#include <occ/qm/scf.h>
 
 using occ::format_matrix;
 using occ::Mat;
@@ -205,4 +208,29 @@ TEST_CASE("draco", "[solvent]") {
   Vec q = occ::core::charges::eeq_partial_charges(nums, pos, 0.0);
 
   Vec radii = occ::solvent::draco::smd_coulomb_radii(q, nums, pos, params);
+}
+
+TEST_CASE("Incremental Fock: solvation opts out on the core Hamiltonian",
+          "[scf][incremental]") {
+  // Solvation leaves the two-electron build perfectly linear — it is H that
+  // moves, because `update_core_hamiltonian` folds in the apparent surface
+  // charge every cycle. Forwarding a single "supports incremental" bool from
+  // the wrapped method missed this entirely.
+  std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
+                                     {1, -1.93166418, 1.60017351, -0.02171049},
+                                     {1, 0.48664409, 0.07959806, 0.00986248}};
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+  occ::qm::HartreeFock hf(basis);
+  REQUIRE(occ::qm::supports_incremental_fock_build(hf.fock_build_properties()));
+
+  occ::solvent::SolvationCorrectedProcedure<occ::qm::HartreeFock> solv(hf,
+                                                                       "water");
+  auto properties = solv.fock_build_properties();
+  REQUIRE(properties.linear_in_density);
+  REQUIRE_FALSE(properties.constant_core_hamiltonian);
+  REQUIRE_FALSE(occ::qm::supports_incremental_fock_build(properties));
+
+  occ::qm::SCF<occ::solvent::SolvationCorrectedProcedure<occ::qm::HartreeFock>>
+      scf(solv);
+  REQUIRE(scf.convergence_settings.incremental_fock_threshold == 0.0);
 }

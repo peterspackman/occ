@@ -108,6 +108,9 @@ template <SCFMethod Procedure> struct SCF {
   occ::qm::ConvergenceAccelerator convergence_accelerator;
   bool reset_incremental_fock_formation{false};
   bool incremental_Fbuild_started{false};
+  /// Fock builds that accumulated F += G(ΔD) rather than rebuilding from H.
+  /// Zero whenever the procedure doesn't support incremental builds.
+  int num_incremental_fock_builds{0};
   double next_reset_threshold{0.0};
   size_t last_reset_iteration{0};
   bool m_have_initial_guess{false};

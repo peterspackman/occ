@@ -22,11 +22,16 @@ public:
   inline auto nbf() const { return m_engine.nbf(); }
 
   bool usual_scf_energy() const { return true; }
-  void update_scf_energy(occ::core::EnergyComponents &energy,
-                         bool incremental) const {
-    return;
+  void update_scf_energy(occ::core::EnergyComponents &) const { return; }
+
+  FockBuildProperties fock_build_properties() const {
+    return {// COSX exchange is built on a density-adapted grid.
+            .linear_in_density = !m_cosx_engine,
+            .constant_core_hamiltonian = true,
+            // Only the conventional 4-centre build screens on the density;
+            // the DF path contracts through the auxiliary basis instead.
+            .density_screened = !m_df_engine && !m_cosx_engine};
   }
-  bool supports_incremental_fock_build() const { return !m_df_engine && !m_cosx_engine; }
 
   inline bool have_effective_core_potentials() const {
     return m_engine.have_effective_core_potentials();

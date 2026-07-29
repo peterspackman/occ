@@ -30,7 +30,7 @@ SCF<P>::SCF(P &procedure, SpinorbitalKind sk) : m_procedure(procedure) {
 
   ctx.V_ext = Mat::Zero(rows, cols);
   ctx.energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
-  if (!m_procedure.supports_incremental_fock_build())
+  if (!supports_incremental_fock_build(m_procedure.fock_build_properties()))
     convergence_settings.incremental_fock_threshold = 0.0;
 }
 
@@ -432,7 +432,9 @@ void SCF<P>::set_external_potential(const Mat &V_ext_single,
 
 template <SCFMethod P> void SCF<P>::update_scf_energy(bool incremental) {
 
-  if (!incremental) {
+  // One-electron terms are traces against the *current* density, so they must
+  // be refreshed every cycle — only the two-electron build is incremental.
+  {
     occ::timing::start(occ::timing::category::la);
     ctx.energy["electronic.kinetic"] =
         2 * expectation(ctx.mo.kind, ctx.mo.D, ctx.T);
@@ -462,7 +464,7 @@ template <SCFMethod P> void SCF<P>::update_scf_energy(bool incremental) {
     ctx.energy["electronic." + ctx.external_potential_label] =
         2 * expectation(ctx.mo.kind, ctx.mo.D, ctx.V_ext);
   }
-  m_procedure.update_scf_energy(ctx.energy, incremental);
+  m_procedure.update_scf_energy(ctx.energy);
 }
 
 template <SCFMethod P> inline const char *SCF<P>::scf_kind() const {
@@ -519,8 +521,7 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
       next_reset_threshold = diis_error / 10;
       log::debug("starting incremental fock build");
     }
-    if (true || reset_incremental_fock_formation ||
-        not incremental_Fbuild_started) {
+    if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
       ctx.F = ctx.H;
       D_diff = ctx.mo.D;
       incremental = false;
@@ -531,6 +532,9 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
       next_reset_threshold = diis_error / 10;
       log::debug("resetting incremental fock build");
     }
+
+    if (incremental)
+      ++num_incremental_fock_builds;
 
     // build a new Fock matrix
     std::swap(ctx.mo.D, D_diff);
