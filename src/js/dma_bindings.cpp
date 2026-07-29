@@ -18,7 +18,7 @@ void register_dma_bindings() {
     class_<occ::dma::Mult>("Mult")
         .constructor<>()
         .constructor<int>()
-        .property("max_rank", &occ::dma::Mult::max_rank)
+        .property("maxRank", &occ::dma::Mult::max_rank)
         .property("q", &occ::dma::Mult::q)
         .function("numComponents", &occ::dma::Mult::num_components)
         .function("Q00", select_overload<double&()>(&occ::dma::Mult::Q00))
@@ -53,7 +53,7 @@ void register_dma_bindings() {
     // DMAResult class (from occ::dma namespace)
     class_<occ::dma::DMAResult>("DMAResult")
         .constructor<>()
-        .property("max_rank", &occ::dma::DMAResult::max_rank)
+        .property("maxRank", &occ::dma::DMAResult::max_rank)
         .property("multipoles", &occ::dma::DMAResult::multipoles);
 
     // DMASites class (from occ::dma namespace)
@@ -62,7 +62,7 @@ void register_dma_bindings() {
         .property("atoms", &occ::dma::DMASites::atoms)
         .property("name", &occ::dma::DMASites::name)
         .property("positions", &occ::dma::DMASites::positions)
-        .property("atom_indices", &occ::dma::DMASites::atom_indices)
+        .property("atomIndices", &occ::dma::DMASites::atom_indices)
         .property("radii", &occ::dma::DMASites::radii)
         .property("limits", &occ::dma::DMASites::limits)
         .function("size", &occ::dma::DMASites::size)
@@ -71,17 +71,17 @@ void register_dma_bindings() {
     // DMASettings class (from occ::dma namespace)
     class_<occ::dma::DMASettings>("DMASettings")
         .constructor<>()
-        .property("max_rank", &occ::dma::DMASettings::max_rank)
-        .property("big_exponent", &occ::dma::DMASettings::big_exponent)
-        .property("include_nuclei", &occ::dma::DMASettings::include_nuclei);
+        .property("maxRank", &occ::dma::DMASettings::max_rank)
+        .property("bigExponent", &occ::dma::DMASettings::big_exponent)
+        .property("includeNuclei", &occ::dma::DMASettings::include_nuclei);
     
     // DMAConfig class
     class_<DMAConfig>("DMAConfig")
         .constructor<>()
-        .property("wavefunction_filename", &DMAConfig::wavefunction_filename)
-        .property("punch_filename", &DMAConfig::punch_filename)
+        .property("wavefunctionFilename", &DMAConfig::wavefunction_filename)
+        .property("punchFilename", &DMAConfig::punch_filename)
         .property("settings", &DMAConfig::settings)
-        .property("write_punch", &DMAConfig::write_punch)
+        .property("writePunch", &DMAConfig::write_punch)
         .function("setAtomRadius", optional_override([](DMAConfig& config, const std::string& element, double radius) {
             config.atom_radii.insert_or_assign(element, radius);
         }))
@@ -108,7 +108,7 @@ void register_dma_bindings() {
     class_<DMADriver>("DMADriver")
         .constructor<>()
         .constructor<const DMAConfig&>()
-        .function("set_config", &DMADriver::set_config)
+        .function("setConfig", &DMADriver::set_config)
         .function("config", &DMADriver::config)
         .function("run", static_cast<DMADriver::DMAOutput(DMADriver::*)()>(&DMADriver::run))
         .function("runWithWavefunction", static_cast<DMADriver::DMAOutput(DMADriver::*)(const occ::qm::Wavefunction&)>(&DMADriver::run));

@@ -14,7 +14,7 @@ print("Loading:", xyz_path)
 local mol = occ.load_molecule(xyz_path)
 
 print("Running HF/STO-3G ...")
-local basis = occ.AOBasis_load(mol:atoms(), "sto-3g")
+local basis = occ.AOBasis.load(mol:atoms(), "sto-3g")
 local hf = occ.HartreeFock(basis)
 local scf = hf:scf()
 scf:set_charge_multiplicity(0, 1)

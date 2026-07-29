@@ -263,7 +263,7 @@ void register_cg_bindings(lua_State *L) {
 
       .beginClass<occ::cg::EnergyTotal>("CrystalGrowthEnergyTotal")
       .addProperty("crystal", &occ::cg::EnergyTotal::crystal_energy)
-      .addProperty("int_", &occ::cg::EnergyTotal::interaction_energy)
+      .addProperty("interaction", &occ::cg::EnergyTotal::interaction_energy)
       .addProperty("solution", &occ::cg::EnergyTotal::solution_term)
       .addFunction(
           "__tostring",

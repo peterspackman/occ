@@ -82,7 +82,8 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
                     const GridSettings &>())
       .def("nuclear_attraction_matrix", &DFT::compute_nuclear_attraction_matrix)
       .def("kinetic_matrix", &DFT::compute_kinetic_matrix)
-      .def("set_density_fitting_basis", &DFT::set_density_fitting_basis)
+      .def("set_density_fitting_basis", &DFT::set_density_fitting_basis,
+           "basis"_a, "auto_aux_threshold"_a = 1e-4)
       .def("overlap_matrix", &DFT::compute_overlap_matrix)
       .def("nuclear_repulsion", &DFT::nuclear_repulsion_energy)
       .def("set_precision", &DFT::set_precision)

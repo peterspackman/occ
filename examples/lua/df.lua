@@ -24,7 +24,7 @@ local function run(use_df)
     local mol = occ.molecule_from_xyz_string(WATER_XYZ)
     print(mol)
 
-    local basis = occ.AOBasis_load(mol:atoms(), "def2-qzvp")
+    local basis = occ.AOBasis.load(mol:atoms(), "def2-qzvp")
     print(basis)
 
     local blyp = occ.DFT("blyp", basis)

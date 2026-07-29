@@ -11,7 +11,7 @@ H   -1.0221932   0.8467758  -0.0114887
 H    0.2575211   0.0421215   0.0052190]]
 
 local mol = occ.molecule_from_xyz_string(WATER_XYZ)
-local basis = occ.AOBasis_load(mol:atoms(), "6-31g")
+local basis = occ.AOBasis.load(mol:atoms(), "6-31g")
 
 local hf = occ.HartreeFock(basis)
 local scf = hf:scf()

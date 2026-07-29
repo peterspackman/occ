@@ -19,7 +19,7 @@ print(molecule)
 
 -- 2. Helper: energy + Cartesian gradient at a given geometry.
 local function compute_energy_gradient(mol)
-    local basis = occ.AOBasis_load(mol:atoms(), "3-21G")
+    local basis = occ.AOBasis.load(mol:atoms(), "3-21G")
     local hf = occ.HartreeFock(basis)
 
     local scf = occ.HF(hf)
@@ -91,7 +91,7 @@ if converged then
     print("\nCalculating vibrational frequencies...")
     -- Rebuild HF/wfn at the final geometry (the optimizer's `final_hf`
     -- holds the second-to-last point — easier to redo than to track).
-    local basis = occ.AOBasis_load(final_mol:atoms(), "3-21G")
+    local basis = occ.AOBasis.load(final_mol:atoms(), "3-21G")
     local hf = occ.HartreeFock(basis)
     local scf = occ.HF(hf)
     scf:set_charge_multiplicity(0, 1)

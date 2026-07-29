@@ -15,7 +15,7 @@ occ.set_num_threads(6)
 local mol = occ.molecule_from_xyz_string(WATER_XYZ)
 print(mol)
 
-local basis = occ.AOBasis_load(mol:atoms(), "sto-3g")
+local basis = occ.AOBasis.load(mol:atoms(), "sto-3g")
 print(basis)
 
 local hf = occ.HartreeFock(basis)

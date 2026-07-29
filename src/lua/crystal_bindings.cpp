@@ -460,10 +460,10 @@ void register_crystal(lua_State *L) {
                                c->asymmetric_unit().chemical_formula(),
                                c->space_group().symbol());
           })
+      .addStaticFunction("create_primitive_supercell",
+                         &Crystal::create_primitive_supercell)
       .endClass()
 
-      .addFunction("crystal_create_primitive_supercell",
-                   &Crystal::create_primitive_supercell)
       .addFunction(
           "crystal_from_cif_file",
           +[](const std::string &filename) {
@@ -591,12 +591,11 @@ void register_site_and_dimer_index(lua_State *L) {
                 "<DimerMappingTable n_unique={} n_sym_unique={}>",
                 t->unique_dimers().size(), t->symmetry_unique_dimers().size());
           })
+      .addStaticFunction("build_dimer_table",
+                         &DimerMappingTable::build_dimer_table)
+      .addStaticFunction("normalized_dimer_index",
+                         &DimerMappingTable::normalized_dimer_index)
       .endClass()
-
-      .addFunction("dimer_mapping_table_build",
-                   &DimerMappingTable::build_dimer_table)
-      .addFunction("dimer_mapping_table_normalized_index",
-                   &DimerMappingTable::normalized_dimer_index)
       .endNamespace();
 }
 
@@ -718,12 +717,12 @@ void register_surface(lua_State *L) {
                                surface->hkl().h, surface->hkl().k,
                                surface->hkl().l, surface->d());
           })
+      .addStaticFunction("check_systematic_absence",
+                         &Surface::check_systematic_absence)
+      .addStaticFunction("faces_are_equivalent",
+                         &Surface::faces_are_equivalent)
       .endClass()
 
-      .addFunction("surface_check_systematic_absence",
-                   &Surface::check_systematic_absence)
-      .addFunction("surface_faces_are_equivalent",
-                   &Surface::faces_are_equivalent)
       .addFunction(
           "generate_surfaces",
           +[](const Crystal &crystal,

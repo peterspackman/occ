@@ -186,12 +186,11 @@ void register_dma_bindings(lua_State *L) {
           +[](occ::driver::DMADriver *d, const occ::qm::Wavefunction &w) {
             return d->run(w);
           })
+      .addStaticFunction("generate_punch_file",
+                         &occ::driver::DMADriver::generate_punch_file)
+      .addStaticFunction("write_punch_file",
+                         &occ::driver::DMADriver::write_punch_file)
       .endClass()
-
-      .addFunction("dma_generate_punch_file",
-                   &occ::driver::DMADriver::generate_punch_file)
-      .addFunction("dma_write_punch_file",
-                   &occ::driver::DMADriver::write_punch_file)
 
       .endNamespace();
 }

@@ -34,7 +34,7 @@ void register_volume_bindings() {
         .property("property", &isosurface::VolumeGenerationParameters::property)
         .property("spin", &isosurface::VolumeGenerationParameters::spin)
         .property("functional", &isosurface::VolumeGenerationParameters::functional)
-        .property("mo_number", &isosurface::VolumeGenerationParameters::mo_number)
+        .property("moNumber", &isosurface::VolumeGenerationParameters::mo_number)
         .function("setSteps", optional_override([](isosurface::VolumeGenerationParameters &params, 
                                                    int nx, int ny, int nz) {
             params.steps = {nx, ny, nz};

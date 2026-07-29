@@ -9,7 +9,7 @@ local path = arg[1] or "examples/scf/water.xyz"
 local mol = occ.load_molecule(path)
 print(string.format("Loaded %s: %s\n", path, tostring(mol)))
 
-local basis = occ.AOBasis_load(mol:atoms(), "sto-3g")
+local basis = occ.AOBasis.load(mol:atoms(), "sto-3g")
 print(basis)
 
 local hf = occ.HartreeFock(basis)

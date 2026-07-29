@@ -243,14 +243,14 @@ describe('DMA Calculations', () => {
     // Let's try to call DMA directly to see exactly where it fails
     const Module = await loadOCC();
     const config = new Module.DMAConfig();
-    config.settings.max_rank = 4;
-    config.settings.big_exponent = 4.0;
-    config.settings.include_nuclei = true;
+    config.settings.maxRank = 4;
+    config.settings.bigExponent = 4.0;
+    config.settings.includeNuclei = true;
     config.setAtomRadius("H", 0.35);
     config.setAtomLimit("H", 1);
     
     const driver = new Module.DMADriver();
-    driver.set_config(config);
+    driver.setConfig(config);
     
     console.log('About to call driver.runWithWavefunction directly...');
     console.log('Wavefunction basis is spherical:', wavefunction.basis.isPure ? wavefunction.basis.isPure() : 'unknown');
@@ -285,7 +285,7 @@ describe('DMA Calculations', () => {
     const result = await calculateDMA(wavefunction, options);
     
     expect(result).toBeInstanceOf(DMAResult);
-    expect(result.result.max_rank).toBe(2);
+    expect(result.result.maxRank).toBe(2);
   });
 
 });
@@ -302,8 +302,8 @@ describe('DMA Results Analysis', () => {
     const firstHydrogenMultipoles = dmaResult.getSiteMultipoles(0);
     
     expect(firstHydrogenMultipoles).toBeDefined();
-    expect(firstHydrogenMultipoles.max_rank).toBeDefined();
-    expect(typeof firstHydrogenMultipoles.max_rank).toBe('number');
+    expect(firstHydrogenMultipoles.maxRank).toBeDefined();
+    expect(typeof firstHydrogenMultipoles.maxRank).toBe('number');
   });
 
   it('should provide total multipole moments', () => {

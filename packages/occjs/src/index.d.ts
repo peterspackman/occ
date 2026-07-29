@@ -531,9 +531,9 @@ export interface Potentials {
 }
 
 export interface Settings {
-  ewald_accuracy: number;
-  use_ewald: boolean;
-  pressure_gpa: number;
+  ewaldAccuracy: number;
+  useEwald: boolean;
+  pressureGpa: number;
 }
 
 export interface IndependentMolecule {
@@ -555,7 +555,7 @@ export interface CrystalData {
   alpha: number;
   beta: number;
   gamma: number;
-  space_group: string;
+  spaceGroup: string;
 }
 
 export interface ReferenceEnergies {

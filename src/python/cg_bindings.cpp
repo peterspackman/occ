@@ -134,7 +134,7 @@ nb::module_ register_cg_bindings(nb::module_ &m) {
 
   nb::class_<occ::cg::EnergyTotal>(m, "CrystalGrowthEnergyTotal")
       .def_ro("crystal", &occ::cg::EnergyTotal::crystal_energy)
-      .def_ro("int", &occ::cg::EnergyTotal::interaction_energy)
+      .def_ro("interaction", &occ::cg::EnergyTotal::interaction_energy)
       .def_ro("solution", &occ::cg::EnergyTotal::solution_term)
       .def("__repr__", [](const occ::cg::EnergyTotal &tot) {
         return fmt::format("(crys={:.6f}, int={:.6f}, sol={:.6f})",

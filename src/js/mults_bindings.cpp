@@ -75,9 +75,9 @@ void register_mults_bindings() {
 
     class_<occ::io::Settings>("Settings")
         .constructor<>()
-        .property("ewald_accuracy", &occ::io::Settings::ewald_accuracy)
-        .property("use_ewald", &occ::io::Settings::use_ewald)
-        .property("pressure_gpa", &occ::io::Settings::pressure_gpa);
+        .property("ewaldAccuracy", &occ::io::Settings::ewald_accuracy)
+        .property("useEwald", &occ::io::Settings::use_ewald)
+        .property("pressureGpa", &occ::io::Settings::pressure_gpa);
 
     class_<occ::io::IndependentMolecule>("IndependentMolecule")
         .constructor<>()
@@ -105,7 +105,7 @@ void register_mults_bindings() {
         .property("alpha", &occ::io::CrystalData::alpha)
         .property("beta", &occ::io::CrystalData::beta)
         .property("gamma", &occ::io::CrystalData::gamma)
-        .property("space_group", &occ::io::CrystalData::space_group);
+        .property("spaceGroup", &occ::io::CrystalData::space_group);
 
     class_<occ::io::ReferenceEnergies>("ReferenceEnergies")
         .constructor<>()

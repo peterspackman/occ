@@ -175,10 +175,8 @@ void register_basis(lua_State *L) {
                                basis->name(), basis->nsh(), basis->nbf(),
                                basis->atoms().size());
           })
+      .addStaticFunction("load", &AOBasis::load)
       .endClass()
-
-      // `AOBasis::load` is a static factory; expose as a free function.
-      .addFunction("AOBasis_load", &AOBasis::load)
       .endNamespace();
 }
 
@@ -312,9 +310,9 @@ void register_mo_and_wfn(lua_State *L) {
                 wfn->basis.name(), spinorbital_kind_to_string(wfn->mo.kind),
                 wfn->basis.nbf(), wfn->charge());
           })
+      .addStaticFunction("load", &Wavefunction::load)
       .endClass()
 
-      .addFunction("Wavefunction_load", &Wavefunction::load)
       // The reader constructors silently produce empty results when
       // given a non-existent path; raise from the Lua side so the user
       // gets a useful error instead of an empty Wavefunction.

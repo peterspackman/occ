@@ -66,7 +66,7 @@ export async function calculateDMA(wavefunction, options = {}) {
   config.setMaxRank(options.maxRank ?? 4);
   config.setBigExponent(options.bigExponent ?? 4.0);
   config.setIncludeNuclei(options.includeNuclei ?? true);
-  console.log(`DMA: Basic settings set - max_rank=${config.settings.max_rank}, big_exponent=${config.settings.big_exponent}`);
+  console.log(`DMA: Basic settings set - maxRank=${config.settings.maxRank}, bigExponent=${config.settings.bigExponent}`);
   
   // Set atom-specific parameters using element symbols
   if (options.atomRadii) {
@@ -103,7 +103,7 @@ export async function calculateDMA(wavefunction, options = {}) {
   console.log('DMA: Driver created');
   
   console.log('DMA: Setting config on driver...');
-  driver.set_config(config);
+  driver.setConfig(config);
   console.log('DMA: Config set on driver');
   
   console.log('DMA: About to call runWithWavefunction...');
@@ -202,7 +202,7 @@ export class DMAResult {
     const components = {
       Q00: mult.getComponent('Q00'),
       charge: mult.getComponent('Q00'),
-      maxRank: mult.max_rank
+      maxRank: mult.maxRank
     };
     
     // Add components up to the multipole's max rank

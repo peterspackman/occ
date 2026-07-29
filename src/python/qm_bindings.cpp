@@ -263,7 +263,9 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
       .def("electronic_electric_potential_contribution",
            &HartreeFock::electronic_electric_potential_contribution,
            nb::rv_policy::move)
-      .def("set_density_fitting_basis", &HartreeFock::set_density_fitting_basis)
+      .def("set_density_fitting_basis",
+           &HartreeFock::set_density_fitting_basis, "basis"_a,
+           "auto_aux_threshold"_a = 1e-4)
       .def("kinetic_matrix", &HartreeFock::compute_kinetic_matrix)
       .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
       .def("overlap_matrix_for_basis",

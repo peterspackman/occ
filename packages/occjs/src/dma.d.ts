@@ -6,7 +6,7 @@ import { Molecule } from './index.d.ts';
 
 // DMA-specific interfaces that should be added to the main module
 export interface Mult {
-  max_rank: number;
+  maxRank: number;
   q: Vec;
   
   // Level 0 (monopole)
@@ -50,13 +50,13 @@ export interface Mult {
 }
 
 export interface DMASettings {
-  max_rank: number;
-  big_exponent: number;
-  include_nuclei: boolean;
+  maxRank: number;
+  bigExponent: number;
+  includeNuclei: boolean;
 }
 
 export interface DMAResultInterface {
-  max_rank: number;
+  maxRank: number;
   multipoles: Mult[];
 }
 
@@ -66,7 +66,7 @@ export interface DMASites {
   atoms: unknown[];
   name: string[];
   positions: Mat3N;
-  atom_indices: IVec;
+  atomIndices: IVec;
   radii: Vec;
   limits: IVec;
 }

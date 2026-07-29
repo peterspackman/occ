@@ -186,7 +186,7 @@ H  0.0000 -0.7572 -0.4692`);
       const params = new OCC.VolumeGenerationParameters();
       params.property = OCC.VolumePropertyKind.ElectronDensity;
       params.setSteps(2, 2, 2);
-      params.mo_number = 4; // HOMO
+      params.moNumber = 4; // HOMO
       
       const volume = OCC.VolumeCalculator.computeMOVolume(wavefunction, 4, params);
       expect(volume).toBeDefined();
