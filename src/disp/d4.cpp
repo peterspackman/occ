@@ -792,6 +792,22 @@ GradResult dispersion_3body_with_grad(const std::vector<core::Atom> &atoms,
   return g;
 }
 
+// C6 coefficients for the ATM three-body term.
+//
+// The ATM term is charge independent: its C6 is evaluated at the neutral
+// (q = 0) reference weights, not the charge-scaled ones the two-body term
+// uses — see dftd4 / cpp-d4 `get_dispersion`, "Three-body term is independent
+// of charges". Reusing the charge-scaled C6 here is invisible for a single
+// small molecule but grows with the number of triples, and GFN2's s9 = 5
+// amplifies the error fivefold.
+Mat compute_atm_c6_matrix(const std::vector<core::Atom> &atoms,
+                          const D4Scaling &sc, RefqMode mode, const Vec &cn,
+                          const AlphaTable &ref_alpha) {
+  const Vec q_neutral = Vec::Zero(atoms.size());
+  const Mat gw = compute_reference_weights(atoms, sc, mode, cn, q_neutral);
+  return compute_c6_matrix(atoms, gw, ref_alpha);
+}
+
 double dispersion_3body(const std::vector<core::Atom> &atoms,
                          const D4Damping &dp, const Mat &c6,
                          double cutoff2_bohr) {
@@ -976,7 +992,14 @@ double D4Dispersion::energy() const {
                                            m_q);
   const Mat c6 = compute_c6_matrix(m_atoms, gw, ref_alpha);
   const double e2 = dispersion_2body(m_atoms, m_damping, c6, m_cutoff_disp2);
-  const double e3 = dispersion_3body(m_atoms, m_damping, c6, m_cutoff_disp3);
+  const double e3 =
+      m_damping.s9 == 0.0
+          ? 0.0
+          : dispersion_3body(
+                m_atoms, m_damping,
+                compute_atm_c6_matrix(m_atoms, m_scaling, m_refq_mode, cn,
+                                      ref_alpha),
+                m_cutoff_disp3);
   return e2 + e3;
 }
 
@@ -1095,8 +1118,15 @@ double D4Dispersion::energy_periodic(const Mat3 &lattice_bohr) const {
                                                 c6, m_cutoff_disp2);
   // 3-body — central-cell only for now (full ATM lattice sum is more
   // involved; the central-cell ATM is a small correction for typical
-  // molecular crystals).
-  const double e3 = dispersion_3body(m_atoms, m_damping, c6, m_cutoff_disp3);
+  // molecular crystals). Charge independent, so it uses the neutral C6.
+  const double e3 =
+      m_damping.s9 == 0.0
+          ? 0.0
+          : dispersion_3body(
+                m_atoms, m_damping,
+                compute_atm_c6_matrix(m_atoms, m_scaling, m_refq_mode, cn,
+                                      ref_alpha),
+                m_cutoff_disp3);
   return e2 + e3;
 }
 
@@ -1116,9 +1146,26 @@ std::pair<double, Mat3N> D4Dispersion::energy_and_gradient() const {
   const auto g2 = dispersion_2body_with_grad(
       m_atoms, m_damping, c6grad.c6, c6grad.dc6_dcn, c6grad.dc6_dq,
       m_cutoff_disp2);
-  const auto g3 = dispersion_3body_with_grad(
-      m_atoms, m_damping, c6grad.c6, c6grad.dc6_dcn, c6grad.dc6_dq,
-      m_cutoff_disp3);
+  // ATM: neutral-charge C6, and therefore no charge chain at all — its
+  // ∂C6/∂q is identically zero because the charge never enters.  The CN
+  // chain survives, so dc6_dcn is still needed (evaluated at q = 0).
+  GradResult g3{};
+  if (m_damping.s9 != 0.0) {
+    const Vec q_neutral = Vec::Zero(m_atoms.size());
+    const auto wgrad_atm = compute_reference_weights_with_grad(
+        m_atoms, m_scaling, m_refq_mode, cn_with_grad.cn, q_neutral);
+    const auto c6_atm =
+        compute_c6_matrix_with_grad(m_atoms, wgrad_atm, ref_alpha);
+    g3 = dispersion_3body_with_grad(
+        m_atoms, m_damping, c6_atm.c6, c6_atm.dc6_dcn,
+        Mat::Zero(c6_atm.dc6_dq.rows(), c6_atm.dc6_dq.cols()),
+        m_cutoff_disp3);
+  } else {
+    const int na = static_cast<int>(m_atoms.size());
+    g3.position = Mat3N::Zero(3, na);
+    g3.dE_dcn = Vec::Zero(na);
+    g3.dE_dq = Vec::Zero(na);
+  }
   const int n = static_cast<int>(m_atoms.size());
   Mat3N grad = g2.position + g3.position;
   for (int a = 0; a < n; ++a) {

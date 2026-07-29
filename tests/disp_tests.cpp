@@ -39,6 +39,51 @@ inline Molecule benzene_molecule() {
   return Molecule(atoms);
 }
 
+TEST_CASE("native d4: the ATM three-body term is charge independent",
+          "[disp][native][d4][atm]") {
+  using namespace occ::disp;
+  // The two-body C6 is charge-scaled through the ζ projection, but the ATM
+  // three-body term is not: dftd4 / cpp-d4 zero the charges before rebuilding
+  // C6 for it. Reusing the charge-scaled C6 is nearly invisible on one small
+  // molecule but grows with the number of triples, and GFN2's s9 = 5 scales
+  // the error up fivefold — an 8-water cluster came out 1e-4 Ha adrift.
+  //
+  // Benzene has 220 triples, so this catches it without needing a reference
+  // value from another program.
+  auto atoms = benzene_molecule().atoms();
+  const Eigen::Index n = static_cast<Eigen::Index>(atoms.size());
+
+  auto energy_with = [&](const occ::Vec &q, double s9) {
+    D4Damping damping = gfn2_damping;
+    damping.s9 = s9;
+    D4Dispersion d(atoms);
+    d.set_damping(damping);
+    d.set_charges(q);
+    return d.energy();
+  };
+
+  occ::Vec q_neutral = occ::Vec::Zero(n);
+  occ::Vec q_polar = occ::Vec::Zero(n);
+  for (Eigen::Index i = 0; i < n; ++i) {
+    q_polar(i) = (atoms[i].atomic_number == 6) ? -0.15 : 0.15;
+  }
+
+  const double atm_neutral =
+      energy_with(q_neutral, gfn2_damping.s9) - energy_with(q_neutral, 0.0);
+  const double atm_polar =
+      energy_with(q_polar, gfn2_damping.s9) - energy_with(q_polar, 0.0);
+
+  // Non-vacuous: the ATM term contributes, and the charges do move the
+  // two-body energy — so an equality below means genuine independence rather
+  // than nothing happening.
+  REQUIRE(std::abs(atm_neutral) > 1e-6);
+  REQUIRE(std::abs(energy_with(q_polar, 0.0) - energy_with(q_neutral, 0.0)) >
+          1e-6);
+
+  INFO("ATM(neutral) = " << atm_neutral << "  ATM(polarized) = " << atm_polar);
+  REQUIRE(atm_polar == Approx(atm_neutral).margin(1e-14));
+}
+
 TEST_CASE("native d4 dispersion (DFT mode)", "[disp][native]") {
   using namespace occ::disp;
 
