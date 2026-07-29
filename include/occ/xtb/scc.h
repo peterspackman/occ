@@ -16,7 +16,18 @@ struct SccOptions {
   double energy_threshold{1e-7};
   double damping_factor{0.4};   // weight on the previous iteration
   double total_charge{0.0};     // net molecular charge (electrons removed)
-  int unpaired_electrons{0};    // GFN2 is restricted by default; this is unused for v1
+  // Nα − Nβ. Non-zero switches the SCC to the spin-unrestricted path
+  // (separate α/β densities). Must have the same parity as the electron count.
+  int unpaired_electrons{0};
+  // Scale on the on-site spin-polarization constants W. 1 (default) is the
+  // spin-polarized GFN2 treatment; 0 reproduces the common-Fock open-shell
+  // result of plain `xtb --uhf` (α and β share one Hamiltonian and differ
+  // only in their occupations).
+  double spin_polarization{1.0};
+  // Force the unrestricted path even for a closed-shell electron count.
+  // Without a symmetry-broken guess this converges to the restricted answer;
+  // it exists so the two code paths can be compared directly.
+  bool force_unrestricted{false};
   double electronic_temperature{300.0}; // K, for Fermi smearing
   bool include_dispersion{true};        // add D4 dispersion (EEQ-based for now)
 };

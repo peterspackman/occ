@@ -30,8 +30,13 @@ public:
 
   // Run an SCC and return the result. Honors:
   //   opts.include_dispersion (D4)
-  //   opts.total_charge / opts.unpaired_electrons
+  //   opts.total_charge / opts.unpaired_electrons / opts.spin_polarization
+  //   opts.electronic_temperature (Fermi smearing)
   // and the `include_multipoles` flag below.
+  //
+  // A non-zero `opts.unpaired_electrons` (or `opts.force_unrestricted`)
+  // selects the spin-unrestricted path: separate α/β densities coupled by the
+  // on-site spin-polarization term ½ mᵀ W m.
   SccResult single_point(const SccOptions &opts = {},
                          bool include_multipoles = true);
 
@@ -85,6 +90,11 @@ public:
     return m_last_shell_charges;
   }
 
+  // On-site spin-coupling matrix W (n_shells × n_shells, block diagonal by
+  // atom) at the given scale — see `occ/xtb/spin.h`. Geometry independent, so
+  // it is cached per scale factor rather than rebuilt each SCC.
+  const Mat &spin_coupling(double scale) const;
+
 private:
   void recompute_geometry_caches();
 
@@ -117,6 +127,11 @@ private:
   // displaced-geometry steps in optimization / Hessian FD).
   Vec m_qsh_init;
   Vec m_last_shell_charges;
+
+  // Cached on-site spin coupling W and the scale it was built at.
+  mutable Mat m_spin_coupling;
+  mutable double m_spin_coupling_scale{0.0};
+  mutable bool m_have_spin_coupling{false};
 
   // Optional implicit-solvent contribution. nullptr → gas phase (Phase 7A).
   std::shared_ptr<XtbSolvationModel> m_solvation;

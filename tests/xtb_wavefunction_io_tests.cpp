@@ -77,6 +77,10 @@ TEST_CASE("XtbCalculator(Molecule): to_wavefunction round-trips through JSON",
   // GFN2 valence-only: H has 1 valence electron, O has 6 → 8 total for water.
   REQUIRE(wfn.num_electrons == 8);
   REQUIRE(wfn.charge() == 0);
+  // Restricted MolecularOrbitals still count occupations per spin channel:
+  // 1.0 per doubly-occupied orbital, summing to n_alpha.
+  REQUIRE(wfn.mo.occupation.sum() == Approx(4.0));
+  REQUIRE(wfn.mo.occupation.maxCoeff() == Approx(1.0));
 
   // xTB extras populated.
   REQUIRE(wfn.have_xtb_data);
@@ -118,6 +122,59 @@ TEST_CASE("XtbCalculator(Molecule): to_wavefunction round-trips through JSON",
   occ::Vec rho2 = wfn2.electron_density(pts);
   REQUIRE((rho1 - rho2).cwiseAbs().maxCoeff() < 1e-10);
   // Density is non-negative everywhere and non-trivial somewhere.
+  REQUIRE(rho1.minCoeff() >= -1e-12);
+  REQUIRE(rho1.maxCoeff() > 1e-3);
+}
+
+TEST_CASE("XtbCalculator: unrestricted wavefunction round-trips through JSON",
+          "[xtb][wavefunction][io][unrestricted]") {
+  using occ::core::Atom;
+  using occ::core::Molecule;
+  // Planar CH3 radical, C-H = 1.078 Å, positions in Bohr.
+  const double r = 1.078 * occ::units::ANGSTROM_TO_BOHR;
+  const double c = 0.8660254037844386 * r;
+  std::vector<Atom> atoms = {
+      {6, 0.0, 0.0, 0.0},
+      {1, r, 0.0, 0.0},
+      {1, -0.5 * r, c, 0.0},
+      {1, -0.5 * r, -c, 0.0},
+  };
+  Molecule mol(atoms);
+  mol.set_multiplicity(2);
+
+  occ::xtb::XtbCalculator calc(mol);
+  // The calculator picks the doublet up from the molecule.
+  REQUIRE(calc.num_unpaired_electrons() == 1);
+  (void)calc.single_point_energy();
+  REQUIRE(calc.last_result().converged);
+
+  occ::qm::Wavefunction wfn = calc.to_wavefunction();
+  REQUIRE(wfn.mo.kind == occ::qm::SpinorbitalKind::Unrestricted);
+  REQUIRE(wfn.num_electrons == 7);
+  REQUIRE(wfn.mo.n_alpha == 4);
+  REQUIRE(wfn.mo.n_beta == 3);
+  REQUIRE(wfn.mo.C.rows() == 2 * static_cast<Eigen::Index>(wfn.nbf));
+  // MolecularOrbitals occupations are per spin channel (0..1 per orbital),
+  // so each block sums to that channel's electron count.
+  REQUIRE(occ::qm::block::a(wfn.mo.occupation).sum() == Approx(4.0));
+  REQUIRE(occ::qm::block::b(wfn.mo.occupation).sum() == Approx(3.0));
+
+  auto wfn2 = round_trip_json(wfn);
+  REQUIRE(wfn2.mo.kind == occ::qm::SpinorbitalKind::Unrestricted);
+  REQUIRE(wfn2.num_electrons == wfn.num_electrons);
+  REQUIRE(wfn2.mo.n_alpha == wfn.mo.n_alpha);
+  REQUIRE(wfn2.mo.n_beta == wfn.mo.n_beta);
+  REQUIRE((wfn2.mo.C - wfn.mo.C).cwiseAbs().maxCoeff() < 1e-12);
+  REQUIRE((wfn2.mo.D - wfn.mo.D).cwiseAbs().maxCoeff() < 1e-12);
+  REQUIRE((wfn2.mo.energies - wfn.mo.energies).cwiseAbs().maxCoeff() < 1e-12);
+
+  // Density evaluation is what cube / isosurface consumers call; the total
+  // density must integrate the same before and after the round-trip and stay
+  // non-negative for an open-shell wavefunction too.
+  occ::Mat3N pts = probe_points();
+  occ::Vec rho1 = wfn.electron_density(pts);
+  occ::Vec rho2 = wfn2.electron_density(pts);
+  REQUIRE((rho1 - rho2).cwiseAbs().maxCoeff() < 1e-10);
   REQUIRE(rho1.minCoeff() >= -1e-12);
   REQUIRE(rho1.maxCoeff() > 1e-3);
 }

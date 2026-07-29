@@ -37,12 +37,21 @@ class Gfn2Parameters;
 //   cn     (n_atoms)                  — coordination numbers
 //   dcn    (n_atoms × Mat3N each)     — ∂CN_i/∂R from
 //                                       gfn_coordination_numbers_with_gradient
+//
+// Open shell: pass the spin density P_spin = P_α − P_β and the shell-resolved
+// spin potential v_spin = W_spin·m. The α/β Hamiltonians differ by
+// ∓½·S·(v_s+v_t), so the exact per-spin sum Σ_σ P_σ·(V^σ_s + V^σ_t) equals
+// P·(V_s+V_t) − P_spin·(v_s+v_t); the extra term is added to Z. Leave both
+// empty (the default) for a restricted density.
+//
 // Output: 3 × N_atoms gradient in Hartree/Bohr.
 Mat3N h0_scc_gradient(const std::vector<core::Atom> &atoms,
                       const Gfn2Parameters &params, const ShellTable &shells,
                       const gto::AOBasis &basis, qm::IntegralEngine &engine,
                       const Mat &S, const Mat &P, const Mat &W,
                       const Vec &V_shell, const Vec &cn,
-                      const std::vector<Mat3N> &dcn);
+                      const std::vector<Mat3N> &dcn,
+                      const Mat &P_spin = Mat(),
+                      const Vec &v_spin_shell = Vec());
 
 } // namespace occ::xtb

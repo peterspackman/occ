@@ -17,6 +17,8 @@
 #include <occ/xtb/h0.h>
 #include <occ/xtb/h0_gradient.h>
 #include <occ/xtb/multipole_ints.h>
+#include <occ/xtb/occupation.h>
+#include <occ/xtb/spin.h>
 #include <occ/xtb/xtb_calculator.h>
 #include <occ/crystal/crystal.h>
 #include <occ/disp/d4.h>
@@ -3001,6 +3003,458 @@ TEST_CASE("Repulsion energy: water vs xtb reference",
   REQUIRE(E == Approx(0.033802464095).margin(1e-9));
 }
 
+// ============================================================================
+// Spin-unrestricted (spin-polarized) GFN2
+//
+// Reference values come from tblite 0.5.0 driven through its Python interface
+// (`Calculator("GFN2-xTB", ..., uhf=1)`, optionally with
+// `calc.add("spin-polarization", scale)`). occ's charge-only SCC agrees with
+// tblite to a few times 1e-7 Ha on total energies for closed and open shell
+// alike, so the tolerances below are set around that pre-existing offset; the
+// *spin-polarization increment* itself matches to well under 1 nHa.
+// ============================================================================
+
+namespace {
+// Planar CH3 radical, C-H = 1.078 Å. Positions in Bohr.
+inline std::vector<occ::core::Atom> methyl_radical_atoms() {
+  const double r = 1.078 * occ::units::ANGSTROM_TO_BOHR;
+  const double c = 0.8660254037844386 * r;
+  return {
+      {6, 0.0, 0.0, 0.0},
+      {1, r, 0.0, 0.0},
+      {1, -0.5 * r, c, 0.0},
+      {1, -0.5 * r, -c, 0.0},
+  };
+}
+} // namespace
+
+TEST_CASE("Spin constants: loaded from the parameter file", "[xtb][spin]") {
+  auto params = occ::xtb::Gfn2Parameters::load_default();
+
+  // Every tabulated element carries a spin_constants block.
+  for (const auto &e : params.elements()) {
+    INFO("element Z = " << e.z);
+    REQUIRE(e.has_spin_constants);
+  }
+
+  const auto &h = *params.element(1);
+  const auto &c = *params.element(6);
+  const auto &ne = *params.element(10);
+  using occ::xtb::spin_pair_index;
+  REQUIRE(h.spin_constants[spin_pair_index(0, 0)] == Approx(-0.0716250));
+  REQUIRE(c.spin_constants[spin_pair_index(0, 0)] == Approx(-0.0305000));
+  REQUIRE(c.spin_constants[spin_pair_index(0, 1)] == Approx(-0.0250250));
+  REQUIRE(c.spin_constants[spin_pair_index(1, 1)] == Approx(-0.0226750));
+  REQUIRE(ne.spin_constants[spin_pair_index(2, 2)] == Approx(-0.0413500));
+
+  // The pair index is symmetric, and rejects l above d (no data beyond it).
+  for (int li = 0; li < 3; ++li) {
+    for (int lj = 0; lj < 3; ++lj) {
+      REQUIRE(spin_pair_index(li, lj) == spin_pair_index(lj, li));
+      REQUIRE(spin_pair_index(li, lj) >= 0);
+      REQUIRE(spin_pair_index(li, lj) < 6);
+    }
+  }
+  REQUIRE(spin_pair_index(3, 0) < 0);
+  REQUIRE(spin_pair_index(0, -1) < 0);
+}
+
+TEST_CASE("Spin coupling matrix: on-site blocks only", "[xtb][spin]") {
+  auto atoms = methyl_radical_atoms();
+  auto params = occ::xtb::Gfn2Parameters::load_default();
+  auto shells = occ::xtb::build_shell_table(atoms, params);
+  occ::Mat W = occ::xtb::spin_coupling_matrix(atoms, shells, params);
+
+  REQUIRE(W.rows() == static_cast<Eigen::Index>(shells.atom.size()));
+  REQUIRE((W - W.transpose()).cwiseAbs().maxCoeff() == Approx(0.0).margin(0));
+  for (size_t s = 0; s < shells.atom.size(); ++s) {
+    for (size_t t = 0; t < shells.atom.size(); ++t) {
+      if (shells.atom[s] != shells.atom[t]) {
+        INFO("shells " << s << ", " << t << " are on different atoms");
+        REQUIRE(W(s, t) == 0.0);
+      }
+    }
+  }
+  // Every diagonal entry is a genuine (negative) constant for C / H.
+  REQUIRE(W.diagonal().maxCoeff() < 0.0);
+
+  // Scaling is linear, and scale 0 switches the interaction off entirely.
+  REQUIRE((occ::xtb::spin_coupling_matrix(atoms, shells, params, 0.5) - 0.5 * W)
+              .cwiseAbs()
+              .maxCoeff() == Approx(0.0).margin(1e-15));
+  REQUIRE(occ::xtb::spin_coupling_matrix(atoms, shells, params, 0.0)
+              .cwiseAbs()
+              .maxCoeff() == 0.0);
+}
+
+TEST_CASE("Spin coupling: a parameter set without spin constants is rejected",
+          "[xtb][spin]") {
+  // Parameter files predating spin-unrestricted support load fine and run
+  // closed-shell calculations; only an actual spin-polarized run needs the
+  // block, and it must say so rather than silently coupling nothing.
+  auto atoms = methyl_radical_atoms();
+  auto params = occ::xtb::Gfn2Parameters::load_default();
+  auto shells = occ::xtb::build_shell_table(atoms, params);
+
+  occ::xtb::Gfn2Parameters stripped;
+  stripped.set_globals(params.globals());
+  for (auto e : params.elements()) {
+    e.has_spin_constants = false;
+    e.spin_constants = {};
+    stripped.add_element(e);
+  }
+
+  REQUIRE_THROWS(occ::xtb::spin_coupling_matrix(atoms, shells, stripped, 1.0));
+  // Scale 0 needs no constants — that path stays available.
+  REQUIRE_NOTHROW(
+      occ::xtb::spin_coupling_matrix(atoms, shells, stripped, 0.0));
+}
+
+TEST_CASE("Alpha/beta occupation split", "[xtb][spin][occupation]") {
+  using occ::xtb::alpha_beta_occupation;
+  auto ab = alpha_beta_occupation(8, 0);
+  REQUIRE(ab.n_alpha == Approx(4.0));
+  REQUIRE(ab.n_beta == Approx(4.0));
+
+  ab = alpha_beta_occupation(7, 1);
+  REQUIRE(ab.n_alpha == Approx(4.0));
+  REQUIRE(ab.n_beta == Approx(3.0));
+
+  ab = alpha_beta_occupation(12, 2);
+  REQUIRE(ab.n_alpha == Approx(7.0));
+  REQUIRE(ab.n_beta == Approx(5.0));
+
+  // Never produces a negative β occupation.
+  ab = alpha_beta_occupation(1, 3);
+  REQUIRE(ab.n_beta >= 0.0);
+  REQUIRE(ab.n_alpha + ab.n_beta == Approx(1.0));
+}
+
+TEST_CASE("Fermi filling: aufbau limit and electron conservation",
+          "[xtb][spin][occupation]") {
+  occ::Vec eps(5);
+  eps << -1.0, -0.9, -0.5, 0.4, 0.8;
+
+  // Wide gap at 300 K → integral occupations and no entropy contribution.
+  const double kt300 = 300.0 / occ::units::AU_TO_KELVIN;
+  auto f = occ::xtb::fermi_filling(3.0, kt300, eps);
+  REQUIRE(f.occupations.sum() == Approx(3.0).margin(1e-12));
+  REQUIRE(f.occupations(2) == Approx(1.0));
+  REQUIRE(f.occupations(3) == Approx(0.0));
+  REQUIRE(f.entropy_energy == Approx(0.0).margin(1e-14));
+
+  // Degenerate frontier levels at a high temperature → fractional filling,
+  // still conserving electrons, with a negative (stabilising) −T·S.
+  occ::Vec degenerate(4);
+  degenerate << -1.0, -0.5, -0.5, 0.9;
+  auto g = occ::xtb::fermi_filling(3.0, 0.05, degenerate);
+  REQUIRE(g.occupations.sum() == Approx(3.0).margin(1e-7));
+  REQUIRE(g.occupations(1) == Approx(g.occupations(2)).margin(1e-9));
+  REQUIRE(g.occupations(1) < 1.0);
+  REQUIRE(g.occupations(1) > 0.0);
+  REQUIRE(g.entropy_energy < 0.0);
+
+  // kt = 0 is plain aufbau.
+  auto h = occ::xtb::fermi_filling(2.0, 0.0, eps);
+  REQUIRE(h.occupations(0) == Approx(1.0));
+  REQUIRE(h.occupations(1) == Approx(1.0));
+  REQUIRE(h.occupations(2) == Approx(0.0));
+  REQUIRE(h.entropy_energy == 0.0);
+}
+
+TEST_CASE("Unrestricted GFN2: CH3 radical vs tblite (spin-polarized)",
+          "[xtb][native][unrestricted]") {
+  occ::core::Molecule mol(methyl_radical_atoms());
+  occ::xtb::XtbCalculator calc(mol);
+  calc.set_num_unpaired_electrons(1);
+  const double e = calc.single_point_energy();
+  const auto &r = calc.last_result();
+
+  REQUIRE(r.converged);
+  REQUIRE(r.unrestricted);
+  // tblite GFN2-xTB, uhf=1, spin-polarization scale 1.0.
+  REQUIRE(e == Approx(-3.576853747857).margin(1e-5));
+
+  // One net unpaired electron, essentially all of it on carbon (the planar
+  // radical's SOMO is the carbon p_z).
+  REQUIRE(r.atomic_magnetization.sum() == Approx(1.0).margin(1e-8));
+  REQUIRE(r.atomic_magnetization(0) > 1.0);
+  REQUIRE(r.atomic_magnetization(1) < 0.0);
+  // The three hydrogens are equivalent.
+  REQUIRE(r.atomic_magnetization(1) ==
+          Approx(r.atomic_magnetization(2)).margin(1e-6));
+  REQUIRE(r.atomic_charges.sum() == Approx(0.0).margin(1e-9));
+
+  // Spin polarization stabilises, and the α levels sit below the β levels.
+  REQUIRE(r.spin_energy < 0.0);
+  REQUIRE(r.orbital_energies(0) < r.orbital_energies_beta(0));
+  REQUIRE(r.orbital_occupations.sum() == Approx(4.0).margin(1e-9));
+  REQUIRE(r.orbital_occupations_beta.sum() == Approx(3.0).margin(1e-9));
+
+  // Total density is the sum of the two spin channels.
+  REQUIRE((r.density_matrix - r.density_matrix_alpha - r.density_matrix_beta)
+              .cwiseAbs()
+              .maxCoeff() == Approx(0.0).margin(1e-12));
+}
+
+TEST_CASE("Unrestricted GFN2: spin polarization increment matches tblite",
+          "[xtb][native][unrestricted]") {
+  occ::core::Molecule mol(methyl_radical_atoms());
+
+  occ::xtb::XtbCalculator polarized(mol);
+  polarized.set_num_unpaired_electrons(1);
+  const double e_polarized = polarized.single_point_energy();
+
+  occ::xtb::XtbCalculator unpolarized(mol);
+  unpolarized.set_num_unpaired_electrons(1);
+  unpolarized.set_spin_polarization(0.0);
+  const double e_unpolarized = unpolarized.single_point_energy();
+
+  // tblite with spin-polarization 0.0 reproduces its plain uhf=1 result, which
+  // is the common-Fock open-shell treatment `xtb --uhf 1` performs.
+  REQUIRE(e_unpolarized == Approx(-3.562749306624).margin(1e-5));
+  // Scale 0 leaves the two channels sharing one Hamiltonian: identical
+  // orbitals, and the magnetization is purely the occupation difference.
+  const auto &u = unpolarized.last_result();
+  REQUIRE((u.orbital_energies - u.orbital_energies_beta).cwiseAbs().maxCoeff() ==
+          Approx(0.0).margin(1e-12));
+  REQUIRE(u.spin_energy == 0.0);
+
+  // The energy *lowering* from spin polarization is the quantity this
+  // implementation adds, and it matches tblite far more tightly than the
+  // absolute energies do.
+  const double reference = -3.576853747857 - (-3.562749306624);
+  REQUIRE(e_polarized - e_unpolarized == Approx(reference).margin(1e-8));
+}
+
+TEST_CASE("Unrestricted GFN2: closed shell reproduces the restricted SCC",
+          "[xtb][native][unrestricted]") {
+  // Forcing the unrestricted path on a closed-shell system must land on the
+  // restricted solution — the two branches share every term except the spin
+  // coupling, which vanishes when α and β densities are equal.
+  auto atoms = water_atoms();
+  auto params = occ::xtb::Gfn2Parameters::load_default();
+  occ::xtb::Gfn2Engine engine(atoms, params);
+
+  occ::xtb::SccOptions restricted_opts;
+  auto restricted = engine.single_point(restricted_opts);
+
+  occ::xtb::SccOptions unrestricted_opts;
+  unrestricted_opts.force_unrestricted = true;
+  auto unrestricted = engine.single_point(unrestricted_opts);
+
+  REQUIRE(restricted.converged);
+  REQUIRE(unrestricted.converged);
+  REQUIRE(unrestricted.unrestricted);
+  REQUIRE(unrestricted.total_energy ==
+          Approx(restricted.total_energy).margin(1e-9));
+  REQUIRE(unrestricted.spin_energy == Approx(0.0).margin(1e-12));
+  REQUIRE(unrestricted.atomic_magnetization.cwiseAbs().maxCoeff() ==
+          Approx(0.0).margin(1e-9));
+  REQUIRE((unrestricted.atomic_charges - restricted.atomic_charges)
+              .cwiseAbs()
+              .maxCoeff() == Approx(0.0).margin(1e-8));
+  REQUIRE((unrestricted.density_matrix - restricted.density_matrix)
+              .cwiseAbs()
+              .maxCoeff() == Approx(0.0).margin(1e-8));
+}
+
+TEST_CASE("Unrestricted GFN2: wavefunction carries both spin channels",
+          "[xtb][native][unrestricted]") {
+  occ::core::Molecule mol(methyl_radical_atoms());
+  occ::xtb::XtbCalculator calc(mol);
+  calc.set_num_unpaired_electrons(1);
+  (void)calc.single_point_energy();
+
+  auto wfn = calc.to_wavefunction();
+  const Eigen::Index nbf = wfn.nbf;
+  REQUIRE(wfn.mo.kind == occ::qm::SpinorbitalKind::Unrestricted);
+  REQUIRE(wfn.mo.n_alpha == 4);
+  REQUIRE(wfn.mo.n_beta == 3);
+  REQUIRE(wfn.num_electrons == 7);
+  REQUIRE(wfn.mo.C.rows() == 2 * nbf);
+  REQUIRE(wfn.mo.C.cols() == nbf);
+  REQUIRE(wfn.mo.D.rows() == 2 * nbf);
+  REQUIRE(wfn.mo.energies.size() == 2 * nbf);
+
+  const auto &r = calc.last_result();
+  REQUIRE((occ::qm::block::a(wfn.mo.D) - r.density_matrix_alpha)
+              .cwiseAbs()
+              .maxCoeff() == Approx(0.0).margin(1e-12));
+  REQUIRE((occ::qm::block::b(wfn.mo.D) - r.density_matrix_beta)
+              .cwiseAbs()
+              .maxCoeff() == Approx(0.0).margin(1e-12));
+  // The α/β spin populations from the wavefunction density reproduce the SCC's.
+  const double n_alpha =
+      (occ::qm::block::a(wfn.mo.D) * r.overlap_matrix).trace();
+  const double n_beta =
+      (occ::qm::block::b(wfn.mo.D) * r.overlap_matrix).trace();
+  REQUIRE(n_alpha == Approx(4.0).margin(1e-8));
+  REQUIRE(n_beta == Approx(3.0).margin(1e-8));
+}
+
+namespace {
+// Central-difference gradient of `XtbCalculator::gradient`'s own energy
+// expression, so analytical and numerical refer to the same functional.
+occ::Mat3N finite_difference_gradient(occ::xtb::XtbCalculator &calc,
+                                      double h = 1e-3) {
+  const occ::Mat3N original = calc.positions();
+  occ::Mat3N g_fd = occ::Mat3N::Zero(3, original.cols());
+  auto energy_at = [&](int a, int k, double dh) {
+    occ::Mat3N pos = original;
+    pos(k, a) += dh;
+    calc.update_structure(pos);
+    (void)calc.gradient(); // sets last_result().total_energy
+    return calc.last_result().total_energy;
+  };
+  for (int a = 0; a < static_cast<int>(original.cols()); ++a) {
+    for (int k = 0; k < 3; ++k) {
+      const double e_p2 = energy_at(a, k, 2 * h);
+      const double e_p1 = energy_at(a, k, h);
+      const double e_m1 = energy_at(a, k, -h);
+      const double e_m2 = energy_at(a, k, -2 * h);
+      g_fd(k, a) = (-e_p2 + 8 * e_p1 - 8 * e_m1 + e_m2) / (12 * h);
+    }
+  }
+  calc.update_structure(original);
+  return g_fd;
+}
+} // namespace
+
+TEST_CASE("Analytical gradient: low-symmetry closed shell vs FD (methanol)",
+          "[xtb][native][gradient][analytical]") {
+  // Regression guard for the energy-weighted density. Water and methane both
+  // happen to be insensitive to miscounting the occupied orbitals — water's
+  // HOMO is a pure oxygen lone pair whose Pulay contribution cancels by
+  // symmetry, and methane's electron count coincides with the basis size.
+  // Methanol is neither, so an incorrect occupied count shows up here as a
+  // ~0.1 Ha/Bohr error rather than passing silently.
+  using occ::core::Atom;
+  std::vector<Atom> atoms = {
+      {6, -0.7500, 0.0300, 0.0100}, {8, 1.9000, -0.1000, 0.0500},
+      {1, -1.4000, 1.9000, 0.2000}, {1, -1.5000, -1.0000, 1.6000},
+      {1, -1.4500, -0.9000, -1.6000}, {1, 2.5000, 1.5000, -0.3000},
+  };
+  occ::core::Molecule mol(atoms);
+  occ::xtb::XtbCalculator calc(mol);
+  // Dispersion off: SCC-coupled D4 omits the ∂E_disp/∂q · ∂q/∂R response, so
+  // it sets a ~1e-5 floor that would mask everything else.
+  calc.set_include_dispersion(false);
+
+  occ::Mat3N g_analytical = calc.gradient();
+  occ::Mat3N g_fd = finite_difference_gradient(calc);
+  INFO("analytical:\n" << g_analytical);
+  INFO("finite difference:\n" << g_fd);
+  REQUIRE((g_analytical - g_fd).cwiseAbs().maxCoeff() < 1e-6);
+  REQUIRE(g_analytical.rowwise().sum().norm() < 1e-9);
+}
+
+TEST_CASE("Analytical gradient: unrestricted CH3 vs FD",
+          "[xtb][native][gradient][unrestricted]") {
+  // Displaced from D3h so no gradient component vanishes by symmetry.
+  auto atoms = methyl_radical_atoms();
+  atoms[1].x += 0.12;
+  atoms[2].z += 0.09;
+  occ::core::Molecule mol(atoms);
+  occ::xtb::XtbCalculator calc(mol);
+  calc.set_num_unpaired_electrons(1);
+  calc.set_include_dispersion(false);
+
+  occ::Mat3N g_analytical = calc.gradient();
+  REQUIRE(calc.last_result().unrestricted);
+  occ::Mat3N g_fd = finite_difference_gradient(calc);
+  INFO("analytical:\n" << g_analytical);
+  INFO("finite difference:\n" << g_fd);
+  REQUIRE((g_analytical - g_fd).cwiseAbs().maxCoeff() < 1e-6);
+  REQUIRE(g_analytical.rowwise().sum().norm() < 1e-9);
+}
+
+TEST_CASE("SCC mixing: near-degenerate frontier orbitals (NH2 doublet)",
+          "[xtb][native][unrestricted][scc]") {
+  // NH2 has two nearly-degenerate frontier orbitals, so the β hole can flip
+  // between them from one cycle to the next. That only converges cleanly if
+  // *every* quantity the Hamiltonian is built from is mixed — including the
+  // CAMM atomic multipoles. Feeding the raw multipoles of the previous
+  // density back into H1 instead makes this oscillate for ~200 cycles and
+  // then settle on a solution ~13 mHa above the reference.
+  using occ::core::Atom;
+  const double b = occ::units::ANGSTROM_TO_BOHR;
+  std::vector<Atom> atoms = {{7, 0.0, 0.0, 0.10 * b},
+                             {1, 0.0, 0.80 * b, -0.55 * b},
+                             {1, 0.0, -0.80 * b, -0.55 * b}};
+  occ::core::Molecule mol(atoms);
+
+  occ::xtb::XtbCalculator calc(mol);
+  calc.set_num_unpaired_electrons(1);
+  const double e = calc.single_point_energy();
+  REQUIRE(calc.last_result().converged);
+  // tblite / xtb GFN2-xTB, uhf = 1, spin polarization on.
+  REQUIRE(e == Approx(-3.822445915128).margin(1e-5));
+  // Converging here should be quick, not a 200-cycle scramble.
+  REQUIRE(calc.last_result().n_iterations < 40);
+
+  occ::xtb::XtbCalculator unpolarized(mol);
+  unpolarized.set_num_unpaired_electrons(1);
+  unpolarized.set_spin_polarization(0.0);
+  // tblite with spin polarization off == plain `xtb --uhf 1`.
+  REQUIRE(unpolarized.single_point_energy() ==
+          Approx(-3.807643224127).margin(1e-5));
+  REQUIRE(unpolarized.last_result().n_iterations < 40);
+}
+
+TEST_CASE("Unrestricted GFN2: O2 triplet vs tblite",
+          "[xtb][native][unrestricted]") {
+  using occ::core::Atom;
+  const double b = occ::units::ANGSTROM_TO_BOHR;
+  occ::core::Molecule mol(
+      std::vector<Atom>{{8, 0.0, 0.0, 0.0}, {8, 0.0, 0.0, 1.21 * b}});
+  occ::xtb::XtbCalculator calc(mol);
+  calc.set_num_unpaired_electrons(2); // triplet ground state
+
+  const double e = calc.single_point_energy();
+  const auto &r = calc.last_result();
+  REQUIRE(r.converged);
+  REQUIRE(e == Approx(-7.931969836906).margin(1e-5));
+  // Two unpaired electrons, shared equally between the two oxygens.
+  REQUIRE(r.atomic_magnetization.sum() == Approx(2.0).margin(1e-8));
+  REQUIRE(r.atomic_magnetization(0) == Approx(1.0).margin(1e-6));
+  REQUIRE(r.atomic_magnetization(1) == Approx(1.0).margin(1e-6));
+  // Homonuclear: no net charge transfer.
+  REQUIRE(r.atomic_charges.cwiseAbs().maxCoeff() == Approx(0.0).margin(1e-8));
+
+  occ::xtb::XtbCalculator unpolarized(mol);
+  unpolarized.set_num_unpaired_electrons(2);
+  unpolarized.set_spin_polarization(0.0);
+  REQUIRE(unpolarized.single_point_energy() ==
+          Approx(-7.904118279645).margin(1e-5));
+}
+
+TEST_CASE("Unrestricted GFN2: input validation", "[xtb][native][unrestricted]") {
+  occ::core::Molecule mol(methyl_radical_atoms());
+  // CH3 has 7 valence electrons — an even unpaired count has the wrong parity.
+  occ::xtb::XtbCalculator wrong_parity(mol);
+  wrong_parity.set_num_unpaired_electrons(2);
+  REQUIRE_THROWS(wrong_parity.single_point_energy());
+
+  // A closed-shell molecule with an odd unpaired count is likewise rejected.
+  occ::core::Molecule water(water_atoms());
+  occ::xtb::XtbCalculator odd(water);
+  odd.set_num_unpaired_electrons(1);
+  REQUIRE_THROWS(odd.single_point_energy());
+
+  // The periodic SCC is restricted only and says so at configuration time.
+  occ::crystal::UnitCell cell(10.0, 10.0, 10.0, M_PI / 2, M_PI / 2, M_PI / 2);
+  occ::Mat3N frac(3, 1);
+  frac << 0.0, 0.0, 0.0;
+  occ::IVec nums(1);
+  nums << 6;
+  occ::crystal::AsymmetricUnit asym(frac, nums);
+  occ::crystal::SpaceGroup sg(1);
+  occ::crystal::Crystal crystal(asym, sg, cell);
+  occ::xtb::XtbCalculator periodic(crystal);
+  REQUIRE_THROWS(periodic.set_num_unpaired_electrons(1));
+}
+
 #ifdef OCC_HAVE_TBLITE
 #include <occ/core/molecule.h>
 #include <occ/xtb/tblite_wrapper.h>
@@ -3072,3 +3526,4 @@ TEST_CASE("AOBasis: overlap eigenvalues vs tblite (methane)",
   REQUIRE(max_eigenvalue_diff(S_tb, S_occ) < 1e-8);
 }
 #endif // OCC_HAVE_TBLITE
+

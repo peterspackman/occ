@@ -39,10 +39,10 @@ public:
   enum class Method { GFN2 };
 
   /// Construct from an isolated molecule (positions in Å — converted to Bohr
-  /// internally). Inherits the molecule's charge.
+  /// internally). Inherits the molecule's charge and multiplicity.
   explicit XtbCalculator(const occ::core::Molecule &mol);
   /// Construct from a dimer; equivalent to a molecule built from the union of
-  /// monomer atoms.
+  /// monomer atoms. Inherits the dimer's charge and multiplicity.
   explicit XtbCalculator(const occ::core::Dimer &dimer);
   /// Construct from a 3D periodic crystal. Defaults to Γ-only sampling; call
   /// `set_kpoints` to enable a Monkhorst-Pack mesh.
@@ -84,17 +84,34 @@ public:
   void set_charge(double c);
   double charge() const { return m_charge; }
 
-  /// Number of unpaired electrons (open-shell). Only `n == 0` is currently
-  /// supported; non-zero values throw `std::runtime_error`. The setter is
-  /// kept for API parity with `TbliteCalculator`.
+  /// Number of unpaired electrons Nα − Nβ (i.e. multiplicity − 1). Non-zero
+  /// switches the SCC to the spin-unrestricted path: separate α/β densities
+  /// coupled by the on-site spin-polarization term. Must have the same parity
+  /// as the valence electron count (checked when the SCC runs). Periodic
+  /// calculators are restricted-only and throw here for `n != 0`.
   void set_num_unpaired_electrons(int n);
-  int num_unpaired_electrons() const { return 0; }
+  int num_unpaired_electrons() const { return m_opts.unpaired_electrons; }
+
+  /// Scale factor on the on-site spin-polarization constants W. The default
+  /// of 1 gives spin-polarized (genuinely unrestricted) GFN2; 0 disables the
+  /// spin coupling, leaving α and β to share one Hamiltonian and differ only
+  /// in their occupations — which is what plain `xtb --uhf` computes.
+  /// Ignored for closed-shell (restricted) runs.
+  void set_spin_polarization(double scale);
+  double spin_polarization() const { return m_opts.spin_polarization; }
+
+  /// True once a spin-unrestricted SCC has run (i.e. `last_result()` carries
+  /// α/β channels).
+  bool is_unrestricted() const { return m_last_result.unrestricted; }
 
   /// Maximum SCC iterations.
   void set_max_iterations(int iterations);
   int max_iterations() const;
 
-  /// Electronic temperature (K) for Fermi smearing.
+  /// Electronic temperature (K) for Fermi smearing of the orbital
+  /// occupations. Molecular path only — the periodic SCC fills by aufbau.
+  /// At the 300 K default, occupations stay integral unless the gap is
+  /// comparable to kT ≈ 1 mHa.
   void set_temperature(double temp);
   double temperature() const;
 
@@ -165,7 +182,12 @@ public:
 
   /// Per-atom Mulliken charges (xtb convention: positive = electron-deficient).
   Vec charges() const;
-  /// Wiberg bond-order matrix (N × N).
+  /// Per-atom magnetization (α − β populations). Empty for a restricted run.
+  Vec atomic_magnetization() const {
+    return m_last_result.atomic_magnetization;
+  }
+  /// Wiberg bond-order matrix (N × N). Built from the total density; molecular
+  /// calculators only (periodic ones have no molecular shell/AO map).
   Mat bond_orders() const;
 
   /// Total energy from the most recent SCC (Hartree).
@@ -176,6 +198,9 @@ public:
   double repulsion_energy() const { return m_last_result.repulsion_energy; }
   /// Dispersion (D4) energy (Hartree); zero if dispersion is disabled.
   double dispersion_energy() const { return m_last_result.dispersion_energy; }
+  /// On-site spin-polarization energy (Hartree, ≤ 0); zero when restricted.
+  /// Already included in `scc_energy()`.
+  double spin_energy() const { return m_last_result.spin_energy; }
 
   // ---------------------------------------------------------------------
   // Gradient

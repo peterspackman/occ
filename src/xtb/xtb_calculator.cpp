@@ -13,6 +13,7 @@
 #include <occ/xtb/multipole_damping.h>
 #include <occ/xtb/multipole_ewald.h>
 #include <occ/xtb/multipole_ints.h>
+#include <occ/xtb/occupation.h>
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/xtb_calculator.h>
 #include <occ/xtb/repulsion.h>
@@ -31,6 +32,27 @@ std::vector<core::Atom> make_atoms(const Mat3N &positions_bohr,
                      positions_bohr(1, i), positions_bohr(2, i)});
   }
   return atoms;
+}
+
+// Energy-weighted density W = Σ_σ Σ_i n_i ε_i C_i C_iᵀ.
+Mat energy_weighted_density(const XtbResult &r) {
+  const auto accumulate = [](Mat &W, const Mat &C, const Vec &eps,
+                             const Vec &occ) {
+    for (Eigen::Index i = 0; i < occ.size(); ++i) {
+      if (occ(i) <= 1e-12)
+        continue;
+      W.noalias() += occ(i) * eps(i) * C.col(i) * C.col(i).transpose();
+    }
+  };
+  const Eigen::Index nbf = r.orbital_coefficients.rows();
+  Mat W = Mat::Zero(nbf, nbf);
+  accumulate(W, r.orbital_coefficients, r.orbital_energies,
+             r.orbital_occupations);
+  if (r.unrestricted) {
+    accumulate(W, r.orbital_coefficients_beta, r.orbital_energies_beta,
+               r.orbital_occupations_beta);
+  }
+  return W;
 }
 
 // Wiberg bond orders: Σ_{μ∈A, ν∈B} (P·S)_μν · (P·S)_νμ.
@@ -53,15 +75,19 @@ Mat compute_wiberg_bond_orders(const Mat &P, const Mat &S,
 
 } // namespace
 
+// Charge and multiplicity are inherited from the input, matching
+// TbliteCalculator / ExternalXtbCalculator so all three backends agree.
 XtbCalculator::XtbCalculator(const core::Molecule &mol)
     : m_positions_bohr(mol.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(mol.atomic_numbers()), m_charge(mol.charge()) {
+  m_opts.unpaired_electrons = mol.multiplicity() - 1;
   initialize_calculator();
 }
 
 XtbCalculator::XtbCalculator(const core::Dimer &dimer)
     : m_positions_bohr(dimer.positions() * occ::units::ANGSTROM_TO_BOHR),
       m_atomic_numbers(dimer.atomic_numbers()), m_charge(dimer.charge()) {
+  m_opts.unpaired_electrons = dimer.multiplicity() - 1;
   initialize_calculator();
 }
 
@@ -140,11 +166,16 @@ XtbCalculator::solvation_model() const {
 }
 
 void XtbCalculator::set_num_unpaired_electrons(int n) {
-  if (n != 0) {
+  if (n != 0 && m_periodic) {
     throw std::runtime_error(
-        "XtbCalculator: open-shell GFN2 not yet implemented "
-        "(num_unpaired_electrons must be 0)");
+        "XtbCalculator: the periodic GFN2 SCC is restricted only "
+        "(num_unpaired_electrons must be 0 for a Crystal)");
   }
+  m_opts.unpaired_electrons = n;
+}
+
+void XtbCalculator::set_spin_polarization(double scale) {
+  m_opts.spin_polarization = scale;
 }
 
 Mat3 XtbCalculator::lattice() const {
@@ -186,9 +217,19 @@ double XtbCalculator::single_point_energy() {
   return single_point().total_energy;
 }
 
-Vec XtbCalculator::charges() const { return m_last_result.atomic_charges; }
+Vec XtbCalculator::charges() const {
+  if (m_last_result.atomic_charges.size() == 0) {
+    throw std::runtime_error(
+        "XtbCalculator::charges: call single_point_energy() first");
+  }
+  return m_last_result.atomic_charges;
+}
 
 Mat XtbCalculator::bond_orders() const {
+  if (m_periodic) {
+    throw std::runtime_error(
+        "XtbCalculator::bond_orders: not available for periodic calculators");
+  }
   if (m_last_result.density_matrix.size() == 0) {
     throw std::runtime_error(
         "XtbCalculator::bond_orders: call single_point_energy() first");
@@ -357,15 +398,8 @@ Mat3N XtbCalculator::gradient() {
   // converged qsh is much closer to the new SCC's fixed point than EEQ.
   m_calc->set_initial_shell_charges(m_last_result.shell_charges);
 
-  // Build the energy-weighted density W = 2 Σ_i^occ ε_i C_i C_i^T
-  // (closed shell — sum over both spins folded in via the factor 2).
-  const auto &C = m_last_result.orbital_coefficients;
-  const auto &eps = m_last_result.orbital_energies;
-  const int n_occ = static_cast<int>(eps.size()) / 2; // closed-shell SCC
-  Mat W = Mat::Zero(C.rows(), C.rows());
-  for (int i = 0; i < n_occ; ++i) {
-    W.noalias() += 2.0 * eps(i) * C.col(i) * C.col(i).transpose();
-  }
+  // Occupations already carry the spin factor, so this covers both cases.
+  Mat W = energy_weighted_density(m_last_result);
 
   // Coordination numbers + ∂CN/∂R for the H0+self-energy chain. The same
   // gfn-CN vector is reused below for `multipole_radii_with_gradient`.
@@ -425,11 +459,24 @@ Mat3N XtbCalculator::gradient() {
     }
   }
 
-  // (1) H0 + Pulay + V_q-via-S + vs-via-S + ∂Π/∂R + dE/dCN chain.
+  // E_spin has no explicit geometry dependence — the W constants are
+  // per-element — so it reaches the gradient only through the Mulliken
+  // magnetization's ∂S/∂R, which h0_scc_gradient adds from these two.
+  Mat P_spin;
+  Vec v_spin_shell;
+  if (m_last_result.unrestricted) {
+    P_spin = m_last_result.density_matrix_alpha -
+             m_last_result.density_matrix_beta;
+    v_spin_shell = m_calc->spin_coupling(m_opts.spin_polarization) *
+                   m_last_result.shell_magnetization;
+  }
+
+  // (1) H0 + Pulay + V_q-via-S + vs-via-S + spin-via-S + ∂Π/∂R + dE/dCN chain.
   Mat3N grad = h0_scc_gradient(
       atoms, m_calc->parameters(), shells, m_calc->basis(),
       m_calc->engine(), m_last_result.overlap_matrix,
-      m_last_result.density_matrix, W, V_shell, cn_g.cn, cn_g.dcn);
+      m_last_result.density_matrix, W, V_shell, cn_g.cn, cn_g.dcn, P_spin,
+      v_spin_shell);
 
   // (2) ½ q^T (∂γ/∂R) q  (analytical Klopman-Ohno γ derivative).
   grad += klopman_ohno_gamma_energy_gradient(
@@ -594,6 +641,14 @@ void XtbCalculator::print_summary() const {
   occ::log::info("{:<32s} {:>20.12f} Ha", "Total energy", r.total_energy);
   occ::log::info("{:<32s} {:>20.12f} Ha", "  SCC (electronic + ES)",
                  r.scc_energy);
+  if (r.unrestricted) {
+    occ::log::info("{:<32s} {:>20.12f} Ha", "    Spin polarization",
+                   r.spin_energy);
+  }
+  if (r.electronic_entropy_energy != 0.0) {
+    occ::log::info("{:<32s} {:>20.12f} Ha", "    Electronic -TS",
+                   r.electronic_entropy_energy);
+  }
   occ::log::info("{:<32s} {:>20.12f} Ha", "  Repulsion", r.repulsion_energy);
   occ::log::info("{:<32s} {:>20.12f} Ha", "  Dispersion (D4)",
                  r.dispersion_energy);
@@ -603,29 +658,47 @@ void XtbCalculator::print_summary() const {
     occ::log::warn("Did NOT converge ({} iterations)", r.n_iterations);
   }
 
-  // HOMO / LUMO from the orbital energies.
-  Eigen::Index n_occ = static_cast<Eigen::Index>(num_atoms()); // placeholder
-  // Find n_occ from orbital_occupations.
-  n_occ = 0;
-  for (Eigen::Index i = 0; i < r.orbital_occupations.size(); ++i)
-    if (r.orbital_occupations(i) > 1e-6) ++n_occ;
-  if (n_occ > 0 && n_occ < r.orbital_energies.size()) {
-    const double homo = r.orbital_energies(n_occ - 1);
-    const double lumo = r.orbital_energies(n_occ);
-    const double gap = lumo - homo;
-    occ::log::info("HOMO = {:>10.4f} Ha ({:>8.3f} eV)", homo,
+  const auto frontier = [](const char *label, const Vec &energies,
+                           const Vec &occupations) {
+    Eigen::Index n_occ = 0;
+    for (Eigen::Index i = 0; i < occupations.size(); ++i)
+      if (occupations(i) > 1e-6)
+        ++n_occ;
+    if (n_occ <= 0 || n_occ >= energies.size())
+      return;
+    const double homo = energies(n_occ - 1);
+    const double lumo = energies(n_occ);
+    occ::log::info("{}HOMO = {:>10.4f} Ha ({:>8.3f} eV)", label, homo,
                    homo * occ::units::AU_TO_EV);
-    occ::log::info("LUMO = {:>10.4f} Ha ({:>8.3f} eV)", lumo,
+    occ::log::info("{}LUMO = {:>10.4f} Ha ({:>8.3f} eV)", label, lumo,
                    lumo * occ::units::AU_TO_EV);
-    occ::log::info("Gap  = {:>10.4f} Ha ({:>8.3f} eV)", gap,
-                   gap * occ::units::AU_TO_EV);
+    occ::log::info("{}Gap  = {:>10.4f} Ha ({:>8.3f} eV)", label, lumo - homo,
+                   (lumo - homo) * occ::units::AU_TO_EV);
+  };
+  if (r.unrestricted) {
+    frontier("α ", r.orbital_energies, r.orbital_occupations);
+    frontier("β ", r.orbital_energies_beta, r.orbital_occupations_beta);
+  } else {
+    frontier("", r.orbital_energies, r.orbital_occupations);
   }
 
+  const bool have_spin = r.atomic_magnetization.size() == num_atoms();
   occ::log::info("{:-<72s}", "Atomic Mulliken charges  ");
-  occ::log::info("  {:>3s}  {:>4s}  {:>14s}", "idx", "Z", "q (e)");
+  if (have_spin) {
+    occ::log::info("  {:>3s}  {:>4s}  {:>14s}  {:>14s}", "idx", "Z", "q (e)",
+                   "spin (e)");
+  } else {
+    occ::log::info("  {:>3s}  {:>4s}  {:>14s}", "idx", "Z", "q (e)");
+  }
   for (int i = 0; i < num_atoms(); ++i) {
-    occ::log::info("  {:>3d}  {:>4d}  {:>14.6f}", i, m_atomic_numbers(i),
-                   r.atomic_charges(i));
+    if (have_spin) {
+      occ::log::info("  {:>3d}  {:>4d}  {:>14.6f}  {:>14.6f}", i,
+                     m_atomic_numbers(i), r.atomic_charges(i),
+                     r.atomic_magnetization(i));
+    } else {
+      occ::log::info("  {:>3d}  {:>4d}  {:>14.6f}", i, m_atomic_numbers(i),
+                     r.atomic_charges(i));
+    }
   }
 }
 
@@ -667,24 +740,52 @@ occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
   }
   wfn.basis.set_ecp_electrons(core_electrons);
 
-  // Closed-shell: total electrons = sum of reference shell occupations - charge.
+  // Total electrons = sum of reference shell occupations − charge.
   double n_elec = 0.0;
   for (Eigen::Index i = 0; i < shell_table.ref_occ.size(); ++i)
     n_elec += shell_table.ref_occ(i);
   n_elec -= m_charge;
-  const int n_alpha =
-      static_cast<int>(std::round(n_elec)) / 2; // restricted, so n_alpha = n_occ
   wfn.num_electrons = static_cast<int>(std::round(n_elec));
+  const auto occupation = alpha_beta_occupation(
+      wfn.num_electrons, m_last_result.num_unpaired_electrons);
+  const int n_alpha = static_cast<int>(std::llround(occupation.n_alpha));
+  const int n_beta = static_cast<int>(std::llround(occupation.n_beta));
 
   auto &mo = wfn.mo;
-  mo.kind = occ::qm::SpinorbitalKind::Restricted;
   mo.n_ao = wfn.nbf;
   mo.n_alpha = n_alpha;
-  mo.n_beta = n_alpha; // closed-shell
-  mo.C = m_last_result.orbital_coefficients;
-  mo.energies = m_last_result.orbital_energies;
-  mo.D = 0.5 * m_last_result.density_matrix; // Wavefunction stores α-only D
-  mo.Cocc = mo.C.leftCols(n_alpha);
+  mo.n_beta = n_beta;
+  // MolecularOrbitals is per spin channel throughout: occupations run 0..1
+  // and D holds the α (and β) density, not the spin-summed totals XtbResult
+  // reports. Unrestricted stacks the α block above the β block.
+  if (m_last_result.unrestricted) {
+    const Eigen::Index nbf = wfn.nbf;
+    mo.kind = occ::qm::SpinorbitalKind::Unrestricted;
+    mo.C = Mat::Zero(2 * nbf, nbf);
+    occ::qm::block::a(mo.C) = m_last_result.orbital_coefficients;
+    occ::qm::block::b(mo.C) = m_last_result.orbital_coefficients_beta;
+    mo.energies = Vec::Zero(2 * nbf);
+    occ::qm::block::a(mo.energies) = m_last_result.orbital_energies;
+    occ::qm::block::b(mo.energies) = m_last_result.orbital_energies_beta;
+    mo.occupation = Vec::Zero(2 * nbf);
+    occ::qm::block::a(mo.occupation) = m_last_result.orbital_occupations;
+    occ::qm::block::b(mo.occupation) = m_last_result.orbital_occupations_beta;
+    mo.D = Mat::Zero(2 * nbf, nbf);
+    occ::qm::block::a(mo.D) = m_last_result.density_matrix_alpha;
+    occ::qm::block::b(mo.D) = m_last_result.density_matrix_beta;
+    mo.Cocc = Mat::Zero(2 * nbf, std::max(n_alpha, n_beta));
+    mo.Cocc.block(0, 0, nbf, n_alpha) =
+        m_last_result.orbital_coefficients.leftCols(n_alpha);
+    mo.Cocc.block(nbf, 0, nbf, n_beta) =
+        m_last_result.orbital_coefficients_beta.leftCols(n_beta);
+  } else {
+    mo.kind = occ::qm::SpinorbitalKind::Restricted;
+    mo.C = m_last_result.orbital_coefficients;
+    mo.energies = m_last_result.orbital_energies;
+    mo.occupation = 0.5 * m_last_result.orbital_occupations;
+    mo.D = 0.5 * m_last_result.density_matrix;
+    mo.Cocc = mo.C.leftCols(n_alpha);
+  }
 
   // Energies — `Energy::total` is the only standard slot that maps cleanly
   // to a GFN2 single-point. The SCC / repulsion / dispersion split lives

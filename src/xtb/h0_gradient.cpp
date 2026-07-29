@@ -104,7 +104,8 @@ Mat3N h0_scc_gradient(const std::vector<core::Atom> &atoms,
                       const gto::AOBasis &basis, qm::IntegralEngine &engine,
                       const Mat &S, const Mat &P, const Mat &W,
                       const Vec &V_shell, const Vec &cn,
-                      const std::vector<Mat3N> &dcn) {
+                      const std::vector<Mat3N> &dcn, const Mat &P_spin,
+                      const Vec &v_spin_shell) {
   const auto &g = params.globals();
   const Eigen::Matrix4d K = build_kscale(g);
   const double w_exp = 0.5; // hardcoded in xtb's gfn2.f90
@@ -270,6 +271,27 @@ Mat3N h0_scc_gradient(const std::vector<core::Atom> &atoms,
               Vec::Ones(nbf) * V_per_bf.transpose())
                 .array())
                 .matrix();
+
+  // Open shell: the α/β Hamiltonians carry ∓½·S·(v_s+v_t), which contributes
+  // +½·P_spin·(v_μ + v_ν) once the two spin channels are summed.
+  if (P_spin.size() > 0 && v_spin_shell.size() > 0) {
+    if (v_spin_shell.size() != static_cast<Eigen::Index>(shells.atom.size())) {
+      throw std::runtime_error("h0_scc_gradient: v_spin_shell size mismatch");
+    }
+    if (P_spin.rows() != nbf || P_spin.cols() != nbf) {
+      throw std::runtime_error("h0_scc_gradient: P_spin size mismatch");
+    }
+    Vec v_spin_per_bf(nbf);
+    for (int mu = 0; mu < nbf; ++mu) {
+      v_spin_per_bf(mu) = v_spin_shell(bf_to_shell[mu]);
+    }
+    Z.noalias() +=
+        0.5 * (P_spin.array() *
+               (v_spin_per_bf * Vec::Ones(nbf).transpose() +
+                Vec::Ones(nbf) * v_spin_per_bf.transpose())
+                  .array())
+                  .matrix();
+  }
 
   occ::qm::IntegralEngine::Op op_overlap =
       occ::qm::IntegralEngine::Op::overlap;

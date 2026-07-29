@@ -2,6 +2,7 @@
 #include <cmath>
 #include <occ/core/diis.h>
 #include <occ/core/log.h>
+#include <occ/core/units.h>
 #include <occ/disp/d4.h>
 #include <optional>
 #include <occ/xtb/anisotropic.h>
@@ -11,7 +12,10 @@
 #include <occ/xtb/gfn2_engine.h>
 #include <occ/xtb/h0.h>
 #include <occ/xtb/multipole_ints.h>
+#include <occ/xtb/occupation.h>
 #include <occ/xtb/repulsion.h>
+#include <occ/xtb/scc_state.h>
+#include <occ/xtb/spin.h>
 #include <memory>
 #include <stdexcept>
 
@@ -65,6 +69,19 @@ void Gfn2Engine::recompute_geometry_caches() {
   m_have_multipole_ints = false; // built on demand
 }
 
+const Mat &Gfn2Engine::spin_coupling(double scale) const {
+  // W depends only on the elements and their shell angular momenta, both of
+  // which update_positions() guarantees are unchanged — so the cache survives
+  // geometry updates and only has to be rebuilt when the scale changes.
+  if (!m_have_spin_coupling || m_spin_coupling_scale != scale) {
+    m_spin_coupling =
+        spin_coupling_matrix(m_atoms, m_shells, m_params, scale);
+    m_spin_coupling_scale = scale;
+    m_have_spin_coupling = true;
+  }
+  return m_spin_coupling;
+}
+
 namespace {
 
 // Mulliken populations per shell from PS = P · S.
@@ -76,15 +93,65 @@ Vec shell_populations(const Mat &PS, const std::vector<int> &bf_to_shell,
   return pop;
 }
 
+// Σ_i n_i c_i c_iᵀ over the occupied (and, with smearing, fractionally
+// occupied) orbitals.
+Mat density_from_occupations(const Mat &C, const Vec &occupations) {
+  Mat P = Mat::Zero(C.rows(), C.rows());
+  for (Eigen::Index i = 0; i < occupations.size(); ++i) {
+    if (occupations(i) <= 1e-12)
+      continue;
+    P.noalias() += occupations(i) * C.col(i) * C.col(i).transpose();
+  }
+  return P;
+}
+
+// Accumulate a per-atom quantity from its per-shell parts.
+Vec shell_to_atom(const Vec &per_shell, const std::vector<int> &shell_atom,
+                  int n_atoms) {
+  Vec per_atom = Vec::Zero(n_atoms);
+  for (Eigen::Index s = 0; s < per_shell.size(); ++s)
+    per_atom(shell_atom[s]) += per_shell(s);
+  return per_atom;
+}
+
+struct ElectronConfiguration {
+  int n_electrons{0};
+  int n_unpaired{0};
+  bool unrestricted{false};
+  AlphaBetaOccupation occupation;
+};
+
+ElectronConfiguration resolve_configuration(double n_electrons_reference,
+                                            const SccOptions &opts) {
+  const double total = n_electrons_reference - opts.total_charge;
+  if (std::abs(std::round(total) - total) > 1e-6) {
+    throw std::runtime_error(
+        "Gfn2Engine: non-integer electron count not supported");
+  }
+  ElectronConfiguration cfg;
+  cfg.n_electrons = static_cast<int>(std::round(total));
+  cfg.n_unpaired = std::abs(opts.unpaired_electrons);
+  cfg.unrestricted = cfg.n_unpaired != 0 || opts.force_unrestricted;
+  if (cfg.n_unpaired > cfg.n_electrons) {
+    throw std::runtime_error(
+        "Gfn2Engine: " + std::to_string(cfg.n_unpaired) +
+        " unpaired electrons requested but only " +
+        std::to_string(cfg.n_electrons) + " valence electrons are available");
+  }
+  if ((cfg.n_electrons - cfg.n_unpaired) % 2 != 0) {
+    throw std::runtime_error(
+        "Gfn2Engine: electron count (" + std::to_string(cfg.n_electrons) +
+        ") and unpaired-electron count (" + std::to_string(cfg.n_unpaired) +
+        ") have different parity — check the charge / multiplicity");
+  }
+  cfg.occupation = alpha_beta_occupation(cfg.n_electrons, cfg.n_unpaired);
+  return cfg;
+}
+
 } // namespace
 
 SccResult Gfn2Engine::single_point(const SccOptions &opts,
                                        bool include_multipoles) {
-  if (opts.unpaired_electrons != 0) {
-    throw std::runtime_error(
-        "Gfn2Engine: open-shell case not yet supported");
-  }
-
   // Initialise the (optional) implicit-solvent model at the current geometry.
   // Models are re-initialised on every SCC so the same instance can outlive
   // geometry updates from XtbCalculator::update_structure.
@@ -114,27 +181,21 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
     m_have_multipole_ints = true;
   }
 
-  // Closed-shell electron count.
-  double n_elec_total = 0.0;
-  for (Eigen::Index i = 0; i < m_z_sh.size(); ++i)
-    n_elec_total += m_z_sh(i);
-  n_elec_total -= opts.total_charge;
-  if (std::abs(std::round(n_elec_total) - n_elec_total) > 1e-6) {
-    throw std::runtime_error(
-        "Gfn2Engine: non-integer electron count not supported");
-  }
-  const int n_elec = static_cast<int>(std::round(n_elec_total));
-  if (n_elec % 2 != 0) {
-    throw std::runtime_error(
-        "Gfn2Engine: open-shell n_elec=" + std::to_string(n_elec));
-  }
-  const int n_occ = n_elec / 2;
+  const auto cfg = resolve_configuration(m_z_sh.sum(), opts);
+  const int n_elec = cfg.n_electrons;
+  const int n_unpaired = cfg.n_unpaired;
+  const bool unrestricted = cfg.unrestricted;
+  const auto &occupation = cfg.occupation;
 
-  // For SCC-D4, set up the geometry-cached state once. We then re-evaluate
-  // dispersion every SCC iteration with the current charges (matches xtb's
-  // self-consistent D4 to within a few µHa). D4SccState owns dftd4's
-  // TMatrix instances which lack proper copy/move, so we hold it via
-  // unique_ptr to keep it pinned in memory.
+  // kB·T in Hartree. 300 K ≈ 0.95 mHa, which leaves occupations integral for
+  // anything with a normal gap.
+  const double kt = opts.electronic_temperature > 0.0
+                        ? opts.electronic_temperature / occ::units::AU_TO_KELVIN
+                        : 0.0;
+  const Mat W = unrestricted ? spin_coupling(opts.spin_polarization) : Mat();
+
+  // Re-evaluated each SCC iteration at the current charges, matching xtb's
+  // self-consistent D4 to within a few µHa.
   std::optional<occ::disp::D4Dispersion> native_d4;
   if (opts.include_dispersion) {
     native_d4.emplace(m_atoms);
@@ -144,32 +205,36 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
   }
   double e_disp = 0.0;
 
-  // SCC initial guess. Priority:
-  //   1. Caller-supplied warm-start `m_qsh_init` if its length matches
-  //      n_shells (typically the previous gradient/opt step's converged
-  //      qsh on a nearby geometry — saves several SCC iterations).
-  //   2. EEQ charges (xtb convention).
-  //   3. Zeros (if EEQ doesn't have parameters for one of the elements).
-  // Cleared after consuming so a stale warm-start can't silently leak
-  // into a subsequent unrelated call.
-  Vec qsh;
+  // Input state for the next Hamiltonian build. Magnetization starts at zero,
+  // so the first iteration's α/β Hamiltonians are identical and the spin
+  // density comes purely from the differing α/β electron counts.
+  const int n_atoms = static_cast<int>(m_atoms.size());
+  SccMixerState state = SccMixerState::zero(m_n_shells, n_atoms, unrestricted,
+                                            include_multipoles);
+
+  // Initial charges: caller-supplied warm start (a nearby geometry's converged
+  // qsh, from geometry optimization or Hessian FD), else EEQ, else zeros for
+  // elements EEQ lacks parameters for. Consumed once so it can't leak into a
+  // later unrelated call.
   if (m_qsh_init.size() == m_n_shells) {
-    qsh = m_qsh_init;
+    state.shell_charges = m_qsh_init;
     m_qsh_init = Vec();
   } else {
     try {
-      qsh = eeq_initial_shell_charges(m_atoms, m_shells, opts.total_charge);
+      state.shell_charges =
+          eeq_initial_shell_charges(m_atoms, m_shells, opts.total_charge);
     } catch (const std::exception &) {
-      qsh = Vec::Zero(m_n_shells);
+      state.shell_charges = Vec::Zero(m_n_shells);
     }
   }
+
   double prev_energy = 0.0;
   Vec orbital_energies, orbital_occupations;
-  Mat C, P;
+  Vec orbital_energies_beta, orbital_occupations_beta;
+  Mat C, C_beta, P, P_alpha, P_beta;
 
-  // Pulay-style charge DIIS: extrapolate qsh_new from history of
-  // (qsh_new_i, residual_i = qsh_new_i − qsh_in_i). Linear damping warms it
-  // up for the first `diis_start` iterations.
+  // Pulay-style DIIS on the whole input state, with linear damping for the
+  // first `diis_start` iterations while history builds.
   const std::size_t diis_start = 3;
   const std::size_t diis_subspace = 8;
   occ::core::diis::DIIS diis(diis_start, diis_subspace);
@@ -177,21 +242,29 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
   occ::log::info("{:=^72s}", "  GFN2-xTB self-consistent charges  ");
   occ::log::info("nbf = {}   n_shells = {}   n_electrons = {}   multipoles = {}",
                  m_nbf, m_n_shells, n_elec, include_multipoles ? "on" : "off");
+  if (unrestricted) {
+    occ::log::info("spin           : unrestricted, Nα = {:g}  Nβ = {:g}  "
+                   "(2S+1 = {})  W scale = {:g}",
+                   occupation.n_alpha, occupation.n_beta, n_unpaired + 1,
+                   opts.spin_polarization);
+  }
   if (m_solvation) {
     occ::log::info("solvation: {}", m_solvation->name());
   }
   occ::log::info("{:>4s}  {:>20s}  {:>12s}  {:>12s}", "iter", "E (Hartree)",
                  "|ΔE|", "max|Δq|");
 
-  bool converged = false;
-  int iter = 0;
-  for (iter = 1; iter <= opts.max_iterations; ++iter) {
-    // Solvation update at the current input shell charges. Projection
-    // shell → atom matches the convention used by the AES H1 below.
+  if (opts.max_iterations < 1) {
+    throw std::runtime_error("Gfn2Engine: max_iterations must be at least 1");
+  }
+
+  // Rebuilt from scratch each cycle; returned on convergence or, unchanged
+  // from the final cycle, when the iteration limit is hit.
+  SccResult result;
+  for (int iter = 1; iter <= opts.max_iterations; ++iter) {
+    const Vec &qsh = state.shell_charges;
+    const Vec atom_q = shell_to_atom(qsh, m_shells.atom, n_atoms);
     if (m_solvation) {
-      Vec atom_q = Vec::Zero(m_atoms.size());
-      for (int s = 0; s < m_n_shells; ++s)
-        atom_q(m_shells.atom[s]) += qsh(s);
       m_solvation->update(atom_q);
     }
 
@@ -200,8 +273,8 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
     for (Eigen::Index s = 0; s < V.size(); ++s) {
       V(s) += m_shells.third_order(s) * qsh(s) * qsh(s);
     }
-    // Fold the atom-resolved solvation shift into each shell's V (each AO
-    // ultimately picks it up via the 0.5·S·(V_μ + V_ν) term that builds H).
+    // Each AO picks the atom-resolved solvation shift up via the
+    // 0.5·S·(V_μ + V_ν) term that builds H.
     if (m_solvation) {
       const Vec &v_solv = m_solvation->atom_potential();
       for (Eigen::Index s = 0; s < V.size(); ++s) {
@@ -219,51 +292,91 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
       }
     }
 
-    if (include_multipoles && iter > 1) {
-      // H1 uses CAMM from the previous iteration's density (current `P` at
-      // entry to this iter). Energy is computed below from the new P, the
-      // new qsh, and the new CAMM (post-density values).
-      auto m_in = compute_camm_moments_periodic(m_atoms, m_bf_to_atom, P,
-                                                  m_mp_ao.D_ket, m_mp_ao.D_bra,
-                                                  m_mp_ao.Q_ket, m_mp_ao.Q_bra);
-      Vec atom_q = Vec::Zero(m_atoms.size());
-      for (int s = 0; s < m_n_shells; ++s)
-        atom_q(m_shells.atom[s]) += qsh(s);
-      auto pot = anisotropic_potentials_ewald(m_atoms, atom_q, m_in,
-                                                m_mp_tensors, m_params);
+    if (include_multipoles) {
+      auto pot = anisotropic_potentials_ewald(
+          m_atoms, atom_q, state.multipoles, m_mp_tensors, m_params);
       apply_anisotropic_h1_periodic(H, m_S, m_mp_ao.D_ket, m_mp_ao.D_bra,
                                      m_mp_ao.Q_ket, m_mp_ao.Q_bra,
                                      m_bf_to_atom, pot);
     }
 
-    Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(H, m_S);
-    if (es.info() != Eigen::Success) {
-      throw std::runtime_error("Gfn2Engine: eigensolver failed");
+    auto solve = [&](const Mat &fock, Vec &energies, Mat &coeffs) {
+      Eigen::GeneralizedSelfAdjointEigenSolver<Mat> es(fock, m_S);
+      if (es.info() != Eigen::Success) {
+        throw std::runtime_error("Gfn2Engine: eigensolver failed");
+      }
+      energies = es.eigenvalues();
+      coeffs = es.eigenvectors();
+    };
+
+    SccMixerState fresh = SccMixerState::zero(m_n_shells, n_atoms,
+                                              unrestricted,
+                                              include_multipoles);
+    double e_entropy = 0.0;
+    if (unrestricted) {
+      // H_σ = H_common ± ½ S_μν (v_μ + v_ν) with v = W·m; + for α, − for β.
+      // W is negative, so a positive magnetization lowers the α levels.
+      const Vec v_spin = W * state.magnetization;
+      Mat H_alpha = H;
+      Mat H_beta = H;
+      for (Eigen::Index mu = 0; mu < m_nbf; ++mu) {
+        const int sh_mu = m_bf_to_shell[mu];
+        for (Eigen::Index nu = 0; nu < m_nbf; ++nu) {
+          const int sh_nu = m_bf_to_shell[nu];
+          const double shift =
+              0.5 * m_S(mu, nu) * (v_spin(sh_mu) + v_spin(sh_nu));
+          H_alpha(mu, nu) += shift;
+          H_beta(mu, nu) -= shift;
+        }
+      }
+      solve(H_alpha, orbital_energies, C);
+      solve(H_beta, orbital_energies_beta, C_beta);
+
+      const auto fill_a = fermi_filling(occupation.n_alpha, kt,
+                                        orbital_energies);
+      const auto fill_b = fermi_filling(occupation.n_beta, kt,
+                                        orbital_energies_beta);
+      orbital_occupations = fill_a.occupations;
+      orbital_occupations_beta = fill_b.occupations;
+      e_entropy = fill_a.entropy_energy + fill_b.entropy_energy;
+
+      P_alpha = density_from_occupations(C, orbital_occupations);
+      P_beta = density_from_occupations(C_beta, orbital_occupations_beta);
+      P = P_alpha + P_beta;
+
+      fresh.magnetization =
+          shell_populations(P_alpha * m_S, m_bf_to_shell, m_n_shells) -
+          shell_populations(P_beta * m_S, m_bf_to_shell, m_n_shells);
+    } else {
+      solve(H, orbital_energies, C);
+      // Both channels fill from the same orbitals, giving the usual 2.0 per
+      // occupied orbital for an even electron count with a gap.
+      const auto fill_a = fermi_filling(occupation.n_alpha, kt,
+                                        orbital_energies);
+      const auto fill_b = fermi_filling(occupation.n_beta, kt,
+                                        orbital_energies);
+      orbital_occupations = fill_a.occupations + fill_b.occupations;
+      e_entropy = fill_a.entropy_energy + fill_b.entropy_energy;
+      P = density_from_occupations(C, orbital_occupations);
     }
-    orbital_energies = es.eigenvalues();
-    C = es.eigenvectors();
 
-    orbital_occupations = Vec::Zero(m_nbf);
-    for (int i = 0; i < n_occ; ++i)
-      orbital_occupations(i) = 2.0;
+    fresh.shell_charges =
+        m_z_sh - shell_populations(P * m_S, m_bf_to_shell, m_n_shells);
+    const Vec &qsh_new = fresh.shell_charges;
+    const Vec atom_q_new = shell_to_atom(qsh_new, m_shells.atom, n_atoms);
+    const double e_spin =
+        unrestricted
+            ? 0.5 * fresh.magnetization.dot(W * fresh.magnetization)
+            : 0.0;
 
-    Mat Cocc = C.leftCols(n_occ);
-    P = 2.0 * (Cocc * Cocc.transpose());
-
-    Mat PS = P * m_S;
-    Vec pop = shell_populations(PS, m_bf_to_shell, m_n_shells);
-    Vec qsh_new = m_z_sh - pop;
-
-    // Multipole AES from the post-density CAMM — energy reflects the
-    // just-solved (P, q, μ) triple, not the H1's input state.
+    // AES from the post-density CAMM: the energy reflects the just-solved
+    // (P, q, μ), not the H1's input state.
     AnisotropicEnergy e_aniso{0.0, 0.0};
     if (include_multipoles) {
-      auto m_new = compute_camm_moments_periodic(m_atoms, m_bf_to_atom, P,
-                                                   m_mp_ao.D_ket, m_mp_ao.D_bra,
-                                                   m_mp_ao.Q_ket, m_mp_ao.Q_bra);
-      Vec atom_q_new = Vec::Zero(m_atoms.size());
-      for (int s = 0; s < m_n_shells; ++s)
-        atom_q_new(m_shells.atom[s]) += qsh_new(s);
+      fresh.multipoles = compute_camm_moments_periodic(
+          m_atoms, m_bf_to_atom, P, m_mp_ao.D_ket, m_mp_ao.D_bra,
+          m_mp_ao.Q_ket, m_mp_ao.Q_bra);
+      const CammMoments &m_new = fresh.multipoles;
       e_aniso = anisotropic_energy_ewald(m_atoms, atom_q_new, m_new,
                                           m_mp_tensors, m_params);
       for (int a = 0; a < static_cast<int>(m_atoms.size()); ++a) {
@@ -278,12 +391,7 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
       }
     }
 
-    // Compute SCC-coupled D4 with the current Mulliken charges via the
-    // native occ::disp::D4Dispersion (uses GFN2-xTB reference data).
     if (native_d4) {
-      Vec atom_q_new = Vec::Zero(m_atoms.size());
-      for (int s = 0; s < m_n_shells; ++s)
-        atom_q_new(m_shells.atom[s]) += qsh_new(s);
       native_d4->set_charges(atom_q_new);
       e_disp = native_d4->energy();
     }
@@ -296,90 +404,86 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
     }
     double e_h0 = (P.cwiseProduct(m_H0)).sum();
     double e_solv = m_solvation ? m_solvation->energy() : 0.0;
-    double scc_energy =
-        e_h0 + e_es + e_third + e_aniso.aes + e_aniso.polariz + e_solv;
+    double scc_energy = e_h0 + e_es + e_third + e_aniso.aes +
+                        e_aniso.polariz + e_solv + e_spin + e_entropy;
     double total_energy = scc_energy + m_e_rep + e_disp;
 
-    double dq_max = (qsh_new - qsh).cwiseAbs().maxCoeff();
-    double de = std::abs(total_energy - prev_energy);
+    const double dq_max = fresh.max_change(state);
+    const double de = std::abs(total_energy - prev_energy);
     occ::log::info("{:>4d}  {:>20.12f}  {:>12.2e}  {:>12.2e}", iter,
                    total_energy, de, dq_max);
     occ::log::debug(
         "    breakdown: H0={:>14.6f}  ES={:>14.6f}  3rd={:>10.3e}  "
-        "AES={:>10.3e}  pol={:>10.3e}  solv={:>10.3e}  rep={:>10.3e}  "
-        "disp={:>10.3e}",
-        e_h0, e_es, e_third, e_aniso.aes, e_aniso.polariz, e_solv, m_e_rep,
-        e_disp);
+        "AES={:>10.3e}  pol={:>10.3e}  solv={:>10.3e}  spin={:>10.3e}  "
+        "-TS={:>10.3e}  rep={:>10.3e}  disp={:>10.3e}",
+        e_h0, e_es, e_third, e_aniso.aes, e_aniso.polariz, e_solv, e_spin,
+        e_entropy, m_e_rep, e_disp);
 
     bool e_ok = (iter > 1) && de < opts.energy_threshold;
     bool q_ok = dq_max < opts.charge_threshold;
-    if (e_ok && q_ok) {
-      converged = true;
-      Vec atom_charges = Vec::Zero(m_atoms.size());
-      for (int s = 0; s < m_n_shells; ++s)
-        atom_charges(m_shells.atom[s]) += qsh_new(s);
-      // Refresh solvation state at the converged charges so the per-element
-      // decomposition reflects the same q that the reported energy uses.
-      if (m_solvation) {
-        m_solvation->update(atom_charges);
-      }
-      SccResult r;
-      r.scc_energy = scc_energy;
-      r.repulsion_energy = m_e_rep;
-      r.dispersion_energy = e_disp;
-      r.total_energy = total_energy;
-      r.shell_charges = qsh_new;
-      r.atomic_charges = atom_charges;
-      r.orbital_energies = orbital_energies;
-      r.orbital_occupations = orbital_occupations;
-      r.density_matrix = P;
-      r.overlap_matrix = m_S;
-      r.orbital_coefficients = C;
-      r.n_iterations = iter;
-      r.converged = true;
-      if (m_solvation) {
-        r.solvation_surfaces = m_solvation->surfaces();
-      }
-      m_last_shell_charges = qsh_new;
-      occ::log::info("Converged in {} iterations.", iter);
-      return r;
+    const bool converged = e_ok && q_ok;
+
+    // Snapshotted every cycle, so an unconverged return still carries a
+    // coherent (energy, density, charges) triple from the last one.
+    if (converged && m_solvation) {
+      // Report the per-element decomposition at the same q as the energy.
+      m_solvation->update(atom_q_new);
+    }
+    result.scc_energy = scc_energy;
+    result.repulsion_energy = m_e_rep;
+    result.dispersion_energy = e_disp;
+    result.total_energy = total_energy;
+    result.shell_charges = qsh_new;
+    result.atomic_charges = atom_q_new;
+    result.orbital_energies = orbital_energies;
+    result.orbital_occupations = orbital_occupations;
+    result.density_matrix = P;
+    result.overlap_matrix = m_S;
+    result.orbital_coefficients = C;
+    result.n_iterations = iter;
+    result.converged = converged;
+    result.unrestricted = unrestricted;
+    result.num_unpaired_electrons = n_unpaired;
+    result.spin_energy = e_spin;
+    result.electronic_entropy_energy = e_entropy;
+    if (unrestricted) {
+      result.shell_magnetization = fresh.magnetization;
+      result.atomic_magnetization =
+          shell_to_atom(fresh.magnetization, m_shells.atom, n_atoms);
+      result.density_matrix_alpha = P_alpha;
+      result.density_matrix_beta = P_beta;
+      result.orbital_coefficients_beta = C_beta;
+      result.orbital_energies_beta = orbital_energies_beta;
+      result.orbital_occupations_beta = orbital_occupations_beta;
+    }
+    if (m_solvation) {
+      result.solvation_surfaces = m_solvation->surfaces();
     }
 
-    // Push (qsh_new, residual) into DIIS. For iter ≤ diis_start the call is
-    // a no-op (just builds history) and we fall back to linear damping; once
-    // there is enough history DIIS overwrites x with the extrapolated qsh.
-    Mat x = qsh_new;
-    Mat err = qsh_new - qsh;
+    if (converged) {
+      m_last_shell_charges = qsh_new;
+      occ::log::info("Converged in {} iterations.", iter);
+      return result;
+    }
+
+    // Extrapolate the whole input state. Below `diis_start` the call only
+    // accumulates history and we fall back to linear damping.
+    Mat x = fresh.pack();
+    Mat err = x - state.pack();
     diis.extrapolate(x, err);
     if (static_cast<std::size_t>(iter) > diis_start) {
-      qsh = x.col(0);
+      state.unpack(x.col(0));
     } else {
-      qsh = (1.0 - opts.damping_factor) * qsh_new + opts.damping_factor * qsh;
+      state.damp_toward(fresh, opts.damping_factor);
     }
     prev_energy = total_energy;
   }
 
   occ::log::warn("GFN2 SCC did not converge in {} iterations",
                  opts.max_iterations);
-  // Unconverged — return last iterate.
-  SccResult r;
-  r.scc_energy = prev_energy - m_e_rep - e_disp;
-  r.repulsion_energy = m_e_rep;
-  r.dispersion_energy = e_disp;
-  r.total_energy = prev_energy;
-  r.shell_charges = qsh;
-  Vec atom_charges = Vec::Zero(m_atoms.size());
-  for (int s = 0; s < m_n_shells; ++s)
-    atom_charges(m_shells.atom[s]) += qsh(s);
-  r.atomic_charges = atom_charges;
-  r.orbital_energies = orbital_energies;
-  r.orbital_occupations = orbital_occupations;
-  r.density_matrix = P;
-  r.overlap_matrix = m_S;
-  r.orbital_coefficients = C;
-  r.n_iterations = iter;
-  r.converged = false;
-  return r;
+  result.n_iterations = opts.max_iterations;
+  result.converged = false;
+  return result;
 }
 
 } // namespace occ::xtb

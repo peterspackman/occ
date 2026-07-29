@@ -39,6 +39,18 @@ ElementParam element_from_json(const json &j) {
   e.rep_zeff = j.at("rep_zeff").get<double>();
   e.dip_kernel = j.at("dip_kernel").get<double>();
   e.quad_kernel = j.at("quad_kernel").get<double>();
+  // Optional: parameter files predating spin-unrestricted support omit this
+  // block. Absence is only an error if an open-shell calculation is run —
+  // see `spin_coupling_matrix`.
+  auto spin = j.find("spin_constants");
+  if (spin != j.end() && !spin->is_null()) {
+    static constexpr std::array<const char *, 6> keys = {"ss", "sp", "pp",
+                                                          "sd", "pd", "dd"};
+    for (size_t i = 0; i < keys.size(); ++i) {
+      e.spin_constants[i] = spin->at(keys[i]).get<double>();
+    }
+    e.has_spin_constants = true;
+  }
   for (const auto &js : j.at("shells")) {
     e.shells.push_back(shell_from_json(js));
   }

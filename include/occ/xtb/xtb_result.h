@@ -27,16 +27,38 @@ struct XtbResult {
   /// Length = N_atoms.
   Vec atomic_charges;
 
-  /// Orbital energies ε at Γ (Hartree). Length = N_basis.
+  /// Orbital energies ε at Γ (Hartree), α channel when unrestricted.
   Vec orbital_energies;
-  /// Orbital occupations n_i (0..2 for closed shell). Length = N_basis.
+  /// Orbital occupations: 0..2 restricted, 0..1 for the α channel otherwise.
   Vec orbital_occupations;
-  /// Density matrix P at Γ (closed-shell, summed over both spins).
+  /// Density matrix P at Γ, always summed over both spins — so Mulliken,
+  /// CAMM and bond-order consumers work unchanged either way.
   Mat density_matrix;
   /// Overlap matrix S at Γ (cached for downstream property analysis).
   Mat overlap_matrix;
-  /// Orbital coefficients C at Γ (closed-shell).
+  /// Orbital coefficients C at Γ, α channel when unrestricted.
   Mat orbital_coefficients;
+
+  // --- Open shell: empty / zero unless the SCC ran spin-unrestricted -------
+
+  bool unrestricted{false};
+  /// Nα − Nβ (multiplicity − 1).
+  int num_unpaired_electrons{0};
+  /// On-site spin-polarization energy ½ mᵀWm (≤ 0), included in `scc_energy`.
+  double spin_energy{0.0};
+  /// Fermi-smearing free-energy term −T·S (≤ 0), included in `scc_energy`.
+  /// Vanishes for any system with a gap ≫ kT.
+  double electronic_entropy_energy{0.0};
+  /// Per-shell magnetization, Mulliken pop(α) − pop(β).
+  Vec shell_magnetization;
+  /// Per-atom spin populations; sums to Nα − Nβ.
+  Vec atomic_magnetization;
+  /// Spin-resolved densities; `density_matrix` is their sum.
+  Mat density_matrix_alpha;
+  Mat density_matrix_beta;
+  Mat orbital_coefficients_beta;
+  Vec orbital_energies_beta;
+  Vec orbital_occupations_beta;
 
   /// Number of SCC iterations actually run.
   int n_iterations{0};

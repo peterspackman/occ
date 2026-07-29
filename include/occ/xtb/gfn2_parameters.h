@@ -28,8 +28,24 @@ struct ElementParam {
   double rep_zeff;                 // REPB
   double dip_kernel;               // DPOL × 0.01
   double quad_kernel;              // QPOL × 0.01
+  // On-site spin-polarization constants W_{ll'} (Hartree), indexed by
+  // `spin_pair_index(l, l')` — order [ss, sp, pp, sd, pd, dd]. Only needed
+  // for spin-unrestricted calculations; `has_spin_constants` is false when
+  // the parameter file omits the block.
+  std::array<double, 6> spin_constants{};
+  bool has_spin_constants{false};
   std::vector<ShellParam> shells;
 };
+
+// Position of the (l_i, l_j) pair in `ElementParam::spin_constants`.
+// Symmetric in its arguments; returns -1 for l above d (GFN2's basis tops
+// out at l = 2, and no constants are tabulated beyond it).
+constexpr int spin_pair_index(int l_i, int l_j) {
+  constexpr int table[3][3] = {{0, 1, 3}, {1, 2, 4}, {3, 4, 5}};
+  if (l_i < 0 || l_i > 2 || l_j < 0 || l_j > 2)
+    return -1;
+  return table[l_i][l_j];
+}
 
 struct GlobalParam {
   // H0 shell scalings (s, p, d, f)

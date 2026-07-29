@@ -19,6 +19,7 @@
 #include <occ/xtb/multipole_ints.h>
 #include <occ/xtb/periodic_integrals.h>
 #include <occ/xtb/repulsion.h>
+#include <occ/xtb/scc_state.h>
 #include <optional>
 #include <stdexcept>
 
@@ -146,28 +147,10 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
     mom.qp = Mat::Zero(6, sys.atoms.size());
   }
   const int n_atoms = static_cast<int>(sys.atoms.size());
-  // DIIS state size: qsh (n_shells) + dipm (3 × n_atoms) + qp (6 × n_atoms).
-  const int diis_size = opts.include_multipoles
-                             ? (n_shells + 9 * n_atoms)
-                             : n_shells;
-  auto pack_state = [&](const Vec &qsh_v, const CammMoments &m, Vec &out) {
-    out.head(n_shells) = qsh_v;
-    if (opts.include_multipoles) {
-      Eigen::Map<const Vec> dipm_flat(m.dipm.data(), 3 * n_atoms);
-      Eigen::Map<const Vec> qp_flat(m.qp.data(), 6 * n_atoms);
-      out.segment(n_shells, 3 * n_atoms) = dipm_flat;
-      out.segment(n_shells + 3 * n_atoms, 6 * n_atoms) = qp_flat;
-    }
-  };
-  auto unpack_state = [&](const Vec &state, Vec &qsh_v, CammMoments &m) {
-    qsh_v = state.head(n_shells);
-    if (opts.include_multipoles) {
-      Eigen::Map<Vec>(m.dipm.data(), 3 * n_atoms) =
-          state.segment(n_shells, 3 * n_atoms);
-      Eigen::Map<Vec>(m.qp.data(), 6 * n_atoms) =
-          state.segment(n_shells + 3 * n_atoms, 6 * n_atoms);
-    }
-  };
+  // Reusable buffers for the mixed state (charges + CAMM moments).
+  SccMixerState mix_in = SccMixerState::zero(n_shells, n_atoms, false,
+                                             opts.include_multipoles);
+  SccMixerState mix_new = mix_in;
 
   const std::size_t diis_start = 3;
   const std::size_t diis_subspace = 8;
@@ -340,27 +323,23 @@ run_charge_only_periodic_scc(const PeriodicSystem &sys,
       return r;
     }
 
-    // mom_new is the freshly computed CAMM from the new density (computed
-    // above); reuse it as the input for next iteration's H1 after DIIS mixing.
-    // Pack (qsh_new, mom_new) into a single DIIS state vector. Error is the
-    // change since the previous (qsh, mom). Extrapolate, then unpack back.
     occ::timing::start(occ::timing::xtb_diis);
-    Vec state(diis_size);
-    Vec state_prev(diis_size);
-    pack_state(qsh_new, mom_new, state);
-    pack_state(qsh, mom, state_prev);
-    Mat x = state;
-    Mat err = state - state_prev;
+    mix_in.shell_charges = qsh;
+    mix_new.shell_charges = qsh_new;
+    if (opts.include_multipoles) {
+      mix_in.multipoles = mom;
+      mix_new.multipoles = mom_new;
+    }
+    Mat x = mix_new.pack();
+    Mat err = x - mix_in.pack();
     diis.extrapolate(x, err);
     if (static_cast<std::size_t>(iter) > diis_start) {
-      Vec extrapolated = x.col(0);
-      unpack_state(extrapolated, qsh, mom);
+      mix_in.unpack(x.col(0));
     } else {
-      // Linear damping on the full state (charges + moments).
-      Vec mixed = (1.0 - opts.damping_factor) * state +
-                  opts.damping_factor * state_prev;
-      unpack_state(mixed, qsh, mom);
+      mix_in.damp_toward(mix_new, opts.damping_factor);
     }
+    qsh = mix_in.shell_charges;
+    mom = mix_in.multipoles;
     occ::timing::stop(occ::timing::xtb_diis);
     prev_energy = total_energy;
   }
@@ -505,27 +484,10 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
     mom.dipm = Mat3N::Zero(3, n_atoms);
     mom.qp = Mat::Zero(6, n_atoms);
   }
-  const int diis_size = opts.include_multipoles
-                             ? (n_shells + 9 * n_atoms)
-                             : n_shells;
-  auto pack_state = [&](const Vec &qsh_v, const CammMoments &m, Vec &out) {
-    out.head(n_shells) = qsh_v;
-    if (opts.include_multipoles) {
-      Eigen::Map<const Vec> dipm_flat(m.dipm.data(), 3 * n_atoms);
-      Eigen::Map<const Vec> qp_flat(m.qp.data(), 6 * n_atoms);
-      out.segment(n_shells, 3 * n_atoms) = dipm_flat;
-      out.segment(n_shells + 3 * n_atoms, 6 * n_atoms) = qp_flat;
-    }
-  };
-  auto unpack_state = [&](const Vec &state, Vec &qsh_v, CammMoments &m) {
-    qsh_v = state.head(n_shells);
-    if (opts.include_multipoles) {
-      Eigen::Map<Vec>(m.dipm.data(), 3 * n_atoms) =
-          state.segment(n_shells, 3 * n_atoms);
-      Eigen::Map<Vec>(m.qp.data(), 6 * n_atoms) =
-          state.segment(n_shells + 3 * n_atoms, 6 * n_atoms);
-    }
-  };
+  // Reusable buffers for the mixed state (charges + CAMM moments).
+  SccMixerState mix_in = SccMixerState::zero(n_shells, n_atoms, false,
+                                             opts.include_multipoles);
+  SccMixerState mix_new = mix_in;
 
   const std::size_t diis_start = 3;
   const std::size_t diis_subspace = 8;
@@ -712,21 +674,22 @@ run_periodic_scc_kpoints(const PeriodicSystem &sys,
 
     // DIIS over packed (qsh; dipm; qpat) — matches the Γ-only path so the
     // multipole H1 contribution stabilises together with the shell charges.
-    Vec state(diis_size);
-    Vec state_prev(diis_size);
-    pack_state(qsh_new, mom_new, state);
-    pack_state(qsh, mom, state_prev);
-    Mat x = state;
-    Mat err = state - state_prev;
+    mix_in.shell_charges = qsh;
+    mix_new.shell_charges = qsh_new;
+    if (opts.include_multipoles) {
+      mix_in.multipoles = mom;
+      mix_new.multipoles = mom_new;
+    }
+    Mat x = mix_new.pack();
+    Mat err = x - mix_in.pack();
     diis.extrapolate(x, err);
     if (static_cast<std::size_t>(iter) > diis_start) {
-      Vec extrapolated = x.col(0);
-      unpack_state(extrapolated, qsh, mom);
+      mix_in.unpack(x.col(0));
     } else {
-      Vec mixed = (1.0 - opts.damping_factor) * state +
-                  opts.damping_factor * state_prev;
-      unpack_state(mixed, qsh, mom);
+      mix_in.damp_toward(mix_new, opts.damping_factor);
     }
+    qsh = mix_in.shell_charges;
+    mom = mix_in.multipoles;
     prev_energy = total_energy;
   }
 
