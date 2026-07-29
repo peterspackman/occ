@@ -30,8 +30,6 @@ SCF<P>::SCF(P &procedure, SpinorbitalKind sk) : m_procedure(procedure) {
 
   ctx.V_ext = Mat::Zero(rows, cols);
   ctx.energy["nuclear.repulsion"] = m_procedure.nuclear_repulsion_energy();
-  if (!supports_incremental_fock_build(m_procedure.fock_build_properties()))
-    convergence_settings.incremental_fock_threshold = 0.0;
 }
 
 template <SCFMethod P> int SCF<P>::n_alpha() const { return ctx.n_occ; }
@@ -513,7 +511,7 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
     m_procedure.update_core_hamiltonian(ctx.mo, ctx.H);
     incremental = true;
 
-    if (not incremental_Fbuild_started &&
+    if (incremental_fock_supported() && not incremental_Fbuild_started &&
         convergence_settings.start_incremental_fock(diis_error)) {
       incremental_Fbuild_started = true;
       reset_incremental_fock_formation = false;

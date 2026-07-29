@@ -97,6 +97,16 @@ template <SCFMethod Procedure> struct SCF {
   inline const char *scf_kind() const;
   double compute_scf_energy();
 
+  /// Whether the procedure's declared `FockBuildProperties` permit
+  /// accumulating F += G(ΔD). Asked of the procedure directly rather than
+  /// cached, so it can't go stale if a DF basis or COSX grid is installed
+  /// after the SCF is constructed. Enforced where the accumulation starts, so
+  /// `convergence_settings.incremental_fock_threshold` can only ever turn
+  /// incremental builds *off* — never on for a method that can't take them.
+  bool incremental_fock_supported() const {
+    return supports_incremental_fock_build(m_procedure.fock_build_properties());
+  }
+
   occ::qm::SCFConvergenceSettings convergence_settings;
   Procedure &m_procedure;
   SCFContext ctx;

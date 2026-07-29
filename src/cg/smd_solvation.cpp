@@ -54,8 +54,6 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   occ::qm::SCF<occ::solvent::SolvationCorrectedProcedure<occ::dft::DFT>> scf(
       proc_solv, gas_wfn.mo.kind);
 
-  scf.convergence_settings.incremental_fock_threshold =
-      m_settings.convergence_threshold;
   scf.set_charge_multiplicity(gas_wfn.charge(), gas_wfn.multiplicity());
 
   // Perform SCF calculation

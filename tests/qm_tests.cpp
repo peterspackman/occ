@@ -1929,7 +1929,7 @@ TEST_CASE("Incremental Fock: disabled when the Fock build isn't incremental-safe
     hf.set_density_fitting_basis("def2-universal-jkfit");
     REQUIRE_FALSE(supports_incremental_fock_build(hf.fock_build_properties()));
     occ::qm::SCF<HartreeFock> scf(hf);
-    REQUIRE(scf.convergence_settings.incremental_fock_threshold == 0.0);
+    REQUIRE_FALSE(scf.incremental_fock_supported());
     (void)scf.compute_scf_energy();
     REQUIRE(scf.num_incremental_fock_builds == 0);
   }
@@ -1939,7 +1939,7 @@ TEST_CASE("Incremental Fock: disabled when the Fock build isn't incremental-safe
     hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid1);
     REQUIRE_FALSE(supports_incremental_fock_build(hf.fock_build_properties()));
     occ::qm::SCF<HartreeFock> scf(hf);
-    REQUIRE(scf.convergence_settings.incremental_fock_threshold == 0.0);
+    REQUIRE_FALSE(scf.incremental_fock_supported());
     (void)scf.compute_scf_energy();
     REQUIRE(scf.num_incremental_fock_builds == 0);
   }
@@ -1948,6 +1948,38 @@ TEST_CASE("Incremental Fock: disabled when the Fock build isn't incremental-safe
     HartreeFock hf(basis);
     REQUIRE(supports_incremental_fock_build(hf.fock_build_properties()));
     occ::qm::SCF<HartreeFock> scf(hf);
-    REQUIRE(scf.convergence_settings.incremental_fock_threshold > 0.0);
+    REQUIRE(scf.incremental_fock_supported());
+  }
+}
+
+TEST_CASE("Incremental Fock: the eligibility gate cannot be overridden",
+          "[scf][incremental]") {
+  // The gate used to be enforced by zeroing `incremental_fock_threshold` in
+  // the SCF constructor, which any caller could undo afterwards — and one in
+  // occ::cg did, on a solvated procedure. The threshold must only ever be
+  // able to turn incremental builds off.
+  auto atoms = incremental_test_atoms();
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+
+  SECTION("writing the threshold cannot re-enable it") {
+    HartreeFock hf(basis);
+    hf.set_density_fitting_basis("def2-universal-jkfit");
+    occ::qm::SCF<HartreeFock> scf(hf);
+    REQUIRE_FALSE(scf.incremental_fock_supported());
+    scf.convergence_settings.incremental_fock_threshold = 1.0;
+    (void)scf.compute_scf_energy();
+    REQUIRE(scf.num_incremental_fock_builds == 0);
+  }
+
+  SECTION("a DF basis installed after construction is still honoured") {
+    // The SCF holds the procedure by reference, so the eligibility question
+    // has to be asked of it at the point of use rather than cached up front.
+    HartreeFock hf(basis);
+    occ::qm::SCF<HartreeFock> scf(hf);
+    REQUIRE(scf.incremental_fock_supported());
+    hf.set_density_fitting_basis("def2-universal-jkfit");
+    REQUIRE_FALSE(scf.incremental_fock_supported());
+    (void)scf.compute_scf_energy();
+    REQUIRE(scf.num_incremental_fock_builds == 0);
   }
 }

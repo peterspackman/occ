@@ -232,5 +232,8 @@ TEST_CASE("Incremental Fock: solvation opts out on the core Hamiltonian",
 
   occ::qm::SCF<occ::solvent::SolvationCorrectedProcedure<occ::qm::HartreeFock>>
       scf(solv);
-  REQUIRE(scf.convergence_settings.incremental_fock_threshold == 0.0);
+  REQUIRE_FALSE(scf.incremental_fock_supported());
+  // ...and no caller can undo that by reaching into the settings.
+  scf.convergence_settings.incremental_fock_threshold = 1.0;
+  REQUIRE_FALSE(scf.incremental_fock_supported());
 }

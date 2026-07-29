@@ -44,6 +44,7 @@ public:
   void set_cosx_settings(const occ::qm::cosx::Settings &settings);
 
   inline bool using_cosx() const { return m_cosx_engine != nullptr; }
+  inline bool using_density_fitting() const { return m_df_engine != nullptr; }
   
   /**
    * @brief Create a new HartreeFock instance with the same settings but different basis

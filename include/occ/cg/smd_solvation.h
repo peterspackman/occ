@@ -13,7 +13,6 @@ struct SMDSettings {
   std::string method{"b3lyp"};
   std::string basis{"6-31g**"};
   bool pure_spherical{false};
-  double convergence_threshold{0.0};
   double temperature{298.0}; // Kelvin
 };
 

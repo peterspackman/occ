@@ -86,9 +86,6 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
     scf.set_external_potential(
         occ::qm::PointChargePotential{config.geometry.point_charges});
   }
-  if (!config.basis.df_name.empty()) {
-    scf.convergence_settings.incremental_fock_threshold = 0.0;
-  }
 
   if (config.method.orbital_smearing_sigma != 0.0) {
     scf.ctx.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;

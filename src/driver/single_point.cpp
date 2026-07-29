@@ -132,9 +132,6 @@ Wavefunction run_method(Molecule &m, const occ::gto::AOBasis &basis,
     scf.set_external_potential(
         occ::qm::PointChargePotential{config.geometry.point_charges});
   }
-  if (!config.basis.df_name.empty()) {
-    scf.convergence_settings.incremental_fock_threshold = 0.0;
-  }
 
   if (config.method.orbital_smearing_sigma != 0.0) {
     scf.ctx.mo.smearing.kind = occ::qm::OrbitalSmearing::Kind::Fermi;
@@ -219,7 +216,6 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
     scf.maxiter = config.method.scf_maxiter;
     scf.set_charge_multiplicity(config.electronic.charge,
                                 config.electronic.multiplicity);
-    scf.convergence_settings.incremental_fock_threshold = 0.0;
     scf.set_initial_guess_from_wfn(wfn);
     double e = scf.compute_scf_energy();
     if (!config.solvent.output_surface_filename.empty())
@@ -236,7 +232,6 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
     scf.set_charge_multiplicity(config.electronic.charge,
                                 config.electronic.multiplicity);
     scf.set_initial_guess_from_wfn(wfn);
-    scf.convergence_settings.incremental_fock_threshold = 0.0;
     double e = scf.compute_scf_energy();
     if (!config.solvent.output_surface_filename.empty())
       proc_solv.write_surface_file(config.solvent.output_surface_filename);
