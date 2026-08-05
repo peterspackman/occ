@@ -1573,20 +1573,33 @@ TEST_CASE("DMADriver total multipoles are in the analysis frame", "[dma][driver]
 
   // Water is neutral, so the magnitude of the total dipole is invariant under
   // both rotation and choice of origin: every axis method must agree.
-  const auto total_dipole_norm = [&](const std::string &axis_method) {
+  const auto total_dipole_norm = [&](const std::string &axis_method,
+                                     double big_exponent) {
     occ::driver::DMAConfig config;
     config.write_punch = false;
     config.settings.max_rank = 2;
+    config.settings.big_exponent = big_exponent;
     config.axis_method = axis_method;
     occ::driver::DMADriver driver(config);
     auto output = driver.run(wfn);
     return output.total.q.segment(1, 3).norm();
   };
 
-  const double reference = total_dipole_norm("none");
-  REQUIRE(reference > 0.1);
-  CHECK(total_dipole_norm("moi") == Approx(reference).margin(1e-9));
-  CHECK(total_dipole_norm("pca") == Approx(reference).margin(1e-9));
+  // Two effects bound how exact this can be, so 1e-6 rather than machine
+  // precision: the fchk density above is printed to ~9 significant figures,
+  // and with big_exponent > 0 the diffuse part goes through a molecule-
+  // oriented numerical grid that a rotation re-samples. Neither is a frame
+  // error -- the bug this guards against moved |Q1| by ~30%.
+  // test_dma.py checks the same invariance on a live SCF wavefunction, where
+  // the analytic path holds to 1e-12.
+  for (double big_exponent : {0.0, 4.0}) {
+    const double reference = total_dipole_norm("none", big_exponent);
+    REQUIRE(reference > 0.1);
+    CHECK(total_dipole_norm("moi", big_exponent) ==
+          Approx(reference).epsilon(1e-6));
+    CHECK(total_dipole_norm("pca", big_exponent) ==
+          Approx(reference).epsilon(1e-6));
+  }
 }
 
 TEST_CASE("DMADriver centres the oriented molecule on its centre of mass",

@@ -8,6 +8,8 @@ from occpy import (
     MolecularOrbitals,
     Wavefunction,
     DMACalculator,
+    DMAConfig,
+    DMADriver,
     DMASettings,
     DMAResult,
     DMASites,
@@ -924,6 +926,123 @@ def test_dma_ethane_c2h4(ethane_wavefunction):
 
     total_mult = calc.compute_total_multipoles(dma_result)
     assert abs(total_mult.get_component("charge")) < 1e-6
+
+
+def _driver_config(**kwargs):
+    config = DMAConfig()
+    config.write_punch = False
+    for key, value in kwargs.items():
+        setattr(config, key, value)
+    return config
+
+
+def test_dma_config_per_element_overrides(h2o_wavefunction):
+    """Per-element overrides must survive the trip through the bindings."""
+    config = _driver_config()
+    config.settings.max_rank = 4
+    config.atom_radii = {"H": 0.5}
+    config.atom_limits = {"H": 2}
+
+    assert config.atom_radii == {"H": 0.5}
+    assert config.atom_limits == {"H": 2}
+
+    output = DMADriver(config).run(h2o_wavefunction)
+    bohr_per_angstrom = 1.0 / 0.52917721067
+
+    for site in range(output.sites.size()):
+        z = output.sites.atoms[output.sites.atom_indices[site]].atomic_number
+        if z == 1:
+            assert output.sites.radii[site] == pytest.approx(
+                0.5 * bohr_per_angstrom, rel=1e-6
+            )
+            assert output.sites.limits[site] == 2
+
+
+def test_dma_config_limits_are_clamped_to_max_rank(h2o_wavefunction):
+    config = _driver_config()
+    config.settings.max_rank = 2
+    config.atom_limits = {"O": 6}
+
+    output = DMADriver(config).run(h2o_wavefunction)
+    assert all(
+        output.sites.limits[i] <= 2 for i in range(output.sites.size())
+    )
+
+
+@pytest.mark.parametrize(
+    "big_exponent,tolerance",
+    [
+        # Fully analytic: the invariance is exact up to rounding.
+        (0.0, 1e-12),
+        # Default: diffuse density goes through a molecule-oriented numerical
+        # grid, so rotating the molecule re-samples it. Invariance is then only
+        # as good as the grid (~1e-8 here), not a frame error.
+        (4.0, 1e-6),
+    ],
+)
+def test_dma_driver_total_multipoles_are_frame_independent(
+    h2o_wavefunction, big_exponent, tolerance
+):
+    """Water is neutral, so |Q1| of the total is invariant under the frame."""
+
+    def total_dipole_norm(axis_method):
+        config = _driver_config(axis_method=axis_method)
+        config.settings.max_rank = 2
+        config.settings.big_exponent = big_exponent
+        output = DMADriver(config).run(h2o_wavefunction)
+        return float(np.linalg.norm(output.total.q[1:4]))
+
+    reference = total_dipole_norm("none")
+    assert reference > 0.1
+    assert total_dipole_norm("moi") == pytest.approx(reference, rel=tolerance)
+    assert total_dipole_norm("pca") == pytest.approx(reference, rel=tolerance)
+
+
+def test_dma_driver_applies_wavefunction_transform(h2o_wavefunction):
+    plain = _driver_config()
+    plain.settings.max_rank = 1
+    reference = DMADriver(plain).run(h2o_wavefunction)
+
+    rotation = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+    moved = _driver_config()
+    moved.settings.max_rank = 1
+    moved.wfn_rotation = rotation
+    moved.wfn_translation = np.array([1.0, 2.0, 3.0])
+    transformed = DMADriver(moved).run(h2o_wavefunction)
+
+    translation = np.array([1.0, 2.0, 3.0]) / 0.52917721067
+    for site in range(reference.sites.size()):
+        expected = rotation @ reference.sites.positions[:, site] + translation
+        assert transformed.sites.positions[:, site] == pytest.approx(
+            expected, abs=1e-9
+        )
+        # Rank 0 is a scalar: unchanged by any rigid-body motion.
+        assert transformed.result.multipoles[site].q[0] == pytest.approx(
+            reference.result.multipoles[site].q[0], abs=1e-9
+        )
+
+
+def test_dma_driver_json_records_effective_settings(h2o_wavefunction):
+    import json
+
+    config = _driver_config()
+    config.settings.max_rank = 4
+    config.atom_radii = {"H": 0.5}
+    config.atom_limits = {"H": 2}
+
+    output = DMADriver(config).run(h2o_wavefunction)
+    data = json.loads(DMADriver.generate_json(config, output))
+
+    assert data["units"] == {"position": "angstrom", "multipole": "atomic"}
+    assert data["settings"]["max_rank"] == 4
+    assert len(data["sites"]) == 3
+
+    for site in data["sites"]:
+        rank = site["rank"]
+        assert len(site["multipoles"]) == (rank + 1) ** 2
+        if site["atomic_number"] == 1:
+            assert site["radius"] == pytest.approx(0.5)
+            assert site["limit"] == 2
 
 
 if __name__ == "__main__":
