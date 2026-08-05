@@ -22,6 +22,27 @@ struct TypedSelfBuckingham {
     double C = 0.0;
 };
 
+// FIT atom types, in the order the pair table below indexes them. FIT is
+// coarser than NEIGHCRYS: every polar hydrogen (502-505) shares H_F2.
+struct FitType {
+    const char *label;
+    std::vector<int> codes;
+};
+
+const std::vector<FitType>& fit_types() {
+    static const std::vector<FitType> types{
+        {"H_F1", {501}},                 // H on carbon
+        {"H_F2", {502, 503, 504, 505}},  // polar H (on N/O)
+        {"C_F1", {511, 512, 513}},
+        {"N_F1", {521, 522, 523, 524}},
+        {"O_F1", {531, 532, 533}},
+        {"F_F1", {540}},
+        {"ClF1", {541}},
+        {"S_F1", {542}},
+    };
+    return types;
+}
+
 std::vector<TypedSelfBuckingham> williams_typed_self_params() {
     std::vector<TypedSelfBuckingham> self{
         {513, 1069.960000, 0.277778, 14.874827}, // C_W2
@@ -272,18 +293,6 @@ std::map<std::pair<int,int>, BuckinghamParams> ForceFieldParams::fit_typed_param
         {6, 7, 6311.420597, 0.293654, 69.388909}, // ClF1 S_F1
         {7, 7, 4156.455363, 0.302963, 60.016406}, // S_F1 S_F1
     };
-    // NEIGHCRYS type codes (from classify_williams_type) for each FIT label.
-    static const std::vector<std::pair<int, std::vector<int>>> codes_for_label = {
-        {0, {501}},                     // H_F1: H on carbon
-        {1, {502, 503, 504, 505}},      // H_F2: polar H (on N/O)
-        {2, {511, 512, 513}},           // C_F1
-        {3, {521, 522, 523, 524}},      // N_F1
-        {4, {531, 532, 533}},           // O_F1
-        {5, {540}},                     // F_F1
-        {6, {541}},                     // ClF1
-        {7, {542}},                     // S_F1
-    };
-
     const double eV = occ::units::EV_TO_KJ_PER_MOL;
     BuckinghamParams by_label[8][8];
     for (const auto& p : pairs) {
@@ -292,11 +301,14 @@ std::map<std::pair<int,int>, BuckinghamParams> ForceFieldParams::fit_typed_param
         by_label[p.j][p.i] = bp;
     }
 
+    // Expand label pairs over the NEIGHCRYS codes each label covers, so the
+    // table can be looked up by the codes classify_williams_type() produces.
+    const auto& types = fit_types();
     std::map<std::pair<int, int>, BuckinghamParams> params;
-    for (const auto& [li, codes_i] : codes_for_label)
-        for (const auto& [lj, codes_j] : codes_for_label)
-            for (int ci : codes_i)
-                for (int cj : codes_j)
+    for (size_t li = 0; li < types.size(); ++li)
+        for (size_t lj = 0; lj < types.size(); ++lj)
+            for (int ci : types[li].codes)
+                for (int cj : types[lj].codes)
                     params[{ci, cj}] = by_label[li][lj];
     return params;
 }
@@ -326,6 +338,15 @@ const char* ForceFieldParams::short_range_type_label(int type_code) {
     case 545: return "I_01";
     default:  return "UNKN";
     }
+}
+
+const char* ForceFieldParams::fit_type_label(int type_code) {
+    for (const auto& type : fit_types()) {
+        if (std::find(type.codes.begin(), type.codes.end(), type_code) !=
+            type.codes.end())
+            return type.label;
+    }
+    return nullptr;
 }
 
 int ForceFieldParams::short_range_type_atomic_number(int type_code) {
@@ -381,6 +402,18 @@ std::vector<std::vector<int>> ForceFieldParams::bonded_neighbors(
         }
     }
     return neighbors;
+}
+
+std::vector<int> ForceFieldParams::classify_atom_types(
+    const std::vector<int>& atomic_numbers,
+    const std::vector<Vec3>& positions) {
+
+    const auto neighbors = bonded_neighbors(atomic_numbers, positions);
+    std::vector<int> codes(atomic_numbers.size(), 0);
+    for (size_t i = 0; i < atomic_numbers.size(); ++i)
+        codes[i] = classify_williams_type(static_cast<int>(i), neighbors,
+                                          atomic_numbers);
+    return codes;
 }
 
 int ForceFieldParams::classify_williams_type(

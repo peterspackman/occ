@@ -34,12 +34,8 @@ DMAMonomer DMAMonomer::from_wavefunction(const occ::qm::Wavefunction &wfn,
   std::vector<Vec3> pos_ang(sites.size());
   for (int s = 0; s < sites.size(); ++s)
     pos_ang[s] = mon.reference.positions.col(s) * occ::units::BOHR_TO_ANGSTROM;
-  const auto neighbors = ForceFieldParams::bonded_neighbors(
+  mon.reference.type_codes = ForceFieldParams::classify_atom_types(
       mon.reference.atomic_numbers, pos_ang);
-  mon.reference.type_codes.resize(sites.size());
-  for (int s = 0; s < sites.size(); ++s)
-    mon.reference.type_codes[s] = ForceFieldParams::classify_williams_type(
-        s, neighbors, mon.reference.atomic_numbers);
   return mon;
 }
 

@@ -159,13 +159,45 @@ void register_dma_bindings(lua_State *L) {
                             &occ::driver::DMAConfig::wavefunction_filename)
       .addPropertyReadWrite("punch_filename",
                             &occ::driver::DMAConfig::punch_filename)
+      .addPropertyReadWrite("json_filename",
+                            &occ::driver::DMAConfig::json_filename)
       .addPropertyReadWrite("settings", &occ::driver::DMAConfig::settings)
+      .addPropertyReadWrite("axis_method", &occ::driver::DMAConfig::axis_method)
+      .addPropertyReadWrite("oriented_xyz_filename",
+                            &occ::driver::DMAConfig::oriented_xyz_filename)
+      .addPropertyReadWrite("axis_filename",
+                            &occ::driver::DMAConfig::axis_filename)
+      .addPropertyReadWrite("csp_input_filename",
+                            &occ::driver::DMAConfig::csp_input_filename)
+      .addPropertyReadWrite("csp_force_field",
+                            &occ::driver::DMAConfig::csp_force_field)
       .addPropertyReadWrite("write_punch", &occ::driver::DMAConfig::write_punch)
+      // Per-element overrides: maps aren't Stack-convertible, so expose the
+      // setters rather than the containers.
+      .addFunction(
+          "set_atom_radius",
+          +[](occ::driver::DMAConfig *c, const std::string &element,
+              double radius) { c->atom_radii[element] = radius; })
+      .addFunction(
+          "set_atom_limit",
+          +[](occ::driver::DMAConfig *c, const std::string &element,
+              int limit) { c->atom_limits[element] = limit; })
+      .addFunction(
+          "set_wfn_rotation", +[](occ::driver::DMAConfig *c,
+                                  const occ::Mat3 &r) { c->wfn_rotation = r; })
+      .addFunction(
+          "set_wfn_translation",
+          +[](occ::driver::DMAConfig *c, const occ::Vec3 &t) {
+            c->wfn_translation = t;
+          })
       .endClass()
 
       .beginClass<occ::driver::DMADriver::DMAOutput>("DMAOutput")
       .addProperty("result", &occ::driver::DMADriver::DMAOutput::result)
       .addProperty("sites", &occ::driver::DMADriver::DMAOutput::sites)
+      .addProperty("total", &occ::driver::DMADriver::DMAOutput::total)
+      .addProperty("axis_method",
+                   &occ::driver::DMADriver::DMAOutput::axis_method)
       .endClass()
 
       .beginClass<occ::driver::DMADriver>("DMADriver")
@@ -190,6 +222,9 @@ void register_dma_bindings(lua_State *L) {
                          &occ::driver::DMADriver::generate_punch_file)
       .addStaticFunction("write_punch_file",
                          &occ::driver::DMADriver::write_punch_file)
+      .addStaticFunction("generate_json",
+                         &occ::driver::DMADriver::generate_json)
+      .addStaticFunction("write_json", &occ::driver::DMADriver::write_json)
       .endClass()
 
       .endNamespace();

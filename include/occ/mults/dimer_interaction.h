@@ -75,6 +75,42 @@ ForceFieldParams fit_force_field();
 /// the element-based Williams DE table as a fallback. Atom typing is enabled.
 ForceFieldParams williams_typed_force_field();
 
+/**
+ * @brief A selectable short-range (repulsion-dispersion) parameter set.
+ *
+ * The single place that maps a user-facing name onto one of the builders
+ * above, shared by `occ cg -m` and `occ dma --csp-force-field` so the two
+ * agree on what "fit" or "w99" means. Adding a set is one entry in
+ * short_range_model_registry() and one branch in make_force_field().
+ */
+struct ShortRangeModel {
+  std::string name;        ///< canonical name, recorded in written output
+  std::string description; ///< one line, shown in --help
+  /// Atom typing the parameters are indexed by: "neighcrys" (W99 labels),
+  /// "neighcrys-fit" (FIT labels), or "none" for element-based.
+  std::string atom_typing;
+  std::vector<std::string> aliases;
+
+  bool typed() const { return atom_typing != "none"; }
+};
+
+/// Every selectable short-range parameter set.
+const std::vector<ShortRangeModel> &short_range_model_registry();
+
+/// Canonical names and aliases, for CLI validation.
+std::vector<std::string> short_range_model_names();
+
+/// Resolve an exact name or alias.
+/// @throws std::runtime_error if the name is not known.
+const ShortRangeModel &short_range_model_from_string(const std::string &name);
+
+/// Resolve by substring, for compound model names like "dma-fit" or
+/// "williams-99". Falls back to the element-based set when nothing matches.
+const ShortRangeModel &short_range_model_for_model_name(const std::string &model_name);
+
+/// Build the ForceFieldParams for a registry entry.
+ForceFieldParams make_force_field(const ShortRangeModel &model);
+
 /// Among the given element atomic numbers, the unique pairs (Zmin, Zmax) that
 /// \p ff has no exp-6 parameters for. dimer_interaction_energy() contributes
 /// electrostatics only for such pairs, so callers can warn about incomplete

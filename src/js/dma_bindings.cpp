@@ -80,8 +80,20 @@ void register_dma_bindings() {
         .constructor<>()
         .property("wavefunctionFilename", &DMAConfig::wavefunction_filename)
         .property("punchFilename", &DMAConfig::punch_filename)
+        .property("jsonFilename", &DMAConfig::json_filename)
         .property("settings", &DMAConfig::settings)
+        .property("axisMethod", &DMAConfig::axis_method)
+        .property("orientedXyzFilename", &DMAConfig::oriented_xyz_filename)
+        .property("axisFilename", &DMAConfig::axis_filename)
+        .property("cspInputFilename", &DMAConfig::csp_input_filename)
+        .property("cspForceField", &DMAConfig::csp_force_field)
         .property("writePunch", &DMAConfig::write_punch)
+        .function("setWfnRotation", optional_override([](DMAConfig& config, const occ::Mat3& rotation) {
+            config.wfn_rotation = rotation;
+        }))
+        .function("setWfnTranslation", optional_override([](DMAConfig& config, const occ::Vec3& translation) {
+            config.wfn_translation = translation;
+        }))
         .function("setAtomRadius", optional_override([](DMAConfig& config, const std::string& element, double radius) {
             config.atom_radii.insert_or_assign(element, radius);
         }))
@@ -102,7 +114,9 @@ void register_dma_bindings() {
     class_<DMADriver::DMAOutput>("DMAOutput")
         .constructor<>()
         .property("result", &DMADriver::DMAOutput::result)
-        .property("sites", &DMADriver::DMAOutput::sites);
+        .property("sites", &DMADriver::DMAOutput::sites)
+        .property("total", &DMADriver::DMAOutput::total)
+        .property("axisMethod", &DMADriver::DMAOutput::axis_method);
 
     // DMADriver class
     class_<DMADriver>("DMADriver")
@@ -115,4 +129,5 @@ void register_dma_bindings() {
         
     // Static helper functions
     function("generate_punch_file", &DMADriver::generate_punch_file);
+    function("generate_dma_json", &DMADriver::generate_json);
 }

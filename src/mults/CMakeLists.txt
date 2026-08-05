@@ -31,6 +31,7 @@ add_library(occ_mults_obj
     force_field_params.cpp
     dimer_interaction.cpp
     dma_energy_model.cpp
+    dma_force_field.cpp
     dma_cg.cpp
     strain_ad.cpp
     crystal_energy.cpp

@@ -70,23 +70,14 @@ void warn_missing_exp6_coverage(const std::vector<DMAMonomer> &monomers,
                    za, zb);
 }
 
-// Pick the short-range exp-6 set from the model name: "fit" -> FIT typed,
-// "w99" -> Williams-1999 typed, anything else (dma / williams / dma-*) ->
-// element-based Williams DE.
+// Pick the short-range exp-6 set from the model name. The name -> parameter
+// set table is shared with `occ dma --csp-force-field`; see
+// short_range_model_registry().
 ForceFieldParams short_range_ff_for_model(const std::string &model_name) {
-  std::string m(model_name.size(), '\0');
-  std::transform(model_name.begin(), model_name.end(), m.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
-  if (m.find("fit") != std::string::npos) {
-    occ::log::info("DMA+exp-6: using FIT typed potential (H_F1/H_F2 split)");
-    return fit_force_field();
-  }
-  if (m.find("w99") != std::string::npos) {
-    occ::log::info("DMA+exp-6: using Williams-99 typed potential");
-    return williams_typed_force_field();
-  }
-  occ::log::info("DMA+exp-6: using element-based Williams-DE potential");
-  return williams_de_force_field();
+  const auto &model = short_range_model_for_model_name(model_name);
+  occ::log::info("DMA+exp-6: using the {} potential: {}", model.name,
+                 model.description);
+  return make_force_field(model);
 }
 
 } // namespace

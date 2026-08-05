@@ -90,7 +90,10 @@ void from_json(const json &j, SiteMultipoles &m) {
 void to_json(json &j, const MoleculeSite &s) {
     if (!s.label.empty()) j["label"] = s.label;
     j["element"] = s.element;
-    if (!s.type.empty() && s.type != s.element) j["type"] = s.type;
+    // Always written, even when it duplicates the element. Consumers default a
+    // missing type to a placeholder rather than to the element, so omitting it
+    // for element-based force fields collapses every site onto one type.
+    j["type"] = s.type.empty() ? s.element : s.type;
     j["position"] = s.position;
     if (s.multipoles.max_rank() > 0 ||
         std::abs(s.multipoles.charge) > 0.0) {
@@ -161,11 +164,17 @@ void from_json(const json &j, BuckinghamPair &bp) {
 
 void to_json(json &j, const Potentials &p) {
     j["cutoff"] = p.cutoff;
+    // Written only when known, so files from before these keys existed and
+    // files that carry them round-trip identically.
+    if (!p.force_field.empty()) j["force_field"] = p.force_field;
+    if (!p.atom_typing.empty()) j["atom_typing"] = p.atom_typing;
     if (!p.buckingham.empty()) j["buckingham"] = p.buckingham;
 }
 
 void from_json(const json &j, Potentials &p) {
     p.cutoff = j.value("cutoff", 15.0);
+    p.force_field = j.value("force_field", std::string{});
+    p.atom_typing = j.value("atom_typing", std::string{});
     if (j.contains("buckingham"))
         p.buckingham = j.at("buckingham").get<std::vector<BuckinghamPair>>();
 }
@@ -216,7 +225,10 @@ void from_json(const json &j, ReferenceEnergies &r) {
 void to_json(json &j, const Basis &b) {
     j["multipole_convention"] = "spherical_gdma";
     j["molecule_types"] = b.molecule_types;
-    if (!b.potentials.buckingham.empty()) {
+    // Also written when there are no pair potentials but the force field is
+    // named, so "deliberately no short-range terms" is distinguishable from
+    // "nobody recorded any".
+    if (!b.potentials.buckingham.empty() || !b.potentials.force_field.empty()) {
         j["potentials"] = b.potentials;
     }
     j["settings"] = b.settings;

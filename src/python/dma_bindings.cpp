@@ -1,6 +1,7 @@
 #include "dma_bindings.h"
 #include <fmt/core.h>
 #include <nanobind/eigen/dense.h>
+#include <nanobind/stl/map.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 #include <nanobind/stl/optional.h>
@@ -147,12 +148,33 @@ nb::module_ register_dma_bindings(nb::module_ &m) {
               "path to wavefunction file")
       .def_rw("punch_filename", &occ::driver::DMAConfig::punch_filename,
               "path to punch file output (default: dma.punch)")
+      .def_rw("json_filename", &occ::driver::DMAConfig::json_filename,
+              "path to structured JSON output; empty disables it")
       .def_rw("settings", &occ::driver::DMAConfig::settings,
               "DMA calculation settings")
       .def_rw("atom_radii", &occ::driver::DMAConfig::atom_radii,
               "atom-specific radii (element symbol -> radius in Angstrom)")
       .def_rw("atom_limits", &occ::driver::DMAConfig::atom_limits,
-              "atom-specific max ranks (element symbol -> max rank)")
+              "atom-specific max ranks (element symbol -> max rank), "
+              "clamped to settings.max_rank")
+      .def_rw("wfn_rotation", &occ::driver::DMAConfig::wfn_rotation,
+              "rotation applied to the wavefunction before analysis")
+      .def_rw("wfn_translation", &occ::driver::DMAConfig::wfn_translation,
+              "translation in Angstrom applied after wfn_rotation")
+      .def_rw("axis_method", &occ::driver::DMAConfig::axis_method,
+              "molecular axis method: none, nc, pca or moi")
+      .def_rw("axis_atoms", &occ::driver::DMAConfig::axis_atoms,
+              "atom indices (0-based) defining the nc axis frame")
+      .def_rw("oriented_xyz_filename",
+              &occ::driver::DMAConfig::oriented_xyz_filename,
+              "path to write the analysed geometry to")
+      .def_rw("axis_filename", &occ::driver::DMAConfig::axis_filename,
+              "path to write a neighcrys-compatible axis file to")
+      .def_rw("csp_input_filename", &occ::driver::DMAConfig::csp_input_filename,
+              "path to write force-field JSON for CSP programs to")
+      .def_rw("csp_force_field", &occ::driver::DMAConfig::csp_force_field,
+              "short-range parameter set for csp_input_filename "
+              "(w99, fit, williams-de, none)")
       .def_rw("write_punch", &occ::driver::DMAConfig::write_punch,
               "whether to write punch file (default: True)")
       .def("__repr__", [](const occ::driver::DMAConfig &config) {
@@ -166,6 +188,16 @@ nb::module_ register_dma_bindings(nb::module_ &m) {
               "DMA calculation result")
       .def_rw("sites", &occ::driver::DMADriver::DMAOutput::sites,
               "DMA sites information")
+      .def_rw("total", &occ::driver::DMADriver::DMAOutput::total,
+              "total multipoles about the origin of the analysis frame")
+      .def_rw("rotation", &occ::driver::DMADriver::DMAOutput::rotation,
+              "rotation taking the input frame to the analysis frame")
+      .def_rw("translation", &occ::driver::DMADriver::DMAOutput::translation,
+              "translation in Bohr, applied after the rotation")
+      .def_rw("axis_method", &occ::driver::DMADriver::DMAOutput::axis_method,
+              "axis method that actually ran (not always the one requested)")
+      .def_rw("axis_atoms", &occ::driver::DMADriver::DMAOutput::axis_atoms,
+              "atom indices that defined the axis frame")
       .def("__repr__", [](const occ::driver::DMADriver::DMAOutput &output) {
         return fmt::format("<DMAOutput num_sites={} max_rank={}>",
                            output.sites.size(), output.result.max_rank);
@@ -185,6 +217,12 @@ nb::module_ register_dma_bindings(nb::module_ &m) {
                   "result"_a, "sites"_a, "generate punch file content as string")
       .def_static("write_punch_file", &occ::driver::DMADriver::write_punch_file,
                   "filename"_a, "result"_a, "sites"_a, "write punch file to disk")
+      .def_static("generate_json", &occ::driver::DMADriver::generate_json,
+                  "config"_a, "output"_a,
+                  "structured results as JSON text")
+      .def_static("write_json", &occ::driver::DMADriver::write_json,
+                  "filename"_a, "config"_a, "output"_a,
+                  "write structured results as JSON to disk")
       .def("__repr__", [](const occ::driver::DMADriver &driver) {
         return fmt::format("<DMADriver>");
       });

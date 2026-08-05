@@ -2,14 +2,20 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <nlohmann/json.hpp>
+#include <occ/core/element.h>
 #include <occ/core/format_matrix.h>
 #include <occ/core/molecule.h>
+#include <occ/core/units.h>
 #include <occ/dma/dma.h>
 #include <occ/dma/linear_multipole_calculator.h>
+#include <occ/driver/dma_driver.h>
+#include <occ/mults/dma_force_field.h>
 #include <occ/qm/io/fchkreader.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
+#include <set>
 
 using namespace occ;
 using Catch::Approx;
@@ -1552,5 +1558,225 @@ TEST_CASE("Mult accessor functions", "[dma]") {
     mult.get_component("Q32s") = -88.8;
     CHECK(mult.Q32s() == Approx(-88.8));
     CHECK(mult.get_multipole(3, -2) == Approx(-88.8));
+  }
+}
+
+// ============================================================================
+// Driver level: the frame results are reported in, the effective per-site
+// settings, and the force-field output.
+// ============================================================================
+
+TEST_CASE("DMADriver total multipoles are in the analysis frame", "[dma][driver]") {
+  std::istringstream fchk(h2o_contents);
+  occ::qm::FchkReader reader(fchk);
+  occ::qm::Wavefunction wfn(reader);
+
+  // Water is neutral, so the magnitude of the total dipole is invariant under
+  // both rotation and choice of origin: every axis method must agree.
+  const auto total_dipole_norm = [&](const std::string &axis_method) {
+    occ::driver::DMAConfig config;
+    config.write_punch = false;
+    config.settings.max_rank = 2;
+    config.axis_method = axis_method;
+    occ::driver::DMADriver driver(config);
+    auto output = driver.run(wfn);
+    return output.total.q.segment(1, 3).norm();
+  };
+
+  const double reference = total_dipole_norm("none");
+  REQUIRE(reference > 0.1);
+  CHECK(total_dipole_norm("moi") == Approx(reference).margin(1e-9));
+  CHECK(total_dipole_norm("pca") == Approx(reference).margin(1e-9));
+}
+
+TEST_CASE("DMADriver centres the oriented molecule on its centre of mass",
+          "[dma][driver]") {
+  std::istringstream fchk(h2o_contents);
+  occ::qm::FchkReader reader(fchk);
+  occ::qm::Wavefunction wfn(reader);
+
+  occ::driver::DMAConfig config;
+  config.write_punch = false;
+  config.settings.max_rank = 0;
+  config.axis_method = "moi";
+
+  occ::driver::DMADriver driver(config);
+  auto output = driver.run(wfn);
+
+  occ::Vec3 com = occ::Vec3::Zero();
+  double total_mass = 0.0;
+  for (int i = 0; i < output.sites.size(); i++) {
+    const int z = output.sites.atoms[output.sites.atom_indices(i)].atomic_number;
+    const double mass = occ::core::Element(z).mass();
+    com += mass * output.sites.positions.col(i);
+    total_mass += mass;
+  }
+  com /= total_mass;
+  CHECK(com.norm() == Approx(0.0).margin(1e-9));
+}
+
+TEST_CASE("DMADriver clamps per-element limits to max_rank", "[dma][driver]") {
+  std::istringstream fchk(h2o_contents);
+  occ::qm::FchkReader reader(fchk);
+  occ::qm::Wavefunction wfn(reader);
+
+  occ::driver::DMAConfig config;
+  config.write_punch = false;
+  config.settings.max_rank = 2;
+  // An override above max_rank must be clamped, not taken at face value.
+  config.atom_limits["O"] = 6;
+  config.atom_limits["H"] = 1;
+
+  occ::driver::DMADriver driver(config);
+  auto output = driver.run(wfn);
+
+  for (int i = 0; i < output.sites.size(); i++) {
+    const int z = output.sites.atoms[output.sites.atom_indices(i)].atomic_number;
+    CHECK(output.sites.limits(i) <= config.settings.max_rank);
+    CHECK(output.sites.limits(i) == (z == 1 ? 1 : 2));
+  }
+}
+
+TEST_CASE("DMADriver applies a supplied wavefunction transform", "[dma][driver]") {
+  std::istringstream fchk(h2o_contents);
+  occ::qm::FchkReader reader(fchk);
+  occ::qm::Wavefunction wfn(reader);
+
+  occ::driver::DMAConfig plain;
+  plain.write_punch = false;
+  plain.settings.max_rank = 1;
+  auto reference = occ::driver::DMADriver(plain).run(wfn);
+
+  occ::driver::DMAConfig moved = plain;
+  // 90 degrees about z, then a translation.
+  moved.wfn_rotation << 0, -1, 0, 1, 0, 0, 0, 0, 1;
+  moved.wfn_translation = occ::Vec3(1.0, 2.0, 3.0);
+  auto transformed = occ::driver::DMADriver(moved).run(wfn);
+
+  const occ::Vec3 translation_bohr =
+      moved.wfn_translation * occ::units::ANGSTROM_TO_BOHR;
+  for (int i = 0; i < reference.sites.size(); i++) {
+    const occ::Vec3 expected =
+        moved.wfn_rotation * reference.sites.positions.col(i) + translation_bohr;
+    CHECK((transformed.sites.positions.col(i) - expected).norm() ==
+          Approx(0.0).margin(1e-9));
+    // Rank 0 is a scalar: unchanged by any rigid-body motion.
+    CHECK(transformed.result.multipoles[i].q(0) ==
+          Approx(reference.result.multipoles[i].q(0)).margin(1e-9));
+  }
+  CHECK(transformed.rotation.isApprox(moved.wfn_rotation, 1e-12));
+}
+
+TEST_CASE("DMADriver JSON reports the effective site settings and frame",
+          "[dma][driver][json]") {
+  std::istringstream fchk(h2o_contents);
+  occ::qm::FchkReader reader(fchk);
+  occ::qm::Wavefunction wfn(reader);
+
+  occ::driver::DMAConfig config;
+  config.write_punch = false;
+  config.settings.max_rank = 4;
+  config.atom_radii["H"] = 0.50;
+  config.atom_limits["H"] = 2;
+  // Requesting CSP output promotes "none" to "moi"; the JSON has to say so.
+  config.csp_input_filename = "unused-in-this-test.json";
+
+  occ::driver::DMADriver driver(config);
+  auto output = driver.run(wfn);
+  auto j = nlohmann::json::parse(
+      occ::driver::DMADriver::generate_json(config, output));
+
+  CHECK(j["settings"]["axis_method_requested"] == "none");
+  CHECK(j["settings"]["axis_method_applied"] == "moi");
+  CHECK(j["units"]["position"] == "angstrom");
+  CHECK(j["units"]["multipole"] == "atomic");
+
+  REQUIRE(j["sites"].size() == 3);
+  for (const auto &site : j["sites"]) {
+    const int z = site["atomic_number"].get<int>();
+    if (z == 1) {
+      CHECK(site["radius"].get<double>() == Approx(0.50));
+      CHECK(site["limit"].get<int>() == 2);
+      CHECK(site["rank"].get<int>() == 2);
+    }
+    // Components are (rank + 1)^2 in the punch file's ordering.
+    const int rank = site["rank"].get<int>();
+    CHECK(site["multipoles"].size() == static_cast<size_t>((rank + 1) * (rank + 1)));
+  }
+
+  // The recorded transform must reproduce the reported site positions.
+  const auto rotation = j["transform"]["rotation"].get<std::vector<double>>();
+  const auto translation = j["transform"]["translation"].get<std::vector<double>>();
+  occ::Mat3 R = Eigen::Map<const occ::Mat3RM>(rotation.data());
+  occ::Vec3 t = Eigen::Map<const occ::Vec3>(translation.data()) *
+                occ::units::ANGSTROM_TO_BOHR;
+  const occ::Mat3N input_positions = wfn.positions();
+  for (int i = 0; i < output.sites.size(); i++) {
+    const occ::Vec3 expected = R * input_positions.col(i) + t;
+    CHECK((output.sites.positions.col(i) - expected).norm() ==
+          Approx(0.0).margin(1e-9));
+  }
+}
+
+TEST_CASE("DMA force-field basis labels sites for the chosen set",
+          "[dma][forcefield]") {
+  std::istringstream fchk(h2o_contents);
+  occ::qm::FchkReader reader(fchk);
+  occ::qm::Wavefunction wfn(reader);
+
+  occ::driver::DMAConfig config;
+  config.write_punch = false;
+  config.settings.max_rank = 2;
+  auto output = occ::driver::DMADriver(config).run(wfn);
+
+  const auto build = [&](const std::string &force_field) {
+    occ::mults::DMAForceFieldOptions options;
+    options.force_field = force_field;
+    return occ::mults::build_dma_force_field_basis(
+        output.sites, output.result.multipoles, options);
+  };
+
+  SECTION("w99 uses NEIGHCRYS labels") {
+    auto basis = build("w99");
+    CHECK(basis.potentials.force_field == "w99");
+    CHECK(basis.potentials.atom_typing == "neighcrys");
+    CHECK(basis.molecule_types[0].sites[0].type == "O_Wa");
+    CHECK(basis.molecule_types[0].sites[1].type == "H_Wa");
+  }
+
+  SECTION("fit groups polar hydrogens into H_F2") {
+    auto basis = build("fit");
+    CHECK(basis.potentials.force_field == "fit");
+    CHECK(basis.potentials.atom_typing == "neighcrys-fit");
+    CHECK(basis.molecule_types[0].sites[0].type == "O_F1");
+    CHECK(basis.molecule_types[0].sites[1].type == "H_F2");
+  }
+
+  SECTION("williams-de falls back to element names") {
+    auto basis = build("williams-de");
+    CHECK(basis.potentials.atom_typing == "none");
+    CHECK(basis.molecule_types[0].sites[0].type == "O");
+    CHECK(basis.molecule_types[0].sites[1].type == "H");
+  }
+
+  SECTION("aliases resolve and unknown names throw") {
+    CHECK(build("williams").potentials.force_field == "w99");
+    CHECK_THROWS(build("not-a-force-field"));
+  }
+
+  SECTION("every emitted pair references a type present on a site") {
+    for (const auto &name : {"w99", "fit", "williams-de"}) {
+      auto basis = build(name);
+      std::set<std::string> present;
+      for (const auto &site : basis.molecule_types[0].sites)
+        present.insert(site.type);
+      REQUIRE(!basis.potentials.buckingham.empty());
+      for (const auto &pair : basis.potentials.buckingham) {
+        INFO(name << ": " << pair.types[0] << "-" << pair.types[1]);
+        CHECK(present.count(pair.types[0]) == 1);
+        CHECK(present.count(pair.types[1]) == 1);
+        CHECK(pair.rho > 0.0);
+      }
+    }
   }
 }

@@ -803,13 +803,8 @@ void CrystalEnergy::build_molecule_geometry() {
 
 void CrystalEnergy::assign_williams_atom_types() {
     for (auto& geom : m_geometry) {
-        const auto neighbors = ForceFieldParams::bonded_neighbors(
+        geom.short_range_type_codes = ForceFieldParams::classify_atom_types(
             geom.atomic_numbers, geom.atom_positions);
-        geom.short_range_type_codes.resize(geom.atomic_numbers.size(), 0);
-        for (size_t i = 0; i < geom.atomic_numbers.size(); ++i) {
-            geom.short_range_type_codes[i] = ForceFieldParams::classify_williams_type(
-                static_cast<int>(i), neighbors, geom.atomic_numbers);
-        }
     }
     m_ff.set_use_short_range_typing(true);
 }

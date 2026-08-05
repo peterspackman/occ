@@ -27,15 +27,21 @@ void solid_harmonics(Eigen::Ref<const Vec3> pos, int j, Eigen::Ref<Vec> r) {
 
   double rfx, rfy, rfz;
 
-  if (j > 0) {
+  // j == 0 is a regular harmonic, per the contract above: the test must be
+  // j >= 0, since the irregular branch also divides by |pos|^2.
+  if (j >= 0) {
     // Regular
     r(1) = 1.0;
-    r(2) = z;
-    r(3) = x;
-    r(4) = y;
     rfz = z;
     rfx = x;
     rfy = y;
+    // The rank-1 block only exists once l >= 1: the caller sizes r as
+    // (l+1)^2 + 1, so for l == 0 there is room for r(1) and nothing else.
+    if (l >= 1) {
+      r(2) = z;
+      r(3) = x;
+      r(4) = y;
+    }
   } else {
     // Irregular
     rr = 1.0 / rr;
@@ -43,9 +49,11 @@ void solid_harmonics(Eigen::Ref<const Vec3> pos, int j, Eigen::Ref<Vec> r) {
     rfy = y * rr;
     rfz = z * rr;
     r(1) = std::sqrt(rr);
-    r(2) = rfz * r(1);
-    r(3) = rfx * r(1);
-    r(4) = rfy * r(1);
+    if (l >= 1) {
+      r(2) = rfz * r(1);
+      r(3) = rfx * r(1);
+      r(4) = rfy * r(1);
+    }
   }
 
   auto rt = [](int v) { return std::sqrt(static_cast<double>(v)); };

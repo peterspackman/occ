@@ -46,6 +46,13 @@ struct BuckinghamPair {
 
 struct Potentials {
     double cutoff = 15.0;
+    /// Provenance: which short-range parameter set these came from
+    /// ("w99", "fit", "williams-de"). Empty when unrecorded; readers should
+    /// treat the pair list as authoritative either way.
+    std::string force_field;
+    /// Atom typing scheme the `type` labels belong to ("neighcrys",
+    /// "neighcrys-fit", "none"). Empty when unrecorded.
+    std::string atom_typing;
     std::vector<BuckinghamPair> buckingham;
 };
 

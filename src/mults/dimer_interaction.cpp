@@ -1,8 +1,11 @@
 #include <algorithm>
 #include <cmath>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <occ/core/units.h>
 #include <occ/mults/dimer_interaction.h>
 #include <set>
+#include <stdexcept>
 
 namespace occ::mults {
 
@@ -74,6 +77,73 @@ ForceFieldParams williams_typed_force_field() {
   ff.set_typed_buckingham(ForceFieldParams::williams_typed_params());
   ff.set_use_williams_atom_typing(true);
   return ff;
+}
+
+const std::vector<ShortRangeModel> &short_range_model_registry() {
+  static const std::vector<ShortRangeModel> registry = {
+      {"w99", "Williams-1999 exp-6, NEIGHCRYS-typed (H_W1, C_W3, ...)",
+       "neighcrys", {"williams"}},
+      {"fit",
+       "FIT (Williams/Cox) exp-6, typed with the H_F1/H_F2 polar-hydrogen split",
+       "neighcrys-fit", {}},
+      {"williams-de", "Williams DE exp-6, element-based (no atom typing)",
+       "none", {"de", "williams_de"}},
+      {"none", "no short-range parameters", "none", {}},
+  };
+  return registry;
+}
+
+std::vector<std::string> short_range_model_names() {
+  std::vector<std::string> names;
+  for (const auto &m : short_range_model_registry()) {
+    names.push_back(m.name);
+    names.insert(names.end(), m.aliases.begin(), m.aliases.end());
+  }
+  return names;
+}
+
+namespace {
+std::string to_lower(const std::string &s) {
+  std::string out(s.size(), '\0');
+  std::transform(s.begin(), s.end(), out.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  return out;
+}
+} // namespace
+
+const ShortRangeModel &short_range_model_from_string(const std::string &name) {
+  const auto lower = to_lower(name);
+  for (const auto &m : short_range_model_registry()) {
+    if (m.name == lower)
+      return m;
+    if (std::find(m.aliases.begin(), m.aliases.end(), lower) != m.aliases.end())
+      return m;
+  }
+  throw std::runtime_error(
+      fmt::format("Unknown short-range model '{}' (available: {})", name,
+                  fmt::join(short_range_model_names(), ", ")));
+}
+
+const ShortRangeModel &
+short_range_model_for_model_name(const std::string &model_name) {
+  const auto lower = to_lower(model_name);
+  // Only the typed sets are named explicitly inside a compound model name;
+  // everything else ("dma", "williams", "dma-b3lyp", ...) means the
+  // element-based table. Precedence is fixed here rather than taken from
+  // registry order, which is presentation order.
+  for (const char *name : {"fit", "w99"}) {
+    if (lower.find(name) != std::string::npos)
+      return short_range_model_from_string(name);
+  }
+  return short_range_model_from_string("williams-de");
+}
+
+ForceFieldParams make_force_field(const ShortRangeModel &model) {
+  if (model.name == "fit")
+    return fit_force_field();
+  if (model.name == "w99")
+    return williams_typed_force_field();
+  return williams_de_force_field();
 }
 
 std::vector<std::pair<int, int>>

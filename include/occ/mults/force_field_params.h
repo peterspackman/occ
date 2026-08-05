@@ -83,6 +83,11 @@ public:
     /// Convert a Williams/NEIGHCRYS type code to a short label (e.g. 512 -> "C_W3").
     static const char* short_range_type_label(int type_code);
 
+    /// Convert a Williams/NEIGHCRYS type code to its FIT label (e.g. 512 ->
+    /// "C_F1"). FIT groups codes: every polar hydrogen (502-505) is H_F2.
+    /// Returns nullptr for a code FIT has no type for.
+    static const char* fit_type_label(int type_code);
+
     /// Map a Williams/NEIGHCRYS type code to element Z, or 0 if unknown.
     static int short_range_type_atomic_number(int type_code);
 
@@ -97,6 +102,12 @@ public:
 
     /// Find bonded neighbors by covalent radius + tolerance.
     static std::vector<std::vector<int>> bonded_neighbors(
+        const std::vector<int>& atomic_numbers,
+        const std::vector<Vec3>& positions);
+
+    /// NEIGHCRYS type code per atom: bonded_neighbors() followed by
+    /// classify_williams_type() for each atom. Positions in Angstrom.
+    static std::vector<int> classify_atom_types(
         const std::vector<int>& atomic_numbers,
         const std::vector<Vec3>& positions);
 

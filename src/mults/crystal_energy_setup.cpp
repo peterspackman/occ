@@ -323,11 +323,10 @@ CrystalEnergySetup from_crystal_and_multipoles(
             atomic_numbers.push_back(atom.atomic_number);
             positions.push_back(atom.position);
         }
-        auto neighbors =
-            ForceFieldParams::bonded_neighbors(atomic_numbers, positions);
+        const auto type_codes =
+            ForceFieldParams::classify_atom_types(atomic_numbers, positions);
         for (int i = 0; i < static_cast<int>(atomic_numbers.size()); ++i) {
-            int type_code = ForceFieldParams::classify_williams_type(
-                i, neighbors, atomic_numbers);
+            int type_code = type_codes[i];
             // Propagate to sites linked to this atom
             for (auto &site : rm.sites) {
                 if (site.atom_index == i) {
