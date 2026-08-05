@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 set(PROJECT_VERSION_MAJOR "0")
 set(PROJECT_VERSION_MINOR "9")
-set(PROJECT_VERSION_PATCH "2")
+set(PROJECT_VERSION_PATCH "3")
 
 project(
     occ
