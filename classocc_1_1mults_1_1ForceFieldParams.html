@@ -168,6 +168,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:aa109a3c3859ff7dfe70344b493f7d96e" id="r_aa109a3c3859ff7dfe70344b493f7d96e"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html#aa109a3c3859ff7dfe70344b493f7d96e">short_range_type_label</a> (int type_code)</td></tr>
 <tr class="memdesc:aa109a3c3859ff7dfe70344b493f7d96e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a Williams/NEIGHCRYS type code to a short label (e.g. 512 -&gt; "C_W3").  <br /></td></tr>
 <tr class="separator:aa109a3c3859ff7dfe70344b493f7d96e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03dda6b1360a1c168da1528d8046b92a" id="r_a03dda6b1360a1c168da1528d8046b92a"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html#a03dda6b1360a1c168da1528d8046b92a">fit_type_label</a> (int type_code)</td></tr>
+<tr class="memdesc:a03dda6b1360a1c168da1528d8046b92a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a Williams/NEIGHCRYS type code to its FIT label (e.g.  <br /></td></tr>
+<tr class="separator:a03dda6b1360a1c168da1528d8046b92a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75fee2b2f1e47082cd5b39c34e3c86de" id="r_a75fee2b2f1e47082cd5b39c34e3c86de"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html#a75fee2b2f1e47082cd5b39c34e3c86de">short_range_type_atomic_number</a> (int type_code)</td></tr>
 <tr class="memdesc:a75fee2b2f1e47082cd5b39c34e3c86de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map a Williams/NEIGHCRYS type code to element Z, or 0 if unknown.  <br /></td></tr>
 <tr class="separator:a75fee2b2f1e47082cd5b39c34e3c86de"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,6 +180,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a701318e1035397ff40c1d8b172b36dc3" id="r_a701318e1035397ff40c1d8b172b36dc3"><td class="memItemLeft" align="right" valign="top">static std::vector&lt; std::vector&lt; int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html#a701318e1035397ff40c1d8b172b36dc3">bonded_neighbors</a> (const std::vector&lt; int &gt; &amp;atomic_numbers, const std::vector&lt; <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &gt; &amp;positions)</td></tr>
 <tr class="memdesc:a701318e1035397ff40c1d8b172b36dc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find bonded neighbors by covalent radius + tolerance.  <br /></td></tr>
 <tr class="separator:a701318e1035397ff40c1d8b172b36dc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b898db323819faaa63014d1edc07ccf" id="r_a5b898db323819faaa63014d1edc07ccf"><td class="memItemLeft" align="right" valign="top">static std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html#a5b898db323819faaa63014d1edc07ccf">classify_atom_types</a> (const std::vector&lt; int &gt; &amp;atomic_numbers, const std::vector&lt; <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &gt; &amp;positions)</td></tr>
+<tr class="memdesc:a5b898db323819faaa63014d1edc07ccf"><td class="mdescLeft">&#160;</td><td class="mdescRight">NEIGHCRYS type code per atom: <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html#a701318e1035397ff40c1d8b172b36dc3" title="Find bonded neighbors by covalent radius + tolerance.">bonded_neighbors()</a> followed by <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html#a85373b77807b942a81ae37b3237963bb" title="Classify atom types using Williams bonding rules.">classify_williams_type()</a> for each atom.  <br /></td></tr>
+<tr class="separator:a5b898db323819faaa63014d1edc07ccf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Manages force field parameters for short-range interactions. </p>
@@ -217,6 +223,45 @@ Static Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Find bonded neighbors by covalent radius + tolerance. </p>
+
+</div>
+</div>
+<a id="a5b898db323819faaa63014d1edc07ccf" name="a5b898db323819faaa63014d1edc07ccf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b898db323819faaa63014d1edc07ccf">&#9670;&#160;</a></span>classify_atom_types()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::vector&lt; int &gt; occ::mults::ForceFieldParams::classify_atom_types </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>atomic_numbers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>positions</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>NEIGHCRYS type code per atom: <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html#a701318e1035397ff40c1d8b172b36dc3" title="Find bonded neighbors by covalent radius + tolerance.">bonded_neighbors()</a> followed by <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html#a85373b77807b942a81ae37b3237963bb" title="Classify atom types using Williams bonding rules.">classify_williams_type()</a> for each atom. </p>
+<p>Positions in Angstrom. </p>
 
 </div>
 </div>
@@ -279,6 +324,35 @@ Static Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a03dda6b1360a1c168da1528d8046b92a" name="a03dda6b1360a1c168da1528d8046b92a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03dda6b1360a1c168da1528d8046b92a">&#9670;&#160;</a></span>fit_type_label()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const char * occ::mults::ForceFieldParams::fit_type_label </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>type_code</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Convert a Williams/NEIGHCRYS type code to its FIT label (e.g. </p>
+<p>512 -&gt; "C_F1"). FIT groups codes: every polar hydrogen (502-505) is H_F2. Returns nullptr for a code FIT has no type for. </p>
 
 </div>
 </div>

@@ -7,6 +7,7 @@ var structocc_1_1qm_1_1SCF =
     [ "compute_sap_guess", "structocc_1_1qm_1_1SCF.html#a3c7cdaa92d0d9c083773c2cac4a3fd31", null ],
     [ "compute_scf_energy", "structocc_1_1qm_1_1SCF.html#a10cf77346f1ce0b3b17d336eef3e776e", null ],
     [ "compute_soad", "structocc_1_1qm_1_1SCF.html#a7c110a720e6de0f151e6445a06bdcd74", null ],
+    [ "incremental_fock_supported", "structocc_1_1qm_1_1SCF.html#aea7476e2e6e2b937d6476e027331dd64", null ],
     [ "molecular_orbitals", "structocc_1_1qm_1_1SCF.html#a9075f467ee3a658fd45a48f79d1d98c2", null ],
     [ "multiplicity", "structocc_1_1qm_1_1SCF.html#aed60ebbf4bb77f81cb969c04b5db89a6", null ],
     [ "n_alpha", "structocc_1_1qm_1_1SCF.html#a512b6ca47c58a81f4b7f5f98635767f7", null ],
@@ -35,6 +36,7 @@ var structocc_1_1qm_1_1SCF =
     [ "m_procedure", "structocc_1_1qm_1_1SCF.html#a81fa65506198b0327da8dfa7f541296e", null ],
     [ "maxiter", "structocc_1_1qm_1_1SCF.html#acd529ab50dc147de066548756c94300d", null ],
     [ "next_reset_threshold", "structocc_1_1qm_1_1SCF.html#ad3bc785148a1e5734910bad160ee0069", null ],
+    [ "num_incremental_fock_builds", "structocc_1_1qm_1_1SCF.html#a97e69104160e256dea173e58bf4946be", null ],
     [ "reset_incremental_fock_formation", "structocc_1_1qm_1_1SCF.html#aab9e3f6076dbabcef64c2bbec5b07cbd", null ],
     [ "total_time", "structocc_1_1qm_1_1SCF.html#aee09c9d64cd3aa051726508bb80f16c7", null ]
 ];

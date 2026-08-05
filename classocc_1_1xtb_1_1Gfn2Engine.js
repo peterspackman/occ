@@ -19,5 +19,6 @@ var classocc_1_1xtb_1_1Gfn2Engine =
     [ "shell_table", "classocc_1_1xtb_1_1Gfn2Engine.html#adaf4d0a302830c339e47d8e73a520e94", null ],
     [ "single_point", "classocc_1_1xtb_1_1Gfn2Engine.html#abdf48986e29d667a303a9a9c711d3c3d", null ],
     [ "solvation_model", "classocc_1_1xtb_1_1Gfn2Engine.html#a183114983e5097de24d69f4bc8ce1006", null ],
+    [ "spin_coupling", "classocc_1_1xtb_1_1Gfn2Engine.html#a4978ba83472d448768c27b6e60e77198", null ],
     [ "update_positions", "classocc_1_1xtb_1_1Gfn2Engine.html#a54c2b4564d467a27c5cf9892b4901644", null ]
 ];

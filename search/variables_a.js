@@ -5,5 +5,5 @@ var searchData=
   ['j_5fsolv_2',['J_solv',['../structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#afd1517d6b7ccffed4313a1a7de2fa74c',1,'occ::scrf::detail::CosmoResponse']]],
   ['joule_5fto_5fau_3',['JOULE_TO_AU',['../namespaceocc_1_1units.html#a52be1ed8034257706224f36dcf200e2f',1,'occ::units']]],
   ['json_5fbasis_4',['json_basis',['../structocc_1_1gto_1_1io_1_1JsonBasisReader.html#a319c0e73486b6f394925492c7817944b',1,'occ::gto::io::JsonBasisReader']]],
-  ['json_5ffilename_5',['json_filename',['../structocc_1_1main_1_1EFSettings.html#a36bc22cd1e1d120b3f5b262dfaff0973',1,'occ::main::EFSettings']]]
+  ['json_5ffilename_5',['json_filename',['../structocc_1_1driver_1_1DMAConfig.html#a60074d4631ea52137fea1b1109ce372e',1,'occ::driver::DMAConfig::json_filename'],['../structocc_1_1main_1_1EFSettings.html#a36bc22cd1e1d120b3f5b262dfaff0973',1,'occ::main::EFSettings::json_filename']]]
 ];

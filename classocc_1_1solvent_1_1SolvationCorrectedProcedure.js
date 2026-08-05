@@ -18,6 +18,7 @@ var classocc_1_1solvent_1_1SolvationCorrectedProcedure =
     [ "compute_point_charge_interaction_matrix", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a2846cb49217364e8e8c98fdfd7141351", null ],
     [ "compute_schwarz_ints", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a84160c5b08ad9ad401402d8030919546", null ],
     [ "engine", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#ad394ad372baa75fcc3d3901e3a447e83", null ],
+    [ "fock_build_properties", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#ac55e0d0f4c43e8f53be05c947455c25b", null ],
     [ "frozen_electrons", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a52776113cdd6d9aaf672f525aef84b9f", null ],
     [ "have_effective_core_potentials", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a57c48514b7c7b9d2ee26f17be261f4d2", null ],
     [ "name", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a98e22f95393c92dea94dd7d98d4e5e05", null ],
@@ -28,7 +29,6 @@ var classocc_1_1solvent_1_1SolvationCorrectedProcedure =
     [ "set_solvent", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a9d40cecadda55a6082b73f7079f2435f", null ],
     [ "set_system_charge", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a0cc8ca2a5b0cc95ccbe1ab9622a69de3", null ],
     [ "solvation_surfaces", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a51e333eaa034ca72d861c0d277520ddf", null ],
-    [ "supports_incremental_fock_build", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#aad4af5545e973d0d14ff3b9e0bc42584", null ],
     [ "surface_areas_cds", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a79d7e5e4f5a063771b4755f4ebe1c11f", null ],
     [ "surface_areas_coulomb", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a24939712b567ce85d0469e6e29a2de4e", null ],
     [ "surface_cds_energy_elements", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a8b8a97dbd4493a6f34ff9957ac8dce01", null ],
@@ -38,7 +38,7 @@ var classocc_1_1solvent_1_1SolvationCorrectedProcedure =
     [ "system_charge", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a28950d1bb46d046a3cb891a70c8ac2f2", null ],
     [ "total_electrons", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a0b3d3dba1225f53d5301d47e37c7c424", null ],
     [ "update_core_hamiltonian", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#aee54f309b6b908e9966e6468ff98959c", null ],
-    [ "update_scf_energy", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a0420c31b20a38016fd5b15e5f0c6d26f", null ],
+    [ "update_scf_energy", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a9304bced8af24eca4657a1a4e8280b63", null ],
     [ "usual_scf_energy", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#aa9168e86e6fbb8c00c7887626fabf630", null ],
     [ "write_surface_file", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a380409236af52db48cda4bfce7b48978", null ]
 ];

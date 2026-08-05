@@ -108,7 +108,7 @@ $(document).ready(function(){initNavTree('structocc_1_1driver_1_1DMADriver_1_1DM
 <div class="dynheader">
 Collaboration diagram for occ::driver::DMADriver::DMAOutput:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="structocc_1_1driver_1_1DMADriver_1_1DMAOutput__coll__graph.svg" width="350" height="139"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="structocc_1_1driver_1_1DMADriver_1_1DMAOutput__coll__graph.svg" width="492" height="139"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -117,8 +117,51 @@ Public Attributes</h2></td></tr>
 <tr class="separator:af3b112a125c7b688165f0de4b5b35409"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05fa3d620ae16b02509a78128b79d3b7" id="r_a05fa3d620ae16b02509a78128b79d3b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dma_1_1DMASites.html">occ::dma::DMASites</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#a05fa3d620ae16b02509a78128b79d3b7">sites</a></td></tr>
 <tr class="separator:a05fa3d620ae16b02509a78128b79d3b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a279ac07753cf491107dd8a53c6e23e38" id="r_a279ac07753cf491107dd8a53c6e23e38"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dma_1_1Mult.html">occ::dma::Mult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#a279ac07753cf491107dd8a53c6e23e38">total</a></td></tr>
+<tr class="memdesc:a279ac07753cf491107dd8a53c6e23e38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total multipoles about the origin of the analysis frame.  <br /></td></tr>
+<tr class="separator:a279ac07753cf491107dd8a53c6e23e38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75e0a1f7343c7341f13f72c5f9a5f643" id="r_a75e0a1f7343c7341f13f72c5f9a5f643"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">occ::Mat3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#a75e0a1f7343c7341f13f72c5f9a5f643">rotation</a> {occ::Mat3::Identity()}</td></tr>
+<tr class="memdesc:a75e0a1f7343c7341f13f72c5f9a5f643"><td class="mdescLeft">&#160;</td><td class="mdescRight">Composite transform taking the input wavefunction frame to the frame everything above is expressed in: x_analysis = rotation * x_input + translation.  <br /></td></tr>
+<tr class="separator:a75e0a1f7343c7341f13f72c5f9a5f643"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2921201a2f69b95fd534a5edf89f5fc6" id="r_a2921201a2f69b95fd534a5edf89f5fc6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">occ::Vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#a2921201a2f69b95fd534a5edf89f5fc6">translation</a> {occ::Vec3::Zero()}</td></tr>
+<tr class="separator:a2921201a2f69b95fd534a5edf89f5fc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a705943ecbbaf67a582684115ac1bcd" id="r_a7a705943ecbbaf67a582684115ac1bcd"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#a7a705943ecbbaf67a582684115ac1bcd">axis_method</a> {&quot;none&quot;}</td></tr>
+<tr class="memdesc:a7a705943ecbbaf67a582684115ac1bcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Axis method that actually ran, which is not always the one asked for (&ndash;write-csp-input promotes "none" to "moi").  <br /></td></tr>
+<tr class="separator:a7a705943ecbbaf67a582684115ac1bcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c767a70d6dc2325805a3a9911a62efd" id="r_a0c767a70d6dc2325805a3a9911a62efd"><td class="memItemLeft" align="right" valign="top">std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#a0c767a70d6dc2325805a3a9911a62efd">axis_atoms</a></td></tr>
+<tr class="separator:a0c767a70d6dc2325805a3a9911a62efd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a0c767a70d6dc2325805a3a9911a62efd" name="a0c767a70d6dc2325805a3a9911a62efd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c767a70d6dc2325805a3a9911a62efd">&#9670;&#160;</a></span>axis_atoms</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;int&gt; occ::driver::DMADriver::DMAOutput::axis_atoms</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7a705943ecbbaf67a582684115ac1bcd" name="a7a705943ecbbaf67a582684115ac1bcd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7a705943ecbbaf67a582684115ac1bcd">&#9670;&#160;</a></span>axis_method</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::driver::DMADriver::DMAOutput::axis_method {&quot;none&quot;}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Axis method that actually ran, which is not always the one asked for (&ndash;write-csp-input promotes "none" to "moi"). </p>
+
+</div>
+</div>
 <a id="af3b112a125c7b688165f0de4b5b35409" name="af3b112a125c7b688165f0de4b5b35409"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af3b112a125c7b688165f0de4b5b35409">&#9670;&#160;</a></span>result</h2>
 
@@ -133,6 +176,23 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a75e0a1f7343c7341f13f72c5f9a5f643" name="a75e0a1f7343c7341f13f72c5f9a5f643"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75e0a1f7343c7341f13f72c5f9a5f643">&#9670;&#160;</a></span>rotation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a42ba6c49f2c1fab31c69b47a36cc1da1">occ::Mat3</a> occ::driver::DMADriver::DMAOutput::rotation {occ::Mat3::Identity()}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Composite transform taking the input wavefunction frame to the frame everything above is expressed in: x_analysis = rotation * x_input + translation. </p>
+<p>Translation is in Bohr. </p>
+
+</div>
+</div>
 <a id="a05fa3d620ae16b02509a78128b79d3b7" name="a05fa3d620ae16b02509a78128b79d3b7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a05fa3d620ae16b02509a78128b79d3b7">&#9670;&#160;</a></span>sites</h2>
 
@@ -141,6 +201,37 @@ Public Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structocc_1_1dma_1_1DMASites.html">occ::dma::DMASites</a> occ::driver::DMADriver::DMAOutput::sites</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a279ac07753cf491107dd8a53c6e23e38" name="a279ac07753cf491107dd8a53c6e23e38"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a279ac07753cf491107dd8a53c6e23e38">&#9670;&#160;</a></span>total</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1dma_1_1Mult.html">occ::dma::Mult</a> occ::driver::DMADriver::DMAOutput::total</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Total multipoles about the origin of the analysis frame. </p>
+<p>Computed with the same sites as <code>result</code>, so it is consistent with it &ndash; do not recompute this from a separately loaded wavefunction. </p>
+
+</div>
+</div>
+<a id="a2921201a2f69b95fd534a5edf89f5fc6" name="a2921201a2f69b95fd534a5edf89f5fc6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2921201a2f69b95fd534a5edf89f5fc6">&#9670;&#160;</a></span>translation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">occ::Vec3</a> occ::driver::DMADriver::DMAOutput::translation {occ::Vec3::Zero()}</td>
         </tr>
       </table>
 </div><div class="memdoc">

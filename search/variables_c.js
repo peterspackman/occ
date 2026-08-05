@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['l_0',['l',['../structocc_1_1core_1_1graph_1_1PeriodicEdge.html#a315bc33b770e78ee92029af13b488f48',1,'occ::core::graph::PeriodicEdge::l'],['../structocc_1_1ints_1_1RIntsDynamic.html#ac7b88b0c08843d545ccfc86b2e7dd436',1,'occ::ints::RIntsDynamic::L'],['../structocc_1_1xtb_1_1ShellParam.html#acd1021474965ab6ffb2a9cdf4e9cbda2',1,'occ::xtb::ShellParam::l'],['../classocc_1_1opt_1_1DihedralCoordinate.html#a88bd952924efc116d45daa73dab07cf8',1,'occ::opt::DihedralCoordinate::l'],['../structocc_1_1gto_1_1Shell.html#aac2e01a2240e87fd567f1afb080e6a01',1,'occ::gto::Shell::l'],['../structocc_1_1gto_1_1Momenta.html#a27d20b51fc03232b3f4339946f492573',1,'occ::gto::Momenta::l'],['../structocc_1_1crystal_1_1HKL.html#a7b329fca4378f37f7fdf35643ba57216',1,'occ::crystal::HKL::l'],['../structocc_1_1gto_1_1MomentaSpherical.html#ab885c51ceb96de3dd38cccaf279de5e7',1,'occ::gto::MomentaSpherical::l']]],
+  ['l_0',['l',['../structocc_1_1crystal_1_1HKL.html#a7b329fca4378f37f7fdf35643ba57216',1,'occ::crystal::HKL::l'],['../structocc_1_1core_1_1graph_1_1PeriodicEdge.html#a315bc33b770e78ee92029af13b488f48',1,'occ::core::graph::PeriodicEdge::l'],['../structocc_1_1ints_1_1RIntsDynamic.html#ac7b88b0c08843d545ccfc86b2e7dd436',1,'occ::ints::RIntsDynamic::L'],['../structocc_1_1xtb_1_1ShellParam.html#acd1021474965ab6ffb2a9cdf4e9cbda2',1,'occ::xtb::ShellParam::l'],['../classocc_1_1opt_1_1DihedralCoordinate.html#a88bd952924efc116d45daa73dab07cf8',1,'occ::opt::DihedralCoordinate::l'],['../structocc_1_1gto_1_1MomentaSpherical.html#ab885c51ceb96de3dd38cccaf279de5e7',1,'occ::gto::MomentaSpherical::l'],['../structocc_1_1gto_1_1Momenta.html#a27d20b51fc03232b3f4339946f492573',1,'occ::gto::Momenta::l'],['../structocc_1_1gto_1_1Shell.html#aac2e01a2240e87fd567f1afb080e6a01',1,'occ::gto::Shell::l']]],
   ['la_1',['la',['../structocc_1_1ints_1_1ECoeffs1DDynamic.html#afb08e5da875451c597c624981293152a',1,'occ::ints::ECoeffs1DDynamic::la'],['../structocc_1_1ints_1_1ShellPairData.html#a0246675234bf29cfacbd4cc8b43b30d6',1,'occ::ints::ShellPairData::la']]],
   ['lab_5fatom_5fpositions_2',['lab_atom_positions',['../structocc_1_1mults_1_1CrystalEnergy_1_1MoleculeCache.html#aa08cad6b1a7edf0a816158799df54d56',1,'occ::mults::CrystalEnergy::MoleculeCache']]],
   ['label_3',['label',['../structocc_1_1geometry_1_1Facet.html#a1f24baa53b537a2ce2f751e2a2d39f8f',1,'occ::geometry::Facet::label'],['../structocc_1_1io_1_1MoleculeSite.html#a3d3eda8667d5ecc99646f985fcdd3817',1,'occ::io::MoleculeSite::label']]],
@@ -35,14 +35,15 @@ var searchData=
   ['lever_32',['lever',['../structocc_1_1mults_1_1SiteHessianDerivatives.html#a0f55cb9c7ece239c949df66441d161ff',1,'occ::mults::SiteHessianDerivatives']]],
   ['lexsort_33',['lexsort',['../structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#aa546383b344f0740fcbe08ad029c539b',1,'occ::descriptors::PointwiseDistanceDistributionConfig']]],
   ['limits_34',['limits',['../structocc_1_1dma_1_1DMASites.html#a67724056cadc5fcd63acbfbb9fe305a4',1,'occ::dma::DMASites']]],
-  ['link0_5fcommands_35',['link0_commands',['../structocc_1_1io_1_1GaussianInputFile.html#a13b4a72b783628f6c75c2ae92770433b',1,'occ::io::GaussianInputFile']]],
-  ['list1_36',['list1',['../structocc_1_1qm_1_1cosx_1_1ScreenedShellPairs.html#ac9621eb5044da9f349183c44ea314524',1,'occ::qm::cosx::ScreenedShellPairs::list1'],['../structocc_1_1qm_1_1cosx_1_1ShellLists.html#abe4f186f76824fc201068bd3f193ec5b',1,'occ::qm::cosx::ShellLists::list1']]],
-  ['list2_37',['list2',['../structocc_1_1qm_1_1cosx_1_1ScreenedShellPairs.html#aabe508770c9b3c470ad6e0666de21f51',1,'occ::qm::cosx::ScreenedShellPairs::list2'],['../structocc_1_1qm_1_1cosx_1_1ShellLists.html#a13319082505868db9b2fc60d52e58122',1,'occ::qm::cosx::ShellLists::list2']]],
-  ['list3_38',['list3',['../structocc_1_1qm_1_1cosx_1_1ShellLists.html#af211a3730f99cdd32bd5bbf2b78c9ec0',1,'occ::qm::cosx::ShellLists']]],
-  ['list_5fproperties_39',['list_properties',['../structocc_1_1main_1_1CubeConfig.html#ace9b46f3e86f5d2cc748b20a2a3d9702',1,'occ::main::CubeConfig']]],
-  ['list_5fsolvents_40',['list_solvents',['../structocc_1_1driver_1_1CGConfig.html#a84fd10570333df33f4ab0fbb5c898830',1,'occ::driver::CGConfig']]],
-  ['listcount_41',['listCount',['../structtinyply_1_1PlyProperty.html#a99574f7f41aea686235487fe27e3dd70',1,'tinyply::PlyProperty']]],
-  ['listtype_42',['listType',['../structtinyply_1_1PlyProperty.html#ab401e48dbf2cec2f9f0128441ddc6dce',1,'tinyply::PlyProperty']]],
-  ['lmax_43',['LMAX',['../namespaceocc_1_1ints.html#aa16749e7224830db026bc69dc82d401e',1,'occ::ints']]],
-  ['lower_44',['lower',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a2dab9abf817d75a7500d569f32ff6374',1,'occ::isosurface::AxisAlignedBoundingBox']]]
+  ['linear_5fin_5fdensity_35',['linear_in_density',['../structocc_1_1qm_1_1FockBuildProperties.html#a97b82c024da2afa694c9fbcc67eb7c7d',1,'occ::qm::FockBuildProperties']]],
+  ['link0_5fcommands_36',['link0_commands',['../structocc_1_1io_1_1GaussianInputFile.html#a13b4a72b783628f6c75c2ae92770433b',1,'occ::io::GaussianInputFile']]],
+  ['list1_37',['list1',['../structocc_1_1qm_1_1cosx_1_1ScreenedShellPairs.html#ac9621eb5044da9f349183c44ea314524',1,'occ::qm::cosx::ScreenedShellPairs::list1'],['../structocc_1_1qm_1_1cosx_1_1ShellLists.html#abe4f186f76824fc201068bd3f193ec5b',1,'occ::qm::cosx::ShellLists::list1']]],
+  ['list2_38',['list2',['../structocc_1_1qm_1_1cosx_1_1ScreenedShellPairs.html#aabe508770c9b3c470ad6e0666de21f51',1,'occ::qm::cosx::ScreenedShellPairs::list2'],['../structocc_1_1qm_1_1cosx_1_1ShellLists.html#a13319082505868db9b2fc60d52e58122',1,'occ::qm::cosx::ShellLists::list2']]],
+  ['list3_39',['list3',['../structocc_1_1qm_1_1cosx_1_1ShellLists.html#af211a3730f99cdd32bd5bbf2b78c9ec0',1,'occ::qm::cosx::ShellLists']]],
+  ['list_5fproperties_40',['list_properties',['../structocc_1_1main_1_1CubeConfig.html#ace9b46f3e86f5d2cc748b20a2a3d9702',1,'occ::main::CubeConfig']]],
+  ['list_5fsolvents_41',['list_solvents',['../structocc_1_1driver_1_1CGConfig.html#a84fd10570333df33f4ab0fbb5c898830',1,'occ::driver::CGConfig']]],
+  ['listcount_42',['listCount',['../structtinyply_1_1PlyProperty.html#a99574f7f41aea686235487fe27e3dd70',1,'tinyply::PlyProperty']]],
+  ['listtype_43',['listType',['../structtinyply_1_1PlyProperty.html#ab401e48dbf2cec2f9f0128441ddc6dce',1,'tinyply::PlyProperty']]],
+  ['lmax_44',['LMAX',['../namespaceocc_1_1ints.html#aa16749e7224830db026bc69dc82d401e',1,'occ::ints']]],
+  ['lower_45',['lower',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a2dab9abf817d75a7500d569f32ff6374',1,'occ::isosurface::AxisAlignedBoundingBox']]]
 ];

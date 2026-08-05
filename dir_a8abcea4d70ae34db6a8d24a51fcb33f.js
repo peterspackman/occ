@@ -17,6 +17,7 @@ var dir_a8abcea4d70ae34db6a8d24a51fcb33f =
     [ "dimer_interaction.h", "dimer__interaction_8h.html", "dimer__interaction_8h" ],
     [ "dma_cg.h", "dma__cg_8h.html", "dma__cg_8h" ],
     [ "dma_energy_model.h", "dma__energy__model_8h.html", "dma__energy__model_8h" ],
+    [ "dma_force_field.h", "dma__force__field_8h.html", "dma__force__field_8h" ],
     [ "esp.h", "mults_2esp_8h.html", "mults_2esp_8h" ],
     [ "ewald_sum.h", "ewald__sum_8h.html", "ewald__sum_8h" ],
     [ "force_field_params.h", "force__field__params_8h.html", "force__field__params_8h" ],

@@ -134,6 +134,11 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a0c2bf694ad69702cd081c20efa75eb82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ac15cab0973936b9919cc0244c42733" id="r_a4ac15cab0973936b9919cc0244c42733"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1driver_1_1DMADriver.html#a4ac15cab0973936b9919cc0244c42733">write_punch_file</a> (const std::string &amp;filename, const <a class="el" href="structocc_1_1dma_1_1DMAResult.html">occ::dma::DMAResult</a> &amp;result, const <a class="el" href="structocc_1_1dma_1_1DMASites.html">occ::dma::DMASites</a> &amp;sites)</td></tr>
 <tr class="separator:a4ac15cab0973936b9919cc0244c42733"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25970a956a21772f10c71b916dfbd1ab" id="r_a25970a956a21772f10c71b916dfbd1ab"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1driver_1_1DMADriver.html#a25970a956a21772f10c71b916dfbd1ab">generate_json</a> (const <a class="el" href="structocc_1_1driver_1_1DMAConfig.html">DMAConfig</a> &amp;<a class="el" href="classocc_1_1driver_1_1DMADriver.html#aa01a45622fa6c19429169c0e870567e7">config</a>, const <a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html">DMAOutput</a> &amp;output)</td></tr>
+<tr class="memdesc:a25970a956a21772f10c71b916dfbd1ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structured results: settings actually used, the frame they are in, and per-site effective radii/limits.  <br /></td></tr>
+<tr class="separator:a25970a956a21772f10c71b916dfbd1ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a577b6b0d486cf063e3e962db60e1d6cb" id="r_a577b6b0d486cf063e3e962db60e1d6cb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1driver_1_1DMADriver.html#a577b6b0d486cf063e3e962db60e1d6cb">write_json</a> (const std::string &amp;filename, const <a class="el" href="structocc_1_1driver_1_1DMAConfig.html">DMAConfig</a> &amp;<a class="el" href="classocc_1_1driver_1_1DMADriver.html#aa01a45622fa6c19429169c0e870567e7">config</a>, const <a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html">DMAOutput</a> &amp;output)</td></tr>
+<tr class="separator:a577b6b0d486cf063e3e962db60e1d6cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="adff7ac489b10987f6fb8c12f563772c7" name="adff7ac489b10987f6fb8c12f563772c7"></a>
@@ -210,6 +215,45 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a25970a956a21772f10c71b916dfbd1ab" name="a25970a956a21772f10c71b916dfbd1ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25970a956a21772f10c71b916dfbd1ab">&#9670;&#160;</a></span>generate_json()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string occ::driver::DMADriver::generate_json </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1driver_1_1DMAConfig.html">DMAConfig</a> &amp;&#160;</td>
+          <td class="paramname"><em>config</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html">DMAOutput</a> &amp;&#160;</td>
+          <td class="paramname"><em>output</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Structured results: settings actually used, the frame they are in, and per-site effective radii/limits. </p>
+<p>Serialized as JSON text. </p>
 
 </div>
 </div>
@@ -304,6 +348,48 @@ Static Public Member Functions</h2></td></tr>
   </td>
   <td class="mlabels-right">
 <span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a577b6b0d486cf063e3e962db60e1d6cb" name="a577b6b0d486cf063e3e962db60e1d6cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a577b6b0d486cf063e3e962db60e1d6cb">&#9670;&#160;</a></span>write_json()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void occ::driver::DMADriver::write_json </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1driver_1_1DMAConfig.html">DMAConfig</a> &amp;&#160;</td>
+          <td class="paramname"><em>config</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html">DMAOutput</a> &amp;&#160;</td>
+          <td class="paramname"><em>output</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">

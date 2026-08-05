@@ -110,10 +110,33 @@ $(document).ready(function(){initNavTree('structocc_1_1io_1_1Potentials.html',''
 Public Attributes</h2></td></tr>
 <tr class="memitem:a1b473ec6bf47d042721c61145c954919" id="r_a1b473ec6bf47d042721c61145c954919"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1Potentials.html#a1b473ec6bf47d042721c61145c954919">cutoff</a> = 15.0</td></tr>
 <tr class="separator:a1b473ec6bf47d042721c61145c954919"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfb7eb9920715e930acb5b911079e601" id="r_acfb7eb9920715e930acb5b911079e601"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1Potentials.html#acfb7eb9920715e930acb5b911079e601">force_field</a></td></tr>
+<tr class="memdesc:acfb7eb9920715e930acb5b911079e601"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provenance: which short-range parameter set these came from ("w99", "fit", "williams-de").  <br /></td></tr>
+<tr class="separator:acfb7eb9920715e930acb5b911079e601"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27c4147be5737a726d40fe195b983ac9" id="r_a27c4147be5737a726d40fe195b983ac9"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1Potentials.html#a27c4147be5737a726d40fe195b983ac9">atom_typing</a></td></tr>
+<tr class="memdesc:a27c4147be5737a726d40fe195b983ac9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atom typing scheme the <code>type</code> labels belong to ("neighcrys", "neighcrys-fit", "none").  <br /></td></tr>
+<tr class="separator:a27c4147be5737a726d40fe195b983ac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb90164804ca706184e7ee33a31de4a8" id="r_adb90164804ca706184e7ee33a31de4a8"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1io_1_1BuckinghamPair.html">BuckinghamPair</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1Potentials.html#adb90164804ca706184e7ee33a31de4a8">buckingham</a></td></tr>
 <tr class="separator:adb90164804ca706184e7ee33a31de4a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a27c4147be5737a726d40fe195b983ac9" name="a27c4147be5737a726d40fe195b983ac9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27c4147be5737a726d40fe195b983ac9">&#9670;&#160;</a></span>atom_typing</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::io::Potentials::atom_typing</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Atom typing scheme the <code>type</code> labels belong to ("neighcrys", "neighcrys-fit", "none"). </p>
+<p>Empty when unrecorded. </p>
+
+</div>
+</div>
 <a id="adb90164804ca706184e7ee33a31de4a8" name="adb90164804ca706184e7ee33a31de4a8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adb90164804ca706184e7ee33a31de4a8">&#9670;&#160;</a></span>buckingham</h2>
 
@@ -139,6 +162,23 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="acfb7eb9920715e930acb5b911079e601" name="acfb7eb9920715e930acb5b911079e601"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acfb7eb9920715e930acb5b911079e601">&#9670;&#160;</a></span>force_field</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::io::Potentials::force_field</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Provenance: which short-range parameter set these came from ("w99", "fit", "williams-de"). </p>
+<p>Empty when unrecorded; readers should treat the pair list as authoritative either way. </p>
 
 </div>
 </div>

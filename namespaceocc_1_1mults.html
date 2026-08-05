@@ -187,6 +187,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1DMAExp6EnergyModel.html">DMAExp6EnergyModel</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">EnergyModelBase using distributed multipoles + exp-6 (Williams), with no induction.  <a href="classocc_1_1mults_1_1DMAExp6EnergyModel.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1DMAForceFieldOptions.html">DMAForceFieldOptions</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1DMAMonomer.html">DMAMonomer</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reference (monomer-frame) DMA data for one symmetry-unique molecule.  <a href="structocc_1_1mults_1_1DMAMonomer.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -316,6 +318,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1mults_1_1ShortRangeInteraction.html">ShortRangeInteraction</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class for computing short-range pairwise interactions.  <a href="classocc_1_1mults_1_1ShortRangeInteraction.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1ShortRangeModel.html">ShortRangeModel</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A selectable short-range (repulsion-dispersion) parameter set.  <a href="structocc_1_1mults_1_1ShortRangeModel.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1mults_1_1SiteHessianDerivatives.html">SiteHessianDerivatives</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Precomputed per-site rotation derivatives for Hessian computation.  <a href="structocc_1_1mults_1_1SiteHessianDerivatives.html#details">More...</a><br /></td></tr>
@@ -504,6 +509,21 @@ Functions</h2></td></tr>
 <tr class="memitem:ab033a01331e42961a1e72fbad9381af0" id="r_ab033a01331e42961a1e72fbad9381af0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#ab033a01331e42961a1e72fbad9381af0">williams_typed_force_field</a> ()</td></tr>
 <tr class="memdesc:ab033a01331e42961a1e72fbad9381af0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build a <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html" title="Manages force field parameters for short-range interactions.">ForceFieldParams</a> for the W99 (Williams 1999) typed exp-6 set, with the element-based Williams DE table as a fallback.  <br /></td></tr>
 <tr class="separator:ab033a01331e42961a1e72fbad9381af0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd369453f80fc0d8e47938309bb84b5c" id="r_acd369453f80fc0d8e47938309bb84b5c"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; <a class="el" href="structocc_1_1mults_1_1ShortRangeModel.html">ShortRangeModel</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#acd369453f80fc0d8e47938309bb84b5c">short_range_model_registry</a> ()</td></tr>
+<tr class="memdesc:acd369453f80fc0d8e47938309bb84b5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Every selectable short-range parameter set.  <br /></td></tr>
+<tr class="separator:acd369453f80fc0d8e47938309bb84b5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0084898fc1685807b139c85db4c55726" id="r_a0084898fc1685807b139c85db4c55726"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#a0084898fc1685807b139c85db4c55726">short_range_model_names</a> ()</td></tr>
+<tr class="memdesc:a0084898fc1685807b139c85db4c55726"><td class="mdescLeft">&#160;</td><td class="mdescRight">Canonical names and aliases, for CLI validation.  <br /></td></tr>
+<tr class="separator:a0084898fc1685807b139c85db4c55726"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc88546460eccdf8baa35cb695c51c86" id="r_adc88546460eccdf8baa35cb695c51c86"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1mults_1_1ShortRangeModel.html">ShortRangeModel</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#adc88546460eccdf8baa35cb695c51c86">short_range_model_from_string</a> (const std::string &amp;name)</td></tr>
+<tr class="memdesc:adc88546460eccdf8baa35cb695c51c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve an exact name or alias.  <br /></td></tr>
+<tr class="separator:adc88546460eccdf8baa35cb695c51c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6dde921fd5388f5e91140e89778cf53c" id="r_a6dde921fd5388f5e91140e89778cf53c"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1mults_1_1ShortRangeModel.html">ShortRangeModel</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#a6dde921fd5388f5e91140e89778cf53c">short_range_model_for_model_name</a> (const std::string &amp;model_name)</td></tr>
+<tr class="memdesc:a6dde921fd5388f5e91140e89778cf53c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve by substring, for compound model names like "dma-fit" or "williams-99".  <br /></td></tr>
+<tr class="separator:a6dde921fd5388f5e91140e89778cf53c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2c1b8a1bd4729b16889236e492ab240" id="r_ae2c1b8a1bd4729b16889236e492ab240"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#ae2c1b8a1bd4729b16889236e492ab240">make_force_field</a> (const <a class="el" href="structocc_1_1mults_1_1ShortRangeModel.html">ShortRangeModel</a> &amp;model)</td></tr>
+<tr class="memdesc:ae2c1b8a1bd4729b16889236e492ab240"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html" title="Manages force field parameters for short-range interactions.">ForceFieldParams</a> for a registry entry.  <br /></td></tr>
+<tr class="separator:ae2c1b8a1bd4729b16889236e492ab240"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae5a2afd8232873195d8e9a2bccd364c2" id="r_ae5a2afd8232873195d8e9a2bccd364c2"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; int, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#ae5a2afd8232873195d8e9a2bccd364c2">missing_exp6_pairs</a> (const std::vector&lt; int &gt; &amp;elements, const <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a> &amp;ff)</td></tr>
 <tr class="memdesc:ae5a2afd8232873195d8e9a2bccd364c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Among the given element atomic numbers, the unique pairs (Zmin, Zmax) that <code>ff</code> has no exp-6 parameters for.  <br /></td></tr>
 <tr class="separator:ae5a2afd8232873195d8e9a2bccd364c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -516,6 +536,9 @@ Functions</h2></td></tr>
 <tr class="memitem:adb68afed0059084b87c8471b5c1ceb4d" id="r_adb68afed0059084b87c8471b5c1ceb4d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1CrystalGrowthResult.html">occ::cg::CrystalGrowthResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#adb68afed0059084b87c8471b5c1ceb4d">run_crystal_growth</a> (const <a class="el" href="structocc_1_1driver_1_1CGConfig.html">occ::driver::CGConfig</a> &amp;config)</td></tr>
 <tr class="memdesc:adb68afed0059084b87c8471b5c1ceb4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unified crystal-growth entry point: dispatches DMA+exp-6 models to <a class="el" href="namespaceocc_1_1mults.html#a9e80e7e8d3908858a7b96b8aa383691f" title="Run a crystal-growth calculation with the DMA+exp-6 model (reuses the shared occ_driver cg pipeline).">run_cg_dma()</a> and everything else to <a class="el" href="namespaceocc_1_1driver.html#a7694b64538d99dde2da027e9b9fb651b">occ::driver::run_cg()</a>.  <br /></td></tr>
 <tr class="separator:adb68afed0059084b87c8471b5c1ceb4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a493eb3aa7ee07499379a3f42cdf7e99b" id="r_a493eb3aa7ee07499379a3f42cdf7e99b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1io_1_1Basis.html">occ::io::Basis</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#a493eb3aa7ee07499379a3f42cdf7e99b">build_dma_force_field_basis</a> (const <a class="el" href="structocc_1_1dma_1_1DMASites.html">occ::dma::DMASites</a> &amp;sites, const std::vector&lt; <a class="el" href="structocc_1_1dma_1_1Mult.html">occ::dma::Mult</a> &gt; &amp;multipoles, const <a class="el" href="structocc_1_1mults_1_1DMAForceFieldOptions.html">DMAForceFieldOptions</a> &amp;options={})</td></tr>
+<tr class="memdesc:a493eb3aa7ee07499379a3f42cdf7e99b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the force-field description that <code>occ dma --write-csp-input</code> serializes.  <br /></td></tr>
+<tr class="separator:a493eb3aa7ee07499379a3f42cdf7e99b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba1632db6c7cd727a7decc3db6ebe21a" id="r_aba1632db6c7cd727a7decc3db6ebe21a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1mults_1_1EwaldLatticeCache.html">EwaldLatticeCache</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1mults.html#aba1632db6c7cd727a7decc3db6ebe21a">build_ewald_lattice_cache</a> (const <a class="el" href="classocc_1_1crystal_1_1UnitCell.html">crystal::UnitCell</a> &amp;unit_cell, const <a class="el" href="structocc_1_1mults_1_1EwaldParams.html">EwaldParams</a> &amp;params)</td></tr>
 <tr class="memdesc:aba1632db6c7cd727a7decc3db6ebe21a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build an <a class="el" href="structocc_1_1mults_1_1EwaldLatticeCache.html" title="Pre-computed reciprocal lattice vectors and coefficients for Ewald.">EwaldLatticeCache</a> from unit cell and parameters.  <br /></td></tr>
 <tr class="separator:aba1632db6c7cd727a7decc3db6ebe21a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -812,6 +835,50 @@ Variables</h2></td></tr>
     <tr><td class="paramname">q</td><td>Current orientation quaternion (will be modified in place) </td></tr>
     <tr><td class="paramname">grad_angle_axis</td><td>The angle-axis gradient </td></tr>
     <tr><td class="paramname">step</td><td>Step size (learning rate) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a493eb3aa7ee07499379a3f42cdf7e99b" name="a493eb3aa7ee07499379a3f42cdf7e99b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a493eb3aa7ee07499379a3f42cdf7e99b">&#9670;&#160;</a></span>build_dma_force_field_basis()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1io_1_1Basis.html">occ::io::Basis</a> occ::mults::build_dma_force_field_basis </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1dma_1_1DMASites.html">occ::dma::DMASites</a> &amp;&#160;</td>
+          <td class="paramname"><em>sites</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1dma_1_1Mult.html">occ::dma::Mult</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>multipoles</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1mults_1_1DMAForceFieldOptions.html">DMAForceFieldOptions</a> &amp;&#160;</td>
+          <td class="paramname"><em>options</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build the force-field description that <code>occ dma --write-csp-input</code> serializes. </p>
+<p>Assigns NEIGHCRYS atom types (when the chosen set is typed), converts the distributed multipoles into the structure-format layout, and emits pair potentials for exactly the type pairs present in this molecule.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sites</td><td>DMA sites, positions in Bohr </td></tr>
+    <tr><td class="paramname">multipoles</td><td>one entry per site, in the same order </td></tr>
   </table>
   </dd>
 </dl>
@@ -2651,6 +2718,26 @@ template&lt;int Order&gt; </div>
 
 </div>
 </div>
+<a id="ae2c1b8a1bd4729b16889236e492ab240" name="ae2c1b8a1bd4729b16889236e492ab240"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2c1b8a1bd4729b16889236e492ab240">&#9670;&#160;</a></span>make_force_field()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html">ForceFieldParams</a> occ::mults::make_force_field </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1mults_1_1ShortRangeModel.html">ShortRangeModel</a> &amp;&#160;</td>
+          <td class="paramname"><em>model</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build the <a class="el" href="classocc_1_1mults_1_1ForceFieldParams.html" title="Manages force field parameters for short-range interactions.">ForceFieldParams</a> for a registry entry. </p>
+
+</div>
+</div>
 <a id="adfe940cd5eea0299a06df26c799fd112" name="adfe940cd5eea0299a06df26c799fd112"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adfe940cd5eea0299a06df26c799fd112">&#9670;&#160;</a></span>merge_to_single_site() <span class="overload">[1/2]</span></h2>
 
@@ -3218,6 +3305,91 @@ template&lt;int MaxL&gt; </div>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a6dde921fd5388f5e91140e89778cf53c" name="a6dde921fd5388f5e91140e89778cf53c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6dde921fd5388f5e91140e89778cf53c">&#9670;&#160;</a></span>short_range_model_for_model_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structocc_1_1mults_1_1ShortRangeModel.html">ShortRangeModel</a> &amp; occ::mults::short_range_model_for_model_name </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>model_name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Resolve by substring, for compound model names like "dma-fit" or "williams-99". </p>
+<p>Falls back to the element-based set when nothing matches. </p>
+
+</div>
+</div>
+<a id="adc88546460eccdf8baa35cb695c51c86" name="adc88546460eccdf8baa35cb695c51c86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc88546460eccdf8baa35cb695c51c86">&#9670;&#160;</a></span>short_range_model_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structocc_1_1mults_1_1ShortRangeModel.html">ShortRangeModel</a> &amp; occ::mults::short_range_model_from_string </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Resolve an exact name or alias. </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if the name is not known. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a0084898fc1685807b139c85db4c55726" name="a0084898fc1685807b139c85db4c55726"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0084898fc1685807b139c85db4c55726">&#9670;&#160;</a></span>short_range_model_names()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; occ::mults::short_range_model_names </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Canonical names and aliases, for CLI validation. </p>
+
+</div>
+</div>
+<a id="acd369453f80fc0d8e47938309bb84b5c" name="acd369453f80fc0d8e47938309bb84b5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd369453f80fc0d8e47938309bb84b5c">&#9670;&#160;</a></span>short_range_model_registry()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::vector&lt; <a class="el" href="structocc_1_1mults_1_1ShortRangeModel.html">ShortRangeModel</a> &gt; &amp; occ::mults::short_range_model_registry </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Every selectable short-range parameter set. </p>
 
 </div>
 </div>

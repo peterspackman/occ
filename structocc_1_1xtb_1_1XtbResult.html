@@ -130,20 +130,48 @@ Public Attributes</h2></td></tr>
 <tr class="memdesc:aeb72bbc515c79f7fc41254682c8e1a4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-atom partial charges q_atom = Σ q_shell over the atom's shells.  <br /></td></tr>
 <tr class="separator:aeb72bbc515c79f7fc41254682c8e1a4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c98a2b55aa89f13188b12e245d4a841" id="r_a7c98a2b55aa89f13188b12e245d4a841"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a7c98a2b55aa89f13188b12e245d4a841">orbital_energies</a></td></tr>
-<tr class="memdesc:a7c98a2b55aa89f13188b12e245d4a841"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orbital energies ε at Γ (Hartree). Length = N_basis.  <br /></td></tr>
+<tr class="memdesc:a7c98a2b55aa89f13188b12e245d4a841"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orbital energies ε at Γ (Hartree), α channel when unrestricted.  <br /></td></tr>
 <tr class="separator:a7c98a2b55aa89f13188b12e245d4a841"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6338fba9e4a91d06225a7e578135d73e" id="r_a6338fba9e4a91d06225a7e578135d73e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a6338fba9e4a91d06225a7e578135d73e">orbital_occupations</a></td></tr>
-<tr class="memdesc:a6338fba9e4a91d06225a7e578135d73e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orbital occupations n_i (0..2 for closed shell). Length = N_basis.  <br /></td></tr>
+<tr class="memdesc:a6338fba9e4a91d06225a7e578135d73e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orbital occupations: 0..2 restricted, 0..1 for the α channel otherwise.  <br /></td></tr>
 <tr class="separator:a6338fba9e4a91d06225a7e578135d73e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa48e317b08040757d02e6856440e2058" id="r_aa48e317b08040757d02e6856440e2058"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#aa48e317b08040757d02e6856440e2058">density_matrix</a></td></tr>
-<tr class="memdesc:aa48e317b08040757d02e6856440e2058"><td class="mdescLeft">&#160;</td><td class="mdescRight">Density matrix P at Γ (closed-shell, summed over both spins).  <br /></td></tr>
+<tr class="memdesc:aa48e317b08040757d02e6856440e2058"><td class="mdescLeft">&#160;</td><td class="mdescRight">Density matrix P at Γ, always summed over both spins — so Mulliken, CAMM and bond-order consumers work unchanged either way.  <br /></td></tr>
 <tr class="separator:aa48e317b08040757d02e6856440e2058"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55f1f4df9d86d98621db848ff0cbd6d9" id="r_a55f1f4df9d86d98621db848ff0cbd6d9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a55f1f4df9d86d98621db848ff0cbd6d9">overlap_matrix</a></td></tr>
 <tr class="memdesc:a55f1f4df9d86d98621db848ff0cbd6d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Overlap matrix S at Γ (cached for downstream property analysis).  <br /></td></tr>
 <tr class="separator:a55f1f4df9d86d98621db848ff0cbd6d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d417bfa9ba6d3a8299eec87d292ded2" id="r_a6d417bfa9ba6d3a8299eec87d292ded2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a6d417bfa9ba6d3a8299eec87d292ded2">orbital_coefficients</a></td></tr>
-<tr class="memdesc:a6d417bfa9ba6d3a8299eec87d292ded2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orbital coefficients C at Γ (closed-shell).  <br /></td></tr>
+<tr class="memdesc:a6d417bfa9ba6d3a8299eec87d292ded2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orbital coefficients C at Γ, α channel when unrestricted.  <br /></td></tr>
 <tr class="separator:a6d417bfa9ba6d3a8299eec87d292ded2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31aa6c3517ac26502f6364c2b3610671" id="r_a31aa6c3517ac26502f6364c2b3610671"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a31aa6c3517ac26502f6364c2b3610671">unrestricted</a> {false}</td></tr>
+<tr class="separator:a31aa6c3517ac26502f6364c2b3610671"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ab8d8e3e5aea8ebe464c48b1b9d87ac" id="r_a1ab8d8e3e5aea8ebe464c48b1b9d87ac"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a1ab8d8e3e5aea8ebe464c48b1b9d87ac">num_unpaired_electrons</a> {0}</td></tr>
+<tr class="memdesc:a1ab8d8e3e5aea8ebe464c48b1b9d87ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nα − Nβ (multiplicity − 1).  <br /></td></tr>
+<tr class="separator:a1ab8d8e3e5aea8ebe464c48b1b9d87ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d2c0e04fa728bace7fef36f4fa1ac7f" id="r_a7d2c0e04fa728bace7fef36f4fa1ac7f"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a7d2c0e04fa728bace7fef36f4fa1ac7f">spin_energy</a> {0.0}</td></tr>
+<tr class="memdesc:a7d2c0e04fa728bace7fef36f4fa1ac7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">On-site spin-polarization energy ½ mᵀWm (≤ 0), included in <code>scc_energy</code>.  <br /></td></tr>
+<tr class="separator:a7d2c0e04fa728bace7fef36f4fa1ac7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a200e28384d353b5d54cfad9d743a4b3b" id="r_a200e28384d353b5d54cfad9d743a4b3b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a200e28384d353b5d54cfad9d743a4b3b">electronic_entropy_energy</a> {0.0}</td></tr>
+<tr class="memdesc:a200e28384d353b5d54cfad9d743a4b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fermi-smearing free-energy term −T·S (≤ 0), included in <code>scc_energy</code>.  <br /></td></tr>
+<tr class="separator:a200e28384d353b5d54cfad9d743a4b3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf59570546b147d8c9735a5b12e453ea" id="r_acf59570546b147d8c9735a5b12e453ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#acf59570546b147d8c9735a5b12e453ea">shell_magnetization</a></td></tr>
+<tr class="memdesc:acf59570546b147d8c9735a5b12e453ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-shell magnetization, Mulliken pop(α) − pop(β).  <br /></td></tr>
+<tr class="separator:acf59570546b147d8c9735a5b12e453ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7fb2f2ded12a71e01e3a3731f8d0670" id="r_ab7fb2f2ded12a71e01e3a3731f8d0670"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#ab7fb2f2ded12a71e01e3a3731f8d0670">atomic_magnetization</a></td></tr>
+<tr class="memdesc:ab7fb2f2ded12a71e01e3a3731f8d0670"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-atom spin populations; sums to Nα − Nβ.  <br /></td></tr>
+<tr class="separator:ab7fb2f2ded12a71e01e3a3731f8d0670"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8edbc9d2a1a900d852b87f4cc992ccd3" id="r_a8edbc9d2a1a900d852b87f4cc992ccd3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a8edbc9d2a1a900d852b87f4cc992ccd3">density_matrix_alpha</a></td></tr>
+<tr class="memdesc:a8edbc9d2a1a900d852b87f4cc992ccd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spin-resolved densities; <code>density_matrix</code> is their sum.  <br /></td></tr>
+<tr class="separator:a8edbc9d2a1a900d852b87f4cc992ccd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a865a034e90ada9ab8a6d7590818b95" id="r_a4a865a034e90ada9ab8a6d7590818b95"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a4a865a034e90ada9ab8a6d7590818b95">density_matrix_beta</a></td></tr>
+<tr class="separator:a4a865a034e90ada9ab8a6d7590818b95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acea4ed450618b0ddb3ec15a8378d2216" id="r_acea4ed450618b0ddb3ec15a8378d2216"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#acea4ed450618b0ddb3ec15a8378d2216">orbital_coefficients_beta</a></td></tr>
+<tr class="separator:acea4ed450618b0ddb3ec15a8378d2216"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb1ceee5397108b18477445028dcce80" id="r_adb1ceee5397108b18477445028dcce80"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#adb1ceee5397108b18477445028dcce80">orbital_energies_beta</a></td></tr>
+<tr class="separator:adb1ceee5397108b18477445028dcce80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f07e01811a8e2019107c48a1eff628e" id="r_a9f07e01811a8e2019107c48a1eff628e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a9f07e01811a8e2019107c48a1eff628e">orbital_occupations_beta</a></td></tr>
+<tr class="separator:a9f07e01811a8e2019107c48a1eff628e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59d29132938a598e16e0572643912ee0" id="r_a59d29132938a598e16e0572643912ee0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1XtbResult.html#a59d29132938a598e16e0572643912ee0">n_iterations</a> {0}</td></tr>
 <tr class="memdesc:a59d29132938a598e16e0572643912ee0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of SCC iterations actually run.  <br /></td></tr>
 <tr class="separator:a59d29132938a598e16e0572643912ee0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -175,6 +203,22 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="ab7fb2f2ded12a71e01e3a3731f8d0670" name="ab7fb2f2ded12a71e01e3a3731f8d0670"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7fb2f2ded12a71e01e3a3731f8d0670">&#9670;&#160;</a></span>atomic_magnetization</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::xtb::XtbResult::atomic_magnetization</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Per-atom spin populations; sums to Nα − Nβ. </p>
+
+</div>
+</div>
 <a id="ab1ccc63f27fbc798069b906d0d40997d" name="ab1ccc63f27fbc798069b906d0d40997d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab1ccc63f27fbc798069b906d0d40997d">&#9670;&#160;</a></span>converged</h2>
 
@@ -203,7 +247,37 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Density matrix P at Γ (closed-shell, summed over both spins). </p>
+<p>Density matrix P at Γ, always summed over both spins — so Mulliken, CAMM and bond-order consumers work unchanged either way. </p>
+
+</div>
+</div>
+<a id="a8edbc9d2a1a900d852b87f4cc992ccd3" name="a8edbc9d2a1a900d852b87f4cc992ccd3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8edbc9d2a1a900d852b87f4cc992ccd3">&#9670;&#160;</a></span>density_matrix_alpha</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::xtb::XtbResult::density_matrix_alpha</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Spin-resolved densities; <code>density_matrix</code> is their sum. </p>
+
+</div>
+</div>
+<a id="a4a865a034e90ada9ab8a6d7590818b95" name="a4a865a034e90ada9ab8a6d7590818b95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a865a034e90ada9ab8a6d7590818b95">&#9670;&#160;</a></span>density_matrix_beta</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::xtb::XtbResult::density_matrix_beta</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -223,6 +297,23 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a200e28384d353b5d54cfad9d743a4b3b" name="a200e28384d353b5d54cfad9d743a4b3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a200e28384d353b5d54cfad9d743a4b3b">&#9670;&#160;</a></span>electronic_entropy_energy</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::xtb::XtbResult::electronic_entropy_energy {0.0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Fermi-smearing free-energy term −T·S (≤ 0), included in <code>scc_energy</code>. </p>
+<p>Vanishes for any system with a gap ≫ kT. </p>
+
+</div>
+</div>
 <a id="a59d29132938a598e16e0572643912ee0" name="a59d29132938a598e16e0572643912ee0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a59d29132938a598e16e0572643912ee0">&#9670;&#160;</a></span>n_iterations</h2>
 
@@ -239,6 +330,22 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a1ab8d8e3e5aea8ebe464c48b1b9d87ac" name="a1ab8d8e3e5aea8ebe464c48b1b9d87ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ab8d8e3e5aea8ebe464c48b1b9d87ac">&#9670;&#160;</a></span>num_unpaired_electrons</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::xtb::XtbResult::num_unpaired_electrons {0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Nα − Nβ (multiplicity − 1). </p>
+
+</div>
+</div>
 <a id="a6d417bfa9ba6d3a8299eec87d292ded2" name="a6d417bfa9ba6d3a8299eec87d292ded2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6d417bfa9ba6d3a8299eec87d292ded2">&#9670;&#160;</a></span>orbital_coefficients</h2>
 
@@ -251,7 +358,21 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Orbital coefficients C at Γ (closed-shell). </p>
+<p>Orbital coefficients C at Γ, α channel when unrestricted. </p>
+
+</div>
+</div>
+<a id="acea4ed450618b0ddb3ec15a8378d2216" name="acea4ed450618b0ddb3ec15a8378d2216"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acea4ed450618b0ddb3ec15a8378d2216">&#9670;&#160;</a></span>orbital_coefficients_beta</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::xtb::XtbResult::orbital_coefficients_beta</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -267,7 +388,21 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Orbital energies ε at Γ (Hartree). Length = N_basis. </p>
+<p>Orbital energies ε at Γ (Hartree), α channel when unrestricted. </p>
+
+</div>
+</div>
+<a id="adb1ceee5397108b18477445028dcce80" name="adb1ceee5397108b18477445028dcce80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb1ceee5397108b18477445028dcce80">&#9670;&#160;</a></span>orbital_energies_beta</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::xtb::XtbResult::orbital_energies_beta</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -283,7 +418,21 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Orbital occupations n_i (0..2 for closed shell). Length = N_basis. </p>
+<p>Orbital occupations: 0..2 restricted, 0..1 for the α channel otherwise. </p>
+
+</div>
+</div>
+<a id="a9f07e01811a8e2019107c48a1eff628e" name="a9f07e01811a8e2019107c48a1eff628e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f07e01811a8e2019107c48a1eff628e">&#9670;&#160;</a></span>orbital_occupations_beta</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::xtb::XtbResult::orbital_occupations_beta</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -353,6 +502,22 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="acf59570546b147d8c9735a5b12e453ea" name="acf59570546b147d8c9735a5b12e453ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf59570546b147d8c9735a5b12e453ea">&#9670;&#160;</a></span>shell_magnetization</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::xtb::XtbResult::shell_magnetization</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Per-shell magnetization, Mulliken pop(α) − pop(β). </p>
+
+</div>
+</div>
 <a id="ac14cd16f01e65e63cb95789282c5f9a7" name="ac14cd16f01e65e63cb95789282c5f9a7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac14cd16f01e65e63cb95789282c5f9a7">&#9670;&#160;</a></span>solvation_surfaces</h2>
 
@@ -370,6 +535,22 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a7d2c0e04fa728bace7fef36f4fa1ac7f" name="a7d2c0e04fa728bace7fef36f4fa1ac7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d2c0e04fa728bace7fef36f4fa1ac7f">&#9670;&#160;</a></span>spin_energy</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::xtb::XtbResult::spin_energy {0.0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>On-site spin-polarization energy ½ mᵀWm (≤ 0), included in <code>scc_energy</code>. </p>
+
+</div>
+</div>
 <a id="af518a51fad304410616511aae349fe57" name="af518a51fad304410616511aae349fe57"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af518a51fad304410616511aae349fe57">&#9670;&#160;</a></span>total_energy</h2>
 
@@ -383,6 +564,20 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>scc_energy + repulsion_energy + dispersion_energy (Hartree). </p>
+
+</div>
+</div>
+<a id="a31aa6c3517ac26502f6364c2b3610671" name="a31aa6c3517ac26502f6364c2b3610671"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31aa6c3517ac26502f6364c2b3610671">&#9670;&#160;</a></span>unrestricted</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::xtb::XtbResult::unrestricted {false}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

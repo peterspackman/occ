@@ -164,6 +164,9 @@ requires ExternalPotential&lt;Model, Procedure&gt;</td></tr>
 <tr class="separator:a208dcf3d747e343bdbd048bc12c05ed1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10cf77346f1ce0b3b17d336eef3e776e" id="r_a10cf77346f1ce0b3b17d336eef3e776e"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#a10cf77346f1ce0b3b17d336eef3e776e">compute_scf_energy</a> ()</td></tr>
 <tr class="separator:a10cf77346f1ce0b3b17d336eef3e776e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea7476e2e6e2b937d6476e027331dd64" id="r_aea7476e2e6e2b937d6476e027331dd64"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#aea7476e2e6e2b937d6476e027331dd64">incremental_fock_supported</a> () const</td></tr>
+<tr class="memdesc:aea7476e2e6e2b937d6476e027331dd64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the procedure's declared <code><a class="el" href="structocc_1_1qm_1_1FockBuildProperties.html" title="What a method guarantees about its Fock build, so the SCF driver can decide whether to accumulate F +...">FockBuildProperties</a></code> permit accumulating F += G(ΔD).  <br /></td></tr>
+<tr class="separator:aea7476e2e6e2b937d6476e027331dd64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -189,6 +192,9 @@ Public Attributes</h2></td></tr>
 <tr class="separator:aab9e3f6076dbabcef64c2bbec5b07cbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaee7cfb6092fa8374bec136744e46dfa" id="r_aaee7cfb6092fa8374bec136744e46dfa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#aaee7cfb6092fa8374bec136744e46dfa">incremental_Fbuild_started</a> {false}</td></tr>
 <tr class="separator:aaee7cfb6092fa8374bec136744e46dfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97e69104160e256dea173e58bf4946be" id="r_a97e69104160e256dea173e58bf4946be"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#a97e69104160e256dea173e58bf4946be">num_incremental_fock_builds</a> {0}</td></tr>
+<tr class="memdesc:a97e69104160e256dea173e58bf4946be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fock builds that accumulated F += G(ΔD) rather than rebuilding from H.  <br /></td></tr>
+<tr class="separator:a97e69104160e256dea173e58bf4946be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3bc785148a1e5734910bad160ee0069" id="r_ad3bc785148a1e5734910bad160ee0069"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#ad3bc785148a1e5734910bad160ee0069">next_reset_threshold</a> {0.0}</td></tr>
 <tr class="separator:ad3bc785148a1e5734910bad160ee0069"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0228eff8fdd8e608395b8fd8eb0d491" id="r_ab0228eff8fdd8e608395b8fd8eb0d491"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCF.html#ab0228eff8fdd8e608395b8fd8eb0d491">last_reset_iteration</a> {0}</td></tr>
@@ -340,6 +346,36 @@ template&lt;SCFMethod P&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aea7476e2e6e2b937d6476e027331dd64" name="aea7476e2e6e2b937d6476e027331dd64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea7476e2e6e2b937d6476e027331dd64">&#9670;&#160;</a></span>incremental_fock_supported()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;SCFMethod Procedure&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="structocc_1_1qm_1_1SCF.html">occ::qm::SCF</a>&lt; Procedure &gt;::incremental_fock_supported </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Whether the procedure's declared <code><a class="el" href="structocc_1_1qm_1_1FockBuildProperties.html" title="What a method guarantees about its Fock build, so the SCF driver can decide whether to accumulate F +...">FockBuildProperties</a></code> permit accumulating F += G(ΔD). </p>
+<p>Asked of the procedure directly rather than cached, so it can't go stale if a DF basis or COSX grid is installed after the <a class="el" href="structocc_1_1qm_1_1SCF.html">SCF</a> is constructed. Enforced where the accumulation starts, so <code>convergence_settings.incremental_fock_threshold</code> can only ever turn incremental builds <em>off</em> — never on for a method that can't take them. </p>
 
 </div>
 </div>
@@ -895,6 +931,25 @@ template&lt;SCFMethod Procedure&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a97e69104160e256dea173e58bf4946be" name="a97e69104160e256dea173e58bf4946be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97e69104160e256dea173e58bf4946be">&#9670;&#160;</a></span>num_incremental_fock_builds</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;SCFMethod Procedure&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="structocc_1_1qm_1_1SCF.html">occ::qm::SCF</a>&lt; Procedure &gt;::num_incremental_fock_builds {0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Fock builds that accumulated F += G(ΔD) rather than rebuilding from H. </p>
+<p>Zero whenever the procedure doesn't support incremental builds. </p>
 
 </div>
 </div>
