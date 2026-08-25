@@ -11,6 +11,8 @@
 #include <occ/solvent/draco.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
+#include <occ/solvent/sigma_kernel.h>
+#include <occ/solvent/sigma_potential.h>
 #include <occ/solvent/sigma_profile.h>
 #include <occ/solvent/solvation_correction.h>
 #include <occ/solvent/surface.h>
@@ -570,6 +572,289 @@ TEST_CASE("Mixture profiles weight by mole fraction", "[solvent][sigma]") {
   REQUIRE(mixture.total_area() == Catch::Approx(0.25 * 1.0 + 0.75 * 3.0));
   REQUIRE(mixture.values(15, 0) == Catch::Approx(0.25 * 1.0));
   REQUIRE(mixture.values(35, 0) == Catch::Approx(0.75 * 3.0));
+}
+
+// Sigma kernel and potential
+
+namespace {
+
+using occ::solvent::sigma::Kernel;
+using occ::solvent::sigma::Model;
+using occ::solvent::sigma::Parameters;
+using occ::solvent::sigma::Potential;
+using occ::solvent::sigma::PotentialOptions;
+using occ::solvent::sigma::Profile;
+
+// Bimodal, water-like: a donor lobe and an acceptor lobe.
+Profile synthetic_profile(const Grid &g, int num_classes) {
+  Profile p;
+  p.grid = g;
+  p.values = Mat::Zero(g.n, num_classes);
+  Vec centers = g.centers();
+  for (int i = 0; i < g.n; i++) {
+    const double x = centers(i);
+    const double lobes = std::exp(-std::pow((x - 0.013) / 0.005, 2)) +
+                         std::exp(-std::pow((x + 0.013) / 0.005, 2)) +
+                         0.3 * std::exp(-std::pow(x / 0.004, 2));
+    p.values(i, 0) = 0.4 * lobes;
+    if (num_classes > 1) {
+      p.values(i, 1) = 0.35 * std::exp(-std::pow((x - 0.015) / 0.004, 2));
+      p.values(i, 2) = 0.2 * std::exp(-std::pow((x + 0.015) / 0.004, 2));
+    }
+  }
+  return p;
+}
+
+// A kernel with prescribed matrices, for the analytic fixed points.
+Kernel constant_kernel(const Grid &g, double value) {
+  Kernel k;
+  k.grid = g;
+  k.num_classes = 1;
+  k.misfit = Mat::Constant(g.n, g.n, value);
+  k.hbond = Mat::Zero(g.n, g.n);
+  return k;
+}
+
+} // namespace
+
+TEST_CASE("Sigma kernel is symmetric", "[solvent][sigma][kernel]") {
+  Grid g;
+  for (auto model : {Model::CosmoSac2002, Model::CosmoSac2010}) {
+    auto params = Parameters::for_model(model);
+    auto k = occ::solvent::sigma::build_kernel(g, params, 298.15);
+    REQUIRE((k.misfit - k.misfit.transpose()).cwiseAbs().maxCoeff() < 1e-12);
+    REQUIRE((k.hbond - k.hbond.transpose()).cwiseAbs().maxCoeff() < 1e-12);
+    REQUIRE(k.dim() == g.n * params.num_classes());
+  }
+}
+
+TEST_CASE("Electrostatic misfit coefficient", "[solvent][sigma][kernel]") {
+  auto p10 = Parameters::cosmo_sac_2010();
+  REQUIRE(p10.c_es(298.15) ==
+          Catch::Approx(6525.69 + 1.4859e8 / (298.15 * 298.15)));
+  // The 2002 misfit is temperature independent.
+  auto p02 = Parameters::cosmo_sac_2002();
+  REQUIRE(p02.c_es(250.0) == Catch::Approx(16466.72 / 2.0));
+  REQUIRE(p02.c_es(400.0) == Catch::Approx(16466.72 / 2.0));
+}
+
+TEST_CASE("COSMO-SAC 2002 hydrogen bonding is a threshold term",
+          "[solvent][sigma][kernel]") {
+  Grid g;
+  auto params = Parameters::cosmo_sac_2002();
+  auto k = occ::solvent::sigma::build_kernel(g, params, 298.15);
+  Vec centers = g.centers();
+
+  for (int a = 0; a < g.n; a++) {
+    for (int b = 0; b < g.n; b++) {
+      const double acc = std::max(centers(a), centers(b));
+      const double don = std::min(centers(a), centers(b));
+      const bool active = acc > params.sigma_hb && don < -params.sigma_hb;
+      if (!active)
+        REQUIRE(k.hbond(a, b) == Catch::Approx(0.0).margin(1e-14));
+      else
+        REQUIRE(k.hbond(a, b) < 0.0);
+    }
+  }
+}
+
+TEST_CASE("COSMO-SAC 2010 hydrogen bonding is gated on sign and class",
+          "[solvent][sigma][kernel]") {
+  Grid g;
+  auto params = Parameters::cosmo_sac_2010();
+  auto k = occ::solvent::sigma::build_kernel(g, params, 298.15);
+  Vec centers = g.centers();
+  const int nhb = static_cast<int>(HBondClass::None);
+  const int oh = static_cast<int>(HBondClass::OH);
+  const int ot = static_cast<int>(HBondClass::OT);
+  auto index = [&](int cls, int bin) { return cls * g.n + bin; };
+
+  // Nodes 40 and 10 are sigma = +0.015 and -0.015.
+  const int hi = 40, lo = 10;
+  const double diff = centers(hi) - centers(lo);
+
+  REQUIRE(k.hbond(index(oh, hi), index(oh, lo)) ==
+          Catch::Approx(-params.c_oh_oh * diff * diff));
+  REQUIRE(k.hbond(index(ot, hi), index(ot, lo)) ==
+          Catch::Approx(-params.c_ot_ot * diff * diff));
+  REQUIRE(k.hbond(index(oh, hi), index(ot, lo)) ==
+          Catch::Approx(-params.c_oh_ot * diff * diff));
+
+  // Same sign, or a non-bonding partner, switches the term off entirely.
+  REQUIRE(k.hbond(index(oh, hi), index(oh, hi)) ==
+          Catch::Approx(0.0).margin(1e-14));
+  REQUIRE(k.hbond(index(oh, hi), index(nhb, lo)) ==
+          Catch::Approx(0.0).margin(1e-14));
+
+  // The misfit term does not depend on the class.
+  REQUIRE(k.misfit(index(oh, hi), index(ot, lo)) ==
+          Catch::Approx(k.misfit(index(nhb, hi), index(nhb, lo))));
+}
+
+TEST_CASE("Pairing distribution is normalised", "[solvent][sigma][potential]") {
+  Grid g;
+  auto params = Parameters::cosmo_sac_2010();
+  auto kernel = occ::solvent::sigma::build_kernel(g, params, 298.15);
+  auto profile = synthetic_profile(g, params.num_classes());
+  auto potential = occ::solvent::sigma::solve_sigma_potential(profile, kernel);
+
+  Vec flat = occ::solvent::sigma::flatten(profile.normalized());
+  Mat pairing = occ::solvent::sigma::pairing_matrix(
+      flat, kernel, occ::solvent::sigma::flatten(potential.mu), 298.15);
+
+  REQUIRE(pairing.rows() == kernel.dim());
+  for (Eigen::Index i = 0; i < pairing.rows(); i++)
+    REQUIRE(pairing.row(i).sum() == Catch::Approx(1.0).epsilon(1e-13));
+  REQUIRE(pairing.minCoeff() >= 0.0);
+}
+
+TEST_CASE("Analytic fixed point for a constant kernel",
+          "[solvent][sigma][potential]") {
+  // With E(s,s') = c the closure collapses to mu = -mu + c, so mu = c/2
+  // everywhere and the pairing energy has no spread at all.
+  Grid g{5, -0.02, 0.02};
+  const double c = 1.7;
+  auto kernel = constant_kernel(g, c);
+  auto profile = synthetic_profile(g, 1);
+  auto potential = occ::solvent::sigma::solve_sigma_potential(profile, kernel);
+
+  REQUIRE(potential.converged);
+  for (int i = 0; i < g.n; i++) {
+    REQUIRE(potential.mu(i, 0) == Catch::Approx(c / 2.0).epsilon(1e-10));
+    REQUIRE(potential.mean_energy(i, 0) == Catch::Approx(c).epsilon(1e-10));
+    REQUIRE(potential.variance(i, 0) == Catch::Approx(0.0).margin(1e-12));
+  }
+}
+
+TEST_CASE("Zero kernel gives a vanishing potential",
+          "[solvent][sigma][potential]") {
+  Grid g{5, -0.02, 0.02};
+  auto kernel = constant_kernel(g, 0.0);
+  auto profile = synthetic_profile(g, 1);
+  auto potential = occ::solvent::sigma::solve_sigma_potential(profile, kernel);
+  REQUIRE(potential.converged);
+  REQUIRE(potential.mu.cwiseAbs().maxCoeff() < 1e-12);
+  REQUIRE(potential.pairing_entropy.cwiseAbs().maxCoeff() < 1e-12);
+}
+
+TEST_CASE("Newton and damped iteration agree", "[solvent][sigma][potential]") {
+  Grid g;
+  auto params = Parameters::cosmo_sac_2010();
+  auto kernel = occ::solvent::sigma::build_kernel(g, params, 298.15);
+  auto profile = synthetic_profile(g, params.num_classes());
+
+  PotentialOptions newton;
+  newton.use_newton = true;
+  auto a = occ::solvent::sigma::solve_sigma_potential(profile, kernel, newton);
+
+  REQUIRE(a.converged);
+  for (double mixing : {0.2, 0.3, 0.5}) {
+    PotentialOptions picard;
+    picard.use_newton = false;
+    picard.mixing = mixing;
+    picard.max_iterations = 20000;
+    auto b =
+        occ::solvent::sigma::solve_sigma_potential(profile, kernel, picard);
+    REQUIRE(b.converged);
+    REQUIRE((a.mu - b.mu).cwiseAbs().maxCoeff() < 1e-8);
+    REQUIRE((a.variance - b.variance).cwiseAbs().maxCoeff() < 1e-6);
+  }
+  // Newton should get there in far fewer steps than damped substitution.
+  REQUIRE(a.iterations < 30);
+}
+
+TEST_CASE("Converged potential satisfies its own closure",
+          "[solvent][sigma][potential]") {
+  Grid g;
+  auto params = Parameters::cosmo_sac_2010();
+  auto kernel = occ::solvent::sigma::build_kernel(g, params, 298.15);
+  auto profile = synthetic_profile(g, params.num_classes());
+  auto potential = occ::solvent::sigma::solve_sigma_potential(profile, kernel);
+  REQUIRE(potential.converged);
+
+  // Substitute the answer back into mu = -(1/beta) ln Z.
+  const double rt = occ::solvent::sigma::gas_constant_kcal * 298.15;
+  Vec flat_p = occ::solvent::sigma::flatten(profile.normalized());
+  Vec mu = occ::solvent::sigma::flatten(potential.mu);
+  Mat energy = kernel.total();
+
+  for (Eigen::Index i = 0; i < kernel.dim(); i++) {
+    double z = 0.0;
+    for (Eigen::Index j = 0; j < kernel.dim(); j++)
+      z += flat_p(j) * std::exp((mu(j) - energy(i, j)) / rt);
+    REQUIRE(-rt * std::log(z) == Catch::Approx(mu(i)).epsilon(1e-9));
+  }
+}
+
+TEST_CASE("Variance splits exactly into its terms",
+          "[solvent][sigma][potential]") {
+  Grid g;
+  auto params = Parameters::cosmo_sac_2010();
+  auto kernel = occ::solvent::sigma::build_kernel(g, params, 298.15);
+  auto profile = synthetic_profile(g, params.num_classes());
+  auto p = occ::solvent::sigma::solve_sigma_potential(profile, kernel);
+
+  Mat reconstructed =
+      p.variance_misfit + p.variance_hbond + 2.0 * p.covariance;
+  const double scale = p.variance.cwiseAbs().maxCoeff();
+  REQUIRE((p.variance - reconstructed).cwiseAbs().maxCoeff() < 1e-12 * scale);
+
+  REQUIRE(p.variance.minCoeff() >= -1e-12 * scale);
+  REQUIRE(p.variance_misfit.minCoeff() >= -1e-12 * scale);
+  REQUIRE(p.variance_hbond.minCoeff() >= -1e-12 * scale);
+  REQUIRE(p.hbond_probability.minCoeff() >= 0.0);
+  REQUIRE(p.hbond_probability.maxCoeff() <= 1.0);
+}
+
+TEST_CASE("Convergence is gated on the variance too",
+          "[solvent][sigma][potential]") {
+  // The second moment settles later than the potential, so tightening only
+  // the variance tolerance must make the solver work harder.
+  Grid g;
+  auto params = Parameters::cosmo_sac_2010();
+  auto kernel = occ::solvent::sigma::build_kernel(g, params, 298.15);
+  auto profile = synthetic_profile(g, params.num_classes());
+
+  PotentialOptions loose;
+  loose.use_newton = false;
+  loose.tolerance_mu = 1e-6;
+  loose.tolerance_variance = 1e30;
+  loose.max_iterations = 20000;
+  auto a = occ::solvent::sigma::solve_sigma_potential(profile, kernel, loose);
+
+  PotentialOptions tight = loose;
+  tight.tolerance_variance = 1e-10;
+  auto b = occ::solvent::sigma::solve_sigma_potential(profile, kernel, tight);
+
+  REQUIRE(a.converged);
+  REQUIRE(b.converged);
+  REQUIRE(b.iterations > a.iterations);
+
+  auto reference =
+      occ::solvent::sigma::solve_sigma_potential(profile, kernel, {});
+  const double lag = (a.variance - reference.variance).cwiseAbs().maxCoeff();
+  fmt::print("variance still moving at tol_mu=1e-6: {:.3e} (kcal/mol)^2\n", lag);
+  REQUIRE(lag > loose.tolerance_mu);
+}
+
+TEST_CASE("The potential is defined where the solvent has no area",
+          "[solvent][sigma][potential]") {
+  // A solute segment can land in a bin the solvent never occupies, so mu has
+  // to be finite across the whole grid.
+  Grid g;
+  auto params = Parameters::cosmo_sac_2002();
+  auto kernel = occ::solvent::sigma::build_kernel(g, params, 298.15);
+
+  Profile sparse;
+  sparse.grid = g;
+  sparse.values = Mat::Zero(g.n, 1);
+  sparse.values(20, 0) = 1.0;
+  sparse.values(30, 0) = 2.0;
+
+  auto p = occ::solvent::sigma::solve_sigma_potential(sparse, kernel);
+  REQUIRE(p.converged);
+  REQUIRE(p.mu.allFinite());
+  REQUIRE(p.variance.allFinite());
 }
 
 TEST_CASE("draco", "[solvent]") {
