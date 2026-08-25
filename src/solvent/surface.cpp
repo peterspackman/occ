@@ -27,7 +27,7 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
                         bool axis_aligned, double smoothing_width_bohr) {
   const size_t N = atomic_numbers.rows();
   const double solvent_radius =
-      std::min(solvent_radius_angs, 0.001) * occ::units::ANGSTROM_TO_BOHR;
+      std::max(solvent_radius_angs, 0.0) * occ::units::ANGSTROM_TO_BOHR;
   Surface surface;
   auto grid = occ::numint::grid::lebedev(146);
   const int npts = grid.rows();
@@ -123,6 +123,24 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
   surface.atom_index = remaining_atom_index;
   surface.vertices = (axes * remaining_points).colwise() + centroid;
   return surface;
+}
+
+double cavity_volume(const Surface &surface, const Mat3N &atom_positions) {
+  const Eigen::Index n = surface.areas.size();
+  if (n == 0 || atom_positions.cols() == 0)
+    return 0.0;
+  const Vec3 origin = atom_positions.rowwise().mean();
+  double v = 0.0;
+  for (Eigen::Index i = 0; i < n; i++) {
+    const Vec3 radial =
+        surface.vertices.col(i) - atom_positions.col(surface.atom_index(i));
+    const double r = radial.norm();
+    if (r < 1e-12)
+      continue; // degenerate element, no well-defined normal
+    const Vec3 normal = radial / r;
+    v += surface.areas(i) * (surface.vertices.col(i) - origin).dot(normal);
+  }
+  return v / 3.0;
 }
 
 IVec nearest_atom_index(const Mat3N &atom_positions,

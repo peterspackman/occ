@@ -197,6 +197,122 @@ TEST_CASE("SMD CDS energy (naphthol)", "[solvent]") {
   fmt::print("Cl {:.3f}\n", Cl);
 }
 
+// Cavity construction: probe radius and enclosed volume
+
+namespace {
+
+// Build an N-sphere cavity from explicit radii/centres (Angstrom in, the
+// builder works in Bohr).
+occ::solvent::surface::Surface
+make_cavity(const std::vector<double> &radii_angs,
+            const std::vector<occ::Vec3> &centers_angs, double probe_angs) {
+  const int n = static_cast<int>(radii_angs.size());
+  Vec radii(n);
+  occ::IVec nums(n);
+  Mat3N pos(3, n);
+  for (int i = 0; i < n; i++) {
+    radii(i) = radii_angs[i] * occ::units::ANGSTROM_TO_BOHR;
+    nums(i) = 6;
+    pos.col(i) = centers_angs[i] * occ::units::ANGSTROM_TO_BOHR;
+  }
+  return occ::solvent::surface::solvent_surface(radii, nums, pos, probe_angs);
+}
+
+Mat3N cavity_atom_positions(const std::vector<occ::Vec3> &centers_angs) {
+  Mat3N pos(3, centers_angs.size());
+  for (size_t i = 0; i < centers_angs.size(); i++)
+    pos.col(i) = centers_angs[i] * occ::units::ANGSTROM_TO_BOHR;
+  return pos;
+}
+
+constexpr double BOHR3_TO_ANGS3 = occ::units::BOHR_TO_ANGSTROM *
+                                  occ::units::BOHR_TO_ANGSTROM *
+                                  occ::units::BOHR_TO_ANGSTROM;
+
+} // namespace
+
+TEST_CASE("Cavity volume of an isolated sphere", "[solvent][cavity]") {
+  // Lebedev weights sum to 1 exactly, so an unmasked sphere recovers
+  // V = 1/3 * (4 pi R^2) * R to machine precision.
+  const double R = 2.0;
+  std::vector<occ::Vec3> centers{occ::Vec3(0.0, 0.0, 0.0)};
+  auto surface = make_cavity({R}, centers, 0.0);
+  double v = occ::solvent::surface::cavity_volume(
+                 surface, cavity_atom_positions(centers)) *
+             BOHR3_TO_ANGS3;
+  const double expected = 4.0 * occ::units::PI * R * R * R / 3.0;
+  REQUIRE(v == Catch::Approx(expected).epsilon(1e-10));
+}
+
+TEST_CASE("Cavity volume is invariant to placement", "[solvent][cavity]") {
+  // The divergence-theorem sum is origin-independent for a closed surface.
+  std::vector<double> radii{2.0, 1.8};
+  std::vector<occ::Vec3> a{occ::Vec3(0.0, 0.0, 0.0), occ::Vec3(2.6, 0.0, 0.0)};
+  std::vector<occ::Vec3> b{occ::Vec3(11.3, -4.1, 7.9),
+                           occ::Vec3(13.9, -4.1, 7.9)};
+
+  double va = occ::solvent::surface::cavity_volume(
+      make_cavity(radii, a, 0.0), cavity_atom_positions(a));
+  double vb = occ::solvent::surface::cavity_volume(
+      make_cavity(radii, b, 0.0), cavity_atom_positions(b));
+  REQUIRE(va == Catch::Approx(vb).epsilon(1e-8));
+}
+
+TEST_CASE("Cavity volume of two overlapping spheres", "[solvent][cavity]") {
+  // Union of two equal spheres, analytic:
+  //   V = 2*(4/3) pi R^3 - pi (4R + d) (2R - d)^2 / 12
+  const double R = 2.0, d = 3.0;
+  std::vector<occ::Vec3> centers{occ::Vec3(0.0, 0.0, 0.0),
+                                 occ::Vec3(d, 0.0, 0.0)};
+  auto surface = make_cavity({R, R}, centers, 0.0);
+  double v = occ::solvent::surface::cavity_volume(
+                 surface, cavity_atom_positions(centers)) *
+             BOHR3_TO_ANGS3;
+
+  const double lens =
+      occ::units::PI * (4 * R + d) * (2 * R - d) * (2 * R - d) / 12.0;
+  const double expected = 2.0 * 4.0 * occ::units::PI * R * R * R / 3.0 - lens;
+
+  // The boolean mask resolves the intersection circle only to grid
+  // resolution (146 Lebedev points per atom), which comes out ~0.5% high.
+  REQUIRE(v == Catch::Approx(expected).epsilon(0.01));
+}
+
+TEST_CASE("Solvent probe radius is honoured", "[solvent][cavity]") {
+  // A larger probe masks more of the crevice between the two spheres.
+  const double R = 2.0, d = 3.0;
+  std::vector<occ::Vec3> centers{occ::Vec3(0.0, 0.0, 0.0),
+                                 occ::Vec3(d, 0.0, 0.0)};
+  auto bare = make_cavity({R, R}, centers, 0.0);
+  auto probed = make_cavity({R, R}, centers, 1.3);
+
+  REQUIRE(probed.areas.size() < bare.areas.size());
+  REQUIRE(probed.areas.sum() < bare.areas.sum());
+
+  // Surviving points are projected back to the atom radius in both cases.
+  Mat3N pos = cavity_atom_positions(centers);
+  const double R_bohr = R * occ::units::ANGSTROM_TO_BOHR;
+  for (const auto *s : {&bare, &probed}) {
+    for (Eigen::Index i = 0; i < s->areas.size(); i++) {
+      double r = (s->vertices.col(i) - pos.col(s->atom_index(i))).norm();
+      REQUIRE(r == Catch::Approx(R_bohr).epsilon(1e-9));
+    }
+  }
+}
+
+TEST_CASE("Zero probe reproduces the legacy cavity", "[solvent][cavity]") {
+  // A 0.001 A probe is indistinguishable from none, which is what keeps
+  // the SMD and CPCM-X cavities fixed.
+  std::vector<double> radii{2.0, 1.8, 1.3};
+  std::vector<occ::Vec3> centers{occ::Vec3(0.0, 0.0, 0.0),
+                                 occ::Vec3(2.6, 0.0, 0.0),
+                                 occ::Vec3(-1.0, 1.0, 0.4)};
+  auto zero = make_cavity(radii, centers, 0.0);
+  auto legacy = make_cavity(radii, centers, 0.001);
+  REQUIRE(zero.areas.size() == legacy.areas.size());
+  REQUIRE(zero.areas.sum() == Catch::Approx(legacy.areas.sum()).epsilon(1e-5));
+}
+
 TEST_CASE("draco", "[solvent]") {
   auto mol = occ::io::molecule_from_xyz_string(WATER);
   auto nums = mol.atomic_numbers();

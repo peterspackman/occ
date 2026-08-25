@@ -21,10 +21,10 @@ struct CpcmXOptions {
   /// `x = 0` is the ideal-conductor (CPCM) convention; the classical Klamt
   /// COSMO value is `x = 0.5`.
   double x{0.0};
-  /// Solvent probe radius (Å) handed to the cavity builder. Note: the current
-  /// `occ::solvent::surface::solvent_surface` implementation clamps this to
-  /// 0.001 Å — left as-is to match the rest of the OCC pipeline.
-  double probe_radius_angs{0.4};
+  /// Solvent probe radius (Å) handed to the cavity builder. Zero gives a
+  /// plain union of vdW spheres. Ignored by the smooth cavity selected
+  /// below — see `occ::solvent::surface::solvent_surface`.
+  double probe_radius_angs{0.0};
   /// Smoothing width (Bohr) used by `solvent_surface` to soften the boolean
   /// cavity mask into a continuous erf-based weight. Zero falls back to the
   /// legacy hard-mask cavity and disables the smooth-cavity diagonal term

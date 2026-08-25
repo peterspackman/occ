@@ -40,8 +40,10 @@ struct Options {
   /// classical Klamt COSMO.
   double f_eps_x{0.0};
 
-  /// Solvent probe radius (Å) handed to the cavity builder.
-  double probe_radius_angs{0.4};
+  /// Solvent probe radius (Å) handed to the cavity builder. Zero gives a
+  /// plain union of vdW spheres. Ignored unless the boolean cavity is
+  /// selected (`smoothing_width_bohr == 0`) — see `solvent_surface`.
+  double probe_radius_angs{0.0};
 
   /// Smoothing width (Bohr) for the cavity weight. `0.0` falls back to the
   /// legacy boolean mask and disables the smooth-cavity diagonal gradient
@@ -58,10 +60,9 @@ struct Options {
   /// regression scripts) bypass the built-in radii tables.
   Vec custom_es_radii_bohr;
 
-  // DRACO and CPCM-X σ-profile addons are not yet wired up; placeholders for
-  // future work. The flags exist so callers can opt-in once support lands.
+  // DRACO is not yet wired up; the flag exists so callers can opt-in once
+  // support lands.
   bool draco_scaling{false};
-  bool include_sigma_profile{false};
 };
 
 /// Self-consistent reaction-field engine — owns the cavity, the COSMO/CPCM

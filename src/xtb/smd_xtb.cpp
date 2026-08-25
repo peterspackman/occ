@@ -11,7 +11,8 @@ occ::scrf::Options smd_engine_options(const std::string &solvent) {
   o.radii = occ::scrf::Options::Radii::SmdIntrinsicCoulomb;
   o.solvent = solvent;
   o.f_eps_x = 0.0; // CPCM ideal-conductor; SMD ES shares this convention
-  o.probe_radius_angs = 0.4;
+  // The smooth cavity selected below ignores the probe regardless.
+  o.probe_radius_angs = 0.0;
   o.smoothing_width_bohr = 0.1;
   o.include_cds = true;
   return o;

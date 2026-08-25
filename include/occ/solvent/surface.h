@@ -19,6 +19,17 @@ struct Surface {
 /// global rotation chain `∂axes/∂R` breaks the frozen-cavity assumption
 /// in `cosmo::gradient`.
 ///
+/// `solvent_radius_angs` is the probe radius for the solvent-excluded
+/// construction: points are laid down at `r_i + probe`, masked against the
+/// other atoms' `r_k + probe` spheres, then projected back inward by `probe`
+/// so the surviving surface sits at `r_i`. A probe of 0 gives a plain union
+/// of vdW spheres; the COSMO-RS convention is 1.3 Å.
+///
+/// \warning The probe applies only on the boolean path. With
+/// `smoothing_width_bohr > 0` it is ignored, since the smooth weight must be
+/// reconstructible from `surface.vertices` alone and an inward projection
+/// would break that.
+///
 /// `smoothing_width_bohr = 0` (default) uses the legacy boolean mask
 /// (point is either fully included or fully dropped). With
 /// `smoothing_width_bohr > 0`, each cavity point gets a continuous
@@ -35,10 +46,23 @@ struct Surface {
 /// positions — required for clean analytical gradients.
 Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
                         const Mat3N &positions,
-                        double solvent_radius_angs = 0.4,
+                        double solvent_radius_angs = 0.0,
                         bool axis_aligned = true,
                         double smoothing_width_bohr = 0.0);
 
 IVec nearest_atom_index(const Mat3N &atom_positions,
                         const Mat3N &element_centers);
+
+/// Volume (Bohr³) enclosed by a discretised cavity, via the divergence
+/// theorem:
+///
+///     V = ⅓ ∮ (r − O)·n̂ dA  ≈  ⅓ Σ_i a_i (r_i − O)·n̂_i
+///
+/// The outward normal at element `i` is radial about its parent atom,
+/// `n̂_i = (r_i − R_{atom_i}) / |r_i − R_{atom_i}|`; `O` is a single fixed
+/// origin (the atom centroid), which the identity requires.
+///
+/// Exact in the continuum limit for a closed surface, so the discrete sum
+/// converges with grid refinement.
+double cavity_volume(const Surface &surface, const Mat3N &atom_positions);
 } // namespace occ::solvent::surface
