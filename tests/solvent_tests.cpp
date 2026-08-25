@@ -11,6 +11,7 @@
 #include <occ/solvent/draco.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
+#include <occ/solvent/sigma_profile.h>
 #include <occ/solvent/solvation_correction.h>
 #include <occ/solvent/surface.h>
 #include <occ/qm/hf.h>
@@ -311,6 +312,183 @@ TEST_CASE("Zero probe reproduces the legacy cavity", "[solvent][cavity]") {
   auto legacy = make_cavity(radii, centers, 0.001);
   REQUIRE(zero.areas.size() == legacy.areas.size());
   REQUIRE(zero.areas.sum() == Catch::Approx(legacy.areas.sum()).epsilon(1e-5));
+}
+
+// Sigma profiles
+
+namespace {
+
+using occ::solvent::sigma::Grid;
+using occ::solvent::sigma::HBondClass;
+using occ::solvent::sigma::Segments;
+
+// Segments laid out along x, in Angstrom, with uniform area.
+Segments line_segments(const std::vector<double> &x_angs,
+                       const std::vector<double> &sigmas, double area_angs2) {
+  const int n = static_cast<int>(x_angs.size());
+  Segments s;
+  s.positions = Mat3N::Zero(3, n);
+  s.areas = Vec::Constant(n, area_angs2);
+  s.sigma = Vec(n);
+  s.atom_index = occ::IVec::Zero(n);
+  s.hbond_class = occ::IVec::Zero(n);
+  for (int i = 0; i < n; i++) {
+    s.positions(0, i) = x_angs[i] * occ::units::ANGSTROM_TO_BOHR;
+    s.sigma(i) = sigmas[i];
+  }
+  return s;
+}
+
+} // namespace
+
+TEST_CASE("Sigma grid nodes", "[solvent][sigma]") {
+  Grid g;
+  REQUIRE(g.n == 51);
+  REQUIRE(g.spacing() == Catch::Approx(0.001));
+  Vec c = g.centers();
+  REQUIRE(c(0) == Catch::Approx(-0.025));
+  REQUIRE(c(25) == Catch::Approx(0.0).margin(1e-15));
+  REQUIRE(c(50) == Catch::Approx(0.025));
+}
+
+TEST_CASE("Segments carry charge density, not charge", "[solvent][sigma]") {
+  // The COSMO solver returns segment charges; sigma is that over the area.
+  occ::solvent::surface::Surface cavity;
+  cavity.vertices = Mat3N::Zero(3, 2);
+  cavity.vertices(0, 1) = 2.0;
+  cavity.areas = Vec(2);
+  cavity.areas << 1.0, 4.0; // Bohr^2
+  cavity.atom_index = occ::IVec::Zero(2);
+
+  Vec charges(2);
+  charges << -0.3, 0.1;
+
+  auto s = occ::solvent::sigma::segments_from_cavity(cavity, charges);
+  const double conv =
+      occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
+  REQUIRE(s.areas(0) == Catch::Approx(conv));
+  REQUIRE(s.sigma(0) == Catch::Approx(-0.3 / conv));
+  REQUIRE(s.sigma(1) == Catch::Approx(0.1 / (4.0 * conv)));
+  // Total screening charge is recovered exactly.
+  REQUIRE(s.total_charge() == Catch::Approx(-0.2));
+}
+
+TEST_CASE("Segment averaging is a local weighted mean", "[solvent][sigma]") {
+  auto s = line_segments({0.0, 0.05, 10.0}, {0.01, -0.01, 0.05}, 0.35);
+  occ::solvent::sigma::average_sigma(s, 0.5);
+
+  // Two near-coincident segments average to each other.
+  REQUIRE(s.sigma_averaged(0) == Catch::Approx(s.sigma_averaged(1)).margin(1e-3));
+  REQUIRE(std::abs(s.sigma_averaged(0)) < 2e-3);
+  // An isolated segment keeps its own value.
+  REQUIRE(s.sigma_averaged(2) == Catch::Approx(0.05).epsilon(1e-6));
+  // A weighted mean never leaves the range of its inputs.
+  REQUIRE(s.sigma_averaged.minCoeff() >= s.sigma.minCoeff() - 1e-12);
+  REQUIRE(s.sigma_averaged.maxCoeff() <= s.sigma.maxCoeff() + 1e-12);
+}
+
+TEST_CASE("Averaging a constant field is the identity", "[solvent][sigma]") {
+  auto s = line_segments({0.0, 0.3, 0.6, 0.9}, {0.007, 0.007, 0.007, 0.007},
+                         0.35);
+  occ::solvent::sigma::average_sigma(s, 0.5);
+  for (Eigen::Index i = 0; i < s.size(); i++)
+    REQUIRE(s.sigma_averaged(i) == Catch::Approx(0.007).epsilon(1e-12));
+}
+
+TEST_CASE("Binning conserves area", "[solvent][sigma]") {
+  auto s = line_segments({0.0, 0.3, 0.6}, {-0.0123, 0.0004, 0.0176}, 0.4);
+  s.sigma_averaged = s.sigma;
+  Grid g;
+  double outside = 0.0;
+  auto p = occ::solvent::sigma::bin_segments(s, g, false, &outside);
+  REQUIRE(p.total_area() == Catch::Approx(s.total_area()).epsilon(1e-14));
+  REQUIRE(outside == Catch::Approx(0.0).margin(1e-15));
+  REQUIRE(p.num_classes() == 1);
+  REQUIRE(p.normalized().sum() == Catch::Approx(1.0));
+}
+
+TEST_CASE("Binning clamps and reports out-of-range area", "[solvent][sigma]") {
+  auto s = line_segments({0.0, 0.3}, {-0.04, 0.002}, 0.4);
+  s.sigma_averaged = s.sigma;
+  Grid g;
+  double outside = 0.0;
+  auto p = occ::solvent::sigma::bin_segments(s, g, false, &outside);
+  REQUIRE(p.total_area() == Catch::Approx(s.total_area()).epsilon(1e-14));
+  REQUIRE(outside == Catch::Approx(0.4));
+}
+
+TEST_CASE("Binning and segment contraction are adjoint", "[solvent][sigma]") {
+  // Depositing area onto the grid and interpolating a field off it use the
+  // same weights, so the binned and segment-resolved contractions agree
+  // exactly. This is what lets a per-patch attribution skip re-binning.
+  auto s = line_segments({0.0, 0.3, 0.6, 0.9, 1.2},
+                         {-0.0181, -0.0034, 0.0002, 0.0091, 0.0203}, 0.37);
+  s.sigma_averaged = s.sigma;
+  Grid g;
+
+  Mat field(g.n, 1);
+  Vec centers = g.centers();
+  for (int i = 0; i < g.n; i++)
+    field(i, 0) = 3.1 - 240.0 * centers(i) + 1.5e4 * centers(i) * centers(i);
+
+  auto p = occ::solvent::sigma::bin_segments(s, g);
+  double binned = occ::solvent::sigma::contract(p, field);
+  Vec per_segment = occ::solvent::sigma::contract_segments(s, g, field);
+
+  REQUIRE(per_segment.size() == s.size());
+  REQUIRE(per_segment.sum() == Catch::Approx(binned).epsilon(1e-13));
+}
+
+TEST_CASE("H-bond classification of segments", "[solvent][sigma]") {
+  auto mol = occ::io::molecule_from_xyz_string(WATER);
+  auto s = line_segments({0.0, 0.3, 0.6}, {0.0, 0.0, 0.0}, 0.4);
+  s.atom_index << 0, 1, 2; // O, H, H
+
+  Mat3N pos_bohr = mol.positions() * occ::units::ANGSTROM_TO_BOHR;
+  occ::solvent::sigma::classify_hbond_segments(s, mol.atomic_numbers(),
+                                               pos_bohr);
+  REQUIRE(s.hbond_class(0) == static_cast<int>(HBondClass::OT));
+  REQUIRE(s.hbond_class(1) == static_cast<int>(HBondClass::OH));
+  REQUIRE(s.hbond_class(2) == static_cast<int>(HBondClass::OH));
+}
+
+TEST_CASE("H-bond resolved profiles split by class", "[solvent][sigma]") {
+  auto s = line_segments({0.0, 0.3, 0.6}, {-0.015, 0.012, 0.001}, 0.4);
+  s.sigma_averaged = s.sigma;
+  s.hbond_class << static_cast<int>(HBondClass::OT),
+      static_cast<int>(HBondClass::OH), static_cast<int>(HBondClass::None);
+
+  Grid g;
+  auto p = occ::solvent::sigma::bin_segments(s, g, true);
+  REQUIRE(p.num_classes() == 3);
+  REQUIRE(p.total_area() == Catch::Approx(s.total_area()).epsilon(1e-14));
+  REQUIRE(p.values.col(static_cast<int>(HBondClass::None)).sum() ==
+          Catch::Approx(0.4));
+  REQUIRE(p.values.col(static_cast<int>(HBondClass::OH)).sum() ==
+          Catch::Approx(0.4));
+  REQUIRE(p.values.col(static_cast<int>(HBondClass::OT)).sum() ==
+          Catch::Approx(0.4));
+  // Summing the classes recovers the H-bond-agnostic profile.
+  auto flat = occ::solvent::sigma::bin_segments(s, g, false);
+  REQUIRE((p.total() - flat.values.col(0)).cwiseAbs().maxCoeff() < 1e-14);
+}
+
+TEST_CASE("Mixture profiles weight by mole fraction", "[solvent][sigma]") {
+  auto a = line_segments({0.0}, {-0.010}, 1.0);
+  auto b = line_segments({0.0}, {0.010}, 3.0);
+  a.sigma_averaged = a.sigma;
+  b.sigma_averaged = b.sigma;
+  Grid g;
+  std::vector<occ::solvent::sigma::Profile> components{
+      occ::solvent::sigma::bin_segments(a, g),
+      occ::solvent::sigma::bin_segments(b, g)};
+
+  Vec x(2);
+  x << 0.25, 0.75;
+  auto mixture = occ::solvent::sigma::mix_profiles(components, x);
+  REQUIRE(mixture.total_area() == Catch::Approx(0.25 * 1.0 + 0.75 * 3.0));
+  REQUIRE(mixture.values(15, 0) == Catch::Approx(0.25 * 1.0));
+  REQUIRE(mixture.values(35, 0) == Catch::Approx(0.75 * 3.0));
 }
 
 TEST_CASE("draco", "[solvent]") {

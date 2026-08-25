@@ -3,6 +3,7 @@ add_library(occ_solvent_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/draco.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parameters.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sigma_profile.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_correction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp"
