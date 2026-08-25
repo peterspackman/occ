@@ -19,6 +19,7 @@
 #include <occ/main/occ_pair.h>
 #include <occ/main/occ_ropt.h>
 #include <occ/main/occ_scf.h>
+#include <occ/main/occ_sigma.h>
 #include <occ/main/occ_surface_cuts.h>
 #include <occ/main/occ_tb.h>
 
@@ -65,6 +66,7 @@ int main(int argc, char *argv[]) {
   auto *cg = occ::main::add_cg_subcommand(app);
   auto *cube = occ::main::add_cube_subcommand(app);
   auto *describe = occ::main::add_describe_subcommand(app);
+  auto *sigma = occ::main::add_sigma_subcommand(app);
   auto *dimers = occ::main::add_dimers_subcommand(app);
   auto *dma = occ::main::add_dma_subcommand(app);
   auto *elastic = occ::main::add_elastic_subcommand(app);

@@ -13,7 +13,8 @@ struct SigmaProfileSettings {
   std::string method{"b3lyp"};
   std::string basis{"def2-tzvp"};
   bool pure_spherical{true};
-  double probe_radius_angs{1.3};
+  double probe_radius_angs{0.0};
+  int angular_points{590};
   solvent::sigma::Model model{solvent::sigma::Model::CosmoSac2010};
 };
 
@@ -37,7 +38,8 @@ struct ConductorResult {
 solvent::sigma::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
                    const solvent::sigma::Parameters &params,
-                   double probe_radius_angs = 1.3);
+                   double probe_radius_angs = 0.0,
+                   int angular_points = 590);
 
 /// Converge the SCF in the ideal-conductor reaction field starting from a
 /// gas-phase wavefunction, then build the segments.

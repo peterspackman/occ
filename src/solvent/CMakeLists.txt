@@ -5,6 +5,7 @@ add_library(occ_solvent_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/parameters.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_activity.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_kernel.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sigma_io.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_profile.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_potential.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd.cpp"

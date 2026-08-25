@@ -15,6 +15,8 @@
 #include <nlohmann/json.hpp>
 #include <occ/dft/dft.h>
 #include <occ/solvent/sigma_activity.h>
+#include <occ/core/element.h>
+#include <occ/solvent/sigma_io.h>
 #include <occ/driver/sigma_driver.h>
 #include <occ/solvent/sigma_kernel.h>
 #include <occ/solvent/sigma_potential.h>
@@ -28,6 +30,7 @@ using occ::format_matrix;
 using occ::Mat;
 using occ::Mat3N;
 using occ::Vec;
+using occ::Vec3;
 using occ::solvent::COSMO;
 
 // COSMO
@@ -1142,6 +1145,210 @@ TEST_CASE("COSMO-SAC 2002 matches the reference implementation",
 TEST_CASE("COSMO-SAC 2010 matches the reference implementation",
           "[solvent][sigma][validation]") {
   check_against_reference("cosmo_sac_2010", Parameters::cosmo_sac_2010(), 1e-6);
+}
+
+TEST_CASE("occ-generated profiles reproduce published activity coefficients",
+          "[solvent][sigma][validation]") {
+  // Tier 2: the machinery is fixed (validated above) and only the profiles
+  // change, so the spread here is entirely our cavity and QM protocol.
+  // occ profiles are B3LYP/def2-TZVP on the published geometries, Klamt
+  // radii, no probe; the reference profiles are DMol3 VWN-BP/DNP.
+  auto reference = load_reference("cosmo_sac_2010");
+  auto params = Parameters::cosmo_sac_2010();
+
+  ankerl::unordered_dense::map<std::string, Component> ours;
+  double worst_area = 0.0, worst_volume = 0.0;
+  for (const auto &[name, published] : reference.components) {
+    auto file = occ::solvent::sigma::read_sigma_profile(
+        std::string(OCC_TEST_DATA_DIR) + "/sigma_profiles_occ/" + name +
+        ".sigma");
+    REQUIRE(file.component.profile.grid == published.profile.grid);
+    REQUIRE(file.component.profile.num_classes() ==
+            published.profile.num_classes());
+    worst_area = std::max(worst_area, std::abs(file.component.area() -
+                                               published.area()) /
+                                          published.area());
+    worst_volume = std::max(worst_volume, std::abs(file.component.volume -
+                                                   published.volume) /
+                                              published.volume);
+    ours.emplace(name, std::move(file.component));
+  }
+
+  double worst = 0.0, sum_squares = 0.0;
+  int count = 0;
+  ankerl::unordered_dense::map<std::string, double> per_system;
+  for (const auto &c : reference.cases) {
+    std::vector<Component> published, generated;
+    for (const auto &name : c.components) {
+      published.push_back(reference.components.at(name));
+      generated.push_back(ours.at(name));
+    }
+    occ::solvent::sigma::PotentialOptions options;
+    options.temperature = c.temperature;
+
+    Vec a = occ::solvent::sigma::activity_coefficients(published,
+                                                       c.mole_fractions,
+                                                       params, options);
+    Vec b = occ::solvent::sigma::activity_coefficients(generated,
+                                                       c.mole_fractions,
+                                                       params, options);
+    const std::string system = c.components[0] + "/" + c.components[1];
+    for (Eigen::Index i = 0; i < a.size(); i++) {
+      const double d = std::abs(a(i) - b(i));
+      per_system[system] = std::max(per_system[system], d);
+      worst = std::max(worst, d);
+      sum_squares += d * d;
+      count++;
+    }
+  }
+
+  for (const auto &[system, value] : per_system)
+    fmt::print("   {:24s} max |d ln gamma| {:.3f}\n", system, value);
+  fmt::print("protocol spread over {} values: max |d ln gamma| {:.3f}, "
+             "rms {:.3f}; cavity area {:.1f}%, volume {:.1f}%\n",
+             count, worst, std::sqrt(sum_squares / count), 100 * worst_area,
+             100 * worst_volume);
+
+  // Our cavity tracks the published one to a few percent.
+  REQUIRE(worst_area < 0.06);
+  REQUIRE(worst_volume < 0.05);
+
+  // Away from donor-donor hydrogen bonding the two protocols agree well.
+  for (const auto &system : {"water/acetone", "methanol/benzene",
+                             "benzene/n-hexane", "acetone/chloroform"})
+    REQUIRE(per_system.at(system) < 0.75);
+  for (const auto &system :
+       {"methanol/benzene", "benzene/n-hexane", "acetone/chloroform"})
+    REQUIRE(per_system.at(system) < 0.2);
+
+  // water/ethanol is the only OH-OH pair in the set and is a known gap: the
+  // strongest H-bond coefficient amplifies the extreme-sigma tails, where
+  // our profile carries roughly twice the published population. Pinned so a
+  // change shows up; it is not an accuracy claim.
+  REQUIRE(per_system.at("water/ethanol") < 12.0);
+}
+
+namespace {
+
+// Parse the DMol3 .cosmo output: the BIOSYM car block for the atoms, and the
+// segment table (position in Bohr, charge in e, area in Angstrom^2).
+struct Dmol3Cosmo {
+  occ::IVec atomic_numbers;
+  Mat3N atom_positions_bohr;
+  Segments segments;
+};
+
+Dmol3Cosmo read_dmol3_cosmo(const std::string &path) {
+  std::ifstream input(path);
+  REQUIRE(input.good());
+  std::vector<std::string> lines;
+  for (std::string line; std::getline(input, line);)
+    lines.push_back(line);
+
+  std::vector<int> numbers;
+  std::vector<Vec3> atoms;
+  std::vector<Vec3> seg_positions;
+  std::vector<double> seg_charge, seg_area;
+  std::vector<int> seg_atom;
+
+  bool in_car = false, in_segments = false;
+  for (size_t i = 0; i < lines.size(); i++) {
+    const auto &line = lines[i];
+    if (line.find("!BIOSYM archive") != std::string::npos) { in_car = true; continue; }
+    if (in_car && line.rfind("end", 0) == 0) { in_car = false; continue; }
+    if (line.find("charge/area") != std::string::npos) { in_segments = true; continue; }
+
+    std::istringstream row(line);
+    if (in_car) {
+      std::string label;
+      double x, y, z;
+      if (row >> label >> x >> y >> z) {
+        std::string element;
+        for (char ch : label) {
+          if (std::isalpha(static_cast<unsigned char>(ch)))
+            element.push_back(ch);
+          else
+            break;
+        }
+        numbers.push_back(occ::core::Element(element).atomic_number());
+        atoms.emplace_back(x, y, z);
+      }
+    } else if (in_segments) {
+      int n = 0, atom = 0;
+      double x, y, z, charge, area, charge_area, potential;
+      if (row >> n >> atom >> x >> y >> z >> charge >> area >> charge_area >>
+          potential) {
+        seg_positions.emplace_back(x, y, z);
+        seg_charge.push_back(charge);
+        seg_area.push_back(area);
+        seg_atom.push_back(atom - 1);
+      }
+    }
+  }
+
+  REQUIRE(!atoms.empty());
+  REQUIRE(!seg_area.empty());
+
+  Dmol3Cosmo out;
+  const int natoms = static_cast<int>(atoms.size());
+  out.atomic_numbers = occ::IVec(natoms);
+  out.atom_positions_bohr = Mat3N(3, natoms);
+  for (int i = 0; i < natoms; i++) {
+    out.atomic_numbers(i) = numbers[i];
+    out.atom_positions_bohr.col(i) = atoms[i] * occ::units::ANGSTROM_TO_BOHR;
+  }
+
+  const int nseg = static_cast<int>(seg_area.size());
+  out.segments.positions = Mat3N(3, nseg);
+  out.segments.areas = Vec(nseg);
+  out.segments.sigma = Vec(nseg);
+  out.segments.atom_index = occ::IVec(nseg);
+  out.segments.atomic_number = occ::IVec(nseg);
+  for (int i = 0; i < nseg; i++) {
+    out.segments.positions.col(i) = seg_positions[i]; // already Bohr
+    out.segments.areas(i) = seg_area[i];
+    out.segments.sigma(i) = seg_charge[i] / seg_area[i];
+    out.segments.atom_index(i) = seg_atom[i];
+    out.segments.atomic_number(i) = numbers[seg_atom[i]];
+  }
+  return out;
+}
+
+} // namespace
+
+TEST_CASE("Published segments reproduce the published profile",
+          "[solvent][sigma][validation]") {
+  // The strongest available check on the sigma machinery: take DMol3's own
+  // segment charges and push them through occ's averaging, H-bond
+  // classification and binning. Agreement here means averaging, the
+  // classification rules, the fractional split and the deposit are all
+  // exactly right, and any remaining difference against the published
+  // profiles comes from the screening charges themselves.
+  auto reference = load_reference("cosmo_sac_2010");
+  auto params = Parameters::cosmo_sac_2010();
+  Grid grid;
+
+  for (const auto &name : {"water", "ethanol"}) {
+    auto parsed = read_dmol3_cosmo(std::string(OCC_TEST_DATA_DIR) + "/" +
+                                   name + "_dmol3.cosmo");
+    occ::solvent::sigma::classify_hbond_segments(
+        parsed.segments, parsed.atomic_numbers, parsed.atom_positions_bohr);
+    occ::solvent::sigma::average_sigma(parsed.segments, params.r_av,
+                                       params.f_decay);
+    auto rebuilt = occ::solvent::sigma::bin_segments(parsed.segments, grid,
+                                                     params.hbond_split());
+
+    const auto &published = reference.components.at(name).profile;
+    const double area = published.total_area();
+    const double l1 =
+        (rebuilt.values - published.values).cwiseAbs().sum() / area;
+    fmt::print("{}: rebuilt from published segments, area {:.4f} vs {:.4f}, "
+               "normalised L1 {:.3e}\n",
+               name, rebuilt.total_area(), area, l1);
+
+    REQUIRE(rebuilt.total_area() == Catch::Approx(area).epsilon(1e-3));
+    REQUIRE(l1 < 1e-10);
+  }
 }
 
 TEST_CASE("draco", "[solvent]") {

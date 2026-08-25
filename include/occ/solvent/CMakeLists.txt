@@ -5,6 +5,7 @@ set(OCC_SOLVENT_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/parameters.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_activity.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_kernel.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sigma_io.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_profile.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_potential.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd.h"

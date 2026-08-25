@@ -44,11 +44,16 @@ struct Surface {
 /// and points whose weight falls below 1e-10 are dropped. This makes the
 /// cavity, and any energy derived from it, C∞ with respect to atomic
 /// positions — required for clean analytical gradients.
+/// `angular_points` selects the Lebedev order used per atom, rounded up to
+/// the nearest available level. The default of 146 is adequate for energies;
+/// σ-profiles need considerably more, since each histogram bin has to be
+/// populated by enough segments to be smooth.
 Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
                         const Mat3N &positions,
                         double solvent_radius_angs = 0.0,
                         bool axis_aligned = true,
-                        double smoothing_width_bohr = 0.0);
+                        double smoothing_width_bohr = 0.0,
+                        int angular_points = 146);
 
 IVec nearest_atom_index(const Mat3N &atom_positions,
                         const Mat3N &element_centers);

@@ -4,6 +4,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/units.h>
+#include <occ/numint/grid_utils.h>
 #include <occ/numint/lebedev.h>
 #include <occ/solvent/smd.h>
 #include <occ/solvent/surface.h>
@@ -24,12 +25,14 @@ Mat3 principal_axes(const Mat3N &positions) {
 
 Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
                         const Mat3N &positions, double solvent_radius_angs,
-                        bool axis_aligned, double smoothing_width_bohr) {
+                        bool axis_aligned, double smoothing_width_bohr,
+                        int angular_points) {
   const size_t N = atomic_numbers.rows();
   const double solvent_radius =
       std::max(solvent_radius_angs, 0.0) * occ::units::ANGSTROM_TO_BOHR;
   Surface surface;
-  auto grid = occ::numint::grid::lebedev(146);
+  auto grid = occ::numint::grid::lebedev(
+      occ::numint::nearest_grid_level_at_or_above(angular_points));
   const int npts = grid.rows();
   Mat tmp_vertices(3, npts * N);
   Vec tmp_areas(npts * N);

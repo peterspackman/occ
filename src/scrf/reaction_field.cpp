@@ -43,7 +43,7 @@ double evaluate_cds_energy(const Mat3N &pos_bohr, const IVec &Z,
 
 } // namespace
 
-Options Options::conductor(double probe_radius_angs) {
+Options Options::conductor(double probe_radius_angs, int angular_points) {
   Options o;
   o.backend = Options::Backend::CPCM;
   o.radii = Options::Radii::CosmoVdW;
@@ -51,6 +51,7 @@ Options Options::conductor(double probe_radius_angs) {
   o.f_eps_x = 0.0;
   o.probe_radius_angs = probe_radius_angs;
   o.smoothing_width_bohr = 0.0;
+  o.angular_points = angular_points;
   o.include_cds = false;
   return o;
 }
@@ -98,7 +99,8 @@ void ReactionFieldEngine::initialize(const Mat3N &positions_bohr,
   // ---- ES cavity build + COSMO factor ------------------------------------
   m_es_surface = occ::solvent::surface::solvent_surface(
       m_es_radii, atomic_numbers, positions_bohr, m_opts.probe_radius_angs,
-      /*axis_aligned=*/false, m_opts.smoothing_width_bohr);
+      /*axis_aligned=*/false, m_opts.smoothing_width_bohr,
+      m_opts.angular_points);
 
   const Eigen::Index ncav = m_es_surface.areas.size();
   if (ncav == 0) {

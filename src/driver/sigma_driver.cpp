@@ -27,13 +27,13 @@ void atom_arrays(const std::vector<occ::core::Atom> &atoms, Mat3N &positions,
 solvent::sigma::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
                    const solvent::sigma::Parameters &params,
-                   double probe_radius_angs) {
+                   double probe_radius_angs, int angular_points) {
   Mat3N positions;
   IVec atomic_numbers;
   atom_arrays(wavefunction.atoms, positions, atomic_numbers);
 
   occ::scrf::ReactionFieldEngine engine(
-      occ::scrf::Options::conductor(probe_radius_angs));
+      occ::scrf::Options::conductor(probe_radius_angs, angular_points));
   engine.initialize(positions, atomic_numbers);
 
   const Vec phi = wavefunction.electric_potential(engine.es_cavity().vertices);
@@ -68,14 +68,15 @@ ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
   result.wavefunction = scf.wavefunction();
   result.segments =
       conductor_segments(result.wavefunction, params,
-                         settings.probe_radius_angs);
+                         settings.probe_radius_angs, settings.angular_points);
 
   Mat3N positions;
   IVec atomic_numbers;
   atom_arrays(result.wavefunction.atoms, positions, atomic_numbers);
 
   occ::scrf::ReactionFieldEngine engine(
-      occ::scrf::Options::conductor(settings.probe_radius_angs));
+      occ::scrf::Options::conductor(settings.probe_radius_angs,
+                                    settings.angular_points));
   engine.initialize(positions, atomic_numbers);
   const double bohr3_to_angs3 = occ::units::BOHR_TO_ANGSTROM *
                                 occ::units::BOHR_TO_ANGSTROM *
