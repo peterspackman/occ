@@ -37,13 +37,17 @@ template <class T> constexpr T planck = T(6.62607015000000000000000e-34);
 
 template <class T> constexpr T avogadro = T(6.02214076000000000000000e23);
 
+// SI exact since the 2019 redefinition.
+template <class T> constexpr T boltzmann = T(1.380649e-23);
+
 template <class T> constexpr T speed_of_light = T(2.99792458000000000000000e8);
 
-template <class T> constexpr T molar_gas_constant = T(8.314462618);
+// Derived, so it cannot drift from boltzmann and avogadro.
+template <class T>
+constexpr T molar_gas_constant = T(boltzmann<T> * avogadro<T>);
 
 template <class T> constexpr T molar_mass_constant = T(0.99999999965e-3);
 
 template <class T> constexpr T celsius = T(273.15);
 
-template <class T> constexpr T boltzmann = T(1.38066244e-23);
 } // namespace occ::constants
