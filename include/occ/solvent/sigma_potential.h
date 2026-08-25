@@ -31,6 +31,11 @@ struct PotentialOptions {
   /// so the update solves `(I + P) δ = g(μ) − μ` with the pairing matrix that
   /// has already been formed.
   bool use_newton{true};
+
+  /// Throw instead of returning an unconverged potential. A potential that
+  /// has not converged produces silently wrong activity coefficients, so
+  /// failing loudly is the default.
+  bool throw_on_failure{true};
 };
 
 /// The σ-potential together with the moment profiles of the pairing energy.

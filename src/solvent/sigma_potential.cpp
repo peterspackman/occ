@@ -149,8 +149,11 @@ Potential solve_sigma_potential(const Profile &solvent, const Kernel &kernel,
   result.num_classes = kernel.num_classes;
   result.temperature = options.temperature;
 
+  bool have_state = false;
   for (int iteration = 1; iteration <= options.max_iterations; iteration++) {
-    pairing_and_log_partition(profile_flat, energy, mu, beta, pairing, log_z);
+    if (!have_state)
+      pairing_and_log_partition(profile_flat, energy, mu, beta, pairing, log_z);
+    have_state = false;
     const Vec mu_updated = -log_z / beta;
     moments = contract_moments(pairing, kernel, profile_flat, beta);
 
@@ -172,22 +175,43 @@ Potential solve_sigma_potential(const Profile &solvent, const Kernel &kernel,
       break;
     }
 
+    // Newton is only accepted when it actually reduces the residual. The
+    // exact step is fine near the solution but can overshoot badly from the
+    // mu = 0 start on strongly hydrogen-bonding profiles, and an unguarded
+    // step there walks away from the fixed point entirely.
+    bool stepped = false;
     if (options.use_newton) {
       Mat jacobian = Mat::Identity(dim, dim) + pairing;
-      mu += jacobian.partialPivLu().solve(mu_updated - mu);
-    } else {
-      mu = (1.0 - options.mixing) * mu + options.mixing * mu_updated;
+      const Vec trial = mu + jacobian.partialPivLu().solve(mu_updated - mu);
+      Mat trial_pairing;
+      Vec trial_log_z;
+      pairing_and_log_partition(profile_flat, energy, trial, beta,
+                                trial_pairing, trial_log_z);
+      const double trial_residual =
+          ((-trial_log_z / beta) - trial).cwiseAbs().maxCoeff();
+      if (std::isfinite(trial_residual) && trial_residual < residual_mu) {
+        mu = trial;
+        pairing = std::move(trial_pairing);
+        log_z = std::move(trial_log_z);
+        have_state = true;
+        stepped = true;
+      }
     }
+    if (!stepped)
+      mu = (1.0 - options.mixing) * mu + options.mixing * mu_updated;
   }
 
   if (!result.converged) {
     // Refresh the moments so the reported profiles match the returned mu.
     pairing_and_log_partition(profile_flat, energy, mu, beta, pairing, log_z);
     moments = contract_moments(pairing, kernel, profile_flat, beta);
-    occ::log::warn("sigma potential did not converge in {} iterations "
-                   "(residual mu = {:.3e}, variance = {:.3e})",
-                   result.iterations, result.residual_mu,
-                   result.residual_variance);
+    const auto message = fmt::format(
+        "sigma potential did not converge in {} iterations (residual mu = "
+        "{:.3e}, variance = {:.3e})",
+        result.iterations, result.residual_mu, result.residual_variance);
+    if (options.throw_on_failure)
+      throw std::runtime_error(message);
+    occ::log::warn("{}", message);
   }
 
   const Grid &grid = kernel.grid;

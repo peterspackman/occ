@@ -1213,19 +1213,15 @@ TEST_CASE("occ-generated profiles reproduce published activity coefficients",
   REQUIRE(worst_area < 0.06);
   REQUIRE(worst_volume < 0.05);
 
-  // Away from donor-donor hydrogen bonding the two protocols agree well.
-  for (const auto &system : {"water/acetone", "methanol/benzene",
+  // A B3LYP/def2-TZVP conductor cavity stands in for DMol3 VWN-BP/DNP to
+  // within a few tenths of a log unit everywhere, and better than that away
+  // from water. Pinned so a protocol regression shows up.
+  REQUIRE(per_system.at("water/acetone") < 0.9);
+  for (const auto &system : {"water/ethanol", "methanol/benzene",
                              "benzene/n-hexane", "acetone/chloroform"})
-    REQUIRE(per_system.at(system) < 0.75);
-  for (const auto &system :
-       {"methanol/benzene", "benzene/n-hexane", "acetone/chloroform"})
-    REQUIRE(per_system.at(system) < 0.2);
-
-  // water/ethanol is the only OH-OH pair in the set and is a known gap: the
-  // strongest H-bond coefficient amplifies the extreme-sigma tails, where
-  // our profile carries roughly twice the published population. Pinned so a
-  // change shows up; it is not an accuracy claim.
-  REQUIRE(per_system.at("water/ethanol") < 12.0);
+    REQUIRE(per_system.at(system) < 0.25);
+  REQUIRE(worst < 0.9);
+  REQUIRE(std::sqrt(sum_squares / count) < 0.2);
 }
 
 namespace {
@@ -1348,6 +1344,44 @@ TEST_CASE("Published segments reproduce the published profile",
 
     REQUIRE(rebuilt.total_area() == Catch::Approx(area).epsilon(1e-3));
     REQUIRE(l1 < 1e-10);
+  }
+}
+
+TEST_CASE("Substituting one component at a time is well behaved",
+          "[solvent][sigma][validation]") {
+  auto reference = load_reference("cosmo_sac_2010");
+  auto params = Parameters::cosmo_sac_2010();
+
+  ankerl::unordered_dense::map<std::string, Component> ours;
+  for (const auto &name : {"water", "ethanol"})
+    ours.emplace(name, occ::solvent::sigma::read_sigma_profile(
+                           std::string(OCC_TEST_DATA_DIR) +
+                           "/sigma_profiles_occ/" + name + ".sigma")
+                           .component);
+
+  occ::solvent::sigma::PotentialOptions options;
+  options.temperature = 283.15;
+  Vec x(2);
+  x << 0.05, 0.95;
+
+  fmt::print("\n water/ethanol, x_water=0.05, T=283.15 -- ln gamma(water)\n");
+  for (bool occ_water : {false, true}) {
+    for (bool occ_ethanol : {false, true}) {
+      std::vector<Component> c{
+          occ_water ? ours.at("water") : reference.components.at("water"),
+          occ_ethanol ? ours.at("ethanol")
+                      : reference.components.at("ethanol")};
+      Vec g = occ::solvent::sigma::activity_coefficients(c, x, params, options);
+      Vec r = occ::solvent::sigma::residual_ln_gamma(c, x, params, options);
+      fmt::print("   water={:3s} ethanol={:3s} : total {:+9.4f}  residual "
+                 "{:+9.4f}\n",
+                 occ_water ? "occ" : "UD", occ_ethanol ? "occ" : "UD", g(0),
+                 r(0));
+      // Swapping either component's profile for the other protocol's moves
+      // ln gamma by at most a tenth of a log unit. An unguarded Newton step
+      // used to send this to +9.6 instead.
+      REQUIRE(g(0) == Catch::Approx(0.4365).margin(0.15));
+    }
   }
 }
 
