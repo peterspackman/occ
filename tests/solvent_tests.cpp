@@ -1385,6 +1385,76 @@ TEST_CASE("Substituting one component at a time is well behaved",
   }
 }
 
+TEST_CASE("Moment profiles converge under grid refinement",
+          "[solvent][sigma][validation]") {
+  // The 2010 exchange kernel is discontinuous at sigma = 0 (the H-bond sign
+  // gate), and that sits in the middle of the grid where p(sigma) is largest.
+  // The second moment is the quantity that cares, so refine and watch it.
+  auto parsed = read_dmol3_cosmo(std::string(OCC_TEST_DATA_DIR) +
+                                 "/water_dmol3.cosmo");
+  auto params = Parameters::cosmo_sac_2010();
+  occ::solvent::sigma::classify_hbond_segments(
+      parsed.segments, parsed.atomic_numbers, parsed.atom_positions_bohr);
+  occ::solvent::sigma::average_sigma(parsed.segments, params.r_av,
+                                     params.f_decay);
+
+  // Probe points away from and astride the discontinuity.
+  const std::vector<double> probes{-0.018, -0.012, -0.004, 0.0,
+                                   0.004,  0.012,  0.018};
+
+  auto evaluate = [&](int n) {
+    Grid grid{n, -0.025, 0.025};
+    auto profile = occ::solvent::sigma::bin_segments(parsed.segments, grid,
+                                                     params.hbond_split());
+    auto kernel = occ::solvent::sigma::build_kernel(grid, params, 298.15);
+    auto potential =
+        occ::solvent::sigma::solve_sigma_potential(profile, kernel);
+    REQUIRE(potential.converged);
+
+    // Sample mu and variance of the OH column at the probe points.
+    const int oh = static_cast<int>(HBondClass::OH);
+    Mat mu_field = potential.mu;
+    Mat var_field = potential.variance;
+    Segments probe_segments;
+    probe_segments.positions = Mat3N::Zero(3, probes.size());
+    probe_segments.areas = Vec::Ones(probes.size());
+    probe_segments.sigma = Eigen::Map<const Vec>(probes.data(), probes.size());
+    probe_segments.sigma_averaged = probe_segments.sigma;
+    probe_segments.atom_index = occ::IVec::Zero(probes.size());
+    probe_segments.atomic_number = occ::IVec::Constant(probes.size(), 8);
+    probe_segments.hbond_class = occ::IVec::Constant(probes.size(), oh);
+
+    Vec mu = occ::solvent::sigma::contract_segments(probe_segments, grid,
+                                                    mu_field);
+    Vec var = occ::solvent::sigma::contract_segments(probe_segments, grid,
+                                                     var_field);
+    return std::make_pair(mu, var);
+  };
+
+  auto finest = evaluate(801);
+  fmt::print("\n grid refinement against n=801 (water, COSMO-SAC 2010)\n");
+  fmt::print("{:>6} {:>7} {:>14} {:>14}\n", "n", "0 node", "max |d mu|",
+             "max |d Var|");
+  double mu_error = 0.0, var_error = 0.0;
+  // Odd n puts sigma = 0 exactly on a node; even n straddles it, which is
+  // the harsher case for the H-bond sign gate.
+  for (int n : {50, 51, 100, 101, 200, 201, 400, 401}) {
+    auto sampled = evaluate(n);
+    const double d_mu = (sampled.first - finest.first).cwiseAbs().maxCoeff();
+    const double d_var = (sampled.second - finest.second).cwiseAbs().maxCoeff();
+    fmt::print("{:>6} {:>7} {:14.5f} {:14.5f}\n", n, (n % 2) ? "yes" : "no",
+               d_mu, d_var);
+    if (n >= 400) {
+      mu_error = std::max(mu_error, d_mu);
+      var_error = std::max(var_error, d_var);
+    }
+  }
+
+  // At the finest step below, both moments must have settled.
+  REQUIRE(mu_error < 0.02);
+  REQUIRE(var_error < 0.05);
+}
+
 TEST_CASE("draco", "[solvent]") {
   auto mol = occ::io::molecule_from_xyz_string(WATER);
   auto nums = mol.atomic_numbers();
