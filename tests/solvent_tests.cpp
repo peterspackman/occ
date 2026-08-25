@@ -11,7 +11,10 @@
 #include <occ/solvent/draco.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include <occ/dft/dft.h>
+#include <occ/solvent/sigma_activity.h>
 #include <occ/driver/sigma_driver.h>
 #include <occ/solvent/sigma_kernel.h>
 #include <occ/solvent/sigma_potential.h>
@@ -984,6 +987,161 @@ TEST_CASE("Water sigma potential", "[solvent][sigma][conductor]") {
   // collapses where it saturates.
   REQUIRE(potential.variance(mid, oh) < potential.variance(donor, oh));
   REQUIRE(potential.variance(mid, oh) < potential.variance(acceptor, oh));
+}
+
+// Numerical validation against the NIST reference implementation
+// (usnistgov/COSMOSAC). tests/data/cosmo_sac_reference.json carries the sigma
+// profiles it was driven with and the ln(gamma) it produced, so both codes
+// see byte-identical input and any difference is ours.
+
+#ifndef OCC_TEST_DATA_DIR
+#define OCC_TEST_DATA_DIR "data"
+#endif
+
+namespace {
+
+using occ::solvent::sigma::Component;
+
+struct ReferenceCase {
+  std::vector<std::string> components;
+  double temperature;
+  Vec mole_fractions;
+  Vec ln_gamma_residual;
+  Vec ln_gamma_combinatorial;
+};
+
+struct ReferenceSet {
+  ankerl::unordered_dense::map<std::string, Component> components;
+  std::vector<ReferenceCase> cases;
+};
+
+ReferenceSet load_reference(const std::string &model_key) {
+  std::ifstream input(std::string(OCC_TEST_DATA_DIR) +
+                      "/cosmo_sac_reference.json");
+  REQUIRE(input.good());
+  auto json = nlohmann::json::parse(input);
+  const auto &block = json.at(model_key);
+
+  ReferenceSet set;
+  for (const auto &[name, entry] : block.at("components").items()) {
+    auto sigma = entry.at("sigma").get<std::vector<double>>();
+    auto columns =
+        entry.at("psigmaA").get<std::vector<std::vector<double>>>();
+
+    Component component;
+    component.volume = entry.at("volume").get<double>();
+    component.profile.grid =
+        Grid{static_cast<int>(sigma.size()), sigma.front(), sigma.back()};
+    component.profile.values =
+        Mat(sigma.size(), static_cast<Eigen::Index>(columns.size()));
+    for (size_t c = 0; c < columns.size(); c++)
+      for (size_t i = 0; i < sigma.size(); i++)
+        component.profile.values(i, c) = columns[c][i];
+    set.components.emplace(name, std::move(component));
+  }
+
+  for (const auto &entry : block.at("cases")) {
+    ReferenceCase c;
+    c.components = entry.at("components").get<std::vector<std::string>>();
+    c.temperature = entry.at("T").get<double>();
+    auto z = entry.at("z").get<std::vector<double>>();
+    auto resid = entry.at("lngamma_resid").get<std::vector<double>>();
+    auto comb = entry.at("lngamma_comb").get<std::vector<double>>();
+    c.mole_fractions = Eigen::Map<Vec>(z.data(), z.size());
+    c.ln_gamma_residual = Eigen::Map<Vec>(resid.data(), resid.size());
+    c.ln_gamma_combinatorial = Eigen::Map<Vec>(comb.data(), comb.size());
+    set.cases.push_back(std::move(c));
+  }
+  return set;
+}
+
+void check_against_reference(const std::string &model_key,
+                             const Parameters &params, double tolerance) {
+  auto reference = load_reference(model_key);
+  REQUIRE(!reference.cases.empty());
+
+  double worst_residual = 0.0, worst_combinatorial = 0.0;
+  for (const auto &c : reference.cases) {
+    std::vector<Component> components;
+    for (const auto &name : c.components)
+      components.push_back(reference.components.at(name));
+    REQUIRE(components.front().profile.num_classes() == params.num_classes());
+
+    occ::solvent::sigma::PotentialOptions options;
+    options.temperature = c.temperature;
+    // Far tighter than the reference's 1e-8 on Gamma, so what is left is
+    // its convergence error rather than ours.
+    options.tolerance_mu = 1e-12;
+    options.tolerance_variance = 1e-10;
+
+    Vec residual = occ::solvent::sigma::residual_ln_gamma(
+        components, c.mole_fractions, params, options);
+    Vec combinatorial = occ::solvent::sigma::combinatorial_ln_gamma(
+        components, c.mole_fractions, params);
+
+    worst_residual = std::max(
+        worst_residual, (residual - c.ln_gamma_residual).cwiseAbs().maxCoeff());
+    worst_combinatorial =
+        std::max(worst_combinatorial,
+                 (combinatorial - c.ln_gamma_combinatorial).cwiseAbs().maxCoeff());
+  }
+
+  fmt::print("{}: {} cases, max |d ln gamma| residual {:.3e}, "
+             "combinatorial {:.3e}\n",
+             model_key, reference.cases.size(), worst_residual,
+             worst_combinatorial);
+  REQUIRE(worst_combinatorial < tolerance);
+  REQUIRE(worst_residual < tolerance);
+}
+
+} // namespace
+
+TEST_CASE("Damped iteration needs more than 200 steps on cold water",
+          "[solvent][sigma][validation]") {
+  // COSMO-SAC 2002 on nearly-pure water at low temperature is the stiffest
+  // case in the reference set: the threshold H-bond term is strong and the
+  // residual is a near-total cancellation between the mixture and pure
+  // potentials. The reference implementation's damped loop is capped at 200
+  // iterations and returns silently when it runs out, which is where the
+  // 2002 tolerance below comes from.
+  auto reference = load_reference("cosmo_sac_2002");
+  auto params = Parameters::cosmo_sac_2002();
+  const auto &water = reference.components.at("water");
+
+  auto kernel = occ::solvent::sigma::build_kernel(water.profile.grid, params,
+                                                  283.15);
+  occ::solvent::sigma::PotentialOptions picard;
+  picard.use_newton = false;
+  picard.mixing = 0.5;
+  picard.temperature = 283.15;
+  picard.max_iterations = 100000;
+  auto slow = occ::solvent::sigma::solve_sigma_potential(water.profile, kernel,
+                                                         picard);
+  REQUIRE(slow.converged);
+
+  occ::solvent::sigma::PotentialOptions newton = picard;
+  newton.use_newton = true;
+  auto fast = occ::solvent::sigma::solve_sigma_potential(water.profile, kernel,
+                                                          newton);
+  REQUIRE(fast.converged);
+
+  fmt::print("cold water 2002: damped {} iterations, Newton {}\n",
+             slow.iterations, fast.iterations);
+  REQUIRE(slow.iterations > 200);
+  REQUIRE(fast.iterations < 40);
+  REQUIRE((slow.mu - fast.mu).cwiseAbs().maxCoeff() < 1e-8);
+}
+
+TEST_CASE("COSMO-SAC 2002 matches the reference implementation",
+          "[solvent][sigma][validation]") {
+  // Looser than 2010 because COSMO1's damped loop gives up after 200
+  // iterations; cold nearly-pure water needs 601. See the test above.
+  check_against_reference("cosmo_sac_2002", Parameters::cosmo_sac_2002(), 1e-4);
+}
+
+TEST_CASE("COSMO-SAC 2010 matches the reference implementation",
+          "[solvent][sigma][validation]") {
+  check_against_reference("cosmo_sac_2010", Parameters::cosmo_sac_2010(), 1e-6);
 }
 
 TEST_CASE("draco", "[solvent]") {

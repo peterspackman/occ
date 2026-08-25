@@ -124,7 +124,7 @@ catch_discover_tests(descriptors_tests)
 
 add_executable(solvent_tests "${CMAKE_CURRENT_SOURCE_DIR}/solvent_tests.cpp")
 target_link_libraries(solvent_tests PRIVATE occ_solvent occ_driver occ_dft occ_qm occ_io Catch2::Catch2WithMain Threads::Threads)
-target_compile_definitions(solvent_tests PRIVATE OCC_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
+target_compile_definitions(solvent_tests PRIVATE OCC_DATA_DIR="${CMAKE_SOURCE_DIR}/share" OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 catch_discover_tests(solvent_tests)
 
 add_executable(xdm_tests "${CMAKE_CURRENT_SOURCE_DIR}/xdm_tests.cpp")

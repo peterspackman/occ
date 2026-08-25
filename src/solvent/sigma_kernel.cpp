@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <numbers>
-#include <occ/solvent/sigma_kernel.h>
+#include <occ/solvent/sigma_potential.h>
 #include <stdexcept>
 
 namespace occ::solvent::sigma {
@@ -30,6 +30,9 @@ Parameters Parameters::cosmo_sac_2002() {
   // alpha' / 2, with no temperature dependence.
   p.a_es = 16466.72 / 2.0;
   p.b_es = 0.0;
+  // Lin & Sandler's truncated gas constant, which the 2002 parameters were
+  // fitted against.
+  p.gas_constant = 0.001987;
   p.sigma_hb = 0.0084;
   p.c_hb = 85580.0;
   return p;
@@ -48,6 +51,8 @@ Parameters Parameters::cosmo_sac_2010() {
   p.c_ot_ot = 932.31;
   p.c_oh_ot = 3016.43;
   p.sigma_0 = 0.007;
+  // Unlike 2002, the 2010 parameterisation uses the post-2019 gas constant.
+  p.gas_constant = gas_constant_kcal;
   return p;
 }
 
@@ -83,6 +88,7 @@ Kernel build_kernel(const Grid &grid, const Parameters &params,
   Kernel kernel;
   kernel.grid = grid;
   kernel.num_classes = params.num_classes();
+  kernel.gas_constant = params.gas_constant;
 
   const Eigen::Index dim = kernel.dim();
   kernel.misfit = Mat::Zero(dim, dim);

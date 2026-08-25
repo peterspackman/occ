@@ -115,7 +115,7 @@ Mat unflatten(const Vec &flat, const Grid &grid, int num_classes) {
 
 Mat pairing_matrix(const Vec &profile_flat, const Kernel &kernel,
                    const Vec &mu, double temperature) {
-  const double beta = 1.0 / (gas_constant_kcal * temperature);
+  const double beta = 1.0 / (kernel.gas_constant * temperature);
   Mat pairing;
   Vec log_z;
   pairing_and_log_partition(profile_flat, kernel.total(), mu, beta, pairing,
@@ -136,7 +136,7 @@ Potential solve_sigma_potential(const Profile &solvent, const Kernel &kernel,
   const Eigen::Index dim = kernel.dim();
   const Vec profile_flat = flatten(solvent.normalized());
   const Mat energy = kernel.total();
-  const double beta = 1.0 / (gas_constant_kcal * options.temperature);
+  const double beta = 1.0 / (kernel.gas_constant * options.temperature);
 
   Vec mu = Vec::Zero(dim);
   Mat pairing;
@@ -205,8 +205,9 @@ Potential solve_sigma_potential(const Profile &solvent, const Kernel &kernel,
 
 double residual_ln_gamma(const Profile &solute,
                          const Potential &solvent_potential,
-                         const Potential &solute_potential, double a_eff) {
-  const double rt = gas_constant_kcal * solvent_potential.temperature;
+                         const Potential &solute_potential, double a_eff,
+                         double gas_constant) {
+  const double rt = gas_constant * solvent_potential.temperature;
   const Mat difference = solvent_potential.mu - solute_potential.mu;
   return contract(solute, difference) / (a_eff * rt);
 }

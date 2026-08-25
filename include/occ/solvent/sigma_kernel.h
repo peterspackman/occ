@@ -38,6 +38,14 @@ struct Parameters {
   double c_oh_ot{3016.43};
   double sigma_0{0.007};
 
+  /// Gas constant used in the Boltzmann weighting, kcal mol⁻¹ K⁻¹.
+  ///
+  /// The published COSMO-SAC parameters were fitted with the truncated value
+  /// 0.001987 rather than the CODATA one (`sigma::gas_constant_kcal`, which
+  /// is larger by 1.1e-4 relative). Reproducing published numbers means
+  /// using the value the parameters were fitted with, so that is the default.
+  double gas_constant{0.001987};
+
   /// Staverman–Guggenheim combinatorial term.
   double q0{79.53};  ///< standard area, Å²
   double r0{66.69};  ///< standard volume, Å³
@@ -70,6 +78,9 @@ struct Kernel {
   int num_classes{1};
   Mat misfit;
   Mat hbond;
+  /// Carried from the parameters so the solver weights with the same R the
+  /// kernel coefficients were fitted against.
+  double gas_constant{0.001987};
 
   Eigen::Index dim() const {
     return static_cast<Eigen::Index>(grid.n) * num_classes;

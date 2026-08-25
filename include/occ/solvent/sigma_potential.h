@@ -4,8 +4,9 @@
 
 namespace occ::solvent::sigma {
 
-/// Gas constant in the units this module works in, kcal mol⁻¹ K⁻¹. Derived
-/// from `occ::constants` so `RT` here matches the rest of occ.
+/// CODATA gas constant in the units this module works in, kcal mol⁻¹ K⁻¹.
+/// Note the published COSMO-SAC parameters were fitted against a truncated
+/// value instead — see `Parameters::gas_constant`.
 inline constexpr double gas_constant_kcal =
     occ::constants::boltzmann<double> * occ::constants::avogadro<double> /
     4184.0;
@@ -90,6 +91,7 @@ Potential solve_sigma_potential(const Profile &solvent, const Kernel &kernel,
 /// which is `contract(solute, μ_S − μ_X)` up to that prefactor.
 double residual_ln_gamma(const Profile &solute,
                          const Potential &solvent_potential,
-                         const Potential &solute_potential, double a_eff);
+                         const Potential &solute_potential, double a_eff,
+                         double gas_constant);
 
 } // namespace occ::solvent::sigma
