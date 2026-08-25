@@ -52,6 +52,21 @@ ContinuumSolvationModel::ContinuumSolvationModel(
   set_solvent(m_solvent_name);
 }
 
+ContinuumSolvationModel::ContinuumSolvationModel(
+    const std::vector<occ::core::Atom> &atoms, const occ::scrf::Options &opts,
+    double charge)
+    : m_charge(charge), m_atomic_charges(Vec::Zero(atoms.size())), m_smd(false),
+      m_solvent_name(opts.solvent), m_nuclear_positions(3, atoms.size()),
+      m_nuclear_charges(atoms.size()), m_engine(opts), m_scale_radii(false) {
+  for (size_t i = 0; i < atoms.size(); i++) {
+    m_nuclear_positions(0, i) = atoms[i].x;
+    m_nuclear_positions(1, i) = atoms[i].y;
+    m_nuclear_positions(2, i) = atoms[i].z;
+    m_nuclear_charges(i) = atoms[i].atomic_number;
+  }
+  initialize_surfaces();
+}
+
 Vec ContinuumSolvationModel::compute_es_radii() {
   IVec nums = m_nuclear_charges.cast<int>();
   if (m_scale_radii) {
@@ -70,6 +85,22 @@ Vec ContinuumSolvationModel::compute_es_radii() {
 
 void ContinuumSolvationModel::initialize_surfaces() {
   IVec nums = m_nuclear_charges.cast<int>();
+
+  if (!m_smd) {
+    // The engine already carries its own radii selection and dielectric.
+    m_engine.initialize(m_nuclear_positions, nums);
+    m_surface_potential = Vec::Zero(m_engine.num_es_surface_points());
+    m_asc = Vec::Zero(m_engine.num_es_surface_points());
+    m_asc_needs_update = true;
+    const double au2_to_ang2 =
+        occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
+    occ::log::info("solvent surface: total area = {:10.3f} Angstroms^2, {} "
+                   "finite elements, f(eps) = {:.8f}",
+                   m_engine.es_cavity().areas.sum() * au2_to_ang2,
+                   m_engine.num_es_surface_points(), m_engine.f_epsilon());
+    return;
+  }
+
   Vec radii = compute_es_radii();
 
   // Log the Coulomb radii in a per-element table (matches legacy output).
@@ -145,6 +176,13 @@ void ContinuumSolvationModel::set_surface_potential(const Vec &potential) {
 
 void ContinuumSolvationModel::set_solvent(const std::string &solvent) {
   m_solvent_name = solvent;
+  if (!m_smd) {
+    auto opts = m_engine.options();
+    opts.solvent = solvent;
+    m_engine = occ::scrf::ReactionFieldEngine(opts);
+    initialize_surfaces();
+    return;
+  }
   m_params = occ::solvent::get_smd_parameters(m_solvent_name);
   occ::log::info("Using SMD solvent '{}'", m_solvent_name);
   occ::log::info("Parameters:");

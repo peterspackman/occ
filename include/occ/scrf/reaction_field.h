@@ -63,6 +63,15 @@ struct Options {
   // DRACO is not yet wired up; the flag exists so callers can opt-in once
   // support lands.
   bool draco_scaling{false};
+
+  /// Ideal-conductor COSMO on Klamt radii with no CDS branch — the reference
+  /// state σ-profiles are defined against. `f(ε) → 1` is reached by taking ε
+  /// large rather than by a separate code path; at ε = 1e10 the difference
+  /// from unity is 1e-10.
+  ///
+  /// The boolean cavity is selected deliberately: the smooth cavity ignores
+  /// the probe radius, and the COSMO-RS convention needs a real 1.3 Å probe.
+  static Options conductor(double probe_radius_angs = 1.3);
 };
 
 /// Self-consistent reaction-field engine — owns the cavity, the COSMO/CPCM

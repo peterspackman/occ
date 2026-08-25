@@ -8,6 +8,7 @@ add_library(occ_driver_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/monomer_wavefunctions.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/correlation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sigma_driver.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dma_driver.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/vibrational_analysis.cpp"
     ${OCC_DRIVER_INCLUDE_FILES}

@@ -43,6 +43,18 @@ double evaluate_cds_energy(const Mat3N &pos_bohr, const IVec &Z,
 
 } // namespace
 
+Options Options::conductor(double probe_radius_angs) {
+  Options o;
+  o.backend = Options::Backend::CPCM;
+  o.radii = Options::Radii::CosmoVdW;
+  o.dielectric_override = 1.0e10;
+  o.f_eps_x = 0.0;
+  o.probe_radius_angs = probe_radius_angs;
+  o.smoothing_width_bohr = 0.0;
+  o.include_cds = false;
+  return o;
+}
+
 ReactionFieldEngine::ReactionFieldEngine(Options opts) : m_opts(std::move(opts)) {}
 
 void ReactionFieldEngine::initialize(const Mat3N &positions_bohr,

@@ -11,6 +11,8 @@
 #include <occ/solvent/draco.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
+#include <occ/dft/dft.h>
+#include <occ/driver/sigma_driver.h>
 #include <occ/solvent/sigma_kernel.h>
 #include <occ/solvent/sigma_potential.h>
 #include <occ/solvent/sigma_profile.h>
@@ -855,6 +857,133 @@ TEST_CASE("The potential is defined where the solvent has no area",
   REQUIRE(p.converged);
   REQUIRE(p.mu.allFinite());
   REQUIRE(p.variance.allFinite());
+}
+
+TEST_CASE("Ideal-conductor COSMO profile for water",
+          "[solvent][sigma][conductor]") {
+  auto mol = occ::io::molecule_from_xyz_string(WATER);
+  auto atoms = mol.atoms();
+
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(true);
+  occ::dft::DFT gas_ks("b3lyp", basis);
+  occ::qm::SCF<occ::dft::DFT> gas_scf(gas_ks);
+  double gas_energy = gas_scf.compute_scf_energy();
+  auto gas_wfn = gas_scf.wavefunction();
+
+  occ::driver::SigmaProfileSettings settings;
+  settings.basis = "def2-svp";
+  auto result = occ::driver::conductor_profile(gas_wfn, settings);
+
+  // A conductor is the strongest possible dielectric, so it must stabilise.
+  REQUIRE(result.energy_conductor < gas_energy);
+
+  const auto &segments = result.segments;
+  REQUIRE(segments.size() > 100);
+  REQUIRE(segments.sigma_averaged.size() == segments.size());
+
+  // Klamt radii on water give a cavity of roughly 43 A^2 and 25 A^3.
+  REQUIRE(result.cavity_area > 30.0);
+  REQUIRE(result.cavity_area < 60.0);
+  REQUIRE(result.cavity_volume > 15.0);
+  REQUIRE(result.cavity_volume < 45.0);
+
+  // Neutral solute, so the screening charge integrates to zero up to the
+  // cavity discretisation error.
+  fmt::print("water conductor: {} segments, area {:.2f} A^2, volume {:.2f} "
+             "A^3, screening charge {:+.5f} e\n",
+             segments.size(), result.cavity_area, result.cavity_volume,
+             result.screening_charge);
+  REQUIRE(std::abs(result.screening_charge) < 0.05);
+
+  // Screening charge is opposite in sign to the solute charge it screens:
+  // positive over the electronegative oxygen, negative over the hydrogens.
+  double o_sigma = 0.0, o_area = 0.0, h_sigma = 0.0, h_area = 0.0;
+  for (Eigen::Index i = 0; i < segments.size(); i++) {
+    if (segments.atomic_number(i) == 8) {
+      o_sigma += segments.areas(i) * segments.sigma_averaged(i);
+      o_area += segments.areas(i);
+    } else {
+      h_sigma += segments.areas(i) * segments.sigma_averaged(i);
+      h_area += segments.areas(i);
+    }
+  }
+  fmt::print("mean sigma: O {:+.5f}, H {:+.5f} e/A^2\n", o_sigma / o_area,
+             h_sigma / h_area);
+  REQUIRE(o_sigma / o_area > 0.0);
+  REQUIRE(h_sigma / h_area < 0.0);
+
+  // Water is all hydroxyl, so every segment is the OH class.
+  for (Eigen::Index i = 0; i < segments.size(); i++)
+    REQUIRE(segments.hbond_class(i) == static_cast<int>(HBondClass::OH));
+}
+
+TEST_CASE("Water sigma potential", "[solvent][sigma][conductor]") {
+  auto mol = occ::io::molecule_from_xyz_string(WATER);
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "def2-svp");
+  basis.set_pure(true);
+  occ::dft::DFT gas_ks("b3lyp", basis);
+  occ::qm::SCF<occ::dft::DFT> gas_scf(gas_ks);
+  gas_scf.compute_scf_energy();
+
+  occ::driver::SigmaProfileSettings settings;
+  settings.basis = "def2-svp";
+  auto conductor =
+      occ::driver::conductor_profile(gas_scf.wavefunction(), settings);
+
+  auto params = Parameters::cosmo_sac_2010();
+  Grid g;
+  auto profile = occ::solvent::sigma::bin_segments(conductor.segments, g,
+                                                   params.hbond_split());
+  auto kernel = occ::solvent::sigma::build_kernel(g, params, 298.15);
+  auto potential = occ::solvent::sigma::solve_sigma_potential(profile, kernel);
+  REQUIRE(potential.converged);
+
+  Vec centers = g.centers();
+  fmt::print("\n   sigma     p_nhb    p_oh     mu_nhb    mu_oh     var_oh   pHB_oh\n");
+  for (int i = 0; i < g.n; i += 5) {
+    fmt::print("{:+8.4f} {:8.4f} {:8.4f} {:+9.3f} {:+9.3f} {:9.3f} {:7.3f}\n",
+               centers(i), profile.values(i, 0), profile.values(i, 1),
+               potential.mu(i, 0), potential.mu(i, 1), potential.variance(i, 1),
+               potential.hbond_probability(i, 1));
+  }
+
+  const int oh = static_cast<int>(HBondClass::OH);
+  const int nhb = static_cast<int>(HBondClass::None);
+  // Nodes 5, 10, 25, 40 and 45 are sigma = -0.020, -0.015, 0, +0.015, +0.020.
+  const int lo = 5, donor = 10, mid = 25, acceptor = 40, hi = 45;
+
+  // The profile is bimodal, with the hydroxyl lobes at roughly +/-0.015.
+  Eigen::Index peak_negative = 0, peak_positive = 0;
+  profile.values.col(oh).head(g.n / 2).maxCoeff(&peak_negative);
+  profile.values.col(oh).tail(g.n / 2).maxCoeff(&peak_positive);
+  peak_positive += g.n / 2;
+  REQUIRE(centers(peak_negative) < -0.010);
+  REQUIRE(centers(peak_positive) > 0.010);
+
+  // Water donates and accepts, so a hydrogen-bonding solute segment is
+  // stabilised at both extremes and penalised in the non-polar middle.
+  REQUIRE(potential.mu(lo, oh) < 0.0);
+  REQUIRE(potential.mu(hi, oh) < 0.0);
+  REQUIRE(potential.mu(mid, oh) > 0.0);
+  REQUIRE(potential.mu(lo, oh) < potential.mu(mid, oh));
+  REQUIRE(potential.mu(hi, oh) < potential.mu(mid, oh));
+
+  // A non-bonding segment has no such channel: the 2010 electrostatic term
+  // is purely a misfit penalty, so it is uphill at both extremes.
+  REQUIRE(potential.mu(lo, nhb) > 0.0);
+  REQUIRE(potential.mu(hi, nhb) > 0.0);
+
+  // The H-bond channel is two-state: saturated in the wings, off in the
+  // middle.
+  REQUIRE(potential.hbond_probability(lo, oh) > 0.95);
+  REQUIRE(potential.hbond_probability(hi, oh) > 0.95);
+  REQUIRE(potential.hbond_probability(mid, oh) < 0.5);
+
+  // The pairing energy spreads out where that channel is genuinely mixed and
+  // collapses where it saturates.
+  REQUIRE(potential.variance(mid, oh) < potential.variance(donor, oh));
+  REQUIRE(potential.variance(mid, oh) < potential.variance(acceptor, oh));
 }
 
 TEST_CASE("draco", "[solvent]") {
