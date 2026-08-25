@@ -19,6 +19,25 @@ constexpr double BOHR2_TO_ANGS2 =
 
 bool is_hbond_heavy_atom(int z) { return z == 7 || z == 8 || z == 9; }
 
+/// Which column a segment deposits into before the P_hb weighting: only the
+/// acceptor lobe of a heavy atom and the donor lobe of a hydrogen take part.
+int hbond_column(int hb_class, int atomic_number, double sigma) {
+  if (hb_class == static_cast<int>(HBondClass::None))
+    return static_cast<int>(HBondClass::None);
+  const bool acceptor_lobe = is_hbond_heavy_atom(atomic_number) && sigma > 0.0;
+  const bool donor_lobe = atomic_number == 1 && sigma < 0.0;
+  return (acceptor_lobe || donor_lobe) ? hb_class
+                                       : static_cast<int>(HBondClass::None);
+}
+
+/// P_hb(σ) = 1 − exp(−σ²/2σ_0²), the fraction of a qualifying segment's area
+/// that actually hydrogen bonds.
+Vec hbond_weights(const Grid &grid, double sigma_0) {
+  Vec centers = grid.centers();
+  const double denom = 2.0 * sigma_0 * sigma_0;
+  return 1.0 - (-centers.array().square() / denom).exp();
+}
+
 /// Deposit weights for a value on a node grid: the two bracketing node
 /// indices and the fraction belonging to the upper one. Values outside the
 /// grid clamp onto the end node.
@@ -77,7 +96,7 @@ double Segments::total_charge_averaged() const {
 }
 
 Segments segments_from_cavity(const surface::Surface &cavity,
-                              const Vec &charges) {
+                              const Vec &charges, const IVec &atomic_numbers) {
   const Eigen::Index n = cavity.areas.size();
   if (charges.size() != n)
     throw std::runtime_error(
@@ -91,10 +110,19 @@ Segments segments_from_cavity(const surface::Surface &cavity,
   s.sigma = charges.array() / s.areas.array();
   s.sigma_averaged = Vec();
   s.hbond_class = IVec::Constant(n, static_cast<int>(HBondClass::None));
+  s.atomic_number = IVec(n);
+  for (Eigen::Index i = 0; i < n; i++) {
+    const int a = cavity.atom_index(i);
+    if (a < 0 || a >= atomic_numbers.size())
+      throw std::runtime_error(fmt::format(
+          "segments_from_cavity: cavity element {} refers to atom {} of {}", i,
+          a, atomic_numbers.size()));
+    s.atomic_number(i) = atomic_numbers(a);
+  }
   return s;
 }
 
-void average_sigma(Segments &segments, double r_av_angs) {
+void average_sigma(Segments &segments, double r_av_angs, double f_decay) {
   const Eigen::Index n = segments.size();
   segments.sigma_averaged = Vec::Zero(n);
   if (n == 0)
@@ -115,8 +143,8 @@ void average_sigma(Segments &segments, double r_av_angs) {
     prefactor(j) = r2 * r_av2 / denom(j);
   }
 
-  // exp(-d^2/denom) < 1e-12 beyond ~5.3 sqrt(denom).
-  const double cutoff = 5.5 * std::sqrt(denom.maxCoeff());
+  // exp(-f_decay d^2/denom) < 1e-12 beyond ~5.3 sqrt(denom/f_decay).
+  const double cutoff = 5.5 * std::sqrt(denom.maxCoeff() / f_decay);
 
   Mat3N positions_angs = segments.positions * occ::units::BOHR_TO_ANGSTROM;
   occ::core::KDTree<double> tree(3, positions_angs, occ::core::max_leaf);
@@ -131,7 +159,7 @@ void average_sigma(Segments &segments, double r_av_angs) {
 
     double numerator = 0.0, weight_sum = 0.0;
     for (const auto &[j, d2] : neighbors) {
-      const double w = prefactor(j) * std::exp(-d2 / denom(j));
+      const double w = prefactor(j) * std::exp(-f_decay * d2 / denom(j));
       numerator += segments.sigma(j) * w;
       weight_sum += w;
     }
@@ -146,28 +174,34 @@ void classify_hbond_segments(Segments &segments, const IVec &atomic_numbers,
   IVec atom_class = IVec::Constant(natoms, static_cast<int>(HBondClass::None));
 
   Vec cov_radii(natoms);
-  for (Eigen::Index a = 0; a < natoms; a++) {
+  for (Eigen::Index a = 0; a < natoms; a++)
     cov_radii(a) = occ::core::Element(atomic_numbers(a)).covalent_radius();
-    if (is_hbond_heavy_atom(atomic_numbers(a)))
-      atom_class(a) = static_cast<int>(HBondClass::OT);
-  }
 
   Mat3N positions_angs = atom_positions_bohr * occ::units::BOHR_TO_ANGSTROM;
-  for (Eigen::Index h = 0; h < natoms; h++) {
-    if (atomic_numbers(h) != 1)
+  auto bonded = [&](Eigen::Index i, Eigen::Index j) {
+    const double threshold =
+        cov_radii(i) + cov_radii(j) + occ::core::covalent_bond_tolerance;
+    return (positions_angs.col(i) - positions_angs.col(j)).squaredNorm() <
+           threshold * threshold;
+  };
+
+  // O with an attached H (and that H) is the OH class; every other N, O, F,
+  // and any H on N or F, is OT.
+  for (Eigen::Index a = 0; a < natoms; a++) {
+    if (!is_hbond_heavy_atom(atomic_numbers(a)))
       continue;
-    for (Eigen::Index a = 0; a < natoms; a++) {
-      if (!is_hbond_heavy_atom(atomic_numbers(a)))
+    bool has_hydrogen = false;
+    for (Eigen::Index h = 0; h < natoms; h++) {
+      if (atomic_numbers(h) != 1 || !bonded(a, h))
         continue;
-      const double threshold =
-          cov_radii(h) + cov_radii(a) + occ::core::covalent_bond_tolerance;
-      const double d =
-          (positions_angs.col(h) - positions_angs.col(a)).squaredNorm();
-      if (d < threshold * threshold) {
-        atom_class(h) = static_cast<int>(HBondClass::OH);
-        break;
-      }
+      has_hydrogen = true;
+      atom_class(h) = (atomic_numbers(a) == 8)
+                          ? static_cast<int>(HBondClass::OH)
+                          : static_cast<int>(HBondClass::OT);
     }
+    atom_class(a) = (has_hydrogen && atomic_numbers(a) == 8)
+                        ? static_cast<int>(HBondClass::OH)
+                        : static_cast<int>(HBondClass::OT);
   }
 
   segments.hbond_class = IVec(segments.size());
@@ -183,8 +217,8 @@ Mat Profile::normalized() const {
 }
 
 Profile bin_segments(const Segments &segments, const Grid &grid,
-                     bool resolve_hbond_classes, double *out_of_range_area) {
-  const int ncols = resolve_hbond_classes ? num_hbond_classes : 1;
+                     HBondSplit split, double *out_of_range_area) {
+  const int ncols = split.enabled ? num_hbond_classes : 1;
   Profile profile;
   profile.grid = grid;
   profile.values = Mat::Zero(grid.n, ncols);
@@ -192,6 +226,8 @@ Profile bin_segments(const Segments &segments, const Grid &grid,
   const Vec &sigma = (segments.sigma_averaged.size() == segments.size())
                          ? segments.sigma_averaged
                          : segments.sigma;
+  const bool have_classes = segments.hbond_class.size() == segments.size() &&
+                            segments.atomic_number.size() == segments.size();
   double outside = 0.0;
 
   for (Eigen::Index i = 0; i < segments.size(); i++) {
@@ -199,15 +235,26 @@ Profile bin_segments(const Segments &segments, const Grid &grid,
     if (w.out_of_range)
       outside += segments.areas(i);
     int col = 0;
-    if (resolve_hbond_classes) {
-      col = segments.hbond_class.size() == segments.size()
-                ? segments.hbond_class(i)
-                : 0;
-      col = std::clamp(col, 0, ncols - 1);
-    }
+    if (split.enabled && have_classes)
+      col = hbond_column(segments.hbond_class(i), segments.atomic_number(i),
+                         sigma(i));
     profile.values(w.lower, col) += segments.areas(i) * (1.0 - w.frac);
     if (w.upper != w.lower)
       profile.values(w.upper, col) += segments.areas(i) * w.frac;
+  }
+
+  if (split.enabled) {
+    Vec p_hb = hbond_weights(grid, split.sigma_0);
+    const int nhb = static_cast<int>(HBondClass::None);
+    const int oh = static_cast<int>(HBondClass::OH);
+    const int ot = static_cast<int>(HBondClass::OT);
+    for (int b = 0; b < grid.n; b++) {
+      const double returned =
+          (1.0 - p_hb(b)) * (profile.values(b, oh) + profile.values(b, ot));
+      profile.values(b, oh) *= p_hb(b);
+      profile.values(b, ot) *= p_hb(b);
+      profile.values(b, nhb) += returned;
+    }
   }
 
   if (out_of_range_area)
@@ -247,7 +294,7 @@ double contract(const Profile &profile, const Mat &field) {
 }
 
 Vec contract_segments(const Segments &segments, const Grid &grid,
-                      const Mat &field) {
+                      const Mat &field, HBondSplit split) {
   if (field.rows() != grid.n)
     throw std::runtime_error(fmt::format(
         "contract_segments: field has {} rows, grid has {} bins", field.rows(),
@@ -256,21 +303,30 @@ Vec contract_segments(const Segments &segments, const Grid &grid,
   const Vec &sigma = (segments.sigma_averaged.size() == segments.size())
                          ? segments.sigma_averaged
                          : segments.sigma;
-  const int ncols = static_cast<int>(field.cols());
-  Vec out(segments.size());
+  const bool resolve = split.enabled && field.cols() > 1 &&
+                       segments.hbond_class.size() == segments.size() &&
+                       segments.atomic_number.size() == segments.size();
+  const int nhb = static_cast<int>(HBondClass::None);
+  Vec p_hb = resolve ? hbond_weights(grid, split.sigma_0) : Vec();
 
+  // Mirrors the deposit in bin_segments, including the per-bin P_hb split,
+  // so the summed result matches the binned contraction exactly.
+  auto value_at = [&](int bin, int col) {
+    if (!resolve || col == nhb)
+      return field(bin, resolve ? nhb : 0);
+    return p_hb(bin) * field(bin, col) + (1.0 - p_hb(bin)) * field(bin, nhb);
+  };
+
+  Vec out(segments.size());
   for (Eigen::Index i = 0; i < segments.size(); i++) {
     const auto w = bin_weights(grid, sigma(i));
-    int col = 0;
-    if (ncols > 1) {
-      col = segments.hbond_class.size() == segments.size()
-                ? segments.hbond_class(i)
+    const int col =
+        resolve ? hbond_column(segments.hbond_class(i),
+                               segments.atomic_number(i), sigma(i))
                 : 0;
-      col = std::clamp(col, 0, ncols - 1);
-    }
-    const double interpolated =
-        field(w.lower, col) * (1.0 - w.frac) +
-        ((w.upper != w.lower) ? field(w.upper, col) * w.frac : 0.0);
+    double interpolated = value_at(w.lower, col) * (1.0 - w.frac);
+    if (w.upper != w.lower)
+      interpolated += value_at(w.upper, col) * w.frac;
     out(i) = segments.areas(i) * interpolated;
   }
   return out;

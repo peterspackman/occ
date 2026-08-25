@@ -331,12 +331,17 @@ Segments line_segments(const std::vector<double> &x_angs,
   s.areas = Vec::Constant(n, area_angs2);
   s.sigma = Vec(n);
   s.atom_index = occ::IVec::Zero(n);
+  s.atomic_number = occ::IVec::Constant(n, 6);
   s.hbond_class = occ::IVec::Zero(n);
   for (int i = 0; i < n; i++) {
     s.positions(0, i) = x_angs[i] * occ::units::ANGSTROM_TO_BOHR;
     s.sigma(i) = sigmas[i];
   }
   return s;
+}
+
+double p_hb(double sigma, double sigma_0 = 0.007) {
+  return 1.0 - std::exp(-sigma * sigma / (2.0 * sigma_0 * sigma_0));
 }
 
 } // namespace
@@ -363,7 +368,9 @@ TEST_CASE("Segments carry charge density, not charge", "[solvent][sigma]") {
   Vec charges(2);
   charges << -0.3, 0.1;
 
-  auto s = occ::solvent::sigma::segments_from_cavity(cavity, charges);
+  occ::IVec nums(1);
+  nums << 8;
+  auto s = occ::solvent::sigma::segments_from_cavity(cavity, charges, nums);
   const double conv =
       occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
   REQUIRE(s.areas(0) == Catch::Approx(conv));
@@ -400,7 +407,7 @@ TEST_CASE("Binning conserves area", "[solvent][sigma]") {
   s.sigma_averaged = s.sigma;
   Grid g;
   double outside = 0.0;
-  auto p = occ::solvent::sigma::bin_segments(s, g, false, &outside);
+  auto p = occ::solvent::sigma::bin_segments(s, g, {}, &outside);
   REQUIRE(p.total_area() == Catch::Approx(s.total_area()).epsilon(1e-14));
   REQUIRE(outside == Catch::Approx(0.0).margin(1e-15));
   REQUIRE(p.num_classes() == 1);
@@ -412,7 +419,7 @@ TEST_CASE("Binning clamps and reports out-of-range area", "[solvent][sigma]") {
   s.sigma_averaged = s.sigma;
   Grid g;
   double outside = 0.0;
-  auto p = occ::solvent::sigma::bin_segments(s, g, false, &outside);
+  auto p = occ::solvent::sigma::bin_segments(s, g, {}, &outside);
   REQUIRE(p.total_area() == Catch::Approx(s.total_area()).epsilon(1e-14));
   REQUIRE(outside == Catch::Approx(0.4));
 }
@@ -440,6 +447,7 @@ TEST_CASE("Binning and segment contraction are adjoint", "[solvent][sigma]") {
 }
 
 TEST_CASE("H-bond classification of segments", "[solvent][sigma]") {
+  // Water: the oxygen carries hydrogens, so it and they are the OH class.
   auto mol = occ::io::molecule_from_xyz_string(WATER);
   auto s = line_segments({0.0, 0.3, 0.6}, {0.0, 0.0, 0.0}, 0.4);
   s.atom_index << 0, 1, 2; // O, H, H
@@ -447,30 +455,103 @@ TEST_CASE("H-bond classification of segments", "[solvent][sigma]") {
   Mat3N pos_bohr = mol.positions() * occ::units::ANGSTROM_TO_BOHR;
   occ::solvent::sigma::classify_hbond_segments(s, mol.atomic_numbers(),
                                                pos_bohr);
-  REQUIRE(s.hbond_class(0) == static_cast<int>(HBondClass::OT));
-  REQUIRE(s.hbond_class(1) == static_cast<int>(HBondClass::OH));
-  REQUIRE(s.hbond_class(2) == static_cast<int>(HBondClass::OH));
+  for (int i = 0; i < 3; i++)
+    REQUIRE(s.hbond_class(i) == static_cast<int>(HBondClass::OH));
 }
 
-TEST_CASE("H-bond resolved profiles split by class", "[solvent][sigma]") {
-  auto s = line_segments({0.0, 0.3, 0.6}, {-0.015, 0.012, 0.001}, 0.4);
+TEST_CASE("Carbonyl and amine atoms are the OT class", "[solvent][sigma]") {
+  // Urea: C=O has no attached hydrogen and the N-H hydrogens sit on nitrogen,
+  // so none of it is the hydroxyl class.
+  auto mol = occ::io::molecule_from_xyz_string(UREA);
+  auto nums = mol.atomic_numbers();
+  const int natoms = static_cast<int>(nums.size());
+
+  Segments s = line_segments(std::vector<double>(natoms, 0.0),
+                             std::vector<double>(natoms, 0.0), 0.4);
+  for (int i = 0; i < natoms; i++)
+    s.atom_index(i) = i;
+
+  Mat3N pos_bohr = mol.positions() * occ::units::ANGSTROM_TO_BOHR;
+  occ::solvent::sigma::classify_hbond_segments(s, nums, pos_bohr);
+
+  for (int i = 0; i < natoms; i++) {
+    const int expected = (nums(i) == 6) ? static_cast<int>(HBondClass::None)
+                                        : static_cast<int>(HBondClass::OT);
+    REQUIRE(s.hbond_class(i) == expected);
+  }
+}
+
+TEST_CASE("H-bond profile split is fractional in sigma",
+          "[solvent][sigma]") {
+  // Acceptor lobe on O, donor lobe on H, and a non-bonding C segment. Each
+  // H-bonding segment keeps only P_hb(sigma) of its area in its own column.
+  auto s = line_segments({0.0, 3.0, 6.0}, {0.015, -0.015, 0.001}, 0.4);
   s.sigma_averaged = s.sigma;
-  s.hbond_class << static_cast<int>(HBondClass::OT),
+  s.atomic_number << 8, 1, 6;
+  s.hbond_class << static_cast<int>(HBondClass::OH),
       static_cast<int>(HBondClass::OH), static_cast<int>(HBondClass::None);
 
   Grid g;
-  auto p = occ::solvent::sigma::bin_segments(s, g, true);
-  REQUIRE(p.num_classes() == 3);
-  REQUIRE(p.total_area() == Catch::Approx(s.total_area()).epsilon(1e-14));
-  REQUIRE(p.values.col(static_cast<int>(HBondClass::None)).sum() ==
+  occ::solvent::sigma::HBondSplit split{true, 0.007};
+  auto profile = occ::solvent::sigma::bin_segments(s, g, split);
+
+  REQUIRE(profile.num_classes() == 3);
+  REQUIRE(profile.total_area() == Catch::Approx(1.2).epsilon(1e-14));
+
+  const int nhb = static_cast<int>(HBondClass::None);
+  const int oh = static_cast<int>(HBondClass::OH);
+  const double w = p_hb(0.015);
+  // sigma = -0.015, 0.001 and 0.015 land exactly on nodes 10, 26 and 40.
+  REQUIRE(profile.values(40, oh) == Catch::Approx(0.4 * w));
+  REQUIRE(profile.values(10, oh) == Catch::Approx(0.4 * w));
+  REQUIRE(profile.values(40, nhb) == Catch::Approx(0.4 * (1.0 - w)));
+  REQUIRE(profile.values(26, nhb) == Catch::Approx(0.4));
+  REQUIRE(profile.values.col(static_cast<int>(HBondClass::OT)).sum() ==
+          Catch::Approx(0.0).margin(1e-15));
+}
+
+TEST_CASE("Only the H-bonding lobe of an atom participates",
+          "[solvent][sigma]") {
+  // A hydroxyl oxygen carrying negative sigma is the donor side of the atom,
+  // not the acceptor side, so none of it is available to hydrogen bond.
+  auto s = line_segments({0.0}, {-0.015}, 0.4);
+  s.sigma_averaged = s.sigma;
+  s.atomic_number << 8;
+  s.hbond_class << static_cast<int>(HBondClass::OH);
+
+  Grid g;
+  auto profile =
+      occ::solvent::sigma::bin_segments(s, g, {true, 0.007});
+  REQUIRE(profile.values(10, static_cast<int>(HBondClass::None)) ==
           Catch::Approx(0.4));
-  REQUIRE(p.values.col(static_cast<int>(HBondClass::OH)).sum() ==
-          Catch::Approx(0.4));
-  REQUIRE(p.values.col(static_cast<int>(HBondClass::OT)).sum() ==
-          Catch::Approx(0.4));
-  // Summing the classes recovers the H-bond-agnostic profile.
-  auto flat = occ::solvent::sigma::bin_segments(s, g, false);
-  REQUIRE((p.total() - flat.values.col(0)).cwiseAbs().maxCoeff() < 1e-14);
+  REQUIRE(profile.values.col(static_cast<int>(HBondClass::OH)).sum() ==
+          Catch::Approx(0.0).margin(1e-15));
+}
+
+TEST_CASE("Split binning and contraction stay adjoint", "[solvent][sigma]") {
+  auto s = line_segments({0.0, 3.0, 6.0, 9.0}, {0.019, -0.012, 0.0035, -0.021},
+                         0.31);
+  s.sigma_averaged = s.sigma;
+  s.atomic_number << 8, 1, 7, 1;
+  s.hbond_class << static_cast<int>(HBondClass::OH),
+      static_cast<int>(HBondClass::OH), static_cast<int>(HBondClass::OT),
+      static_cast<int>(HBondClass::OT);
+
+  Grid g;
+  occ::solvent::sigma::HBondSplit split{true, 0.007};
+  Mat field(g.n, occ::solvent::sigma::num_hbond_classes);
+  Vec centers = g.centers();
+  for (int i = 0; i < g.n; i++) {
+    field(i, 0) = 2.0 - 130.0 * centers(i);
+    field(i, 1) = -8.0 + 400.0 * centers(i) * centers(i);
+    field(i, 2) = 1.3 + 55.0 * centers(i);
+  }
+
+  auto profile = occ::solvent::sigma::bin_segments(s, g, split);
+  double binned = occ::solvent::sigma::contract(profile, field);
+  Vec per_segment =
+      occ::solvent::sigma::contract_segments(s, g, field, split);
+  REQUIRE(per_segment.sum() == Catch::Approx(binned).epsilon(1e-13));
 }
 
 TEST_CASE("Mixture profiles weight by mole fraction", "[solvent][sigma]") {
