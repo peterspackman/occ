@@ -379,10 +379,16 @@ TEST_CASE("CG: CavitySurface operations", "[cg]") {
 TEST_CASE("CG: SolvationData round-trips through JSON", "[cg]") {
   using namespace occ::cg;
 
+  const occ::Mat3N coulomb_positions = occ::Mat3N::Random(3, 4);
+  const occ::Vec coulomb_areas = occ::Vec::Ones(4) * 1.5;
+
   SolvationData data;
-  auto &coulomb = add_cavity(data, "coulomb", occ::Mat3N::Random(3, 4),
-                             occ::Vec::Ones(4) * 1.5, occ::Vec::Ones(4) * -0.25);
-  coulomb.descriptors.push_back({"hbond_area", occ::Vec::Ones(4) * 7.0});
+  add_cavity(data, "coulomb", coulomb_positions, coulomb_areas,
+             occ::Vec::Ones(4) * -0.25);
+  // Note the returned reference is only valid until the next add_cavity, so
+  // finish with this cavity before adding another.
+  data.cavities.back().descriptors.push_back(
+      {"hbond_area", occ::Vec::Ones(4) * 7.0});
   add_cavity(data, "cds", occ::Mat3N::Random(3, 3), occ::Vec::Ones(3) * 2.0,
              occ::Vec::Ones(3) * -0.1);
   data.total_solvation_energy = -1.3;
@@ -398,8 +404,8 @@ TEST_CASE("CG: SolvationData round-trips through JSON", "[cg]") {
 
   const auto *c = restored.find("coulomb");
   REQUIRE(c != nullptr);
-  CHECK(c->positions.isApprox(coulomb.positions));
-  CHECK(c->areas.isApprox(coulomb.areas));
+  CHECK(c->positions.isApprox(coulomb_positions));
+  CHECK(c->areas.isApprox(coulomb_areas));
   REQUIRE(c->energies.size() == 1);
   CHECK(c->energies[0].name == "coulomb");
   REQUIRE(c->descriptors.size() == 1);

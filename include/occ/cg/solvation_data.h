@@ -56,6 +56,10 @@ struct SolvationData {
 [[nodiscard]] const CavitySurface *cds_cavity(const SolvationData &);
 
 /// Add a named cavity with a single energy channel of the same name.
+///
+/// \warning Returns a reference into `cavities`, so it is invalidated by the
+/// next `add_cavity` exactly as `std::vector::emplace_back` would be. Finish
+/// with one cavity before adding the next.
 CavitySurface &add_cavity(SolvationData &, const std::string &name,
                           const Mat3N &positions, const Vec &areas,
                           const Vec &energies);
