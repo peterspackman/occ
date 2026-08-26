@@ -226,6 +226,61 @@ TEST_CASE("CG: ContributionPair basic operations", "[cg]") {
   }
 }
 
+TEST_CASE("CG: SolvationContribution carries arbitrary channels", "[cg]") {
+  using namespace occ::cg;
+
+  SECTION("Named energy channels sum; descriptors do not") {
+    SolvationContribution contrib;
+    contrib.set_antisymmetrize(false);
+    contrib.add_energy("dielectric", -3.0);
+    contrib.add_energy("residual", 1.0);
+    contrib.add_descriptor("hbond_area", 12.0);
+    contrib.add_descriptor("reorganisation", 0.5);
+
+    REQUIRE(contrib.energy("dielectric").forward == -3.0);
+    REQUIRE(contrib.energy("residual").forward == 1.0);
+    REQUIRE(contrib.total_energy() == -2.0);
+    // Descriptors are carried but never enter the energy.
+    REQUIRE(contrib.descriptor("hbond_area").forward == 12.0);
+    REQUIRE(contrib.energy_channels().size() == 2);
+    REQUIRE(contrib.descriptor_channels().size() == 2);
+  }
+
+  SECTION("Unknown channels read as zero") {
+    SolvationContribution contrib;
+    REQUIRE(contrib.energy("not-a-channel").forward == 0.0);
+    REQUIRE(contrib.descriptor("not-a-channel").total() == 0.0);
+  }
+
+  SECTION("Exchange moves every channel, including one-sided ones") {
+    SolvationContribution a, b;
+    a.add_energy("dielectric", -3.0);
+    a.add_descriptor("hbond_area", 12.0);
+    b.add_energy("dielectric", -5.0);
+    // Only b has this one; it must still reach a.
+    b.add_energy("residual", 2.0);
+
+    a.exchange_with(b);
+    REQUIRE(a.energy("dielectric").reverse == -5.0);
+    REQUIRE(b.energy("dielectric").reverse == -3.0);
+    REQUIRE(a.energy("residual").reverse == 2.0);
+    REQUIRE(a.descriptor("hbond_area").forward == 12.0);
+    REQUIRE(b.descriptor("hbond_area").reverse == 12.0);
+    REQUIRE(a.has_been_exchanged());
+  }
+
+  SECTION("SMD accessors map onto the named channels") {
+    SolvationContribution contrib;
+    contrib.add_coulomb(-1.5);
+    contrib.add_cds(-0.5);
+    contrib.add_coulomb_area(20.0);
+    REQUIRE(contrib.coulomb().forward == contrib.energy("electrostatic").forward);
+    REQUIRE(contrib.cds().forward == contrib.energy("cds").forward);
+    REQUIRE(contrib.coulomb_area().forward ==
+            contrib.descriptor("electrostatic_area").forward);
+  }
+}
+
 TEST_CASE("CG: SolvationContribution functionality", "[cg]") {
   using namespace occ::cg;
 
