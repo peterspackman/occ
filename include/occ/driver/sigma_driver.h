@@ -25,6 +25,11 @@ struct ConductorResult {
   qm::Wavefunction wavefunction;
   double energy_gas{0.0};
   double energy_conductor{0.0};
+  /// Per-element screening energy ½σ_iφ_i on the conductor cavity (Hartree).
+  /// Summed this is the variational part of `energy_conductor − energy_gas`;
+  /// the remainder is the electronic relaxation cost, which has no per-element
+  /// decomposition.
+  Vec dielectric_energies;
   double cavity_area{0.0};   ///< Å²
   double cavity_volume{0.0}; ///< Å³
   /// Σ a_i σ_i against −q_solute; the gap is the cavity discretisation error.
@@ -42,7 +47,8 @@ conductor_segments(const qm::Wavefunction &wavefunction,
                    const solvent::sigma::Parameters &params,
                    double probe_radius_angs = 0.0,
                    int angular_points = 590,
-                   bool constrain_charge = true);
+                   bool constrain_charge = true,
+                   Vec *dielectric_energies = nullptr);
 
 /// Converge the SCF in the ideal-conductor reaction field starting from a
 /// gas-phase wavefunction, then build the segments.

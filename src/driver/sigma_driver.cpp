@@ -28,7 +28,7 @@ solvent::sigma::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
                    const solvent::sigma::Parameters &params,
                    double probe_radius_angs, int angular_points,
-                   bool constrain_charge) {
+                   bool constrain_charge, Vec *dielectric_energies) {
   Mat3N positions;
   IVec atomic_numbers;
   atom_arrays(wavefunction.atoms, positions, atomic_numbers);
@@ -42,6 +42,12 @@ conductor_segments(const qm::Wavefunction &wavefunction,
   if (constrain_charge)
     constraint = static_cast<double>(wavefunction.charge());
   engine.solve_asc(phi, constraint);
+
+  if (dielectric_energies) {
+    auto surfaces = engine.surfaces();
+    *dielectric_energies = surfaces.coulomb ? surfaces.coulomb->energies
+                                            : Vec::Zero(phi.size());
+  }
 
   auto segments = solvent::sigma::segments_from_cavity(
       engine.es_cavity(), engine.surface_charges(), atomic_numbers);
@@ -70,10 +76,10 @@ ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
   result.energy_gas = gas_wavefunction.energy.total;
   result.energy_conductor = scf.compute_scf_energy();
   result.wavefunction = scf.wavefunction();
-  result.segments =
-      conductor_segments(result.wavefunction, params,
-                         settings.probe_radius_angs, settings.angular_points,
-                         settings.constrain_charge);
+  result.segments = conductor_segments(
+      result.wavefunction, params, settings.probe_radius_angs,
+      settings.angular_points, settings.constrain_charge,
+      &result.dielectric_energies);
 
   Mat3N positions;
   IVec atomic_numbers;

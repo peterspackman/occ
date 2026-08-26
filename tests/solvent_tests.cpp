@@ -1773,13 +1773,14 @@ TEST_CASE("Sigma surfaces partition over crystal neighbours",
   SolventModel water(store.get("water"), params);
   auto scrf_surface = water.solvation_surface(conductor.segments);
 
+  // Both halves of the decomposition, in the two branches cg already reads.
   occ::cg::SMDSolventSurfaces surfaces;
   surfaces.coulomb.positions = scrf_surface.positions;
   surfaces.coulomb.areas = scrf_surface.areas;
-  surfaces.coulomb.energies = scrf_surface.energies;
-  surfaces.cds.positions = Mat3N(3, 0);
-  surfaces.cds.areas = Vec(0);
-  surfaces.cds.energies = Vec(0);
+  surfaces.coulomb.energies = conductor.dielectric_energies;
+  surfaces.cds.positions = scrf_surface.positions;
+  surfaces.cds.areas = scrf_surface.areas;
+  surfaces.cds.energies = scrf_surface.energies;
   surfaces.electronic_energies = Vec::Zero(scrf_surface.areas.size());
 
   occ::cg::SolventSurfacePartitioner partitioner(crystal, neighbors);
@@ -1788,29 +1789,41 @@ TEST_CASE("Sigma surfaces partition over crystal neighbours",
   auto contributions = partitioner.partition(neighbors, surfaces);
   REQUIRE(contributions.size() == neighbors.size());
 
-  double partitioned = 0.0, partitioned_area = 0.0;
+  double partitioned_diel = 0.0, partitioned_res = 0.0,
+         partitioned_area = 0.0;
   for (const auto &c : contributions) {
-    partitioned += c.coulomb().forward;
+    partitioned_diel += c.coulomb().forward;
+    partitioned_res += c.cds().forward;
     partitioned_area += c.coulomb_area().forward;
   }
 
-  const double total = scrf_surface.total_energy();
-  fmt::print("\n acetic acid in water: {} segments over {} neighbours, "
-             "residual {:.3f} kJ/mol, partitioned {:.3f} kJ/mol\n",
+  const double dielectric = conductor.dielectric_energies.sum();
+  const double residual = scrf_surface.total_energy();
+  fmt::print("\n acetic acid in water: {} segments over {} neighbours\n"
+             "   E_diel {:8.3f} kJ/mol (partitioned {:8.3f})\n"
+             "   mu_res {:8.3f} kJ/mol (partitioned {:8.3f})\n",
              conductor.segments.size(), neighbors.size(),
-             total * occ::units::AU_TO_KJ_PER_MOL,
-             partitioned * occ::units::AU_TO_KJ_PER_MOL);
+             dielectric * occ::units::AU_TO_KJ_PER_MOL,
+             partitioned_diel * occ::units::AU_TO_KJ_PER_MOL,
+             residual * occ::units::AU_TO_KJ_PER_MOL,
+             partitioned_res * occ::units::AU_TO_KJ_PER_MOL);
 
-  // Every element is assigned to exactly one neighbour, so nothing is lost.
-  REQUIRE(partitioned == Catch::Approx(total).epsilon(1e-10));
+  // Every element is assigned to exactly one neighbour, so both branches are
+  // conserved independently.
+  REQUIRE(partitioned_diel == Catch::Approx(dielectric).epsilon(1e-10));
+  REQUIRE(partitioned_res == Catch::Approx(residual).epsilon(1e-10));
   REQUIRE(partitioned_area ==
           Catch::Approx(scrf_surface.total_area()).epsilon(1e-10));
 
-  // No sign is asserted: this is the residual term alone, without the pure
-  // component reference or the combinatorial part, so it is not a solvation
-  // free energy. Acetic acid comes out positive in water because its methyl
-  // surface sits near sigma = 0, where water's sigma potential is uphill.
-  REQUIRE(std::isfinite(total));
+  // The screening term dominates the magnitude, which is why leaving it out
+  // would have made the desolvation penalty far too small.
+  REQUIRE(dielectric < 0.0);
+  REQUIRE(std::abs(dielectric) > std::abs(residual));
+
+  // No sign is asserted for the residual: it is the conductor-to-solvent
+  // correction, and acetic acid's methyl surface sits near sigma = 0 where
+  // water's sigma potential is uphill.
+  REQUIRE(std::isfinite(residual));
 
   // What can be checked is that the model discriminates solvents: the polar
   // surface hydrogen bonds in water and cannot in an alkane.
