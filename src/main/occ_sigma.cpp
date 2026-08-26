@@ -9,6 +9,7 @@
 #include <occ/main/occ_sigma.h>
 #include <occ/qm/scf.h>
 #include <occ/solvent/sigma_io.h>
+#include <occ/solvent/sigma_solvation.h>
 
 namespace occ::main {
 
@@ -108,6 +109,29 @@ void run_sigma_subcommand(SigmaConfig const &config) {
 
   if (config.solvent.empty())
     return;
+
+  // Solvation energy of this molecule in the named solvent, when a profile
+  // for it is available: E_diel (gas -> conductor) + the residual contraction.
+  {
+    auto store = occ::solvent::sigma::ProfileStore::standard();
+    if (store.contains(config.solvent)) {
+      occ::solvent::sigma::PotentialOptions options;
+      options.temperature = config.temperature;
+      occ::solvent::sigma::SolventModel solvent(store.get(config.solvent),
+                                                params, options);
+      const double e_diel = (result.energy_conductor - result.energy_gas) *
+                            occ::units::AU_TO_KJ_PER_MOL;
+      const double residual =
+          solvent.segment_energies(result.segments).sum() *
+          occ::units::AU_TO_KJ_PER_MOL;
+      const double hbond =
+          solvent.segment_hbond_area(result.segments).sum();
+      occ::log::info("solvation in '{}': E_diel {:.4f} + residual {:.4f} = "
+                     "{:.4f} kJ/mol  (hydrogen-bonded area {:.3f} A^2)",
+                     config.solvent, e_diel, residual, e_diel + residual,
+                     hbond);
+    }
+  }
 
   auto kernel =
       occ::solvent::sigma::build_kernel(grid, params, config.temperature);
