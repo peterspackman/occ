@@ -52,6 +52,9 @@ struct CrystalGrowthCalculatorOptions {
   bool use_wolf_sum{false};
   bool use_crystal_polarization{false};
   bool write_debug_output_files{true};
+  /// Print a per-contact table of the solvation descriptors (lambda,
+  /// hydrogen-bonded area, ...) alongside the energy table.
+  bool print_solvation_descriptors{false};
   double inner_radius{3.8};
   double outer_radius{3.8};
   std::string xtb_solvation_model{"cpcmx"};

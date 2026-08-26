@@ -275,6 +275,7 @@ struct SolvatedNeighborInputs {
   bool write_surface_files{true};
   double inner_radius{3.8};
   double solution_term{0.0}; ///< kJ/mol
+  bool print_descriptors{false};
 };
 
 /// One dimer's crystal-side energy, supplied by the calculator.
@@ -331,6 +332,13 @@ cg::MoleculeResult assemble_solvated_neighbors(
   cg::MoleculeResult results;
   results.total.solution_term = in.solution_term;
 
+  struct DescriptorRow {
+    int unique_idx;
+    std::string label;
+    cg::CGEnergyComponents values;
+  };
+  std::vector<DescriptorRow> descriptor_rows;
+
   size_t j = 0;
   for (const auto &[dimer, unique_idx] : in.full_neighbors) {
     const auto energy = crystal_energy(unique_idx);
@@ -372,6 +380,8 @@ cg::MoleculeResult assemble_solvated_neighbors(
       cg::CGEnergyComponents descriptors;
       for (const auto &channel : contribution.descriptor_channels())
         descriptors[channel] = contribution.descriptor(channel).total();
+      if (in.print_descriptors)
+        descriptor_rows.push_back({unique_idx, dimer.name(), descriptors});
 
       interactions.push_back(cg::DimerResult{dimer, true, unique_idx,
                                              std::move(components),
@@ -405,6 +415,33 @@ cg::MoleculeResult assemble_solvated_neighbors(
 
     results.add_dimer_result(interactions.back());
     j++;
+  }
+
+  // Per-contact descriptors, one column per channel the model produced.
+  if (in.print_descriptors && !descriptor_rows.empty()) {
+    std::vector<std::string> channels;
+    for (const auto &[name, value] : descriptor_rows.front().values)
+      channels.push_back(name);
+    std::sort(channels.begin(), channels.end());
+
+    std::string header = fmt::format("{:>4s} {:<28s}", "id", "Label");
+    for (const auto &channel : channels)
+      header += fmt::format(" {:>16s}", channel);
+    occ::log::warn("");
+    occ::log::warn("Solvation descriptors per nearest-neighbour contact");
+    occ::log::warn("{}", header);
+    occ::log::warn(std::string(header.size(), '='));
+
+    for (const auto &row : descriptor_rows) {
+      std::string line = fmt::format("{:>4d} {:<28s}", row.unique_idx,
+                                     row.label);
+      for (const auto &channel : channels) {
+        const auto it = row.values.find(channel);
+        line += fmt::format(" {:16.4f}",
+                            it == row.values.end() ? 0.0 : it->second);
+      }
+      occ::log::warn("{}", line);
+    }
   }
 
   // Per-contact descriptors are model-specific, so report whatever came
@@ -581,7 +618,8 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
                             opts.inner_radius,
                             m_solvated_surface_properties[i]
                                     .total_solvation_energy *
-                                occ::units::AU_TO_KJ_PER_MOL};
+                                occ::units::AU_TO_KJ_PER_MOL,
+                            opts.print_solvation_descriptors};
 
   auto crystal_energy = [this](size_t idx) {
     const auto &e = m_dimer_energies[idx];
@@ -780,7 +818,8 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
                             opts.write_debug_output_files,
                             opts.inner_radius,
                             (m_solvated_energies[i] - m_gas_phase_energies[i]) *
-                                occ::units::AU_TO_KJ_PER_MOL};
+                                occ::units::AU_TO_KJ_PER_MOL,
+                            opts.print_solvation_descriptors};
 
   auto crystal_energy = [this](size_t idx) {
     DimerCrystalEnergy out;

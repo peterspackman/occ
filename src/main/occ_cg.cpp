@@ -47,6 +47,9 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "solvation model: smd (default), sigma, none");
   cg->add_option("--temperature", config->temperature,
                  "temperature in K for the solvation model");
+  cg->add_flag("--solvation-descriptors", config->print_solvation_descriptors,
+               "print a per-contact table of solvation descriptors "
+               "(reorganisation, hydrogen-bonded area)");
   cg->add_option("--charges", config->charge_string, "system net charge");
   cg->add_option("-w,--wavefunction-choice", config->wavefunction_choice,
                  "Choice of wavefunctions");

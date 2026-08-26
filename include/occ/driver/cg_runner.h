@@ -17,6 +17,7 @@ struct CGConfig {
   interaction::LatticeConvergenceSettings lattice_settings;
   std::string solvent{"water"};
   std::string solvation_model{"smd"};
+  bool print_solvation_descriptors{false};
   double temperature{298.15};
   DMAReferenceLevel dma_reference;
   std::string charge_string{""};
