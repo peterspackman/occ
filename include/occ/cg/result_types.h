@@ -26,6 +26,10 @@ constexpr const char *dispersion = "Dispersion";
 constexpr const char *repulsion = "Repulsion";
 constexpr const char *exchange = "Exchange";
 
+/// Descriptors are merged into the dimer's interaction map under this prefix
+/// so surface-level code can tell them apart from energies.
+constexpr const char *descriptor_prefix = "descriptor:";
+
 } // namespace components
 
 struct DimerSolventTerm {

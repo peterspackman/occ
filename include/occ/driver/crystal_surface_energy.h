@@ -1,4 +1,5 @@
 #pragma once
+#include <ankerl/unordered_dense.h>
 #include <nlohmann/json.hpp>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/hkl.h>
@@ -12,6 +13,11 @@ struct FacetEnergies {
   std::vector<std::vector<size_t>> interaction_energy_counts;
   double energy{0.0};
   double area{0.0};
+
+  /// Solvation descriptors summed over the contacts this cut breaks, in the
+  /// units the solvation model documents. Empty when no solvation model
+  /// carried any.
+  ankerl::unordered_dense::map<std::string, double> descriptors{};
 };
 
 struct CrystalSurfaceEnergies {

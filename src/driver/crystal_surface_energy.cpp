@@ -3,6 +3,8 @@
 #include <occ/crystal/surface.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/gmf.h>
+#include <cstring>
+#include <occ/cg/result_types.h>
 #include <occ/driver/crystal_surface_energy.h>
 
 namespace occ::driver {
@@ -14,6 +16,22 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
     const std::string &basename, const Crystal &crystal,
     const CrystalDimers &uc_dimers, int max_number_of_surfaces, int sign) {
   CrystalSurfaceEnergies result{crystal, {}, {}};
+
+  // Descriptor channels carried on the dimers, discovered once.
+  std::vector<std::string> descriptor_channels;
+  {
+    ankerl::unordered_dense::set<std::string> seen;
+    for (const auto &mol_neighbors : uc_dimers.molecule_neighbors) {
+      for (const auto &neighbor : mol_neighbors) {
+        for (const auto &[key, value] : neighbor.dimer.interaction_energies()) {
+          if (key.rfind(cg::components::descriptor_prefix, 0) == 0)
+            seen.insert(key);
+        }
+      }
+    }
+    descriptor_channels.assign(seen.begin(), seen.end());
+    std::sort(descriptor_channels.begin(), descriptor_channels.end());
+  }
 
   crystal::CrystalSurfaceGenerationParameters params;
   io::GMFWriter gmf(crystal);
@@ -70,6 +88,15 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
         log::debug("Surface energy (A) (J/m^2)  = {:12.6f}", surface_energy_a);
 
         f.energy = surface_energy_a;
+      }
+
+      // Any solvation descriptor riding on the dimers sums over the same cut
+      // contacts, giving the facet-level analogue of the per-contact values.
+      for (const auto &prefixed : descriptor_channels) {
+        const auto name =
+            prefixed.substr(std::strlen(cg::components::descriptor_prefix));
+        f.descriptors[name] =
+            surface_cut_result.total_above(uc_dimers, prefixed);
       }
 
       result.facets.push_back(f);
@@ -138,6 +165,12 @@ void to_json(nlohmann::json &j, const FacetEnergies &facet) {
   j["area"] = facet.area;
   j["energy"] = facet.energy;
   j["interaction_energy_counts"] = facet.interaction_energy_counts;
+  if (!facet.descriptors.empty()) {
+    nlohmann::json descriptors;
+    for (const auto &[key, value] : facet.descriptors)
+      descriptors[key] = value;
+    j["descriptors"] = descriptors;
+  }
 }
 
 void to_json(nlohmann::json &j,

@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <Eigen/Geometry>
 #include <array>
 #include <occ/core/linear_algebra.h>
@@ -41,10 +42,17 @@ struct SurfaceCutResult {
    * \param dimers Reference crystal dimers
    * \return Total number of dimers above the surface
    */
-  double total_above(const CrystalDimers &) const;
-  double total_below(const CrystalDimers &) const;
-  double total_slab(const CrystalDimers &) const;
-  double total_bulk(const CrystalDimers &) const;
+  /// Sum a named per-dimer interaction component over the dimers cut by the
+  /// surface. Defaults to the total interaction energy; any other channel
+  /// carried on the dimer (a solvation descriptor, say) sums the same way.
+  double total_above(const CrystalDimers &,
+                     const std::string &key = "Total") const;
+  double total_below(const CrystalDimers &,
+                     const std::string &key = "Total") const;
+  double total_slab(const CrystalDimers &,
+                    const std::string &key = "Total") const;
+  double total_bulk(const CrystalDimers &,
+                    const std::string &key = "Total") const;
   std::vector<std::vector<size_t>>
   unique_counts_above(const CrystalDimers &) const;
 };

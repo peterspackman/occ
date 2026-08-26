@@ -488,14 +488,15 @@ unique_counts_from_dimers(const SurfaceCutResult::DimerCounts &counts,
 
 double
 energy_from_counts_and_dimers(const SurfaceCutResult::DimerCounts &counts,
-                              const CrystalDimers &dimers) {
+                              const CrystalDimers &dimers,
+                              const std::string &key) {
   double energy_total = 0.0;
   for (int i = 0; i < counts.size(); i++) {
     const auto &neighbor_counts = counts[i];
     const auto &neighbors = dimers.molecule_neighbors[i];
     for (int j = 0; j < neighbor_counts.size(); j++) {
       if (neighbor_counts[j] > 0) {
-        double e_int = neighbors[j].dimer.interaction_energy();
+        double e_int = neighbors[j].dimer.interaction_energy(key);
         energy_total += neighbor_counts[j] * e_int;
       }
     }
@@ -508,20 +509,24 @@ SurfaceCutResult::unique_counts_above(const CrystalDimers &dimers) const {
   return unique_counts_from_dimers(above, dimers);
 }
 
-double SurfaceCutResult::total_above(const CrystalDimers &dimers) const {
-  return energy_from_counts_and_dimers(above, dimers);
+double SurfaceCutResult::total_above(const CrystalDimers &dimers,
+                                     const std::string &key) const {
+  return energy_from_counts_and_dimers(above, dimers, key);
 }
 
-double SurfaceCutResult::total_below(const CrystalDimers &dimers) const {
-  return energy_from_counts_and_dimers(below, dimers);
+double SurfaceCutResult::total_below(const CrystalDimers &dimers,
+                                     const std::string &key) const {
+  return energy_from_counts_and_dimers(below, dimers, key);
 }
 
-double SurfaceCutResult::total_slab(const CrystalDimers &dimers) const {
-  return energy_from_counts_and_dimers(slab, dimers);
+double SurfaceCutResult::total_slab(const CrystalDimers &dimers,
+                                     const std::string &key) const {
+  return energy_from_counts_and_dimers(slab, dimers, key);
 }
 
-double SurfaceCutResult::total_bulk(const CrystalDimers &dimers) const {
-  return energy_from_counts_and_dimers(bulk, dimers);
+double SurfaceCutResult::total_bulk(const CrystalDimers &dimers,
+                                     const std::string &key) const {
+  return energy_from_counts_and_dimers(bulk, dimers, key);
 }
 
 SurfaceCutResult::SurfaceCutResult(const CrystalDimers &dimers) {
