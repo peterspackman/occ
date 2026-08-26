@@ -1,5 +1,5 @@
 #pragma once
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 #include <occ/core/molecule.h>
 #include <occ/driver/sigma_driver.h>
 #include <occ/qm/wavefunction.h>
@@ -26,7 +26,7 @@ struct SigmaSolvationSettings {
 /// `reorganisation` and `hbond_area` are per-element and partition the same
 /// way, giving each neighbour contact a descriptor alongside its energy.
 struct SigmaSolvationResult {
-  std::vector<cg::SMDSolventSurfaces> surfaces;
+  std::vector<cg::SolvationData> surfaces;
   std::vector<qm::Wavefunction> wavefunctions; ///< ideal-conductor
   std::vector<Vec> reorganisation;             ///< Hartree, per element
   std::vector<Vec> hbond_area;                 ///< Å², per element

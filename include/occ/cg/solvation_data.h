@@ -1,5 +1,6 @@
 #pragma once
-#include <occ/cg/solvent_surface.h>
+#include <occ/scrf/surfaces.h>
+#include <occ/xtb/solvation_interface.h>
 #include <occ/core/linear_algebra.h>
 #include <string>
 #include <string_view>
@@ -48,12 +49,26 @@ struct SolvationData {
   [[nodiscard]] const CavitySurface *find(std::string_view name) const;
 };
 
-/// SMD/CPCM-X cache format to the partitionable shape.
-///
-/// The electrostatic cavity carries `coulomb.energies + electronic_energies`
-/// as a single `coulomb` channel, matching what the partitioner has
-/// always summed. Cavity names are kept as `coulomb` and `cds` so the dump
-/// file names do not change.
-[[nodiscard]] SolvationData to_solvation_data(const SMDSolventSurfaces &);
+/// Convenience accessors for the two SMD/CPCM-X cavities.
+[[nodiscard]] CavitySurface *coulomb_cavity(SolvationData &);
+[[nodiscard]] const CavitySurface *coulomb_cavity(const SolvationData &);
+[[nodiscard]] CavitySurface *cds_cavity(SolvationData &);
+[[nodiscard]] const CavitySurface *cds_cavity(const SolvationData &);
+
+/// Add a named cavity with a single energy channel of the same name.
+CavitySurface &add_cavity(SolvationData &, const std::string &name,
+                          const Mat3N &positions, const Vec &areas,
+                          const Vec &energies);
+
+/// Build from the unified `occ::scrf::SolvationSurfaces` bundle produced by
+/// the HF/DFT and xTB pipelines. CPCM-X has no CDS branch, so that cavity is
+/// simply absent.
+[[nodiscard]] SolvationData
+from_scrf_surfaces(const occ::scrf::SolvationSurfaces &);
+
+[[nodiscard]] inline SolvationData
+from_xtb_surfaces(const occ::xtb::SolvationSurfaces &surfaces) {
+  return from_scrf_surfaces(surfaces);
+}
 
 } // namespace occ::cg

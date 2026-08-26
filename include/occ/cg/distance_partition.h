@@ -31,11 +31,6 @@ public:
   [[nodiscard]] std::vector<SolvationContribution>
   partition(const NeighborList &nearest, const SolvationData &surface);
 
-  /// Convenience overload for the SMD/CPCM-X cache format.
-  [[nodiscard]] std::vector<SolvationContribution>
-  partition(const NeighborList &nearest, const SMDSolventSurfaces &surface) {
-    return partition(nearest, to_solvation_data(surface));
-  }
 
   [[nodiscard]] inline bool should_antisymmetrize() const {
     return m_antisymmetrize;

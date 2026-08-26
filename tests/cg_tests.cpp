@@ -5,7 +5,7 @@
 #include <occ/cg/distance_partition.h>
 #include <occ/cg/result_types.h>
 #include <occ/cg/solvation_types.h>
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 #include <occ/core/data_directory.h>
 #include <occ/core/units.h>
 #include <occ/solvent/surface.h>
@@ -351,118 +351,60 @@ TEST_CASE("CG: SolvationContribution functionality", "[cg]") {
   }
 }
 
-TEST_CASE("CG: SolventSurface operations", "[cg]") {
+TEST_CASE("CG: CavitySurface operations", "[cg]") {
   using namespace occ::cg;
 
   SECTION("Default construction") {
-    SolventSurface surface;
-    CHECK(surface.size() == 0);
-    CHECK(surface.total_energy() == 0.0);
-    CHECK(surface.total_area() == 0.0);
+    CavitySurface cavity;
+    CHECK(cavity.size() == 0);
+    CHECK(cavity.total_energy() == 0.0);
+    CHECK(cavity.total_area() == 0.0);
   }
 
-  SECTION("Surface with data") {
-    SolventSurface surface;
+  SECTION("Energies sum across channels; descriptors do not") {
+    CavitySurface cavity;
+    cavity.name = "conductor";
+    cavity.positions = occ::Mat3N::Random(3, 5);
+    cavity.areas = occ::Vec::Ones(5) * 3.0;
+    cavity.energies.push_back({"dielectric", occ::Vec::Ones(5) * 2.0});
+    cavity.energies.push_back({"residual", occ::Vec::Ones(5) * -0.5});
+    cavity.descriptors.push_back({"hbond_area", occ::Vec::Ones(5) * 99.0});
 
-    // Create test data
-    surface.positions = occ::Mat3N::Random(3, 5);
-    surface.energies = occ::Vec::Ones(5) * 2.0;
-    surface.areas = occ::Vec::Ones(5) * 3.0;
-
-    CHECK(surface.size() == 5);
-    CHECK(surface.total_energy() == Approx(10.0)); // 5 points * 2.0 energy each
-    CHECK(surface.total_area() == Approx(15.0));   // 5 points * 3.0 area each
-  }
-
-  SECTION("JSON serialization") {
-    SolventSurface surface;
-    surface.positions = occ::Mat3N::Random(3, 3);
-    surface.energies = occ::Vec::Ones(3) * 2.0;
-    surface.areas = occ::Vec::Ones(3) * 1.5;
-
-    nlohmann::json j = surface;
-    auto deserialized = j.get<SolventSurface>();
-
-    CHECK(deserialized.size() == surface.size());
-    CHECK(deserialized.total_energy() == surface.total_energy());
-    CHECK(deserialized.total_area() == surface.total_area());
-    CHECK(deserialized.positions.isApprox(surface.positions));
-    CHECK(deserialized.energies.isApprox(surface.energies));
-    CHECK(deserialized.areas.isApprox(surface.areas));
+    CHECK(cavity.size() == 5);
+    CHECK(cavity.total_area() == Approx(15.0));
+    CHECK(cavity.total_energy() == Approx(7.5)); // 5*(2.0 - 0.5)
   }
 }
 
-TEST_CASE("CG: SMDSolventSurfaces functionality", "[cg]") {
+TEST_CASE("CG: SolvationData round-trips through JSON", "[cg]") {
   using namespace occ::cg;
 
-  SECTION("Default construction") {
-    SMDSolventSurfaces surfaces;
-    CHECK(surfaces.total_energy() == 0.0);
-    CHECK(surfaces.total_solvation_energy == 0.0);
-    CHECK(surfaces.electronic_contribution == 0.0);
-    CHECK(surfaces.gas_phase_contribution == 0.0);
-    CHECK(surfaces.free_energy_correction == 0.0);
-  }
+  SolvationData data;
+  auto &coulomb = add_cavity(data, "coulomb", occ::Mat3N::Random(3, 4),
+                             occ::Vec::Ones(4) * 1.5, occ::Vec::Ones(4) * -0.25);
+  coulomb.descriptors.push_back({"hbond_area", occ::Vec::Ones(4) * 7.0});
+  add_cavity(data, "cds", occ::Mat3N::Random(3, 3), occ::Vec::Ones(3) * 2.0,
+             occ::Vec::Ones(3) * -0.1);
+  data.total_solvation_energy = -1.3;
+  data.gas_phase_contribution = 0.4;
 
-  SECTION("Energy calculations") {
-    SMDSolventSurfaces surfaces;
+  nlohmann::json j = data;
+  auto restored = j.get<SolvationData>();
 
-    // Set up coulomb surface
-    surfaces.coulomb.positions = occ::Mat3N::Random(3, 3);
-    surfaces.coulomb.energies = occ::Vec::Ones(3) * 2.0;
-    surfaces.coulomb.areas = occ::Vec::Ones(3);
+  REQUIRE(restored.cavities.size() == 2);
+  CHECK(restored.total_energy() == Approx(data.total_energy()));
+  CHECK(restored.total_solvation_energy == data.total_solvation_energy);
+  CHECK(restored.gas_phase_contribution == data.gas_phase_contribution);
 
-    // Set up CDS surface
-    surfaces.cds.positions = occ::Mat3N::Random(3, 4);
-    surfaces.cds.energies = occ::Vec::Ones(4) * 3.0;
-    surfaces.cds.areas = occ::Vec::Ones(4);
-
-    surfaces.electronic_energies = occ::Vec::Ones(3);
-
-    double expected_total =
-        surfaces.coulomb.total_energy() +   // 3 points * 2.0 = 6.0
-        surfaces.cds.total_energy() +       // 4 points * 3.0 = 12.0
-        surfaces.electronic_energies.sum(); // 3 points * 1.0 = 3.0
-
-    CHECK(surfaces.total_energy() == Approx(21.0));
-  }
-
-  SECTION("JSON serialization") {
-    SMDSolventSurfaces surfaces;
-
-    surfaces.coulomb.positions = occ::Mat3N::Random(3, 2);
-    surfaces.coulomb.energies = occ::Vec::Ones(2) * 1.5;
-    surfaces.coulomb.areas = occ::Vec::Ones(2) * 1.0;
-
-    surfaces.cds.positions = occ::Mat3N::Random(3, 3);
-    surfaces.cds.energies = occ::Vec::Ones(3) * 2.0;
-    surfaces.cds.areas = occ::Vec::Ones(3) * 1.2;
-
-    surfaces.electronic_energies = occ::Vec::Ones(2) * 0.5;
-
-    surfaces.total_solvation_energy = 1.0;
-    surfaces.electronic_contribution = 2.0;
-    surfaces.gas_phase_contribution = 3.0;
-    surfaces.free_energy_correction = 4.0;
-
-    nlohmann::json j = surfaces;
-    auto deserialized = j.get<SMDSolventSurfaces>();
-
-    // Check all components are properly serialized/deserialized
-    CHECK(deserialized.coulomb.size() == surfaces.coulomb.size());
-    CHECK(deserialized.cds.size() == surfaces.cds.size());
-    CHECK(deserialized.electronic_energies.isApprox(
-        surfaces.electronic_energies));
-    CHECK(deserialized.total_solvation_energy ==
-          surfaces.total_solvation_energy);
-    CHECK(deserialized.electronic_contribution ==
-          surfaces.electronic_contribution);
-    CHECK(deserialized.gas_phase_contribution ==
-          surfaces.gas_phase_contribution);
-    CHECK(deserialized.free_energy_correction ==
-          surfaces.free_energy_correction);
-    CHECK(deserialized.total_energy() == surfaces.total_energy());
-  }
+  const auto *c = restored.find("coulomb");
+  REQUIRE(c != nullptr);
+  CHECK(c->positions.isApprox(coulomb.positions));
+  CHECK(c->areas.isApprox(coulomb.areas));
+  REQUIRE(c->energies.size() == 1);
+  CHECK(c->energies[0].name == "coulomb");
+  REQUIRE(c->descriptors.size() == 1);
+  CHECK(c->descriptors[0].name == "hbond_area");
+  CHECK(restored.find("not-a-cavity") == nullptr);
 }
 
 namespace {
@@ -513,22 +455,15 @@ TEST_CASE("CG: SolventSurfacePartitioner with acetic acid crystal",
     auto solvent_surface = occ::solvent::surface::solvent_surface(
         coulomb_radii, nums, positions, 0.0);
 
-    // Create SMD surface from points
-    SMDSolventSurfaces surface;
-
-    // Set up coulomb surface
-    surface.coulomb.positions = solvent_surface.vertices;
-    surface.coulomb.energies =
-        occ::Vec::Ones(solvent_surface.vertices.cols()) * -0.5;
-    surface.coulomb.areas = solvent_surface.areas;
-    surface.electronic_energies =
-        occ::Vec::Ones(solvent_surface.vertices.cols()) * -0.2;
-
-    // Set up CDS surface (using same points but different energies for test)
-    surface.cds.positions = surface.coulomb.positions;
-    surface.cds.energies =
-        occ::Vec::Ones(solvent_surface.vertices.cols()) * -0.3;
-    surface.cds.areas = surface.coulomb.areas;
+    // Two cavities on the same points, as SMD would produce.
+    const Eigen::Index n = solvent_surface.vertices.cols();
+    SolvationData surface;
+    auto &coulomb =
+        add_cavity(surface, "coulomb", solvent_surface.vertices,
+                   solvent_surface.areas, occ::Vec::Ones(n) * -0.5);
+    coulomb.energies.push_back({"electronic", occ::Vec::Ones(n) * -0.2});
+    add_cavity(surface, "cds", solvent_surface.vertices, solvent_surface.areas,
+               occ::Vec::Ones(n) * -0.3);
 
     // Create partitioner
     SolventSurfacePartitioner partitioner(crystal, neighbors);
@@ -563,15 +498,22 @@ TEST_CASE("CG: SolventSurfacePartitioner with acetic acid crystal",
       CHECK(total_coulomb != 0.0);
       CHECK(total_cds != 0.0);
 
-      // The total should match all point energies (-0.5 per point * number of
-      // points)
-      double expected_coulomb = -0.5 * solvent_surface.vertices.cols();
-      double expected_electronic = -0.2 * solvent_surface.vertices.cols();
-      double expected_total = expected_coulomb + expected_electronic;
-
-      CAPTURE(expected_total);
+      // Each channel is now partitioned separately, so `coulomb()` carries
+      // only the electrostatic term and `electronic` sits alongside it.
+      const double n_points = solvent_surface.vertices.cols();
       CHECK(std::abs(total_coulomb) ==
-            Approx(std::abs(expected_total)).margin(1e-10));
+            Approx(std::abs(-0.5 * n_points)).margin(1e-10));
+
+      double total_electronic = 0.0, total_forward = 0.0;
+      for (const auto &contrib : contributions) {
+        total_electronic += contrib.energy("electronic").forward;
+        total_forward += contrib.forward_energy();
+      }
+      CHECK(std::abs(total_electronic) ==
+            Approx(std::abs(-0.2 * n_points)).margin(1e-10));
+      // Summed over channels this is every point's energy, once.
+      CHECK(std::abs(total_forward) ==
+            Approx(std::abs(-1.0 * n_points)).margin(1e-10));
     }
 
     SECTION("Normalized distances") {
@@ -654,16 +596,17 @@ TEST_CASE("CG: xtb SMD surfaces partition through acetic-acid crystal",
   // ---------------------------------------------------------------
   // Convert and partition.
   // ---------------------------------------------------------------
-  SMDSolventSurfaces cg_surfs = from_xtb_surfaces(xtb_surfs);
-  REQUIRE(cg_surfs.coulomb.size() == xtb_surfs.coulomb->size());
-  REQUIRE(cg_surfs.cds.size() == xtb_surfs.cds->size());
+  SolvationData cg_surfs = from_xtb_surfaces(xtb_surfs);
+  const auto *coulomb = cg_surfs.find("coulomb");
+  const auto *cds = cg_surfs.find("cds");
+  REQUIRE(coulomb != nullptr);
+  REQUIRE(cds != nullptr);
+  REQUIRE(coulomb->size() == xtb_surfs.coulomb->size());
+  REQUIRE(cds->size() == xtb_surfs.cds->size());
 
   // Round-trip identity: per-element sums should equal the underlying model.
-  CHECK(cg_surfs.coulomb.total_energy() ==
-        Approx(model->e_es()).margin(1e-12));
-  CHECK(cg_surfs.cds.total_energy() == Approx(model->e_cds()).margin(1e-12));
-  // electronic_energies is zeroed; SMDSolventSurfaces::total_energy() sums
-  // coulomb+cds+electronic, which now adds up to model->energy() exactly.
+  CHECK(coulomb->total_energy() == Approx(model->e_es()).margin(1e-12));
+  CHECK(cds->total_energy() == Approx(model->e_cds()).margin(1e-12));
   CHECK(cg_surfs.total_energy() == Approx(model->energy()).margin(1e-12));
 
   // ---------------------------------------------------------------
@@ -704,8 +647,7 @@ TEST_CASE("CG: xtb SMD surfaces partition through acetic-acid crystal",
 TEST_CASE("CG: from_xtb_surfaces handles CPCM-X (no cds)",
           "[cg][xtb][solvation]") {
   // Synthesise an xtb SolvationSurfaces with only the coulomb branch and
-  // confirm the adapter produces an SMD bundle with an empty cds and a
-  // sensible total.
+  // confirm the adapter produces a single cavity with a sensible total.
   occ::xtb::SolvationSurfaces s;
   occ::xtb::SolvationSurface c;
   c.positions = occ::Mat3N::Random(3, 5);
@@ -715,8 +657,11 @@ TEST_CASE("CG: from_xtb_surfaces handles CPCM-X (no cds)",
   s.coulomb = std::move(c);
 
   auto cg_s = from_xtb_surfaces(s);
-  CHECK(cg_s.coulomb.size() == 5);
-  CHECK(cg_s.cds.size() == 0);
-  CHECK(cg_s.coulomb.total_energy() == Approx(-0.05).margin(1e-12));
+  REQUIRE(cg_s.cavities.size() == 1);
+  const auto *coulomb = cg_s.find("coulomb");
+  REQUIRE(coulomb != nullptr);
+  CHECK(coulomb->size() == 5);
+  CHECK(cg_s.find("cds") == nullptr);
+  CHECK(coulomb->total_energy() == Approx(-0.05).margin(1e-12));
   CHECK(cg_s.total_solvation_energy == Approx(-0.05).margin(1e-12));
 }

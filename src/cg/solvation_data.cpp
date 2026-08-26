@@ -24,34 +24,50 @@ const CavitySurface *SolvationData::find(std::string_view name) const {
   return nullptr;
 }
 
-SolvationData to_solvation_data(const SMDSolventSurfaces &surfaces) {
+namespace {
+CavitySurface *find_mutable(SolvationData &data, std::string_view name) {
+  for (auto &cavity : data.cavities) {
+    if (cavity.name == name)
+      return &cavity;
+  }
+  return nullptr;
+}
+} // namespace
+
+CavitySurface *coulomb_cavity(SolvationData &d) {
+  return find_mutable(d, "coulomb");
+}
+const CavitySurface *coulomb_cavity(const SolvationData &d) {
+  return d.find("coulomb");
+}
+CavitySurface *cds_cavity(SolvationData &d) { return find_mutable(d, "cds"); }
+const CavitySurface *cds_cavity(const SolvationData &d) {
+  return d.find("cds");
+}
+
+CavitySurface &add_cavity(SolvationData &data, const std::string &name,
+                          const Mat3N &positions, const Vec &areas,
+                          const Vec &energies) {
+  CavitySurface cavity;
+  cavity.name = name;
+  cavity.positions = positions;
+  cavity.areas = areas;
+  cavity.energies.push_back({name, energies});
+  data.cavities.push_back(std::move(cavity));
+  return data.cavities.back();
+}
+
+SolvationData from_scrf_surfaces(const occ::scrf::SolvationSurfaces &surfaces) {
   SolvationData out;
-  out.total_solvation_energy = surfaces.total_solvation_energy;
-  out.electronic_contribution = surfaces.electronic_contribution;
-  out.gas_phase_contribution = surfaces.gas_phase_contribution;
-  out.free_energy_correction = surfaces.free_energy_correction;
-
-  if (surfaces.coulomb.size() > 0) {
-    CavitySurface cavity;
-    cavity.name = "coulomb";
-    cavity.positions = surfaces.coulomb.positions;
-    cavity.areas = surfaces.coulomb.areas;
-    Vec electrostatic = surfaces.coulomb.energies;
-    if (surfaces.electronic_energies.size() == electrostatic.size())
-      electrostatic += surfaces.electronic_energies;
-    cavity.energies.push_back({"coulomb", std::move(electrostatic)});
-    out.cavities.push_back(std::move(cavity));
+  if (surfaces.coulomb) {
+    const auto &c = *surfaces.coulomb;
+    add_cavity(out, "coulomb", c.positions, c.areas, c.energies);
   }
-
-  if (surfaces.cds.size() > 0) {
-    CavitySurface cavity;
-    cavity.name = "cds";
-    cavity.positions = surfaces.cds.positions;
-    cavity.areas = surfaces.cds.areas;
-    cavity.energies.push_back({"cds", surfaces.cds.energies});
-    out.cavities.push_back(std::move(cavity));
+  if (surfaces.cds) {
+    const auto &d = *surfaces.cds;
+    add_cavity(out, "cds", d.positions, d.areas, d.energies);
   }
-
+  out.total_solvation_energy = surfaces.total_energy();
   return out;
 }
 

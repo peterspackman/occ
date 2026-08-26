@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <fmt/os.h>
 #include <occ/cg/distance_partition.h>
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 #include <occ/driver/crystal_growth.h>
 #include <occ/interaction/ce_energy_model.h>
 #include <occ/interaction/lattice_energy.h>
@@ -469,11 +469,9 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
     total.crystal_energy += e_crys;
 
     cg::DimerSolventTerm solvent_term;
-    solvent_term.ab = (solvent_neighbor_contribution.coulomb().forward +
-                       solvent_neighbor_contribution.cds().forward) *
+    solvent_term.ab = solvent_neighbor_contribution.forward_energy() *
                       occ::units::AU_TO_KJ_PER_MOL;
-    solvent_term.ba = (solvent_neighbor_contribution.coulomb().reverse +
-                       solvent_neighbor_contribution.cds().reverse) *
+    solvent_term.ba = solvent_neighbor_contribution.reverse_energy() *
                       occ::units::AU_TO_KJ_PER_MOL;
 
     solvent_term.total = solvent_neighbor_contribution.total_energy() *
@@ -751,11 +749,9 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
 
     const auto &solvent_neighbor_contribution = solvation_breakdown[j];
     cg::DimerSolventTerm solvent_term;
-    solvent_term.ab = (solvent_neighbor_contribution.coulomb().forward +
-                       solvent_neighbor_contribution.cds().forward) *
+    solvent_term.ab = solvent_neighbor_contribution.forward_energy() *
                       occ::units::AU_TO_KJ_PER_MOL;
-    solvent_term.ba = (solvent_neighbor_contribution.coulomb().reverse +
-                       solvent_neighbor_contribution.cds().reverse) *
+    solvent_term.ba = solvent_neighbor_contribution.reverse_energy() *
                       occ::units::AU_TO_KJ_PER_MOL;
     solvent_term.total = solvent_neighbor_contribution.total_energy() *
                          occ::units::AU_TO_KJ_PER_MOL;

@@ -3,7 +3,7 @@
 #include <occ/cg/result_types.h>
 #include <occ/cg/smd_solvation.h>
 #include <occ/cg/solvation_contribution.h>
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 #include <occ/core/dimer.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
@@ -119,7 +119,7 @@ protected:
   std::vector<double> m_lattice_energies;
   WavefunctionList m_gas_phase_wavefunctions;
   WavefunctionList m_solvated_wavefunctions;
-  std::vector<cg::SMDSolventSurfaces> m_solvated_surface_properties;
+  std::vector<cg::SolvationData> m_solvated_surface_properties;
   crystal::CrystalDimers m_full_dimers;
   cg::PairEnergies m_dimer_energies;
   crystal::CrystalDimers m_nearest_dimers;

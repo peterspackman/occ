@@ -77,32 +77,35 @@ sigma_solvation(const std::string &basename,
 
     auto scrf_surface = model.solvation_surface(segments);
 
-    // The two branches carry the two halves of the COSMO-RS decomposition,
-    // which map onto the shape cg already consumes:
-    //   coulomb <- E_diel, gas to ideal conductor. Large, solvent
-    //              independent, and the bulk of the magnitude.
-    //   cds     <- mu_res, conductor to real solvent. Carries all of the
-    //              solvent dependence.
-    // Keeping them apart means cg reports them separately, exactly as it does
-    // for the SMD electrostatic and CDS terms.
-    cg::SMDSolventSurfaces surfaces;
-    surfaces.coulomb.positions = scrf_surface.positions;
-    surfaces.coulomb.areas = scrf_surface.areas;
-    surfaces.coulomb.energies = dielectric;
-
-    surfaces.cds.positions = scrf_surface.positions;
-    surfaces.cds.areas = scrf_surface.areas;
-    surfaces.cds.energies = scrf_surface.energies;
-
-    // The electronic relaxation cost has no per-element decomposition, so it
-    // is spread by area — the same convention the SMD path uses.
+    // One cavity, carrying both halves of the COSMO-RS decomposition as
+    // separate channels plus the per-contact descriptors:
+    //   dielectric <- gas to ideal conductor. Large, solvent independent.
+    //   residual   <- conductor to real solvent. All of the solvent
+    //                 dependence lives here.
     const double e_diel_total =
         result_energy_difference(wavefunction, gas_wavefunctions[i]);
     const double relaxation = e_diel_total - dielectric.sum();
-    surfaces.electronic_energies =
-        (relaxation / scrf_surface.areas.sum()) * scrf_surface.areas;
+
+    cg::SolvationData surfaces;
+    cg::CavitySurface cavity;
+    cavity.name = "conductor";
+    cavity.positions = scrf_surface.positions;
+    cavity.areas = scrf_surface.areas;
+    cavity.energies.push_back({"dielectric", dielectric});
+    cavity.energies.push_back({"residual", scrf_surface.energies});
+    // No per-element decomposition for the relaxation; spread it by area.
+    cavity.energies.push_back(
+        {"electronic", (relaxation / scrf_surface.areas.sum()) *
+                           scrf_surface.areas});
+
+    Vec reorganisation = model.segment_reorganisation(segments);
+    Vec hbond_area = model.segment_hbond_area(segments);
+    cavity.descriptors.push_back({"reorganisation", reorganisation});
+    cavity.descriptors.push_back({"hbond_area", hbond_area});
+    surfaces.cavities.push_back(std::move(cavity));
+
     surfaces.electronic_contribution = relaxation;
-    surfaces.total_solvation_energy = e_diel_total + scrf_surface.total_energy();
+    surfaces.total_solvation_energy = surfaces.total_energy();
 
     occ::log::info("  molecule {}: {} segments, E_diel {:.3f} + mu_res {:.3f} "
                    "= {:.3f} kJ/mol",
@@ -114,8 +117,8 @@ sigma_solvation(const std::string &basename,
 
     result.surfaces.push_back(std::move(surfaces));
     result.wavefunctions.push_back(std::move(wavefunction));
-    result.reorganisation.push_back(model.segment_reorganisation(segments));
-    result.hbond_area.push_back(model.segment_hbond_area(segments));
+    result.reorganisation.push_back(std::move(reorganisation));
+    result.hbond_area.push_back(std::move(hbond_area));
   }
   return result;
 }

@@ -80,6 +80,20 @@ std::vector<std::string> SolvationContribution::descriptor_channels() const {
   return sorted_keys(m_descriptors);
 }
 
+double SolvationContribution::forward_energy() const {
+  double total = 0.0;
+  for (const auto &[name, pair] : m_energies)
+    total += pair.forward;
+  return total;
+}
+
+double SolvationContribution::reverse_energy() const {
+  double total = 0.0;
+  for (const auto &[name, pair] : m_energies)
+    total += pair.reverse;
+  return total;
+}
+
 double SolvationContribution::total_energy() const {
   double forward = 0.0, reverse = 0.0;
   for (const auto &[name, pair] : m_energies) {

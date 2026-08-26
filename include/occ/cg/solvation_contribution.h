@@ -46,6 +46,10 @@ public:
   /// enabled.
   [[nodiscard]] double total_energy() const;
 
+  /// Summed over every energy channel, without the antisymmetric correction.
+  [[nodiscard]] double forward_energy() const;
+  [[nodiscard]] double reverse_energy() const;
+
   void exchange_with(SolvationContribution &other);
   [[nodiscard]] bool has_been_exchanged() const { return m_exchanged; }
 

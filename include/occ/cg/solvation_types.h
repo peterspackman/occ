@@ -1,7 +1,7 @@
 #pragma once
 #include <occ/cg/neighbor_atoms.h>
 #include <occ/cg/solvation_contribution.h>
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 
 
 namespace occ::cg {
