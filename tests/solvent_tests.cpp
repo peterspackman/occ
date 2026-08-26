@@ -1829,6 +1829,49 @@ TEST_CASE("Sigma surfaces partition over crystal neighbours",
           Catch::Approx(hexane.segment_energies(conductor.segments).sum()));
 }
 
+TEST_CASE("Dielectric and residual terms across solvents",
+          "[.][solvent][sigma][methodology]") {
+  // COSMO-RS splits solvation as E_diel (gas -> ideal conductor, from the QM,
+  // solvent independent) + mu_res (conductor -> real solvent, all the solvent
+  // dependence). Only the second is currently wired into cg. Print both.
+  auto params = Parameters::cosmo_sac_2010();
+  ProfileStore store({profile_directory()});
+
+  for (const char *name : {"WATER", "NAPHTHOL"}) {
+    const char *xyz = (std::string(name) == "WATER") ? WATER : NAPHTHOL;
+    auto mol = occ::io::molecule_from_xyz_string(xyz);
+    occ::gto::AOBasis basis =
+        occ::gto::AOBasis::load(mol.atoms(), "def2-svp");
+    basis.set_pure(true);
+    occ::dft::DFT gas_ks("b3lyp", basis);
+    occ::qm::SCF<occ::dft::DFT> gas_scf(gas_ks);
+    gas_scf.compute_scf_energy();
+
+    occ::driver::SigmaProfileSettings settings;
+    settings.basis = "def2-svp";
+    auto conductor =
+        occ::driver::conductor_profile(gas_scf.wavefunction(), settings);
+    const double e_diel = (conductor.energy_conductor - conductor.energy_gas) *
+                          occ::units::AU_TO_KJ_PER_MOL;
+
+    fmt::print("\n{}  E_diel = {:+8.2f} kJ/mol (conductor, solvent independent)\n",
+               name, e_diel);
+    fmt::print("{:>12} {:>12} {:>12} {:>10}\n", "solvent", "mu_res", "sum",
+               "HB frac");
+    for (const auto &solvent :
+         {"water", "methanol", "acetone", "chloroform", "benzene", "n-hexane"}) {
+      SolventModel model(store.get(solvent), params);
+      const double mu_res =
+          model.segment_energies(conductor.segments).sum() *
+          occ::units::AU_TO_KJ_PER_MOL;
+      const double hb = model.segment_hbond_area(conductor.segments).sum() /
+                        conductor.segments.total_area();
+      fmt::print("{:>12} {:+12.2f} {:+12.2f} {:10.3f}\n", solvent, mu_res,
+                 e_diel + mu_res, hb);
+    }
+  }
+}
+
 TEST_CASE("draco", "[solvent]") {
   auto mol = occ::io::molecule_from_xyz_string(WATER);
   auto nums = mol.atomic_numbers();
