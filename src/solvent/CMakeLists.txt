@@ -8,6 +8,7 @@ add_library(occ_solvent_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_io.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_profile.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_potential.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sigma_solvation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_correction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp"

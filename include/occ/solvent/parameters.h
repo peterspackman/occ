@@ -6,6 +6,11 @@
 
 namespace occ::solvent {
 
+/// Directory holding the shipped solvent data, `$OCC_DATA_PATH/solvent`,
+/// falling back to the working directory.
+std::string solvent_data_path();
+void override_data_path_directory(const std::string &);
+
 double get_dielectric(const std::string &name);
 SMDSolventParameters get_smd_parameters(const std::string &name);
 

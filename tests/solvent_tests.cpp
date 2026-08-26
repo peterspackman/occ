@@ -1,5 +1,6 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <fmt/os.h>
 #include <fmt/ostream.h>
 #include <occ/core/eeq.h>
@@ -19,6 +20,7 @@
 #include <occ/core/element.h>
 #include <occ/scrf/reaction_field.h>
 #include <occ/solvent/sigma_io.h>
+#include <occ/solvent/sigma_solvation.h>
 #include <occ/driver/sigma_driver.h>
 #include <occ/solvent/sigma_kernel.h>
 #include <occ/solvent/sigma_potential.h>
@@ -1592,6 +1594,133 @@ TEST_CASE("Charge constraint restores the sum rule without reshaping sigma",
   // moves. Anything large here would mean the constraint is doing more than
   // restoring the sum rule.
   REQUIRE(l1 < 0.05);
+}
+
+// Solvent models and per-segment attribution
+
+namespace {
+
+using occ::solvent::sigma::ProfileStore;
+using occ::solvent::sigma::SolventModel;
+
+std::string profile_directory() {
+  return std::string(OCC_TEST_DATA_DIR) + "/sigma_profiles_occ";
+}
+
+Segments water_segments_from_published_cosmo(const Parameters &params) {
+  auto parsed = read_dmol3_cosmo(std::string(OCC_TEST_DATA_DIR) +
+                                 "/water_dmol3.cosmo");
+  occ::solvent::sigma::classify_hbond_segments(
+      parsed.segments, parsed.atomic_numbers, parsed.atom_positions_bohr);
+  occ::solvent::sigma::average_sigma(parsed.segments, params.r_av,
+                                     params.f_decay);
+  return parsed.segments;
+}
+
+} // namespace
+
+TEST_CASE("Profile store resolves solvents by name", "[solvent][sigma]") {
+  ProfileStore store({profile_directory()});
+  REQUIRE(store.contains("benzene"));
+  REQUIRE(store.contains("BENZENE")); // case insensitive
+  REQUIRE_FALSE(store.contains("not-a-solvent"));
+
+  auto names = store.available();
+  REQUIRE(std::find(names.begin(), names.end(), "water") != names.end());
+
+  auto benzene = store.get("benzene");
+  REQUIRE(benzene.area() > 100.0);
+  REQUIRE(benzene.volume > 90.0);
+
+  // The failure names the paths searched and how to make the file.
+  REQUIRE_THROWS_WITH(store.get("not-a-solvent"),
+                      Catch::Matchers::ContainsSubstring("occ sigma"));
+}
+
+TEST_CASE("Segment energies are additive and sum to the residual potential",
+          "[solvent][sigma][solvation]") {
+  // This additivity is the whole reason the cg partitioner needs no new
+  // logic: a contact's solvation contribution is just the sum over the
+  // segments assigned to it.
+  auto params = Parameters::cosmo_sac_2010();
+  ProfileStore store({profile_directory()});
+  SolventModel water(store.get("water"), params);
+  REQUIRE(water.potential().converged);
+
+  auto solute = water_segments_from_published_cosmo(params);
+  Vec energies = water.segment_energies(solute);
+  REQUIRE(energies.size() == solute.size());
+
+  // Summing the segments equals contracting the binned profile, so an
+  // arbitrary partition of the segments recovers the total exactly.
+  Grid grid = water.potential().grid;
+  auto profile = occ::solvent::sigma::bin_segments(solute, grid,
+                                                   params.hbond_split());
+  const double binned =
+      occ::solvent::sigma::contract(profile,
+                                    water.potential().mu / params.a_eff) /
+      occ::units::AU_TO_KCAL_PER_MOL;
+  REQUIRE(energies.sum() == Catch::Approx(binned).epsilon(1e-12));
+
+  // Split the segments in half and check the parts sum to the whole.
+  double first = 0.0, second = 0.0;
+  for (Eigen::Index i = 0; i < energies.size(); i++)
+    (i % 2 == 0 ? first : second) += energies(i);
+  REQUIRE(first + second == Catch::Approx(energies.sum()).epsilon(1e-12));
+
+  fmt::print("\n water in water: residual {:.4f} kJ/mol over {} segments\n",
+             energies.sum() * occ::units::AU_TO_KJ_PER_MOL, energies.size());
+}
+
+TEST_CASE("Per-contact descriptors accompany the energies",
+          "[solvent][sigma][solvation]") {
+  auto params = Parameters::cosmo_sac_2010();
+  ProfileStore store({profile_directory()});
+  auto solute = water_segments_from_published_cosmo(params);
+
+  SolventModel water(store.get("water"), params);
+  SolventModel hexane(store.get("n-hexane"), params);
+
+  Vec lambda = water.segment_reorganisation(solute);
+  Vec hbond_area = water.segment_hbond_area(solute);
+  REQUIRE(lambda.size() == solute.size());
+  REQUIRE(lambda.minCoeff() >= 0.0);
+  // p_HB is a probability, so the weighted area cannot exceed the real area.
+  REQUIRE(hbond_area.minCoeff() >= 0.0);
+  REQUIRE(hbond_area.sum() <= solute.total_area() + 1e-9);
+
+  // Water hydrogen bonds to water; hexane cannot, so almost none of the
+  // same surface is bonded in hexane.
+  const double bonded_in_water = hbond_area.sum() / solute.total_area();
+  const double bonded_in_hexane =
+      hexane.segment_hbond_area(solute).sum() / solute.total_area();
+  fmt::print(" hydrogen-bonded fraction of a water surface: {:.3f} in water, "
+             "{:.3f} in n-hexane\n",
+             bonded_in_water, bonded_in_hexane);
+  REQUIRE(bonded_in_water > 0.3);
+  REQUIRE(bonded_in_hexane < 0.02);
+
+  // And it is more favourable in water than in hexane.
+  REQUIRE(water.segment_energies(solute).sum() <
+          hexane.segment_energies(solute).sum());
+}
+
+TEST_CASE("Solvation surface matches the cg bundle shape",
+          "[solvent][sigma][solvation]") {
+  auto params = Parameters::cosmo_sac_2010();
+  ProfileStore store({profile_directory()});
+  SolventModel water(store.get("water"), params);
+  auto solute = water_segments_from_published_cosmo(params);
+
+  auto surface = water.solvation_surface(solute);
+  REQUIRE(surface.size() == static_cast<size_t>(solute.size()));
+  REQUIRE(surface.positions.cols() == solute.size());
+  REQUIRE(surface.total_energy() ==
+          Catch::Approx(water.segment_energies(solute).sum()));
+  // cg works in Bohr^2 while the sigma machinery works in Angstrom^2.
+  const double conv = occ::units::ANGSTROM_TO_BOHR * occ::units::ANGSTROM_TO_BOHR;
+  REQUIRE(surface.total_area() ==
+          Catch::Approx(solute.total_area() * conv).epsilon(1e-12));
 }
 
 TEST_CASE("draco", "[solvent]") {
