@@ -1999,6 +1999,114 @@ TEST_CASE("Mixture components interpolate between the pure solvents",
   }
 }
 
+namespace {
+
+occ::crystal::Crystal urea_crystal() {
+  const std::vector<std::string> labels = {"C1", "H1", "H2",  "N1",
+                                           "O1", "N1B", "H1B", "H2B"};
+  occ::IVec nums(labels.size());
+  Mat positions(labels.size(), 3);
+  for (size_t i = 0; i < labels.size(); i++)
+    nums(i) = occ::core::Element(labels[i]).atomic_number();
+  positions << 0.00000, 0.50000, 0.32720,
+               0.26900, 0.76900, 0.27900,
+               0.14200, 0.64200, -0.02800,
+               0.14550, 0.64550, 0.18000,
+               0.00000, 0.50000, 0.59660,
+              -0.14550, 0.35450, 0.18000,
+              -0.26900, 0.23100, 0.27900,
+              -0.14200, 0.35800, -0.02800;
+  occ::crystal::AsymmetricUnit asym(positions.transpose(), nums, labels);
+  occ::crystal::SpaceGroup sg(113);
+  auto cell = occ::crystal::tetragonal_cell(5.582, 4.686);
+  return occ::crystal::Crystal(asym, sg, cell);
+}
+
+} // namespace
+
+TEST_CASE("Contact patch accessibility in the crystal",
+          "[.][solvent][sigma][accessibility]") {
+  // cg credits a broken contact the solvation its patch would get on an
+  // *isolated* molecule. At a real surface the molecule keeps its remaining
+  // neighbours, so some of that patch is still buried. Measure how much.
+  auto crystal = urea_crystal();
+  auto molecule = crystal.symmetry_unique_molecules()[0];
+  auto dimers = crystal.symmetry_unique_dimers(3.8);
+  const auto &neighbors = dimers.molecule_neighbors[0];
+
+  occ::IVec nums = molecule.atomic_numbers();
+  Mat3N positions = molecule.positions() * occ::units::ANGSTROM_TO_BOHR;
+  Vec radii = occ::solvent::cosmo::solvation_radii(nums);
+  auto cavity = occ::solvent::surface::solvent_surface(radii, nums, positions);
+
+  // Neighbour atoms, tagged by which neighbour they belong to.
+  std::vector<Mat3N> neighbour_positions;
+  std::vector<Vec> neighbour_radii;
+  for (const auto &n : neighbors) {
+    auto b = n.dimer.b();
+    neighbour_positions.push_back(b.positions() * occ::units::ANGSTROM_TO_BOHR);
+    neighbour_radii.push_back(
+        occ::solvent::cosmo::solvation_radii(b.atomic_numbers()));
+  }
+
+  const size_t n_neighbours = neighbors.size();
+  Vec patch_area = Vec::Zero(n_neighbours);
+  Vec shadowed_area = Vec::Zero(n_neighbours);
+
+  const double conv =
+      occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
+
+  for (Eigen::Index i = 0; i < cavity.areas.size(); i++) {
+    const Vec3 point = cavity.vertices.col(i);
+
+    // Nearest neighbour molecule, as the cg partitioner assigns it.
+    size_t owner = 0;
+    double best = std::numeric_limits<double>::max();
+    for (size_t k = 0; k < n_neighbours; k++) {
+      double d = (neighbour_positions[k].colwise() - point)
+                     .colwise()
+                     .norm()
+                     .minCoeff();
+      if (d < best) {
+        best = d;
+        owner = k;
+      }
+    }
+    const double area = cavity.areas(i) * conv;
+    patch_area(owner) += area;
+
+    // With the owner removed, is the point still inside another neighbour?
+    bool buried = false;
+    for (size_t k = 0; k < n_neighbours && !buried; k++) {
+      if (k == owner)
+        continue;
+      Vec d = (neighbour_positions[k].colwise() - point).colwise().norm();
+      for (Eigen::Index a = 0; a < d.size(); a++) {
+        if (d(a) < neighbour_radii[k](a)) {
+          buried = true;
+          break;
+        }
+      }
+    }
+    if (buried)
+      shadowed_area(owner) += area;
+  }
+
+  fmt::print("\n urea: cavity {:.2f} A^2 over {} neighbours\n",
+             cavity.areas.sum() * conv, n_neighbours);
+  fmt::print("{:>4} {:>28} {:>10} {:>10} {:>10}\n", "idx", "label",
+             "patch A^2", "shadowed", "accessible");
+  for (size_t k = 0; k < n_neighbours; k++) {
+    if (patch_area(k) <= 0.0)
+      continue;
+    const double frac = 1.0 - shadowed_area(k) / patch_area(k);
+    fmt::print("{:>4} {:>28} {:10.3f} {:10.3f} {:10.3f}\n",
+               neighbors[k].unique_index, neighbors[k].dimer.name(),
+               patch_area(k), shadowed_area(k), frac);
+  }
+  REQUIRE(cavity.areas.size() > 0);
+}
+
 TEST_CASE("draco", "[solvent]") {
   auto mol = occ::io::molecule_from_xyz_string(WATER);
   auto nums = mol.atomic_numbers();
