@@ -3,6 +3,7 @@
 #include <occ/cg/distance_partition.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/driver/crystal_growth.h>
+#include <occ/driver/dimer_desolvation.h>
 #include <occ/interaction/ce_energy_model.h>
 #include <occ/interaction/lattice_energy.h>
 #include <occ/interaction/xtb_energy_model.h>
@@ -276,6 +277,10 @@ struct SolvatedNeighborInputs {
   double inner_radius{3.8};
   double solution_term{0.0}; ///< kJ/mol
   bool print_descriptors{false};
+  /// Per-unique-dimer desolvation (Hartree, positive = costs solvation).
+  /// When non-empty the partitioned solvation energies are redistributed to
+  /// match these ratios, rescaled so each molecule's total is unchanged.
+  const std::vector<double> *desolvation_weights{nullptr};
 };
 
 /// One dimer's crystal-side energy, supplied by the calculator.
@@ -329,6 +334,40 @@ cg::MoleculeResult assemble_solvated_neighbors(
       " {} {:>3d} {:>5.2f} {:>5.2f} {:<28s} {: 7.2f} "
       "{: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f} {: 7.2f}";
 
+  // Redistribute the solvation over contacts using dimer-difference weights
+  // while holding the molecule's total fixed. The partition conserves the
+  // total but attributes it by surface proximity; the dimer difference has
+  // the right per-contact geometry but sums to less than the whole, because
+  // burial is many-body. Ratios from one, total from the other.
+  std::vector<double> redistributed;
+  if (in.desolvation_weights && !in.desolvation_weights->empty()) {
+    double partitioned_total = 0.0, weight_total = 0.0;
+    std::vector<double> weights(breakdown.size(), 0.0);
+    size_t j = 0;
+    for (const auto &[dimer, unique_idx] : in.full_neighbors) {
+      if (j >= breakdown.size())
+        break;
+      partitioned_total +=
+          breakdown[j].forward_energy() + breakdown[j].reverse_energy();
+      if (unique_idx < static_cast<int>(in.desolvation_weights->size()))
+        weights[j] = (*in.desolvation_weights)[unique_idx];
+      // A dimer better solvated than its separated monomers would attribute
+      // solvation of the wrong sign; clamp rather than let it flip a contact.
+      if (weights[j] < 0.0)
+        weights[j] = 0.0;
+      weight_total += weights[j];
+      j++;
+    }
+    if (std::abs(weight_total) > 1e-12) {
+      redistributed.resize(weights.size());
+      for (size_t k = 0; k < weights.size(); k++)
+        redistributed[k] = partitioned_total * weights[k] / weight_total;
+      occ::log::debug("dimer-difference redistribution: total {:.6f} Ha "
+                      "spread over {} contacts",
+                      partitioned_total, weights.size());
+    }
+  }
+
   cg::MoleculeResult results;
   results.total.solution_term = in.solution_term;
 
@@ -357,6 +396,17 @@ cg::MoleculeResult assemble_solvated_neighbors(
         contribution.reverse_energy() * occ::units::AU_TO_KJ_PER_MOL;
     solvent_term.total =
         contribution.total_energy() * occ::units::AU_TO_KJ_PER_MOL;
+
+    if (!redistributed.empty()) {
+      const double target = redistributed[j] * occ::units::AU_TO_KJ_PER_MOL;
+      const double current = solvent_term.ab + solvent_term.ba;
+      // Keep the forward/reverse split where there is one to keep.
+      const double share =
+          (std::abs(current) > 1e-12) ? solvent_term.ab / current : 0.5;
+      solvent_term.ab = target * share;
+      solvent_term.ba = target - solvent_term.ab;
+      solvent_term.total = target;
+    }
 
     const double e_nn = crystal_contributions[j].energy;
     const bool is_nearest_neighbor = crystal_contributions[j].is_nn;
@@ -637,6 +687,31 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
     };
     return out;
   };
+
+  if (opts.dimer_desolvation && !m_desolvation_weights_ready) {
+    m_desolvation_weights_ready = true;
+    if (opts.solvation_model == SolvationModelKind::Sigma) {
+      auto spec = SolventSpec::parse(opts.solvent);
+      spec.temperature = opts.temperature;
+      SigmaSolvationSettings settings;
+      auto parameterized =
+          occ::interaction::ce_model_from_string(opts.energy_model);
+      settings.method = parameterized.method;
+      settings.basis = parameterized.basis;
+      settings.temperature = opts.temperature;
+      occ::log::info("Computing dimer-difference desolvation weights for {} "
+                     "unique dimers",
+                     m_full_dimers.unique_dimers.size());
+      m_desolvation_weights = dimer_desolvation(
+          crystal(), m_solvated_wavefunctions, m_full_dimers, spec, settings,
+          opts.inner_radius + 0.5);
+    } else {
+      occ::log::warn("--dimer-desolvation needs the sigma solvation model; "
+                     "keeping the surface partition");
+    }
+  }
+  if (!m_desolvation_weights.empty())
+    in.desolvation_weights = &m_desolvation_weights;
 
   std::vector<cg::SolvationContribution> breakdown;
   auto results = assemble_solvated_neighbors(

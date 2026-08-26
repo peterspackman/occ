@@ -6,6 +6,7 @@ set(OCC_DRIVER_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/single_point.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_driver.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/cg_solvation_model.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dimer_desolvation.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_solvation.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/vibrational_analysis.h"
     PARENT_SCOPE)

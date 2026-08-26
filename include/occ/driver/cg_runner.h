@@ -18,6 +18,7 @@ struct CGConfig {
   std::string solvent{"water"};
   std::string solvation_model{"smd"};
   bool print_solvation_descriptors{false};
+  bool dimer_desolvation{false};
   double temperature{298.15};
   DMAReferenceLevel dma_reference;
   std::string charge_string{""};

@@ -55,6 +55,10 @@ struct CrystalGrowthCalculatorOptions {
   /// Print a per-contact table of the solvation descriptors (lambda,
   /// hydrogen-bonded area, ...) alongside the energy table.
   bool print_solvation_descriptors{false};
+  /// Redistribute each molecule's solvation over its contacts using
+  /// dimer-difference weights instead of the nearest-atom surface partition.
+  /// The total per molecule is preserved; only the distribution changes.
+  bool dimer_desolvation{false};
   double inner_radius{3.8};
   double outer_radius{3.8};
   std::string xtb_solvation_model{"cpcmx"};
@@ -169,6 +173,12 @@ public:
 
   cg::MoleculeResult process_neighbors_for_symmetry_unique_molecule(
       int i, const std::string &molname) override;
+
+private:
+  /// Per-unique-dimer desolvation weights, computed lazily on first use when
+  /// `dimer_desolvation` is enabled.
+  std::vector<double> m_desolvation_weights;
+  bool m_desolvation_weights_ready{false};
 };
 
 class XTBCrystalGrowthCalculator : public CrystalGrowthCalculator {

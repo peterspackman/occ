@@ -47,6 +47,9 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "solvation model: smd (default), sigma, none");
   cg->add_option("--temperature", config->temperature,
                  "temperature in K for the solvation model");
+  cg->add_flag("--dimer-desolvation", config->dimer_desolvation,
+               "attribute solvation to contacts by dimer difference rather "
+               "than by surface proximity (sigma model only)");
   cg->add_flag("--solvation-descriptors", config->print_solvation_descriptors,
                "print a per-contact table of solvation descriptors "
                "(reorganisation, hydrogen-bonded area)");
