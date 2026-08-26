@@ -110,7 +110,10 @@ sigma_solvation(const std::string &basename,
 
     Vec reorganisation = model.segment_reorganisation(segments);
     Vec hbond_area = model.segment_hbond_area(segments);
-    cavity.descriptors.push_back({"reorganisation", reorganisation});
+    // Reported in kJ/mol to sit alongside the cg energies; hbond_area stays
+    // in Angstrom^2.
+    cavity.descriptors.push_back(
+        {"reorganisation", reorganisation * occ::units::AU_TO_KJ_PER_MOL});
     cavity.descriptors.push_back({"hbond_area", hbond_area});
     surfaces.cavities.push_back(std::move(cavity));
 

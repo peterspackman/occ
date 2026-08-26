@@ -366,8 +366,16 @@ cg::MoleculeResult assemble_solvated_neighbors(
       components[cg::components::solvation_ba] = solvent_term.ba;
       components[cg::components::solvation_total] = solvent_term.total;
       components[cg::components::total] = interaction_energy;
-      interactions.push_back(
-          cg::DimerResult{dimer, true, unique_idx, std::move(components)});
+
+      // Whatever non-energy channels the model partitioned ride along with
+      // the energies, so a new descriptor needs no change here.
+      cg::CGEnergyComponents descriptors;
+      for (const auto &channel : contribution.descriptor_channels())
+        descriptors[channel] = contribution.descriptor(channel).total();
+
+      interactions.push_back(cg::DimerResult{dimer, true, unique_idx,
+                                             std::move(components),
+                                             std::move(descriptors)});
 
       auto crystal_components = energy.breakdown;
       crystal_components[cg::components::crystal_nn] = e_nn;
@@ -397,6 +405,18 @@ cg::MoleculeResult assemble_solvated_neighbors(
 
     results.add_dimer_result(interactions.back());
     j++;
+  }
+
+  // Per-contact descriptors are model-specific, so report whatever came
+  // through rather than a fixed set.
+  if (!results.descriptors.empty()) {
+    occ::log::warn("Solvation descriptors summed over nearest neighbours:");
+    std::vector<std::string> names;
+    for (const auto &[name, value] : results.descriptors)
+      names.push_back(name);
+    std::sort(names.begin(), names.end());
+    for (const auto &name : names)
+      occ::log::warn("  {:<24s} {: 12.4f}", name, results.descriptors[name]);
   }
 
   breakdown_out = std::move(breakdown);

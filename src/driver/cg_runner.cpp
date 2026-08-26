@@ -130,6 +130,12 @@ inline void serialize_cg_dimers(nlohmann::json &j, const Crystal &crystal,
     e["crystal_energy"] = mol_total.crystal_energy;
     e["interaction_energy"] = mol_total.interaction_energy;
     e["solution_term"] = mol_total.solution_term;
+    if (!mol_result.descriptors.empty()) {
+      nlohmann::json descriptors;
+      for (const auto &[k, v] : mol_result.descriptors)
+        descriptors[k] = v;
+      e["descriptors"] = descriptors;
+    }
     j["totals_per_molecule"].push_back(e);
   }
 
@@ -159,6 +165,12 @@ inline void serialize_cg_dimers(nlohmann::json &j, const Crystal &crystal,
       d["Unique Index"] = dimer_result.unique_idx;
       d["Crystalgrower Identifier"] = cg_id;
       d["energies"] = e;
+      if (!dimer_result.descriptors.empty()) {
+        nlohmann::json descriptors;
+        for (const auto &[k, v] : dimer_result.descriptors)
+          descriptors[k] = v;
+        d["descriptors"] = descriptors;
+      }
 
       nlohmann::json offsets_a = {};
       {

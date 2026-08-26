@@ -39,6 +39,8 @@ bool MoleculeResult::has_energy_component(const std::string &key) const {
 
 void MoleculeResult::add_dimer_result(const DimerResult &dimer) {
   if (dimer.is_nearest_neighbor) {
+    for (const auto &[key, value] : dimer.descriptors)
+      descriptors[key] += value;
     energy_components[components::total] += dimer.total_energy();
     energy_components[components::crystal_total] +=
         dimer.energy_component(components::crystal_total);

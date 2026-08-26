@@ -351,6 +351,33 @@ TEST_CASE("CG: SolvationContribution functionality", "[cg]") {
   }
 }
 
+TEST_CASE("CG: descriptors accumulate over nearest neighbours", "[cg]") {
+  using namespace occ::cg;
+
+  MoleculeResult molecule;
+
+  DimerResult near_a;
+  near_a.is_nearest_neighbor = true;
+  near_a.descriptors = {{"hbond_area", 4.0}, {"reorganisation", 1.5}};
+  molecule.add_dimer_result(near_a);
+
+  DimerResult near_b;
+  near_b.is_nearest_neighbor = true;
+  near_b.descriptors = {{"hbond_area", 6.0}, {"reorganisation", 2.5}};
+  molecule.add_dimer_result(near_b);
+
+  // Descriptors describe contacts, so a non-nearest neighbour contributes
+  // nothing, exactly as for the energies.
+  DimerResult far;
+  far.is_nearest_neighbor = false;
+  far.descriptors = {{"hbond_area", 99.0}};
+  molecule.add_dimer_result(far);
+
+  REQUIRE(molecule.descriptors.at("hbond_area") == Approx(10.0));
+  REQUIRE(molecule.descriptors.at("reorganisation") == Approx(4.0));
+  REQUIRE(molecule.dimer_results.size() == 3);
+}
+
 TEST_CASE("CG: CavitySurface operations", "[cg]") {
   using namespace occ::cg;
 

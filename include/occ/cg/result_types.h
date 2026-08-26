@@ -49,6 +49,11 @@ struct DimerResult {
                                        {components::crystal_total, 0.0},
                                        {components::solvation_total, 0.0}};
 
+  /// Non-energy per-contact quantities carried by the solvation model, in
+  /// whatever units it documents: the σ model emits `reorganisation` in
+  /// kJ/mol and `hbond_area` in Å², plus a `<cavity>_area` in Bohr².
+  CGEnergyComponents descriptors{};
+
   double total_energy() const;
 
   void set_energy_component(const std::string &key, double value);
@@ -66,6 +71,9 @@ struct MoleculeResult {
 
   std::vector<DimerResult> dimer_results;
   bool has_inversion_symmetry{true};
+
+  /// Descriptors summed over this molecule's nearest-neighbour contacts.
+  CGEnergyComponents descriptors{};
 
   cg::EnergyTotal total;
 
