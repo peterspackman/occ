@@ -1,6 +1,6 @@
 #pragma once
 #include <occ/cg/solvation_contribution.h>
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 #include <occ/crystal/crystal.h>
 
 namespace occ::cg {
@@ -24,8 +24,18 @@ public:
     return m_use_dnorm;
   }
 
+  /// Assign every element of every cavity to its nearest neighbour molecule.
+  /// Each cavity contributes its energy and descriptor channels verbatim,
+  /// plus an `<cavity>_area` descriptor, so a solvation model carrying new
+  /// channels needs no change here.
   [[nodiscard]] std::vector<SolvationContribution>
-  partition(const NeighborList &nearest, const SMDSolventSurfaces &surface);
+  partition(const NeighborList &nearest, const SolvationData &surface);
+
+  /// Convenience overload for the SMD/CPCM-X cache format.
+  [[nodiscard]] std::vector<SolvationContribution>
+  partition(const NeighborList &nearest, const SMDSolventSurfaces &surface) {
+    return partition(nearest, to_solvation_data(surface));
+  }
 
   [[nodiscard]] inline bool should_antisymmetrize() const {
     return m_antisymmetrize;
@@ -37,7 +47,7 @@ public:
 private:
   std::vector<SolvationContribution>
   partition_nearest_atom(const NeighborList &nearest,
-                         const SMDSolventSurfaces &surface);
+                         const SolvationData &surface);
 
   std::string m_basename{"molecule_solvent"};
   bool m_antisymmetrize{true};

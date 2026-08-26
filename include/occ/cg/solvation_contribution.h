@@ -55,23 +55,23 @@ public:
   // Named accessors for the SMD channels, kept so existing callers and tests
   // read unchanged.
   void add_coulomb(double value, bool is_forward = true) {
-    add_energy("electrostatic", value, is_forward);
+    add_energy("coulomb", value, is_forward);
   }
   void add_cds(double value, bool is_forward = true) {
     add_energy("cds", value, is_forward);
   }
   void add_coulomb_area(double value, bool is_forward = true) {
-    add_descriptor("electrostatic_area", value, is_forward);
+    add_descriptor("coulomb_area", value, is_forward);
   }
   void add_cds_area(double value, bool is_forward = true) {
     add_descriptor("cds_area", value, is_forward);
   }
   [[nodiscard]] const ContributionPair &coulomb() const {
-    return energy("electrostatic");
+    return energy("coulomb");
   }
   [[nodiscard]] const ContributionPair &cds() const { return energy("cds"); }
   [[nodiscard]] const ContributionPair &coulomb_area() const {
-    return descriptor("electrostatic_area");
+    return descriptor("coulomb_area");
   }
   [[nodiscard]] const ContributionPair &cds_area() const {
     return descriptor("cds_area");

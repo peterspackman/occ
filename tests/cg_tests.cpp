@@ -274,10 +274,10 @@ TEST_CASE("CG: SolvationContribution carries arbitrary channels", "[cg]") {
     contrib.add_coulomb(-1.5);
     contrib.add_cds(-0.5);
     contrib.add_coulomb_area(20.0);
-    REQUIRE(contrib.coulomb().forward == contrib.energy("electrostatic").forward);
+    REQUIRE(contrib.coulomb().forward == contrib.energy("coulomb").forward);
     REQUIRE(contrib.cds().forward == contrib.energy("cds").forward);
     REQUIRE(contrib.coulomb_area().forward ==
-            contrib.descriptor("electrostatic_area").forward);
+            contrib.descriptor("coulomb_area").forward);
   }
 }
 

@@ -1773,28 +1773,34 @@ TEST_CASE("Sigma surfaces partition over crystal neighbours",
   SolventModel water(store.get("water"), params);
   auto scrf_surface = water.solvation_surface(conductor.segments);
 
-  // Both halves of the decomposition, in the two branches cg already reads.
-  occ::cg::SMDSolventSurfaces surfaces;
-  surfaces.coulomb.positions = scrf_surface.positions;
-  surfaces.coulomb.areas = scrf_surface.areas;
-  surfaces.coulomb.energies = conductor.dielectric_energies;
-  surfaces.cds.positions = scrf_surface.positions;
-  surfaces.cds.areas = scrf_surface.areas;
-  surfaces.cds.energies = scrf_surface.energies;
-  surfaces.electronic_energies = Vec::Zero(scrf_surface.areas.size());
+  // Build the sigma model's own shape directly: one conductor cavity with two
+  // energy channels and the per-contact descriptors alongside.
+  occ::cg::SolvationData data;
+  occ::cg::CavitySurface cavity;
+  cavity.name = "conductor";
+  cavity.positions = scrf_surface.positions;
+  cavity.areas = scrf_surface.areas;
+  cavity.energies.push_back({"dielectric", conductor.dielectric_energies});
+  cavity.energies.push_back({"residual", scrf_surface.energies});
+  cavity.descriptors.push_back(
+      {"hbond_area", water.segment_hbond_area(conductor.segments)});
+  cavity.descriptors.push_back(
+      {"reorganisation", water.segment_reorganisation(conductor.segments)});
+  data.cavities.push_back(std::move(cavity));
 
   occ::cg::SolventSurfacePartitioner partitioner(crystal, neighbors);
   partitioner.set_should_write_surface_files(false);
   partitioner.set_use_normalized_distance(false);
-  auto contributions = partitioner.partition(neighbors, surfaces);
+  auto contributions = partitioner.partition(neighbors, data);
   REQUIRE(contributions.size() == neighbors.size());
 
-  double partitioned_diel = 0.0, partitioned_res = 0.0,
-         partitioned_area = 0.0;
+  double partitioned_diel = 0.0, partitioned_res = 0.0, partitioned_area = 0.0,
+         partitioned_hbond = 0.0;
   for (const auto &c : contributions) {
-    partitioned_diel += c.coulomb().forward;
-    partitioned_res += c.cds().forward;
-    partitioned_area += c.coulomb_area().forward;
+    partitioned_diel += c.energy("dielectric").forward;
+    partitioned_res += c.energy("residual").forward;
+    partitioned_area += c.descriptor("conductor_area").forward;
+    partitioned_hbond += c.descriptor("hbond_area").forward;
   }
 
   const double dielectric = conductor.dielectric_energies.sum();
@@ -1819,6 +1825,13 @@ TEST_CASE("Sigma surfaces partition over crystal neighbours",
   // would have made the desolvation penalty far too small.
   REQUIRE(dielectric < 0.0);
   REQUIRE(std::abs(dielectric) > std::abs(residual));
+
+  // Descriptors ride the same nearest-atom assignment as the energies, so a
+  // per-contact hydrogen-bonded area falls out with no partitioner changes.
+  const double hbond_total = water.segment_hbond_area(conductor.segments).sum();
+  REQUIRE(partitioned_hbond == Catch::Approx(hbond_total).epsilon(1e-10));
+  REQUIRE(contributions.front().energy_channels().size() == 2);
+  REQUIRE(contributions.front().descriptor_channels().size() == 3);
 
   // No sign is asserted for the residual: it is the conductor-to-solvent
   // correction, and acetic acid's methyl surface sits near sigma = 0 where
