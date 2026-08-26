@@ -20,6 +20,8 @@
 #include <occ/core/element.h>
 #include <occ/scrf/reaction_field.h>
 #include <occ/solvent/sigma_io.h>
+#include <occ/cg/distance_partition.h>
+#include <occ/crystal/crystal.h>
 #include <occ/solvent/sigma_solvation.h>
 #include <occ/driver/sigma_driver.h>
 #include <occ/solvent/sigma_kernel.h>
@@ -1721,6 +1723,110 @@ TEST_CASE("Solvation surface matches the cg bundle shape",
   const double conv = occ::units::ANGSTROM_TO_BOHR * occ::units::ANGSTROM_TO_BOHR;
   REQUIRE(surface.total_area() ==
           Catch::Approx(solute.total_area() * conv).epsilon(1e-12));
+}
+
+namespace {
+
+occ::crystal::Crystal acetic_acid_crystal() {
+  const std::vector<std::string> labels = {"C1", "C2", "H1", "H2",
+                                           "H3", "H4", "O1", "O2"};
+  occ::IVec nums(labels.size());
+  Mat positions(labels.size(), 3);
+  for (size_t i = 0; i < labels.size(); i++)
+    nums(i) = occ::core::Element(labels[i]).atomic_number();
+  positions << 0.16510, 0.28580, 0.17090, 0.08940, 0.37620, 0.34810, 0.18200,
+      0.05100, -0.11600, 0.12800, 0.51000, 0.49100, 0.03300, 0.54000, 0.27900,
+      0.05300, 0.16800, 0.42100, 0.12870, 0.10750, 0.00000, 0.25290, 0.37030,
+      0.17690;
+  occ::crystal::AsymmetricUnit asym(positions.transpose(), nums, labels);
+  occ::crystal::SpaceGroup sg(33);
+  auto cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
+  return occ::crystal::Crystal(asym, sg, cell);
+}
+
+} // namespace
+
+TEST_CASE("Sigma surfaces partition over crystal neighbours",
+          "[solvent][sigma][solvation]") {
+  // The end-to-end cg path: conductor SCF -> segments -> sigma potential ->
+  // per-element energies -> the existing nearest-neighbour partitioner. The
+  // property that matters is that the partition conserves the total, which
+  // is what segment additivity buys.
+  auto crystal = acetic_acid_crystal();
+  auto molecule = crystal.symmetry_unique_molecules()[0];
+  auto dimers = crystal.symmetry_unique_dimers(7.0);
+  const auto &neighbors = dimers.molecule_neighbors[0];
+
+  occ::gto::AOBasis basis =
+      occ::gto::AOBasis::load(molecule.atoms(), "def2-svp");
+  basis.set_pure(true);
+  occ::dft::DFT gas_ks("b3lyp", basis);
+  occ::qm::SCF<occ::dft::DFT> gas_scf(gas_ks);
+  gas_scf.compute_scf_energy();
+
+  auto params = Parameters::cosmo_sac_2010();
+  occ::driver::SigmaProfileSettings settings;
+  settings.basis = "def2-svp";
+  auto conductor = occ::driver::conductor_profile(gas_scf.wavefunction(), settings);
+
+  ProfileStore store({profile_directory()});
+  SolventModel water(store.get("water"), params);
+  auto scrf_surface = water.solvation_surface(conductor.segments);
+
+  occ::cg::SMDSolventSurfaces surfaces;
+  surfaces.coulomb.positions = scrf_surface.positions;
+  surfaces.coulomb.areas = scrf_surface.areas;
+  surfaces.coulomb.energies = scrf_surface.energies;
+  surfaces.cds.positions = Mat3N(3, 0);
+  surfaces.cds.areas = Vec(0);
+  surfaces.cds.energies = Vec(0);
+  surfaces.electronic_energies = Vec::Zero(scrf_surface.areas.size());
+
+  occ::cg::SolventSurfacePartitioner partitioner(crystal, neighbors);
+  partitioner.set_should_write_surface_files(false);
+  partitioner.set_use_normalized_distance(false);
+  auto contributions = partitioner.partition(neighbors, surfaces);
+  REQUIRE(contributions.size() == neighbors.size());
+
+  double partitioned = 0.0, partitioned_area = 0.0;
+  for (const auto &c : contributions) {
+    partitioned += c.coulomb().forward;
+    partitioned_area += c.coulomb_area().forward;
+  }
+
+  const double total = scrf_surface.total_energy();
+  fmt::print("\n acetic acid in water: {} segments over {} neighbours, "
+             "residual {:.3f} kJ/mol, partitioned {:.3f} kJ/mol\n",
+             conductor.segments.size(), neighbors.size(),
+             total * occ::units::AU_TO_KJ_PER_MOL,
+             partitioned * occ::units::AU_TO_KJ_PER_MOL);
+
+  // Every element is assigned to exactly one neighbour, so nothing is lost.
+  REQUIRE(partitioned == Catch::Approx(total).epsilon(1e-10));
+  REQUIRE(partitioned_area ==
+          Catch::Approx(scrf_surface.total_area()).epsilon(1e-10));
+
+  // No sign is asserted: this is the residual term alone, without the pure
+  // component reference or the combinatorial part, so it is not a solvation
+  // free energy. Acetic acid comes out positive in water because its methyl
+  // surface sits near sigma = 0, where water's sigma potential is uphill.
+  REQUIRE(std::isfinite(total));
+
+  // What can be checked is that the model discriminates solvents: the polar
+  // surface hydrogen bonds in water and cannot in an alkane.
+  SolventModel hexane(store.get("n-hexane"), params);
+  const double bonded_water =
+      water.segment_hbond_area(conductor.segments).sum() /
+      conductor.segments.total_area();
+  const double bonded_hexane =
+      hexane.segment_hbond_area(conductor.segments).sum() /
+      conductor.segments.total_area();
+  fmt::print(" hydrogen-bonded fraction: {:.3f} in water, {:.3f} in n-hexane\n",
+             bonded_water, bonded_hexane);
+  REQUIRE(bonded_water > 0.1);
+  REQUIRE(bonded_hexane < 0.02);
+  REQUIRE(water.segment_energies(conductor.segments).sum() !=
+          Catch::Approx(hexane.segment_energies(conductor.segments).sum()));
 }
 
 TEST_CASE("draco", "[solvent]") {
