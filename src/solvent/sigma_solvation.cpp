@@ -70,6 +70,33 @@ std::vector<std::string> ProfileStore::available() const {
   return names;
 }
 
+Component mix_components(const std::vector<Component> &components,
+                         const Vec &mole_fractions) {
+  if (components.empty())
+    throw std::runtime_error("mix_components: no components");
+  if (mole_fractions.size() != static_cast<Eigen::Index>(components.size()))
+    throw std::runtime_error(
+        fmt::format("mix_components: {} fractions for {} components",
+                    mole_fractions.size(), components.size()));
+
+  const double sum = mole_fractions.sum();
+  if (sum <= 0.0)
+    throw std::runtime_error("mix_components: mole fractions sum to zero");
+  const Vec x = mole_fractions / sum;
+
+  std::vector<Profile> profiles;
+  profiles.reserve(components.size());
+  for (const auto &component : components)
+    profiles.push_back(component.profile);
+
+  Component mixture;
+  mixture.profile = mix_profiles(profiles, x);
+  mixture.volume = 0.0;
+  for (size_t k = 0; k < components.size(); k++)
+    mixture.volume += x(k) * components[k].volume;
+  return mixture;
+}
+
 SolventModel::SolventModel(Component solvent, Parameters params,
                            PotentialOptions options)
     : m_solvent(std::move(solvent)), m_params(std::move(params)),

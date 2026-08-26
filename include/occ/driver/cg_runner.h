@@ -16,6 +16,8 @@ struct DMAReferenceLevel {
 struct CGConfig {
   interaction::LatticeConvergenceSettings lattice_settings;
   std::string solvent{"water"};
+  std::string solvation_model{"smd"};
+  double temperature{298.15};
   DMAReferenceLevel dma_reference;
   std::string charge_string{""};
   std::string wavefunction_choice{"gas"};

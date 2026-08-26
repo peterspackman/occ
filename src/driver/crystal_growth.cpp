@@ -472,16 +472,29 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
     occ::timing::StopWatch sw;
     sw.start();
 
-    cg::SMDSettings smd_settings;
-    smd_settings.method = parameterized_model.method;
-    smd_settings.basis = parameterized_model.basis;
+    CGSolvationSettings settings;
+    settings.method = parameterized_model.method;
+    settings.basis = parameterized_model.basis;
 
-    cg::SMDCalculator smd_calc(opts.basename, m_molecules,
-                               m_gas_phase_wavefunctions, opts.solvent,
-                               smd_settings);
-    auto result = smd_calc.calculate();
-    m_solvated_surface_properties = result.surfaces;
-    m_solvated_wavefunctions = result.wavefunctions;
+    auto spec = SolventSpec::parse(opts.solvent);
+    spec.temperature = opts.temperature;
+
+    auto model = make_cg_solvation_model(opts.solvation_model, settings);
+    model->validate(spec);
+    if (opts.wavefunction_choice == WavefunctionChoice::Solvated &&
+        !model->supports_solvated_wavefunctions()) {
+      throw std::runtime_error(fmt::format(
+          "{} cannot supply solvent-polarised wavefunctions (its reference is "
+          "the ideal conductor); use --wavefunction-choice gas",
+          model->name()));
+    }
+    occ::log::info("Solvation model: {} in '{}'", model->name(),
+                   spec.to_string());
+
+    auto result = model->compute(opts.basename, m_molecules,
+                                 m_gas_phase_wavefunctions, spec);
+    m_solvated_surface_properties = std::move(result.surfaces);
+    m_solvated_wavefunctions = std::move(result.wavefunctions);
 
     sw.stop();
     occ::log::info("Solution phase wavefunctions took {:.6f} seconds",

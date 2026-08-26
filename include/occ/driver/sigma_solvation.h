@@ -1,5 +1,6 @@
 #pragma once
 #include <occ/cg/solvation_data.h>
+#include <occ/driver/cg_solvation_model.h>
 #include <occ/core/molecule.h>
 #include <occ/driver/sigma_driver.h>
 #include <occ/qm/wavefunction.h>
@@ -45,7 +46,7 @@ SigmaSolvationResult
 sigma_solvation(const std::string &basename,
                 const std::vector<core::Molecule> &molecules,
                 const std::vector<qm::Wavefunction> &gas_wavefunctions,
-                const std::string &solvent,
+                const SolventSpec &solvent,
                 const SigmaSolvationSettings &settings = {});
 
 } // namespace occ::driver

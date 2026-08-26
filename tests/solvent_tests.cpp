@@ -22,6 +22,7 @@
 #include <occ/solvent/sigma_io.h>
 #include <occ/cg/distance_partition.h>
 #include <occ/crystal/crystal.h>
+#include <occ/driver/cg_solvation_model.h>
 #include <occ/solvent/sigma_solvation.h>
 #include <occ/driver/sigma_driver.h>
 #include <occ/solvent/sigma_kernel.h>
@@ -1895,6 +1896,106 @@ TEST_CASE("Dielectric and residual terms across solvents",
       fmt::print("{:>12} {:+12.2f} {:+12.2f} {:10.3f}\n", solvent, mu_res,
                  e_diel + mu_res, hb);
     }
+  }
+}
+
+TEST_CASE("Solvent specs parse names and mixtures", "[solvent][sigma]") {
+  using occ::driver::SolventSpec;
+
+  SECTION("A bare name is a pure solvent") {
+    auto spec = SolventSpec::parse("water");
+    REQUIRE_FALSE(spec.is_mixture());
+    REQUIRE(spec.single() == "water");
+    REQUIRE(spec.to_string() == "water");
+    REQUIRE(spec.filename_tag() == "water");
+  }
+
+  SECTION("Fractions are normalised") {
+    auto spec = SolventSpec::parse("water:3,ethanol:1");
+    REQUIRE(spec.is_mixture());
+    REQUIRE(spec.components.size() == 2);
+    REQUIRE(spec.mole_fractions(0) == Catch::Approx(0.75));
+    REQUIRE(spec.mole_fractions(1) == Catch::Approx(0.25));
+    REQUIRE(spec.mole_fractions.sum() == Catch::Approx(1.0));
+    // Colons and commas are not portable in filenames.
+    REQUIRE(spec.filename_tag() == "water0.75-ethanol0.25");
+    REQUIRE_THROWS(spec.single());
+  }
+
+  SECTION("Whitespace is tolerated") {
+    auto spec = SolventSpec::parse(" water : 0.7 , ethanol : 0.3 ");
+    REQUIRE(spec.components[0] == "water");
+    REQUIRE(spec.components[1] == "ethanol");
+  }
+
+  SECTION("A mixture without fractions is rejected") {
+    REQUIRE_THROWS_WITH(SolventSpec::parse("water,ethanol"),
+                        Catch::Matchers::ContainsSubstring("mole fraction"));
+  }
+}
+
+TEST_CASE("Solvation model selection and its guard rails",
+          "[solvent][sigma]") {
+  using namespace occ::driver;
+
+  REQUIRE(parse_solvation_model("smd") == SolvationModelKind::Smd);
+  REQUIRE(parse_solvation_model("sigma") == SolvationModelKind::Sigma);
+  REQUIRE(parse_solvation_model("cosmo-sac") == SolvationModelKind::Sigma);
+  REQUIRE(parse_solvation_model("none") == SolvationModelKind::None);
+  REQUIRE_THROWS(parse_solvation_model("nonsense"));
+
+  CGSolvationSettings settings;
+  auto smd = make_cg_solvation_model(SolvationModelKind::Smd, settings);
+  auto sigma = make_cg_solvation_model(SolvationModelKind::Sigma, settings);
+
+  // SMD polarises against the real dielectric; the sigma model's reference is
+  // the ideal conductor, so it must not be asked for solvated wavefunctions.
+  REQUIRE(smd->supports_solvated_wavefunctions());
+  REQUIRE_FALSE(sigma->supports_solvated_wavefunctions());
+
+  auto mixture = SolventSpec::parse("water:0.7,ethanol:0.3");
+  REQUIRE_THROWS_WITH(smd->validate(mixture),
+                      Catch::Matchers::ContainsSubstring("mixtures"));
+  REQUIRE_NOTHROW(sigma->validate(mixture));
+}
+
+TEST_CASE("Mixture components interpolate between the pure solvents",
+          "[solvent][sigma]") {
+  auto params = Parameters::cosmo_sac_2010();
+  ProfileStore store({profile_directory()});
+  auto water = store.get("water");
+  auto ethanol = store.get("ethanol");
+
+  Vec x(2);
+  x << 0.75, 0.25;
+  auto mixed = occ::solvent::sigma::mix_components({water, ethanol}, x);
+
+  // Areas and volumes are mole-fraction weighted.
+  REQUIRE(mixed.area() ==
+          Catch::Approx(0.75 * water.area() + 0.25 * ethanol.area()));
+  REQUIRE(mixed.volume ==
+          Catch::Approx(0.75 * water.volume + 0.25 * ethanol.volume));
+  REQUIRE(mixed.profile.grid == water.profile.grid);
+
+  // Unnormalised fractions give the same mixture.
+  Vec unnormalised(2);
+  unnormalised << 3.0, 1.0;
+  auto same = occ::solvent::sigma::mix_components({water, ethanol},
+                                                  unnormalised);
+  REQUIRE((same.profile.values - mixed.profile.values).cwiseAbs().maxCoeff() <
+          1e-12);
+
+  // The mixture's sigma potential lies between the pure ones.
+  auto mu = [&](const occ::solvent::sigma::Component &c) {
+    return SolventModel(c, params).potential().mu;
+  };
+  Mat mu_water = mu(water), mu_ethanol = mu(ethanol), mu_mixed = mu(mixed);
+  const int oh = static_cast<int>(HBondClass::OH);
+  for (int i : {5, 25, 45}) {
+    const double lo = std::min(mu_water(i, oh), mu_ethanol(i, oh));
+    const double hi = std::max(mu_water(i, oh), mu_ethanol(i, oh));
+    REQUIRE(mu_mixed(i, oh) >= lo - 1e-9);
+    REQUIRE(mu_mixed(i, oh) <= hi + 1e-9);
   }
 }
 

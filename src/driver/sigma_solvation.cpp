@@ -45,17 +45,27 @@ SigmaSolvationResult
 sigma_solvation(const std::string &basename,
                 const std::vector<core::Molecule> &molecules,
                 const std::vector<qm::Wavefunction> &gas_wavefunctions,
-                const std::string &solvent,
+                const SolventSpec &solvent,
                 const SigmaSolvationSettings &settings) {
   const auto params = solvent::sigma::Parameters::for_model(settings.model);
   solvent::sigma::PotentialOptions options;
   options.temperature = settings.temperature;
 
   auto store = solvent::sigma::ProfileStore::standard();
-  solvent::sigma::SolventModel model(store.get(solvent), params, options);
-  occ::log::info("Sigma solvation: {} in '{}', potential converged in {} "
-                 "iterations",
-                 solvent::sigma::model_name(settings.model), solvent,
+  std::vector<solvent::sigma::Component> components;
+  components.reserve(solvent.components.size());
+  for (const auto &name : solvent.components)
+    components.push_back(store.get(name));
+  auto mixture = solvent.is_mixture()
+                     ? solvent::sigma::mix_components(components,
+                                                      solvent.mole_fractions)
+                     : components.front();
+
+  solvent::sigma::SolventModel model(std::move(mixture), params, options);
+  occ::log::info("Sigma solvation: {} in '{}' at {:.2f} K, potential "
+                 "converged in {} iterations",
+                 solvent::sigma::model_name(settings.model),
+                 solvent.to_string(), options.temperature,
                  model.potential().iterations);
 
   SigmaSolvationResult result;

@@ -32,6 +32,14 @@ private:
   std::vector<std::string> m_search_paths;
 };
 
+/// Mole-fraction-weighted mixture of solvent components.
+///
+/// The profile is `Σ_k x_k A_k p_k(σ)` (what `mix_profiles` produces) and the
+/// cavity volume is weighted the same way, so the combinatorial term sees a
+/// consistent pseudo-component. Fractions are normalised.
+Component mix_components(const std::vector<Component> &components,
+                         const Vec &mole_fractions);
+
 /// A solvent held as its converged σ-potential, ready to contract against
 /// any solute's segments.
 ///

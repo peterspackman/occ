@@ -40,7 +40,13 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
   cg->add_option("-c,--cg-radius", config->cg_radius,
                  "maximum radius (Angstroms) for nearest neighbours in CG "
                  "file (must be <= radius)");
-  cg->add_option("-s,--solvent", config->solvent, "solvent name");
+  cg->add_option("-s,--solvent", config->solvent,
+                 "solvent name, or a mixture as name:fraction,name:fraction "
+                 "(mixtures require --solvation-model sigma)");
+  cg->add_option("--solvation-model", config->solvation_model,
+                 "solvation model: smd (default), sigma, none");
+  cg->add_option("--temperature", config->temperature,
+                 "temperature in K for the solvation model");
   cg->add_option("--charges", config->charge_string, "system net charge");
   cg->add_option("-w,--wavefunction-choice", config->wavefunction_choice,
                  "Choice of wavefunctions");

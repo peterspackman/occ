@@ -23,6 +23,7 @@
 #include <occ/io/xyz.h>
 #include <occ/driver/cg_pipeline.h>
 #include <occ/driver/cg_runner.h>
+#include <occ/driver/cg_solvation_model.h>
 #include <occ/driver/crystal_surface_energy.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
@@ -209,7 +210,7 @@ inline CrystalSurfaceEnergies compute_and_serialize_surface_cuts(
 
   occ::log::info("Crystal surface energies (solvated)");
   auto surface_energies = calculate_crystal_surface_energies(
-      fmt::format("{}_{}", opts.basename, opts.solvent), calc.crystal(),
+      fmt::format("{}_{}", opts.basename, opts.solvent_tag), calc.crystal(),
       uc_dimers, max_facets, 1);
 
   occ::log::info("Crystal surface energies (vacuum)");
@@ -218,7 +219,7 @@ inline CrystalSurfaceEnergies compute_and_serialize_surface_cuts(
       max_facets, -1);
 
   j["surface_energies"] = surface_energies;
-  write_wulff(fmt::format("{}_{}.ply", opts.basename, opts.solvent),
+  write_wulff(fmt::format("{}_{}.ply", opts.basename, opts.solvent_tag),
               surface_energies);
   write_wulff(fmt::format("{}_vacuum.ply", opts.basename),
               vacuum_surface_energies);
@@ -268,6 +269,9 @@ CGPreparation prepare_cg(CGConfig const &config) {
 
   Options opts;
   opts.solvent = config.solvent;
+  opts.solvent_tag = SolventSpec::parse(config.solvent).filename_tag();
+  opts.solvation_model = parse_solvation_model(config.solvation_model);
+  opts.temperature = config.temperature;
   opts.basename = basename;
   opts.write_debug_output_files = config.write_dump_files;
   opts.energy_model = config.lattice_settings.model_name;
@@ -359,7 +363,8 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
   }
 
   auto cg_interaction_labels =
-      write_cg_net_file(fmt::format("{}_{}_net.txt", basename, config.solvent),
+      write_cg_net_file(fmt::format("{}_{}_net.txt", basename,
+                                    opts.solvent_tag),
                         calc.crystal(), uc_dimers);
 
   nlohmann::json results_json;
@@ -375,7 +380,7 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
   }
 
   std::ofstream dest(
-      fmt::format("{}_{}_cg_results.json", opts.basename, opts.solvent));
+      fmt::format("{}_{}_cg_results.json", opts.basename, opts.solvent_tag));
   dest << results_json.dump(2);
 
   // calc.dipole_correction();

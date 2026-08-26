@@ -10,6 +10,7 @@
 #include <occ/core/point_group.h>
 #include <occ/core/timings.h>
 #include <occ/crystal/crystal.h>
+#include <occ/driver/cg_solvation_model.h>
 #include <occ/driver/single_point.h>
 #include <occ/interaction/pair_energy.h>
 #include <occ/interaction/pairinteraction.h>
@@ -39,6 +40,11 @@ calculate_net_dipole(const WavefunctionList &wavefunctions,
 
 struct CrystalGrowthCalculatorOptions {
   std::string solvent{"water"};
+  /// Filesystem-safe form of `solvent`, used for output filenames.
+  std::string solvent_tag{"water"};
+  /// Which solvation model supplies the per-element surfaces.
+  SolvationModelKind solvation_model{SolvationModelKind::Smd};
+  double temperature{298.15};
   std::string basename{"calculation"};
   std::string energy_model{"ce-b3lyp"};
 
