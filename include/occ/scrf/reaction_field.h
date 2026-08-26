@@ -5,6 +5,7 @@
 #include <occ/scrf/surfaces.h>
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/surface.h>
+#include <optional>
 #include <string>
 
 namespace occ::scrf {
@@ -109,7 +110,19 @@ public:
   /// Eulerian: solve `A σ = −f(ε)·φ_cavity`. Caches `σ` and `φ` so
   /// `energy_es()` / `surfaces()` reflect the result. Does NOT compute
   /// `V_atom` — use the atom-resolved path for that.
-  void solve_asc(const Vec &phi_at_cavity);
+  ///
+  /// With `total_solute_charge` set, the solve is constrained to
+  /// `Σσ = −f(ε)·q`, which for a conductor is exact by Gauss's law. The
+  /// unconstrained solve falls short by the charge lying outside the cavity.
+  /// Enforced with a Lagrange multiplier on the existing factorisation:
+  ///
+  ///     σ = σ_free − λ A⁻¹1,   λ = (1ᵀσ_free − σ_target) / (1ᵀA⁻¹1)
+  ///
+  /// This restores the sum rule but does not redistribute σ; the shape error
+  /// needs the Klamt–Jonas double-cavity correction, which is not
+  /// implemented.
+  void solve_asc(const Vec &phi_at_cavity,
+                 std::optional<double> total_solute_charge = std::nullopt);
 
   /// Atom-resolved: from input atomic charges, compute
   ///   φ = B·q,  σ = G·q,  V_atom = J_solv·q,  E_es = ½ q·V_atom.

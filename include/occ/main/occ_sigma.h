@@ -14,6 +14,7 @@ struct SigmaConfig {
   double probe_radius{0.0};
   double temperature{298.15};
   int angular_points{590};
+  bool unconstrained_charge{false};
   bool cartesian{false};
 };
 

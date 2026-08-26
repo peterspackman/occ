@@ -27,7 +27,8 @@ void atom_arrays(const std::vector<occ::core::Atom> &atoms, Mat3N &positions,
 solvent::sigma::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
                    const solvent::sigma::Parameters &params,
-                   double probe_radius_angs, int angular_points) {
+                   double probe_radius_angs, int angular_points,
+                   bool constrain_charge) {
   Mat3N positions;
   IVec atomic_numbers;
   atom_arrays(wavefunction.atoms, positions, atomic_numbers);
@@ -37,7 +38,10 @@ conductor_segments(const qm::Wavefunction &wavefunction,
   engine.initialize(positions, atomic_numbers);
 
   const Vec phi = wavefunction.electric_potential(engine.es_cavity().vertices);
-  engine.solve_asc(phi);
+  std::optional<double> constraint;
+  if (constrain_charge)
+    constraint = static_cast<double>(wavefunction.charge());
+  engine.solve_asc(phi, constraint);
 
   auto segments = solvent::sigma::segments_from_cavity(
       engine.es_cavity(), engine.surface_charges(), atomic_numbers);
@@ -68,7 +72,8 @@ ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
   result.wavefunction = scf.wavefunction();
   result.segments =
       conductor_segments(result.wavefunction, params,
-                         settings.probe_radius_angs, settings.angular_points);
+                         settings.probe_radius_angs, settings.angular_points,
+                         settings.constrain_charge);
 
   Mat3N positions;
   IVec atomic_numbers;

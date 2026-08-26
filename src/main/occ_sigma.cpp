@@ -50,6 +50,8 @@ CLI::App *add_sigma_subcommand(CLI::App &app) {
                     "temperature for the sigma potential (K)");
   sigma->add_option("--angular-points", config->angular_points,
                     "Lebedev order per atom for the cavity");
+  sigma->add_flag("--unconstrained-charge", config->unconstrained_charge,
+                  "do not constrain the surface charge to -q");
   sigma->add_flag("--cartesian", config->cartesian,
                   "use cartesian (6d) basis functions");
 
@@ -77,6 +79,7 @@ void run_sigma_subcommand(SigmaConfig const &config) {
   settings.pure_spherical = !config.cartesian;
   settings.probe_radius_angs = config.probe_radius;
   settings.angular_points = config.angular_points;
+  settings.constrain_charge = !config.unconstrained_charge;
   settings.model = model;
 
   auto result =

@@ -170,7 +170,8 @@ void ReactionFieldEngine::rebuild_cds_branch() {
   m_e_cds = m_cds_energy_elements.sum();
 }
 
-void ReactionFieldEngine::solve_asc(const Vec &phi_at_cavity) {
+void ReactionFieldEngine::solve_asc(const Vec &phi_at_cavity,
+                                   std::optional<double> total_solute_charge) {
   const Eigen::Index ncav = m_es_surface.areas.size();
   if (phi_at_cavity.size() != ncav) {
     throw std::runtime_error(
@@ -185,6 +186,15 @@ void ReactionFieldEngine::solve_asc(const Vec &phi_at_cavity) {
   }
   m_phi = phi_at_cavity;
   m_sigma = m_es_lu.solve(-m_f_eps * phi_at_cavity);
+  if (total_solute_charge) {
+    const Vec y = m_es_lu.solve(Vec::Ones(ncav));
+    const double denominator = y.sum();
+    if (std::abs(denominator) > 1e-14) {
+      const double target = -m_f_eps * (*total_solute_charge);
+      const double lambda = (m_sigma.sum() - target) / denominator;
+      m_sigma -= lambda * y;
+    }
+  }
   m_e_es = 0.5 * m_sigma.dot(m_phi);
   // Atom-resolved state stays stale — caller is using the Eulerian path.
   m_have_atom_charges = false;

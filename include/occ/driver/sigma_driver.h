@@ -15,6 +15,8 @@ struct SigmaProfileSettings {
   bool pure_spherical{true};
   double probe_radius_angs{0.0};
   int angular_points{590};
+  /// Constrain the surface charge to -q (Gauss's law for a conductor).
+  bool constrain_charge{true};
   solvent::sigma::Model model{solvent::sigma::Model::CosmoSac2010};
 };
 
@@ -39,7 +41,8 @@ solvent::sigma::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
                    const solvent::sigma::Parameters &params,
                    double probe_radius_angs = 0.0,
-                   int angular_points = 590);
+                   int angular_points = 590,
+                   bool constrain_charge = true);
 
 /// Converge the SCF in the ideal-conductor reaction field starting from a
 /// gas-phase wavefunction, then build the segments.
