@@ -102,6 +102,15 @@ public:
     /// Based on the most diffuse primitive combination
     T pair_extent(size_t shell_idx) const;
 
+    /// Grid-point-independent upper bound on this pair's ESP integrals,
+    ///     sum_prim |2 pi / p * c_a * c_b * exp(-mu R_AB^2)|,
+    /// i.e. the integral prefactor with the Boys factor F_0 <= 1 bounded out.
+    /// Because it drops the only distance-to-grid-point dependence, it bounds
+    /// the pair everywhere and is the right magnitude to screen a 1/R kernel
+    /// on. Cheaper and tighter than the overlap, which is this times
+    /// sqrt(pi/p)/2 and so understates compact pairs badly.
+    T pair_estimate(size_t shell_idx) const;
+
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

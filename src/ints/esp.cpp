@@ -70,7 +70,31 @@ struct ShellPairHolder {
     // Screening support: pair center and extent based on most diffuse primitive
     virtual std::array<T, 3> pair_center() const = 0;
     virtual T pair_extent() const = 0;
+    virtual T pair_estimate() const = 0;
 };
+
+// Grid-point-independent bound on a pair's ESP integrals: the integral
+// prefactor 2 pi / p * c_a c_b * exp(-mu R_AB^2), with the Boys factor
+// F_0 <= 1 bounded out. exp(-mu R_AB^2) lives in the (0,0,0) Hermite column
+// of the E matrix. Pairs sharing an origin drop that factor entirely: their
+// monopole coefficient can vanish by symmetry (an s-p pair, say) while the
+// ESP integral does not, so bounding E by 1 there keeps them unscreened.
+template <typename T>
+T primitive_pair_estimate(const ShellPairData<T> &data, int nab_val,
+                          int nherm_val) {
+    const bool same_origin = (data.A == data.B);
+    T est = T(0);
+    for (const auto& prim : data.primitives) {
+        T emax = T(1);
+        if (!same_origin) {
+            emax = T(0);
+            for (int ab = 0; ab < nab_val; ++ab)
+                emax = std::max(emax, std::abs(prim.E_matrix[ab * nherm_val]));
+        }
+        est += std::abs(prim.prefactor) * emax;
+    }
+    return est;
+}
 
 // Concrete implementation for specific LA, LB (Cartesian)
 template <typename T, int LA, int LB>
@@ -78,6 +102,7 @@ struct ShellPairHolderCartesian : ShellPairHolder<T> {
     ShellPairData<T> data;
     std::array<T, 3> m_pair_center;
     T m_pair_extent;
+    T m_pair_estimate;
 
     ShellPairHolderCartesian(ShellPairData<T>&& d) : data(std::move(d)) {
         // Find the most diffuse primitive (smallest exponent p)
@@ -94,6 +119,8 @@ struct ShellPairHolderCartesian : ShellPairHolder<T> {
         // r = sqrt(-ln(threshold) / p) = sqrt(27.6 / p)
         constexpr T log_threshold = T(27.631021115928547);  // -ln(1e-12)
         m_pair_extent = std::sqrt(log_threshold / p_min);
+        m_pair_estimate = primitive_pair_estimate<T>(
+            data, ncart(LA) * ncart(LB), nhermsum(LA + LB));
     }
 
     int la() const override { return LA; }
@@ -104,6 +131,7 @@ struct ShellPairHolderCartesian : ShellPairHolder<T> {
 
     std::array<T, 3> pair_center() const override { return m_pair_center; }
     T pair_extent() const override { return m_pair_extent; }
+    T pair_estimate() const override { return m_pair_estimate; }
 
     void evaluate(const Eigen::Ref<const Mat3N<T>>& C,
                   const T* boys_table,
@@ -162,6 +190,7 @@ struct ShellPairHolderSpherical : ShellPairHolder<T> {
     int nab_sph;
     std::array<T, 3> m_pair_center;
     T m_pair_extent;
+    T m_pair_estimate;
 
     ShellPairHolderSpherical(ShellPairData<T>&& d)
         : data(std::move(d)), nab_sph(nsph(LA) * nsph(LB)) {
@@ -177,6 +206,8 @@ struct ShellPairHolderSpherical : ShellPairHolder<T> {
         // Extent: radius where exp(-p * r^2) < threshold (1e-12)
         constexpr T log_threshold = T(27.631021115928547);  // -ln(1e-12)
         m_pair_extent = std::sqrt(log_threshold / p_min);
+        m_pair_estimate = primitive_pair_estimate<T>(
+            data, nab_sph, nhermsum(LA + LB));
     }
 
     int la() const override { return LA; }
@@ -187,6 +218,7 @@ struct ShellPairHolderSpherical : ShellPairHolder<T> {
 
     std::array<T, 3> pair_center() const override { return m_pair_center; }
     T pair_extent() const override { return m_pair_extent; }
+    T pair_estimate() const override { return m_pair_estimate; }
 
     void evaluate(const Eigen::Ref<const Mat3N<T>>& C,
                   const T* boys_table,
@@ -506,6 +538,14 @@ T ESPEvaluator<T>::pair_extent(size_t shell_idx) const {
         throw std::out_of_range("Invalid shell pair index");
     }
     return impl_->shell_pairs[shell_idx]->pair_extent();
+}
+
+template <typename T>
+T ESPEvaluator<T>::pair_estimate(size_t shell_idx) const {
+    if (shell_idx >= impl_->shell_pairs.size()) {
+        throw std::out_of_range("Invalid shell pair index");
+    }
+    return impl_->shell_pairs[shell_idx]->pair_estimate();
 }
 
 // Explicit instantiations

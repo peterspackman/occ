@@ -25,7 +25,14 @@ public:
   void update_scf_energy(occ::core::EnergyComponents &) const { return; }
 
   FockBuildProperties fock_build_properties() const {
-    return {// COSX exchange is built on a density-adapted grid.
+    return {// The COSX exchange build is in fact linear in the density (its
+            // grid is fixed, not density adapted), so difference-density
+            // builds are valid and are what the literature does. It is
+            // disabled here because the shell-pair screen keys off the
+            // density: screening a difference density changes which pairs
+            // survive from cycle to cycle, and that interacts with the
+            // convergence floor the screen already imposes. Worth enabling
+            // behind its own validation, not as a side effect.
             .linear_in_density = !m_cosx_engine,
             .constant_core_hamiltonian = true,
             // Only the conventional 4-centre build screens on the density;

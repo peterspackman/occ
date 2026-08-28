@@ -45,7 +45,7 @@ struct DriverInput {
 struct COSXSettings {
   double screen_threshold{1e-4};      // Shell extent screening threshold (looser = smaller extents = more screening)
   double margin{1.0};                 // Geometric margin (Bohr)
-  double f_threshold{1e-10};          // F-intermediate threshold
+  double f_threshold{1e-7};           // COSX shell-pair screening cutoff
 };
 
 // Acceleration policy for SCF two-electron integrals (density fitting / COSX).

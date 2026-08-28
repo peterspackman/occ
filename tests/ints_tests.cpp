@@ -278,6 +278,116 @@ TEST_CASE("ESPEvaluator high-level API", "[esp][evaluator]") {
     REQUIRE(true);  // If we get here, evaluator was created
 }
 
+// The COSX exchange build drives ESPEvaluator over every significant shell
+// pair of the orbital basis: contracted shells, mixed angular momenta, and
+// two different centres. Check that path against libcint for every (la, lb)
+// combination up to f, in both Cartesian and spherical form.
+TEST_CASE("ESPEvaluator matches libcint for all shell pairs", "[esp][evaluator][libcint]") {
+    using namespace occ::qm;
+    using occ::core::Atom;
+    using occ::core::PointCharge;
+    using MatRM = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
+    const auto& b = boys();
+
+    const std::array<double, 3> A{0.0, 0.0, 0.0};
+    const std::array<double, 3> B{1.3, -0.7, 0.45};
+
+    // A few grid points: on top of a centre, between them, and well outside.
+    occ::Mat3N points(3, 4);
+    points.col(0) << 0.15, 0.05, -0.1;
+    points.col(1) << 0.7, -0.3, 0.2;
+    points.col(2) << 1.4, -0.8, 0.5;
+    points.col(3) << 4.5, 2.0, -3.0;
+
+    // Contracted (2-primitive) shells, as in a real basis set.
+    const std::vector<double> exps_a{3.1, 0.72};
+    const std::vector<double> exps_b{2.4, 0.53};
+    const std::vector<std::vector<double>> coeffs_a{{0.42, 0.68}};
+    const std::vector<std::vector<double>> coeffs_b{{0.55, 0.61}};
+
+    for (bool spherical : {false, true}) {
+        for (int la = 0; la <= 3; ++la) {
+            for (int lb = 0; lb <= 3; ++lb) {
+                DYNAMIC_SECTION((spherical ? "spherical" : "cartesian")
+                                << " la=" << la << " lb=" << lb) {
+                    std::vector<Atom> atoms = {{6, A[0], A[1], A[2]},
+                                               {8, B[0], B[1], B[2]}};
+                    std::vector<Shell> shells;
+                    shells.push_back(Shell(la, exps_a, coeffs_a, A));
+                    shells.push_back(Shell(lb, exps_b, coeffs_b, B));
+                    for (auto& sh : shells)
+                        sh.incorporate_shell_norm();
+
+                    AOBasis basis(atoms, shells);
+                    basis.set_pure(spherical);
+                    IntegralEngine engine(basis);
+
+                    const auto& sh_a = basis.shells()[0];
+                    const auto& sh_b = basis.shells()[1];
+                    const int size_a = sh_a.size();
+                    const int size_b = sh_b.size();
+
+                    ESPEvaluator<double> esp(b.table());
+                    const size_t idx = esp.add_shell_pair(
+                        sh_a.l, sh_b.l, sh_a.num_primitives(),
+                        sh_b.num_primitives(), sh_a.exponents.data(),
+                        sh_b.exponents.data(),
+                        sh_a.contraction_coefficients.col(0).data(),
+                        sh_b.contraction_coefficients.col(0).data(),
+                        sh_a.origin.data(), sh_b.origin.data(), spherical);
+
+                    REQUIRE(esp.nab(idx) == size_a * size_b);
+
+                    // Overlap of the same shell pair: the COSX pair screen
+                    // uses this as the pair's charge magnitude.
+                    {
+                        occ::Mat S_ref =
+                            engine.one_electron_operator(cint::Operator::overlap);
+                        std::vector<double> s(esp.nab(idx));
+                        esp.evaluate_overlap(idx, s.data());
+                        Eigen::Map<const MatRM> S(s.data(), size_a, size_b);
+                        const double err =
+                            (S - S_ref.block(0, size_a, size_a, size_b))
+                                .cwiseAbs()
+                                .maxCoeff();
+                        INFO("overlap max|err|=" << err);
+                        REQUIRE(err < 1e-10);
+                    }
+
+                    const Eigen::Index npt = points.cols();
+                    MatRM integrals(npt, esp.nab(idx));
+                    MatRM workspace(npt, esp.nherm(idx));
+                    esp.evaluate(idx, points, integrals, workspace, 0.0);
+
+                    for (Eigen::Index pt = 0; pt < npt; ++pt) {
+                        // libcint reference: a unit positive point charge at
+                        // this grid point gives -\int phi_p phi_q / |r - C|.
+                        std::vector<PointCharge> charges{
+                            PointCharge(1.0, points(0, pt), points(1, pt),
+                                        points(2, pt))};
+                        occ::Mat ref = -engine.point_charge_potential(charges);
+
+                        Eigen::Map<const MatRM> V(integrals.row(pt).data(),
+                                                  size_a, size_b);
+                        const double max_ref =
+                            ref.block(0, size_a, size_a, size_b)
+                                .cwiseAbs()
+                                .maxCoeff();
+                        const double err =
+                            (V - ref.block(0, size_a, size_a, size_b))
+                                .cwiseAbs()
+                                .maxCoeff();
+                        INFO("point " << pt << " max|ref|=" << max_ref
+                                      << " max|err|=" << err);
+                        REQUIRE(err < 1e-8 * std::max(1.0, max_ref));
+                    }
+                }
+            }
+        }
+    }
+}
+
 // ============================================================================
 // Overlap integral tests
 // ============================================================================
