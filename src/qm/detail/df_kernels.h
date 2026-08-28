@@ -75,7 +75,7 @@ std::vector<T> reduce_thread_local_vectors(const occ::parallel::thread_local_sto
 
 // Generic exchange contraction helper
 template<typename KMatType>
-void contract_exchange_matrices(const std::vector<Mat>& iuP, const Eigen::LLT<Mat>& V_LLt, 
+void contract_exchange_matrices(const std::vector<Mat>& iuP, const CoulombMetric& V_LLt, 
                                KMatType& K_block) {
   Mat X(iuP[0].rows(), iuP[0].cols());
   for (size_t i = 0; i < iuP.size(); i++) {
@@ -517,7 +517,7 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_exchange_operator_kernel_r(IntegralEngine &engine,
                                       IntegralEngine &engine_aux,
                                       const MolecularOrbitals &mo,
-                                      const Eigen::LLT<Mat> &V_LLt,
+                                      const CoulombMetric &V_LLt,
                                       cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::df);
   size_t nocc = mo.Cocc.cols();
@@ -573,7 +573,7 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_exchange_operator_kernel_u(IntegralEngine &engine,
                                       IntegralEngine &engine_aux,
                                       const MolecularOrbitals &mo,
-                                      const Eigen::LLT<Mat> &V_LLt,
+                                      const CoulombMetric &V_LLt,
                                       cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::df);
   size_t nocc = mo.Cocc.cols();
@@ -650,7 +650,7 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
                                       IntegralEngine &engine_aux,
                                       const MolecularOrbitals &mo,
-                                      const Eigen::LLT<Mat> &V_LLt,
+                                      const CoulombMetric &V_LLt,
                                       cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::df);
   size_t nocc = mo.Cocc.cols();
@@ -736,7 +736,7 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_coulomb_operator_kernel_r(IntegralEngine &engine,
                                      IntegralEngine &engine_aux,
                                      const MolecularOrbitals &mo,
-                                     const Eigen::LLT<Mat> &V_LLt,
+                                     const CoulombMetric &V_LLt,
                                      cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::df);
   const auto nbf = engine.aobasis().nbf();
@@ -822,7 +822,7 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_coulomb_operator_kernel_u(IntegralEngine &engine,
                                      IntegralEngine &engine_aux,
                                      const MolecularOrbitals &mo,
-                                     const Eigen::LLT<Mat> &V_LLt,
+                                     const CoulombMetric &V_LLt,
                                      cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::df);
   const auto nbf = engine.aobasis().nbf();
@@ -927,7 +927,7 @@ template <ShellKind kind = ShellKind::Cartesian>
 Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
                                      IntegralEngine &engine_aux,
                                      const MolecularOrbitals &mo,
-                                     const Eigen::LLT<Mat> &V_LLt,
+                                     const CoulombMetric &V_LLt,
                                      cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::df);
   const auto nbf = engine.aobasis().nbf();
@@ -1034,7 +1034,7 @@ Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
 template <ShellKind kind = ShellKind::Cartesian>
 JKPair direct_coulomb_and_exchange_operator_kernel_r(
     IntegralEngine &engine, IntegralEngine &engine_aux,
-    const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
+    const MolecularOrbitals &mo, const CoulombMetric &V_LLt,
     cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::df);
   size_t nocc = mo.Cocc.cols();
@@ -1160,7 +1160,7 @@ JKPair direct_coulomb_and_exchange_operator_kernel_r(
 template <ShellKind kind = ShellKind::Cartesian>
 JKPair direct_coulomb_and_exchange_operator_kernel_u(
     IntegralEngine &engine, IntegralEngine &engine_aux,
-    const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
+    const MolecularOrbitals &mo, const CoulombMetric &V_LLt,
     cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::df);
   size_t nocc = mo.n_ao;
@@ -1246,7 +1246,7 @@ JKPair direct_coulomb_and_exchange_operator_kernel_u(
 template <ShellKind kind = ShellKind::Cartesian>
 JKPair direct_coulomb_and_exchange_operator_kernel_g(
     IntegralEngine &engine, IntegralEngine &engine_aux,
-    const MolecularOrbitals &mo, const Eigen::LLT<Mat> &V_LLt,
+    const MolecularOrbitals &mo, const CoulombMetric &V_LLt,
     cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::df);
   size_t nocc = mo.n_alpha; // number of electrons == n_alpha for general
@@ -1431,7 +1431,7 @@ JKPair direct_coulomb_and_exchange_operator_kernel_g(
 inline Mat stored_coulomb_kernel_r(const Mat &ints, const AOBasis &aobasis,
                                    const AOBasis &auxbasis,
                                    const MolecularOrbitals &mo,
-                                   const Eigen::LLT<Mat> V_LLt) {
+                                   const CoulombMetric &V_LLt) {
   occ::log::debug("Computing coulomb");
   const auto nbf = aobasis.nbf();
   const auto ndf = auxbasis.nbf();
@@ -1467,7 +1467,7 @@ inline Mat stored_coulomb_kernel_r(const Mat &ints, const AOBasis &aobasis,
 inline Mat stored_coulomb_kernel_u(const Mat &ints, const AOBasis &aobasis,
                                    const AOBasis &auxbasis,
                                    const MolecularOrbitals &mo,
-                                   const Eigen::LLT<Mat> V_LLt) {
+                                   const CoulombMetric &V_LLt) {
   const auto nbf = aobasis.nbf();
   const auto ndf = auxbasis.nbf();
   const auto [rows, cols] =
@@ -1507,7 +1507,7 @@ inline Mat stored_coulomb_kernel_u(const Mat &ints, const AOBasis &aobasis,
 inline Mat stored_coulomb_kernel_g(const Mat &ints, const AOBasis &aobasis,
                                    const AOBasis &auxbasis,
                                    const MolecularOrbitals &mo,
-                                   const Eigen::LLT<Mat> V_LLt) {
+                                   const CoulombMetric &V_LLt) {
   const auto nbf = aobasis.nbf();
   const auto ndf = auxbasis.nbf();
   const auto [rows, cols] =
@@ -1548,7 +1548,7 @@ inline Mat stored_coulomb_kernel_g(const Mat &ints, const AOBasis &aobasis,
 inline Mat stored_exchange_kernel_r(const Mat &ints, const AOBasis &aobasis,
                                     const AOBasis &auxbasis,
                                     const MolecularOrbitals &mo,
-                                    const Eigen::LLT<Mat> &V_LLt) {
+                                    const CoulombMetric &V_LLt) {
   const auto nbf = aobasis.nbf();
   const auto ndf = auxbasis.nbf();
   const size_t nocc = mo.Cocc.cols();
@@ -1592,7 +1592,7 @@ inline Mat stored_exchange_kernel_r(const Mat &ints, const AOBasis &aobasis,
 inline Mat stored_exchange_kernel_u(const Mat &ints, const AOBasis &aobasis,
                                     const AOBasis &auxbasis,
                                     const MolecularOrbitals &mo,
-                                    const Eigen::LLT<Mat> &V_LLt) {
+                                    const CoulombMetric &V_LLt) {
   const auto nbf = aobasis.nbf();
   const auto ndf = auxbasis.nbf();
   const auto [rows, cols] =
@@ -1650,7 +1650,7 @@ inline Mat stored_exchange_kernel_u(const Mat &ints, const AOBasis &aobasis,
 inline Mat stored_exchange_kernel_g(const Mat &ints, const AOBasis &aobasis,
                                     const AOBasis &auxbasis,
                                     const MolecularOrbitals &mo,
-                                    const Eigen::LLT<Mat> &V_LLt) {
+                                    const CoulombMetric &V_LLt) {
   const auto nbf = aobasis.nbf();
   const auto ndf = auxbasis.nbf();
   const auto [rows, cols] =
@@ -1712,7 +1712,7 @@ inline Mat stored_exchange_kernel_g(const Mat &ints, const AOBasis &aobasis,
 inline auto ao_tensor_reconstruction_kernel(std::vector<Eigen::Tensor<double, 4>>& tensors,
                                            const Mat& ints, const AOBasis& aobasis,
                                            const AOBasis& auxbasis,
-                                           const Eigen::LLT<Mat>& V_LLt) {
+                                           const CoulombMetric& V_LLt) {
   const auto nbf = aobasis.nbf();
   const auto naux = auxbasis.nbf();
   const auto nthreads = occ::parallel::get_num_threads();
@@ -1777,7 +1777,7 @@ inline auto ao_tensor_reconstruction_kernel(std::vector<Eigen::Tensor<double, 4>
 inline auto ao_tensor_reconstruction_kernel_batched(std::vector<Eigen::Tensor<double, 4>>& tensors,
                                                    const Mat& ints, const AOBasis& aobasis,
                                                    const AOBasis& auxbasis,
-                                                   const Eigen::LLT<Mat>& V_LLt) {
+                                                   const CoulombMetric& V_LLt) {
   const auto nbf = aobasis.nbf();
   const auto naux = auxbasis.nbf();
   const auto nthreads = occ::parallel::get_num_threads();
@@ -1837,7 +1837,7 @@ inline auto ao_tensor_reconstruction_kernel_batched(std::vector<Eigen::Tensor<do
 // Computes (ia|jb) directly without reconstructing full AO tensor
 inline void compute_df_mp2_integrals(std::vector<std::vector<std::vector<std::vector<double>>>>& ovov_tensor,
                                      const Mat& ints, const AOBasis& aobasis, const AOBasis& auxbasis,
-                                     const MolecularOrbitals& mo, const Eigen::LLT<Mat>& V_LLt,
+                                     const MolecularOrbitals& mo, const CoulombMetric& V_LLt,
                                      size_t n_occ, size_t n_virt) {
   const auto nbf = aobasis.nbf();
   const auto naux = auxbasis.nbf();

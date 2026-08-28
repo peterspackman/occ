@@ -15,6 +15,56 @@ enum class CoulombMethod {
 using gto::Shell;
 using gto::AOBasis;
 
+/**
+ * @brief Factorization of the density-fitting Coulomb metric V = (P|Q).
+ *
+ * Cholesky whenever V is numerically positive definite, otherwise a symmetric
+ * eigendecomposition with the near-null space discarded. Two situations need
+ * the second path, and both used to produce silently wrong results:
+ *
+ *  - an auxiliary basis that is close to linearly dependent for the given
+ *    geometry (Eigen's LLT then reports failure, and solving with the failed
+ *    factorization returns garbage);
+ *  - the long-range metric (P|erf(omega r)/r|Q) of a range-separated hybrid,
+ *    whose attenuated kernel damps the high-exponent auxiliary functions so
+ *    hard that a JK-fitting basis is near-singular under it.
+ *
+ */
+class CoulombMetric {
+public:
+  /// Factorize V. `lindep` is relative to the largest eigenvalue.
+  void compute(const Mat &V, double lindep = 1e-12);
+
+  inline bool uses_cholesky() const { return m_cholesky; }
+  inline Eigen::Index num_discarded() const { return m_discarded; }
+  inline bool initialized() const { return m_size > 0; }
+
+  /// V^-1 b
+  template <typename Derived>
+  Mat solve(const Eigen::MatrixBase<Derived> &b) const {
+    if (m_cholesky)
+      return m_llt.solve(b);
+    return m_half * (m_half.transpose() * b);
+  }
+
+  /// L^-1 b, where L L^T = V (or its eigen equivalent U diag(w)^-1/2): the
+  /// half-inverse that turns 3-centre integrals into DF B tensors. Has fewer
+  /// rows than naux when the eigen path drops vectors.
+  template <typename Derived>
+  Mat half_inverse_apply(const Eigen::MatrixBase<Derived> &b) const {
+    if (m_cholesky)
+      return m_llt.matrixL().solve(Mat(b));
+    return m_half.transpose() * b;
+  }
+
+private:
+  bool m_cholesky{true};
+  Eigen::Index m_size{0};
+  Eigen::Index m_discarded{0};
+  Eigen::LLT<Mat> m_llt;
+  Mat m_half; ///< U diag(1/sqrt(w)) over the retained eigenvectors
+};
+
 class IntegralEngineDF {
 public:
   enum Policy { Choose, Direct, Stored };
@@ -50,8 +100,8 @@ public:
   inline const IntegralEngine &ao_engine() const { return m_ao_engine; }
   inline const IntegralEngine &aux_engine() const { return m_aux_engine; }
   inline const Mat &integral_store() const { return m_integral_store; }
-  /// Cholesky factorization of the Coulomb metric V=(P|Q), V = L Lᵀ.
-  inline const Eigen::LLT<Mat> &coulomb_metric() const { return V_LLt; }
+  /// Factorization of the Coulomb metric V=(P|Q) for the active omega.
+  inline const CoulombMetric &coulomb_metric() const { return V_LLt; }
   void compute_stored_integrals();
 
   /// Integral-direct density-fitting B tensor for the given MO coefficient
@@ -91,7 +141,11 @@ private:
 
   mutable IntegralEngine m_ao_engine;  // engine with ao basis & aux basis
   mutable IntegralEngine m_aux_engine; // engine with just aux basis
-  Eigen::LLT<Mat> V_LLt;
+  CoulombMetric V_LLt;        ///< metric factorization for the active omega
+  CoulombMetric m_V_LLt_full; ///< cached omega = 0 factorization
+  CoulombMetric m_V_LLt_lr;   ///< cached factorization for m_lr_omega
+  double m_omega{0.0};          ///< omega the active factorization belongs to
+  double m_lr_omega{0.0};       ///< omega of the cached long-range metric
   Mat m_integral_store;
   Policy m_policy{Policy::Choose};
   size_t m_integral_store_memory_limit{512 * 1024 * 1024}; // 512 MiB
