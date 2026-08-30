@@ -3,6 +3,7 @@ add_library(occ_qm_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/auto_aux_basis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cdiis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/convergence_accelerator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/coulomb_metric.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/chelpg.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cint_interface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ediis.cpp"

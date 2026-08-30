@@ -1,3 +1,4 @@
+#include <occ/qm/coulomb_metric.h>
 #include <occ/qm/split_ri_j.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/core/log.h>
@@ -168,7 +169,7 @@ struct SplitRIJ::Impl {
     Vec V_diag_sqrt_max;            // Max sqrt(V(r,r)) per aux shell for screening
     double screening_threshold = 1e-12;
 
-    Eigen::LLT<Mat> V_LLt;
+    CoulombMetric V_LLt;
     Boys<> boys;
 
     // Flat list of significant shell pairs with precomputed data
@@ -351,9 +352,11 @@ struct SplitRIJ::Impl {
 
         occ::timing::start(occ::timing::category::la);
         V_LLt.compute(V);
-        if (V_LLt.info() != Eigen::Success) {
-            throw std::runtime_error("Split-RI-J: Cholesky decomposition of V failed - "
-                                     "auxiliary basis may be linearly dependent");
+        if (!V_LLt.uses_cholesky()) {
+            occ::log::warn("Split-RI-J: Coulomb metric is not positive definite, "
+                           "falling back to an eigendecomposition ({} of {} "
+                           "auxiliary vectors discarded)",
+                           V_LLt.num_discarded(), V.rows());
         }
         occ::timing::stop(occ::timing::category::la);
 

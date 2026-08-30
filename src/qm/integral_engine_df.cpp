@@ -1,47 +1,7 @@
 #include <Eigen/Cholesky>
-#include <Eigen/Eigenvalues>
 #include "detail/df_kernels.h"
 
 namespace occ::qm {
-
-void CoulombMetric::compute(const Mat &V, double lindep) {
-  m_size = V.rows();
-  m_discarded = 0;
-  m_llt = Eigen::LLT<Mat>(V);
-  if (m_llt.info() == Eigen::Success) {
-    m_cholesky = true;
-    m_half.resize(0, 0);
-    return;
-  }
-  // Not numerically positive definite: fall back to a symmetric
-  // eigendecomposition and drop the near-null space.
-  m_cholesky = false;
-  Eigen::SelfAdjointEigenSolver<Mat> es(V);
-  if (es.info() != Eigen::Success)
-    throw std::runtime_error(
-        "Eigendecomposition of the density-fitting Coulomb metric failed");
-  const Vec &w = es.eigenvalues();
-  const double cutoff = lindep * std::max(w.maxCoeff(), 0.0);
-  Eigen::Index nkept = 0;
-  for (Eigen::Index i = 0; i < w.size(); ++i)
-    if (w(i) > cutoff)
-      ++nkept;
-  if (nkept == 0)
-    throw std::runtime_error(
-        "Density-fitting Coulomb metric has no positive eigenvalues");
-  m_discarded = w.size() - nkept;
-  m_half.resize(w.size(), nkept);
-  Eigen::Index col = 0;
-  for (Eigen::Index i = 0; i < w.size(); ++i) {
-    if (w(i) <= cutoff)
-      continue;
-    m_half.col(col++) = es.eigenvectors().col(i) / std::sqrt(w(i));
-  }
-  occ::log::warn("Coulomb metric is not positive definite: using an "
-                 "eigendecomposition, discarded {} of {} auxiliary vectors "
-                 "(eigenvalue range [{:.3e}, {:.3e}])",
-                 m_discarded, w.size(), w.minCoeff(), w.maxCoeff());
-}
 
 using ShellPairList = std::vector<std::vector<size_t>>;
 using ShellList = std::vector<gto::Shell>;
@@ -71,15 +31,16 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
     const double min_diag = V.diagonal().minCoeff();
     const double max_diag = V.diagonal().maxCoeff();
     occ::log::warn(
-        "Coulomb metric is not positive definite for this auxiliary basis\n"
-        "  Auxiliary basis size: {} functions\n"
+        "Coulomb metric is not positive definite for this auxiliary basis; "
+        "using an eigendecomposition\n"
+        "  Auxiliary basis size: {} functions ({} vectors discarded)\n"
         "  Diagonal range: [{:.2e}, {:.2e}]\n"
         "Suggestions:\n"
         "  - Try a different auxiliary basis (e.g., def2-universal-jkfit)\n"
         "  - If using --df-basis=auto, try a looser threshold "
         "(--df-auto-threshold=1e-3)\n"
         "  - Check for near-linear dependencies in the molecular geometry",
-        V.rows(), min_diag, max_diag);
+        V.rows(), V_LLt.num_discarded(), min_diag, max_diag);
   }
   m_V_LLt_full = V_LLt;
   occ::timing::stop(occ::timing::category::la);
@@ -353,6 +314,10 @@ void IntegralEngineDF::set_range_separated_omega(double omega) {
     // drops the resulting near-null space.
     V_LLt.compute(V);
     occ::timing::stop(occ::timing::category::la);
+    if (!V_LLt.uses_cholesky())
+      occ::log::debug("Long-range Coulomb metric (omega = {}) is near-singular, "
+                      "as expected: discarded {} of {} auxiliary vectors",
+                      omega, V_LLt.num_discarded(), V.rows());
     m_V_LLt_lr = V_LLt;
     m_lr_omega = omega;
   }
