@@ -190,16 +190,12 @@ opencosmors_solvation(const std::string &basename,
       solvent::sigma::SolvationParameters::opencosmors_24a();
   occ::log::info("openCOSMO-RS 24a solvation: '{}' at {:.2f} K",
                  solvent.to_string(), options.temperature);
-  // Only the surface-additive channels are produced here. The ring,
-  // reference-state and eta terms of the openCOSMO-RS solvation free energy
-  // are per-molecule; they cancel in the attachment-energy differences the
-  // facet energies are built from, but they are absent from the per-molecule
-  // total the solution thermodynamics use, which instead receives the
-  // pipeline's own 1.89 kcal/mol concentration shift.
-  occ::log::warn("openCOSMO-RS: facet energies are complete, but the reported "
-                 "dG solution and log S omit this model's ring, reference "
-                 "state and eta terms; use 'occ sigma --opencosmors' for an "
-                 "absolute solvation free energy");
+  // The surface-additive channels (dielectric, residual, cavity) carry the
+  // per-contact decomposition the facet energies are built from. The
+  // combinatorial, ring, reference-state and eta terms are per-molecule: they
+  // cancel in attachment-energy differences, so they stay out of the
+  // per-segment channels, but the solution thermodynamics need them and they
+  // are added to the molecular total below.
 
   // The averaging convention the segments arrive with belongs to COSMO-SAC;
   // the RS descriptors are rebuilt on their own radii below.
@@ -215,16 +211,17 @@ opencosmors_solvation(const std::string &basename,
     auto wavefunction =
         conductor_wavefunction(cache, gas_wavefunctions[i], settings);
     Vec dielectric;
+    double cavity_volume = 0.0;
     auto segments =
         conductor_segments(wavefunction, sac_params, 0.0,
-                           settings.angular_points, true, &dielectric);
+                           settings.angular_points, true, &dielectric,
+                           &cavity_volume);
     solvent::sigma::average_sigma(segments, rs.r_av, 1.0);
     solvent::sigma::average_sigma_orth(segments, rs.r_av, rs.r_corr,
                                        rs.sigma_orth_factor);
 
-    // Volume and cavity area are left unset: they feed only the combinatorial
-    // and reference-state terms, which are per-molecule and omitted here.
-    auto solute = solvent::sigma::RSComponent::from_segments(segments, 0.0);
+    auto solute = solvent::sigma::RSComponent::from_segments(
+        segments, cavity_volume, segments.total_area());
 
     const Vec residual = model.segment_energies(solute);
     const Vec cavity =
@@ -240,6 +237,19 @@ opencosmors_solvation(const std::string &basename,
         result_energy_difference(wavefunction, gas_wavefunctions[i]);
     const double relaxation = e_diel - dielectric.sum();
 
+    // Per-molecule terms. The cycle rank of the bond graph counts rings for
+    // a connected molecule; without bonds it is zero and the ring term drops
+    // out, as it should for an acyclic solute.
+    const auto &mol = molecules[i];
+    const int num_rings =
+        mol.bonds().empty()
+            ? 0
+            : std::max<int>(0, static_cast<int>(mol.bonds().size()) -
+                                   static_cast<int>(mol.size()) + 1);
+    const auto molecular = solvent::sigma::rs_solvation_free_energy(
+        model, solute, segments, e_diel, num_rings,
+        settings.volume_per_molecule, solvation_params);
+
     cg::SolvationData surfaces;
     cg::CavitySurface surface;
     surface.name = "conductor";
@@ -254,16 +264,24 @@ opencosmors_solvation(const std::string &basename,
     surfaces.cavities.push_back(std::move(surface));
 
     surfaces.electronic_contribution = relaxation;
-    surfaces.total_solvation_energy = surfaces.total_energy();
+    // The per-segment channels cover dielectric, residual and cavity; take
+    // the rest of the model's total from the molecular assembly so the
+    // reported solvation free energy is the whole of it.
+    const double per_molecule = molecular.combinatorial + molecular.ring +
+                                molecular.reference_state + molecular.constant;
+    surfaces.total_solvation_energy = surfaces.total_energy() + per_molecule;
 
-    occ::log::info("  molecule {}: {} segments, E_diel {:.3f} + residual "
-                   "{:.3f} + cavity {:.3f} = {:.3f} kJ/mol",
-                   i, segments.size(),
-                   e_diel * occ::units::AU_TO_KJ_PER_MOL,
-                   residual.sum() * occ::units::AU_TO_KJ_PER_MOL,
-                   cavity.sum() * occ::units::AU_TO_KJ_PER_MOL,
-                   surfaces.total_solvation_energy *
-                       occ::units::AU_TO_KJ_PER_MOL);
+    const double k = occ::units::AU_TO_KJ_PER_MOL;
+    occ::log::info("  molecule {}: {} segments, {} ring(s), cavity {:.1f} A^3",
+                   i, segments.size(), num_rings, cavity_volume);
+    occ::log::info("    E_diel {:8.3f}  residual {:8.3f}  cavity {:8.3f}",
+                   e_diel * k, residual.sum() * k, cavity.sum() * k);
+    occ::log::info("    comb   {:8.3f}  ring     {:8.3f}  ref.st {:8.3f}  "
+                   "eta {:8.3f}",
+                   molecular.combinatorial * k, molecular.ring * k,
+                   molecular.reference_state * k, molecular.constant * k);
+    occ::log::info("    total  {:8.3f} kJ/mol",
+                   surfaces.total_solvation_energy * k);
 
     result.surfaces.push_back(std::move(surfaces));
     result.wavefunctions.push_back(std::move(wavefunction));

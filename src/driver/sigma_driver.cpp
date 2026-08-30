@@ -28,7 +28,8 @@ solvent::sigma::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
                    const solvent::sigma::Parameters &params,
                    double probe_radius_angs, int angular_points,
-                   bool constrain_charge, Vec *dielectric_energies) {
+                   bool constrain_charge, Vec *dielectric_energies,
+                   double *cavity_volume_angs3) {
   Mat3N positions;
   IVec atomic_numbers;
   atom_arrays(wavefunction.atoms, positions, atomic_numbers);
@@ -47,6 +48,15 @@ conductor_segments(const qm::Wavefunction &wavefunction,
     auto surfaces = engine.surfaces();
     *dielectric_energies = surfaces.coulomb ? surfaces.coulomb->energies
                                             : Vec::Zero(phi.size());
+  }
+
+  if (cavity_volume_angs3) {
+    constexpr double bohr3_to_angs3 = occ::units::BOHR_TO_ANGSTROM *
+                                      occ::units::BOHR_TO_ANGSTROM *
+                                      occ::units::BOHR_TO_ANGSTROM;
+    *cavity_volume_angs3 =
+        occ::solvent::surface::cavity_volume(engine.es_cavity(), positions) *
+        bohr3_to_angs3;
   }
 
   auto segments = solvent::sigma::segments_from_cavity(

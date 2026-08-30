@@ -48,7 +48,8 @@ conductor_segments(const qm::Wavefunction &wavefunction,
                    double probe_radius_angs = 0.0,
                    int angular_points = 590,
                    bool constrain_charge = true,
-                   Vec *dielectric_energies = nullptr);
+                   Vec *dielectric_energies = nullptr,
+                   double *cavity_volume_angs3 = nullptr);
 
 /// Converge the SCF in the ideal-conductor reaction field starting from a
 /// gas-phase wavefunction, then build the segments.

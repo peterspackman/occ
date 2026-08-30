@@ -582,6 +582,10 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
     CGSolvationSettings settings;
     settings.method = parameterized_model.method;
     settings.basis = parameterized_model.basis;
+    // Dissolving a crystal, the cell gives the condensed-phase volume per
+    // molecule directly; openCOSMO-RS uses it for its reference-state term.
+    if (const auto n = m_crystal.unit_cell_molecules().size(); n > 0)
+      settings.volume_per_molecule = m_crystal.volume() / static_cast<double>(n);
 
     auto spec = SolventSpec::parse(opts.solvent);
     spec.temperature = opts.temperature;

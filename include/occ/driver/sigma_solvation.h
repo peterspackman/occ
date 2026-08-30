@@ -17,6 +17,9 @@ struct SigmaSolvationSettings {
   int angular_points{590};
   double temperature{298.15};
   solvent::sigma::Model model{solvent::sigma::Model::CosmoSac2010};
+  /// Condensed-phase volume per solute molecule, A^3, for the openCOSMO-RS
+  /// reference-state term. Zero leaves that term out.
+  double volume_per_molecule{0.0};
 };
 
 /// Per-monomer solvation surfaces from a σ-potential model, plus the
