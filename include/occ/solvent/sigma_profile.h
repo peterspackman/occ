@@ -36,6 +36,8 @@ struct Segments {
   Vec areas;          ///< Å²
   Vec sigma;          ///< e/Å², raw q_i / a_i
   Vec sigma_averaged; ///< e/Å², after `average_sigma`
+  /// e/Å², after `average_sigma_orth`; empty for models that do not use it.
+  Vec sigma_orth;
   IVec atom_index;
   IVec atomic_number; ///< of the parent atom
   IVec hbond_class;   ///< `HBondClass`; all `None` until classified
@@ -67,6 +69,21 @@ Segments segments_from_cavity(const surface::Surface &cavity,
 /// (COSMO-SAC 2010) uses `r_av = √(7.25/π) Å, f_decay = 3.57`.
 void average_sigma(Segments &segments, double r_av_angs = 0.8176300195,
                    double f_decay = 1.0);
+
+/// The same average returned rather than stored, so a second descriptor can
+/// be built on a different radius without disturbing `sigma_averaged`.
+Vec averaged_sigma(const Segments &segments, double r_av_angs,
+                   double f_decay = 1.0);
+
+/// Fill `sigma_orth`, the correlation screening charge density COSMO-RS
+/// misfit uses:
+///
+///     σ⊥ = avg(r_corr) − factor · avg(r_av)
+///
+/// openCOSMO-RS takes `r_av = 0.5 Å`, `r_corr = 1.0 Å` and `factor = 0.816`.
+/// Requires `sigma_averaged` to have been filled on the same `r_av`.
+void average_sigma_orth(Segments &segments, double r_av_angs,
+                        double r_corr_angs, double factor = 0.816);
 
 /// Assign `hbond_class` from atomic numbers and geometry. Connectivity is
 /// perceived with the covalent-radius criterion the crystal module uses,

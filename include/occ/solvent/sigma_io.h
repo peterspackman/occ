@@ -16,8 +16,12 @@ struct ProfileFile {
 
 ProfileFile read_sigma_profile(const std::string &path);
 
+/// A known `dispersion` adds the two COSMO-SAC-dsp fields to the header;
+/// an unknown one leaves them out, which is how the published databases and
+/// anything generated before the dispersion term read back.
 void write_sigma_profile(const std::string &path, const std::string &name,
                          const Profile &profile, const Parameters &params,
-                         double area, double volume);
+                         double area, double volume,
+                         const Dispersion &dispersion = {});
 
 } // namespace occ::solvent::sigma

@@ -57,6 +57,15 @@ ProfileFile read_sigma_profile(const std::string &path) {
   out.name = meta.value("name", std::string{});
   out.area = meta.value("area [A^2]", 0.0);
   out.component.volume = meta.value("volume [A^3]", 0.0);
+  // Profiles written before the dispersion term, and the published databases,
+  // carry neither field; the component then has no dispersion parameter.
+  if (meta.contains("dispersion e/kB [K]") && meta.contains("dispersion class")) {
+    out.component.dispersion.epsilon =
+        meta.at("dispersion e/kB [K]").get<double>();
+    out.component.dispersion.klass = dispersion_class_from_name(
+        meta.at("dispersion class").get<std::string>());
+    out.component.dispersion.known = true;
+  }
   out.component.profile.grid =
       Grid{static_cast<int>(n), sigma_values.front(), sigma_values[n - 1]};
   out.component.profile.values = Mat(n, num_classes);
@@ -68,7 +77,8 @@ ProfileFile read_sigma_profile(const std::string &path) {
 
 void write_sigma_profile(const std::string &path, const std::string &name,
                          const Profile &profile, const Parameters &params,
-                         double area, double volume) {
+                         double area, double volume,
+                         const Dispersion &dispersion) {
   nlohmann::json meta{
       {"name", name},
       {"area [A^2]", area},
@@ -79,6 +89,11 @@ void write_sigma_profile(const std::string &path, const std::string &name,
       {"averaging", params.resolves_hbond_classes() ? "Hsieh" : "Mullins"},
       {"generator", "occ"},
   };
+  if (dispersion.known) {
+    meta["dispersion e/kB [K]"] = dispersion.epsilon;
+    meta["dispersion class"] =
+        std::string(dispersion_class_name(dispersion.klass));
+  }
 
   auto output =
       fmt::output_file(path, fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);

@@ -81,8 +81,12 @@ Vec residual_ln_gamma(const std::vector<Component> &components,
 Vec activity_coefficients(const std::vector<Component> &components,
                           const Vec &mole_fractions, const Parameters &params,
                           const PotentialOptions &options) {
-  return combinatorial_ln_gamma(components, mole_fractions, params) +
-         residual_ln_gamma(components, mole_fractions, params, options);
+  Vec ln_gamma = combinatorial_ln_gamma(components, mole_fractions, params) +
+                 residual_ln_gamma(components, mole_fractions, params, options);
+  if (components.size() == 2)
+    ln_gamma += dispersion_ln_gamma(components[0].dispersion,
+                                    components[1].dispersion, mole_fractions);
+  return ln_gamma;
 }
 
 } // namespace occ::solvent::sigma

@@ -1,4 +1,5 @@
 #pragma once
+#include <occ/solvent/sigma_dispersion.h>
 #include <occ/solvent/sigma_potential.h>
 #include <vector>
 
@@ -9,6 +10,9 @@ namespace occ::solvent::sigma {
 struct Component {
   Profile profile; ///< area per bin, Å²
   double volume{0.0}; ///< Å³
+  /// Left unknown when the profile carries no dispersion metadata, in which
+  /// case the dispersion term contributes nothing.
+  Dispersion dispersion{};
 
   double area() const { return profile.total_area(); }
 };
@@ -36,11 +40,12 @@ Vec residual_ln_gamma(const std::vector<Component> &components,
                       const Vec &mole_fractions, const Parameters &params,
                       const PotentialOptions &options = {});
 
-/// `combinatorial_ln_gamma + residual_ln_gamma`.
+/// `combinatorial_ln_gamma + residual_ln_gamma`, plus the COSMO-SAC-dsp
+/// dispersion term for a binary whose components both carry a dispersion
+/// parameter.
 ///
-/// This is COSMO-SAC without the COSMO-SAC-dsp dispersion term, which is a
-/// separate additive contribution with its own atom-type parameters and is
-/// not implemented.
+/// The dispersion term is defined for two components only, so a mixture of
+/// three or more gets the first two contributions alone.
 Vec activity_coefficients(const std::vector<Component> &components,
                           const Vec &mole_fractions, const Parameters &params,
                           const PotentialOptions &options = {});

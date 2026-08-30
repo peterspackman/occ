@@ -2,8 +2,11 @@ add_library(occ_solvent_obj
     OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/draco.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/json.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/opencosmors.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/opencosmors_io.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parameters.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_activity.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sigma_dispersion.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_kernel.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_io.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sigma_profile.cpp"

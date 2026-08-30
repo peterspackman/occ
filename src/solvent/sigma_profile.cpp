@@ -122,11 +122,12 @@ Segments segments_from_cavity(const surface::Surface &cavity,
   return s;
 }
 
-void average_sigma(Segments &segments, double r_av_angs, double f_decay) {
+Vec averaged_sigma(const Segments &segments, double r_av_angs,
+                   double f_decay) {
   const Eigen::Index n = segments.size();
-  segments.sigma_averaged = Vec::Zero(n);
+  Vec result = Vec::Zero(n);
   if (n == 0)
-    return;
+    return result;
 
   const double r_av2 = r_av_angs * r_av_angs;
 
@@ -163,9 +164,22 @@ void average_sigma(Segments &segments, double r_av_angs, double f_decay) {
       numerator += segments.sigma(j) * w;
       weight_sum += w;
     }
-    segments.sigma_averaged(i) =
-        (weight_sum > 0.0) ? numerator / weight_sum : segments.sigma(i);
+    result(i) = (weight_sum > 0.0) ? numerator / weight_sum : segments.sigma(i);
   });
+  return result;
+}
+
+void average_sigma(Segments &segments, double r_av_angs, double f_decay) {
+  segments.sigma_averaged = averaged_sigma(segments, r_av_angs, f_decay);
+}
+
+void average_sigma_orth(Segments &segments, double r_av_angs,
+                        double r_corr_angs, double factor) {
+  if (segments.sigma_averaged.size() != segments.size())
+    throw std::runtime_error(
+        "average_sigma_orth: call average_sigma on the same radius first");
+  segments.sigma_orth =
+      averaged_sigma(segments, r_corr_angs) - factor * segments.sigma_averaged;
 }
 
 void classify_hbond_segments(Segments &segments, const IVec &atomic_numbers,

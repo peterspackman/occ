@@ -1,0 +1,164 @@
+#include <algorithm>
+#include <filesystem>
+#include <fmt/core.h>
+#include <fmt/os.h>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <occ/core/util.h>
+#include <occ/solvent/opencosmors_io.h>
+#include <occ/solvent/parameters.h>
+#include <sstream>
+#include <stdexcept>
+
+namespace fs = std::filesystem;
+
+namespace occ::solvent::sigma {
+
+namespace {
+
+std::string segments_filename(const std::string &name) {
+  return occ::util::to_lower_copy(name) + ".rsseg";
+}
+
+} // namespace
+
+RSComponentFile read_rs_segments(const std::string &path) {
+  std::ifstream input(path);
+  if (!input)
+    throw std::runtime_error(
+        fmt::format("read_rs_segments: cannot open '{}'", path));
+
+  nlohmann::json meta;
+  std::vector<double> sigma, sigma_orth, area;
+  std::vector<int> atomic_numbers;
+
+  std::string line;
+  while (std::getline(input, line)) {
+    if (line.empty())
+      continue;
+    if (line.front() == '#') {
+      const auto marker = line.find("# meta:");
+      if (marker != std::string::npos)
+        meta = nlohmann::json::parse(line.substr(marker + 7));
+      continue;
+    }
+    std::istringstream row(line);
+    double s = 0.0, so = 0.0, a = 0.0;
+    int z = 0;
+    if (!(row >> s >> so >> a >> z))
+      throw std::runtime_error(
+          fmt::format("read_rs_segments: bad row in '{}': {}", path, line));
+    sigma.push_back(s);
+    sigma_orth.push_back(so);
+    area.push_back(a);
+    atomic_numbers.push_back(z);
+  }
+
+  if (sigma.empty())
+    throw std::runtime_error(
+        fmt::format("read_rs_segments: no data rows in '{}'", path));
+
+  const Eigen::Index n = static_cast<Eigen::Index>(sigma.size());
+  RSComponentFile out;
+  out.name = meta.value("name", std::string{});
+  out.r_av = meta.value("r_av [A]", 0.0);
+  out.r_corr = meta.value("r_corr [A]", 0.0);
+  out.sigma_orth_factor = meta.value("sigma_orth_factor", 0.0);
+  out.component.sigma = Eigen::Map<Vec>(sigma.data(), n);
+  out.component.sigma_orth = Eigen::Map<Vec>(sigma_orth.data(), n);
+  out.component.area = Eigen::Map<Vec>(area.data(), n);
+  out.component.volume = meta.value("volume [A^3]", 0.0);
+  out.component.cavity_area = meta.value("area [A^2]", 0.0);
+  out.atomic_numbers = Eigen::Map<IVec>(atomic_numbers.data(), n);
+  out.method = meta.value("method", std::string{});
+  out.basis = meta.value("basis", std::string{});
+  return out;
+}
+
+void write_rs_segments(const std::string &path, const std::string &name,
+                       const RSComponent &component,
+                       const IVec &atomic_numbers,
+                       const RSParameters &params, const std::string &method,
+                       const std::string &basis) {
+  if (component.sigma_orth.size() != component.size())
+    throw std::runtime_error(
+        "write_rs_segments: sigma_orth has not been computed");
+  if (atomic_numbers.size() != component.size())
+    throw std::runtime_error(
+        "write_rs_segments: one atomic number per segment is required");
+
+  nlohmann::json meta{
+      {"name", name},
+      {"area [A^2]", component.total_area()},
+      {"volume [A^3]", component.volume},
+      {"r_av [A]", params.r_av},
+      {"r_corr [A]", params.r_corr},
+      {"sigma_orth_factor", params.sigma_orth_factor},
+      {"segments", component.size()},
+      {"generator", "occ"},
+  };
+  if (!method.empty())
+    meta["method"] = method;
+  if (!basis.empty())
+    meta["basis"] = basis;
+
+  auto output =
+      fmt::output_file(path, fmt::file::WRONLY | O_TRUNC | fmt::file::CREATE);
+  output.print("# meta: {}\n", meta.dump());
+  output.print("# Rows are: sigma [e/A^2], sigma_orth [e/A^2], area [A^2], "
+               "atomic number\n");
+  for (Eigen::Index i = 0; i < component.size(); i++)
+    output.print("{:.14e} {:.14e} {:.14e} {:d}\n", component.sigma(i),
+                 component.sigma_orth(i), component.area(i),
+                 atomic_numbers(i));
+}
+
+RSProfileStore::RSProfileStore(std::vector<std::string> search_paths)
+    : m_search_paths(std::move(search_paths)) {}
+
+RSProfileStore RSProfileStore::standard() {
+  return RSProfileStore(
+      {(fs::path(solvent_data_path()) / "opencosmors").string(),
+       fs::current_path().string()});
+}
+
+bool RSProfileStore::contains(const std::string &name) const {
+  const auto filename = segments_filename(name);
+  return std::any_of(m_search_paths.begin(), m_search_paths.end(),
+                     [&](const std::string &directory) {
+                       return fs::exists(fs::path(directory) / filename);
+                     });
+}
+
+RSComponentFile RSProfileStore::get(const std::string &name) const {
+  const auto filename = segments_filename(name);
+  for (const auto &directory : m_search_paths) {
+    const auto path = fs::path(directory) / filename;
+    if (fs::exists(path))
+      return read_rs_segments(path.string());
+  }
+  throw std::runtime_error(fmt::format(
+      "no openCOSMO-RS segments for solvent '{}' (looked for {} in: {}). "
+      "Generate them with: occ sigma {}.xyz --write-segments {}",
+      name, filename, occ::util::join(m_search_paths, ", "),
+      occ::util::to_lower_copy(name), filename));
+}
+
+std::vector<std::string> RSProfileStore::available() const {
+  std::vector<std::string> names;
+  for (const auto &directory : m_search_paths) {
+    if (!fs::is_directory(directory))
+      continue;
+    for (const auto &entry : fs::directory_iterator(directory)) {
+      if (entry.path().extension() != ".rsseg")
+        continue;
+      auto stem = entry.path().stem().string();
+      if (std::find(names.begin(), names.end(), stem) == names.end())
+        names.push_back(std::move(stem));
+    }
+  }
+  std::sort(names.begin(), names.end());
+  return names;
+}
+
+} // namespace occ::solvent::sigma
