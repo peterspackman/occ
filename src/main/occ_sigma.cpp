@@ -8,6 +8,8 @@
 #include <occ/io/xyz.h>
 #include <occ/main/occ_sigma.h>
 #include <occ/qm/scf.h>
+#include <occ/solvent/opencosmors.h>
+#include <occ/solvent/opencosmors_io.h>
 #include <occ/solvent/sigma_io.h>
 #include <occ/solvent/sigma_solvation.h>
 
@@ -47,6 +49,21 @@ CLI::App *add_sigma_subcommand(CLI::App &app) {
   sigma->add_option("--solvent", config->solvent,
                     "also report the sigma potential of this profile treated "
                     "as a pure solvent");
+  sigma->add_option("--write-segments", config->segments_filename,
+                    "write this molecule's openCOSMO-RS segment ensemble "
+                    "(.rsseg) so it can be reused as a cached solvent");
+  sigma->add_flag("--opencosmors", config->opencosmors,
+                  "use the openCOSMO-RS kernel against the stored .rsseg "
+                  "ensemble for --solvent");
+  sigma->add_option("--solvent-geometry", config->solvent_geometry,
+                    "solvent geometry; assembles the openCOSMO-RS solvation "
+                    "free energy against a conductor cavity computed for it");
+  sigma->add_option("--liquid-volume", config->solvent_volume_liquid,
+                    "solute liquid molar volume (Angstrom^3 per molecule) for "
+                    "the openCOSMO-RS reference-state term");
+  sigma->add_option("--rings", config->num_rings,
+                    "number of rings in the solute, for the openCOSMO-RS ring "
+                    "correction");
   sigma->add_option("--temperature", config->temperature,
                     "temperature for the sigma potential (K)");
   sigma->add_option("--angular-points", config->angular_points,
@@ -90,6 +107,10 @@ void run_sigma_subcommand(SigmaConfig const &config) {
   auto profile = occ::solvent::sigma::bin_segments(result.segments, grid,
                                                    params.hbond_split());
 
+  const auto dispersion = occ::solvent::sigma::dispersion_parameters(
+      molecule.atomic_numbers(), molecule.positions() *
+                                     occ::units::ANGSTROM_TO_BOHR);
+
   occ::log::info("cavity area          {:12.5f} Angstrom^2", result.cavity_area);
   occ::log::info("cavity volume        {:12.5f} Angstrom^3",
                  result.cavity_volume);
@@ -97,6 +118,13 @@ void run_sigma_subcommand(SigmaConfig const &config) {
   occ::log::info("screening charge     {:12.5f} e", result.screening_charge);
   occ::log::info("conductor stabilisation {:9.5f} Hartree",
                  result.energy_conductor - result.energy_gas);
+  if (dispersion.known)
+    occ::log::info("dispersion e/kB      {:12.4f} K ({})", dispersion.epsilon,
+                   occ::solvent::sigma::dispersion_class_name(
+                       dispersion.klass));
+  else
+    occ::log::warn("no COSMO-SAC-dsp parameter for this molecule; the "
+                   "dispersion term will be skipped wherever it is used");
 
   std::string path = config.output_filename;
   if (path.empty())
@@ -104,15 +132,77 @@ void run_sigma_subcommand(SigmaConfig const &config) {
            ".sigma";
   occ::solvent::sigma::write_sigma_profile(
       path, molecule.name(), profile, params, result.cavity_area,
-      result.cavity_volume);
+      result.cavity_volume, dispersion);
   occ::log::info("wrote sigma profile to {}", path);
 
-  if (config.solvent.empty())
+  // openCOSMO-RS descriptors: sigma on its own averaging radius plus the
+  // correlation density sigma_orth. Cheap once the cavity exists.
+  occ::solvent::sigma::RSParameters rs;
+  auto rs_segments = result.segments;
+  occ::solvent::sigma::average_sigma(rs_segments, rs.r_av, 1.0);
+  occ::solvent::sigma::average_sigma_orth(rs_segments, rs.r_av, rs.r_corr,
+                                          rs.sigma_orth_factor);
+  const auto rs_solute = occ::solvent::sigma::RSComponent::from_segments(
+      rs_segments, result.cavity_volume, result.cavity_area);
+
+  if (!config.segments_filename.empty()) {
+    occ::solvent::sigma::write_rs_segments(
+        config.segments_filename, molecule.name(), rs_solute,
+        rs_segments.atomic_number, rs, config.method, config.basis);
+    occ::log::info("wrote openCOSMO-RS segments to {}",
+                   config.segments_filename);
+  }
+
+  auto report_opencosmors = [&](const occ::solvent::sigma::RSComponent &solvent,
+                                const std::string &label) {
+    occ::solvent::sigma::RSOptions rs_options;
+    rs_options.temperature = config.temperature;
+    occ::solvent::sigma::RSSolventModel model(solvent, rs, rs_options);
+    auto energy = occ::solvent::sigma::rs_solvation_free_energy(
+        model, rs_solute, rs_segments,
+        result.energy_conductor - result.energy_gas, config.num_rings,
+        config.solvent_volume_liquid,
+        occ::solvent::sigma::SolvationParameters::opencosmors_24a());
+
+    const double k = occ::units::AU_TO_KJ_PER_MOL;
+    occ::log::info("openCOSMO-RS 24a solvation free energy in '{}' (kJ/mol)",
+                   label);
+    occ::log::info("  E_diel           {:10.3f}", energy.dielectric * k);
+    occ::log::info("  residual         {:10.3f}", energy.residual * k);
+    occ::log::info("  combinatorial    {:10.3f}", energy.combinatorial * k);
+    occ::log::info("  cavity           {:10.3f}", energy.cavity * k);
+    occ::log::info("  ring             {:10.3f}", energy.ring * k);
+    occ::log::info("  reference state  {:10.3f}", energy.reference_state * k);
+    occ::log::info("  constant         {:10.3f}", energy.constant * k);
+    occ::log::info("  total            {:10.3f}", energy.total() * k);
+  };
+
+  // A cached solvent ensemble avoids recomputing the solvent cavity, which
+  // is what makes a solvent screen cheap.
+  if (config.opencosmors && !config.solvent.empty()) {
+    auto store = occ::solvent::sigma::RSProfileStore::standard();
+    auto solvent = store.get(config.solvent);
+    if (solvent.r_av > 0.0 &&
+        std::abs(solvent.r_av - rs.r_av) > 1e-12)
+      throw std::runtime_error(fmt::format(
+          "solvent '{}' was averaged on r_av = {} but the parameters in use "
+          "specify {}",
+          config.solvent, solvent.r_av, rs.r_av));
+    if (!solvent.basis.empty() && solvent.basis != config.basis)
+      occ::log::warn("solvent '{}' segments were computed with {}/{} but this "
+                     "solute uses {}/{}; the descriptors are not comparable",
+                     config.solvent, solvent.method, solvent.basis,
+                     config.method, config.basis);
+    report_opencosmors(solvent.component, config.solvent);
+    return;
+  }
+
+  if (config.solvent.empty() && config.solvent_geometry.empty())
     return;
 
   // Solvation energy of this molecule in the named solvent, when a profile
   // for it is available: E_diel (gas -> conductor) + the residual contraction.
-  {
+  if (!config.solvent.empty()) {
     auto store = occ::solvent::sigma::ProfileStore::standard();
     if (store.contains(config.solvent)) {
       occ::solvent::sigma::PotentialOptions options;
@@ -131,6 +221,32 @@ void run_sigma_subcommand(SigmaConfig const &config) {
                      config.solvent, e_diel, residual, e_diel + residual,
                      hbond);
     }
+  }
+
+  // openCOSMO-RS: both cavities are built here, so no stored profile is
+  // involved and the solvent carries the segment descriptors its kernel
+  // needs rather than a binned profile.
+  if (!config.solvent_geometry.empty()) {
+    auto solvent_molecule =
+        occ::io::molecule_from_xyz_file(config.solvent_geometry);
+    occ::gto::AOBasis solvent_basis =
+        occ::gto::AOBasis::load(solvent_molecule.atoms(), config.basis);
+    solvent_basis.set_pure(!config.cartesian);
+    occ::dft::DFT solvent_gas(config.method, solvent_basis);
+    occ::qm::SCF<occ::dft::DFT> solvent_scf(solvent_gas);
+    solvent_scf.compute_scf_energy();
+    auto solvent_conductor =
+        occ::driver::conductor_profile(solvent_scf.wavefunction(), settings);
+
+    auto solvent_segments = solvent_conductor.segments;
+    occ::solvent::sigma::average_sigma(solvent_segments, rs.r_av, 1.0);
+    occ::solvent::sigma::average_sigma_orth(solvent_segments, rs.r_av,
+                                            rs.r_corr, rs.sigma_orth_factor);
+    report_opencosmors(occ::solvent::sigma::RSComponent::from_segments(
+                           solvent_segments, solvent_conductor.cavity_volume,
+                           solvent_conductor.cavity_area),
+                       solvent_molecule.name());
+    return;
   }
 
   auto kernel =

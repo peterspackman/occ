@@ -95,8 +95,11 @@ SolvationModelKind parse_solvation_model(const std::string &name) {
     return SolvationModelKind::Smd;
   if (lowered == "sigma" || lowered == "cosmo-sac" || lowered == "cosmosac")
     return SolvationModelKind::Sigma;
-  throw std::runtime_error(
-      fmt::format("unknown solvation model '{}' (none, smd, sigma)", name));
+  if (lowered == "opencosmors" || lowered == "opencosmo-rs" ||
+      lowered == "cosmo-rs")
+    return SolvationModelKind::OpenCosmoRS;
+  throw std::runtime_error(fmt::format(
+      "unknown solvation model '{}' (none, smd, sigma, opencosmors)", name));
 }
 
 std::string solvation_model_name(SolvationModelKind kind) {
@@ -107,6 +110,8 @@ std::string solvation_model_name(SolvationModelKind kind) {
     return "smd";
   case SolvationModelKind::Sigma:
     return "sigma";
+  case SolvationModelKind::OpenCosmoRS:
+    return "opencosmors";
   }
   return "unknown";
 }
@@ -182,6 +187,36 @@ private:
   CGSolvationSettings m_settings;
 };
 
+class OpenCosmoRSCGSolvationModel final : public CGSolvationModel {
+public:
+  explicit OpenCosmoRSCGSolvationModel(CGSolvationSettings settings)
+      : m_settings(std::move(settings)) {}
+
+  std::string name() const override { return "openCOSMO-RS"; }
+  /// Same ideal-conductor wavefunction as the sigma model, so the same
+  /// over-polarisation argument applies.
+  bool supports_solvated_wavefunctions() const override { return false; }
+  void validate(const SolventSpec &) const override {} // mixtures welcome
+
+  CGSolvationResult
+  compute(const std::string &basename,
+          const std::vector<core::Molecule> &molecules,
+          const std::vector<qm::Wavefunction> &gas_wavefunctions,
+          const SolventSpec &solvent) override {
+    SigmaSolvationSettings settings;
+    settings.method = m_settings.method;
+    settings.basis = m_settings.basis;
+    settings.pure_spherical = m_settings.pure_spherical;
+    settings.angular_points = m_settings.angular_points;
+    settings.temperature = solvent.temperature;
+    return opencosmors_solvation(basename, molecules, gas_wavefunctions,
+                                 solvent, settings);
+  }
+
+private:
+  CGSolvationSettings m_settings;
+};
+
 class NoSolvationModel final : public CGSolvationModel {
 public:
   std::string name() const override { return "none"; }
@@ -211,6 +246,8 @@ make_cg_solvation_model(SolvationModelKind kind,
     return std::make_unique<SmdCGSolvationModel>(settings);
   case SolvationModelKind::Sigma:
     return std::make_unique<SigmaCGSolvationModel>(settings);
+  case SolvationModelKind::OpenCosmoRS:
+    return std::make_unique<OpenCosmoRSCGSolvationModel>(settings);
   }
   throw std::runtime_error("make_cg_solvation_model: unknown kind");
 }

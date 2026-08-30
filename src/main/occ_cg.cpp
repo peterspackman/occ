@@ -42,9 +42,9 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "file (must be <= radius)");
   cg->add_option("-s,--solvent", config->solvent,
                  "solvent name, or a mixture as name:fraction,name:fraction "
-                 "(mixtures require --solvation-model sigma)");
+                 "(mixtures require --solvation-model sigma or opencosmors)");
   cg->add_option("--solvation-model", config->solvation_model,
-                 "solvation model: smd (default), sigma, none");
+                 "solvation model: smd (default), sigma, opencosmors, none");
   cg->add_option("--temperature", config->temperature,
                  "temperature in K for the solvation model");
   cg->add_flag("--dimer-desolvation", config->dimer_desolvation,

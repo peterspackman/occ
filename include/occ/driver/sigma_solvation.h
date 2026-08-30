@@ -49,4 +49,22 @@ sigma_solvation(const std::string &basename,
                 const SolventSpec &solvent,
                 const SigmaSolvationSettings &settings = {});
 
+/// The same, using the openCOSMO-RS kernel and its cached `.rsseg` solvent
+/// ensembles.
+///
+/// Three channels are produced, all additive over surface elements:
+/// `dielectric` (gas to ideal conductor), `residual` (conductor to solvent),
+/// and `cavity` (the per-atom `τ_α A_α` term). The remaining terms of the
+/// openCOSMO-RS solvation free energy — ring, reference state and the
+/// constant η — are per-molecule and have no surface-element home; they are
+/// the same for a bulk and a surface molecule, so they cancel in the
+/// attachment-energy difference cg forms and are deliberately omitted here.
+/// The absolute solvation free energy is what `occ sigma` reports, not this.
+CGSolvationResult
+opencosmors_solvation(const std::string &basename,
+                      const std::vector<core::Molecule> &molecules,
+                      const std::vector<qm::Wavefunction> &gas_wavefunctions,
+                      const SolventSpec &solvent,
+                      const SigmaSolvationSettings &settings = {});
+
 } // namespace occ::driver
