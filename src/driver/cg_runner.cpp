@@ -284,7 +284,6 @@ CGPreparation prepare_cg(CGConfig const &config) {
   opts.solvent_tag = SolventSpec::parse(config.solvent).filename_tag();
   opts.solvation_model = parse_solvation_model(config.solvation_model);
   opts.print_solvation_descriptors = config.print_solvation_descriptors;
-  opts.dimer_desolvation = config.dimer_desolvation;
   opts.temperature = config.temperature;
   opts.basename = basename;
   opts.write_debug_output_files = config.write_dump_files;

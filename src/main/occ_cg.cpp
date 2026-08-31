@@ -42,20 +42,18 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "file (must be <= radius)");
   cg->add_option("-s,--solvent", config->solvent,
                  "solvent name, or a mixture as name:fraction,name:fraction "
-                 "(mixtures require --solvation-model sigma or opencosmors)");
+                 "(mixtures require --solvation-model cosmo-rs)");
   cg->add_option("--solvation-model", config->solvation_model,
-                 "solvation model: smd (default), sigma, opencosmors, none");
+                 "solvation model: smd (default), cosmo-rs, none");
   cg->add_option("--temperature", config->temperature,
                  "temperature in K for the solvation model");
-  cg->add_flag("--dimer-desolvation", config->dimer_desolvation,
-               "attribute solvation to contacts by dimer difference rather "
-               "than by surface proximity (sigma model only)");
   cg->add_flag("--solvation-descriptors", config->print_solvation_descriptors,
-               "print a per-contact table of solvation descriptors "
-               "(reorganisation, hydrogen-bonded area)");
+               "print a per-contact table of solvation descriptors; which "
+               "ones are available depends on the solvation model");
   cg->add_option("--charges", config->charge_string, "system net charge");
   cg->add_option("-w,--wavefunction-choice", config->wavefunction_choice,
-                 "Choice of wavefunctions");
+                 "wavefunctions used for pair interactions: gas or solvated "
+                 "(cosmo-rs supports gas only)");
   cg->add_flag("--write-kmcpp", config->write_kmcpp_file,
                "write out an input file for kmcpp program");
   cg->add_flag("--xtb", config->use_xtb, "use xtb for interaction energies");

@@ -337,6 +337,13 @@ Vec segment_cavity_energies(const Segments &segments,
   return out;
 }
 
+int ring_count(const core::Molecule &molecule) {
+  if (molecule.bonds().empty())
+    return 0;
+  return std::max<int>(0, static_cast<int>(molecule.bonds().size()) -
+                              static_cast<int>(molecule.size()) + 1);
+}
+
 std::vector<int> unparameterised_elements(const Segments &segments,
                                           const SolvationParameters &params) {
   std::vector<int> missing;

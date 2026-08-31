@@ -40,9 +40,8 @@ struct SolventSpec {
 
 enum class SolvationModelKind {
   None,  ///< gas phase, no solvation surfaces
-  Smd,   ///< SMD via a solvated DFT SCF
-  Sigma, ///< COSMO-SAC σ-potential on an ideal-conductor cavity
-  OpenCosmoRS, ///< openCOSMO-RS 24a kernel on the same cavity
+  Smd,  ///< SMD via a solvated DFT SCF
+  OpenCosmoRS, ///< openCOSMO-RS 24a on an ideal-conductor cavity
 };
 
 [[nodiscard]] SolvationModelKind parse_solvation_model(const std::string &);

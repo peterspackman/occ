@@ -1,14 +1,13 @@
 #pragma once
 #include <occ/qm/wavefunction.h>
-#include <occ/solvent/sigma_kernel.h>
+#include <occ/solvent/opencosmors.h>
 #include <occ/solvent/sigma_profile.h>
 #include <string>
 
 namespace occ::driver {
 
-/// Settings for the ideal-conductor COSMO calculation a σ-profile is built
-/// from. The averaging convention comes from `model`, since it is part of the
-/// parameterisation rather than a free choice.
+/// Settings for the ideal-conductor COSMO calculation the segment
+/// descriptors are built from.
 struct SigmaProfileSettings {
   std::string method{"b3lyp"};
   std::string basis{"def2-tzvp"};
@@ -17,7 +16,10 @@ struct SigmaProfileSettings {
   int angular_points{590};
   /// Constrain the surface charge to -q (Gauss's law for a conductor).
   bool constrain_charge{true};
-  solvent::sigma::Model model{solvent::sigma::Model::CosmoSac2010};
+  /// Averaging radii for σ and σ⊥. Part of the parameterisation rather than a
+  /// free choice, so overriding them makes the descriptors incomparable with
+  /// the shipped solvent ensembles.
+  solvent::sigma::RSParameters parameters{};
 };
 
 struct ConductorResult {
@@ -36,17 +38,16 @@ struct ConductorResult {
   double screening_charge{0.0};
 };
 
-/// Build averaged, H-bond-classified segments from a wavefunction that has
-/// already been converged in the ideal-conductor reaction field.
+/// Build segments from a wavefunction that has already been converged in the
+/// ideal-conductor reaction field, with both σ and σ⊥ averaged on `params`.
 ///
 /// Reusing a cached conductor wavefunction here is the whole point of the
-/// model: the σ-profile is solvent independent, so one calculation serves
-/// every solvent.
+/// model: the segment descriptors are solvent independent, so one calculation
+/// serves every solvent.
 solvent::sigma::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
-                   const solvent::sigma::Parameters &params,
-                   double probe_radius_angs = 0.0,
-                   int angular_points = 590,
+                   const solvent::sigma::RSParameters &params = {},
+                   double probe_radius_angs = 0.0, int angular_points = 590,
                    bool constrain_charge = true,
                    Vec *dielectric_energies = nullptr,
                    double *cavity_volume_angs3 = nullptr);

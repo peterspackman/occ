@@ -26,7 +26,7 @@ void atom_arrays(const std::vector<occ::core::Atom> &atoms, Mat3N &positions,
 
 solvent::sigma::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
-                   const solvent::sigma::Parameters &params,
+                   const solvent::sigma::RSParameters &params,
                    double probe_radius_angs, int angular_points,
                    bool constrain_charge, Vec *dielectric_energies,
                    double *cavity_volume_angs3) {
@@ -61,15 +61,14 @@ conductor_segments(const qm::Wavefunction &wavefunction,
 
   auto segments = solvent::sigma::segments_from_cavity(
       engine.es_cavity(), engine.surface_charges(), atomic_numbers);
-  solvent::sigma::classify_hbond_segments(segments, atomic_numbers, positions);
-  solvent::sigma::average_sigma(segments, params.r_av, params.f_decay);
+  solvent::sigma::average_sigma(segments, params.r_av);
+  solvent::sigma::average_sigma_orth(segments, params.r_av, params.r_corr,
+                                     params.sigma_orth_factor);
   return segments;
 }
 
 ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
                                   const SigmaProfileSettings &settings) {
-  const auto params = solvent::sigma::Parameters::for_model(settings.model);
-
   occ::gto::AOBasis basis =
       occ::gto::AOBasis::load(gas_wavefunction.atoms, settings.basis);
   basis.set_pure(settings.pure_spherical);
@@ -87,25 +86,11 @@ ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
   result.energy_conductor = scf.compute_scf_energy();
   result.wavefunction = scf.wavefunction();
   result.segments = conductor_segments(
-      result.wavefunction, params, settings.probe_radius_angs,
+      result.wavefunction, settings.parameters, settings.probe_radius_angs,
       settings.angular_points, settings.constrain_charge,
-      &result.dielectric_energies);
+      &result.dielectric_energies, &result.cavity_volume);
 
-  Mat3N positions;
-  IVec atomic_numbers;
-  atom_arrays(result.wavefunction.atoms, positions, atomic_numbers);
-
-  occ::scrf::ReactionFieldEngine engine(
-      occ::scrf::Options::conductor(settings.probe_radius_angs,
-                                    settings.angular_points));
-  engine.initialize(positions, atomic_numbers);
-  const double bohr3_to_angs3 = occ::units::BOHR_TO_ANGSTROM *
-                                occ::units::BOHR_TO_ANGSTROM *
-                                occ::units::BOHR_TO_ANGSTROM;
   result.cavity_area = result.segments.total_area();
-  result.cavity_volume =
-      occ::solvent::surface::cavity_volume(engine.es_cavity(), positions) *
-      bohr3_to_angs3;
   result.screening_charge = result.segments.total_charge();
 
   occ::log::info("conductor COSMO: {} segments, area {:.2f} A^2, volume "

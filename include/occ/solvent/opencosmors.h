@@ -1,5 +1,6 @@
 #pragma once
 #include <ankerl/unordered_dense.h>
+#include <occ/core/molecule.h>
 #include <occ/solvent/sigma_profile.h>
 #include <vector>
 
@@ -46,6 +47,11 @@ struct SolvationParameters {
 /// Segments on an element outside the parameter set contribute zero.
 Vec segment_cavity_energies(const Segments &segments,
                             const SolvationParameters &params);
+
+/// Number of rings, for the ring correction: the cycle rank of the bond
+/// graph, `bonds - atoms + 1` for a connected molecule. Zero without bonds,
+/// which is also the right answer for an acyclic solute.
+int ring_count(const core::Molecule &molecule);
 
 /// Atomic numbers present in `segments` that the parameter set does not
 /// cover, sorted and deduplicated. Empty when every element is covered.

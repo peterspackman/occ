@@ -6,25 +6,22 @@ namespace occ::main {
 
 struct SigmaConfig {
   std::string geometry_filename{""};
-  std::string output_filename{""};
   std::string method{"b3lyp"};
   std::string basis{"def2-tzvp"};
-  std::string model{"cosmo-sac-2010"};
+  /// Named solvent, resolved against the shipped `.rsseg` ensembles.
   std::string solvent{""};
-  /// Geometry of the solvent molecule. When given, the openCOSMO-RS
-  /// solvation free energy is assembled against a conductor cavity computed
-  /// for it, rather than against a stored σ-profile.
+  /// Geometry of the solvent molecule, as an alternative to a named solvent:
+  /// its conductor cavity is computed here rather than loaded.
   std::string solvent_geometry{""};
-  /// Where to write this molecule's openCOSMO-RS segment ensemble, so it can
-  /// be used as a cached solvent later.
+  /// Where to write this molecule's segment ensemble, so it can be reused as
+  /// a cached solvent later.
   std::string segments_filename{""};
-  /// Use the openCOSMO-RS kernel against the stored ensemble for `--solvent`
-  /// rather than the COSMO-SAC σ-potential.
-  bool opencosmors{false};
-  /// Solute liquid molar volume, Å³ per molecule, for the reference-state
-  /// term. Non-positive drops that term.
-  double solvent_volume_liquid{0.0};
-  int num_rings{0};
+  /// Liquid-phase volume per solute molecule, Angstrom^3, for the
+  /// reference-state term. Non-positive drops that term.
+  double liquid_volume{0.0};
+  /// Rings in the solute, for the ring correction. Negative counts them from
+  /// the bond graph.
+  int num_rings{-1};
   double probe_radius{0.0};
   double temperature{298.15};
   int angular_points{590};
