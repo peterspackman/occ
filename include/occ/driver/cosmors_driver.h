@@ -12,7 +12,7 @@ namespace occ::driver {
 /// descriptors are built from.
 struct ConductorSettings {
   std::string method{"b3lyp"};
-  std::string basis{"def2-tzvp"};
+  std::string basis{"def2-svp"};
   bool pure_spherical{true};
   double probe_radius_angs{0.0};
   int angular_points{590};
@@ -62,7 +62,7 @@ ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
 /// Settings for a single-molecule openCOSMO-RS solvation free energy.
 struct CosmoRSSolvationSettings {
   std::string method{"b3lyp"};
-  std::string basis{"def2-tzvp"};
+  std::string basis{"def2-svp"};
   bool pure_spherical{true};
   double probe_radius_angs{0.0};
   int angular_points{590};

@@ -11,7 +11,7 @@ namespace occ::driver {
 
 struct CosmoRSSettings {
   std::string method{"b3lyp"};
-  std::string basis{"def2-tzvp"};
+  std::string basis{"def2-svp"};
   bool pure_spherical{true};
   int angular_points{590};
   /// Solvent probe radius used to build the cavity, Angstrom. Zero is the
