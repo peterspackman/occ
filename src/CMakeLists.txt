@@ -135,7 +135,7 @@ target_link_libraries(occjs PUBLIC
 # Emscripten-specific linker flags for JavaScript bindings
 # Note: static_partitioner in XDM code avoids Firefox WASM threading issues
 set_target_properties(occjs PROPERTIES
-    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=8MB -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORT_EXCEPTION_HANDLING_HELPERS=1 -fexceptions -pthread --bind --preload-file ${CMAKE_SOURCE_DIR}/share@/"
+    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1GB -s STACK_SIZE=8MB -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORT_EXCEPTION_HANDLING_HELPERS=1 -fexceptions -pthread --bind -s EXPORTED_RUNTIME_METHODS=['FS'] --preload-file ${CMAKE_SOURCE_DIR}/share@/"
 )
 
 # Set output file extension
