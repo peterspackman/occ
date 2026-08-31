@@ -35,11 +35,9 @@ struct CosmoRSSettings {
 /// added into `total_solvation_energy` so the reported figure is the model's
 /// whole solvation free energy. They are identical for a bulk and a surface
 /// molecule, so they cancel in the attachment-energy difference cg forms.
-CGSolvationResult
-cosmors_solvation(const std::string &basename,
-                      const std::vector<core::Molecule> &molecules,
-                      const std::vector<qm::Wavefunction> &gas_wavefunctions,
-                      const SolventSpec &solvent,
-                      const CosmoRSSettings &settings = {});
+CGSolvationResult cosmors_solvation(
+    const std::string &basename, const std::vector<core::Molecule> &molecules,
+    const std::vector<qm::Wavefunction> &gas_wavefunctions,
+    const SolventSpec &solvent, const CosmoRSSettings &settings = {});
 
 } // namespace occ::driver

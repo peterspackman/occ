@@ -35,7 +35,6 @@ void write_segments(const std::string &path, const std::string &name,
                     const std::string &method = {},
                     const std::string &basis = {});
 
-
 /// Resolves a solvent name to its segment ensemble, read from `<name>.rsseg`
 /// under the search paths. Ensembles are produced by `occ sigma`; nothing is
 /// computed here.

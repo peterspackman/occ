@@ -1,7 +1,7 @@
 #pragma once
+#include <occ/core/linear_algebra.h>
 #include <occ/scrf/surfaces.h>
 #include <occ/xtb/solvation_interface.h>
-#include <occ/core/linear_algebra.h>
 #include <string>
 #include <string_view>
 #include <vector>

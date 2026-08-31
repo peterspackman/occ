@@ -4,7 +4,7 @@
 #include <occ/cg/cg_json.h>
 #include <occ/cg/distance_partition.h>
 #include <occ/cg/result_types.h>
-#include <occ/cg/solvation_types.h>
+#include <occ/cg/neighbor_atoms.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/core/data_directory.h>
 #include <occ/core/units.h>

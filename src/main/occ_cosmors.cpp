@@ -1,7 +1,7 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
-#include <occ/driver/cosmors_driver.h>
 #include <occ/dft/dft.h>
+#include <occ/driver/cosmors_driver.h>
 #include <occ/io/xyz.h>
 #include <occ/main/occ_cosmors.h>
 #include <occ/qm/scf.h>
@@ -15,7 +15,8 @@ void report(const occ::driver::CosmoRSSolvation &result,
             const std::string &solvent, double temperature) {
   const auto &e = result.energy;
   const double k = occ::units::AU_TO_KJ_PER_MOL;
-  occ::log::info("cavity area          {:12.5f} Angstrom^2", result.cavity_area);
+  occ::log::info("cavity area          {:12.5f} Angstrom^2",
+                 result.cavity_area);
   occ::log::info("cavity volume        {:12.5f} Angstrom^3",
                  result.cavity_volume);
   occ::log::info("openCOSMO-RS 24a solvation free energy in '{}' at {:.2f} K "
@@ -126,8 +127,7 @@ void run_cosmors_subcommand(CosmoRSConfig const &config) {
   }
 
   if (!config.solvent_geometry.empty()) {
-    auto solvent =
-        occ::io::molecule_from_xyz_file(config.solvent_geometry);
+    auto solvent = occ::io::molecule_from_xyz_file(config.solvent_geometry);
     auto result =
         occ::driver::cosmors_solvation_free_energy(solute, solvent, settings);
     report(result, solvent.name(), config.temperature);

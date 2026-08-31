@@ -23,7 +23,6 @@ enum class WavefunctionChoice { GasPhase, Solvated };
 using occ::core::Molecule;
 using occ::qm::Wavefunction;
 using WavefunctionList = std::vector<Wavefunction>;
-using SolventNeighborContributionList = std::vector<cg::SolvationContribution>;
 
 struct AssignedEnergy {
   bool is_nn{true};
@@ -33,10 +32,6 @@ struct AssignedEnergy {
 std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
     const crystal::CrystalDimers::MoleculeNeighbors &neighbors,
     const std::vector<double> &dimer_energies, double cg_radius);
-
-std::vector<occ::Vec3>
-calculate_net_dipole(const WavefunctionList &wavefunctions,
-                     const crystal::CrystalDimers &crystal_dimers);
 
 struct CrystalGrowthCalculatorOptions {
   std::string solvent{"water"};
@@ -135,7 +130,6 @@ protected:
   crystal::CrystalDimers m_full_dimers;
   cg::PairEnergies m_dimer_energies;
   crystal::CrystalDimers m_nearest_dimers;
-  std::vector<SolventNeighborContributionList> m_solvation_breakdowns;
   std::vector<cg::DimerResults> m_interaction_energies;
   std::vector<cg::DimerResults> m_crystal_interaction_energies;
   std::vector<double> m_solution_terms;

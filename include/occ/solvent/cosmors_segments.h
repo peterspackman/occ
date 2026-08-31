@@ -39,7 +39,8 @@ Segments segments_from_cavity(const surface::Surface &cavity,
 /// Segment averaging onto the effective contact scale:
 ///
 ///     σ̄_i = Σ_j σ_j w_ij / Σ_j w_ij
-///     w_ij = (r_j² r_av²)/(r_j² + r_av²) · exp[ −f_decay d_ij²/(r_j² + r_av²) ]
+///     w_ij = (r_j² r_av²)/(r_j² + r_av²) · exp[ −f_decay d_ij²/(r_j² + r_av²)
+///     ]
 ///
 /// with `r_j = √(a_j/π)` the radius of an equal-area disc. Fills
 /// `sigma_averaged`. The Gaussian is truncated where it falls below ~1e-12.

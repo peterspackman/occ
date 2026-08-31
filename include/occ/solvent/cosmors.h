@@ -48,9 +48,9 @@ int ring_count(const core::Molecule &molecule);
 struct Parameters {
   /// @name Segment descriptors
   /// @{
-  double a_eff{5.9248470};   ///< Å², effective contact area
-  double r_av{0.5};          ///< Å, σ averaging radius
-  double r_corr{1.0};        ///< Å, σ⊥ averaging radius
+  double a_eff{5.9248470}; ///< Å², effective contact area
+  double r_av{0.5};        ///< Å, σ averaging radius
+  double r_corr{1.0};      ///< Å, σ⊥ averaging radius
   double sigma_orth_factor{0.816};
   /// @}
 
@@ -58,10 +58,10 @@ struct Parameters {
   /// `mf_alpha` and `hb_c` are in J/mol/Å²/e², so pairwise energies come out
   /// in J/mol.
   /// @{
-  double mf_alpha{7.2847361e06};         ///< misfit prefactor
-  double mf_f_corr{2.4};                 ///< σ⊥ weight in the misfit
-  double hb_c{4.3311555e07};             ///< H-bond prefactor, at `hb_t_ref`
-  double hb_c_T{1.5};                    ///< temperature dependence of `hb_c`
+  double mf_alpha{7.2847361e06}; ///< misfit prefactor
+  double mf_f_corr{2.4};         ///< σ⊥ weight in the misfit
+  double hb_c{4.3311555e07};     ///< H-bond prefactor, at `hb_t_ref`
+  double hb_c_T{1.5};            ///< temperature dependence of `hb_c`
   /// Temperature the H-bond prefactor was fitted at, K. Not a setting: the
   /// run temperature is `ActivityOptions::temperature`.
   double hb_t_ref{298.15};
@@ -99,11 +99,11 @@ struct Parameters {
 /// One component reduced to what the kernel needs: its segment descriptors,
 /// areas, and the cavity volume the combinatorial term uses.
 struct Component {
-  Vec sigma;           ///< e/Å², averaged on `r_av`
-  Vec sigma_orth;      ///< e/Å²
-  Vec area;            ///< Å² per segment
-  IVec atomic_number;  ///< parent atom of each segment, for the vdW term
-  double volume{0.0};  ///< Å³
+  Vec sigma;          ///< e/Å², averaged on `r_av`
+  Vec sigma_orth;     ///< e/Å²
+  Vec area;           ///< Å² per segment
+  IVec atomic_number; ///< parent atom of each segment, for the vdW term
+  double volume{0.0}; ///< Å³
   /// Cavity area for the combinatorial term, Å². The discretised segment
   /// areas need not sum to it exactly, so it is carried separately; zero
   /// falls back to the sum.
@@ -126,8 +126,7 @@ struct Component {
 /// Negative, so it stabilises. Additive over segments by construction, which
 /// is what lets `occ cg` attribute it to contacts without further modelling.
 /// Segments on an element outside the parameter set contribute zero.
-Vec segment_vdw_energies(const Component &component,
-                         const Parameters &params);
+Vec segment_vdw_energies(const Component &component, const Parameters &params);
 
 /// Atomic numbers in `component` that `params.tau` does not cover, sorted and
 /// deduplicated. Empty when every element is covered.
@@ -142,19 +141,19 @@ std::vector<int> unparameterised_elements(const Component &component,
 /// mole-fraction averages the combinatorial term expects. Fractions are
 /// normalised.
 Component mix_components(const std::vector<Component> &components,
-                              const Vec &mole_fractions);
+                         const Vec &mole_fractions);
 
 /// Pairwise interaction free energy between every segment of `a` and every
 /// segment of `b`, in J/mol. Misfit plus hydrogen bonding; the sign
 /// convention is that hydrogen bonding is negative.
 Mat interaction_energies(const Component &a, const Component &b,
-                            const Parameters &params, double temperature);
+                         const Parameters &params, double temperature);
 
 /// Controls for the segment activity fixed point.
 struct ActivityOptions {
   double temperature{298.15};
-  double mixing{0.7};       ///< successive-substitution damping
-  double tolerance{1e-12};  ///< on max relative change in Γ
+  double mixing{0.7};      ///< successive-substitution damping
+  double tolerance{1e-12}; ///< on max relative change in Γ
   int max_iterations{5000};
   bool throw_on_failure{true};
 };
@@ -166,16 +165,14 @@ struct ActivityOptions {
 /// segments. Subtract the pure-component values for a pure-component
 /// reference state.
 Vec residual_ln_gamma(const std::vector<Component> &components,
-                         const Vec &mole_fractions,
-                         const Parameters &params,
-                         const ActivityOptions &options = {});
+                      const Vec &mole_fractions, const Parameters &params,
+                      const ActivityOptions &options = {});
 
 /// Staverman–Guggenheim combinatorial `ln γ`, in the volume/area form
 /// openCOSMO-RS uses. Zero for a pure component, so it needs no reference
 /// state subtraction.
 Vec combinatorial_ln_gamma(const std::vector<Component> &components,
-                              const Vec &mole_fractions,
-                              const Parameters &params);
+                           const Vec &mole_fractions, const Parameters &params);
 
 /// A solvent held as its converged segment activities, ready to accept any
 /// solute at infinite dilution.
@@ -187,7 +184,7 @@ Vec combinatorial_ln_gamma(const std::vector<Component> &components,
 class SolventModel {
 public:
   explicit SolventModel(Component solvent, Parameters params = {},
-                          ActivityOptions options = {});
+                        ActivityOptions options = {});
 
   /// Per-segment residual energy `(a_i/a_eff) RT ln Γ_i` for a solute at
   /// infinite dilution, in Hartree. Additive over segments, so it partitions

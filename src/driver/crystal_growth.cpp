@@ -78,42 +78,6 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
   return crystal_contributions;
 }
 
-std::vector<occ::Vec3>
-calculate_net_dipole(const WavefunctionList &wavefunctions,
-                     const crystal::CrystalDimers &crystal_dimers) {
-  std::vector<occ::Vec3> dipoles;
-  std::vector<occ::Vec> partial_charges;
-  for (const auto &wfn : wavefunctions) {
-    partial_charges.push_back(wfn.mulliken_charges());
-  }
-  for (size_t idx = 0; idx < crystal_dimers.molecule_neighbors.size(); idx++) {
-    occ::Vec3 dipole = occ::Vec3::Zero(3);
-    size_t j = 0;
-    for (const auto &[dimer, unique_idx] :
-         crystal_dimers.molecule_neighbors[idx]) {
-      occ::Vec3 center_a = dimer.a().center_of_mass();
-      if (j == 0) {
-        const auto &charges =
-            partial_charges[dimer.a().asymmetric_molecule_idx()];
-        dipole.array() +=
-            ((dimer.a().positions().colwise() - center_a).array() *
-             charges.array())
-                .rowwise()
-                .sum();
-      }
-      const auto &charges =
-          partial_charges[dimer.b().asymmetric_molecule_idx()];
-      const auto &pos_b = dimer.b().positions();
-      dipole.array() += ((pos_b.colwise() - center_a).array() * charges.array())
-                            .rowwise()
-                            .sum();
-      j++;
-    }
-    dipoles.push_back(dipole / occ::units::BOHR_TO_ANGSTROM);
-  }
-  return dipoles;
-}
-
 inline Wavefunction
 load_or_calculate_wavefunction(const Molecule &mol, const std::string &name,
                                const std::string &energy_model) {
@@ -298,8 +262,7 @@ struct DimerCrystalEnergy {
 template <typename EnergyFn>
 cg::MoleculeResult assemble_solvated_neighbors(
     const SolvatedNeighborInputs &in, EnergyFn &&crystal_energy,
-    cg::DimerResults &interactions, cg::DimerResults &interactions_crystal,
-    std::vector<cg::SolvationContribution> &breakdown_out) {
+    cg::DimerResults &interactions, cg::DimerResults &interactions_crystal) {
 
   cg::SolventSurfacePartitioner partitioner(in.crystal, in.full_neighbors);
   partitioner.set_should_antisymmetrize(in.antisymmetrize);
@@ -447,8 +410,8 @@ cg::MoleculeResult assemble_solvated_neighbors(
   }
 
   // Per-contact descriptors are model-specific, so report whatever came
-  // through rather than a fixed set.
-  if (!results.descriptors.empty()) {
+  // through rather than a fixed set. Gated with the table it summarises.
+  if (in.print_descriptors && !results.descriptors.empty()) {
     occ::log::warn("Solvation descriptors summed over nearest neighbours:");
     std::vector<std::string> names;
     for (const auto &[name, value] : results.descriptors)
@@ -458,7 +421,6 @@ cg::MoleculeResult assemble_solvated_neighbors(
       occ::log::warn("  {:<24s} {: 12.4f}", name, results.descriptors[name]);
   }
 
-  breakdown_out = std::move(breakdown);
   return results;
 }
 
@@ -497,22 +459,6 @@ CEModelCrystalGrowthCalculator::CEModelCrystalGrowthCalculator(
     const CrystalGrowthCalculatorOptions &options)
     : CrystalGrowthCalculator(crystal, options) {}
 
-/*
-void CEModelCrystalGrowthCalculator::dipole_correction() {
-  auto dipoles = calculate_net_dipole(m_gas_phase_wavefunctions, m_full_dimers);
-  double V =
-      4.0 * std::numbers::pi_v<double> * m_outer_radius * m_outer_radius * m_outer_radius / 3.0;
-  for (int i = 0; i < dipoles.size(); i++) {
-    const auto &dipole = dipoles[i];
-    occ::log::debug("Net dipole for molecule shell {} = ({:.3f} {:.3f} {:.3f})",
-                    i, dipole(0), dipole(1), dipole(2));
-    double e = -2 * std::numbers::pi_v<double> * dipole.squaredNorm() / (3 * V) *
-               occ::units::AU_TO_KJ_PER_MOL;
-    occ::log::debug("Energy = {:.6f} kJ/mol ({:.3f} per molecule)", e,
-                    e / (2 * m_full_dimers.molecule_neighbors[i].size()));
-  }
-}
-*/
 
 void CEModelCrystalGrowthCalculator::init_monomer_energies() {
   const auto &opts = options();
@@ -570,9 +516,15 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
   sw.start();
   occ::log::info("Computing monomer energies for gas phase");
   compute_monomer_energies(opts.basename, m_gas_phase_wavefunctions);
-  occ::log::info("Computing monomer energies for solution phase");
-  compute_monomer_energies(fmt::format("{}_{}", opts.basename, opts.solvent_tag),
-                           m_solvated_wavefunctions);
+  // Only the solvated wavefunctions that will actually be used: a model whose
+  // reference is the ideal conductor forces the gas-phase choice, and those
+  // have already been done just above.
+  if (opts.wavefunction_choice == WavefunctionChoice::Solvated) {
+    occ::log::info("Computing monomer energies for solution phase");
+    compute_monomer_energies(
+        fmt::format("{}_{}", opts.basename, opts.solvent_tag),
+        m_solvated_wavefunctions);
+  }
   sw.stop();
   occ::log::info("Computing monomer energies took {:.6f} seconds", sw.read());
 }
@@ -647,12 +599,9 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
     return out;
   };
 
-  std::vector<cg::SolvationContribution> breakdown;
-  auto results = assemble_solvated_neighbors(
-      in, crystal_energy, m_interaction_energies[i],
-      m_crystal_interaction_energies[i], breakdown);
-  m_solvation_breakdowns.push_back(std::move(breakdown));
-  return results;
+  return assemble_solvated_neighbors(in, crystal_energy,
+                                     m_interaction_energies[i],
+                                     m_crystal_interaction_energies[i]);
 }
 
 cg::CrystalGrowthResult
@@ -841,12 +790,9 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
     return out;
   };
 
-  std::vector<cg::SolvationContribution> breakdown;
-  auto results = assemble_solvated_neighbors(
-      in, crystal_energy, m_interaction_energies[i],
-      m_crystal_interaction_energies[i], breakdown);
-  m_solvation_breakdowns.push_back(std::move(breakdown));
-  return results;
+  return assemble_solvated_neighbors(in, crystal_energy,
+                                     m_interaction_energies[i],
+                                     m_crystal_interaction_energies[i]);
 }
 
 DummyCrystalGrowthCalculator::DummyCrystalGrowthCalculator(

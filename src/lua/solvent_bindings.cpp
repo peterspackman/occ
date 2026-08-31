@@ -43,12 +43,12 @@ void register_solvent_bindings(lua_State *L) {
       .addProperty("reference_state", &SolvationEnergy::reference_state)
       .addProperty("eta", &SolvationEnergy::eta)
       .addFunction("total", &SolvationEnergy::total)
-      .addFunction("__tostring",
-                   +[](const SolvationEnergy *e) {
-                     return fmt::format(
-                         "<CosmoRSEnergy total={:.3f} kJ/mol>",
-                         e->total() * occ::units::AU_TO_KJ_PER_MOL);
-                   })
+      .addFunction(
+          "__tostring",
+          +[](const SolvationEnergy *e) {
+            return fmt::format("<CosmoRSEnergy total={:.3f} kJ/mol>",
+                               e->total() * occ::units::AU_TO_KJ_PER_MOL);
+          })
       .endClass()
 
       .beginClass<CosmoRSSolvation>("CosmoRSSolvationResult")

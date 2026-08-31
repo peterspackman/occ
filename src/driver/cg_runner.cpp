@@ -396,7 +396,6 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
       fmt::format("{}_{}_cg_results.json", opts.basename, opts.solvent_tag));
   dest << results_json.dump(2);
 
-  // calc.dipole_correction();
   return result;
 }
 

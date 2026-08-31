@@ -51,8 +51,7 @@ Segments segments_from_cavity(const surface::Surface &cavity,
   return s;
 }
 
-Vec averaged_sigma(const Segments &segments, double r_av_angs,
-                   double f_decay) {
+Vec averaged_sigma(const Segments &segments, double r_av_angs, double f_decay) {
   const Eigen::Index n = segments.size();
   Vec result = Vec::Zero(n);
   if (n == 0)

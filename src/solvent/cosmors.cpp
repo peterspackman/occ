@@ -11,7 +11,7 @@
 namespace occ::solvent::cosmors {
 
 Component Component::from_segments(const Segments &segments, double volume,
-                                       double cavity_area) {
+                                   double cavity_area) {
   if (segments.sigma_orth.size() != segments.size())
     throw std::runtime_error(
         "Component::from_segments: sigma_orth has not been computed");
@@ -26,7 +26,7 @@ Component Component::from_segments(const Segments &segments, double volume,
 }
 
 Component mix_components(const std::vector<Component> &components,
-                              const Vec &mole_fractions) {
+                         const Vec &mole_fractions) {
   if (components.empty())
     throw std::runtime_error("mix_components: no components");
   if (static_cast<Eigen::Index>(components.size()) != mole_fractions.size())
@@ -34,8 +34,7 @@ Component mix_components(const std::vector<Component> &components,
         "mix_components: one mole fraction per component is required");
   const double sum = mole_fractions.sum();
   if (sum <= 0.0)
-    throw std::runtime_error(
-        "mix_components: mole fractions are not positive");
+    throw std::runtime_error("mix_components: mole fractions are not positive");
 
   Eigen::Index total = 0;
   for (const auto &c : components)
@@ -64,7 +63,7 @@ Component mix_components(const std::vector<Component> &components,
 }
 
 Mat interaction_energies(const Component &a, const Component &b,
-                            const Parameters &params, double temperature) {
+                         const Parameters &params, double temperature) {
   const Eigen::Index na = a.size(), nb = b.size();
   Mat out(na, nb);
 
@@ -94,8 +93,8 @@ Mat interaction_energies(const Component &a, const Component &b,
       const double misfit = misfit_prefactor * sigma_sum *
                             (sigma_sum + params.mf_f_corr * orth_sum);
       // Symmetrised: either segment may be the donor.
-      const double hbond = acceptor_i * donor(b.sigma(j)) +
-                           acceptor(b.sigma(j)) * donor_i;
+      const double hbond =
+          acceptor_i * donor(b.sigma(j)) + acceptor(b.sigma(j)) * donor_i;
       out(i, j) = misfit + hb_prefactor * hbond;
     }
   }
@@ -109,8 +108,7 @@ namespace {
 /// fixed point can be iterated in plain arithmetic — one matrix-vector
 /// product per step instead of a log-sum-exp over every pair.
 Mat boltzmann_factors(const Mat &interaction, double temperature) {
-  const double rt =
-      occ::constants::molar_gas_constant<double> * temperature;
+  const double rt = occ::constants::molar_gas_constant<double> * temperature;
   Mat exponent = -interaction / rt;
   const double largest = exponent.maxCoeff();
   if (largest > 500.0)
@@ -129,8 +127,7 @@ Vec solve_segment_activities(const Mat &interaction, const Vec &fraction,
 
   Vec gamma = Vec::Ones(n);
   for (int iteration = 0; iteration < options.max_iterations; iteration++) {
-    const Vec updated =
-        (tau * fraction.cwiseProduct(gamma)).cwiseInverse();
+    const Vec updated = (tau * fraction.cwiseProduct(gamma)).cwiseInverse();
     const double change =
         (updated - gamma).cwiseQuotient(gamma).cwiseAbs().maxCoeff();
     gamma += options.mixing * (updated - gamma);
@@ -186,12 +183,11 @@ PooledEnsemble pool(const std::vector<Component> &components,
 } // namespace
 
 Vec residual_ln_gamma(const std::vector<Component> &components,
-                         const Vec &mole_fractions,
-                         const Parameters &params,
-                         const ActivityOptions &options) {
+                      const Vec &mole_fractions, const Parameters &params,
+                      const ActivityOptions &options) {
   const auto ensemble = pool(components, mole_fractions);
-  const Mat interaction = interaction_energies(
-      ensemble.all, ensemble.all, params, options.temperature);
+  const Mat interaction = interaction_energies(ensemble.all, ensemble.all,
+                                               params, options.temperature);
   const Vec ln_gamma =
       solve_segment_activities(interaction, ensemble.fraction, options);
 
@@ -206,8 +202,8 @@ Vec residual_ln_gamma(const std::vector<Component> &components,
 }
 
 Vec combinatorial_ln_gamma(const std::vector<Component> &components,
-                              const Vec &mole_fractions,
-                              const Parameters &params) {
+                           const Vec &mole_fractions,
+                           const Parameters &params) {
   const Eigen::Index n = components.size();
   Vec volume(n), area(n);
   for (Eigen::Index m = 0; m < n; m++) {
@@ -231,24 +227,23 @@ Vec combinatorial_ln_gamma(const std::vector<Component> &components,
 }
 
 SolventModel::SolventModel(Component solvent, Parameters params,
-                               ActivityOptions options)
+                           ActivityOptions options)
     : m_solvent(std::move(solvent)), m_params(std::move(params)),
       m_options(std::move(options)) {
   const auto ensemble = pool({m_solvent}, Vec::Ones(1));
   m_fraction = ensemble.fraction;
-  const Mat interaction = interaction_energies(
-      ensemble.all, ensemble.all, m_params, m_options.temperature);
-  m_ln_gamma =
-      solve_segment_activities(interaction, m_fraction, m_options);
+  const Mat interaction = interaction_energies(ensemble.all, ensemble.all,
+                                               m_params, m_options.temperature);
+  m_ln_gamma = solve_segment_activities(interaction, m_fraction, m_options);
 }
 
 Vec SolventModel::segment_energies(const Component &solute) const {
   // Test particle against the converged solvent: at infinite dilution the
   // solute does not perturb the solvent's own activities.
-  const Mat interaction = interaction_energies(solute, m_solvent, m_params,
-                                                  m_options.temperature);
-  const double rt = occ::constants::molar_gas_constant<double> *
-                    m_options.temperature;
+  const Mat interaction =
+      interaction_energies(solute, m_solvent, m_params, m_options.temperature);
+  const double rt =
+      occ::constants::molar_gas_constant<double> * m_options.temperature;
   const Mat tau = boltzmann_factors(interaction, m_options.temperature);
   const Vec weight = m_fraction.cwiseProduct(m_ln_gamma.array().exp().matrix());
   const Vec ln_gamma = -(tau * weight).array().log();
@@ -267,12 +262,12 @@ double SolventModel::combinatorial_energy(const Component &solute) const {
   const double phi = solute.volume / m_solvent.volume;
   const double theta = solute.total_area() / m_solvent.total_area();
   const double ratio = phi / theta;
-  const double ln_gamma =
-      std::log(phi) + 1.0 - phi -
-      m_params.comb_z * 0.5 * (solute.total_area() / m_params.comb_a_std) *
-          (std::log(ratio) + 1.0 - ratio);
-  const double rt = occ::constants::molar_gas_constant<double> *
-                    m_options.temperature;
+  const double ln_gamma = std::log(phi) + 1.0 - phi -
+                          m_params.comb_z * 0.5 *
+                              (solute.total_area() / m_params.comb_a_std) *
+                              (std::log(ratio) + 1.0 - ratio);
+  const double rt =
+      occ::constants::molar_gas_constant<double> * m_options.temperature;
   return rt * ln_gamma / (occ::units::AU_TO_KJ_PER_MOL * 1000.0);
 }
 
@@ -307,8 +302,7 @@ SolvationEnergy solvation_free_energy(const SolventModel &solvent,
   return out;
 }
 
-Vec segment_vdw_energies(const Component &component,
-                         const Parameters &params) {
+Vec segment_vdw_energies(const Component &component, const Parameters &params) {
   const Eigen::Index n = component.size();
   Vec out = Vec::Zero(n);
   const double kcal_to_hartree = 1.0 / occ::units::AU_TO_KCAL_PER_MOL;

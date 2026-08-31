@@ -1,10 +1,10 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
-#include <occ/solvent/cosmors_io.h>
 #include <occ/driver/cosmors_driver.h>
 #include <occ/qm/scf.h>
 #include <occ/scrf/reaction_field.h>
+#include <occ/solvent/cosmors_io.h>
 #include <occ/solvent/solvation_correction.h>
 
 namespace occ::driver {
@@ -47,8 +47,8 @@ conductor_segments(const qm::Wavefunction &wavefunction,
 
   if (dielectric_energies) {
     auto surfaces = engine.surfaces();
-    *dielectric_energies = surfaces.coulomb ? surfaces.coulomb->energies
-                                            : Vec::Zero(phi.size());
+    *dielectric_energies =
+        surfaces.coulomb ? surfaces.coulomb->energies : Vec::Zero(phi.size());
   }
 
   if (cavity_volume_angs3) {
@@ -64,7 +64,7 @@ conductor_segments(const qm::Wavefunction &wavefunction,
       engine.es_cavity(), engine.surface_charges(), atomic_numbers);
   solvent::cosmors::average_sigma(segments, params.r_av);
   solvent::cosmors::average_sigma_orth(segments, params.r_av, params.r_corr,
-                                     params.sigma_orth_factor);
+                                       params.sigma_orth_factor);
   return segments;
 }
 

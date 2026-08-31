@@ -116,9 +116,8 @@ SegmentStore::SegmentStore(std::vector<std::string> search_paths)
     : m_search_paths(std::move(search_paths)) {}
 
 SegmentStore SegmentStore::standard() {
-  return SegmentStore(
-      {(fs::path(solvent_data_path()) / "cosmors").string(),
-       fs::current_path().string()});
+  return SegmentStore({(fs::path(solvent_data_path()) / "cosmors").string(),
+                       fs::current_path().string()});
 }
 
 bool SegmentStore::contains(const std::string &name) const {
@@ -161,8 +160,7 @@ std::vector<std::string> SegmentStore::available() const {
 }
 
 ComponentFile load_solvent(const SegmentStore &store, const std::string &name,
-                           const Parameters &params,
-                           const std::string &method,
+                           const Parameters &params, const std::string &method,
                            const std::string &basis) {
   auto file = store.get(name);
   if (file.r_av > 0.0 && std::abs(file.r_av - params.r_av) > 1e-12)

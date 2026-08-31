@@ -86,8 +86,7 @@ nb::module_ register_solvent_bindings(nb::module_ &m) {
       "The same, computing the solvent's cavity from its geometry rather than "
       "loading a cached ensemble");
 
-  m.def("available_cosmo_rs_solvents",
-        &occ::driver::available_cosmors_solvents,
+  m.def("available_cosmo_rs_solvents", &occ::driver::available_cosmors_solvents,
         "solvent names with a cached segment ensemble, sorted");
 
   return m;

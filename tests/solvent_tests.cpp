@@ -13,6 +13,7 @@
 #include <occ/solvent/parameters.h>
 #include <occ/solvent/smd.h>
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <nlohmann/json.hpp>
@@ -25,6 +26,7 @@
 #include <occ/solvent/cosmors.h>
 #include <occ/solvent/cosmors_io.h>
 #include <occ/driver/cosmors_driver.h>
+#include <occ/driver/cosmors_solvation.h>
 #include <occ/solvent/cosmors_segments.h>
 #include <occ/solvent/solvation_correction.h>
 #include <occ/solvent/surface.h>
@@ -1048,6 +1050,104 @@ TEST_CASE("Charge constraint restores the sum rule without reshaping sigma",
       (free_segments.areas.array() * free_segments.sigma.array().abs()).sum();
   fmt::print(" normalised L1 between the two distributions {:.4f}\n", l1);
   REQUIRE(l1 < 0.05);
+}
+
+namespace {
+
+occ::crystal::Crystal acetic_acid_crystal() {
+  const std::vector<std::string> labels = {"C1", "C2", "H1", "H2",
+                                           "H3", "H4", "O1", "O2"};
+  occ::IVec nums(labels.size());
+  Mat positions(labels.size(), 3);
+  for (size_t i = 0; i < labels.size(); i++)
+    nums(i) = occ::core::Element(labels[i]).atomic_number();
+  positions << 0.16510, 0.28580, 0.17090, 0.08940, 0.37620, 0.34810, 0.18200,
+      0.05100, -0.11600, 0.12800, 0.51000, 0.49100, 0.03300, 0.54000, 0.27900,
+      0.05300, 0.16800, 0.42100, 0.12870, 0.10750, 0.00000, 0.25290, 0.37030,
+      0.17690;
+  occ::crystal::AsymmetricUnit asym(positions.transpose(), nums, labels);
+  occ::crystal::SpaceGroup sg(33);
+  auto cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
+  return occ::crystal::Crystal(asym, sg, cell);
+}
+
+} // namespace
+
+TEST_CASE("openCOSMO-RS cg surfaces partition over crystal neighbours",
+          "[solvent][cosmors][solvation]") {
+  // The end-to-end cg path: conductor SCF -> segment descriptors -> the
+  // per-segment channels -> the nearest-neighbour partitioner. What matters
+  // is that the surface-additive channels survive the partition intact,
+  // which is exactly what segment additivity buys, and that the molecular
+  // total is the model's whole free energy rather than the channels alone.
+  auto crystal = acetic_acid_crystal();
+  auto molecules = crystal.symmetry_unique_molecules();
+  auto dimers = crystal.symmetry_unique_dimers(7.0);
+  const auto &neighbors = dimers.molecule_neighbors[0];
+
+  std::vector<occ::qm::Wavefunction> gas;
+  for (const auto &mol : molecules) {
+    occ::gto::AOBasis basis =
+        occ::gto::AOBasis::load(mol.atoms(), "def2-svp");
+    basis.set_pure(true);
+    occ::dft::DFT ks("b3lyp", basis);
+    occ::qm::SCF<occ::dft::DFT> scf(ks);
+    scf.compute_scf_energy();
+    gas.push_back(scf.wavefunction());
+  }
+
+  const auto basename =
+      (std::filesystem::temp_directory_path() / "occ_cosmors_cg").string();
+  occ::driver::CosmoRSSettings settings;
+  settings.method = "b3lyp";
+  settings.basis = "def2-svp";
+  settings.pure_spherical = true;
+  auto spec = occ::driver::SolventSpec::parse("water");
+
+  auto result = occ::driver::cosmors_solvation(basename, molecules, gas, spec,
+                                               settings);
+  for (size_t i = 0; i < molecules.size(); i++)
+    std::filesystem::remove(fmt::format("{}_{}_conductor.owf.json", basename, i));
+
+  REQUIRE(result.surfaces.size() == molecules.size());
+  const auto &data = result.surfaces[0];
+  REQUIRE(data.cavities.size() == 1);
+  const auto &cavity = data.cavities.front();
+  REQUIRE(cavity.name == "conductor");
+
+  // The three surface-additive terms plus the area-spread relaxation.
+  std::vector<std::string> channels;
+  for (const auto &e : cavity.energies)
+    channels.push_back(e.name);
+  std::sort(channels.begin(), channels.end());
+  REQUIRE(channels ==
+          std::vector<std::string>{"dielectric", "electronic", "residual",
+                                   "vdw"});
+
+  occ::cg::SolventSurfacePartitioner partitioner(crystal, neighbors);
+  partitioner.set_should_write_surface_files(false);
+  partitioner.set_use_normalized_distance(false);
+  auto contributions = partitioner.partition(neighbors, data);
+  REQUIRE(contributions.size() == neighbors.size());
+
+  // Every channel is conserved: the partition redistributes, it does not
+  // create or destroy.
+  for (const auto &channel : cavity.energies) {
+    double partitioned = 0.0;
+    for (const auto &c : contributions)
+      partitioned += c.energy(channel.name).forward;
+    fmt::print(" {:<12s} total {:12.6f}, partitioned {:12.6f} Hartree\n",
+               channel.name, channel.values.sum(), partitioned);
+    REQUIRE(partitioned == Catch::Approx(channel.values.sum()).margin(1e-10));
+  }
+
+  // The reported total carries the per-molecule terms too, so it is strictly
+  // more negative than the channels alone by the combinatorial, ring,
+  // reference-state and eta contributions.
+  const double channels_only = data.total_energy();
+  fmt::print(" channels {:.6f}, total {:.6f} Hartree\n", channels_only,
+             data.total_solvation_energy);
+  REQUIRE(data.total_solvation_energy != Catch::Approx(channels_only));
 }
 
 TEST_CASE("Solvent specs parse names and mixtures", "[solvent][cosmors]") {

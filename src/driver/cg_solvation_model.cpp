@@ -40,9 +40,8 @@ SolventSpec SolventSpec::parse(const std::string &text) {
   if (spec.components.empty())
     throw std::runtime_error(fmt::format("could not parse solvent '{}'", text));
 
-  const bool any_missing =
-      std::any_of(fractions.begin(), fractions.end(),
-                  [](double f) { return f < 0.0; });
+  const bool any_missing = std::any_of(fractions.begin(), fractions.end(),
+                                       [](double f) { return f < 0.0; });
   if (spec.components.size() == 1) {
     spec.mole_fractions = Vec::Ones(1);
     return spec;
@@ -53,13 +52,11 @@ SolventSpec SolventSpec::parse(const std::string &text) {
         "e.g. water:0.7,ethanol:0.3",
         text));
 
-  spec.mole_fractions =
-      Eigen::Map<Vec>(fractions.data(), fractions.size());
+  spec.mole_fractions = Eigen::Map<Vec>(fractions.data(), fractions.size());
   const double sum = spec.mole_fractions.sum();
   if (sum <= 0.0)
-    throw std::runtime_error(
-        fmt::format("solvent mixture '{}' has non-positive mole fractions",
-                    text));
+    throw std::runtime_error(fmt::format(
+        "solvent mixture '{}' has non-positive mole fractions", text));
   spec.mole_fractions /= sum;
   return spec;
 }
@@ -97,8 +94,8 @@ SolvationModelKind parse_solvation_model(const std::string &name) {
   if (lowered == "cosmo-rs" || lowered == "cosmors" ||
       lowered == "opencosmo-rs" || lowered == "cosmors")
     return SolvationModelKind::CosmoRS;
-  throw std::runtime_error(fmt::format(
-      "unknown solvation model '{}' (none, smd, cosmo-rs)", name));
+  throw std::runtime_error(
+      fmt::format("unknown solvation model '{}' (none, smd, cosmo-rs)", name));
 }
 
 std::string solvation_model_name(SolvationModelKind kind) {
@@ -125,7 +122,8 @@ namespace {
 
 /// RT ln(24.46) at 298 K, in Hartree: the ideal gas at 1 atm against the same
 /// gas at 1 mol/L. Owed by any model whose ΔG_solv starts from a 1 mol/L gas.
-constexpr double gas_concentration_shift = 1.89 / occ::units::AU_TO_KCAL_PER_MOL;
+constexpr double gas_concentration_shift =
+    1.89 / occ::units::AU_TO_KCAL_PER_MOL;
 
 class SmdCGSolvationModel final : public CGSolvationModel {
 public:
@@ -194,8 +192,8 @@ public:
     settings.angular_points = m_settings.angular_points;
     settings.temperature = solvent.temperature;
     settings.volume_per_molecule = m_settings.volume_per_molecule;
-    return cosmors_solvation(basename, molecules, gas_wavefunctions,
-                                 solvent, settings);
+    return cosmors_solvation(basename, molecules, gas_wavefunctions, solvent,
+                             settings);
   }
 
 private:

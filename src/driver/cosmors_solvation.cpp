@@ -43,10 +43,9 @@ double result_energy_difference(const qm::Wavefunction &conductor,
 
 CGSolvationResult
 cosmors_solvation(const std::string &basename,
-                      const std::vector<core::Molecule> &molecules,
-                      const std::vector<qm::Wavefunction> &gas_wavefunctions,
-                      const SolventSpec &solvent,
-                      const CosmoRSSettings &settings) {
+                  const std::vector<core::Molecule> &molecules,
+                  const std::vector<qm::Wavefunction> &gas_wavefunctions,
+                  const SolventSpec &solvent, const CosmoRSSettings &settings) {
   const auto params = solvent::cosmors::Parameters::v24a();
   solvent::cosmors::ActivityOptions options;
   options.temperature = settings.temperature;
