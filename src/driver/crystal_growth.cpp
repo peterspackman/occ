@@ -616,7 +616,7 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
   occ::log::info("Computing monomer energies for gas phase");
   compute_monomer_energies(opts.basename, m_gas_phase_wavefunctions);
   occ::log::info("Computing monomer energies for solution phase");
-  compute_monomer_energies(fmt::format("{}_{}", opts.basename, opts.solvent),
+  compute_monomer_energies(fmt::format("{}_{}", opts.basename, opts.solvent_tag),
                            m_solvated_wavefunctions);
   sw.stop();
   occ::log::info("Computing monomer energies took {:.6f} seconds", sw.read());
@@ -668,7 +668,7 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
                             molname,
                             m_dimer_energies.size(),
                             opts.use_asymmetric_partition,
-                            true,
+                            opts.write_debug_output_files,
                             opts.inner_radius,
                             m_solvated_surface_properties[i]
                                     .total_solvation_energy *
@@ -733,7 +733,7 @@ CEModelCrystalGrowthCalculator::evaluate_molecular_surroundings() {
   m_solution_terms = std::vector<double>(m_molecules.size(), 0.0);
   for (size_t i = 0; i < m_molecules.size(); i++) {
     auto mol_dimer_results = process_neighbors_for_symmetry_unique_molecule(
-        i, fmt::format("{}_{}_{}", opts.basename, i, opts.solvent));
+        i, fmt::format("{}_{}_{}", opts.basename, i, opts.solvent_tag));
 
     result.molecule_results.push_back(mol_dimer_results);
 
@@ -802,7 +802,7 @@ XTBCrystalGrowthCalculator::evaluate_molecular_surroundings() {
   m_solution_terms = std::vector<double>(m_molecules.size(), 0.0);
   for (size_t i = 0; i < m_molecules.size(); i++) {
     auto mol_dimer_results = process_neighbors_for_symmetry_unique_molecule(
-        i, fmt::format("{}_{}_{}", opts.basename, i, opts.solvent));
+        i, fmt::format("{}_{}_{}", opts.basename, i, opts.solvent_tag));
 
     result.molecule_results.push_back(mol_dimer_results);
 
