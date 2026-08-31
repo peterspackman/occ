@@ -142,6 +142,8 @@ void register_cg_bindings() {
         .property("modelName", &get_model_name, &set_model_name)
         .property("maxRadius", &get_max_radius, &set_max_radius)
         .property("solvent", &CGConfig::solvent)
+        .property("solvationModel", &CGConfig::solvation_model)
+        .property("temperature", &CGConfig::temperature)
         .property("chargeString", &CGConfig::charge_string)
         .property("dmaReference", &CGConfig::dma_reference)
         .property("cgRadius", &CGConfig::cg_radius)
