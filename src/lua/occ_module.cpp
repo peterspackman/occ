@@ -12,6 +12,7 @@
 #include "mults_bindings.h"
 #include "opt_bindings.h"
 #include "qm_bindings.h"
+#include "solvent_bindings.h"
 #include "xtb_bindings.h"
 #include <LuaBridge/LuaBridge.h>
 #include <occ/core/data_directory.h>
@@ -358,6 +359,7 @@ void open_occ_module(lua_State *L) {
   register_isosurface_bindings(L);
   register_mults_bindings(L);
   register_cg_bindings(L);
+  register_solvent_bindings(L);
   register_xtb_bindings(L);
 
   // Lua-side conveniences (help, pp) — load AFTER bindings so the

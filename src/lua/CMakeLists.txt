@@ -13,6 +13,7 @@ add_library(occ_lua_bindings STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/isosurface_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/mults_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/cg_bindings.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/solvent_bindings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/xtb_bindings.cpp"
 )
 

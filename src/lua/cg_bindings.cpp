@@ -85,6 +85,8 @@ void register_cg_bindings(lua_State *L) {
       .addPropertyReadWrite("lattice_settings", &CGConfig::lattice_settings)
       .addPropertyReadWrite("cg_radius", &CGConfig::cg_radius)
       .addPropertyReadWrite("solvent", &CGConfig::solvent)
+      .addPropertyReadWrite("solvation_model", &CGConfig::solvation_model)
+      .addPropertyReadWrite("temperature", &CGConfig::temperature)
       .addPropertyReadWrite("charge_string", &CGConfig::charge_string)
       .addPropertyReadWrite("dma_reference", &CGConfig::dma_reference)
       .addPropertyReadWrite("compute_morphology",

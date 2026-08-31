@@ -1,6 +1,7 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
+#include <occ/solvent/cosmors_io.h>
 #include <occ/driver/cosmors_driver.h>
 #include <occ/qm/scf.h>
 #include <occ/scrf/reaction_field.h>
@@ -99,6 +100,94 @@ ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
                  result.cavity_volume, result.screening_charge,
                  static_cast<double>(gas_wavefunction.charge()));
   return result;
+}
+
+namespace {
+
+ConductorSettings conductor_settings(const CosmoRSSolvationSettings &s) {
+  ConductorSettings out;
+  out.method = s.method;
+  out.basis = s.basis;
+  out.pure_spherical = s.pure_spherical;
+  out.probe_radius_angs = s.probe_radius_angs;
+  out.angular_points = s.angular_points;
+  out.constrain_charge = s.constrain_charge;
+  return out;
+}
+
+/// Gas SCF then conductor SCF for one molecule.
+ConductorResult conductor_for(const core::Molecule &molecule,
+                              const ConductorSettings &settings) {
+  occ::gto::AOBasis basis =
+      occ::gto::AOBasis::load(molecule.atoms(), settings.basis);
+  basis.set_pure(settings.pure_spherical);
+  occ::dft::DFT gas(settings.method, basis);
+  occ::qm::SCF<occ::dft::DFT> scf(gas);
+  scf.compute_scf_energy();
+  return conductor_profile(scf.wavefunction(), settings);
+}
+
+CosmoRSSolvation assemble(const core::Molecule &solute,
+                          const ConductorResult &conductor,
+                          const solvent::cosmors::Component &solvent,
+                          const CosmoRSSolvationSettings &settings,
+                          const solvent::cosmors::Parameters &params) {
+  solvent::cosmors::ActivityOptions options;
+  options.temperature = settings.temperature;
+  const solvent::cosmors::SolventModel model(solvent, params, options);
+
+  const auto component = solvent::cosmors::Component::from_segments(
+      conductor.segments, conductor.cavity_volume, conductor.cavity_area);
+  const auto missing =
+      solvent::cosmors::unparameterised_elements(component, params);
+  if (!missing.empty())
+    occ::log::warn("{} element(s) have no openCOSMO-RS surface tension and "
+                   "contribute nothing to the van der Waals term",
+                   missing.size());
+
+  CosmoRSSolvation out;
+  out.num_rings = (settings.num_rings >= 0)
+                      ? settings.num_rings
+                      : solvent::cosmors::ring_count(solute);
+  out.energy = solvent::cosmors::solvation_free_energy(
+      model, component, conductor.energy_conductor - conductor.energy_gas,
+      out.num_rings, settings.liquid_volume);
+  out.cavity_area = conductor.cavity_area;
+  out.cavity_volume = conductor.cavity_volume;
+  out.conductor = conductor.wavefunction;
+  return out;
+}
+
+} // namespace
+
+CosmoRSSolvation
+cosmors_solvation_free_energy(const core::Molecule &solute,
+                              const std::string &solvent_name,
+                              const CosmoRSSolvationSettings &settings) {
+  const auto params = solvent::cosmors::Parameters::v24a();
+  auto conductor = conductor_for(solute, conductor_settings(settings));
+  const auto solvent = solvent::cosmors::load_solvent(
+      solvent::cosmors::SegmentStore::standard(), solvent_name, params,
+      settings.method, settings.basis);
+  return assemble(solute, conductor, solvent.component, settings, params);
+}
+
+CosmoRSSolvation
+cosmors_solvation_free_energy(const core::Molecule &solute,
+                              const core::Molecule &solvent,
+                              const CosmoRSSolvationSettings &settings) {
+  const auto params = solvent::cosmors::Parameters::v24a();
+  const auto shared = conductor_settings(settings);
+  auto solute_conductor = conductor_for(solute, shared);
+  auto solvent_conductor = conductor_for(solvent, shared);
+  const auto ensemble = solvent::cosmors::Component::from_segments(
+      solvent_conductor.segments, solvent_conductor.cavity_volume,
+      solvent_conductor.cavity_area);
+  return assemble(solute, solute_conductor, ensemble, settings, params);
+}
+
+std::vector<std::string> available_cosmors_solvents() {
+  return solvent::cosmors::SegmentStore::standard().available();
 }
 
 } // namespace occ::driver

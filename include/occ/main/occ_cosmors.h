@@ -27,6 +27,7 @@ struct CosmoRSConfig {
   int angular_points{590};
   bool unconstrained_charge{false};
   bool cartesian{false};
+  bool list_solvents{false};
 };
 
 CLI::App *add_cosmors_subcommand(CLI::App &app);

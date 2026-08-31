@@ -54,6 +54,10 @@ nb::module_ register_cg_bindings(nb::module_ &m) {
       .def_rw("lattice_settings", &CGConfig::lattice_settings)
       .def_rw("cg_radius", &CGConfig::cg_radius)
       .def_rw("solvent", &CGConfig::solvent)
+      .def_rw("solvation_model", &CGConfig::solvation_model,
+              "smd (default), cosmo-rs, or none")
+      .def_rw("temperature", &CGConfig::temperature,
+              "temperature in K for the solvation model")
       .def_rw("charge_string", &CGConfig::charge_string)
       .def_rw("dma_reference", &CGConfig::dma_reference)
       .def_rw("wavefunction_choice", &CGConfig::wavefunction_choice)
