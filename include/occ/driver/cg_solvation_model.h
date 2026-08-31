@@ -66,10 +66,27 @@ public:
   [[nodiscard]] virtual std::string name() const = 0;
 
   /// Whether the model can supply a wavefunction polarised by the real
-  /// solvent. The σ model cannot: its wavefunction is the ε=∞ conductor, so
+  /// solvent. openCOSMO-RS cannot: its wavefunction is the ε=∞ conductor, so
   /// asking for solvated interaction energies is an error rather than a
   /// silent degradation.
   [[nodiscard]] virtual bool supports_solvated_wavefunctions() const = 0;
+
+  /// Shift, in Hartree, taking the model's solvation free energy onto the
+  /// same gas standard state as the sublimation free energy it is added to.
+  ///
+  /// The convention belongs to the model rather than to cg. Both SMD and
+  /// openCOSMO-RS report ΔG_solv between a 1 mol/L ideal gas and a 1 mol/L
+  /// solution — SMD by construction, openCOSMO-RS because its fitted
+  /// intercept η was regressed onto experimental values on that convention —
+  /// while cg's sublimation term ends at a 1 atm gas. Both therefore owe the
+  /// RT ln(24.46) concentration shift. A model on another convention
+  /// declares its own here rather than inheriting one.
+  ///
+  /// Note this is not the model's own reference-state term: openCOSMO-RS's
+  /// −RT ln(v_gas/v_liquid) is solute-specific (17.9 kJ/mol for water against
+  /// 13.5 for cyclohexane) and is part of the fitted model, not a
+  /// standard-state conversion.
+  [[nodiscard]] virtual double standard_state_shift() const { return 0.0; }
 
   /// Rejects a mixture unless the model handles one.
   virtual void validate(const SolventSpec &) const;

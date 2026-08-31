@@ -1,5 +1,6 @@
 #include <occ/cg/smd_solvation.h>
 #include <occ/core/log.h>
+#include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/driver/cg_solvation_model.h>
 #include <occ/driver/cosmors_solvation.h>
@@ -122,12 +123,22 @@ void CGSolvationModel::validate(const SolventSpec &solvent) const {
 
 namespace {
 
+/// RT ln(24.46) at 298 K, in Hartree: the ideal gas at 1 atm against the same
+/// gas at 1 mol/L. Owed by any model whose ΔG_solv starts from a 1 mol/L gas.
+constexpr double gas_concentration_shift = 1.89 / occ::units::AU_TO_KCAL_PER_MOL;
+
 class SmdCGSolvationModel final : public CGSolvationModel {
 public:
   explicit SmdCGSolvationModel(CGSolvationSettings settings)
       : m_settings(std::move(settings)) {}
 
   std::string name() const override { return "SMD"; }
+
+  /// SMD is parameterised against the Minnesota solvation database, whose
+  /// ΔG_solv runs from a 1 mol/L gas to a 1 mol/L solution.
+  double standard_state_shift() const override {
+    return gas_concentration_shift;
+  }
   bool supports_solvated_wavefunctions() const override { return true; }
 
   CGSolvationResult
@@ -158,6 +169,14 @@ public:
       : m_settings(std::move(settings)) {}
 
   std::string name() const override { return "openCOSMO-RS"; }
+
+  /// The same convention as SMD: `[cosmors]` checks the assembled total
+  /// against the same experimental hydration free energies, and it lands on
+  /// them with a mean deviation of -0.09 kJ/mol, so it is a 1 mol/L to
+  /// 1 mol/L quantity too.
+  double standard_state_shift() const override {
+    return gas_concentration_shift;
+  }
   /// The ideal-conductor wavefunction is over-polarised for interaction
   /// energies, so cg must use the gas-phase one.
   bool supports_solvated_wavefunctions() const override { return false; }

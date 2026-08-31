@@ -190,10 +190,13 @@ inline void compute_monomer_energies(const std::string &basename,
   }
 }
 
+/// `standard_state_shift` comes from the active solvation model, in kJ/mol:
+/// each model defines its own reference state and cg must not assume one.
 inline void write_energy_summary(double total,
                                  const occ::core::Molecule &molecule,
                                  double solvation_free_energy,
-                                 double total_interaction_energy) {
+                                 double total_interaction_energy,
+                                 double standard_state_shift) {
   double Gr = molecule.rotational_free_energy(298);
   occ::core::MolecularPointGroup pg(molecule);
   occ::log::debug("Molecule point group = {}, symmetry number = {}",
@@ -212,8 +215,7 @@ inline void write_energy_summary(double total,
   occ::log::warn("rotational free energy (molecule)    {: 9.3f}  (E_rot)", Gr);
   occ::log::warn("translational free energy (molecule) {: 9.3f}  (E_trans)",
                  Gt);
-  // includes concentration shift
-  double dG_solv = solvation_free_energy + 1.89 / occ::units::KJ_TO_KCAL;
+  double dG_solv = solvation_free_energy + standard_state_shift;
   occ::log::warn("solvation free energy (molecule)     {: 9.3f}  (E_solv)",
                  dG_solv);
   double dH_sub = -0.5 * total - 2 * RT;
@@ -552,6 +554,9 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
     occ::log::info("Solvation model: {} in '{}'", model->name(),
                    spec.to_string());
 
+    m_standard_state_shift =
+        model->standard_state_shift() * occ::units::AU_TO_KJ_PER_MOL;
+
     auto result = model->compute(opts.basename, m_molecules,
                                  m_gas_phase_wavefunctions, spec);
     m_solvated_surface_properties = std::move(result.surfaces);
@@ -666,7 +671,8 @@ CEModelCrystalGrowthCalculator::evaluate_molecular_surroundings() {
     m_lattice_energies.push_back(mol_dimer_results.total.crystal_energy);
     write_energy_summary(mol_dimer_results.total.crystal_energy, m_molecules[i],
                          mol_dimer_results.total.solution_term,
-                         mol_dimer_results.total.interaction_energy);
+                         mol_dimer_results.total.interaction_energy,
+                         m_standard_state_shift);
 
     if (opts.write_debug_output_files) {
       // write neighbors file for molecule i
@@ -736,7 +742,7 @@ XTBCrystalGrowthCalculator::evaluate_molecular_surroundings() {
     occ::driver::write_energy_summary(
         mol_dimer_results.total.crystal_energy, m_molecules[i],
         mol_dimer_results.total.solution_term,
-        mol_dimer_results.total.interaction_energy);
+        mol_dimer_results.total.interaction_energy, m_standard_state_shift);
   }
   return result;
 }
@@ -745,6 +751,10 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
   occ::timing::StopWatch sw_gas;
   occ::timing::StopWatch sw_solv;
   const auto &opts = options();
+
+  // This path is SMD throughout, so it owes the same concentration shift the
+  // SMD model declares.
+  m_standard_state_shift = 1.89 / occ::units::KJ_TO_KCAL;
 
   m_solvated_surface_properties.clear();
   m_solvated_surface_properties.reserve(m_molecules.size());

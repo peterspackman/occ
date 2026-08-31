@@ -139,6 +139,8 @@ protected:
   std::vector<cg::DimerResults> m_interaction_energies;
   std::vector<cg::DimerResults> m_crystal_interaction_energies;
   std::vector<double> m_solution_terms;
+  /// kJ/mol, from the active solvation model. See `write_energy_summary`.
+  double m_standard_state_shift{0.0};
 
 private:
   CrystalGrowthCalculatorOptions m_options;
