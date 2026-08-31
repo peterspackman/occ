@@ -4,7 +4,7 @@
 
 namespace occ::main {
 
-struct SigmaConfig {
+struct CosmoRSConfig {
   std::string geometry_filename{""};
   std::string method{"b3lyp"};
   std::string basis{"def2-tzvp"};
@@ -29,7 +29,7 @@ struct SigmaConfig {
   bool cartesian{false};
 };
 
-CLI::App *add_sigma_subcommand(CLI::App &app);
-void run_sigma_subcommand(SigmaConfig const &);
+CLI::App *add_cosmors_subcommand(CLI::App &app);
+void run_cosmors_subcommand(CosmoRSConfig const &);
 
 } // namespace occ::main

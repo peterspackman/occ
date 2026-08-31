@@ -1,7 +1,7 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
-#include <occ/driver/sigma_driver.h>
+#include <occ/driver/cosmors_driver.h>
 #include <occ/qm/scf.h>
 #include <occ/scrf/reaction_field.h>
 #include <occ/solvent/solvation_correction.h>
@@ -24,9 +24,9 @@ void atom_arrays(const std::vector<occ::core::Atom> &atoms, Mat3N &positions,
 
 } // namespace
 
-solvent::sigma::Segments
+solvent::cosmors::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
-                   const solvent::sigma::RSParameters &params,
+                   const solvent::cosmors::Parameters &params,
                    double probe_radius_angs, int angular_points,
                    bool constrain_charge, Vec *dielectric_energies,
                    double *cavity_volume_angs3) {
@@ -59,16 +59,16 @@ conductor_segments(const qm::Wavefunction &wavefunction,
         bohr3_to_angs3;
   }
 
-  auto segments = solvent::sigma::segments_from_cavity(
+  auto segments = solvent::cosmors::segments_from_cavity(
       engine.es_cavity(), engine.surface_charges(), atomic_numbers);
-  solvent::sigma::average_sigma(segments, params.r_av);
-  solvent::sigma::average_sigma_orth(segments, params.r_av, params.r_corr,
+  solvent::cosmors::average_sigma(segments, params.r_av);
+  solvent::cosmors::average_sigma_orth(segments, params.r_av, params.r_corr,
                                      params.sigma_orth_factor);
   return segments;
 }
 
 ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
-                                  const SigmaProfileSettings &settings) {
+                                  const ConductorSettings &settings) {
   occ::gto::AOBasis basis =
       occ::gto::AOBasis::load(gas_wavefunction.atoms, settings.basis);
   basis.set_pure(settings.pure_spherical);

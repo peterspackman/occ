@@ -5,14 +5,14 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <occ/core/util.h>
-#include <occ/solvent/opencosmors_io.h>
+#include <occ/solvent/cosmors_io.h>
 #include <occ/solvent/parameters.h>
 #include <sstream>
 #include <stdexcept>
 
 namespace fs = std::filesystem;
 
-namespace occ::solvent::sigma {
+namespace occ::solvent::cosmors {
 
 namespace {
 
@@ -22,11 +22,11 @@ std::string segments_filename(const std::string &name) {
 
 } // namespace
 
-RSComponentFile read_rs_segments(const std::string &path) {
+ComponentFile read_segments(const std::string &path) {
   std::ifstream input(path);
   if (!input)
     throw std::runtime_error(
-        fmt::format("read_rs_segments: cannot open '{}'", path));
+        fmt::format("read_segments: cannot open '{}'", path));
 
   nlohmann::json meta;
   std::vector<double> sigma, sigma_orth, area;
@@ -47,7 +47,7 @@ RSComponentFile read_rs_segments(const std::string &path) {
     int z = 0;
     if (!(row >> s >> so >> a >> z))
       throw std::runtime_error(
-          fmt::format("read_rs_segments: bad row in '{}': {}", path, line));
+          fmt::format("read_segments: bad row in '{}': {}", path, line));
     sigma.push_back(s);
     sigma_orth.push_back(so);
     area.push_back(a);
@@ -56,10 +56,10 @@ RSComponentFile read_rs_segments(const std::string &path) {
 
   if (sigma.empty())
     throw std::runtime_error(
-        fmt::format("read_rs_segments: no data rows in '{}'", path));
+        fmt::format("read_segments: no data rows in '{}'", path));
 
   const Eigen::Index n = static_cast<Eigen::Index>(sigma.size());
-  RSComponentFile out;
+  ComponentFile out;
   out.name = meta.value("name", std::string{});
   out.r_av = meta.value("r_av [A]", 0.0);
   out.r_corr = meta.value("r_corr [A]", 0.0);
@@ -75,17 +75,17 @@ RSComponentFile read_rs_segments(const std::string &path) {
   return out;
 }
 
-void write_rs_segments(const std::string &path, const std::string &name,
-                       const RSComponent &component,
+void write_segments(const std::string &path, const std::string &name,
+                       const Component &component,
                        const IVec &atomic_numbers,
-                       const RSParameters &params, const std::string &method,
+                       const Parameters &params, const std::string &method,
                        const std::string &basis) {
   if (component.sigma_orth.size() != component.size())
     throw std::runtime_error(
-        "write_rs_segments: sigma_orth has not been computed");
+        "write_segments: sigma_orth has not been computed");
   if (atomic_numbers.size() != component.size())
     throw std::runtime_error(
-        "write_rs_segments: one atomic number per segment is required");
+        "write_segments: one atomic number per segment is required");
 
   nlohmann::json meta{
       {"name", name},
@@ -113,16 +113,16 @@ void write_rs_segments(const std::string &path, const std::string &name,
                  atomic_numbers(i));
 }
 
-RSProfileStore::RSProfileStore(std::vector<std::string> search_paths)
+SegmentStore::SegmentStore(std::vector<std::string> search_paths)
     : m_search_paths(std::move(search_paths)) {}
 
-RSProfileStore RSProfileStore::standard() {
-  return RSProfileStore(
-      {(fs::path(solvent_data_path()) / "opencosmors").string(),
+SegmentStore SegmentStore::standard() {
+  return SegmentStore(
+      {(fs::path(solvent_data_path()) / "cosmors").string(),
        fs::current_path().string()});
 }
 
-bool RSProfileStore::contains(const std::string &name) const {
+bool SegmentStore::contains(const std::string &name) const {
   const auto filename = segments_filename(name);
   return std::any_of(m_search_paths.begin(), m_search_paths.end(),
                      [&](const std::string &directory) {
@@ -130,12 +130,12 @@ bool RSProfileStore::contains(const std::string &name) const {
                      });
 }
 
-RSComponentFile RSProfileStore::get(const std::string &name) const {
+ComponentFile SegmentStore::get(const std::string &name) const {
   const auto filename = segments_filename(name);
   for (const auto &directory : m_search_paths) {
     const auto path = fs::path(directory) / filename;
     if (fs::exists(path))
-      return read_rs_segments(path.string());
+      return read_segments(path.string());
   }
   throw std::runtime_error(fmt::format(
       "no openCOSMO-RS segments for solvent '{}' (looked for {} in: {}). "
@@ -144,7 +144,7 @@ RSComponentFile RSProfileStore::get(const std::string &name) const {
       occ::util::to_lower_copy(name), filename));
 }
 
-std::vector<std::string> RSProfileStore::available() const {
+std::vector<std::string> SegmentStore::available() const {
   std::vector<std::string> names;
   for (const auto &directory : m_search_paths) {
     if (!fs::is_directory(directory))
@@ -161,4 +161,4 @@ std::vector<std::string> RSProfileStore::available() const {
   return names;
 }
 
-} // namespace occ::solvent::sigma
+} // namespace occ::solvent::cosmors

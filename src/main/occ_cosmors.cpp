@@ -2,57 +2,57 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
-#include <occ/driver/sigma_driver.h>
+#include <occ/driver/cosmors_driver.h>
 #include <occ/io/xyz.h>
-#include <occ/main/occ_sigma.h>
+#include <occ/main/occ_cosmors.h>
 #include <occ/qm/scf.h>
-#include <occ/solvent/opencosmors.h>
-#include <occ/solvent/opencosmors_io.h>
+#include <occ/solvent/cosmors.h>
+#include <occ/solvent/cosmors_io.h>
 
 namespace occ::main {
 
-CLI::App *add_sigma_subcommand(CLI::App &app) {
-  CLI::App *sigma = app.add_subcommand(
-      "sigma", "compute an openCOSMO-RS solvation free energy");
-  auto config = std::make_shared<SigmaConfig>();
+CLI::App *add_cosmors_subcommand(CLI::App &app) {
+  CLI::App *cosmors = app.add_subcommand(
+      "cosmo-rs", "compute an openCOSMO-RS solvation free energy");
+  auto config = std::make_shared<CosmoRSConfig>();
 
-  sigma->add_option("geometry", config->geometry_filename,
+  cosmors->add_option("geometry", config->geometry_filename,
                     "input geometry file (xyz)")
       ->required();
-  sigma->add_option("--method", config->method, "DFT functional");
-  sigma->add_option("--basis", config->basis, "basis set");
-  sigma->add_option("--solvent", config->solvent,
+  cosmors->add_option("--method", config->method, "DFT functional");
+  cosmors->add_option("--basis", config->basis, "basis set");
+  cosmors->add_option("--solvent", config->solvent,
                     "solvent name, resolved against the shipped segment "
                     "ensembles");
-  sigma->add_option("--solvent-geometry", config->solvent_geometry,
+  cosmors->add_option("--solvent-geometry", config->solvent_geometry,
                     "solvent geometry file, as an alternative to --solvent: "
                     "its conductor cavity is computed rather than loaded");
-  sigma->add_option("--write-segments", config->segments_filename,
+  cosmors->add_option("--write-segments", config->segments_filename,
                     "write this molecule's segment ensemble (.rsseg) so it "
                     "can be reused as a cached solvent");
-  sigma->add_option("--liquid-volume", config->liquid_volume,
+  cosmors->add_option("--liquid-volume", config->liquid_volume,
                     "liquid-phase volume per solute molecule (Angstrom^3) for "
                     "the reference-state term; omitted when unset");
-  sigma->add_option("--rings", config->num_rings,
+  cosmors->add_option("--rings", config->num_rings,
                     "rings in the solute for the ring correction (default: "
                     "counted from the bond graph)");
-  sigma->add_option("--probe", config->probe_radius,
+  cosmors->add_option("--probe", config->probe_radius,
                     "solvent probe radius used to build the cavity (Angstrom)");
-  sigma->add_option("--temperature", config->temperature, "temperature (K)");
-  sigma->add_option("--angular-points", config->angular_points,
+  cosmors->add_option("--temperature", config->temperature, "temperature (K)");
+  cosmors->add_option("--angular-points", config->angular_points,
                     "Lebedev order per atom for the cavity");
-  sigma->add_flag("--unconstrained-charge", config->unconstrained_charge,
+  cosmors->add_flag("--unconstrained-charge", config->unconstrained_charge,
                   "do not constrain the surface charge to -q");
-  sigma->add_flag("--cartesian", config->cartesian,
+  cosmors->add_flag("--cartesian", config->cartesian,
                   "use cartesian (6d) basis functions");
 
-  sigma->fallthrough();
-  sigma->callback([config]() { run_sigma_subcommand(*config); });
-  return sigma;
+  cosmors->fallthrough();
+  cosmors->callback([config]() { run_cosmors_subcommand(*config); });
+  return cosmors;
 }
 
-void run_sigma_subcommand(SigmaConfig const &config) {
-  namespace sigma = occ::solvent::sigma;
+void run_cosmors_subcommand(CosmoRSConfig const &config) {
+  namespace cosmors = occ::solvent::cosmors;
 
   if (!config.solvent.empty() && !config.solvent_geometry.empty())
     throw std::runtime_error(
@@ -68,7 +68,7 @@ void run_sigma_subcommand(SigmaConfig const &config) {
   occ::qm::SCF<occ::dft::DFT> gas_scf(gas);
   gas_scf.compute_scf_energy();
 
-  occ::driver::SigmaProfileSettings settings;
+  occ::driver::ConductorSettings settings;
   settings.method = config.method;
   settings.basis = config.basis;
   settings.pure_spherical = !config.cartesian;
@@ -78,7 +78,7 @@ void run_sigma_subcommand(SigmaConfig const &config) {
 
   auto result =
       occ::driver::conductor_profile(gas_scf.wavefunction(), settings);
-  const sigma::RSParameters rs = settings.parameters;
+  const cosmors::Parameters rs = settings.parameters;
 
   occ::log::info("cavity area          {:12.5f} Angstrom^2", result.cavity_area);
   occ::log::info("cavity volume        {:12.5f} Angstrom^3",
@@ -88,11 +88,11 @@ void run_sigma_subcommand(SigmaConfig const &config) {
   occ::log::info("conductor stabilisation {:9.5f} Hartree",
                  result.energy_conductor - result.energy_gas);
 
-  const auto solute = sigma::RSComponent::from_segments(
+  const auto solute = cosmors::Component::from_segments(
       result.segments, result.cavity_volume, result.cavity_area);
 
   if (!config.segments_filename.empty()) {
-    sigma::write_rs_segments(config.segments_filename, molecule.name(), solute,
+    cosmors::write_segments(config.segments_filename, molecule.name(), solute,
                              result.segments.atomic_number, rs, config.method,
                              config.basis);
     occ::log::info("wrote segment ensemble to {}", config.segments_filename);
@@ -102,17 +102,17 @@ void run_sigma_subcommand(SigmaConfig const &config) {
     return;
 
   const int num_rings = (config.num_rings >= 0) ? config.num_rings
-                                                : sigma::ring_count(molecule);
+                                                : cosmors::ring_count(molecule);
 
-  auto report = [&](const sigma::RSComponent &solvent,
+  auto report = [&](const cosmors::Component &solvent,
                     const std::string &label) {
-    sigma::RSOptions options;
+    cosmors::ActivityOptions options;
     options.temperature = config.temperature;
-    sigma::RSSolventModel model(solvent, rs, options);
-    auto energy = sigma::rs_solvation_free_energy(
+    cosmors::SolventModel model(solvent, rs, options);
+    auto energy = cosmors::solvation_free_energy(
         model, solute, result.segments,
         result.energy_conductor - result.energy_gas, num_rings,
-        config.liquid_volume, sigma::SolvationParameters::opencosmors_24a());
+        config.liquid_volume, cosmors::SolvationParameters::v24a());
 
     const double k = occ::units::AU_TO_KJ_PER_MOL;
     occ::log::info("openCOSMO-RS 24a solvation free energy in '{}' at {:.2f} K "
@@ -131,7 +131,7 @@ void run_sigma_subcommand(SigmaConfig const &config) {
   // A cached solvent ensemble avoids recomputing the solvent cavity, which is
   // what makes a solvent screen cheap.
   if (!config.solvent.empty()) {
-    auto store = sigma::RSProfileStore::standard();
+    auto store = cosmors::SegmentStore::standard();
     auto solvent = store.get(config.solvent);
     if (solvent.r_av > 0.0 && std::abs(solvent.r_av - rs.r_av) > 1e-12)
       throw std::runtime_error(fmt::format(
@@ -159,7 +159,7 @@ void run_sigma_subcommand(SigmaConfig const &config) {
   solvent_scf.compute_scf_energy();
   auto solvent_conductor =
       occ::driver::conductor_profile(solvent_scf.wavefunction(), settings);
-  report(sigma::RSComponent::from_segments(solvent_conductor.segments,
+  report(cosmors::Component::from_segments(solvent_conductor.segments,
                                            solvent_conductor.cavity_volume,
                                            solvent_conductor.cavity_area),
          solvent_molecule.name());

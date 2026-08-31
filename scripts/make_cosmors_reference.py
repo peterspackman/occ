@@ -11,7 +11,7 @@ Run against an environment with opencosmorspy installed, from the directory
 holding the .orcacosmo files:
 
     python scripts/make_opencosmors_reference.py tests/data/opencosmors \
-        tests/data/opencosmors_reference.json
+        tests/data/cosmors_reference.json
 """
 import json
 import os

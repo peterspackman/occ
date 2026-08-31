@@ -5,10 +5,10 @@
 #include <occ/core/kdtree.h>
 #include <occ/core/parallel.h>
 #include <occ/core/units.h>
-#include <occ/solvent/sigma_profile.h>
+#include <occ/solvent/cosmors_segments.h>
 #include <stdexcept>
 
-namespace occ::solvent::sigma {
+namespace occ::solvent::cosmors {
 
 namespace {
 
@@ -111,4 +111,4 @@ void average_sigma_orth(Segments &segments, double r_av_angs,
       averaged_sigma(segments, r_corr_angs) - factor * segments.sigma_averaged;
 }
 
-} // namespace occ::solvent::sigma
+} // namespace occ::solvent::cosmors

@@ -8,7 +8,7 @@
 /// Units follow the published parameter tables and are converted at the
 /// boundary: σ in e/Å², segment areas in Å², distances in Å (positions are
 /// stored in Bohr to match `surface::Surface`).
-namespace occ::solvent::sigma {
+namespace occ::solvent::cosmors {
 
 /// Per-segment COSMO data.
 struct Segments {
@@ -62,4 +62,4 @@ Vec averaged_sigma(const Segments &segments, double r_av_angs,
 void average_sigma_orth(Segments &segments, double r_av_angs,
                         double r_corr_angs, double factor = 0.816);
 
-} // namespace occ::solvent::sigma
+} // namespace occ::solvent::cosmors

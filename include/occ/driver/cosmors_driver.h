@@ -1,14 +1,14 @@
 #pragma once
 #include <occ/qm/wavefunction.h>
-#include <occ/solvent/opencosmors.h>
-#include <occ/solvent/sigma_profile.h>
+#include <occ/solvent/cosmors.h>
+#include <occ/solvent/cosmors_segments.h>
 #include <string>
 
 namespace occ::driver {
 
 /// Settings for the ideal-conductor COSMO calculation the segment
 /// descriptors are built from.
-struct SigmaProfileSettings {
+struct ConductorSettings {
   std::string method{"b3lyp"};
   std::string basis{"def2-tzvp"};
   bool pure_spherical{true};
@@ -19,11 +19,11 @@ struct SigmaProfileSettings {
   /// Averaging radii for σ and σ⊥. Part of the parameterisation rather than a
   /// free choice, so overriding them makes the descriptors incomparable with
   /// the shipped solvent ensembles.
-  solvent::sigma::RSParameters parameters{};
+  solvent::cosmors::Parameters parameters{};
 };
 
 struct ConductorResult {
-  solvent::sigma::Segments segments;
+  solvent::cosmors::Segments segments;
   qm::Wavefunction wavefunction;
   double energy_gas{0.0};
   double energy_conductor{0.0};
@@ -44,9 +44,9 @@ struct ConductorResult {
 /// Reusing a cached conductor wavefunction here is the whole point of the
 /// model: the segment descriptors are solvent independent, so one calculation
 /// serves every solvent.
-solvent::sigma::Segments
+solvent::cosmors::Segments
 conductor_segments(const qm::Wavefunction &wavefunction,
-                   const solvent::sigma::RSParameters &params = {},
+                   const solvent::cosmors::Parameters &params = {},
                    double probe_radius_angs = 0.0, int angular_points = 590,
                    bool constrain_charge = true,
                    Vec *dielectric_energies = nullptr,
@@ -55,6 +55,6 @@ conductor_segments(const qm::Wavefunction &wavefunction,
 /// Converge the SCF in the ideal-conductor reaction field starting from a
 /// gas-phase wavefunction, then build the segments.
 ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
-                                  const SigmaProfileSettings &settings = {});
+                                  const ConductorSettings &settings = {});
 
 } // namespace occ::driver

@@ -2,14 +2,14 @@
 #include <occ/cg/solvation_data.h>
 #include <occ/core/molecule.h>
 #include <occ/driver/cg_solvation_model.h>
-#include <occ/driver/sigma_driver.h>
+#include <occ/driver/cosmors_driver.h>
 #include <occ/qm/wavefunction.h>
 #include <string>
 #include <vector>
 
 namespace occ::driver {
 
-struct SigmaSolvationSettings {
+struct CosmoRSSettings {
   std::string method{"b3lyp"};
   std::string basis{"def2-tzvp"};
   bool pure_spherical{true};
@@ -36,10 +36,10 @@ struct SigmaSolvationSettings {
 /// whole solvation free energy. They are identical for a bulk and a surface
 /// molecule, so they cancel in the attachment-energy difference cg forms.
 CGSolvationResult
-opencosmors_solvation(const std::string &basename,
+cosmors_solvation(const std::string &basename,
                       const std::vector<core::Molecule> &molecules,
                       const std::vector<qm::Wavefunction> &gas_wavefunctions,
                       const SolventSpec &solvent,
-                      const SigmaSolvationSettings &settings = {});
+                      const CosmoRSSettings &settings = {});
 
 } // namespace occ::driver

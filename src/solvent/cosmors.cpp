@@ -5,12 +5,12 @@
 #include <occ/core/constants.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
-#include <occ/solvent/opencosmors.h>
+#include <occ/solvent/cosmors.h>
 #include <stdexcept>
 
-namespace occ::solvent::sigma {
+namespace occ::solvent::cosmors {
 
-SolvationParameters SolvationParameters::opencosmors_24a() {
+SolvationParameters SolvationParameters::v24a() {
   // openCOSMO-RS 24a, as distributed with openCOSMO-RS_py
   // (TUHH-TVT/openCOSMO-RS_py, parameterization.py). kcal/mol/Å².
   SolvationParameters params;
@@ -31,14 +31,14 @@ SolvationParameters SolvationParameters::opencosmors_24a() {
   return params;
 }
 
-RSParameters RSParameters::opencosmors_24a() { return RSParameters{}; }
+Parameters Parameters::v24a() { return Parameters{}; }
 
-RSComponent RSComponent::from_segments(const Segments &segments, double volume,
+Component Component::from_segments(const Segments &segments, double volume,
                                        double cavity_area) {
   if (segments.sigma_orth.size() != segments.size())
     throw std::runtime_error(
-        "RSComponent::from_segments: sigma_orth has not been computed");
-  RSComponent out;
+        "Component::from_segments: sigma_orth has not been computed");
+  Component out;
   out.sigma = segments.sigma_averaged;
   out.sigma_orth = segments.sigma_orth;
   out.area = segments.areas;
@@ -47,23 +47,23 @@ RSComponent RSComponent::from_segments(const Segments &segments, double volume,
   return out;
 }
 
-RSComponent mix_rs_components(const std::vector<RSComponent> &components,
+Component mix_components(const std::vector<Component> &components,
                               const Vec &mole_fractions) {
   if (components.empty())
-    throw std::runtime_error("mix_rs_components: no components");
+    throw std::runtime_error("mix_components: no components");
   if (static_cast<Eigen::Index>(components.size()) != mole_fractions.size())
     throw std::runtime_error(
-        "mix_rs_components: one mole fraction per component is required");
+        "mix_components: one mole fraction per component is required");
   const double sum = mole_fractions.sum();
   if (sum <= 0.0)
     throw std::runtime_error(
-        "mix_rs_components: mole fractions are not positive");
+        "mix_components: mole fractions are not positive");
 
   Eigen::Index total = 0;
   for (const auto &c : components)
     total += c.size();
 
-  RSComponent out;
+  Component out;
   out.sigma = Vec(total);
   out.sigma_orth = Vec(total);
   out.area = Vec(total);
@@ -82,8 +82,8 @@ RSComponent mix_rs_components(const std::vector<RSComponent> &components,
   return out;
 }
 
-Mat rs_interaction_energies(const RSComponent &a, const RSComponent &b,
-                            const RSParameters &params, double temperature) {
+Mat interaction_energies(const Component &a, const Component &b,
+                            const Parameters &params, double temperature) {
   const Eigen::Index na = a.size(), nb = b.size();
   Mat out(na, nb);
 
@@ -142,7 +142,7 @@ Mat boltzmann_factors(const Mat &interaction, double temperature) {
 
 /// ln Γ for the pooled ensemble.
 Vec solve_segment_activities(const Mat &interaction, const Vec &fraction,
-                             const RSOptions &options) {
+                             const ActivityOptions &options) {
   const Eigen::Index n = fraction.size();
   const Mat tau = boltzmann_factors(interaction, options.temperature);
 
@@ -168,12 +168,12 @@ Vec solve_segment_activities(const Mat &interaction, const Vec &fraction,
 /// Pool every component's segments into one ensemble, with the segment mole
 /// fractions the mixture implies.
 struct PooledEnsemble {
-  RSComponent all;
+  Component all;
   Vec fraction;
   std::vector<Eigen::Index> offset;
 };
 
-PooledEnsemble pool(const std::vector<RSComponent> &components,
+PooledEnsemble pool(const std::vector<Component> &components,
                     const Vec &mole_fractions) {
   Eigen::Index total = 0;
   for (const auto &c : components)
@@ -204,12 +204,12 @@ PooledEnsemble pool(const std::vector<RSComponent> &components,
 
 } // namespace
 
-Vec rs_residual_ln_gamma(const std::vector<RSComponent> &components,
+Vec residual_ln_gamma(const std::vector<Component> &components,
                          const Vec &mole_fractions,
-                         const RSParameters &params,
-                         const RSOptions &options) {
+                         const Parameters &params,
+                         const ActivityOptions &options) {
   const auto ensemble = pool(components, mole_fractions);
-  const Mat interaction = rs_interaction_energies(
+  const Mat interaction = interaction_energies(
       ensemble.all, ensemble.all, params, options.temperature);
   const Vec ln_gamma =
       solve_segment_activities(interaction, ensemble.fraction, options);
@@ -224,9 +224,9 @@ Vec rs_residual_ln_gamma(const std::vector<RSComponent> &components,
   return out;
 }
 
-Vec rs_combinatorial_ln_gamma(const std::vector<RSComponent> &components,
+Vec combinatorial_ln_gamma(const std::vector<Component> &components,
                               const Vec &mole_fractions,
-                              const RSParameters &params) {
+                              const Parameters &params) {
   const Eigen::Index n = components.size();
   Vec volume(n), area(n);
   for (Eigen::Index m = 0; m < n; m++) {
@@ -249,22 +249,22 @@ Vec rs_combinatorial_ln_gamma(const std::vector<RSComponent> &components,
   return out;
 }
 
-RSSolventModel::RSSolventModel(RSComponent solvent, RSParameters params,
-                               RSOptions options)
+SolventModel::SolventModel(Component solvent, Parameters params,
+                               ActivityOptions options)
     : m_solvent(std::move(solvent)), m_params(std::move(params)),
       m_options(std::move(options)) {
   const auto ensemble = pool({m_solvent}, Vec::Ones(1));
   m_fraction = ensemble.fraction;
-  const Mat interaction = rs_interaction_energies(
+  const Mat interaction = interaction_energies(
       ensemble.all, ensemble.all, m_params, m_options.temperature);
   m_ln_gamma =
       solve_segment_activities(interaction, m_fraction, m_options);
 }
 
-Vec RSSolventModel::segment_energies(const RSComponent &solute) const {
+Vec SolventModel::segment_energies(const Component &solute) const {
   // Test particle against the converged solvent: at infinite dilution the
   // solute does not perturb the solvent's own activities.
-  const Mat interaction = rs_interaction_energies(solute, m_solvent, m_params,
+  const Mat interaction = interaction_energies(solute, m_solvent, m_params,
                                                   m_options.temperature);
   const double rt = occ::constants::molar_gas_constant<double> *
                     m_options.temperature;
@@ -277,11 +277,11 @@ Vec RSSolventModel::segment_energies(const RSComponent &solute) const {
       .matrix();
 }
 
-double RSSolventModel::residual_energy(const RSComponent &solute) const {
+double SolventModel::residual_energy(const Component &solute) const {
   return segment_energies(solute).sum();
 }
 
-double RSSolventModel::combinatorial_energy(const RSComponent &solute) const {
+double SolventModel::combinatorial_energy(const Component &solute) const {
   // Infinite dilution: the mixture averages are the pure solvent's.
   const double phi = solute.volume / m_solvent.volume;
   const double theta = solute.total_area() / m_solvent.total_area();
@@ -295,11 +295,11 @@ double RSSolventModel::combinatorial_energy(const RSComponent &solute) const {
   return rt * ln_gamma / (occ::units::AU_TO_KJ_PER_MOL * 1000.0);
 }
 
-RSSolvationEnergy rs_solvation_free_energy(
-    const RSSolventModel &solvent, const RSComponent &solute,
+SolvationEnergy solvation_free_energy(
+    const SolventModel &solvent, const Component &solute,
     const Segments &segments, double dielectric, int num_rings,
     double volume_liquid, const SolvationParameters &solvation_params) {
-  RSSolvationEnergy out;
+  SolvationEnergy out;
   out.dielectric = dielectric;
   out.residual = solvent.residual_energy(solute);
   out.combinatorial = solvent.combinatorial_energy(solute);
@@ -388,4 +388,4 @@ double molecular_solvation_terms(int num_rings, double volume_liquid,
   return total;
 }
 
-} // namespace occ::solvent::sigma
+} // namespace occ::solvent::cosmors

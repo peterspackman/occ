@@ -1,9 +1,9 @@
 #include <filesystem>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
-#include <occ/driver/sigma_solvation.h>
-#include <occ/solvent/opencosmors.h>
-#include <occ/solvent/opencosmors_io.h>
+#include <occ/driver/cosmors_solvation.h>
+#include <occ/solvent/cosmors.h>
+#include <occ/solvent/cosmors_io.h>
 
 namespace fs = std::filesystem;
 
@@ -13,13 +13,13 @@ namespace {
 
 qm::Wavefunction conductor_wavefunction(const std::string &cache_path,
                                         const qm::Wavefunction &gas,
-                                        const SigmaSolvationSettings &settings) {
+                                        const CosmoRSSettings &settings) {
   if (fs::exists(cache_path)) {
     occ::log::info("Loading cached conductor wavefunction from {}", cache_path);
     return qm::Wavefunction::load(cache_path);
   }
 
-  SigmaProfileSettings profile_settings;
+  ConductorSettings profile_settings;
   profile_settings.method = settings.method;
   profile_settings.basis = settings.basis;
   profile_settings.pure_spherical = settings.pure_spherical;
@@ -42,17 +42,17 @@ double result_energy_difference(const qm::Wavefunction &conductor,
 } // namespace
 
 CGSolvationResult
-opencosmors_solvation(const std::string &basename,
+cosmors_solvation(const std::string &basename,
                       const std::vector<core::Molecule> &molecules,
                       const std::vector<qm::Wavefunction> &gas_wavefunctions,
                       const SolventSpec &solvent,
-                      const SigmaSolvationSettings &settings) {
-  const solvent::sigma::RSParameters rs;
-  solvent::sigma::RSOptions options;
+                      const CosmoRSSettings &settings) {
+  const solvent::cosmors::Parameters rs;
+  solvent::cosmors::ActivityOptions options;
   options.temperature = settings.temperature;
 
-  auto store = solvent::sigma::RSProfileStore::standard();
-  std::vector<solvent::sigma::RSComponent> components;
+  auto store = solvent::cosmors::SegmentStore::standard();
+  std::vector<solvent::cosmors::Component> components;
   components.reserve(solvent.components.size());
   for (const auto &name : solvent.components) {
     auto file = store.get(name);
@@ -65,12 +65,12 @@ opencosmors_solvation(const std::string &basename,
   }
   auto mixture =
       solvent.is_mixture()
-          ? solvent::sigma::mix_rs_components(components, solvent.mole_fractions)
+          ? solvent::cosmors::mix_components(components, solvent.mole_fractions)
           : components.front();
 
-  solvent::sigma::RSSolventModel model(std::move(mixture), rs, options);
+  solvent::cosmors::SolventModel model(std::move(mixture), rs, options);
   const auto solvation_params =
-      solvent::sigma::SolvationParameters::opencosmors_24a();
+      solvent::cosmors::SolvationParameters::v24a();
   occ::log::info("openCOSMO-RS 24a solvation: '{}' at {:.2f} K",
                  solvent.to_string(), options.temperature);
   // The surface-additive channels (dielectric, residual, cavity) carry the
@@ -95,13 +95,13 @@ opencosmors_solvation(const std::string &basename,
         conductor_segments(wavefunction, rs, 0.0, settings.angular_points,
                            true, &dielectric, &cavity_volume);
 
-    auto solute = solvent::sigma::RSComponent::from_segments(
+    auto solute = solvent::cosmors::Component::from_segments(
         segments, cavity_volume, segments.total_area());
 
     const Vec residual = model.segment_energies(solute);
     const Vec cavity =
-        solvent::sigma::segment_cavity_energies(segments, solvation_params);
-    const auto missing = solvent::sigma::unparameterised_elements(
+        solvent::cosmors::segment_cavity_energies(segments, solvation_params);
+    const auto missing = solvent::cosmors::unparameterised_elements(
         segments, solvation_params);
     if (!missing.empty())
       occ::log::warn("molecule {}: {} element(s) have no openCOSMO-RS cavity "
@@ -121,7 +121,7 @@ opencosmors_solvation(const std::string &basename,
             ? 0
             : std::max<int>(0, static_cast<int>(mol.bonds().size()) -
                                    static_cast<int>(mol.size()) + 1);
-    const auto molecular = solvent::sigma::rs_solvation_free_energy(
+    const auto molecular = solvent::cosmors::solvation_free_energy(
         model, solute, segments, e_diel, num_rings,
         settings.volume_per_molecule, solvation_params);
 

@@ -2,7 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/core/util.h>
 #include <occ/driver/cg_solvation_model.h>
-#include <occ/driver/sigma_solvation.h>
+#include <occ/driver/cosmors_solvation.h>
 #include <sstream>
 #include <stdexcept>
 
@@ -94,8 +94,8 @@ SolvationModelKind parse_solvation_model(const std::string &name) {
   if (lowered == "smd")
     return SolvationModelKind::Smd;
   if (lowered == "cosmo-rs" || lowered == "cosmors" ||
-      lowered == "opencosmo-rs" || lowered == "opencosmors")
-    return SolvationModelKind::OpenCosmoRS;
+      lowered == "opencosmo-rs" || lowered == "cosmors")
+    return SolvationModelKind::CosmoRS;
   throw std::runtime_error(fmt::format(
       "unknown solvation model '{}' (none, smd, cosmo-rs)", name));
 }
@@ -106,7 +106,7 @@ std::string solvation_model_name(SolvationModelKind kind) {
     return "none";
   case SolvationModelKind::Smd:
     return "smd";
-  case SolvationModelKind::OpenCosmoRS:
+  case SolvationModelKind::CosmoRS:
     return "cosmo-rs";
   }
   return "unknown";
@@ -152,9 +152,9 @@ private:
   CGSolvationSettings m_settings;
 };
 
-class OpenCosmoRSCGSolvationModel final : public CGSolvationModel {
+class CosmoRSSolvationModel final : public CGSolvationModel {
 public:
-  explicit OpenCosmoRSCGSolvationModel(CGSolvationSettings settings)
+  explicit CosmoRSSolvationModel(CGSolvationSettings settings)
       : m_settings(std::move(settings)) {}
 
   std::string name() const override { return "openCOSMO-RS"; }
@@ -168,14 +168,14 @@ public:
           const std::vector<core::Molecule> &molecules,
           const std::vector<qm::Wavefunction> &gas_wavefunctions,
           const SolventSpec &solvent) override {
-    SigmaSolvationSettings settings;
+    CosmoRSSettings settings;
     settings.method = m_settings.method;
     settings.basis = m_settings.basis;
     settings.pure_spherical = m_settings.pure_spherical;
     settings.angular_points = m_settings.angular_points;
     settings.temperature = solvent.temperature;
     settings.volume_per_molecule = m_settings.volume_per_molecule;
-    return opencosmors_solvation(basename, molecules, gas_wavefunctions,
+    return cosmors_solvation(basename, molecules, gas_wavefunctions,
                                  solvent, settings);
   }
 
@@ -210,8 +210,8 @@ make_cg_solvation_model(SolvationModelKind kind,
     return std::make_unique<NoSolvationModel>();
   case SolvationModelKind::Smd:
     return std::make_unique<SmdCGSolvationModel>(settings);
-  case SolvationModelKind::OpenCosmoRS:
-    return std::make_unique<OpenCosmoRSCGSolvationModel>(settings);
+  case SolvationModelKind::CosmoRS:
+    return std::make_unique<CosmoRSSolvationModel>(settings);
   }
   throw std::runtime_error("make_cg_solvation_model: unknown kind");
 }
