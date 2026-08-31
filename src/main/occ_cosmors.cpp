@@ -78,7 +78,7 @@ void run_cosmors_subcommand(CosmoRSConfig const &config) {
 
   auto result =
       occ::driver::conductor_profile(gas_scf.wavefunction(), settings);
-  const cosmors::Parameters rs = settings.parameters;
+  const cosmors::Parameters params = settings.parameters;
 
   occ::log::info("cavity area          {:12.5f} Angstrom^2", result.cavity_area);
   occ::log::info("cavity volume        {:12.5f} Angstrom^3",
@@ -93,8 +93,7 @@ void run_cosmors_subcommand(CosmoRSConfig const &config) {
 
   if (!config.segments_filename.empty()) {
     cosmors::write_segments(config.segments_filename, molecule.name(), solute,
-                             result.segments.atomic_number, rs, config.method,
-                             config.basis);
+                            params, config.method, config.basis);
     occ::log::info("wrote segment ensemble to {}", config.segments_filename);
   }
 
@@ -108,41 +107,39 @@ void run_cosmors_subcommand(CosmoRSConfig const &config) {
                     const std::string &label) {
     cosmors::ActivityOptions options;
     options.temperature = config.temperature;
-    cosmors::SolventModel model(solvent, rs, options);
+    cosmors::SolventModel model(solvent, params, options);
     auto energy = cosmors::solvation_free_energy(
-        model, solute, result.segments,
-        result.energy_conductor - result.energy_gas, num_rings,
-        config.liquid_volume, cosmors::SolvationParameters::v24a());
+        model, solute, result.energy_conductor - result.energy_gas, num_rings,
+        config.liquid_volume);
 
     const double k = occ::units::AU_TO_KJ_PER_MOL;
     occ::log::info("openCOSMO-RS 24a solvation free energy in '{}' at {:.2f} K "
                    "({} ring(s), kJ/mol)",
                    label, config.temperature, num_rings);
-    occ::log::info("  E_diel           {:10.3f}", energy.dielectric * k);
-    occ::log::info("  residual         {:10.3f}", energy.residual * k);
-    occ::log::info("  combinatorial    {:10.3f}", energy.combinatorial * k);
-    occ::log::info("  cavity           {:10.3f}", energy.cavity * k);
-    occ::log::info("  ring             {:10.3f}", energy.ring * k);
-    occ::log::info("  reference state  {:10.3f}", energy.reference_state * k);
-    occ::log::info("  constant         {:10.3f}", energy.constant * k);
+    occ::log::info("  dielectric       {:10.3f}   gas -> ideal conductor",
+                   energy.dielectric * k);
+    occ::log::info("  residual         {:10.3f}   RT ln(gamma_res)",
+                   energy.residual * k);
+    occ::log::info("  combinatorial    {:10.3f}   RT ln(gamma_comb)",
+                   energy.combinatorial * k);
+    occ::log::info("  van der Waals    {:10.3f}   -sum_a tau_a A_a",
+                   energy.vdw * k);
+    occ::log::info("  ring             {:10.3f}   -omega_ring n_ring",
+                   energy.ring * k);
+    occ::log::info("  reference state  {:10.3f}   -RT ln(v_gas/v_liquid)",
+                   energy.reference_state * k);
+    occ::log::info("  eta              {:10.3f}   fitted intercept",
+                   energy.eta * k);
     occ::log::info("  total            {:10.3f}", energy.total() * k);
   };
 
   // A cached solvent ensemble avoids recomputing the solvent cavity, which is
   // what makes a solvent screen cheap.
   if (!config.solvent.empty()) {
-    auto store = cosmors::SegmentStore::standard();
-    auto solvent = store.get(config.solvent);
-    if (solvent.r_av > 0.0 && std::abs(solvent.r_av - rs.r_av) > 1e-12)
-      throw std::runtime_error(fmt::format(
-          "solvent '{}' was averaged on r_av = {} but the parameters in use "
-          "specify {}",
-          config.solvent, solvent.r_av, rs.r_av));
-    if (!solvent.basis.empty() && solvent.basis != config.basis)
-      occ::log::warn("solvent '{}' segments were computed with {}/{} but this "
-                     "solute uses {}/{}; the descriptors are not comparable",
-                     config.solvent, solvent.method, solvent.basis,
-                     config.method, config.basis);
+    auto solvent =
+        cosmors::load_solvent(cosmors::SegmentStore::standard(),
+                              config.solvent, params, config.method,
+                              config.basis);
     report(solvent.component, config.solvent);
     return;
   }

@@ -4,6 +4,7 @@
 #include <fmt/os.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <occ/core/log.h>
 #include <occ/core/util.h>
 #include <occ/solvent/cosmors_io.h>
 #include <occ/solvent/parameters.h>
@@ -69,21 +70,19 @@ ComponentFile read_segments(const std::string &path) {
   out.component.area = Eigen::Map<Vec>(area.data(), n);
   out.component.volume = meta.value("volume [A^3]", 0.0);
   out.component.cavity_area = meta.value("area [A^2]", 0.0);
-  out.atomic_numbers = Eigen::Map<IVec>(atomic_numbers.data(), n);
+  out.component.atomic_number = Eigen::Map<IVec>(atomic_numbers.data(), n);
   out.method = meta.value("method", std::string{});
   out.basis = meta.value("basis", std::string{});
   return out;
 }
 
 void write_segments(const std::string &path, const std::string &name,
-                       const Component &component,
-                       const IVec &atomic_numbers,
-                       const Parameters &params, const std::string &method,
-                       const std::string &basis) {
+                    const Component &component, const Parameters &params,
+                    const std::string &method, const std::string &basis) {
   if (component.sigma_orth.size() != component.size())
     throw std::runtime_error(
         "write_segments: sigma_orth has not been computed");
-  if (atomic_numbers.size() != component.size())
+  if (component.atomic_number.size() != component.size())
     throw std::runtime_error(
         "write_segments: one atomic number per segment is required");
 
@@ -110,7 +109,7 @@ void write_segments(const std::string &path, const std::string &name,
   for (Eigen::Index i = 0; i < component.size(); i++)
     output.print("{:.14e} {:.14e} {:.14e} {:d}\n", component.sigma(i),
                  component.sigma_orth(i), component.area(i),
-                 atomic_numbers(i));
+                 component.atomic_number(i));
 }
 
 SegmentStore::SegmentStore(std::vector<std::string> search_paths)
@@ -159,6 +158,23 @@ std::vector<std::string> SegmentStore::available() const {
   }
   std::sort(names.begin(), names.end());
   return names;
+}
+
+ComponentFile load_solvent(const SegmentStore &store, const std::string &name,
+                           const Parameters &params,
+                           const std::string &method,
+                           const std::string &basis) {
+  auto file = store.get(name);
+  if (file.r_av > 0.0 && std::abs(file.r_av - params.r_av) > 1e-12)
+    throw std::runtime_error(fmt::format(
+        "solvent '{}' was averaged on r_av = {} but the parameters in use "
+        "specify {}; the descriptors are not comparable",
+        name, file.r_av, params.r_av));
+  if (!basis.empty() && !file.basis.empty() && file.basis != basis)
+    occ::log::warn("solvent '{}' segments were computed with {}/{} but this "
+                   "run uses {}/{}; the descriptors are not comparable",
+                   name, file.method, file.basis, method, basis);
+  return file;
 }
 
 } // namespace occ::solvent::cosmors

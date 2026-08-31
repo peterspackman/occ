@@ -14,6 +14,7 @@
 #include <occ/solvent/smd.h>
 #include <chrono>
 #include <fstream>
+#include <map>
 #include <nlohmann/json.hpp>
 #include <occ/dft/dft.h>
 #include <occ/core/element.h>
@@ -475,6 +476,53 @@ TEST_CASE("Ideal-conductor COSMO profile for water",
 #define OCC_TEST_DATA_DIR "data"
 #endif
 
+TEST_CASE("openCOSMO-RS 24a defaults are the published parameter set",
+          "[solvent][cosmors][parameters]") {
+  // The kernel, the combinatorial term and the free-energy assembly were
+  // regressed together, so `Parameters` carries all three and the defaults
+  // are the 24a set. This pins every one of them against the values the
+  // reference distribution ships, which is what keeps `v24a()` honest.
+  std::ifstream input(std::string(OCC_TEST_DATA_DIR) +
+                      "/cosmors_reference.json");
+  REQUIRE(input.good());
+  const auto block = nlohmann::json::parse(input).at("parameters");
+  const auto params = occ::solvent::cosmors::Parameters::v24a();
+
+  REQUIRE(block.at("a_eff").get<double>() == Catch::Approx(params.a_eff));
+  REQUIRE(block.at("r_av").get<double>() == Catch::Approx(params.r_av));
+  REQUIRE(block.at("mf_r_av_corr").get<double>() == Catch::Approx(params.r_corr));
+  REQUIRE(block.at("mf_alpha").get<double>() == Catch::Approx(params.mf_alpha));
+  REQUIRE(block.at("mf_f_corr").get<double>() ==
+          Catch::Approx(params.mf_f_corr));
+  REQUIRE(block.at("hb_c").get<double>() == Catch::Approx(params.hb_c));
+  REQUIRE(block.at("hb_c_T").get<double>() == Catch::Approx(params.hb_c_T));
+  REQUIRE(block.at("hb_sigma_thresh").get<double>() ==
+          Catch::Approx(params.hb_sigma_thresh));
+  REQUIRE(block.at("comb_sg_z_coord").get<double>() ==
+          Catch::Approx(params.comb_z));
+  REQUIRE(block.at("comb_sg_a_std").get<double>() ==
+          Catch::Approx(params.comb_a_std));
+  REQUIRE(block.at("eta").get<double>() == Catch::Approx(params.eta));
+  REQUIRE(block.at("omega_ring").get<double>() ==
+          Catch::Approx(params.omega_ring));
+
+  const auto tau = block.at("tau").get<std::map<std::string, double>>();
+  REQUIRE(tau.size() == params.tau.size());
+  for (const auto &[z, value] : tau) {
+    const auto entry = params.tau.find(std::stoi(z));
+    REQUIRE(entry != params.tau.end());
+    REQUIRE(entry->second == Catch::Approx(value));
+  }
+
+  // The default-constructed set must be the named one, since that is what
+  // every default argument in the module resolves to.
+  const occ::solvent::cosmors::Parameters defaults;
+  REQUIRE(defaults.a_eff == params.a_eff);
+  REQUIRE(defaults.eta == params.eta);
+  REQUIRE(defaults.omega_ring == params.omega_ring);
+  REQUIRE(defaults.tau.size() == params.tau.size());
+}
+
 TEST_CASE("sigma and sigma_orth reproduce the openCOSMO-RS reference",
           "[solvent][cosmors][validation]") {
   // tests/data/cosmors_reference.json carries the reference's own
@@ -670,9 +718,8 @@ TEST_CASE("openCOSMO-RS segment ensembles survive a round trip",
   const auto path = (std::filesystem::temp_directory_path() /
                      "occ_rsseg_roundtrip.rsseg")
                         .string();
-  occ::solvent::cosmors::write_segments(path, "acetone", original,
-                                         segments.atomic_number, params,
-                                         "b3lyp", "6-31g**");
+  occ::solvent::cosmors::write_segments(path, "acetone", original, params,
+                                        "b3lyp", "6-31g**");
   auto loaded = occ::solvent::cosmors::read_segments(path);
   std::filesystem::remove(path);
 
@@ -690,8 +737,9 @@ TEST_CASE("openCOSMO-RS segment ensembles survive a round trip",
               .maxCoeff() < 1e-15);
   REQUIRE((loaded.component.area - original.area).cwiseAbs().maxCoeff() <
           1e-15);
-  REQUIRE((loaded.atomic_numbers - segments.atomic_number).cwiseAbs().sum() ==
-          0);
+  REQUIRE((loaded.component.atomic_number - segments.atomic_number)
+              .cwiseAbs()
+              .sum() == 0);
   REQUIRE(std::abs(loaded.component.total_area() - original.total_area()) <
           1e-12);
 
@@ -769,11 +817,9 @@ TEST_CASE("openCOSMO-RS hydration free energies land near experiment",
   auto json = nlohmann::json::parse(input);
 
   auto params = occ::solvent::cosmors::Parameters::v24a();
-  auto solvation = occ::solvent::cosmors::SolvationParameters::v24a();
 
   struct Entry {
     Component component;
-    occ::solvent::cosmors::Segments segments;
     double dielectric;
   };
   ankerl::unordered_dense::map<std::string, Entry> molecules;
@@ -807,9 +853,8 @@ TEST_CASE("openCOSMO-RS hydration free energies land near experiment",
     molecules.emplace(
         name,
         Entry{Component::from_segments(segments,
-                                         block.at("volume").get<double>(),
-                                         block.at("area").get<double>()),
-              segments,
+                                       block.at("volume").get<double>(),
+                                       block.at("area").get<double>()),
               block.at("energy_dielectric").get<double>() /
                   occ::units::AU_TO_KJ_PER_MOL});
   }
@@ -836,21 +881,20 @@ TEST_CASE("openCOSMO-RS hydration free energies land near experiment",
 
   fmt::print("\nopenCOSMO-RS 24a hydration free energies (kJ/mol)\n");
   fmt::print("{:10s} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8} | {:>8} {:>8}\n",
-             "solute", "E_diel", "res", "comb", "cavity", "ref.st", "const",
+             "solute", "E_diel", "res", "comb", "vdw", "ref.st", "eta",
              "total", "exp");
   double worst = 0.0;
   std::vector<double> deviations;
   for (const auto &c : cases) {
     const auto &entry = molecules.at(c.name);
     auto energy = occ::solvent::cosmors::solvation_free_energy(
-        water, entry.component, entry.segments, entry.dielectric, c.rings,
-        c.volume_liquid, solvation);
+        water, entry.component, entry.dielectric, c.rings, c.volume_liquid);
     const double k = occ::units::AU_TO_KJ_PER_MOL;
     fmt::print("{:10s} {:8.2f} {:8.2f} {:8.2f} {:8.2f} {:8.2f} {:8.2f} | "
                "{:8.2f} {:8.2f}\n",
                c.name, energy.dielectric * k, energy.residual * k,
-               energy.combinatorial * k, energy.cavity * k,
-               energy.reference_state * k, energy.constant * k,
+               energy.combinatorial * k, energy.vdw * k,
+               energy.reference_state * k, energy.eta * k,
                energy.total() * k, c.experiment);
     const double deviation = energy.total() * k - c.experiment;
     worst = std::max(worst, std::abs(deviation));

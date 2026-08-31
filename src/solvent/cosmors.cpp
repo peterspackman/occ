@@ -10,29 +10,6 @@
 
 namespace occ::solvent::cosmors {
 
-SolvationParameters SolvationParameters::v24a() {
-  // openCOSMO-RS 24a, as distributed with openCOSMO-RS_py
-  // (TUHH-TVT/openCOSMO-RS_py, parameterization.py). kcal/mol/Å².
-  SolvationParameters params;
-  params.tau = {
-      {1, 2.933803e-02},  // H
-      {6, 2.287904e-02},  // C
-      {7, 7.007681e-04},  // N
-      {8, 3.545052e-03},  // O
-      {9, 5.608829e-03},  // F
-      {14, 4.215503e-03}, // Si
-      {15, 3.607977e-03}, // P
-      {16, 3.498700e-02}, // S
-      {17, 3.414282e-02}, // Cl
-      {35, 4.085111e-02}, // Br
-  };
-  params.eta = -4.448499;       // kcal/mol
-  params.omega_ring = 2.6302510e-01; // kcal/mol
-  return params;
-}
-
-Parameters Parameters::v24a() { return Parameters{}; }
-
 Component Component::from_segments(const Segments &segments, double volume,
                                        double cavity_area) {
   if (segments.sigma_orth.size() != segments.size())
@@ -42,6 +19,7 @@ Component Component::from_segments(const Segments &segments, double volume,
   out.sigma = segments.sigma_averaged;
   out.sigma_orth = segments.sigma_orth;
   out.area = segments.areas;
+  out.atomic_number = segments.atomic_number;
   out.volume = volume;
   out.cavity_area = cavity_area;
   return out;
@@ -67,6 +45,7 @@ Component mix_components(const std::vector<Component> &components,
   out.sigma = Vec(total);
   out.sigma_orth = Vec(total);
   out.area = Vec(total);
+  out.atomic_number = IVec::Zero(total);
 
   Eigen::Index at = 0;
   for (size_t m = 0; m < components.size(); m++) {
@@ -75,6 +54,8 @@ Component mix_components(const std::vector<Component> &components,
     out.sigma.segment(at, c.size()) = c.sigma;
     out.sigma_orth.segment(at, c.size()) = c.sigma_orth;
     out.area.segment(at, c.size()) = x * c.area;
+    if (c.atomic_number.size() == c.size())
+      out.atomic_number.segment(at, c.size()) = c.atomic_number;
     out.volume += x * c.volume;
     out.cavity_area += x * c.total_area();
     at += c.size();
@@ -100,7 +81,7 @@ Mat interaction_energies(const Component &a, const Component &b,
   };
 
   const double scale =
-      1.0 - params.hb_c_T + params.hb_c_T * (298.15 / temperature);
+      1.0 - params.hb_c_T + params.hb_c_T * (params.hb_t_ref / temperature);
   const double hb_prefactor =
       (scale > 0.0) ? params.hb_c * scale * params.a_eff : 0.0;
 
@@ -295,44 +276,47 @@ double SolventModel::combinatorial_energy(const Component &solute) const {
   return rt * ln_gamma / (occ::units::AU_TO_KJ_PER_MOL * 1000.0);
 }
 
-SolvationEnergy solvation_free_energy(
-    const SolventModel &solvent, const Component &solute,
-    const Segments &segments, double dielectric, int num_rings,
-    double volume_liquid, const SolvationParameters &solvation_params) {
+SolvationEnergy solvation_free_energy(const SolventModel &solvent,
+                                      const Component &solute,
+                                      double dielectric, int num_rings,
+                                      double volume_liquid) {
+  const auto &params = solvent.parameters();
+  const double temperature = solvent.options().temperature;
+  const double kcal_to_hartree = 1.0 / occ::units::AU_TO_KCAL_PER_MOL;
+
   SolvationEnergy out;
   out.dielectric = dielectric;
   out.residual = solvent.residual_energy(solute);
   out.combinatorial = solvent.combinatorial_energy(solute);
-  out.cavity = segment_cavity_energies(segments, solvation_params).sum();
-
-  const double to_hartree = 1.0 / occ::units::AU_TO_KCAL_PER_MOL;
-  out.ring = -solvation_params.omega_ring * num_rings * to_hartree;
-  out.constant = -solvation_params.eta * to_hartree;
+  out.vdw = segment_vdw_energies(solute, params).sum();
+  out.ring = -params.omega_ring * num_rings * kcal_to_hartree;
+  out.eta = -params.eta * kcal_to_hartree;
 
   if (volume_liquid > 0.0) {
+    // Volume of one molecule of ideal gas at `temperature` and 1 bar, in A^3,
+    // so the ratio against the liquid volume is dimensionless.
     constexpr double bar_in_pascal = 1.0e5;
     constexpr double cubic_metre_in_cubic_angstrom = 1.0e30;
-    const double temperature = solvent.options().temperature;
     const double volume_gas = occ::constants::boltzmann<double> * temperature /
                               bar_in_pascal * cubic_metre_in_cubic_angstrom;
-    const double rt =
+    const double rt_kj =
         occ::constants::molar_gas_constant<double> * temperature / 1000.0;
-    out.reference_state = -(rt * std::log(volume_gas / volume_liquid)) /
+    out.reference_state = -(rt_kj * std::log(volume_gas / volume_liquid)) /
                           occ::units::AU_TO_KJ_PER_MOL;
   }
   return out;
 }
 
-Vec segment_cavity_energies(const Segments &segments,
-                            const SolvationParameters &params) {
-  const Eigen::Index n = segments.size();
+Vec segment_vdw_energies(const Component &component,
+                         const Parameters &params) {
+  const Eigen::Index n = component.size();
   Vec out = Vec::Zero(n);
-  const double to_hartree = 1.0 / occ::units::AU_TO_KCAL_PER_MOL;
+  const double kcal_to_hartree = 1.0 / occ::units::AU_TO_KCAL_PER_MOL;
   for (Eigen::Index i = 0; i < n; i++) {
-    const auto entry = params.tau.find(segments.atomic_number(i));
+    const auto entry = params.tau.find(component.atomic_number(i));
     if (entry == params.tau.end())
       continue;
-    out(i) = -entry->second * segments.areas(i) * to_hartree;
+    out(i) = -entry->second * component.area(i) * kcal_to_hartree;
   }
   return out;
 }
@@ -344,11 +328,11 @@ int ring_count(const core::Molecule &molecule) {
                               static_cast<int>(molecule.size()) + 1);
 }
 
-std::vector<int> unparameterised_elements(const Segments &segments,
-                                          const SolvationParameters &params) {
+std::vector<int> unparameterised_elements(const Component &component,
+                                          const Parameters &params) {
   std::vector<int> missing;
-  for (Eigen::Index i = 0; i < segments.size(); i++) {
-    const int z = segments.atomic_number(i);
+  for (Eigen::Index i = 0; i < component.size(); i++) {
+    const int z = component.atomic_number(i);
     if (params.tau.contains(z))
       continue;
     if (std::find(missing.begin(), missing.end(), z) == missing.end())
@@ -359,33 +343,11 @@ std::vector<int> unparameterised_elements(const Segments &segments,
 }
 
 ankerl::unordered_dense::map<int, double>
-area_per_element(const Segments &segments) {
+area_per_element(const Component &component) {
   ankerl::unordered_dense::map<int, double> out;
-  for (Eigen::Index i = 0; i < segments.size(); i++)
-    out[segments.atomic_number(i)] += segments.areas(i);
+  for (Eigen::Index i = 0; i < component.size(); i++)
+    out[component.atomic_number(i)] += component.area(i);
   return out;
-}
-
-double molecular_solvation_terms(int num_rings, double volume_liquid,
-                                 double temperature,
-                                 const SolvationParameters &params) {
-  const double to_hartree = 1.0 / occ::units::AU_TO_KCAL_PER_MOL;
-  double total = -params.omega_ring * num_rings * to_hartree;
-  total -= params.eta * to_hartree;
-
-  if (volume_liquid > 0.0) {
-    // Ideal gas volume per molecule at `temperature` and 1 bar, in Å³, so
-    // the ratio matches `volume_liquid`.
-    constexpr double bar_in_pascal = 1.0e5;
-    constexpr double cubic_metre_in_cubic_angstrom = 1.0e30;
-    const double volume_gas = occ::constants::boltzmann<double> * temperature /
-                              bar_in_pascal * cubic_metre_in_cubic_angstrom;
-    const double rt =
-        occ::constants::molar_gas_constant<double> * temperature / 1000.0;
-    total -= (rt * std::log(volume_gas / volume_liquid)) /
-             occ::units::AU_TO_KJ_PER_MOL;
-  }
-  return total;
 }
 
 } // namespace occ::solvent::cosmors
