@@ -231,7 +231,6 @@ namespace {
 /// Inputs to the solvated neighbour loop that do not depend on how the dimer
 /// energies were produced.
 struct SolvatedNeighborInputs {
-  const crystal::Crystal &crystal;
   const crystal::CrystalDimers::MoleculeNeighbors &full_neighbors;
   const crystal::CrystalDimers::MoleculeNeighbors &nearest_neighbors;
   const cg::SolvationData &solvation;
@@ -264,7 +263,7 @@ cg::MoleculeResult assemble_solvated_neighbors(
     const SolvatedNeighborInputs &in, EnergyFn &&crystal_energy,
     cg::DimerResults &interactions, cg::DimerResults &interactions_crystal) {
 
-  cg::SolventSurfacePartitioner partitioner(in.crystal, in.full_neighbors);
+  cg::SolventSurfacePartitioner partitioner(in.full_neighbors);
   partitioner.set_should_antisymmetrize(in.antisymmetrize);
   partitioner.set_basename(in.molname);
   partitioner.set_use_normalized_distance(false);
@@ -398,12 +397,12 @@ cg::MoleculeResult assemble_solvated_neighbors(
     occ::log::warn(std::string(header.size(), '='));
 
     for (const auto &row : descriptor_rows) {
-      std::string line = fmt::format("{:>4d} {:<28s}", row.unique_idx,
-                                     row.label);
+      std::string line =
+          fmt::format("{:>4d} {:<28s}", row.unique_idx, row.label);
       for (const auto &channel : channels) {
         const auto it = row.values.find(channel);
-        line += fmt::format(" {:16.4f}",
-                            it == row.values.end() ? 0.0 : it->second);
+        line +=
+            fmt::format(" {:16.4f}", it == row.values.end() ? 0.0 : it->second);
       }
       occ::log::warn("{}", line);
     }
@@ -459,7 +458,6 @@ CEModelCrystalGrowthCalculator::CEModelCrystalGrowthCalculator(
     const CrystalGrowthCalculatorOptions &options)
     : CrystalGrowthCalculator(crystal, options) {}
 
-
 void CEModelCrystalGrowthCalculator::init_monomer_energies() {
   const auto &opts = options();
   {
@@ -480,10 +478,12 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
     CGSolvationSettings settings;
     settings.method = parameterized_model.method;
     settings.basis = parameterized_model.basis;
+    settings.probe_radius_angs = opts.solvent_probe_radius;
     // Dissolving a crystal, the cell gives the condensed-phase volume per
     // molecule directly; openCOSMO-RS uses it for its reference-state term.
     if (const auto n = m_crystal.unit_cell_molecules().size(); n > 0)
-      settings.volume_per_molecule = m_crystal.volume() / static_cast<double>(n);
+      settings.volume_per_molecule =
+          m_crystal.volume() / static_cast<double>(n);
 
     auto spec = SolventSpec::parse(opts.solvent);
     spec.temperature = opts.temperature;
@@ -568,19 +568,18 @@ CEModelCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
     int i, const std::string &molname) {
   const auto &opts = options();
 
-  SolvatedNeighborInputs in{crystal(),
-                            m_full_dimers.molecule_neighbors[i],
-                            m_nearest_dimers.molecule_neighbors[i],
-                            m_solvated_surface_properties[i],
-                            molname,
-                            m_dimer_energies.size(),
-                            opts.use_asymmetric_partition,
-                            opts.write_debug_output_files,
-                            opts.inner_radius,
-                            m_solvated_surface_properties[i]
-                                    .total_solvation_energy *
-                                occ::units::AU_TO_KJ_PER_MOL,
-                            opts.print_solvation_descriptors};
+  SolvatedNeighborInputs in{
+      .full_neighbors = m_full_dimers.molecule_neighbors[i],
+      .nearest_neighbors = m_nearest_dimers.molecule_neighbors[i],
+      .solvation = m_solvated_surface_properties[i],
+      .molname = molname,
+      .num_unique_dimers = m_dimer_energies.size(),
+      .antisymmetrize = opts.use_asymmetric_partition,
+      .write_surface_files = opts.write_debug_output_files,
+      .inner_radius = opts.inner_radius,
+      .solution_term = m_solvated_surface_properties[i].total_solvation_energy *
+                       occ::units::AU_TO_KJ_PER_MOL,
+      .print_descriptors = opts.print_solvation_descriptors};
 
   auto crystal_energy = [this](size_t idx) {
     const auto &e = m_dimer_energies[idx];
@@ -736,8 +735,7 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
     // crystal neighbour list replace that.
     {
       occ::xtb::XtbCalculator xtb(m);
-      auto smd =
-          std::make_shared<occ::xtb::SmdSolvationModel>(opts.solvent);
+      auto smd = std::make_shared<occ::xtb::SmdSolvationModel>(opts.solvent);
       xtb.set_solvation_model(smd);
       occ::log::info("Solvation: {} (in-tree SmdSolvationModel)", opts.solvent);
       sw_solv.start();
@@ -771,18 +769,18 @@ XTBCrystalGrowthCalculator::process_neighbors_for_symmetry_unique_molecule(
     int i, const std::string &molname) {
   const auto &opts = options();
 
-  SolvatedNeighborInputs in{crystal(),
-                            m_full_dimers.molecule_neighbors[i],
-                            m_nearest_dimers.molecule_neighbors[i],
-                            m_solvated_surface_properties[i],
-                            molname,
-                            m_dimer_energies.size(),
-                            opts.use_asymmetric_partition,
-                            opts.write_debug_output_files,
-                            opts.inner_radius,
-                            (m_solvated_energies[i] - m_gas_phase_energies[i]) *
-                                occ::units::AU_TO_KJ_PER_MOL,
-                            opts.print_solvation_descriptors};
+  SolvatedNeighborInputs in{
+      .full_neighbors = m_full_dimers.molecule_neighbors[i],
+      .nearest_neighbors = m_nearest_dimers.molecule_neighbors[i],
+      .solvation = m_solvated_surface_properties[i],
+      .molname = molname,
+      .num_unique_dimers = m_dimer_energies.size(),
+      .antisymmetrize = opts.use_asymmetric_partition,
+      .write_surface_files = opts.write_debug_output_files,
+      .inner_radius = opts.inner_radius,
+      .solution_term = (m_solvated_energies[i] - m_gas_phase_energies[i]) *
+                       occ::units::AU_TO_KJ_PER_MOL,
+      .print_descriptors = opts.print_solvation_descriptors};
 
   auto crystal_energy = [this](size_t idx) {
     DimerCrystalEnergy out;

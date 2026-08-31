@@ -42,8 +42,6 @@ struct SolvationData {
 
   double total_solvation_energy{0.0};
   double electronic_contribution{0.0};
-  double gas_phase_contribution{0.0};
-  double free_energy_correction{0.0};
 
   [[nodiscard]] double total_energy() const;
   [[nodiscard]] const CavitySurface *find(std::string_view name) const;

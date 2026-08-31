@@ -56,8 +56,10 @@ public:
   [[nodiscard]] bool antisymmetrize() const { return m_antisymmetrize; }
   void set_antisymmetrize(bool on) { m_antisymmetrize = on; }
 
-  // Named accessors for the SMD channels, kept so existing callers and tests
-  // read unchanged.
+  // Named accessors for the SMD channels. Only the tests use them now, since
+  // the channels are addressed by name everywhere else; they stay because a
+  // test that names the channel it means is easier to read than one that
+  // spells "coulomb" as a string literal.
   void add_coulomb(double value, bool is_forward = true) {
     add_energy("coulomb", value, is_forward);
   }
@@ -82,7 +84,8 @@ public:
   }
 
 private:
-  using ChannelMap = ankerl::unordered_dense::map<std::string, ContributionPair>;
+  using ChannelMap =
+      ankerl::unordered_dense::map<std::string, ContributionPair>;
   ChannelMap m_energies;
   ChannelMap m_descriptors;
   bool m_exchanged{false};

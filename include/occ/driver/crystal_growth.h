@@ -40,6 +40,9 @@ struct CrystalGrowthCalculatorOptions {
   /// Which solvation model supplies the per-element surfaces.
   SolvationModelKind solvation_model{SolvationModelKind::Smd};
   double temperature{298.15};
+  /// Solvent probe radius for the conductor cavity, Angstrom. Only the
+  /// cosmo-rs model builds one; SMD has its own cavity construction.
+  double solvent_probe_radius{0.0};
   std::string basename{"calculation"};
   std::string energy_model{"ce-b3lyp"};
 

@@ -41,7 +41,8 @@ OCC provides comprehensive functionality for ground-state single-point calculati
     - Global hybrid functionals (range-separated support planned)
   - Density fitting (RI-JK) with auxiliary basis sets
   - GFN2-xTB semi-empirical tight-binding (molecular + periodic; see below)
-  - Implicit solvation via SMD, CPCM-X for xTB
+  - Implicit solvation: SMD, and openCOSMO-RS 24a (`occ cosmo-rs`,
+    or `occ cg --solvation-model cosmo-rs`); CPCM-X for xTB
   - XDM dispersion model
   - D4 (DFT-D4) dispersion correction
 

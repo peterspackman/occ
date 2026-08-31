@@ -77,9 +77,9 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   // spread by area over the electrostatic cavity as its own channel.
   if (auto *cavity = occ::cg::coulomb_cavity(surfaces)) {
     cavity->energies.push_back(
-        {"electronic", (surfaces.electronic_contribution /
-                        cavity->areas.array().sum()) *
-                           cavity->areas.array()});
+        {"electronic",
+         (surfaces.electronic_contribution / cavity->areas.array().sum()) *
+             cavity->areas.array()});
   }
 
   return {surfaces, solvated_wfn};
@@ -106,20 +106,6 @@ void SMDCalculator::calculate_free_energy_components(
     double original_energy, double solvated_energy,
     double surface_energy) const {
 
-  // Calculate rotational and translational contributions
-  double Gr = mol.rotational_free_energy(m_settings.temperature);
-  occ::core::MolecularPointGroup pg(mol);
-  double Gt = mol.translational_free_energy(m_settings.temperature);
-
-  // Temperature-dependent terms
-  const double R = 8.31446261815324;
-  const double RT = m_settings.temperature * R / 1000;
-  Gr += RT * std::log(pg.symmetry_number());
-
-  // Set free energy components
-  surfaces.free_energy_correction =
-      (1.89 / occ::units::KJ_TO_KCAL - 2 * RT) / occ::units::AU_TO_KJ_PER_MOL;
-  surfaces.gas_phase_contribution = (Gt + Gr) / occ::units::AU_TO_KJ_PER_MOL;
   surfaces.electronic_contribution =
       solvated_energy - original_energy - surface_energy;
   surfaces.total_solvation_energy = solvated_energy - original_energy;

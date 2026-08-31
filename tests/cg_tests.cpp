@@ -3,8 +3,8 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <occ/cg/cg_json.h>
 #include <occ/cg/distance_partition.h>
-#include <occ/cg/result_types.h>
 #include <occ/cg/neighbor_atoms.h>
+#include <occ/cg/result_types.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/core/data_directory.h>
 #include <occ/core/units.h>
@@ -419,7 +419,7 @@ TEST_CASE("CG: SolvationData round-trips through JSON", "[cg]") {
   add_cavity(data, "cds", occ::Mat3N::Random(3, 3), occ::Vec::Ones(3) * 2.0,
              occ::Vec::Ones(3) * -0.1);
   data.total_solvation_energy = -1.3;
-  data.gas_phase_contribution = 0.4;
+  data.electronic_contribution = 0.4;
 
   nlohmann::json j = data;
   auto restored = j.get<SolvationData>();
@@ -427,7 +427,7 @@ TEST_CASE("CG: SolvationData round-trips through JSON", "[cg]") {
   REQUIRE(restored.cavities.size() == 2);
   CHECK(restored.total_energy() == Approx(data.total_energy()));
   CHECK(restored.total_solvation_energy == data.total_solvation_energy);
-  CHECK(restored.gas_phase_contribution == data.gas_phase_contribution);
+  CHECK(restored.electronic_contribution == data.electronic_contribution);
 
   const auto *c = restored.find("coulomb");
   REQUIRE(c != nullptr);
@@ -491,15 +491,14 @@ TEST_CASE("CG: SolventSurfacePartitioner with acetic acid crystal",
     // Two cavities on the same points, as SMD would produce.
     const Eigen::Index n = solvent_surface.vertices.cols();
     SolvationData surface;
-    auto &coulomb =
-        add_cavity(surface, "coulomb", solvent_surface.vertices,
-                   solvent_surface.areas, occ::Vec::Ones(n) * -0.5);
+    auto &coulomb = add_cavity(surface, "coulomb", solvent_surface.vertices,
+                               solvent_surface.areas, occ::Vec::Ones(n) * -0.5);
     coulomb.energies.push_back({"electronic", occ::Vec::Ones(n) * -0.2});
     add_cavity(surface, "cds", solvent_surface.vertices, solvent_surface.areas,
                occ::Vec::Ones(n) * -0.3);
 
     // Create partitioner
-    SolventSurfacePartitioner partitioner(crystal, neighbors);
+    SolventSurfacePartitioner partitioner(neighbors);
     partitioner.set_should_write_surface_files(false);
 
     SECTION("Standard distances") {
@@ -645,7 +644,7 @@ TEST_CASE("CG: xtb SMD surfaces partition through acetic-acid crystal",
   // ---------------------------------------------------------------
   // SolventSurfacePartitioner over the crystal's neighbour list.
   // ---------------------------------------------------------------
-  SolventSurfacePartitioner partitioner(crystal, neighbors);
+  SolventSurfacePartitioner partitioner(neighbors);
   partitioner.set_should_write_surface_files(false);
   partitioner.set_use_normalized_distance(false);
   auto contributions = partitioner.partition(neighbors, cg_surfs);

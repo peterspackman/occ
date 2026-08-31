@@ -5,9 +5,8 @@
 namespace occ::cg {
 
 SolventSurfacePartitioner::SolventSurfacePartitioner(
-    const crystal::Crystal &crystal,
-    const SolventSurfacePartitioner::NeighborList &neighbors)
-    : m_crystal(crystal), m_neighbors(neighbors) {}
+    const NeighborList &neighbors)
+    : m_neighbors(neighbors) {}
 
 void SolventSurfacePartitioner::set_basename(const std::string &name) {
   m_basename = name;

@@ -104,6 +104,8 @@ struct CGSolvationSettings {
   std::string basis{"6-31g**"};
   bool pure_spherical{false};
   int angular_points{590};
+  /// Solvent probe radius used to build the conductor cavity, Angstrom.
+  double probe_radius_angs{0.0};
   /// Crystal volume per molecule, A^3. openCOSMO-RS needs a condensed-phase
   /// volume for its reference-state term; dissolving a crystal, the cell
   /// supplies it directly. Zero leaves that term out.

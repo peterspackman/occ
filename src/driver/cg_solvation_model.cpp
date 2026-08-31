@@ -190,6 +190,7 @@ public:
     settings.basis = m_settings.basis;
     settings.pure_spherical = m_settings.pure_spherical;
     settings.angular_points = m_settings.angular_points;
+    settings.probe_radius_angs = m_settings.probe_radius_angs;
     settings.temperature = solvent.temperature;
     settings.volume_per_molecule = m_settings.volume_per_molecule;
     return cosmors_solvation(basename, molecules, gas_wavefunctions, solvent,

@@ -26,13 +26,16 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "DMA multipoles + element-based exp-6 (Williams-DE)\n"
                  "  fit, w99                                        "
                  "DMA multipoles + typed exp-6 (FIT / Williams-99)");
-  cg->add_option("--dma-model", config->dma_reference.model,
-                 "DMA reference model implying method+basis (default ce-b3lyp); "
-                 "only used by the dma/williams models");
-  cg->add_option("--dma-method", config->dma_reference.method,
-                 "override the DMA reference QM method (default: from --dma-model)");
-  cg->add_option("--dma-basis", config->dma_reference.basis,
-                 "override the DMA reference basis set (default: from --dma-model)");
+  cg->add_option(
+      "--dma-model", config->dma_reference.model,
+      "DMA reference model implying method+basis (default ce-b3lyp); "
+      "only used by the dma/williams models");
+  cg->add_option(
+      "--dma-method", config->dma_reference.method,
+      "override the DMA reference QM method (default: from --dma-model)");
+  cg->add_option(
+      "--dma-basis", config->dma_reference.basis,
+      "override the DMA reference basis set (default: from --dma-model)");
   cg->add_option(
       "--convergence-threshold,--convergence_threshold",
       config->lattice_settings.energy_tolerance,
@@ -47,6 +50,9 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "solvation model: smd (default), cosmo-rs, none");
   cg->add_option("--temperature", config->temperature,
                  "temperature in K for the solvation model");
+  cg->add_option("--solvent-probe", config->solvent_probe_radius,
+                 "solvent probe radius (Angstrom) for the conductor cavity "
+                 "(cosmo-rs only; SMD builds its own cavity)");
   cg->add_flag("--solvation-descriptors", config->print_solvation_descriptors,
                "print a per-contact table of solvation descriptors; which "
                "ones are available depends on the solvation model");

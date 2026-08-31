@@ -8,11 +8,9 @@ namespace occ::cg {
 class SolventSurfacePartitioner {
 public:
   using NeighborList = crystal::CrystalDimers::MoleculeNeighbors;
-  SolventSurfacePartitioner(const crystal::Crystal &crystal,
-                            const NeighborList &full_neighbors);
+  explicit SolventSurfacePartitioner(const NeighborList &full_neighbors);
 
   void set_basename(const std::string &);
-  [[nodiscard]] inline const auto &basename() const { return m_basename; }
 
   void set_should_write_surface_files(bool);
   [[nodiscard]] inline bool should_write_surface_files() const {
@@ -31,7 +29,6 @@ public:
   [[nodiscard]] std::vector<SolvationContribution>
   partition(const NeighborList &nearest, const SolvationData &surface);
 
-
   [[nodiscard]] inline bool should_antisymmetrize() const {
     return m_antisymmetrize;
   }
@@ -48,7 +45,6 @@ private:
   bool m_antisymmetrize{true};
   bool m_use_dnorm{true};
   bool m_should_write_surface_files{true};
-  const crystal::Crystal &m_crystal;
   const crystal::CrystalDimers::MoleculeNeighbors &m_neighbors;
 };
 

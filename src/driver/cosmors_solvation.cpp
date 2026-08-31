@@ -24,6 +24,7 @@ qm::Wavefunction conductor_wavefunction(const std::string &cache_path,
   profile_settings.basis = settings.basis;
   profile_settings.pure_spherical = settings.pure_spherical;
   profile_settings.angular_points = settings.angular_points;
+  profile_settings.probe_radius_angs = settings.probe_radius_angs;
 
   auto result = conductor_profile(gas, profile_settings);
   auto wavefunction = result.wavefunction;
@@ -84,9 +85,9 @@ cosmors_solvation(const std::string &basename,
         conductor_wavefunction(cache, gas_wavefunctions[i], settings);
     Vec dielectric;
     double cavity_volume = 0.0;
-    auto segments =
-        conductor_segments(wavefunction, params, 0.0, settings.angular_points,
-                           true, &dielectric, &cavity_volume);
+    auto segments = conductor_segments(
+        wavefunction, params, settings.probe_radius_angs,
+        settings.angular_points, true, &dielectric, &cavity_volume);
 
     auto solute = solvent::cosmors::Component::from_segments(
         segments, cavity_volume, segments.total_area());

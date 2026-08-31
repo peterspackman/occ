@@ -19,6 +19,7 @@ struct CGConfig {
   std::string solvation_model{"smd"};
   bool print_solvation_descriptors{false};
   double temperature{298.15};
+  double solvent_probe_radius{0.0};
   DMAReferenceLevel dma_reference;
   std::string charge_string{""};
   std::string wavefunction_choice{"gas"};

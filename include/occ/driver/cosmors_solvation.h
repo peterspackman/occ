@@ -14,6 +14,9 @@ struct CosmoRSSettings {
   std::string basis{"def2-tzvp"};
   bool pure_spherical{true};
   int angular_points{590};
+  /// Solvent probe radius used to build the cavity, Angstrom. Zero is the
+  /// COSMO convention: the cavity is the scaled van der Waals surface.
+  double probe_radius_angs{0.0};
   double temperature{298.15};
   /// Condensed-phase volume per solute molecule, A^3, for the reference-state
   /// term. Zero leaves that term out.

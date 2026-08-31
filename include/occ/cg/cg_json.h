@@ -10,8 +10,6 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CavitySurface, name, positions, areas,
                                    energies, descriptors);
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SolvationData, cavities,
                                    total_solvation_energy,
-                                   electronic_contribution,
-                                   gas_phase_contribution,
-                                   free_energy_correction);
+                                   electronic_contribution);
 
 } // namespace occ::cg

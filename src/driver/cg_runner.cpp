@@ -5,9 +5,12 @@
 #include <occ/core/point_group.h>
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/dft/dft.h>
+#include <occ/driver/cg_pipeline.h>
+#include <occ/driver/cg_runner.h>
+#include <occ/driver/cg_solvation_model.h>
 #include <occ/driver/crystal_growth.h>
 #include <occ/driver/crystal_morphology.h>
-#include <optional>
+#include <occ/driver/crystal_surface_energy.h>
 #include <occ/geometry/wulff.h>
 #include <occ/interaction/disp.h>
 #include <occ/interaction/polarization.h>
@@ -18,17 +21,14 @@
 #include <occ/io/kmcpp.h>
 #include <occ/io/load_geometry.h>
 #include <occ/io/occ_input.h>
-#include <occ/isosurface/ply.h>
-#include <occ/qm/io/wavefunction_json.h>
 #include <occ/io/xyz.h>
-#include <occ/driver/cg_pipeline.h>
-#include <occ/driver/cg_runner.h>
-#include <occ/driver/cg_solvation_model.h>
-#include <occ/driver/crystal_surface_energy.h>
+#include <occ/isosurface/ply.h>
 #include <occ/qm/hf.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/solvent/solvation_correction.h>
+#include <optional>
 
 namespace fs = std::filesystem;
 using occ::cg::CrystalGrowthResult;
@@ -285,6 +285,7 @@ CGPreparation prepare_cg(CGConfig const &config) {
   opts.solvation_model = parse_solvation_model(config.solvation_model);
   opts.print_solvation_descriptors = config.print_solvation_descriptors;
   opts.temperature = config.temperature;
+  opts.solvent_probe_radius = config.solvent_probe_radius;
   opts.basename = basename;
   opts.write_debug_output_files = config.write_dump_files;
   opts.energy_model = config.lattice_settings.model_name;
@@ -375,10 +376,9 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
     to_json(morphology_json, result.morphology);
   }
 
-  auto cg_interaction_labels =
-      write_cg_net_file(fmt::format("{}_{}_net.txt", basename,
-                                    opts.solvent_tag),
-                        calc.crystal(), uc_dimers);
+  auto cg_interaction_labels = write_cg_net_file(
+      fmt::format("{}_{}_net.txt", basename, opts.solvent_tag), calc.crystal(),
+      uc_dimers);
 
   nlohmann::json results_json;
   serialize_cg_results(results_json, opts, calc.crystal());
