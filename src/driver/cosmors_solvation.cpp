@@ -51,7 +51,10 @@ cosmors_solvation(const std::string &basename,
   solvent::cosmors::ActivityOptions options;
   options.temperature = settings.temperature;
 
-  const auto store = solvent::cosmors::SegmentStore::standard();
+  const auto store = settings.segment_search_paths.empty()
+                         ? solvent::cosmors::SegmentStore::standard()
+                         : solvent::cosmors::SegmentStore(
+                               settings.segment_search_paths);
   std::vector<solvent::cosmors::Component> components;
   components.reserve(solvent.components.size());
   for (const auto &name : solvent.components)

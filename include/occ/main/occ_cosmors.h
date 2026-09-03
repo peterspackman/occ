@@ -8,7 +8,8 @@ struct CosmoRSConfig {
   std::string geometry_filename{""};
   std::string method{"b3lyp"};
   std::string basis{"def2-svp"};
-  /// Named solvent, resolved against the shipped `.rsseg` ensembles.
+  /// Named solvent, resolved against the cached ensembles on the search
+  /// path. occ ships none: generate them with `--write-segments`.
   std::string solvent{""};
   /// Geometry of the solvent molecule, as an alternative to a named solvent:
   /// its conductor cavity is computed here rather than loaded.

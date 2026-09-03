@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
 #include <filesystem>
@@ -475,19 +476,23 @@ TEST_CASE("Ideal-conductor COSMO profile for water",
   REQUIRE(h_sigma / h_area < 0.0);
 }
 
-#ifndef OCC_DATA_DIR
-#define OCC_DATA_DIR "share"
+#ifndef OCC_TEST_DATA_DIR
+#define OCC_TEST_DATA_DIR "data"
 #endif
 
 namespace {
 
-/// The segment ensembles occ ships, which occ generates itself
-/// (`occ cosmo-rs --write-segments`) at the driver's default level of
-/// theory. Resolved from the source tree rather than `OCC_DATA_PATH` so the
-/// ensembles under test are the ones in the checkout.
-occ::solvent::cosmors::SegmentStore shipped_segments() {
+/// occ ships no solvent ensembles: they are computed per run, or supplied
+/// separately. `tests/data/water.rsseg` is the one fixture kept here, in the
+/// original text layout so that reader stays covered, and it doubles as the
+/// input for the JSON round trip.
+occ::solvent::cosmors::SegmentStore fixture_segments() {
   return occ::solvent::cosmors::SegmentStore(
-      {std::string(OCC_DATA_DIR) + "/solvent/cosmors"});
+      {std::string(OCC_TEST_DATA_DIR)});
+}
+
+occ::solvent::cosmors::Component water_fixture() {
+  return fixture_segments().get("water").component;
 }
 
 } // namespace
@@ -538,26 +543,27 @@ TEST_CASE("openCOSMO-RS 24a defaults are the published parameter set",
 TEST_CASE("openCOSMO-RS segment ensembles survive a round trip",
           "[solvent][cosmors]") {
   const auto params = occ::solvent::cosmors::Parameters::v24a();
-  const auto store = shipped_segments();
-  REQUIRE(store.contains("acetone"));
-  const auto original = store.get("acetone").component;
+  const auto original = water_fixture();
 
-  const auto path =
-      (std::filesystem::temp_directory_path() / "occ_rsseg_roundtrip.rsseg")
-          .string();
-  occ::solvent::cosmors::write_segments(path, "acetone", original, params,
+  // Both layouts have to preserve the ensemble: occ writes JSON, but .rsseg
+  // stays readable and writable for compatibility.
+  const auto extension = GENERATE(".json", ".rsseg");
+  INFO(extension);
+  const auto path = (std::filesystem::temp_directory_path() /
+                     ("occ_segments_roundtrip" + std::string(extension)))
+                        .string();
+
+  occ::solvent::cosmors::write_segments(path, "water", original, params,
                                         "b3lyp", "def2-svp");
   auto loaded = occ::solvent::cosmors::read_segments(path);
   std::filesystem::remove(path);
 
-  REQUIRE(loaded.name == "acetone");
+  REQUIRE(loaded.name == "water");
   REQUIRE(loaded.method == "b3lyp");
   REQUIRE(loaded.basis == "def2-svp");
   REQUIRE(loaded.r_av == params.r_av);
   REQUIRE(loaded.r_corr == params.r_corr);
   REQUIRE(loaded.component.size() == original.size());
-  // Written at 14 significant figures, so the descriptors come back to
-  // relative 1e-13 and the energies that follow are unaffected.
   REQUIRE((loaded.component.sigma - original.sigma).cwiseAbs().maxCoeff() <
           1e-15);
   REQUIRE((loaded.component.sigma_orth - original.sigma_orth)
@@ -588,13 +594,11 @@ TEST_CASE("openCOSMO-RS mixtures reduce to the pure component",
   // component at any composition, which pins the area weighting and the
   // volume/cavity-area averaging in mix_components.
   const auto params = occ::solvent::cosmors::Parameters::v24a();
-  const auto store = shipped_segments();
-  const auto water = store.get("water").component;
-  const auto solute = store.get("methanol").component;
+  const auto water = water_fixture();
 
   occ::solvent::cosmors::ActivityOptions options;
   occ::solvent::cosmors::SolventModel pure(water, params, options);
-  const double reference = pure.residual_energy(solute);
+  const double reference = pure.residual_energy(water);
 
   for (double x : {0.25, 0.5, 0.75}) {
     INFO(x);
@@ -605,7 +609,7 @@ TEST_CASE("openCOSMO-RS mixtures reduce to the pure component",
     REQUIRE(std::abs(mixed.volume - water.volume) < 1e-10);
     REQUIRE(std::abs(mixed.total_area() - water.total_area()) < 1e-10);
     occ::solvent::cosmors::SolventModel model(mixed, params, options);
-    REQUIRE(std::abs(model.residual_energy(solute) - reference) < 1e-12);
+    REQUIRE(std::abs(model.residual_energy(water) - reference) < 1e-12);
   }
 }
 
@@ -618,36 +622,30 @@ TEST_CASE("openCOSMO-RS infinite dilution matches the mixture solve",
   occ::solvent::cosmors::ActivityOptions options;
   options.temperature = 298.15;
 
-  const auto store = shipped_segments();
-  const auto water = store.get("water").component;
+  const auto water = water_fixture();
   occ::solvent::cosmors::SolventModel solvent(water, params, options);
 
-  for (const char *name : {"methanol", "acetone"}) {
-    INFO(name);
-    const auto solute = store.get(name).component;
-    const std::vector<occ::solvent::cosmors::Component> pair{solute, water};
-    Vec x(2);
-    x << 1e-10, 1.0 - 1e-10;
-    const double mixture =
-        occ::solvent::cosmors::residual_ln_gamma(pair, x, params, options)(0);
-    const double rt = occ::constants::molar_gas_constant<double> *
-                      options.temperature / 1000.0;
-    const double test_particle = solvent.residual_energy(solute) *
-                                 occ::units::AU_TO_KJ_PER_MOL / rt;
-    REQUIRE(std::abs(mixture - test_particle) < 1e-8);
-  }
+  const std::vector<occ::solvent::cosmors::Component> pair{water, water};
+  Vec x(2);
+  x << 1e-10, 1.0 - 1e-10;
+  const double mixture =
+      occ::solvent::cosmors::residual_ln_gamma(pair, x, params, options)(0);
+  const double rt = occ::constants::molar_gas_constant<double> *
+                    options.temperature / 1000.0;
+  const double test_particle =
+      solvent.residual_energy(water) * occ::units::AU_TO_KJ_PER_MOL / rt;
+  REQUIRE(std::abs(mixture - test_particle) < 1e-8);
 }
 
 TEST_CASE("COSMO-RS solvation free energy runs end to end",
           "[solvent][cosmors][driver]") {
   // Covers the one-call facade the CLI and every language binding sit on:
-  // gas SCF, conductor SCF, segment descriptors, cached solvent ensemble,
-  // and the free-energy assembly. Water is the cheapest solute that
-  // exercises all of it, and the shipped ensembles are built at the
-  // settings' defaults so solute and solvent are at the same level.
+  // gas SCF, conductor SCF, segment descriptors and the free-energy assembly.
+  // The solvent geometry overload is used because occ ships no cached
+  // ensembles, so this is also the path a user without one takes.
   //
   // Experimental geometry, r(OH) = 0.9572 A and 104.52 degrees.
-  const auto solute = occ::io::molecule_from_xyz_string(R"(3
+  const auto water = occ::io::molecule_from_xyz_string(R"(3
 water
 O   0.000000   0.000000   0.000000
 H   0.756950  -0.585880   0.000000
@@ -658,7 +656,7 @@ H  -0.756950  -0.585880   0.000000
   settings.liquid_volume = 30.01; // A^3 per molecule at 298 K
   settings.num_rings = 0;
   const auto result =
-      occ::driver::cosmors_solvation_free_energy(solute, "water", settings);
+      occ::driver::cosmors_solvation_free_energy(water, water, settings);
 
   const double k = occ::units::AU_TO_KJ_PER_MOL;
   fmt::print("\nopenCOSMO-RS 24a: water in water (kJ/mol)\n");
@@ -685,18 +683,35 @@ H  -0.756950  -0.585880   0.000000
   REQUIRE(std::abs(result.total() * k - (-26.4)) < 25.0);
 }
 
-TEST_CASE("Cached solvent ensembles are discoverable", "[solvent][cosmors]") {
-  // available_cosmors_solvents is what the CLI and the bindings list, so it
-  // has to see the ensembles that ship with occ.
-  const auto store = shipped_segments();
-  const auto names = store.available();
-  REQUIRE(names.size() >= 5);
-  REQUIRE(std::is_sorted(names.begin(), names.end()));
-  for (const char *expected : {"water", "methanol", "acetone", "benzene"}) {
-    INFO(expected);
-    REQUIRE(std::find(names.begin(), names.end(), expected) != names.end());
-  }
+TEST_CASE("Segment ensembles are resolved by name in either layout",
+          "[solvent][cosmors]") {
+  const auto store = fixture_segments();
+  REQUIRE(store.contains("water"));
+  REQUIRE(store.contains("WATER")); // names are case-insensitive
   REQUIRE_FALSE(store.contains("not-a-solvent"));
+
+  const auto names = store.available();
+  REQUIRE(std::is_sorted(names.begin(), names.end()));
+  REQUIRE(std::find(names.begin(), names.end(), "water") != names.end());
+
+  // occ ships none, so the failure a user hits first must say how to make one.
+  occ::solvent::cosmors::SegmentStore empty({"/nonexistent"});
+  REQUIRE_THROWS_WITH(empty.get("water"),
+                      Catch::Matchers::ContainsSubstring("occ cosmo-rs"));
+
+  // A JSON ensemble is preferred over a .rsseg one in the same directory.
+  const auto dir = std::filesystem::temp_directory_path() / "occ_seg_pref";
+  std::filesystem::create_directories(dir);
+  const auto params = occ::solvent::cosmors::Parameters::v24a();
+  auto component = water_fixture();
+  occ::solvent::cosmors::write_segments((dir / "water.rsseg").string(), "text",
+                                        component, params, "b3lyp", "def2-svp");
+  occ::solvent::cosmors::write_segments((dir / "water.json").string(), "json",
+                                        component, params, "b3lyp", "def2-svp");
+  REQUIRE(occ::solvent::cosmors::SegmentStore({dir.string()})
+              .get("water")
+              .name == "json");
+  std::filesystem::remove_all(dir);
 }
 
 TEST_CASE("Conductor cavity cost scales usably",
@@ -866,6 +881,8 @@ TEST_CASE("openCOSMO-RS cg surfaces partition over crystal neighbours",
   settings.method = "b3lyp";
   settings.basis = "def2-svp";
   settings.pure_spherical = true;
+  // occ ships no ensembles; point at the test fixture.
+  settings.segment_search_paths = {std::string(OCC_TEST_DATA_DIR)};
   auto spec = occ::driver::SolventSpec::parse("water");
 
   auto result =

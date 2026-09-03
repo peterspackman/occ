@@ -21,6 +21,11 @@ struct CosmoRSSettings {
   /// Condensed-phase volume per solute molecule, A^3, for the reference-state
   /// term. Zero leaves that term out.
   double volume_per_molecule{0.0};
+  /// Where to look for solvent segment ensembles. Empty uses the standard
+  /// search path (`$OCC_DATA_PATH/solvent/cosmors`, then the working
+  /// directory); occ ships none, so this is how a caller points at a set it
+  /// generated or obtained separately.
+  std::vector<std::string> segment_search_paths{};
 };
 
 /// Build openCOSMO-RS solvation surfaces for each molecule in `solvent`.

@@ -20,7 +20,7 @@ struct ConductorSettings {
   bool constrain_charge{true};
   /// Averaging radii for σ and σ⊥. Part of the parameterisation rather than a
   /// free choice, so overriding them makes the descriptors incomparable with
-  /// the shipped solvent ensembles.
+  /// any solvent ensemble built on the defaults.
   solvent::cosmors::Parameters parameters{};
 };
 

@@ -42,7 +42,10 @@ OCC provides comprehensive functionality for ground-state single-point calculati
   - Density fitting (RI-JK) with auxiliary basis sets
   - GFN2-xTB semi-empirical tight-binding (molecular + periodic; see below)
   - Implicit solvation: SMD, and openCOSMO-RS 24a (`occ cosmo-rs`,
-    or `occ cg --solvation-model cosmo-rs`); CPCM-X for xTB
+    or `occ cg --solvation-model cosmo-rs`); CPCM-X for xTB.
+    No solvent segment ensembles are shipped: compute them with
+    `occ cosmo-rs <solvent>.xyz --write-segments <solvent>.json`, or give a
+    solvent geometry directly with `--solvent-geometry`
   - XDM dispersion model
   - D4 (DFT-D4) dispersion correction
 

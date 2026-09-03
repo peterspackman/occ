@@ -22,17 +22,21 @@ describe('COSMO-RS solvation', () => {
     await loadOCC();
   });
 
-  it('lists the shipped solvent ensembles', async () => {
+  it('lists cached solvent ensembles, of which occ ships none', async () => {
     const solvents = await availableCosmoRsSolvents();
     expect(Array.isArray(solvents)).toBe(true);
-    expect(solvents).toContain('water');
-    // Sorted, so a caller can present them directly.
+    // Sorted, so a caller can present them directly. Empty unless the caller
+    // has put ensembles on the search path themselves.
     expect([...solvents].sort()).toEqual(solvents);
   });
 
   it('assembles a solvation free energy from its terms', async () => {
     const mol = await moleculeFromXYZ(waterXYZ);
-    const result = await cosmoRsSolvation(mol, 'water', { liquidVolume: 30.01 });
+    // No ensemble ships, so the solvent is given as a geometry and its
+    // conductor cavity computed alongside the solute's.
+    const solventMol = await moleculeFromXYZ(waterXYZ);
+    const result = await cosmoRsSolvation(mol, solventMol,
+                                          { liquidVolume: 30.01 });
 
     expect(result.cavityArea).toBeGreaterThan(30);
     expect(result.cavityVolume).toBeGreaterThan(15);
@@ -53,7 +57,7 @@ describe('COSMO-RS solvation', () => {
 
   it('rejects unknown settings rather than ignoring them', async () => {
     const mol = await moleculeFromXYZ(waterXYZ);
-    await expect(cosmoRsSolvation(mol, 'water', { liquidVolumes: 30 }))
+    await expect(cosmoRsSolvation(mol, mol, { liquidVolumes: 30 }))
       .rejects.toThrow(/unknown option 'liquidVolumes'/);
   });
 });
