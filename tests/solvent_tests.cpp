@@ -496,10 +496,10 @@ TEST_CASE("openCOSMO-RS 24a defaults are the published parameter set",
           "[solvent][cosmors][parameters]") {
   // The kernel, the combinatorial term and the free-energy assembly were
   // regressed together, so `Parameters` carries all three and its defaults
-  // are the 24a set published in Grigorash et al., J. Comput. Chem. 2024,
-  // 45, 2699. The struct's member initialisers are the only copy of the
-  // values in the source; this pins them so an accidental edit fails here
-  // rather than silently becoming a different model.
+  // are the published 24a set (see the expression documented on
+  // `occ::solvent::cosmors`). The struct's member initialisers are the only
+  // copy of the values in the source; this pins them so an accidental edit
+  // fails here rather than silently becoming a different model.
   const auto p = occ::solvent::cosmors::Parameters::v24a();
 
   REQUIRE(p.a_eff == Catch::Approx(5.9248470));
