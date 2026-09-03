@@ -9,7 +9,7 @@
 const CG_KEYS = new Set([
   'crystalFilename', 'modelName', 'maxRadius', 'solvent', 'solvationModel',
   'temperature', 'chargeString', 'cgRadius', 'computeMorphology',
-  'numSurfaceEnergies'
+  'numSurfaceEnergies', 'minInterplanarSpacing'
 ]);
 
 const COSMORS_KEYS = new Set([

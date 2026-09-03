@@ -98,6 +98,8 @@ void register_cg_bindings(lua_State *L) {
       // for callers using the model identifier.
       .addPropertyReadWrite("max_facets", &CGConfig::max_facets)
       .addPropertyReadWrite("num_surface_energies", &CGConfig::max_facets)
+      .addPropertyReadWrite("min_interplanar_spacing",
+                            &CGConfig::min_interplanar_spacing)
       .addPropertyReadWrite("write_dump_files", &CGConfig::write_dump_files)
       .addPropertyReadWrite("spherical", &CGConfig::spherical)
       .addPropertyReadWrite("write_kmcpp_file", &CGConfig::write_kmcpp_file)

@@ -148,7 +148,9 @@ void register_cg_bindings() {
         .property("dmaReference", &CGConfig::dma_reference)
         .property("cgRadius", &CGConfig::cg_radius)
         .property("computeMorphology", &CGConfig::compute_morphology)
-        .property("numSurfaceEnergies", &CGConfig::max_facets);
+        .property("numSurfaceEnergies", &CGConfig::max_facets)
+        .property("minInterplanarSpacing",
+                  &CGConfig::min_interplanar_spacing);
 
     // Returns a plain JS object: {moleculeResults: [...], morphology?: {...}}
     function("calculateCrystalGrowthEnergies",

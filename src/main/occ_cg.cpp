@@ -83,7 +83,13 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
       "Enforce that the resulting unit cell molecules (e.g. in the net file) "
       "must have geometric centroids in the range [0,1) (default: true)");
   cg->add_option("--surface-energies", config->max_facets,
-                 "Calculate surface energies and write .gmf morphology files");
+                 "Number of surfaces to compute energies for, writing .gmf "
+                 "morphology files. Deprecated: a count can split a Friedel "
+                 "pair and skew the Wulff construction; use --surface-d-min");
+  cg->add_option("--surface-d-min", config->min_interplanar_spacing,
+                 "Calculate surface energies for every face with interplanar "
+                 "spacing >= this (Angstrom), and write .gmf morphology "
+                 "files. Preferred over --surface-energies");
   cg->add_flag("--morphology", config->compute_morphology,
                "Compute particle size/shape-dependent (surface/edge/corner) "
                "energies; implies --surface-energies");

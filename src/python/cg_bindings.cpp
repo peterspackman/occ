@@ -62,7 +62,12 @@ nb::module_ register_cg_bindings(nb::module_ &m) {
       .def_rw("dma_reference", &CGConfig::dma_reference)
       .def_rw("wavefunction_choice", &CGConfig::wavefunction_choice)
       .def_rw("compute_morphology", &CGConfig::compute_morphology)
-      .def_rw("num_surface_energies", &CGConfig::max_facets);
+      .def_rw("num_surface_energies", &CGConfig::max_facets,
+              "deprecated: a face count can split a Friedel pair and skew "
+              "the Wulff construction; prefer min_interplanar_spacing")
+      .def_rw("min_interplanar_spacing", &CGConfig::min_interplanar_spacing,
+              "compute surface energies for every face with d >= this "
+              "(Angstrom); takes precedence over num_surface_energies");
 
   nb::class_<occ::cg::FacetMorphology>(m, "FacetMorphology")
       .def_ro("hkl", &occ::cg::FacetMorphology::hkl)

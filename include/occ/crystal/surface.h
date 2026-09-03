@@ -130,4 +130,32 @@ std::vector<Surface>
 generate_surfaces(const Crystal &c,
                   const CrystalSurfaceGenerationParameters & = {});
 
+/// Whether the crystal's point group maps `hkl` onto `-h-k-l`, i.e. whether
+/// the two faces belong to the same form.
+///
+/// True for the 11 centrosymmetric point groups. False for the other 21,
+/// where (hkl) and (-h-k-l) are distinct forms — this is hemimorphism, and
+/// the two ends of a polar axis can carry different terminations and
+/// different surface energies.
+///
+/// The pair is nonetheless *always* degenerate in d, because 1/d² = hᵀG*h is
+/// a quadratic form in the indices and so is invariant under h → -h,
+/// whatever the metric. Ordering faces by d therefore cannot separate a
+/// Friedel pair: d has the symmetry of the Laue class, while equivalence of
+/// faces has the symmetry of the point group, and for the non-centrosymmetric
+/// groups the Laue class has index two over it. Anything that truncates a
+/// d-ordered list has to cut on whole Laue orbits or it splits such a pair
+/// arbitrarily, which is what `laue_orbit_partners` is for.
+bool friedel_mate_is_equivalent(const Crystal &c, const HKL &hkl);
+
+/// Positions in `surfaces` that share a Laue-class orbit with `surfaces[i]`,
+/// including `i` itself.
+///
+/// A single form when the point group is centrosymmetric, a Friedel pair of
+/// forms otherwise. Truncating a d-ordered surface list on these groups keeps
+/// the cut crystallographically meaningful.
+std::vector<size_t> laue_orbit_partners(const Crystal &c,
+                                        const std::vector<Surface> &surfaces,
+                                        size_t i);
+
 } // namespace occ::crystal

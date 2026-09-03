@@ -420,7 +420,18 @@ export interface CrystalGrowthConfig {
   /** Nearest-neighbour cutoff written to the CG file, Angstrom. */
   cgRadius: number;
   computeMorphology: boolean;
+  /**
+   * Number of faces to compute surface energies for. Deprecated: a count can
+   * split a Friedel pair — two distinct forms that always share a d-spacing
+   * in a non-centrosymmetric group — which skews the Wulff construction.
+   * Prefer `minInterplanarSpacing`.
+   */
   numSurfaceEnergies: number;
+  /**
+   * Compute surface energies for every face with interplanar spacing at least
+   * this (Angstrom). Takes precedence over `numSurfaceEnergies`.
+   */
+  minInterplanarSpacing: number;
   delete(): void;
 }
 

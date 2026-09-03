@@ -267,6 +267,41 @@ generate_surfaces(const Crystal &c,
   return result;
 }
 
+bool friedel_mate_is_equivalent(const Crystal &c, const HKL &hkl) {
+  const HKL mate{-hkl.h, -hkl.k, -hkl.l};
+  for (const auto &symop : c.space_group().symmetry_operations()) {
+    const HKL image = apply_rotation(symop, hkl);
+    if (image.h == mate.h && image.k == mate.k && image.l == mate.l)
+      return true;
+  }
+  return false;
+}
+
+std::vector<size_t> laue_orbit_partners(const Crystal &c,
+                                        const std::vector<Surface> &surfaces,
+                                        size_t i) {
+  std::vector<size_t> group{i};
+  if (i >= surfaces.size() || friedel_mate_is_equivalent(c, surfaces[i].hkl()))
+    return group;
+
+  // Non-centrosymmetric: the Friedel mate is a second form. It is whichever
+  // representative in the list has -h in its own point-group orbit.
+  const HKL h = surfaces[i].hkl();
+  const HKL mate{-h.h, -h.k, -h.l};
+  for (size_t j = 0; j < surfaces.size(); j++) {
+    if (j == i)
+      continue;
+    for (const auto &symop : c.space_group().symmetry_operations()) {
+      const HKL image = apply_rotation(symop, surfaces[j].hkl());
+      if (image.h == mate.h && image.k == mate.k && image.l == mate.l) {
+        group.push_back(j);
+        break;
+      }
+    }
+  }
+  return group;
+}
+
 bool Surface::check_systematic_absence(const Crystal &crystal, const HKL &hkl) {
   Vec3 f(hkl.h, hkl.k, hkl.l);
   constexpr double position_tolerance = 1e-6;

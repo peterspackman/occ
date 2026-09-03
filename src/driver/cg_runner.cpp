@@ -218,17 +218,17 @@ serialize_cg_results(nlohmann::json &j, const Options &opts,
 inline CrystalSurfaceEnergies compute_and_serialize_surface_cuts(
     CrystalGrowthCalculator &calc, nlohmann::json &j, const Options &opts,
     const CrystalDimers &uc_dimers, const CrystalDimers &uc_dimers_vacuum,
-    int max_facets) {
+    int max_facets, double min_interplanar_spacing) {
 
   occ::log::info("Crystal surface energies (solvated)");
   auto surface_energies = calculate_crystal_surface_energies(
       fmt::format("{}_{}", opts.basename, opts.solvent_tag), calc.crystal(),
-      uc_dimers, max_facets, 1);
+      uc_dimers, max_facets, 1, min_interplanar_spacing);
 
   occ::log::info("Crystal surface energies (vacuum)");
   auto vacuum_surface_energies = calculate_crystal_surface_energies(
       fmt::format("{}_vacuum", opts.basename), calc.crystal(), uc_dimers_vacuum,
-      max_facets, -1);
+      max_facets, -1, min_interplanar_spacing);
 
   j["surface_energies"] = surface_energies;
   write_wulff(fmt::format("{}_{}.ply", opts.basename, opts.solvent_tag),
@@ -355,17 +355,31 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
 
   nlohmann::json surface_cuts_json;
 
-  // --morphology needs surface energies; default the facet count if unset.
+  const double d_min = config.min_interplanar_spacing;
   int n_facets = config.max_facets;
-  if (config.compute_morphology && n_facets <= 0) {
-    n_facets = 80;
-    occ::log::info("--morphology: computing {} surface energies", n_facets);
+  if (d_min > 0.0) {
+    if (n_facets > 0)
+      occ::log::warn("--surface-d-min given, ignoring --surface-energies {}",
+                     n_facets);
+    n_facets = 0;
+  } else {
+    if (n_facets > 0)
+      occ::log::warn(
+          "--surface-energies is deprecated: a face count can split a Friedel "
+          "pair, which skews the Wulff construction. Prefer --surface-d-min, "
+          "which cuts on interplanar spacing");
+    // --morphology needs surface energies; default the facet count if unset.
+    if (config.compute_morphology && n_facets <= 0) {
+      n_facets = 80;
+      occ::log::info("--morphology: computing {} surface energies", n_facets);
+    }
   }
 
   std::optional<CrystalSurfaceEnergies> surface_energies;
-  if (n_facets > 0) {
+  if (n_facets > 0 || d_min > 0.0) {
     surface_energies = compute_and_serialize_surface_cuts(
-        calc, surface_cuts_json, opts, uc_dimers, uc_dimers_vacuum, n_facets);
+        calc, surface_cuts_json, opts, uc_dimers, uc_dimers_vacuum, n_facets,
+        d_min);
   }
 
   nlohmann::json morphology_json;
