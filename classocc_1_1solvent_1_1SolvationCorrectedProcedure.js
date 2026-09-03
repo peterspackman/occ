@@ -1,6 +1,7 @@
 var classocc_1_1solvent_1_1SolvationCorrectedProcedure =
 [
     [ "SolvationCorrectedProcedure", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a628c10354686880fd846ac69bdc4a506", null ],
+    [ "SolvationCorrectedProcedure", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a5d6619dd51418b878fe1db427ba7440a", null ],
     [ "active_electrons", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a9c6dcba8857d2a3259e49004d54aa6ec", null ],
     [ "aobasis", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a5eff76cb9395f3976a71a149f891da52", null ],
     [ "atoms", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#adcfc1a7de85103593552b996d7cbf42a", null ],

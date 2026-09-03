@@ -7,7 +7,7 @@ var searchData=
   ['pairenergystorebase_4',['PairEnergyStoreBase',['../classocc_1_1interaction_1_1PairEnergyStoreBase.html',1,'occ::interaction']]],
   ['pairhessianresult_5',['PairHessianResult',['../structocc_1_1mults_1_1PairHessianResult.html',1,'occ::mults']]],
   ['pairinput_6',['pairinput',['../structocc_1_1elastic__fit_1_1PairInput.html',1,'occ::elastic_fit::PairInput'],['../structocc_1_1io_1_1PairInput.html',1,'occ::io::PairInput']]],
-  ['parameters_7',['parameters',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html',1,'occ::dft::NonLocalCorrelationFunctional::Parameters'],['../structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html',1,'occ::io::AdaptiveGridBounds&lt; PropertyFunctor &gt;::Parameters'],['../structocc_1_1xdm_1_1XDM_1_1Parameters.html',1,'occ::xdm::XDM::Parameters']]],
+  ['parameters_7',['parameters',['../structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html',1,'occ::dft::NonLocalCorrelationFunctional::Parameters'],['../structocc_1_1io_1_1AdaptiveGridBounds_1_1Parameters.html',1,'occ::io::AdaptiveGridBounds&lt; PropertyFunctor &gt;::Parameters'],['../structocc_1_1solvent_1_1cosmors_1_1Parameters.html',1,'occ::solvent::cosmors::Parameters'],['../structocc_1_1xdm_1_1XDM_1_1Parameters.html',1,'occ::xdm::XDM::Parameters']]],
   ['params_8',['Params',['../structocc_1_1dft_1_1DensityFunctional_1_1Params.html',1,'occ::dft::DensityFunctional']]],
   ['particlesample_9',['ParticleSample',['../structocc_1_1cg_1_1ParticleSample.html',1,'occ::cg']]],
   ['partitionmethod_10',['PartitionMethod',['../structocc_1_1numint_1_1PartitionMethod.html',1,'occ::numint']]],

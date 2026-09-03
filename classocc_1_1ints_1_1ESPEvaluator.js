@@ -19,6 +19,7 @@ var classocc_1_1ints_1_1ESPEvaluator =
     [ "operator=", "classocc_1_1ints_1_1ESPEvaluator.html#a855a9e8314f7c5b7d340d1b17af0046d", null ],
     [ "operator=", "classocc_1_1ints_1_1ESPEvaluator.html#a657c837deaac080da3a48ad5647ec316", null ],
     [ "pair_center", "classocc_1_1ints_1_1ESPEvaluator.html#a5a64e10c2a96608e4668173c3739f6fa", null ],
+    [ "pair_estimate", "classocc_1_1ints_1_1ESPEvaluator.html#a7cb418fdecd632bfa8e477e8ca99e2f3", null ],
     [ "pair_extent", "classocc_1_1ints_1_1ESPEvaluator.html#af798a21940f35bbbc3926a52646f6967", null ],
     [ "workspace_size", "classocc_1_1ints_1_1ESPEvaluator.html#a96a09f553fd38c95acf2dfca0364558f", null ]
 ];

@@ -1,0 +1,41 @@
+<map id="/home/runner/work/occ/occ/include/occ/solvent/cosmors_io.h" name="/home/runner/work/occ/occ/include/occ/solvent/cosmors_io.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="1014,5,1191,60"/>
+<area shape="rect" id="Node000002" href="$cosmors_8h.html" title=" " alt="" coords="617,108,783,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1014,55,768,108,767,102,1013,50"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="924,343,983,368"/>
+<area shape="poly" id="edge21_Node000001_Node000013" title=" " alt="" coords="1103,61,1096,108,1083,168,1061,234,1029,296,1009,319,986,337,983,333,1005,315,1024,293,1056,232,1078,167,1091,107,1098,60"/>
+<area shape="rect" id="Node000014" title=" " alt="" coords="1021,343,1083,368"/>
+<area shape="poly" id="edge22_Node000001_Node000014" title=" " alt="" coords="1115,60,1129,106,1139,166,1140,232,1135,265,1124,296,1107,319,1087,337,1083,333,1103,316,1119,293,1129,263,1135,231,1134,166,1123,107,1110,61"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="409,189,599,214"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="672,136,546,186,544,181,671,131"/>
+<area shape="rect" id="Node000004" href="$molecule_8h.html" title=" " alt="" coords="624,189,776,214"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="703,134,703,175,697,175,697,134"/>
+<area shape="poly" id="edge20_Node000002_Node000014" title=" " alt="" coords="762,131,824,148,896,175,967,214,1000,239,1029,268,1045,297,1053,328,1047,329,1040,299,1025,271,996,243,964,219,894,180,823,153,760,136"/>
+<area shape="rect" id="Node000016" href="$cosmors__segments_8h.html" title=" " alt="" coords="125,181,280,221"/>
+<area shape="poly" id="edge16_Node000002_Node000016" title=" " alt="" coords="628,136,294,188,293,183,627,131"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="471,269,612,295"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="678,216,578,266,575,261,676,212"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="637,269,763,295"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="703,214,703,255,697,255,697,214"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="788,269,844,295"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="719,212,789,259,786,264,716,216"/>
+<area shape="rect" id="Node000008" href="$atom_8h.html" title=" " alt="" coords="241,269,367,295"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="648,217,613,224,379,269,378,264,611,219,646,211"/>
+<area shape="rect" id="Node000012" href="$element_8h.html" title=" " alt="" coords="868,269,1015,295"/>
+<area shape="poly" id="edge11_Node000004_Node000012" title=" " alt="" coords="736,211,894,263,892,268,734,217"/>
+<area shape="rect" id="Node000015" title=" " alt="" coords="391,269,446,295"/>
+<area shape="poly" id="edge15_Node000004_Node000015" title=" " alt="" coords="659,217,460,272,459,267,658,211"/>
+<area shape="rect" id="Node000009" href="$linear__algebra_8h.html" title=" " alt="" coords="161,343,346,368"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="298,297,272,333,267,330,293,293"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="142,416,234,441"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="245,370,210,408,206,404,241,367"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="258,416,382,441"/>
+<area shape="poly" id="edge10_Node000009_Node000011" title=" " alt="" coords="266,367,302,404,298,408,262,370"/>
+<area shape="poly" id="edge14_Node000012_Node000009" title=" " alt="" coords="868,296,856,297,360,347,360,342,856,292,867,291"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="946,295,952,329,946,330,941,295"/>
+<area shape="poly" id="edge13_Node000012_Node000014" title=" " alt="" coords="961,292,1024,333,1021,337,958,297"/>
+<area shape="poly" id="edge17_Node000016_Node000009" title=" " alt="" coords="210,221,231,294,245,329,240,331,225,296,205,222"/>
+<area shape="rect" id="Node000017" href="$solvent_2surface_8h.html" title=" " alt="" coords="5,269,165,295"/>
+<area shape="poly" id="edge18_Node000016_Node000017" title=" " alt="" coords="176,224,115,264,112,260,173,219"/>
+<area shape="poly" id="edge19_Node000017_Node000009" title=" " alt="" coords="113,292,214,335,212,340,111,297"/>
+</map>

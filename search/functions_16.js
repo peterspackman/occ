@@ -49,8 +49,9 @@ var searchData=
   ['write_5fply_5ffile_46',['write_ply_file',['../namespaceocc_1_1io.html#a8b8b6eb8568d47e85b96130c3c57268d',1,'occ::io']]],
   ['write_5fply_5fmesh_47',['write_ply_mesh',['../namespaceocc_1_1io.html#acc79d4aa61d69bc8446855d324216a01',1,'occ::io']]],
   ['write_5fpunch_5ffile_48',['write_punch_file',['../classocc_1_1driver_1_1DMADriver.html#a4ac15cab0973936b9919cc0244c42733',1,'occ::driver::DMADriver']]],
-  ['write_5fstructure_5fjson_49',['write_structure_json',['../namespaceocc_1_1io.html#a5c8204b9fae922197f7ae20fa0aadec1',1,'occ::io']]],
-  ['write_5fsurface_5ffile_50',['write_surface_file',['../classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a380409236af52db48cda4bfce7b48978',1,'occ::solvent::SolvationCorrectedProcedure::write_surface_file()'],['../classocc_1_1solvent_1_1ContinuumSolvationModel.html#ab48401dc5b3c9baddb3b0e5ef6b11eb8',1,'occ::solvent::ContinuumSolvationModel::write_surface_file()']]],
-  ['writewaveformobj_51',['writeWaveformOBJ',['../classquickhull_1_1ConvexHull.html#adf972161981b987b34023195687d80e0',1,'quickhull::ConvexHull']]],
-  ['wulffconstruction_52',['WulffConstruction',['../classocc_1_1geometry_1_1WulffConstruction.html#aafc421bac4476bde28c6b603086d1673',1,'occ::geometry::WulffConstruction']]]
+  ['write_5fsegments_49',['write_segments',['../namespaceocc_1_1solvent_1_1cosmors.html#ae4c689e42cbe40243d18226167cfcff8',1,'occ::solvent::cosmors']]],
+  ['write_5fstructure_5fjson_50',['write_structure_json',['../namespaceocc_1_1io.html#a5c8204b9fae922197f7ae20fa0aadec1',1,'occ::io']]],
+  ['write_5fsurface_5ffile_51',['write_surface_file',['../classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a380409236af52db48cda4bfce7b48978',1,'occ::solvent::SolvationCorrectedProcedure::write_surface_file()'],['../classocc_1_1solvent_1_1ContinuumSolvationModel.html#ab48401dc5b3c9baddb3b0e5ef6b11eb8',1,'occ::solvent::ContinuumSolvationModel::write_surface_file()']]],
+  ['writewaveformobj_52',['writeWaveformOBJ',['../classquickhull_1_1ConvexHull.html#adf972161981b987b34023195687d80e0',1,'quickhull::ConvexHull']]],
+  ['wulffconstruction_53',['WulffConstruction',['../classocc_1_1geometry_1_1WulffConstruction.html#aafc421bac4476bde28c6b603086d1673',1,'occ::geometry::WulffConstruction']]]
 ];

@@ -1,6 +1,7 @@
 var namespaceocc_1_1main =
 [
     [ "validator", "namespaceocc_1_1main_1_1validator.html", null ],
+    [ "CosmoRSConfig", "structocc_1_1main_1_1CosmoRSConfig.html", "structocc_1_1main_1_1CosmoRSConfig" ],
     [ "CubeConfig", "structocc_1_1main_1_1CubeConfig.html", "structocc_1_1main_1_1CubeConfig" ],
     [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
     [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
@@ -16,6 +17,7 @@ var namespaceocc_1_1main =
     [ "SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", "structocc_1_1main_1_1SurfaceCutsConfig" ],
     [ "TbConfig", "structocc_1_1main_1_1TbConfig.html", "structocc_1_1main_1_1TbConfig" ],
     [ "add_cg_subcommand", "namespaceocc_1_1main.html#a55540e4c994b6cc65ca1ef88f030bc1a", null ],
+    [ "add_cosmors_subcommand", "namespaceocc_1_1main.html#a37c8dfabe747bce04879efcbdf2cea5b", null ],
     [ "add_cube_subcommand", "namespaceocc_1_1main.html#a204ffd238382becc84fee24a3048d20b", null ],
     [ "add_describe_subcommand", "namespaceocc_1_1main.html#aab9daeef6e8a7ad1a534cb6c2006a309", null ],
     [ "add_dimers_subcommand", "namespaceocc_1_1main.html#a48a6201e966a08a5d39969dc40bb03db", null ],
@@ -37,6 +39,7 @@ var namespaceocc_1_1main =
     [ "print_header", "namespaceocc_1_1main.html#ae6120cd9d924a194e7f3a1decd5cb6d8", null ],
     [ "read_input_file", "namespaceocc_1_1main.html#a696e8d3cc65b1c7e4c9bf7c517b2e706", null ],
     [ "run_cg_subcommand", "namespaceocc_1_1main.html#a4f45de1659f29ce03f7bf87d74b7c7d4", null ],
+    [ "run_cosmors_subcommand", "namespaceocc_1_1main.html#ae3d646581c18259097d2010ed57ea886", null ],
     [ "run_cube_subcommand", "namespaceocc_1_1main.html#a45566c667887d1fe07b48523a1189a09", null ],
     [ "run_describe_subcommand", "namespaceocc_1_1main.html#a6d83b8a52ad8058c79d226ae9862255d", null ],
     [ "run_dimers_subcommand", "namespaceocc_1_1main.html#a5f883983a0b5d4e64d68868752bafe01", null ],

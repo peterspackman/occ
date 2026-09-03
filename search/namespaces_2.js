@@ -84,12 +84,13 @@ var searchData=
   ['occ_3a_3aslater_3a_3aimpl_81',['impl',['../namespaceocc_1_1slater_1_1impl.html',1,'occ::slater']]],
   ['occ_3a_3asolvent_82',['solvent',['../namespaceocc_1_1solvent.html',1,'occ']]],
   ['occ_3a_3asolvent_3a_3acosmo_83',['cosmo',['../namespaceocc_1_1solvent_1_1cosmo.html',1,'occ::solvent']]],
-  ['occ_3a_3asolvent_3a_3adraco_84',['draco',['../namespaceocc_1_1solvent_1_1draco.html',1,'occ::solvent']]],
-  ['occ_3a_3asolvent_3a_3asmd_85',['smd',['../namespaceocc_1_1solvent_1_1smd.html',1,'occ::solvent']]],
-  ['occ_3a_3asolvent_3a_3asurface_86',['surface',['../namespaceocc_1_1solvent_1_1surface.html',1,'occ::solvent']]],
-  ['occ_3a_3atiming_87',['timing',['../namespaceocc_1_1timing.html',1,'occ']]],
-  ['occ_3a_3aunits_88',['units',['../namespaceocc_1_1units.html',1,'occ']]],
-  ['occ_3a_3autil_89',['util',['../namespaceocc_1_1util.html',1,'occ']]],
-  ['occ_3a_3axdm_90',['xdm',['../namespaceocc_1_1xdm.html',1,'occ']]],
-  ['occ_3a_3axtb_91',['xtb',['../namespaceocc_1_1xtb.html',1,'occ']]]
+  ['occ_3a_3asolvent_3a_3acosmors_84',['cosmors',['../namespaceocc_1_1solvent_1_1cosmors.html',1,'occ::solvent']]],
+  ['occ_3a_3asolvent_3a_3adraco_85',['draco',['../namespaceocc_1_1solvent_1_1draco.html',1,'occ::solvent']]],
+  ['occ_3a_3asolvent_3a_3asmd_86',['smd',['../namespaceocc_1_1solvent_1_1smd.html',1,'occ::solvent']]],
+  ['occ_3a_3asolvent_3a_3asurface_87',['surface',['../namespaceocc_1_1solvent_1_1surface.html',1,'occ::solvent']]],
+  ['occ_3a_3atiming_88',['timing',['../namespaceocc_1_1timing.html',1,'occ']]],
+  ['occ_3a_3aunits_89',['units',['../namespaceocc_1_1units.html',1,'occ']]],
+  ['occ_3a_3autil_90',['util',['../namespaceocc_1_1util.html',1,'occ']]],
+  ['occ_3a_3axdm_91',['xdm',['../namespaceocc_1_1xdm.html',1,'occ']]],
+  ['occ_3a_3axtb_92',['xtb',['../namespaceocc_1_1xtb.html',1,'occ']]]
 ];

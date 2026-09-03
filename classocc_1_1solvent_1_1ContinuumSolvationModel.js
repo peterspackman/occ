@@ -1,6 +1,7 @@
 var classocc_1_1solvent_1_1ContinuumSolvationModel =
 [
     [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a7e297a1a1386a405acdb8a0b330690f4", null ],
+    [ "ContinuumSolvationModel", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#aa6eac574316d63044ce9e80161a2b18a", null ],
     [ "apparent_surface_charge", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#aa6b54352d932fdea7ff7db3ddea87b64", null ],
     [ "charge", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#a60e07a2d161bc57be8e7d62ab71a0ed8", null ],
     [ "engine", "classocc_1_1solvent_1_1ContinuumSolvationModel.html#aefd77f237645d97205dccbab5d63e587", null ],

@@ -111,13 +111,49 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a610465e63c5eba21db4cd2ba282f2b7a" id="r_a610465e63c5eba21db4cd2ba282f2b7a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1solvent_1_1surface_1_1Surface.html">Surface</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1surface.html#a610465e63c5eba21db4cd2ba282f2b7a">solvent_surface</a> (const Vec &amp;radii, const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a> &amp;atomic_numbers, const Mat3N &amp;positions, double solvent_radius_angs=0.4, bool axis_aligned=true, double smoothing_width_bohr=0.0)</td></tr>
-<tr class="memdesc:a610465e63c5eba21db4cd2ba282f2b7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build an atom-centered Lebedev cavity surface.  <br /></td></tr>
-<tr class="separator:a610465e63c5eba21db4cd2ba282f2b7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24e68d691c129085442e42c1d5228d0d" id="r_a24e68d691c129085442e42c1d5228d0d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1solvent_1_1surface_1_1Surface.html">Surface</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1surface.html#a24e68d691c129085442e42c1d5228d0d">solvent_surface</a> (const Vec &amp;radii, const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a> &amp;atomic_numbers, const Mat3N &amp;positions, double solvent_radius_angs=0.0, bool axis_aligned=true, double smoothing_width_bohr=0.0, int angular_points=146)</td></tr>
+<tr class="memdesc:a24e68d691c129085442e42c1d5228d0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build an atom-centered Lebedev cavity surface.  <br /></td></tr>
+<tr class="separator:a24e68d691c129085442e42c1d5228d0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c804f320cbbdb26d5fb19deba8acc4b" id="r_a0c804f320cbbdb26d5fb19deba8acc4b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1surface.html#a0c804f320cbbdb26d5fb19deba8acc4b">nearest_atom_index</a> (const Mat3N &amp;atom_positions, const Mat3N &amp;element_centers)</td></tr>
 <tr class="separator:a0c804f320cbbdb26d5fb19deba8acc4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c47cb3dafeee892ed999255392210c0" id="r_a3c47cb3dafeee892ed999255392210c0"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1solvent_1_1surface.html#a3c47cb3dafeee892ed999255392210c0">cavity_volume</a> (const <a class="el" href="structocc_1_1solvent_1_1surface_1_1Surface.html">Surface</a> &amp;surface, const Mat3N &amp;atom_positions)</td></tr>
+<tr class="memdesc:a3c47cb3dafeee892ed999255392210c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Volume (Bohr³) enclosed by a discretised cavity, via the divergence theorem:  <br /></td></tr>
+<tr class="separator:a3c47cb3dafeee892ed999255392210c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a3c47cb3dafeee892ed999255392210c0" name="a3c47cb3dafeee892ed999255392210c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c47cb3dafeee892ed999255392210c0">&#9670;&#160;</a></span>cavity_volume()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::solvent::surface::cavity_volume </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1solvent_1_1surface_1_1Surface.html">Surface</a> &amp;&#160;</td>
+          <td class="paramname"><em>surface</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Mat3N &amp;&#160;</td>
+          <td class="paramname"><em>atom_positions</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Volume (Bohr³) enclosed by a discretised cavity, via the divergence theorem: </p>
+<pre class="fragment">V = ⅓ ∮ (r − O)·n̂ dA  ≈  ⅓ Σ_i a_i (r_i − O)·n̂_i
+</pre><p> The outward normal at element <code>i</code> is radial about its parent atom, <code>n̂_i = (r_i − R_{atom_i}) / |r_i − R_{atom_i}|</code>; <code>O</code> is a single fixed origin (the atom centroid), which the identity requires.</p>
+<p>Exact in the continuum limit for a closed surface, so the discrete sum converges with grid refinement. </p>
+
+</div>
+</div>
 <a id="a0c804f320cbbdb26d5fb19deba8acc4b" name="a0c804f320cbbdb26d5fb19deba8acc4b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0c804f320cbbdb26d5fb19deba8acc4b">&#9670;&#160;</a></span>nearest_atom_index()</h2>
 
@@ -146,8 +182,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a610465e63c5eba21db4cd2ba282f2b7a" name="a610465e63c5eba21db4cd2ba282f2b7a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a610465e63c5eba21db4cd2ba282f2b7a">&#9670;&#160;</a></span>solvent_surface()</h2>
+<a id="a24e68d691c129085442e42c1d5228d0d" name="a24e68d691c129085442e42c1d5228d0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24e68d691c129085442e42c1d5228d0d">&#9670;&#160;</a></span>solvent_surface()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -174,7 +210,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>solvent_radius_angs</em> = <code>0.4</code>, </td>
+          <td class="paramname"><em>solvent_radius_angs</em> = <code>0.0</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -186,7 +222,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>smoothing_width_bohr</em> = <code>0.0</code>&#160;</td>
+          <td class="paramname"><em>smoothing_width_bohr</em> = <code>0.0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>angular_points</em> = <code>146</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -198,9 +240,11 @@ Functions</h2></td></tr>
 
 <p>Build an atom-centered Lebedev cavity surface. </p>
 <p><code>axis_aligned = true</code> (default) preserves the legacy behaviour of pre-rotating the molecule into its principal-axes frame before placing the Lebedev grid — fine for energy-only callers (SMD HF/DFT pipeline). For analytical gradients, set <code>axis_aligned = false</code> so each cavity point sits rigidly on its parent atom; otherwise the global rotation chain <code>∂axes/∂R</code> breaks the frozen-cavity assumption in <code>cosmo::gradient</code>.</p>
+<p><code>solvent_radius_angs</code> is the probe radius for the solvent-excluded construction: points are laid down at <code>r_i + probe</code>, masked against the other atoms' <code>r_k + probe</code> spheres, then projected back inward by <code>probe</code> so the surviving surface sits at <code>r_i</code>. A probe of 0 gives a plain union of vdW spheres; the COSMO-RS convention is 1.3 Å.</p>
+<dl class="section warning"><dt>Warning</dt><dd>The probe applies only on the boolean path. With <code>smoothing_width_bohr &gt; 0</code> it is ignored, since the smooth weight must be reconstructible from <code>surface.vertices</code> alone and an inward projection would break that.</dd></dl>
 <p><code>smoothing_width_bohr = 0</code> (default) uses the legacy boolean mask (point is either fully included or fully dropped). With <code>smoothing_width_bohr &gt; 0</code>, each cavity point gets a continuous weight in [0, 1]: </p><pre class="fragment">weight_j = Π_{k ≠ atom_j} smoothstep(|r_j − R_k|, r_k, w)
 smoothstep(d, t, w) = ½ (1 + erf((d − t)/w))
-</pre><p> Distances are measured between the post-shift cavity vertex and atom centres so the gradient code can reconstruct the same weights from <code>surface.vertices</code> and atom radii. Areas are multiplied by the weight and points whose weight falls below 1e-10 are dropped. This makes the cavity, and any energy derived from it, C∞ with respect to atomic positions — required for clean analytical gradients. </p>
+</pre><p> Distances are measured between the post-shift cavity vertex and atom centres so the gradient code can reconstruct the same weights from <code>surface.vertices</code> and atom radii. Areas are multiplied by the weight and points whose weight falls below 1e-10 are dropped. This makes the cavity, and any energy derived from it, C∞ with respect to atomic positions — required for clean analytical gradients. <code>angular_points</code> selects the Lebedev order used per atom, rounded up to the nearest available level. The default of 146 is adequate for energies; σ-profiles need considerably more, since each histogram bin has to be populated by enough segments to be smooth. </p>
 
 </div>
 </div>

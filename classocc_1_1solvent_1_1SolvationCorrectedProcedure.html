@@ -110,6 +110,9 @@ $(document).ready(function(){initNavTree('classocc_1_1solvent_1_1SolvationCorrec
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a628c10354686880fd846ac69bdc4a506" id="r_a628c10354686880fd846ac69bdc4a506"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a628c10354686880fd846ac69bdc4a506">SolvationCorrectedProcedure</a> (Proc &amp;proc, const std::string &amp;solvent=&quot;water&quot;, bool radii_scaling=false)</td></tr>
 <tr class="separator:a628c10354686880fd846ac69bdc4a506"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d6619dd51418b878fe1db427ba7440a" id="r_a5d6619dd51418b878fe1db427ba7440a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a5d6619dd51418b878fe1db427ba7440a">SolvationCorrectedProcedure</a> (Proc &amp;proc, const <a class="el" href="structocc_1_1scrf_1_1Options.html">occ::scrf::Options</a> &amp;opts)</td></tr>
+<tr class="memdesc:a5d6619dd51418b878fe1db427ba7440a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drive the reaction field from an explicit engine configuration rather than the SMD tables — see the matching <code><a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html" title="SMD-style continuum solvation model used by the HF/DFT pipeline.">ContinuumSolvationModel</a></code> ctor.  <br /></td></tr>
+<tr class="separator:a5d6619dd51418b878fe1db427ba7440a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac55e0d0f4c43e8f53be05c947455c25b" id="r_ac55e0d0f4c43e8f53be05c947455c25b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1FockBuildProperties.html">occ::qm::FockBuildProperties</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#ac55e0d0f4c43e8f53be05c947455c25b">fock_build_properties</a> () const</td></tr>
 <tr class="separator:ac55e0d0f4c43e8f53be05c947455c25b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57c48514b7c7b9d2ee26f17be261f4d2" id="r_a57c48514b7c7b9d2ee26f17be261f4d2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a57c48514b7c7b9d2ee26f17be261f4d2">have_effective_core_potentials</a> () const</td></tr>
@@ -197,7 +200,7 @@ Public Member Functions</h2></td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a628c10354686880fd846ac69bdc4a506" name="a628c10354686880fd846ac69bdc4a506"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a628c10354686880fd846ac69bdc4a506">&#9670;&#160;</a></span>SolvationCorrectedProcedure()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a628c10354686880fd846ac69bdc4a506">&#9670;&#160;</a></span>SolvationCorrectedProcedure() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -237,6 +240,46 @@ template&lt;typename Proc &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5d6619dd51418b878fe1db427ba7440a" name="a5d6619dd51418b878fe1db427ba7440a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d6619dd51418b878fe1db427ba7440a">&#9670;&#160;</a></span>SolvationCorrectedProcedure() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Proc &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::SolvationCorrectedProcedure </td>
+          <td>(</td>
+          <td class="paramtype">Proc &amp;&#160;</td>
+          <td class="paramname"><em>proc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1scrf_1_1Options.html">occ::scrf::Options</a> &amp;&#160;</td>
+          <td class="paramname"><em>opts</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Drive the reaction field from an explicit engine configuration rather than the SMD tables — see the matching <code><a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html" title="SMD-style continuum solvation model used by the HF/DFT pipeline.">ContinuumSolvationModel</a></code> ctor. </p>
 
 </div>
 </div>

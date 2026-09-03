@@ -277,6 +277,12 @@ Functions</h2></td></tr>
 <tr class="separator:a99f1bccd4bc3a7c1fee4324283464906"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acabcfc08796e949c67ded87405c2b2c8" id="r_acabcfc08796e949c67ded87405c2b2c8"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classocc_1_1crystal_1_1Surface.html">Surface</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#acabcfc08796e949c67ded87405c2b2c8">generate_surfaces</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, const <a class="el" href="structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html">CrystalSurfaceGenerationParameters</a> &amp;={})</td></tr>
 <tr class="separator:acabcfc08796e949c67ded87405c2b2c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70b14f2dd5620bf90e0dedd7647efb2c" id="r_a70b14f2dd5620bf90e0dedd7647efb2c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#a70b14f2dd5620bf90e0dedd7647efb2c">friedel_mate_is_equivalent</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, const <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> &amp;hkl)</td></tr>
+<tr class="memdesc:a70b14f2dd5620bf90e0dedd7647efb2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the crystal's point group maps <code>hkl</code> onto <code>-h-k-l</code>, i.e.  <br /></td></tr>
+<tr class="separator:a70b14f2dd5620bf90e0dedd7647efb2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf1fbc5a0f5df6f6150f9d5e8d40f21f" id="r_abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#abf1fbc5a0f5df6f6150f9d5e8d40f21f">laue_orbit_partners</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, const std::vector&lt; <a class="el" href="classocc_1_1crystal_1_1Surface.html">Surface</a> &gt; &amp;surfaces, size_t i)</td></tr>
+<tr class="memdesc:abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Positions in <code>surfaces</code> that share a Laue-class orbit with <code>surfaces[i]</code>, including <code>i</code> itself.  <br /></td></tr>
+<tr class="separator:abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78a9c35cd26a715ea7cfbee259ea95e5" id="r_a78a9c35cd26a715ea7cfbee259ea95e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#a78a9c35cd26a715ea7cfbee259ea95e5">cubic_cell</a> (double length)</td></tr>
 <tr class="memdesc:a78a9c35cd26a715ea7cfbee259ea95e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a cubic unit cell from a given length.  <br /></td></tr>
 <tr class="separator:a78a9c35cd26a715ea7cfbee259ea95e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -538,6 +544,39 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a70b14f2dd5620bf90e0dedd7647efb2c" name="a70b14f2dd5620bf90e0dedd7647efb2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70b14f2dd5620bf90e0dedd7647efb2c">&#9670;&#160;</a></span>friedel_mate_is_equivalent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::crystal::friedel_mate_is_equivalent </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> &amp;&#160;</td>
+          <td class="paramname"><em>hkl</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether the crystal's point group maps <code>hkl</code> onto <code>-h-k-l</code>, i.e. </p>
+<p>whether the two faces belong to the same form.</p>
+<p>True for the 11 centrosymmetric point groups. False for the other 21, where (hkl) and (-h-k-l) are distinct forms — this is hemimorphism, and the two ends of a polar axis can carry different terminations and different surface energies.</p>
+<p>The pair is nonetheless <em>always</em> degenerate in d, because 1/d² = hᵀG*h is a quadratic form in the indices and so is invariant under h → -h, whatever the metric. Ordering faces by d therefore cannot separate a Friedel pair: d has the symmetry of the Laue class, while equivalence of faces has the symmetry of the point group, and for the non-centrosymmetric groups the Laue class has index two over it. Anything that truncates a d-ordered list has to cut on whole Laue orbits or it splits such a pair arbitrarily, which is what <code>laue_orbit_partners</code> is for. </p>
+
+</div>
+</div>
 <a id="a1b0def4d76564c3bd44a0a26aaf20696" name="a1b0def4d76564c3bd44a0a26aaf20696"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1b0def4d76564c3bd44a0a26aaf20696">&#9670;&#160;</a></span>from_json() <span class="overload">[1/4]</span></h2>
 
@@ -726,6 +765,43 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Construct a hexagonal unit cell from two given lengths. </p>
+
+</div>
+</div>
+<a id="abf1fbc5a0f5df6f6150f9d5e8d40f21f" name="abf1fbc5a0f5df6f6150f9d5e8d40f21f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf1fbc5a0f5df6f6150f9d5e8d40f21f">&#9670;&#160;</a></span>laue_orbit_partners()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; size_t &gt; occ::crystal::laue_orbit_partners </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classocc_1_1crystal_1_1Surface.html">Surface</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>surfaces</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>i</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Positions in <code>surfaces</code> that share a Laue-class orbit with <code>surfaces[i]</code>, including <code>i</code> itself. </p>
+<p>A single form when the point group is centrosymmetric, a Friedel pair of forms otherwise. Truncating a d-ordered surface list on these groups keeps the cut crystallographically meaningful. </p>
 
 </div>
 </div>

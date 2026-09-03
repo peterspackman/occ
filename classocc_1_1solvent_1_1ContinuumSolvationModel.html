@@ -113,6 +113,9 @@ $(document).ready(function(){initNavTree('classocc_1_1solvent_1_1ContinuumSolvat
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a7e297a1a1386a405acdb8a0b330690f4" id="r_a7e297a1a1386a405acdb8a0b330690f4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html#a7e297a1a1386a405acdb8a0b330690f4">ContinuumSolvationModel</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;, const std::string &amp;<a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html#adc0744cfd4b99d5f3ccce0b1e4841a96">solvent</a>=&quot;water&quot;, double <a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html#a60e07a2d161bc57be8e7d62ab71a0ed8">charge</a>=0.0, bool draco=false)</td></tr>
 <tr class="separator:a7e297a1a1386a405acdb8a0b330690f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6eac574316d63044ce9e80161a2b18a" id="r_aa6eac574316d63044ce9e80161a2b18a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html#aa6eac574316d63044ce9e80161a2b18a">ContinuumSolvationModel</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;, const <a class="el" href="structocc_1_1scrf_1_1Options.html">occ::scrf::Options</a> &amp;, double <a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html#a60e07a2d161bc57be8e7d62ab71a0ed8">charge</a>=0.0)</td></tr>
+<tr class="memdesc:aa6eac574316d63044ce9e80161a2b18a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drive the engine from an explicit configuration instead of the SMD parameter tables.  <br /></td></tr>
+<tr class="separator:aa6eac574316d63044ce9e80161a2b18a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76f305f5d7bd06dc692540c965a25dfc" id="r_a76f305f5d7bd06dc692540c965a25dfc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html#a76f305f5d7bd06dc692540c965a25dfc">set_solvent</a> (const std::string &amp;)</td></tr>
 <tr class="separator:a76f305f5d7bd06dc692540c965a25dfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc0744cfd4b99d5f3ccce0b1e4841a96" id="r_adc0744cfd4b99d5f3ccce0b1e4841a96"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1ContinuumSolvationModel.html#adc0744cfd4b99d5f3ccce0b1e4841a96">solvent</a> () const</td></tr>
@@ -165,7 +168,7 @@ Public Member Functions</h2></td></tr>
 <p>Phase 2: this class is now a thin adapter over <code><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html" title="Self-consistent reaction-field engine — owns the cavity, the COSMO/CPCM pre-factored response,...">occ::scrf::ReactionFieldEngine</a></code>. The public API is preserved so callers (drivers, <code><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">SolvationCorrectedProcedure</a>&lt;Proc&gt;</code>, the cg solvation pipeline) do not need to change; the engine pre-factors the <a class="el" href="classocc_1_1solvent_1_1COSMO.html">COSMO</a> A matrix once and re-uses it across SCF iterations. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a7e297a1a1386a405acdb8a0b330690f4" name="a7e297a1a1386a405acdb8a0b330690f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7e297a1a1386a405acdb8a0b330690f4">&#9670;&#160;</a></span>ContinuumSolvationModel()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e297a1a1386a405acdb8a0b330690f4">&#9670;&#160;</a></span>ContinuumSolvationModel() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -201,6 +204,43 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa6eac574316d63044ce9e80161a2b18a" name="aa6eac574316d63044ce9e80161a2b18a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa6eac574316d63044ce9e80161a2b18a">&#9670;&#160;</a></span>ContinuumSolvationModel() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">occ::solvent::ContinuumSolvationModel::ContinuumSolvationModel </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">occ::core::Atom</a> &gt; &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1scrf_1_1Options.html">occ::scrf::Options</a> &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>charge</em> = <code>0.0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Drive the engine from an explicit configuration instead of the SMD parameter tables. </p>
+<p>Used for the ideal-conductor <a class="el" href="classocc_1_1solvent_1_1COSMO.html">COSMO</a> calculation that σ-profiles are built from, where there is no SMD solvent to look up and no CDS branch. </p>
 
 </div>
 </div>

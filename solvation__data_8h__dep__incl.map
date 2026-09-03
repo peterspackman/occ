@@ -1,0 +1,23 @@
+<map id="/home/runner/work/occ/occ/include/occ/cg/solvation_data.h" name="/home/runner/work/occ/occ/include/occ/cg/solvation_data.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="399,5,607,60"/>
+<area shape="rect" id="Node000002" href="$cg__json_8h.html" title=" " alt="" coords="5,108,176,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="386,63,189,111,177,114,175,108,187,105,385,58"/>
+<area shape="rect" id="Node000003" href="$distance__partition_8h.html" title=" " alt="" coords="200,108,403,163"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="439,68,355,110,353,106,437,64"/>
+<area shape="rect" id="Node000004" href="$crystal__growth_8h.html" title=" " alt="" coords="417,211,588,265"/>
+<area shape="poly" id="edge12_Node000001_Node000004" title=" " alt="" coords="482,73,468,109,464,135,468,162,476,187,488,209,483,212,472,189,463,163,458,135,463,107,477,71"/>
+<area shape="rect" id="Node000007" href="$smd__solvation_8h.html" title=" " alt="" coords="477,108,653,163"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="529,70,551,106,547,109,524,73"/>
+<area shape="rect" id="Node000008" href="$cg__solvation__model_8h.html" title=" " alt="" coords="677,108,848,163"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="584,62,696,105,694,110,582,67"/>
+<area shape="rect" id="Node000009" href="$cosmors__solvation_8h.html" title=" " alt="" coords="739,211,909,265"/>
+<area shape="poly" id="edge11_Node000001_Node000009" title=" " alt="" coords="620,40,693,49,764,62,824,81,846,93,862,106,869,119,873,132,871,160,860,188,846,212,842,209,855,185,865,159,868,133,865,121,858,110,843,97,822,86,763,68,692,54,620,45"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="367,166,451,208,449,213,365,171"/>
+<area shape="rect" id="Node000005" href="$cg__pipeline_8h.html" title=" " alt="" coords="320,313,491,368"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="470,277,433,315,429,311,466,273"/>
+<area shape="rect" id="Node000006" href="$dma__cg_8h.html" title=" " alt="" coords="515,313,685,368"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="540,273,577,311,573,315,536,277"/>
+<area shape="poly" id="edge7_Node000007_Node000004" title=" " alt="" coords="544,176,521,212,517,209,539,173"/>
+<area shape="poly" id="edge10_Node000008_Node000004" title=" " alt="" coords="683,170,571,213,569,208,681,165"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="788,173,810,209,806,212,784,176"/>
+</map>

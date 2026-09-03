@@ -99,6 +99,7 @@ $(document).ready(function(){initNavTree('structocc_1_1scrf_1_1Options.html','')
 <div class="header">
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="structocc_1_1scrf_1_1Options-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">occ::scrf::Options Struct Reference</div></div>
@@ -123,6 +124,12 @@ Public Types</h2></td></tr>
 <tr class="memdesc:a0b9411a28016afa046f22632a68ef2cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atomic-radii set used to build the ES cavity.  <a href="structocc_1_1scrf_1_1Options.html#a0b9411a28016afa046f22632a68ef2cb">More...</a><br /></td></tr>
 <tr class="separator:a0b9411a28016afa046f22632a68ef2cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a7dd765c0bede495dee64bcd88b8d9856" id="r_a7dd765c0bede495dee64bcd88b8d9856"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structocc_1_1scrf_1_1Options.html">Options</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1Options.html#a7dd765c0bede495dee64bcd88b8d9856">conductor</a> (double <a class="el" href="structocc_1_1scrf_1_1Options.html#a630d1d3d91ff93d9a85860e4fc38be1d">probe_radius_angs</a>=0.0, int <a class="el" href="structocc_1_1scrf_1_1Options.html#a0ce7ebf787d11fde003079c612a4af9a">angular_points</a>=590)</td></tr>
+<tr class="memdesc:a7dd765c0bede495dee64bcd88b8d9856"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ideal-conductor COSMO on Klamt radii with no CDS branch — the reference state σ-profiles are defined against.  <br /></td></tr>
+<tr class="separator:a7dd765c0bede495dee64bcd88b8d9856"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:aaa00c251a02ee388ad07bb1b80226df4" id="r_aaa00c251a02ee388ad07bb1b80226df4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1scrf_1_1Options.html#aeda32a023f3e8e730e159ac1b0e403a5">Backend</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1Options.html#aaa00c251a02ee388ad07bb1b80226df4">backend</a> {<a class="el" href="structocc_1_1scrf_1_1Options.html#aeda32a023f3e8e730e159ac1b0e403a5ad6d30087471ddbad8650ce517a725864">Backend::CPCM</a>}</td></tr>
@@ -138,9 +145,12 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:aa55aa58c293bb6d433374a63d5e214a7" id="r_aa55aa58c293bb6d433374a63d5e214a7"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1Options.html#aa55aa58c293bb6d433374a63d5e214a7">f_eps_x</a> {0.0}</td></tr>
 <tr class="memdesc:aa55aa58c293bb6d433374a63d5e214a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">COSMO/CPCM convention parameter in <code>f(ε) = (ε − 1)/(ε + x)</code>.  <br /></td></tr>
 <tr class="separator:aa55aa58c293bb6d433374a63d5e214a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a630d1d3d91ff93d9a85860e4fc38be1d" id="r_a630d1d3d91ff93d9a85860e4fc38be1d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1Options.html#a630d1d3d91ff93d9a85860e4fc38be1d">probe_radius_angs</a> {0.4}</td></tr>
+<tr class="memitem:a630d1d3d91ff93d9a85860e4fc38be1d" id="r_a630d1d3d91ff93d9a85860e4fc38be1d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1Options.html#a630d1d3d91ff93d9a85860e4fc38be1d">probe_radius_angs</a> {0.0}</td></tr>
 <tr class="memdesc:a630d1d3d91ff93d9a85860e4fc38be1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solvent probe radius (Å) handed to the cavity builder.  <br /></td></tr>
 <tr class="separator:a630d1d3d91ff93d9a85860e4fc38be1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ce7ebf787d11fde003079c612a4af9a" id="r_a0ce7ebf787d11fde003079c612a4af9a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1Options.html#a0ce7ebf787d11fde003079c612a4af9a">angular_points</a> {146}</td></tr>
+<tr class="memdesc:a0ce7ebf787d11fde003079c612a4af9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lebedev order per atom for the cavity.  <br /></td></tr>
+<tr class="separator:a0ce7ebf787d11fde003079c612a4af9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a190fd9b2a346f2d992708442cceed953" id="r_a190fd9b2a346f2d992708442cceed953"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1Options.html#a190fd9b2a346f2d992708442cceed953">smoothing_width_bohr</a> {0.1}</td></tr>
 <tr class="memdesc:a190fd9b2a346f2d992708442cceed953"><td class="mdescLeft">&#160;</td><td class="mdescRight">Smoothing width (Bohr) for the cavity weight.  <br /></td></tr>
 <tr class="separator:a190fd9b2a346f2d992708442cceed953"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -152,8 +162,6 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a6bf7e7fcc82055b3a18bd11b5c2502df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af06c06fdd0b184b7078c0e31ff6eb108" id="r_af06c06fdd0b184b7078c0e31ff6eb108"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1Options.html#af06c06fdd0b184b7078c0e31ff6eb108">draco_scaling</a> {false}</td></tr>
 <tr class="separator:af06c06fdd0b184b7078c0e31ff6eb108"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5dac1c0edc1cc30c7292bd7d376a078c" id="r_a5dac1c0edc1cc30c7292bd7d376a078c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1Options.html#a5dac1c0edc1cc30c7292bd7d376a078c">include_sigma_profile</a> {false}</td></tr>
-<tr class="separator:a5dac1c0edc1cc30c7292bd7d376a078c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Construction options for <code><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html" title="Self-consistent reaction-field engine — owns the cavity, the COSMO/CPCM pre-factored response,...">ReactionFieldEngine</a></code>. </p>
@@ -217,7 +225,65 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a7dd765c0bede495dee64bcd88b8d9856" name="a7dd765c0bede495dee64bcd88b8d9856"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7dd765c0bede495dee64bcd88b8d9856">&#9670;&#160;</a></span>conductor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structocc_1_1scrf_1_1Options.html">Options</a> occ::scrf::Options::conductor </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>probe_radius_angs</em> = <code>0.0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>angular_points</em> = <code>590</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Ideal-conductor COSMO on Klamt radii with no CDS branch — the reference state σ-profiles are defined against. </p>
+<p><code>f(ε) → 1</code> is reached by taking ε large rather than by a separate code path; at ε = 1e10 the difference from unity is 1e-10.</p>
+<p>The probe defaults to zero. Although the published σ-profile databases were generated by codes reporting a 1.3 Å solvent radius, their cavity areas and volumes match a plain union of Klamt spheres to 1–3%, whereas applying a 1.3 Å probe here loses 18–35% of the area. </p>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a0ce7ebf787d11fde003079c612a4af9a" name="a0ce7ebf787d11fde003079c612a4af9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ce7ebf787d11fde003079c612a4af9a">&#9670;&#160;</a></span>angular_points</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::scrf::Options::angular_points {146}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Lebedev order per atom for the cavity. </p>
+<p>146 suffices for energies; σ-profiles need more to avoid a spiky histogram. </p>
+
+</div>
+</div>
 <a id="aaa00c251a02ee388ad07bb1b80226df4" name="aaa00c251a02ee388ad07bb1b80226df4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaa00c251a02ee388ad07bb1b80226df4">&#9670;&#160;</a></span>backend</h2>
 
@@ -314,20 +380,6 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a5dac1c0edc1cc30c7292bd7d376a078c" name="a5dac1c0edc1cc30c7292bd7d376a078c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5dac1c0edc1cc30c7292bd7d376a078c">&#9670;&#160;</a></span>include_sigma_profile</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool occ::scrf::Options::include_sigma_profile {false}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a630d1d3d91ff93d9a85860e4fc38be1d" name="a630d1d3d91ff93d9a85860e4fc38be1d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a630d1d3d91ff93d9a85860e4fc38be1d">&#9670;&#160;</a></span>probe_radius_angs</h2>
 
@@ -335,12 +387,13 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double occ::scrf::Options::probe_radius_angs {0.4}</td>
+          <td class="memname">double occ::scrf::Options::probe_radius_angs {0.0}</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Solvent probe radius (Å) handed to the cavity builder. </p>
+<p>Zero gives a plain union of vdW spheres. Ignored unless the boolean cavity is selected (<code>smoothing_width_bohr == 0</code>) — see <code>solvent_surface</code>. </p>
 
 </div>
 </div>

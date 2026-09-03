@@ -12,6 +12,7 @@ var result__types_8h =
     [ "coulomb", "result__types_8h.html#a386e62efd068d051cd7682022e1acd60", null ],
     [ "crystal_nn", "result__types_8h.html#a56b4910865fb1f2ae2d9e9247620a973", null ],
     [ "crystal_total", "result__types_8h.html#a96b2395fd4b8fedbb8f19dd2de466764", null ],
+    [ "descriptor_prefix", "result__types_8h.html#a815b986008cf64ada42dd6b36dc312d3", null ],
     [ "dispersion", "result__types_8h.html#aa9b14b340cf03112c19464f7aff3caaf", null ],
     [ "exchange", "result__types_8h.html#ac5216da165018fadc87cf7db8cfcdd48", null ],
     [ "polarization", "result__types_8h.html#a562ecb515147fc84eab24ff0de5befe0", null ],

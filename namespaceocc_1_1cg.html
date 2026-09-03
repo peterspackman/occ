@@ -101,7 +101,6 @@ $(document).ready(function(){initNavTree('namespaceocc_1_1cg.html',''); initResi
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">occ::cg Namespace Reference</div></div>
 </div><!--header-->
@@ -114,6 +113,9 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">One cavity's worth of per-element solvation data.  <a href="structocc_1_1cg_1_1CavitySurface.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1ContributionPair.html">ContributionPair</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1CornerMorphology.html">CornerMorphology</a></td></tr>
@@ -142,8 +144,6 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1NeighborAtoms.html">NeighborAtoms</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1NeighborContribution.html">NeighborContribution</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1ParticleSample.html">ParticleSample</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Broken-bond excess energy of a finite particle at one size, decomposed by inclusion-exclusion so e_excess == e_surface + e_edge + e_corner exactly.  <a href="structocc_1_1cg_1_1ParticleSample.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -151,13 +151,16 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1SMDSettings.html">SMDSettings</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html">SolvationContribution</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solvation attributed to one neighbour contact, as a set of named channels.  <a href="classocc_1_1cg_1_1SolvationContribution.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1SolventSurface.html">SolventSurface</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Every cavity a solvation model produced for one molecule, plus the scalar bookkeeping cg reports.  <a href="structocc_1_1cg_1_1SolvationData.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolventSurfacePartitioner.html">SolventSurfacePartitioner</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1SurfaceField.html">SurfaceField</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A named per-element quantity defined on one cavity.  <a href="structocc_1_1cg_1_1SurfaceField.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -185,28 +188,33 @@ Typedefs</h2></td></tr>
 <tr class="memitem:a999cd08c97d17040789562269d22d453" id="r_a999cd08c97d17040789562269d22d453"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a999cd08c97d17040789562269d22d453">DimerResults</a> = std::vector&lt; <a class="el" href="structocc_1_1cg_1_1DimerResult.html">DimerResult</a> &gt;</td></tr>
 <tr class="separator:a999cd08c97d17040789562269d22d453"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
-Enumerations</h2></td></tr>
-<tr class="memitem:ae284280e2614fc31a1eba564be91dd6c" id="r_ae284280e2614fc31a1eba564be91dd6c"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#ae284280e2614fc31a1eba564be91dd6c">PartitionScheme</a> { <a class="el" href="namespaceocc_1_1cg.html#ae284280e2614fc31a1eba564be91dd6cad46944b7474143da3a8f5f49afc5bbfc">NearestAtom</a>
-, <a class="el" href="namespaceocc_1_1cg.html#ae284280e2614fc31a1eba564be91dd6ca904a394a586beaef3768b3b664aa966c">NearestAtomDnorm</a>
-, <a class="el" href="namespaceocc_1_1cg.html#ae284280e2614fc31a1eba564be91dd6cad47101755289809d537b90d5f1737add">ElectronDensity</a>
- }</td></tr>
-<tr class="separator:ae284280e2614fc31a1eba564be91dd6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aaa52a885ee62a9b4a7c5abae12521453" id="r_aaa52a885ee62a9b4a7c5abae12521453"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#aaa52a885ee62a9b4a7c5abae12521453">NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE</a> (<a class="el" href="structocc_1_1cg_1_1SolventSurface.html">SolventSurface</a>, positions, energies, areas)</td></tr>
-<tr class="separator:aaa52a885ee62a9b4a7c5abae12521453"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac958b5b6a7a122e54cde06349179f66c" id="r_ac958b5b6a7a122e54cde06349179f66c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#ac958b5b6a7a122e54cde06349179f66c">NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE</a> (<a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a>, coulomb, cds, electronic_energies, total_solvation_energy, electronic_contribution, gas_phase_contribution, free_energy_correction)</td></tr>
-<tr class="separator:ac958b5b6a7a122e54cde06349179f66c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd1f9747aa96c74c6bdf6eae5e1e14c1" id="r_abd1f9747aa96c74c6bdf6eae5e1e14c1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#abd1f9747aa96c74c6bdf6eae5e1e14c1">NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE</a> (<a class="el" href="structocc_1_1cg_1_1SurfaceField.html">SurfaceField</a>, name, values)</td></tr>
+<tr class="separator:abd1f9747aa96c74c6bdf6eae5e1e14c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a779e9e15cce0e420a1f05c72be107739" id="r_a779e9e15cce0e420a1f05c72be107739"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a779e9e15cce0e420a1f05c72be107739">NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE</a> (<a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a>, name, positions, areas, energies, descriptors)</td></tr>
+<tr class="separator:a779e9e15cce0e420a1f05c72be107739"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ac9564f49d078488b9e3e1f3e0c9473" id="r_a9ac9564f49d078488b9e3e1f3e0c9473"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a9ac9564f49d078488b9e3e1f3e0c9473">NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE</a> (<a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a>, cavities, total_solvation_energy, electronic_contribution)</td></tr>
+<tr class="separator:a9ac9564f49d078488b9e3e1f3e0c9473"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48533d39bf477dcc431b1993ff46f20e" id="r_a48533d39bf477dcc431b1993ff46f20e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a48533d39bf477dcc431b1993ff46f20e">exchange_matching_forward_reverse_pairs</a> (const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html#a64bcd1ba7c2106300d03ef64064822f3">crystal::CrystalDimers::MoleculeNeighbors</a> &amp;neighbors, std::vector&lt; <a class="el" href="classocc_1_1cg_1_1SolvationContribution.html">SolvationContribution</a> &gt; &amp;energy_contribution)</td></tr>
 <tr class="separator:a48533d39bf477dcc431b1993ff46f20e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8506668fa23aea463684053dcf3be5c3" id="r_a8506668fa23aea463684053dcf3be5c3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a8506668fa23aea463684053dcf3be5c3">from_scrf_surfaces</a> (const <a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html">occ::scrf::SolvationSurfaces</a> &amp;scrf_surfaces)</td></tr>
-<tr class="memdesc:a8506668fa23aea463684053dcf3be5c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adapter from the unified <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> per-element bundle (produced by both the xTB and HF/DFT pipelines after Phase 3) to the cg shape consumed by <code><a class="el" href="classocc_1_1cg_1_1SolventSurfacePartitioner.html">SolventSurfacePartitioner</a></code> and the JSON writers.  <br /></td></tr>
-<tr class="separator:a8506668fa23aea463684053dcf3be5c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4469c1385b66591eccdf33f53a9254f5" id="r_a4469c1385b66591eccdf33f53a9254f5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a4469c1385b66591eccdf33f53a9254f5">from_xtb_surfaces</a> (const <a class="el" href="namespaceocc_1_1xtb.html#a8fbf5c7bcb0c65b514d24d94fd56c497">occ::xtb::SolvationSurfaces</a> &amp;xtb_surfaces)</td></tr>
-<tr class="memdesc:a4469c1385b66591eccdf33f53a9254f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Backwards-compatible alias.  <br /></td></tr>
-<tr class="separator:a4469c1385b66591eccdf33f53a9254f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b752694df705137816781557c9387a4" id="r_a3b752694df705137816781557c9387a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a3b752694df705137816781557c9387a4">coulomb_cavity</a> (<a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;)</td></tr>
+<tr class="memdesc:a3b752694df705137816781557c9387a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience accessors for the two SMD/CPCM-X cavities.  <br /></td></tr>
+<tr class="separator:a3b752694df705137816781557c9387a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7a9ef20f363ae1ef63a3a881515e40e" id="r_ab7a9ef20f363ae1ef63a3a881515e40e"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#ab7a9ef20f363ae1ef63a3a881515e40e">coulomb_cavity</a> (const <a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;)</td></tr>
+<tr class="separator:ab7a9ef20f363ae1ef63a3a881515e40e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a629e2390a7545bf4182baaf16cb2d582" id="r_a629e2390a7545bf4182baaf16cb2d582"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a629e2390a7545bf4182baaf16cb2d582">cds_cavity</a> (<a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;)</td></tr>
+<tr class="separator:a629e2390a7545bf4182baaf16cb2d582"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9ce9953a428bc1292a57e69eafe4181" id="r_ac9ce9953a428bc1292a57e69eafe4181"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#ac9ce9953a428bc1292a57e69eafe4181">cds_cavity</a> (const <a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;)</td></tr>
+<tr class="separator:ac9ce9953a428bc1292a57e69eafe4181"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98f2d8fffb3fb92b8b8544b791452309" id="r_a98f2d8fffb3fb92b8b8544b791452309"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a98f2d8fffb3fb92b8b8544b791452309">add_cavity</a> (<a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;, const std::string &amp;name, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;positions, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;areas, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;energies)</td></tr>
+<tr class="memdesc:a98f2d8fffb3fb92b8b8544b791452309"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a named cavity with a single energy channel of the same name.  <br /></td></tr>
+<tr class="separator:a98f2d8fffb3fb92b8b8544b791452309"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84fe7df49f002d9851c3c6175df984bc" id="r_a84fe7df49f002d9851c3c6175df984bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a84fe7df49f002d9851c3c6175df984bc">from_scrf_surfaces</a> (const <a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html">occ::scrf::SolvationSurfaces</a> &amp;)</td></tr>
+<tr class="memdesc:a84fe7df49f002d9851c3c6175df984bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build from the unified <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> bundle produced by the HF/DFT and xTB pipelines.  <br /></td></tr>
+<tr class="separator:a84fe7df49f002d9851c3c6175df984bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af87fd8a44df3d7cd9c123ecb745de81d" id="r_af87fd8a44df3d7cd9c123ecb745de81d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#af87fd8a44df3d7cd9c123ecb745de81d">from_xtb_surfaces</a> (const <a class="el" href="namespaceocc_1_1xtb.html#a8fbf5c7bcb0c65b514d24d94fd56c497">occ::xtb::SolvationSurfaces</a> &amp;surfaces)</td></tr>
+<tr class="separator:af87fd8a44df3d7cd9c123ecb745de81d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65ee954505547d7d1ee39969d9c5b169" id="r_a65ee954505547d7d1ee39969d9c5b169"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1cg.html#a65ee954505547d7d1ee39969d9c5b169">to_json</a> (nlohmann::json &amp;, const <a class="el" href="structocc_1_1cg_1_1MorphologyResult.html">MorphologyResult</a> &amp;)</td></tr>
 <tr class="separator:a65ee954505547d7d1ee39969d9c5b169"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -365,35 +373,130 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<h2 class="groupheader">Enumeration Type Documentation</h2>
-<a id="ae284280e2614fc31a1eba564be91dd6c" name="ae284280e2614fc31a1eba564be91dd6c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae284280e2614fc31a1eba564be91dd6c">&#9670;&#160;</a></span>PartitionScheme</h2>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a98f2d8fffb3fb92b8b8544b791452309" name="a98f2d8fffb3fb92b8b8544b791452309"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98f2d8fffb3fb92b8b8544b791452309">&#9670;&#160;</a></span>add_cavity()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">enum class <a class="el" href="namespaceocc_1_1cg.html#ae284280e2614fc31a1eba564be91dd6c">occ::cg::PartitionScheme</a></td>
+          <td class="memname"><a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> &amp; occ::cg::add_cavity </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>positions</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
+          <td class="paramname"><em>areas</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
+          <td class="paramname"><em>energies</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ae284280e2614fc31a1eba564be91dd6cad46944b7474143da3a8f5f49afc5bbfc" name="ae284280e2614fc31a1eba564be91dd6cad46944b7474143da3a8f5f49afc5bbfc"></a>NearestAtom&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ae284280e2614fc31a1eba564be91dd6ca904a394a586beaef3768b3b664aa966c" name="ae284280e2614fc31a1eba564be91dd6ca904a394a586beaef3768b3b664aa966c"></a>NearestAtomDnorm&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ae284280e2614fc31a1eba564be91dd6cad47101755289809d537b90d5f1737add" name="ae284280e2614fc31a1eba564be91dd6cad47101755289809d537b90d5f1737add"></a>ElectronDensity&#160;</td><td class="fielddoc"></td></tr>
-</table>
+
+<p>Add a named cavity with a single energy channel of the same name. </p>
+<dl class="section warning"><dt>Warning</dt><dd>Returns a reference into <code>cavities</code>, so it is invalidated by the next <code>add_cavity</code> exactly as <code>std::vector::emplace_back</code> would be. Finish with one cavity before adding the next. </dd></dl>
 
 </div>
 </div>
-<h2 class="groupheader">Function Documentation</h2>
+<a id="ac9ce9953a428bc1292a57e69eafe4181" name="ac9ce9953a428bc1292a57e69eafe4181"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9ce9953a428bc1292a57e69eafe4181">&#9670;&#160;</a></span>cds_cavity() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> * occ::cg::cds_cavity </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a629e2390a7545bf4182baaf16cb2d582" name="a629e2390a7545bf4182baaf16cb2d582"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a629e2390a7545bf4182baaf16cb2d582">&#9670;&#160;</a></span>cds_cavity() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> * occ::cg::cds_cavity </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab7a9ef20f363ae1ef63a3a881515e40e" name="ab7a9ef20f363ae1ef63a3a881515e40e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7a9ef20f363ae1ef63a3a881515e40e">&#9670;&#160;</a></span>coulomb_cavity() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> * occ::cg::coulomb_cavity </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3b752694df705137816781557c9387a4" name="a3b752694df705137816781557c9387a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b752694df705137816781557c9387a4">&#9670;&#160;</a></span>coulomb_cavity() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a> * occ::cg::coulomb_cavity </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convenience accessors for the two SMD/CPCM-X cavities. </p>
+
+</div>
+</div>
 <a id="a48533d39bf477dcc431b1993ff46f20e" name="a48533d39bf477dcc431b1993ff46f20e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a48533d39bf477dcc431b1993ff46f20e">&#9670;&#160;</a></span>exchange_matching_forward_reverse_pairs()</h2>
 
@@ -422,29 +525,29 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a8506668fa23aea463684053dcf3be5c3" name="a8506668fa23aea463684053dcf3be5c3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8506668fa23aea463684053dcf3be5c3">&#9670;&#160;</a></span>from_scrf_surfaces()</h2>
+<a id="a84fe7df49f002d9851c3c6175df984bc" name="a84fe7df49f002d9851c3c6175df984bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84fe7df49f002d9851c3c6175df984bc">&#9670;&#160;</a></span>from_scrf_surfaces()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a> occ::cg::from_scrf_surfaces </td>
+          <td class="memname"><a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> occ::cg::from_scrf_surfaces </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html">occ::scrf::SolvationSurfaces</a> &amp;&#160;</td>
-          <td class="paramname"><em>scrf_surfaces</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Adapter from the unified <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> per-element bundle (produced by both the xTB and HF/DFT pipelines after Phase 3) to the cg shape consumed by <code><a class="el" href="classocc_1_1cg_1_1SolventSurfacePartitioner.html">SolventSurfacePartitioner</a></code> and the JSON writers. </p>
-<p>Behaviour: • <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurface.html#a5a2eb366ebfbeb5372e53576f6044633">scrf::SolvationSurface.energies</a></code> carries the full per-element ES contribution <code>½ σ_i · φ_total_i</code> — identical algebraically to the legacy <code>nuc_i + elec_i + pol_i</code> per-element decomposition — so it flows straight into <code>coulomb.energies</code> and <code>electronic_energies</code> stays zero. The cg partitioner sums <code>coulomb.energies(i) + electronic_energies(i)</code> per element anyway, see <code>distance_partition.cpp:108</code>. • CPCM-X has no CDS branch (<code>scrf_surfaces.cds == std::nullopt</code>); the returned <code>cds</code> surface comes out empty. • <code>total_solvation_energy</code> is set to <code>scrf_surfaces.total_energy()</code>; the remaining DFT-flavoured fields (<code>electronic_contribution</code>, <code>gas_phase_contribution</code>, <code>free_energy_correction</code>) stay at their default zero — the DFT caller fills them in via <code>SMDCalculator::calculate_free_energy_components</code>. </p>
+<p>Build from the unified <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> bundle produced by the HF/DFT and xTB pipelines. </p>
+<p>CPCM-X has no CDS branch, so that cavity is simply absent. </p>
 
 </div>
 </div>
-<a id="a4469c1385b66591eccdf33f53a9254f5" name="a4469c1385b66591eccdf33f53a9254f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4469c1385b66591eccdf33f53a9254f5">&#9670;&#160;</a></span>from_xtb_surfaces()</h2>
+<a id="af87fd8a44df3d7cd9c123ecb745de81d" name="af87fd8a44df3d7cd9c123ecb745de81d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af87fd8a44df3d7cd9c123ecb745de81d">&#9670;&#160;</a></span>from_xtb_surfaces()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -453,10 +556,10 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a> occ::cg::from_xtb_surfaces </td>
+          <td class="memname"><a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a> occ::cg::from_xtb_surfaces </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="namespaceocc_1_1xtb.html#a8fbf5c7bcb0c65b514d24d94fd56c497">occ::xtb::SolvationSurfaces</a> &amp;&#160;</td>
-          <td class="paramname"><em>xtb_surfaces</em></td><td>)</td>
+          <td class="paramname"><em>surfaces</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -467,13 +570,10 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Backwards-compatible alias. </p>
-<p><code><a class="el" href="namespaceocc_1_1xtb.html#a8fbf5c7bcb0c65b514d24d94fd56c497">occ::xtb::SolvationSurfaces</a></code> is a type alias for <code><a class="el" href="structocc_1_1scrf_1_1SolvationSurfaces.html" title="Bundle of optional surfaces — coulomb is the electrostatic cavity, cds is the SMD cavitation-dispersi...">occ::scrf::SolvationSurfaces</a></code> (Phase 2), so this just forwards. </p>
-
 </div>
 </div>
-<a id="ac958b5b6a7a122e54cde06349179f66c" name="ac958b5b6a7a122e54cde06349179f66c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac958b5b6a7a122e54cde06349179f66c">&#9670;&#160;</a></span>NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE() <span class="overload">[1/2]</span></h2>
+<a id="a779e9e15cce0e420a1f05c72be107739" name="a779e9e15cce0e420a1f05c72be107739"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a779e9e15cce0e420a1f05c72be107739">&#9670;&#160;</a></span>NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -481,49 +581,37 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">occ::cg::NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structocc_1_1cg_1_1SMDSolventSurfaces.html">SMDSolventSurfaces</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1cg_1_1CavitySurface.html">CavitySurface</a>&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">coulomb&#160;</td>
+          <td class="paramtype">name&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">cds&#160;</td>
+          <td class="paramtype">positions&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">electronic_energies&#160;</td>
+          <td class="paramtype">areas&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">total_solvation_energy&#160;</td>
+          <td class="paramtype">energies&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">electronic_contribution&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gas_phase_contribution&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">free_energy_correction&#160;</td>
+          <td class="paramtype">descriptors&#160;</td>
           <td class="paramname">&#160;</td>
         </tr>
         <tr>
@@ -536,8 +624,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aaa52a885ee62a9b4a7c5abae12521453" name="aaa52a885ee62a9b4a7c5abae12521453"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaa52a885ee62a9b4a7c5abae12521453">&#9670;&#160;</a></span>NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE() <span class="overload">[2/2]</span></h2>
+<a id="a9ac9564f49d078488b9e3e1f3e0c9473" name="a9ac9564f49d078488b9e3e1f3e0c9473"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ac9564f49d078488b9e3e1f3e0c9473">&#9670;&#160;</a></span>NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -545,25 +633,59 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">occ::cg::NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structocc_1_1cg_1_1SolventSurface.html">SolventSurface</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1cg_1_1SolvationData.html">SolvationData</a>&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">positions&#160;</td>
+          <td class="paramtype">cavities&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">energies&#160;</td>
+          <td class="paramtype">total_solvation_energy&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">areas&#160;</td>
+          <td class="paramtype">electronic_contribution&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="abd1f9747aa96c74c6bdf6eae5e1e14c1" name="abd1f9747aa96c74c6bdf6eae5e1e14c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd1f9747aa96c74c6bdf6eae5e1e14c1">&#9670;&#160;</a></span>NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">occ::cg::NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1cg_1_1SurfaceField.html">SurfaceField</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">name&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">values&#160;</td>
           <td class="paramname">&#160;</td>
         </tr>
         <tr>

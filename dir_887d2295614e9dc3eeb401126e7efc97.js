@@ -2,6 +2,7 @@ var dir_887d2295614e9dc3eeb401126e7efc97 =
 [
     [ "cli_validators.h", "cli__validators_8h.html", "cli__validators_8h" ],
     [ "occ_cg.h", "occ__cg_8h.html", "occ__cg_8h" ],
+    [ "occ_cosmors.h", "occ__cosmors_8h.html", "occ__cosmors_8h" ],
     [ "occ_cube.h", "occ__cube_8h.html", "occ__cube_8h" ],
     [ "occ_describe.h", "occ__describe_8h.html", "occ__describe_8h" ],
     [ "occ_dimers.h", "occ__dimers_8h.html", "occ__dimers_8h" ],

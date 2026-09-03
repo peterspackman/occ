@@ -1,0 +1,5 @@
+<map id="occ::solvent::cosmors::ComponentFile" name="occ::solvent::cosmors::ComponentFile">
+<area shape="rect" id="Node000001" title="A solvent&#39;s segment ensemble as stored on disk." alt="" coords="5,108,168,148"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1solvent_1_1cosmors_1_1Component.html" title="One component reduced to what the kernel needs: its segment descriptors, areas, and the cavity volume..." alt="" coords="5,5,168,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="89,59,89,108,84,108,84,59"/>
+</map>

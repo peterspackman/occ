@@ -8,6 +8,5 @@ var dir_09946947da640734f5be0738fd03b274 =
     [ "result_types.h", "result__types_8h.html", "result__types_8h" ],
     [ "smd_solvation.h", "smd__solvation_8h.html", "smd__solvation_8h" ],
     [ "solvation_contribution.h", "solvation__contribution_8h.html", "solvation__contribution_8h" ],
-    [ "solvation_types.h", "solvation__types_8h.html", "solvation__types_8h" ],
-    [ "solvent_surface.h", "solvent__surface_8h.html", "solvent__surface_8h" ]
+    [ "solvation_data.h", "solvation__data_8h.html", "solvation__data_8h" ]
 ];

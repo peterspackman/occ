@@ -3,6 +3,7 @@ var namespaceocc_1_1solvent =
     [ "cosmo", "namespaceocc_1_1solvent_1_1cosmo.html", [
       [ "solvation_radii", "namespaceocc_1_1solvent_1_1cosmo.html#a2b587108986b0b039969e4675fb7cce8", null ]
     ] ],
+    [ "cosmors", "namespaceocc_1_1solvent_1_1cosmors.html", "namespaceocc_1_1solvent_1_1cosmors" ],
     [ "draco", "namespaceocc_1_1solvent_1_1draco.html", [
       [ "coordination_numbers", "namespaceocc_1_1solvent_1_1draco.html#a6730930178f0aa7b1c8f43ab1074a09e", null ],
       [ "smd_coulomb_radii", "namespaceocc_1_1solvent_1_1draco.html#aea12a14dd3edd10a91b88e9dc5d3c1e9", null ]
@@ -27,5 +28,7 @@ var namespaceocc_1_1solvent =
     [ "get_smd_parameters", "namespaceocc_1_1solvent.html#aeb9911f245379dfd8e6b17ce52ed2f86", null ],
     [ "list_available_solvents", "namespaceocc_1_1solvent.html#a044a8b7a97364d93a956602f7e7c220b", null ],
     [ "load_draco_parameters", "namespaceocc_1_1solvent.html#a6f1f7d0599fb7191b010e196091d473b", null ],
+    [ "override_data_path_directory", "namespaceocc_1_1solvent.html#a5ec25626d041364ce3924e9a39ebf621", null ],
+    [ "solvent_data_path", "namespaceocc_1_1solvent.html#ae2b30f0551527116f1ca335bbec0b84e", null ],
     [ "to_json", "namespaceocc_1_1solvent.html#a6386bda2c9d519a9aada86278bf41d2e", null ]
 ];

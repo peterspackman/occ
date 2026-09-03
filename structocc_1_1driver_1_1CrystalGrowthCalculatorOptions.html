@@ -110,6 +110,17 @@ $(document).ready(function(){initNavTree('structocc_1_1driver_1_1CrystalGrowthCa
 Public Attributes</h2></td></tr>
 <tr class="memitem:af595448d6c91e4e66a4aab89cf09e25c" id="r_af595448d6c91e4e66a4aab89cf09e25c"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#af595448d6c91e4e66a4aab89cf09e25c">solvent</a> {&quot;water&quot;}</td></tr>
 <tr class="separator:af595448d6c91e4e66a4aab89cf09e25c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ded58a3f3c7001a726dc2635c82eab5" id="r_a2ded58a3f3c7001a726dc2635c82eab5"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a2ded58a3f3c7001a726dc2635c82eab5">solvent_tag</a> {&quot;water&quot;}</td></tr>
+<tr class="memdesc:a2ded58a3f3c7001a726dc2635c82eab5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filesystem-safe form of <code>solvent</code>, used for output filenames.  <br /></td></tr>
+<tr class="separator:a2ded58a3f3c7001a726dc2635c82eab5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92a3ae5e9661241601e5bfe41b91644d" id="r_a92a3ae5e9661241601e5bfe41b91644d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1driver.html#a8db8cc178b579bd5d1d4f63f507e9be0">SolvationModelKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a92a3ae5e9661241601e5bfe41b91644d">solvation_model</a> {<a class="el" href="namespaceocc_1_1driver.html#a8db8cc178b579bd5d1d4f63f507e9be0a1d94a15e509773fbab9e850e819d06e1">SolvationModelKind::Smd</a>}</td></tr>
+<tr class="memdesc:a92a3ae5e9661241601e5bfe41b91644d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Which solvation model supplies the per-element surfaces.  <br /></td></tr>
+<tr class="separator:a92a3ae5e9661241601e5bfe41b91644d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea01d3f731bc452da911b9f573464f66" id="r_aea01d3f731bc452da911b9f573464f66"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#aea01d3f731bc452da911b9f573464f66">temperature</a> {298.15}</td></tr>
+<tr class="separator:aea01d3f731bc452da911b9f573464f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28257fb76b18f43f7e74c82022a85749" id="r_a28257fb76b18f43f7e74c82022a85749"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a28257fb76b18f43f7e74c82022a85749">solvent_probe_radius</a> {0.0}</td></tr>
+<tr class="memdesc:a28257fb76b18f43f7e74c82022a85749"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solvent probe radius for the conductor cavity, Angstrom.  <br /></td></tr>
+<tr class="separator:a28257fb76b18f43f7e74c82022a85749"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3801c5baa2ce1127c2618bb0c651578a" id="r_a3801c5baa2ce1127c2618bb0c651578a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a3801c5baa2ce1127c2618bb0c651578a">basename</a> {&quot;calculation&quot;}</td></tr>
 <tr class="separator:a3801c5baa2ce1127c2618bb0c651578a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa35cfe8f9078c1683b08f704d2eaa58d" id="r_aa35cfe8f9078c1683b08f704d2eaa58d"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#aa35cfe8f9078c1683b08f704d2eaa58d">energy_model</a> {&quot;ce-b3lyp&quot;}</td></tr>
@@ -122,7 +133,11 @@ Public Attributes</h2></td></tr>
 <tr class="separator:ac4af5c391c9ecef826297882d32984c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7760b10637da3c750090de79e94b44c8" id="r_a7760b10637da3c750090de79e94b44c8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a7760b10637da3c750090de79e94b44c8">write_debug_output_files</a> {true}</td></tr>
 <tr class="separator:a7760b10637da3c750090de79e94b44c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43ff4f3ee79fc7fa0758b8fbcd05c0fc" id="r_a43ff4f3ee79fc7fa0758b8fbcd05c0fc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a43ff4f3ee79fc7fa0758b8fbcd05c0fc">print_solvation_descriptors</a> {false}</td></tr>
+<tr class="memdesc:a43ff4f3ee79fc7fa0758b8fbcd05c0fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print a per-contact table of the solvation descriptors (lambda, hydrogen-bonded area, ...) alongside the energy table.  <br /></td></tr>
+<tr class="separator:a43ff4f3ee79fc7fa0758b8fbcd05c0fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6aeaf639a10ae8fb314d74269e65ea3e" id="r_a6aeaf639a10ae8fb314d74269e65ea3e"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6aeaf639a10ae8fb314d74269e65ea3e">inner_radius</a> {3.8}</td></tr>
+<tr class="memdesc:a6aeaf639a10ae8fb314d74269e65ea3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Redistribute each molecule's solvation over its contacts using dimer-difference weights instead of the nearest-atom surface partition.  <br /></td></tr>
 <tr class="separator:a6aeaf639a10ae8fb314d74269e65ea3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad60a2862cbbfb2a1b976805797257f06" id="r_ad60a2862cbbfb2a1b976805797257f06"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ad60a2862cbbfb2a1b976805797257f06">outer_radius</a> {3.8}</td></tr>
 <tr class="separator:ad60a2862cbbfb2a1b976805797257f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -172,6 +187,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Redistribute each molecule's solvation over its contacts using dimer-difference weights instead of the nearest-atom surface partition. </p>
+<p>The total per molecule is preserved; only the distribution changes. </p>
+
 </div>
 </div>
 <a id="ad60a2862cbbfb2a1b976805797257f06" name="ad60a2862cbbfb2a1b976805797257f06"></a>
@@ -188,6 +206,38 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a43ff4f3ee79fc7fa0758b8fbcd05c0fc" name="a43ff4f3ee79fc7fa0758b8fbcd05c0fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43ff4f3ee79fc7fa0758b8fbcd05c0fc">&#9670;&#160;</a></span>print_solvation_descriptors</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::driver::CrystalGrowthCalculatorOptions::print_solvation_descriptors {false}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Print a per-contact table of the solvation descriptors (lambda, hydrogen-bonded area, ...) alongside the energy table. </p>
+
+</div>
+</div>
+<a id="a92a3ae5e9661241601e5bfe41b91644d" name="a92a3ae5e9661241601e5bfe41b91644d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92a3ae5e9661241601e5bfe41b91644d">&#9670;&#160;</a></span>solvation_model</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc_1_1driver.html#a8db8cc178b579bd5d1d4f63f507e9be0">SolvationModelKind</a> occ::driver::CrystalGrowthCalculatorOptions::solvation_model {<a class="el" href="namespaceocc_1_1driver.html#a8db8cc178b579bd5d1d4f63f507e9be0a1d94a15e509773fbab9e850e819d06e1">SolvationModelKind::Smd</a>}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Which solvation model supplies the per-element surfaces. </p>
+
+</div>
+</div>
 <a id="af595448d6c91e4e66a4aab89cf09e25c" name="af595448d6c91e4e66a4aab89cf09e25c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af595448d6c91e4e66a4aab89cf09e25c">&#9670;&#160;</a></span>solvent</h2>
 
@@ -196,6 +246,53 @@ Public Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">std::string occ::driver::CrystalGrowthCalculatorOptions::solvent {&quot;water&quot;}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a28257fb76b18f43f7e74c82022a85749" name="a28257fb76b18f43f7e74c82022a85749"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28257fb76b18f43f7e74c82022a85749">&#9670;&#160;</a></span>solvent_probe_radius</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::driver::CrystalGrowthCalculatorOptions::solvent_probe_radius {0.0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Solvent probe radius for the conductor cavity, Angstrom. </p>
+<p>Only the cosmo-rs model builds one; SMD has its own cavity construction. </p>
+
+</div>
+</div>
+<a id="a2ded58a3f3c7001a726dc2635c82eab5" name="a2ded58a3f3c7001a726dc2635c82eab5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ded58a3f3c7001a726dc2635c82eab5">&#9670;&#160;</a></span>solvent_tag</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::driver::CrystalGrowthCalculatorOptions::solvent_tag {&quot;water&quot;}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Filesystem-safe form of <code>solvent</code>, used for output filenames. </p>
+
+</div>
+</div>
+<a id="aea01d3f731bc452da911b9f573464f66" name="aea01d3f731bc452da911b9f573464f66"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea01d3f731bc452da911b9f573464f66">&#9670;&#160;</a></span>temperature</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::driver::CrystalGrowthCalculatorOptions::temperature {298.15}</td>
         </tr>
       </table>
 </div><div class="memdoc">

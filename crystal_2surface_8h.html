@@ -104,7 +104,8 @@ $(document).ready(function(){initNavTree('crystal_2surface_8h.html',''); initRes
   <div class="headertitle"><div class="title">surface.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;Eigen/Geometry&gt;</code><br />
+<div class="textblock"><code>#include &lt;string&gt;</code><br />
+<code>#include &lt;Eigen/Geometry&gt;</code><br />
 <code>#include &lt;array&gt;</code><br />
 <code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="crystal_8h.html">occ/crystal/crystal.h</a>&gt;</code><br />
@@ -114,7 +115,7 @@ $(document).ready(function(){initNavTree('crystal_2surface_8h.html',''); initRes
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for surface.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="crystal_2surface_8h__incl.svg" width="2996" height="608"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="crystal_2surface_8h__incl.svg" width="2963" height="608"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -141,6 +142,12 @@ Namespaces</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:acabcfc08796e949c67ded87405c2b2c8" id="r_acabcfc08796e949c67ded87405c2b2c8"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classocc_1_1crystal_1_1Surface.html">Surface</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#acabcfc08796e949c67ded87405c2b2c8">occ::crystal::generate_surfaces</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, const <a class="el" href="structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html">CrystalSurfaceGenerationParameters</a> &amp;={})</td></tr>
 <tr class="separator:acabcfc08796e949c67ded87405c2b2c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70b14f2dd5620bf90e0dedd7647efb2c" id="r_a70b14f2dd5620bf90e0dedd7647efb2c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#a70b14f2dd5620bf90e0dedd7647efb2c">occ::crystal::friedel_mate_is_equivalent</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, const <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> &amp;hkl)</td></tr>
+<tr class="memdesc:a70b14f2dd5620bf90e0dedd7647efb2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the crystal's point group maps <code>hkl</code> onto <code>-h-k-l</code>, i.e.  <br /></td></tr>
+<tr class="separator:a70b14f2dd5620bf90e0dedd7647efb2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf1fbc5a0f5df6f6150f9d5e8d40f21f" id="r_abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#abf1fbc5a0f5df6f6150f9d5e8d40f21f">occ::crystal::laue_orbit_partners</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, const std::vector&lt; <a class="el" href="classocc_1_1crystal_1_1Surface.html">Surface</a> &gt; &amp;surfaces, size_t i)</td></tr>
+<tr class="memdesc:abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Positions in <code>surfaces</code> that share a Laue-class orbit with <code>surfaces[i]</code>, including <code>i</code> itself.  <br /></td></tr>
+<tr class="separator:abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

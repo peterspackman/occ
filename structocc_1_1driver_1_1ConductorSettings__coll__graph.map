@@ -1,0 +1,5 @@
+<map id="occ::driver::ConductorSettings" name="occ::driver::ConductorSettings">
+<area shape="rect" id="Node000001" title="Settings for the ideal&#45;conductor COSMO calculation the segment descriptors are built from." alt="" coords="5,108,223,133"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1solvent_1_1cosmors_1_1Parameters.html" title="Every parameter of the openCOSMO&#45;RS model." alt="" coords="33,5,195,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="117,59,117,108,111,108,111,59"/>
+</map>

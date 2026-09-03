@@ -116,9 +116,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a88d614088b71aa7a93a5c6bd4c7654ea" id="r_a88d614088b71aa7a93a5c6bd4c7654ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a88d614088b71aa7a93a5c6bd4c7654ea">initialize</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;atom_positions_bohr, const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a> &amp;atomic_numbers)</td></tr>
 <tr class="memdesc:a88d614088b71aa7a93a5c6bd4c7654ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the cavity, pre-factor the COSMO A matrix, and (if <code>include_cds</code>) pre-evaluate the CDS branch.  <br /></td></tr>
 <tr class="separator:a88d614088b71aa7a93a5c6bd4c7654ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7c2a94ed5b16ad8ee9e3298b7a401294" id="r_a7c2a94ed5b16ad8ee9e3298b7a401294"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a7c2a94ed5b16ad8ee9e3298b7a401294">solve_asc</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;phi_at_cavity)</td></tr>
-<tr class="memdesc:a7c2a94ed5b16ad8ee9e3298b7a401294"><td class="mdescLeft">&#160;</td><td class="mdescRight">Eulerian: solve <code>A σ = −f(ε)·φ_cavity</code>.  <br /></td></tr>
-<tr class="separator:a7c2a94ed5b16ad8ee9e3298b7a401294"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68bf9492dfcd5b0277d500d6e45af36e" id="r_a68bf9492dfcd5b0277d500d6e45af36e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a68bf9492dfcd5b0277d500d6e45af36e">solve_asc</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;phi_at_cavity, std::optional&lt; double &gt; total_solute_charge=std::nullopt)</td></tr>
+<tr class="memdesc:a68bf9492dfcd5b0277d500d6e45af36e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Eulerian: solve <code>A σ = −f(ε)·φ_cavity</code>.  <br /></td></tr>
+<tr class="separator:a68bf9492dfcd5b0277d500d6e45af36e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30fc34259bc37d135f097f14525aa1e8" id="r_a30fc34259bc37d135f097f14525aa1e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a30fc34259bc37d135f097f14525aa1e8">update_from_atom_charges</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;atom_charges)</td></tr>
 <tr class="memdesc:a30fc34259bc37d135f097f14525aa1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atom-resolved: from input atomic charges, compute φ = B·q, σ = G·q, V_atom = J_solv·q, E_es = ½ q·V_atom.  <br /></td></tr>
 <tr class="separator:a30fc34259bc37d135f097f14525aa1e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -695,8 +695,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a7c2a94ed5b16ad8ee9e3298b7a401294" name="a7c2a94ed5b16ad8ee9e3298b7a401294"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7c2a94ed5b16ad8ee9e3298b7a401294">&#9670;&#160;</a></span>solve_asc()</h2>
+<a id="a68bf9492dfcd5b0277d500d6e45af36e" name="a68bf9492dfcd5b0277d500d6e45af36e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68bf9492dfcd5b0277d500d6e45af36e">&#9670;&#160;</a></span>solve_asc()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -705,14 +705,26 @@ Public Member Functions</h2></td></tr>
           <td class="memname">void occ::scrf::ReactionFieldEngine::solve_asc </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
-          <td class="paramname"><em>phi_at_cavity</em></td><td>)</td>
+          <td class="paramname"><em>phi_at_cavity</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">std::optional&lt; double &gt;&#160;</td>
+          <td class="paramname"><em>total_solute_charge</em> = <code>std::nullopt</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Eulerian: solve <code>A σ = −f(ε)·φ_cavity</code>. </p>
-<p>Caches <code>σ</code> and <code>φ</code> so <code><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#ab7231287db8155b22f07993d05b5e224">energy_es()</a></code> / <code><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#afbfd143d75c8f7f9447c11bd09097f06" title="Per-element decomposition of the latest update.">surfaces()</a></code> reflect the result. Does NOT compute <code>V_atom</code> — use the atom-resolved path for that. </p>
+<p>Caches <code>σ</code> and <code>φ</code> so <code><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#ab7231287db8155b22f07993d05b5e224">energy_es()</a></code> / <code><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#afbfd143d75c8f7f9447c11bd09097f06" title="Per-element decomposition of the latest update.">surfaces()</a></code> reflect the result. Does NOT compute <code>V_atom</code> — use the atom-resolved path for that.</p>
+<p>With <code>total_solute_charge</code> set, the solve is constrained to <code>Σσ = −f(ε)·q</code>, which for a conductor is exact by Gauss's law. The unconstrained solve falls short by the charge lying outside the cavity. Enforced with a Lagrange multiplier on the existing factorisation: </p><pre class="fragment">σ = σ_free − λ A⁻¹1,   λ = (1ᵀσ_free − σ_target) / (1ᵀA⁻¹1)
+</pre><p> This restores the sum rule but does not redistribute σ; the shape error needs the Klamt–Jonas double-cavity correction, which is not implemented. </p>
 
 </div>
 </div>

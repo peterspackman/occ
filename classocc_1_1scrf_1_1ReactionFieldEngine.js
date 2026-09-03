@@ -20,7 +20,7 @@ var classocc_1_1scrf_1_1ReactionFieldEngine =
     [ "num_es_surface_points", "classocc_1_1scrf_1_1ReactionFieldEngine.html#a67776e7c42bc2cd59937fc6e65626ea2", null ],
     [ "options", "classocc_1_1scrf_1_1ReactionFieldEngine.html#a2ef178c548a998800f0bab97ea782ff8", null ],
     [ "smd_parameters", "classocc_1_1scrf_1_1ReactionFieldEngine.html#a87017b2de9e170e9d5af66d620603729", null ],
-    [ "solve_asc", "classocc_1_1scrf_1_1ReactionFieldEngine.html#a7c2a94ed5b16ad8ee9e3298b7a401294", null ],
+    [ "solve_asc", "classocc_1_1scrf_1_1ReactionFieldEngine.html#a68bf9492dfcd5b0277d500d6e45af36e", null ],
     [ "surface_charges", "classocc_1_1scrf_1_1ReactionFieldEngine.html#a24d6d07e6ba07e92196e0f1604db0804", null ],
     [ "surfaces", "classocc_1_1scrf_1_1ReactionFieldEngine.html#afbfd143d75c8f7f9447c11bd09097f06", null ],
     [ "update_from_atom_charges", "classocc_1_1scrf_1_1ReactionFieldEngine.html#a30fc34259bc37d135f097f14525aa1e8", null ]

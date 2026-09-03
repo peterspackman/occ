@@ -33,7 +33,7 @@ var classocc_1_1driver_1_1CrystalGrowthCalculator =
     [ "m_molecules", "classocc_1_1driver_1_1CrystalGrowthCalculator.html#a8f8f5d0a5a69da0c92b7157a810e991c", null ],
     [ "m_nearest_dimers", "classocc_1_1driver_1_1CrystalGrowthCalculator.html#a610b893c63368ecd5d951fdebc23c412", null ],
     [ "m_solution_terms", "classocc_1_1driver_1_1CrystalGrowthCalculator.html#a554f99eb068b4c2bc9113a4d12c1bd87", null ],
-    [ "m_solvated_surface_properties", "classocc_1_1driver_1_1CrystalGrowthCalculator.html#a53d8a99990d2051dc22390c52992f711", null ],
+    [ "m_solvated_surface_properties", "classocc_1_1driver_1_1CrystalGrowthCalculator.html#a7ee8aebe9f390e34149e62ae7baa4b80", null ],
     [ "m_solvated_wavefunctions", "classocc_1_1driver_1_1CrystalGrowthCalculator.html#afa2dd3e21d8bda13eccac4feb9c987f4", null ],
-    [ "m_solvation_breakdowns", "classocc_1_1driver_1_1CrystalGrowthCalculator.html#ad8438aaf007447b0b68a7a4748fcd8ae", null ]
+    [ "m_standard_state_shift", "classocc_1_1driver_1_1CrystalGrowthCalculator.html#a9ebf02257907736f5449fc248fc0129c", null ]
 ];

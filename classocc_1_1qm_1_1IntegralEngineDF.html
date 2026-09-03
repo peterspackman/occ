@@ -163,9 +163,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a32357c25539a8faadf4f5d9de15cb300"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd09551e4f521f811b999686c946d706" id="r_acd09551e4f521f811b999686c946d706"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#acd09551e4f521f811b999686c946d706">integral_store</a> () const</td></tr>
 <tr class="separator:acd09551e4f521f811b999686c946d706"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1f9d8abc3402b10b26801610f9a9532f" id="r_a1f9d8abc3402b10b26801610f9a9532f"><td class="memItemLeft" align="right" valign="top">const Eigen::LLT&lt; <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#a1f9d8abc3402b10b26801610f9a9532f">coulomb_metric</a> () const</td></tr>
-<tr class="memdesc:a1f9d8abc3402b10b26801610f9a9532f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cholesky factorization of the Coulomb metric V=(P|Q), V = L Lᵀ.  <br /></td></tr>
-<tr class="separator:a1f9d8abc3402b10b26801610f9a9532f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abedce9be8792db69e30f14f848a644b1" id="r_abedce9be8792db69e30f14f848a644b1"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classocc_1_1qm_1_1CoulombMetric.html">CoulombMetric</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#abedce9be8792db69e30f14f848a644b1">coulomb_metric</a> () const</td></tr>
+<tr class="memdesc:abedce9be8792db69e30f14f848a644b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Factorization of the Coulomb metric V=(P|Q) for the active omega.  <br /></td></tr>
+<tr class="separator:abedce9be8792db69e30f14f848a644b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab6b8e83d5310d1d77f53c3a6a12451fc" id="r_ab6b8e83d5310d1d77f53c3a6a12451fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#ab6b8e83d5310d1d77f53c3a6a12451fc">compute_stored_integrals</a> ()</td></tr>
 <tr class="separator:ab6b8e83d5310d1d77f53c3a6a12451fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3510878dc026972c608ad67660248493" id="r_a3510878dc026972c608ad67660248493"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1IntegralEngineDF.html#a3510878dc026972c608ad67660248493">build_b_direct</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt; C_left, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt; C_right) const</td></tr>
@@ -488,8 +488,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a1f9d8abc3402b10b26801610f9a9532f" name="a1f9d8abc3402b10b26801610f9a9532f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1f9d8abc3402b10b26801610f9a9532f">&#9670;&#160;</a></span>coulomb_metric()</h2>
+<a id="abedce9be8792db69e30f14f848a644b1" name="abedce9be8792db69e30f14f848a644b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abedce9be8792db69e30f14f848a644b1">&#9670;&#160;</a></span>coulomb_metric()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -498,7 +498,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const Eigen::LLT&lt; <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &gt; &amp; occ::qm::IntegralEngineDF::coulomb_metric </td>
+          <td class="memname">const <a class="el" href="classocc_1_1qm_1_1CoulombMetric.html">CoulombMetric</a> &amp; occ::qm::IntegralEngineDF::coulomb_metric </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -511,7 +511,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Cholesky factorization of the Coulomb metric V=(P|Q), V = L Lᵀ. </p>
+<p>Factorization of the Coulomb metric V=(P|Q) for the active omega. </p>
 
 </div>
 </div>

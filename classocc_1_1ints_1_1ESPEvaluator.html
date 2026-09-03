@@ -171,6 +171,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af798a21940f35bbbc3926a52646f6967" id="r_af798a21940f35bbbc3926a52646f6967"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1ints_1_1ESPEvaluator.html#af798a21940f35bbbc3926a52646f6967">pair_extent</a> (<a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b376e88ec758d">size_t</a> <a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b376e88ec758d">shell_idx</a>) <a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b376e88ec758d">const</a></td></tr>
 <tr class="memdesc:af798a21940f35bbbc3926a52646f6967"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the extent of a shell pair (radius where pair density &lt; 1e-12) Based on the most diffuse primitive combination.  <br /></td></tr>
 <tr class="separator:af798a21940f35bbbc3926a52646f6967"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cb418fdecd632bfa8e477e8ca99e2f3" id="r_a7cb418fdecd632bfa8e477e8ca99e2f3"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1ints_1_1ESPEvaluator.html#a7cb418fdecd632bfa8e477e8ca99e2f3">pair_estimate</a> (<a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b376e88ec758d">size_t</a> <a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b376e88ec758d">shell_idx</a>) <a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b376e88ec758d">const</a></td></tr>
+<tr class="memdesc:a7cb418fdecd632bfa8e477e8ca99e2f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Grid-point-independent upper bound on this pair's ESP integrals, sum_prim |2 pi / p * c_a * c_b * exp(-mu R_AB^2)|, i.e.  <br /></td></tr>
+<tr class="separator:a7cb418fdecd632bfa8e477e8ca99e2f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b376e88ec758d">typename</a> T&gt;<br />
@@ -793,6 +796,29 @@ template&lt;<a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b3
 </div><div class="memdoc">
 
 <p>Get the effective center of a shell pair (overlap region) Based on the most diffuse primitive combination. </p>
+
+</div>
+</div>
+<a id="a7cb418fdecd632bfa8e477e8ca99e2f3" name="a7cb418fdecd632bfa8e477e8ca99e2f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7cb418fdecd632bfa8e477e8ca99e2f3">&#9670;&#160;</a></span>pair_estimate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b376e88ec758d">typename</a> T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">T <a class="el" href="classocc_1_1ints_1_1ESPEvaluator.html">occ::ints::ESPEvaluator</a>&lt; T &gt;::pair_estimate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1ints.html#aad916427ba65698e746b376e88ec758d">size_t</a>&#160;</td>
+          <td class="paramname"><em>shell_idx</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Grid-point-independent upper bound on this pair's ESP integrals, sum_prim |2 pi / p * c_a * c_b * exp(-mu R_AB^2)|, i.e. </p>
+<p>the integral prefactor with the <a class="el" href="classocc_1_1ints_1_1Boys.html">Boys</a> factor F_0 &lt;= 1 bounded out. Because it drops the only distance-to-grid-point dependence, it bounds the pair everywhere and is the right magnitude to screen a 1/R kernel on. Cheaper and tighter than the overlap, which is this times sqrt(pi/p)/2 and so understates compact pairs badly. </p>
 
 </div>
 </div>

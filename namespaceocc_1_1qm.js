@@ -46,6 +46,7 @@ var namespaceocc_1_1qm =
     [ "CanonicalOrthogonalizer", "classocc_1_1qm_1_1CanonicalOrthogonalizer.html", "classocc_1_1qm_1_1CanonicalOrthogonalizer" ],
     [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
     [ "ConvergenceAccelerator", "classocc_1_1qm_1_1ConvergenceAccelerator.html", "classocc_1_1qm_1_1ConvergenceAccelerator" ],
+    [ "CoulombMetric", "classocc_1_1qm_1_1CoulombMetric.html", "classocc_1_1qm_1_1CoulombMetric" ],
     [ "DFIntegrals", "classocc_1_1qm_1_1DFIntegrals.html", "classocc_1_1qm_1_1DFIntegrals" ],
     [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
     [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],

@@ -1,0 +1,11 @@
+<map id="/home/runner/work/occ/occ/include/occ/qm/coulomb_metric.h" name="/home/runner/work/occ/occ/include/occ/qm/coulomb_metric.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="49,5,259,60"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,127,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,62,89,100,86,96,125,58"/>
+<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="151,108,336,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="183,58,223,96,220,100,179,62"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="131,181,223,207"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="234,135,199,173,195,169,230,132"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="247,181,371,207"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="256,132,291,169,287,173,252,135"/>
+</map>

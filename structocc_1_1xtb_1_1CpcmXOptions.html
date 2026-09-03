@@ -120,7 +120,7 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:abf7563345cea696d002415e0bcd67e90" id="r_abf7563345cea696d002415e0bcd67e90"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1CpcmXOptions.html#abf7563345cea696d002415e0bcd67e90">x</a> {0.0}</td></tr>
 <tr class="memdesc:abf7563345cea696d002415e0bcd67e90"><td class="mdescLeft">&#160;</td><td class="mdescRight">COSMO/CPCM scaling factor in <code>f(ε) = (ε − 1) / (ε + x)</code>.  <br /></td></tr>
 <tr class="separator:abf7563345cea696d002415e0bcd67e90"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae039a53b2496140e130eb1c353cf4271" id="r_ae039a53b2496140e130eb1c353cf4271"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1CpcmXOptions.html#ae039a53b2496140e130eb1c353cf4271">probe_radius_angs</a> {0.4}</td></tr>
+<tr class="memitem:ae039a53b2496140e130eb1c353cf4271" id="r_ae039a53b2496140e130eb1c353cf4271"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1CpcmXOptions.html#ae039a53b2496140e130eb1c353cf4271">probe_radius_angs</a> {0.0}</td></tr>
 <tr class="memdesc:ae039a53b2496140e130eb1c353cf4271"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solvent probe radius (Å) handed to the cavity builder.  <br /></td></tr>
 <tr class="separator:ae039a53b2496140e130eb1c353cf4271"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ca37d46ce8429afa1d05d81b0e3fcb7" id="r_a8ca37d46ce8429afa1d05d81b0e3fcb7"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1xtb_1_1CpcmXOptions.html#a8ca37d46ce8429afa1d05d81b0e3fcb7">smoothing_width_bohr</a> {0.1}</td></tr>
@@ -155,13 +155,13 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double occ::xtb::CpcmXOptions::probe_radius_angs {0.4}</td>
+          <td class="memname">double occ::xtb::CpcmXOptions::probe_radius_angs {0.0}</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Solvent probe radius (Å) handed to the cavity builder. </p>
-<p>Note: the current <code><a class="el" href="namespaceocc_1_1solvent_1_1surface.html#a610465e63c5eba21db4cd2ba282f2b7a" title="Build an atom-centered Lebedev cavity surface.">occ::solvent::surface::solvent_surface</a></code> implementation clamps this to 0.001 Å — left as-is to match the rest of the OCC pipeline. </p>
+<p>Zero gives a plain union of vdW spheres. Ignored by the smooth cavity selected below — see <code><a class="el" href="namespaceocc_1_1solvent_1_1surface.html#a24e68d691c129085442e42c1d5228d0d" title="Build an atom-centered Lebedev cavity surface.">occ::solvent::surface::solvent_surface</a></code>. </p>
 
 </div>
 </div>

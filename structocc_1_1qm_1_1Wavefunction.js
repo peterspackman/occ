@@ -32,6 +32,7 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "symmetric_orthonormalize_molecular_orbitals", "structocc_1_1qm_1_1Wavefunction.html#aadcb825d6970a24ecf390ddea6240f75", null ],
     [ "atoms", "structocc_1_1qm_1_1Wavefunction.html#afeccdf21f185580812da868d561af166", null ],
     [ "basis", "structocc_1_1qm_1_1Wavefunction.html#a4fa282437c5da86e074c9b69baf7d730", null ],
+    [ "converged", "structocc_1_1qm_1_1Wavefunction.html#aac6df975ae8aca70df28be4bc4bacefb", null ],
     [ "energy", "structocc_1_1qm_1_1Wavefunction.html#ad88762bcfd80595fa83b21df0b620d02", null ],
     [ "H", "structocc_1_1qm_1_1Wavefunction.html#ad0e4e1c4f93b97a3e479d3dbba47ef05", null ],
     [ "have_energies", "structocc_1_1qm_1_1Wavefunction.html#a48f460b0d8e26971d2581c87266bdc37", null ],

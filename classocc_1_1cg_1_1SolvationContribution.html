@@ -104,12 +104,44 @@ $(document).ready(function(){initNavTree('classocc_1_1cg_1_1SolvationContributio
 </div><!--header-->
 <div class="contents">
 
+<p>Solvation attributed to one neighbour contact, as a set of named channels.  
+ <a href="classocc_1_1cg_1_1SolvationContribution.html#details">More...</a></p>
+
 <p><code>#include &lt;solvation_contribution.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ad554585f4d7e08c9e0794720a45e904f" id="r_ad554585f4d7e08c9e0794720a45e904f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ad554585f4d7e08c9e0794720a45e904f">SolvationContribution</a> ()=default</td></tr>
 <tr class="separator:ad554585f4d7e08c9e0794720a45e904f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61bc55a2206be765fe575bc99abe7775" id="r_a61bc55a2206be765fe575bc99abe7775"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a61bc55a2206be765fe575bc99abe7775">add_energy</a> (std::string_view channel, double value, bool is_forward=true)</td></tr>
+<tr class="separator:a61bc55a2206be765fe575bc99abe7775"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7708ed9fe4f8c673e714ed81c5abfaa" id="r_ac7708ed9fe4f8c673e714ed81c5abfaa"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ac7708ed9fe4f8c673e714ed81c5abfaa">add_descriptor</a> (std::string_view channel, double value, bool is_forward=true)</td></tr>
+<tr class="separator:ac7708ed9fe4f8c673e714ed81c5abfaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42358bf1aa9f87ab90ba604c28d23a69" id="r_a42358bf1aa9f87ab90ba604c28d23a69"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1cg_1_1ContributionPair.html">ContributionPair</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a42358bf1aa9f87ab90ba604c28d23a69">energy</a> (std::string_view channel) const</td></tr>
+<tr class="memdesc:a42358bf1aa9f87ab90ba604c28d23a69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Zero pair when the channel was never written.  <br /></td></tr>
+<tr class="separator:a42358bf1aa9f87ab90ba604c28d23a69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a990da05057ed0458969b719157c040aa" id="r_a990da05057ed0458969b719157c040aa"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1cg_1_1ContributionPair.html">ContributionPair</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a990da05057ed0458969b719157c040aa">descriptor</a> (std::string_view channel) const</td></tr>
+<tr class="separator:a990da05057ed0458969b719157c040aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3c5f9e1e527df230837187eed31acb4" id="r_ac3c5f9e1e527df230837187eed31acb4"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ac3c5f9e1e527df230837187eed31acb4">energy_channels</a> () const</td></tr>
+<tr class="separator:ac3c5f9e1e527df230837187eed31acb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a319f49daf8466330503a6cd340d179f1" id="r_a319f49daf8466330503a6cd340d179f1"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a319f49daf8466330503a6cd340d179f1">descriptor_channels</a> () const</td></tr>
+<tr class="separator:a319f49daf8466330503a6cd340d179f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac25088690b52d4b7f6223240f62cbfce" id="r_ac25088690b52d4b7f6223240f62cbfce"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ac25088690b52d4b7f6223240f62cbfce">total_energy</a> () const</td></tr>
+<tr class="memdesc:ac25088690b52d4b7f6223240f62cbfce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sum over every energy channel, with the antisymmetric correction when enabled.  <br /></td></tr>
+<tr class="separator:ac25088690b52d4b7f6223240f62cbfce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a251b470002f6039b468909ae7bbafc52" id="r_a251b470002f6039b468909ae7bbafc52"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a251b470002f6039b468909ae7bbafc52">forward_energy</a> () const</td></tr>
+<tr class="memdesc:a251b470002f6039b468909ae7bbafc52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Summed over every energy channel, without the antisymmetric correction.  <br /></td></tr>
+<tr class="separator:a251b470002f6039b468909ae7bbafc52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b5bdc986c8d66ee4f4a14e8f36672a7" id="r_a6b5bdc986c8d66ee4f4a14e8f36672a7"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a6b5bdc986c8d66ee4f4a14e8f36672a7">reverse_energy</a> () const</td></tr>
+<tr class="separator:a6b5bdc986c8d66ee4f4a14e8f36672a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a995b411e5f8aaf8c4868449a40abb1" id="r_a7a995b411e5f8aaf8c4868449a40abb1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a7a995b411e5f8aaf8c4868449a40abb1">exchange_with</a> (<a class="el" href="classocc_1_1cg_1_1SolvationContribution.html">SolvationContribution</a> &amp;other)</td></tr>
+<tr class="separator:a7a995b411e5f8aaf8c4868449a40abb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba5d1bd7ca80300c9320d2416abf470d" id="r_aba5d1bd7ca80300c9320d2416abf470d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#aba5d1bd7ca80300c9320d2416abf470d">has_been_exchanged</a> () const</td></tr>
+<tr class="separator:aba5d1bd7ca80300c9320d2416abf470d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65c1ef15de89c9caa3042fb0db144c6e" id="r_a65c1ef15de89c9caa3042fb0db144c6e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a65c1ef15de89c9caa3042fb0db144c6e">antisymmetrize</a> () const</td></tr>
+<tr class="separator:a65c1ef15de89c9caa3042fb0db144c6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0076fc8964e5d7ddd988a07ae0a241c" id="r_ac0076fc8964e5d7ddd988a07ae0a241c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ac0076fc8964e5d7ddd988a07ae0a241c">set_antisymmetrize</a> (bool on)</td></tr>
+<tr class="separator:ac0076fc8964e5d7ddd988a07ae0a241c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a87755fc3867e95ad1fac6708a2d3908c" id="r_a87755fc3867e95ad1fac6708a2d3908c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a87755fc3867e95ad1fac6708a2d3908c">add_coulomb</a> (double value, bool is_forward=true)</td></tr>
 <tr class="separator:a87755fc3867e95ad1fac6708a2d3908c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f963dd2998249cf0abb622adebd0ab6" id="r_a8f963dd2998249cf0abb622adebd0ab6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a8f963dd2998249cf0abb622adebd0ab6">add_cds</a> (double value, bool is_forward=true)</td></tr>
@@ -118,12 +150,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a128440d66ec2cc6b57331029412514d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a4c292d9ec256628034eda9518c40cb" id="r_a6a4c292d9ec256628034eda9518c40cb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a6a4c292d9ec256628034eda9518c40cb">add_cds_area</a> (double value, bool is_forward=true)</td></tr>
 <tr class="separator:a6a4c292d9ec256628034eda9518c40cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac25088690b52d4b7f6223240f62cbfce" id="r_ac25088690b52d4b7f6223240f62cbfce"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ac25088690b52d4b7f6223240f62cbfce">total_energy</a> () const</td></tr>
-<tr class="separator:ac25088690b52d4b7f6223240f62cbfce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a995b411e5f8aaf8c4868449a40abb1" id="r_a7a995b411e5f8aaf8c4868449a40abb1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a7a995b411e5f8aaf8c4868449a40abb1">exchange_with</a> (<a class="el" href="classocc_1_1cg_1_1SolvationContribution.html">SolvationContribution</a> &amp;other)</td></tr>
-<tr class="separator:a7a995b411e5f8aaf8c4868449a40abb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba5d1bd7ca80300c9320d2416abf470d" id="r_aba5d1bd7ca80300c9320d2416abf470d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#aba5d1bd7ca80300c9320d2416abf470d">has_been_exchanged</a> () const</td></tr>
-<tr class="separator:aba5d1bd7ca80300c9320d2416abf470d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f3ffe00341293a564937cc3f1a29958" id="r_a9f3ffe00341293a564937cc3f1a29958"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1cg_1_1ContributionPair.html">ContributionPair</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a9f3ffe00341293a564937cc3f1a29958">coulomb</a> () const</td></tr>
 <tr class="separator:a9f3ffe00341293a564937cc3f1a29958"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25e26b46ec599b9fae87ff5b7b0670ef" id="r_a25e26b46ec599b9fae87ff5b7b0670ef"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1cg_1_1ContributionPair.html">ContributionPair</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a25e26b46ec599b9fae87ff5b7b0670ef">cds</a> () const</td></tr>
@@ -132,12 +158,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ae767ee1878919155aa0f47955b36f83f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81a17123af5cfc6ac6c5b108ea8fb023" id="r_a81a17123af5cfc6ac6c5b108ea8fb023"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1cg_1_1ContributionPair.html">ContributionPair</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a81a17123af5cfc6ac6c5b108ea8fb023">cds_area</a> () const</td></tr>
 <tr class="separator:a81a17123af5cfc6ac6c5b108ea8fb023"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65c1ef15de89c9caa3042fb0db144c6e" id="r_a65c1ef15de89c9caa3042fb0db144c6e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#a65c1ef15de89c9caa3042fb0db144c6e">antisymmetrize</a> () const</td></tr>
-<tr class="separator:a65c1ef15de89c9caa3042fb0db144c6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac0076fc8964e5d7ddd988a07ae0a241c" id="r_ac0076fc8964e5d7ddd988a07ae0a241c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ac0076fc8964e5d7ddd988a07ae0a241c">set_antisymmetrize</a> (bool on)</td></tr>
-<tr class="separator:ac0076fc8964e5d7ddd988a07ae0a241c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Solvation attributed to one neighbour contact, as a set of named channels. </p>
+<p>Channels are open-ended so a solvation model can carry whatever it produces: SMD uses <code>electrostatic</code> and <code>cds</code>, the σ-potential model uses <code>dielectric</code> and <code>residual</code> plus descriptors like <code>hbond_area</code>. Adding a channel needs no change here, in the partitioner, or in the exchange logic.</p>
+<p>Energies are summed into <code><a class="el" href="classocc_1_1cg_1_1SolvationContribution.html#ac25088690b52d4b7f6223240f62cbfce" title="Sum over every energy channel, with the antisymmetric correction when enabled.">total_energy()</a></code>; descriptors (areas, per-contact diagnostics) are carried and exchanged the same way but never summed into an energy. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ad554585f4d7e08c9e0794720a45e904f" name="ad554585f4d7e08c9e0794720a45e904f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad554585f4d7e08c9e0794720a45e904f">&#9670;&#160;</a></span>SolvationContribution()</h2>
 
@@ -169,6 +195,9 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void occ::cg::SolvationContribution::add_cds </td>
@@ -188,6 +217,11 @@ Public Member Functions</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>
@@ -197,6 +231,9 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void occ::cg::SolvationContribution::add_cds_area </td>
@@ -216,6 +253,11 @@ Public Member Functions</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>
@@ -225,6 +267,9 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void occ::cg::SolvationContribution::add_coulomb </td>
@@ -244,6 +289,11 @@ Public Member Functions</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>
@@ -253,10 +303,86 @@ Public Member Functions</h2></td></tr>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void occ::cg::SolvationContribution::add_coulomb_area </td>
           <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>is_forward</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac7708ed9fe4f8c673e714ed81c5abfaa" name="ac7708ed9fe4f8c673e714ed81c5abfaa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac7708ed9fe4f8c673e714ed81c5abfaa">&#9670;&#160;</a></span>add_descriptor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::cg::SolvationContribution::add_descriptor </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>channel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>is_forward</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a61bc55a2206be765fe575bc99abe7775" name="a61bc55a2206be765fe575bc99abe7775"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61bc55a2206be765fe575bc99abe7775">&#9670;&#160;</a></span>add_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::cg::SolvationContribution::add_energy </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>channel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>value</em>, </td>
         </tr>
@@ -401,6 +527,78 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a990da05057ed0458969b719157c040aa" name="a990da05057ed0458969b719157c040aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a990da05057ed0458969b719157c040aa">&#9670;&#160;</a></span>descriptor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structocc_1_1cg_1_1ContributionPair.html">ContributionPair</a> &amp; occ::cg::SolvationContribution::descriptor </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>channel</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a319f49daf8466330503a6cd340d179f1" name="a319f49daf8466330503a6cd340d179f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a319f49daf8466330503a6cd340d179f1">&#9670;&#160;</a></span>descriptor_channels()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; occ::cg::SolvationContribution::descriptor_channels </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a42358bf1aa9f87ab90ba604c28d23a69" name="a42358bf1aa9f87ab90ba604c28d23a69"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42358bf1aa9f87ab90ba604c28d23a69">&#9670;&#160;</a></span>energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structocc_1_1cg_1_1ContributionPair.html">ContributionPair</a> &amp; occ::cg::SolvationContribution::energy </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>channel</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Zero pair when the channel was never written. </p>
+
+</div>
+</div>
+<a id="ac3c5f9e1e527df230837187eed31acb4" name="ac3c5f9e1e527df230837187eed31acb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3c5f9e1e527df230837187eed31acb4">&#9670;&#160;</a></span>energy_channels()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; occ::cg::SolvationContribution::energy_channels </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a7a995b411e5f8aaf8c4868449a40abb1" name="a7a995b411e5f8aaf8c4868449a40abb1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7a995b411e5f8aaf8c4868449a40abb1">&#9670;&#160;</a></span>exchange_with()</h2>
 
@@ -416,6 +614,25 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a251b470002f6039b468909ae7bbafc52" name="a251b470002f6039b468909ae7bbafc52"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a251b470002f6039b468909ae7bbafc52">&#9670;&#160;</a></span>forward_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::cg::SolvationContribution::forward_energy </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Summed over every energy channel, without the antisymmetric correction. </p>
 
 </div>
 </div>
@@ -440,6 +657,23 @@ Public Member Functions</h2></td></tr>
 <span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6b5bdc986c8d66ee4f4a14e8f36672a7" name="a6b5bdc986c8d66ee4f4a14e8f36672a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b5bdc986c8d66ee4f4a14e8f36672a7">&#9670;&#160;</a></span>reverse_energy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double occ::cg::SolvationContribution::reverse_energy </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
 </div><div class="memdoc">
 
 </div>
@@ -484,6 +718,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Sum over every energy channel, with the antisymmetric correction when enabled. </p>
 
 </div>
 </div>

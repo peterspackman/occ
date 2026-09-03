@@ -9,11 +9,10 @@ var searchData=
   ['slaterbasissetmap_6',['SlaterBasisSetMap',['../namespaceocc_1_1slater.html#ae12d0bf0b6ac1dd14469ae9cb162fb98',1,'occ::slater']]],
   ['solvationsurface_7',['SolvationSurface',['../namespaceocc_1_1xtb.html#ad4ca318e06a1ddddf26feee7f3d12757',1,'occ::xtb']]],
   ['solvationsurfaces_8',['SolvationSurfaces',['../namespaceocc_1_1xtb.html#a8fbf5c7bcb0c65b514d24d94fd56c497',1,'occ::xtb']]],
-  ['solventneighborcontributionlist_9',['SolventNeighborContributionList',['../namespaceocc_1_1driver.html#a878e17d57522dc762a391dec916e11ce',1,'occ::driver']]],
-  ['sortedk100distances_10',['SortedK100Distances',['../namespaceocc_1_1descriptors.html#a141963aab52264428f4c9d5823e9405b',1,'occ::descriptors']]],
-  ['sortedk10distances_11',['SortedK10Distances',['../namespaceocc_1_1descriptors.html#a00508d9cf681193b5b05fcac2ef2b353',1,'occ::descriptors']]],
-  ['sortedk1distance_12',['SortedK1Distance',['../namespaceocc_1_1descriptors.html#a8059fec08451916072e95da977b9851d',1,'occ::descriptors']]],
-  ['sortedk20distances_13',['SortedK20Distances',['../namespaceocc_1_1descriptors.html#a4ff96723ab1bec5bfbd5cff71d6a4a08',1,'occ::descriptors']]],
-  ['sortedk50distances_14',['SortedK50Distances',['../namespaceocc_1_1descriptors.html#a65ead458c5122bd5d86e192bd14041f2',1,'occ::descriptors']]],
-  ['sortedk5distances_15',['SortedK5Distances',['../namespaceocc_1_1descriptors.html#a41e1480063f130a2a76af897986cfd80',1,'occ::descriptors']]]
+  ['sortedk100distances_9',['SortedK100Distances',['../namespaceocc_1_1descriptors.html#a141963aab52264428f4c9d5823e9405b',1,'occ::descriptors']]],
+  ['sortedk10distances_10',['SortedK10Distances',['../namespaceocc_1_1descriptors.html#a00508d9cf681193b5b05fcac2ef2b353',1,'occ::descriptors']]],
+  ['sortedk1distance_11',['SortedK1Distance',['../namespaceocc_1_1descriptors.html#a8059fec08451916072e95da977b9851d',1,'occ::descriptors']]],
+  ['sortedk20distances_12',['SortedK20Distances',['../namespaceocc_1_1descriptors.html#a4ff96723ab1bec5bfbd5cff71d6a4a08',1,'occ::descriptors']]],
+  ['sortedk50distances_13',['SortedK50Distances',['../namespaceocc_1_1descriptors.html#a65ead458c5122bd5d86e192bd14041f2',1,'occ::descriptors']]],
+  ['sortedk5distances_14',['SortedK5Distances',['../namespaceocc_1_1descriptors.html#a41e1480063f130a2a76af897986cfd80',1,'occ::descriptors']]]
 ];

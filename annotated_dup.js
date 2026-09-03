@@ -13,6 +13,7 @@ var annotated_dup =
     ] ],
     [ "occ", "namespaceocc.html", [
       [ "cg", "namespaceocc_1_1cg.html", [
+        [ "CavitySurface", "structocc_1_1cg_1_1CavitySurface.html", "structocc_1_1cg_1_1CavitySurface" ],
         [ "ContributionPair", "structocc_1_1cg_1_1ContributionPair.html", "structocc_1_1cg_1_1ContributionPair" ],
         [ "CornerMorphology", "structocc_1_1cg_1_1CornerMorphology.html", "structocc_1_1cg_1_1CornerMorphology" ],
         [ "CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
@@ -25,14 +26,13 @@ var annotated_dup =
         [ "MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", "structocc_1_1cg_1_1MoleculeResult" ],
         [ "MorphologyResult", "structocc_1_1cg_1_1MorphologyResult.html", "structocc_1_1cg_1_1MorphologyResult" ],
         [ "NeighborAtoms", "structocc_1_1cg_1_1NeighborAtoms.html", "structocc_1_1cg_1_1NeighborAtoms" ],
-        [ "NeighborContribution", "structocc_1_1cg_1_1NeighborContribution.html", "structocc_1_1cg_1_1NeighborContribution" ],
         [ "ParticleSample", "structocc_1_1cg_1_1ParticleSample.html", "structocc_1_1cg_1_1ParticleSample" ],
         [ "SMDCalculator", "classocc_1_1cg_1_1SMDCalculator.html", "classocc_1_1cg_1_1SMDCalculator" ],
         [ "SMDSettings", "structocc_1_1cg_1_1SMDSettings.html", "structocc_1_1cg_1_1SMDSettings" ],
-        [ "SMDSolventSurfaces", "structocc_1_1cg_1_1SMDSolventSurfaces.html", "structocc_1_1cg_1_1SMDSolventSurfaces" ],
         [ "SolvationContribution", "classocc_1_1cg_1_1SolvationContribution.html", "classocc_1_1cg_1_1SolvationContribution" ],
-        [ "SolventSurface", "structocc_1_1cg_1_1SolventSurface.html", "structocc_1_1cg_1_1SolventSurface" ],
-        [ "SolventSurfacePartitioner", "classocc_1_1cg_1_1SolventSurfacePartitioner.html", "classocc_1_1cg_1_1SolventSurfacePartitioner" ]
+        [ "SolvationData", "structocc_1_1cg_1_1SolvationData.html", "structocc_1_1cg_1_1SolvationData" ],
+        [ "SolventSurfacePartitioner", "classocc_1_1cg_1_1SolventSurfacePartitioner.html", "classocc_1_1cg_1_1SolventSurfacePartitioner" ],
+        [ "SurfaceField", "structocc_1_1cg_1_1SurfaceField.html", "structocc_1_1cg_1_1SurfaceField" ]
       ] ],
       [ "core", "namespaceocc_1_1core.html", [
         [ "charges", "namespaceocc_1_1core_1_1charges.html", [
@@ -165,8 +165,16 @@ var annotated_dup =
         [ "CEModelCrystalGrowthCalculator", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html", "classocc_1_1driver_1_1CEModelCrystalGrowthCalculator" ],
         [ "CGConfig", "structocc_1_1driver_1_1CGConfig.html", "structocc_1_1driver_1_1CGConfig" ],
         [ "CGPreparation", "structocc_1_1driver_1_1CGPreparation.html", "structocc_1_1driver_1_1CGPreparation" ],
+        [ "CGSolvationModel", "classocc_1_1driver_1_1CGSolvationModel.html", "classocc_1_1driver_1_1CGSolvationModel" ],
+        [ "CGSolvationResult", "structocc_1_1driver_1_1CGSolvationResult.html", "structocc_1_1driver_1_1CGSolvationResult" ],
+        [ "CGSolvationSettings", "structocc_1_1driver_1_1CGSolvationSettings.html", "structocc_1_1driver_1_1CGSolvationSettings" ],
+        [ "ConductorResult", "structocc_1_1driver_1_1ConductorResult.html", "structocc_1_1driver_1_1ConductorResult" ],
+        [ "ConductorSettings", "structocc_1_1driver_1_1ConductorSettings.html", "structocc_1_1driver_1_1ConductorSettings" ],
         [ "CorrelationOptions", "structocc_1_1driver_1_1CorrelationOptions.html", "structocc_1_1driver_1_1CorrelationOptions" ],
         [ "CorrelationResult", "structocc_1_1driver_1_1CorrelationResult.html", "structocc_1_1driver_1_1CorrelationResult" ],
+        [ "CosmoRSSettings", "structocc_1_1driver_1_1CosmoRSSettings.html", "structocc_1_1driver_1_1CosmoRSSettings" ],
+        [ "CosmoRSSolvation", "structocc_1_1driver_1_1CosmoRSSolvation.html", "structocc_1_1driver_1_1CosmoRSSolvation" ],
+        [ "CosmoRSSolvationSettings", "structocc_1_1driver_1_1CosmoRSSolvationSettings.html", "structocc_1_1driver_1_1CosmoRSSolvationSettings" ],
         [ "CrystalGrowthCalculator", "classocc_1_1driver_1_1CrystalGrowthCalculator.html", "classocc_1_1driver_1_1CrystalGrowthCalculator" ],
         [ "CrystalGrowthCalculatorOptions", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions" ],
         [ "CrystalSurfaceEnergies", "structocc_1_1driver_1_1CrystalSurfaceEnergies.html", "structocc_1_1driver_1_1CrystalSurfaceEnergies" ],
@@ -177,6 +185,7 @@ var annotated_dup =
         [ "FacetEnergies", "structocc_1_1driver_1_1FacetEnergies.html", "structocc_1_1driver_1_1FacetEnergies" ],
         [ "MethodSpec", "structocc_1_1driver_1_1MethodSpec.html", "structocc_1_1driver_1_1MethodSpec" ],
         [ "MorphologyOptions", "structocc_1_1driver_1_1MorphologyOptions.html", "structocc_1_1driver_1_1MorphologyOptions" ],
+        [ "SolventSpec", "structocc_1_1driver_1_1SolventSpec.html", "structocc_1_1driver_1_1SolventSpec" ],
         [ "VibrationalAnalysisConfig", "structocc_1_1driver_1_1VibrationalAnalysisConfig.html", "structocc_1_1driver_1_1VibrationalAnalysisConfig" ],
         [ "XTBCrystalGrowthCalculator", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html", "classocc_1_1driver_1_1XTBCrystalGrowthCalculator" ]
       ] ],
@@ -404,6 +413,7 @@ var annotated_dup =
         [ "VolumeGridFunctor", "classocc_1_1isosurface_1_1VolumeGridFunctor.html", "classocc_1_1isosurface_1_1VolumeGridFunctor" ]
       ] ],
       [ "main", "namespaceocc_1_1main.html", [
+        [ "CosmoRSConfig", "structocc_1_1main_1_1CosmoRSConfig.html", "structocc_1_1main_1_1CosmoRSConfig" ],
         [ "CubeConfig", "structocc_1_1main_1_1CubeConfig.html", "structocc_1_1main_1_1CubeConfig" ],
         [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
@@ -564,6 +574,7 @@ var annotated_dup =
         [ "CanonicalOrthogonalizer", "classocc_1_1qm_1_1CanonicalOrthogonalizer.html", "classocc_1_1qm_1_1CanonicalOrthogonalizer" ],
         [ "CDIIS", "classocc_1_1qm_1_1CDIIS.html", "classocc_1_1qm_1_1CDIIS" ],
         [ "ConvergenceAccelerator", "classocc_1_1qm_1_1ConvergenceAccelerator.html", "classocc_1_1qm_1_1ConvergenceAccelerator" ],
+        [ "CoulombMetric", "classocc_1_1qm_1_1CoulombMetric.html", "classocc_1_1qm_1_1CoulombMetric" ],
         [ "DFIntegrals", "classocc_1_1qm_1_1DFIntegrals.html", "classocc_1_1qm_1_1DFIntegrals" ],
         [ "EDIIS", "classocc_1_1qm_1_1EDIIS.html", "classocc_1_1qm_1_1EDIIS" ],
         [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
@@ -613,6 +624,16 @@ var annotated_dup =
         [ "StockholderWeight", "classocc_1_1slater_1_1StockholderWeight.html", "classocc_1_1slater_1_1StockholderWeight" ]
       ] ],
       [ "solvent", "namespaceocc_1_1solvent.html", [
+        [ "cosmors", "namespaceocc_1_1solvent_1_1cosmors.html", [
+          [ "ActivityOptions", "structocc_1_1solvent_1_1cosmors_1_1ActivityOptions.html", "structocc_1_1solvent_1_1cosmors_1_1ActivityOptions" ],
+          [ "Component", "structocc_1_1solvent_1_1cosmors_1_1Component.html", "structocc_1_1solvent_1_1cosmors_1_1Component" ],
+          [ "ComponentFile", "structocc_1_1solvent_1_1cosmors_1_1ComponentFile.html", "structocc_1_1solvent_1_1cosmors_1_1ComponentFile" ],
+          [ "Parameters", "structocc_1_1solvent_1_1cosmors_1_1Parameters.html", "structocc_1_1solvent_1_1cosmors_1_1Parameters" ],
+          [ "Segments", "structocc_1_1solvent_1_1cosmors_1_1Segments.html", "structocc_1_1solvent_1_1cosmors_1_1Segments" ],
+          [ "SegmentStore", "classocc_1_1solvent_1_1cosmors_1_1SegmentStore.html", "classocc_1_1solvent_1_1cosmors_1_1SegmentStore" ],
+          [ "SolvationEnergy", "structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html", "structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy" ],
+          [ "SolventModel", "classocc_1_1solvent_1_1cosmors_1_1SolventModel.html", "classocc_1_1solvent_1_1cosmors_1_1SolventModel" ]
+        ] ],
         [ "surface", "namespaceocc_1_1solvent_1_1surface.html", [
           [ "Surface", "structocc_1_1solvent_1_1surface_1_1Surface.html", "structocc_1_1solvent_1_1surface_1_1Surface" ]
         ] ],
