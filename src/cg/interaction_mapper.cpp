@@ -143,7 +143,12 @@ void InteractionMapper::update_dimer_properties(
   dimer.set_property(
       "asymmetric_dimer",
       fmt::format("dimer_{}", asym_dimers[interaction_id].unique_index));
-  dimer.set_interaction_energies(energies[interaction_id].energy_components);
+  // Descriptors travel with the energies so surface-level code can sum any
+  // named channel through the same machinery.
+  auto components = energies[interaction_id].energy_components;
+  for (const auto &[key, value] : energies[interaction_id].descriptors)
+    components[std::string(cg::components::descriptor_prefix) + key] = value;
+  dimer.set_interaction_energies(std::move(components));
   dimer.set_interaction_id(interaction_id);
 }
 

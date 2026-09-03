@@ -163,6 +163,7 @@ void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
   if (J.contains("method")) {
     J.at("method").get_to(wfn.method);
   }
+  wfn.converged = J.value("converged", true);
 }
 
 void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
@@ -233,6 +234,7 @@ void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
     J["xtb"] = xtb;
   }
   J["method"] = wfn.method;
+  J["converged"] = wfn.converged;
 }
 } // namespace occ::qm
 

@@ -23,33 +23,26 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
   occ::timing::stop(occ::timing::category::df);
 
   occ::timing::start(occ::timing::category::la);
-  occ::log::debug("Computing LLt decomposition of V");
-  V_LLt = Eigen::LLT<Mat>(V);
-  if (V_LLt.info() != Eigen::Success) {
-    // Gather diagnostic information
-    const size_t naux = V.rows();
+  occ::log::debug("Factorizing the Coulomb metric V");
+  V_LLt.compute(V);
+  if (!V_LLt.uses_cholesky()) {
+    // Reached the eigendecomposition fallback: the results are still correct,
+    // but the auxiliary basis is a poor fit for this geometry and says so.
     const double min_diag = V.diagonal().minCoeff();
     const double max_diag = V.diagonal().maxCoeff();
-    const double cond_approx = max_diag / std::max(min_diag, 1e-16);
-
-    occ::log::error(
-        "LLT decomposition of Coulomb metric failed!\n"
-        "  Auxiliary basis size: {} functions\n"
+    occ::log::warn(
+        "Coulomb metric is not positive definite for this auxiliary basis; "
+        "using an eigendecomposition\n"
+        "  Auxiliary basis size: {} functions ({} vectors discarded)\n"
         "  Diagonal range: [{:.2e}, {:.2e}]\n"
-        "  Approx condition number: {:.2e}",
-        naux, min_diag, max_diag, cond_approx);
-
-    if (min_diag < 0) {
-      occ::log::error("  Matrix has negative diagonal elements - basis may have linear dependencies");
-    } else if (cond_approx > 1e10) {
-      occ::log::error("  Matrix is ill-conditioned - auxiliary basis may be poorly suited");
-    }
-
-    occ::log::error("Suggestions:\n"
-                    "  - Try a different auxiliary basis (e.g., def2-universal-jkfit)\n"
-                    "  - If using --df-basis=auto, try a looser threshold (--df-auto-threshold=1e-3)\n"
-                    "  - Check for near-linear dependencies in the molecular geometry");
+        "Suggestions:\n"
+        "  - Try a different auxiliary basis (e.g., def2-universal-jkfit)\n"
+        "  - If using --df-basis=auto, try a looser threshold "
+        "(--df-auto-threshold=1e-3)\n"
+        "  - Check for near-linear dependencies in the molecular geometry",
+        V.rows(), V_LLt.num_discarded(), min_diag, max_diag);
   }
+  m_V_LLt_full = V_LLt;
   occ::timing::stop(occ::timing::category::la);
 }
 
@@ -299,9 +292,37 @@ Mat IntegralEngineDF::fock_operator(const MolecularOrbitals &mo) {
 }
 
 void IntegralEngineDF::set_range_separated_omega(double omega) {
+  if (omega == m_omega)
+    return;
   m_ao_engine.set_range_separated_omega(omega);
   m_aux_engine.set_range_separated_omega(omega);
-  set_integral_policy(Policy::Direct);
+  // The fitting metric must use the same operator as the 3-centre integrals:
+  // for the long-range exchange that is (P|erf(omega r)/r|Q), not (P|1/r|Q).
+  // Keep the full-Coulomb factorization so switching omega back is free.
+  if (omega == 0.0) {
+    V_LLt = m_V_LLt_full;
+  } else if (omega == m_lr_omega) {
+    V_LLt = m_V_LLt_lr; // cached: the SCF toggles omega on every Fock build
+  } else {
+    occ::timing::start(occ::timing::category::df);
+    Mat V = m_aux_engine.one_electron_operator(Op::coulomb, false);
+    occ::timing::stop(occ::timing::category::df);
+    occ::timing::start(occ::timing::category::la);
+    // (P|erf(omega r)/r|Q) is far more ill-conditioned than (P|1/r|Q): the
+    // attenuated kernel damps the high-exponent auxiliary functions, so a
+    // JK-fitting basis is close to linearly dependent under it. CoulombMetric
+    // drops the resulting near-null space.
+    V_LLt.compute(V);
+    occ::timing::stop(occ::timing::category::la);
+    if (!V_LLt.uses_cholesky())
+      occ::log::debug("Long-range Coulomb metric (omega = {}) is near-singular, "
+                      "as expected: discarded {} of {} auxiliary vectors",
+                      omega, V_LLt.num_discarded(), V.rows());
+    m_V_LLt_lr = V_LLt;
+    m_lr_omega = omega;
+  }
+  m_omega = omega;
+  set_integral_policy(omega == 0.0 ? Policy::Choose : Policy::Direct);
 }
 
 void IntegralEngineDF::set_precision(double precision) {

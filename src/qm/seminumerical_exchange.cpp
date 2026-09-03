@@ -460,17 +460,20 @@ void SemiNumericalExchange::prepare_screening() const {
                                      *m_esp_evaluator, m_shell_pair_map,
                                      m_significant_pairs);
 
-  // Cache per-pair geometry (center, extent) for per-batch geometric screening.
-  // ESP shell-pair indices are assigned sequentially [0, num_shell_pairs).
+  // Cache per-pair screening data. ESP shell-pair indices are assigned
+  // sequentially in [0, num_shell_pairs).
   const size_t np = m_esp_evaluator->num_shell_pairs();
   m_pair_centers.resize(3, np);
   m_pair_extents.resize(np);
-  for (size_t i = 0; i < np; ++i) {
-    auto c = m_esp_evaluator->pair_center(i);
-    m_pair_centers(0, i) = c[0];
-    m_pair_centers(1, i) = c[1];
-    m_pair_centers(2, i) = c[2];
-    m_pair_extents(i) = m_esp_evaluator->pair_extent(i);
+  m_pair_charge.resize(np);
+  for (const auto &[flat_idx, esp_idx] : m_shell_pair_map) {
+    auto c = m_esp_evaluator->pair_center(esp_idx);
+    m_pair_centers(0, esp_idx) = c[0];
+    m_pair_centers(1, esp_idx) = c[1];
+    m_pair_centers(2, esp_idx) = c[2];
+    m_pair_extents(esp_idx) = m_esp_evaluator->pair_extent(esp_idx);
+
+    m_pair_charge(esp_idx) = m_esp_evaluator->pair_estimate(esp_idx);
   }
 }
 
@@ -519,11 +522,14 @@ Mat SemiNumericalExchange::compute_K_restricted(const qm::MolecularOrbitals &mo,
   if (m_use_esp) {
     prepare_screening();
 
-    // D2 = 2 * D, then project: D2q = S^{-1} * D2
+    // Overlap fitting (Izsak & Neese 2011). The paper replaces X on the bra
+    // index, K = S S_N^-1 X G^T; folding S_N^-1 S into the density instead
+    // applies the same Q to the contracted index. Measured equivalent: the
+    // orientations differ by up to 3x in max|dK| on a coarse grid but agree
+    // to 1e-8 Ha in the SCF energy, and this side yields a symmetric K
+    // without an extra transform of the assembled matrix.
     Mat D2 = 2.0 * mo.D;
     Mat D2q = m_overlap_projector * D2;
-
-    // Use helper to compute K
     Mat K = compute_K_for_density(D2q, precision);
     return 0.25 * (K + K.transpose());
   }
@@ -576,7 +582,7 @@ Mat SemiNumericalExchange::compute_K_restricted(const qm::MolecularOrbitals &mo,
       const auto &pts_block = atom_pts.middleCols(l, npt);
       const auto &weights_block = atom_weights.segment(l, npt);
       occ::gto::evaluate_basis(basis, pts_block, ao, 0);
-      if (ao.phi.maxCoeff() < precision)
+      if (ao.phi.cwiseAbs().maxCoeff() < precision)
         continue;
 
       dummy_atoms.resize(npt);
@@ -712,12 +718,20 @@ namespace {
 // shell-pair operator integrals (the V buffer); the grid batching, basis-value
 // evaluation, density contraction, screening and back-contraction are shared
 // between the single- and dual-operator (range-separated) exchange builds.
+// Shell-pair screening note.
+//
+// The quantity built here is the ESP integral of a shell pair at a grid point,
+// A_pq(g) = \int rho_pq(r) / |r - g| dr, which decays as 1/|g - P|. It must NOT
+// be screened on distance: a fixed cutoff (however generous) discards the whole
+// Coulomb tail and the SCF collapses variationally. Screen instead on the
+// product of the pair's charge magnitude and the F intermediate it contracts
+// with, both of which really do vanish.
 template <typename FillV>
 Mat seminumerical_exchange_sweep(
     const gto::AOBasis &basis, const std::vector<occ::numint::AtomGrid> &atom_grids,
     const ankerl::unordered_dense::map<size_t, size_t> &shell_pair_map,
-    const occ::ints::ESPEvaluator<double> &esp, const Mat3N &pair_centers,
-    const Vec &pair_extents, double margin, const Mat &D2q, double precision,
+    const occ::ints::ESPEvaluator<double> &esp, const Vec &pair_charge,
+    double threshold, const Mat &D2q, double precision,
     FillV &&fill_v) {
   const size_t nbf = basis.nbf();
   const auto &shells = basis.shells();
@@ -768,25 +782,43 @@ Mat seminumerical_exchange_sweep(
     auto weights_block = atom_grid.weights.segment(batch.start, batch.count);
     Eigen::Index npt = batch.count;
 
-    // Bounding sphere of this grid batch (for per-batch geometric screening).
-    occ::Vec3 batch_center = pts_block.rowwise().mean();
-    double batch_radius = 0.0;
-    for (Eigen::Index c = 0; c < npt; ++c)
-      batch_radius =
-          std::max(batch_radius, (pts_block.col(c) - batch_center).norm());
-
     // Quick screening using traditional evaluation
     occ::gto::GTOValues ao;
     occ::gto::evaluate_basis(basis, pts_block, ao, 0);
 
-    if (ao.phi.maxCoeff() < precision)
+    // Absolute value: a batch whose basis-function values are all negative
+    // has a negative maxCoeff and would otherwise be skipped outright.
+    if (ao.phi.cwiseAbs().maxCoeff() < precision)
       return;
 
-    Mat wao = ao.phi.array().colwise() * weights_block.array();
-    Mat Fg = wao * D2q;
+    // Split the quadrature weight symmetrically over the two contractions,
+    // X = sqrt(w) * phi, so that the screening intermediate F carries sqrt(w)
+    // rather than the whole weight. The assembled K is unchanged; only the
+    // scale of the screened quantity is, and this scale tracks grid density
+    // far better. Weights are non-negative for Becke partitioned grids, but
+    // carry any sign on one factor so the product stays exact regardless.
+    Vec sqrt_w = weights_block.array().abs().sqrt();
+    Vec signed_sqrt_w =
+        sqrt_w.array() * weights_block.array().sign();
+    Mat xao = ao.phi.array().colwise() * signed_sqrt_w.array();
+    Mat xao_bra = ao.phi.array().colwise() * sqrt_w.array();
+    Mat Fg = xao * D2q;
     Mat Gg = Mat::Zero(npt, nbf);
 
-    constexpr double density_threshold = 1e-6;
+    // Largest |F| over this batch for each shell: the density-side factor of
+    // the screening bound, maximised over the batch.
+    Vec max_F(shells.size());
+    for (size_t s = 0; s < shells.size(); ++s)
+      max_F(s) = Fg.middleCols(first_bf[s], shells[s].size())
+                     .cwiseAbs()
+                     .maxCoeff();
+
+    // F now carries sqrt(w), so its scale still tracks grid density: a fixed
+    // absolute cutoff screens harder as the grid is refined, and the screening
+    // error grows exactly where a finer grid was asked for. Scaling the cutoff
+    // by the same sqrt(w) removes that drift, so the threshold means the same
+    // thing at every grid level.
+    const double cutoff = threshold * std::sqrt(weights_block.cwiseAbs().maxCoeff());
 
     // Get thread-local buffers for this batch
     auto& workspace = esp_workspace_local.local();
@@ -794,26 +826,17 @@ Mat seminumerical_exchange_sweep(
 
     // Process all shell pairs sequentially within this batch
     for (const auto& [pair_idx, esp_idx] : shell_pair_map) {
-      // Geometric screen: skip pairs whose density region cannot reach this
-      // batch (their basis functions are negligible at the batch grid points).
-      if ((pair_centers.col(esp_idx) - batch_center).norm() -
-              pair_extents(esp_idx) >=
-          batch_radius + margin)
-        continue;
-
       auto [p, q] = pair_index_to_shells(pair_idx);
+
+      // Charge x density screen. Both factors decay; the 1/R falloff of the
+      // integral itself deliberately plays no part (see the note above).
+      if (pair_charge(esp_idx) * std::max(max_F(p), max_F(q)) < cutoff)
+        continue;
 
       int bf_p = first_bf[p];
       int bf_q = first_bf[q];
       int size_p = shells[p].size();
       int size_q = shells[q].size();
-
-      // Density screening based on input density
-      double max_D = D2q.block(bf_p, bf_q, size_p, size_q).cwiseAbs().maxCoeff();
-      if (p != q) {
-        max_D = std::max(max_D, D2q.block(bf_q, bf_p, size_q, size_p).cwiseAbs().maxCoeff());
-      }
-      if (max_D < density_threshold) continue;
 
       int nab = esp.nab(esp_idx);
       int nherm = esp.nherm(esp_idx);
@@ -841,7 +864,7 @@ Mat seminumerical_exchange_sweep(
       }
     }
 
-    K_local.local().noalias() -= ao.phi.transpose() * Gg;
+    K_local.local().noalias() -= xao_bra.transpose() * Gg;
   });
 
   // Combine results from all threads
@@ -859,8 +882,8 @@ Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
   using MatRM =
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
   return seminumerical_exchange_sweep(
-      m_basis, m_atom_grids, m_shell_pair_map, *m_esp_evaluator, m_pair_centers,
-      m_pair_extents, m_settings.margin, D2q, precision,
+      m_basis, m_atom_grids, m_shell_pair_map, *m_esp_evaluator, m_pair_charge,
+      m_settings.f_threshold, D2q, precision,
       [this](std::size_t esp_idx, const auto &pts, Eigen::Index /*npt*/,
              int /*nab*/, MatRM &V, MatRM &ws) {
         m_esp_evaluator->evaluate(esp_idx, pts, V, ws, m_omega);
@@ -926,8 +949,8 @@ Mat SemiNumericalExchange::compute_K_fused_rs_for_density(
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
   occ::parallel::thread_local_storage<MatRM> lr_local;
   return seminumerical_exchange_sweep(
-      m_basis, m_atom_grids, m_shell_pair_map, *m_esp_evaluator, m_pair_centers,
-      m_pair_extents, m_settings.margin, D2q, precision,
+      m_basis, m_atom_grids, m_shell_pair_map, *m_esp_evaluator, m_pair_charge,
+      m_settings.f_threshold, D2q, precision,
       [&, w_full, w_lr, omega](std::size_t esp_idx, const auto &pts,
                                Eigen::Index npt, int nab, MatRM &V, MatRM &ws) {
         m_esp_evaluator->evaluate(esp_idx, pts, V, ws, 0.0);

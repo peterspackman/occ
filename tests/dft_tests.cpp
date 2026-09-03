@@ -368,6 +368,66 @@ TEST_CASE("Water seminumerical exchange approximation", "[scf]") {
   occ::timing::print_timings();
 }
 
+// Regression test for the COSX shell-pair screen. The ESP integrals it builds
+// decay as 1/R, so screening shell pairs on their distance from a grid batch
+// silently discards the Coulomb tail of the exchange build. That error is
+// invisible on a compact, low-angular-momentum system, so use two separated
+// water molecules in a basis with f functions: pairs on one monomer sit well
+// outside any plausible distance cutoff from the other monomer's grid points.
+TEST_CASE("COSX exchange vs exact for separated fragments",
+          "[cosx][screening]") {
+  // Blind-test target II (C5H3NOS), the smallest case from the ~wB97X/def2-TZVP
+  // run where the COSX SCF collapsed. Bohr.
+  std::vector<occ::core::Atom> atoms{{16, 0.70095611, 14.44824124, 5.66653276},
+                                     {6, 1.12098554, 17.39789585, 6.89695234},
+                                     {1, 0.63334171, 19.04076706, 5.77014644},
+                                     {6, 2.01750941, 17.31671322, 9.36274257},
+                                     {8, 2.54504535, 19.31706391, 10.86036943},
+                                     {1, 2.18800050, 20.94649916, 9.96887223},
+                                     {6, 2.33505898, 14.81584967, 10.26058925},
+                                     {1, 2.96753142, 14.35460531, 12.15466175},
+                                     {6, 1.68612703, 13.04041418, 8.44930566},
+                                     {6, 1.69372373, 10.40847922, 8.67892628},
+                                     {7, 1.67819018, 8.20736402, 8.83065239}};
+
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-tzvp");
+  basis.set_pure(false);
+  REQUIRE(basis.l_max() == 3); // f functions must be present
+
+  // Density fitting for the SCF: fast, and independent of the COSX path
+  // under test.
+  auto hf = occ::qm::HartreeFock(basis);
+  hf.set_density_fitting_basis("def2-universal-jkfit");
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  scf.compute_scf_energy();
+  const auto &mo = scf.ctx.mo;
+
+  occ::qm::IntegralEngine engine(basis);
+  occ::Mat K_exact =
+      engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Restricted, mo).K;
+
+  // A quadrature error falls as the grid is refined. A screening error does
+  // not: dropped shell pairs stay dropped however many points you add. That
+  // difference is the assertion here - a distance-based pair screen plateaus
+  // around 8e-3 across all three grid levels, while the charge x density
+  // screen converges 5.8e-3 -> 5.8e-4 -> 9.9e-5.
+  std::vector<double> err;
+  for (auto level : {occ::numint::COSXGridLevel::Grid1,
+                     occ::numint::COSXGridLevel::Grid2,
+                     occ::numint::COSXGridLevel::Grid3}) {
+    occ::qm::cosx::SemiNumericalExchange sgx(
+        basis, occ::numint::GridSettings::for_cosx(level));
+    sgx.set_use_esp(true);
+    occ::Mat K_cosx = sgx.compute_K(mo);
+    err.push_back((K_cosx - K_exact).cwiseAbs().maxCoeff());
+    fmt::print("COSX {} K max error vs exact: {:.3e}\n",
+               occ::numint::cosx_grid_level_to_string(level), err.back());
+  }
+
+  REQUIRE(err.back() < 5e-4);          // Grid3 is genuinely accurate
+  REQUIRE(err.back() < err.front() / 5); // and the error is grid-limited
+}
+
 TEST_CASE("COSX long-range (range-separated) exchange vs exact",
           "[cosx][range-separated]") {
   std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
@@ -573,6 +633,145 @@ TEST_CASE("COSX geometric screening robust for diffuse basis",
   // Diffuse functions need finer grids for COSX; the point is that screening
   // does not inflate this beyond the normal grid error.
   REQUIRE(err < 1e-3);
+}
+
+// The unrestricted COSX build carries different density and symmetrization
+// factors from the restricted one (2*D with a 0.5 symmetrization, against
+// 2*D with 0.25). Nothing exercised those factors, so check both spin blocks
+// against the exact 4-centre exchange for an open-shell system.
+TEST_CASE("COSX unrestricted exchange vs exact", "[cosx][unrestricted]") {
+  // Methyl radical, planar D3h (Bohr), doublet.
+  std::vector<occ::core::Atom> atoms{{6, 0.0, 0.0, 0.0},
+                                     {1, 2.0393, 0.0, 0.0},
+                                     {1, -1.01965, 1.76608, 0.0},
+                                     {1, -1.01965, -1.76608, 0.0}};
+
+  auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+  basis.set_pure(false);
+  auto hf = occ::qm::HartreeFock(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(
+      hf, occ::qm::SpinorbitalKind::Unrestricted);
+  scf.set_charge_multiplicity(0, 2);
+  scf.compute_scf_energy();
+  const auto &mo = scf.ctx.mo;
+  REQUIRE(mo.kind == occ::qm::SpinorbitalKind::Unrestricted);
+  REQUIRE(mo.n_alpha != mo.n_beta);
+
+  occ::qm::IntegralEngine engine(basis);
+  occ::Mat K_exact =
+      engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Unrestricted, mo).K;
+
+  occ::qm::cosx::SemiNumericalExchange sgx(
+      basis, occ::numint::GridSettings::for_cosx(
+                 occ::numint::COSXGridLevel::Grid3));
+  sgx.set_use_esp(true);
+  occ::Mat K_cosx = sgx.compute_K(mo);
+
+  REQUIRE(K_cosx.rows() == K_exact.rows());
+  REQUIRE(K_cosx.cols() == K_exact.cols());
+
+  const double err_a =
+      (occ::qm::block::a(K_cosx) - occ::qm::block::a(K_exact))
+          .cwiseAbs()
+          .maxCoeff();
+  const double err_b =
+      (occ::qm::block::b(K_cosx) - occ::qm::block::b(K_exact))
+          .cwiseAbs()
+          .maxCoeff();
+  const double scale = occ::qm::block::a(K_exact).cwiseAbs().maxCoeff();
+  fmt::print("COSX unrestricted K error vs exact: alpha={:.3e} beta={:.3e} "
+             "(max|K|={:.3e})\n",
+             err_a, err_b, scale);
+
+  // A wrong density or symmetrization factor shows up as an error of order
+  // max|K| itself, not as grid noise.
+  REQUIRE(err_a < 1e-3 * scale);
+  REQUIRE(err_b < 1e-3 * scale);
+}
+
+// Cost of the shell-pair screen for a single K build, at production settings
+// (def2-TZVP, Cartesian, GRIDX 1). Sweeps both screening knobs so the same
+// test measures whichever screen the build under test actually implements:
+// margin drives the old distance test, f_threshold the charge x density one.
+// Reported against the same K with all screening switched off.
+TEST_CASE("COSX screening cost", "[cosx][screenbench][.]") {
+  // Unscreened (0.0) first: it is the reference the others are measured
+  // against. The rest sweep the charge x density cutoff.
+  const std::vector<double> thresholds{0.0,  1e-12, 1e-10, 1e-9, 1e-8,
+                                       1e-7, 1e-6,  1e-5,  1e-4};
+
+  auto bench = [&](const std::string &name,
+                   const std::vector<occ::core::Atom> &atoms) {
+    auto basis = occ::gto::AOBasis::load(atoms, "def2-tzvp");
+    basis.set_pure(false);
+    auto hf = occ::qm::HartreeFock(basis);
+    hf.set_density_fitting_basis("def2-universal-jkfit");
+    occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+    scf.compute_scf_energy();
+    const auto mo = scf.ctx.mo;
+
+    // Grid error at this level, for scale: a screening cutoff is only worth
+    // considering while its error stays well under this.
+    occ::qm::IntegralEngine engine(basis);
+    occ::Mat K_exact =
+        engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Restricted, mo).K;
+
+    for (auto level : {occ::numint::COSXGridLevel::Grid1,
+                       occ::numint::COSXGridLevel::Grid2,
+                       occ::numint::COSXGridLevel::Grid3}) {
+      occ::Mat K_reference;
+      for (double threshold : thresholds) {
+        occ::qm::cosx::SemiNumericalExchange sgx(
+            basis, occ::numint::GridSettings::for_cosx(level));
+        sgx.set_use_esp(true);
+        occ::qm::cosx::Settings s;
+        s.f_threshold = threshold;
+        sgx.set_settings(s);
+
+        occ::Mat K = sgx.compute_K(mo); // warm up, precompute pair data
+        constexpr int reps = 3;
+        occ::timing::StopWatch<1> sw;
+        sw.start(0);
+        for (int r = 0; r < reps; ++r)
+          sgx.compute_K(mo);
+        sw.stop(0);
+
+        if (K_reference.size() == 0)
+          K_reference = K; // unscreened K on this same grid
+        fmt::print("BENCH {} nbf= {} grid= {} thr= {:.0e} time= {:.4f} "
+                   "screen_err= {:.2e} grid_err= {:.2e}\n",
+                   name, (int)basis.nbf(), (int)level + 1, threshold,
+                   sw.read(0) / reps, (K - K_reference).cwiseAbs().maxCoeff(),
+                   (K - K_exact).cwiseAbs().maxCoeff());
+      }
+    }
+  };
+
+  // Extended systems: a linear chain is the best case for a distance-based
+  // screen, so it flatters the old criterion rather than the new one.
+  for (int n : {8}) {
+    std::vector<occ::core::Atom> atoms;
+    for (int i = 0; i < n; ++i) {
+      double z = i * 8.0;
+      atoms.push_back({8, 0.0, 0.0, z});
+      atoms.push_back({1, 0.0, 1.43, z + 1.1});
+      atoms.push_back({1, 0.0, -1.43, z + 1.1});
+    }
+    bench(fmt::format("{}xH2O", n), atoms);
+  }
+
+  // A compact, real molecule: blind-test target II.
+  bench("target II", {{16, 0.70095611, 14.44824124, 5.66653276},
+                      {6, 1.12098554, 17.39789585, 6.89695234},
+                      {1, 0.63334171, 19.04076706, 5.77014644},
+                      {6, 2.01750941, 17.31671322, 9.36274257},
+                      {8, 2.54504535, 19.31706391, 10.86036943},
+                      {1, 2.18800050, 20.94649916, 9.96887223},
+                      {6, 2.33505898, 14.81584967, 10.26058925},
+                      {1, 2.96753142, 14.35460531, 12.15466175},
+                      {6, 1.68612703, 13.04041418, 8.44930566},
+                      {6, 1.69372373, 10.40847922, 8.67892628},
+                      {7, 1.67819018, 8.20736402, 8.83065239}});
 }
 
 TEST_CASE("COSX scaling probe", "[cosx][scaling][.]") {

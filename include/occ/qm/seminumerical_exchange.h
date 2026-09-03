@@ -17,7 +17,18 @@ namespace occ::qm::cosx {
 struct Settings {
   double screen_threshold{1e-4};      // Shell extent screening threshold (looser = smaller extents = more screening)
   double margin{1.0};                 // Geometric margin (Bohr)
-  double f_threshold{1e-10};          // F-intermediate threshold
+  // Shell-pair cutoff: a pair is skipped for a grid batch when its ESP
+  // estimate times max|F| falls below this, scaled by sqrt of the batch's
+  // largest quadrature weight.
+  //
+  // The binding constraint is not the grid error but SCF convergence. This
+  // error is density dependent, so unlike the systematic grid error it acts
+  // as noise and sets a floor on how far DIIS can drive |FDS-SDF|: 1e-5 costs
+  // extra iterations on compact molecules and 1e-4 stalls the SCF outright.
+  // 1e-7 keeps two decades of margin on that while still leaving the
+  // screening error some 1000x under the grid error at every grid level.
+  // See the [cosx][screenbench] scan.
+  double f_threshold{1e-7};
 };
 
 // Import grid types from occ::dft namespace
@@ -188,9 +199,15 @@ private:
   mutable ankerl::unordered_dense::map<size_t, size_t> m_shell_pair_map;  // flat_idx -> ESP idx
   mutable std::vector<std::pair<size_t, size_t>> m_significant_pairs;  // (p, q) list
 
-  // Per-pair geometry (indexed by ESP shell-pair index) for per-batch geometric
-  // screening: pair overlap-region center and the radius beyond which the pair
-  // density is negligible.
+  // Per-pair screening data, indexed by ESP shell-pair index.
+  //
+  // m_pair_charge is max|S_pq|, the magnitude of the pair's charge
+  // distribution. The ESP integral of a pair falls off as 1/R, so a pair can
+  // only be dropped on the strength of its charge and of the F intermediate it
+  // meets - never on its distance from the grid batch (see the screening note
+  // in seminumerical_exchange.cpp). Pairs sharing an origin are pinned to 1:
+  // their overlap can vanish by symmetry while their ESP does not.
+  mutable Vec m_pair_charge;
   mutable Mat3N m_pair_centers;
   mutable Vec m_pair_extents;
 

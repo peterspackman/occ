@@ -2,6 +2,7 @@
 #include "js/core_bindings.h"
 #include "js/correlation_bindings.h"
 #include "js/qm_bindings.h"
+#include "js/solvent_bindings.h"
 #include "js/dft_bindings.h"
 #include "js/opt_bindings.h"
 #include "js/isosurface_bindings.h"
@@ -34,6 +35,7 @@ EMSCRIPTEN_BINDINGS(occ) {
     register_dma_bindings();
     register_mults_bindings();
     register_volume_bindings();
+    register_solvent_bindings();
     register_xtb_bindings();
     register_cg_bindings();
 

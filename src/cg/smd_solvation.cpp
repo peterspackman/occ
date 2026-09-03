@@ -1,7 +1,7 @@
 #include <fmt/os.h>
 #include <occ/cg/cg_json.h>
 #include <occ/cg/smd_solvation.h>
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 #include <occ/core/point_group.h>
 #include <occ/qm/scf.h>
 
@@ -16,7 +16,7 @@ SMDCalculator::SMDCalculator(
       m_molecules(molecules), m_gas_wavefunctions(wavefunctions) {}
 
 bool SMDCalculator::try_load_cached(const CacheFiles &cache,
-                                    SMDSolventSurfaces &surfaces,
+                                    SolvationData &surfaces,
                                     occ::qm::Wavefunction &wfn) const {
   if (!cache.exists())
     return false;
@@ -26,7 +26,7 @@ bool SMDCalculator::try_load_cached(const CacheFiles &cache,
 
   std::ifstream ifs(cache.surface_path.string());
   auto jf = nlohmann::json::parse(ifs);
-  surfaces = jf.get<SMDSolventSurfaces>();
+  surfaces = jf.get<SolvationData>();
 
   occ::log::info("Loading cached solvated wavefunction from {}",
                  cache.wavefunction_path.string());
@@ -34,7 +34,7 @@ bool SMDCalculator::try_load_cached(const CacheFiles &cache,
   return true;
 }
 
-std::pair<SMDSolventSurfaces, occ::qm::Wavefunction>
+std::pair<SolvationData, occ::qm::Wavefunction>
 SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
                                    const occ::qm::Wavefunction &gas_wfn,
                                    size_t index) {
@@ -65,26 +65,28 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   // identical to the legacy `nuc_i + elec_i + pol_i` decomposition (see
   // `from_scrf_surfaces`); summed totals match to floating-point precision.
   auto scrf_surfaces = proc_solv.solvation_surfaces();
-  SMDSolventSurfaces surfaces = occ::cg::from_scrf_surfaces(scrf_surfaces);
+  SolvationData surfaces = occ::cg::from_scrf_surfaces(scrf_surfaces);
 
-  occ::log::debug("sum e_es  {:12.6f}", surfaces.coulomb.energies.array().sum());
-  occ::log::debug("sum e_cds {:12.6f}", surfaces.cds.energies.array().sum());
-
-  double surface_energy = surfaces.coulomb.energies.array().sum() +
-                          surfaces.cds.energies.array().sum();
+  double surface_energy = surfaces.total_energy();
+  occ::log::debug("sum e_surface {:12.6f}", surface_energy);
 
   calculate_free_energy_components(surfaces, mol, original_energy,
                                    solvated_energy, surface_energy);
 
-  surfaces.electronic_energies = (surfaces.electronic_contribution /
-                                  surfaces.coulomb.areas.array().sum()) *
-                                 surfaces.coulomb.areas.array();
+  // The electronic relaxation has no per-element decomposition, so it is
+  // spread by area over the electrostatic cavity as its own channel.
+  if (auto *cavity = occ::cg::coulomb_cavity(surfaces)) {
+    cavity->energies.push_back(
+        {"electronic",
+         (surfaces.electronic_contribution / cavity->areas.array().sum()) *
+             cavity->areas.array()});
+  }
 
   return {surfaces, solvated_wfn};
 }
 
 void SMDCalculator::save_calculation(const CacheFiles &cache,
-                                     const SMDSolventSurfaces &surfaces,
+                                     const SolvationData &surfaces,
                                      occ::qm::Wavefunction &wfn) const {
   occ::log::info("Writing solvated surface properties to {}",
                  cache.surface_path.string());
@@ -100,24 +102,10 @@ void SMDCalculator::save_calculation(const CacheFiles &cache,
 }
 
 void SMDCalculator::calculate_free_energy_components(
-    SMDSolventSurfaces &surfaces, const occ::core::Molecule &mol,
+    SolvationData &surfaces, const occ::core::Molecule &mol,
     double original_energy, double solvated_energy,
     double surface_energy) const {
 
-  // Calculate rotational and translational contributions
-  double Gr = mol.rotational_free_energy(m_settings.temperature);
-  occ::core::MolecularPointGroup pg(mol);
-  double Gt = mol.translational_free_energy(m_settings.temperature);
-
-  // Temperature-dependent terms
-  const double R = 8.31446261815324;
-  const double RT = m_settings.temperature * R / 1000;
-  Gr += RT * std::log(pg.symmetry_number());
-
-  // Set free energy components
-  surfaces.free_energy_correction =
-      (1.89 / occ::units::KJ_TO_KCAL - 2 * RT) / occ::units::AU_TO_KJ_PER_MOL;
-  surfaces.gas_phase_contribution = (Gt + Gr) / occ::units::AU_TO_KJ_PER_MOL;
   surfaces.electronic_contribution =
       solvated_energy - original_energy - surface_energy;
   surfaces.total_solvation_energy = solvated_energy - original_energy;
@@ -142,7 +130,7 @@ SMDCalculator::Result SMDCalculator::calculate() {
   for (size_t i = 0; i < m_gas_wavefunctions.size(); ++i) {
     CacheFiles cache(m_basename, i, m_solvent);
 
-    SMDSolventSurfaces surfaces;
+    SolvationData surfaces;
     occ::qm::Wavefunction wavefunction;
 
     bool cached = try_load_cached(cache, surfaces, wavefunction);

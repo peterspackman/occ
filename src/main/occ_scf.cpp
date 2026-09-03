@@ -222,7 +222,7 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                   "COSX geometric margin in Bohr (default 1.0)")
       ->group(kHidden);
   scf->add_option("--cosx-f-threshold", config->method.cosx.f_threshold,
-                  "COSX F-intermediate threshold (default 1e-10)")
+                  "COSX shell-pair screening cutoff (default 1e-7)")
       ->group(kHidden);
   scf->add_option("--df-auto-threshold", config->basis.df_auto_threshold,
                   "Cholesky threshold for the 'auto' auxiliary basis (default: 1e-4)")

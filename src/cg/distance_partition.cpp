@@ -5,9 +5,8 @@
 namespace occ::cg {
 
 SolventSurfacePartitioner::SolventSurfacePartitioner(
-    const crystal::Crystal &crystal,
-    const SolventSurfacePartitioner::NeighborList &neighbors)
-    : m_crystal(crystal), m_neighbors(neighbors) {}
+    const NeighborList &neighbors)
+    : m_neighbors(neighbors) {}
 
 void SolventSurfacePartitioner::set_basename(const std::string &name) {
   m_basename = name;
@@ -19,11 +18,6 @@ void SolventSurfacePartitioner::set_should_write_surface_files(bool should) {
 
 void SolventSurfacePartitioner::set_use_normalized_distance(bool should) {
   m_use_dnorm = should;
-}
-
-std::vector<SolvationContribution>
-partition(const SMDSolventSurfaces &surface) {
-  return {};
 }
 
 void exchange_matching_forward_reverse_pairs(
@@ -74,8 +68,7 @@ inline void write_surface_file(const std::string &filename,
 std::vector<SolvationContribution>
 SolventSurfacePartitioner::partition_nearest_atom(
     const SolventSurfacePartitioner::NeighborList &nearest,
-    const SMDSolventSurfaces &surface) {
-  using occ::units::angstroms;
+    const SolvationData &surface) {
   std::vector<SolvationContribution> energy_contribution(m_neighbors.size());
   for (auto &contrib : energy_contribution) {
     contrib.set_antisymmetrize(should_antisymmetrize());
@@ -94,46 +87,34 @@ SolventSurfacePartitioner::partition_nearest_atom(
     return idx;
   };
 
-  // Process coulomb contributions
-  PartitionedSurface coul;
-  coul.positions = surface.coulomb.positions;
-  coul.molecule_index = IVec(surface.coulomb.size());
-  coul.energies = surface.coulomb.energies;
+  for (const auto &cavity : surface.cavities) {
+    const std::string area_channel = cavity.name + "_area";
+    PartitionedSurface dump;
+    dump.positions = cavity.positions;
+    dump.molecule_index = IVec(cavity.size());
+    dump.energies = Vec::Zero(cavity.size());
 
-  for (size_t i = 0; i < surface.coulomb.size(); i++) {
-    occ::Vec3 x = surface.coulomb.positions.col(i);
-    Eigen::Index idx = closest_idx(x, natoms.positions, natoms.vdw_radii);
-    auto m_idx = natoms.molecule_index(idx);
+    for (size_t i = 0; i < cavity.size(); i++) {
+      occ::Vec3 x = cavity.positions.col(i);
+      Eigen::Index idx = closest_idx(x, natoms.positions, natoms.vdw_radii);
+      auto m_idx = natoms.molecule_index(idx);
+      auto &contribution = energy_contribution[m_idx];
 
-    energy_contribution[m_idx].add_coulomb(surface.coulomb.energies(i) +
-                                           surface.electronic_energies(i));
-    energy_contribution[m_idx].add_coulomb_area(surface.coulomb.areas(i));
+      for (const auto &field : cavity.energies) {
+        contribution.add_energy(field.name, field.values(i));
+        dump.energies(i) += field.values(i);
+      }
+      for (const auto &field : cavity.descriptors)
+        contribution.add_descriptor(field.name, field.values(i));
+      contribution.add_descriptor(area_channel, cavity.areas(i));
 
-    coul.molecule_index(i) = m_idx;
-  }
+      dump.molecule_index(i) = m_idx;
+    }
 
-  if (m_should_write_surface_files) {
-    write_surface_file(fmt::format("{}_coulomb.txt", m_basename), coul);
-  }
-
-  // Process coulomb contributions
-  PartitionedSurface cds;
-  cds.positions = surface.cds.positions;
-  cds.molecule_index = IVec(surface.cds.size());
-  cds.energies = surface.cds.energies;
-
-  for (size_t i = 0; i < surface.cds.size(); i++) {
-    occ::Vec3 x = surface.cds.positions.col(i);
-    Eigen::Index idx = closest_idx(x, natoms.positions, natoms.vdw_radii);
-    auto m_idx = natoms.molecule_index(idx);
-    energy_contribution[m_idx].add_cds(surface.cds.energies(i));
-    energy_contribution[m_idx].add_cds_area(surface.cds.areas(i));
-
-    cds.molecule_index(i) = m_idx;
-  }
-
-  if (m_should_write_surface_files) {
-    write_surface_file(fmt::format("{}_cds.txt", m_basename), cds);
+    if (m_should_write_surface_files) {
+      write_surface_file(fmt::format("{}_{}.txt", m_basename, cavity.name),
+                         dump);
+    }
   }
 
   exchange_matching_forward_reverse_pairs(m_neighbors, energy_contribution);
@@ -142,7 +123,7 @@ SolventSurfacePartitioner::partition_nearest_atom(
 
 std::vector<SolvationContribution> SolventSurfacePartitioner::partition(
     const SolventSurfacePartitioner::NeighborList &nearest,
-    const SMDSolventSurfaces &surface) {
+    const SolvationData &surface) {
   return partition_nearest_atom(nearest, surface);
 }
 

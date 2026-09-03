@@ -2,7 +2,7 @@
 #include <fmt/core.h>
 #include <memory>
 #include <vector>
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/driver/cg_pipeline.h>
@@ -23,9 +23,9 @@ namespace {
 
 // Electrostatic-only continuum solvation of one monomer with the solute fixed
 // (no polarization): the gas-phase DMA multipoles set the potential on the
-// cavity and E_solv = 1/2 sigma.phi. Packaged as SMDSolventSurfaces so the cg
+// cavity and E_solv = 1/2 sigma.phi. Packaged as SolvationData so the cg
 // partitioner consumes it unchanged.
-cg::SMDSolventSurfaces compute_monomer_esp_solvation(const DMAMonomer &mon,
+cg::SolvationData compute_monomer_esp_solvation(const DMAMonomer &mon,
                                                      const std::string &solvent) {
   const int n = static_cast<int>(mon.reference.size());
   IVec Z(n);

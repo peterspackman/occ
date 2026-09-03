@@ -41,6 +41,7 @@ occ> mol.positions     -- bare expression auto-pretty-prints the matrix
 | Isosurface (PLY mesh)          | `isosurface.py`                 | `isosurface.lua`               |
 | Cube files (density / ESP)     | `cube.py`                       | `cube.lua`                     |
 | Crystal-growth lattice energy  | `cg.py`                         | `cg.lua`                       |
+| openCOSMO-RS solvation energy  | `cosmors_solvation.py`          | `cosmors_solvation.lua`        |
 | Elastic / acoustic properties  | `acoustic_velocities.py`        | `acoustic_velocities.lua`      |
 
 ## Lua-only
@@ -68,7 +69,7 @@ occ> mol.positions     -- bare expression auto-pretty-prints the matrix
   serialize to a nested Lua table, `occ.Mat3N(t)` to go the other way.
   See `lua/matrix_basics.lua` for a full tour.
 - **Static / factory methods.** Python has `Wavefunction.from_fchk(path)`;
-  Lua has `occ.Wavefunction_from_fchk(path)` — sol2 doesn't model Python's
+  Lua has `occ.Wavefunction_from_fchk(path)` — LuaBridge3 doesn't model Python's
   static-method shape so we expose them as free functions in the `occ`
   namespace with a `<Type>_<func>` naming convention.
 - **Submodules.** Only `occ.opt` is nested (mirrors Python's `occpy.opt`);
@@ -77,7 +78,7 @@ occ> mol.positions     -- bare expression auto-pretty-prints the matrix
 ## Background
 
 The Python bindings use [nanobind](https://github.com/wjakob/nanobind);
-the Lua bindings use [sol2](https://github.com/ThePhD/sol2) on top of
+the Lua bindings use [LuaBridge3](https://github.com/kunitoki/LuaBridge3) on top of
 embedded Lua 5.4, with [linenoise](https://github.com/antirez/linenoise)
 for the REPL. All are built from the same `occ` C++ sources via the
 parallel `src/python/`, `src/js/`, `src/lua/` binding trees.

@@ -7,8 +7,7 @@ add_library(
     "${CMAKE_CURRENT_SOURCE_DIR}/result_types.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd_solvation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_contribution.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/solvation_types.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/solvent_surface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/solvation_data.cpp"
     ${OCC_CG_INCLUDE_FILES}
 )
 add_library(occ_cg $<TARGET_OBJECTS:occ_cg_obj>)

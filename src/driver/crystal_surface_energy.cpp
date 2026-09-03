@@ -1,8 +1,11 @@
+#include <algorithm>
 #include <fmt/os.h>
 #include <occ/core/log.h>
 #include <occ/crystal/surface.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/gmf.h>
+#include <cstring>
+#include <occ/cg/result_types.h>
 #include <occ/driver/crystal_surface_energy.h>
 
 namespace occ::driver {
@@ -12,8 +15,25 @@ using occ::crystal::CrystalDimers;
 
 CrystalSurfaceEnergies calculate_crystal_surface_energies(
     const std::string &basename, const Crystal &crystal,
-    const CrystalDimers &uc_dimers, int max_number_of_surfaces, int sign) {
+    const CrystalDimers &uc_dimers, int max_number_of_surfaces, int sign,
+    double min_interplanar_spacing) {
   CrystalSurfaceEnergies result{crystal, {}, {}};
+
+  // Descriptor channels carried on the dimers, discovered once.
+  std::vector<std::string> descriptor_channels;
+  {
+    ankerl::unordered_dense::set<std::string> seen;
+    for (const auto &mol_neighbors : uc_dimers.molecule_neighbors) {
+      for (const auto &neighbor : mol_neighbors) {
+        for (const auto &[key, value] : neighbor.dimer.interaction_energies()) {
+          if (key.rfind(cg::components::descriptor_prefix, 0) == 0)
+            seen.insert(key);
+        }
+      }
+    }
+    descriptor_channels.assign(seen.begin(), seen.end());
+    std::sort(descriptor_channels.begin(), descriptor_channels.end());
+  }
 
   crystal::CrystalSurfaceGenerationParameters params;
   io::GMFWriter gmf(crystal);
@@ -22,8 +42,46 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
   params.d_min = 0.1;
   params.unique = true;
   auto surfaces = crystal::generate_surfaces(crystal, params);
-  log::debug("Top {} surfaces", max_number_of_surfaces);
-  int number_of_surfaces = 0;
+
+  // `Surface::d()` is the reciprocal spacing |ha* + kb* + lc*|, so the list is
+  // already in BFDH order: smallest reciprocal spacing, largest d, first.
+  const size_t keep = [&]() -> size_t {
+    if (min_interplanar_spacing > 0.0) {
+      const double max_reciprocal = 1.0 / min_interplanar_spacing;
+      size_t n = 0;
+      while (n < surfaces.size() && surfaces[n].d() <= max_reciprocal)
+        n++;
+      log::debug("{} surfaces with d >= {:.3f} A", n, min_interplanar_spacing);
+      return n;
+    }
+    return std::min(surfaces.size(),
+                    static_cast<size_t>(std::max(max_number_of_surfaces, 0)));
+  }();
+
+  if (min_interplanar_spacing <= 0.0 && keep < surfaces.size()) {
+    // A count cannot know about Friedel pairs: (hkl) and (-h-k-l) are distinct
+    // forms in any non-centrosymmetric group, yet always share a d-spacing,
+    // so a positional cut can take one and leave the other. The Wulff
+    // construction is a global hull, so that skews the whole polyhedron, not
+    // just the missing face.
+    for (size_t i = 0; i < keep; i++) {
+      for (size_t j : crystal::laue_orbit_partners(crystal, surfaces, i)) {
+        if (j < keep)
+          continue;
+        const auto a = surfaces[i].hkl();
+        const auto b = surfaces[j].hkl();
+        log::warn("--surface-energies {} splits a Friedel pair: kept ({} {} "
+                  "{}) but dropped ({} {} {}), which has the same spacing "
+                  "({:.3f} A). The Wulff construction will be asymmetric; use "
+                  "--surface-d-min to cut on spacing instead.",
+                  max_number_of_surfaces, a.h, a.k, a.l, b.h, b.k, b.l,
+                  1.0 / surfaces[j].d());
+      }
+    }
+  }
+
+  log::debug("Top {} surfaces", keep);
+  size_t number_of_surfaces = 0;
   constexpr double tolerance{1e-5};
 
   Mat3N unique_positions(3, crystal.unit_cell_molecules().size());
@@ -70,6 +128,15 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
         log::debug("Surface energy (A) (J/m^2)  = {:12.6f}", surface_energy_a);
 
         f.energy = surface_energy_a;
+      }
+
+      // Any solvation descriptor riding on the dimers sums over the same cut
+      // contacts, giving the facet-level analogue of the per-contact values.
+      for (const auto &prefixed : descriptor_channels) {
+        const auto name =
+            prefixed.substr(std::strlen(cg::components::descriptor_prefix));
+        f.descriptors[name] =
+            surface_cut_result.total_above(uc_dimers, prefixed);
       }
 
       result.facets.push_back(f);
@@ -125,7 +192,7 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
     }
 
     number_of_surfaces++;
-    if (number_of_surfaces >= max_number_of_surfaces)
+    if (number_of_surfaces >= keep)
       break;
   }
   gmf.write(fmt::format("{}.gmf", basename));
@@ -138,6 +205,12 @@ void to_json(nlohmann::json &j, const FacetEnergies &facet) {
   j["area"] = facet.area;
   j["energy"] = facet.energy;
   j["interaction_energy_counts"] = facet.interaction_energy_counts;
+  if (!facet.descriptors.empty()) {
+    nlohmann::json descriptors;
+    for (const auto &[key, value] : facet.descriptors)
+      descriptors[key] = value;
+    j["descriptors"] = descriptors;
+  }
 }
 
 void to_json(nlohmann::json &j,

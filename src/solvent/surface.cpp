@@ -4,6 +4,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <occ/core/units.h>
+#include <occ/numint/grid_utils.h>
 #include <occ/numint/lebedev.h>
 #include <occ/solvent/smd.h>
 #include <occ/solvent/surface.h>
@@ -24,12 +25,14 @@ Mat3 principal_axes(const Mat3N &positions) {
 
 Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
                         const Mat3N &positions, double solvent_radius_angs,
-                        bool axis_aligned, double smoothing_width_bohr) {
+                        bool axis_aligned, double smoothing_width_bohr,
+                        int angular_points) {
   const size_t N = atomic_numbers.rows();
   const double solvent_radius =
-      std::min(solvent_radius_angs, 0.001) * occ::units::ANGSTROM_TO_BOHR;
+      std::max(solvent_radius_angs, 0.0) * occ::units::ANGSTROM_TO_BOHR;
   Surface surface;
-  auto grid = occ::numint::grid::lebedev(146);
+  auto grid = occ::numint::grid::lebedev(
+      occ::numint::nearest_grid_level_at_or_above(angular_points));
   const int npts = grid.rows();
   Mat tmp_vertices(3, npts * N);
   Vec tmp_areas(npts * N);
@@ -123,6 +126,24 @@ Surface solvent_surface(const Vec &radii, const IVec &atomic_numbers,
   surface.atom_index = remaining_atom_index;
   surface.vertices = (axes * remaining_points).colwise() + centroid;
   return surface;
+}
+
+double cavity_volume(const Surface &surface, const Mat3N &atom_positions) {
+  const Eigen::Index n = surface.areas.size();
+  if (n == 0 || atom_positions.cols() == 0)
+    return 0.0;
+  const Vec3 origin = atom_positions.rowwise().mean();
+  double v = 0.0;
+  for (Eigen::Index i = 0; i < n; i++) {
+    const Vec3 radial =
+        surface.vertices.col(i) - atom_positions.col(surface.atom_index(i));
+    const double r = radial.norm();
+    if (r < 1e-12)
+      continue; // degenerate element, no well-defined normal
+    const Vec3 normal = radial / r;
+    v += surface.areas(i) * (surface.vertices.col(i) - origin).dot(normal);
+  }
+  return v / 3.0;
 }
 
 IVec nearest_atom_index(const Mat3N &atom_positions,

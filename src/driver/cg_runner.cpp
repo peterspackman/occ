@@ -5,9 +5,12 @@
 #include <occ/core/point_group.h>
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/dft/dft.h>
+#include <occ/driver/cg_pipeline.h>
+#include <occ/driver/cg_runner.h>
+#include <occ/driver/cg_solvation_model.h>
 #include <occ/driver/crystal_growth.h>
 #include <occ/driver/crystal_morphology.h>
-#include <optional>
+#include <occ/driver/crystal_surface_energy.h>
 #include <occ/geometry/wulff.h>
 #include <occ/interaction/disp.h>
 #include <occ/interaction/polarization.h>
@@ -18,16 +21,14 @@
 #include <occ/io/kmcpp.h>
 #include <occ/io/load_geometry.h>
 #include <occ/io/occ_input.h>
-#include <occ/isosurface/ply.h>
-#include <occ/qm/io/wavefunction_json.h>
 #include <occ/io/xyz.h>
-#include <occ/driver/cg_pipeline.h>
-#include <occ/driver/cg_runner.h>
-#include <occ/driver/crystal_surface_energy.h>
+#include <occ/isosurface/ply.h>
 #include <occ/qm/hf.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/solvent/solvation_correction.h>
+#include <optional>
 
 namespace fs = std::filesystem;
 using occ::cg::CrystalGrowthResult;
@@ -129,6 +130,12 @@ inline void serialize_cg_dimers(nlohmann::json &j, const Crystal &crystal,
     e["crystal_energy"] = mol_total.crystal_energy;
     e["interaction_energy"] = mol_total.interaction_energy;
     e["solution_term"] = mol_total.solution_term;
+    if (!mol_result.descriptors.empty()) {
+      nlohmann::json descriptors;
+      for (const auto &[k, v] : mol_result.descriptors)
+        descriptors[k] = v;
+      e["descriptors"] = descriptors;
+    }
     j["totals_per_molecule"].push_back(e);
   }
 
@@ -158,6 +165,12 @@ inline void serialize_cg_dimers(nlohmann::json &j, const Crystal &crystal,
       d["Unique Index"] = dimer_result.unique_idx;
       d["Crystalgrower Identifier"] = cg_id;
       d["energies"] = e;
+      if (!dimer_result.descriptors.empty()) {
+        nlohmann::json descriptors;
+        for (const auto &[k, v] : dimer_result.descriptors)
+          descriptors[k] = v;
+        d["descriptors"] = descriptors;
+      }
 
       nlohmann::json offsets_a = {};
       {
@@ -205,20 +218,20 @@ serialize_cg_results(nlohmann::json &j, const Options &opts,
 inline CrystalSurfaceEnergies compute_and_serialize_surface_cuts(
     CrystalGrowthCalculator &calc, nlohmann::json &j, const Options &opts,
     const CrystalDimers &uc_dimers, const CrystalDimers &uc_dimers_vacuum,
-    int max_facets) {
+    int max_facets, double min_interplanar_spacing) {
 
   occ::log::info("Crystal surface energies (solvated)");
   auto surface_energies = calculate_crystal_surface_energies(
-      fmt::format("{}_{}", opts.basename, opts.solvent), calc.crystal(),
-      uc_dimers, max_facets, 1);
+      fmt::format("{}_{}", opts.basename, opts.solvent_tag), calc.crystal(),
+      uc_dimers, max_facets, 1, min_interplanar_spacing);
 
   occ::log::info("Crystal surface energies (vacuum)");
   auto vacuum_surface_energies = calculate_crystal_surface_energies(
       fmt::format("{}_vacuum", opts.basename), calc.crystal(), uc_dimers_vacuum,
-      max_facets, -1);
+      max_facets, -1, min_interplanar_spacing);
 
   j["surface_energies"] = surface_energies;
-  write_wulff(fmt::format("{}_{}.ply", opts.basename, opts.solvent),
+  write_wulff(fmt::format("{}_{}.ply", opts.basename, opts.solvent_tag),
               surface_energies);
   write_wulff(fmt::format("{}_vacuum.ply", opts.basename),
               vacuum_surface_energies);
@@ -268,6 +281,11 @@ CGPreparation prepare_cg(CGConfig const &config) {
 
   Options opts;
   opts.solvent = config.solvent;
+  opts.solvent_tag = SolventSpec::parse(config.solvent).filename_tag();
+  opts.solvation_model = parse_solvation_model(config.solvation_model);
+  opts.print_solvation_descriptors = config.print_solvation_descriptors;
+  opts.temperature = config.temperature;
+  opts.solvent_probe_radius = config.solvent_probe_radius;
   opts.basename = basename;
   opts.write_debug_output_files = config.write_dump_files;
   opts.energy_model = config.lattice_settings.model_name;
@@ -337,17 +355,31 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
 
   nlohmann::json surface_cuts_json;
 
-  // --morphology needs surface energies; default the facet count if unset.
+  const double d_min = config.min_interplanar_spacing;
   int n_facets = config.max_facets;
-  if (config.compute_morphology && n_facets <= 0) {
-    n_facets = 80;
-    occ::log::info("--morphology: computing {} surface energies", n_facets);
+  if (d_min > 0.0) {
+    if (n_facets > 0)
+      occ::log::warn("--surface-d-min given, ignoring --surface-energies {}",
+                     n_facets);
+    n_facets = 0;
+  } else {
+    if (n_facets > 0)
+      occ::log::warn(
+          "--surface-energies is deprecated: a face count can split a Friedel "
+          "pair, which skews the Wulff construction. Prefer --surface-d-min, "
+          "which cuts on interplanar spacing");
+    // --morphology needs surface energies; default the facet count if unset.
+    if (config.compute_morphology && n_facets <= 0) {
+      n_facets = 80;
+      occ::log::info("--morphology: computing {} surface energies", n_facets);
+    }
   }
 
   std::optional<CrystalSurfaceEnergies> surface_energies;
-  if (n_facets > 0) {
+  if (n_facets > 0 || d_min > 0.0) {
     surface_energies = compute_and_serialize_surface_cuts(
-        calc, surface_cuts_json, opts, uc_dimers, uc_dimers_vacuum, n_facets);
+        calc, surface_cuts_json, opts, uc_dimers, uc_dimers_vacuum, n_facets,
+        d_min);
   }
 
   nlohmann::json morphology_json;
@@ -358,9 +390,9 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
     to_json(morphology_json, result.morphology);
   }
 
-  auto cg_interaction_labels =
-      write_cg_net_file(fmt::format("{}_{}_net.txt", basename, config.solvent),
-                        calc.crystal(), uc_dimers);
+  auto cg_interaction_labels = write_cg_net_file(
+      fmt::format("{}_{}_net.txt", basename, opts.solvent_tag), calc.crystal(),
+      uc_dimers);
 
   nlohmann::json results_json;
   serialize_cg_results(results_json, opts, calc.crystal());
@@ -375,10 +407,9 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
   }
 
   std::ofstream dest(
-      fmt::format("{}_{}_cg_results.json", opts.basename, opts.solvent));
+      fmt::format("{}_{}_cg_results.json", opts.basename, opts.solvent_tag));
   dest << results_json.dump(2);
 
-  // calc.dipole_correction();
   return result;
 }
 

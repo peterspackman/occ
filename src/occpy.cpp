@@ -10,6 +10,7 @@
 #include "python/mults_bindings.h"
 #include "python/opt_bindings.h"
 #include "python/qm_bindings.h"
+#include "python/solvent_bindings.h"
 #include "python/xtb_bindings.h"
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/function.h>
@@ -41,6 +42,7 @@ NB_MODULE(_occpy, m) {
   auto intr = register_interaction_bindings(m);
   auto mults = register_mults_bindings(m);
   auto opt = register_opt_bindings(m);
+  auto solvent = register_solvent_bindings(m);
   auto xtb = register_xtb_bindings(m);
 
   // LogLevel enum is already registered in core_bindings.cpp

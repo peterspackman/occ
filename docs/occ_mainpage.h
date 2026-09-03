@@ -144,6 +144,22 @@
 /**
  * @namespace occ::solvent
  * @brief solvation models for correction of QM methods (implicit only for now)
+ *
+ * Two models are available: SMD, which polarises the SCF against the real
+ * dielectric, and openCOSMO-RS, which works from the ideal-conductor
+ * screening charges. Both share the cavity construction in
+ * `occ::solvent::surface`.
+ */
+
+/**
+ * @namespace occ::solvent::cosmors
+ * @brief openCOSMO-RS 24a: segment descriptors, the interaction kernel and
+ * the solvation free energy assembled from them
+ *
+ * The entry point for a single molecule is
+ * `occ::driver::cosmors_solvation_free_energy`; `occ cg --solvation-model
+ * cosmo-rs` uses the same model with the surface-additive terms partitioned
+ * over crystal contacts.
  */
 
 /**

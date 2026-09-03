@@ -2878,3 +2878,74 @@ TEST_CASE("Subgroup transforms survive a large supercell",
           std::llround(benzene.unit_cell_atoms().atomic_numbers.sum() *
                        best_det * best_det));
 }
+
+// Friedel pairs and the d-ordering
+//
+// 1/d^2 = h^T G* h is a quadratic form in the indices, so it is invariant
+// under h -> -h whatever the metric: (hkl) and (-h-k-l) always share a
+// d-spacing. Whether they are the *same face* is a point-group question, and
+// the two answers disagree for the 21 non-centrosymmetric point groups. That
+// mismatch is why a d-ordered surface list cannot be truncated on a count
+// without risking an asymmetric Wulff construction.
+
+TEST_CASE("Friedel mates are one form only when the group is centrosymmetric",
+          "[crystal][surface][friedel]") {
+  auto cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
+
+  SECTION("polar Pna2_1 keeps them distinct") {
+    // mm2: every rotation preserves l, so (h k l) and (h k -l) are separate
+    // forms. This is hemimorphism, and it is physical.
+    Crystal polar(acetic_asym(), SpaceGroup(33), cell);
+    REQUIRE_FALSE(occ::crystal::friedel_mate_is_equivalent(polar, {3, 0, 1}));
+    REQUIRE_FALSE(occ::crystal::friedel_mate_is_equivalent(polar, {0, 0, 1}));
+    // In the ab plane the 2-fold along c does map h to -h.
+    REQUIRE(occ::crystal::friedel_mate_is_equivalent(polar, {1, 1, 0}));
+  }
+
+  SECTION("centrosymmetric P2_1/c merges them") {
+    Crystal centro(acetic_asym(), SpaceGroup(14), cell);
+    for (const auto &hkl : std::vector<occ::crystal::HKL>{
+             {3, 0, 1}, {0, 0, 1}, {1, 1, 0}, {2, 1, -3}}) {
+      INFO(fmt::format("({} {} {})", hkl.h, hkl.k, hkl.l));
+      REQUIRE(occ::crystal::friedel_mate_is_equivalent(centro, hkl));
+    }
+  }
+}
+
+TEST_CASE("A Friedel pair shares its d-spacing and its Laue orbit",
+          "[crystal][surface][friedel]") {
+  auto cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
+  Crystal polar(acetic_asym(), SpaceGroup(33), cell);
+
+  occ::crystal::CrystalSurfaceGenerationParameters params;
+  params.d_min = 0.1;
+  params.unique = true;
+  params.reduced = true;
+  auto surfaces = occ::crystal::generate_surfaces(polar, params);
+  REQUIRE(surfaces.size() > 4);
+
+  // Every non-centrosymmetric representative must have its mate present, at
+  // the same spacing. A count-based cut between the two is what skews the
+  // Wulff construction.
+  size_t pairs = 0;
+  for (size_t i = 0; i < surfaces.size(); i++) {
+    if (occ::crystal::friedel_mate_is_equivalent(polar, surfaces[i].hkl()))
+      continue;
+    auto group = occ::crystal::laue_orbit_partners(polar, surfaces, i);
+    REQUIRE(group.size() == 2);
+    REQUIRE(group[0] == i);
+    const auto a = surfaces[group[0]].hkl();
+    const auto b = surfaces[group[1]].hkl();
+    INFO(fmt::format("({} {} {}) vs ({} {} {})", a.h, a.k, a.l, b.h, b.k, b.l));
+    REQUIRE(surfaces[group[0]].d() == Catch::Approx(surfaces[group[1]].d()));
+    pairs++;
+  }
+  REQUIRE(pairs > 0);
+
+  // Centrosymmetric groups have no such pairing to preserve.
+  Crystal centro(acetic_asym(), SpaceGroup(14), cell);
+  auto centro_surfaces = occ::crystal::generate_surfaces(centro, params);
+  for (size_t i = 0; i < centro_surfaces.size(); i++)
+    REQUIRE(occ::crystal::laue_orbit_partners(centro, centro_surfaces, i)
+                .size() == 1);
+}

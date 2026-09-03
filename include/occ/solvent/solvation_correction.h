@@ -31,6 +31,13 @@ public:
                           const std::string &solvent = "water",
                           double charge = 0.0, bool draco = false);
 
+  /// Drive the engine from an explicit configuration instead of the SMD
+  /// parameter tables. Used for the ideal-conductor COSMO calculation that
+  /// σ-profiles are built from, where there is no SMD solvent to look up and
+  /// no CDS branch.
+  ContinuumSolvationModel(const std::vector<occ::core::Atom> &,
+                          const occ::scrf::Options &, double charge = 0.0);
+
   void set_solvent(const std::string &);
   const std::string &solvent() const { return m_solvent_name; }
 
@@ -97,6 +104,9 @@ private:
 
   double m_charge{0.0};
   Vec m_atomic_charges;            // EEQ charges (DRACO path only)
+  /// False when constructed from explicit options: skips the SMD parameter
+  /// lookup, radii and logging.
+  bool m_smd{true};
 
   std::string m_solvent_name;
   Mat3N m_nuclear_positions;
@@ -117,24 +127,15 @@ public:
       : m_atoms(proc.atoms()), m_proc(proc),
         m_solvation_model(proc.atoms(), solvent, m_proc.system_charge(),
                           radii_scaling) {
-    occ::Mat3N pos(3, m_atoms.size());
-    occ::IVec nums(m_atoms.size());
-    for (int i = 0; i < m_atoms.size(); i++) {
-      pos(0, i) = m_atoms[i].x;
-      pos(1, i) = m_atoms[i].y;
-      pos(2, i) = m_atoms[i].z;
-      nums(i) = m_atoms[i].atomic_number;
-    }
-    m_qn = m_proc.nuclear_electric_potential_contribution(
-        m_solvation_model.surface_positions_coulomb());
-    m_point_charges.reserve(m_qn.rows());
+    initialize();
+  }
 
-    for (int i = 0; i < m_solvation_model.num_surface_points(); i++) {
-      const auto &pt = m_solvation_model.surface_positions_coulomb().col(i);
-      m_point_charges.emplace_back(0.0, pt);
-    }
-
-    m_cds_solvation_energy = m_solvation_model.smd_cds_energy();
+  /// Drive the reaction field from an explicit engine configuration rather
+  /// than the SMD tables — see the matching `ContinuumSolvationModel` ctor.
+  SolvationCorrectedProcedure(Proc &proc, const occ::scrf::Options &opts)
+      : m_atoms(proc.atoms()), m_proc(proc),
+        m_solvation_model(proc.atoms(), opts, m_proc.system_charge()) {
+    initialize();
   }
 
   occ::qm::FockBuildProperties fock_build_properties() const {
@@ -343,6 +344,17 @@ public:
   }
 
 private:
+  void initialize() {
+    m_qn = m_proc.nuclear_electric_potential_contribution(
+        m_solvation_model.surface_positions_coulomb());
+    m_point_charges.reserve(m_qn.rows());
+    for (int i = 0; i < m_solvation_model.num_surface_points(); i++) {
+      const auto &pt = m_solvation_model.surface_positions_coulomb().col(i);
+      m_point_charges.emplace_back(0.0, pt);
+    }
+    m_cds_solvation_energy = m_solvation_model.smd_cds_energy();
+  }
+
   const std::string m_solvent_name{"water"};
   const std::vector<occ::core::Atom> &m_atoms;
   Proc &m_proc;

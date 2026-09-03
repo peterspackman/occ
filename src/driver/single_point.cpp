@@ -424,12 +424,24 @@ single_point_driver(const OccInput &config,
   }
 }
 
+// An SCF that hit its iteration limit leaves an arbitrary density behind.
+// Returning it lets every downstream consumer (multipoles, ESP, correlation,
+// lattice energies) produce confident nonsense, so fail here instead.
+static Wavefunction require_converged(Wavefunction wfn) {
+  if (!wfn.converged)
+    throw std::runtime_error(
+        "SCF did not converge; refusing to return a wavefunction. Raise "
+        "--scf-maxiter, change the initial guess, or check the acceleration "
+        "settings (--ri, --cosx-grid).");
+  return wfn;
+}
+
 Wavefunction single_point(const OccInput &config) {
-  return single_point_driver(config);
+  return require_converged(single_point_driver(config));
 }
 
 Wavefunction single_point(const OccInput &config, const Wavefunction &wfn) {
-  return single_point_driver(config, wfn);
+  return require_converged(single_point_driver(config, wfn));
 }
 
 } // namespace occ::driver

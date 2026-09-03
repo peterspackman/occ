@@ -151,6 +151,13 @@ export async function wavefunctionFromString(content, format) {
 }
 
 
+// Crystal growth and COSMO-RS solvation wrappers
+import {
+  calculateCrystalGrowth,
+  cosmoRsSolvation,
+  availableCosmoRsSolvents
+} from './crystal-growth.js';
+
 // Re-export all bindings from the WASM module
 export * from './occjs.js';
 
@@ -184,5 +191,9 @@ export {
   optimizeDFT,
   computeFrequencies,
   optimizeAndAnalyze,
-  moleculeToXYZ
+  moleculeToXYZ,
+  // Crystal growth and solvation
+  calculateCrystalGrowth,
+  cosmoRsSolvation,
+  availableCosmoRsSolvents
 };

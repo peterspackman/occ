@@ -43,6 +43,19 @@ double evaluate_cds_energy(const Mat3N &pos_bohr, const IVec &Z,
 
 } // namespace
 
+Options Options::conductor(double probe_radius_angs, int angular_points) {
+  Options o;
+  o.backend = Options::Backend::CPCM;
+  o.radii = Options::Radii::CosmoVdW;
+  o.dielectric_override = 1.0e10;
+  o.f_eps_x = 0.0;
+  o.probe_radius_angs = probe_radius_angs;
+  o.smoothing_width_bohr = 0.0;
+  o.angular_points = angular_points;
+  o.include_cds = false;
+  return o;
+}
+
 ReactionFieldEngine::ReactionFieldEngine(Options opts) : m_opts(std::move(opts)) {}
 
 void ReactionFieldEngine::initialize(const Mat3N &positions_bohr,
@@ -86,7 +99,8 @@ void ReactionFieldEngine::initialize(const Mat3N &positions_bohr,
   // ---- ES cavity build + COSMO factor ------------------------------------
   m_es_surface = occ::solvent::surface::solvent_surface(
       m_es_radii, atomic_numbers, positions_bohr, m_opts.probe_radius_angs,
-      /*axis_aligned=*/false, m_opts.smoothing_width_bohr);
+      /*axis_aligned=*/false, m_opts.smoothing_width_bohr,
+      m_opts.angular_points);
 
   const Eigen::Index ncav = m_es_surface.areas.size();
   if (ncav == 0) {
@@ -156,7 +170,8 @@ void ReactionFieldEngine::rebuild_cds_branch() {
   m_e_cds = m_cds_energy_elements.sum();
 }
 
-void ReactionFieldEngine::solve_asc(const Vec &phi_at_cavity) {
+void ReactionFieldEngine::solve_asc(const Vec &phi_at_cavity,
+                                   std::optional<double> total_solute_charge) {
   const Eigen::Index ncav = m_es_surface.areas.size();
   if (phi_at_cavity.size() != ncav) {
     throw std::runtime_error(
@@ -171,6 +186,15 @@ void ReactionFieldEngine::solve_asc(const Vec &phi_at_cavity) {
   }
   m_phi = phi_at_cavity;
   m_sigma = m_es_lu.solve(-m_f_eps * phi_at_cavity);
+  if (total_solute_charge) {
+    const Vec y = m_es_lu.solve(Vec::Ones(ncav));
+    const double denominator = y.sum();
+    if (std::abs(denominator) > 1e-14) {
+      const double target = -m_f_eps * (*total_solute_charge);
+      const double lambda = (m_sigma.sum() - target) / denominator;
+      m_sigma -= lambda * y;
+    }
+  }
   m_e_es = 0.5 * m_sigma.dot(m_phi);
   // Atom-resolved state stays stale — caller is using the Eulerian path.
   m_have_atom_charges = false;

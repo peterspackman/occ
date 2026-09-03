@@ -46,9 +46,11 @@ Mat DFIntegrals::build_b_tilde(Eigen::Ref<const Mat> C_left,
                    : build_b_stored(C_left, C_right);
   // Fold the Coulomb metric once: B̃ = B·L⁻ᵀ with V = L Lᵀ, so that
   //   (ia|jb) = Σ_P B̃(ia,P) B̃(jb,P).
-  // B̃ᵀ = L⁻¹ Bᵀ via a single triangular solve.
-  Mat Bt = m_df.coulomb_metric().matrixL().solve(B.transpose()); // (naux x M)
-  return Bt.transpose();                                         // (M x naux)
+  // If the metric was too ill-conditioned for a Cholesky the half-inverse
+  // comes from its eigendecomposition instead, with fewer than naux rows.
+  // The identity above holds either way.
+  Mat Bt = m_df.coulomb_metric().half_inverse_apply(B.transpose()); // (naux x M)
+  return Bt.transpose();                                            // (M x naux)
 }
 
 } // namespace occ::qm

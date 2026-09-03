@@ -1,6 +1,7 @@
 #pragma once
 #include <Eigen/Cholesky>
 #include <Eigen/IterativeLinearSolvers>
+#include <occ/qm/coulomb_metric.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/split_ri_j.h>
 
@@ -50,8 +51,8 @@ public:
   inline const IntegralEngine &ao_engine() const { return m_ao_engine; }
   inline const IntegralEngine &aux_engine() const { return m_aux_engine; }
   inline const Mat &integral_store() const { return m_integral_store; }
-  /// Cholesky factorization of the Coulomb metric V=(P|Q), V = L Lᵀ.
-  inline const Eigen::LLT<Mat> &coulomb_metric() const { return V_LLt; }
+  /// Factorization of the Coulomb metric V=(P|Q) for the active omega.
+  inline const CoulombMetric &coulomb_metric() const { return V_LLt; }
   void compute_stored_integrals();
 
   /// Integral-direct density-fitting B tensor for the given MO coefficient
@@ -91,7 +92,11 @@ private:
 
   mutable IntegralEngine m_ao_engine;  // engine with ao basis & aux basis
   mutable IntegralEngine m_aux_engine; // engine with just aux basis
-  Eigen::LLT<Mat> V_LLt;
+  CoulombMetric V_LLt;        ///< metric factorization for the active omega
+  CoulombMetric m_V_LLt_full; ///< cached omega = 0 factorization
+  CoulombMetric m_V_LLt_lr;   ///< cached factorization for m_lr_omega
+  double m_omega{0.0};          ///< omega the active factorization belongs to
+  double m_lr_omega{0.0};       ///< omega of the cached long-range metric
   Mat m_integral_store;
   Policy m_policy{Policy::Choose};
   size_t m_integral_store_memory_limit{512 * 1024 * 1024}; // 512 MiB

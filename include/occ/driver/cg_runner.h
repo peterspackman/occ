@@ -16,11 +16,20 @@ struct DMAReferenceLevel {
 struct CGConfig {
   interaction::LatticeConvergenceSettings lattice_settings;
   std::string solvent{"water"};
+  std::string solvation_model{"smd"};
+  bool print_solvation_descriptors{false};
+  double temperature{298.15};
+  double solvent_probe_radius{0.0};
   DMAReferenceLevel dma_reference;
   std::string charge_string{""};
   std::string wavefunction_choice{"gas"};
   double cg_radius{3.8};
+  /// Count-based surface selection. Deprecated: it can split a Friedel pair
+  /// and skew the Wulff construction. Prefer `min_interplanar_spacing`.
   int max_facets{0};
+  /// Include every face with d >= this (Angstrom). Takes precedence over
+  /// `max_facets`, and is the crystallographically meaningful cut.
+  double min_interplanar_spacing{0.0};
   bool compute_morphology{false};
   bool write_dump_files{false};
   bool spherical{false};

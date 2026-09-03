@@ -41,7 +41,11 @@ OCC provides comprehensive functionality for ground-state single-point calculati
     - Global hybrid functionals (range-separated support planned)
   - Density fitting (RI-JK) with auxiliary basis sets
   - GFN2-xTB semi-empirical tight-binding (molecular + periodic; see below)
-  - Implicit solvation via SMD, CPCM-X for xTB
+  - Implicit solvation: SMD, and openCOSMO-RS 24a (`occ cosmo-rs`,
+    or `occ cg --solvation-model cosmo-rs`); CPCM-X for xTB.
+    No solvent segment ensembles are shipped: compute them with
+    `occ cosmo-rs <solvent>.xyz --write-segments <solvent>.json`, or give a
+    solvent geometry directly with `--solvent-geometry`
   - XDM dispersion model
   - D4 (DFT-D4) dispersion correction
 
@@ -246,3 +250,19 @@ If you use the GFN2-xTB implementation, cite:
 
 The OCC implementation of GFN2-xTB is independent of, but was developed
 with reference to, the [tblite](https://github.com/tblite/tblite) project.
+
+If you use the openCOSMO-RS solvation model (`occ cosmo-rs`, or
+`occ cg --solvation-model cosmo-rs`), cite:
+
+- S. Müller, T. Nevolianis, M. Garcia-Ratés, C. Riplinger, K. Leonhard,
+  I. Smirnova, *Predicting solvation free energies for neutral molecules in
+  any solvent with openCOSMO-RS*, Fluid Phase Equilibria **589**, 114250
+  (2025). [doi:10.1016/j.fluid.2024.114250](https://doi.org/10.1016/j.fluid.2024.114250)
+- A. Grigorash, S. Müller, P. Paricaud, E. H. Stenby, I. Smirnova, W. Yan,
+  *A comprehensive approach to incorporating intermolecular dispersion into
+  the openCOSMO-RS*, Chemical Engineering Science **309**, 121425 (2025).
+  [doi:10.1016/j.ces.2025.121425](https://doi.org/10.1016/j.ces.2025.121425)
+
+The OCC implementation uses the published 24a parameter set and is
+independent of, but was developed with reference to, the
+[openCOSMO-RS_py](https://github.com/TUHH-TVT/openCOSMO-RS_py) project.

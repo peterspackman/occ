@@ -267,6 +267,41 @@ generate_surfaces(const Crystal &c,
   return result;
 }
 
+bool friedel_mate_is_equivalent(const Crystal &c, const HKL &hkl) {
+  const HKL mate{-hkl.h, -hkl.k, -hkl.l};
+  for (const auto &symop : c.space_group().symmetry_operations()) {
+    const HKL image = apply_rotation(symop, hkl);
+    if (image.h == mate.h && image.k == mate.k && image.l == mate.l)
+      return true;
+  }
+  return false;
+}
+
+std::vector<size_t> laue_orbit_partners(const Crystal &c,
+                                        const std::vector<Surface> &surfaces,
+                                        size_t i) {
+  std::vector<size_t> group{i};
+  if (i >= surfaces.size() || friedel_mate_is_equivalent(c, surfaces[i].hkl()))
+    return group;
+
+  // Non-centrosymmetric: the Friedel mate is a second form. It is whichever
+  // representative in the list has -h in its own point-group orbit.
+  const HKL h = surfaces[i].hkl();
+  const HKL mate{-h.h, -h.k, -h.l};
+  for (size_t j = 0; j < surfaces.size(); j++) {
+    if (j == i)
+      continue;
+    for (const auto &symop : c.space_group().symmetry_operations()) {
+      const HKL image = apply_rotation(symop, surfaces[j].hkl());
+      if (image.h == mate.h && image.k == mate.k && image.l == mate.l) {
+        group.push_back(j);
+        break;
+      }
+    }
+  }
+  return group;
+}
+
 bool Surface::check_systematic_absence(const Crystal &crystal, const HKL &hkl) {
   Vec3 f(hkl.h, hkl.k, hkl.l);
   constexpr double position_tolerance = 1e-6;
@@ -488,14 +523,15 @@ unique_counts_from_dimers(const SurfaceCutResult::DimerCounts &counts,
 
 double
 energy_from_counts_and_dimers(const SurfaceCutResult::DimerCounts &counts,
-                              const CrystalDimers &dimers) {
+                              const CrystalDimers &dimers,
+                              const std::string &key) {
   double energy_total = 0.0;
   for (int i = 0; i < counts.size(); i++) {
     const auto &neighbor_counts = counts[i];
     const auto &neighbors = dimers.molecule_neighbors[i];
     for (int j = 0; j < neighbor_counts.size(); j++) {
       if (neighbor_counts[j] > 0) {
-        double e_int = neighbors[j].dimer.interaction_energy();
+        double e_int = neighbors[j].dimer.interaction_energy(key);
         energy_total += neighbor_counts[j] * e_int;
       }
     }
@@ -508,20 +544,24 @@ SurfaceCutResult::unique_counts_above(const CrystalDimers &dimers) const {
   return unique_counts_from_dimers(above, dimers);
 }
 
-double SurfaceCutResult::total_above(const CrystalDimers &dimers) const {
-  return energy_from_counts_and_dimers(above, dimers);
+double SurfaceCutResult::total_above(const CrystalDimers &dimers,
+                                     const std::string &key) const {
+  return energy_from_counts_and_dimers(above, dimers, key);
 }
 
-double SurfaceCutResult::total_below(const CrystalDimers &dimers) const {
-  return energy_from_counts_and_dimers(below, dimers);
+double SurfaceCutResult::total_below(const CrystalDimers &dimers,
+                                     const std::string &key) const {
+  return energy_from_counts_and_dimers(below, dimers, key);
 }
 
-double SurfaceCutResult::total_slab(const CrystalDimers &dimers) const {
-  return energy_from_counts_and_dimers(slab, dimers);
+double SurfaceCutResult::total_slab(const CrystalDimers &dimers,
+                                     const std::string &key) const {
+  return energy_from_counts_and_dimers(slab, dimers, key);
 }
 
-double SurfaceCutResult::total_bulk(const CrystalDimers &dimers) const {
-  return energy_from_counts_and_dimers(bulk, dimers);
+double SurfaceCutResult::total_bulk(const CrystalDimers &dimers,
+                                     const std::string &key) const {
+  return energy_from_counts_and_dimers(bulk, dimers, key);
 }
 
 SurfaceCutResult::SurfaceCutResult(const CrystalDimers &dimers) {

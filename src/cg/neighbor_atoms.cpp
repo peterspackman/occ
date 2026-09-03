@@ -1,4 +1,4 @@
-#include <occ/cg/solvation_types.h>
+#include <occ/cg/neighbor_atoms.h>
 #include <occ/core/units.h>
 
 namespace occ::cg {

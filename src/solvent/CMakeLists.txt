@@ -2,7 +2,10 @@ add_library(occ_solvent_obj
     OBJECT
     "${CMAKE_CURRENT_SOURCE_DIR}/draco.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/json.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cosmors.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cosmors_io.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/parameters.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cosmors_segments.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/smd.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/solvation_correction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp"

@@ -802,6 +802,7 @@ occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
   wfn.xtb_atomic_charges = m_last_result.atomic_charges;
   wfn.xtb_converged = m_last_result.converged;
   wfn.xtb_n_iterations = m_last_result.n_iterations;
+  wfn.converged = m_last_result.converged;
 
   // Cache the overlap matrix on T (commonly used by downstream).
   wfn.T = m_last_result.overlap_matrix;

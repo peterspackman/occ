@@ -380,6 +380,187 @@ export interface Wavefunction {
 }
 
 // Main module interface
+// ---------------------------------------------------------------------------
+// Crystal growth (occ cg) and COSMO-RS solvation
+// ---------------------------------------------------------------------------
+
+export interface VectorString {
+  size(): number;
+  get(index: number): string;
+  delete(): void;
+}
+
+/** Reference method/basis implied by a DMA model name. */
+export interface DMAReferenceLevel {
+  model: string;
+  method: string;
+  basis: string;
+}
+
+/**
+ * Inputs to a crystal-growth calculation. This is a native (embind) object:
+ * call `delete()` when finished, or use `calculateCrystalGrowth` which owns
+ * the lifetime for you.
+ */
+export interface CrystalGrowthConfig {
+  /** Path to the input CIF, inside the module filesystem. */
+  crystalFilename: string;
+  /** Pair-interaction energy model, e.g. "ce-b3lyp", "ce-1p", "gfn2". */
+  modelName: string;
+  /** Neighbour cutoff for the lattice sum, Angstrom. */
+  maxRadius: number;
+  /** Solvent name, or a mixture as "name:fraction,name:fraction". */
+  solvent: string;
+  /** "smd" (default), "cosmo-rs", or "none". Mixtures need "cosmo-rs". */
+  solvationModel: string;
+  /** Temperature in K for the solvation model. */
+  temperature: number;
+  chargeString: string;
+  dmaReference: DMAReferenceLevel;
+  /** Nearest-neighbour cutoff written to the CG file, Angstrom. */
+  cgRadius: number;
+  computeMorphology: boolean;
+  /**
+   * Number of faces to compute surface energies for. Deprecated: a count can
+   * split a Friedel pair — two distinct forms that always share a d-spacing
+   * in a non-centrosymmetric group — which skews the Wulff construction.
+   * Prefer `minInterplanarSpacing`.
+   */
+  numSurfaceEnergies: number;
+  /**
+   * Compute surface energies for every face with interplanar spacing at least
+   * this (Angstrom). Takes precedence over `numSurfaceEnergies`.
+   */
+  minInterplanarSpacing: number;
+  delete(): void;
+}
+
+export interface CrystalGrowthConfigConstructor {
+  new(): CrystalGrowthConfig;
+}
+
+/** Per symmetry-unique molecule. Energies in kJ/mol. */
+export interface CrystalGrowthMoleculeResult {
+  totalEnergy: number;
+  crystalEnergy: number;
+  interactionEnergy: number;
+  solutionTerm: number;
+}
+
+/** Miller indices, as [h, k, l]. */
+export type HKL = [number, number, number];
+
+export interface MorphologyFacet {
+  hkl: HKL;
+  /** Surface energy, J/m^2. */
+  gamma: number;
+  /** Facet area as a fraction of the total. */
+  area: number;
+}
+
+export interface MorphologyEdge {
+  hklA: HKL;
+  hklB: HKL;
+  length: number;
+  lineTension: number;
+}
+
+export interface MorphologyCorner {
+  hkls: HKL[];
+  count: number;
+  epsilon: number;
+}
+
+/** One point on the particle size sweep. */
+export interface MorphologySample {
+  sizeScale: number;
+  nMolecules: number;
+  eExcess: number;
+  eSurface: number;
+  eEdge: number;
+  eCorner: number;
+  eSurfaceAnalytic: number;
+  area: number;
+  edgeLength: number;
+  nCorners: number;
+}
+
+export interface Morphology {
+  shape: string;
+  muBulk: number;
+  molecularVolume: number;
+  facets: MorphologyFacet[];
+  edges: MorphologyEdge[];
+  corners: MorphologyCorner[];
+  samples: MorphologySample[];
+}
+
+export interface CrystalGrowthResult {
+  moleculeResults: CrystalGrowthMoleculeResult[];
+  /** Present only when `computeMorphology` was set. */
+  morphology?: Morphology;
+}
+
+/**
+ * Settings for an openCOSMO-RS solvation free energy. Native object; call
+ * `delete()` when finished.
+ */
+export interface CosmoRSSettings {
+  method: string;
+  basis: string;
+  pureSpherical: boolean;
+  /** Solvent probe radius used to build the cavity, Angstrom. */
+  probeRadius: number;
+  /** Lebedev order per atom for the cavity. */
+  angularPoints: number;
+  constrainCharge: boolean;
+  temperature: number;
+  /**
+   * Liquid-phase volume per solute molecule, Angstrom^3, for the
+   * reference-state term. Non-positive drops that term, which takes the
+   * total off any absolute scale.
+   */
+  liquidVolume: number;
+  /** Rings in the solute; negative counts them from the bond graph. */
+  numRings: number;
+  delete(): void;
+}
+
+export interface CosmoRSSettingsConstructor {
+  new(): CosmoRSSettings;
+}
+
+/** The openCOSMO-RS terms, each in kJ/mol. */
+export interface CosmoRSEnergy {
+  /** Gas to ideal conductor. */
+  dielectric: number;
+  /** RT ln(gamma_res). */
+  residual: number;
+  /** RT ln(gamma_comb). */
+  combinatorial: number;
+  /** van der Waals surface term, -sum_a tau_a A_a. */
+  vdw: number;
+  /** -omega_ring n_ring. */
+  ring: number;
+  /** -RT ln(v_gas/v_liquid). */
+  referenceState: number;
+  /** Fitted intercept. */
+  eta: number;
+  total: number;
+}
+
+export interface CosmoRSSolvationResult {
+  energy: CosmoRSEnergy;
+  /** Angstrom^2. */
+  cavityArea: number;
+  /** Angstrom^3. */
+  cavityVolume: number;
+  /** Rings used, whether given or counted. */
+  numRings: number;
+  /** The solvation free energy, kJ/mol. */
+  total: number;
+}
+
 export interface OCCModule {
   // Math types
   Vec3: typeof Vec3;
@@ -467,6 +648,25 @@ export interface OCCModule {
   
   // JSON export
   isosurfaceToJSON(surf: Isosurface): string;
+
+  // Crystal growth
+  CrystalGrowthConfig: CrystalGrowthConfigConstructor;
+  calculateCrystalGrowthEnergies(config: CrystalGrowthConfig): CrystalGrowthResult;
+
+  // COSMO-RS solvation
+  CosmoRSSettings: CosmoRSSettingsConstructor;
+  cosmoRsSolvationFreeEnergy(
+    solute: Molecule,
+    solvent: string,
+    settings: CosmoRSSettings
+  ): CosmoRSSolvationResult;
+  cosmoRsSolvationFreeEnergyInSolventGeometry(
+    solute: Molecule,
+    solvent: Molecule,
+    settings: CosmoRSSettings
+  ): CosmoRSSolvationResult;
+  /** Solvent names with a cached segment ensemble, sorted. */
+  availableCosmoRsSolvents(): VectorString;
 }
 
 export interface LoadOptions {
@@ -672,4 +872,19 @@ export type Crystal = unknown;
 
 // Full pipeline: Crystal -> SCF -> DMA -> CrystalEnergySetup.
 export function fromCrystal(crystal: Crystal, config?: MultipoleConfig): CrystalEnergySetup;
+
+// Crystal growth and COSMO-RS solvation. These own the native config handle,
+// so the caller never has to delete() one.
+export declare function calculateCrystalGrowth(
+  options: Partial<Omit<CrystalGrowthConfig, 'delete' | 'dmaReference'>> & {
+    /** CIF text, staged into the module filesystem for the run. */
+    cif?: string;
+  }
+): Promise<CrystalGrowthResult>;
+export declare function cosmoRsSolvation(
+  solute: Molecule,
+  solvent: string | Molecule,
+  options?: Partial<Omit<CosmoRSSettings, 'delete'>>
+): Promise<CosmoRSSolvationResult>;
+export declare function availableCosmoRsSolvents(): Promise<string[]>;
 export function computeCrystalEnergy(jsonPath: string): CrystalEnergyResult;

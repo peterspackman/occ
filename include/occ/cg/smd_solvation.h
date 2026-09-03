@@ -1,7 +1,7 @@
 #pragma once
 #include <fmt/format.h>
 #include <filesystem>
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 #include <occ/core/molecule.h>
 #include <occ/dft/dft.h>
 #include <occ/qm/wavefunction.h>
@@ -25,7 +25,7 @@ public:
                 const SMDSettings &settings = SMDSettings{});
 
   struct Result {
-    std::vector<SMDSolventSurfaces> surfaces;
+    std::vector<SolvationData> surfaces;
     std::vector<occ::qm::Wavefunction> wavefunctions;
   };
 
@@ -50,18 +50,18 @@ private:
     }
   };
 
-  bool try_load_cached(const CacheFiles &cache, SMDSolventSurfaces &,
+  bool try_load_cached(const CacheFiles &cache, SolvationData &,
                        occ::qm::Wavefunction &) const;
 
-  std::pair<SMDSolventSurfaces, occ::qm::Wavefunction>
+  std::pair<SolvationData, occ::qm::Wavefunction>
   perform_calculation(const occ::core::Molecule &mol,
                       const occ::qm::Wavefunction &gas_wfn, size_t index);
 
   void save_calculation(const CacheFiles &cache,
-                        const SMDSolventSurfaces &surface,
+                        const SolvationData &surface,
                         occ::qm::Wavefunction &wfn) const;
 
-  void calculate_free_energy_components(SMDSolventSurfaces &surface,
+  void calculate_free_energy_components(SolvationData &surface,
                                         const occ::core::Molecule &mol,
                                         double original_energy,
                                         double solvated_energy,

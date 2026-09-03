@@ -2,6 +2,8 @@
 """Extract GFN2-xTB parameters from Grimme's xtb source tree to JSON.
 
 Reads:
+  - xtb    param_gfn2-xtb.txt          (GFN2 parameters)
+  - tblite src/tblite/data/spin.f90    (spin constants; not in the xtb file)
   - $XTB_SRC/param_gfn2-xtb.txt
   - $XTB_SRC/src/xtb/gfn2.f90       (referenceOcc table; sanity checks)
   - $XTB_SRC/src/param/paulingen.f90 (Pauling EN, used for H0 EN-shift)
@@ -48,18 +50,83 @@ Per-key scalings applied here (matches xtb's read_gfn_param.f90):
   ipeashift       : x 0.1   (globals.ipeashift_au)
 
 Run:
-    python3 scripts/extract_gfn2_params.py [--xtb-src ~/git/xtb] \
-        [--out share/xtb/gfn2.json]
+    python3 scripts/extract_gfn2_params.py [--out share/xtb/gfn2.json]
+
+Reads the pinned xtb commit over the network by default; pass --xtb-src to
+use a local checkout instead.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import sys
+import urllib.request
 from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Upstream sources, pinned so regeneration is reproducible and so the generated
+# file can record exactly what it was built from.
+#
+# The GFN2 parameters come from xtb's parameter file; the spin constants are
+# not in it and come from tblite. Both are LGPL-3.0-or-later, and both sets of
+# values are published in the method papers.
+#
+#   xtb     https://github.com/grimme-lab/xtb    (LGPL-3.0-or-later)
+#   tblite  https://github.com/tblite/tblite     (LGPL-3.0-or-later)
+# ---------------------------------------------------------------------------
+XTB_URL = "https://github.com/grimme-lab/xtb"
+XTB_COMMIT = "a73499f9515d9e48614699d70f63fa908a699c38"
+XTB_PARAM_FILE = "param_gfn2-xtb.txt"
+
+TBLITE_URL = "https://github.com/tblite/tblite"
+TBLITE_COMMIT = "a1f0ab59f7f4d0b44508ced089b6f9a3432144e1"
+TBLITE_SPIN_FILE = "src/tblite/data/spin.f90"
+
+
+def read_upstream(repo: str, commit: str, relative_path: str,
+                  local_root: str | None) -> str:
+    """Read a file from a local checkout, or from the pinned upstream commit.
+
+    Defaults to the network so the script runs without local checkouts; pass
+    the matching --*-src to point at a working tree instead, which is what you
+    want when re-pinning to a newer commit.
+    """
+    if local_root:
+        path = Path(local_root).expanduser() / relative_path
+        if not path.is_file():
+            raise SystemExit(f"missing: {path}")
+        return path.read_text()
+    url = f"https://raw.githubusercontent.com/{repo}/{commit}/{relative_path}"
+    try:
+        with urllib.request.urlopen(url) as response:
+            return response.read().decode("utf-8")
+    except OSError as exc:
+        raise SystemExit(f"could not fetch {url}: {exc}") from exc
+
+
+# Order of the six spin constants in tblite's table, and in our JSON.
+SPIN_KEYS = ["ss", "sp", "pp", "sd", "pd", "dd"]
+
+
+def parse_spin_constants(text: str) -> list[list[float]]:
+    """Pull `spin_constants(6, 86)` out of tblite's data/spin.f90.
+
+    Returns one list of six values per element, in SPIN_KEYS order.
+    """
+    marker = "spin_constants(6, 86) = reshape(["
+    start = text.index(marker) + len(marker)
+    body = text[start:text.index("shape(spin_constants)", start)]
+    body = re.sub(r"!.*", "", body)              # trailing comments
+    body = body.replace("&", "").replace("]", "")
+    values = [float(v.replace("_wp", ""))
+              for v in body.split(",") if v.strip()]
+    if len(values) != 6 * 86:
+        raise SystemExit(
+            f"expected {6 * 86} spin constants, parsed {len(values)}")
+    return [values[i:i + 6] for i in range(0, len(values), 6)]
+
 
 # ---------------------------------------------------------------------------
 # Hardcoded supporting tables scraped once from xtb source.
@@ -222,8 +289,7 @@ GAM3_KEY = {"gam3s": (0, "both"), "gam3p": (1, "both"),
             "gam3f": (3, "both")}
 
 
-def parse_param_file(path: Path) -> dict:
-    text = path.read_text()
+def parse_param_file(text: str) -> dict:
     info: dict = {}
     globals_: dict = {}
     gam3shell = [[0.0, 0.0] for _ in range(4)]
@@ -384,19 +450,34 @@ def parse_element_block(z: int, body: str) -> dict:
 
 def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("--xtb-src", default=os.path.expanduser("~/git/xtb"))
+    p.add_argument(
+        "--xtb-src",
+        default=None,
+        help="local xtb checkout; defaults to fetching the pinned commit",
+    )
+    p.add_argument(
+        "--tblite-src",
+        default=None,
+        help="local tblite checkout; defaults to fetching the pinned commit",
+    )
     repo_root = Path(__file__).resolve().parent.parent
     default_out = repo_root / "share" / "xtb" / "gfn2.json"
     p.add_argument("--out", default=str(default_out))
     args = p.parse_args(argv)
 
-    xtb_src = Path(args.xtb_src)
-    param = xtb_src / "param_gfn2-xtb.txt"
-    if not param.is_file():
-        print(f"missing: {param}", file=sys.stderr)
-        return 1
+    data = parse_param_file(
+        read_upstream("grimme-lab/xtb", XTB_COMMIT, XTB_PARAM_FILE,
+                      args.xtb_src))
+    spin = parse_spin_constants(
+        read_upstream("tblite/tblite", TBLITE_COMMIT, TBLITE_SPIN_FILE,
+                      args.tblite_src))
 
-    data = parse_param_file(param)
+    # The parameter file has no spin constants; attach tblite's, which are
+    # indexed by atomic number.
+    for element in data["elements"]:
+        z = element["z"]
+        if 1 <= z <= len(spin):
+            element["spin_constants"] = dict(zip(SPIN_KEYS, spin[z - 1]))
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
 
@@ -405,6 +486,27 @@ def main(argv: list[str]) -> int:
         "doi": data["info"].get("doi", "10.1021/acs.jctc.8b01176"),
         "version": 1,
         "max_z": 86,
+        "source": {
+            "generator": "scripts/extract_gfn2_params.py",
+            "upstream": [
+                {
+                    "project": "xtb",
+                    "url": XTB_URL,
+                    "commit": XTB_COMMIT,
+                    "files": [XTB_PARAM_FILE],
+                    "license": "LGPL-3.0-or-later",
+                    "provides": "GFN2-xTB parameters",
+                },
+                {
+                    "project": "tblite",
+                    "url": TBLITE_URL,
+                    "commit": TBLITE_COMMIT,
+                    "files": [TBLITE_SPIN_FILE],
+                    "license": "LGPL-3.0-or-later",
+                    "provides": "spin constants",
+                },
+            ],
+        },
         "globals": data["globals"],
         "elements": data["elements"],
     }

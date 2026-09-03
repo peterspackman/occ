@@ -3,13 +3,14 @@
 #include <occ/cg/result_types.h>
 #include <occ/cg/smd_solvation.h>
 #include <occ/cg/solvation_contribution.h>
-#include <occ/cg/solvent_surface.h>
+#include <occ/cg/solvation_data.h>
 #include <occ/core/dimer.h>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/point_group.h>
 #include <occ/core/timings.h>
 #include <occ/crystal/crystal.h>
+#include <occ/driver/cg_solvation_model.h>
 #include <occ/driver/single_point.h>
 #include <occ/interaction/pair_energy.h>
 #include <occ/interaction/pairinteraction.h>
@@ -22,7 +23,6 @@ enum class WavefunctionChoice { GasPhase, Solvated };
 using occ::core::Molecule;
 using occ::qm::Wavefunction;
 using WavefunctionList = std::vector<Wavefunction>;
-using SolventNeighborContributionList = std::vector<cg::SolvationContribution>;
 
 struct AssignedEnergy {
   bool is_nn{true};
@@ -33,12 +33,16 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
     const crystal::CrystalDimers::MoleculeNeighbors &neighbors,
     const std::vector<double> &dimer_energies, double cg_radius);
 
-std::vector<occ::Vec3>
-calculate_net_dipole(const WavefunctionList &wavefunctions,
-                     const crystal::CrystalDimers &crystal_dimers);
-
 struct CrystalGrowthCalculatorOptions {
   std::string solvent{"water"};
+  /// Filesystem-safe form of `solvent`, used for output filenames.
+  std::string solvent_tag{"water"};
+  /// Which solvation model supplies the per-element surfaces.
+  SolvationModelKind solvation_model{SolvationModelKind::Smd};
+  double temperature{298.15};
+  /// Solvent probe radius for the conductor cavity, Angstrom. Only the
+  /// cosmo-rs model builds one; SMD has its own cavity construction.
+  double solvent_probe_radius{0.0};
   std::string basename{"calculation"};
   std::string energy_model{"ce-b3lyp"};
 
@@ -46,6 +50,12 @@ struct CrystalGrowthCalculatorOptions {
   bool use_wolf_sum{false};
   bool use_crystal_polarization{false};
   bool write_debug_output_files{true};
+  /// Print a per-contact table of the solvation descriptors (lambda,
+  /// hydrogen-bonded area, ...) alongside the energy table.
+  bool print_solvation_descriptors{false};
+  /// Redistribute each molecule's solvation over its contacts using
+  /// dimer-difference weights instead of the nearest-atom surface partition.
+  /// The total per molecule is preserved; only the distribution changes.
   double inner_radius{3.8};
   double outer_radius{3.8};
   std::string xtb_solvation_model{"cpcmx"};
@@ -119,14 +129,15 @@ protected:
   std::vector<double> m_lattice_energies;
   WavefunctionList m_gas_phase_wavefunctions;
   WavefunctionList m_solvated_wavefunctions;
-  std::vector<cg::SMDSolventSurfaces> m_solvated_surface_properties;
+  std::vector<cg::SolvationData> m_solvated_surface_properties;
   crystal::CrystalDimers m_full_dimers;
   cg::PairEnergies m_dimer_energies;
   crystal::CrystalDimers m_nearest_dimers;
-  std::vector<SolventNeighborContributionList> m_solvation_breakdowns;
   std::vector<cg::DimerResults> m_interaction_energies;
   std::vector<cg::DimerResults> m_crystal_interaction_energies;
   std::vector<double> m_solution_terms;
+  /// kJ/mol, from the active solvation model. See `write_energy_summary`.
+  double m_standard_state_shift{0.0};
 
 private:
   CrystalGrowthCalculatorOptions m_options;
@@ -160,6 +171,8 @@ public:
 
   cg::MoleculeResult process_neighbors_for_symmetry_unique_molecule(
       int i, const std::string &molname) override;
+
+private:
 };
 
 class XTBCrystalGrowthCalculator : public CrystalGrowthCalculator {

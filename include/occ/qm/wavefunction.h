@@ -156,6 +156,10 @@ struct Wavefunction {
   Vec xtb_atomic_charges;
   bool xtb_converged{false};
   int xtb_n_iterations{0};
+
+  /// Whether the SCF that produced these orbitals converged. Anything
+  /// derived from an unconverged density is meaningless.
+  bool converged{true};
 };
 
 } // namespace occ::qm

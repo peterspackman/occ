@@ -26,13 +26,16 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "DMA multipoles + element-based exp-6 (Williams-DE)\n"
                  "  fit, w99                                        "
                  "DMA multipoles + typed exp-6 (FIT / Williams-99)");
-  cg->add_option("--dma-model", config->dma_reference.model,
-                 "DMA reference model implying method+basis (default ce-b3lyp); "
-                 "only used by the dma/williams models");
-  cg->add_option("--dma-method", config->dma_reference.method,
-                 "override the DMA reference QM method (default: from --dma-model)");
-  cg->add_option("--dma-basis", config->dma_reference.basis,
-                 "override the DMA reference basis set (default: from --dma-model)");
+  cg->add_option(
+      "--dma-model", config->dma_reference.model,
+      "DMA reference model implying method+basis (default ce-b3lyp); "
+      "only used by the dma/williams models");
+  cg->add_option(
+      "--dma-method", config->dma_reference.method,
+      "override the DMA reference QM method (default: from --dma-model)");
+  cg->add_option(
+      "--dma-basis", config->dma_reference.basis,
+      "override the DMA reference basis set (default: from --dma-model)");
   cg->add_option(
       "--convergence-threshold,--convergence_threshold",
       config->lattice_settings.energy_tolerance,
@@ -40,10 +43,23 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
   cg->add_option("-c,--cg-radius", config->cg_radius,
                  "maximum radius (Angstroms) for nearest neighbours in CG "
                  "file (must be <= radius)");
-  cg->add_option("-s,--solvent", config->solvent, "solvent name");
+  cg->add_option("-s,--solvent", config->solvent,
+                 "solvent name, or a mixture as name:fraction,name:fraction "
+                 "(mixtures require --solvation-model cosmo-rs)");
+  cg->add_option("--solvation-model", config->solvation_model,
+                 "solvation model: smd (default), cosmo-rs, none");
+  cg->add_option("--temperature", config->temperature,
+                 "temperature in K for the solvation model");
+  cg->add_option("--solvent-probe", config->solvent_probe_radius,
+                 "solvent probe radius (Angstrom) for the conductor cavity "
+                 "(cosmo-rs only; SMD builds its own cavity)");
+  cg->add_flag("--solvation-descriptors", config->print_solvation_descriptors,
+               "print a per-contact table of solvation descriptors; which "
+               "ones are available depends on the solvation model");
   cg->add_option("--charges", config->charge_string, "system net charge");
   cg->add_option("-w,--wavefunction-choice", config->wavefunction_choice,
-                 "Choice of wavefunctions");
+                 "wavefunctions used for pair interactions: gas or solvated "
+                 "(cosmo-rs supports gas only)");
   cg->add_flag("--write-kmcpp", config->write_kmcpp_file,
                "write out an input file for kmcpp program");
   cg->add_flag("--xtb", config->use_xtb, "use xtb for interaction energies");
@@ -67,7 +83,13 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
       "Enforce that the resulting unit cell molecules (e.g. in the net file) "
       "must have geometric centroids in the range [0,1) (default: true)");
   cg->add_option("--surface-energies", config->max_facets,
-                 "Calculate surface energies and write .gmf morphology files");
+                 "Number of surfaces to compute energies for, writing .gmf "
+                 "morphology files. Deprecated: a count can split a Friedel "
+                 "pair and skew the Wulff construction; use --surface-d-min");
+  cg->add_option("--surface-d-min", config->min_interplanar_spacing,
+                 "Calculate surface energies for every face with interplanar "
+                 "spacing >= this (Angstrom), and write .gmf morphology "
+                 "files. Preferred over --surface-energies");
   cg->add_flag("--morphology", config->compute_morphology,
                "Compute particle size/shape-dependent (surface/edge/corner) "
                "energies; implies --surface-energies");
