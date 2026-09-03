@@ -117,7 +117,9 @@ export async function availableCosmoRsSolvents() {
   const names = Module.availableCosmoRsSolvents();
   try {
     const out = [];
-    for (let i = 0; i < names.size(); i++) out.push(names.get(i));
+    for (let i = 0; i < names.size(); i++) {
+      out.push(names.get(i));
+    }
     return out;
   } finally {
     names.delete();
