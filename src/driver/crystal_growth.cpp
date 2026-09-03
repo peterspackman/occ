@@ -3,6 +3,7 @@
 #include <occ/cg/distance_partition.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/driver/crystal_growth.h>
+#include <occ/driver/monomer_wavefunctions.h>
 #include <occ/interaction/ce_energy_model.h>
 #include <occ/interaction/lattice_energy.h>
 #include <occ/interaction/xtb_energy_model.h>
@@ -124,34 +125,6 @@ calculate_wavefunctions(const std::string &basename,
     index++;
   }
   return wavefunctions;
-}
-
-inline void compute_monomer_energies(const std::string &basename,
-                                     WavefunctionList &wavefunctions) {
-  size_t idx = 0;
-
-  for (auto &wfn : wavefunctions) {
-    fs::path monomer_energies_path(
-        fmt::format("{}_{}_monomer_energies.json", basename, idx));
-    if (fs::exists(monomer_energies_path)) {
-      occ::log::debug("Loading monomer energies from {}",
-                      monomer_energies_path.string());
-      std::ifstream ifs(monomer_energies_path.string());
-      wfn.energy = nlohmann::json::parse(ifs).get<occ::qm::Energy>();
-    } else {
-      occ::log::flush();
-      qm::HartreeFock hf(wfn.basis);
-      occ::interaction::CEMonomerCalculationParameters params;
-      params.Schwarz = hf.compute_schwarz_ints();
-      occ::interaction::compute_ce_model_energies(wfn, hf, params);
-      occ::log::debug("Writing monomer energies to {}",
-                      monomer_energies_path.string());
-      std::ofstream ofs(monomer_energies_path.string());
-      nlohmann::json j = wfn.energy;
-      ofs << j;
-    }
-    idx++;
-  }
 }
 
 /// `standard_state_shift` comes from the active solvation model, in kJ/mol:
@@ -515,7 +488,8 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
   occ::timing::StopWatch sw;
   sw.start();
   occ::log::info("Computing monomer energies for gas phase");
-  compute_monomer_energies(opts.basename, m_gas_phase_wavefunctions);
+  compute_monomer_energies(opts.basename, m_gas_phase_wavefunctions,
+                           opts.energy_model);
   // Only the solvated wavefunctions that will actually be used: a model whose
   // reference is the ideal conductor forces the gas-phase choice, and those
   // have already been done just above.
@@ -523,7 +497,7 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
     occ::log::info("Computing monomer energies for solution phase");
     compute_monomer_energies(
         fmt::format("{}_{}", opts.basename, opts.solvent_tag),
-        m_solvated_wavefunctions);
+        m_solvated_wavefunctions, opts.energy_model);
   }
   sw.stop();
   occ::log::info("Computing monomer energies took {:.6f} seconds", sw.read());
