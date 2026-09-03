@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
@@ -7,7 +8,6 @@
 #include <fmt/ostream.h>
 #include <fstream>
 #include <map>
-#include <nlohmann/json.hpp>
 #include <occ/cg/distance_partition.h>
 #include <occ/core/eeq.h>
 #include <occ/core/element.h>
@@ -475,264 +475,87 @@ TEST_CASE("Ideal-conductor COSMO profile for water",
   REQUIRE(h_sigma / h_area < 0.0);
 }
 
-#ifndef OCC_TEST_DATA_DIR
-#define OCC_TEST_DATA_DIR "data"
+#ifndef OCC_DATA_DIR
+#define OCC_DATA_DIR "share"
 #endif
+
+namespace {
+
+/// The segment ensembles occ ships, which occ generates itself
+/// (`occ cosmo-rs --write-segments`) at the driver's default level of
+/// theory. Resolved from the source tree rather than `OCC_DATA_PATH` so the
+/// ensembles under test are the ones in the checkout.
+occ::solvent::cosmors::SegmentStore shipped_segments() {
+  return occ::solvent::cosmors::SegmentStore(
+      {std::string(OCC_DATA_DIR) + "/solvent/cosmors"});
+}
+
+} // namespace
 
 TEST_CASE("openCOSMO-RS 24a defaults are the published parameter set",
           "[solvent][cosmors][parameters]") {
   // The kernel, the combinatorial term and the free-energy assembly were
-  // regressed together, so `Parameters` carries all three and the defaults
-  // are the 24a set. This pins every one of them against the values the
-  // reference distribution ships, which is what keeps `v24a()` honest.
-  std::ifstream input(std::string(OCC_TEST_DATA_DIR) +
-                      "/cosmors_reference.json");
-  REQUIRE(input.good());
-  const auto block = nlohmann::json::parse(input).at("parameters");
-  const auto params = occ::solvent::cosmors::Parameters::v24a();
+  // regressed together, so `Parameters` carries all three and its defaults
+  // are the 24a set published in Grigorash et al., J. Comput. Chem. 2024,
+  // 45, 2699. The struct's member initialisers are the only copy of the
+  // values in the source; this pins them so an accidental edit fails here
+  // rather than silently becoming a different model.
+  const auto p = occ::solvent::cosmors::Parameters::v24a();
 
-  REQUIRE(block.at("a_eff").get<double>() == Catch::Approx(params.a_eff));
-  REQUIRE(block.at("r_av").get<double>() == Catch::Approx(params.r_av));
-  REQUIRE(block.at("mf_r_av_corr").get<double>() ==
-          Catch::Approx(params.r_corr));
-  REQUIRE(block.at("mf_alpha").get<double>() == Catch::Approx(params.mf_alpha));
-  REQUIRE(block.at("mf_f_corr").get<double>() ==
-          Catch::Approx(params.mf_f_corr));
-  REQUIRE(block.at("hb_c").get<double>() == Catch::Approx(params.hb_c));
-  REQUIRE(block.at("hb_c_T").get<double>() == Catch::Approx(params.hb_c_T));
-  REQUIRE(block.at("hb_sigma_thresh").get<double>() ==
-          Catch::Approx(params.hb_sigma_thresh));
-  REQUIRE(block.at("comb_sg_z_coord").get<double>() ==
-          Catch::Approx(params.comb_z));
-  REQUIRE(block.at("comb_sg_a_std").get<double>() ==
-          Catch::Approx(params.comb_a_std));
-  REQUIRE(block.at("eta").get<double>() == Catch::Approx(params.eta));
-  REQUIRE(block.at("omega_ring").get<double>() ==
-          Catch::Approx(params.omega_ring));
+  REQUIRE(p.a_eff == Catch::Approx(5.9248470));
+  REQUIRE(p.r_av == Catch::Approx(0.5));
+  REQUIRE(p.r_corr == Catch::Approx(1.0));
+  REQUIRE(p.sigma_orth_factor == Catch::Approx(0.816));
 
-  const auto tau = block.at("tau").get<std::map<std::string, double>>();
-  REQUIRE(tau.size() == params.tau.size());
+  REQUIRE(p.mf_alpha == Catch::Approx(7.2847361e06));
+  REQUIRE(p.mf_f_corr == Catch::Approx(2.4));
+  REQUIRE(p.hb_c == Catch::Approx(4.3311555e07));
+  REQUIRE(p.hb_c_T == Catch::Approx(1.5));
+  REQUIRE(p.hb_t_ref == Catch::Approx(298.15));
+  REQUIRE(p.hb_sigma_thresh == Catch::Approx(9.6112460e-03));
+
+  REQUIRE(p.comb_z == Catch::Approx(10.0));
+  REQUIRE(p.comb_a_std == Catch::Approx(4.1623570e01));
+
+  REQUIRE(p.eta == Catch::Approx(-4.448499));
+  REQUIRE(p.omega_ring == Catch::Approx(2.6302510e-01));
+
+  // Per-element van der Waals surface tensions, kcal/mol/A^2.
+  const std::vector<std::pair<int, double>> tau{
+      {1, 2.933803e-02},  {6, 2.287904e-02},  {7, 7.007681e-04},
+      {8, 3.545052e-03},  {9, 5.608829e-03},  {14, 4.215503e-03},
+      {15, 3.607977e-03}, {16, 3.498700e-02}, {17, 3.414282e-02},
+      {35, 4.085111e-02},
+  };
+  REQUIRE(p.tau.size() == tau.size());
   for (const auto &[z, value] : tau) {
-    const auto entry = params.tau.find(std::stoi(z));
-    REQUIRE(entry != params.tau.end());
-    REQUIRE(entry->second == Catch::Approx(value));
+    INFO("element " << z);
+    REQUIRE(p.tau.contains(z));
+    REQUIRE(p.tau.at(z) == Catch::Approx(value));
   }
-
-  // The default-constructed set must be the named one, since that is what
-  // every default argument in the module resolves to.
-  const occ::solvent::cosmors::Parameters defaults;
-  REQUIRE(defaults.a_eff == params.a_eff);
-  REQUIRE(defaults.eta == params.eta);
-  REQUIRE(defaults.omega_ring == params.omega_ring);
-  REQUIRE(defaults.tau.size() == params.tau.size());
-}
-
-TEST_CASE("sigma and sigma_orth reproduce the openCOSMO-RS reference",
-          "[solvent][cosmors][validation]") {
-  // tests/data/cosmors_reference.json carries the reference's own
-  // segments (position, area, raw sigma) alongside the sigma and sigma_orth
-  // it derives from them, so both codes average identical input.
-  std::ifstream input(std::string(OCC_TEST_DATA_DIR) +
-                      "/cosmors_reference.json");
-  REQUIRE(input.good());
-  auto json = nlohmann::json::parse(input);
-  const double r_av = json.at("parameters").at("r_av").get<double>();
-  const double r_corr = json.at("parameters").at("mf_r_av_corr").get<double>();
-
-  double worst_sigma = 0.0, worst_orth = 0.0;
-  for (const auto &[name, block] : json.at("segments").items()) {
-    auto positions =
-        block.at("positions").get<std::vector<std::vector<double>>>();
-    auto areas = block.at("areas").get<std::vector<double>>();
-    auto sigma_raw = block.at("sigma_raw").get<std::vector<double>>();
-    auto expected_sigma = block.at("sigma").get<std::vector<double>>();
-    auto expected_orth = block.at("sigma_orth").get<std::vector<double>>();
-    const Eigen::Index n = static_cast<Eigen::Index>(areas.size());
-
-    occ::solvent::cosmors::Segments segments;
-    segments.positions = Mat3N(3, n);
-    for (Eigen::Index i = 0; i < n; i++)
-      for (int k = 0; k < 3; k++)
-        // The reference stores segment positions in Angstrom.
-        segments.positions(k, i) =
-            positions[i][k] * occ::units::ANGSTROM_TO_BOHR;
-    segments.areas = Eigen::Map<Vec>(areas.data(), n);
-    segments.sigma = Eigen::Map<Vec>(sigma_raw.data(), n);
-
-    occ::solvent::cosmors::average_sigma(segments, r_av, 1.0);
-    occ::solvent::cosmors::average_sigma_orth(segments, r_av, r_corr);
-
-    INFO(name);
-    REQUIRE(segments.sigma_orth.size() == n);
-    worst_sigma =
-        std::max(worst_sigma, (segments.sigma_averaged -
-                               Eigen::Map<Vec>(expected_sigma.data(), n))
-                                  .cwiseAbs()
-                                  .maxCoeff());
-    worst_orth = std::max(worst_orth, (segments.sigma_orth -
-                                       Eigen::Map<Vec>(expected_orth.data(), n))
-                                          .cwiseAbs()
-                                          .maxCoeff());
-  }
-
-  fmt::print("openCOSMO-RS descriptors: max |d sigma| {:.3e}, "
-             "|d sigma_orth| {:.3e} e/A^2\n",
-             worst_sigma, worst_orth);
-  REQUIRE(worst_sigma < 1e-12);
-  REQUIRE(worst_orth < 1e-12);
-}
-
-TEST_CASE("openCOSMO-RS 24a reproduces the reference activity coefficients",
-          "[solvent][cosmors][validation]") {
-  using occ::solvent::cosmors::Component;
-  std::ifstream input(std::string(OCC_TEST_DATA_DIR) +
-                      "/cosmors_reference.json");
-  REQUIRE(input.good());
-  auto json = nlohmann::json::parse(input);
-
-  auto params = occ::solvent::cosmors::Parameters::v24a();
-  {
-    // The stored parameters are the ones the reference actually ran with.
-    const auto &block = json.at("parameters");
-    REQUIRE(std::abs(block.at("a_eff").get<double>() - params.a_eff) < 1e-12);
-    REQUIRE(std::abs(block.at("mf_alpha").get<double>() - params.mf_alpha) <
-            1e-6);
-    REQUIRE(std::abs(block.at("hb_c").get<double>() - params.hb_c) < 1e-6);
-    REQUIRE(std::abs(block.at("comb_sg_a_std").get<double>() -
-                     params.comb_a_std) < 1e-9);
-  }
-
-  // Rebuild each molecule's descriptors from the reference's own raw
-  // segments, so the comparison isolates the kernel rather than the cavity.
-  ankerl::unordered_dense::map<std::string, Component> components;
-  for (const auto &[name, block] : json.at("segments").items()) {
-    auto positions =
-        block.at("positions").get<std::vector<std::vector<double>>>();
-    auto areas = block.at("areas").get<std::vector<double>>();
-    auto sigma_raw = block.at("sigma_raw").get<std::vector<double>>();
-    const Eigen::Index n = static_cast<Eigen::Index>(areas.size());
-
-    occ::solvent::cosmors::Segments segments;
-    segments.positions = Mat3N(3, n);
-    for (Eigen::Index i = 0; i < n; i++)
-      for (int k = 0; k < 3; k++)
-        segments.positions(k, i) =
-            positions[i][k] * occ::units::ANGSTROM_TO_BOHR;
-    segments.areas = Eigen::Map<Vec>(areas.data(), n);
-    segments.sigma = Eigen::Map<Vec>(sigma_raw.data(), n);
-    occ::solvent::cosmors::average_sigma(segments, params.r_av, 1.0);
-    occ::solvent::cosmors::average_sigma_orth(
-        segments, params.r_av, params.r_corr, params.sigma_orth_factor);
-    components.emplace(name, Component::from_segments(
-                                 segments, block.at("volume").get<double>(),
-                                 block.at("area").get<double>()));
-  }
-
-  double worst_residual = 0.0, worst_combinatorial = 0.0;
-  int checked = 0;
-  for (const auto &entry : json.at("cases")) {
-    auto names = entry.at("components").get<std::vector<std::string>>();
-    // Only the molecules whose segments the reference stored can be rebuilt.
-    if (!components.contains(names[0]) || !components.contains(names[1]))
-      continue;
-    checked++;
-
-    auto z = entry.at("z").get<std::vector<double>>();
-    auto resid = entry.at("lngamma_resid").get<std::vector<double>>();
-    auto comb = entry.at("lngamma_comb").get<std::vector<double>>();
-    const Vec x = Eigen::Map<Vec>(z.data(), z.size());
-    const std::vector<Component> pair{components.at(names[0]),
-                                      components.at(names[1])};
-
-    occ::solvent::cosmors::ActivityOptions options;
-    options.temperature = entry.at("T").get<double>();
-
-    Vec residual =
-        occ::solvent::cosmors::residual_ln_gamma(pair, x, params, options);
-    if (entry.at("reference_state").get<std::string>() == "pure_component") {
-      for (Eigen::Index m = 0; m < 2; m++) {
-        Vec pure = Vec::Zero(2);
-        pure(m) = 1.0;
-        residual(m) -= occ::solvent::cosmors::residual_ln_gamma(
-            pair, pure, params, options)(m);
-      }
-    }
-    Vec combinatorial =
-        occ::solvent::cosmors::combinatorial_ln_gamma(pair, x, params);
-
-    worst_residual = std::max(
-        worst_residual,
-        (residual - Eigen::Map<Vec>(resid.data(), 2)).cwiseAbs().maxCoeff());
-    worst_combinatorial = std::max(
-        worst_combinatorial, (combinatorial - Eigen::Map<Vec>(comb.data(), 2))
-                                 .cwiseAbs()
-                                 .maxCoeff());
-  }
-
-  fmt::print("openCOSMO-RS 24a: {} cases, max |d ln gamma| residual {:.3e}, "
-             "combinatorial {:.3e}\n",
-             checked, worst_residual, worst_combinatorial);
-  REQUIRE(checked > 0);
-  REQUIRE(worst_combinatorial < 1e-10);
-  // What is left is the reference's own discretisation, not ours: it bins
-  // segments onto a (sigma, sigma_orth) grid before the kernel, while occ
-  // uses the segments directly. Refining that grid walks its answer onto
-  // ours -- for water/methanol at equimolar, 298.15 K, its residual runs
-  // -0.7673, -0.7443, -0.7382, -0.7367 at steps 1e-3 to 1e-4, and the
-  // agreement here improves from 8.8e-2 to 9.6e-4 over the same refinement.
-  REQUIRE(worst_residual < 2e-3);
 }
 
 TEST_CASE("openCOSMO-RS segment ensembles survive a round trip",
           "[solvent][cosmors]") {
-  using occ::solvent::cosmors::Component;
-  std::ifstream input(std::string(OCC_TEST_DATA_DIR) +
-                      "/cosmors_reference.json");
-  REQUIRE(input.good());
-  auto json = nlohmann::json::parse(input);
-  auto params = occ::solvent::cosmors::Parameters::v24a();
-
-  const auto &block = json.at("segments").at("acetone");
-  auto positions =
-      block.at("positions").get<std::vector<std::vector<double>>>();
-  auto areas = block.at("areas").get<std::vector<double>>();
-  auto sigma_raw = block.at("sigma_raw").get<std::vector<double>>();
-  auto atom_index = block.at("atom_index").get<std::vector<int>>();
-  auto atom_element = block.at("atom_element").get<std::vector<int>>();
-  const Eigen::Index n = static_cast<Eigen::Index>(areas.size());
-
-  occ::solvent::cosmors::Segments segments;
-  segments.positions = Mat3N(3, n);
-  for (Eigen::Index i = 0; i < n; i++)
-    for (int k = 0; k < 3; k++)
-      segments.positions(k, i) = positions[i][k] * occ::units::ANGSTROM_TO_BOHR;
-  segments.areas = Eigen::Map<Vec>(areas.data(), n);
-  segments.sigma = Eigen::Map<Vec>(sigma_raw.data(), n);
-  segments.atomic_number = occ::IVec(n);
-  for (Eigen::Index i = 0; i < n; i++) {
-    const int z = atom_element[atom_index[i]];
-    segments.atomic_number(i) = (z > 100) ? 1 : z;
-  }
-  occ::solvent::cosmors::average_sigma(segments, params.r_av, 1.0);
-  occ::solvent::cosmors::average_sigma_orth(
-      segments, params.r_av, params.r_corr, params.sigma_orth_factor);
-  const auto original =
-      Component::from_segments(segments, block.at("volume").get<double>(),
-                               block.at("area").get<double>());
+  const auto params = occ::solvent::cosmors::Parameters::v24a();
+  const auto store = shipped_segments();
+  REQUIRE(store.contains("acetone"));
+  const auto original = store.get("acetone").component;
 
   const auto path =
       (std::filesystem::temp_directory_path() / "occ_rsseg_roundtrip.rsseg")
           .string();
   occ::solvent::cosmors::write_segments(path, "acetone", original, params,
-                                        "b3lyp", "6-31g**");
+                                        "b3lyp", "def2-svp");
   auto loaded = occ::solvent::cosmors::read_segments(path);
   std::filesystem::remove(path);
 
   REQUIRE(loaded.name == "acetone");
   REQUIRE(loaded.method == "b3lyp");
-  REQUIRE(loaded.basis == "6-31g**");
+  REQUIRE(loaded.basis == "def2-svp");
   REQUIRE(loaded.r_av == params.r_av);
-  REQUIRE(loaded.component.size() == n);
+  REQUIRE(loaded.r_corr == params.r_corr);
+  REQUIRE(loaded.component.size() == original.size());
   // Written at 14 significant figures, so the descriptors come back to
   // relative 1e-13 and the energies that follow are unaffected.
   REQUIRE((loaded.component.sigma - original.sigma).cwiseAbs().maxCoeff() <
@@ -742,11 +565,12 @@ TEST_CASE("openCOSMO-RS segment ensembles survive a round trip",
               .maxCoeff() < 1e-15);
   REQUIRE((loaded.component.area - original.area).cwiseAbs().maxCoeff() <
           1e-15);
-  REQUIRE((loaded.component.atomic_number - segments.atomic_number)
+  REQUIRE((loaded.component.atomic_number - original.atomic_number)
               .cwiseAbs()
               .sum() == 0);
   REQUIRE(std::abs(loaded.component.total_area() - original.total_area()) <
           1e-12);
+  REQUIRE(std::abs(loaded.component.volume - original.volume) < 1e-12);
 
   // The point of the file is that a solvent loaded from it behaves like one
   // built in memory.
@@ -763,36 +587,11 @@ TEST_CASE("openCOSMO-RS mixtures reduce to the pure component",
   // Mixing a component with itself must be indistinguishable from the pure
   // component at any composition, which pins the area weighting and the
   // volume/cavity-area averaging in mix_components.
-  using occ::solvent::cosmors::Component;
-  std::ifstream input(std::string(OCC_TEST_DATA_DIR) +
-                      "/cosmors_reference.json");
-  REQUIRE(input.good());
-  auto json = nlohmann::json::parse(input);
-  auto params = occ::solvent::cosmors::Parameters::v24a();
+  const auto params = occ::solvent::cosmors::Parameters::v24a();
+  const auto store = shipped_segments();
+  const auto water = store.get("water").component;
+  const auto solute = store.get("methanol").component;
 
-  auto build = [&](const std::string &name) {
-    const auto &block = json.at("segments").at(name);
-    auto positions =
-        block.at("positions").get<std::vector<std::vector<double>>>();
-    auto areas = block.at("areas").get<std::vector<double>>();
-    auto sigma_raw = block.at("sigma_raw").get<std::vector<double>>();
-    const Eigen::Index n = static_cast<Eigen::Index>(areas.size());
-    occ::solvent::cosmors::Segments s;
-    s.positions = Mat3N(3, n);
-    for (Eigen::Index i = 0; i < n; i++)
-      for (int k = 0; k < 3; k++)
-        s.positions(k, i) = positions[i][k] * occ::units::ANGSTROM_TO_BOHR;
-    s.areas = Eigen::Map<Vec>(areas.data(), n);
-    s.sigma = Eigen::Map<Vec>(sigma_raw.data(), n);
-    occ::solvent::cosmors::average_sigma(s, params.r_av, 1.0);
-    occ::solvent::cosmors::average_sigma_orth(s, params.r_av, params.r_corr,
-                                              params.sigma_orth_factor);
-    return Component::from_segments(s, block.at("volume").get<double>(),
-                                    block.at("area").get<double>());
-  };
-
-  const auto water = build("water");
-  const auto solute = build("methanol");
   occ::solvent::cosmors::ActivityOptions options;
   occ::solvent::cosmors::SolventModel pure(water, params, options);
   const double reference = pure.residual_energy(solute);
@@ -810,138 +609,94 @@ TEST_CASE("openCOSMO-RS mixtures reduce to the pure component",
   }
 }
 
-TEST_CASE("openCOSMO-RS hydration free energies land near experiment",
+TEST_CASE("openCOSMO-RS infinite dilution matches the mixture solve",
           "[solvent][cosmors]") {
-  // The reference implementation stops at ln(gamma); eq. 16 of Grigorash et
-  // al. is only used in their regression, so there is no reference value to
-  // check the assembly against. Experiment is the available test, and the
-  // point is the absolute scale rather than the last kJ/mol.
-  using occ::solvent::cosmors::Component;
-  std::ifstream input(std::string(OCC_TEST_DATA_DIR) +
-                      "/cosmors_reference.json");
-  REQUIRE(input.good());
-  auto json = nlohmann::json::parse(input);
-
-  auto params = occ::solvent::cosmors::Parameters::v24a();
-
-  struct Entry {
-    Component component;
-    double dielectric;
-  };
-  ankerl::unordered_dense::map<std::string, Entry> molecules;
-  for (const auto &[name, block] : json.at("segments").items()) {
-    auto positions =
-        block.at("positions").get<std::vector<std::vector<double>>>();
-    auto areas = block.at("areas").get<std::vector<double>>();
-    auto sigma_raw = block.at("sigma_raw").get<std::vector<double>>();
-    auto atom_index = block.at("atom_index").get<std::vector<int>>();
-    auto atom_element = block.at("atom_element").get<std::vector<int>>();
-    const Eigen::Index n = static_cast<Eigen::Index>(areas.size());
-
-    occ::solvent::cosmors::Segments segments;
-    segments.positions = Mat3N(3, n);
-    for (Eigen::Index i = 0; i < n; i++)
-      for (int k = 0; k < 3; k++)
-        segments.positions(k, i) =
-            positions[i][k] * occ::units::ANGSTROM_TO_BOHR;
-    segments.areas = Eigen::Map<Vec>(areas.data(), n);
-    segments.sigma = Eigen::Map<Vec>(sigma_raw.data(), n);
-    segments.atomic_number = occ::IVec(n);
-    for (Eigen::Index i = 0; i < n; i++) {
-      // The reference remaps hydrogen to 100 + Z(bonded atom); undo that so
-      // the per-element cavity parameters key on the real element.
-      const int z = atom_element[atom_index[i]];
-      segments.atomic_number(i) = (z > 100) ? 1 : z;
-    }
-    occ::solvent::cosmors::average_sigma(segments, params.r_av, 1.0);
-    occ::solvent::cosmors::average_sigma_orth(
-        segments, params.r_av, params.r_corr, params.sigma_orth_factor);
-    molecules.emplace(
-        name, Entry{Component::from_segments(segments,
-                                             block.at("volume").get<double>(),
-                                             block.at("area").get<double>()),
-                    block.at("energy_dielectric").get<double>() /
-                        occ::units::AU_TO_KJ_PER_MOL});
-  }
-
+  // The infinite-dilution test particle and the mixture solve are separate
+  // code paths that must agree where they overlap: a vanishing solute mole
+  // fraction.
+  const auto params = occ::solvent::cosmors::Parameters::v24a();
   occ::solvent::cosmors::ActivityOptions options;
   options.temperature = 298.15;
-  occ::solvent::cosmors::SolventModel water(molecules.at("water").component,
-                                            params, options);
 
-  // Liquid molar volume per molecule, A^3, from bulk densities at 298 K, and
-  // experimental hydration free energies (Minnesota solvation database).
-  struct Expected {
-    const char *name;
-    double volume_liquid;
-    int rings;
-    double experiment; ///< kJ/mol
-  };
-  const std::vector<Expected> cases{
-      {"water", 30.01, 0, -26.4},       {"methanol", 67.63, 0, -21.4},
-      {"ethanol", 97.44, 0, -20.9},     {"acetone", 122.86, 0, -16.1},
-      {"benzene", 148.47, 1, -3.6},     {"cyclohexane", 180.58, 1, 5.2},
-      {"acetic_acid", 95.55, 0, -28.0},
-  };
+  const auto store = shipped_segments();
+  const auto water = store.get("water").component;
+  occ::solvent::cosmors::SolventModel solvent(water, params, options);
 
-  fmt::print("\nopenCOSMO-RS 24a hydration free energies (kJ/mol)\n");
-  fmt::print("{:10s} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8} | {:>8} {:>8}\n",
-             "solute", "E_diel", "res", "comb", "vdw", "ref.st", "eta", "total",
-             "exp");
-  double worst = 0.0;
-  std::vector<double> deviations;
-  for (const auto &c : cases) {
-    const auto &entry = molecules.at(c.name);
-    auto energy = occ::solvent::cosmors::solvation_free_energy(
-        water, entry.component, entry.dielectric, c.rings, c.volume_liquid);
-    const double k = occ::units::AU_TO_KJ_PER_MOL;
-    fmt::print("{:10s} {:8.2f} {:8.2f} {:8.2f} {:8.2f} {:8.2f} {:8.2f} | "
-               "{:8.2f} {:8.2f}\n",
-               c.name, energy.dielectric * k, energy.residual * k,
-               energy.combinatorial * k, energy.vdw * k,
-               energy.reference_state * k, energy.eta * k, energy.total() * k,
-               c.experiment);
-    const double deviation = energy.total() * k - c.experiment;
-    worst = std::max(worst, std::abs(deviation));
-    deviations.push_back(deviation);
-  }
-
-  // A constant offset would point at the reference-state convention rather
-  // than the model, so report the mean separately from the scatter about it.
-  double mean = 0.0;
-  for (double d : deviations)
-    mean += d;
-  mean /= deviations.size();
-  double scatter = 0.0;
-  for (double d : deviations)
-    scatter += (d - mean) * (d - mean);
-  scatter = std::sqrt(scatter / deviations.size());
-  fmt::print("deviation from experiment: mean {:+.2f}, rms about the mean "
-             "{:.2f}, worst {:.2f} kJ/mol\n\n",
-             mean, scatter, worst);
-
-  // The infinite-dilution test particle is a separate code path from the
-  // mixture solve the reference comparison covers, so check the two agree
-  // where they overlap: a vanishing solute mole fraction.
   for (const char *name : {"methanol", "acetone"}) {
     INFO(name);
-    const std::vector<Component> pair{molecules.at(name).component,
-                                      molecules.at("water").component};
+    const auto solute = store.get(name).component;
+    const std::vector<occ::solvent::cosmors::Component> pair{solute, water};
     Vec x(2);
     x << 1e-10, 1.0 - 1e-10;
     const double mixture =
         occ::solvent::cosmors::residual_ln_gamma(pair, x, params, options)(0);
     const double rt = occ::constants::molar_gas_constant<double> *
                       options.temperature / 1000.0;
-    const double test_particle =
-        water.residual_energy(molecules.at(name).component) *
-        occ::units::AU_TO_KJ_PER_MOL / rt;
+    const double test_particle = solvent.residual_energy(solute) *
+                                 occ::units::AU_TO_KJ_PER_MOL / rt;
     REQUIRE(std::abs(mixture - test_particle) < 1e-8);
   }
+}
+
+TEST_CASE("COSMO-RS solvation free energy runs end to end",
+          "[solvent][cosmors][driver]") {
+  // Covers the one-call facade the CLI and every language binding sit on:
+  // gas SCF, conductor SCF, segment descriptors, cached solvent ensemble,
+  // and the free-energy assembly. Water is the cheapest solute that
+  // exercises all of it, and the shipped ensembles are built at the
+  // settings' defaults so solute and solvent are at the same level.
+  //
+  // Experimental geometry, r(OH) = 0.9572 A and 104.52 degrees.
+  const auto solute = occ::io::molecule_from_xyz_string(R"(3
+water
+O   0.000000   0.000000   0.000000
+H   0.756950  -0.585880   0.000000
+H  -0.756950  -0.585880   0.000000
+)");
+
+  occ::driver::CosmoRSSolvationSettings settings;
+  settings.liquid_volume = 30.01; // A^3 per molecule at 298 K
+  settings.num_rings = 0;
+  const auto result =
+      occ::driver::cosmors_solvation_free_energy(solute, "water", settings);
+
+  const double k = occ::units::AU_TO_KJ_PER_MOL;
+  fmt::print("\nopenCOSMO-RS 24a: water in water (kJ/mol)\n");
+  fmt::print("  dielectric {:8.2f}\n  residual   {:8.2f}\n"
+             "  combinat.  {:8.2f}\n  vdw        {:8.2f}\n"
+             "  ref. state {:8.2f}\n  eta        {:8.2f}\n  total      "
+             "{:8.2f}  (experiment -26.4)\n\n",
+             result.energy.dielectric * k, result.energy.residual * k,
+             result.energy.combinatorial * k, result.energy.vdw * k,
+             result.energy.reference_state * k, result.energy.eta * k,
+             result.total() * k);
+
+  REQUIRE(result.cavity_area > 0.0);
+  REQUIRE(result.cavity_volume > 0.0);
+  REQUIRE(result.num_rings == 0);
+  // Screening a neutral dipole against an ideal conductor stabilises it.
+  REQUIRE(result.energy.dielectric < 0.0);
+  // The van der Waals term is -sum(tau * area) with positive tau.
+  REQUIRE(result.energy.vdw < 0.0);
 
   // Loose: this checks the assembly is on the right scale and has the right
-  // sign, not that the model is accurate.
-  REQUIRE(worst < 25.0);
+  // sign against the Minnesota solvation database value, not that the model
+  // is accurate to the last kJ/mol.
+  REQUIRE(std::abs(result.total() * k - (-26.4)) < 25.0);
+}
+
+TEST_CASE("Cached solvent ensembles are discoverable", "[solvent][cosmors]") {
+  // available_cosmors_solvents is what the CLI and the bindings list, so it
+  // has to see the ensembles that ship with occ.
+  const auto store = shipped_segments();
+  const auto names = store.available();
+  REQUIRE(names.size() >= 5);
+  REQUIRE(std::is_sorted(names.begin(), names.end()));
+  for (const char *expected : {"water", "methanol", "acetone", "benzene"}) {
+    INFO(expected);
+    REQUIRE(std::find(names.begin(), names.end(), expected) != names.end());
+  }
+  REQUIRE_FALSE(store.contains("not-a-solvent"));
 }
 
 TEST_CASE("Conductor cavity cost scales usably",

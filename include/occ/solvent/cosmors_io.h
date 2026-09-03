@@ -36,8 +36,8 @@ void write_segments(const std::string &path, const std::string &name,
                     const std::string &basis = {});
 
 /// Resolves a solvent name to its segment ensemble, read from `<name>.rsseg`
-/// under the search paths. Ensembles are produced by `occ sigma`; nothing is
-/// computed here.
+/// under the search paths. Ensembles are produced by `occ cosmo-rs`; nothing
+/// is computed here.
 class SegmentStore {
 public:
   explicit SegmentStore(std::vector<std::string> search_paths);
