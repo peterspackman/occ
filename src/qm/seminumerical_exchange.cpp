@@ -482,12 +482,12 @@ void SemiNumericalExchange::prepare_screening() const {
 // =============================================================================
 
 Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
-                                     double precision,
-                                     const Mat &Schwarz) const {
+                                     double precision, const Mat &Schwarz,
+                                     double omega) const {
   // Range separation is only wired through the ESP integral path. The legacy
   // (non-ESP) path computes full-Coulomb integrals only, so honour the request
   // by failing fast rather than silently returning the wrong operator.
-  if (m_omega != 0.0 && !m_use_esp) {
+  if (omega != 0.0 && !m_use_esp) {
     throw std::runtime_error(
         "COSX range-separated exchange (omega != 0) requires ESP mode; call "
         "set_use_esp(true)");
@@ -498,13 +498,13 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
   Mat K;
   switch (mo.kind) {
   case SpinorbitalKind::Restricted:
-    K = compute_K_restricted(mo, precision);
+    K = compute_K_restricted(mo, precision, omega);
     break;
   case SpinorbitalKind::Unrestricted:
-    K = compute_K_unrestricted(mo, precision);
+    K = compute_K_unrestricted(mo, precision, omega);
     break;
   case SpinorbitalKind::General:
-    K = compute_K_general(mo, precision);
+    K = compute_K_general(mo, precision, omega);
     break;
   }
 
@@ -517,7 +517,8 @@ Mat SemiNumericalExchange::compute_K(const qm::MolecularOrbitals &mo,
 // =============================================================================
 
 Mat SemiNumericalExchange::compute_K_restricted(const qm::MolecularOrbitals &mo,
-                                                 double precision) const {
+                                                 double precision,
+                                                 double omega) const {
   // Use ESP-based approach if enabled
   if (m_use_esp) {
     prepare_screening();
@@ -530,7 +531,7 @@ Mat SemiNumericalExchange::compute_K_restricted(const qm::MolecularOrbitals &mo,
     // without an extra transform of the assembled matrix.
     Mat D2 = 2.0 * mo.D;
     Mat D2q = m_overlap_projector * D2;
-    Mat K = compute_K_for_density(D2q, precision);
+    Mat K = compute_K_for_density(D2q, precision, omega);
     return 0.25 * (K + K.transpose());
   }
 
@@ -620,7 +621,8 @@ Mat SemiNumericalExchange::compute_K_restricted(const qm::MolecularOrbitals &mo,
 // =============================================================================
 
 Mat SemiNumericalExchange::compute_K_unrestricted(const qm::MolecularOrbitals &mo,
-                                                   double precision) const {
+                                                   double precision,
+                                                   double omega) const {
   const size_t nbf = m_basis.nbf();
 
   // Use ESP-based approach if enabled
@@ -639,8 +641,8 @@ Mat SemiNumericalExchange::compute_K_unrestricted(const qm::MolecularOrbitals &m
     Mat Dbq = m_overlap_projector * Db;
 
     // Compute K for each spin block
-    Mat Ka = compute_K_for_density(Daq, precision);
-    Mat Kb = compute_K_for_density(Dbq, precision);
+    Mat Ka = compute_K_for_density(Daq, precision, omega);
+    Mat Kb = compute_K_for_density(Dbq, precision, omega);
 
     // Symmetrize with factor 0.5 (vs 0.25 for RHF which has 2x density)
     Ka = 0.5 * (Ka + Ka.transpose());
@@ -662,7 +664,8 @@ Mat SemiNumericalExchange::compute_K_unrestricted(const qm::MolecularOrbitals &m
 // =============================================================================
 
 Mat SemiNumericalExchange::compute_K_general(const qm::MolecularOrbitals &mo,
-                                              double precision) const {
+                                              double precision,
+                                              double omega) const {
   const size_t nbf = m_basis.nbf();
 
   // Use ESP-based approach if enabled
@@ -683,10 +686,10 @@ Mat SemiNumericalExchange::compute_K_general(const qm::MolecularOrbitals &mo,
     Mat Dbbq = m_overlap_projector * Dbb;
 
     // Compute K for each block
-    Mat Kaa = compute_K_for_density(Daaq, precision);
-    Mat Kab = compute_K_for_density(Dabq, precision);
-    Mat Kba = compute_K_for_density(Dbaq, precision);
-    Mat Kbb = compute_K_for_density(Dbbq, precision);
+    Mat Kaa = compute_K_for_density(Daaq, precision, omega);
+    Mat Kab = compute_K_for_density(Dabq, precision, omega);
+    Mat Kba = compute_K_for_density(Dbaq, precision, omega);
+    Mat Kbb = compute_K_for_density(Dbbq, precision, omega);
 
     // Symmetrize diagonal blocks - use 0.5 factor (same as unrestricted)
     Kaa = 0.5 * (Kaa + Kaa.transpose());
@@ -878,15 +881,16 @@ Mat seminumerical_exchange_sweep(
 } // namespace
 
 Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
-                                                 double precision) const {
+                                                 double precision,
+                                                 double omega) const {
   using MatRM =
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
   return seminumerical_exchange_sweep(
       m_basis, m_atom_grids, m_shell_pair_map, *m_esp_evaluator, m_pair_charge,
       m_settings.f_threshold, D2q, precision,
-      [this](std::size_t esp_idx, const auto &pts, Eigen::Index /*npt*/,
+      [this, omega](std::size_t esp_idx, const auto &pts, Eigen::Index /*npt*/,
              int /*nab*/, MatRM &V, MatRM &ws) {
-        m_esp_evaluator->evaluate(esp_idx, pts, V, ws, m_omega);
+        m_esp_evaluator->evaluate(esp_idx, pts, V, ws, omega);
       });
 }
 

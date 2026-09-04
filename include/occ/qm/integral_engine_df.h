@@ -44,6 +44,7 @@ public:
   inline CoulombMethod coulomb_method() const { return m_coulomb_method; }
 
   void set_range_separated_omega(double omega);
+  inline double range_separated_omega() const { return m_omega; }
   void set_precision(double precision);
   inline double precision() const { return m_precision; };
 
@@ -91,6 +92,15 @@ private:
   }
 
   inline bool use_stored_integrals() const {
+    // The store holds one operator's three-centre integrals and does not
+    // record which, and `compute_stored_integrals` fills it only once -- so
+    // reusing it under a different operator would silently hand back full
+    // Coulomb integrals for the attenuated one. It can therefore only ever
+    // serve `1/r`, whatever the policy says. This is a property of the store,
+    // not a policy decision, which is why it is stated here rather than by
+    // overwriting the caller's policy when omega changes.
+    if (m_omega != 0.0)
+      return false;
     if (m_policy == Policy::Choose) {
       return (integral_storage_bytes() < m_integral_store_memory_limit);
     }

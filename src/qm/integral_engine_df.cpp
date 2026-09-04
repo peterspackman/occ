@@ -335,7 +335,6 @@ void IntegralEngineDF::set_range_separated_omega(double omega) {
     m_lr_omega = omega;
   }
   m_omega = omega;
-  set_integral_policy(omega == 0.0 ? Policy::Choose : Policy::Direct);
 }
 
 void IntegralEngineDF::set_precision(double precision) {
@@ -345,4 +344,3 @@ void IntegralEngineDF::set_precision(double precision) {
 }
 
 } // namespace occ::qm
-

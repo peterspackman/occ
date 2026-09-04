@@ -64,15 +64,15 @@ Mat IntegralEngine::wolf_point_charge_potential(
   // unit shell
   set_auxiliary_basis(dummy_shells, true);
 
-  double old_omega = m_env.range_separated_omega();
-  m_env.set_range_separated_omega(-alpha);
-
-  if (is_spherical()) {
-    Vext = detail::point_charge_potential_kernel<ShellKind::Spherical>(
-        m_env, m_aobasis, m_auxbasis, m_shellpairs);
-  } else {
-    Vext = detail::point_charge_potential_kernel<ShellKind::Cartesian>(
-        m_env, m_aobasis, m_auxbasis, m_shellpairs);
+  {
+    const ScopedRangeSeparation attenuated(m_env, -alpha);
+    if (is_spherical()) {
+      Vext = detail::point_charge_potential_kernel<ShellKind::Spherical>(
+          m_env, m_aobasis, m_auxbasis, m_shellpairs);
+    } else {
+      Vext = detail::point_charge_potential_kernel<ShellKind::Cartesian>(
+          m_env, m_aobasis, m_auxbasis, m_shellpairs);
+    }
   }
 
   dummy_shells.clear();
@@ -84,17 +84,17 @@ Mat IntegralEngine::wolf_point_charge_potential(
     total_charge += atomic_partial_charges[i];
   }
   set_auxiliary_basis(dummy_shells, true);
-  m_env.set_range_separated_omega(alpha);
 
-  if (is_spherical()) {
-    Vintra = detail::point_charge_potential_kernel<ShellKind::Spherical>(
-        m_env, m_aobasis, m_auxbasis, m_shellpairs);
-  } else {
-    Vintra = detail::point_charge_potential_kernel<ShellKind::Cartesian>(
-        m_env, m_aobasis, m_auxbasis, m_shellpairs);
+  {
+    const ScopedRangeSeparation attenuated(m_env, alpha);
+    if (is_spherical()) {
+      Vintra = detail::point_charge_potential_kernel<ShellKind::Spherical>(
+          m_env, m_aobasis, m_auxbasis, m_shellpairs);
+    } else {
+      Vintra = detail::point_charge_potential_kernel<ShellKind::Cartesian>(
+          m_env, m_aobasis, m_auxbasis, m_shellpairs);
+    }
   }
-
-  m_env.set_range_separated_omega(old_omega);
 
   total_charge += std::accumulate(
       charges.begin(), charges.end(),

@@ -25,15 +25,14 @@ qm::JKTriple DFT::compute_JK_gradient(const MolecularOrbitals &mo,
     auto JK_short = m_hf.compute_JK_gradient(mo, Schwarz);
     J = JK_short.J; // Coulomb is same for both ranges
     
-    // Compute long-range (ω=rs.omega) K gradients  
-    m_hf.set_range_separated_omega(rs.omega);
-    auto JK_long = m_hf.compute_JK_gradient(mo, Schwarz);
-    m_hf.set_range_separated_omega(0.0); // Reset omega
+    // Compute long-range (ω=rs.omega) K gradients
+    const MatTriple K_long =
+        m_hf.compute_K_gradient_long_range(mo, rs.omega, Schwarz);
     
     // Combine: K = (α + β) * K_short - β * K_long
-    K.x = (rs.alpha + rs.beta) * JK_short.K.x - rs.beta * JK_long.K.x;
-    K.y = (rs.alpha + rs.beta) * JK_short.K.y - rs.beta * JK_long.K.y;
-    K.z = (rs.alpha + rs.beta) * JK_short.K.z - rs.beta * JK_long.K.z;
+    K.x = (rs.alpha + rs.beta) * JK_short.K.x - rs.beta * K_long.x;
+    K.y = (rs.alpha + rs.beta) * JK_short.K.y - rs.beta * K_long.y;
+    K.z = (rs.alpha + rs.beta) * JK_short.K.z - rs.beta * K_long.z;
     
   } else if (k_factor > 0.0) {
     // Global hybrid

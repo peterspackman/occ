@@ -1983,3 +1983,89 @@ TEST_CASE("Incremental Fock: the eligibility gate cannot be overridden",
     REQUIRE(scf.num_incremental_fock_builds == 0);
   }
 }
+
+TEST_CASE("Range separation leaves the density-fitting policy alone",
+          "[df][range-separated]") {
+  // Toggling omega used to end with
+  // `set_integral_policy(omega == 0.0 ? Choose : Direct)`, so returning to the
+  // full Coulomb operator overwrote whatever policy the caller had chosen.
+  // Every range-separated functional therefore fell back to storing the
+  // three-centre integrals -- the allocation that exhausted memory in the
+  // browser -- and `--use-direct-df-kernels` was quietly ignored.
+  //
+  // The store genuinely cannot serve the attenuated operator, since it records
+  // no operator and is filled only once; that constraint now lives in
+  // `use_stored_integrals` instead of being imposed on the caller's policy.
+  std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
+                                     {1, 0.0, 0.0, 1.39839733}};
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
+  basis.set_pure(false);
+  auto aux_basis = occ::gto::AOBasis::load(atoms, "def2-universal-jkfit");
+  aux_basis.set_pure(false);
+
+  using Policy = occ::qm::IntegralEngineDF::Policy;
+  for (const auto policy : {Policy::Direct, Policy::Stored, Policy::Choose}) {
+    occ::qm::IntegralEngineDF df(atoms, basis.shells(), aux_basis.shells());
+    df.set_integral_policy(policy);
+
+    df.set_range_separated_omega(0.3);
+    CHECK(df.integral_policy() == policy);
+    CHECK(df.range_separated_omega() == 0.3);
+
+    df.set_range_separated_omega(0.0);
+    CHECK(df.integral_policy() == policy);
+    CHECK(df.range_separated_omega() == 0.0);
+  }
+}
+
+TEST_CASE("A throwing build does not leave omega set", "[range-separated]") {
+  // `IntegralEngine` still carries the operator as mutable state, and one
+  // caller genuinely needs it transiently: the point-charge potential uses two
+  // operators in a single call. `ScopedRangeSeparation` is what makes that
+  // safe -- before it, a build that threw part way through left omega set and
+  // every later build silently used the attenuated operator.
+  std::vector<occ::core::Atom> atoms{{1, 0.0, 0.0, 0.0},
+                                     {1, 0.0, 0.0, 1.39839733}};
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
+  basis.set_pure(false);
+  occ::qm::IntegralEngine engine(basis);
+
+  REQUIRE(engine.range_separated_omega() == 0.0);
+  try {
+    const occ::qm::ScopedRangeSeparation attenuated(engine, 0.3);
+    REQUIRE(engine.range_separated_omega() == 0.3);
+    throw std::runtime_error("build failed");
+  } catch (const std::runtime_error &) {
+  }
+  CHECK(engine.range_separated_omega() == 0.0);
+}
+
+TEST_CASE("Long-range exchange needs no toggling", "[range-separated]") {
+  // The attenuated operator now has its own engine, so asking for it leaves
+  // the full-Coulomb one untouched -- and asking twice gives the same answer,
+  // which a leaked omega would break.
+  std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
+                                     {1, -1.93166418, 1.60017351, -0.02171049},
+                                     {1, 0.48664409, 0.07959806, 0.00986248}};
+  auto basis = occ::gto::AOBasis::load(atoms, "sto-3g");
+  basis.set_pure(false);
+  occ::qm::HartreeFock hf(basis);
+
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  scf.compute_scf_energy();
+  const auto &mo = scf.ctx.mo;
+
+  const occ::Mat K_full_before = hf.compute_K(mo);
+  const occ::Mat K_lr = hf.compute_K_long_range(mo, 0.3);
+  const occ::Mat K_full_after = hf.compute_K(mo);
+
+  // The attenuated operator is strictly weaker, so it cannot reproduce the
+  // full one -- if these matched, the long-range build would be a no-op.
+  CHECK((K_lr - K_full_before).cwiseAbs().maxCoeff() > 1e-6);
+  // ... and the full-Coulomb build is unaffected by having asked.
+  CHECK((K_full_after - K_full_before).cwiseAbs().maxCoeff() ==
+        Catch::Approx(0.0).margin(1e-12));
+  // Asking again gives the same long-range matrix.
+  CHECK((hf.compute_K_long_range(mo, 0.3) - K_lr).cwiseAbs().maxCoeff() ==
+        Catch::Approx(0.0).margin(1e-12));
+}

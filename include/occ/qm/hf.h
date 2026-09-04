@@ -180,26 +180,48 @@ public:
     return mults + nuc_mults;
   }
 
-  inline double range_separated_omega() const {
-    return m_engine.range_separated_omega();
-  }
+  /// Exchange built with the attenuated operator `erf(omega r)/r`.
+  ///
+  /// The attenuated operator gets its own engines, fixed to it for the life of
+  /// the calculation, rather than being produced by toggling omega on the
+  /// shared ones and toggling it back. Omega is constant for a calculation --
+  /// it comes from the functional -- so the only thing the toggling ever
+  /// bought was letting one engine serve two operators, and it cost exception
+  /// safety, const-correctness, and the ability to cache anything that belongs
+  /// to an operator rather than to a basis.
+  ///
+  /// COSX is the exception and takes omega as a plain argument: nothing in it
+  /// is cached per operator, so a second grid and shell-pair map would be pure
+  /// duplication.
+  Mat compute_K_long_range(const MolecularOrbitals &mo, double omega,
+                           const Mat &Schwarz = Mat()) const;
 
-  inline void set_range_separated_omega(double omega) {
-    m_engine.set_range_separated_omega(omega);
-    if (m_df_engine) {
-      (*m_df_engine).set_range_separated_omega(omega);
-    }
-    if (m_cosx_engine) {
-      m_cosx_engine->set_range_separated_omega(omega);
-    }
-  }
+  /// Exchange gradient with the attenuated operator, as above.
+  MatTriple compute_K_gradient_long_range(const MolecularOrbitals &mo,
+                                          double omega,
+                                          const Mat &Schwarz = Mat()) const;
 
   inline std::string name() const { return m_method_name; }
 
 private:
+  /// Build the long-range engines for `omega` if they are not already there.
+  /// Lazy because most calculations never need them, and keyed on omega so a
+  /// changed functional cannot silently reuse the wrong operator.
+  void ensure_long_range_engines(double omega) const;
+
   mutable std::unique_ptr<IntegralEngineDF> m_df_engine{nullptr};
   mutable std::unique_ptr<occ::qm::cosx::SemiNumericalExchange> m_cosx_engine{nullptr};
   mutable occ::qm::IntegralEngine m_engine;
+
+  /// Twins of the above, fixed to `erf(m_lr_omega r)/r` and never mutated.
+  mutable std::unique_ptr<occ::qm::IntegralEngine> m_lr_engine{nullptr};
+  mutable std::unique_ptr<IntegralEngineDF> m_lr_df_engine{nullptr};
+  mutable double m_lr_omega{0.0};
+
+  /// Kept from `set_density_fitting_basis` so the long-range density-fitting
+  /// engine can be built later without reloading the auxiliary basis.
+  std::vector<occ::gto::Shell> m_df_aux_shells;
+
   std::string m_method_name{"HF"};
 };
 

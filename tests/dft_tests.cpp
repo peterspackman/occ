@@ -464,8 +464,7 @@ TEST_CASE("COSX long-range (range-separated) exchange vs exact",
 
   occ::qm::cosx::SemiNumericalExchange sgx_lr(basis, settings);
   sgx_lr.set_use_esp(true);
-  sgx_lr.set_range_separated_omega(omega);
-  occ::Mat K_lr = sgx_lr.compute_K(mo);
+  occ::Mat K_lr = sgx_lr.compute_K(mo, std::numeric_limits<double>::epsilon(), occ::Mat(), omega);
   double err_lr = (K_lr - jk_lr.K).array().cwiseAbs().maxCoeff();
 
   fmt::print("COSX K max error vs exact: full={:.3e}  long-range={:.3e}\n",
@@ -506,11 +505,8 @@ TEST_CASE("COSX fused range-separated vs two-call",
   const double alpha = 1.0, beta = -0.842294, omega = 0.3;
 
   auto two_call = [&]() {
-    sgx.set_range_separated_omega(0.0);
-    occ::Mat Kf = sgx.compute_K(mo);
-    sgx.set_range_separated_omega(omega);
-    occ::Mat Klr = sgx.compute_K(mo);
-    sgx.set_range_separated_omega(0.0);
+    occ::Mat Kf = sgx.compute_K(mo, std::numeric_limits<double>::epsilon(), occ::Mat(), 0.0);
+    occ::Mat Klr = sgx.compute_K(mo, std::numeric_limits<double>::epsilon(), occ::Mat(), omega);
     return occ::Mat((alpha + beta) * Kf - beta * Klr);
   };
   auto fused = [&]() {

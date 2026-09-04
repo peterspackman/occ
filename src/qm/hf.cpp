@@ -40,8 +40,12 @@ void HartreeFock::set_density_fitting_basis(
   }
 
   dfbasis.set_kind(m_engine.aobasis().kind());
+  m_df_aux_shells = dfbasis.shells();
   m_df_engine = std::make_unique<IntegralEngineDF>(
-      atoms(), m_engine.aobasis().shells(), dfbasis.shells());
+      atoms(), m_engine.aobasis().shells(), m_df_aux_shells);
+  // A long-range twin built for a previous basis would now be stale.
+  m_lr_df_engine.reset();
+  m_lr_engine.reset();
 }
 
 void HartreeFock::set_density_fitting_policy(IntegralEngineDF::Policy policy) {
@@ -297,13 +301,55 @@ JKPair HartreeFock::coulomb_and_range_separated_exchange(
   }
 
   if (w_lr != 0.0) {
-    set_range_separated_omega(omega);
-    Mat K_lr = compute_K(mo, Schwarz);
-    set_range_separated_omega(0.0);
+    const Mat K_lr = compute_K_long_range(mo, omega, Schwarz);
     result.K.noalias() += w_lr * K_lr;
   }
 
   return result;
+}
+
+void HartreeFock::ensure_long_range_engines(double omega) const {
+  if (m_lr_omega == omega && (m_lr_engine || m_lr_df_engine))
+    return;
+
+  m_lr_engine = std::make_unique<IntegralEngine>(m_engine.aobasis());
+  m_lr_engine->set_precision(m_engine.precision());
+  m_lr_engine->set_range_separated_omega(omega);
+
+  if (m_df_engine) {
+    m_lr_df_engine = std::make_unique<IntegralEngineDF>(
+        atoms(), m_engine.aobasis().shells(), m_df_aux_shells);
+    m_lr_df_engine->set_precision(m_df_engine->precision());
+    // The store only ever serves the full Coulomb operator, so this engine
+    // recomputes regardless; saying so is clearer than relying on the default.
+    m_lr_df_engine->set_integral_policy(IntegralEngineDF::Policy::Direct);
+    // Builds the attenuated fitting metric (P|erf(omega r)/r|Q) once, here,
+    // instead of on every Fock build.
+    m_lr_df_engine->set_range_separated_omega(omega);
+  }
+
+  m_lr_omega = omega;
+}
+
+Mat HartreeFock::compute_K_long_range(const MolecularOrbitals &mo, double omega,
+                                      const Mat &Schwarz) const {
+  if (m_cosx_engine)
+    return m_cosx_engine->compute_K(mo, std::numeric_limits<double>::epsilon(),
+                                    Schwarz, omega);
+  ensure_long_range_engines(omega);
+  if (m_lr_df_engine)
+    return m_lr_df_engine->exchange(mo);
+  return m_lr_engine->coulomb_and_exchange(mo.kind, mo, Schwarz).K;
+}
+
+MatTriple
+HartreeFock::compute_K_gradient_long_range(const MolecularOrbitals &mo,
+                                           double omega,
+                                           const Mat &Schwarz) const {
+  // The gradient path is always the conventional four-centre engine, so the
+  // long-range twin is exactly what it needs.
+  ensure_long_range_engines(omega);
+  return m_lr_engine->coulomb_exchange_grad(mo.kind, mo, Schwarz).K;
 }
 
 std::vector<JKPair>

@@ -335,4 +335,30 @@ private:
   int m_ecp_max_l{0};
 };
 
+/// Applies a range-separation parameter for the duration of a scope, and puts
+/// back whatever was there before however the scope is left.
+///
+/// The engines carry the operator as mutable state, so a build that throws
+/// part way through would otherwise leave omega set, and every later Fock
+/// build would silently use the attenuated operator instead of the full
+/// Coulomb one. Works on anything with the `range_separated_omega()` /
+/// `set_range_separated_omega()` pair: `IntegralEngine`, `IntegralEngineDF`,
+/// `HartreeFock`, `cint::IntegralEnvironment`.
+template <typename T> class ScopedRangeSeparation {
+public:
+  ScopedRangeSeparation(T &target, double omega)
+      : m_target(target), m_previous(target.range_separated_omega()) {
+    m_target.set_range_separated_omega(omega);
+  }
+  ~ScopedRangeSeparation() { m_target.set_range_separated_omega(m_previous); }
+  ScopedRangeSeparation(const ScopedRangeSeparation &) = delete;
+  ScopedRangeSeparation &operator=(const ScopedRangeSeparation &) = delete;
+
+private:
+  T &m_target;
+  double m_previous;
+};
+template <typename T>
+ScopedRangeSeparation(T &, double) -> ScopedRangeSeparation<T>;
+
 } // namespace occ::qm

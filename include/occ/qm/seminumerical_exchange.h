@@ -116,9 +116,17 @@ class SemiNumericalExchange {
 
 public:
   SemiNumericalExchange(const gto::AOBasis &, const occ::numint::GridSettings & = {});
+  /// Seminumerical exchange for one operator.
+  ///
+  /// `omega` selects it: zero for the full Coulomb `1/r`, nonzero for the
+  /// attenuated `erf(omega r)/r`. Passed rather than held, because nothing
+  /// here is cached per operator -- the grid, the shell-pair map and the
+  /// density contraction are shared, and only the analytic ESP integral looks
+  /// at omega at all.
   Mat compute_K(const qm::MolecularOrbitals &mo,
                 double precision = std::numeric_limits<double>::epsilon(),
-                const occ::Mat &Schwarz = occ::Mat()) const;
+                const occ::Mat &Schwarz = occ::Mat(),
+                double omega = 0.0) const;
 
   /// Fused range-separated exchange: builds the full Hartree-Fock exchange
   /// matrix of a range-separated hybrid,
@@ -149,12 +157,6 @@ public:
   const Settings &settings() const { return m_settings; }
 
   /// Range-separation parameter for the exchange operator.
-  /// omega == 0 (default): full Coulomb 1/r exchange.
-  /// omega  > 0: long-range erf(omega*r)/r exchange (for range-separated
-  /// hybrids). The short-range part is obtained as K_full - K_long_range.
-  void set_range_separated_omega(double omega) { m_omega = omega; }
-  double range_separated_omega() const { return m_omega; }
-
   /// Get grid information
   size_t num_grid_points() const;
   size_t num_batches() const;
@@ -165,13 +167,17 @@ public:
 
 private:
   // Spinorbital-specific compute_K implementations
-  Mat compute_K_restricted(const qm::MolecularOrbitals &mo, double precision) const;
-  Mat compute_K_unrestricted(const qm::MolecularOrbitals &mo, double precision) const;
-  Mat compute_K_general(const qm::MolecularOrbitals &mo, double precision) const;
+  Mat compute_K_restricted(const qm::MolecularOrbitals &mo, double precision,
+                           double omega) const;
+  Mat compute_K_unrestricted(const qm::MolecularOrbitals &mo, double precision,
+                             double omega) const;
+  Mat compute_K_general(const qm::MolecularOrbitals &mo, double precision,
+                        double omega) const;
 
   // Core K computation for a projected density matrix (nbf x nbf)
   // Returns (nbf x nbf) exchange matrix
-  Mat compute_K_for_density(const Mat &D2q, double precision) const;
+  Mat compute_K_for_density(const Mat &D2q, double precision,
+                            double omega) const;
 
   // Fused full + long-range K for a projected density matrix: accumulates
   // w_full * K[1/r] + w_lr * K[erf(omega*r)/r] in a single grid sweep.
@@ -216,8 +222,5 @@ private:
 
   // Configuration settings
   Settings m_settings;
-
-  // Range-separation parameter (0 = full Coulomb exchange)
-  double m_omega{0.0};
 };
 } // namespace occ::qm::cosx
