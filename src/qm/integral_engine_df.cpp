@@ -1,4 +1,7 @@
 #include <Eigen/Cholesky>
+#include <fmt/core.h>
+#include <new>
+#include <stdexcept>
 #include "detail/df_kernels.h"
 
 namespace occ::qm {
@@ -57,11 +60,21 @@ void IntegralEngineDF::set_coulomb_method(CoulombMethod method) {
 void IntegralEngineDF::compute_stored_integrals() {
   occ::timing::start(occ::timing::category::df);
   if (m_integral_store.rows() == 0) {
-    occ::log::info("Storing 3-center integrals, computing with {} threads",
-                   occ::parallel::get_num_threads());
     size_t nbf = m_ao_engine.nbf();
     size_t ndf = m_aux_engine.nbf();
-    m_integral_store = Mat::Zero(nbf * nbf, ndf);
+    const double mib = integral_storage_bytes() / (1024.0 * 1024.0);
+    occ::log::info("Storing 3-center integrals ({} x {} x {}, {:.0f} MiB), "
+                   "computing with {} threads",
+                   nbf, nbf, ndf, mib, occ::parallel::get_num_threads());
+    try {
+      m_integral_store = Mat::Zero(nbf * nbf, ndf);
+    } catch (const std::bad_alloc &) {
+      throw std::runtime_error(fmt::format(
+          "could not allocate {:.0f} MiB for the stored 3-centre integrals "
+          "({} basis functions, {} auxiliary). Use the direct density fitting "
+          "policy, which recomputes them instead of storing them.",
+          mib, nbf, ndf));
+    }
     auto lambda = [&](const IntegralResult &args) {
       size_t offset = 0;
       for (size_t i = args.bf[2]; i < args.bf[2] + args.dims[2]; i++) {
@@ -332,3 +345,4 @@ void IntegralEngineDF::set_precision(double precision) {
 }
 
 } // namespace occ::qm
+

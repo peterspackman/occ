@@ -266,6 +266,10 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
       .def("set_density_fitting_basis",
            &HartreeFock::set_density_fitting_basis, "basis"_a,
            "auto_aux_threshold"_a = 1e-4)
+      .def("set_density_fitting_policy",
+           &HartreeFock::set_density_fitting_policy, "policy"_a,
+           "Direct recomputes the 3-centre integrals each iteration; Stored "
+           "keeps them, at nbf^2 x ndf doubles")
       .def("kinetic_matrix", &HartreeFock::compute_kinetic_matrix)
       .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
       .def("overlap_matrix_for_basis",

@@ -84,6 +84,10 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
       .def("kinetic_matrix", &DFT::compute_kinetic_matrix)
       .def("set_density_fitting_basis", &DFT::set_density_fitting_basis,
            "basis"_a, "auto_aux_threshold"_a = 1e-4)
+      .def("set_density_fitting_policy", &DFT::set_density_fitting_policy,
+           "policy"_a,
+           "Direct recomputes the 3-centre integrals each iteration; Stored "
+           "keeps them, at nbf^2 x ndf doubles")
       .def("overlap_matrix", &DFT::compute_overlap_matrix)
       .def("nuclear_repulsion", &DFT::nuclear_repulsion_energy)
       .def("set_precision", &DFT::set_precision)

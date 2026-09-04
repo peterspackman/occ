@@ -77,6 +77,11 @@ std::vector<T> reduce_thread_local_vectors(const occ::parallel::thread_local_sto
 template<typename KMatType>
 void contract_exchange_matrices(const std::vector<Mat>& iuP, const CoulombMetric& V_LLt, 
                                KMatType& K_block) {
+  // One entry per occupied orbital, so an empty spin channel leaves nothing
+  // to contract: a spin-polarised system with no beta electrons, or the very
+  // first Fock build of a guess that supplies a density but no orbitals.
+  if (iuP.empty())
+    return;
   Mat X(iuP[0].rows(), iuP[0].cols());
   for (size_t i = 0; i < iuP.size(); i++) {
     X = V_LLt.solve(iuP[i].transpose());
@@ -524,14 +529,18 @@ Mat direct_exchange_operator_kernel_r(IntegralEngine &engine,
   const auto nbf = engine.aobasis().nbf();
   const auto ndf = engine.auxbasis().nbf();
 
-  // TBB thread-local storage for intermediate matrices
-  occ::parallel::thread_local_storage<std::vector<Mat>> tl_iuP([=]() {
-    return std::vector<Mat>(nocc, Mat::Zero(nbf, ndf));
-  });
+  // One shared workspace, not one per thread: the parallel loop runs over
+  // auxiliary shells and every write below lands in the column indexed by an
+  // auxiliary function, so two threads never touch the same element. These
+  // are nocc x nbf x ndf, the largest allocation in the build, so duplicating
+  // them per thread cost both the footprint and the time to zero and reduce
+  // them. `direct_coulomb_and_exchange_operator_kernel_u` already shares its
+  // copy for the same reason.
+  std::vector<Mat> iuP(nocc, Mat::Zero(nbf, ndf));
 
   // Process each auxiliary shell with work-stealing parallelization
   auto process_integrals = [&](const IntegralResult &args) {
-    auto &local_iuP = tl_iuP.local();
+    auto &local_iuP = iuP;
     
     for (size_t i = 0; i < nocc; i++) {
       auto &iuPx = local_iuP[i];
@@ -560,8 +569,6 @@ Mat direct_exchange_operator_kernel_r(IntegralEngine &engine,
                                            engine.aobasis(), engine.auxbasis(), 
                                            engine.shellpairs(), opt);
 
-  // Reduce thread-local results and contract
-  auto iuP = reduce_thread_local_vectors(tl_iuP);
   Mat K = Mat::Zero(nbf, nbf);
   contract_exchange_matrices(iuP, V_LLt, K);
 
@@ -583,17 +590,20 @@ Mat direct_exchange_operator_kernel_u(IntegralEngine &engine,
       occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::Unrestricted>(nbf);
 
   // TBB thread-local storage for intermediate matrices (alpha and beta)
-  occ::parallel::thread_local_storage<std::vector<Mat>> tl_iuPa([=]() {
-    return std::vector<Mat>(nocc, Mat::Zero(nbf, ndf));
-  });
-  occ::parallel::thread_local_storage<std::vector<Mat>> tl_iuPb([=]() {
-    return std::vector<Mat>(nocc, Mat::Zero(nbf, ndf));
-  });
+  // One shared workspace, not one per thread: the parallel loop runs over
+  // auxiliary shells and every write below lands in the column indexed by an
+  // auxiliary function, so two threads never touch the same element. These
+  // are nocc x nbf x ndf, the largest allocation in the build, so duplicating
+  // them per thread cost both the footprint and the time to zero and reduce
+  // them. `direct_coulomb_and_exchange_operator_kernel_u` already shares its
+  // copy for the same reason.
+  std::vector<Mat> iuPa(nocc, Mat::Zero(nbf, ndf));
+  std::vector<Mat> iuPb(nocc, Mat::Zero(nbf, ndf));
 
   // Process each auxiliary shell with work-stealing parallelization
   auto process_integrals = [&](const IntegralResult &args) {
-    auto &local_iuPa = tl_iuPa.local();
-    auto &local_iuPb = tl_iuPb.local();
+    auto &local_iuPa = iuPa;
+    auto &local_iuPb = iuPb;
     
     for (size_t i = 0; i < nocc; i++) {
       auto &iuPxa = local_iuPa[i];
@@ -629,8 +639,6 @@ Mat direct_exchange_operator_kernel_u(IntegralEngine &engine,
                                            engine.shellpairs(), opt);
 
   // Reduce thread-local results and contract for both spin channels
-  auto iuPa = reduce_thread_local_vectors(tl_iuPa);
-  auto iuPb = reduce_thread_local_vectors(tl_iuPb);
   
   Mat K = Mat::Zero(rows, cols);
   auto Ka = block::a(K);
@@ -660,17 +668,20 @@ Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
       occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::General>(nbf);
 
   // TBB thread-local storage for intermediate matrices (alpha and beta)
-  occ::parallel::thread_local_storage<std::vector<Mat>> tl_iuPa([=]() {
-    return std::vector<Mat>(nocc, Mat::Zero(nbf, ndf));
-  });
-  occ::parallel::thread_local_storage<std::vector<Mat>> tl_iuPb([=]() {
-    return std::vector<Mat>(nocc, Mat::Zero(nbf, ndf));
-  });
+  // One shared workspace, not one per thread: the parallel loop runs over
+  // auxiliary shells and every write below lands in the column indexed by an
+  // auxiliary function, so two threads never touch the same element. These
+  // are nocc x nbf x ndf, the largest allocation in the build, so duplicating
+  // them per thread cost both the footprint and the time to zero and reduce
+  // them. `direct_coulomb_and_exchange_operator_kernel_u` already shares its
+  // copy for the same reason.
+  std::vector<Mat> iuPa(nocc, Mat::Zero(nbf, ndf));
+  std::vector<Mat> iuPb(nocc, Mat::Zero(nbf, ndf));
 
   // Process each auxiliary shell with work-stealing parallelization
   auto process_integrals = [&](const IntegralResult &args) {
-    auto &local_iuPa = tl_iuPa.local();
-    auto &local_iuPb = tl_iuPb.local();
+    auto &local_iuPa = iuPa;
+    auto &local_iuPb = iuPb;
     
     for (size_t i = 0; i < nocc; i++) {
       auto &iuPxa = local_iuPa[i];
@@ -706,8 +717,6 @@ Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
                                            engine.shellpairs(), opt);
 
   // Reduce thread-local results and contract for general spinorbital case
-  auto iuPa = reduce_thread_local_vectors(tl_iuPa);
-  auto iuPb = reduce_thread_local_vectors(tl_iuPb);
   
   Mat K = Mat::Zero(rows, cols);
   Mat Xa(nbf, ndf), Xb(nbf, ndf);
@@ -1041,17 +1050,21 @@ JKPair direct_coulomb_and_exchange_operator_kernel_r(
   const auto nbf = engine.aobasis().nbf();
   const auto ndf = engine.auxbasis().nbf();
 
-  // TBB thread-local storage for combined JK data
-  occ::parallel::thread_local_storage<JKData> tl_jk_data([=]() {
-    return JKData(ndf, nbf, nocc);
-  });
+  // One shared workspace, not one per thread.
+  //
+  // The parallel loop runs over auxiliary shells and every accumulation here
+  // is indexed by an auxiliary basis function, so two threads never touch the
+  // same element of `g` or the same column of `iuP`. Duplicating them per
+  // thread and reducing afterwards was pure overhead: `iuP` is
+  // nocc x nbf x ndf, the largest allocation in the build (1.2 GiB for a
+  // 50-atom dimer in a JK-fitting basis), so the copies dominated both the
+  // footprint and the time spent zeroing and summing them.
+  JKData shared(ndf, nbf, nocc);
+  Vec &g = shared.g;
+  std::vector<Mat> &iuP = shared.iuP;
 
   // Combined JK computation in single pass over three-center integrals
   auto process_integrals = [&](const IntegralResult &args) {
-    auto &local_data = tl_jk_data.local();
-    auto &g = local_data.g;
-    auto &iuP = local_data.iuP;
-    
     size_t offset = 0;
     const auto c2 = mo.Cocc.block(args.bf[0], 0, args.dims[0], nocc);
     const auto c3 = mo.Cocc.block(args.bf[1], 0, args.dims[1], nocc);
@@ -1099,12 +1112,6 @@ JKPair direct_coulomb_and_exchange_operator_kernel_r(
                                            engine.aobasis(), engine.auxbasis(), 
                                            engine.shellpairs(), opt);
 
-  // Reduce Coulomb data and solve
-  Vec g = Vec::Zero(ndf);
-  for (const auto &local_data : tl_jk_data) {
-    g += local_data.g;
-  }
-  
   occ::timing::start(occ::timing::category::la);
   Vec d = V_LLt.solve(g);
   occ::timing::stop(occ::timing::category::la);
@@ -1142,16 +1149,8 @@ JKPair direct_coulomb_and_exchange_operator_kernel_r(
     J += local_J;
   }
 
-  // Reduce exchange data and contract
-  std::vector<Mat> iuP_total(nocc, Mat::Zero(nbf, ndf));
-  for (const auto &local_data : tl_jk_data) {
-    for (size_t i = 0; i < nocc; i++) {
-      iuP_total[i] += local_data.iuP[i];
-    }
-  }
-
   Mat K = Mat::Zero(nbf, nbf);
-  contract_exchange_matrices(iuP_total, V_LLt, K);
+  contract_exchange_matrices(iuP, V_LLt, K);
 
   occ::timing::stop(occ::timing::category::df);
   return {J + J.transpose(), 0.5 * (K + K.transpose())};
@@ -1261,19 +1260,22 @@ JKPair direct_coulomb_and_exchange_operator_kernel_g(
   occ::parallel::thread_local_storage<Vec> tl_gbb(Vec::Zero(ndf));
   
   // TBB thread-local storage for exchange intermediate matrices
-  occ::parallel::thread_local_storage<std::vector<Mat>> tl_iuPa([=]() {
-    return std::vector<Mat>(nocc, Mat::Zero(nbf, ndf));
-  });
-  occ::parallel::thread_local_storage<std::vector<Mat>> tl_iuPb([=]() {
-    return std::vector<Mat>(nocc, Mat::Zero(nbf, ndf));
-  });
+  // One shared workspace, not one per thread: the parallel loop runs over
+  // auxiliary shells and every write below lands in the column indexed by an
+  // auxiliary function, so two threads never touch the same element. These
+  // are nocc x nbf x ndf, the largest allocation in the build, so duplicating
+  // them per thread cost both the footprint and the time to zero and reduce
+  // them. `direct_coulomb_and_exchange_operator_kernel_u` already shares its
+  // copy for the same reason.
+  std::vector<Mat> iuPa(nocc, Mat::Zero(nbf, ndf));
+  std::vector<Mat> iuPb(nocc, Mat::Zero(nbf, ndf));
 
   // Combined JK computation in single pass over three-center integrals
   auto process_integrals = [&](const IntegralResult &args) {
     auto &gaa = tl_gaa.local();
     auto &gbb = tl_gbb.local();
-    auto &local_iuPa = tl_iuPa.local();
-    auto &local_iuPb = tl_iuPb.local();
+    auto &local_iuPa = iuPa;
+    auto &local_iuPb = iuPb;
     
     const auto Daa = block::aa(mo.D);
     const auto Dbb = block::bb(mo.D);
@@ -1398,10 +1400,9 @@ JKPair direct_coulomb_and_exchange_operator_kernel_g(
     J += local_J;
   }
 
-  // Reduce exchange data and contract
-  auto iuPa_total = reduce_thread_local_vectors(tl_iuPa);
-  auto iuPb_total = reduce_thread_local_vectors(tl_iuPb);
-  
+  const auto &iuPa_total = iuPa;
+  const auto &iuPb_total = iuPb;
+
   Mat K = Mat::Zero(rows, cols);
   Mat Xa(nbf, ndf), Xb(nbf, ndf);
   

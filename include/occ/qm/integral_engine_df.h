@@ -77,13 +77,22 @@ private:
     return n;
   }
 
-  size_t integral_storage_max_size() const {
-    return m_ao_engine.auxbasis().nbf() * num_rows();
+  /// Bytes `compute_stored_integrals` would allocate: the full nbf x nbf
+  /// square for every auxiliary function.
+  ///
+  /// This has to mirror that allocation exactly. It previously counted
+  /// screened shell pairs and returned a number of elements, which was then
+  /// compared against a limit in bytes -- so the guard let through roughly
+  /// sixteen times what it advertised, and the store blew up instead.
+  size_t integral_storage_bytes() const {
+    const size_t nbf = m_ao_engine.nbf();
+    const size_t ndf = m_aux_engine.nbf();
+    return nbf * nbf * ndf * sizeof(double);
   }
 
   inline bool use_stored_integrals() const {
     if (m_policy == Policy::Choose) {
-      return (m_integral_store_memory_limit > integral_storage_max_size());
+      return (integral_storage_bytes() < m_integral_store_memory_limit);
     }
     return (m_policy == Policy::Stored);
   }
@@ -98,8 +107,22 @@ private:
   double m_omega{0.0};          ///< omega the active factorization belongs to
   double m_lr_omega{0.0};       ///< omega of the cached long-range metric
   Mat m_integral_store;
-  Policy m_policy{Policy::Choose};
+  /// Direct by default: recomputing the 3-centre integrals each iteration
+  /// costs time, whereas storing them costs an allocation that scales as
+  /// nbf^2 x ndf and cannot be recovered from when it fails -- which is what
+  /// browsers, with a 1 GB heap, kept hitting. Ask for `Stored` explicitly
+  /// when the memory is known to be there.
+  Policy m_policy{Policy::Direct};
+  /// Ceiling on the stored 3-centre integrals, only consulted by
+  /// `Policy::Choose`. The browser gets a much smaller share: its whole heap
+  /// is capped at 1 GB and the wavefunction, grids and Fock matrices have to
+  /// live there too, so half a gigabyte of integrals is not affordable even
+  /// when the allocation nominally succeeds.
+#ifdef __EMSCRIPTEN__
+  size_t m_integral_store_memory_limit{128 * 1024 * 1024}; // 128 MiB
+#else
   size_t m_integral_store_memory_limit{512 * 1024 * 1024}; // 512 MiB
+#endif
 
   // Coulomb method selection
   CoulombMethod m_coulomb_method{CoulombMethod::Traditional};

@@ -1,6 +1,9 @@
 #pragma once
+#include <algorithm>
 #include <cstddef>
+#include <cstdlib>
 #include <occ/core/log.h>
+#include <occ/gto/shell.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/fitting_basis.h>
 #include <occ/qm/integral_engine_df.h>
@@ -33,16 +36,60 @@ struct AccelerationPlan {
  *                           hybrid mixing fraction for DFT, 0.0 for a pure GGA
  * @param user_df_basis      explicit --df-basis/--aux value ("" if unset)
  * @param user_cosx          explicit --cosx flag
+ * @param df_exchange_bytes  size of the DF-K intermediate, 0 if unknown
  *
  * Explicit user settings always win; Auto only fills in choices left unset.
  * The Auto rule (ORCA-style): density-fit the Coulomb term for every SCF
  * method, and for exact exchange use DF-K below the basis-function crossover,
  * seminumerical COSX above it.
  */
+/**
+ * @brief Memory budget for the DF exchange intermediate, in bytes.
+ *
+ * DF-K half-transforms the three-centre integrals into B[i][mu][P], which is
+ * nocc x nbf x ndf doubles. That intermediate cannot be blocked over the
+ * auxiliary index -- K = sum_i B_i V^-1 B_i^T, and V^-1 couples every
+ * auxiliary function to every other -- so its size is a hard requirement of
+ * the method rather than something an implementation can trade away.
+ *
+ * COSX needs no such intermediate, which makes it the right choice once the
+ * DF-K workspace stops fitting, independent of how many basis functions
+ * there are.
+ */
+inline std::size_t df_exchange_memory_budget() {
+#ifdef __EMSCRIPTEN__
+  // The whole wasm heap is capped at 1 GB and the wavefunction, grids and
+  // Fock matrices share it.
+  constexpr std::size_t default_mib = 192;
+#else
+  constexpr std::size_t default_mib = 2048;
+#endif
+  // The budget is a property of the machine rather than of the calculation,
+  // so it is set by the environment rather than the input file.
+  if (const char *env = std::getenv("OCC_DF_EXCHANGE_BUDGET_MB")) {
+    char *end = nullptr;
+    const unsigned long long mib = std::strtoull(env, &end, 10);
+    if (end != env && mib > 0)
+      return static_cast<std::size_t>(mib) * 1024 * 1024;
+    occ::log::warn("ignoring OCC_DF_EXCHANGE_BUDGET_MB='{}': expected a "
+                   "positive number of MiB",
+                   env);
+  }
+  return default_mib * 1024 * 1024;
+}
+
+/// Bytes DF-K would need for its half-transformed intermediate.
+inline std::size_t df_exchange_intermediate_bytes(std::size_t nocc,
+                                                  std::size_t nbf,
+                                                  std::size_t ndf) {
+  return nocc * nbf * ndf * sizeof(double);
+}
+
 inline AccelerationPlan
 plan_acceleration(io::RIPolicy policy, const std::string &orbital_basis_name,
                   std::size_t nbf, double exact_exchange,
-                  const std::string &user_df_basis, bool user_cosx) {
+                  const std::string &user_df_basis, bool user_cosx,
+                  std::size_t df_exchange_bytes = 0) {
   using occ::qm::FittingKind;
   using occ::qm::resolve_fitting_basis;
 
@@ -76,6 +123,19 @@ plan_acceleration(io::RIPolicy policy, const std::string &orbital_basis_name,
       if (has_exact_exchange &&
           nbf > static_cast<std::size_t>(occ::qm::cosx_nbf_crossover()))
         plan.use_cosx = true;
+      // A basis-size threshold alone misses the case that actually fails: the
+      // DF-K intermediate scales as nocc x nbf x ndf, so a modest orbital
+      // basis with a large fitting basis can exceed the budget well below the
+      // crossover. `df_exchange_bytes` is zero when the caller cannot size it.
+      if (has_exact_exchange && !plan.use_cosx && df_exchange_bytes > 0 &&
+          df_exchange_bytes > df_exchange_memory_budget()) {
+        occ::log::info(
+            "DF exchange would need {} MiB for its half-transformed "
+            "integrals, over the {} MiB budget; using COSX instead",
+            df_exchange_bytes / (1024 * 1024),
+            df_exchange_memory_budget() / (1024 * 1024));
+        plan.use_cosx = true;
+      }
     }
     break;
   }
@@ -109,9 +169,35 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
   // LC-omegaPBE), since the long-range exact exchange still needs a K build.
   const double cosx_exchange = range_separated ? 1.0 : exchange_factor;
 
+  // Size the DF-K intermediate so the policy can weigh memory as well as
+  // basis size. The fitting basis has to be resolved and loaded to count its
+  // functions; that happens again in set_density_fitting_basis, but only once
+  // per SCF setup rather than per iteration.
+  std::size_t df_exchange_bytes = 0;
+  if (has_exact_exchange && config.method.ri_policy == io::RIPolicy::Auto &&
+      config.basis.df_name.empty() && !config.method.use_cosx) {
+    const auto aux_name = occ::qm::resolve_fitting_basis(
+        config.basis.name, occ::qm::FittingKind::JK);
+    if (!aux_name.empty()) {
+      try {
+        const auto &ao = proc.aobasis();
+        auto aux = occ::gto::AOBasis::load(ao.atoms(), aux_name);
+        const int electrons =
+            ao.effective_nuclear_charge() - static_cast<int>(config.electronic.charge);
+        const std::size_t nocc =
+            static_cast<std::size_t>(std::max(electrons, 0) + 1) / 2;
+        df_exchange_bytes =
+            df_exchange_intermediate_bytes(nocc, nbf, aux.nbf());
+      } catch (const std::exception &e) {
+        occ::log::debug("could not size the DF exchange intermediate: {}",
+                        e.what());
+      }
+    }
+  }
+
   AccelerationPlan accel = plan_acceleration(
       config.method.ri_policy, config.basis.name, nbf, cosx_exchange,
-      config.basis.df_name, config.method.use_cosx);
+      config.basis.df_name, config.method.use_cosx, df_exchange_bytes);
 
   // COSX has no analytic gradient; gradient-producing drivers downgrade it to
   // DF exchange (the gradient itself stays on exact integrals regardless).
