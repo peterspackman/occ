@@ -124,6 +124,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:aa9359d0d91ae64202c7a7b353ec46de4" id="r_aa9359d0d91ae64202c7a7b353ec46de4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Guess.html#aa9359d0d91ae64202c7a7b353ec46de4">density_basis</a></td></tr>
 <tr class="memdesc:aa9359d0d91ae64202c7a7b353ec46de4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The basis <code>density</code> is expressed in.  <br /></td></tr>
 <tr class="separator:aa9359d0d91ae64202c7a7b353ec46de4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad97c6f052ea54c5d069ff11abaae56ca" id="r_ad97c6f052ea54c5d069ff11abaae56ca"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Guess.html#ad97c6f052ea54c5d069ff11abaae56ca">density_in_orbital_basis</a> {false}</td></tr>
+<tr class="memdesc:ad97c6f052ea54c5d069ff11abaae56ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether <code>density_basis</code> is the orbital basis itself, in which case the caller wants a plain density-driven Fock build.  <br /></td></tr>
+<tr class="separator:ad97c6f052ea54c5d069ff11abaae56ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3e32bd0449c17754ac3d66601a69812" id="r_ad3e32bd0449c17754ac3d66601a69812"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Guess.html#ad3e32bd0449c17754ac3d66601a69812">density_is_shell_diagonal</a> {false}</td></tr>
 <tr class="memdesc:ad3e32bd0449c17754ac3d66601a69812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether <code>density</code> is block-diagonal over the shells of <code>density_basis</code>, which the mixed-basis Fock build uses to skip integrals.  <br /></td></tr>
 <tr class="separator:ad3e32bd0449c17754ac3d66601a69812"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -166,6 +169,23 @@ Public Attributes</h2></td></tr>
 
 <p>The basis <code>density</code> is expressed in. </p>
 <p><code>Soad</code> builds in the minimal basis, so the caller has to project; every other kind uses the orbital basis, where the projection is the identity. </p>
+
+</div>
+</div>
+<a id="ad97c6f052ea54c5d069ff11abaae56ca" name="ad97c6f052ea54c5d069ff11abaae56ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad97c6f052ea54c5d069ff11abaae56ca">&#9670;&#160;</a></span>density_in_orbital_basis</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::qm::Guess::density_in_orbital_basis {false}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether <code>density_basis</code> is the orbital basis itself, in which case the caller wants a plain density-driven Fock build. </p>
+<p>Routing that case through the mixed-basis build instead pays for an identity projection: it duplicates every shell as auxiliary and runs the four-index loop over the doubled set. </p>
 
 </div>
 </div>

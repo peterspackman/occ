@@ -6,6 +6,7 @@ var classocc_1_1dft_1_1DFT =
     [ "compute_effective_core_potential_matrix", "classocc_1_1dft_1_1DFT.html#a772912fd4df034b5f315cdd3d347bb94", null ],
     [ "compute_electronic_multipoles", "classocc_1_1dft_1_1DFT.html#a14321390683baab8da79843cd40373ff", null ],
     [ "compute_fock", "classocc_1_1dft_1_1DFT.html#a4f2d84b3185882b2fba3df62b3e042d4", null ],
+    [ "compute_fock_from_density", "classocc_1_1dft_1_1DFT.html#a1561fd4093e145f903847d4a4f219741", null ],
     [ "compute_fock_gradient", "classocc_1_1dft_1_1DFT.html#a4476c7dc3b5f33f9a41417ee1940a260", null ],
     [ "compute_fock_mixed_basis", "classocc_1_1dft_1_1DFT.html#a6842ba3f48620598706d47ffbde811f8", null ],
     [ "compute_J", "classocc_1_1dft_1_1DFT.html#aefb2b6ff3b7e008988a2e2f4ff7d3cf9", null ],

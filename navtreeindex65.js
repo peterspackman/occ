@@ -1,5 +1,13 @@
 var NAVTREEINDEX65 =
 {
+"structocc_1_1xtb_1_1AnisotropicEnergy.html#ad625a011681a20fd2e1a20aec5d27871":[3,0,2,33,1,2],
+"structocc_1_1xtb_1_1AnisotropicPairGradient.html":[5,0,2,26,2],
+"structocc_1_1xtb_1_1AnisotropicPairGradient.html":[3,0,2,33,2],
+"structocc_1_1xtb_1_1AnisotropicPairGradient.html#a634acfa80721f017c322acdb77ea9360":[5,0,2,26,2,1],
+"structocc_1_1xtb_1_1AnisotropicPairGradient.html#a634acfa80721f017c322acdb77ea9360":[3,0,2,33,2,1],
+"structocc_1_1xtb_1_1AnisotropicPairGradient.html#ad1cea22773b6c1f76549111666e214b0":[5,0,2,26,2,0],
+"structocc_1_1xtb_1_1AnisotropicPairGradient.html#ad1cea22773b6c1f76549111666e214b0":[3,0,2,33,2,0],
+"structocc_1_1xtb_1_1AnisotropicPotentials.html":[5,0,2,26,3],
 "structocc_1_1xtb_1_1AnisotropicPotentials.html":[3,0,2,33,3],
 "structocc_1_1xtb_1_1AnisotropicPotentials.html#a2dc2bc174994e5a7a9f2f06fe6a4e83a":[5,0,2,26,3,0],
 "structocc_1_1xtb_1_1AnisotropicPotentials.html#a2dc2bc174994e5a7a9f2f06fe6a4e83a":[3,0,2,33,3,0],
@@ -241,13 +249,5 @@ var NAVTREEINDEX65 =
 "structocc_1_1xtb_1_1PeriodicSystem.html#a08b2714df6a1e5a0797b8fd9d48179ad":[3,0,2,33,26,0],
 "structocc_1_1xtb_1_1PeriodicSystem.html#a3519fb6fcdddb94a605f6a12aba102c4":[5,0,2,26,26,2],
 "structocc_1_1xtb_1_1PeriodicSystem.html#a3519fb6fcdddb94a605f6a12aba102c4":[3,0,2,33,26,2],
-"structocc_1_1xtb_1_1PeriodicSystem.html#a662751c7e4580c497969cea59e26dbfd":[5,0,2,26,26,4],
-"structocc_1_1xtb_1_1PeriodicSystem.html#a662751c7e4580c497969cea59e26dbfd":[3,0,2,33,26,4],
-"structocc_1_1xtb_1_1PeriodicSystem.html#a9958e7b073b36ce5d0e24f59e60f8205":[5,0,2,26,26,1],
-"structocc_1_1xtb_1_1PeriodicSystem.html#a9958e7b073b36ce5d0e24f59e60f8205":[3,0,2,33,26,1],
-"structocc_1_1xtb_1_1PeriodicSystem.html#ad476fd006650718247d23947962a7e8b":[5,0,2,26,26,3],
-"structocc_1_1xtb_1_1PeriodicSystem.html#ad476fd006650718247d23947962a7e8b":[3,0,2,33,26,3],
-"structocc_1_1xtb_1_1RepulsionEnergyGradient.html":[3,0,2,33,27],
-"structocc_1_1xtb_1_1RepulsionEnergyGradient.html":[5,0,2,26,27],
-"structocc_1_1xtb_1_1RepulsionEnergyGradient.html#ad9f1c051534cebff1727d240be3ea77c":[3,0,2,33,27,1]
+"structocc_1_1xtb_1_1PeriodicSystem.html#a662751c7e4580c497969cea59e26dbfd":[5,0,2,26,26,4]
 };

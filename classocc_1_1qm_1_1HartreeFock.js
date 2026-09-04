@@ -6,6 +6,7 @@ var classocc_1_1qm_1_1HartreeFock =
     [ "compute_effective_core_potential_matrix", "classocc_1_1qm_1_1HartreeFock.html#ab02eb658d51353f91ee1a62a8c003e51", null ],
     [ "compute_electronic_multipoles", "classocc_1_1qm_1_1HartreeFock.html#a399dc9a86a83b8576d7f419876ca277c", null ],
     [ "compute_fock", "classocc_1_1qm_1_1HartreeFock.html#a918643efdca01c353816afc11964dda6", null ],
+    [ "compute_fock_from_density", "classocc_1_1qm_1_1HartreeFock.html#a20f10f74e43b70ba4b04164c0df28740", null ],
     [ "compute_fock_gradient", "classocc_1_1qm_1_1HartreeFock.html#a48605d86828f75c91e1075762e2b3f3b", null ],
     [ "compute_fock_mixed_basis", "classocc_1_1qm_1_1HartreeFock.html#a99c6cc6b6e10976120945d1a62c0763b", null ],
     [ "compute_J", "classocc_1_1qm_1_1HartreeFock.html#aef832e14f5e69e7bad61f3a9e628a3e9", null ],

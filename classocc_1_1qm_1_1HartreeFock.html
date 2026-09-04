@@ -165,6 +165,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a48605d86828f75c91e1075762e2b3f3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a99c6cc6b6e10976120945d1a62c0763b" id="r_a99c6cc6b6e10976120945d1a62c0763b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a99c6cc6b6e10976120945d1a62c0763b">compute_fock_mixed_basis</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo_minbs, const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;bs, bool is_shell_diagonal)</td></tr>
 <tr class="separator:a99c6cc6b6e10976120945d1a62c0763b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20f10f74e43b70ba4b04164c0df28740" id="r_a20f10f74e43b70ba4b04164c0df28740"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a20f10f74e43b70ba4b04164c0df28740">compute_fock_from_density</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
+<tr class="memdesc:a20f10f74e43b70ba4b04164c0df28740"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fock matrix from a density already expressed in this method's own basis.  <br /></td></tr>
+<tr class="separator:a20f10f74e43b70ba4b04164c0df28740"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a19dfe5eeae97f45eece5da3adda6ea15" id="r_a19dfe5eeae97f45eece5da3adda6ea15"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1JKPair.html">JKPair</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a19dfe5eeae97f45eece5da3adda6ea15">compute_JK</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
 <tr class="separator:a19dfe5eeae97f45eece5da3adda6ea15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3cc3fba033cd376cac2196de2434f1b3" id="r_a3cc3fba033cd376cac2196de2434f1b3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1JKTriple.html">JKTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html#a3cc3fba033cd376cac2196de2434f1b3">compute_JK_gradient</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()) const</td></tr>
@@ -424,6 +427,46 @@ template&lt;int order&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a20f10f74e43b70ba4b04164c0df28740" name="a20f10f74e43b70ba4b04164c0df28740"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20f10f74e43b70ba4b04164c0df28740">&#9670;&#160;</a></span>compute_fock_from_density()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::qm::HartreeFock::compute_fock_from_density </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>Schwarz</em> = <code><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Fock matrix from a density already expressed in this method's own basis. </p>
+<p>The conventional four-centre build, which reads <code>mo.D</code> and screens on it as well as on Schwarz. Density fitting and COSX cannot serve here: both build exchange from the occupied coefficients, and a guess has a density before it has any orbitals.</p>
+<p>Distinct from <code>compute_fock_mixed_basis</code>, which exists to project a density out of a <em>different</em> basis. Handing that function this method's own basis makes it duplicate every shell as auxiliary and run the full four-index loop unscreened &ndash; on a 566-function system that cost 256 s against 59 s for the whole rest of an <a class="el" href="structocc_1_1qm_1_1SCF.html">SCF</a> iteration. </p>
 
 </div>
 </div>

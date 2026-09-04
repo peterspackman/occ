@@ -163,6 +163,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aee54f309b6b908e9966e6468ff98959c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af404247b63c5d5712be698f27f2421b6" id="r_af404247b63c5d5712be698f27f2421b6"><td class="memItemLeft" align="right" valign="top">Mat&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#af404247b63c5d5712be698f27f2421b6">compute_fock</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const Mat &amp;Schwarz=Mat()) const</td></tr>
 <tr class="separator:af404247b63c5d5712be698f27f2421b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d0898d87bdc515c6a5931bb53cb8fa0" id="r_a3d0898d87bdc515c6a5931bb53cb8fa0"><td class="memItemLeft" align="right" valign="top">Mat&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a3d0898d87bdc515c6a5931bb53cb8fa0">compute_fock_from_density</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo, const Mat &amp;Schwarz=Mat()) const</td></tr>
+<tr class="separator:a3d0898d87bdc515c6a5931bb53cb8fa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91871373bc64208de0643420d61869df" id="r_a91871373bc64208de0643420d61869df"><td class="memItemLeft" align="right" valign="top">Mat&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a91871373bc64208de0643420d61869df">compute_fock_mixed_basis</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;mo_bs, const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">qm::AOBasis</a> &amp;bs, bool is_shell_diagonal)</td></tr>
 <tr class="separator:a91871373bc64208de0643420d61869df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d40cecadda55a6082b73f7079f2435f" id="r_a9d40cecadda55a6082b73f7079f2435f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a9d40cecadda55a6082b73f7079f2435f">set_solvent</a> (const std::string &amp;solvent)</td></tr>
@@ -502,6 +504,44 @@ template&lt;typename Proc &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">Mat <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::compute_fock </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
+          <td class="paramname"><em>mo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Mat &amp;&#160;</td>
+          <td class="paramname"><em>Schwarz</em> = <code>Mat()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3d0898d87bdc515c6a5931bb53cb8fa0" name="a3d0898d87bdc515c6a5931bb53cb8fa0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d0898d87bdc515c6a5931bb53cb8fa0">&#9670;&#160;</a></span>compute_fock_from_density()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Proc &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Mat <a class="el" href="classocc_1_1solvent_1_1SolvationCorrectedProcedure.html">occ::solvent::SolvationCorrectedProcedure</a>&lt; Proc &gt;::compute_fock_from_density </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">MolecularOrbitals</a> &amp;&#160;</td>
           <td class="paramname"><em>mo</em>, </td>

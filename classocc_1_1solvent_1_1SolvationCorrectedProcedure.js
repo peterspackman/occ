@@ -10,6 +10,7 @@ var classocc_1_1solvent_1_1SolvationCorrectedProcedure =
     [ "compute_electronic_multipole_matrices", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a2a55a4f56f1f5ca0531ea2cdf78838b9", null ],
     [ "compute_electronic_multipoles", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a9a5fbe899b59ffb2d27b65e39247223b", null ],
     [ "compute_fock", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#af404247b63c5d5712be698f27f2421b6", null ],
+    [ "compute_fock_from_density", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a3d0898d87bdc515c6a5931bb53cb8fa0", null ],
     [ "compute_fock_mixed_basis", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a91871373bc64208de0643420d61869df", null ],
     [ "compute_kinetic_matrix", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a444bee11238b6bcf639eeac109d1726c", null ],
     [ "compute_nuclear_attraction_matrix", "classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#ae4d827edea2ffe93c013a5ad86725041", null ],
