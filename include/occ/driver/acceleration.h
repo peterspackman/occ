@@ -239,7 +239,10 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
   if (!accel.df_basis.empty()) {
     proc.set_density_fitting_basis(accel.df_basis,
                                    config.basis.df_auto_threshold);
-    // Leave the DF store policy at Policy::Choose unless the user forces direct.
+    // Direct is the default -- storing the three-centre integrals needs
+    // nbf^2 x ndf doubles, which is what exhausted the browser heap. The flag
+    // is kept because it still forces the issue for a caller that has changed
+    // the policy itself; on the default path it is a no-op.
     if (config.method.use_direct_df_kernels)
       proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
     if (config.method.use_split_ri_j)

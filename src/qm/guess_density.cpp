@@ -81,8 +81,11 @@ Mat compute_sap_matrix(const std::vector<occ::core::Atom> &atoms,
   // AuH, 1700 on a two-coordinate Au(I) complex.
   //
   // Drop the SAP contribution on those centres and keep it everywhere else.
+  // `AOBasis` fills this with one zero per atom, so it is never empty --
+  // emptiness does not mean "no ECP", and testing it ran the whole shell
+  // filter below on every system.
   const auto &ecp_electrons = basis.ecp_electrons();
-  if (!ecp_electrons.empty()) {
+  if (basis.total_ecp_electrons() > 0) {
     const auto &all_shells = sap_basis.shells();
     const auto &shell_to_atom = sap_basis.shell_to_atom();
     std::vector<Shell> kept;
@@ -107,7 +110,6 @@ Mat compute_sap_matrix(const std::vector<occ::core::Atom> &atoms,
   engine.set_auxiliary_basis(sap_basis.shells(), false); // true = dummy atoms
 
   const auto nbf = basis.nbf();
-  const auto naux = sap_basis.nbf();
   Mat V_sap = Mat::Zero(nbf, nbf);
 
   // The fit expands the screened electronic charge Z^el(r) in error

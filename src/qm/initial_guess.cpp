@@ -219,7 +219,7 @@ struct AtomicDensity {
 /// every element. The density comes back spin-summed and normalised to half
 /// the atom's electron count, or empty if the atom could not be set up.
 AtomicDensity converge_atom(const core::Atom &atom, const AOBasis &basis,
-                            size_t atom_index) {
+                            size_t atom_index) try {
   std::vector<gto::Shell> shells;
   for (const int s : basis.atom_to_shell()[atom_index])
     shells.push_back(basis[s]);
@@ -298,6 +298,16 @@ AtomicDensity converge_atom(const core::Atom &atom, const AOBasis &basis,
     result.density = block::a(mo.D) + block::b(mo.D);
   }
   return result;
+} catch (const std::exception &e) {
+  // Setting the atom up can throw as readily as converging it: building the
+  // one-atom basis, constructing the method, and settling the charge and
+  // multiplicity all do, and all of them sit outside the inner try. The
+  // header promises `build_guess` always hands back a usable starting point,
+  // so an atom that cannot be set up drops out with an empty density and the
+  // caller warns and carries on with the rest.
+  log::debug("atomic guess for Z = {} could not be set up ({})",
+             atom.atomic_number, e.what());
+  return {};
 }
 
 Guess build_atomic_scf(const GuessRequest &request) {

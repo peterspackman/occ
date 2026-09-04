@@ -66,6 +66,15 @@ public:
     if (m_df_engine != nullptr) {
       m_df_engine->set_precision(precision);
     }
+    // The attenuated-operator twins take their precision at construction, so
+    // they would otherwise keep whatever was current when they were first
+    // built and quietly disagree with the engines beside them.
+    if (m_lr_engine != nullptr) {
+      m_lr_engine->set_precision(precision);
+    }
+    if (m_lr_df_engine != nullptr) {
+      m_lr_df_engine->set_precision(precision);
+    }
     // Note: COSX doesn't have precision setting
   }
 

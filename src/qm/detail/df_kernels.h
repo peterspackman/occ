@@ -77,9 +77,12 @@ std::vector<T> reduce_thread_local_vectors(const occ::parallel::thread_local_sto
 template<typename KMatType>
 void contract_exchange_matrices(const std::vector<Mat>& iuP, const CoulombMetric& V_LLt, 
                                KMatType& K_block) {
-  // One entry per occupied orbital, so an empty spin channel leaves nothing
-  // to contract: a spin-polarised system with no beta electrons, or the very
-  // first Fock build of a guess that supplies a density but no orbitals.
+  // One entry per occupied orbital, so a system with no occupied orbitals at
+  // all leaves nothing to contract -- the very first Fock build of a guess
+  // that supplied a density but no orbitals. (An empty beta channel does not
+  // reach here: the unrestricted kernel sizes both spin workspaces from
+  // `mo.Cocc.cols()`, so a beta-empty system gets a zero-filled `iuPb`, not an
+  // empty one.)
   if (iuP.empty())
     return;
   Mat X(iuP[0].rows(), iuP[0].cols());
