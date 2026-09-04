@@ -158,6 +158,19 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                   "maximum number of SCF iterations")
       ->check(CLI::PositiveNumber);
 
+  scf->add_option("--guess", config->method.guess,
+                  "SCF initial guess: auto (default; SOAD where the minimal "
+                  "basis covers every element, converged atomic densities "
+                  "otherwise) | core (bare core Hamiltonian) | soad | sap "
+                  "(superposition of atomic potentials; no ECP support) | "
+                  "atomic (one small SCF per element)")
+      ->transform(CLI::CheckedTransformer(
+          std::map<std::string, occ::qm::GuessKind>{
+              occ::qm::guess_kind_names().begin(),
+              occ::qm::guess_kind_names().end()},
+          CLI::ignore_case))
+      ->option_text("auto|core|soad|sap|atomic");
+
   // SCF acceleration policy (density fitting / COSX selection)
   scf->add_option("--ri", config->method.ri_policy,
                   "SCF acceleration: auto (default; DF-J everywhere, DF-K below "

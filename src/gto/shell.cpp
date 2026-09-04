@@ -619,6 +619,11 @@ AOBasis AOBasis::load_sap_basis(const AtomList &atoms) {
           shells.push_back(
               Shell(s.angular_momentum[i % s.angular_momentum.size()],
                     s.exponents, {s.coefficients[i]}, origin));
+          // The coefficients multiply unit-*charge* Gaussians
+          // (a/pi)^(3/2) exp(-a r^2), not unit-norm basis functions, and
+          // libcint folds a 1/(2 sqrt(pi)) common factor into every l=0
+          // shell -- so the stored coefficient must be 2 a^(3/2)/pi, which is
+          // what this computes. The usual GTO normalisation is wrong here.
           shells[nsh].normalize_charge_distribution_primitives();
           nsh++;
         }
@@ -629,16 +634,6 @@ AOBasis AOBasis::load_sap_basis(const AtomList &atoms) {
       throw std::logic_error(errmsg);
     }
   }
-  log::info("BEFORE CONSTRUCTOR");
-  for (size_t shell_idx = 0; shell_idx < shells.size(); shell_idx++) {
-    auto &sh = shells[shell_idx];
-    for (int i = 0; i < sh.num_primitives(); i++) {
-      log::info("{} {:12.6f} {:12.6f}", i, sh.exponents(i),
-                sh.contraction_coefficients(i, 0));
-    }
-    log::info("sum {}", sh.contraction_coefficients.sum());
-  }
-  log::info("DONE BEFORE CONSTRUCTOR");
   AOBasis result(atoms, shells, canonical_name);
   return result;
 }

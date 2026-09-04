@@ -11,6 +11,7 @@ add_library(occ_qm_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/fitting_basis.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gradients.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/guess_density.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/initial_guess.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_2c.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_3c.cpp"

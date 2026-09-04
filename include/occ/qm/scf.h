@@ -9,7 +9,7 @@
 #include <occ/qm/convergence_accelerator.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/external_potential.h>
-#include <occ/qm/guess_density.h>
+#include <occ/qm/initial_guess.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/opmatrix.h>
 #include <occ/qm/orthogonalizer.h>
@@ -64,13 +64,18 @@ template <SCFMethod Procedure> struct SCF {
 
   const MolecularOrbitals &molecular_orbitals() const;
 
-  Mat compute_soad(const Mat &overlap_minbs) const;
   void set_conditioning_orthogonalizer();
   void set_core_matrices();
   void set_initial_guess_from_wfn(const Wavefunction &wfn);
 
+  /// Which guess to start from. `GuessKind::Auto`, the default, lets
+  /// `select_guess` decide per system.
+  void set_guess_kind(GuessKind kind) { m_guess_kind = kind; }
+  GuessKind guess_kind() const { return m_guess_kind; }
+
+  /// Build the starting orbitals: core Hamiltonian, plus whatever the
+  /// selected guess contributes, diagonalised.
   void compute_initial_guess();
-  void compute_sap_guess();
 
   /// Generic external-potential entry point. `V_ext_single` is a single
   /// `nbf x nbf` one-electron operator in the AO basis — SCF expands it
@@ -94,6 +99,9 @@ template <SCFMethod Procedure> struct SCF {
   }
 
   void update_scf_energy(bool incremental);
+
+  /// Raise the virtual orbitals by `shift` Hartree, in place.
+  void apply_level_shift(Mat &F, double shift) const;
   inline const char *scf_kind() const;
   double compute_scf_energy();
 
@@ -124,6 +132,15 @@ template <SCFMethod Procedure> struct SCF {
   double next_reset_threshold{0.0};
   size_t last_reset_iteration{0};
   bool m_have_initial_guess{false};
+
+private:
+  /// Spread a guess's one-electron potential over this calculation's spin
+  /// blocks and add it to `ctx.F`.
+  void add_guess_potential(const Mat &potential);
+  /// Build the Fock contribution of a guess density and add it to `ctx.F`.
+  void add_guess_density(const Guess &guess);
+
+  GuessKind m_guess_kind{GuessKind::Auto};
 };
 
 } // namespace occ::qm

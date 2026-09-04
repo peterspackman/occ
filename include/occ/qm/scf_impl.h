@@ -1,5 +1,8 @@
 #pragma once
+#include <ankerl/unordered_dense.h>
+#include <limits>
 #include <fmt/format.h>
+#include <occ/qm/hf.h>
 
 namespace occ::qm {
 
@@ -148,90 +151,6 @@ const std::vector<occ::core::Atom> &SCF<P>::atoms() const {
   return m_procedure.atoms();
 }
 
-template <SCFMethod P>
-Mat SCF<P>::compute_soad(const Mat &overlap_minbs) const {
-  // computes Superposition-Of-Atomic-Densities guess for the
-  // molecular density matrix in minimal basis; occupies subshells by
-  // smearing electrons evenly over the orbitals compute number of
-  // atomic orbitals
-  size_t nao = 0;
-  bool spherical = m_procedure.aobasis().is_pure();
-  for (const auto &atom : atoms()) {
-    const auto Z = atom.atomic_number;
-    nao += occ::qm::guess::minimal_basis_nao(Z, spherical);
-  }
-
-  // compute the minimal basis density
-  Mat D_minbs = Mat::Zero(nao, nao);
-  size_t ao_offset = 0; // first AO of this atom
-  const auto &frozen_electrons = m_procedure.frozen_electrons();
-  size_t atom_index = 0;
-  occ::log::debug("Frozen electrons vector size: {}", frozen_electrons.size());
-  for (size_t i = 0; i < frozen_electrons.size(); i++) {
-    occ::log::debug("Atom {}: {} frozen electrons", i, frozen_electrons[i]);
-  }
-  for (const auto &atom : atoms()) {
-    const auto Z = atom.atomic_number;
-    
-    // Handle frozen electrons for ECP atoms
-    double remaining_frozen = 0.0;
-    if (atom_index < frozen_electrons.size()) {
-      remaining_frozen = static_cast<double>(frozen_electrons[atom_index]);
-    }
-
-    auto occvec = occ::qm::guess::minimal_basis_occupation_vector(Z, spherical);
-
-    // Remove frozen electrons from inner shells first
-    if (remaining_frozen > 0.0) {
-      int offset = 0;
-      while (remaining_frozen > 0.0 && offset < occvec.size()) {
-        double r = std::min(occvec[offset], remaining_frozen);
-        occvec[offset] -= r;
-        remaining_frozen -= r;
-        offset++;
-      }
-      occ::log::debug("Atom {} (Z={}): removed {} frozen electrons from minimal basis occupation", 
-                     atom_index, Z, static_cast<double>(frozen_electrons[atom_index]) - remaining_frozen);
-    }
-
-    occ::log::debug("Occupation vector for atom {} sum: {}", 
-                   atom_index, std::accumulate(occvec.begin(), occvec.end(), 0.0));
-    int bf = 0;
-    for (const auto &occ : occvec) {
-      D_minbs(ao_offset + bf, ao_offset + bf) = occ;
-      bf++;
-    }
-    ao_offset += occvec.size();
-    atom_index++;
-  }
-
-  int c = charge();
-  // smear the charge across all shells
-  if (c != 0) {
-    double v = static_cast<double>(c) / D_minbs.rows();
-    for (int i = 0; i < D_minbs.rows(); i++) {
-      D_minbs(i, i) -= v;
-    }
-  }
-
-  for (int bf = 0; bf < D_minbs.rows(); bf++) {
-    const double ovlp = overlap_minbs(bf, bf);
-    if (std::abs(ovlp - 1.0) > 1e-6) {
-      occ::log::debug("Normalising overlap min basis bf{} = {}", bf, ovlp);
-    }
-    D_minbs(bf, bf) /= ovlp;
-  }
-  double diagonal_sum = (D_minbs * overlap_minbs).diagonal().sum();
-  ;
-  double difference = diagonal_sum - ctx.n_electrons;
-  occ::log::debug("Minimal basis guess diagonal sum: {}", diagonal_sum);
-  if (std::abs(difference) > 1e-6)
-    occ::log::warn(
-        "Warning! Difference between diagonal sum and num electrons: {}",
-        difference);
-  return D_minbs * 0.5; // we use densities normalized to # of electrons/2
-}
-
 template <SCFMethod P> void SCF<P>::set_conditioning_orthogonalizer() {
   if (ctx.mo.kind == Unrestricted) {
     ctx.orthogonalizer.build(block::a(ctx.S));
@@ -297,9 +216,53 @@ void SCF<P>::set_initial_guess_from_wfn(const Wavefunction &wfn) {
   set_conditioning_orthogonalizer();
 }
 
+template <SCFMethod P>
+void SCF<P>::add_guess_potential(const Mat &potential) {
+  // The guess builds one nbf x nbf operator; spread it over whichever spin
+  // blocks this calculation carries, exactly as `set_core_matrices` does for
+  // the nuclear attraction.
+  switch (ctx.mo.kind) {
+  case Restricted:
+    ctx.F += potential;
+    break;
+  case Unrestricted:
+    block::a(ctx.F) += potential;
+    block::b(ctx.F) += potential;
+    break;
+  case General:
+    block::aa(ctx.F) += potential;
+    block::bb(ctx.F) += potential;
+    break;
+  }
+}
+
+template <SCFMethod P>
+void SCF<P>::add_guess_density(const Guess &guess) {
+  // Only a density is known here -- there are no orbitals yet -- so this has
+  // to be the density-only Fock build, and the orbitals come out of
+  // diagonalising the result. `compute_fock_mixed_basis` takes a single
+  // square density normalised to half the electron count and replicates its
+  // contribution across the spin blocks, which is all a guess needs: the
+  // first real iteration resolves the spins.
+  occ::qm::MolecularOrbitals mo_guess;
+  mo_guess.kind = ctx.mo.kind;
+  mo_guess.n_ao = guess.density.rows();
+  mo_guess.n_alpha = n_alpha();
+  mo_guess.n_beta = n_beta();
+  mo_guess.D = guess.density;
+  ctx.F += m_procedure.compute_fock_mixed_basis(
+      mo_guess, guess.density_basis, guess.density_is_shell_diagonal);
+}
+
 template <SCFMethod P> void SCF<P>::compute_initial_guess() {
   if (m_have_initial_guess)
     return;
+
+  // The guess needs the occupation counts to be settled -- they decide how
+  // many orbitals come out of the diagonalisation, and density-fitted
+  // exchange is built from the occupied coefficients. Idempotent, so calling
+  // it here costs nothing when the SCF driver has already done it.
+  update_occupied_orbital_count();
 
   log::info("Computing core hamiltonian");
   set_core_matrices();
@@ -308,91 +271,40 @@ template <SCFMethod P> void SCF<P>::compute_initial_guess() {
   set_conditioning_orthogonalizer();
   occ::timing::stop(occ::timing::category::la);
 
-  occ::timing::start(occ::timing::category::guess);
-  
-  if (m_procedure.have_effective_core_potentials()) {
-    log::info("Using core Hamiltonian initial guess for ECP system");
-    // For ECP systems, just use the core Hamiltonian as initial guess
-    // The Fock matrix is already set to H = T + V + V_ecp + V_ext
-    ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, ctx.F);
-    m_have_initial_guess = true;
-    occ::timing::stop(occ::timing::category::guess);
-    return;
-  }
+  const GuessKind kind = select_guess(m_guess_kind, m_procedure.aobasis());
 
-  log::info("Computing initial guess using SOAD in minimal basis");
-  Mat D_minbs;
-  if (m_procedure.aobasis().name() == OCC_MINIMAL_BASIS) {
-    D_minbs = compute_soad(
-        m_procedure.compute_overlap_matrix()); // compute guess in minimal basis
-    switch (ctx.mo.kind) {
-    case Restricted:
-      ctx.mo.D = D_minbs;
-      break;
-    case Unrestricted:
-      block::a(ctx.mo.D) =
-          D_minbs * (static_cast<double>(n_alpha()) / ctx.n_electrons);
-      block::b(ctx.mo.D) =
-          D_minbs * (static_cast<double>(n_beta()) / ctx.n_electrons);
-      break;
-    case General:
-      block::aa(ctx.mo.D) = D_minbs * 0.5;
-      block::bb(ctx.mo.D) = D_minbs * 0.5;
-      break;
-    }
-  } else {
-    // if basis != minimal basis, map non-representable SOAD guess
-    // into the AO basis
-    // by diagonalizing a Fock matrix
-    log::debug("Projecting minimal basis guess into atomic orbital "
-               "basis...");
-    const auto tstart = std::chrono::high_resolution_clock::now();
-    auto minbs = occ::gto::AOBasis::load_minimal_basis(m_procedure.atoms());
-    minbs.set_pure(m_procedure.aobasis().is_pure());
-    D_minbs = compute_soad(m_procedure.compute_overlap_matrix_for_basis(
-        minbs)); // compute guess in minimal basis
-    occ::log::debug("Loaded minimal basis {}", OCC_MINIMAL_BASIS);
-    occ::qm::MolecularOrbitals mo_minbs;
-    mo_minbs.kind = ctx.mo.kind;
-    mo_minbs.D = D_minbs;
-    ctx.F += m_procedure.compute_fock_mixed_basis(mo_minbs, minbs, true);
-    ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, ctx.F);
+  // Time the guess only when there is one, which also keeps the category from
+  // being entered twice over. The atomic guess runs a nested SCF per element,
+  // each starting from the core Hamiltonian; `StopWatch::start` simply
+  // overwrites the start point, so a nested region would leave the outer one
+  // measuring from the wrong instant. Guarding on the kind means the nested
+  // calculations never enter the category at all, and the core guess -- which
+  // is free by definition -- is the only thing that goes unmeasured.
+  const bool timed = kind != GuessKind::Core;
+  if (timed)
+    occ::timing::start(occ::timing::category::guess);
 
-    const auto tstop = std::chrono::high_resolution_clock::now();
-    const std::chrono::duration<double> time_elapsed = tstop - tstart;
-    log::debug("SOAD projection into AO basis took {:.5f} s",
-               time_elapsed.count());
-  }
-  m_have_initial_guess = true;
-  occ::timing::stop(occ::timing::category::guess);
-}
+  const GuessRequest request{m_procedure.aobasis(), charge(), ctx.n_electrons};
+  const Guess guess = build_guess(kind, request);
+  // Report what was built, not what was asked for: `build_guess` falls back
+  // to the core Hamiltonian when a guess cannot be built for this system.
+  log::info("Initial guess: {}", guess_kind_name(guess.kind));
 
-template <SCFMethod P> void SCF<P>::compute_sap_guess() {
-  if (m_have_initial_guess)
-    return;
+  if (guess.potential.size() > 0)
+    add_guess_potential(guess.potential);
+  else if (guess.density.size() > 0)
+    add_guess_density(guess);
 
-  log::info("Computing SAP initial guess");
-
-  // Set core matrices (T, V, H)
-  set_core_matrices();
-  
-  // Ensure correct electron counts and occupation numbers
-  update_occupied_orbital_count();
-
-  // Compute SAP potential matrix
-  Mat V_sap =
-      occ::qm::guess::compute_sap_matrix(atoms(), m_procedure.aobasis());
-
-  // Form effective Hamiltonian: H_eff = H_core + V_sap
-  ctx.F = ctx.H + V_sap;
-
-  // Set up orthogonalization
-  set_conditioning_orthogonalizer();
-
-  // Diagonalize effective Hamiltonian to get initial orbitals
+  // Every guess ends here: whatever it added to the core Hamiltonian, the
+  // orbitals come from diagonalising the result. That also means every guess
+  // leaves behind a full set of orbitals, which the first Fock build needs --
+  // density-fitted exchange is built from the occupied coefficients, not the
+  // density.
   ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, ctx.F);
-
   m_have_initial_guess = true;
+
+  if (timed)
+    occ::timing::stop(occ::timing::category::guess);
 }
 
 template <SCFMethod P>
@@ -427,6 +339,44 @@ void SCF<P>::set_external_potential(const Mat &V_ext_single,
   ctx.energy["nuclear." + ctx.external_potential_label] = nuclear_energy;
   log::info("External potential '{}' set: nuclear–external energy = {:.8f} Ha",
             label, nuclear_energy);
+}
+
+template <SCFMethod P>
+void SCF<P>::apply_level_shift(Mat &F, double shift) const {
+  // Saunders-Hillier: F' = F + b (S - S P_occ S), with P_occ the occupied
+  // density in the AO metric. S - S P_occ S is S times the virtual projector,
+  // so the shift lands entirely on the virtual block and the occupied
+  // eigenvalues are untouched.
+  //
+  // The spin-resolved kinds carry one Fock block per spin, each with its own
+  // occupied space, so each is shifted against its own density.
+  switch (ctx.mo.kind) {
+  case SpinorbitalKind::Restricted: {
+    // D is the total density, i.e. twice the occupied projector.
+    const Mat SDS = ctx.S * (0.5 * ctx.mo.D) * ctx.S;
+    F.noalias() += shift * (ctx.S - SDS);
+    break;
+  }
+  case SpinorbitalKind::Unrestricted: {
+    const Mat Sa = ctx.S * block::a(ctx.mo.D) * ctx.S;
+    const Mat Sb = ctx.S * block::b(ctx.mo.D) * ctx.S;
+    block::a(F).noalias() += shift * (ctx.S - Sa);
+    block::b(F).noalias() += shift * (ctx.S - Sb);
+    break;
+  }
+  case SpinorbitalKind::General: {
+    // The overlap is block diagonal but the density is not: spin mixing puts
+    // weight in the ab/ba blocks, and dropping them would shift against a
+    // projector that is not idempotent.
+    block::aa(F).noalias() +=
+        shift * (ctx.S - ctx.S * block::aa(ctx.mo.D) * ctx.S);
+    block::bb(F).noalias() +=
+        shift * (ctx.S - ctx.S * block::bb(ctx.mo.D) * ctx.S);
+    block::ab(F).noalias() -= shift * (ctx.S * block::ab(ctx.mo.D) * ctx.S);
+    block::ba(F).noalias() -= shift * (ctx.S * block::ba(ctx.mo.D) * ctx.S);
+    break;
+  }
+  }
 }
 
 template <SCFMethod P> void SCF<P>::update_scf_energy(bool incremental) {
@@ -552,6 +502,19 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
 
     if (diis_error < next_reset_threshold || iter - last_reset_iteration >= 8)
       reset_incremental_fock_formation = true;
+
+    // Level shift the virtuals while the density is still far from converged.
+    //
+    // Adding b * (S - S P_occ S) raises every virtual orbital by b Hartree
+    // and leaves the occupied block alone, which widens the gap the next
+    // diagonalisation sees and stops occupied and virtual orbitals trading
+    // places between cycles. `effective_level_shift` returns zero once the
+    // commutator drops below its threshold, so the converged solution is the
+    // unshifted one and the energy is unaffected.
+    const double shift =
+        convergence_settings.effective_level_shift(diis_error);
+    if (shift != 0.0)
+      apply_level_shift(F_diis, shift);
 
     ctx.orthogonalizer.orthogonalize_molecular_orbitals(ctx.mo, F_diis);
     D_diff = ctx.mo.D - D_last;

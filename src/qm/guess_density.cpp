@@ -1,125 +1,108 @@
+#include <algorithm>
+#include <array>
 #include "detail/three_center_kernels.h"
 #include <occ/core/log.h>
 #include <occ/qm/guess_density.h>
 #include <occ/qm/integral_engine.h>
-// modified routines from libint2
-// include/libint2/chemistry/sto3g_atomic_density.h
 
 namespace occ::qm::guess {
 
-namespace impl {
-
-/* compute orbital occupation numbers for a subshell created
- * by smearing at most num_electrons_remaining
- * (corresponds to spherical averaging)
- */
-
-void update_occupation_subshell(std::vector<double> &destination, int size,
-                                int &num_electrons_remaining) {
-  const int electrons_allocated =
-      (num_electrons_remaining > 2 * size) ? 2 * size : num_electrons_remaining;
-  num_electrons_remaining -= electrons_allocated;
-  const double electrons_per_orbital =
-      static_cast<double>(electrons_allocated) / size;
-  for (size_t f = 0; f < size; f++) {
-    destination.push_back(electrons_per_orbital);
-  }
+int ground_state_multiplicity(int Z) {
+  // Indexed by atomic number; entry 0 is a placeholder so Z indexes directly.
+  static constexpr std::array<int, 119> multiplicities{{
+      0,
+      2, 1,                                                    // H  - He
+      2, 1, 2, 3, 4, 3, 2, 1,                                  // Li - Ne
+      2, 1, 2, 3, 4, 3, 2, 1,                                  // Na - Ar
+      2, 1,                                                    // K  - Ca
+      2, 3, 4, 7, 6, 5, 4, 3, 2, 1,                            // Sc - Zn
+      2, 3, 4, 3, 2, 1,                                        // Ga - Kr
+      2, 1,                                                    // Rb - Sr
+      2, 3, 6, 7, 6, 5, 4, 1, 2, 1,                            // Y  - Cd
+      2, 3, 4, 3, 2, 1,                                        // In - Xe
+      2, 1,                                                    // Cs - Ba
+      2, 1, 4, 5, 6, 7, 8, 9, 6, 5, 4, 3, 2, 1, 2,             // La - Lu
+      3, 4, 5, 6, 5, 4, 3, 2, 1,                               // Hf - Hg
+      2, 3, 4, 3, 2, 1,                                        // Tl - Rn
+      2, 1,                                                    // Fr - Ra
+      2, 3, 4, 5, 6, 7, 8, 9, 6, 5, 4, 3, 2, 1, 2,             // Ac - Lr
+      3, 4, 5, 6, 5, 4, 3, 2, 1,                               // Rf - Cn
+      2, 3, 4, 3, 2, 1,                                        // Nh - Og
+  }};
+  if (Z < 1 || Z >= static_cast<int>(multiplicities.size()))
+    return 0;
+  return multiplicities[Z];
 }
 
-} // namespace impl
+std::vector<SubshellOccupation> minimal_basis_subshell_occupations(int Z) {
+  // Madelung filling order, and plain aufbau within it -- so copper comes out
+  // 4s2 3d9 rather than its true 4s1 3d10. A guess wants a smooth, spherical
+  // starting density more than it wants the right term symbol, and the
+  // exceptions are what the atomic-SCF guess is for.
+  static constexpr int order[][2] = {
+      {1, 0},                          // 1s
+      {2, 0}, {2, 1},                  // 2s 2p
+      {3, 0}, {3, 1},                  // 3s 3p
+      {4, 0}, {3, 2}, {4, 1},          // 4s 3d 4p
+      {5, 0}, {4, 2}, {5, 1},          // 5s 4d 5p
+      {6, 0}, {4, 3}, {5, 2}, {6, 1},  // 6s 4f 5d 6p
+      {7, 0}, {5, 3}, {6, 2}, {7, 1},  // 7s 5f 6d 7p
+  };
 
-int minimal_basis_nao(int Z, bool spherical) {
-  int nao = 1;
-  if (Z == 1 || Z == 2) // H, He
-    nao = 1;
-  else if (Z <= 10) // Li - Ne
-    nao = 5;
-  else if (Z <= 18) // Na - Ar
-    nao = 9;
-  else if (Z < 20) // K, Ca
-    nao = 13;
-  else if (Z <= 36) // Sc - Kr
-    nao = spherical ? 18 : 19;
-  else if (Z <= 54) // Rb - Xe
-    nao = spherical ? 27 : 29;
-  else if (Z <= 86)
-    nao = spherical ? 40 : 46; // 3 D functions, 1 F = 6 extra functions
-  else
-    throw "minimal basis not defined for elements Z > 86";
-  return nao;
-}
-
-std::vector<double> minimal_basis_occupation_vector(size_t Z, bool spherical) {
-
-  using impl::update_occupation_subshell;
-  std::vector<double> occvec;
-  size_t nao = minimal_basis_nao(Z, spherical);
-  occvec.reserve(nao);
-
-  int num_of_electrons = Z;
-  int dsize = spherical ? 5 : 6;
-  int fsize = spherical ? 7 : 10;
-
-  // Fill 1s
-  update_occupation_subshell(occvec, 1, num_of_electrons);
-
-  // Fill 2s, 2p
-  if (Z > 2) {
-    update_occupation_subshell(occvec, 1, num_of_electrons); // 2s
-    update_occupation_subshell(occvec, 3, num_of_electrons); // 2p
+  std::vector<SubshellOccupation> occupations;
+  int remaining = Z;
+  for (const auto &[n, l] : order) {
+    if (remaining <= 0)
+      break;
+    const int capacity = 2 * (2 * l + 1);
+    const int electrons = std::min(remaining, capacity);
+    occupations.push_back({n, l, static_cast<double>(electrons)});
+    remaining -= electrons;
   }
-
-  // Fill 3s, 3p
-  if (Z > 10) {
-    update_occupation_subshell(occvec, 1, num_of_electrons); // 3s
-    update_occupation_subshell(occvec, 3, num_of_electrons); // 3p
-  }
-
-  // Fill 4s, 3d, 4p
-  if (Z > 18) {
-    update_occupation_subshell(occvec, 1, num_of_electrons);     // 4s
-    update_occupation_subshell(occvec, dsize, num_of_electrons); // 3d
-    update_occupation_subshell(occvec, 3, num_of_electrons);     // 4p
-  }
-
-  // Fill 5s, 4d, 5p
-  if (Z > 36) {
-    update_occupation_subshell(occvec, 1, num_of_electrons);     // 5s
-    update_occupation_subshell(occvec, dsize, num_of_electrons); // 4d
-    update_occupation_subshell(occvec, 3, num_of_electrons);     // 5p
-  }
-
-  // Fill 6s, 4f, 5d, 6p
-  if (Z > 54) {
-    update_occupation_subshell(occvec, 1, num_of_electrons);     // 6s
-    update_occupation_subshell(occvec, fsize, num_of_electrons); // 4f
-    update_occupation_subshell(occvec, dsize, num_of_electrons); // 5d
-    update_occupation_subshell(occvec, 3, num_of_electrons);     // 6p
-  }
-
-  // Fill 7s, 5f, 6d, 7p
-  if (Z > 86) {
-    update_occupation_subshell(occvec, 1, num_of_electrons);     // 7s
-    update_occupation_subshell(occvec, fsize, num_of_electrons); // 5f
-    update_occupation_subshell(occvec, dsize, num_of_electrons); // 6d
-    update_occupation_subshell(occvec, 3, num_of_electrons);     // 7p
-  }
-
-  // Check for any errors in occupation vector size
-  if (occvec.size() != nao) {
-    occ::log::warn("Inconsistent number of atomic orbitals in minimal basis "
-                   "occupation vector: expected {}, have {}",
-                   nao, occvec.size());
-  }
-  return occvec;
+  if (remaining > 0)
+    occ::log::warn("{} electrons of Z = {} did not fit the minimal basis "
+                   "configuration",
+                   remaining, Z);
+  return occupations;
 }
 
 Mat compute_sap_matrix(const std::vector<occ::core::Atom> &atoms,
-                       const AOBasis &basis,
-                       const std::string &sap_basis_name) {
-  occ::log::debug("Computing SAP matrix using basis: {}", sap_basis_name);
-
+                       const AOBasis &basis) {
   auto sap_basis = AOBasis::load_sap_basis(atoms);
+  occ::log::debug("Computing SAP matrix using {}", sap_basis.name());
+
+  // The GRASP fits are all-electron atomic potentials, but on an ECP atom the
+  // core Hamiltonian this is added to already carries V_ecp together with a
+  // nuclear attraction built from the *effective* charge (Z minus the ECP
+  // electrons). That combination is itself the atom's valence effective
+  // potential, so adding an all-electron SAP potential on top counts the core
+  // twice. The core screening is repulsive for an electron, which is why the
+  // guess came out far too high: 87 Hartree above the converged energy on
+  // AuH, 1700 on a two-coordinate Au(I) complex.
+  //
+  // Drop the SAP contribution on those centres and keep it everywhere else.
+  const auto &ecp_electrons = basis.ecp_electrons();
+  if (!ecp_electrons.empty()) {
+    const auto &all_shells = sap_basis.shells();
+    const auto &shell_to_atom = sap_basis.shell_to_atom();
+    std::vector<Shell> kept;
+    kept.reserve(all_shells.size());
+    for (size_t i = 0; i < all_shells.size(); i++) {
+      const size_t a = shell_to_atom[i];
+      if (a < ecp_electrons.size() && ecp_electrons[a] > 0) {
+        occ::log::debug("SAP: skipping atom {} (Z={}), its ECP already "
+                        "describes the core",
+                        a, atoms[a].atomic_number);
+        continue;
+      }
+      kept.push_back(all_shells[i]);
+    }
+    if (kept.empty())
+      return Mat::Zero(basis.nbf(), basis.nbf());
+    if (kept.size() != all_shells.size())
+      sap_basis = AOBasis(atoms, kept, sap_basis.name());
+  }
+
   IntegralEngine engine(basis);
   engine.set_auxiliary_basis(sap_basis.shells(), false); // true = dummy atoms
 
@@ -127,8 +110,10 @@ Mat compute_sap_matrix(const std::vector<occ::core::Atom> &atoms,
   const auto naux = sap_basis.nbf();
   Mat V_sap = Mat::Zero(nbf, nbf);
 
-  // Use the existing 3-center kernel to compute (ij|P) integrals
-  // where P are the SAP auxiliary functions
+  // The fit expands the screened electronic charge Z^el(r) in error
+  // functions, which are the Coulomb potentials of unit-charge s-Gaussians:
+  // V^el_ij = -sum_p c_p (ij|a_p). So these are three-centre *two-electron*
+  // integrals, the same ones density fitting uses.
 
   // Lambda to collect 3-center integrals and contract with SAP coefficients
   auto collect_integrals = [&](const IntegralEngine::IntegralResult<3> &args) {
@@ -158,6 +143,8 @@ Mat compute_sap_matrix(const std::vector<occ::core::Atom> &atoms,
   }
 
   occ::log::debug("SAP matrix computed with {} x {} elements", nbf, nbf);
+  // The tabulated coefficients sum to -Z, and the screening enters as
+  // -sum_p c_p (ij|a_p), so the assembled matrix is negated once here.
   return -V_sap;
 }
 

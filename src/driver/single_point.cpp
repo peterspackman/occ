@@ -123,6 +123,7 @@ Wavefunction run_method(Molecule &m, const occ::gto::AOBasis &basis,
 
   SCF<T> scf(proc, SK);
   scf.maxiter = config.method.scf_maxiter;
+  scf.set_guess_kind(config.method.guess);
   occ::log::trace("Setting system charge: {}", config.electronic.charge);
   occ::log::trace("Setting system multiplicity: {}",
                   config.electronic.multiplicity);

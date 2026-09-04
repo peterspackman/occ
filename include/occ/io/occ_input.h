@@ -7,6 +7,7 @@
 #include <occ/core/spinorbital.h>
 #include <occ/crystal/crystal.h>
 #include <occ/numint/grid_settings.h>
+#include <occ/qm/guess_kind.h>
 
 namespace occ::io {
 using occ::core::Element;
@@ -68,6 +69,9 @@ struct MethodInput {
   // disables screening (dense XC build).
   double dft_xc_screening_threshold{1e-10};
   double orbital_smearing_sigma{0.0};
+  // Where the SCF starts from. Auto picks per system; see `select_guess` in
+  // <occ/qm/initial_guess.h>.
+  occ::qm::GuessKind guess{occ::qm::GuessKind::Auto};
   RIPolicy ri_policy{RIPolicy::Auto}; // Automatic DF/COSX selection (see RIPolicy)
   bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
   bool use_split_ri_j{false}; // Use Split-RI-J for Coulomb matrix (Neese 2003)

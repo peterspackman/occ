@@ -86,6 +86,7 @@ catch_discover_tests(interaction_tests)
 add_executable(qm_tests
     "${CMAKE_CURRENT_SOURCE_DIR}/qm_tests.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/qm_benchmarks.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/guess_tests.cpp"
 )
 target_link_libraries(qm_tests PRIVATE occ_qm occ_correlation Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(qm_tests PRIVATE OCC_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
