@@ -110,8 +110,9 @@ $(document).ready(function(){initNavTree('classocc_1_1qm_1_1cosx_1_1SemiNumerica
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aad7c56af759bb8fb24628db4b8897eb3" id="r_aad7c56af759bb8fb24628db4b8897eb3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#aad7c56af759bb8fb24628db4b8897eb3">SemiNumericalExchange</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;, const <a class="el" href="structocc_1_1numint_1_1GridSettings.html">occ::numint::GridSettings</a> &amp;={})</td></tr>
 <tr class="separator:aad7c56af759bb8fb24628db4b8897eb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a84569b4bc4febb96db25f0dcf21f36c1" id="r_a84569b4bc4febb96db25f0dcf21f36c1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a84569b4bc4febb96db25f0dcf21f36c1">compute_K</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">qm::MolecularOrbitals</a> &amp;mo, double precision=std::numeric_limits&lt; double &gt;::epsilon(), const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a>()) const</td></tr>
-<tr class="separator:a84569b4bc4febb96db25f0dcf21f36c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a234c17773cd5ba4f41148a27f7f52466" id="r_a234c17773cd5ba4f41148a27f7f52466"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a234c17773cd5ba4f41148a27f7f52466">compute_K</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">qm::MolecularOrbitals</a> &amp;mo, double precision=std::numeric_limits&lt; double &gt;::epsilon(), const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a> &amp;Schwarz=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a>(), double omega=0.0) const</td></tr>
+<tr class="memdesc:a234c17773cd5ba4f41148a27f7f52466"><td class="mdescLeft">&#160;</td><td class="mdescRight">Seminumerical exchange for one operator.  <br /></td></tr>
+<tr class="separator:a234c17773cd5ba4f41148a27f7f52466"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42b2cd06910186c9d7dfdae0ba63bd9b" id="r_a42b2cd06910186c9d7dfdae0ba63bd9b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a42b2cd06910186c9d7dfdae0ba63bd9b">compute_K_range_separated</a> (const <a class="el" href="structocc_1_1qm_1_1MolecularOrbitals.html">qm::MolecularOrbitals</a> &amp;mo, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>, double <a class="el" href="core_2opmatrix_8h.html#adff2ac04a289a00b32da24ad8a4aa8b6">beta</a>, double omega, double precision=std::numeric_limits&lt; double &gt;::epsilon()) const</td></tr>
 <tr class="memdesc:a42b2cd06910186c9d7dfdae0ba63bd9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fused range-separated exchange: builds the full Hartree-Fock exchange matrix of a range-separated hybrid, K = (alpha+beta)*K[1/r] - beta*K[erf(omega*r)/r], in a SINGLE grid sweep.  <br /></td></tr>
 <tr class="separator:a42b2cd06910186c9d7dfdae0ba63bd9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -134,13 +135,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5b7e115635d9992526ac04dcb321574a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad39608937b41b736f8319236e373a9dd" id="r_ad39608937b41b736f8319236e373a9dd"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structocc_1_1qm_1_1cosx_1_1Settings.html">Settings</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#ad39608937b41b736f8319236e373a9dd">settings</a> () const</td></tr>
 <tr class="separator:ad39608937b41b736f8319236e373a9dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae1f47860ab238670168e329b05c8d85b" id="r_ae1f47860ab238670168e329b05c8d85b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#ae1f47860ab238670168e329b05c8d85b">set_range_separated_omega</a> (double omega)</td></tr>
-<tr class="memdesc:ae1f47860ab238670168e329b05c8d85b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Range-separation parameter for the exchange operator.  <br /></td></tr>
-<tr class="separator:ae1f47860ab238670168e329b05c8d85b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0cfefec7a1b56851e5c91f41a5bdf464" id="r_a0cfefec7a1b56851e5c91f41a5bdf464"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a0cfefec7a1b56851e5c91f41a5bdf464">range_separated_omega</a> () const</td></tr>
-<tr class="separator:a0cfefec7a1b56851e5c91f41a5bdf464"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4fdd3c2580915d0db48d07b750004210" id="r_a4fdd3c2580915d0db48d07b750004210"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a4fdd3c2580915d0db48d07b750004210">num_grid_points</a> () const</td></tr>
-<tr class="memdesc:a4fdd3c2580915d0db48d07b750004210"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get grid information.  <br /></td></tr>
+<tr class="memdesc:a4fdd3c2580915d0db48d07b750004210"><td class="mdescLeft">&#160;</td><td class="mdescRight">Range-separation parameter for the exchange operator.  <br /></td></tr>
 <tr class="separator:a4fdd3c2580915d0db48d07b750004210"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a05bdc5d6c63392022a03739de2d750" id="r_a1a05bdc5d6c63392022a03739de2d750"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1cosx_1_1SemiNumericalExchange.html#a1a05bdc5d6c63392022a03739de2d750">num_batches</a> () const</td></tr>
 <tr class="separator:a1a05bdc5d6c63392022a03739de2d750"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -180,8 +176,8 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a84569b4bc4febb96db25f0dcf21f36c1" name="a84569b4bc4febb96db25f0dcf21f36c1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a84569b4bc4febb96db25f0dcf21f36c1">&#9670;&#160;</a></span>compute_K()</h2>
+<a id="a234c17773cd5ba4f41148a27f7f52466" name="a234c17773cd5ba4f41148a27f7f52466"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a234c17773cd5ba4f41148a27f7f52466">&#9670;&#160;</a></span>compute_K()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -202,7 +198,13 @@ Public Member Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a> &amp;&#160;</td>
-          <td class="paramname"><em>Schwarz</em> = <code><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a>()</code>&#160;</td>
+          <td class="paramname"><em>Schwarz</em> = <code><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a>()</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>omega</em> = <code>0.0</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -211,6 +213,9 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Seminumerical exchange for one operator. </p>
+<p><code>omega</code> selects it: zero for the full Coulomb <code>1/r</code>, nonzero for the attenuated <code>erf(omega r)/r</code>. Passed rather than held, because nothing here is cached per operator &ndash; the grid, the shell-pair map and the density contraction are shared, and only the analytic ESP integral looks at omega at all. </p>
 
 </div>
 </div>
@@ -381,61 +386,8 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get grid information. </p>
-
-</div>
-</div>
-<a id="a0cfefec7a1b56851e5c91f41a5bdf464" name="a0cfefec7a1b56851e5c91f41a5bdf464"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0cfefec7a1b56851e5c91f41a5bdf464">&#9670;&#160;</a></span>range_separated_omega()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">double occ::qm::cosx::SemiNumericalExchange::range_separated_omega </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae1f47860ab238670168e329b05c8d85b" name="ae1f47860ab238670168e329b05c8d85b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae1f47860ab238670168e329b05c8d85b">&#9670;&#160;</a></span>set_range_separated_omega()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void occ::qm::cosx::SemiNumericalExchange::set_range_separated_omega </td>
-          <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>omega</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
 <p>Range-separation parameter for the exchange operator. </p>
-<p>omega == 0 (default): full Coulomb 1/r exchange. omega &gt; 0: long-range erf(omega*r)/r exchange (for range-separated hybrids). The short-range part is obtained as K_full - K_long_range. </p>
+<p>Get grid information </p>
 
 </div>
 </div>

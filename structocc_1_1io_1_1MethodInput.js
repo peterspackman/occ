@@ -11,6 +11,7 @@ var structocc_1_1io_1_1MethodInput =
     [ "cosx_grid_level", "structocc_1_1io_1_1MethodInput.html#ae82deca2168e7bf0ab03faaaac9c07c6", null ],
     [ "dft_grid", "structocc_1_1io_1_1MethodInput.html#ae421844e58ba074671bc2868e3176808", null ],
     [ "dft_xc_screening_threshold", "structocc_1_1io_1_1MethodInput.html#abf0ebd5ec6682f2f8ae4160d63f99f3c", null ],
+    [ "guess", "structocc_1_1io_1_1MethodInput.html#aca303c7385549766d7dcd496304950a8", null ],
     [ "integral_precision", "structocc_1_1io_1_1MethodInput.html#a5ed5d236df94308d8d72a9a1f440ef5d", null ],
     [ "mp2_backend", "structocc_1_1io_1_1MethodInput.html#aaf9860f4ac4d37c3c16972862da2d5fb", null ],
     [ "mp2_laplace_points", "structocc_1_1io_1_1MethodInput.html#a8079f491e7ba79392dbb53f5f6336c23", null ],

@@ -22,7 +22,7 @@ var searchData=
   ['occ_5ftb_2eh_19',['occ_tb.h',['../occ__tb_8h.html',1,'']]],
   ['occupation_2eh_20',['occupation.h',['../occupation_8h.html',1,'']]],
   ['oniom_2eh_21',['oniom.h',['../oniom_8h.html',1,'']]],
-  ['opmatrix_2eh_22',['opmatrix.h',['../core_2opmatrix_8h.html',1,'(Global Namespace)'],['../qm_2opmatrix_8h.html',1,'(Global Namespace)']]],
+  ['opmatrix_2eh_22',['opmatrix.h',['../qm_2opmatrix_8h.html',1,'(Global Namespace)'],['../core_2opmatrix_8h.html',1,'(Global Namespace)']]],
   ['optimization_5fprojection_2eh_23',['optimization_projection.h',['../optimization__projection_8h.html',1,'']]],
   ['optimization_5fstate_2eh_24',['optimization_state.h',['../optimization__state_8h.html',1,'']]],
   ['optimize_2eh_25',['optimize.h',['../optimize_8h.html',1,'']]],

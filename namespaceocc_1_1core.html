@@ -342,6 +342,9 @@ Functions</h2></td></tr>
 <tr class="separator:ab12b7da8178f1cbb8c077cfb9592c4c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06bd80d9c43fa53a3494e04f9bbb79c6" id="r_a06bd80d9c43fa53a3494e04f9bbb79c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#a06bd80d9c43fa53a3494e04f9bbb79c6">label_molecules_by_chemical_formula</a> (std::vector&lt; <a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a> &gt; &amp;molecules)</td></tr>
 <tr class="separator:a06bd80d9c43fa53a3494e04f9bbb79c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4283753a00823f1a742f5c269429378" id="r_ac4283753a00823f1a742f5c269429378"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#ac4283753a00823f1a742f5c269429378">validate_geometry</a> (const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;m)</td></tr>
+<tr class="memdesc:ac4283753a00823f1a742f5c269429378"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reject a geometry that has atoms sitting on top of each other.  <br /></td></tr>
+<tr class="separator:ac4283753a00823f1a742f5c269429378"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9090dcf8213bf9e23ac3851ed4f5e52" id="r_aa9090dcf8213bf9e23ac3851ed4f5e52"><td class="memItemLeft" align="right" valign="top">constexpr unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1core.html#aa9090dcf8213bf9e23ac3851ed4f5e52">num_unique_multipole_components</a> (int L)</td></tr>
 <tr class="memdesc:aa9090dcf8213bf9e23ac3851ed4f5e52"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of unique multipole components for a given angular momentum.  <br /></td></tr>
 <tr class="separator:aa9090dcf8213bf9e23ac3851ed4f5e52"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -2050,6 +2053,29 @@ template&lt;typename AtomIterator &gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="structocc_1_1core_1_1SymmetryMappingResult.html" title="Result of attempting a transformation with grouped permutations.">SymmetryMappingResult</a> containing success status, permutation, and RMSD </dd></dl>
+
+</div>
+</div>
+<a id="ac4283753a00823f1a742f5c269429378" name="ac4283753a00823f1a742f5c269429378"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4283753a00823f1a742f5c269429378">&#9670;&#160;</a></span>validate_geometry()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::core::validate_geometry </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1core_1_1Molecule.html">Molecule</a> &amp;&#160;</td>
+          <td class="paramname"><em>m</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reject a geometry that has atoms sitting on top of each other. </p>
+<p>Coincident atoms give duplicate basis functions, so the overlap matrix is singular and every method then fails differently and unhelpfully. GFN2 reports only "eigensolver failed". Hartree-Fock discards half of its auxiliary basis as linearly dependent, then grinds out every iteration allowed with the energy stationary to 1e-15 and a commutator that never falls &ndash; and exits zero. Neither says what is actually wrong, so this says it once, up front, before any of that work is done.</p>
+<p>Throws for atoms at the same point; warns for a separation shorter than any real bond, which a partially occupied crystallographic site can legitimately have.</p>
+<p>Seen in practice from a dimer assembled with one of its monomers appended twice, which is why the message counts the pairs: a coincident count that divides the atom count points straight at a duplicated fragment. </p>
 
 </div>
 </div>

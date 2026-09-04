@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['g_0',['g',['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html#a7f2403ee2bea2b9bc761f71ef89b3022',1,'occ::mults::EwaldLatticeCache::GVector::G'],['../structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313',1,'occ::scrf::detail::CosmoResponse::G'],['../structocc_1_1opt_1_1OptPoint.html#a2022f77f410ad41cc743c7969da36d2f',1,'occ::opt::OptPoint::g']]],
+  ['g_0',['g',['../structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313',1,'occ::scrf::detail::CosmoResponse::G'],['../structocc_1_1opt_1_1OptPoint.html#a2022f77f410ad41cc743c7969da36d2f',1,'occ::opt::OptPoint::g'],['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html#a7f2403ee2bea2b9bc761f71ef89b3022',1,'occ::mults::EwaldLatticeCache::GVector::G']]],
   ['g_5fcm3_5fto_5fkg_5fm3_1',['G_CM3_TO_KG_M3',['../namespaceocc_1_1units.html#a061dda57ae5c9464607558dbddd71218',1,'occ::units']]],
   ['g_5fcoeffs_2',['g_coeffs',['../structocc_1_1xtb_1_1EwaldGammaData.html#a55b4cea7f4fbe6a933217f061c505c9a',1,'occ::xtb::EwaldGammaData']]],
   ['g_5fvectors_3',['g_vectors',['../structocc_1_1xtb_1_1EwaldGammaData.html#ad1daf989a4bdd7af802459fedae11a61',1,'occ::xtb::EwaldGammaData::g_vectors'],['../structocc_1_1mults_1_1EwaldLatticeCache.html#a472c357f4687cea28c97a05cab42e4b2',1,'occ::mults::EwaldLatticeCache::g_vectors']]],
@@ -40,7 +40,7 @@ var searchData=
   ['gradient_5frms_37',['gradient_rms',['../structocc_1_1opt_1_1ConvergenceCriteria.html#a255685b358e559d0c402c11d4658ab1d',1,'occ::opt::ConvergenceCriteria::gradient_rms'],['../structocc_1_1io_1_1OptimizationInput.html#a06ad87d0971ff2bc06cbd5b85802b319',1,'occ::io::OptimizationInput::gradient_rms']]],
   ['gradient_5frms_5fconverged_38',['gradient_rms_converged',['../structocc_1_1opt_1_1ConvergenceInfo.html#ae5a0a46c76973f1f56eac15d98d6420d',1,'occ::opt::ConvergenceInfo']]],
   ['gradient_5ftol_39',['gradient_tol',['../structocc_1_1mults_1_1LBFGSSettings.html#adbc21db542f3804e7a79a471d27f4d5a',1,'occ::mults::LBFGSSettings::gradient_tol'],['../structocc_1_1mults_1_1MSTMINSettings.html#af5e60b4fca7ace68819da4ebd7eb5cdb',1,'occ::mults::MSTMINSettings::gradient_tol'],['../structocc_1_1mults_1_1TrustRegionSettings.html#a542f3059144532b5882ae631546c6bde',1,'occ::mults::TrustRegionSettings::gradient_tol']]],
-  ['gradient_5ftolerance_40',['gradient_tolerance',['../structocc_1_1main_1_1RoptSettings.html#acc4c3da0146a83368367575205020ed1',1,'occ::main::RoptSettings::gradient_tolerance'],['../structocc_1_1mults_1_1CrystalOptimizerSettings.html#a27f4c59e027f74b68a99bf57fcba8398',1,'occ::mults::CrystalOptimizerSettings::gradient_tolerance'],['../structocc_1_1io_1_1Settings.html#aec40ecf6cfda6e58f67dfb921f677766',1,'occ::io::Settings::gradient_tolerance']]],
+  ['gradient_5ftolerance_40',['gradient_tolerance',['../structocc_1_1main_1_1RoptSettings.html#acc4c3da0146a83368367575205020ed1',1,'occ::main::RoptSettings::gradient_tolerance'],['../structocc_1_1io_1_1Settings.html#aec40ecf6cfda6e58f67dfb921f677766',1,'occ::io::Settings::gradient_tolerance'],['../structocc_1_1mults_1_1CrystalOptimizerSettings.html#a27f4c59e027f74b68a99bf57fcba8398',1,'occ::mults::CrystalOptimizerSettings::gradient_tolerance']]],
   ['grid_41',['grid',['../structocc_1_1elastic__fit_1_1MonkhorstPack.html#a0828017f15e0e14e28f0ea75b8c7fd15',1,'occ::elastic_fit::MonkhorstPack']]],
   ['grid_5fmax_5fangular_42',['grid_max_angular',['../structocc_1_1qm_1_1cc_1_1ThcOptions.html#aff380a4e98cb78c17abfb6ad2fbfed70',1,'occ::qm::cc::ThcOptions']]],
   ['grid_5fradial_5fprecision_43',['grid_radial_precision',['../structocc_1_1qm_1_1cc_1_1ThcOptions.html#a8ae8d938086a7b6fcd7ec9591697e849',1,'occ::qm::cc::ThcOptions']]],
@@ -49,8 +49,9 @@ var searchData=
   ['grow_5flimit_46',['grow_limit',['../structocc_1_1core_1_1opt_1_1Bracket1D.html#a8e9ea0a6d2c52db1639119805be41cf9',1,'occ::core::opt::Bracket1D']]],
   ['gtol_47',['gtol',['../structocc_1_1mults_1_1LBFGSSettings.html#a87b589b00eb60432c1fb400d0aad281f',1,'occ::mults::LBFGSSettings']]],
   ['gu_48',['gu',['../structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html#a9abaaf5204a14cc8531d14e1bf231f87',1,'occ::geometry::mc::impl::EdgeCrossing']]],
-  ['gulp_5ffile_49',['gulp_file',['../structocc_1_1elastic__fit_1_1FittingSettings.html#a8b07688b16a343d981e41e27b0b3e129',1,'occ::elastic_fit::FittingSettings::gulp_file'],['../structocc_1_1main_1_1EFSettings.html#a47703384f1119ec08221cb0d7a9f4d7b',1,'occ::main::EFSettings::gulp_file']]],
-  ['gulp_5fscale_50',['gulp_scale',['../structocc_1_1elastic__fit_1_1FittingSettings.html#aa9477b13e19c35af8434509ea0c6579e',1,'occ::elastic_fit::FittingSettings::gulp_scale'],['../structocc_1_1main_1_1EFSettings.html#a5ed89bb9a82b15f1c243433e9d5ee5c6',1,'occ::main::EFSettings::gulp_scale']]],
-  ['gulp_5fstrings_51',['gulp_strings',['../structocc_1_1elastic__fit_1_1FittingResults.html#abdabe8bc2119d1dcb555653b19c9e38f',1,'occ::elastic_fit::FittingResults']]],
-  ['gv_52',['gv',['../structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html#aeb1d4e6ee8f85c9f772ed55b7c6c714c',1,'occ::geometry::mc::impl::EdgeCrossing']]]
+  ['guess_49',['guess',['../structocc_1_1io_1_1MethodInput.html#aca303c7385549766d7dcd496304950a8',1,'occ::io::MethodInput']]],
+  ['gulp_5ffile_50',['gulp_file',['../structocc_1_1elastic__fit_1_1FittingSettings.html#a8b07688b16a343d981e41e27b0b3e129',1,'occ::elastic_fit::FittingSettings::gulp_file'],['../structocc_1_1main_1_1EFSettings.html#a47703384f1119ec08221cb0d7a9f4d7b',1,'occ::main::EFSettings::gulp_file']]],
+  ['gulp_5fscale_51',['gulp_scale',['../structocc_1_1elastic__fit_1_1FittingSettings.html#aa9477b13e19c35af8434509ea0c6579e',1,'occ::elastic_fit::FittingSettings::gulp_scale'],['../structocc_1_1main_1_1EFSettings.html#a5ed89bb9a82b15f1c243433e9d5ee5c6',1,'occ::main::EFSettings::gulp_scale']]],
+  ['gulp_5fstrings_52',['gulp_strings',['../structocc_1_1elastic__fit_1_1FittingResults.html#abdabe8bc2119d1dcb555653b19c9e38f',1,'occ::elastic_fit::FittingResults']]],
+  ['gv_53',['gv',['../structocc_1_1geometry_1_1mc_1_1impl_1_1EdgeCrossing.html#aeb1d4e6ee8f85c9f772ed55b7c6c714c',1,'occ::geometry::mc::impl::EdgeCrossing']]]
 ];

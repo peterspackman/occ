@@ -104,8 +104,11 @@ $(document).ready(function(){initNavTree('acceleration_8h.html',''); initResizab
   <div class="headertitle"><div class="title">acceleration.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;cstddef&gt;</code><br />
+<div class="textblock"><code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;cstddef&gt;</code><br />
+<code>#include &lt;cstdlib&gt;</code><br />
 <code>#include &lt;<a class="el" href="log_8h.html">occ/core/log.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="shell_8h.html">occ/gto/shell.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="occ__input_8h.html">occ/io/occ_input.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="fitting__basis_8h.html">occ/qm/fitting_basis.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="integral__engine__df_8h.html">occ/qm/integral_engine_df.h</a>&gt;</code><br />
@@ -115,7 +118,7 @@ $(document).ready(function(){initNavTree('acceleration_8h.html',''); initResizab
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for acceleration.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="acceleration_8h__incl.svg" width="3428" height="638"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="acceleration_8h__incl.svg" width="2746" height="682"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -135,9 +138,14 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ad34b21eb98293f18ae357dfd021ea661" id="r_ad34b21eb98293f18ae357dfd021ea661"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1driver_1_1AccelerationPlan.html">AccelerationPlan</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#ad34b21eb98293f18ae357dfd021ea661">occ::driver::plan_acceleration</a> (<a class="el" href="namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50">io::RIPolicy</a> policy, const std::string &amp;orbital_basis_name, std::size_t nbf, double exact_exchange, const std::string &amp;user_df_basis, bool user_cosx)</td></tr>
-<tr class="memdesc:ad34b21eb98293f18ae357dfd021ea661"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decide SCF acceleration (density fitting / COSX) for a calculation.  <br /></td></tr>
-<tr class="separator:ad34b21eb98293f18ae357dfd021ea661"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a872da57e2f48d36d2c5c5d31a6ac64d1" id="r_a872da57e2f48d36d2c5c5d31a6ac64d1"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a872da57e2f48d36d2c5c5d31a6ac64d1">occ::driver::df_exchange_memory_budget</a> ()</td></tr>
+<tr class="memdesc:a872da57e2f48d36d2c5c5d31a6ac64d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decide SCF acceleration (density fitting / COSX) for a calculation.  <br /></td></tr>
+<tr class="separator:a872da57e2f48d36d2c5c5d31a6ac64d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81c748b17dfd3e10e6b07d9183b5a77e" id="r_a81c748b17dfd3e10e6b07d9183b5a77e"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a81c748b17dfd3e10e6b07d9183b5a77e">occ::driver::df_exchange_intermediate_bytes</a> (std::size_t nocc, std::size_t nbf, std::size_t ndf)</td></tr>
+<tr class="memdesc:a81c748b17dfd3e10e6b07d9183b5a77e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bytes DF-K would need for its half-transformed intermediate.  <br /></td></tr>
+<tr class="separator:a81c748b17dfd3e10e6b07d9183b5a77e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5829b88f4cdf883e791fa3884a6e3ddf" id="r_a5829b88f4cdf883e791fa3884a6e3ddf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1driver_1_1AccelerationPlan.html">AccelerationPlan</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a5829b88f4cdf883e791fa3884a6e3ddf">occ::driver::plan_acceleration</a> (<a class="el" href="namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50">io::RIPolicy</a> policy, const std::string &amp;orbital_basis_name, std::size_t nbf, double exact_exchange, const std::string &amp;user_df_basis, bool user_cosx, std::size_t df_exchange_bytes=0)</td></tr>
+<tr class="separator:a5829b88f4cdf883e791fa3884a6e3ddf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aebef72d251141363c893f7f79c70ca04" id="r_aebef72d251141363c893f7f79c70ca04"><td class="memTemplParams" colspan="2">template&lt;typename Proc &gt; </td></tr>
 <tr class="memitem:aebef72d251141363c893f7f79c70ca04"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#aebef72d251141363c893f7f79c70ca04">occ::driver::apply_acceleration</a> (Proc &amp;proc, std::size_t nbf, const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;config, bool allow_cosx=true)</td></tr>
 <tr class="memdesc:aebef72d251141363c893f7f79c70ca04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the active acceleration policy (DF / COSX) to an SCF procedure.  <br /></td></tr>

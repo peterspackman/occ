@@ -16,5 +16,6 @@ var searchData=
   ['grid_5ftypes_2eh_13',['grid_types.h',['../grid__types_8h.html',1,'']]],
   ['grid_5futils_2eh_14',['grid_utils.h',['../grid__utils_8h.html',1,'']]],
   ['gto_2eh_15',['gto.h',['../gto_8h.html',1,'']]],
-  ['guess_5fdensity_2eh_16',['guess_density.h',['../guess__density_8h.html',1,'']]]
+  ['guess_5fdensity_2eh_16',['guess_density.h',['../guess__density_8h.html',1,'']]],
+  ['guess_5fkind_2eh_17',['guess_kind.h',['../guess__kind_8h.html',1,'']]]
 ];

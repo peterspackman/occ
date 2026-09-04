@@ -20,5 +20,7 @@ var searchData=
   ['gridsettings_17',['GridSettings',['../structocc_1_1numint_1_1GridSettings.html',1,'occ::numint']]],
   ['gridsymmetryinfo_18',['GridSymmetryInfo',['../structocc_1_1io_1_1GridSymmetryInfo.html',1,'occ::io']]],
   ['gtovalues_19',['GTOValues',['../structocc_1_1gto_1_1GTOValues.html',1,'occ::gto']]],
-  ['gvector_20',['GVector',['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html',1,'occ::mults::EwaldLatticeCache']]]
+  ['guess_20',['Guess',['../structocc_1_1qm_1_1Guess.html',1,'occ::qm']]],
+  ['guessrequest_21',['GuessRequest',['../structocc_1_1qm_1_1GuessRequest.html',1,'occ::qm']]],
+  ['gvector_22',['GVector',['../structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html',1,'occ::mults::EwaldLatticeCache']]]
 ];

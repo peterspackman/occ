@@ -1,5 +1,5 @@
-<map id="/home/runner/work/occ/occ/include/occ/qm/guess_density.h" name="/home/runner/work/occ/occ/include/occ/qm/guess_density.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="21,5,213,60"/>
+<map id="/home/runner/work/occ/occ/include/occ/qm/initial_guess.h" name="/home/runner/work/occ/occ/include/occ/qm/initial_guess.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="21,5,212,60"/>
 <area shape="rect" id="Node000002" href="$scf_8h.html" title=" " alt="" coords="25,108,209,148"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="119,74,119,108,114,108,114,74"/>
 <area shape="rect" id="Node000003" href="$hessians_8h.html" title=" " alt="" coords="5,196,228,236"/>

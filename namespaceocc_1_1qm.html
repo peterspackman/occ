@@ -161,6 +161,12 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1GradientEvaluator.html">GradientEvaluator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Guess.html">Guess</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The starting point a guess produces.  <a href="structocc_1_1qm_1_1Guess.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1GuessRequest.html">GuessRequest</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">What a guess needs to know about the system.  <a href="structocc_1_1qm_1_1GuessRequest.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HartreeFock.html">HartreeFock</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1HessianEvaluator.html">HessianEvaluator</a></td></tr>
@@ -197,6 +203,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1SCFConvergenceSettings.html">SCFConvergenceSettings</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1SCFMethodBase.html">SCFMethodBase</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1ScopedRangeSeparation.html">ScopedRangeSeparation</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applies a range-separation parameter for the duration of a scope, and puts back whatever was there before however the scope is left.  <a href="classocc_1_1qm_1_1ScopedRangeSeparation.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1SplitRIJ.html">SplitRIJ</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Split-RI-J: Coulomb matrix via Hermite Gaussian basis (Neese 2003)  <a href="classocc_1_1qm_1_1SplitRIJ.html#details">More...</a><br /></td></tr>
@@ -241,6 +250,17 @@ Enumerations</h2></td></tr>
 , <a class="el" href="namespaceocc_1_1qm.html#a5c3f3ed928cbff80d1742c0ded1e98dba2521dc256a4368da87585c936b451dd7">D4</a>
  }</td></tr>
 <tr class="separator:a5c3f3ed928cbff80d1742c0ded1e98db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff54e60746f41e12e35dff6049d04775" id="r_aff54e60746f41e12e35dff6049d04775"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a> { <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775a06b9281e396db002010bde1de57262eb">Auto</a>
+, <a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775a83168e6cb289d732cc78427b51f93153">Core</a>
+, <a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775acf47c18587c47c43bdabd8e5077c950e">Soad</a>
+, <a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775aa5734424887783d782c4136b7aff71c5">Sap</a>
+, <br />
+&#160;&#160;<a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775ad71828f502a7ec49e91266601030925b">AtomicScf</a>
+<br />
+ }</td></tr>
+<tr class="memdesc:aff54e60746f41e12e35dff6049d04775"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where the SCF starts from.  <a href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">More...</a><br /></td></tr>
+<tr class="separator:aff54e60746f41e12e35dff6049d04775"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab76983d7f2f4d9156c8ccebb15d6a4ca" id="r_ab76983d7f2f4d9156c8ccebb15d6a4ca"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4ca">CoulombMethod</a> { <a class="el" href="namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caa1bfbcce75c3c9a52a464d4cb0984488a">Traditional</a>
 , <a class="el" href="namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4caae8170441f7460d522a29a1988d225775">SplitRIJ</a>
  }</td></tr>
@@ -275,6 +295,26 @@ Functions</h2></td></tr>
 <tr class="separator:a879a0c61d5547c7ddd07c0c8c42f9f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc64228bb1558331b90be2793c89b2a7" id="r_acc64228bb1558331b90be2793c89b2a7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#acc64228bb1558331b90be2793c89b2a7">cosx_nbf_crossover</a> ()</td></tr>
 <tr class="separator:acc64228bb1558331b90be2793c89b2a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc796c0ffb276df1ce0dcce05bc0c9ad" id="r_acc796c0ffb276df1ce0dcce05bc0c9ad"><td class="memItemLeft" align="right" valign="top">std::string_view&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#acc796c0ffb276df1ce0dcce05bc0c9ad">guess_kind_name</a> (<a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a> kind)</td></tr>
+<tr class="separator:acc796c0ffb276df1ce0dcce05bc0c9ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab247e5383e70cdaee353aa844467c85e" id="r_ab247e5383e70cdaee353aa844467c85e"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; std::pair&lt; std::string, <a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a> &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#ab247e5383e70cdaee353aa844467c85e">guess_kind_names</a> ()</td></tr>
+<tr class="memdesc:ab247e5383e70cdaee353aa844467c85e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The names a user may write, and what each selects.  <br /></td></tr>
+<tr class="separator:ab247e5383e70cdaee353aa844467c85e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97fdc01cb0e120542d05bc9458b8f335" id="r_a97fdc01cb0e120542d05bc9458b8f335"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a97fdc01cb0e120542d05bc9458b8f335">guess_kind_from_string</a> (std::string_view name)</td></tr>
+<tr class="memdesc:a97fdc01cb0e120542d05bc9458b8f335"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a guess name. Returns nothing for an unrecognised one.  <br /></td></tr>
+<tr class="separator:a97fdc01cb0e120542d05bc9458b8f335"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cf1931c2abe451e2c42afda315cc9ef" id="r_a8cf1931c2abe451e2c42afda315cc9ef"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a8cf1931c2abe451e2c42afda315cc9ef">minimal_basis_covers</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;basis)</td></tr>
+<tr class="memdesc:a8cf1931c2abe451e2c42afda315cc9ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the shipped minimal basis has shells for every atom in <code>basis</code>.  <br /></td></tr>
+<tr class="separator:a8cf1931c2abe451e2c42afda315cc9ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aacfe509f9f92d0fee7151b5328b48427" id="r_aacfe509f9f92d0fee7151b5328b48427"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aacfe509f9f92d0fee7151b5328b48427">select_guess</a> (<a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a> requested, const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;basis)</td></tr>
+<tr class="memdesc:aacfe509f9f92d0fee7151b5328b48427"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve <code>Auto</code> into a concrete kind; anything else passes through unchanged, so an explicit request is honoured even where it is a poor choice.  <br /></td></tr>
+<tr class="separator:aacfe509f9f92d0fee7151b5328b48427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aacb711d8aae7dcab6c2dac8150a474fc" id="r_aacb711d8aae7dcab6c2dac8150a474fc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Guess.html">Guess</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aacb711d8aae7dcab6c2dac8150a474fc">build_guess</a> (<a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a> kind, const <a class="el" href="structocc_1_1qm_1_1GuessRequest.html">GuessRequest</a> &amp;request)</td></tr>
+<tr class="memdesc:aacb711d8aae7dcab6c2dac8150a474fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build <code>kind</code> for <code>request</code>.  <br /></td></tr>
+<tr class="separator:aacb711d8aae7dcab6c2dac8150a474fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef47b81ceac345d2af78ef9fc38bfcc7" id="r_aef47b81ceac345d2af78ef9fc38bfcc7"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aef47b81ceac345d2af78ef9fc38bfcc7"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aef47b81ceac345d2af78ef9fc38bfcc7">ScopedRangeSeparation</a> (T &amp;, double) -&gt; <a class="el" href="classocc_1_1qm_1_1ScopedRangeSeparation.html">ScopedRangeSeparation</a>&lt; T &gt;</td></tr>
+<tr class="separator:aef47b81ceac345d2af78ef9fc38bfcc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea99ff092d8022a134859b02bc81a705" id="r_aea99ff092d8022a134859b02bc81a705"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aea99ff092d8022a134859b02bc81a705">from_json</a> (const nlohmann::json &amp;J, <a class="el" href="structocc_1_1qm_1_1Energy.html">Energy</a> &amp;energy)</td></tr>
 <tr class="separator:aea99ff092d8022a134859b02bc81a705"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af56a1ad02bf6c763085926a57c0c60f4" id="r_af56a1ad02bf6c763085926a57c0c60f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#af56a1ad02bf6c763085926a57c0c60f4">to_json</a> (nlohmann::json &amp;J, const <a class="el" href="structocc_1_1qm_1_1Energy.html">Energy</a> &amp;energy)</td></tr>
@@ -488,6 +528,48 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="aff54e60746f41e12e35dff6049d04775" name="aff54e60746f41e12e35dff6049d04775"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff54e60746f41e12e35dff6049d04775">&#9670;&#160;</a></span>GuessKind</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">occ::qm::GuessKind</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Where the <a class="el" href="structocc_1_1qm_1_1SCF.html">SCF</a> starts from. </p>
+<p>Every kind here ends in the same place &ndash; diagonalise a Fock matrix built from something cheaper than the answer &ndash; and differs only in what that something is. See &lt;<a class="el" href="initial__guess_8h.html">occ/qm/initial_guess.h</a>&gt; for how each is built.</p>
+<p>This lives apart from the rest of the guess API, and depends on nothing, so that input handling can name a guess without taking on a dependency on the <a class="el" href="structocc_1_1qm_1_1SCF.html">SCF</a> itself. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="aff54e60746f41e12e35dff6049d04775a06b9281e396db002010bde1de57262eb" name="aff54e60746f41e12e35dff6049d04775a06b9281e396db002010bde1de57262eb"></a>Auto&#160;</td><td class="fielddoc"><p>Choose per system; see <code>select_guess</code>. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aff54e60746f41e12e35dff6049d04775a83168e6cb289d732cc78427b51f93153" name="aff54e60746f41e12e35dff6049d04775a83168e6cb289d732cc78427b51f93153"></a>Core&#160;</td><td class="fielddoc"><p>No guess: diagonalise the bare core Hamiltonian. </p>
+<p>Always available, and always the worst starting point that still converges. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aff54e60746f41e12e35dff6049d04775acf47c18587c47c43bdabd8e5077c950e" name="aff54e60746f41e12e35dff6049d04775acf47c18587c47c43bdabd8e5077c950e"></a>Soad&#160;</td><td class="fielddoc"><p>Superposition of atomic densities: tabulated ground-state occupations spread over a minimal basis, projected into the orbital basis. </p>
+<p>Cheap and good, but only for elements the shipped minimal basis covers. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aff54e60746f41e12e35dff6049d04775aa5734424887783d782c4136b7aff71c5" name="aff54e60746f41e12e35dff6049d04775aa5734424887783d782c4136b7aff71c5"></a>Sap&#160;</td><td class="fielddoc"><p>Superposition of atomic potentials: a fitted effective potential per element added to the core Hamiltonian. </p>
+<p>Covers every element, but has no sound treatment of effective core potentials. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aff54e60746f41e12e35dff6049d04775ad71828f502a7ec49e91266601030925b" name="aff54e60746f41e12e35dff6049d04775ad71828f502a7ec49e91266601030925b"></a>AtomicScf&#160;</td><td class="fielddoc"><p>Superposition of converged isolated-atom densities, one small <a class="el" href="structocc_1_1qm_1_1SCF.html">SCF</a> per element in this calculation's own basis. </p>
+<p>Costs more than the others and works wherever the orbital basis does, ECPs included. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a id="a42516c145cd4f504f6ad11a8db8248e1" name="a42516c145cd4f504f6ad11a8db8248e1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a42516c145cd4f504f6ad11a8db8248e1">&#9670;&#160;</a></span>SpinComponent</h2>
 
@@ -516,6 +598,37 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="aacb711d8aae7dcab6c2dac8150a474fc" name="aacb711d8aae7dcab6c2dac8150a474fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aacb711d8aae7dcab6c2dac8150a474fc">&#9670;&#160;</a></span>build_guess()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1qm_1_1Guess.html">Guess</a> occ::qm::build_guess </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a>&#160;</td>
+          <td class="paramname"><em>kind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1GuessRequest.html">GuessRequest</a> &amp;&#160;</td>
+          <td class="paramname"><em>request</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Build <code>kind</code> for <code>request</code>. </p>
+<p>Falls back to <code>Core</code> &ndash; an empty <code><a class="el" href="structocc_1_1qm_1_1Guess.html" title="The starting point a guess produces.">Guess</a></code> &ndash; when the guess cannot be built for this system, having said why in the log. Every caller therefore gets a usable starting point. </p>
+
+</div>
+</div>
 <a id="a44d0c2cc10936b5fce7b0f4086155b6e" name="a44d0c2cc10936b5fce7b0f4086155b6e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a44d0c2cc10936b5fce7b0f4086155b6e">&#9670;&#160;</a></span>chelpg_charges()</h2>
 
@@ -679,6 +792,88 @@ template&lt;typename TA &gt; </div>
 
 <p>Generate automatic auxiliary basis using pivoted Cholesky decomposition Based on Lehtola, J. </p>
 <p>Chem. Theory Comput. 2021, 17, 6886-6900 </p>
+
+</div>
+</div>
+<a id="a97fdc01cb0e120542d05bc9458b8f335" name="a97fdc01cb0e120542d05bc9458b8f335"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97fdc01cb0e120542d05bc9458b8f335">&#9670;&#160;</a></span>guess_kind_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a> &gt; occ::qm::guess_kind_from_string </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Parse a guess name. Returns nothing for an unrecognised one. </p>
+
+</div>
+</div>
+<a id="acc796c0ffb276df1ce0dcce05bc0c9ad" name="acc796c0ffb276df1ce0dcce05bc0c9ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc796c0ffb276df1ce0dcce05bc0c9ad">&#9670;&#160;</a></span>guess_kind_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view occ::qm::guess_kind_name </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a>&#160;</td>
+          <td class="paramname"><em>kind</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab247e5383e70cdaee353aa844467c85e" name="ab247e5383e70cdaee353aa844467c85e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab247e5383e70cdaee353aa844467c85e">&#9670;&#160;</a></span>guess_kind_names()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::vector&lt; std::pair&lt; std::string, <a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a> &gt; &gt; &amp; occ::qm::guess_kind_names </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The names a user may write, and what each selects. </p>
+<p>Shared by the command line and by any other input route, so they cannot drift apart. </p>
 
 </div>
 </div>
@@ -848,6 +1043,27 @@ template&lt;SpinorbitalKind kind&gt; </div>
 
 </div>
 </div>
+<a id="a8cf1931c2abe451e2c42afda315cc9ef" name="a8cf1931c2abe451e2c42afda315cc9ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8cf1931c2abe451e2c42afda315cc9ef">&#9670;&#160;</a></span>minimal_basis_covers()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::qm::minimal_basis_covers </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether the shipped minimal basis has shells for every atom in <code>basis</code>. </p>
+<p><code>build_sto3g_shells</code> drops elements it has no entry for rather than failing, so loading the minimal basis is not itself a coverage test: an uncovered atom simply comes back carrying no shells. </p>
+
+</div>
+</div>
 <a id="abbd3ff1729602847daf45753f527aa15" name="abbd3ff1729602847daf45753f527aa15"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abbd3ff1729602847daf45753f527aa15">&#9670;&#160;</a></span>mulliken_partition()</h2>
 
@@ -907,6 +1123,67 @@ template&lt;SpinorbitalKind kind&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aef47b81ceac345d2af78ef9fc38bfcc7" name="aef47b81ceac345d2af78ef9fc38bfcc7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef47b81ceac345d2af78ef9fc38bfcc7">&#9670;&#160;</a></span>ScopedRangeSeparation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classocc_1_1qm_1_1ScopedRangeSeparation.html">occ::qm::ScopedRangeSeparation</a> </td>
+          <td>(</td>
+          <td class="paramtype">T &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> -&gt;  <a class="el" href="classocc_1_1qm_1_1ScopedRangeSeparation.html">ScopedRangeSeparation</a>&lt; T &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aacfe509f9f92d0fee7151b5328b48427" name="aacfe509f9f92d0fee7151b5328b48427"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aacfe509f9f92d0fee7151b5328b48427">&#9670;&#160;</a></span>select_guess()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a> occ::qm::select_guess </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775">GuessKind</a>&#160;</td>
+          <td class="paramname"><em>requested</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">gto::AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Resolve <code>Auto</code> into a concrete kind; anything else passes through unchanged, so an explicit request is honoured even where it is a poor choice. </p>
+<p>Logs the reason whenever <code>Auto</code> picks something other than SOAD. </p>
 
 </div>
 </div>

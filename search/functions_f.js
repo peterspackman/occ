@@ -53,7 +53,7 @@ var searchData=
   ['pes_50',['pes',['../classocc_1_1elastic__fit_1_1PES.html#a9396259ff096ad120067dcd16698e798',1,'occ::elastic_fit::PES::PES(double volume, const occ::Mat3 &amp;lattice_vectors)'],['../classocc_1_1elastic__fit_1_1PES.html#aba63a5a7a1f461e0549ba65a40d0d2ba',1,'occ::elastic_fit::PES::PES(const crystal::Crystal &amp;crystal)']]],
   ['pgemm_51',['pgemm',['../namespaceocc_1_1qm_1_1cc.html#ad175eea5c8fb01593e8261467749f11a',1,'occ::qm::cc']]],
   ['phonons_52',['phonons',['../classocc_1_1elastic__fit_1_1PES.html#ae88acafac46ec2e13dcd5853bd7d1bce',1,'occ::elastic_fit::PES']]],
-  ['plan_5facceleration_53',['plan_acceleration',['../namespaceocc_1_1driver.html#ad34b21eb98293f18ae357dfd021ea661',1,'occ::driver']]],
+  ['plan_5facceleration_53',['plan_acceleration',['../namespaceocc_1_1driver.html#a5829b88f4cdf883e791fa3884a6e3ddf',1,'occ::driver']]],
   ['plane_54',['plane',['../classquickhull_1_1Plane.html#a849e5e70b8a26b33922cec3e79e426a7',1,'quickhull::Plane::Plane()=default'],['../classquickhull_1_1Plane.html#ae390857155091f4659af5e8256492efc',1,'quickhull::Plane::Plane(const Eigen::Matrix&lt; T, 3, 1 &gt; &amp;N, const Eigen::Matrix&lt; T, 3, 1 &gt; &amp;P)']]],
   ['plyelement_55',['plyelement',['../structtinyply_1_1PlyElement.html#aac090e3b5ff542a9555b23c000e1fba8',1,'tinyply::PlyElement::PlyElement(std::istream &amp;istream)'],['../structtinyply_1_1PlyElement.html#a2aad69dcf5d9b4860df05805f48af0bd',1,'tinyply::PlyElement::PlyElement(const std::string &amp;_name, size_t count)']]],
   ['plyfile_56',['PlyFile',['../structtinyply_1_1PlyFile.html#ae2ae6a9a5ae4c15d531dc7fdd335ae7a',1,'tinyply::PlyFile']]],

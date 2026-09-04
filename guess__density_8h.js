@@ -1,6 +1,7 @@
 var guess__density_8h =
 [
-    [ "compute_sap_matrix", "guess__density_8h.html#ae393d4cd0e43b1f54b1747ec4698f19a", null ],
-    [ "minimal_basis_nao", "guess__density_8h.html#acb0a9b7918ce5f813b34eb9e6ac97ecb", null ],
-    [ "minimal_basis_occupation_vector", "guess__density_8h.html#a4ade54494fd9364e06b8f76af7095ba8", null ]
+    [ "occ::qm::guess::SubshellOccupation", "structocc_1_1qm_1_1guess_1_1SubshellOccupation.html", "structocc_1_1qm_1_1guess_1_1SubshellOccupation" ],
+    [ "compute_sap_matrix", "guess__density_8h.html#aa9d6ca6175e5cf9e13f94655b23400a1", null ],
+    [ "ground_state_multiplicity", "guess__density_8h.html#a04332876b0efb602efd09428cdc25199", null ],
+    [ "minimal_basis_subshell_occupations", "guess__density_8h.html#aa6f5f06b3d1e18ddb83f1a4cb8ba856d", null ]
 ];

@@ -1,12 +1,12 @@
 var structocc_1_1qm_1_1SCF =
 [
     [ "SCF", "structocc_1_1qm_1_1SCF.html#aabdcf66486ae015a43e887b61445bba4", null ],
+    [ "apply_level_shift", "structocc_1_1qm_1_1SCF.html#a71ca3d926dcdfe449de2b4411db45731", null ],
     [ "atoms", "structocc_1_1qm_1_1SCF.html#a37dbd16d5150d3fb1651130dbf2a1836", null ],
     [ "charge", "structocc_1_1qm_1_1SCF.html#a92aa9a8a4d48ca21635beb356972ccf9", null ],
     [ "compute_initial_guess", "structocc_1_1qm_1_1SCF.html#a4ca25c7e1a96889ce610bb3c9fafd2cf", null ],
-    [ "compute_sap_guess", "structocc_1_1qm_1_1SCF.html#a3c7cdaa92d0d9c083773c2cac4a3fd31", null ],
     [ "compute_scf_energy", "structocc_1_1qm_1_1SCF.html#a10cf77346f1ce0b3b17d336eef3e776e", null ],
-    [ "compute_soad", "structocc_1_1qm_1_1SCF.html#a7c110a720e6de0f151e6445a06bdcd74", null ],
+    [ "guess_kind", "structocc_1_1qm_1_1SCF.html#a2d9f6ca2cd2f7af687f9a72480c12760", null ],
     [ "incremental_fock_supported", "structocc_1_1qm_1_1SCF.html#aea7476e2e6e2b937d6476e027331dd64", null ],
     [ "molecular_orbitals", "structocc_1_1qm_1_1SCF.html#a9075f467ee3a658fd45a48f79d1d98c2", null ],
     [ "multiplicity", "structocc_1_1qm_1_1SCF.html#aed60ebbf4bb77f81cb969c04b5db89a6", null ],
@@ -19,6 +19,7 @@ var structocc_1_1qm_1_1SCF =
     [ "set_core_matrices", "structocc_1_1qm_1_1SCF.html#aaddffeb3b30eadff5648e95e8b0540cd", null ],
     [ "set_external_potential", "structocc_1_1qm_1_1SCF.html#a5dbf0c106a9ef152702cc333c9e7d93a", null ],
     [ "set_external_potential", "structocc_1_1qm_1_1SCF.html#aef378c625faaf2ccd118e9a83fda657f", null ],
+    [ "set_guess_kind", "structocc_1_1qm_1_1SCF.html#a700349435086eb5e3dbd931291d0fe50", null ],
     [ "set_initial_guess_from_wfn", "structocc_1_1qm_1_1SCF.html#a8dec2c7b918fe15d01152e58474f84de", null ],
     [ "set_multiplicity", "structocc_1_1qm_1_1SCF.html#a94c97404efd518cc00dbd85925444faa", null ],
     [ "update_occupied_orbital_count", "structocc_1_1qm_1_1SCF.html#afc748d5835398efc7a10f0c7d00eb78a", null ],

@@ -165,6 +165,7 @@ var namespaceocc_1_1core =
     [ "total_num_multipole_components", "namespaceocc_1_1core.html#a4c43c80b170febf6fb0c2e6fbaa82d9a", null ],
     [ "translate_atoms", "namespaceocc_1_1core.html#a03ad31d684771525fec5bd1c8d0524a8", null ],
     [ "try_transformation_with_grouped_permutations", "namespaceocc_1_1core.html#ab12b7da8178f1cbb8c077cfb9592c4c5", null ],
+    [ "validate_geometry", "namespaceocc_1_1core.html#ac4283753a00823f1a742f5c269429378", null ],
     [ "covalent_bond_tolerance", "namespaceocc_1_1core.html#a5ab8e34cdda6bb4f9065e51d0a930d2b", null ],
     [ "max_leaf", "namespaceocc_1_1core.html#a19df90100f5a4ddba86433c350fa160a", null ],
     [ "multipole_component_names", "namespaceocc_1_1core.html#a2c13a8ff8a8712711388809ff8ca9aec", null ]

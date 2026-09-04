@@ -26,6 +26,7 @@ var classocc_1_1qm_1_1IntegralEngineDF =
     [ "integral_policy", "classocc_1_1qm_1_1IntegralEngineDF.html#adc193df3ebd6bdb59159dd318b7740fb", null ],
     [ "integral_store", "classocc_1_1qm_1_1IntegralEngineDF.html#acd09551e4f521f811b999686c946d706", null ],
     [ "precision", "classocc_1_1qm_1_1IntegralEngineDF.html#aa64426ec879bb2345eaaf25fd3ef0767", null ],
+    [ "range_separated_omega", "classocc_1_1qm_1_1IntegralEngineDF.html#af09b7b5f37c4cfd94da9a283eea55dd8", null ],
     [ "set_coulomb_method", "classocc_1_1qm_1_1IntegralEngineDF.html#ab956c0fde7433b19ce22c491bab45ce5", null ],
     [ "set_integral_policy", "classocc_1_1qm_1_1IntegralEngineDF.html#aa20bdfe5ed36bf35cdf6bba53184f9de", null ],
     [ "set_precision", "classocc_1_1qm_1_1IntegralEngineDF.html#acff67cee4175800d43c115c6fd19905b", null ],

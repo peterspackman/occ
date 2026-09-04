@@ -569,6 +569,9 @@ var annotated_dup =
           [ "Settings", "structocc_1_1qm_1_1cosx_1_1Settings.html", "structocc_1_1qm_1_1cosx_1_1Settings" ],
           [ "ShellLists", "structocc_1_1qm_1_1cosx_1_1ShellLists.html", "structocc_1_1qm_1_1cosx_1_1ShellLists" ]
         ] ],
+        [ "guess", "namespaceocc_1_1qm_1_1guess.html", [
+          [ "SubshellOccupation", "structocc_1_1qm_1_1guess_1_1SubshellOccupation.html", "structocc_1_1qm_1_1guess_1_1SubshellOccupation" ]
+        ] ],
         [ "ADIIS", "classocc_1_1qm_1_1ADIIS.html", "classocc_1_1qm_1_1ADIIS" ],
         [ "AutoAuxResult", "structocc_1_1qm_1_1AutoAuxResult.html", "structocc_1_1qm_1_1AutoAuxResult" ],
         [ "CanonicalOrthogonalizer", "classocc_1_1qm_1_1CanonicalOrthogonalizer.html", "classocc_1_1qm_1_1CanonicalOrthogonalizer" ],
@@ -580,6 +583,8 @@ var annotated_dup =
         [ "Energy", "structocc_1_1qm_1_1Energy.html", "structocc_1_1qm_1_1Energy" ],
         [ "FockBuildProperties", "structocc_1_1qm_1_1FockBuildProperties.html", "structocc_1_1qm_1_1FockBuildProperties" ],
         [ "GradientEvaluator", "classocc_1_1qm_1_1GradientEvaluator.html", "classocc_1_1qm_1_1GradientEvaluator" ],
+        [ "Guess", "structocc_1_1qm_1_1Guess.html", "structocc_1_1qm_1_1Guess" ],
+        [ "GuessRequest", "structocc_1_1qm_1_1GuessRequest.html", "structocc_1_1qm_1_1GuessRequest" ],
         [ "HartreeFock", "classocc_1_1qm_1_1HartreeFock.html", "classocc_1_1qm_1_1HartreeFock" ],
         [ "HessianEvaluator", "classocc_1_1qm_1_1HessianEvaluator.html", "classocc_1_1qm_1_1HessianEvaluator" ],
         [ "IntegralEngine", "classocc_1_1qm_1_1IntegralEngine.html", "classocc_1_1qm_1_1IntegralEngine" ],
@@ -597,6 +602,7 @@ var annotated_dup =
         [ "SCFContext", "structocc_1_1qm_1_1SCFContext.html", "structocc_1_1qm_1_1SCFContext" ],
         [ "SCFConvergenceSettings", "structocc_1_1qm_1_1SCFConvergenceSettings.html", "structocc_1_1qm_1_1SCFConvergenceSettings" ],
         [ "SCFMethodBase", "classocc_1_1qm_1_1SCFMethodBase.html", "classocc_1_1qm_1_1SCFMethodBase" ],
+        [ "ScopedRangeSeparation", "classocc_1_1qm_1_1ScopedRangeSeparation.html", "classocc_1_1qm_1_1ScopedRangeSeparation" ],
         [ "SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html", "classocc_1_1qm_1_1SplitRIJ" ],
         [ "Wavefunction", "structocc_1_1qm_1_1Wavefunction.html", "structocc_1_1qm_1_1Wavefunction" ],
         [ "WolfPointChargePotential", "structocc_1_1qm_1_1WolfPointChargePotential.html", "structocc_1_1qm_1_1WolfPointChargePotential" ]
