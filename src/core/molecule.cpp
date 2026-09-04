@@ -1,6 +1,8 @@
 #include <Eigen/Eigenvalues>
 #include <ankerl/unordered_dense.h>
 #include <fmt/core.h>
+#include <occ/core/element.h>
+#include <set>
 #include <occ/core/constants.h>
 #include <occ/core/inertia_tensor.h>
 #include <occ/core/log.h>
@@ -479,6 +481,63 @@ Molecule Molecule::permute(const std::vector<int> &permutation) const {
   }
 
   return result;
+}
+
+void validate_geometry(const Molecule &m) {
+  // Numerically identical, versus merely improbable. The shortest real bond
+  // is H2 at 0.74 Angstrom, so anything under half of that is worth a word
+  // even when it is not an outright duplicate -- a partially occupied site in
+  // a crystal structure can be genuinely close, and that is the caller's
+  // decision to make.
+  constexpr double coincident = 1e-4;
+  constexpr double suspicious = 0.5;
+
+  const auto &positions = m.positions();
+  const auto &numbers = m.atomic_numbers();
+  std::vector<std::pair<int, int>> duplicates;
+
+  for (int i = 0; i < positions.cols(); i++) {
+    for (int j = i + 1; j < positions.cols(); j++) {
+      const double r = (positions.col(i) - positions.col(j)).norm();
+      if (r < coincident)
+        duplicates.emplace_back(i, j);
+      else if (r < suspicious) {
+        occ::log::warn("atoms {} ({}) and {} ({}) are only {:.3f} Angstrom "
+                       "apart, closer than any real bond",
+                       i, Element(numbers(i)).symbol(), j,
+                       Element(numbers(j)).symbol(), r);
+      }
+    }
+  }
+
+  if (duplicates.empty())
+    return;
+
+  // Counted as distinct atoms rather than twice the pairs, since three or
+  // more atoms at one point share pairs between them.
+  std::set<int> involved;
+  for (const auto &[i, j] : duplicates) {
+    involved.insert(i);
+    involved.insert(j);
+  }
+
+  std::string detail;
+  const size_t shown = std::min<size_t>(duplicates.size(), 3);
+  for (size_t k = 0; k < shown; k++) {
+    const auto [i, j] = duplicates[k];
+    detail += fmt::format("\n  atoms {} and {} are both {} at ({:.4f}, "
+                          "{:.4f}, {:.4f})",
+                          i, j, Element(numbers(i)).symbol(),
+                          positions(0, i), positions(1, i), positions(2, i));
+  }
+  if (duplicates.size() > shown)
+    detail += fmt::format("\n  ... and {} more", duplicates.size() - shown);
+
+  throw std::runtime_error(fmt::format(
+      "{} of the {} atoms are coincident ({} pairs), which makes the overlap "
+      "matrix singular. If the coincident count divides the molecule evenly, "
+      "a fragment has most likely been added twice.{}",
+      involved.size(), positions.cols(), duplicates.size(), detail));
 }
 
 } // namespace occ::core

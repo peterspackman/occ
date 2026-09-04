@@ -296,6 +296,7 @@ single_point_driver(const OccInput &config,
                     const std::optional<Wavefunction> &guess = {}) {
   Molecule m = config.geometry.molecule();
   print_configuration(m, config);
+  validate_geometry(m);
   constexpr auto R = SpinorbitalKind::Restricted;
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;

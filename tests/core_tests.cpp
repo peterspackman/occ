@@ -1016,3 +1016,38 @@ TEST_CASE("Molecule label generation", "[molecule]") {
     REQUIRE(molecules[52].name() == "1BA");
   }
 }
+
+TEST_CASE("Coincident atoms are rejected up front", "[molecule][geometry]") {
+  using occ::core::Molecule;
+  using occ::core::validate_geometry;
+
+  const occ::IVec water_numbers = (occ::IVec(3) << 8, 1, 1).finished();
+  occ::Mat3N water(3, 3);
+  water << 0.0, 0.0, 0.0, 0.0, 0.7572, -0.7572, 0.1173, -0.4692, -0.4692;
+
+  SECTION("an ordinary geometry passes") {
+    REQUIRE_NOTHROW(validate_geometry(Molecule(water_numbers, water)));
+  }
+
+  SECTION("a fragment added twice is rejected") {
+    // Exactly what a dimer assembled with one monomer appended twice looks
+    // like: the duplicate makes the overlap matrix singular, and without this
+    // check GFN2 reports only "eigensolver failed" while Hartree-Fock burns
+    // every iteration it is allowed and still exits zero.
+    occ::IVec numbers(6);
+    numbers << 8, 1, 1, 8, 1, 1;
+    occ::Mat3N doubled(3, 6);
+    doubled << water, water;
+    REQUIRE_THROWS_AS(validate_geometry(Molecule(numbers, doubled)),
+                      std::runtime_error);
+  }
+
+  SECTION("a short contact is allowed, but noticed") {
+    // Half an Angstrom is shorter than any real bond, yet a partially
+    // occupied crystallographic site can genuinely be that close, so this
+    // warns rather than refusing to run.
+    occ::Mat3N pinched = water;
+    pinched(1, 2) = 0.4;
+    REQUIRE_NOTHROW(validate_geometry(Molecule(water_numbers, pinched)));
+  }
+}

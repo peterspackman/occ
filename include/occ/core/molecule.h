@@ -805,4 +805,23 @@ private:
 void label_molecules_by_chemical_formula(
     std::vector<occ::core::Molecule> &molecules);
 
+/// Reject a geometry that has atoms sitting on top of each other.
+///
+/// Coincident atoms give duplicate basis functions, so the overlap matrix is
+/// singular and every method then fails differently and unhelpfully. GFN2
+/// reports only "eigensolver failed". Hartree-Fock discards half of its
+/// auxiliary basis as linearly dependent, then grinds out every iteration
+/// allowed with the energy stationary to 1e-15 and a commutator that never
+/// falls -- and exits zero. Neither says what is actually wrong, so this says
+/// it once, up front, before any of that work is done.
+///
+/// Throws for atoms at the same point; warns for a separation shorter than
+/// any real bond, which a partially occupied crystallographic site can
+/// legitimately have.
+///
+/// Seen in practice from a dimer assembled with one of its monomers appended
+/// twice, which is why the message counts the pairs: a coincident count that
+/// divides the atom count points straight at a duplicated fragment.
+void validate_geometry(const Molecule &m);
+
 } // namespace occ::core
