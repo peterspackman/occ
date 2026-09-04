@@ -44,5 +44,5 @@ EMSCRIPTEN_BINDINGS(occ) {
     function("setLogFile", &occ::log::set_log_file);
 
     // Version information
-    constant("version", std::string("0.9.3"));
+    constant("version", std::string("0.9.4"));
 }
