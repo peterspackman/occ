@@ -36,6 +36,13 @@ struct Guess {
   /// where the projection is the identity.
   gto::AOBasis density_basis;
 
+  /// Whether `density_basis` is the orbital basis itself, in which case the
+  /// caller wants a plain density-driven Fock build. Routing that case through
+  /// the mixed-basis build instead pays for an identity projection: it
+  /// duplicates every shell as auxiliary and runs the four-index loop over the
+  /// doubled set.
+  bool density_in_orbital_basis{false};
+
   /// Whether `density` is block-diagonal over the shells of `density_basis`,
   /// which the mixed-basis Fock build uses to skip integrals. True only for
   /// `Soad`, whose occupations are diagonal by construction.

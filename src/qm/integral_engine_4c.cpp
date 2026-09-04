@@ -238,6 +238,25 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
   auto shell2bf = m_aobasis.first_bf();
   auto shell2bf_D = m_auxbasis.first_bf();
 
+  // Density screening. Every contribution below is weighted by a block of D,
+  // so a block that is negligible contributes nothing and the integral need
+  // not be computed at all. This matters most for exactly the densities that
+  // reach here: a SOAD guess is diagonal, and a superposition of atomic
+  // densities is block diagonal per atom, so the overwhelming majority of
+  // (s3, s4) pairs are identically zero.
+  // `D` here is always a plain square in `D_bs` -- the spin blocks are
+  // replicated by the caller afterwards -- so this is the per-shell-block
+  // infinity norm, without the spinorbital machinery.
+  Mat Dnorm(nsh_aux, nsh_aux);
+  for (int s3 = 0; s3 < nsh_aux; ++s3) {
+    for (int s4 = 0; s4 < nsh_aux; ++s4) {
+      Dnorm(s3, s4) = D.block(shell2bf_D[s3], shell2bf_D[s4], D_bs[s3].size(),
+                              D_bs[s4].size())
+                          .lpNorm<Eigen::Infinity>();
+    }
+  }
+  const double screen = m_precision;
+
   // Parallelize over unique shell pairs (s1,s2) with s2 ≤ s1
   size_t num_pairs = (size_t(nsh) * (nsh + 1)) / 2;
 
@@ -266,6 +285,8 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
       int s4_fence = is_shell_diagonal ? s3 + 1 : nsh_aux;
 
       for (int s4 = s4_begin; s4 != s4_fence; ++s4) {
+        if (Dnorm(s3, s4) < screen)
+          continue;
         int bf4_first = shell2bf_D[s4];
         int n4 = D_bs[s4].size();
         double s34_deg = (s3 == s4) ? 1.0 : 2.0;

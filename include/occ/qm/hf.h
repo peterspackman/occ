@@ -99,6 +99,23 @@ public:
 
   Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_minbs,
                                const gto::AOBasis &bs, bool is_shell_diagonal);
+
+  /// Fock matrix from a density already expressed in this method's own basis.
+  ///
+  /// The conventional four-centre build, which reads `mo.D` and screens on it
+  /// as well as on Schwarz. Density fitting and COSX cannot serve here: both
+  /// build exchange from the occupied coefficients, and a guess has a density
+  /// before it has any orbitals.
+  ///
+  /// Distinct from `compute_fock_mixed_basis`, which exists to project a
+  /// density out of a *different* basis. Handing that function this method's
+  /// own basis makes it duplicate every shell as auxiliary and run the full
+  /// four-index loop unscreened -- on a 566-function system that cost 256 s
+  /// against 59 s for the whole rest of an SCF iteration.
+  Mat compute_fock_from_density(const MolecularOrbitals &mo,
+                                const Mat &Schwarz = Mat()) const {
+    return m_engine.fock_operator(mo.kind, mo, Schwarz);
+  }
   JKPair compute_JK(const MolecularOrbitals &mo,
                     const Mat &Schwarz = Mat()) const;
   JKTriple compute_JK_gradient(const MolecularOrbitals &mo,

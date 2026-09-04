@@ -504,6 +504,14 @@ public:
 
   const auto &hf() const { return m_hf; }
 
+  /// Forwarded to Hartree-Fock: this builds a starting density's Fock matrix,
+  /// where exact exchange stands in for the functional perfectly well and
+  /// saves constructing an XC grid before the first real iteration.
+  inline Mat compute_fock_from_density(const MolecularOrbitals &mo,
+                                       const Mat &Schwarz = Mat()) const {
+    return m_hf.compute_fock_from_density(mo, Schwarz);
+  }
+
   inline Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
                                       const gto::AOBasis &bs,
                                       bool is_shell_diagonal) {

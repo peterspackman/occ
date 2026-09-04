@@ -250,8 +250,14 @@ void SCF<P>::add_guess_density(const Guess &guess) {
   mo_guess.n_alpha = n_alpha();
   mo_guess.n_beta = n_beta();
   mo_guess.D = guess.density;
-  ctx.F += m_procedure.compute_fock_mixed_basis(
-      mo_guess, guess.density_basis, guess.density_is_shell_diagonal);
+  if (guess.density_in_orbital_basis) {
+    // Already in this method's basis, so no projection is needed -- just a
+    // Fock build from a density, screened on the density and on Schwarz.
+    ctx.F += m_procedure.compute_fock_from_density(mo_guess, ctx.K);
+  } else {
+    ctx.F += m_procedure.compute_fock_mixed_basis(
+        mo_guess, guess.density_basis, guess.density_is_shell_diagonal);
+  }
 }
 
 template <SCFMethod P> void SCF<P>::compute_initial_guess() {
@@ -439,8 +445,10 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
   convergence_accelerator.set_strategy(convergence_settings.diis_strategy);
   convergence_accelerator.set_switch_threshold(convergence_settings.diis_switch_threshold);
 
-  compute_initial_guess();
+  // Before the guess, not after: the guess builds a Fock matrix too and can
+  // screen with it.
   ctx.K = m_procedure.compute_schwarz_ints();
+  compute_initial_guess();
   Mat D_diff = ctx.mo.D;
   Mat D_last;
   Mat FD_comm = Mat::Zero(ctx.F.rows(), ctx.F.cols());

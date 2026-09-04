@@ -384,6 +384,7 @@ Guess build_atomic_scf(const GuessRequest &request) {
   guess.kind = GuessKind::AtomicScf;
   guess.density = std::move(D);
   guess.density_basis = basis;
+  guess.density_in_orbital_basis = true;
   return guess;
 }
 

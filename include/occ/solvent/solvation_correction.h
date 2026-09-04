@@ -278,6 +278,11 @@ public:
     return m_proc.compute_fock(mo, Schwarz);
   }
 
+  Mat compute_fock_from_density(const MolecularOrbitals &mo,
+                                const Mat &Schwarz = Mat()) const {
+    return m_proc.compute_fock_from_density(mo, Schwarz);
+  }
+
   Mat compute_fock_mixed_basis(const MolecularOrbitals &mo_bs,
                                const qm::AOBasis &bs, bool is_shell_diagonal) {
     return m_proc.compute_fock_mixed_basis(mo_bs, bs, is_shell_diagonal);
