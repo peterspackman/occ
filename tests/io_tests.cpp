@@ -1,8 +1,12 @@
-#include <fmt/core.h>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <fmt/core.h>
 #include <occ/core/format_matrix.h>
+#include <occ/core/units.h>
+#include <occ/crystal/spacegroup.h>
+#include <occ/io/cifparser.h>
+#include <occ/io/cifwriter.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/crystalgrower.h>
@@ -10,13 +14,12 @@
 #include <occ/io/dftb_gen.h>
 #include <occ/io/eigen_json.h>
 #include <occ/io/gmf.h>
-#include <occ/isosurface/isosurface_json.h>
-#include <occ/qm/io/orca_json.h>
-#include <occ/isosurface/ply.h>
-#include <occ/qm/io/qcschema.h>
+#include <occ/io/load_geometry.h>
 #include <occ/io/shelxfile.h>
-#include <occ/io/cifparser.h>
-#include <occ/io/cifwriter.h>
+#include <occ/isosurface/isosurface_json.h>
+#include <occ/isosurface/ply.h>
+#include <occ/qm/io/orca_json.h>
+#include <occ/qm/io/qcschema.h>
 
 using occ::format_matrix;
 using occ::util::all_close;
@@ -598,6 +601,250 @@ TEST_CASE("Isosurface JSON", "[isosurface_json]") {
     REQUIRE_THAT(normals[5].get<float>(), Catch::Matchers::WithinRel(1.0f));
     REQUIRE_THAT(normals[8].get<float>(), Catch::Matchers::WithinRel(1.0f));
   }
+}
+
+TEST_CASE("CIF symmetry: ICSD origin suffixes", "[cif][file]") {
+  // ICSD-derived files mark the origin choice with a trailing S or Z rather
+  // than the :1 / :2 gemmi expects, and 'F d -3 m Z' read as 'F d -3 m' puts
+  // the structure at the wrong origin.
+  const std::string cif = R"CIF(data_test
+_cell_length_a 11.0
+_cell_length_b 11.0
+_cell_length_c 11.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_space_group_name_H-M_alt 'F d -3 m Z'
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+C1 C 0.125 0.125 0.125
+)CIF";
+  occ::io::CifParser parser;
+  auto crystal = parser.parse_crystal_from_string(cif);
+  INFO(parser.failure_description());
+  REQUIRE(crystal.has_value());
+
+  const occ::crystal::SpaceGroup origin_two("F d -3 m :2");
+  std::vector<std::string> found, expected;
+  for (const auto &op : crystal->space_group().symmetry_operations())
+    found.push_back(op.to_string());
+  for (const auto &op : origin_two.symmetry_operations())
+    expected.push_back(op.to_string());
+  std::sort(found.begin(), found.end());
+  std::sort(expected.begin(), expected.end());
+  CHECK(found == expected);
+}
+
+TEST_CASE("CIF numeric placeholders do not become NaN", "[cif][file]") {
+  // '?' and '.' are how a CIF says it is not reporting a value. Passing them
+  // through as NaN poisons every structure factor computed from the result,
+  // and a mixed column -- anisotropic atoms with '?', isotropic ones with a
+  // number -- is entirely ordinary.
+  const std::string cif = R"CIF(data_test
+_cell_length_a 8.0
+_cell_length_b 9.0
+_cell_length_c 10.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 100.0
+_cell_angle_gamma 90.0
+_symmetry_space_group_name_H-M 'P 1'
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_occupancy
+C1 C 0.10 0.20 0.30 ? .
+H1 H 0.40 0.50 0.60 0.05 1.0
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+C1 0.02 0.03 0.04 ? ? 0.001
+)CIF";
+  occ::io::CifParser parser;
+  auto crystal = parser.parse_crystal_from_string(cif);
+  INFO(parser.failure_description());
+  REQUIRE(crystal.has_value());
+
+  const auto &asym = crystal->asymmetric_unit();
+  REQUIRE(asym.size() == 2);
+  CHECK_FALSE(asym.adps.hasNaN());
+  CHECK_FALSE(asym.occupations.hasNaN());
+  // A missing occupancy falls back to full, and the reported ADPs survive.
+  CHECK_THAT(asym.occupations(0), Catch::Matchers::WithinAbs(1.0, 1e-12));
+  CHECK_THAT(asym.adps(0, 0), Catch::Matchers::WithinAbs(0.02, 1e-12));
+  CHECK_THAT(asym.adps(3, 0), Catch::Matchers::WithinAbs(0.0, 1e-12));
+  CHECK_THAT(asym.adps(5, 0), Catch::Matchers::WithinAbs(0.001, 1e-12));
+  CHECK_THAT(asym.adps(0, 1), Catch::Matchers::WithinAbs(0.05, 1e-12));
+}
+
+TEST_CASE("CIF symmetry: the setting comes from the Hall symbol",
+          "[cif][file]") {
+  // P 4/n is one of about twenty groups with two origin choices. The
+  // Hermann-Mauguin name does not say which; the Hall symbol does, and so does
+  // the list of operations. Reading the name first puts the structure at the
+  // wrong origin, which moves every atom that should sit on a special position.
+  const std::string header = R"CIF(data_test
+_cell_length_a 10.0
+_cell_length_b 10.0
+_cell_length_c 12.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_symmetry_space_group_name_H-M 'P 4/n'
+)CIF";
+  const std::string atoms = R"CIF(
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+C1 C 0.25 0.25 0.0
+)CIF";
+
+  const auto operations = [](const occ::crystal::Crystal &crystal) {
+    std::vector<std::string> result;
+    for (const auto &op : crystal.space_group().symmetry_operations())
+      result.push_back(op.to_string());
+    std::sort(result.begin(), result.end());
+    return result;
+  };
+
+  occ::io::CifParser parser;
+  auto by_name = parser.parse_crystal_from_string(header + atoms);
+  REQUIRE(by_name.has_value());
+
+  occ::io::CifParser hall_parser;
+  auto by_hall = hall_parser.parse_crystal_from_string(
+      header + "_space_group_name_Hall '-P 4a'\n" + atoms);
+  REQUIRE(by_hall.has_value());
+
+  // Both are P 4/n, but not the same setting.
+  CHECK(by_name->space_group().number() == by_hall->space_group().number());
+  CHECK(operations(*by_name) != operations(*by_hall));
+
+  const occ::crystal::SpaceGroup origin_two("P 4/n :2");
+  std::vector<std::string> expected;
+  for (const auto &op : origin_two.symmetry_operations())
+    expected.push_back(op.to_string());
+  std::sort(expected.begin(), expected.end());
+  CHECK(operations(*by_hall) == expected);
+
+  // An explicit list of operations pins the setting down just as well.
+  std::string symops = "\nloop_\n_symmetry_equiv_pos_as_xyz\n";
+  for (const auto &op : origin_two.symmetry_operations())
+    symops += op.to_string() + "\n";
+  occ::io::CifParser symop_parser;
+  auto by_symops =
+      symop_parser.parse_crystal_from_string(header + symops + atoms);
+  REQUIRE(by_symops.has_value());
+  CHECK(operations(*by_symops) == expected);
+}
+
+TEST_CASE("CIF symmetry: operations in a non-standard basis", "[cif][file]") {
+  // P 1 21/c 1 on the C-centred cell a' = a + b, b' = -a + b of an orthogonal
+  // 7 x 8 x 9 A cell. gemmi has no table entry for that setting, and falling
+  // back to the name expands every atom with the wrong operations.
+  const std::string header = fmt::format(
+      R"CIF(data_test
+_cell_length_a {0:.12f}
+_cell_length_b {0:.12f}
+_cell_length_c 9.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma {1:.12f}
+_symmetry_space_group_name_H-M 'P 1 21/c 1'
+loop_
+_symmetry_equiv_pos_as_xyz
+)CIF",
+      std::sqrt(113.0), std::acos(15.0 / 113.0) * 180.0 / occ::units::PI);
+  const std::vector<std::string> operations{"x,y,z",
+                                            "y+1/4,x+1/4,-z+1/2",
+                                            "-x,-y,-z",
+                                            "-y+1/4,-x+1/4,z+1/2",
+                                            "x+1/2,y+1/2,z",
+                                            "y+3/4,x+3/4,-z+1/2",
+                                            "-x+1/2,-y+1/2,-z",
+                                            "-y+3/4,-x+3/4,z+1/2"};
+  const std::string atoms = R"CIF(loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+C1 C 0.11 0.23 0.37
+)CIF";
+
+  const auto images = [&](size_t num_operations) {
+    std::string cif = header;
+    for (size_t i = 0; i < num_operations; i++)
+      cif += operations[i] + "\n";
+    occ::io::CifParser parser;
+    auto crystal = parser.parse_crystal_from_string(cif + atoms);
+    INFO(parser.failure_description());
+    REQUIRE(crystal.has_value());
+    return crystal->unit_cell_atoms().size();
+  };
+
+  // The whole group is used as given: a general position has eight images.
+  CHECK(images(operations.size()) == 8);
+  // One operation short is not a group, and is not trusted over the name.
+  CHECK(images(operations.size() - 1) == 4);
+}
+
+TEST_CASE("CIF element types and labels", "[cif][file]") {
+  const std::string cell = R"CIF(
+_cell_length_a 10.0
+_cell_length_b 10.0
+_cell_length_c 10.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_symmetry_space_group_name_H-M 'P 1'
+loop_
+_atom_site_label
+)CIF";
+
+  const auto atomic_numbers = [](const std::string &cif) {
+    occ::io::CifParser parser;
+    auto crystal = parser.parse_crystal_from_string(cif);
+    INFO(parser.failure_description());
+    REQUIRE(crystal.has_value());
+    const auto &numbers = crystal->asymmetric_unit().atomic_numbers;
+    return std::vector<int>(numbers.data(), numbers.data() + numbers.size());
+  };
+
+  // A type symbol is an element symbol, whatever its case.
+  CHECK(atomic_numbers("data_types" + cell + R"CIF(_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+NA1 NA 0.0 0.0 0.0
+CL1 CL- 0.5 0.5 0.5
+)CIF") == std::vector<int>{11, 17});
+
+  // Without a type column the label is all there is, and a label is not a
+  // symbol: HO1 is a hydrogen and CD1 a carbon.
+  CHECK(atomic_numbers("data_labels" + cell + R"CIF(_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+O1 0.10 0.10 0.10
+HO1 0.20 0.10 0.10
+CD1 0.30 0.30 0.30
+CA1 0.50 0.50 0.50
+)CIF") == std::vector<int>{8, 1, 6, 6});
 }
 
 TEST_CASE("ShelxFile unified read/write", "[shelx][file]") {

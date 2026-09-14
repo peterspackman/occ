@@ -100,6 +100,7 @@ private:
     FracZ,
     AdpType,
     Uiso,
+    Biso,
     Occupancy,
     AdpLabel,
     AdpU11,

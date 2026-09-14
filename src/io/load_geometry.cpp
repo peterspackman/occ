@@ -9,7 +9,12 @@ namespace occ::io {
 occ::crystal::Crystal load_crystal(const std::string &filename) {
   if (CifParser::is_likely_cif_filename(filename)) {
     occ::io::CifParser parser;
-    return parser.parse_crystal_from_file(filename).value();
+    auto crystal = parser.parse_crystal_from_file(filename);
+    if (!crystal)
+      throw std::runtime_error(fmt::format("Could not read CIF '{}': {}",
+                                           filename,
+                                           parser.failure_description()));
+    return *crystal;
   } else if (DftbGenFormat::is_likely_gen_filename(filename)) {
     DftbGenFormat parser;
     parser.parse(filename);

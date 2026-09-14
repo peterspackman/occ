@@ -207,6 +207,20 @@ public:
   Mat6N to_cartesian_adp(const Mat6N &adp) const;
 
   /**
+   * \brief The u_cif packing of an isotropic displacement parameter.
+   *
+   * ADPs are stored as U^ij referred to the reciprocal axes, and in that
+   * convention an isotropic U is diag(U, U, U) only when the cell is
+   * orthogonal. In general the off-diagonals carry the cosines of the
+   * reciprocal cell angles, and dropping them understates the temperature
+   * factor of every reflection with mixed indices.
+   *
+   * \param u_iso the isotropic displacement parameter, in Angstrom^2
+   * \returns (u11, u22, u33, u12, u13, u23)
+   */
+  Vec6 isotropic_adp(double u_iso) const;
+
+  /**
    * Convert a given matrix of coordinates from Cartesian to fractional
    *
    * \param coords Mat3N of Cartesian coordinates
