@@ -12,6 +12,7 @@
 #include <occ/descriptors/rinse.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/load_geometry.h>
+#include <occ/main/occ_describe.h>
 #include <string>
 #include <tuple>
 
@@ -271,6 +272,44 @@ TEST_CASE("Waasmaier-Kirfel form factors", "[rinse]") {
   CHECK(xray_form_factor("Unobtainium") == std::nullopt);
   CHECK(xray_form_factor(0) == std::nullopt);
   CHECK(xray_form_factor(120) == std::nullopt);
+}
+
+TEST_CASE("occ describe takes several structures", "[rinse][describe]") {
+  using Status = occ::main::DescribeOutcome::Status;
+  const auto path = [](const std::string &name) {
+    return fmt::format("{}/rinse/{}", OCC_TEST_DATA_DIR, name);
+  };
+  const auto reference_hash = [](const std::string &name) {
+    for (const auto &structure : rinse_reference::structures)
+      if (structure.name == name)
+        return std::string(structure.hash_one_word);
+    return std::string{};
+  };
+
+  occ::main::DescribeConfig config;
+  config.structure_filenames = {path("TETRAZ01.res"), path("missing.cif"),
+                                path("ylid.cif")};
+  const auto outcomes = occ::main::describe_structures(config);
+  REQUIRE(outcomes.size() == 3);
+
+  // Each crystal gets its own hash, and an unreadable file in the middle does
+  // not stop the ones after it -- though the run as a whole still fails.
+  CHECK(outcomes[0].status == Status::Described);
+  CHECK(outcomes[0].detail == reference_hash("TETRAZ01.res"));
+  CHECK(outcomes[1].status == Status::Failed);
+  CHECK(outcomes[2].status == Status::Described);
+  CHECK(outcomes[2].detail == reference_hash("ylid.cif"));
+  CHECK_THROWS_AS(occ::main::run_describe_subcommand(config),
+                  std::runtime_error);
+
+  // Restricted to a descriptor that needs molecules, a crystal is skipped, and
+  // a run that describes nothing is an error.
+  config.structure_filenames = {path("TETRAZ01.res")};
+  config.descriptor_strings = {"steinhardt"};
+  CHECK(occ::main::describe_structures(config).front().status ==
+        Status::Skipped);
+  CHECK_THROWS_AS(occ::main::run_describe_subcommand(config),
+                  std::runtime_error);
 }
 
 TEST_CASE("RINSE timing", "[.rinse-benchmark]") {

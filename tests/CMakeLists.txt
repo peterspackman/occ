@@ -124,7 +124,7 @@ target_link_libraries(descriptors_tests PRIVATE occ_descriptors Catch2::Catch2Wi
 catch_discover_tests(descriptors_tests)
 
 add_executable(rinse_tests "${CMAKE_CURRENT_SOURCE_DIR}/rinse_tests.cpp")
-target_link_libraries(rinse_tests PRIVATE occ_descriptors occ_io Catch2::Catch2WithMain Threads::Threads)
+target_link_libraries(rinse_tests PRIVATE occ_descriptors occ_io occ_main Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(rinse_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 catch_discover_tests(rinse_tests)
 
