@@ -2949,3 +2949,48 @@ TEST_CASE("A Friedel pair shares its d-spacing and its Laue orbit",
     REQUIRE(occ::crystal::laue_orbit_partners(centro, centro_surfaces, i)
                 .size() == 1);
 }
+
+TEST_CASE("Primitive supercell", "[crystal][supercell]") {
+  AsymmetricUnit asym = acetic_asym();
+  SpaceGroup sg(33);
+  UnitCell cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
+  Crystal acetic(asym, sg, cell);
+
+  const HKL multiples{2, 3, 1};
+  Crystal supercell = Crystal::create_primitive_supercell(acetic, multiples);
+
+  CHECK(supercell.space_group().number() == 1);
+  CHECK_THAT(supercell.unit_cell().a(),
+             Catch::Matchers::WithinRel(2 * cell.a(), 1e-12));
+  CHECK_THAT(supercell.unit_cell().b(),
+             Catch::Matchers::WithinRel(3 * cell.b(), 1e-12));
+  CHECK_THAT(supercell.unit_cell().c(),
+             Catch::Matchers::WithinRel(cell.c(), 1e-12));
+
+  // The whole point of a supercell: six times the volume holding six times the
+  // atoms. Fractional coordinates are relative to the cell they are quoted in,
+  // and forgetting to divide them down piles every image onto the first cell.
+  const size_t copies = multiples.h * multiples.k * multiples.l;
+  CHECK(supercell.unit_cell_atoms().size() ==
+        copies * acetic.unit_cell_atoms().size());
+  CHECK(supercell.unit_cell_molecules().size() ==
+        copies * acetic.unit_cell_molecules().size());
+
+  // Every atom of the supercell sits on an atom of the original lattice.
+  const Mat3N original = acetic.to_cartesian(acetic.unit_cell_atoms().frac_pos);
+  const Mat3N images =
+      supercell.to_cartesian(supercell.unit_cell_atoms().frac_pos);
+  for (int i = 0; i < images.cols(); i++) {
+    // Reduce back into the original cell before comparing
+    Vec3 fractional = acetic.to_fractional(Vec3(images.col(i)));
+    fractional = fractional.array() - fractional.array().floor();
+    const Vec3 position = acetic.to_cartesian(fractional);
+    double closest = std::numeric_limits<double>::max();
+    for (int j = 0; j < original.cols(); j++)
+      closest = std::min(closest, (original.col(j) - position).norm());
+    INFO("supercell atom " << i);
+    CHECK(closest < 1e-8);
+  }
+
+  CHECK_THROWS(Crystal::create_primitive_supercell(acetic, {0, 1, 1}));
+}

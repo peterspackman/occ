@@ -1001,28 +1001,41 @@ CrystalDimers Crystal::unit_cell_dimers(double radius) const {
 }
 
 Crystal Crystal::create_primitive_supercell(const Crystal &c, HKL hkl) {
+  if (hkl.h < 1 || hkl.k < 1 || hkl.l < 1)
+    throw std::invalid_argument(
+        fmt::format("A supercell needs at least one cell along each axis, got "
+                    "({}, {}, {})",
+                    hkl.h, hkl.k, hkl.l));
+
   const auto &uc = c.unit_cell();
   auto supercell = UnitCell(uc.a() * hkl.h, uc.b() * hkl.k, uc.c() * hkl.l,
                             uc.alpha(), uc.beta(), uc.gamma());
   const auto &uc_mols = c.unit_cell_molecules();
-  size_t natoms = std::accumulate(uc_mols.begin(), uc_mols.end(), 0,
-                                  [](size_t a, const auto &mol) {
-                                    return a + mol.size();
-                                  }) *
-                  hkl.h * hkl.k * hkl.l;
+  const size_t natoms =
+      std::accumulate(
+          uc_mols.begin(), uc_mols.end(), size_t{0},
+          [](size_t a, const auto &mol) { return a + mol.size(); }) *
+      hkl.h * hkl.k * hkl.l;
   Mat3N positions(3, natoms);
   IVec numbers(natoms);
-  Vec3 t;
+  // Fractional coordinates are relative to whichever cell they are quoted in,
+  // so shifting a molecule by whole cells of the original lattice is only half
+  // the job: the result has to be divided down into the supercell's own
+  // fractional coordinates, or every image lands back on the first cell.
+  const Array multiples = Vec3(hkl.h, hkl.k, hkl.l).array().cast<double>();
   size_t offset{0};
   for (int h = 0; h < hkl.h; h++) {
     for (int k = 0; k < hkl.k; k++) {
       for (int l = 0; l < hkl.l; l++) {
+        const Vec3 t(h, k, l);
         for (const auto &uc_mol : uc_mols) {
-          t = Vec3(h, k, l);
-          size_t n = uc_mol.size();
+          const size_t n = uc_mol.size();
           positions.block(0, offset, 3, n) =
-              c.to_fractional(uc_mol.positions());
-          positions.block(0, offset, 3, n).colwise() += t;
+              ((c.to_fractional(uc_mol.positions()).colwise() + t)
+                   .array()
+                   .colwise() /
+               multiples)
+                  .matrix();
           numbers.block(offset, 0, n, 1) = uc_mol.atomic_numbers();
           offset += n;
         }
