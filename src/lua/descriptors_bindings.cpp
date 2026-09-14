@@ -3,6 +3,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/descriptors/pdd_amd.h>
 #include <occ/descriptors/promolecule_shape.h>
+#include <occ/descriptors/rinse.h>
 #include <occ/descriptors/steinhardt.h>
 
 namespace occ::lua_bindings {
@@ -120,6 +121,60 @@ void register_descriptors_bindings(lua_State *L) {
       .addPropertyReadWrite(
           "domain_upper",
           &PromoleculeDensityShape::InterpolatorParameters::domain_upper)
+      .endClass()
+
+      .beginClass<RinseParams>("RinseParams")
+      .addConstructor<void (*)()>()
+      .addPropertyReadWrite("n_max", &RinseParams::n_max)
+      .addPropertyReadWrite("l_min", &RinseParams::l_min)
+      .addPropertyReadWrite("l_max", &RinseParams::l_max)
+      .addPropertyReadWrite("radial_scale", &RinseParams::radial_scale)
+      .addPropertyReadWrite("monopole_normalisation",
+                            &RinseParams::monopole_normalisation)
+      .addPropertyReadWrite("log1p", &RinseParams::log1p)
+      .addPropertyReadWrite("l2", &RinseParams::l2)
+      // Only the volume-uniform basis is reachable from Lua: LuaBridge needs a
+      // Stack specialisation per enum, and the other family is a research knob.
+      .addProperty("q_max", &RinseParams::q_max)
+      .addProperty("sin_theta_over_lambda_max",
+                   &RinseParams::sin_theta_over_lambda_max)
+      .addProperty("num_l_levels", &RinseParams::num_l_levels)
+      .addProperty("size", &RinseParams::size)
+      .addFunction(
+          "fixed_uiso", +[](RinseParams *p, double u) { p->fixed_uiso = u; })
+      .addFunction(
+          "clear_fixed_uiso", +[](RinseParams *p) { p->fixed_uiso.reset(); })
+      .addFunction(
+          "l_values",
+          +[](const RinseParams *p, lua_State *S) {
+            const auto values = p->l_values();
+            occ::Vec as_doubles(values.size());
+            for (size_t i = 0; i < values.size(); i++)
+              as_doubles(i) = values[i];
+            return vec_to_table(S, as_doubles);
+          })
+      .endClass()
+
+      .beginClass<Rinse>("Rinse")
+      .addConstructor<void (*)()>()
+      .addStaticFunction(
+          "new_with_params",
+          +[](const RinseParams &params) { return new Rinse(params); })
+      .addFunction(
+          "power_spectrum",
+          +[](const Rinse *r, const Crystal &c, lua_State *S) {
+            return mat_to_table(S, (*r)(c));
+          })
+      .addFunction(
+          "compute",
+          +[](const Rinse *r, const Crystal &c, lua_State *S) {
+            return vec_to_table(S, r->compute(c));
+          })
+      .addFunction(
+          "hash",
+          +[](const Rinse *r, const Crystal &c, int num_words) {
+            return rinse_hash(r->compute(c), num_words);
+          })
       .endClass()
 
       .endNamespace();

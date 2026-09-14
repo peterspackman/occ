@@ -266,3 +266,26 @@ If you use the openCOSMO-RS solvation model (`occ cosmo-rs`, or
 The OCC implementation uses the published 24a parameter set and is
 independent of, but was developed with reference to, the
 [openCOSMO-RS_py](https://github.com/TUHH-TVT/openCOSMO-RS_py) project.
+
+If you use the RINSE crystal descriptor (`occ describe` on a crystal
+structure, or `Rinse` in the Python and Lua bindings), cite the X-ray
+scattering factors it is built on:
+
+- D. Waasmaier, A. Kirfel,
+  *New analytical scattering-factor functions for free atoms and ions*,
+  Acta Cryst. A **51**, 416-431 (1995).
+  [doi:10.1107/S0108767394013292](https://doi.org/10.1107/S0108767394013292)
+- R. F. Stewart, E. R. Davidson, W. T. Simpson,
+  *Coherent X-Ray Scattering for the Hydrogen Atom in the Hydrogen Molecule*,
+  J. Chem. Phys. **42**, 3175-3187 (1965).
+  [doi:10.1063/1.1696397](https://doi.org/10.1063/1.1696397)
+- R. W. Grosse-Kunstleve, N. K. Sauter, N. W. Moriarty, P. D. Adams,
+  *The Computational Crystallography Toolbox: crystallographic algorithms in a
+  reusable software framework*, J. Appl. Cryst. **35**, 126-136 (2002).
+  [doi:10.1107/S0021889801017824](https://doi.org/10.1107/S0021889801017824)
+  -- the source of the five-Gaussian fit to the Stewart-Davidson-Simpson
+  bonded hydrogen used for H.
+
+The OCC implementation is a port of, and reproduces the descriptors and hashes
+of, the [rinse-descriptor](https://github.com/DuMOCC-Group/rinse-descriptor)
+reference implementation by T. Fellowes, including its bundled PCA hash model.

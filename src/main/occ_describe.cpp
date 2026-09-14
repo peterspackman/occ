@@ -1,11 +1,17 @@
 #include <ankerl/unordered_dense.h>
 #include <occ/core/log.h>
 #include <occ/core/util.h>
+#include <occ/crystal/crystal.h>
+#include <occ/descriptors/rinse.h>
 #include <occ/descriptors/steinhardt.h>
+#include <occ/io/cifparser.h>
+#include <occ/io/load_geometry.h>
+#include <occ/io/shelxfile.h>
 #include <occ/io/xyz.h>
 #include <occ/main/occ_describe.h>
 
 using occ::core::Molecule;
+using occ::crystal::Crystal;
 
 namespace occ::main {
 
@@ -13,6 +19,8 @@ std::string to_string(DescribeConfig::Descriptor desc) {
   switch (desc) {
   case DescribeConfig::Descriptor::Steinhardt:
     return "steinhardt";
+  case DescribeConfig::Descriptor::Rinse:
+    return "rinse";
   default:
     return "unknown descriptor";
   }
@@ -21,6 +29,7 @@ std::string to_string(DescribeConfig::Descriptor desc) {
 std::vector<DescribeConfig::Descriptor> DescribeConfig::descriptors() const {
   std::vector<DescribeConfig::Descriptor> desc{
       DescribeConfig::Descriptor::Steinhardt,
+      DescribeConfig::Descriptor::Rinse,
   };
 
   ankerl::unordered_dense::set<DescribeConfig::Descriptor> result;
@@ -51,42 +60,112 @@ CLI::App *add_describe_subcommand(CLI::App &app) {
   auto config = std::make_shared<DescribeConfig>();
 
   desc->add_option("geometry", config->geometry_filename,
-                   "input geometry file (xyz)")
+                   "input structure file (xyz for molecules, cif or "
+                   "res/ins for crystals)")
       ->required();
 
   desc->add_option("--descriptor", config->descriptor_strings,
-                   "Descriptors to compute");
+                   "Descriptors to compute (steinhardt, rinse)");
+
+  desc->add_option("--hash-words", config->hash_words,
+                   "Words in the RINSE hash; each carries 16 bits");
+
+  desc->add_option_function<double>(
+          "--fixed-uiso", [config](const double &u) { config->fixed_uiso = u; },
+          "Give every atom this isotropic U (A^2) in place of its ADPs for "
+          "RINSE, so structures with and without ADPs can be compared")
+      ->check(CLI::NonNegativeNumber);
 
   desc->fallthrough();
   desc->callback([config]() { run_describe_subcommand(*config); });
   return desc;
 }
 
-void run_describe_subcommand(DescribeConfig const &config) {
+namespace {
 
-  const auto descriptors_to_compute = config.descriptors();
-  if (descriptors_to_compute.size() > 0) {
-    occ::log::info("Descriptors to compute:");
-    for (const auto &desc : descriptors_to_compute) {
-      occ::log::info("{}", to_string(desc));
-    }
-  }
+void describe_molecule(const std::string &filename) {
+  Molecule molecule = occ::io::molecule_from_xyz_file(filename);
+  occ::log::info("Found {} atoms\n", molecule.size());
 
-  Molecule m1 = occ::io::molecule_from_xyz_file(config.geometry_filename);
-
-  occ::log::info("Found {} atoms\n", m1.size());
+  occ::descriptors::Steinhardt steinhardt(6);
 
   occ::log::info("Steinhardt Q parameters");
-  occ::descriptors::Steinhardt s(6);
-  auto q = s.compute_averaged_q(m1.positions());
-  for (int l = 0; l < q.rows(); l++) {
-    occ::log::warn("Q({}): {:12.6f}", l, q(l));
-  }
+  const auto q = steinhardt.compute_averaged_q(molecule.positions());
+  for (int l = 0; l < q.rows(); l++)
+    occ::log::info("Q({}): {:12.6f}", l, q(l));
 
   occ::log::info("Steinhardt W parameters");
-  auto w = s.compute_averaged_w(m1.positions());
-  for (int l = 0; l < w.rows(); l++) {
-    occ::log::warn("W({}): {:12.6f}", l, w(l));
+  const auto w = steinhardt.compute_averaged_w(molecule.positions());
+  for (int l = 0; l < w.rows(); l++)
+    occ::log::info("W({}): {:12.6f}", l, w(l));
+}
+
+void describe_crystal(const std::string &filename, int hash_words,
+                      std::optional<double> fixed_uiso) {
+  const Crystal crystal = occ::io::load_crystal(filename);
+  occ::log::info("Space group {}, {} atoms in the unit cell\n",
+                 crystal.space_group().symbol(),
+                 crystal.unit_cell_atoms().size());
+
+  occ::descriptors::RinseParams rinse_params{};
+  rinse_params.fixed_uiso = fixed_uiso;
+  const occ::descriptors::Rinse rinse(rinse_params);
+  const auto &params = rinse.parameters();
+  if (params.fixed_uiso)
+    occ::log::info("Every atom given U = {:.4f} A^2 in place of its ADPs",
+                   *params.fixed_uiso);
+  const occ::Mat spectrum = rinse(crystal);
+
+  occ::log::info("RINSE power spectrum, sin(theta)/lambda <= {:.3f} A^-1",
+                 params.sin_theta_over_lambda_max());
+  std::string header = fmt::format("{:>4}", "n");
+  for (const int l : params.l_values())
+    header += fmt::format(" {:>10}", fmt::format("l={}", l));
+  occ::log::info("{}", header);
+  for (int n = 0; n < spectrum.rows(); n++) {
+    std::string row = fmt::format("{:>4}", n);
+    for (int k = 0; k < spectrum.cols(); k++)
+      row += fmt::format(" {:10.6f}", spectrum(n, k));
+    occ::log::info("{}", row);
+  }
+  occ::log::info("\nRINSE hash: {}",
+                 occ::descriptors::rinse_hash(
+                     occ::descriptors::Rinse::flatten(spectrum), hash_words));
+}
+
+} // namespace
+
+void run_describe_subcommand(DescribeConfig const &config) {
+  // The file decides what can be computed: RINSE needs a lattice, the
+  // Steinhardt parameters need neighbours around a point.
+  const bool is_crystal =
+      occ::io::CifParser::is_likely_cif_filename(config.geometry_filename) ||
+      occ::io::ShelxFile::is_likely_shelx_filename(config.geometry_filename);
+  const auto available = is_crystal ? DescribeConfig::Descriptor::Rinse
+                                    : DescribeConfig::Descriptor::Steinhardt;
+
+  // Without --descriptor, compute whatever the input allows; with it, only
+  // what was asked for.
+  bool wanted = config.descriptor_strings.empty();
+  for (const auto &desc : config.descriptors()) {
+    if (desc == available)
+      wanted = true;
+    else
+      occ::log::warn("Skipping {}: it needs {} input", to_string(desc),
+                     is_crystal ? "molecular" : "crystal");
+  }
+  if (!wanted)
+    throw std::runtime_error(
+        fmt::format("None of the requested descriptors can be computed for {}",
+                    config.geometry_filename));
+
+  if (is_crystal) {
+    describe_crystal(config.geometry_filename, config.hash_words,
+                     config.fixed_uiso);
+  } else {
+    if (config.fixed_uiso)
+      occ::log::warn("--fixed-uiso only affects RINSE, ignoring it");
+    describe_molecule(config.geometry_filename);
   }
 }
 
