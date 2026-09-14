@@ -1051,3 +1051,20 @@ TEST_CASE("Coincident atoms are rejected up front", "[molecule][geometry]") {
     REQUIRE_NOTHROW(validate_geometry(Molecule(water_numbers, pinched)));
   }
 }
+
+TEST_CASE("Element labels resolve by their leading symbol as written",
+          "[element]") {
+  using occ::core::Element;
+  // Site labels are often written in upper case, and whatever follows the
+  // element symbol is not part of it: HO1 is a hydroxyl hydrogen, not holmium,
+  // and CA1 a carbon, not calcium. A caller that knows it holds a bare symbol
+  // in the wrong case -- a SHELX SFAC type, say -- has to normalise it first.
+  CHECK(Element("HO1").atomic_number() == 1);
+  CHECK(Element("CD1").atomic_number() == 6);
+  CHECK(Element("CA1").atomic_number() == 6);
+  CHECK(Element("H1A").atomic_number() == 1);
+  CHECK(Element("C10").atomic_number() == 6);
+  CHECK(Element("Cl1").atomic_number() == 17);
+  CHECK(Element("Na").atomic_number() == 11);
+  CHECK(Element("").atomic_number() == 0);
+}

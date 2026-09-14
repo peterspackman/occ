@@ -8,9 +8,10 @@ Element::Element(int atomicNumber) : m_data(ELEMENTDATA_TABLE[atomicNumber]) {}
 
 Element::Element(const std::string &s, bool exact_match)
     : m_data(ELEMENTDATA_TABLE[0]) {
-  // capitalize the symbol first
-  auto symbol = occ::util::trim_copy(s);
-  auto capitalized = occ::util::capitalize_copy(s);
+  // Matched as written. Capitalizing here would be wrong for a site label,
+  // where whatever follows the symbol is not part of it: HO1 would become
+  // holmium.
+  const auto symbol = occ::util::trim_copy(s);
   size_t match_length = 0;
   for (size_t i = ELEMENT_MAX - 1; i > 0; i--) {
     const auto dat = ELEMENTDATA_TABLE[i];

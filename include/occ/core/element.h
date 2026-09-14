@@ -152,8 +152,10 @@ public:
    * \param exact_match whether to only find exact matches for the given
    * string.
    *
-   * The string parameter is trimmed of whitespace, then capitalized prior to
-   * attempted matching so it should be case insensitive.
+   * The string parameter is trimmed of whitespace and matched as written, so a
+   * symbol has to be in its usual case: "Na" is sodium, while "NA" reads like a
+   * site label and matches nitrogen. A caller holding a bare symbol of unknown
+   * case should capitalize it first.
    *
    * If exact_match is false, then things like labels e.g. H1, HA will be able
    * to match (based on a partial match) with the relevant element. This
