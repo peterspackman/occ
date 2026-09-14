@@ -123,6 +123,11 @@ add_executable(descriptors_tests "${CMAKE_CURRENT_SOURCE_DIR}/descriptors_tests.
 target_link_libraries(descriptors_tests PRIVATE occ_descriptors Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(descriptors_tests)
 
+add_executable(rinse_tests "${CMAKE_CURRENT_SOURCE_DIR}/rinse_tests.cpp")
+target_link_libraries(rinse_tests PRIVATE occ_descriptors occ_io Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(rinse_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+catch_discover_tests(rinse_tests)
+
 add_executable(solvent_tests "${CMAKE_CURRENT_SOURCE_DIR}/solvent_tests.cpp")
 target_link_libraries(solvent_tests PRIVATE occ_solvent occ_driver occ_cg occ_crystal occ_dft occ_qm occ_io Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(solvent_tests PRIVATE OCC_DATA_DIR="${CMAKE_SOURCE_DIR}/share" OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
@@ -221,6 +226,7 @@ add_custom_target(all_tests ALL
         sht_tests
         slater_tests
         descriptors_tests
+        rinse_tests
         solvent_tests
         xdm_tests
         xtb_tests

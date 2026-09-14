@@ -1,0 +1,76 @@
+data_C_1
+_audit_block_doi                  10.5517/ccdc.csd.cc2lnp43
+_database_code_depnum_ccdc_archive 'CCDC 2403155'
+loop_
+  _citation_id
+  _citation_doi
+  _citation_year
+  1  10.1107/S2052520625009618  2025
+
+_audit_update_record              
+;
+2025-10-30 deposited with the CCDC.	2026-07-17 downloaded from the CCDC.
+;
+
+_pd_block_id                      C_1
+_pd_block_diffractogram_id        d6b_01628_415K.raw_1
+_diffrn_measurement_device_type   Bruker_D8_ADVANCE
+_pd_phase_name                    C
+_cell_length_a                    7.3727(5)
+_cell_length_b                    6.3267(5)
+_cell_length_c                    9.1348(10)
+_cell_angle_alpha                 90
+_cell_angle_beta                  90
+_cell_angle_gamma                 90
+_cell_volume                      426.09(7)
+_cell_formula_units_Z             2
+_chemical_formula_weight          180.939033
+_cell_measurement_temperature     423
+_diffrn_ambient_temperature       423
+_cell_measurement_pressure        101
+_diffrn_ambient_pressure          101
+_exptl_crystal_density_diffrn     1.4103(2)
+_exptl_absorpt_coefficient_mu     0.15038(2)
+_diffrn_radiation_wavelength      0.709300000
+_cell_measurement_theta_min       1.50004995
+_cell_measurement_theta_max       15.001565
+_space_group_crystal_system       orthorhombic
+_space_group_name_H-M_alt         'P 21 21 2'
+loop_
+  _space_group_symop_id
+  _space_group_symop_operation_xyz
+  1  'x, y, z '
+  2  '-x+1/2, y+1/2, -z '
+  3  '-x, -y, z '
+  4  'x+1/2, -y+1/2, -z '
+
+loop_
+  _atom_site_label
+  _atom_site_type_symbol
+  _atom_site_site_symmetry_multiplicity
+  _atom_site_fract_x
+  _atom_site_fract_y
+  _atom_site_fract_z
+  _atom_site_occupancy
+  _atom_site_B_iso_or_equiv
+  B1   B  2             0            0.5   0.94408     1  9.0(3)
+  N1   N  2             0   4.930381e-32   0.15158     1  9.0(3)
+  C1x  C  2  9.860761e-32              0      0.31     1  9.0(3)
+  C2x  C  4       0.92784        0.17359   0.38128     1  9.0(3)
+  C3x  C  4       0.92658        0.17176   0.53194     1  9.0(3)
+  C4x  C  2             0  -1.972152e-31   0.60454     1  9.0(3)
+  H1   H  2             0   1.972152e-31   0.70546     1  9.0(3)
+  H2   H  4       0.89734        0.06907   0.09545   0.5  9.0(3)
+  H3   H  4   2.46519e-32       0.138132  0.095448   0.5  9.0(3)
+  H4   H  4      0.102658       0.069068  0.095448   0.5  9.0(3)
+  H8   H  4      0.126123       0.692877  0.320349     1  9.0(3)
+  H9   H  4      0.131173       0.696841  0.592835     1  9.0(3)
+  F0   F  4     -0.079(9)      0.457(13)  1.079(2)  0.25  9.0(3)
+  F1   F  4      0.143(7)      0.639(10)  0.963(4)  0.25  9.0(3)
+  F2   F  4      0.051(9)       0.312(7)  0.878(8)  0.25  9.0(3)
+  F3   F  4     -0.131(8)       0.575(9)  0.849(7)  0.25  9.0(3)
+  F4   F  4    -0.092(14)      0.324(11)  0.892(6)  0.25  9.0(3)
+  F5   F  4      0.129(8)      0.563(11)  0.842(6)  0.25  9.0(3)
+  F6   F  4    -0.123(12)      0.658(12)  0.978(6)  0.25  9.0(3)
+  F7   F  4     0.074(10)      0.454(12)  1.080(3)  0.25  9.0(3)
+
