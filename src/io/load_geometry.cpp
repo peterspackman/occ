@@ -2,6 +2,7 @@
 #include <occ/io/cifparser.h>
 #include <occ/io/dftb_gen.h>
 #include <occ/io/load_geometry.h>
+#include <occ/io/shelxfile.h>
 #include <occ/io/xyz.h>
 
 namespace occ::io {
@@ -14,6 +15,13 @@ occ::crystal::Crystal load_crystal(const std::string &filename) {
       throw std::runtime_error(fmt::format("Could not read CIF '{}': {}",
                                            filename,
                                            parser.failure_description()));
+    return *crystal;
+  } else if (ShelxFile::is_likely_shelx_filename(filename)) {
+    ShelxFile parser;
+    auto crystal = parser.read_crystal_from_file(filename);
+    if (!crystal)
+      throw std::runtime_error(fmt::format("Could not read SHELX file '{}': {}",
+                                           filename, parser.error_message()));
     return *crystal;
   } else if (DftbGenFormat::is_likely_gen_filename(filename)) {
     DftbGenFormat parser;

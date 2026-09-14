@@ -603,6 +603,70 @@ TEST_CASE("Isosurface JSON", "[isosurface_json]") {
   }
 }
 
+namespace {
+
+// A monoclinic structure exercising the parts of the format that carry
+// structural information: continuation lines, comments, free variables, a
+// disordered pair whose occupancies sum to one, riding hydrogens, and a tail of
+// instructions and difference-map peaks that are not atoms.
+constexpr const char *shelx_hard_case = R"SHELX(TITL hard case ! with a comment
+CELL 0.71073 7.1234 8.2345 11.3456 90.0 102.345 90.0
+ZERR 4 0.001 0.001 0.001 0 0.02 0
+LATT 1
+SYMM -x, 1/2+y, 1/2-z
+SFAC C H N O
+UNIT 8 12 4 4
+FVAR 0.31427 0.63000
+REM this is a remark 4 and should not become an atom
+WGHT 0.05 0.1
+L.S. 10
+ACTA
+BOND $H
+CONF
+AFIX 137
+C1    1  0.11000  0.22000  0.33000  11.00000  0.02100  0.02200 =
+         0.02300  0.00100  0.00200  0.00300
+H1A   2  0.15000  0.28000  0.36000  11.00000 -1.50000
+H1B   2  0.05000  0.25000  0.29000  11.00000 -1.50000
+AFIX 0
+PART 1
+O1    4  0.41000  0.52000  0.63000  21.00000  0.03100
+PART 2
+O2    4  0.44000  0.55000  0.66000 -21.00000  0.03300
+PART 0
+N1    3  0.71000  0.12000  0.83000  10.50000  0.01900  0.02000 =
+         0.02100 -0.00100 -0.00200 -0.00300
+RESI 1 SOL
+C2    1  0.61000  0.72000  0.13000  11.00000  0.02500
+HKLF 4
+END
+Q1    1  0.90000  0.90000  0.90000  11.00000  0.05000  1.23
+Q2    1  0.80000  0.80000  0.80000  11.00000  0.05000  0.98
+)SHELX";
+
+// Two atoms on inversion centres, so the site occupation factors carry a
+// symmetry factor of a half.
+constexpr const char *shelx_nacl = R"SHELX(TITL NaCl
+CELL 0.71073 5.64020 5.64020 5.64020 90.000 90.000 90.000
+LATT 1
+SFAC NA CL
+UNIT 1 1
+NA1 1 0.000000 0.000000 0.000000 11.00000 0.05000
+CL1 2 0.500000 0.500000 0.500000 11.00000 0.05000
+END
+)SHELX";
+
+int index_of_label(const occ::crystal::Crystal &crystal,
+                   const std::string &label) {
+  const auto &labels = crystal.asymmetric_unit().labels;
+  for (size_t i = 0; i < labels.size(); i++)
+    if (labels[i] == label)
+      return static_cast<int>(i);
+  return -1;
+}
+
+} // namespace
+
 TEST_CASE("CIF symmetry: ICSD origin suffixes", "[cif][file]") {
   // ICSD-derived files mark the origin choice with a trailing S or Z rather
   // than the :1 / :2 gemmi expects, and 'F d -3 m Z' read as 'F d -3 m' puts
@@ -804,6 +868,19 @@ C1 C 0.11 0.23 0.37
   CHECK(images(operations.size() - 1) == 4);
 }
 
+TEST_CASE("ShelxFile reads upper-case SFAC types", "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto crystal = shelx.read_crystal_from_string(shelx_nacl);
+  INFO(shelx.error_message());
+  REQUIRE(crystal.has_value());
+
+  // SHELX writes scattering types in upper case: NA is sodium, not nitrogen.
+  const auto &numbers = crystal->asymmetric_unit().atomic_numbers;
+  REQUIRE(numbers.size() == 2);
+  CHECK(numbers(0) == 11);
+  CHECK(numbers(1) == 17);
+}
+
 TEST_CASE("CIF element types and labels", "[cif][file]") {
   const std::string cell = R"CIF(
 _cell_length_a 10.0
@@ -845,6 +922,104 @@ HO1 0.20 0.10 0.10
 CD1 0.30 0.30 0.30
 CA1 0.50 0.50 0.50
 )CIF") == std::vector<int>{8, 1, 6, 6});
+}
+
+TEST_CASE("ShelxFile reads displacement parameters", "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto crystal = shelx.read_crystal_from_string(shelx_hard_case);
+  INFO(shelx.error_message());
+  REQUIRE(crystal.has_value());
+
+  const auto &asym = crystal->asymmetric_unit();
+  // The instruction lines, the residue, and the two difference-map peaks are
+  // not atoms; the seven real ones are.
+  REQUIRE(asym.size() == 7);
+  CHECK(crystal->space_group().symbol() == "P 1 21/c 1");
+
+  // SHELX writes the off-diagonals U23 U13 U12; occ stores U12 U13 U23.
+  const int c1 = index_of_label(*crystal, "C1");
+  REQUIRE(c1 >= 0);
+  CHECK_THAT(asym.adps(0, c1), Catch::Matchers::WithinAbs(0.021, 1e-12));
+  CHECK_THAT(asym.adps(1, c1), Catch::Matchers::WithinAbs(0.022, 1e-12));
+  CHECK_THAT(asym.adps(2, c1), Catch::Matchers::WithinAbs(0.023, 1e-12));
+  CHECK_THAT(asym.adps(3, c1), Catch::Matchers::WithinAbs(0.003, 1e-12));
+  CHECK_THAT(asym.adps(4, c1), Catch::Matchers::WithinAbs(0.002, 1e-12));
+  CHECK_THAT(asym.adps(5, c1), Catch::Matchers::WithinAbs(0.001, 1e-12));
+
+  // A negative U_iso means the atom rides on the last one with a U of its own,
+  // at that multiple of its U_eq -- 1.5 * U_eq(C1) here.
+  const int h1a = index_of_label(*crystal, "H1A");
+  REQUIRE(h1a >= 0);
+  CHECK_THAT(asym.adps(0, h1a),
+             Catch::Matchers::WithinRel(0.03360569872884666, 1e-12));
+
+  const int c2 = index_of_label(*crystal, "C2");
+  REQUIRE(c2 >= 0);
+  CHECK_THAT(asym.adps(0, c2), Catch::Matchers::WithinAbs(0.025, 1e-12));
+  // An isotropic U is not diag(U, U, U) in a monoclinic cell: u13 picks up
+  // cos(beta*).
+  CHECK_THAT(asym.adps(3, c2), Catch::Matchers::WithinAbs(0.0, 1e-12));
+  CHECK(asym.adps(4, c2) != 0.0);
+  CHECK_THAT(asym.adps(5, c2), Catch::Matchers::WithinAbs(0.0, 1e-12));
+}
+
+TEST_CASE("ShelxFile decodes free variables", "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto crystal = shelx.read_crystal_from_string(shelx_hard_case);
+  REQUIRE(crystal.has_value());
+  const auto &asym = crystal->asymmetric_unit();
+
+  // 21.0 is "free variable 2", -21.0 is "one minus free variable 2", and
+  // 10.5 is a plain 0.5 held fixed.
+  CHECK_THAT(asym.occupations(index_of_label(*crystal, "O1")),
+             Catch::Matchers::WithinRel(0.63, 1e-12));
+  CHECK_THAT(asym.occupations(index_of_label(*crystal, "O2")),
+             Catch::Matchers::WithinRel(0.37, 1e-12));
+  CHECK_THAT(asym.occupations(index_of_label(*crystal, "N1")),
+             Catch::Matchers::WithinRel(0.5, 1e-12));
+  CHECK_THAT(asym.occupations(index_of_label(*crystal, "C1")),
+             Catch::Matchers::WithinRel(1.0, 1e-12));
+}
+
+TEST_CASE("ShelxFile puts site symmetry back into the occupancy",
+          "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto crystal = shelx.read_crystal_from_string(shelx_nacl);
+  INFO(shelx.error_message());
+  REQUIRE(crystal.has_value());
+
+  // LATT 1 is positive, so the structure is centrosymmetric and both atoms sit
+  // on inversion centres. SHELX halves the occupancy of such a site because its
+  // structure factor sums over both images; occ keeps one position, so the
+  // occupancy has to carry the factor instead.
+  CHECK(crystal->space_group().symbol() == "P -1");
+  const auto &asym = crystal->asymmetric_unit();
+  REQUIRE(asym.size() == 2);
+  CHECK_THAT(asym.occupations(0), Catch::Matchers::WithinRel(2.0, 1e-12));
+  CHECK_THAT(asym.occupations(1), Catch::Matchers::WithinRel(2.0, 1e-12));
+  CHECK(crystal->unit_cell_atoms().size() == 2);
+}
+
+TEST_CASE("ShelxFile round-trips occupancies and ADPs", "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto original = shelx.read_crystal_from_string(shelx_hard_case);
+  REQUIRE(original.has_value());
+
+  occ::io::ShelxFile writer;
+  auto reread = writer.read_crystal_from_string(
+      writer.write_crystal_to_string(*original));
+  INFO(writer.error_message());
+  REQUIRE(reread.has_value());
+
+  const auto &before = original->asymmetric_unit();
+  const auto &after = reread->asymmetric_unit();
+  REQUIRE(before.size() == after.size());
+  CHECK((before.occupations - after.occupations).cwiseAbs().maxCoeff() < 1e-5);
+  CHECK((before.adps - after.adps).cwiseAbs().maxCoeff() < 1e-5);
+  CHECK((before.positions - after.positions).cwiseAbs().maxCoeff() < 1e-5);
+  // The SYMM lines have to leave out what LATT already implies, or a
+  // centrosymmetric group comes back as P1.
+  CHECK(original->space_group().symbol() == reread->space_group().symbol());
 }
 
 TEST_CASE("ShelxFile unified read/write", "[shelx][file]") {
