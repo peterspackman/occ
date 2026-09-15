@@ -1,10 +1,10 @@
 #include <Eigen/Geometry>
-#include <ankerl/unordered_dense.h>
-#include <fmt/core.h>
 #include <algorithm>
+#include <ankerl/unordered_dense.h>
 #include <bit>
 #include <cmath>
 #include <cstdint>
+#include <fmt/core.h>
 #include <map>
 #include <numeric>
 #include <occ/core/log.h>
@@ -13,6 +13,8 @@
 #include <occ/crystal/symmetryoperation.h>
 #include <occ/driver/crystal_morphology.h>
 #include <occ/geometry/wulff.h>
+#include <sstream>
+#include <stdexcept>
 
 namespace occ::driver {
 
@@ -49,11 +51,14 @@ struct UniqueFacet {
   double gamma{0.0};
   double offset{0.0};    // optimal cut offset (fraction of d-spacing)
   double dspacing{0.0};  // interplanar spacing (Angstrom); 0 disables snapping
+  // support distance: gamma for the Wulff shape, the user's for a given habit
+  double distance{0.0};
 };
 
 struct ParticleShape {
   std::vector<Vec3> normals;     // active facet unit normals
-  std::vector<double> distances; // active facet support distances (gamma)
+  std::vector<double> distances; // active facet support distances
+  std::vector<double> gammas;    // active facet surface energies (J/m^2)
   std::vector<HKL> hkls;         // active facet (representative) Miller indices
   std::vector<double> areas;     // active facet area (unit scale)
   std::vector<double> offsets;   // optimal cut offset per active facet
@@ -124,6 +129,7 @@ std::vector<UniqueFacet> unique_facets(const std::vector<FacetEnergies> &facets,
   }
   std::vector<UniqueFacet> out;
   for (auto &[k, v] : best) {
+    v.distance = v.gamma; // the Wulff shape: support distance = surface energy
     double gnorm = occ::crystal::Surface(v.hkl, crystal).d(); // |G| = 1/d
     v.dspacing = (gnorm > 1e-9) ? 1.0 / gnorm : 0.0;
     out.push_back(v);
@@ -133,39 +139,34 @@ std::vector<UniqueFacet> unique_facets(const std::vector<FacetEnergies> &facets,
 
 ParticleShape build_shape(const Crystal &crystal,
                           const std::vector<UniqueFacet> &facets) {
-  const size_t n = facets.size();
-  Mat3N hkl(3, n);
-  Vec energies(n);
-  for (size_t i = 0; i < n; ++i) {
-    hkl(0, i) = facets[i].hkl.h;
-    hkl(1, i) = facets[i].hkl.k;
-    hkl(2, i) = facets[i].hkl.l;
-    energies(i) = facets[i].gamma;
-  }
-  // (hkl) plane normal in cartesian is reciprocal * hkl; symmetry rotations
-  // are applied in (direct) fractional coordinates (matches write_wulff)
+  // Every distinct face of each form, with its normal from the integer image
+  // (the (hkl) plane normal in cartesian is reciprocal * hkl); see face_images.
   const Mat3 recip = crystal.unit_cell().reciprocal();
-  Mat3N hkl_frac = crystal.to_fractional(recip * hkl);
-  auto [symop_id, expanded_frac] = crystal.space_group().apply_rotations(hkl_frac);
-  const size_t n_sym = crystal.space_group().symmetry_operations().size();
-  Vec expanded_energies = energies.replicate(n_sym, 1);
-  Mat3N directions = crystal.to_cartesian(expanded_frac);
-  directions.colwise().normalize();
-
-  std::vector<HKL> expanded_hkl(directions.cols());
-  std::vector<double> expanded_offset(directions.cols()), expanded_d(directions.cols());
-  for (int j = 0; j < directions.cols(); ++j) {
-    const auto &rep = facets[j % n]; // apply_rotations orders by symop block
-    expanded_hkl[j] = rep.hkl;       // representative hkl of the form
-    expanded_d[j] = rep.dspacing;
-    // a cut at offset o on face (hkl) maps under symop (R, t) to a cut at
-    // o + hkl'.t (mod 1) on the rotated face hkl' = R^-T hkl, so faces of a
-    // form related by screw axes / glides have shifted optimal terminations
-    occ::crystal::SymmetryOperation symop(static_cast<int>(symop_id(j)));
-    Vec3 hkl_rep(rep.hkl.h, rep.hkl.k, rep.hkl.l);
-    Vec3 hkl_rot = symop.rotation().inverse().transpose() * hkl_rep;
-    double o = rep.offset + hkl_rot.dot(symop.translation());
-    expanded_offset[j] = o - std::floor(o);
+  std::vector<Vec3> normals;
+  std::vector<double> energies;
+  std::vector<HKL> expanded_hkl;
+  std::vector<double> expanded_gamma, expanded_offset, expanded_d;
+  for (const auto &rep : facets) {
+    for (const auto &[image, symop] :
+         occ::crystal::face_images(crystal, rep.hkl)) {
+      const Vec3 h(image.h, image.k, image.l);
+      normals.push_back((recip * h).normalized());
+      energies.push_back(rep.distance);
+      expanded_gamma.push_back(rep.gamma);
+      expanded_hkl.push_back(rep.hkl); // representative hkl of the form
+      expanded_d.push_back(rep.dspacing);
+      // a cut at offset o on face (hkl) maps under symop (R, t) to a cut at
+      // o + hkl'.t (mod 1) on the rotated face hkl' = R^-T hkl, so faces of a
+      // form related by screw axes / glides have shifted optimal terminations
+      const double o = rep.offset + h.dot(symop.translation());
+      expanded_offset.push_back(o - std::floor(o));
+    }
+  }
+  Mat3N directions(3, normals.size());
+  Vec expanded_energies(normals.size());
+  for (size_t j = 0; j < normals.size(); ++j) {
+    directions.col(j) = normals[j];
+    expanded_energies(j) = energies[j];
   }
 
   WulffConstruction wulff(directions, expanded_energies);
@@ -181,6 +182,7 @@ ParticleShape build_shape(const Crystal &crystal,
     active_of_wulff[f] = k;
     shape.normals.push_back(facet.normal);
     shape.distances.push_back(facet.energy);
+    shape.gammas.push_back(expanded_gamma[f]);
     shape.hkls.push_back(expanded_hkl[f]);
     shape.areas.push_back(wulff.facet_area(f));
     shape.offsets.push_back(expanded_offset[f]);
@@ -273,9 +275,32 @@ MorphologyResult compute_crystal_morphology(
   if (options.user_shifts.empty()) {
     facets = unique_facets(surface_energies.facets, crystal);
   } else {
-    // user/growth morphology: fixed support distances, no optimal-cut snapping
-    for (const auto &[hkl, shift] : options.user_shifts)
-      facets.push_back(UniqueFacet{hkl, shift, 0.0, 0.0});
+    // A given habit: the support distances are the user's, but each face sits
+    // at the lowest-energy termination found for its form and reports that
+    // surface energy, exactly as in the Wulff shape. Otherwise faces cut
+    // through molecules at arbitrary depths and the excess energy scatters
+    // with size.
+    const auto computed = unique_facets(surface_energies.facets, crystal);
+    for (const auto &[hkl, distance] : options.user_shifts) {
+      const HKL face = reduced_hkl(hkl);
+      auto form = std::find_if(
+          computed.begin(), computed.end(), [&](const UniqueFacet &f) {
+            for (const auto &[image, symop] :
+                 occ::crystal::face_images(crystal, reduced_hkl(f.hkl)))
+              if (image == face)
+                return true;
+            return false;
+          });
+      if (form == computed.end()) {
+        throw std::invalid_argument(fmt::format(
+            "Morphology shape face ({} {} {}) has no computed surface energy; "
+            "lower --surface-d-min to include it",
+            hkl.h, hkl.k, hkl.l));
+      }
+      UniqueFacet facet = *form;
+      facet.distance = distance;
+      facets.push_back(facet);
+    }
   }
   ParticleShape shape = build_shape(crystal, facets);
   if (shape.normals.size() < 4 || shape.volume <= 0) {
@@ -327,7 +352,7 @@ MorphologyResult compute_crystal_morphology(
   for (size_t f = 0; f < shape.normals.size(); ++f) {
     auto &fm = facet_map[hkl_key(shape.hkls[f])];
     fm.hkl = reduced_hkl(shape.hkls[f]);
-    fm.gamma = shape.distances[f];
+    fm.gamma = shape.gammas[f];
     fm.area += shape.areas[f];
   }
   for (auto &[k, v] : facet_map)
@@ -443,7 +468,7 @@ MorphologyResult compute_crystal_morphology(
     for (size_t fi = 0; fi < shape.areas.size(); ++fi) {
       total_area += shape.areas[fi];
       e_surf_analytic +=
-          shape.distances[fi] / KJ_PER_MOL_TO_J_PER_M2 * shape.areas[fi] * s * s;
+          shape.gammas[fi] / KJ_PER_MOL_TO_J_PER_M2 * shape.areas[fi] * s * s;
     }
     for (const auto &e : shape.edges)
       total_len += e.length;
@@ -485,6 +510,31 @@ MorphologyResult compute_crystal_morphology(
     result.corners.push_back(cm);
   }
   return result;
+}
+
+std::vector<std::pair<HKL, double>> read_morphology_shape(std::istream &input) {
+  std::vector<std::pair<HKL, double>> shape;
+  std::string line;
+  for (int line_number = 1; std::getline(input, line); line_number++) {
+    const std::string content = line.substr(0, line.find('#'));
+    if (content.find_first_not_of(" \t\r") == std::string::npos)
+      continue;
+    std::istringstream fields(content);
+    HKL hkl;
+    double distance{0.0};
+    std::string extra;
+    if (!(fields >> hkl.h >> hkl.k >> hkl.l >> distance) || distance <= 0.0 ||
+        (fields >> extra)) {
+      throw std::invalid_argument(
+          fmt::format("morphology shape line {}: expected 'h k l distance' "
+                      "with a positive distance, got '{}'",
+                      line_number, line));
+    }
+    shape.emplace_back(hkl, distance);
+  }
+  if (shape.empty())
+    throw std::invalid_argument("morphology shape: no faces given");
+  return shape;
 }
 
 } // namespace occ::driver

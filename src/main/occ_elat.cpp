@@ -190,7 +190,7 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
 
   std::unique_ptr<occ::interaction::EnergyModelBase> energy_model;
 
-  if (settings.model_name == "xtb") {
+  if (occ::interaction::model_name_implies_xtb(settings.model_name)) {
     energy_model = std::make_unique<XTBEnergyModel>(c);
   } else if (settings.model_name == "external") {
     if (settings.external_command.empty()) {
@@ -324,7 +324,9 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
   elat->add_option("crystal", config->crystal_filename,
                    "input crystal structure (CIF)")
       ->required();
-  elat->add_option("-m,--model", config->model_name, "Energy model");
+  elat->add_option("-m,--model", config->model_name,
+                   "energy model: ce-b3lyp (default), ce-hf, ce-1p, ce-2p, "
+                   "ce-5p, or gfn2 (also gfn2-xtb, xtb) for tight binding");
   elat->add_option("--json", config->output_json_filename,
                    "JSON filename for output");
   elat->add_option("-r,--radius", config->max_radius,

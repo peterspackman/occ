@@ -1,4 +1,5 @@
 #pragma once
+#include <istream>
 #include <nlohmann/json.hpp>
 #include <occ/cg/morphology_types.h>
 #include <occ/cg/result_types.h>
@@ -19,8 +20,9 @@ namespace occ::driver {
 struct MorphologyOptions {
   std::vector<int> sizes{1000, 2000, 4000, 8000, 16000, 32000};
   double sign{1.0}; ///< +1 for solvated facet energies, -1 for vacuum
-  /// Optional user/growth morphology: (hkl -> support distance). When non-empty it
-  /// replaces the equilibrium (Wulff) shape.
+  /// Optional user/growth morphology: (hkl -> support distance). When non-empty
+  /// it replaces the equilibrium (Wulff) shape. Each face still sits at its
+  /// lowest-energy termination, so every face needs a computed surface energy.
   std::vector<std::pair<occ::crystal::HKL, double>> user_shifts{};
 };
 
@@ -40,5 +42,13 @@ MorphologyResult compute_crystal_morphology(
     const CrystalSurfaceEnergies &surface_energies,
     const occ::cg::CrystalGrowthResult &growth_result,
     const MorphologyOptions &options = {});
+
+/// Read a particle shape for `MorphologyOptions::user_shifts`: one face per
+/// line as `h k l distance`, one face per form (its symmetry-equivalent faces
+/// are added), distances in any one unit since only their ratios matter.
+/// Blank lines and anything after '#' are ignored; a malformed line, or a
+/// distance that is not positive, is an error.
+std::vector<std::pair<occ::crystal::HKL, double>>
+read_morphology_shape(std::istream &input);
 
 } // namespace occ::driver

@@ -47,8 +47,7 @@ public:
   std::vector<WulffEdge> edges() const;
 
 private:
-  void extract_wulff_from_dual_hull_simplices(const IMat3N &simplices);
-  void merge_coincident_vertices();
+  void build_polyhedron();
 
   std::vector<Facet> m_facets;
 

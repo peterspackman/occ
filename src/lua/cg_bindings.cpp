@@ -109,8 +109,6 @@ void register_cg_bindings(lua_State *L) {
                             &CGConfig::asymmetric_solvent_contribution)
       .addPropertyReadWrite("gamma_point_molecules",
                             &CGConfig::gamma_point_molecules)
-      .addPropertyReadWrite("xtb_solvation_model",
-                            &CGConfig::xtb_solvation_model)
       .addPropertyReadWrite("list_solvents", &CGConfig::list_solvents)
       .addPropertyReadWrite("crystal_is_atomic",
                             &CGConfig::crystal_is_atomic)

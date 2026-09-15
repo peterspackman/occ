@@ -1,9 +1,12 @@
+#include <array>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_random.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <fmt/core.h>
 #include <fmt/os.h>
+#include <fstream>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/geometry/icosphere_mesh.h>
@@ -16,6 +19,13 @@
 #include <occ/geometry/wulff.h>
 #include <occ/isosurface/obj.h>
 #include <random>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#ifndef OCC_TEST_DATA_DIR
+#define OCC_TEST_DATA_DIR "data"
+#endif
 
 // Marching Cubes
 
@@ -281,9 +291,8 @@ TEST_CASE("Wulff", "[geometry]") {
 }
 
 TEST_CASE("Wulff octahedron", "[geometry]") {
-  // Regular octahedron: every corner is 4-valent, so the dual hull
-  // triangulation produces coincident Wulff vertices that must be merged
-  // for facet polygons, edges and corners to come out right.
+  // Regular octahedron: every corner is 4-valent, so facet polygons, edges
+  // and corners must each see a single vertex per corner.
   occ::Mat3N directions(3, 8);
   occ::Vec energies = occ::Vec::Ones(8);
   int c = 0;
@@ -310,6 +319,56 @@ TEST_CASE("Wulff octahedron", "[geometry]") {
   for (const auto &e : edges)
     REQUIRE(e.length == Catch::Approx(std::sqrt(6.0)));
   REQUIRE(wulff.total_area() == Catch::Approx(12.0 * std::sqrt(3.0)));
+}
+
+namespace {
+// One facet per line: unit normal x y z, then energy; '#' starts a comment.
+void load_wulff_input(const std::string &filename, occ::Mat3N &normals,
+                      occ::Vec &energies) {
+  std::ifstream file(std::string(OCC_TEST_DATA_DIR) + "/" + filename);
+  REQUIRE(file.good());
+  std::vector<std::array<double, 4>> rows;
+  std::string line;
+  while (std::getline(file, line)) {
+    if (line.empty() || line[0] == '#')
+      continue;
+    std::istringstream fields(line);
+    std::array<double, 4> row{};
+    fields >> row[0] >> row[1] >> row[2] >> row[3];
+    rows.push_back(row);
+  }
+  normals.resize(3, rows.size());
+  energies.resize(rows.size());
+  for (size_t i = 0; i < rows.size(); i++) {
+    normals.col(i) = occ::Vec3(rows[i][0], rows[i][1], rows[i][2]);
+    energies(i) = rows[i][3];
+  }
+}
+} // namespace
+
+TEST_CASE("Wulff construction from near-symmetric facet sets", "[geometry]") {
+  // Facet sets in which faces that would be symmetry equivalent differ in
+  // energy by less than 1e-5, so many Wulff vertices are nearly degenerate.
+  // Reference values: Qhull half-space intersection of each input.
+  auto [filename, max_vertex_norm, total_area] =
+      GENERATE(Catch::Generators::table<std::string, double, double>(
+          {{"wulff_near_symmetric_1.txt", 0.463573783, 1.2991457399e+00},
+           {"wulff_near_symmetric_2.txt", 0.387552698, 1.3427971276e+00},
+           {"wulff_near_symmetric_3.txt", 0.327341046, 8.3143481487e-01}}));
+  INFO(filename);
+  occ::Mat3N normals;
+  occ::Vec energies;
+  load_wulff_input(filename, normals, energies);
+
+  auto wulff = occ::geometry::WulffConstruction(normals, energies);
+  const auto &vertices = wulff.vertices();
+
+  // Every vertex lies inside every facet's half-space n.x <= gamma.
+  Eigen::MatrixXd slack = (normals.transpose() * vertices).colwise() - energies;
+  REQUIRE(slack.maxCoeff() <= 1e-6 * energies.maxCoeff());
+  REQUIRE(vertices.colwise().norm().maxCoeff() ==
+          Catch::Approx(max_vertex_norm).epsilon(1e-5));
+  REQUIRE(wulff.total_area() == Catch::Approx(total_area).epsilon(1e-5));
 }
 
 using namespace quickhull;

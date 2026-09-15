@@ -1,9 +1,12 @@
+#include <algorithm>
 #include <filesystem>
 #include <fmt/os.h>
+#include <fstream>
 #include <occ/cg/interaction_mapper.h>
 #include <occ/core/kabsch.h>
 #include <occ/core/point_group.h>
 #include <occ/crystal/dimer_labeller.h>
+#include <occ/crystal/surface.h>
 #include <occ/dft/dft.h>
 #include <occ/driver/cg_pipeline.h>
 #include <occ/driver/cg_runner.h>
@@ -13,6 +16,7 @@
 #include <occ/driver/crystal_surface_energy.h>
 #include <occ/geometry/wulff.h>
 #include <occ/interaction/disp.h>
+#include <occ/interaction/pairinteraction.h>
 #include <occ/interaction/polarization.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
@@ -93,26 +97,27 @@ inline Mat calculate_directional_correlation_matrix(
 
 inline void write_wulff(const std::string &filename,
                         const CrystalSurfaceEnergies &s) {
-  const auto &sg = s.crystal.space_group();
-  occ::Vec energies(s.facets.size());
-  occ::Mat3N hkl(3, s.facets.size());
-  for (size_t f = 0; f < s.facets.size(); f++) {
-    const auto &facet = s.facets[f];
-    hkl(0, f) = facet.hkl.h;
-    hkl(1, f) = facet.hkl.k;
-    hkl(2, f) = facet.hkl.l;
-    energies(f) = facet.energy;
+  // Every distinct face image of every positive-energy cut; the Wulff
+  // construction keeps the innermost plane of each face. Normals come from the
+  // integer images, as in the morphology (see face_images).
+  const Mat3 recip = s.crystal.unit_cell().reciprocal();
+  std::vector<Vec3> normals;
+  std::vector<double> energies;
+  for (const auto &facet : s.facets) {
+    if (facet.energy <= 0.0)
+      continue;
+    for (const auto &[image, symop] :
+         occ::crystal::face_images(s.crystal, facet.hkl)) {
+      normals.push_back((recip * Vec3(image.h, image.k, image.l)).normalized());
+      energies.push_back(facet.energy);
+    }
   }
-  // (hkl) plane normal in cartesian is reciprocal * hkl; rotations are
-  // applied in (direct) fractional coordinates
-  const auto &R = s.crystal.unit_cell().reciprocal();
-  occ::Mat3N hkl_frac = s.crystal.to_fractional(R * hkl);
-
-  auto [symop_id, expanded_hkl_frac] = sg.apply_rotations(hkl_frac);
-  occ::Vec expanded_energies =
-      energies.replicate(sg.symmetry_operations().size(), 1);
-  occ::Mat3N directions = s.crystal.unit_cell().to_cartesian(expanded_hkl_frac);
-  directions.colwise().normalize();
+  occ::Mat3N directions(3, normals.size());
+  occ::Vec expanded_energies(normals.size());
+  for (size_t j = 0; j < normals.size(); ++j) {
+    directions.col(j) = normals[j];
+    expanded_energies(j) = energies[j];
+  }
   auto wulff = occ::geometry::WulffConstruction(directions, expanded_energies);
   occ::isosurface::Isosurface mesh;
   mesh.vertices = wulff.vertices().cast<float>();
@@ -130,6 +135,22 @@ inline void serialize_cg_dimers(nlohmann::json &j, const Crystal &crystal,
     e["crystal_energy"] = mol_total.crystal_energy;
     e["interaction_energy"] = mol_total.interaction_energy;
     e["solution_term"] = mol_total.solution_term;
+    if (const auto &fe = mol_result.free_energy) {
+      e["free_energy"] = {
+          {"temperature", 298.0},
+          {"lattice_energy", fe->lattice_energy},
+          {"rotational_free_energy", fe->rotational_free_energy},
+          {"translational_free_energy", fe->translational_free_energy},
+          {"solvation_free_energy", fe->solvation_free_energy},
+          {"dH_sublimation", fe->dH_sublimation},
+          {"dS_sublimation", fe->dS_sublimation},
+          {"dG_sublimation", fe->dG_sublimation},
+          {"dG_solution", fe->dG_solution},
+          {"equilibrium_constant", fe->equilibrium_constant},
+          {"log_S", fe->log_S},
+          {"solubility_g_per_L", fe->solubility_g_per_L},
+          {"total_interaction_energy", fe->total_interaction_energy}};
+    }
     if (!mol_result.descriptors.empty()) {
       nlohmann::json descriptors;
       for (const auto &[k, v] : mol_result.descriptors)
@@ -210,6 +231,8 @@ serialize_cg_results(nlohmann::json &j, const Options &opts,
   j["title"] = opts.basename;
   j["solvent"] = opts.solvent;
   j["model"] = fmt::format("crystalclear, solvent='{}'", opts.solvent);
+  j["energy_model"] = opts.energy_model;
+  j["solvation_model"] = solvation_model_name(opts.solvation_model);
   j["has_permutation_symmetry"] = !opts.use_asymmetric_partition;
 
   j["crystal"] = crystal;
@@ -288,8 +311,12 @@ CGPreparation prepare_cg(CGConfig const &config) {
   opts.solvent_probe_radius = config.solvent_probe_radius;
   opts.basename = basename;
   opts.write_debug_output_files = config.write_dump_files;
-  opts.energy_model = config.lattice_settings.model_name;
-  opts.xtb_solvation_model = config.xtb_solvation_model;
+  // --xtb with the default model name still runs xtb; say so in the output.
+  opts.energy_model =
+      config.use_xtb && !occ::interaction::model_name_implies_xtb(
+                            config.lattice_settings.model_name)
+          ? "xtb"
+          : config.lattice_settings.model_name;
   opts.use_asymmetric_partition = config.asymmetric_solvent_contribution;
 
   // just ensure this is true for further outputs as the xtb calculation is
@@ -383,10 +410,33 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
   }
 
   nlohmann::json morphology_json;
+  if (!config.compute_morphology &&
+      (!config.morphology_sizes.empty() || !config.morphology_shape.empty())) {
+    occ::log::warn("--morphology-sizes and --morphology-shape have no effect "
+                   "without --morphology");
+  }
   if (config.compute_morphology && surface_energies) {
     occ::log::info("Computing particle size/shape-dependent energies");
-    result.morphology = compute_crystal_morphology(calc.crystal(), uc_dimers,
-                                                   *surface_energies, result);
+    MorphologyOptions morphology_options;
+    if (!config.morphology_sizes.empty()) {
+      if (std::any_of(config.morphology_sizes.begin(),
+                      config.morphology_sizes.end(),
+                      [](int n) { return n <= 0; })) {
+        throw std::invalid_argument("--morphology-sizes must all be positive");
+      }
+      morphology_options.sizes = config.morphology_sizes;
+    }
+    if (!config.morphology_shape.empty()) {
+      std::ifstream shape_file(config.morphology_shape);
+      if (!shape_file) {
+        throw std::runtime_error(fmt::format(
+            "Cannot read morphology shape file '{}'", config.morphology_shape));
+      }
+      morphology_options.user_shifts = read_morphology_shape(shape_file);
+    }
+    result.morphology =
+        compute_crystal_morphology(calc.crystal(), uc_dimers, *surface_energies,
+                                   result, morphology_options);
     to_json(morphology_json, result.morphology);
   }
 
@@ -423,27 +473,12 @@ CrystalGrowthResult run_cg_impl(CGConfig const &config) {
   return run_cg_pipeline(calc, prep.opts, config);
 }
 
-namespace {
-// Treat `gfn1`, `gfn2`, `xtb`, `gfn1-xtb`, `gfn2-xtb`, … as routes to the
-// in-tree xtb backend so users can pick it via `-m gfn2-xtb` instead of
-// having to remember the `--xtb` flag. Case-insensitive; ignores anything
-// after a leading "gfn" / "xtb" prefix so future variants come along free.
-bool model_name_implies_xtb(const std::string &name) {
-  if (name.empty())
-    return false;
-  std::string lower(name.size(), '\0');
-  std::transform(name.begin(), name.end(), lower.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
-  return lower.rfind("gfn", 0) == 0 || lower.rfind("xtb", 0) == 0;
-}
-} // namespace
-
 CrystalGrowthResult run_cg(CGConfig const &config) {
   CrystalGrowthResult result;
 
   const bool use_xtb_route =
-      config.use_xtb ||
-      model_name_implies_xtb(config.lattice_settings.model_name);
+      config.use_xtb || occ::interaction::model_name_implies_xtb(
+                            config.lattice_settings.model_name);
 
   if (config.dry_run) {
     result = run_cg_impl<DummyCrystalGrowthCalculator>(config);

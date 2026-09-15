@@ -2949,3 +2949,42 @@ TEST_CASE("A Friedel pair shares its d-spacing and its Laue orbit",
     REQUIRE(occ::crystal::laue_orbit_partners(centro, centro_surfaces, i)
                 .size() == 1);
 }
+
+TEST_CASE("Face images are the distinct R^-T hkl over the point group",
+          "[crystal][surface]") {
+  using occ::crystal::HKL;
+  auto cell = occ::crystal::orthorhombic_cell(13.31, 4.1, 5.75);
+  auto sorted_images = [](const Crystal &c, const HKL &hkl) {
+    std::vector<HKL> images;
+    for (const auto &[image, symop] : occ::crystal::face_images(c, hkl))
+      images.push_back(image);
+    std::sort(images.begin(), images.end());
+    return images;
+  };
+
+  SECTION("polar Pna2_1") {
+    // mm2: a general face has four images; a face on the polar axis has only
+    // itself, since its Friedel mate is another form.
+    Crystal polar(acetic_asym(), SpaceGroup(33), cell);
+    REQUIRE(sorted_images(polar, {1, 1, 1}) ==
+            std::vector<HKL>{{-1, -1, 1}, {-1, 1, 1}, {1, -1, 1}, {1, 1, 1}});
+    REQUIRE(sorted_images(polar, {0, 0, 1}) == std::vector<HKL>{{0, 0, 1}});
+    REQUIRE(sorted_images(polar, {1, 0, 0}) ==
+            std::vector<HKL>{{-1, 0, 0}, {1, 0, 0}});
+  }
+
+  SECTION("centrosymmetric P2_1/c") {
+    // The mirror leaves every (h 0 l) face in place, so such a face has two
+    // images, not four.
+    Crystal centro(acetic_asym(), SpaceGroup(14), cell);
+    REQUIRE(sorted_images(centro, {1, 0, -1}) ==
+            std::vector<HKL>{{-1, 0, 1}, {1, 0, -1}});
+    const auto images = occ::crystal::face_images(centro, {2, 1, -3});
+    REQUIRE(images.size() == 4);
+    for (const auto &[image, symop] : images) {
+      const occ::Vec3 expected =
+          symop.rotation().inverse().transpose() * occ::Vec3(2, 1, -3);
+      REQUIRE(occ::Vec3(image.h, image.k, image.l).isApprox(expected));
+    }
+  }
+}

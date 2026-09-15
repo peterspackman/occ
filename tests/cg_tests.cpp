@@ -1,16 +1,28 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <filesystem>
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include <occ/cg/cg_json.h>
 #include <occ/cg/distance_partition.h>
 #include <occ/cg/neighbor_atoms.h>
 #include <occ/cg/result_types.h>
+#include <occ/cg/smd_solvation.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/core/data_directory.h>
+#include <occ/core/molecule.h>
 #include <occ/core/units.h>
+#include <occ/driver/crystal_growth.h>
+#include <occ/driver/crystal_morphology.h>
+#include <occ/driver/monomer_wavefunctions.h>
 #include <occ/solvent/surface.h>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 #ifndef OCC_GFN2_DATA_DIR
 #define OCC_GFN2_DATA_DIR "share"
@@ -676,6 +688,80 @@ TEST_CASE("CG: xtb SMD surfaces partition through acetic-acid crystal",
   CHECK(neighbours_with_assignment > 0);
 }
 
+namespace {
+
+occ::core::Molecule water_molecule() {
+  occ::IVec nums(3);
+  nums << 8, 1, 1;
+  occ::Mat3N pos(3, 3);
+  pos << 0.0, 0.0, 0.0,         // x
+      0.0, 0.7572, -0.7572,     // y
+      0.1173, -0.4692, -0.4692; // z
+  return occ::core::Molecule(nums, pos);
+}
+
+// A fresh directory per test case, so files cached by an earlier run cannot
+// satisfy a lookup the test expects to miss.
+std::filesystem::path fresh_directory(const std::string &name) {
+  const auto dir =
+      std::filesystem::temp_directory_path() / "occ_cg_tests" / name;
+  std::filesystem::remove_all(dir);
+  std::filesystem::create_directories(dir);
+  return dir;
+}
+
+} // namespace
+
+TEST_CASE("CG: wavefunction cache is recomputed at a different basis",
+          "[cg][cache]") {
+  const std::string name = (fresh_directory("gas_level") / "water_0").string();
+  const auto first = occ::driver::calculate_wavefunction(water_molecule(), name,
+                                                         "hf", "3-21g", false);
+  const auto second = occ::driver::calculate_wavefunction(
+      water_molecule(), name, "hf", "sto-3g", false);
+  REQUIRE(first.basis.name() == "3-21g");
+  REQUIRE(second.basis.name() == "sto-3g");
+}
+
+TEST_CASE("CG: monomer energy cache is reused only for the model that wrote it",
+          "[cg][cache]") {
+  const std::string base =
+      (fresh_directory("monomer_energies") / "water").string();
+  auto wavefunctions = occ::driver::calculate_wavefunctions(
+      base, {water_molecule()}, "hf", "3-21g", false);
+  const auto cached_model = [&base]() {
+    std::ifstream ifs(base + "_0_monomer_energies.json");
+    return nlohmann::json::parse(ifs).value("model", std::string{});
+  };
+
+  occ::driver::compute_monomer_energies(base, wavefunctions, "ce-hf");
+  REQUIRE(cached_model() == "CE-HF");
+  occ::driver::compute_monomer_energies(base, wavefunctions, "ce-b3lyp");
+  REQUIRE(cached_model() == "CE-B3LYP");
+}
+
+TEST_CASE("CG: solvated wavefunction cache is recomputed at a different basis",
+          "[cg][cache][solvation]") {
+  const auto dir = fresh_directory("solvated_level");
+  const std::vector<occ::core::Molecule> molecules{water_molecule()};
+  const std::string base = (dir / "water").string();
+
+  occ::cg::SMDSettings settings;
+  settings.basis = "3-21g";
+  const auto gas = occ::driver::calculate_wavefunctions(
+      (dir / "gas_321g").string(), molecules, settings.method, settings.basis,
+      false);
+  occ::cg::SMDCalculator first(base, molecules, gas, "water", settings);
+  REQUIRE(first.calculate().wavefunctions[0].basis.name() == "3-21g");
+
+  settings.basis = "sto-3g";
+  const auto gas_sto3g = occ::driver::calculate_wavefunctions(
+      (dir / "gas_sto3g").string(), molecules, settings.method, settings.basis,
+      false);
+  occ::cg::SMDCalculator second(base, molecules, gas_sto3g, "water", settings);
+  REQUIRE(second.calculate().wavefunctions[0].basis.name() == "sto-3g");
+}
+
 TEST_CASE("CG: from_xtb_surfaces handles CPCM-X (no cds)",
           "[cg][xtb][solvation]") {
   // Synthesise an xtb SolvationSurfaces with only the coulomb branch and
@@ -696,4 +782,75 @@ TEST_CASE("CG: from_xtb_surfaces handles CPCM-X (no cds)",
   CHECK(cg_s.find("cds") == nullptr);
   CHECK(coulomb->total_energy() == Approx(-0.05).margin(1e-12));
   CHECK(cg_s.total_solvation_energy == Approx(-0.05).margin(1e-12));
+}
+
+TEST_CASE("CG: xtb growth calculator with no solvation stays in the gas phase",
+          "[cg][xtb][solvation]") {
+  occ::driver::CrystalGrowthCalculatorOptions opts;
+  opts.solvation_model = occ::driver::SolvationModelKind::None;
+  occ::driver::XTBCrystalGrowthCalculator calc(acetic_acid_crystal(), opts);
+  calc.init_monomer_energies();
+
+  REQUIRE_FALSE(calc.m_gas_phase_energies.empty());
+  REQUIRE(calc.m_solvated_energies == calc.m_gas_phase_energies);
+  for (auto &surfaces : calc.solvated_surface_properties())
+    REQUIRE(surfaces.total_energy() == 0.0);
+}
+
+TEST_CASE("CG: xtb growth calculator rejects cosmo-rs",
+          "[cg][xtb][solvation]") {
+  occ::driver::CrystalGrowthCalculatorOptions opts;
+  opts.solvation_model = occ::driver::SolvationModelKind::CosmoRS;
+  REQUIRE_THROWS_AS(
+      [&] {
+        occ::driver::XTBCrystalGrowthCalculator calc(acetic_acid_crystal(),
+                                                     opts);
+      }(),
+      std::invalid_argument);
+}
+
+TEST_CASE("CG: morphology shape files", "[cg][morphology]") {
+  using occ::driver::read_morphology_shape;
+
+  SECTION("faces, with comments and blank lines") {
+    std::istringstream input(
+        "# a needle along c\n1 0 0 1.0\n\n0 1 0 1.0  # sides\n0 0 1 6.5\n");
+    const auto shape = read_morphology_shape(input);
+    REQUIRE(shape.size() == 3);
+    REQUIRE(shape[2].first == occ::crystal::HKL{0, 0, 1});
+    REQUIRE(shape[2].second == 6.5);
+  }
+
+  SECTION("malformed or empty input is an error") {
+    for (const std::string text :
+         {"1 0 0\n", "1 0 0 -2.0\n", "1 0 0 1.0 extra\n", "a b c 1\n",
+          "# nothing\n"}) {
+      INFO(text);
+      std::istringstream input(text);
+      REQUIRE_THROWS_AS(read_morphology_shape(input), std::invalid_argument);
+    }
+  }
+}
+
+TEST_CASE("CG: free energy terms are kept per molecule", "[cg][xtb]") {
+  namespace fs = std::filesystem;
+  const auto dir = fs::temp_directory_path() / "occ_cg_tests_free_energy";
+  fs::remove_all(dir);
+  fs::create_directories(dir);
+
+  occ::driver::CrystalGrowthCalculatorOptions opts;
+  opts.solvation_model = occ::driver::SolvationModelKind::None;
+  opts.basename = (dir / "acetic_acid").string();
+  occ::driver::XTBCrystalGrowthCalculator calc(acetic_acid_crystal(), opts);
+  calc.init_monomer_energies();
+  calc.converge_lattice_energy();
+  const auto result = calc.evaluate_molecular_surroundings();
+
+  REQUIRE_FALSE(result.molecule_results.empty());
+  for (const auto &molecule : result.molecule_results) {
+    REQUIRE(molecule.free_energy.has_value());
+    REQUIRE(molecule.free_energy->lattice_energy ==
+            Approx(0.5 * molecule.total.crystal_energy));
+    REQUIRE(molecule.free_energy->solvation_free_energy == Approx(0.0));
+  }
 }
