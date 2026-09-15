@@ -1,10 +1,14 @@
 #pragma once
 #include <catch2/matchers/catch_matchers_templated.hpp>
+#include <filesystem>
 #include <fmt/core.h>
 #include <sstream>
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <tuple>
 #include <cmath>
+namespace fs = std::filesystem;
 
 // Custom Catch2 matcher for matrix comparison with detailed debugging
 template<typename ExpectedType>
@@ -102,4 +106,18 @@ public:
 template<typename T>
 inline MatrixApproxMatcher<T> IsApproxMatrix(T const& expected, double atol = 1e-6, double rtol = 1e-6) {
     return MatrixApproxMatcher<T>(expected, atol, rtol);
+}
+// This is here to handle strings > 65,535 bytes that MSVC doesn't like
+// It is runtime read instead of comptime... But the other potential solutions
+// are terrible. this is the most concise one and it shouldn't really be a problem.
+inline std::string read_file(const fs::path& path) {
+    std::ifstream file(path, std::ios::binary);
+    if (!file) {
+        throw std::runtime_error(
+            std::format("Failed to open file: {}", path.string()));
+    }
+
+    std::ostringstream contents;
+    contents << file.rdbuf();
+    return contents.str();
 }
