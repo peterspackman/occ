@@ -121,9 +121,9 @@ void parse_input_file(occ::io::OccInput &input, const std::string &filename,
     throw std::runtime_error("Require two monomers in input file");
 
   input.pair.source_a =
-      (fs::path(monomer_directory) / fs::path(monomers[0]["source"])).string();
+      (fs::path(monomer_directory) / fs::path(monomers[0]["source"].get<std::string>())).string();
   input.pair.source_b =
-      (fs::path(monomer_directory) / fs::path(monomers[1]["source"])).string();
+      (fs::path(monomer_directory) / fs::path(monomers[1]["source"].get<std::string>())).string();
 
   load_matrix(monomers[0]["rotation"], input.pair.rotation_a);
   load_vector(monomers[0]["translation"], input.pair.translation_a);
