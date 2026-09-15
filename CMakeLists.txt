@@ -65,7 +65,7 @@ if(WITH_CCACHE)
     endif()
 endif()
 
-if(WITH_LLD)
+if(WITH_LLD AND NOT MSVC)
     find_program(LLD_PROGRAM lld)
     if(LLD_PROGRAM)
         message(STATUS "Using lld linker: ${LLD_PROGRAM}")
