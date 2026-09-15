@@ -165,13 +165,14 @@ endif()
 
 if("${USE_QCINT}")
     set(LIBCINT_REPOSITORY "sunqm/qcint")
-else()
-    set(LIBCINT_REPOSITORY "peterspackman/libcint")
+    # The changes were merged a while ago
+else ()
+    set(LIBCINT_REPOSITORY "sunqm/libcint")
 endif()
 
 # qcint is unsupported under MSVC; fall back to the MSVC-patched libcint fork.
 if(MSVC AND NOT "${USE_QCINT}")
-    set(LIBCINT_REPOSITORY "MilitaoLucas/libcint")
+    set(LIBCINT_REPOSITORY "RealUranar/libcint")
 endif()
 
 if(
@@ -183,7 +184,7 @@ endif()
 if(NOT USE_SYSTEM_LIBCINT)
     # Add compiler flags to fix the implicit function declaration error
     if(MSVC)
-        set(LIBCINT_C_FLAGS "/Tc /wd4024")
+        set(LIBCINT_C_FLAGS "/TC /wd4024")
     else()
         set(LIBCINT_C_FLAGS
             "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE"
@@ -195,7 +196,7 @@ if(NOT USE_SYSTEM_LIBCINT)
         GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
         GIT_TAG master
         OPTIONS
-            "WITH_FORTRAN ${USE_FORTRAN}"
+	    "WITH_FORTRAN OFF"
             "WITH_CINT2_INTERFACE OFF"
             "ENABLE_STATIC ON"
             "BUILD_SHARED_LIBS OFF"
@@ -209,14 +210,31 @@ if(NOT USE_SYSTEM_LIBCINT)
 
     # Apply the flags to the target after it's created
     if(TARGET cint)
-        if(NOT MSVC)
+	if(MSVC)
+	    find_program(PATCH_EXECUTABLE patch
+		    HINTS "C:/Program Files/Git/usr/bin"
+		    REQUIRED
+	    )
+            execute_process(
+		    COMMAND ${PATCH_EXECUTABLE} -p1 -N -r - --forward
+		    INPUT_FILE  "${CMAKE_CURRENT_SOURCE_DIR}/patches/msvc_libcint.patch"
+		    WORKING_DIRECTORY "${libcint_SOURCE_DIR}"
+		    RESULT_VARIABLE _patch_result
+		    OUTPUT_VARIABLE _patch_output
+		    ERROR_VARIABLE _patch_error
+	    )
+	    message(STATUS "libcint patch result: ${_patch_result}")
+	    message(STATUS "libcint patch output: ${_patch_output}")
+	    message(STATUS "libcint patch error: ${_patch_error}")
+	       
+	else ()
             target_compile_options(
                 cint
                 PRIVATE
                     -Wno-implicit-function-declaration
                     -Wno-deprecated-non-prototype
             )
-        endif()
+	endif()
     endif()
 
     add_library(libcint::libcint INTERFACE IMPORTED GLOBAL)
