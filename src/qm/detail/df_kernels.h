@@ -1797,8 +1797,8 @@ inline auto ao_tensor_reconstruction_kernel(std::vector<Eigen::Tensor<double, 4>
     }
     
     // For each ρσ pair, compute V^(-1) * (ρσ|P) and then dot with (μν|P)
-    for (size_t rho = 0; rho < nbf; ++rho) {
-      for (size_t sigma = 0; sigma < nbf; ++sigma) {
+    for (Eigen::Index rho = 0; rho < nbf; ++rho) {
+      for (Eigen::Index sigma = 0; sigma < nbf; ++sigma) {
         // Extract (ρσ|P) vector
         Vec rhosigmaP = Vec::Zero(naux);
         for (size_t P = 0; P < naux; ++P) {
@@ -1811,8 +1811,8 @@ inline auto ao_tensor_reconstruction_kernel(std::vector<Eigen::Tensor<double, 4>
         
         // Now compute (μν|ρσ) = (μν|P) * V^(-1) * (ρσ|P) for assigned μν pairs
         for (size_t pair_idx = pair_start; pair_idx < pair_end; ++pair_idx) {
-          size_t mu = pair_idx / nbf;
-          size_t nu = pair_idx % nbf;
+          Eigen::Index mu = pair_idx / nbf;
+          Eigen::Index nu = pair_idx % nbf;
           
           double integral_value = 0.0;
           for (size_t P = 0; P < naux; ++P) {
@@ -1865,8 +1865,8 @@ inline auto ao_tensor_reconstruction_kernel_batched(std::vector<Eigen::Tensor<do
     
     // Process assigned μν pairs
     for (size_t pair_idx = pair_start; pair_idx < pair_end; ++pair_idx) {
-      size_t mu = pair_idx / nbf;
-      size_t nu = pair_idx % nbf;
+      Eigen::Index mu = pair_idx / nbf;
+      Eigen::Index nu = pair_idx % nbf;
       
       // Extract (μν|P) vector
       Vec munuP = Vec::Zero(naux);
@@ -1876,8 +1876,8 @@ inline auto ao_tensor_reconstruction_kernel_batched(std::vector<Eigen::Tensor<do
       }
       
       // Compute all (μν|ρσ) for this μν using precomputed X values
-      for (size_t rho = 0; rho < nbf; ++rho) {
-        for (size_t sigma = 0; sigma < nbf; ++sigma) {
+      for (Eigen::Index rho = 0; rho < nbf; ++rho) {
+        for (Eigen::Index sigma = 0; sigma < nbf; ++sigma) {
           size_t rhosigma_idx = rho * nbf + sigma;
           double integral_value = munuP.dot(X_all.col(rhosigma_idx));
           tensor(mu, nu, rho, sigma) = integral_value;

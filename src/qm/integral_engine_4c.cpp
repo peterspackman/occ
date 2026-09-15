@@ -1,4 +1,5 @@
 #include "detail/four_center_kernels.h"
+#include <Eigen/src/Core/util/Meta.h>
 
 
 namespace occ::qm {
@@ -373,7 +374,7 @@ Mat IntegralEngine::fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
 Eigen::Tensor<double, 4>
 IntegralEngine::four_center_integrals_tensor(const Mat &Schwarz) const {
   using Result = IntegralEngine::IntegralResult<4>;
-  const size_t n_ao = nbf();
+  const Eigen::Index n_ao = nbf();
   constexpr auto op = cint::Operator::coulomb;
   auto nthreads = occ::parallel::get_num_threads();
 
@@ -408,10 +409,10 @@ IntegralEngine::four_center_integrals_tensor(const Mat &Schwarz) const {
             if (std::abs(value) > 1e-12) {
               // Determine canonical ordering for 8-fold symmetry
               // Store in form where: μ <= ν and ρ <= σ and (μν) <= (ρσ)
-              size_t mu = std::min(bf0, bf1);
-              size_t nu = std::max(bf0, bf1);
-              size_t rho = std::min(bf2, bf3);
-              size_t sigma = std::max(bf2, bf3);
+              Eigen::Index mu = std::min(bf0, bf1);
+              Eigen::Index nu = std::max(bf0, bf1);
+              Eigen::Index rho = std::min(bf2, bf3);
+              Eigen::Index sigma = std::max(bf2, bf3);
 
               // Ensure (μν) <= (ρσ) by comparing composite indices
               size_t munu = mu * n_ao + nu;
@@ -586,10 +587,10 @@ double IntegralEngine::get_integral_8fold_symmetry(
     size_t l, size_t n_ao) {
   // Map indices to canonical form using 8-fold symmetry
   // Canonical form: μ <= ν and ρ <= σ and (μν) <= (ρσ)
-  size_t mu = std::min(i, j);
-  size_t nu = std::max(i, j);
-  size_t rho = std::min(k, l);
-  size_t sigma = std::max(k, l);
+  Eigen::Index mu = std::min(i, j);
+  Eigen::Index nu = std::max(i, j);
+  Eigen::Index rho = std::min(k, l);
+  Eigen::Index sigma = std::max(k, l);
 
   // Ensure (μν) <= (ρσ) by comparing composite indices
   size_t munu = mu * n_ao + nu;
