@@ -108,6 +108,15 @@ jobs:
         Remove-Item -Path build/*.xz -ErrorAction SilentlyContinue
         ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
 
+    - name: Upload compile_commands.json (on failure)
+      if: failure()
+      continue-on-error: true
+      uses: actions/upload-artifact@v4
+      with:
+        name: compile-commands-${{ matrix.name }}
+        path: ${{github.workspace}}/build/compile_commands.json
+        overwrite: true
+
     - name: Test
       if: matrix.name == 'linux-x86_64'
       working-directory: ${{github.workspace}}/build
