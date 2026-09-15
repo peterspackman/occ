@@ -76,7 +76,7 @@ target_link_libraries(io_periodic_grid_tests PRIVATE occ_io occ_dft Catch2::Catc
 catch_discover_tests(io_periodic_grid_tests)
 
 add_executable(wavefunction_io_tests "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_io_tests.cpp")
-target_link_libraries(wavefunction_io_tests PRIVATE occ_io occ_qm Catch2::Catch2WithMain Threads::Threads)
+target_link_libraries(wavefunction_io_tests PRIVATE occ_io occ_qm TBB::tbb Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(wavefunction_io_tests)
 
 add_executable(interaction_tests "${CMAKE_CURRENT_SOURCE_DIR}/interaction_tests.cpp")
