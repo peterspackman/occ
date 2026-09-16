@@ -693,6 +693,40 @@ inline occ::core::Molecule methane_molecule() {
 }
 } // namespace
 
+TEST_CASE("SMD-xtb: solvation free energy of water", "[xtb][solvation][smd]") {
+  // Characterisation, not a reference: the reaction field is driven by atomic
+  // charges alone (ReactionFieldEngine::update_from_atom_charges), so GFN2's
+  // atomic dipoles and quadrupoles never reach the cavity and polar solutes
+  // come out under-stabilised. Water lands near -3.5 kcal/mol against -6.31
+  // measured, and aromatics are further out. Feeding the CAMM multipoles to
+  // the cavity will move this; update the number deliberately when it does.
+  using occ::core::Molecule;
+  using occ::xtb::SmdSolvationModel;
+  using occ::xtb::XtbCalculator;
+
+  auto atoms = water_atoms();
+  occ::IVec nums(atoms.size());
+  occ::Mat3N pos_ang(3, atoms.size());
+  for (size_t i = 0; i < atoms.size(); ++i) {
+    nums(i) = atoms[i].atomic_number;
+    pos_ang(0, i) = atoms[i].x / occ::units::ANGSTROM_TO_BOHR;
+    pos_ang(1, i) = atoms[i].y / occ::units::ANGSTROM_TO_BOHR;
+    pos_ang(2, i) = atoms[i].z / occ::units::ANGSTROM_TO_BOHR;
+  }
+  Molecule water(nums, pos_ang);
+
+  XtbCalculator gas(water);
+  const double e_gas = gas.single_point_energy();
+  XtbCalculator solvated(water);
+  solvated.set_solvation_model(std::make_shared<SmdSolvationModel>("water"));
+  const double e_solvated = solvated.single_point_energy();
+
+  const double dg = (e_solvated - e_gas) * occ::units::AU_TO_KJ_PER_MOL;
+  INFO("dG(solv) = " << dg << " kJ/mol");
+  REQUIRE(dg < 0.0);
+  REQUIRE(dg == Approx(-14.56).margin(0.5));
+}
+
 TEST_CASE("SMD-xtb: math invariants (water cavity)",
           "[xtb][solvation][smd]") {
   using occ::xtb::SmdSolvationModel;
