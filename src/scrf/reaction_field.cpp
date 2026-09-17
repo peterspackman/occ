@@ -132,9 +132,14 @@ void ReactionFieldEngine::initialize(const Mat3N &positions_bohr,
   // ---- Reset per-update state --------------------------------------------
   m_have_atom_charges = false;
   m_atomic_charges = Vec();
+  m_atomic_dipoles = Mat3N();
+  m_atomic_quadrupoles = Mat();
   m_sigma = Vec();
   m_phi = Vec();
   m_v_solv = Vec::Zero(natom);
+  m_v_dipole = Mat3N();
+  m_v_quad = Mat();
+  m_dE_drco = Vec();
   m_e_es = 0.0;
 
   occ::log::debug("ReactionFieldEngine: solvent='{}' eps={:.4f} f(eps)={:.4f} "
@@ -199,7 +204,12 @@ void ReactionFieldEngine::solve_asc(const Vec &phi_at_cavity,
   // Atom-resolved state stays stale — caller is using the Eulerian path.
   m_have_atom_charges = false;
   m_atomic_charges = Vec();
+  m_atomic_dipoles = Mat3N();
+  m_atomic_quadrupoles = Mat();
   m_v_solv = Vec::Zero(m_atom_positions.cols());
+  m_v_dipole = Mat3N();
+  m_v_quad = Mat();
+  m_dE_drco = Vec();
 }
 
 void ReactionFieldEngine::update_from_atom_charges(const Vec &atom_charges) {
@@ -219,6 +229,96 @@ void ReactionFieldEngine::update_from_atom_charges(const Vec &atom_charges) {
   }
   m_v_solv = m_response.J_solv * atom_charges;
   m_e_es = 0.5 * atom_charges.dot(m_v_solv);
+  m_v_dipole = Mat3N();
+  m_v_quad = Mat();
+  m_dE_drco = Vec();
+}
+
+void ReactionFieldEngine::set_multipole_damping(const Vec &rco_bohr,
+                                               double kdmp3, double kdmp5) {
+  m_damping_rco = rco_bohr;
+  m_kdmp3 = kdmp3;
+  m_kdmp5 = kdmp5;
+}
+
+void ReactionFieldEngine::update_from_atom_multipoles(const Vec &atom_charges,
+                                                      const Mat3N &dipoles,
+                                                      const Mat &quadrupoles) {
+  const Eigen::Index natom = m_atom_positions.cols();
+  if (atom_charges.size() != natom || dipoles.rows() != 3 ||
+      dipoles.cols() != natom || quadrupoles.rows() != 6 ||
+      quadrupoles.cols() != natom) {
+    throw std::runtime_error(fmt::format(
+        "ReactionFieldEngine::update_from_atom_multipoles: expected q({}), "
+        "dipoles(3 x {}), quadrupoles(6 x {}); got q({}), dipoles({} x {}), "
+        "quadrupoles({} x {})",
+        natom, natom, natom, atom_charges.size(), dipoles.rows(),
+        dipoles.cols(), quadrupoles.rows(), quadrupoles.cols()));
+  }
+  m_atomic_charges = atom_charges;
+  m_have_atom_charges = true;
+  m_atomic_dipoles = dipoles;
+  m_atomic_quadrupoles = quadrupoles;
+  m_v_solv = Vec::Zero(natom);
+  m_v_dipole = Mat3N::Zero(3, natom);
+  m_v_quad = Mat::Zero(6, natom);
+  m_dE_drco = Vec();
+
+  const Eigen::Index ncav = m_es_surface.areas.size();
+  if (ncav == 0) {
+    m_sigma = Vec();
+    m_phi = Vec();
+    m_e_es = 0.0;
+    return;
+  }
+
+  const bool damped = m_damping_rco.size() == natom;
+  const auto damping = [&](Eigen::Index a) {
+    return detail::MultipoleDamping{damped ? m_damping_rco(a) : 0.0, m_kdmp3,
+                                    m_kdmp5};
+  };
+
+  m_phi = m_response.B * atom_charges;
+  for (Eigen::Index i = 0; i < ncav; ++i) {
+    double phi = 0.0;
+    for (Eigen::Index a = 0; a < natom; ++a) {
+      const auto k = detail::multipole_kernel(
+          m_es_surface.vertices.col(i) - m_atom_positions.col(a), damping(a));
+      phi += k.t1.dot(dipoles.col(a));
+      for (int p = 0; p < 6; ++p)
+        phi += k.t2[p] * quadrupoles(p, a);
+    }
+    m_phi(i) += phi;
+  }
+
+  m_sigma = m_es_lu.solve(-m_f_eps * m_phi);
+
+  // E_es = ½ φᵀKφ with K = −f(ε)A⁻¹ symmetric, so ∂E/∂X = (∂φ/∂X)ᵀσ for every
+  // moment: each conjugate is just that moment's own kernel contracted with σ.
+  m_v_solv = m_response.B.transpose() * m_sigma;
+  if (damped)
+    m_dE_drco = Vec::Zero(natom);
+  for (Eigen::Index i = 0; i < ncav; ++i) {
+    const double s = m_sigma(i);
+    for (Eigen::Index a = 0; a < natom; ++a) {
+      const auto k = detail::multipole_kernel(
+          m_es_surface.vertices.col(i) - m_atom_positions.col(a), damping(a));
+      const double phi_d = k.t1.dot(dipoles.col(a));
+      double phi_q = 0.0;
+      for (int p = 0; p < 6; ++p)
+        phi_q += k.t2[p] * quadrupoles(p, a);
+      m_v_dipole.col(a) += s * k.t1;
+      for (int p = 0; p < 6; ++p)
+        m_v_quad(p, a) += s * k.t2[p];
+      if (damped) {
+        // t1 and t2 already carry f3 and f5, so ∂φ/∂rco is φ times the
+        // logarithmic derivative of the factor that scaled it.
+        m_dE_drco(a) += s * (phi_d * k.df3_drco / k.f3 +
+                             phi_q * k.df5_drco / k.f5);
+      }
+    }
+  }
+  m_e_es = 0.5 * m_sigma.dot(m_phi);
 }
 
 SolvationSurfaces ReactionFieldEngine::surfaces() const {
@@ -258,7 +358,8 @@ Mat3N ReactionFieldEngine::gradient() const {
     grad += detail::cosmo_gradient_frozen(
         m_atom_positions, m_es_surface.vertices, m_es_surface.areas,
         m_es_surface.atom_index, m_atomic_charges, m_sigma, m_f_eps,
-        m_es_radii, m_opts.smoothing_width_bohr);
+        m_es_radii, m_opts.smoothing_width_bohr, m_atomic_dipoles,
+        m_atomic_quadrupoles, m_damping_rco, m_kdmp3, m_kdmp5);
   }
 
   // CDS branch — FD over the geometry-only CDS energy. Rebuilding the cavity

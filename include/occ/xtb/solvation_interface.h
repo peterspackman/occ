@@ -43,7 +43,45 @@ public:
 
   virtual void update(const Vec &atomic_charges) = 0;
 
+  /// Update from the atomic charges together with the CAMM atomic dipoles
+  /// (3 × N) and traceless quadrupoles (6 × N, `CammMoments::qp` layout), so
+  /// the anisotropic part of the density polarises the continuum too. The
+  /// default drops them, which leaves charge-only models unchanged.
+  virtual void update(const Vec &atomic_charges, const Mat3N & /*dipoles*/,
+                      const Mat & /*quadrupoles*/) {
+    update(atomic_charges);
+  }
+
+  /// Hand the model the solute's own short-range damping radii for the
+  /// atom→cavity dipole and quadrupole kernels, so a multipolar reaction field
+  /// treats the CAMM moments the way the rest of the method does. Called once
+  /// per geometry, before the first `update`. The default ignores them.
+  virtual void set_multipole_damping(const Vec & /*rco_bohr*/,
+                                     double /*kdmp3*/, double /*kdmp5*/) {}
+
   virtual const Vec &atom_potential() const = 0;
+
+  /// Conjugates of the atomic dipoles and quadrupoles at the last update:
+  /// ∂E_solv/∂μ (3 × N) and ∂E_solv/∂Θ (6 × N, same layout as the input). The
+  /// SCC folds these into its anisotropic potentials so the reaction field
+  /// reaches the Fock matrix through the multipole channels as well as the
+  /// charge one. Both are empty unless the model took the multipole update.
+  virtual const Mat3N &dipole_potential() const {
+    static const Mat3N none;
+    return none;
+  }
+  virtual const Mat &quadrupole_potential() const {
+    static const Mat none;
+    return none;
+  }
+
+  /// ∂E_solv/∂R_co per atom, for damping radii that depend on the geometry.
+  /// The caller closes the chain through its own ∂R_co/∂CN and ∂CN/∂R. Empty
+  /// when the model applies no damping.
+  virtual const Vec &damping_radius_gradient() const {
+    static const Vec none;
+    return none;
+  }
 
   virtual double energy() const = 0;
 
@@ -74,6 +112,7 @@ public:
     m_potential = Vec::Zero(atomic_numbers.size());
   }
 
+  using XtbSolvationModel::update;
   void update(const Vec & /*atomic_charges*/) override {}
 
   const Vec &atom_potential() const override { return m_potential; }

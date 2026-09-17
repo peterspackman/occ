@@ -130,6 +130,36 @@ public:
   /// `gradient()` reflect this update.
   void update_from_atom_charges(const Vec &atom_charges);
 
+  /// Atom-resolved including the anisotropic part of the solute density. The
+  /// cavity potential comes from the atom-centred multipole expansion
+  ///
+  ///   φ_i = Σ_A [ q_A/d + μ_A·d/d³ + Σ_αβ Θ^A_αβ d_α d_β/d⁵ ],  d = r_i − R_A
+  ///
+  /// so that a solute with no net atomic charges — benzene, say — still
+  /// polarises the continuum through its quadrupoles. Caches the conjugate of
+  /// every moment, each being that moment's own kernel contracted with σ:
+  ///
+  ///   V_atom = ∂E_es/∂q,  V_dipole = ∂E_es/∂μ,  V_quad = ∂E_es/∂Θ
+  ///
+  /// `dipoles` is 3 × natom. `quadrupoles` is 6 × natom, traceless, ordered
+  /// (xx, xy, yy, xz, yz, zz) with the off-diagonal components entering φ
+  /// twice — the layout and normalisation of `occ::xtb::CammMoments::qp`, so
+  /// the potentials come back conjugate to the stored components directly.
+  ///
+  /// Costs one LU solve per call: the pre-solved response `G` only covers the
+  /// charge column, and widening it to the dipoles and quadrupoles would make
+  /// it nine times larger for no saving on the systems this is used for.
+  void update_from_atom_multipoles(const Vec &atom_charges,
+                                   const Mat3N &dipoles,
+                                   const Mat &quadrupoles);
+
+  /// Short-range damping for the atom→cavity dipole and quadrupole kernels
+  /// (see `detail::MultipoleDamping`). `rco_bohr` is one cut-off radius per
+  /// atom; pass it empty to switch damping off. The radii belong to whatever
+  /// model produced the moments — for GFN2 they are its own CN-dependent
+  /// multipole radii — so the engine takes them rather than choosing them.
+  void set_multipole_damping(const Vec &rco_bohr, double kdmp3, double kdmp5);
+
   /// Total cached solvation energy: E_es + E_cds. (E_cds = 0 when
   /// `include_cds == false`.)
   double energy() const { return m_e_es + m_e_cds; }
@@ -139,6 +169,18 @@ public:
   /// Cached per-atom screening potential V_atom (Hartree, length = natom).
   /// Empty until the first atom-resolved update.
   const Vec &atom_potential() const { return m_v_solv; }
+
+  /// Conjugates of the atomic dipoles (3 × natom) and quadrupoles (6 × natom,
+  /// in the input layout) at the last update. Both are empty unless that
+  /// update went through `update_from_atom_multipoles`.
+  const Mat3N &dipole_potential() const { return m_v_dipole; }
+  const Mat &quadrupole_potential() const { return m_v_quad; }
+
+  /// ∂E_es/∂R_co per atom at the last update (empty when the kernels are
+  /// undamped). Cut-off radii that depend on the geometry contribute to the
+  /// nuclear gradient through this; the caller owns that chain because it owns
+  /// the radii.
+  const Vec &damping_radius_gradient() const { return m_dE_drco; }
 
   /// Cached apparent surface charges σ on the ES cavity. Length = ncav_es.
   /// Empty before the first update.
@@ -150,9 +192,15 @@ public:
   /// geometry-only).
   SolvationSurfaces surfaces() const;
 
-  /// Frozen-cavity analytical gradient (Hartree/Bohr, 3 × natom). Requires
-  /// a prior `update_from_atom_charges(q)` — returns an empty matrix
-  /// otherwise. When `include_cds`, adds an FD CDS contribution on top.
+  /// Frozen-cavity analytical gradient (Hartree/Bohr, 3 × natom). Requires a
+  /// prior atom-resolved update — returns a zero matrix otherwise. When
+  /// `include_cds`, adds an FD CDS contribution on top.
+  ///
+  /// This is the explicit derivative at frozen moments. After
+  /// `update_from_atom_multipoles` the dipoles and quadrupoles are included in
+  /// the source field, but their own response to the geometry (∂μ/∂R, ∂Θ/∂R)
+  /// belongs to the caller's density-Pulay chain, exactly as it does for the
+  /// charges.
   Mat3N gradient() const;
 
   // ---------------------------------------------------------------------
@@ -215,9 +263,17 @@ private:
   // Refreshed on each update*()
   bool m_have_atom_charges{false};
   Vec m_atomic_charges;
+  Mat3N m_atomic_dipoles;      // empty unless the last update carried them
+  Mat m_atomic_quadrupoles;
+  Vec m_damping_rco;           // empty when the kernels are undamped
+  Vec m_dE_drco;
+  double m_kdmp3{3.0};
+  double m_kdmp5{4.0};
   Vec m_phi;
   Vec m_sigma;
   Vec m_v_solv;
+  Mat3N m_v_dipole;  // empty unless the last update carried multipoles
+  Mat m_v_quad;
   double m_e_es{0.0};
 };
 

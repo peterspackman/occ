@@ -694,12 +694,11 @@ inline occ::core::Molecule methane_molecule() {
 } // namespace
 
 TEST_CASE("SMD-xtb: solvation free energy of water", "[xtb][solvation][smd]") {
-  // Characterisation, not a reference: the reaction field is driven by atomic
-  // charges alone (ReactionFieldEngine::update_from_atom_charges), so GFN2's
-  // atomic dipoles and quadrupoles never reach the cavity and polar solutes
-  // come out under-stabilised. Water lands near -3.5 kcal/mol against -6.31
-  // measured, and aromatics are further out. Feeding the CAMM multipoles to
-  // the cavity will move this; update the number deliberately when it does.
+  // Characterisation, not a reference. The reaction field is driven by the
+  // full CAMM expansion, damped the way GFN2 damps its own anisotropic
+  // electrostatics, which puts water at -5.6 kcal/mol against -6.31 measured
+  // and -7.9 from DFT/SMD on the same cavity. Anything that changes the
+  // cavity potential moves this; update the number deliberately when it does.
   using occ::core::Molecule;
   using occ::xtb::SmdSolvationModel;
   using occ::xtb::XtbCalculator;
@@ -724,7 +723,7 @@ TEST_CASE("SMD-xtb: solvation free energy of water", "[xtb][solvation][smd]") {
   const double dg = (e_solvated - e_gas) * occ::units::AU_TO_KJ_PER_MOL;
   INFO("dG(solv) = " << dg << " kJ/mol");
   REQUIRE(dg < 0.0);
-  REQUIRE(dg == Approx(-14.56).margin(0.5));
+  REQUIRE(dg == Approx(-23.58).margin(0.5));
 }
 
 TEST_CASE("SMD-xtb: math invariants (water cavity)",
@@ -782,6 +781,105 @@ TEST_CASE("SMD-xtb: math invariants (water cavity)",
 
   SECTION("per-element CDS sum matches scalar e_cds()") {
     REQUIRE(m.cds_energy_elements().sum() == Approx(m.e_cds()).margin(1e-12));
+  }
+
+  SECTION("zero multipoles reproduce the charge-only reaction field") {
+    occ::Vec q(3);
+    q << -0.6, 0.3, 0.3;
+    m.update(q);
+    const double e_charges = m.e_es();
+    const occ::Vec v_charges = m.atom_potential();
+
+    m.update(q, occ::Mat3N::Zero(3, 3), occ::Mat::Zero(6, 3));
+    INFO("E_es(charges) = " << e_charges << "  E_es(multipoles) = " << m.e_es());
+    REQUIRE(m.e_es() == Approx(e_charges).margin(1e-12));
+    REQUIRE((m.atom_potential() - v_charges).cwiseAbs().maxCoeff() < 1e-12);
+
+    // The conjugates do not vanish with the moments: ∂E/∂μ is the field the
+    // charge-driven σ exerts at each atom, which is what induces the atomic
+    // dipoles once the SCC is allowed to respond to it.
+    REQUIRE(m.dipole_potential().cwiseAbs().maxCoeff() > 1e-4);
+  }
+
+  SECTION("a quadrupole alone polarises the cavity") {
+    // The benzene case in miniature: no atomic charges and no atomic dipoles,
+    // so a charge-driven reaction field would find nothing to respond to.
+    occ::Mat qp = occ::Mat::Zero(6, 3);
+    qp(0, 0) = 0.5;   // xx
+    qp(2, 0) = 0.5;   // yy
+    qp(5, 0) = -1.0;  // zz — traceless
+    m.update(occ::Vec::Zero(3), occ::Mat3N::Zero(3, 3), qp);
+    INFO("E_es(quadrupole only) = " << m.e_es() * 627.5095 << " kcal/mol");
+    REQUIRE(m.e_es() < 0.0);
+    REQUIRE(std::abs(m.e_es() * 627.5095) > 0.1);
+  }
+
+  SECTION("variational consistency: V_dipole = ∂E_es/∂μ") {
+    // The conjugates the SCC folds into its anisotropic potentials, so an
+    // error here is an error in the Fock matrix.
+    occ::Vec q(3);
+    q << -0.6, 0.3, 0.3;
+    occ::Mat3N dipm(3, 3);
+    dipm << 0.10, 0.07, -0.01, 0.13, 0.01, 0.07, 0.02, -0.03, 0.04;
+    occ::Mat qp = occ::Mat::Zero(6, 3);
+    qp(0, 0) = 0.30;
+    qp(2, 0) = -0.10;
+    qp(5, 0) = -0.20;
+    qp(1, 1) = 0.05;
+
+    m.update(q, dipm, qp);
+    const occ::Mat3N v_analytical = m.dipole_potential();
+
+    const double h = 1e-5;
+    occ::Mat3N v_fd(3, 3);
+    for (Eigen::Index a = 0; a < 3; ++a) {
+      for (int k = 0; k < 3; ++k) {
+        occ::Mat3N dp = dipm, dm = dipm;
+        dp(k, a) += h;
+        dm(k, a) -= h;
+        m.update(q, dp, qp);
+        const double ep = m.e_es();
+        m.update(q, dm, qp);
+        const double em = m.e_es();
+        v_fd(k, a) = (ep - em) / (2 * h);
+      }
+    }
+    INFO("analytical:\n" << v_analytical);
+    INFO("finite-diff:\n" << v_fd);
+    REQUIRE((v_analytical - v_fd).cwiseAbs().maxCoeff() < 1e-9);
+  }
+
+  SECTION("variational consistency: V_quad = ∂E_es/∂Θ") {
+    occ::Vec q(3);
+    q << -0.6, 0.3, 0.3;
+    occ::Mat3N dipm(3, 3);
+    dipm << 0.10, 0.07, -0.01, 0.13, 0.01, 0.07, 0.02, -0.03, 0.04;
+    occ::Mat qp = occ::Mat::Zero(6, 3);
+    qp(0, 0) = 0.30;
+    qp(2, 0) = -0.10;
+    qp(5, 0) = -0.20;
+    qp(1, 1) = 0.05;
+
+    m.update(q, dipm, qp);
+    const occ::Mat v_analytical = m.quadrupole_potential();
+
+    const double h = 1e-5;
+    occ::Mat v_fd(6, 3);
+    for (Eigen::Index a = 0; a < 3; ++a) {
+      for (int p = 0; p < 6; ++p) {
+        occ::Mat qpp = qp, qpm = qp;
+        qpp(p, a) += h;
+        qpm(p, a) -= h;
+        m.update(q, dipm, qpp);
+        const double ep = m.e_es();
+        m.update(q, dipm, qpm);
+        const double em = m.e_es();
+        v_fd(p, a) = (ep - em) / (2 * h);
+      }
+    }
+    INFO("analytical:\n" << v_analytical);
+    INFO("finite-diff:\n" << v_fd);
+    REQUIRE((v_analytical - v_fd).cwiseAbs().maxCoeff() < 1e-9);
   }
 
   SECTION("variational consistency: V_solv = ∂E_es/∂q (CDS factors out)") {

@@ -32,7 +32,22 @@ public:
   void initialize(const Mat3N &positions_bohr,
                   const IVec &atomic_numbers) override;
   void update(const Vec &atomic_charges) override;
+  void update(const Vec &atomic_charges, const Mat3N &dipoles,
+              const Mat &quadrupoles) override;
+  void set_multipole_damping(const Vec &rco_bohr, double kdmp3,
+                             double kdmp5) override {
+    m_engine.set_multipole_damping(rco_bohr, kdmp3, kdmp5);
+  }
   const Vec &atom_potential() const override { return m_engine.atom_potential(); }
+  const Mat3N &dipole_potential() const override {
+    return m_engine.dipole_potential();
+  }
+  const Mat &quadrupole_potential() const override {
+    return m_engine.quadrupole_potential();
+  }
+  const Vec &damping_radius_gradient() const override {
+    return m_engine.damping_radius_gradient();
+  }
   double energy() const override { return m_engine.energy(); }
   std::string name() const override;
   std::optional<SolvationSurfaces> surfaces() const override;

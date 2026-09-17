@@ -75,4 +75,15 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
                               const MultipolePairTensors &tensors,
                               const Gfn2Parameters &params);
 
+// Fold externally-supplied per-atom multipole potentials — the reaction
+// field's conjugates of μ and Θ — into `pot`, so the SCC's H1 update sees the
+// solute-solvent coupling through the dipole and quadrupole channels as well
+// as the charge one. `vd_extra` is 3 × n_atoms and `vq_extra` is 6 × n_atoms
+// in CammMoments::qp order (xx, xy, yy, xz, yz, zz); the quadrupole part is
+// transposed into the qpint order `vq` uses. Both carry the same
+// off-diagonal-counted-twice normalization as the AES potentials, so this is a
+// plain add with a reorder — no rescaling. Empty inputs are ignored.
+void add_multipole_potentials(AnisotropicPotentials &pot,
+                               const Mat3N &vd_extra, const Mat &vq_extra);
+
 } // namespace occ::xtb
