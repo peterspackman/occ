@@ -1,6 +1,8 @@
 #include <filesystem>
+#include <fstream>
 #include <fmt/os.h>
 #include <occ/cg/distance_partition.h>
+#include <occ/cg/cg_json.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/driver/crystal_growth.h>
 #include <occ/driver/monomer_wavefunctions.h>
@@ -674,6 +676,50 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
 
     double e_gas, e_solv;
 
+    // A monomer's gas and solvated SCC depend on nothing that changes between
+    // runs on the same structure, but they are not cheap: for a drug-sized
+    // molecule the solvated one dominates a repeat `occ cg`, which is most of
+    // the cost of scanning morphologies. Cache them the way the CE path caches
+    // its monomer energies, keyed on the model and solvent so a cache written
+    // for another one is ignored rather than silently reused.
+    const std::string cache_tag =
+        use_smd ? fmt::format("gfn2_{}", opts.solvent_tag) : "gfn2_gas";
+    fs::path monomer_cache(
+        fmt::format("{}_{}_{}_xtb_monomer.json", opts.basename, index, cache_tag));
+    bool loaded = false;
+    if (fs::exists(monomer_cache)) {
+      try {
+        std::ifstream ifs(monomer_cache.string());
+        const auto cached = nlohmann::json::parse(ifs);
+        if (cached.value("tag", std::string{}) == cache_tag &&
+            cached.value("n_atoms", -1) == static_cast<int>(m.size())) {
+          e_gas = cached.at("e_gas").get<double>();
+          e_solv = cached.at("e_solv").get<double>();
+          m_gas_phase_energies.push_back(e_gas);
+          m_solvated_energies.push_back(e_solv);
+          m_solvated_surface_properties.push_back(
+              cached.at("surfaces").get<cg::SolvationData>());
+          occ::log::info("Loaded monomer {} xTB energies from {}", index,
+                         monomer_cache.string());
+          loaded = true;
+        } else {
+          occ::log::warn("Cached xTB monomer {} is for another model, solvent "
+                         "or molecule; recomputing",
+                         monomer_cache.string());
+        }
+      } catch (const std::exception &e) {
+        occ::log::warn("Could not read {} ({}); recomputing",
+                       monomer_cache.string(), e.what());
+      }
+    }
+    if (loaded) {
+      occ::log::info("Solvation free energy: {:12.6f} (E(solv) = "
+                     "{:12.6f}, E(gas) = {:12.6f})\n",
+                     e_solv - e_gas, e_solv, e_gas);
+      index++;
+      continue;
+    }
+
     // Gas phase via the in-tree GFN2 backend.
     {
       occ::xtb::XtbCalculator xtb(m);
@@ -711,6 +757,19 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
         // surface so the partitioner sees length-zero coulomb/cds vectors.
         m_solvated_surface_properties.emplace_back();
       }
+    }
+
+    {
+      nlohmann::json j;
+      j["tag"] = cache_tag;
+      j["n_atoms"] = static_cast<int>(m.size());
+      j["e_gas"] = e_gas;
+      j["e_solv"] = e_solv;
+      j["surfaces"] = m_solvated_surface_properties.back();
+      std::ofstream ofs(monomer_cache.string());
+      ofs << j;
+      occ::log::info("Wrote monomer {} xTB energies to {}", index,
+                     monomer_cache.string());
     }
 
     occ::log::info("Solvation free energy: {:12.6f} (E(solv) = "

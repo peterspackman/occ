@@ -830,6 +830,47 @@ TEST_CASE("CG: morphology shape files", "[cg][morphology]") {
       REQUIRE_THROWS_AS(read_morphology_shape(input), std::invalid_argument);
     }
   }
+
+  SECTION("many named shapes in one file") {
+    using occ::driver::read_morphology_shapes;
+    std::istringstream input("# two habits\n"
+                             "shape block\n"
+                             "1 0 0 1.0\n"
+                             "0 0 1 1.0\n"
+                             "shape  needle \n"
+                             "1 0 0 1.0\n"
+                             "0 0 1 8.0\n");
+    const auto shapes = read_morphology_shapes(input);
+    REQUIRE(shapes.size() == 2);
+    REQUIRE(shapes[0].name == "block");
+    REQUIRE(shapes[1].name == "needle");   // surrounding space trimmed
+    REQUIRE(shapes[0].shifts.size() == 2);
+    REQUIRE(shapes[1].shifts[1].second == 8.0);
+  }
+
+  SECTION("a file that names no shape is still one shape") {
+    using occ::driver::read_morphology_shapes;
+    std::istringstream input("1 0 0 1.0\n0 0 1 6.5\n");
+    const auto shapes = read_morphology_shapes(input);
+    REQUIRE(shapes.size() == 1);
+    REQUIRE(shapes[0].name.empty());
+    REQUIRE(shapes[0].shifts.size() == 2);
+  }
+
+  SECTION("a named shape with no faces, or a nameless 'shape', is an error") {
+    using occ::driver::read_morphology_shapes;
+    for (const std::string text : {"shape empty\nshape other\n1 0 0 1.0\n",
+                                   "shape\n1 0 0 1.0\n"}) {
+      INFO(text);
+      std::istringstream input(text);
+      REQUIRE_THROWS_AS(read_morphology_shapes(input), std::invalid_argument);
+    }
+  }
+
+  SECTION("the single-shape reader refuses a multi-shape file") {
+    std::istringstream input("shape a\n1 0 0 1.0\nshape b\n0 0 1 1.0\n");
+    REQUIRE_THROWS_AS(read_morphology_shape(input), std::invalid_argument);
+  }
 }
 
 TEST_CASE("CG: free energy terms are kept per molecule", "[cg][xtb]") {
@@ -853,4 +894,48 @@ TEST_CASE("CG: free energy terms are kept per molecule", "[cg][xtb]") {
             Approx(0.5 * molecule.total.crystal_energy));
     REQUIRE(molecule.free_energy->solvation_free_energy == Approx(0.0));
   }
+}
+
+// ============================================================================
+// Cached xTB monomers
+// ============================================================================
+
+TEST_CASE("SolvationData survives a JSON round trip", "[cg][solvation][cache]") {
+  // The xTB monomer cache stores these arrays so a repeat `occ cg` can skip the
+  // solvated SCC. A round-trip bug would not throw — it would quietly hand the
+  // partitioner the wrong per-element areas — so check the values, not just
+  // that it parses.
+  occ::cg::SolvationData data;
+  data.total_solvation_energy = -0.0421;
+  data.electronic_contribution = -0.0313;
+
+  occ::Mat3N positions(3, 4);
+  positions << 0.0, 1.5, -2.5, 3.25,
+               0.5, -1.0, 2.0, -0.75,
+               1.0, 2.5, 0.25, 4.0;
+  occ::Vec areas(4);
+  areas << 0.5, 1.25, 2.0, 0.125;
+  occ::Vec energies(4);
+  energies << -1e-3, 2e-4, -3.5e-5, 4e-6;
+  auto &cavity = occ::cg::add_cavity(data, "coulomb", positions, areas, energies);
+  cavity.descriptors.push_back({"sigma", areas});
+
+  const nlohmann::json j = data;
+  const auto restored = j.get<occ::cg::SolvationData>();
+
+  REQUIRE(restored.cavities.size() == data.cavities.size());
+  const auto &back = restored.cavities.front();
+  REQUIRE(back.name == "coulomb");
+  REQUIRE(back.positions.rows() == 3);
+  REQUIRE(back.positions.cols() == 4);
+  REQUIRE((back.positions - positions).cwiseAbs().maxCoeff() < 1e-12);
+  REQUIRE((back.areas - areas).cwiseAbs().maxCoeff() < 1e-12);
+  REQUIRE(back.energies.size() == 1);
+  REQUIRE((back.energies.front().values - energies).cwiseAbs().maxCoeff() < 1e-12);
+  REQUIRE(back.descriptors.size() == 1);
+  REQUIRE(back.descriptors.front().name == "sigma");
+  REQUIRE(restored.total_solvation_energy ==
+          Approx(data.total_solvation_energy).margin(1e-12));
+  REQUIRE(restored.electronic_contribution ==
+          Approx(data.electronic_contribution).margin(1e-12));
 }

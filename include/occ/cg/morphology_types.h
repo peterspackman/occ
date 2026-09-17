@@ -48,6 +48,7 @@ struct ParticleSample {
 /// Particle size/shape-dependent (surface + edge + corner) energies.
 struct MorphologyResult {
   std::string shape{"wulff"};
+  std::string name;             ///< habit name, when a multi-shape file gave one
   double mu_bulk{0.0};          ///< per-molecule lattice energy (0.5 * crystal_energy), kJ/mol
   double molecular_volume{0.0}; ///< Angstrom^3
   std::vector<FacetMorphology> facets;

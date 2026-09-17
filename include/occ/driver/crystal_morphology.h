@@ -51,4 +51,21 @@ MorphologyResult compute_crystal_morphology(
 std::vector<std::pair<occ::crystal::HKL, double>>
 read_morphology_shape(std::istream &input);
 
+/// One named shape from a multi-shape file.
+struct NamedShape {
+  std::string name; ///< empty for a file that names no shapes
+  std::vector<std::pair<occ::crystal::HKL, double>> shifts;
+};
+
+/// Read one or more shapes. A line `shape <name>` opens a named shape and the
+/// faces that follow belong to it; a file with no such line is a single
+/// unnamed shape, so every file `read_morphology_shape` accepts is still
+/// valid here.
+///
+/// Scanning habits is what a user shape is for, and the shape itself is the
+/// cheap part of the calculation: the pair energies, the monomers and the
+/// surface enumeration are all independent of it. Reading the whole set at
+/// once lets those be done once rather than once per habit.
+std::vector<NamedShape> read_morphology_shapes(std::istream &input);
+
 } // namespace occ::driver

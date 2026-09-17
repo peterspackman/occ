@@ -512,14 +512,34 @@ MorphologyResult compute_crystal_morphology(
   return result;
 }
 
-std::vector<std::pair<HKL, double>> read_morphology_shape(std::istream &input) {
-  std::vector<std::pair<HKL, double>> shape;
+std::vector<NamedShape> read_morphology_shapes(std::istream &input) {
+  std::vector<NamedShape> shapes;
   std::string line;
   for (int line_number = 1; std::getline(input, line); line_number++) {
     const std::string content = line.substr(0, line.find('#'));
     if (content.find_first_not_of(" \t\r") == std::string::npos)
       continue;
     std::istringstream fields(content);
+
+    // `shape <name>` opens a new habit. Anything else is a face belonging to
+    // the habit currently open, or to the single unnamed shape of a file that
+    // never opens one.
+    std::string first;
+    fields >> first;
+    if (first == "shape") {
+      std::string name;
+      std::getline(fields, name);
+      const auto begin = name.find_first_not_of(" \t\r");
+      const auto end = name.find_last_not_of(" \t\r");
+      if (begin == std::string::npos) {
+        throw std::invalid_argument(fmt::format(
+            "morphology shape line {}: 'shape' needs a name", line_number));
+      }
+      shapes.push_back({name.substr(begin, end - begin + 1), {}});
+      continue;
+    }
+
+    fields.seekg(0);
     HKL hkl;
     double distance{0.0};
     std::string extra;
@@ -527,14 +547,32 @@ std::vector<std::pair<HKL, double>> read_morphology_shape(std::istream &input) {
         (fields >> extra)) {
       throw std::invalid_argument(
           fmt::format("morphology shape line {}: expected 'h k l distance' "
-                      "with a positive distance, got '{}'",
+                      "with a positive distance, or 'shape <name>', got '{}'",
                       line_number, line));
     }
-    shape.emplace_back(hkl, distance);
+    if (shapes.empty())
+      shapes.push_back({});
+    shapes.back().shifts.emplace_back(hkl, distance);
   }
-  if (shape.empty())
+
+  if (shapes.empty())
     throw std::invalid_argument("morphology shape: no faces given");
-  return shape;
+  for (const auto &shape : shapes) {
+    if (shape.shifts.empty()) {
+      throw std::invalid_argument(
+          fmt::format("morphology shape '{}': no faces given", shape.name));
+    }
+  }
+  return shapes;
+}
+
+std::vector<std::pair<HKL, double>> read_morphology_shape(std::istream &input) {
+  auto shapes = read_morphology_shapes(input);
+  if (shapes.size() > 1) {
+    throw std::invalid_argument(fmt::format(
+        "morphology shape: expected one shape, got {}", shapes.size()));
+  }
+  return std::move(shapes.front().shifts);
 }
 
 } // namespace occ::driver
@@ -543,6 +581,8 @@ namespace occ::cg {
 
 void to_json(nlohmann::json &j, const MorphologyResult &m) {
   j["shape"] = m.shape;
+  if (!m.name.empty())
+    j["name"] = m.name;
   j["shape_note"] =
       m.shape == "wulff"
           ? "Wulff equilibrium shape (minimises surface energy only, the "

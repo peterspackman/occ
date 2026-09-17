@@ -97,7 +97,11 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
   cg->add_option("--morphology-shape", config->morphology_shape,
                  "file of 'h k l distance' lines, one face per form, giving a "
                  "particle shape to use instead of the Wulff shape for "
-                 "--morphology");
+                 "--morphology. A line 'shape <name>' starts another habit, so "
+                 "one file can hold a whole scan: the pair energies and surface "
+                 "enumeration are then done once and each extra habit costs "
+                 "only its own shape. Results go to 'morphologies' in the JSON "
+                 "when there is more than one");
   cg->add_flag("--list-available-solvents", config->list_solvents,
                "List available solvents and exit");
   cg->fallthrough();

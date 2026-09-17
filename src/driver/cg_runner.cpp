@@ -426,18 +426,48 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
       }
       morphology_options.sizes = config.morphology_sizes;
     }
+    // A shape file may hold many habits. Everything the morphology needs --
+    // pair energies, monomers, the surface enumeration -- is already done, so
+    // the extra habits cost only the shape construction itself.
+    std::vector<occ::driver::NamedShape> shapes;
     if (!config.morphology_shape.empty()) {
       std::ifstream shape_file(config.morphology_shape);
       if (!shape_file) {
         throw std::runtime_error(fmt::format(
             "Cannot read morphology shape file '{}'", config.morphology_shape));
       }
-      morphology_options.user_shifts = read_morphology_shape(shape_file);
+      shapes = read_morphology_shapes(shape_file);
+      occ::log::info("Read {} shape(s) from {}", shapes.size(),
+                     config.morphology_shape);
+    } else {
+      shapes.push_back({});   // the equilibrium (Wulff) shape
     }
-    result.morphology =
-        compute_crystal_morphology(calc.crystal(), uc_dimers, *surface_energies,
-                                   result, morphology_options);
-    to_json(morphology_json, result.morphology);
+
+    std::vector<MorphologyResult> morphologies;
+    morphologies.reserve(shapes.size());
+    for (const auto &shape : shapes) {
+      morphology_options.user_shifts = shape.shifts;
+      auto morphology =
+          compute_crystal_morphology(calc.crystal(), uc_dimers,
+                                     *surface_energies, result,
+                                     morphology_options);
+      morphology.name = shape.name;
+      morphologies.push_back(std::move(morphology));
+    }
+
+    result.morphology = morphologies.front();
+    if (morphologies.size() == 1) {
+      to_json(morphology_json, result.morphology);
+    } else {
+      // Many habits: an array, so a scan is one run and one file. The singular
+      // key stays a single object so existing readers keep working.
+      morphology_json = nlohmann::json::array();
+      for (const auto &morphology : morphologies) {
+        nlohmann::json entry;
+        to_json(entry, morphology);
+        morphology_json.push_back(std::move(entry));
+      }
+    }
   }
 
   auto cg_interaction_labels = write_cg_net_file(
@@ -453,7 +483,8 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
     results_json["surface_cuts"] = surface_cuts_json;
   }
   if (!morphology_json.is_null()) {
-    results_json["morphology"] = morphology_json;
+    results_json[morphology_json.is_array() ? "morphologies" : "morphology"] =
+        morphology_json;
   }
 
   std::ofstream dest(
