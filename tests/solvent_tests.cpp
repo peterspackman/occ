@@ -18,6 +18,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/dft/dft.h>
 #include <occ/driver/cg_solvation_model.h>
+#include <occ/driver/geometry_optimization.h>
 #include <occ/driver/cosmors_driver.h>
 #include <occ/driver/cosmors_solvation.h>
 #include <occ/io/xyz.h>
@@ -1034,4 +1035,65 @@ TEST_CASE("Incremental Fock: solvation opts out on the core Hamiltonian",
   // ...and no caller can undo that by reaching into the settings.
   scf.convergence_settings.incremental_fock_threshold = 1.0;
   REQUIRE_FALSE(scf.incremental_fock_supported());
+}
+
+// ============================================================================
+// Solvated geometry optimization
+// ============================================================================
+
+TEST_CASE("Geometry optimization: GFN2 optimises in solvent, other methods "
+          "refuse", "[solvent][opt][gfn2]") {
+  // `occ tb --opt --solvent X` used to drop the solvent on the floor and
+  // optimise in the gas phase without saying so. GFN2 is the one method whose
+  // SMD implementation has a gradient, so it is the one method the optimizer
+  // accepts a solvent for.
+  using occ::core::Molecule;
+
+  occ::IVec nums(3);
+  occ::Mat3N pos(3, 3);
+  nums << 8, 1, 1;
+  pos.col(0) << 0.0, 0.0, 0.1173;
+  pos.col(1) << 0.0, 0.7572, -0.4692;
+  pos.col(2) << 0.0, -0.7572, -0.4692;
+  Molecule water(nums, pos);
+
+  auto input = [&](const std::string &method, const std::string &solvent) {
+    occ::io::OccInput config;
+    config.method.name = method;
+    config.basis.name = "sto-3g";
+    config.geometry.set_molecule(water);
+    config.solvent.solvent_name = solvent;
+    config.optimization.max_iterations = 30;
+    return config;
+  };
+
+  const auto bond_length = [](const occ::qm::Wavefunction &wfn) {
+    const auto &a = wfn.atoms;
+    return std::hypot(a[1].x - a[0].x, a[1].y - a[0].y, a[1].z - a[0].z) *
+           occ::units::BOHR_TO_ANGSTROM;
+  };
+
+  const double r_gas =
+      bond_length(occ::driver::geometry_optimization(input("gfn2", "")));
+  const double r_solv =
+      bond_length(occ::driver::geometry_optimization(input("gfn2", "water")));
+
+  INFO("r(OH) gas = " << r_gas << " A, in water = " << r_solv << " A");
+  REQUIRE(r_gas > 0.9);
+  REQUIRE(r_gas < 1.05);
+  // The reaction field stabilises the more polar structure, so the bond
+  // lengthens. The point of the test is that it moves at all: an ignored
+  // solvent gives exactly the gas-phase geometry back.
+  REQUIRE(r_solv > r_gas + 1e-3);
+
+  // Everything else still refuses rather than quietly optimising in vacuum.
+  REQUIRE_THROWS_WITH(occ::driver::geometry_optimization(input("hf", "water")),
+                      Catch::Matchers::ContainsSubstring("Solvated gradients"));
+
+  // The driver writes these into the working directory with fallback names
+  // when the input has no filename; don't leave them in the source tree.
+  for (const char *f : {"opt_traj.xyz", "occ_step_log.txt", "optimized.xyz"}) {
+    std::error_code ec;
+    std::filesystem::remove(f, ec);
+  }
 }

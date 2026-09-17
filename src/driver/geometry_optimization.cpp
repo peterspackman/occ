@@ -13,6 +13,8 @@
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/xdm/xdm.h>
+#include <memory>
+#include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
 
 using occ::core::Molecule;
@@ -213,6 +215,10 @@ void configure(occ::xtb::XtbCalculator &calc, const OccInput &config) {
   calc.set_num_unpaired_electrons(config.electronic.multiplicity - 1);
   calc.set_spin_polarization(config.electronic.spin_polarization);
   calc.set_temperature(config.electronic.electronic_temperature);
+  if (!config.solvent.solvent_name.empty()) {
+    calc.set_solvation_model(std::make_shared<occ::xtb::SmdSolvationModel>(
+        config.solvent.solvent_name));
+  }
 }
 
 std::pair<Wavefunction, Mat3N>
@@ -305,7 +311,16 @@ optimization_step_driver(const OccInput &config, const Molecule &m,
       return run_gfn2_for_optimization(m, config, gfn2_cache);
     }
     }
+  } else if (method_kind == MethodKind::GFN2) {
+    // GFN2 is the one method with a solvated gradient: SMD reaches it through
+    // XtbSolvationModel::gradient() — the frozen-cavity analytical
+    // electrostatic term plus a finite-difference CDS piece, checked against
+    // FD on the energy in tests/xtb_native_tests.cpp. The cavity is rebuilt at
+    // each geometry inside the SCC, so the cached calculator stays valid.
+    return run_gfn2_for_optimization(m, config, gfn2_cache);
   } else {
+    // SolvationCorrectedProcedure is energy-only: no gradient methods, and
+    // its boolean cavity has no continuous derivative anyway.
     throw std::runtime_error("Not implemented: Solvated gradients");
   }
 }

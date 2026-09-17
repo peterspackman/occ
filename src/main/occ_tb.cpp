@@ -213,6 +213,7 @@ void run_molecular(const TbConfig &cfg) {
     input.electronic.multiplicity = cfg.multiplicity;
     input.electronic.spin_polarization = cfg.spin_polarization;
     input.electronic.electronic_temperature = cfg.electronic_temperature;
+    input.solvent.solvent_name = cfg.solvent;
     input.filename = cfg.filename;
     occ::log::info("{:-<72s}", "GFN2-xTB molecular optimization ");
     occ::log::info("input          : {}", cfg.filename);
@@ -220,6 +221,8 @@ void run_molecular(const TbConfig &cfg) {
     occ::log::info("multipoles     : on (analytical gradient)");
     occ::log::info("charge         : {:+.3f} e", cfg.charge);
     occ::log::info("multiplicity   : {}", cfg.multiplicity);
+    occ::log::info("solvent        : {}",
+                   cfg.solvent.empty() ? "none (gas phase)" : cfg.solvent);
     occ::log::info("");
     auto wfn = occ::driver::geometry_optimization(input);
     // Save the converged wavefunction at the optimised geometry. The
@@ -238,6 +241,11 @@ void run_molecular(const TbConfig &cfg) {
       opt_calc.set_temperature(cfg.electronic_temperature);
       opt_calc.set_include_multipoles(cfg.include_multipoles);
       opt_calc.set_include_dispersion(cfg.include_dispersion);
+      if (!cfg.solvent.empty()) {
+        // The geometry was optimised in solvent; the Hessian has to be too.
+        opt_calc.set_solvation_model(
+            std::make_shared<occ::xtb::SmdSolvationModel>(cfg.solvent));
+      }
       run_frequencies(opt_calc, cfg);
     }
     return;
