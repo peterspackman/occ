@@ -49,8 +49,14 @@ jobs:
           - os: windows-latest
             architecture: x86_64
             script: windows_build.ps1
-            name: "windows-x86_64"
+            name: "windows-mingw"
             experimental: true
+          - os: windows-latest
+            architecture: x86_64
+            script: windows_build.ps1
+            name: "windows-msvc"
+            experimental: true
+
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental == true }}
     steps:
