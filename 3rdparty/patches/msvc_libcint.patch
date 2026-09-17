@@ -1,0 +1,890 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 26a1520..5d950dd 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -47,7 +47,9 @@ endif()
+ 
+ include(CheckFunctionExists)
+ set(CMAKE_REQUIRED_INCLUDES math.h)
+-set(CMAKE_REQUIRED_LIBRARIES m)
++if(NOT MSVC)
++  set(CMAKE_REQUIRED_LIBRARIES m)
++endif()
+ check_function_exists(expl HAVE_EXPL)
+ check_function_exists(sqrtl HAVE_SQRTL)
+ #set(CMAKE_REQUIRED_INCLUDES quadmath.h)
+@@ -185,7 +187,9 @@ set_target_properties(cint PROPERTIES
+ if(QUADMATH_FOUND)
+   target_link_libraries(cint quadmath)
+ endif()
+-target_link_libraries(cint "-lm")
++if(NOT MSVC)
++  target_link_libraries(cint "-lm")
++endif()
+ 
+ 
+ 
+diff --git a/include/cint.h.in b/include/cint.h.in
+index 8c4e4b1..896212f 100644
+--- a/include/cint.h.in
++++ b/include/cint.h.in
+@@ -7,10 +7,13 @@
+ #define CINT_VERSION            "@cint_VERSION@"
+ #define CINT_SOVERSION          @cint_SOVERSION@
+ 
++/* clang-cl defines _MSC_VER as well, and like cl.exe it uses the UCRT
++ * <complex.h>, so both MSVC-family compilers share the struct-based
++ * _Dcomplex representation.  GCC/Clang use the native _Complex type. */
+ #if defined(__cplusplus)
+ #include <complex>
+ typedef std::complex<double> cint_complex;
+-#elif defined(_MSC_VER) && !defined(__clang__)
++#elif defined(_MSC_VER)
+ #include <complex.h>
+ typedef _Dcomplex cint_complex;
+ #else
+@@ -18,10 +21,6 @@ typedef _Dcomplex cint_complex;
+ typedef double _Complex cint_complex;
+ #endif
+ 
+-#if defined(_MSC_VER) && defined(__clang__)
+-#define _Cbuild(r, i) __builtin_complex((double)(r), (double)(i))
+-#endif
+-
+ #cmakedefine I8
+ #ifdef I8
+ #include <stdint.h>
+diff --git a/src/cart2sph.c b/src/cart2sph.c
+index ac9e039..4c6801d 100644
+--- a/src/cart2sph.c
++++ b/src/cart2sph.c
+@@ -3701,7 +3701,11 @@ static double *d_ket_cart2spheric(double *gsph, double *gcart,
+         double *coeff_c2s = g_c2s[2].cart2sph;
+         double *pgsph = gsph;
+         FINT i;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+         for (i = 0; i < nbra; i++) {
+                 gsph[0*lds+i] = coeff_c2s[ 1] * gcart[1*nbra+i];
+                 gsph[1*lds+i] = coeff_c2s[10] * gcart[4*nbra+i];
+@@ -3749,7 +3753,11 @@ static double *f_ket_cart2spheric(double *gsph, double *gcart,
+         double *coeff_c2s = g_c2s[3].cart2sph;
+         double *pgsph = gsph;
+         FINT i;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+         for (i = 0; i < nbra; i++) {
+                 gsph[0*lds+i] = coeff_c2s[ 1] * gcart[1*nbra+i]
+                               + coeff_c2s[ 6] * gcart[6*nbra+i];
+@@ -3817,7 +3825,11 @@ static double *g_ket_cart2spheric(double *gsph, double *gcart,
+         double *coeff_c2s = g_c2s[4].cart2sph;
+         double *pgsph = gsph;
+         FINT i;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+         for (i = 0; i < nbra; i++) {
+                 gsph[0*lds+i] = coeff_c2s[  1] * gcart[ 1*nbra+i]
+                               + coeff_c2s[  6] * gcart[ 6*nbra+i];
+@@ -3945,7 +3957,11 @@ static void a_bra_cart2spinor_si(double *gspR, double *gspI,
+                 saI = 0;
+                 sbR = 0;
+                 sbI = 0;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (n = 0; n < nf; n++) {
+                         v1 = g1[j*nf+n];
+                         vx = gx[j*nf+n];
+@@ -3995,7 +4011,11 @@ static void a_bra_cart2spinor_sf(double *gspR, double *gspI,
+                 saI = 0;
+                 sbR = 0;
+                 sbI = 0;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (n = 0; n < nf; n++) {
+                         v1 = g1[j*nf+n];
+                         caR = coeffR[i*nf*2   +n];
+@@ -4038,7 +4058,11 @@ static void a_bra1_cart2spinor_si(double *gspR, double *gspI,
+         double caR, caI, cbR, cbI, v1, vx, vy, vz;
+ 
+         for (j = 0; j < nket; j++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < ndg; i++) {
+                         gspaR[j*ndg+i] = 0;
+                         gspaI[j*ndg+i] = 0;
+@@ -4051,7 +4075,11 @@ static void a_bra1_cart2spinor_si(double *gspR, double *gspI,
+                         caI = coeffI[i*nf*2   +n];
+                         cbR = coeffR[i*nf*2+nf+n];
+                         cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (m = 0; m < ngrids; m++) {
+                                 v1 = g1[(j*nf+n)*ngrids+m];
+                                 vx = gx[(j*nf+n)*ngrids+m];
+@@ -4090,7 +4118,11 @@ static void a_bra1_cart2spinor_sf(double *gspR, double *gspI,
+         double caR, caI, cbR, cbI, v1;
+ 
+         for (j = 0; j < nket; j++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < ndg; i++) {
+                         gspaR[j*ndg+i] = 0;
+                         gspaI[j*ndg+i] = 0;
+@@ -4103,7 +4135,11 @@ static void a_bra1_cart2spinor_sf(double *gspR, double *gspI,
+                         caI = coeffI[i*nf*2   +n];
+                         cbR = coeffR[i*nf*2+nf+n];
+                         cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (m = 0; m < ngrids; m++) {
+                                 v1 = g1[(j*nf+n)*ngrids+m];
+                                 gspaR[(j*nd+i)*ngrids+m] += caR * v1;
+@@ -4151,7 +4187,11 @@ static void a_bra1_cart2spinor_zi(double *gspR, double *gspI,
+         double v11I, v12I, v21I, v22I;
+ 
+         for (j = 0; j < nket; j++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < ndg; i++) {
+                         gspaR[j*ndg+i] = 0;
+                         gspaI[j*ndg+i] = 0;
+@@ -4164,7 +4204,11 @@ static void a_bra1_cart2spinor_zi(double *gspR, double *gspI,
+                         caI = coeffI[i*nf*2   +n];
+                         cbR = coeffR[i*nf*2+nf+n];
+                         cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (m = 0; m < ngrids; m++) {
+                                 // [ 1+1j*z, y+1j*x]
+                                 // [-y+1j*x, 1-1j*z]
+@@ -4211,7 +4255,11 @@ static void a_bra1_cart2spinor_zf(double *gspR, double *gspI,
+         double caR, caI, cbR, cbI, v1R, v1I;
+ 
+         for (j = 0; j < nket; j++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < ndg; i++) {
+                         gspaR[j*ndg+i] = 0;
+                         gspaI[j*ndg+i] = 0;
+@@ -4224,7 +4272,11 @@ static void a_bra1_cart2spinor_zf(double *gspR, double *gspI,
+                         caI = coeffI[i*nf*2   +n];
+                         cbR = coeffR[i*nf*2+nf+n];
+                         cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (m = 0; m < ngrids; m++) {
+                                 v1R = g1R[(j*nf+n)*ngrids+m];
+                                 v1I = g1I[(j*nf+n)*ngrids+m];
+@@ -4263,7 +4315,11 @@ static void a_ket_cart2spinor_si(double *gspR, double *gspI,
+         double caR, caI, cbR, cbI, v1, vx, vy, vz;
+ 
+         for (i = 0; i < nd; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (j = 0; j < nbra; j++) {
+                         gspaR[j+i*lds] = 0;
+                         gspaI[j+i*lds] = 0;
+@@ -4275,7 +4331,11 @@ static void a_ket_cart2spinor_si(double *gspR, double *gspI,
+                         caI = coeffI[i*nf*2   +n];
+                         cbR = coeffR[i*nf*2+nf+n];
+                         cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (j = 0; j < nbra; j++) {
+                                 v1 = g1[j+n*nbra];
+                                 vx = gx[j+n*nbra];
+@@ -4315,7 +4375,11 @@ static void a_ket_cart2spinor_sf(double *gspR, double *gspI,
+         double caR, caI, cbR, cbI, v1;
+ 
+         for (i = 0; i < nd; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (j = 0; j < nbra; j++) {
+                         gspaR[j+i*lds] = 0;
+                         gspaI[j+i*lds] = 0;
+@@ -4327,7 +4391,11 @@ static void a_ket_cart2spinor_sf(double *gspR, double *gspI,
+                         caI = coeffI[i*nf*2   +n];
+                         cbR = coeffR[i*nf*2+nf+n];
+                         cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (j = 0; j < nbra; j++) {
+                                 v1 = g1[j+n*nbra];
+                                 gspaR[j+i*lds] += caR * v1;
+@@ -4360,7 +4428,11 @@ static void a_ket_cart2spinor(double *gspR, double *gspI,
+         double cR, cI, gR, gI;
+ 
+         for (i = 0; i < nd; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (j = 0; j < nbra; j++) {
+                         gspR[j+i*nbra] = 0;
+                         gspI[j+i*nbra] = 0;
+@@ -4370,7 +4442,11 @@ static void a_ket_cart2spinor(double *gspR, double *gspI,
+                         cI = coeffI[i*nf2+n];
+                         if (cR != 0) {
+                                 if (cI != 0) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                         for (j = 0; j < nbra; j++) {
+                                                 gR = gcartR[j+n*nbra];
+                                                 gI = gcartI[j+n*nbra];
+@@ -4378,7 +4454,11 @@ static void a_ket_cart2spinor(double *gspR, double *gspI,
+                                                 gspI[j+i*nbra] += cI * gR + cR * gI;
+                                         }
+                                 } else {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                         for (j = 0; j < nbra; j++) {
+                                                 gR = gcartR[j+n*nbra];
+                                                 gI = gcartI[j+n*nbra];
+@@ -4388,7 +4468,11 @@ static void a_ket_cart2spinor(double *gspR, double *gspI,
+                                 }
+                         } else {
+                                 if (cI != 0) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                         for (j = 0; j < nbra; j++) {
+                                                 gR = gcartR[j+n*nbra];
+                                                 gI = gcartI[j+n*nbra];
+@@ -4441,7 +4525,11 @@ static void a_ket1_cart2spinor(double *gspR, double *gspI,
+ 
+         for (i = 0; i < nd; i++) {
+                 for (k = 0; k < counts; k++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (j = 0; j < nbra; j++) {
+                         gspR[k*nds+j+i*nbra] = 0;
+                         gspI[k*nds+j+i*nbra] = 0;
+@@ -4452,7 +4540,11 @@ static void a_ket1_cart2spinor(double *gspR, double *gspI,
+                         cbR = coeffR[i*nf2+nf+n];
+                         cbI = coeffI[i*nf2+nf+n];
+                         for (k = 0; k < counts; k++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (j = 0; j < nbra; j++) {
+                                 gaR = gcartaR[k*nfs+j+n*nbra];
+                                 gaI = gcartaI[k*nfs+j+n*nbra];
+@@ -4519,7 +4611,11 @@ static void dcopy_grids_ij(double *out, const double *gctr,
+ 
+         for (j = 0; j < mj; j++) {
+                 for (i = 0; i < mi; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (m = 0; m < mgrids; m++) {
+                         out[i*ngrids+m] = gctr[i*mgrids+m];
+                 } }
+@@ -4539,7 +4635,11 @@ static void zcopy_grids_ij(cint_complex *out, double *gctrR, double *gctrI,
+ 
+         for (j = 0; j < mj; j++) {
+                 for (i = 0; i < mi; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (m = 0; m < mgrids; m++) {
+                         dout[(i*ngrids+m)*OF_CMPLX  ] = gctrR[i*mgrids+m];
+                         dout[(i*ngrids+m)*OF_CMPLX+1] = gctrI[i*mgrids+m];
+@@ -4573,7 +4673,11 @@ static void dcopy_iklj(double *fijkl, const double *gctr,
+                         for (k = 0; k < mk; k++) {
+                                 pijkl = fijkl + k * nij;
+                                 pgctr = gctr + k * mi;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (j = 0; j < mj; j++) {
+                                         pijkl[ni*j] = pgctr[mikl*j];
+                                 }
+@@ -4587,7 +4691,11 @@ static void dcopy_iklj(double *fijkl, const double *gctr,
+                         for (k = 0; k < mk; k++) {
+                                 pijkl = fijkl + k * nij;
+                                 pgctr = gctr + k * mi;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (j = 0; j < mj; j++) {
+                                         pijkl[ni*j+0] = pgctr[mikl*j+0];
+                                         pijkl[ni*j+1] = pgctr[mikl*j+1];
+@@ -4603,7 +4711,11 @@ static void dcopy_iklj(double *fijkl, const double *gctr,
+                         for (k = 0; k < mk; k++) {
+                                 pijkl = fijkl + k * nij;
+                                 pgctr = gctr + k * mi;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (j = 0; j < mj; j++) {
+                                         pijkl[ni*j+0] = pgctr[mikl*j+0];
+                                         pijkl[ni*j+1] = pgctr[mikl*j+1];
+@@ -4621,7 +4733,11 @@ static void dcopy_iklj(double *fijkl, const double *gctr,
+                         for (k = 0; k < mk; k++) {
+                                 pijkl = fijkl + k * nij;
+                                 pgctr = gctr + k * mi;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (j = 0; j < mj; j++) {
+                                         pijkl[ni*j+0] = pgctr[mikl*j+0];
+                                         pijkl[ni*j+1] = pgctr[mikl*j+1];
+@@ -4640,7 +4756,11 @@ static void dcopy_iklj(double *fijkl, const double *gctr,
+                         for (k = 0; k < mk; k++) {
+                                 pijkl = fijkl + k * nij;
+                                 pgctr = gctr + k * mi;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (j = 0; j < mj; j++) {
+                                         pijkl[ni*j+0] = pgctr[mikl*j+0];
+                                         pijkl[ni*j+1] = pgctr[mikl*j+1];
+@@ -4661,7 +4781,11 @@ static void dcopy_iklj(double *fijkl, const double *gctr,
+                                 pijkl = fijkl + k * nij;
+                                 pgctr = gctr + k * mi;
+                                 for (j = 0; j < mj; j++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                         for (i = 0; i < mi; i++) {
+                                                 pijkl[ni*j+i] = pgctr[mikl*j+i];
+                                         }
+@@ -4691,7 +4815,11 @@ static void zcopy_iklj(cint_complex *fijkl, double *gctrR, double *gctrI,
+                         pgctrR = gctrR + k * mi;
+                         pgctrI = gctrI + k * mi;
+                         for (j = 0; j < mj; j++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (i = 0; i < mi; i++) {
+                                         pijkl[(j*ni+i)*OF_CMPLX  ] = pgctrR[j*mikl+i];
+                                         pijkl[(j*ni+i)*OF_CMPLX+1] = pgctrI[j*mikl+i];
+@@ -6519,7 +6647,11 @@ void CINTc2s_bra_spinor_e1sf(cint_complex *gsp, FINT nket,
+                 saI = 0;
+                 sbR = 0;
+                 sbI = 0;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (n = 0; n < nf; n++) {
+                         v1 = gcart[j*nf+n];
+                         caR = coeffR[i*nf*2   +n];
+@@ -6563,7 +6695,11 @@ void CINTc2s_bra_spinor_sf(cint_complex *gsp, FINT nket,
+                 saI = 0;
+                 sbR = 0;
+                 sbI = 0;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (n = 0; n < nf; n++) {
+                         v1R = creal(gcart[j*nf+n]);
+                         v1I = cimag(gcart[j*nf+n]);
+@@ -6603,7 +6739,11 @@ void CINTc2s_ket_spinor(cint_complex *gsp, FINT nbra,
+         double cR, cI, gR, gI;
+ 
+         for (i = 0; i < nd; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (j = 0; j < nbra; j++) {
+                         gspz[(j+i*nbra)*OF_CMPLX  ] = 0;
+                         gspz[(j+i*nbra)*OF_CMPLX+1] = 0;
+@@ -6611,7 +6751,11 @@ void CINTc2s_ket_spinor(cint_complex *gsp, FINT nbra,
+                 for (n = 0; n < nf2; n++) {
+                         cR = coeffR[i*nf2+n];
+                         cI = coeffI[i*nf2+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (j = 0; j < nbra; j++) {
+                                 gR = creal(gcart[j+n*nbra]);
+                                 gI = cimag(gcart[j+n*nbra]);
+@@ -6642,7 +6786,11 @@ void CINTc2s_iket_spinor(cint_complex *gsp, FINT nbra,
+         double cR, cI, gR, gI;
+ 
+         for (i = 0; i < nd; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (j = 0; j < nbra; j++) {
+                         gspz[(j+i*nbra)*OF_CMPLX  ] = 0;
+                         gspz[(j+i*nbra)*OF_CMPLX+1] = 0;
+@@ -6650,7 +6798,11 @@ void CINTc2s_iket_spinor(cint_complex *gsp, FINT nbra,
+                 for (n = 0; n < nf2; n++) {
+                         cR = coeffR[i*nf2+n];
+                         cI = coeffI[i*nf2+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (j = 0; j < nbra; j++) {
+                                 gR = creal(gcart[j+n*nbra]);
+                                 gI = cimag(gcart[j+n*nbra]);
+@@ -6684,7 +6836,11 @@ void CINTc2s_bra_spinor(cint_complex *gsp, FINT nket,
+         for (i = 0; i < nd; i++) {
+                 sR = 0;
+                 sI = 0;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (n = 0; n < nf2; n++) {
+                         gR = creal(gcart[j*nf2+n]);
+                         gI = cimag(gcart[j*nf2+n]);
+@@ -6723,7 +6879,11 @@ void CINTc2s_bra_spinor_si(cint_complex *gsp, FINT nket,
+         for (i = 0; i < nd; i++) {
+                 sR = 0;
+                 sI = 0;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (n = 0; n < nf; n++) {
+                         caR = coeffR[i*nf*2   +n];
+                         caI = coeffI[i*nf*2   +n];
+@@ -6767,7 +6927,11 @@ void CINTc2s_ket_spinor_sf1(cint_complex *gspa, cint_complex *gspb, double *gcar
+ 
+         for (k = 0; k < nctr; k++) {
+                 for (i = 0; i < nd; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (j = 0; j < ldc; j++) {
+                                 gspaz[(j+i*lds)*OF_CMPLX  ] = 0;
+                                 gspaz[(j+i*lds)*OF_CMPLX+1] = 0;
+@@ -6779,7 +6943,11 @@ void CINTc2s_ket_spinor_sf1(cint_complex *gspa, cint_complex *gspb, double *gcar
+                                 caI = coeffI[i*nf*2   +n];
+                                 cbR = coeffR[i*nf*2+nf+n];
+                                 cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (j = 0; j < ldc; j++) {
+                                         v1 = gcart[j+n*ldc];
+                                         gspaz[(j+i*lds)*OF_CMPLX  ] += caR * v1;
+@@ -6816,7 +6984,11 @@ void CINTc2s_iket_spinor_sf1(cint_complex *gspa, cint_complex *gspb, double *gca
+ 
+         for (k = 0; k < nctr; k++) {
+                 for (i = 0; i < nd; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (j = 0; j < ldc; j++) {
+                                 gspaz[(j+i*lds)*OF_CMPLX  ] = 0;
+                                 gspaz[(j+i*lds)*OF_CMPLX+1] = 0;
+@@ -6828,7 +7000,11 @@ void CINTc2s_iket_spinor_sf1(cint_complex *gspa, cint_complex *gspb, double *gca
+                                 caI = coeffI[i*nf*2   +n];
+                                 cbR = coeffR[i*nf*2+nf+n];
+                                 cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (j = 0; j < ldc; j++) {
+                                         v1 = gcart[j+n*ldc];
+                                         gspaz[(j+i*lds)*OF_CMPLX  ] -= caI * v1;
+@@ -6870,7 +7046,11 @@ void CINTc2s_ket_spinor_si1(cint_complex *gspa, cint_complex *gspb, double *gcar
+ 
+         for (k = 0; k < nctr; k++) {
+                 for (i = 0; i < nd; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (j = 0; j < ldc; j++) {
+                                 gspaz[(j+i*lds)*OF_CMPLX  ] = 0;
+                                 gspaz[(j+i*lds)*OF_CMPLX+1] = 0;
+@@ -6882,7 +7062,11 @@ void CINTc2s_ket_spinor_si1(cint_complex *gspa, cint_complex *gspb, double *gcar
+                                 caI = coeffI[i*nf*2   +n];
+                                 cbR = coeffR[i*nf*2+nf+n];
+                                 cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (j = 0; j < ldc; j++) {
+                                         v1 = gc_1[j+n*ldc];
+                                         vx = gc_x[j+n*ldc];
+@@ -6930,7 +7114,11 @@ void CINTc2s_iket_spinor_si1(cint_complex *gspa, cint_complex *gspb, double *gca
+ 
+         for (k = 0; k < nctr; k++) {
+                 for (i = 0; i < nd; i++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (j = 0; j < ldc; j++) {
+                                 gspaz[(j+i*lds)*OF_CMPLX  ] = 0;
+                                 gspaz[(j+i*lds)*OF_CMPLX+1] = 0;
+@@ -6942,7 +7130,11 @@ void CINTc2s_iket_spinor_si1(cint_complex *gspa, cint_complex *gspb, double *gca
+                                 caI = coeffI[i*nf*2   +n];
+                                 cbR = coeffR[i*nf*2+nf+n];
+                                 cbI = coeffI[i*nf*2+nf+n];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                                 for (j = 0; j < ldc; j++) {
+                                         v1 = gc_1[j+n*ldc];
+                                         vx = gc_x[j+n*ldc];
+diff --git a/src/fblas.c b/src/fblas.c
+index 8f0a2cb..8cd1851 100644
+--- a/src/fblas.c
++++ b/src/fblas.c
+@@ -40,7 +40,11 @@ void CINTdmat_transpose(double *a_t, double *a, FINT m, FINT n)
+         FINT i, j, k;
+ 
+         for (j = 0; j < n-3; j+=4) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < m; i++) {
+                         a_t[(j+0)*m+i] = a[i*n+j+0];
+                         a_t[(j+1)*m+i] = a[i*n+j+1];
+@@ -51,20 +55,32 @@ void CINTdmat_transpose(double *a_t, double *a, FINT m, FINT n)
+ 
+         switch (n-j) {
+         case 1:
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < m; i++) {
+                         a_t[j*m+i] = a[i*n+j];
+                 }
+                 break;
+         case 2:
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < m; i++) {
+                         a_t[(j+0)*m+i] = a[i*n+j+0];
+                         a_t[(j+1)*m+i] = a[i*n+j+1];
+                 }
+                 break;
+         case 3:
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < m; i++) {
+                         a_t[(j+0)*m+i] = a[i*n+j+0];
+                         a_t[(j+1)*m+i] = a[i*n+j+1];
+@@ -82,7 +98,11 @@ void CINTdplus_transpose(double *a_t, double *a, FINT m, FINT n)
+         FINT i, j, k;
+ 
+         for (j = 0; j < n-3; j+=4) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < m; i++) {
+                         a_t[(j+0)*m+i] += a[i*n+j+0];
+                         a_t[(j+1)*m+i] += a[i*n+j+1];
+@@ -93,20 +113,32 @@ void CINTdplus_transpose(double *a_t, double *a, FINT m, FINT n)
+ 
+         switch (n-j) {
+         case 1:
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < m; i++) {
+                         a_t[j*m+i] += a[i*n+j];
+                 }
+                 break;
+         case 2:
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < m; i++) {
+                         a_t[(j+0)*m+i] += a[i*n+j+0];
+                         a_t[(j+1)*m+i] += a[i*n+j+1];
+                 }
+                 break;
+         case 3:
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (i = 0; i < m; i++) {
+                         a_t[(j+0)*m+i] += a[i*n+j+0];
+                         a_t[(j+1)*m+i] += a[i*n+j+1];
+@@ -169,7 +201,11 @@ void CINTdgemm_NN1(FINT m, FINT n, FINT k,
+                 }
+                 for (kp = 0; kp < k; kp++) {
+                         bi = b[kp+k*j];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (i = 0; i < m; i++) {
+                                 c[i+ldc*j] += a[i+m*kp] * bi;
+                         }
+@@ -191,7 +227,11 @@ void CINTdgemm_TN(FINT m, FINT n, FINT k,
+         for (j = 0; j < n; j++) {
+                 for (i = 0; i < m; i++) {
+                         ci = 0;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (kp = 0; kp < k; kp++) {
+                                 ci += a[kp+k*i] * b[kp+k*j];
+                         }
+@@ -211,7 +251,11 @@ void CINTdgemm_NT(FINT m, FINT n, FINT k,
+                 }
+                 for (kp = 0; kp < k; kp++) {
+                         bi = b[j+n*kp];
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (i = 0; i < m; i++) {
+                                 c[i+m*j] += a[i+m*kp] * bi;
+                         }
+diff --git a/src/g1e_grids.c b/src/g1e_grids.c
+index 8721c78..6795e2f 100644
+--- a/src/g1e_grids.c
++++ b/src/g1e_grids.c
+@@ -88,7 +88,11 @@ FINT CINTg0_1e_grids(double *g, double cutoff,
+                         gy[ig+GRID_BLKSIZE*i] = 1;
+                 }
+         }
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+         for (ig = 0; ig < bgrids; ig++) {
+                 rijrg[ig+GRID_BLKSIZE*0] = gridsT[ig+GRID_BLKSIZE*0] - rij[0];
+                 rijrg[ig+GRID_BLKSIZE*1] = gridsT[ig+GRID_BLKSIZE*1] - rij[1];
+@@ -233,7 +237,11 @@ FINT CINTg0_1e_grids(double *g, double cutoff,
+                 p1x = p0x + di;
+                 p1y = p0y + di;
+                 p1z = p0z + di;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (ig = 0; ig < bgrids; ig++) {
+                         rirgx[ig] = rijrx[0] + u[ig+GRID_BLKSIZE*n] * rijrg[ig+GRID_BLKSIZE*0];
+                         rirgy[ig] = rijrx[1] + u[ig+GRID_BLKSIZE*n] * rijrg[ig+GRID_BLKSIZE*1];
+@@ -257,7 +265,11 @@ FINT CINTg0_1e_grids(double *g, double cutoff,
+                         p2x = p0x - di;
+                         p2y = p0y - di;
+                         p2z = p0z - di;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (ig = 0; ig < bgrids; ig++) {
+                                 p1x[ig] = i * t2[ig] * p2x[ig] + rirgx[ig] * p0x[ig];
+                                 p1y[ig] = i * t2[ig] * p2y[ig] + rirgy[ig] * p0y[ig];
+@@ -279,7 +291,11 @@ FINT CINTg0_1e_grids(double *g, double cutoff,
+                 p2z = p1z + di;
+ 
+                 for (n = 0; n < nroots; n++) {
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (ig = 0; ig < bgrids; ig++) {
+                         p0x[ig+GRID_BLKSIZE*n] = p2x[ig+GRID_BLKSIZE*n] + rirj[0] * p1x[ig+GRID_BLKSIZE*n];
+                         p0y[ig+GRID_BLKSIZE*n] = p2y[ig+GRID_BLKSIZE*n] + rirj[1] * p1y[ig+GRID_BLKSIZE*n];
+@@ -358,7 +374,11 @@ void CINTnabla1i_grids(double *f, double *g,
+                 //f(...,0,...) = -2*ai*g(...,1,...)
+                 for (n = 0; n < nroots; n++) {
+                         ptr = dj * j + n * GRID_BLKSIZE;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (ig = ptr; ig < ptr+bgrids; ig++) {
+                                 fx[ig] = ai2 * gx[ig+di];
+                                 fy[ig] = ai2 * gy[ig+di];
+@@ -369,7 +389,11 @@ void CINTnabla1i_grids(double *f, double *g,
+                 for (i = 1; i <= li; i++) {
+                 for (n = 0; n < nroots; n++) {
+                         ptr = dj * j + di * i + n * GRID_BLKSIZE;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                         for (ig = ptr; ig < ptr+bgrids; ig++) {
+                                 fx[ig] = i * gx[ig-di] + ai2 * gx[ig+di];
+                                 fy[ig] = i * gy[ig-di] + ai2 * gy[ig+di];
+@@ -400,7 +424,11 @@ void CINTnabla1j_grids(double *f, double *g,
+         for (i = 0; i <= li; i++) {
+         for (n = 0; n < nroots; n++) {
+                 ptr = di * i + n * GRID_BLKSIZE;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (ig = ptr; ig < ptr+bgrids; ig++) {
+                         fx[ig] = aj2 * gx[ig+dj];
+                         fy[ig] = aj2 * gy[ig+dj];
+@@ -412,7 +440,11 @@ void CINTnabla1j_grids(double *f, double *g,
+         for (i = 0; i <= li; i++) {
+         for (n = 0; n < nroots; n++) {
+                 ptr = dj * j + di * i + n * GRID_BLKSIZE;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (ig = ptr; ig < ptr+bgrids; ig++) {
+                         fx[ig] = j * gx[ig-dj] + aj2 * gx[ig+dj];
+                         fy[ig] = j * gy[ig-dj] + aj2 * gy[ig+dj];
+@@ -442,7 +474,11 @@ void CINTx1i_grids(double *f, double *g, double *ri,
+         for (i = 0; i <= li; i++) {
+         for (n = 0; n < nroots; n++) {
+                 ptr = dj * j + di * i + n * GRID_BLKSIZE;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (ig = ptr; ig < ptr+bgrids; ig++) {
+                         fx[ig] = gx[ig+di] + ri[0] * gx[ig];
+                         fy[ig] = gy[ig+di] + ri[1] * gy[ig];
+@@ -471,7 +507,11 @@ void CINTx1j_grids(double *f, double *g, double *rj,
+         for (i = 0; i <= li; i++) {
+         for (n = 0; n < nroots; n++) {
+                 ptr = dj * j + di * i + n * GRID_BLKSIZE;
++#if defined(_MSC_VER) && !defined(__clang__)
++#pragma loop(ivdep)
++#elif defined(__GNUC__) || defined(__clang__)
+ #pragma GCC ivdep
++#endif
+                 for (ig = ptr; ig < ptr+bgrids; ig++) {
+                         fx[ig] = gx[ig+dj] + rj[0] * gx[ig];
+                         fy[ig] = gy[ig+dj] + rj[1] * gy[ig];

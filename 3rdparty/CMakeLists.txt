@@ -175,10 +175,7 @@ if(MSVC AND NOT "${USE_QCINT}")
     set(LIBCINT_REPOSITORY "RealUranar/libcint")
 endif()
 
-if(
-    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
-    AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux"
-)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(LIBCINT_BUILD_TYPE "CMAKE_BUILD_TYPE Release")
 endif()
 if(NOT USE_SYSTEM_LIBCINT)
@@ -196,7 +193,7 @@ if(NOT USE_SYSTEM_LIBCINT)
         GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
         GIT_TAG master
         OPTIONS
-	    "WITH_FORTRAN OFF"
+            "WITH_FORTRAN OFF"
             "WITH_CINT2_INTERFACE OFF"
             "ENABLE_STATIC ON"
             "BUILD_SHARED_LIBS OFF"
@@ -210,31 +207,31 @@ if(NOT USE_SYSTEM_LIBCINT)
 
     # Apply the flags to the target after it's created
     if(TARGET cint)
-	if(MSVC)
-	    find_program(PATCH_EXECUTABLE patch
-		    HINTS "C:/Program Files/Git/usr/bin"
-		    REQUIRED
-	    )
+        if(MSVC)
+            find_program(PATCH_EXECUTABLE patch
+            HINTS "C:/Program Files/Git/usr/bin"
+            REQUIRED
+            )
             execute_process(
-		    COMMAND ${PATCH_EXECUTABLE} -p1 -N -r - --forward
-		    INPUT_FILE  "${CMAKE_CURRENT_SOURCE_DIR}/patches/msvc_libcint.patch"
-		    WORKING_DIRECTORY "${libcint_SOURCE_DIR}"
-		    RESULT_VARIABLE _patch_result
-		    OUTPUT_VARIABLE _patch_output
-		    ERROR_VARIABLE _patch_error
-	    )
-	    message(STATUS "libcint patch result: ${_patch_result}")
-	    message(STATUS "libcint patch output: ${_patch_output}")
-	    message(STATUS "libcint patch error: ${_patch_error}")
-	       
-	else ()
+            COMMAND ${PATCH_EXECUTABLE} -p1 -N -r - --forward
+            INPUT_FILE  "${CMAKE_CURRENT_SOURCE_DIR}/patches/msvc_libcint.patch"
+            WORKING_DIRECTORY "${libcint_SOURCE_DIR}"
+            RESULT_VARIABLE _patch_result
+            OUTPUT_VARIABLE _patch_output
+            ERROR_VARIABLE _patch_error
+            )
+            message(STATUS "libcint patch result: ${_patch_result}")
+            message(STATUS "libcint patch output: ${_patch_output}")
+            message(STATUS "libcint patch error: ${_patch_error}")
+
+        else ()
             target_compile_options(
                 cint
                 PRIVATE
                     -Wno-implicit-function-declaration
                     -Wno-deprecated-non-prototype
             )
-	endif()
+        endif()
     endif()
 
     add_library(libcint::libcint INTERFACE IMPORTED GLOBAL)
