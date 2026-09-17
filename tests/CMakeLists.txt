@@ -7,29 +7,74 @@ CPMAddPackage(
 set(CMAKE_UNITY_BUILD OFF)
 
 
-#Use ccache to speed up rebuilds
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-    message(STATUS "Found ccache in ${CCACHE_PROGRAM}")
-    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-else()
-    message(WARNING "ccache not found, compiling without it")  
+#Use ccache/sccache to speed up rebuilds
+if(WITH_CACHE)
+    find_program(CCACHE_PROGRAM ccache)
+    if(CCACHE_PROGRAM)
+        message(STATUS "Using ccache: ${CCACHE_PROGRAM}")
+        set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    else()
+        find_program(SCCACHE_PROGRAM sccache)
+        if(SCCACHE_PROGRAM)
+            message(STATUS "Using sccache: ${SCCACHE_PROGRAM}")
+            set(CMAKE_C_COMPILER_LAUNCHER "${SCCACHE_PROGRAM}")
+            set(CMAKE_CXX_COMPILER_LAUNCHER "${SCCACHE_PROGRAM}")
+        endif()
+    endif()
 endif()
 
+
 #Use lld as faster alternative to ld
-find_program(LLD_PROGRAM lld)
-if(LLD_PROGRAM)
-    message(STATUS "Using lld linker at ${LLD_PROGRAM}")
-    set(CMAKE_LINKER "${LLD_PROGRAM}")
-else()
-    message(WARNING "lld linker not found, using default linker")
+if (WITH_LLD)
+    find_program(LLD_PROGRAM lld)
+    if(LLD_PROGRAM)
+        message(STATUS "Using lld linker at ${LLD_PROGRAM}")
+        set(CMAKE_LINKER "${LLD_PROGRAM}")
+    else()
+        message(WARNING "lld linker not found, using default linker")
+    endif()
 endif()
 
 
 list(APPEND CMAKE_MODULE_PATH "${catch_SOURCE_DIR}/extras")
 include(CTest)
 include(Catch)
+
+# --- UTF-8 test names on Windows ---------------------------------------------
+# Catch2 stores test names as UTF-8 and CTest passes them back as UTF-8 filters.
+# On Windows two separate steps mangle them:
+#
+#  1. Discovery. Catch2's CatchAddTests.cmake calls execute_process() to run
+#     `--list-tests` without requesting policy CMP0176, so with CMake >= 3.31 on
+#     Windows the UTF-8 output is decoded using the local (OEM) code page and the
+#     mojibake is baked into the generated test list. Run the script through a
+#     shim that enables CMP0176 first.
+#  2. Execution. The C runtime decodes the process command line into argv using
+#     the ANSI code page, so a UTF-8 name filter arrives mangled and Catch2
+#     matches nothing. Embedding an activeCodePage=UTF-8 manifest makes the
+#     process use UTF-8 for argv, so the filter matches.
+if(WIN32 AND POLICY CMP0176)
+    set(_occ_catch_add_tests_impl "${_CATCH_DISCOVER_TESTS_SCRIPT}")
+    set(_occ_catch_add_tests_utf8
+        "${CMAKE_CURRENT_BINARY_DIR}/CatchAddTestsUtf8.cmake")
+    file(
+        WRITE "${_occ_catch_add_tests_utf8}"
+        "if(POLICY CMP0176)\n"
+        "  cmake_policy(SET CMP0176 NEW)\n"
+        "endif()\n"
+        "include(\"${_occ_catch_add_tests_impl}\")\n"
+    )
+    # Shadow the cache variable set by Catch.cmake for this directory scope.
+    set(_CATCH_DISCOVER_TESTS_SCRIPT "${_occ_catch_add_tests_utf8}")
+endif()
+
+if(MSVC)
+    add_link_options(
+        "/MANIFEST:EMBED"
+        "/MANIFESTINPUT:${CMAKE_CURRENT_SOURCE_DIR}/../cmake/utf8.manifest"
+    )
+endif()
 
 add_executable(core_tests "${CMAKE_CURRENT_SOURCE_DIR}/core_tests.cpp")
 target_link_libraries(core_tests PRIVATE occ_core Catch2::Catch2WithMain Threads::Threads)
