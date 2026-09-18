@@ -4,17 +4,17 @@
 
 namespace occ::qm::orb {
 
-inline auto occupied_restricted(Eigen::Ref<const Mat> orbitals,
+inline Mat occupied_restricted(Eigen::Ref<const Mat> orbitals,
                                 size_t num_occ) {
   return orbitals.leftCols(num_occ);
 }
 
-inline auto occupied_restricted_fractional(Eigen::Ref<const Mat> orbitals,
+inline Mat occupied_restricted_fractional(Eigen::Ref<const Mat> orbitals,
                                            Eigen::Ref<const Vec> occupations) {
   return orbitals * occupations.array().sqrt().matrix().asDiagonal();
 }
 
-inline auto occupied_unrestricted(Eigen::Ref<const Mat> orbitals,
+inline Mat occupied_unrestricted(Eigen::Ref<const Mat> orbitals,
                                   size_t num_alpha, size_t num_beta) {
   size_t nbf = orbitals.rows() / 2;
   Mat occ = Mat::Zero(2 * nbf, std::max(num_alpha, num_beta));
@@ -25,8 +25,7 @@ inline auto occupied_unrestricted(Eigen::Ref<const Mat> orbitals,
   return occ;
 }
 
-inline auto
-occupied_unrestricted_fractional(Eigen::Ref<const Mat> orbitals,
+inline Mat occupied_unrestricted_fractional(Eigen::Ref<const Mat> orbitals,
                                  Eigen::Ref<const Vec> occupations) {
 
   size_t nbf = orbitals.rows() / 2;
@@ -40,13 +39,13 @@ occupied_unrestricted_fractional(Eigen::Ref<const Mat> orbitals,
   return occ;
 }
 
-inline auto weighted_density_matrix_restricted(Eigen::Ref<const Mat> orbitals,
+inline Mat weighted_density_matrix_restricted(Eigen::Ref<const Mat> orbitals,
                                                Eigen::Ref<const Vec> weights) {
 
   return orbitals * weights.asDiagonal() * orbitals.transpose();
 }
 
-inline auto
+inline Mat
 weighted_density_matrix_unrestricted(Eigen::Ref<const Mat> orbitals,
                                      Eigen::Ref<const Vec> weights) {
 
@@ -61,11 +60,11 @@ weighted_density_matrix_unrestricted(Eigen::Ref<const Mat> orbitals,
   return D;
 }
 
-inline auto density_matrix_restricted(Eigen::Ref<const Mat> occupied_orbitals) {
+inline Mat density_matrix_restricted(Eigen::Ref<const Mat> occupied_orbitals) {
   return occupied_orbitals * occupied_orbitals.transpose();
 }
 
-inline auto density_matrix_unrestricted(Eigen::Ref<const Mat> occupied_orbitals,
+inline Mat density_matrix_unrestricted(Eigen::Ref<const Mat> occupied_orbitals,
                                         size_t num_alpha, size_t num_beta) {
   size_t rows, cols;
   size_t nbf = occupied_orbitals.rows() / 2;
@@ -82,7 +81,7 @@ inline auto density_matrix_unrestricted(Eigen::Ref<const Mat> occupied_orbitals,
   return D;
 }
 
-inline auto density_matrix_general(Eigen::Ref<const Mat> occupied_orbitals) {
+inline Mat density_matrix_general(Eigen::Ref<const Mat> occupied_orbitals) {
   return 0.5 * occupied_orbitals * occupied_orbitals.transpose();
 }
 

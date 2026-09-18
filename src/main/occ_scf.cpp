@@ -483,4 +483,9 @@ Wavefunction run_scf_external(occ::io::OccInput config, bool write_wfn) {
   return wfn;
 }
 
+void shutdown() {
+  occ::log::flush();
+  occ::timing::clear_all();
+}
+
 } // namespace occ::main

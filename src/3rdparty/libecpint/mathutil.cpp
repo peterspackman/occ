@@ -104,7 +104,7 @@ namespace libecpint {
 			// Sl{-m}(theta, phi) = Clm * Plm(std::cos(theta)) * std::sin(m * phi)
 			// Sl0(theta, phi) = std::sqrt(2) * Cl0 * Pl0(std::cos(theta))
 			// where Clm^2 = (2l + 1)*(l - m)! / (8*pi * (l+m)!)
-			double osq4pi = 1.0 / std::sqrt(4.0 * M_PI);
+			double osq4pi = 1.0 / std::sqrt(4.0 * std::numbers::pi_v<double>);
 			int sign;
 			for (int l = 0; l <= lmax; l++) {
 				rshValues(l, l) = osq4pi * std::sqrt(2.0 * l + 1.0) * Plm[l][0];
@@ -119,7 +119,7 @@ namespace libecpint {
 			}
 
 		} else {
-			rshValues(0, 0) = 1.0 / std::sqrt(4.0 * M_PI);
+			rshValues(0, 0) = 1.0 / std::sqrt(4.0 * std::numbers::pi_v<double>);
 		}
 
 		return rshValues;

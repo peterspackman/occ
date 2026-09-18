@@ -8,6 +8,7 @@
 
 namespace occ::log {
 namespace {
+std::shared_ptr<spdlog::logger> initial_logger = spdlog::default_logger();
 std::shared_ptr<spdlog::logger> current_logger = spdlog::default_logger();
 
 // Custom sink that forwards messages to callbacks
@@ -166,6 +167,27 @@ void set_log_file(const std::string &filename) {
   }
   spdlog::set_pattern("%v");
   spdlog::enable_backtrace(32);
+  current_logger->flush_on(spdlog::level::trace);
+}
+
+void close_log_file() {
+  current_logger->flush();
+  auto previous_logger = current_logger;
+
+  std::vector<spdlog::sink_ptr> sinks = initial_logger->sinks();
+  if (callback_sink_instance) {
+    sinks.push_back(callback_sink_instance);
+  }
+
+  auto logger =
+      std::make_shared<spdlog::logger>("occ", sinks.begin(), sinks.end());
+  logger->set_level(current_logger->level());
+
+  current_logger = logger;
+  spdlog::set_default_logger(current_logger);
+  if (previous_logger->name() != current_logger->name()) {
+    spdlog::drop(previous_logger->name());
+  }
 }
 
 void register_log_callback(const LogCallback &callback) {

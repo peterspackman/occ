@@ -20,6 +20,10 @@ CPMAddPackage(
     VERSION "3.4.0"
 )
 if(NOT "${USE_SYSTEM_TBB}")
+    if (BUILD_SHARED_TBB AND NOT BUILD_SHARED_LIBS)
+        set(BUILD_SHARED_LIBS ON)
+        set(SWITCHED ON)
+    endif()
     set(TBB_OPTIONS "")
     list(APPEND TBB_OPTIONS "TBB_TEST OFF")
     list(APPEND TBB_OPTIONS "TBB_STRICT OFF")
@@ -44,6 +48,9 @@ if(NOT "${USE_SYSTEM_TBB}")
         VERSION "2022.2.0"
         OPTIONS ${TBB_OPTIONS}
     )
+    if (BUILD_SHARED_TBB AND SWITCHED)
+        set(BUILD_SHARED_LIBS OFF)
+    endif()
 endif()
 
 CPMAddPackage(
@@ -158,41 +165,81 @@ endif()
 
 if("${USE_QCINT}")
     set(LIBCINT_REPOSITORY "sunqm/qcint")
-else()
-    set(LIBCINT_REPOSITORY "peterspackman/libcint")
+    # The changes were merged a while ago
+else ()
+    set(LIBCINT_REPOSITORY "sunqm/libcint")
 endif()
 
-if(
-    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
-    AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux"
-)
+# qcint is unsupported under MSVC; fall back to the MSVC-patched libcint fork.
+if(MSVC AND NOT "${USE_QCINT}")
+    set(LIBCINT_REPOSITORY "RealUranar/libcint")
+endif()
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(LIBCINT_BUILD_TYPE "CMAKE_BUILD_TYPE Release")
 endif()
 if(NOT USE_SYSTEM_LIBCINT)
     # Add compiler flags to fix the implicit function declaration error
-    set(LIBCINT_C_FLAGS
-        "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE"
-    )
+    if(MSVC)
+        set(LIBCINT_C_FLAGS "/TC /wd4024")
+    else()
+        set(LIBCINT_C_FLAGS
+            "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE"
+        )
+    endif()
 
+    # Fetch libcint without configuring it. The MSVC/clang-cl patch must be
+    # applied *before* libcint's CMakeLists runs: it edits include/cint.h.in,
+    # and patching after add_subdirectory() leaves the generated include/cint.h
+    # stale (still selecting the non-MSVC complex type) until a second configure.
     CPMAddPackage(
         NAME libcint
         GITHUB_REPOSITORY "${LIBCINT_REPOSITORY}"
         GIT_TAG master
-        OPTIONS
-            "WITH_FORTRAN OFF"
-            "WITH_CINT2_INTERFACE OFF"
-            "ENABLE_STATIC ON"
-            "BUILD_SHARED_LIBS OFF"
-            "PYPZPX ON"
-            "BUILD_MARCH_NATIVE ON"
-            "WITH_RANGE_COULOMB ON"
-            "CMAKE_C_FLAGS ${LIBCINT_C_FLAGS}"
-            ${LIBCINT_BUILD_TYPE}
+        DOWNLOAD_ONLY YES
         VERSION "6.1.2"
     )
 
-    # Apply the flags to the target after it's created
-    if(TARGET cint)
+    if(MSVC)
+        find_program(PATCH_EXECUTABLE patch
+            HINTS "C:/Program Files/Git/usr/bin"
+            REQUIRED
+        )
+        # -N/--forward keeps this idempotent when the source cache is already
+        # patched: patch reports "already applied" and exits non-zero, which we
+        # log but deliberately do not treat as an error.
+        execute_process(
+            COMMAND ${PATCH_EXECUTABLE} -p1 -N -r - --forward
+            INPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/patches/msvc_libcint.patch"
+            WORKING_DIRECTORY "${libcint_SOURCE_DIR}"
+            RESULT_VARIABLE _patch_result
+            OUTPUT_VARIABLE _patch_output
+            ERROR_VARIABLE _patch_error
+        )
+        message(STATUS "libcint patch result: ${_patch_result}")
+        message(STATUS "libcint patch output: ${_patch_output}")
+        message(STATUS "libcint patch error: ${_patch_error}")
+    endif()
+
+    # Configure libcint with the options the CPM OPTIONS keyword would set.
+    # block() keeps CMAKE_C_FLAGS / CMAKE_BUILD_TYPE / BUILD_SHARED_LIBS local
+    # so they don't leak into the other third-party packages.
+    block()
+        set(WITH_FORTRAN OFF)
+        set(WITH_CINT2_INTERFACE OFF)
+        set(ENABLE_STATIC ON)
+        set(BUILD_SHARED_LIBS OFF)
+        set(PYPZPX ON)
+        set(BUILD_MARCH_NATIVE ON)
+        set(WITH_RANGE_COULOMB ON)
+        set(CMAKE_C_FLAGS "${LIBCINT_C_FLAGS}")
+        if(LIBCINT_BUILD_TYPE)
+            set(CMAKE_BUILD_TYPE Release)
+        endif()
+        add_subdirectory("${libcint_SOURCE_DIR}" "${libcint_BINARY_DIR}" EXCLUDE_FROM_ALL)
+    endblock()
+
+    if(TARGET cint AND NOT MSVC)
         target_compile_options(
             cint
             PRIVATE

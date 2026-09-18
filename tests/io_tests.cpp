@@ -1000,7 +1000,7 @@ TEST_CASE("CIF writer", "[io][cif][write]") {
     auto acetic = acetic_crystal();
     
     occ::io::CifWriter writer;
-    std::string temp_file = "/tmp/test_acetic.cif";
+    std::string temp_file = (std::filesystem::temp_directory_path() / "test_acetic.cif").string();
     
     // This should not throw
     REQUIRE_NOTHROW(writer.write(temp_file, acetic, "Acetic acid test"));

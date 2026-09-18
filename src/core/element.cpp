@@ -4,25 +4,25 @@
 
 namespace occ::core {
 
-Element::Element(int atomicNumber) : m_data(ELEMENTDATA_TABLE[atomicNumber]) {}
+Element::Element(int atomicNumber) : m_data(make_element_data(atomicNumber)) {}
 
 Element::Element(const std::string &s, bool exact_match)
-    : m_data(ELEMENTDATA_TABLE[0]) {
+    : m_data(make_element_data(0)) {
   // capitalize the symbol first
   auto symbol = occ::util::trim_copy(s);
   auto capitalized = occ::util::capitalize_copy(s);
   size_t match_length = 0;
   for (size_t i = ELEMENT_MAX - 1; i > 0; i--) {
-    const auto dat = ELEMENTDATA_TABLE[i];
-    const size_t N = dat.symbol.size();
-    if (dat.symbol.compare(0, N, symbol, 0, N) == 0) {
-      if (exact_match && dat.symbol != symbol)
+    const auto &dat = ELEMENTDATA_TABLE[i];
+    const size_t N = std::char_traits<char>::length(dat.symbol);
+    if (symbol.compare(0, N, dat.symbol, N) == 0) {
+      if (exact_match && symbol != dat.symbol)
         continue;
-      if (dat.symbol.size() > match_length) {
-        m_data = dat;
-        match_length = dat.symbol.size();
+      if (N > match_length) {
+        m_data = make_element_data(static_cast<int>(i));
+        match_length = N;
       }
-      if (symbol.size() == dat.symbol.size())
+      if (symbol.size() == N)
         return;
     }
   }

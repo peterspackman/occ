@@ -29,6 +29,7 @@ public:
 
   IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
                    const ShellList &df);
+  ~IntegralEngineDF();
 
   Mat exchange(const MolecularOrbitals &mo);
   Mat coulomb(const MolecularOrbitals &mo);

@@ -3575,7 +3575,7 @@ TEST_CASE("Unrestricted GFN2: input validation", "[xtb][native][unrestricted]") 
   REQUIRE_THROWS(odd.single_point_energy());
 
   // The periodic SCC is restricted only and says so at configuration time.
-  occ::crystal::UnitCell cell(10.0, 10.0, 10.0, M_PI / 2, M_PI / 2, M_PI / 2);
+  occ::crystal::UnitCell cell(10.0, 10.0, 10.0, std::numbers::pi_v<double> / 2, std::numbers::pi_v<double> / 2, std::numbers::pi_v<double> / 2);
   occ::Mat3N frac(3, 1);
   frac << 0.0, 0.0, 0.0;
   occ::IVec nums(1);

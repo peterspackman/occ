@@ -1,15 +1,30 @@
-cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.25 FATAL_ERROR)
 
 set(PROJECT_VERSION_MAJOR "0")
 set(PROJECT_VERSION_MINOR "9")
 set(PROJECT_VERSION_PATCH "4")
 
+if(MSVC)
+    add_compile_options(/utf-8 $<$<COMPILE_LANGUAGE:CXX>:/EHsc>)
+    if(POLICY CMP0141)
+        cmake_policy(SET CMP0141 NEW)
+    endif()
+endif()
 project(
     occ
     VERSION
         "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
     LANGUAGES CXX C
 )
+
+# Embed debug info (/Z7) for Debug and RelWithDebInfo instead of a shared
+# per-target .pdb (/Zi): parallel cl.exe writing the same PDB (under sccache)
+# fails with C1041. This must be a literal -- DEBUG_INFORMATION_FORMAT does not
+# evaluate generator expressions, and a genex silently falls back to /Zi.
+if(MSVC AND (CMAKE_BUILD_TYPE STREQUAL "Debug"
+             OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo"))
+    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT Embedded)
+endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,7 +50,7 @@ if(SKBUILD)
 endif()
 
 # Build acceleration options
-option(WITH_CCACHE "Use ccache for faster clean rebuilds (if available)" ON)
+option(WITH_CACHE "Use sccache/ccache for faster clean rebuilds (if available)" ON)
 option(
     WITH_UNITY_BUILD
     "Enable unity builds (faster clean builds, slower incremental)"
@@ -49,23 +64,30 @@ option(
 )
 
 # lld is faster on Linux but incompatible with Apple clang on macOS
-if(NOT APPLE)
+if(NOT APPLE AND NOT MSVC)
     option(WITH_LLD "Use lld linker for faster linking (if available)" ON)
 else()
     option(WITH_LLD "Use lld linker for faster linking (if available)" OFF)
 endif()
 
 option(USE_SYSTEM_LIBCINT "Use libcint installed on system" OFF)
-if(WITH_CCACHE)
+if(WITH_CACHE)
     find_program(CCACHE_PROGRAM ccache)
     if(CCACHE_PROGRAM)
         message(STATUS "Using ccache: ${CCACHE_PROGRAM}")
         set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
         set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    else()
+        find_program(SCCACHE_PROGRAM sccache)
+        if(SCCACHE_PROGRAM)
+            message(STATUS "Using sccache: ${SCCACHE_PROGRAM}")
+            set(CMAKE_C_COMPILER_LAUNCHER "${SCCACHE_PROGRAM}")
+            set(CMAKE_CXX_COMPILER_LAUNCHER "${SCCACHE_PROGRAM}")
+        endif()
     endif()
 endif()
 
-if(WITH_LLD)
+if(WITH_LLD AND NOT MSVC)
     find_program(LLD_PROGRAM lld)
     if(LLD_PROGRAM)
         message(STATUS "Using lld linker: ${LLD_PROGRAM}")
@@ -79,6 +101,7 @@ if(WITH_UNITY_BUILD)
     set(CMAKE_UNITY_BUILD_BATCH_SIZE 8)
 endif()
 
+option(BUILD_SHARED_TBB "Build shared TBB" OFF)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
     option(BUILD_FPIC "Build with position independent code" OFF)
@@ -104,6 +127,11 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     endif()
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" OFF)
     option(USE_SYSTEM_TBB "Use TBB installed on system" OFF)
+    option(
+        USE_FORTRAN
+        "Enable the use of Fortran in the libraries that can use it"
+        OFF
+    )
     option(USE_QCINT "Use SIMD optimised qcint rather than libcint" OFF)
     option(GG_NO_PRAGMA "Define the __GG_NO_PRAGMA macro" OFF)
     option(EMSCRIPTEN "Using emscripten" OFF)
@@ -128,7 +156,15 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 if(WIN32)
-    add_compile_definitions(NOMINMAX)
+    add_compile_definitions(NOMINMAX _USE_MATH_DEFINES)
+    if(MSVC)
+        add_compile_definitions($<$<CONFIG:Debug>:_DEBUG>)
+        add_compile_options(/bigobj)
+    endif()
+endif()
+if(MSVC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+    string(REPLACE "/Zi" "/Z7" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 endif()
 
 if("${WITH_PYTHON_BINDINGS}")
@@ -212,12 +248,8 @@ endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")
 # don't use install commands from third party
-if(BUILD_UNIFIED_LIB)
-    add_subdirectory(3rdparty)
-    add_subdirectory(libocc)
-else()
-    add_subdirectory(3rdparty EXCLUDE_FROM_ALL)
-endif()
+
+add_subdirectory(3rdparty EXCLUDE_FROM_ALL)
 add_subdirectory(include)
 add_subdirectory(src)
 

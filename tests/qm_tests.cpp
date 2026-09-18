@@ -1762,67 +1762,67 @@ using occ::io::RIPolicy;
 TEST_CASE("plan_acceleration applies the ORCA-style policy", "[acceleration]") {
   occ::set_data_directory(OCC_DATA_DIR);
   const int crossover = occ::qm::cosx_nbf_crossover();
-  const std::size_t small = static_cast<std::size_t>(crossover) - 1;
-  const std::size_t large = static_cast<std::size_t>(crossover) + 1;
+  const std::size_t m_small = static_cast<std::size_t>(crossover) - 1; // small is a macro from msvc
+  const std::size_t m_large = static_cast<std::size_t>(crossover) + 1;
 
   SECTION("Auto density-fits the Coulomb term for a pure GGA, no COSX") {
-    auto p = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large,
+    auto p = plan_acceleration(RIPolicy::Auto, "def2-tzvp", m_large,
                                /*exact_exchange=*/0.0, "", false);
     REQUIRE(p.df_basis == "def2-universal-jkfit");
     REQUIRE_FALSE(p.use_cosx);
   }
 
   SECTION("Auto uses DF-K below the crossover for exact exchange") {
-    auto hf = plan_acceleration(RIPolicy::Auto, "cc-pvtz", small,
+    auto hf = plan_acceleration(RIPolicy::Auto, "cc-pvtz", m_small,
                                 /*exact_exchange=*/1.0, "", false);
     REQUIRE(hf.df_basis == "cc-pvtz-jkfit");
     REQUIRE_FALSE(hf.use_cosx);
   }
 
   SECTION("Auto switches to COSX above the crossover for exact exchange") {
-    auto hf = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large,
+    auto hf = plan_acceleration(RIPolicy::Auto, "def2-tzvp", m_large,
                                 /*exact_exchange=*/1.0, "", false);
     REQUIRE(hf.df_basis == "def2-universal-jkfit");
     REQUIRE(hf.use_cosx);
 
     // hybrid DFT (nonzero exact exchange) behaves like HF
-    auto hyb = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large,
+    auto hyb = plan_acceleration(RIPolicy::Auto, "def2-tzvp", m_large,
                                  /*exact_exchange=*/0.2, "", false);
     REQUIRE(hyb.use_cosx);
   }
 
   SECTION("explicit user settings win over Auto") {
     // user-specified DF basis is respected and COSX is not auto-added
-    auto p = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large, 1.0,
+    auto p = plan_acceleration(RIPolicy::Auto, "def2-tzvp", m_large, 1.0,
                                "my-aux", false);
     REQUIRE(p.df_basis == "my-aux");
     REQUIRE_FALSE(p.use_cosx);
     // user --cosx alone keeps DF off (conventional J + COSX K)
-    auto c = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large, 1.0, "",
+    auto c = plan_acceleration(RIPolicy::Auto, "def2-tzvp", m_large, 1.0, "",
                                true);
     REQUIRE(c.df_basis.empty());
     REQUIRE(c.use_cosx);
   }
 
   SECTION("None is conventional unless the user forces DF/COSX") {
-    auto p = plan_acceleration(RIPolicy::None, "def2-tzvp", large, 1.0, "",
+    auto p = plan_acceleration(RIPolicy::None, "def2-tzvp", m_large, 1.0, "",
                                false);
     REQUIRE(p.df_basis.empty());
     REQUIRE_FALSE(p.use_cosx);
   }
 
   SECTION("JK forces DF and never COSX; COSX forces DF-J + COSX-K") {
-    auto jk = plan_acceleration(RIPolicy::JK, "cc-pvtz", large, 1.0, "", false);
+    auto jk = plan_acceleration(RIPolicy::JK, "cc-pvtz", m_large, 1.0, "", false);
     REQUIRE(jk.df_basis == "cc-pvtz-jkfit");
     REQUIRE_FALSE(jk.use_cosx);
 
-    auto cosx = plan_acceleration(RIPolicy::COSX, "def2-tzvp", small, 1.0, "",
+    auto cosx = plan_acceleration(RIPolicy::COSX, "def2-tzvp", m_small, 1.0, "",
                                   false);
     REQUIRE(cosx.df_basis == "def2-universal-jkfit");
     REQUIRE(cosx.use_cosx);
 
     // COSX requested but pure GGA -> no exact exchange to replace
-    auto gga = plan_acceleration(RIPolicy::COSX, "def2-tzvp", large, 0.0, "",
+    auto gga = plan_acceleration(RIPolicy::COSX, "def2-tzvp", m_large, 0.0, "",
                                  false);
     REQUIRE_FALSE(gga.use_cosx);
   }

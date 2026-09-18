@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: ["main"]
     tags: "v*"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -48,8 +49,14 @@ jobs:
           - os: windows-latest
             architecture: x86_64
             script: windows_build.ps1
-            name: "windows-x86_64"
+            name: "windows-mingw"
             experimental: true
+          - os: windows-latest
+            architecture: x86_64
+            script: windows_build.ps1
+            name: "windows-msvc"
+            experimental: true
+
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental == true }}
     steps:
@@ -60,7 +67,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y python3-numpy libpthread-stubs0-dev \
-            doxygen graphviz ninja-build ccache
+            doxygen graphviz ninja-build ccache cmake lld
 
     - name: Install Dependencies Mac
       if: startsWith(runner.os, 'macOS')
@@ -77,7 +84,6 @@ jobs:
       with:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
-          ${{github.workspace}}/build
         key: ${{ matrix.name }}-occ-build-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: |
           ${{ matrix.name }}-occ-build-
@@ -107,6 +113,15 @@ jobs:
       run: |
         Remove-Item -Path build/*.xz -ErrorAction SilentlyContinue
         ./scripts/${{matrix.script}} "${{matrix.architecture}}" "${{matrix.name}}"
+
+    - name: Upload compile_commands.json (on failure)
+      if: failure()
+      continue-on-error: true
+      uses: actions/upload-artifact@v4
+      with:
+        name: compile-commands-${{ matrix.name }}
+        path: ${{github.workspace}}/build/compile_commands.json
+        overwrite: true
 
     - name: Test
       if: matrix.name == 'linux-x86_64'

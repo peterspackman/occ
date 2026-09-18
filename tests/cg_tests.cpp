@@ -19,6 +19,7 @@
 #include <occ/solvent/surface.h>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
+#include "test_utils.h"
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -380,10 +381,10 @@ TEST_CASE("CG: descriptors accumulate over nearest neighbours", "[cg]") {
 
   // Descriptors describe contacts, so a non-nearest neighbour contributes
   // nothing, exactly as for the energies.
-  DimerResult far;
-  far.is_nearest_neighbor = false;
-  far.descriptors = {{"hbond_area", 99.0}};
-  molecule.add_dimer_result(far);
+  DimerResult m_far;
+  m_far.is_nearest_neighbor = false;
+  m_far.descriptors = {{"hbond_area", 99.0}};
+  molecule.add_dimer_result(m_far);
 
   REQUIRE(molecule.descriptors.at("hbond_area") == Approx(10.0));
   REQUIRE(molecule.descriptors.at("reorganisation") == Approx(4.0));

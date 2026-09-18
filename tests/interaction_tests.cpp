@@ -215,7 +215,7 @@ occ::interaction::ElatResults create_test_elat_results() {
 
 TEST_CASE("Elat format write and read round-trip", "[interaction][json][elat]") {
   auto results = create_test_elat_results();
-  std::string test_file = "/tmp/test_elat_roundtrip.json";
+  std::string test_file = (std::filesystem::temp_directory_path() / "test_elat_roundtrip.json").string();
 
   // Write legacy format
   occ::interaction::write_elat_json(test_file, results);

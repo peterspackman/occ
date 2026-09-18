@@ -26,6 +26,7 @@ void set_log_level(spdlog::level::level_enum level);
 void set_log_level(int verbosity);
 
 void set_log_file(const std::string &filename);
+void close_log_file();
 
 inline void flush() { spdlog::default_logger()->flush(); }
 

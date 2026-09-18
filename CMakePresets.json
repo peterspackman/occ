@@ -7,7 +7,7 @@
       "name": "base",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build-${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/build-${presetName}/install-${presetName}",
@@ -24,8 +24,8 @@
         "ENABLE_HOST_OPT": "OFF",
         "BUILD_DOCS": "OFF",
         "BUILD_TESTING": "OFF",
-        "CMAKE_CXX_FLAGS": "-O2 -march=skylake -static-libgcc -static-libstdc++",
-        "CMAKE_C_FLAGS": "-O2 -march=x86-64-v3 -static-libgcc"
+        "CMAKE_CXX_FLAGS": "-O2 -march=skylake ",
+        "CMAKE_C_FLAGS": "-O2 -march=x86-64-v3 "
       }
     },
 
@@ -108,6 +108,104 @@
       "cacheVariables": {
         "BUILD_TESTING": "ON"
       }
+    },
+
+    {
+      "name": "windows-mingw",
+      "displayName": "Release (Windows, MinGW-w64, static)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "ENABLE_HOST_OPT": "OFF",
+        "BUILD_SHARED_LIBS": "OFF",
+        "USE_OPENMP": "OFF",
+        "CPACK_SYSTEM_NAME": "windows",
+        "GG_NO_PRAGMA": "ON",
+        "CMAKE_CXX_FLAGS": "-O2 -static -static-libgcc -static-libstdc++",
+        "CMAKE_C_FLAGS": "-O2 -static -static-libgcc -static-libstdc++",
+        "CMAKE_EXE_LINKER_FLAGS": "-static -static-libgcc -static-libstdc++"
+      }
+    },
+
+    {
+      "name": "windows-msvc",
+      "displayName": "Release (MSVC, static)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "clang-cl",
+       "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_LINKER": "lld-link",
+        "ENABLE_HOST_OPT": "OFF",
+        "BUILD_SHARED_LIBS": "OFF",
+        "USE_OPENMP": "OFF",
+        "CPACK_SYSTEM_NAME": "windows",
+        "DCMAKE_GENERATOR_x86_64_pc_windows_msvc":"Ninja",
+        "BUILD_SHARED_TBB":"ON",
+        "GG_NO_PRAGMA": "ON",
+        "BUILD_TESTING": "ON",
+        "BUILD_FPIC": "ON",
+        "WITH_PYTHON_BINDINGS": "OFF"
+      }
+    },
+
+    {
+      "name": "debug-msvc",
+      "displayName": "Debug (MSVC, static)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_LINKER": "lld-link",
+        "ENABLE_HOST_OPT": "OFF",
+        "BUILD_SHARED_LIBS": "OFF",
+        "USE_OPENMP": "OFF",
+        "CPACK_SYSTEM_NAME": "windows",
+        "DCMAKE_GENERATOR_x86_64_pc_windows_msvc":"Ninja",
+        "BUILD_SHARED_TBB":"ON",
+        "GG_NO_PRAGMA": "ON",
+        "BUILD_TESTING": "ON",
+        "BUILD_FPIC": "ON",
+        "WITH_PYTHON_BINDINGS": "OFF"
+      }
+    },
+
+    {
+      "name": "relwithdebinfo-gcc",
+      "displayName": "RelWithDebInfo (GCC, symbols + -O2)",
+      "inherits": "release-gcc-testing",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_FLAGS": "-O2 -march=skylake -g -fno-omit-frame-pointer",
+        "CMAKE_C_FLAGS": "-O2 -march=x86-64-v3 -g -fno-omit-frame-pointer"
+      }
+    },
+
+    {
+      "name": "relwithdebinfo-clang",
+      "displayName": "RelWithDebInfo (Clang, symbols + -O2)",
+      "inherits": "release-clang-testing",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BUILD_DOCS": "OFF",
+        "CMAKE_CXX_FLAGS": "-O2 -march=skylake -g -fno-omit-frame-pointer -static-libgcc -static-libstdc++",
+        "CMAKE_C_FLAGS": "-O2 -march=x86-64-v3 -g -fno-omit-frame-pointer -static-libgcc"
+      }
+    },
+
+    {
+      "name": "relwithdebinfo-msvc",
+      "displayName": "RelWithDebInfo (MSVC, symbols + /O2 /Ob2)",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "/O2 /Ob2 /DNDEBUG",
+        "CMAKE_C_FLAGS_RELWITHDEBINFO": "/O2 /Ob2 /DNDEBUG",
+        "CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO": "/DEBUG /INCREMENTAL:NO"
+      }
     }
   ],
 
@@ -151,6 +249,36 @@
       "name": "debug-clang-testing",
       "configurePreset": "debug-clang-testing",
       "displayName": "Build debug-clang-testing"
+    },
+    {
+      "name": "windows-mingw",
+      "configurePreset": "windows-mingw",
+      "displayName": "Build windows-mingw"
+    },
+    {
+      "name": "windows-msvc",
+      "configurePreset": "windows-msvc",
+      "displayName": "Build windows-msvc"
+    },
+    {
+      "name": "debug-msvc",
+      "configurePreset": "debug-msvc",
+      "displayName": "Build debug-msvc"
+    },
+    {
+      "name": "relwithdebinfo-gcc",
+      "configurePreset": "relwithdebinfo-gcc",
+      "displayName": "Build relwithdebinfo-gcc"
+    },
+    {
+      "name": "relwithdebinfo-clang",
+      "configurePreset": "relwithdebinfo-clang",
+      "displayName": "Build relwithdebinfo-clang"
+    },
+    {
+      "name": "relwithdebinfo-msvc",
+      "configurePreset": "relwithdebinfo-msvc",
+      "displayName": "Build relwithdebinfo-msvc"
     }
   ],
 
@@ -180,6 +308,41 @@
       "name": "debug-clang-testing",
       "configurePreset": "debug-clang-testing",
       "displayName": "Test debug-clang",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    },
+    {
+      "name": "windows-msvc",
+      "configurePreset": "windows-msvc",
+      "displayName": "Test windows-msvc",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    },
+    {
+      "name": "debug-msvc",
+      "configurePreset": "debug-msvc",
+      "displayName": "Test debug-msvc",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    },
+    {
+      "name": "relwithdebinfo-gcc",
+      "configurePreset": "relwithdebinfo-gcc",
+      "displayName": "Test relwithdebinfo-gcc",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    },
+    {
+      "name": "relwithdebinfo-clang",
+      "configurePreset": "relwithdebinfo-clang",
+      "displayName": "Test relwithdebinfo-clang",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    },
+    {
+      "name": "relwithdebinfo-msvc",
+      "configurePreset": "relwithdebinfo-msvc",
+      "displayName": "Test relwithdebinfo-msvc",
       "output": { "outputOnFailure": true },
       "execution": { "noTestsAction": "error", "stopOnFailure": false }
     }
@@ -252,6 +415,67 @@
         { "type": "configure", "name": "debug-clang-testing" },
         { "type": "build",     "name": "debug-clang-testing" },
         { "type": "test",      "name": "debug-clang-testing" }
+      ]
+    },
+    {
+      "name": "windows-msvc",
+      "displayName": "Configure + Build (MSVC Release)",
+      "steps": [
+        { "type": "configure", "name": "windows-msvc" },
+        { "type": "build",     "name": "windows-msvc" }
+      ]
+    },
+    {
+      "name": "windows-msvc-testing",
+      "displayName": "Configure + Build + Test (MSVC Release)",
+      "steps": [
+        { "type": "configure", "name": "windows-msvc" },
+        { "type": "build",     "name": "windows-msvc" },
+        { "type": "test",      "name": "windows-msvc" }
+      ]
+    },
+    {
+      "name": "debug-msvc",
+      "displayName": "Configure + Build (MSVC Debug)",
+      "steps": [
+        { "type": "configure", "name": "debug-msvc" },
+        { "type": "build",     "name": "debug-msvc" }
+      ]
+    },
+    {
+      "name": "debug-msvc-testing",
+      "displayName": "Configure + Build + Test (MSVC Debug)",
+      "steps": [
+        { "type": "configure", "name": "debug-msvc" },
+        { "type": "build",     "name": "debug-msvc" },
+        { "type": "test",      "name": "debug-msvc" }
+      ]
+    },
+    {
+      "name": "relwithdebinfo-gcc",
+      "displayName": "Configure + Build + Test (GCC RelWithDebInfo)",
+      "steps": [
+        { "type": "configure", "name": "relwithdebinfo-gcc" },
+        { "type": "build",     "name": "relwithdebinfo-gcc" },
+        { "type": "test",      "name": "relwithdebinfo-gcc" }
+      ]
+    },
+    {
+      "name": "relwithdebinfo-clang",
+      "displayName": "Configure + Build + Test (Clang RelWithDebInfo)",
+      "steps": [
+        { "type": "configure", "name": "relwithdebinfo-clang" },
+        { "type": "build",     "name": "relwithdebinfo-clang" },
+        { "type": "test",      "name": "relwithdebinfo-clang" }
+      ]
+    },
+    {
+      "name": "relwithdebinfo-msvc",
+      "displayName": "Configure + Build + Test (MSVC RelWithDebInfo)",
+      "steps": [
+        { "type": "configure", "name": "relwithdebinfo-msvc" },
+        { "type": "build",     "name": "relwithdebinfo-msvc" },
+        { "type": "test",      "name": "relwithdebinfo-msvc" }
       ]
     }
   ]

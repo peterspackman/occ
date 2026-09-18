@@ -23,8 +23,17 @@ struct ElementData {
   float mass;
 };
 
+struct ElementRawData {
+  int atomic_number;
+  const char *name;
+  const char *symbol;
+  float cov_radius;
+  float vdw_radius;
+  float mass;
+};
+
 /// \internal
-static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] = {
+static constexpr ElementRawData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] = {
     {0, "Dummy", "Xx", 0.0f, 0.0f, 0.0f},
     {1, "hydrogen", "H", 0.23f, 1.20f, 1.00794f},
     {2, "helium", "He", 1.50f, 1.40f, 4.002602f},
@@ -128,7 +137,13 @@ static ElementData ELEMENTDATA_TABLE[ELEMENT_MAX + 1] = {
     {100, "fermium", "Fm", 1.50f, 2.45f, 257.0f},
     {101, "mendelevium", "Md", 1.50f, 2.46f, 258.0f},
     {102, "nobelium", "No", 1.50f, 2.46f, 259.0f},
-    {103, "lawrencium", "Lr", 1.50f, 2.00f, 262.0f}};
+     {103, "lawrencium", "Lr", 1.50f, 2.00f, 262.0f}};
+
+inline ElementData make_element_data(int atomic_number) {
+  const auto &data = ELEMENTDATA_TABLE[atomic_number];
+  return {data.atomic_number, data.name, data.symbol, data.cov_radius,
+          data.vdw_radius, data.mass};
+}
 
 /// @endcond
 

@@ -7,6 +7,37 @@ namespace occ::qm::detail {
 
 using IntegralResult = IntegralEngine::IntegralResult<3>;
 
+// Query the maximum libcint scratch cache size needed for any (p, p, auxP) shell
+// triple in this basis. Iterates over all AO x AUX shell pairs and calls the
+// libcint size-query path (out=nullptr returns cache_size, no integration).
+template <ShellKind kind>
+inline size_t three_center_max_cache_size(cint::IntegralEnvironment &env,
+                                          const AOBasis &aobasis,
+                                          const AOBasis &auxbasis,
+                                          cint::Optimizer &opt) {
+  const int nsh_ao = aobasis.size();
+  size_t max_cs = 1;
+  for (int p = 0; p < nsh_ao; p++) {
+    for (int auxP = 0; auxP < (int)auxbasis.size(); auxP++) {
+      int shls[3] = {p, p, auxP + nsh_ao};
+      size_t cs;
+      if constexpr (kind == ShellKind::Spherical) {
+        cs = (size_t)libcint::int3c2e_sph(nullptr, nullptr, shls,
+             env.atom_data_ptr(), env.num_atoms(),
+             env.basis_data_ptr(), env.num_basis(),
+             env.env_data_ptr(), opt.optimizer_ptr(), nullptr);
+      } else {
+        cs = (size_t)libcint::int3c2e_cart(nullptr, nullptr, shls,
+             env.atom_data_ptr(), env.num_atoms(),
+             env.basis_data_ptr(), env.num_basis(),
+             env.env_data_ptr(), opt.optimizer_ptr(), nullptr);
+      }
+      if (cs > max_cs) max_cs = cs;
+    }
+  }
+  return max_cs;
+}
+
 // Generic TBB-based three-center integral computation helper
 template <ShellKind kind, typename Lambda>
 void compute_three_center_integrals_tbb(Lambda &process_lambda,
@@ -16,9 +47,17 @@ void compute_three_center_integrals_tbb(Lambda &process_lambda,
                                         const ShellPairList &shellpairs,
                                         cint::Optimizer &opt) {
   occ::timing::start(occ::timing::category::ints3c2e);
-  
+
+  // Pre-compute the maximum libcint cache size and allocate one buffer per
+  // TBB thread. The size-query is cheap (no integration, just arithmetic).
+  const size_t libcint_cache_sz =
+      three_center_max_cache_size<kind>(env, aobasis, auxbasis, opt);
+  occ::parallel::thread_local_storage<std::vector<double>> tl_libcint_cache(
+      [libcint_cache_sz]() { return std::vector<double>(libcint_cache_sz); });
+
   // Parallelize over auxiliary basis functions using TBB work-stealing
   occ::parallel::parallel_for(size_t(0), auxbasis.size(), [&](size_t auxP) {
+    double *libcint_cache = tl_libcint_cache.local().data();
     size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
                      auxbasis.max_shell_size();
     auto buffer = std::make_unique<double[]>(bufsize);
@@ -41,7 +80,7 @@ void compute_three_center_integrals_tbb(Lambda &process_lambda,
         args.shell[1] = q;
         shell_idx = {p, static_cast<int>(q), static_cast<int>(auxP) + nsh_ao};
         args.dims = env.three_center_helper<Op::coulomb, kind>(
-            shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr);
+            shell_idx, opt.optimizer_ptr(), buffer.get(), libcint_cache);
         if (args.dims[0] > -1) {
           process_lambda(args);
         }
@@ -484,7 +523,8 @@ void three_center_aux_kernel(Lambda &f, cint::IntegralEnvironment &env,
                              const gto::AOBasis &auxbasis,
                              const ShellPairList &shellpairs,
                              cint::Optimizer &opt,
-                             int thread_id = 0) noexcept {
+                             int thread_id = 0,
+                             double *libcint_cache = nullptr) noexcept {
   occ::timing::start(occ::timing::category::ints3c2e);
   auto nthreads = occ::parallel::get_num_threads();
   size_t bufsize = aobasis.max_shell_size() * aobasis.max_shell_size() *
@@ -511,7 +551,7 @@ void three_center_aux_kernel(Lambda &f, cint::IntegralEnvironment &env,
         args.shell[1] = q;
         shell_idx = {p, static_cast<int>(q), auxP + nsh_ao};
         args.dims = env.three_center_helper<Op::coulomb, kind>(
-            shell_idx, opt.optimizer_ptr(), buffer.get(), nullptr);
+            shell_idx, opt.optimizer_ptr(), buffer.get(), libcint_cache);
         if (args.dims[0] > -1) {
           f(args);
         }
@@ -1185,12 +1225,17 @@ JKPair direct_coulomb_and_exchange_operator_kernel_u(
   auto jk_lambda_1 = jk_lambda_direct_polarized(
       gg_alpha, gg_beta, iuP_alpha, iuP_beta, block::a(mo.D), block::b(mo.D),
       mo.occ_alpha(), mo.occ_beta());
-  auto lambda = [&](int thread_id) {
-    three_center_aux_kernel<kind>(jk_lambda_1, engine.env(), engine.aobasis(),
-                                  engine.auxbasis(), engine.shellpairs(), opt,
-                                  thread_id);
-  };
-  occ::parallel::parallel_for(0, nthreads, lambda);
+  {
+    const size_t cs = three_center_max_cache_size<kind>(
+        engine.env(), engine.aobasis(), engine.auxbasis(), opt);
+    std::vector<std::vector<double>> aux_caches(nthreads, std::vector<double>(cs));
+    auto lambda = [&](int thread_id) {
+      three_center_aux_kernel<kind>(jk_lambda_1, engine.env(), engine.aobasis(),
+                                    engine.auxbasis(), engine.shellpairs(), opt,
+                                    thread_id, aux_caches[thread_id].data());
+    };
+    occ::parallel::parallel_for(0, nthreads, lambda);
+  }
 
   for (int i = 1; i < nthreads; i++) {
     gg_alpha[0] += gg_alpha[i];
@@ -1218,12 +1263,17 @@ JKPair direct_coulomb_and_exchange_operator_kernel_u(
   occ::timing::stop(occ::timing::category::la);
 
   auto jlambda = j_lambda_direct_u(JJ, d_alpha, d_beta);
-  auto lambda2 = [&](int thread_id) {
-    three_center_aux_kernel<kind>(jlambda, engine.env(), engine.aobasis(),
-                                  engine.auxbasis(), engine.shellpairs(), opt,
-                                  thread_id);
-  };
-  occ::parallel::parallel_for(0, nthreads, lambda2);
+  {
+    const size_t cs = three_center_max_cache_size<kind>(
+        engine.env(), engine.aobasis(), engine.auxbasis(), opt);
+    std::vector<std::vector<double>> aux_caches(nthreads, std::vector<double>(cs));
+    auto lambda2 = [&](int thread_id) {
+      three_center_aux_kernel<kind>(jlambda, engine.env(), engine.aobasis(),
+                                    engine.auxbasis(), engine.shellpairs(), opt,
+                                    thread_id, aux_caches[thread_id].data());
+    };
+    occ::parallel::parallel_for(0, nthreads, lambda2);
+  }
 
   auto Ja = block::a(J);
   auto Jb = block::b(J);
@@ -1747,8 +1797,8 @@ inline auto ao_tensor_reconstruction_kernel(std::vector<Eigen::Tensor<double, 4>
     }
     
     // For each ρσ pair, compute V^(-1) * (ρσ|P) and then dot with (μν|P)
-    for (size_t rho = 0; rho < nbf; ++rho) {
-      for (size_t sigma = 0; sigma < nbf; ++sigma) {
+    for (Eigen::Index rho = 0; rho < nbf; ++rho) {
+      for (Eigen::Index sigma = 0; sigma < nbf; ++sigma) {
         // Extract (ρσ|P) vector
         Vec rhosigmaP = Vec::Zero(naux);
         for (size_t P = 0; P < naux; ++P) {
@@ -1761,8 +1811,8 @@ inline auto ao_tensor_reconstruction_kernel(std::vector<Eigen::Tensor<double, 4>
         
         // Now compute (μν|ρσ) = (μν|P) * V^(-1) * (ρσ|P) for assigned μν pairs
         for (size_t pair_idx = pair_start; pair_idx < pair_end; ++pair_idx) {
-          size_t mu = pair_idx / nbf;
-          size_t nu = pair_idx % nbf;
+          Eigen::Index mu = pair_idx / nbf;
+          Eigen::Index nu = pair_idx % nbf;
           
           double integral_value = 0.0;
           for (size_t P = 0; P < naux; ++P) {
@@ -1815,8 +1865,8 @@ inline auto ao_tensor_reconstruction_kernel_batched(std::vector<Eigen::Tensor<do
     
     // Process assigned μν pairs
     for (size_t pair_idx = pair_start; pair_idx < pair_end; ++pair_idx) {
-      size_t mu = pair_idx / nbf;
-      size_t nu = pair_idx % nbf;
+      Eigen::Index mu = pair_idx / nbf;
+      Eigen::Index nu = pair_idx % nbf;
       
       // Extract (μν|P) vector
       Vec munuP = Vec::Zero(naux);
@@ -1826,8 +1876,8 @@ inline auto ao_tensor_reconstruction_kernel_batched(std::vector<Eigen::Tensor<do
       }
       
       // Compute all (μν|ρσ) for this μν using precomputed X values
-      for (size_t rho = 0; rho < nbf; ++rho) {
-        for (size_t sigma = 0; sigma < nbf; ++sigma) {
+      for (Eigen::Index rho = 0; rho < nbf; ++rho) {
+        for (Eigen::Index sigma = 0; sigma < nbf; ++sigma) {
           size_t rhosigma_idx = rho * nbf + sigma;
           double integral_value = munuP.dot(X_all.col(rhosigma_idx));
           tensor(mu, nu, rho, sigma) = integral_value;
