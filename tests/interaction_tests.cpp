@@ -1,14 +1,17 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 #include <fmt/ostream.h>
+#include <fstream>
 #include <occ/crystal/crystal.h>
-#include <occ/interaction/pair_potential.h>
-#include <occ/interaction/wolf.h>
-#include <occ/interaction/polarization_partitioning.h>
 #include <occ/interaction/interaction_json.h>
 #include <occ/interaction/lattice_energy.h>
-#include <filesystem>
-#include <fstream>
+#include <occ/interaction/pair_potential.h>
+#include <occ/interaction/pairinteraction.h>
+#include <occ/interaction/polarization_partitioning.h>
+#include <occ/interaction/wolf.h>
+#include <stdexcept>
+#include <string>
 
 /* Dimer tests */
 using occ::crystal::AsymmetricUnit;
@@ -240,4 +243,45 @@ TEST_CASE("Elat format write and read round-trip", "[interaction][json][elat]") 
 
   // Clean up
   std::filesystem::remove(test_file);
+}
+
+TEST_CASE("CE model names are case-insensitive and unknown names are an error",
+          "[interaction][model]") {
+  using occ::interaction::ce_model_from_string;
+  REQUIRE(ce_model_from_string("ce-1p").basis == "def2-svp");
+  REQUIRE(ce_model_from_string("CE-B3LYP").basis == "6-31g**");
+  REQUIRE_THROWS_AS(ce_model_from_string("gfn2"), std::invalid_argument);
+  REQUIRE_THROWS_AS(ce_model_from_string("williams"), std::invalid_argument);
+}
+
+TEST_CASE("Model names that select the xtb backend", "[interaction][model]") {
+  using occ::interaction::model_name_implies_xtb;
+  for (const std::string name : {"gfn2", "GFN2-xTB", "xtb"}) {
+    INFO(name);
+    REQUIRE(model_name_implies_xtb(name));
+  }
+  for (const std::string name :
+       {"ce-1p", "ce-b3lyp", "williams", "", "external"}) {
+    INFO(name);
+    REQUIRE_FALSE(model_name_implies_xtb(name));
+  }
+  // the in-tree backend implements GFN2 only
+  for (const std::string name : {"gfn1", "GFN0-xTB", "gfnff", "xtb-gfn1"}) {
+    INFO(name);
+    REQUIRE_THROWS_AS(model_name_implies_xtb(name), std::invalid_argument);
+  }
+}
+
+TEST_CASE("CE model names say which functional they use",
+          "[interaction][model]") {
+  using occ::interaction::ce_model_from_string;
+  REQUIRE(ce_model_from_string("ce-1p").method == "b3lyp");
+  REQUIRE(ce_model_from_string("ce-1p-b3lyp").method == "b3lyp");
+  REQUIRE(ce_model_from_string("ce-1p-wb97m-v").method == "wb97m-v");
+  REQUIRE(ce_model_from_string("ce-2p").name == "CE-2p-B3LYP");
+  REQUIRE(ce_model_from_string("ce-2p-wb97m-v").method == "wb97m-v");
+  REQUIRE(ce_model_from_string("ce-5p").method == "wb97m-v");
+  // the functional is the only difference between the two variants
+  REQUIRE(ce_model_from_string("ce-1p-wb97m-v").repulsion ==
+          ce_model_from_string("ce-1p").repulsion);
 }

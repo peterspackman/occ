@@ -1,10 +1,11 @@
 #include <Eigen/LU>
-#include <occ/mults/rotation.h>
-#include <occ/sht/wigner3j.h>
-#include <occ/sht/clebsch.h>
 #include <cmath>
-#include <stdexcept>
 #include <complex>
+#include <occ/mults/rotation.h>
+#include <occ/sht/clebsch.h>
+#include <occ/sht/wigner3j.h>
+#include <stdexcept>
+#include <string>
 
 namespace occ::mults {
 
@@ -332,15 +333,18 @@ Mat wigner_d_matrix(const RotationMatrix& R, int lmax) {
 
 occ::dma::Mult& rotate_multipole(occ::dma::Mult& mult, const RotationMatrix& R) {
     if (mult.max_rank < 0) return mult;
-    
-    // `wigner_d_matrix` is sized (max_rank+1)^2, but Mult::q is always
-    // allocated for the maximum rank (121 elements). Multiply only the
-    // active block, otherwise Eigen's matrix-vector product reads past the
-    // smaller D allocation (uninitialised/garbage -> NaNs in optimized builds).
-    Mat D = wigner_d_matrix(R, mult.max_rank);
+
+    // q holds more components than the rank uses (121 by default), so rotate
+    // only the (max_rank + 1)^2 that D acts on and leave the rest untouched.
     const int n = mult.num_components();
-    Vec q_rotated = D * mult.q.head(n);
-    mult.q.head(n) = q_rotated;
+    if (mult.q.size() < n) {
+      throw std::invalid_argument("rotate_multipole: rank " +
+                                  std::to_string(mult.max_rank) + " needs " +
+                                  std::to_string(n) + " components, q has " +
+                                  std::to_string(mult.q.size()));
+    }
+    Mat D = wigner_d_matrix(R, mult.max_rank);
+    mult.q.head(n) = D * mult.q.head(n);
 
     return mult;
 }

@@ -32,6 +32,11 @@ void SmdSolvationModel::update(const Vec &atomic_charges) {
   m_engine.update_from_atom_charges(atomic_charges);
 }
 
+void SmdSolvationModel::update(const Vec &atomic_charges, const Mat3N &dipoles,
+                               const Mat &quadrupoles) {
+  m_engine.update_from_atom_multipoles(atomic_charges, dipoles, quadrupoles);
+}
+
 std::string SmdSolvationModel::name() const {
   return fmt::format("SMD-xtb(solvent='{}', eps={:.3f})", m_solvent,
                      m_engine.dielectric());

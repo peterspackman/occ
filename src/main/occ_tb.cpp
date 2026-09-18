@@ -10,6 +10,7 @@
 #include <occ/core/vibration.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/io/cifparser.h>
+#include <occ/xtb/smd_xtb.h>
 #include <occ/io/dftb_gen.h>
 #include <occ/io/load_geometry.h>
 #include <occ/io/occ_input.h>
@@ -212,6 +213,7 @@ void run_molecular(const TbConfig &cfg) {
     input.electronic.multiplicity = cfg.multiplicity;
     input.electronic.spin_polarization = cfg.spin_polarization;
     input.electronic.electronic_temperature = cfg.electronic_temperature;
+    input.solvent.solvent_name = cfg.solvent;
     input.filename = cfg.filename;
     occ::log::info("{:-<72s}", "GFN2-xTB molecular optimization ");
     occ::log::info("input          : {}", cfg.filename);
@@ -219,6 +221,8 @@ void run_molecular(const TbConfig &cfg) {
     occ::log::info("multipoles     : on (analytical gradient)");
     occ::log::info("charge         : {:+.3f} e", cfg.charge);
     occ::log::info("multiplicity   : {}", cfg.multiplicity);
+    occ::log::info("solvent        : {}",
+                   cfg.solvent.empty() ? "none (gas phase)" : cfg.solvent);
     occ::log::info("");
     auto wfn = occ::driver::geometry_optimization(input);
     // Save the converged wavefunction at the optimised geometry. The
@@ -237,6 +241,11 @@ void run_molecular(const TbConfig &cfg) {
       opt_calc.set_temperature(cfg.electronic_temperature);
       opt_calc.set_include_multipoles(cfg.include_multipoles);
       opt_calc.set_include_dispersion(cfg.include_dispersion);
+      if (!cfg.solvent.empty()) {
+        // The geometry was optimised in solvent; the Hessian has to be too.
+        opt_calc.set_solvation_model(
+            std::make_shared<occ::xtb::SmdSolvationModel>(cfg.solvent));
+      }
       run_frequencies(opt_calc, cfg);
     }
     return;
@@ -267,6 +276,41 @@ void run_molecular(const TbConfig &cfg) {
   calc.print_summary();
   occ::log::info("");
   occ::log::info("Total energy        : {:>20.12f} Ha", e_total);
+
+  if (!cfg.solvent.empty()) {
+    // A second SCC with the reaction field on: the difference is the solvation
+    // free energy, and the model reports its electrostatic and CDS parts.
+    occ::xtb::XtbCalculator solvated(mol);
+    solvated.set_charge(cfg.charge);
+    solvated.set_num_unpaired_electrons(cfg.multiplicity - 1);
+    solvated.set_spin_polarization(cfg.spin_polarization);
+    solvated.set_temperature(cfg.electronic_temperature);
+    solvated.set_include_multipoles(cfg.include_multipoles);
+    solvated.set_include_dispersion(cfg.include_dispersion);
+    auto smd = std::make_shared<occ::xtb::SmdSolvationModel>(cfg.solvent);
+    solvated.set_solvation_model(smd);
+    const double e_solvated = solvated.single_point_energy();
+    if (!solvated.last_result().converged) {
+      occ::log::error("Solvated SCC did not converge.");
+    } else {
+      const double dg = (e_solvated - e_total) * occ::units::AU_TO_KJ_PER_MOL;
+      occ::log::info("");
+      occ::log::info("Solvation: {}", smd->name());
+      occ::log::info("  E(solvated)       : {:>20.12f} Ha", e_solvated);
+      occ::log::info("  dG(solv)          : {:>10.3f} kJ/mol ({:.3f} kcal/mol)",
+                     dg, dg * occ::units::KJ_TO_KCAL);
+      if (auto surfaces = smd->surfaces()) {
+        if (surfaces->coulomb)
+          occ::log::info("    electrostatic   : {:>10.3f} kJ/mol",
+                         surfaces->coulomb->energies.sum() *
+                             occ::units::AU_TO_KJ_PER_MOL);
+        if (surfaces->cds)
+          occ::log::info("    CDS             : {:>10.3f} kJ/mol",
+                         surfaces->cds->energies.sum() *
+                             occ::units::AU_TO_KJ_PER_MOL);
+      }
+    }
+  }
 
   write_wavefunction(calc.to_wavefunction(), cfg.filename, cfg.formats);
 
@@ -300,6 +344,9 @@ CLI::App *add_tb_subcommand(CLI::App &app) {
                   "orbital occupations (default 300). Raise it if the SCC "
                   "oscillates on near-degenerate frontier orbitals. "
                   "Molecular inputs only.");
+  tb->add_option("-s,--solvent", cfg->solvent,
+                 "SMD solvent name; also reports the solvation free energy "
+                 "(molecular inputs only)");
   tb->add_flag("--no-multipoles{false}", cfg->include_multipoles,
                 "Disable CAMM multipoles + anisotropic ES (charge-only SCC)");
   tb->add_flag("--no-dispersion{false}", cfg->include_dispersion,

@@ -1,11 +1,13 @@
 #pragma once
-#include <string>
 #include <Eigen/Geometry>
 #include <array>
 #include <occ/core/linear_algebra.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/hkl.h>
+#include <occ/crystal/symmetryoperation.h>
 #include <occ/crystal/unitcell.h>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace occ::crystal {
@@ -157,5 +159,17 @@ bool friedel_mate_is_equivalent(const Crystal &c, const HKL &hkl);
 std::vector<size_t> laue_orbit_partners(const Crystal &c,
                                         const std::vector<Surface> &surfaces,
                                         size_t i);
+
+/// The distinct faces equivalent to `hkl` under the crystal's point group,
+/// each with the first symmetry operation (R|t) that produces it: the image is
+/// R^-T hkl, and a cut at offset o on `hkl` maps to o + image.t on it.
+///
+/// Exact integer arithmetic. Build facet normals from these images
+/// (reciprocal * image) rather than by rotating a cartesian normal, which is
+/// exact only when the cell has the full metric symmetry: on a relaxed cell
+/// that has drifted slightly, a face an operation leaves in place comes back
+/// as a near-duplicate of itself.
+std::vector<std::pair<HKL, SymmetryOperation>> face_images(const Crystal &c,
+                                                           const HKL &hkl);
 
 } // namespace occ::crystal

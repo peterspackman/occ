@@ -19,6 +19,10 @@ struct TbConfig {
   // orbitals otherwise cause. Molecular only.
   double electronic_temperature{300.0};
   bool include_multipoles{true};
+  // SMD solvent name; empty runs in the gas phase. Molecular only: the
+  // periodic SCC has no solvation model. A solvated run also does the gas
+  // phase one, so it can report the solvation free energy.
+  std::string solvent;
   bool include_dispersion{true};
   std::vector<int> kpoints{1, 1, 1};
   // Crystal-only: after the periodic SCC, also run a molecular SCC for each

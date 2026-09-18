@@ -25,18 +25,31 @@ void compute_monomer_energies(const std::string &basename,
   for (auto &wfn : wavefunctions) {
     fs::path monomer_energies_path(
         fmt::format("{}_{}_monomer_energies.json", basename, idx));
+    // Cached as {"model": ..., "energy": ...}. The filename does not name the
+    // model, so a file that names another model, or none, is recomputed.
+    bool loaded = false;
     if (fs::exists(monomer_energies_path)) {
-      occ::log::info("Loading monomer {} energies from {}", idx,
-                     monomer_energies_path.string());
       std::ifstream ifs(monomer_energies_path.string());
-      wfn.energy = nlohmann::json::parse(ifs).get<occ::qm::Energy>();
-    } else {
+      const auto cached = nlohmann::json::parse(ifs);
+      if (cached.contains("model") && cached["model"] == model.name) {
+        occ::log::info("Loading monomer {} energies from {}", idx,
+                       monomer_energies_path.string());
+        wfn.energy = cached["energy"].get<occ::qm::Energy>();
+        loaded = true;
+      } else {
+        occ::log::warn("Cached monomer energies {} are not for {}; recomputing",
+                       monomer_energies_path.string(), model.name);
+      }
+    }
+    if (!loaded) {
       occ::log::info("Computing monomer {} energies", idx);
       interaction.compute_monomer_energies(wfn);
       occ::log::info("Writing monomer energies to {}",
                      monomer_energies_path.string());
       std::ofstream ofs(monomer_energies_path.string());
-      nlohmann::json j = wfn.energy;
+      nlohmann::json j;
+      j["model"] = model.name;
+      j["energy"] = wfn.energy;
       ofs << j;
     }
     idx++;

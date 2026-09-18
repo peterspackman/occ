@@ -2,12 +2,12 @@
 #include <algorithm>
 #include <cmath>
 #include <fmt/core.h>
+#include <map>
 #include <numeric>
-#include <set>
-#include <occ/core/format_matrix.h>
 #include <occ/core/log.h>
-#include <occ/geometry/quickhull.h>
 #include <occ/geometry/wulff.h>
+#include <set>
+#include <utility>
 
 namespace occ::geometry {
 
@@ -29,37 +29,190 @@ Mat3N project_to_plane(const Mat3N &points, const Vec3 &plane_normal) {
   return result;
 }
 
-void Facet::reorder(const Mat3N &points) {
-  if (point_index.empty())
+namespace {
+
+// Column order of coplanar points by angle about their centroid, measured in
+// an in-plane basis built from the normal.
+std::vector<size_t> angular_order(const Mat3N &points, const Vec3 &normal) {
+  const Vec3 u = normal.unitOrthogonal();
+  const Vec3 v = normal.cross(u);
+  const Vec3 centroid = points.rowwise().mean();
+  std::vector<double> angles(points.cols());
+  for (int i = 0; i < points.cols(); ++i) {
+    const Vec3 d = points.col(i) - centroid;
+    angles[i] = std::atan2(v.dot(d), u.dot(d));
+  }
+  std::vector<size_t> order(points.cols());
+  std::iota(order.begin(), order.end(), 0);
+  std::sort(order.begin(), order.end(),
+            [&angles](size_t a, size_t b) { return angles[a] < angles[b]; });
+  return order;
+}
+
+// A convex polyhedron: each face is a cyclically ordered loop of vertex
+// indices, labelled with the facet whose plane it lies in (-1 for the faces of
+// the initial bounding box).
+struct Polyhedron {
+  struct Face {
+    int facet{-1};
+    std::vector<int> loop;
+  };
+  std::vector<Vec3> vertices;
+  std::vector<Face> faces;
+};
+
+Polyhedron bounding_box(double half_width) {
+  Polyhedron box;
+  for (int i = 0; i < 8; ++i)
+    box.vertices.push_back(half_width * Vec3((i & 1) ? 1.0 : -1.0,
+                                             (i & 2) ? 1.0 : -1.0,
+                                             (i & 4) ? 1.0 : -1.0));
+  box.faces = {{-1, {0, 2, 6, 4}}, {-1, {1, 5, 7, 3}},  // x = -w, +w
+               {-1, {0, 4, 5, 1}}, {-1, {2, 3, 7, 6}},  // y = -w, +w
+               {-1, {0, 1, 3, 2}}, {-1, {4, 6, 7, 5}}}; // z = -w, +w
+  return box;
+}
+
+// Drop vertices no face refers to.
+void compact(Polyhedron &poly) {
+  std::vector<int> remap(poly.vertices.size(), -1);
+  std::vector<Vec3> kept;
+  for (auto &face : poly.faces) {
+    for (int &k : face.loop) {
+      if (remap[k] < 0) {
+        remap[k] = kept.size();
+        kept.push_back(poly.vertices[k]);
+      }
+      k = remap[k];
+    }
+  }
+  poly.vertices = std::move(kept);
+}
+
+// Keep the part of `poly` with n.x <= energy; the new face is labelled
+// `facet`. Each vertex is classified once and each crossed edge is split once,
+// so the result is a valid polyhedron however close the plane comes to
+// existing vertices or faces.
+void clip(Polyhedron &poly, const Vec3 &n, double energy, int facet) {
+  double scale = 0.0;
+  for (const auto &v : poly.vertices)
+    scale = std::max(scale, v.norm());
+  const double tolerance = 1e-12 * scale; // rounding, nothing more
+
+  std::vector<double> distance(poly.vertices.size());
+  bool cuts = false;
+  for (size_t k = 0; k < poly.vertices.size(); ++k) {
+    distance[k] = n.dot(poly.vertices[k]) - energy;
+    cuts = cuts || distance[k] > tolerance;
+  }
+  if (!cuts)
     return;
 
-  Mat3N points_2d = project_to_plane(points, normal);
+  std::map<std::pair<int, int>, int> edge_points;
+  auto edge_point = [&](int i, int j) {
+    const std::pair<int, int> key{std::min(i, j), std::max(i, j)};
+    if (auto it = edge_points.find(key); it != edge_points.end())
+      return it->second;
+    const double t = distance[i] / (distance[i] - distance[j]);
+    poly.vertices.push_back(poly.vertices[i] +
+                            t * (poly.vertices[j] - poly.vertices[i]));
+    distance.push_back(0.0);
+    const int index = static_cast<int>(poly.vertices.size()) - 1;
+    edge_points.emplace(key, index);
+    return index;
+  };
 
-  Vec3 centroid = points_2d.col(0);
-  Mat3N directions = points_2d.colwise() - centroid;
-  for (int i = 1; i < directions.cols(); ++i) {
-    directions.col(i).normalize();
+  std::vector<int> cap;
+  auto add_to_cap = [&cap](int k) {
+    if (std::find(cap.begin(), cap.end(), k) == cap.end())
+      cap.push_back(k);
+  };
+
+  std::vector<Polyhedron::Face> faces;
+  for (const auto &face : poly.faces) {
+    std::vector<int> loop;
+    const size_t m = face.loop.size();
+    for (size_t a = 0; a < m; ++a) {
+      const int i = face.loop[a];
+      const int j = face.loop[(a + 1) % m];
+      const double di = distance[i], dj = distance[j];
+      if (di <= tolerance) {
+        loop.push_back(i);
+        if (di >= -tolerance)
+          add_to_cap(i);
+      }
+      if ((di < -tolerance && dj > tolerance) ||
+          (di > tolerance && dj < -tolerance)) {
+        const int p = edge_point(i, j);
+        loop.push_back(p);
+        add_to_cap(p);
+      }
+    }
+    if (loop.size() >= 3)
+      faces.push_back({face.facet, std::move(loop)});
   }
-  // Create a vector of indices for sorting
-  std::vector<size_t> indices(point_index.size() - 1);
-  std::iota(indices.begin(), indices.end(), 1);
 
-  // Sort the indices based on the angles in the directions array
-  std::sort(indices.begin(), indices.end(),
-            [&directions](size_t i1, size_t i2) {
-              double angle1 = std::atan2(directions(1, i1), directions(0, i1));
-              double angle2 = std::atan2(directions(1, i2), directions(0, i2));
-              return angle1 < angle2;
-            });
+  if (cap.size() >= 3) {
+    Mat3N points(3, cap.size());
+    for (size_t k = 0; k < cap.size(); ++k)
+      points.col(k) = poly.vertices[cap[k]];
+    std::vector<int> loop(cap.size());
+    const auto order = angular_order(points, n);
+    for (size_t k = 0; k < order.size(); ++k)
+      loop[k] = cap[order[k]];
+    faces.push_back({facet, std::move(loop)});
+  }
+  poly.faces = std::move(faces);
+  compact(poly);
+}
 
-  // Create a new sorted point_index array
+// Merge vertices within `tolerance` of each other. Two planes that nearly
+// coincide cut a sliver face between them; merging collapses it, and a face
+// left with fewer than three distinct vertices is dropped.
+void merge_close_vertices(Polyhedron &poly, double tolerance) {
+  std::vector<int> remap(poly.vertices.size());
+  std::vector<Vec3> kept;
+  for (size_t k = 0; k < poly.vertices.size(); ++k) {
+    int found = -1;
+    for (size_t m = 0; m < kept.size(); ++m) {
+      if ((kept[m] - poly.vertices[k]).norm() <= tolerance) {
+        found = static_cast<int>(m);
+        break;
+      }
+    }
+    if (found < 0) {
+      found = static_cast<int>(kept.size());
+      kept.push_back(poly.vertices[k]);
+    }
+    remap[k] = found;
+  }
+  poly.vertices = std::move(kept);
+
+  std::vector<Polyhedron::Face> faces;
+  for (const auto &face : poly.faces) {
+    std::vector<int> loop;
+    for (int k : face.loop) {
+      if (loop.empty() || loop.back() != remap[k])
+        loop.push_back(remap[k]);
+    }
+    while (loop.size() > 1 && loop.front() == loop.back())
+      loop.pop_back();
+    if (loop.size() >= 3)
+      faces.push_back({face.facet, std::move(loop)});
+  }
+  poly.faces = std::move(faces);
+  compact(poly);
+}
+
+} // namespace
+
+void Facet::reorder(const Mat3N &points) {
+  if (point_index.size() < 3)
+    return;
+  const auto order = angular_order(points, normal);
   std::vector<int> sorted_point_index(point_index.size());
-  sorted_point_index[0] = point_index[0]; // Keep the first index unchanged
-  for (size_t i = 0; i < indices.size(); ++i) {
-    sorted_point_index[i + 1] = point_index[indices[i]];
-  }
-
-  // Replace the original point_index with the sorted version
+  for (size_t i = 0; i < order.size(); ++i)
+    sorted_point_index[i] = point_index[order[i]];
   point_index = std::move(sorted_point_index);
 }
 
@@ -87,10 +240,8 @@ WulffConstruction::WulffConstruction(
     const std::vector<std::string> &facet_labels) {
 
   const size_t N = facet_energies.rows();
-
-  Mat3N dual_points(3, N);
-  for (int i = 0; i < N; i++) {
-    double energy = facet_energies(i);
+  for (size_t i = 0; i < N; i++) {
+    const double energy = facet_energies(i);
     // dual = p / (|p|^2), since we haven't scaled p just divide by energy
     Vec3 dual = facet_normals.col(i).array() / energy;
     m_facets.push_back(Facet{energy, facet_normals.col(i),
@@ -98,49 +249,54 @@ WulffConstruction::WulffConstruction(
                                  ? facet_labels[i]
                                  : fmt::format("facet_{}", i),
                              dual});
-    dual_points.col(i) = dual;
   }
-  quickhull::QuickHull<double> hull_builder;
-
-  auto hull =
-      hull_builder.getConvexHull(dual_points.data(), dual_points.cols(), true);
-
-  occ::log::debug("Convex hull has {} faces, {} vertices",
-                  hull.triangles().cols(), hull.vertices().cols());
-  occ::log::debug("Hull triangles:\n{}",
-                  format_matrix(hull.triangles(), "{:6d}"));
-  occ::log::debug("Hull vertices:\n{}", format_matrix(hull.vertices()));
-  IMat3N triangles = hull.triangles().cast<int>();
-  extract_wulff_from_dual_hull_simplices(triangles);
+  build_polyhedron();
 }
 
-void WulffConstruction::extract_wulff_from_dual_hull_simplices(
-    const IMat3N &simplices) {
+// The Wulff shape is the intersection of the half-spaces n.x <= gamma, built
+// by clipping a bounding box with each facet plane in turn.
+void WulffConstruction::build_polyhedron() {
+  double max_energy = 0.0;
+  for (const auto &facet : m_facets)
+    max_energy = std::max(max_energy, facet.energy);
 
-  m_wulff_vertices = Mat3N(3, simplices.cols());
-  for (int i = 0; i < m_wulff_vertices.cols(); i++) {
-    auto &facet_a = m_facets[simplices(0, i)];
-    auto &facet_b = m_facets[simplices(1, i)];
-    auto &facet_c = m_facets[simplices(2, i)];
-    m_wulff_vertices.col(i) =
-        (facet_b.dual - facet_a.dual).cross(facet_c.dual - facet_a.dual);
-
-    double fac = m_wulff_vertices.col(i).dot(facet_a.normal);
-    if (std::abs(fac) < 1e-6) {
-      occ::log::warn("zero or near zero scaling factor in wulff construction - "
-                     "check if system is 2D or is missing facets!");
+  Polyhedron poly;
+  if (max_energy > 0.0) {
+    poly = bounding_box(1e6 * max_energy);
+    int non_positive = 0;
+    for (size_t f = 0; f < m_facets.size(); f++) {
+      if (m_facets[f].energy <= 0.0) {
+        non_positive++;
+        continue;
+      }
+      clip(poly, m_facets[f].normal, m_facets[f].energy, static_cast<int>(f));
     }
-
-    double scale_factor = facet_a.energy / fac;
-    m_wulff_vertices.col(i).array() *= scale_factor;
-
-    // push_back facet_indices
-    facet_a.point_index.push_back(i);
-    facet_b.point_index.push_back(i);
-    facet_c.point_index.push_back(i);
+    if (non_positive > 0)
+      occ::log::warn("Wulff construction: ignored {} facets with non-positive "
+                     "energy",
+                     non_positive);
+    merge_close_vertices(poly, 1e-6 * max_energy);
   }
 
-  merge_coincident_vertices();
+  const bool bounded =
+      !poly.faces.empty() &&
+      std::none_of(poly.faces.begin(), poly.faces.end(),
+                   [](const Polyhedron::Face &face) { return face.facet < 0; });
+  if (!bounded) {
+    occ::log::warn("Wulff construction: the facets do not enclose a bounded "
+                   "shape; returning an empty one");
+    poly = Polyhedron{};
+  }
+
+  m_wulff_vertices = Mat3N(3, poly.vertices.size());
+  for (size_t k = 0; k < poly.vertices.size(); k++)
+    m_wulff_vertices.col(k) = poly.vertices[k];
+  for (auto &facet : m_facets)
+    facet.point_index.clear();
+  for (const auto &face : poly.faces)
+    m_facets[face.facet].point_index = face.loop;
+  occ::log::debug("Wulff construction: {} vertices, {} of {} facets active",
+                  poly.vertices.size(), poly.faces.size(), m_facets.size());
 
   size_t N = 0;
   for (auto &facet : m_facets) {
@@ -161,55 +317,6 @@ void WulffConstruction::extract_wulff_from_dual_hull_simplices(
     m_wulff_triangles.block(0, N, 3, size) = facet.triangles;
     m_wulff_triangle_indices.block(N, 0, size, 1).array() = f;
     N += size;
-  }
-}
-
-// The dual hull is triangulated, so a Wulff corner where more than three
-// facets meet is produced once per dual simplex: coincident vertices with
-// distinct indices. Merge them so facet polygons, edges and corners see one
-// vertex per geometric corner.
-void WulffConstruction::merge_coincident_vertices() {
-  const int nv = m_wulff_vertices.cols();
-  if (nv == 0)
-    return;
-  const double tol2 = std::pow(
-      1e-8 * std::max(1.0, m_wulff_vertices.colwise().norm().maxCoeff()), 2);
-
-  std::vector<int> remap(nv);
-  std::vector<int> kept;
-  for (int i = 0; i < nv; ++i) {
-    int found = -1;
-    for (size_t k = 0; k < kept.size(); ++k) {
-      if ((m_wulff_vertices.col(i) - m_wulff_vertices.col(kept[k]))
-              .squaredNorm() < tol2) {
-        found = k;
-        break;
-      }
-    }
-    if (found < 0) {
-      found = kept.size();
-      kept.push_back(i);
-    }
-    remap[i] = found;
-  }
-  if (static_cast<int>(kept.size()) == nv)
-    return;
-
-  Mat3N merged(3, kept.size());
-  for (size_t k = 0; k < kept.size(); ++k)
-    merged.col(k) = m_wulff_vertices.col(kept[k]);
-  m_wulff_vertices = merged;
-
-  for (auto &facet : m_facets) {
-    std::vector<int> updated;
-    for (int idx : facet.point_index) {
-      int v = remap[idx];
-      if (std::find(updated.begin(), updated.end(), v) == updated.end())
-        updated.push_back(v);
-    }
-    if (updated.size() < 3)
-      updated.clear(); // degenerate facet -> inactive
-    facet.point_index = std::move(updated);
   }
 }
 

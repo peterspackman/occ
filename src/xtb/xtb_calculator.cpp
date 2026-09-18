@@ -435,6 +435,14 @@ Mat3N XtbCalculator::gradient() {
       build_molecular_multipole_tensors(atoms, mr.radii, m_calc->parameters());
   auto pot = anisotropic_potentials_ewald(atoms, atom_q, mom, mp_tensors,
                                            m_calc->parameters());
+  // A reaction field driven by the full multipole expansion shifts H through
+  // the dipole and quadrupole channels too, so its conjugates belong in the
+  // density-Pulay chain at (6) alongside the AES ones. Charge-only solvation
+  // models hand back empty potentials and this is a no-op.
+  if (auto solv = m_calc->solvation_model()) {
+    add_multipole_potentials(pot, solv->dipole_potential(),
+                             solv->quadrupole_potential());
+  }
 
   // Shell shift potential V_q = J·qsh + Γ_3 q² (charge-only piece).  Augment
   // with per-atom vs from the anisotropic potentials so the existing
@@ -509,6 +517,21 @@ Mat3N XtbCalculator::gradient() {
   for (size_t A = 0; A < atoms.size(); ++A) {
     if (ag.dE_dcn(A) != 0.0) {
       grad.noalias() += ag.dE_dcn(A) * cn_g.dcn[A];
+    }
+  }
+
+  // Same chain for a solvation model whose multipole damping rides on those
+  // CN-dependent radii: ∂E_solv/∂R_co · ∂R_co/∂CN · ∂CN/∂R. R_co is the full
+  // multipole radius, so ∂R_co/∂CN is `mr.dradii_dcn` unscaled.
+  if (auto solv = m_calc->solvation_model()) {
+    const Vec &dE_drco = solv->damping_radius_gradient();
+    if (dE_drco.size() == static_cast<Eigen::Index>(atoms.size())) {
+      for (size_t A = 0; A < atoms.size(); ++A) {
+        const double chain = dE_drco(A) * mr.dradii_dcn(A);
+        if (chain != 0.0) {
+          grad.noalias() += chain * cn_g.dcn[A];
+        }
+      }
     }
   }
 

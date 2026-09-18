@@ -1,4 +1,6 @@
 #pragma once
+#include <algorithm>
+#include <cctype>
 #include <fmt/core.h>
 #include <occ/core/log.h>
 #include <occ/core/units.h>
@@ -6,6 +8,7 @@
 #include <occ/qm/hf_fwd.h>
 #include <occ/qm/spinorbital.h>
 #include <occ/qm/wavefunction.h>
+#include <stdexcept>
 #include <string>
 
 namespace occ::interaction {
@@ -45,16 +48,22 @@ inline constexpr double CE1p_XDM_KREP{0.77850434};
 inline CEParameterizedModel CE1_XDM_B3LYP{
     1.0,     1.0,        CE1p_XDM_KREP, CE1p_XDM_KREP, 1.0, "CE-1p-B3LYP",
     "b3lyp", "def2-svp", true,          0.65,          1.70};
-inline CEParameterizedModel CE2_XDM_WB97MV{
-    1.0,     0.485,      0.485, 0.803, 1.0, "CE2p-XDM-wB97M-V",
+inline CEParameterizedModel CE1_XDM_WB97MV{
+    1.0,       1.0,        CE1p_XDM_KREP, CE1p_XDM_KREP, 1.0, "CE-1p-wB97M-V",
+    "wb97m-v", "def2-svp", true,          0.65,          1.70};
+inline CEParameterizedModel CE2_XDM_B3LYP{
+    1.0,     0.485,      0.485, 0.803, 1.0, "CE-2p-B3LYP",
     "b3lyp", "def2-svp", true,  0.65,  1.70};
+inline CEParameterizedModel CE2_XDM_WB97MV{
+    1.0,       0.485,      0.485, 0.803, 1.0, "CE-2p-wB97M-V",
+    "wb97m-v", "def2-svp", true,  0.65,  1.70};
 
 inline CEParameterizedModel CE5_XDM_WB97MV{
     1.0051,    0.6705,     0.6,  0.7929, 1.0509, "CE5p-XDM-wB97M-V",
     "wb97m-v", "def2-svp", true, 0.65,   1.70};
 
 inline CEParameterizedModel CE1_XDM = CE1_XDM_B3LYP;
-inline CEParameterizedModel CE2_XDM = CE2_XDM_WB97MV;
+inline CEParameterizedModel CE2_XDM = CE2_XDM_B3LYP;
 inline CEParameterizedModel CE5_XDM = CE5_XDM_WB97MV;
 
 struct CEMonomerCalculationParameters {
@@ -134,25 +143,50 @@ double compute_polarization_energy(const Wavefunction &wfn_a,
   return e_pol;
 }
 
-inline CEParameterizedModel ce_model_from_string(const std::string &s) {
+/// The CrystalExplorer model called `name` (case-insensitive): ce-b3lyp,
+/// ce-hf, ce-1p, ce-2p or ce-5p, with their -xdm and -wb97m-v aliases. An
+/// unknown name is an error.
+inline CEParameterizedModel ce_model_from_string(const std::string &name) {
+  std::string s(name.size(), '\0');
+  std::transform(name.begin(), name.end(), s.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
   if (s == "ce-b3lyp")
     return CE_B3LYP_631Gdp;
   if (s == "ce-hf")
     return CE_HF_321G;
-  if (s == "ce-1p" || s == "ce1p" || s == "ce-1p-xdm")
+  if (s == "ce-1p" || s == "ce1p" || s == "ce-1p-xdm" || s == "ce-1p-b3lyp")
     return CE1_XDM;
-  if (s == "ce-2p" || s == "ce2p" || s == "ce-2p-xdm")
+  if (s == "ce-2p" || s == "ce2p" || s == "ce-2p-xdm" || s == "ce-2p-b3lyp")
     return CE2_XDM;
   if (s == "ce-5p" || s == "ce5p" || s == "ce-5p-xdm")
     return CE5_XDM;
-  if (s == "ce-1p-wb97m-v" || s == "ce1p-wb97m-v" || s == "ce-1p-wb97m-v")
-    return CE1_XDM;
-  if (s == "ce-2p-wb97m-v" || s == "ce2p-wb97m-v" || s == "ce-2p-wb97m-v")
-    return CE2_XDM;
-  if (s == "ce-5p-wb97m-v" || s == "ce5p-wb97m-v" || s == "ce-5p-wb97m-v")
-    return CE5_XDM;
-  log::warn("Unknown model, defaulting to CE-1p");
-  return CE1_XDM;
+  if (s == "ce-1p-wb97m-v" || s == "ce1p-wb97m-v")
+    return CE1_XDM_WB97MV;
+  if (s == "ce-2p-wb97m-v" || s == "ce2p-wb97m-v")
+    return CE2_XDM_WB97MV;
+  if (s == "ce-5p-wb97m-v" || s == "ce5p-wb97m-v")
+    return CE5_XDM_WB97MV;
+  throw std::invalid_argument(fmt::format(
+      "Unknown CE energy model '{}': expected ce-b3lyp, ce-hf, ce-1p, ce-2p or "
+      "ce-5p (ce-1p and ce-2p also as -b3lyp or -wb97m-v)",
+      name));
+}
+
+/// Whether `name` selects the in-tree xtb backend, which implements GFN2-xTB
+/// only: xtb, gfn2 or gfn2-xtb, case-insensitive. Any other name starting
+/// with "gfn" or "xtb" (gfn1, gfnff, ...) is an error.
+inline bool model_name_implies_xtb(const std::string &name) {
+  std::string lower(name.size(), '\0');
+  std::transform(name.begin(), name.end(), lower.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  if (lower == "xtb" || lower == "gfn2" || lower == "gfn2-xtb")
+    return true;
+  if (lower.rfind("gfn", 0) == 0 || lower.rfind("xtb", 0) == 0)
+    throw std::invalid_argument(fmt::format(
+        "Unsupported tight-binding model '{}': the in-tree xtb implements "
+        "GFN2-xTB only (use gfn2, gfn2-xtb or xtb)",
+        name));
+  return false;
 }
 
 struct CEEnergyComponents {

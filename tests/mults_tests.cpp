@@ -153,6 +153,22 @@ TEST_CASE("Multipole rotation - simple multipole objects",
   }
 }
 
+TEST_CASE("Multipole rotation - component storage is kept",
+          "[mults][rotation]") {
+  // Mult stores 121 components whatever its rank; rotation acts on the first
+  // (rank + 1)^2 and leaves the rest as they are.
+  Mat3 rot = rotation_utils::axis_angle_to_rotation(
+      Vec3(1, 1, 1), std::numbers::pi_v<double> / 3);
+  for (int rank = 0; rank <= 4; ++rank) {
+    INFO("rank " << rank);
+    Mult mult(rank);
+    mult.q.head(mult.num_components()).setOnes();
+    Mult rotated = rotated_multipole(mult, rot);
+    REQUIRE(rotated.q.size() == mult.q.size());
+    REQUIRE(rotated.q.tail(mult.q.size() - mult.num_components()).isZero());
+  }
+}
+
 TEST_CASE("Multipole rotation - water molecule validation",
           "[mults][rotation][validation]") {
 

@@ -1,6 +1,8 @@
 #include <filesystem>
+#include <fstream>
 #include <fmt/os.h>
 #include <occ/cg/distance_partition.h>
+#include <occ/cg/cg_json.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/driver/crystal_growth.h>
 #include <occ/driver/monomer_wavefunctions.h>
@@ -79,61 +81,13 @@ std::vector<AssignedEnergy> assign_interaction_terms_to_nearest_neighbours(
   return crystal_contributions;
 }
 
-inline Wavefunction
-load_or_calculate_wavefunction(const Molecule &mol, const std::string &name,
-                               const std::string &energy_model) {
-  fs::path json_path(fmt::format("{}.owf.json", name));
-  if (fs::exists(json_path)) {
-    occ::log::info("Loading wavefunction from {}", json_path.string());
-    return Wavefunction::load(json_path.string());
-  }
-
-  auto parameterized_model =
-      occ::interaction::ce_model_from_string(energy_model);
-
-  occ::io::OccInput input;
-  input.method.name = parameterized_model.method;
-  input.basis.name = parameterized_model.basis;
-  input.geometry.set_molecule(mol);
-  input.electronic.charge = mol.charge();
-  input.electronic.multiplicity = mol.multiplicity();
-
-  auto wfn = occ::driver::single_point(input);
-
-  wfn.save(json_path.string());
-  return wfn;
-}
-
-inline WavefunctionList
-calculate_wavefunctions(const std::string &basename,
-                        const std::vector<Molecule> &molecules,
-                        const std::string &energy_model) {
-  WavefunctionList wavefunctions;
-  size_t index = 0;
-  for (const auto &m : molecules) {
-    occ::log::info(
-        "Geometry for molecule {} ({})\n{:3s} {:^10s} {:^10s} {:^10s}", index,
-        m.name(), "sym", "x", "y", "z");
-    for (const auto &atom : m.atoms()) {
-      occ::log::info("{:^3s} {:10.6f} {:10.6f} {:10.6f}",
-                     core::Element(atom.atomic_number).symbol(), atom.x, atom.y,
-                     atom.z);
-    }
-    std::string name = fmt::format("{}_{}", basename, index);
-    wavefunctions.emplace_back(
-        load_or_calculate_wavefunction(m, name, energy_model));
-    index++;
-  }
-  return wavefunctions;
-}
-
 /// `standard_state_shift` comes from the active solvation model, in kJ/mol:
 /// each model defines its own reference state and cg must not assume one.
-inline void write_energy_summary(double total,
-                                 const occ::core::Molecule &molecule,
-                                 double solvation_free_energy,
-                                 double total_interaction_energy,
-                                 double standard_state_shift) {
+inline cg::FreeEnergySummary
+write_energy_summary(double total, const occ::core::Molecule &molecule,
+                     double solvation_free_energy,
+                     double total_interaction_energy,
+                     double standard_state_shift) {
   double Gr = molecule.rotational_free_energy(298);
   occ::core::MolecularPointGroup pg(molecule);
   occ::log::debug("Molecule point group = {}, symmetry number = {}",
@@ -173,6 +127,21 @@ inline void write_energy_summary(double total,
                  equilibrium_constant * molar_mass * 1000);
   occ::log::warn("Total E_int                          {: 9.3f}",
                  total_interaction_energy);
+
+  cg::FreeEnergySummary summary;
+  summary.lattice_energy = 0.5 * total;
+  summary.rotational_free_energy = Gr;
+  summary.translational_free_energy = Gt;
+  summary.solvation_free_energy = dG_solv;
+  summary.dH_sublimation = dH_sub;
+  summary.dS_sublimation = dS_sub;
+  summary.dG_sublimation = dG_sub;
+  summary.dG_solution = dG_solubility;
+  summary.equilibrium_constant = equilibrium_constant;
+  summary.log_S = std::log10(equilibrium_constant);
+  summary.solubility_g_per_L = equilibrium_constant * molar_mass * 1000;
+  summary.total_interaction_energy = total_interaction_energy;
+  return summary;
 }
 
 inline void write_xyz_neighbors(
@@ -437,7 +406,8 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
     occ::timing::StopWatch sw;
     sw.start();
     m_gas_phase_wavefunctions =
-        calculate_wavefunctions(opts.basename, m_molecules, opts.energy_model);
+        calculate_wavefunctions(opts.basename, m_molecules, opts.energy_model,
+                                /*spherical=*/false);
     sw.stop();
 
     occ::log::info("Gas phase wavefunctions took {:.6f} seconds", sw.read());
@@ -510,7 +480,12 @@ void CEModelCrystalGrowthCalculator::converge_lattice_energy() {
                  wfn_choice);
 
   LatticeConvergenceSettings convergence_settings;
-  convergence_settings.model_name = opts.energy_model;
+  // Pair energies are cached on disk under this tag. Those from solvated
+  // wavefunctions depend on the solvent, so they are kept apart.
+  convergence_settings.model_name =
+      opts.wavefunction_choice == WavefunctionChoice::Solvated
+          ? fmt::format("{}_solvated_{}", opts.energy_model, opts.solvent_tag)
+          : opts.energy_model;
   convergence_settings.max_radius = opts.outer_radius;
   convergence_settings.wolf_sum = opts.use_wolf_sum;
   convergence_settings.crystal_field_polarization =
@@ -591,10 +566,10 @@ CEModelCrystalGrowthCalculator::evaluate_molecular_surroundings() {
 
     m_solution_terms[i] = mol_dimer_results.total.solution_term;
     m_lattice_energies.push_back(mol_dimer_results.total.crystal_energy);
-    write_energy_summary(mol_dimer_results.total.crystal_energy, m_molecules[i],
-                         mol_dimer_results.total.solution_term,
-                         mol_dimer_results.total.interaction_energy,
-                         m_standard_state_shift);
+    result.molecule_results.back().free_energy = write_energy_summary(
+        mol_dimer_results.total.crystal_energy, m_molecules[i],
+        mol_dimer_results.total.solution_term,
+        mol_dimer_results.total.interaction_energy, m_standard_state_shift);
 
     if (opts.write_debug_output_files) {
       // write neighbors file for molecule i
@@ -611,8 +586,10 @@ XTBCrystalGrowthCalculator::XTBCrystalGrowthCalculator(
     const crystal::Crystal &crystal,
     const CrystalGrowthCalculatorOptions &options)
     : CrystalGrowthCalculator(crystal, options) {
-
-  occ::log::info("XTB solvation model: {}", options.xtb_solvation_model);
+  if (options.solvation_model == SolvationModelKind::CosmoRS) {
+    throw std::invalid_argument("The xtb energy model supports "
+                                "--solvation-model smd or none, not cosmo-rs");
+  }
 }
 
 void XTBCrystalGrowthCalculator::converge_lattice_energy() {
@@ -622,6 +599,8 @@ void XTBCrystalGrowthCalculator::converge_lattice_energy() {
   occ::interaction::LatticeConvergenceSettings convergence_settings;
   convergence_settings.wolf_sum = opts.use_wolf_sum;
   convergence_settings.max_radius = opts.outer_radius;
+  // The on-disk pair energy cache tag, kept apart from the CE models' tags.
+  convergence_settings.model_name = "xtb";
 
   m_full_dimers = m_crystal.symmetry_unique_dimers(opts.outer_radius);
   std::vector<interaction::CEEnergyComponents> energies;
@@ -661,10 +640,11 @@ XTBCrystalGrowthCalculator::evaluate_molecular_surroundings() {
 
     m_solution_terms[i] = mol_dimer_results.total.solution_term;
     m_lattice_energies.push_back(mol_dimer_results.total.crystal_energy);
-    occ::driver::write_energy_summary(
-        mol_dimer_results.total.crystal_energy, m_molecules[i],
-        mol_dimer_results.total.solution_term,
-        mol_dimer_results.total.interaction_energy, m_standard_state_shift);
+    result.molecule_results.back().free_energy =
+        occ::driver::write_energy_summary(
+            mol_dimer_results.total.crystal_energy, m_molecules[i],
+            mol_dimer_results.total.solution_term,
+            mol_dimer_results.total.interaction_energy, m_standard_state_shift);
   }
   return result;
 }
@@ -674,9 +654,12 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
   occ::timing::StopWatch sw_solv;
   const auto &opts = options();
 
-  // This path is SMD throughout, so it owes the same concentration shift the
-  // SMD model declares.
-  m_standard_state_shift = 1.89 / occ::units::KJ_TO_KCAL;
+  // With SMD this path owes the same concentration shift the SMD model
+  // declares; with no solvation there is no second standard state to shift to.
+  const bool use_smd = opts.solvation_model == SolvationModelKind::Smd;
+  m_standard_state_shift = use_smd ? 1.89 / occ::units::KJ_TO_KCAL : 0.0;
+  if (!use_smd)
+    occ::log::info("Solvation: none (gas phase only)");
 
   m_solvated_surface_properties.clear();
   m_solvated_surface_properties.reserve(m_molecules.size());
@@ -693,6 +676,50 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
 
     double e_gas, e_solv;
 
+    // A monomer's gas and solvated SCC depend on nothing that changes between
+    // runs on the same structure, but they are not cheap: for a drug-sized
+    // molecule the solvated one dominates a repeat `occ cg`, which is most of
+    // the cost of scanning morphologies. Cache them the way the CE path caches
+    // its monomer energies, keyed on the model and solvent so a cache written
+    // for another one is ignored rather than silently reused.
+    const std::string cache_tag =
+        use_smd ? fmt::format("gfn2_{}", opts.solvent_tag) : "gfn2_gas";
+    fs::path monomer_cache(
+        fmt::format("{}_{}_{}_xtb_monomer.json", opts.basename, index, cache_tag));
+    bool loaded = false;
+    if (fs::exists(monomer_cache)) {
+      try {
+        std::ifstream ifs(monomer_cache.string());
+        const auto cached = nlohmann::json::parse(ifs);
+        if (cached.value("tag", std::string{}) == cache_tag &&
+            cached.value("n_atoms", -1) == static_cast<int>(m.size())) {
+          e_gas = cached.at("e_gas").get<double>();
+          e_solv = cached.at("e_solv").get<double>();
+          m_gas_phase_energies.push_back(e_gas);
+          m_solvated_energies.push_back(e_solv);
+          m_solvated_surface_properties.push_back(
+              cached.at("surfaces").get<cg::SolvationData>());
+          occ::log::info("Loaded monomer {} xTB energies from {}", index,
+                         monomer_cache.string());
+          loaded = true;
+        } else {
+          occ::log::warn("Cached xTB monomer {} is for another model, solvent "
+                         "or molecule; recomputing",
+                         monomer_cache.string());
+        }
+      } catch (const std::exception &e) {
+        occ::log::warn("Could not read {} ({}); recomputing",
+                       monomer_cache.string(), e.what());
+      }
+    }
+    if (loaded) {
+      occ::log::info("Solvation free energy: {:12.6f} (E(solv) = "
+                     "{:12.6f}, E(gas) = {:12.6f})\n",
+                     e_solv - e_gas, e_solv, e_gas);
+      index++;
+      continue;
+    }
+
     // Gas phase via the in-tree GFN2 backend.
     {
       occ::xtb::XtbCalculator xtb(m);
@@ -707,7 +734,11 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
     // exactly the way the CE/QM path does. We deliberately don't compute
     // solvated *dimers* — the per-monomer surfaces partitioned over the
     // crystal neighbour list replace that.
-    {
+    if (!use_smd) {
+      e_solv = e_gas;
+      m_solvated_energies.push_back(e_solv);
+      m_solvated_surface_properties.emplace_back();
+    } else {
       occ::xtb::XtbCalculator xtb(m);
       auto smd = std::make_shared<occ::xtb::SmdSolvationModel>(opts.solvent);
       xtb.set_solvation_model(smd);
@@ -726,6 +757,19 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
         // surface so the partitioner sees length-zero coulomb/cds vectors.
         m_solvated_surface_properties.emplace_back();
       }
+    }
+
+    {
+      nlohmann::json j;
+      j["tag"] = cache_tag;
+      j["n_atoms"] = static_cast<int>(m.size());
+      j["e_gas"] = e_gas;
+      j["e_solv"] = e_solv;
+      j["surfaces"] = m_solvated_surface_properties.back();
+      std::ofstream ofs(monomer_cache.string());
+      ofs << j;
+      occ::log::info("Wrote monomer {} xTB energies to {}", index,
+                     monomer_cache.string());
     }
 
     occ::log::info("Solvation free energy: {:12.6f} (E(solv) = "

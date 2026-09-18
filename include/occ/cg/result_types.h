@@ -3,6 +3,7 @@
 #include <occ/cg/morphology_types.h>
 #include <occ/core/dimer.h>
 #include <occ/interaction/pairinteraction.h>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -68,6 +69,25 @@ struct DimerResult {
 
 using DimerResults = std::vector<DimerResult>;
 
+/// The free energy terms occ reports for each symmetry-unique molecule, at
+/// T = 298 K and P = 1 atm, in kJ/mol unless noted.
+struct FreeEnergySummary {
+  double lattice_energy{0.0};
+  double rotational_free_energy{0.0};
+  double translational_free_energy{0.0};
+  double solvation_free_energy{0.0};
+  double dH_sublimation{0.0};
+  /// Rotational + translational free energy, as printed; dG_sublimation is
+  /// dH_sublimation + dS_sublimation.
+  double dS_sublimation{0.0};
+  double dG_sublimation{0.0};
+  double dG_solution{0.0};
+  double equilibrium_constant{0.0}; ///< dimensionless
+  double log_S{0.0};
+  double solubility_g_per_L{0.0};
+  double total_interaction_energy{0.0};
+};
+
 struct MoleculeResult {
   CGEnergyComponents energy_components{{components::total, 0.0},
                                        {components::crystal_total, 0.0},
@@ -80,6 +100,8 @@ struct MoleculeResult {
   CGEnergyComponents descriptors{};
 
   cg::EnergyTotal total;
+  /// Set once the crystal growth calculation has evaluated this molecule.
+  std::optional<FreeEnergySummary> free_energy;
 
   double total_energy() const;
   void add_dimer_result(const DimerResult &dimer);

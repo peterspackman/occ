@@ -67,7 +67,13 @@ nb::module_ register_cg_bindings(nb::module_ &m) {
               "the Wulff construction; prefer min_interplanar_spacing")
       .def_rw("min_interplanar_spacing", &CGConfig::min_interplanar_spacing,
               "compute surface energies for every face with d >= this "
-              "(Angstrom); takes precedence over num_surface_energies");
+              "(Angstrom); takes precedence over num_surface_energies")
+      .def_rw("morphology_sizes", &CGConfig::morphology_sizes,
+              "particle sizes (molecules) sampled by the morphology; empty "
+              "keeps the default series")
+      .def_rw("morphology_shape", &CGConfig::morphology_shape,
+              "file of 'h k l distance' faces to use instead of the Wulff "
+              "shape");
 
   nb::class_<occ::cg::FacetMorphology>(m, "FacetMorphology")
       .def_ro("hkl", &occ::cg::FacetMorphology::hkl)

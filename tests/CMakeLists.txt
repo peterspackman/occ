@@ -102,6 +102,7 @@ catch_discover_tests(disp_tests)
 
 add_executable(geometry_tests "${CMAKE_CURRENT_SOURCE_DIR}/geometry_tests.cpp")
 target_link_libraries(geometry_tests PRIVATE occ_geometry occ_io occ_isosurface Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(geometry_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 catch_discover_tests(geometry_tests)
 
 add_executable(gto_tests "${CMAKE_CURRENT_SOURCE_DIR}/gto_tests.cpp")
@@ -194,7 +195,7 @@ target_compile_definitions(xtb_wavefunction_io_tests PRIVATE
 catch_discover_tests(xtb_wavefunction_io_tests)
 
 add_executable(cg_tests "${CMAKE_CURRENT_SOURCE_DIR}/cg_tests.cpp")
-target_link_libraries(cg_tests PRIVATE occ_cg Catch2::Catch2WithMain Threads::Threads)
+target_link_libraries(cg_tests PRIVATE occ_cg occ_driver Catch2::Catch2WithMain Threads::Threads)
 # Resolve the GFN2 parameter file from the source share/ tree at runtime —
 # matches the xtb / xtb_wavefunction_io test executables. Without this
 # the test's DataDirGuard falls back to the relative `"share"` default

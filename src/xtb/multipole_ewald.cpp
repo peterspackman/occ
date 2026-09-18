@@ -477,4 +477,18 @@ anisotropic_potentials_ewald(const std::vector<core::Atom> &atoms,
   return out;
 }
 
+
+void add_multipole_potentials(AnisotropicPotentials &pot,
+                               const Mat3N &vd_extra, const Mat &vq_extra) {
+  if (vd_extra.cols() == pot.vd.cols() && vd_extra.rows() == 3) {
+    pot.vd += vd_extra;
+  }
+  if (vq_extra.cols() == pot.vq.cols() && vq_extra.rows() == 6) {
+    // qpint: 0=xx 1=yy 2=zz 3=xy 4=xz 5=yz;  qp: 0=xx 1=xy 2=yy 3=xz 4=yz 5=zz
+    static constexpr int qp_from_qpint[6] = {0, 2, 5, 1, 3, 4};
+    for (int p = 0; p < 6; ++p) {
+      pot.vq.row(p) += vq_extra.row(qp_from_qpint[p]);
+    }
+  }
+}
 } // namespace occ::xtb

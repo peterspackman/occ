@@ -20,7 +20,7 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "energy model for pair interactions:\n"
                  "  ce-b3lyp (default), ce-hf, ce-1p, ce-2p, ce-5p  "
                  "CrystalExplorer DFT models\n"
-                 "  gfn1, gfn2 (also gfn2-xtb, ...)                 "
+                 "  gfn2 (also gfn2-xtb, xtb)                       "
                  "tight-binding via the in-tree xtb backend\n"
                  "  williams, dma                                   "
                  "DMA multipoles + element-based exp-6 (Williams-DE)\n"
@@ -66,9 +66,6 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
   cg->add_flag("--dry-run", config->dry_run,
                "don't calculate any interaction energies, but calculate a net "
                "and structure file");
-  cg->add_option("--xtb-solvation-model,--xtb_solvation_model",
-                 config->xtb_solvation_model,
-                 "solvation model for use with xtb interaction energies");
   cg->add_flag("-d,--dump", config->write_dump_files, "Write dump files");
   cg->add_flag("--atomic", config->crystal_is_atomic,
                "Crystal is atomic (i.e. no bonds)");
@@ -93,6 +90,18 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
   cg->add_flag("--morphology", config->compute_morphology,
                "Compute particle size/shape-dependent (surface/edge/corner) "
                "energies; implies --surface-energies");
+  cg->add_option("--morphology-sizes", config->morphology_sizes,
+                 "particle sizes in molecules for --morphology, comma "
+                 "separated (default 1000,2000,4000,8000,16000,32000)")
+      ->delimiter(',');
+  cg->add_option("--morphology-shape", config->morphology_shape,
+                 "file of 'h k l distance' lines, one face per form, giving a "
+                 "particle shape to use instead of the Wulff shape for "
+                 "--morphology. A line 'shape <name>' starts another habit, so "
+                 "one file can hold a whole scan: the pair energies and surface "
+                 "enumeration are then done once and each extra habit costs "
+                 "only its own shape. Results go to 'morphologies' in the JSON "
+                 "when there is more than one");
   cg->add_flag("--list-available-solvents", config->list_solvents,
                "List available solvents and exit");
   cg->fallthrough();

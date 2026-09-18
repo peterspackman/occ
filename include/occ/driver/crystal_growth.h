@@ -58,7 +58,6 @@ struct CrystalGrowthCalculatorOptions {
   /// The total per molecule is preserved; only the distribution changes.
   double inner_radius{3.8};
   double outer_radius{3.8};
-  std::string xtb_solvation_model{"cpcmx"};
   WavefunctionChoice wavefunction_choice{WavefunctionChoice::GasPhase};
 };
 

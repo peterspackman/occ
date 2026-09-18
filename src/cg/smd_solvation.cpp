@@ -21,6 +21,25 @@ bool SMDCalculator::try_load_cached(const CacheFiles &cache,
   if (!cache.exists())
     return false;
 
+  // Both files depend on the level of theory, which the filenames do not
+  // record: reuse them only when the cached wavefunction was computed at this
+  // one. A wavefunction saved without its method says "SCF" and is judged on
+  // the basis alone.
+  auto cached_wfn =
+      occ::qm::Wavefunction::load(cache.wavefunction_path.string());
+  const bool same_level =
+      cached_wfn.basis.name() == m_settings.basis &&
+      cached_wfn.basis.is_pure() == m_settings.pure_spherical &&
+      (cached_wfn.method == "SCF" || cached_wfn.method == m_settings.method);
+  if (!same_level) {
+    occ::log::warn("Cached solvated wavefunction {} was computed at a "
+                   "different level ({}/{}); recomputing at {}/{}",
+                   cache.wavefunction_path.string(), cached_wfn.method,
+                   cached_wfn.basis.name(), m_settings.method,
+                   m_settings.basis);
+    return false;
+  }
+
   occ::log::info("Loading cached surface properties from {}",
                  cache.surface_path.string());
 
@@ -30,7 +49,7 @@ bool SMDCalculator::try_load_cached(const CacheFiles &cache,
 
   occ::log::info("Loading cached solvated wavefunction from {}",
                  cache.wavefunction_path.string());
-  wfn = occ::qm::Wavefunction::load(cache.wavefunction_path.string());
+  wfn = std::move(cached_wfn);
   return true;
 }
 
@@ -98,6 +117,7 @@ void SMDCalculator::save_calculation(const CacheFiles &cache,
 
   occ::log::info("Writing solvated wavefunction to {}",
                  cache.wavefunction_path.string());
+  wfn.method = m_settings.method; // recorded for cache validation
   wfn.save(cache.wavefunction_path.string());
 }
 

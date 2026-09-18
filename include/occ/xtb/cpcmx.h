@@ -51,6 +51,7 @@ public:
 
   void initialize(const Mat3N &positions_bohr,
                   const IVec &atomic_numbers) override;
+  using XtbSolvationModel::update;
   void update(const Vec &atomic_charges) override;
   const Vec &atom_potential() const override { return m_engine.atom_potential(); }
   double energy() const override { return m_engine.energy(); }

@@ -35,6 +35,99 @@ Mat build_atom_cavity_coulomb(const Mat3N &cavity_points,
   return B;
 }
 
+namespace {
+
+// f(d) = 1/(1 + 6·(rco/d)^k) and its d-derivative f'(d) = f²·6k·(rco/d)^k / d.
+struct DampingFactor {
+  double f{1.0};
+  double df_dd{0.0};
+  double df_drco{0.0};
+};
+
+DampingFactor damping_factor(double d, double rco, double k) {
+  DampingFactor out;
+  if (rco <= 0.0)
+    return out;
+  const double u = std::pow(rco / d, k);
+  out.f = 1.0 / (1.0 + 6.0 * u);
+  const double t = out.f * out.f * 6.0 * k * u;
+  out.df_dd = t / d;
+  out.df_drco = -t / rco;
+  return out;
+}
+
+} // namespace
+
+MultipoleKernel multipole_kernel(const Vec3 &d, MultipoleDamping damping) {
+  const double r2 = d.squaredNorm();
+  const double g1 = 1.0 / std::sqrt(r2);
+  const double g3 = g1 / r2;
+  const double g5 = g3 / r2;
+  const double third = g3 / 3.0;
+  MultipoleKernel k;
+  k.t0 = g1;
+  k.t1 = d * g3;
+  k.t2 = {d.x() * d.x() * g5 - third, 2.0 * d.x() * d.y() * g5,
+          d.y() * d.y() * g5 - third, 2.0 * d.x() * d.z() * g5,
+          2.0 * d.y() * d.z() * g5, d.z() * d.z() * g5 - third};
+  if (damping.active()) {
+    const double dist = 1.0 / g1;
+    const auto d3 = damping_factor(dist, damping.rco, damping.kdmp3);
+    const auto d5 = damping_factor(dist, damping.rco, damping.kdmp5);
+    k.t1 *= d3.f;
+    for (auto &v : k.t2)
+      v *= d5.f;
+    k.f3 = d3.f;
+    k.f5 = d5.f;
+    k.df3_drco = d3.df_drco;
+    k.df5_drco = d5.df_drco;
+  }
+  return k;
+}
+
+Vec3 multipole_kernel_gradient(const Vec3 &d, double q, const Vec3 &mu,
+                               const double *theta, MultipoleDamping damping) {
+  const double r2 = d.squaredNorm();
+  const double g1 = 1.0 / std::sqrt(r2);
+  const double dist = 1.0 / g1;
+  const double g3 = g1 / r2;
+  const double g5 = g3 / r2;
+  const double g7 = g5 / r2;
+  const Vec3 d_hat = d * g1;
+
+  // ∇(q/d) = −q·d/d³. Never damped.
+  Vec3 grad = -q * g3 * d;
+
+  // ∇(μ·d/d³) = μ/d³ − 3(μ·d)·d/d⁵, then the product rule for f₃(d).
+  const double mu_dot_d = mu.dot(d);
+  const double phi_dipole = mu_dot_d * g3;
+  Vec3 grad_dipole = g3 * mu - 3.0 * mu_dot_d * g5 * d;
+  if (damping.active()) {
+    const auto f3 = damping_factor(dist, damping.rco, damping.kdmp3);
+    grad_dipole = f3.f * grad_dipole + phi_dipole * f3.df_dd * d_hat;
+  }
+  grad += grad_dipole;
+
+  if (theta != nullptr) {
+    // Θ·d, with the stored off-diagonals used on both sides of the matrix.
+    const Vec3 theta_d(theta[0] * d.x() + theta[1] * d.y() + theta[3] * d.z(),
+                       theta[1] * d.x() + theta[2] * d.y() + theta[4] * d.z(),
+                       theta[3] * d.x() + theta[4] * d.y() + theta[5] * d.z());
+    const double dtd = theta_d.dot(d);
+    const double trace = theta[0] + theta[2] + theta[5];
+    const double phi_quad = dtd * g5 - trace * g3 / 3.0;
+    // ∇(d·Θ·d/d⁵) = 2Θd/d⁵ − 5(d·Θ·d)·d/d⁷;  ∇(−tr(Θ)/(3d³)) = tr(Θ)·d/d⁵
+    Vec3 grad_quad =
+        2.0 * g5 * theta_d - 5.0 * dtd * g7 * d + trace * g5 * d;
+    if (damping.active()) {
+      const auto f5 = damping_factor(dist, damping.rco, damping.kdmp5);
+      grad_quad = f5.f * grad_quad + phi_quad * f5.df_dd * d_hat;
+    }
+    grad += grad_quad;
+  }
+  return grad;
+}
+
 CosmoResponse build_cosmo_response(const Mat3N &atom_positions_bohr,
                                    const Mat3N &cavity_points,
                                    const Vec &cavity_areas, double epsilon,
@@ -66,30 +159,45 @@ Mat3N cosmo_gradient_frozen(const Mat3N &atom_positions_bohr,
                             const IVec &cavity_atom_index,
                             const Vec &atom_charges, const Vec &sigma,
                             double f_epsilon, const Vec &atom_radii_bohr,
-                            double smoothing_width_bohr) {
+                            double smoothing_width_bohr,
+                            const Mat3N &atom_dipoles,
+                            const Mat &atom_quadrupoles,
+                            const Vec &damping_rco_bohr, double kdmp3,
+                            double kdmp5) {
   const Eigen::Index natom = atom_positions_bohr.cols();
   const Eigen::Index ncav = cavity_points.cols();
   Mat3N grad = Mat3N::Zero(3, natom);
   if (ncav == 0 || std::abs(f_epsilon) < 1e-14)
     return grad;
 
-  // g_i — field at each cavity point from the atomic source charges.
-  Mat3N g_field(3, ncav);
+  const bool have_dipoles = atom_dipoles.cols() == natom;
+  const bool have_quadrupoles = atom_quadrupoles.cols() == natom;
+  const bool have_damping = damping_rco_bohr.size() == natom;
+
+  // Source term. For each (cavity point i, atom a) pair, u = ∂φ_i/∂d with
+  // d = r_i − R_a. The cavity point rides on its parent atom and the source
+  // sits on atom a, so the pair contributes ±σ_i·u to the two of them —
+  // equal and opposite, which keeps the total gradient translation-invariant.
+  // With no dipoles or quadrupoles this is exactly the old g/h pair of loops.
+  Mat3N source_grad = Mat3N::Zero(3, natom);
   for (Eigen::Index i = 0; i < ncav; ++i) {
-    Mat3N diff = atom_positions_bohr;
-    diff.colwise() -= cavity_points.col(i);
-    // -(r_i - R_a) = (R_a - r_i)
-    Vec r2 = diff.colwise().squaredNorm();
-    Vec3 g = Vec3::Zero();
+    const int c = cavity_atom_index(i);
+    Vec3 on_cavity = Vec3::Zero();
     for (Eigen::Index a = 0; a < natom; ++a) {
-      const double d2 = r2(a);
-      if (d2 > 1e-20) {
-        const double r3 = d2 * std::sqrt(d2);
-        // r_i - R_a = -diff.col(a)
-        g -= atom_charges(a) * diff.col(a) / r3;
-      }
+      const Vec3 d = cavity_points.col(i) - atom_positions_bohr.col(a);
+      if (d.squaredNorm() < 1e-20)
+        continue;
+      const MultipoleDamping damping{
+          have_damping ? damping_rco_bohr(a) : 0.0, kdmp3, kdmp5};
+      const Vec3 u = multipole_kernel_gradient(
+          d, atom_charges(a),
+          have_dipoles ? Vec3(atom_dipoles.col(a)) : Vec3::Zero(),
+          have_quadrupoles ? atom_quadrupoles.col(a).data() : nullptr,
+          damping);
+      on_cavity += u;
+      source_grad.col(a) -= sigma(i) * u;
     }
-    g_field.col(i) = g;
+    source_grad.col(c) += sigma(i) * on_cavity;
   }
 
   // t_i — field at cavity point i from σ on every other cavity point.
@@ -109,30 +217,11 @@ Mat3N cosmo_gradient_frozen(const Mat3N &atom_positions_bohr,
     t_field.col(i) = t;
   }
 
-  // h_c — field at each atom from σ on the whole cavity.
-  Mat3N h_field = Mat3N::Zero(3, natom);
-  for (Eigen::Index c = 0; c < natom; ++c) {
-    Vec3 h = Vec3::Zero();
-    for (Eigen::Index i = 0; i < ncav; ++i) {
-      Vec3 d = cavity_points.col(i) - atom_positions_bohr.col(c);
-      const double d2 = d.squaredNorm();
-      if (d2 > 1e-20) {
-        const double r3 = d2 * std::sqrt(d2);
-        h += sigma(i) * d / r3;
-      }
-    }
-    h_field.col(c) = h;
-  }
-
   // Assemble the per-atom gradient.
   const double inv_f = 1.0 / f_epsilon;
+  grad += source_grad;
   for (Eigen::Index i = 0; i < ncav; ++i) {
-    const int c = cavity_atom_index(i);
-    grad.col(c) -= sigma(i) * g_field.col(i);
-    grad.col(c) += inv_f * sigma(i) * t_field.col(i);
-  }
-  for (Eigen::Index c = 0; c < natom; ++c) {
-    grad.col(c) += atom_charges(c) * h_field.col(c);
+    grad.col(cavity_atom_index(i)) += inv_f * sigma(i) * t_field.col(i);
   }
 
   // Smooth-cavity diagonal A term. Only contributes when the caller opts in

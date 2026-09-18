@@ -302,6 +302,24 @@ std::vector<size_t> laue_orbit_partners(const Crystal &c,
   return group;
 }
 
+std::vector<std::pair<HKL, SymmetryOperation>> face_images(const Crystal &c,
+                                                           const HKL &hkl) {
+  std::vector<std::pair<HKL, SymmetryOperation>> result;
+  for (const auto &symop : c.space_group().symmetry_operations()) {
+    const Eigen::Matrix3i rot_inv_t =
+        symop.rotation().inverse().transpose().array().round().cast<int>();
+    const IVec3 v = rot_inv_t * IVec3(hkl.h, hkl.k, hkl.l);
+    const HKL image{v(0), v(1), v(2)};
+    const bool seen =
+        std::any_of(result.begin(), result.end(), [&image](const auto &entry) {
+          return entry.first == image;
+        });
+    if (!seen)
+      result.emplace_back(image, symop);
+  }
+  return result;
+}
+
 bool Surface::check_systematic_absence(const Crystal &crystal, const HKL &hkl) {
   Vec3 f(hkl.h, hkl.k, hkl.l);
   constexpr double position_tolerance = 1e-6;
