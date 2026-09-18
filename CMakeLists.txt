@@ -5,8 +5,7 @@ set(PROJECT_VERSION_MINOR "9")
 set(PROJECT_VERSION_PATCH "4")
 
 if(MSVC)
-    add_compile_options(/utf-8)
-
+    add_compile_options(/utf-8 $<$<COMPILE_LANGUAGE:CXX>:/EHsc>)
     if(POLICY CMP0141)
         cmake_policy(SET CMP0141 NEW)
     endif()
