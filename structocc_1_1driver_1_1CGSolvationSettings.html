@@ -125,6 +125,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ad3836156e07e1dbd7b863b3e670e5f0e" id="r_ad3836156e07e1dbd7b863b3e670e5f0e"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CGSolvationSettings.html#ad3836156e07e1dbd7b863b3e670e5f0e">volume_per_molecule</a> {0.0}</td></tr>
 <tr class="memdesc:ad3836156e07e1dbd7b863b3e670e5f0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Crystal volume per molecule, A^3.  <br /></td></tr>
 <tr class="separator:ad3836156e07e1dbd7b863b3e670e5f0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49744de77e5d5a3aa7c69b5d20b55cee" id="r_a49744de77e5d5a3aa7c69b5d20b55cee"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classocc_1_1io_1_1JsonCache.html">occ::io::JsonCache</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CGSolvationSettings.html#a49744de77e5d5a3aa7c69b5d20b55cee">cache</a></td></tr>
+<tr class="memdesc:a49744de77e5d5a3aa7c69b5d20b55cee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where a model keeps its per-molecule results between runs (SMD does; openCOSMO-RS keeps nothing).  <br /></td></tr>
+<tr class="separator:a49744de77e5d5a3aa7c69b5d20b55cee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Settings the concrete models need; a superset, each uses what applies. </p>
@@ -154,6 +157,24 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a49744de77e5d5a3aa7c69b5d20b55cee" name="a49744de77e5d5a3aa7c69b5d20b55cee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a49744de77e5d5a3aa7c69b5d20b55cee">&#9670;&#160;</a></span>cache</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt;<a class="el" href="classocc_1_1io_1_1JsonCache.html">occ::io::JsonCache</a>&gt; occ::driver::CGSolvationSettings::cache</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      std::make_shared&lt;occ::io::FileJsonCache&gt;()}</div>
+</div><!-- fragment -->
+<p>Where a model keeps its per-molecule results between runs (SMD does; openCOSMO-RS keeps nothing). </p>
 
 </div>
 </div>

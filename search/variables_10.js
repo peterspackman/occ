@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['p_0',['p',['../structocc_1_1ints_1_1PrimitivePairData.html#a9b0498b9a2de5121970e87cb24deef5e',1,'occ::ints::PrimitivePairData::p'],['../structocc_1_1core_1_1KalmanEstimator.html#a9e1c43d2837dd34874b5782a8ea1b03b',1,'occ::core::KalmanEstimator::P'],['../structocc_1_1ints_1_1ECoeffs1D.html#a2aa6c20b50460e8cb700aa1ddffefb80',1,'occ::ints::ECoeffs1D::P'],['../structocc_1_1ints_1_1ECoeffs1DDynamic.html#a3e2f4e181cfdd977afcb36b37068ec4c',1,'occ::ints::ECoeffs1DDynamic::p']]],
+  ['p_0',['p',['../structocc_1_1ints_1_1ECoeffs1D.html#a2aa6c20b50460e8cb700aa1ddffefb80',1,'occ::ints::ECoeffs1D::P'],['../structocc_1_1ints_1_1ECoeffs1DDynamic.html#a3e2f4e181cfdd977afcb36b37068ec4c',1,'occ::ints::ECoeffs1DDynamic::p'],['../structocc_1_1ints_1_1PrimitivePairData.html#a9b0498b9a2de5121970e87cb24deef5e',1,'occ::ints::PrimitivePairData::p'],['../structocc_1_1core_1_1KalmanEstimator.html#a9e1c43d2837dd34874b5782a8ea1b03b',1,'occ::core::KalmanEstimator::P']]],
   ['p05_5fdeg_1',['p05_deg',['../structocc_1_1isosurface_1_1AngleStats.html#a9e934657fb959c8b766b08e501971728',1,'occ::isosurface::AngleStats']]],
   ['p_5fdata_5fbuffer_2',['p_data_buffer',['../structocc_1_1core_1_1numpy_1_1NumpyArray.html#a08c65bb4ea3242cabd63598977d8b17b',1,'occ::core::numpy::NumpyArray']]],
   ['pa_5fto_5fgpa_3',['PA_TO_GPA',['../namespaceocc_1_1units.html#abb13a2190f2c77a4f2cbc3f02d7f8c47',1,'occ::units']]],
@@ -29,7 +29,7 @@ var searchData=
   ['phi_5fyz_26',['phi_yz',['../structocc_1_1gto_1_1GTOValues.html#adbcaf4e288e125bd8ab1bc8a573d0a3f',1,'occ::gto::GTOValues']]],
   ['phi_5fz_27',['phi_z',['../structocc_1_1gto_1_1GTOValues.html#aea3b80615fd6b93b11c2ded3b7cab6b9',1,'occ::gto::GTOValues']]],
   ['phi_5fzz_28',['phi_zz',['../structocc_1_1gto_1_1GTOValues.html#abfe6e7056ecbe5effa21538a6c82100d',1,'occ::gto::GTOValues']]],
-  ['pi_29',['pi',['../structocc_1_1ints_1_1BoysConstants.html#ac90014e1f88dbd851cacc7d4a562ff0c',1,'occ::ints::BoysConstants::pi'],['../namespaceocc_1_1units.html#a028d775e813e880062aff24bec1a1b4a',1,'occ::units::PI'],['../namespaceocc_1_1constants.html#ac6930578fafd8c4b018ba281349ab2ed',1,'occ::constants::pi']]],
+  ['pi_29',['pi',['../structocc_1_1ints_1_1BoysConstants.html#ac90014e1f88dbd851cacc7d4a562ff0c',1,'occ::ints::BoysConstants::pi'],['../namespaceocc_1_1constants.html#ac6930578fafd8c4b018ba281349ab2ed',1,'occ::constants::pi'],['../namespaceocc_1_1units.html#a028d775e813e880062aff24bec1a1b4a',1,'occ::units::PI']]],
   ['planck_30',['planck',['../namespaceocc_1_1constants.html#a09d810b3a282917f3a97b8311c389477',1,'occ::constants']]],
   ['point_5fcharge_5ffilename_31',['point_charge_filename',['../structocc_1_1io_1_1GeometryInput.html#ae5be26813872d9110d402d81adf3b0f7',1,'occ::io::GeometryInput']]],
   ['point_5fcharges_32',['point_charges',['../structocc_1_1io_1_1GeometryInput.html#a40d024feeb0229737680e41271fb4db0',1,'occ::io::GeometryInput::point_charges'],['../structocc_1_1io_1_1PointChargeFileReader.html#a6fa98db3228e6bcdd747ef6bceefa123',1,'occ::io::PointChargeFileReader::point_charges']]],

@@ -60,12 +60,12 @@ var namespaceocc_1_1driver =
     [ "assign_interaction_terms_to_nearest_neighbours", "namespaceocc_1_1driver.html#aac7268ab1f985e6e5fd2812789f00d41", null ],
     [ "available_cosmors_solvents", "namespaceocc_1_1driver.html#a2c3f7c067d2e908a29279d20b7fac115", null ],
     [ "calculate_crystal_surface_energies", "namespaceocc_1_1driver.html#abd9cb5b9a75ab755b120d6fdb6ceed71", null ],
-    [ "calculate_wavefunction", "namespaceocc_1_1driver.html#aeddf3af694e5c1b09e0e8fc2fa661837", null ],
-    [ "calculate_wavefunction", "namespaceocc_1_1driver.html#aa2368e693eef3762f51243df67daaef5", null ],
-    [ "calculate_wavefunctions", "namespaceocc_1_1driver.html#a94e6b5ea763961d4ab1d27f1ccbd26a5", null ],
-    [ "calculate_wavefunctions", "namespaceocc_1_1driver.html#a15fc658e3c32945ab0772183f39e5e28", null ],
+    [ "calculate_wavefunction", "namespaceocc_1_1driver.html#ab636a73ea13f0d0cfd028e1abd073d7a", null ],
+    [ "calculate_wavefunction", "namespaceocc_1_1driver.html#a43542b303aa616c8ae3543ea2a1569d5", null ],
+    [ "calculate_wavefunctions", "namespaceocc_1_1driver.html#a1b0f9f676c8d3788822904674b2fbe67", null ],
+    [ "calculate_wavefunctions", "namespaceocc_1_1driver.html#a90dedff28ada5801cff5c5585bd9b6db", null ],
     [ "compute_crystal_morphology", "namespaceocc_1_1driver.html#aef1414f535e88fcf5919e6d30eb99ab5", null ],
-    [ "compute_monomer_energies", "namespaceocc_1_1driver.html#a321682a3395f70f01f945162b0f6f0a6", null ],
+    [ "compute_monomer_energies", "namespaceocc_1_1driver.html#a6834bcbe2a7b2017a37da18e23f13f0c", null ],
     [ "conductor_profile", "namespaceocc_1_1driver.html#a8d20472807e2570d186ada3eedb941f3", null ],
     [ "conductor_segments", "namespaceocc_1_1driver.html#a8d245c7f2b8a0dabe7ea8faadb2b1635", null ],
     [ "cosmors_solvation", "namespaceocc_1_1driver.html#a7878bc77ab1cff8dd54890f0d096544f", null ],
@@ -93,5 +93,6 @@ var namespaceocc_1_1driver =
     [ "to_json", "namespaceocc_1_1driver.html#ae5f9c09524bc517b2a7d3038ca6c3dc0", null ],
     [ "to_json", "namespaceocc_1_1driver.html#aa66a9498a7bcb89d3cfc11d1041e1a05", null ],
     [ "vibrational_analysis", "namespaceocc_1_1driver.html#a88f111ef255622ce8f4acf92d91293d4", null ],
-    [ "vibrational_analysis", "namespaceocc_1_1driver.html#a25908b2919227fae53cd07cf5695a03e", null ]
+    [ "vibrational_analysis", "namespaceocc_1_1driver.html#a25908b2919227fae53cd07cf5695a03e", null ],
+    [ "with_solvated_procedure", "namespaceocc_1_1driver.html#a9547f5caf048ed5268826931c5e84711", null ]
 ];

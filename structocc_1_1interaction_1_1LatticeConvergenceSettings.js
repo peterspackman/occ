@@ -1,5 +1,6 @@
 var structocc_1_1interaction_1_1LatticeConvergenceSettings =
 [
+    [ "cache_pair_energies", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a9fd16d6b1012c96b1c678f37ffaf82e3", null ],
     [ "charge_string", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#acd7172d4119830ad23cbcabf07425756", null ],
     [ "crystal_field_polarization", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a5373b6b391e52ab2b5bbf70546f374c3", null ],
     [ "crystal_filename", "structocc_1_1interaction_1_1LatticeConvergenceSettings.html#a6780aef2e99ac38a107f2997d4fe7189", null ],

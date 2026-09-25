@@ -15,5 +15,6 @@ var dir_ebd379896397d727b5a519429e0506e7 =
     [ "method_parser.h", "method__parser_8h.html", "method__parser_8h" ],
     [ "monomer_wavefunctions.h", "monomer__wavefunctions_8h.html", "monomer__wavefunctions_8h" ],
     [ "single_point.h", "single__point_8h.html", "single__point_8h" ],
+    [ "solvated_procedure.h", "solvated__procedure_8h.html", "solvated__procedure_8h" ],
     [ "vibrational_analysis.h", "vibrational__analysis_8h.html", "vibrational__analysis_8h" ]
 ];

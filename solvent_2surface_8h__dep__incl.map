@@ -1,32 +1,34 @@
 <map id="/home/runner/work/occ/occ/include/occ/solvent/surface.h" name="/home/runner/work/occ/occ/include/occ/solvent/surface.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="318,5,495,60"/>
-<area shape="rect" id="Node000002" href="$reaction__field_8h.html" title=" " alt="" coords="223,108,393,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="373,72,336,110,332,106,369,68"/>
-<area shape="rect" id="Node000008" href="$cpcmx_8h.html" title=" " alt="" coords="5,211,176,265"/>
-<area shape="poly" id="edge15_Node000001_Node000008" title=" " alt="" coords="306,65,258,85,212,110,182,134,154,161,111,212,107,209,150,157,178,130,209,106,255,80,304,60"/>
-<area shape="rect" id="Node000009" href="$smd__xtb_8h.html" title=" " alt="" coords="403,211,573,265"/>
-<area shape="poly" id="edge16_Node000001_Node000009" title=" " alt="" coords="425,72,480,209,475,211,420,74"/>
-<area shape="rect" id="Node000010" href="$cosmors__segments_8h.html" title=" " alt="" coords="598,108,775,163"/>
-<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="493,62,615,105,613,110,491,67"/>
-<area shape="rect" id="Node000003" href="$solvation__correction_8h.html" title=" " alt="" coords="201,211,378,265"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="303,177,297,211,292,210,298,176"/>
-<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="240,171,148,213,146,208,238,166"/>
-<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="368,167,442,208,439,213,366,172"/>
-<area shape="rect" id="Node000004" href="$smd__solvation_8h.html" title=" " alt="" coords="201,313,377,368"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="292,279,292,313,287,313,287,279"/>
-<area shape="rect" id="Node000005" href="$crystal__growth_8h.html" title=" " alt="" coords="204,416,375,471"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="292,382,292,416,287,416,287,382"/>
-<area shape="rect" id="Node000006" href="$cg__pipeline_8h.html" title=" " alt="" coords="107,519,277,573"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="256,483,219,520,215,517,252,479"/>
-<area shape="rect" id="Node000007" href="$dma__cg_8h.html" title=" " alt="" coords="301,519,472,573"/>
-<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="326,479,363,517,359,520,322,483"/>
-<area shape="rect" id="Node000011" href="$cosmors__driver_8h.html" title=" " alt="" coords="728,313,899,368"/>
-<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="749,169,771,187,789,209,802,235,810,263,816,313,811,313,804,264,797,237,784,212,767,191,746,173"/>
-<area shape="rect" id="Node000013" href="$cosmors_8h.html" title=" " alt="" coords="598,211,775,265"/>
-<area shape="poly" id="edge12_Node000010_Node000013" title=" " alt="" coords="689,176,689,211,684,211,684,176"/>
-<area shape="rect" id="Node000012" href="$cosmors__solvation_8h.html" title=" " alt="" coords="728,416,899,471"/>
-<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="816,382,816,416,811,416,811,382"/>
-<area shape="poly" id="edge13_Node000013_Node000011" title=" " alt="" coords="732,272,782,311,779,315,729,276"/>
-<area shape="rect" id="Node000014" href="$cosmors__io_8h.html" title=" " alt="" coords="526,313,703,368"/>
-<area shape="poly" id="edge14_Node000013_Node000014" title=" " alt="" coords="662,278,636,315,631,312,658,275"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="350,5,527,60"/>
+<area shape="rect" id="Node000002" href="$reaction__field_8h.html" title=" " alt="" coords="255,108,425,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="405,72,368,110,364,106,401,68"/>
+<area shape="rect" id="Node000009" href="$cpcmx_8h.html" title=" " alt="" coords="37,211,208,265"/>
+<area shape="poly" id="edge16_Node000001_Node000009" title=" " alt="" coords="338,65,290,85,244,110,214,134,186,161,143,212,139,209,182,157,210,130,241,106,287,80,336,60"/>
+<area shape="rect" id="Node000010" href="$smd__xtb_8h.html" title=" " alt="" coords="435,211,605,265"/>
+<area shape="poly" id="edge17_Node000001_Node000010" title=" " alt="" coords="457,72,512,209,507,211,452,74"/>
+<area shape="rect" id="Node000011" href="$cosmors__segments_8h.html" title=" " alt="" coords="630,108,807,163"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="525,62,647,105,645,110,523,67"/>
+<area shape="rect" id="Node000003" href="$solvation__correction_8h.html" title=" " alt="" coords="233,211,410,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="335,177,329,211,324,210,330,176"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="272,171,180,213,178,208,270,166"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="400,167,474,208,471,213,398,172"/>
+<area shape="rect" id="Node000004" href="$smd__solvation_8h.html" title=" " alt="" coords="100,313,276,368"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="277,276,225,315,221,311,274,271"/>
+<area shape="rect" id="Node000008" href="$solvated__procedure_8h.html" title=" " alt="" coords="300,313,471,368"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="348,276,371,312,366,315,343,279"/>
+<area shape="rect" id="Node000005" href="$crystal__growth_8h.html" title=" " alt="" coords="103,416,273,471"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="191,382,191,416,185,416,185,382"/>
+<area shape="rect" id="Node000006" href="$cg__pipeline_8h.html" title=" " alt="" coords="5,519,176,573"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="155,483,118,520,114,517,151,479"/>
+<area shape="rect" id="Node000007" href="$dma__cg_8h.html" title=" " alt="" coords="200,519,371,573"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="225,479,262,517,258,520,221,483"/>
+<area shape="rect" id="Node000012" href="$cosmors__driver_8h.html" title=" " alt="" coords="760,313,931,368"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="781,169,803,187,821,209,834,235,842,263,848,313,843,313,836,264,829,237,816,212,799,191,778,173"/>
+<area shape="rect" id="Node000014" href="$cosmors_8h.html" title=" " alt="" coords="630,211,807,265"/>
+<area shape="poly" id="edge13_Node000011_Node000014" title=" " alt="" coords="721,176,721,211,716,211,716,176"/>
+<area shape="rect" id="Node000013" href="$cosmors__solvation_8h.html" title=" " alt="" coords="760,416,931,471"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="848,382,848,416,843,416,843,382"/>
+<area shape="poly" id="edge14_Node000014_Node000012" title=" " alt="" coords="764,272,814,311,811,315,761,276"/>
+<area shape="rect" id="Node000015" href="$cosmors__io_8h.html" title=" " alt="" coords="558,313,735,368"/>
+<area shape="poly" id="edge15_Node000014_Node000015" title=" " alt="" coords="694,278,668,315,663,312,690,275"/>
 </map>

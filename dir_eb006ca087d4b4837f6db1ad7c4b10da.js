@@ -13,6 +13,7 @@ var dir_eb006ca087d4b4837f6db1ad7c4b10da =
     [ "engrad.h", "engrad_8h.html", "engrad_8h" ],
     [ "gmf.h", "gmf_8h.html", "gmf_8h" ],
     [ "json_basis.h", "io_2json__basis_8h.html", null ],
+    [ "json_cache.h", "json__cache_8h.html", "json__cache_8h" ],
     [ "kmcpp.h", "kmcpp_8h.html", "kmcpp_8h" ],
     [ "load_geometry.h", "load__geometry_8h.html", "load__geometry_8h" ],
     [ "occ_input.h", "occ__input_8h.html", "occ__input_8h" ],

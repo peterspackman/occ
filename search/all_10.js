@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['p_0',['p',['../structocc_1_1ints_1_1ECoeffs1DDynamic.html#a3e2f4e181cfdd977afcb36b37068ec4c',1,'occ::ints::ECoeffs1DDynamic::p'],['../structocc_1_1ints_1_1PrimitivePairData.html#a9b0498b9a2de5121970e87cb24deef5e',1,'occ::ints::PrimitivePairData::p'],['../structocc_1_1core_1_1KalmanEstimator.html#a9e1c43d2837dd34874b5782a8ea1b03b',1,'occ::core::KalmanEstimator::P'],['../structocc_1_1ints_1_1ECoeffs1D.html#a2aa6c20b50460e8cb700aa1ddffefb80',1,'occ::ints::ECoeffs1D::P']]],
+  ['p_0',['p',['../structocc_1_1core_1_1KalmanEstimator.html#a9e1c43d2837dd34874b5782a8ea1b03b',1,'occ::core::KalmanEstimator::P'],['../structocc_1_1ints_1_1ECoeffs1D.html#a2aa6c20b50460e8cb700aa1ddffefb80',1,'occ::ints::ECoeffs1D::P'],['../structocc_1_1ints_1_1ECoeffs1DDynamic.html#a3e2f4e181cfdd977afcb36b37068ec4c',1,'occ::ints::ECoeffs1DDynamic::p'],['../structocc_1_1ints_1_1PrimitivePairData.html#a9b0498b9a2de5121970e87cb24deef5e',1,'occ::ints::PrimitivePairData::p']]],
   ['p05_5fdeg_1',['p05_deg',['../structocc_1_1isosurface_1_1AngleStats.html#a9e934657fb959c8b766b08e501971728',1,'occ::isosurface::AngleStats']]],
   ['p_5fdata_5fbuffer_2',['p_data_buffer',['../structocc_1_1core_1_1numpy_1_1NumpyArray.html#a08c65bb4ea3242cabd63598977d8b17b',1,'occ::core::numpy::NumpyArray']]],
   ['pa_5fto_5fgpa_3',['PA_TO_GPA',['../namespaceocc_1_1units.html#abb13a2190f2c77a4f2cbc3f02d7f8c47',1,'occ::units']]],
@@ -116,7 +116,7 @@ var searchData=
   ['phi_5fz_113',['phi_z',['../structocc_1_1gto_1_1GTOValues.html#aea3b80615fd6b93b11c2ded3b7cab6b9',1,'occ::gto::GTOValues']]],
   ['phi_5fzz_114',['phi_zz',['../structocc_1_1gto_1_1GTOValues.html#abfe6e7056ecbe5effa21538a6c82100d',1,'occ::gto::GTOValues']]],
   ['phonons_115',['phonons',['../classocc_1_1elastic__fit_1_1PES.html#ae88acafac46ec2e13dcd5853bd7d1bce',1,'occ::elastic_fit::PES']]],
-  ['pi_116',['pi',['../namespaceocc_1_1constants.html#ac6930578fafd8c4b018ba281349ab2ed',1,'occ::constants::pi'],['../namespaceocc_1_1units.html#a028d775e813e880062aff24bec1a1b4a',1,'occ::units::PI'],['../structocc_1_1ints_1_1BoysConstants.html#ac90014e1f88dbd851cacc7d4a562ff0c',1,'occ::ints::BoysConstants::pi']]],
+  ['pi_116',['pi',['../namespaceocc_1_1units.html#a028d775e813e880062aff24bec1a1b4a',1,'occ::units::PI'],['../namespaceocc_1_1constants.html#ac6930578fafd8c4b018ba281349ab2ed',1,'occ::constants::pi'],['../structocc_1_1ints_1_1BoysConstants.html#ac90014e1f88dbd851cacc7d4a562ff0c',1,'occ::ints::BoysConstants::pi']]],
   ['plan_5facceleration_117',['plan_acceleration',['../namespaceocc_1_1driver.html#a5829b88f4cdf883e791fa3884a6e3ddf',1,'occ::driver']]],
   ['planck_118',['planck',['../namespaceocc_1_1constants.html#a09d810b3a282917f3a97b8311c389477',1,'occ::constants']]],
   ['plane_119',['plane',['../classquickhull_1_1Plane.html#a849e5e70b8a26b33922cec3e79e426a7',1,'quickhull::Plane::Plane()=default'],['../classquickhull_1_1Plane.html#ae390857155091f4659af5e8256492efc',1,'quickhull::Plane::Plane(const Eigen::Matrix&lt; T, 3, 1 &gt; &amp;N, const Eigen::Matrix&lt; T, 3, 1 &gt; &amp;P)'],['../classquickhull_1_1Plane.html',1,'quickhull::Plane&lt; T &gt;']]],

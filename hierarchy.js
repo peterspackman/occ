@@ -326,6 +326,10 @@ var hierarchy =
     [ "occ::qm::JKTriple", "structocc_1_1qm_1_1JKTriple.html", null ],
     [ "occ::gto::io::JsonBasis", "structocc_1_1gto_1_1io_1_1JsonBasis.html", null ],
     [ "occ::gto::io::JsonBasisReader", "structocc_1_1gto_1_1io_1_1JsonBasisReader.html", null ],
+    [ "occ::io::JsonCache", "classocc_1_1io_1_1JsonCache.html", [
+      [ "occ::io::FileJsonCache", "classocc_1_1io_1_1FileJsonCache.html", null ],
+      [ "occ::io::MemoryJsonCache", "classocc_1_1io_1_1MemoryJsonCache.html", null ]
+    ] ],
     [ "occ::io::JsonWavefunctionReader", "structocc_1_1io_1_1JsonWavefunctionReader.html", null ],
     [ "occ::io::JsonWavefunctionWriter", "structocc_1_1io_1_1JsonWavefunctionWriter.html", null ],
     [ "occ::core::KalmanEstimator", "structocc_1_1core_1_1KalmanEstimator.html", null ],

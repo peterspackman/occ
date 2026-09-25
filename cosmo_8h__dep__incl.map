@@ -1,9 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/solvent/cosmo.h" name="/home/runner/work/occ/occ/include/occ/solvent/cosmo.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="99,5,277,60"/>
-<area shape="rect" id="Node000002" href="$solvation__correction_8h.html" title=" " alt="" coords="99,108,277,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,74,191,108,185,108,185,74"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="198,5,375,60"/>
+<area shape="rect" id="Node000002" href="$solvation__correction_8h.html" title=" " alt="" coords="198,108,375,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="289,74,289,108,284,108,284,74"/>
 <area shape="rect" id="Node000003" href="$smd__solvation_8h.html" title=" " alt="" coords="100,211,276,265"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="191,176,191,211,185,211,185,176"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="253,175,216,212,212,209,249,171"/>
+<area shape="rect" id="Node000007" href="$solvated__procedure_8h.html" title=" " alt="" coords="300,211,471,265"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="324,171,361,209,358,212,320,175"/>
 <area shape="rect" id="Node000004" href="$crystal__growth_8h.html" title=" " alt="" coords="103,313,273,368"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="191,279,191,313,185,313,185,279"/>
 <area shape="rect" id="Node000005" href="$cg__pipeline_8h.html" title=" " alt="" coords="5,416,176,471"/>

@@ -1,6 +1,8 @@
 var structocc_1_1driver_1_1CrystalGrowthCalculatorOptions =
 [
     [ "basename", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a3801c5baa2ce1127c2618bb0c651578a", null ],
+    [ "cache", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#afc2563e7add931cdaec72ad2b4f97282", null ],
+    [ "cache_pair_energies", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a0c1ed23e06ed2213e1b1481661d2de3f", null ],
     [ "energy_model", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#aa35cfe8f9078c1683b08f704d2eaa58d", null ],
     [ "inner_radius", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6aeaf639a10ae8fb314d74269e65ea3e", null ],
     [ "outer_radius", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ad60a2862cbbfb2a1b976805797257f06", null ],

@@ -10,7 +10,9 @@ var wavefunction__json_8h =
       [ "MSGPACK", "wavefunction__json_8h.html#ac216ed773cc0fb9fcb04e266ac5c24a3a164e3da677c8ca25a97538f466f3cd94", null ]
     ] ],
     [ "from_json", "wavefunction__json_8h.html#aea99ff092d8022a134859b02bc81a705", null ],
+    [ "from_json", "wavefunction__json_8h.html#a02da566540a2e35f95f9bfc8e376995c", null ],
     [ "json_format", "wavefunction__json_8h.html#a099816a1d1f5ac39efdf73b50c8f6efc", null ],
     [ "to_json", "wavefunction__json_8h.html#af56a1ad02bf6c763085926a57c0c60f4", null ],
+    [ "to_json", "wavefunction__json_8h.html#ae4c77f061de3434308206c3503d499ff", null ],
     [ "valid_json_format_string", "wavefunction__json_8h.html#a03fbffee6c9f175af30275db3fe30f69", null ]
 ];

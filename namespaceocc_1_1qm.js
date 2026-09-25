@@ -114,6 +114,7 @@ var namespaceocc_1_1qm =
     [ "expectation", "namespaceocc_1_1qm.html#a7f9747809d33a47c63c971414cfb7321", null ],
     [ "expectation", "namespaceocc_1_1qm.html#a2a982da10e9beee254cd5401c9e3028a", null ],
     [ "from_json", "namespaceocc_1_1qm.html#aea99ff092d8022a134859b02bc81a705", null ],
+    [ "from_json", "namespaceocc_1_1qm.html#a02da566540a2e35f95f9bfc8e376995c", null ],
     [ "generate_auto_aux", "namespaceocc_1_1qm.html#a25a9715eed17d1bec6120971166e7f53", null ],
     [ "guess_kind_from_string", "namespaceocc_1_1qm.html#a97fdc01cb0e120542d05bc9458b8f335", null ],
     [ "guess_kind_name", "namespaceocc_1_1qm.html#acc796c0ffb276df1ce0dcce05bc0c9ad", null ],
@@ -131,6 +132,7 @@ var namespaceocc_1_1qm =
     [ "shellblock_norm", "namespaceocc_1_1qm.html#ac8a55dbc14f641aaa3c836398faeb519", null ],
     [ "supports_incremental_fock_build", "namespaceocc_1_1qm.html#aaad89bca165ccdb869de3cf1197d3129", null ],
     [ "to_json", "namespaceocc_1_1qm.html#af56a1ad02bf6c763085926a57c0c60f4", null ],
+    [ "to_json", "namespaceocc_1_1qm.html#ae4c77f061de3434308206c3503d499ff", null ],
     [ "is_scf_method_v", "namespaceocc_1_1qm.html#af7275368e99175434508cc27a5d3659c", null ],
     [ "supports_density_fitting_v", "namespaceocc_1_1qm.html#adaccff0ae547b4b5613387ec864850cf", null ],
     [ "supports_point_charges_v", "namespaceocc_1_1qm.html#acda93790f6f9b38ccc9e412012ac9fb9", null ]

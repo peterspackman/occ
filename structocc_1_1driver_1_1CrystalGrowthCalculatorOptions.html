@@ -143,6 +143,12 @@ Public Attributes</h2></td></tr>
 <tr class="separator:ad60a2862cbbfb2a1b976805797257f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5760679b30588b899de05651c80915ff" id="r_a5760679b30588b899de05651c80915ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1driver.html#a93e7aa58c1e87808d00d580da61457db">WavefunctionChoice</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a5760679b30588b899de05651c80915ff">wavefunction_choice</a> {<a class="el" href="namespaceocc_1_1driver.html#a93e7aa58c1e87808d00d580da61457dba550806ba1cc6d56dc8f9a0c80b4c6aff">WavefunctionChoice::GasPhase</a>}</td></tr>
 <tr class="separator:a5760679b30588b899de05651c80915ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc2563e7add931cdaec72ad2b4f97282" id="r_afc2563e7add931cdaec72ad2b4f97282"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classocc_1_1io_1_1JsonCache.html">occ::io::JsonCache</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#afc2563e7add931cdaec72ad2b4f97282">cache</a></td></tr>
+<tr class="memdesc:afc2563e7add931cdaec72ad2b4f97282"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where monomer wavefunctions, energies and solvation surfaces are kept, keyed on <code>basename</code>.  <br /></td></tr>
+<tr class="separator:afc2563e7add931cdaec72ad2b4f97282"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c1ed23e06ed2213e1b1481661d2de3f" id="r_a0c1ed23e06ed2213e1b1481661d2de3f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a0c1ed23e06ed2213e1b1481661d2de3f">cache_pair_energies</a> {true}</td></tr>
+<tr class="memdesc:a0c1ed23e06ed2213e1b1481661d2de3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keep converged pair energies on disk as well; see LatticeConvergenceSettings::cache_pair_energies.  <br /></td></tr>
+<tr class="separator:a0c1ed23e06ed2213e1b1481661d2de3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a3801c5baa2ce1127c2618bb0c651578a" name="a3801c5baa2ce1127c2618bb0c651578a"></a>
@@ -156,6 +162,41 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="afc2563e7add931cdaec72ad2b4f97282" name="afc2563e7add931cdaec72ad2b4f97282"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc2563e7add931cdaec72ad2b4f97282">&#9670;&#160;</a></span>cache</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt;<a class="el" href="classocc_1_1io_1_1JsonCache.html">occ::io::JsonCache</a>&gt; occ::driver::CrystalGrowthCalculatorOptions::cache</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      std::make_shared&lt;occ::io::FileJsonCache&gt;()}</div>
+</div><!-- fragment -->
+<p>Where monomer wavefunctions, energies and solvation surfaces are kept, keyed on <code>basename</code>. </p>
+<p>Files by default, so a repeat run reuses them; an <a class="el" href="classocc_1_1io_1_1MemoryJsonCache.html" title="Documents held for the lifetime of the object; nothing touches the disk.">occ::io::MemoryJsonCache</a> keeps them in this process only. </p>
+
+</div>
+</div>
+<a id="a0c1ed23e06ed2213e1b1481661d2de3f" name="a0c1ed23e06ed2213e1b1481661d2de3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c1ed23e06ed2213e1b1481661d2de3f">&#9670;&#160;</a></span>cache_pair_energies</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::driver::CrystalGrowthCalculatorOptions::cache_pair_energies {true}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Keep converged pair energies on disk as well; see LatticeConvergenceSettings::cache_pair_energies. </p>
 
 </div>
 </div>

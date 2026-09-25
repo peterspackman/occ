@@ -1,0 +1,5 @@
+<map id="occ::io::MemoryJsonCache" name="occ::io::MemoryJsonCache">
+<area shape="rect" id="Node000001" title="Documents held for the lifetime of the object; nothing touches the disk." alt="" coords="5,79,199,104"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1io_1_1JsonCache.html" title="Somewhere to keep expensive intermediate results (monomer energies, wavefunctions,..." alt="" coords="33,5,171,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,44,105,79,99,79,99,44"/>
+</map>
