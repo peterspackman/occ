@@ -311,6 +311,10 @@ CGPreparation prepare_cg(CGConfig const &config) {
   opts.solvent_probe_radius = config.solvent_probe_radius;
   opts.basename = basename;
   opts.write_debug_output_files = config.write_dump_files;
+  if (config.no_cache) {
+    opts.cache = std::make_shared<occ::io::MemoryJsonCache>();
+    opts.cache_pair_energies = false;
+  }
   // --xtb with the default model name still runs xtb; say so in the output.
   opts.energy_model =
       config.use_xtb && !occ::interaction::model_name_implies_xtb(

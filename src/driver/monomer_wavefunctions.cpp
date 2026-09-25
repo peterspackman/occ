@@ -39,7 +39,7 @@ void compute_monomer_energies(const std::string &basename,
     if (!loaded) {
       occ::log::info("Computing monomer {} energies", idx);
       interaction.compute_monomer_energies(wfn);
-      occ::log::info("Writing monomer energies to {}", key);
+      occ::log::info("Caching monomer energies as {}", key);
       nlohmann::json j;
       j["model"] = model.name;
       j["energy"] = wfn.energy;

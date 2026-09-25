@@ -489,6 +489,7 @@ void CEModelCrystalGrowthCalculator::converge_lattice_energy() {
           : opts.energy_model;
   convergence_settings.max_radius = opts.outer_radius;
   convergence_settings.wolf_sum = opts.use_wolf_sum;
+  convergence_settings.cache_pair_energies = opts.cache_pair_energies;
   convergence_settings.crystal_field_polarization =
       opts.use_crystal_polarization;
 
@@ -600,6 +601,7 @@ void XTBCrystalGrowthCalculator::converge_lattice_energy() {
   occ::interaction::LatticeConvergenceSettings convergence_settings;
   convergence_settings.wolf_sum = opts.use_wolf_sum;
   convergence_settings.max_radius = opts.outer_radius;
+  convergence_settings.cache_pair_energies = opts.cache_pair_energies;
   // The on-disk pair energy cache tag, kept apart from the CE models' tags.
   convergence_settings.model_name = "xtb";
 
@@ -766,7 +768,7 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
       j["e_solv"] = e_solv;
       j["surfaces"] = m_solvated_surface_properties.back();
       opts.cache->store(monomer_cache, j);
-      occ::log::info("Wrote monomer {} xTB energies to {}", index,
+      occ::log::info("Cached monomer {} xTB energies as {}", index,
                      monomer_cache);
     }
 

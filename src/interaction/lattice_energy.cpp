@@ -105,7 +105,10 @@ LatticeEnergyResult LatticeEnergyCalculator::compute() {
     previous_lattice_energy = lattice_energy;
 
     // Create energy store for this cycle
-    PairEnergyStore store{PairEnergyStore::Kind::XYZ, store_name};
+    PairEnergyStore store{m_settings.cache_pair_energies
+                              ? PairEnergyStore::Kind::XYZ
+                              : PairEnergyStore::Kind::Memory,
+                          store_name};
 
     // Setup progress tracking
     size_t dimers_to_compute = 0;

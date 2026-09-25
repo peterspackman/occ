@@ -109,10 +109,10 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
 void SMDCalculator::save_calculation(const CacheKeys &keys,
                                      const SolvationData &surfaces,
                                      occ::qm::Wavefunction &wfn) const {
-  occ::log::info("Writing solvated surface properties to {}", keys.surface);
+  occ::log::info("Caching solvated surface properties as {}", keys.surface);
   m_cache.store(keys.surface, surfaces);
 
-  occ::log::info("Writing solvated wavefunction to {}", keys.wavefunction);
+  occ::log::info("Caching solvated wavefunction as {}", keys.wavefunction);
   wfn.method = m_settings.method; // recorded for cache validation
   m_cache.store(keys.wavefunction, wfn);
 }

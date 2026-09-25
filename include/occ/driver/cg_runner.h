@@ -39,6 +39,9 @@ struct CGConfig {
   std::string morphology_shape{};
   bool morphology_emit_bonds{false};
   bool write_dump_files{false};
+  /// Keep monomer wavefunctions, monomer energies, solvation surfaces and
+  /// pair energies in memory only, rather than as reusable files.
+  bool no_cache{false};
   bool spherical{false};
   bool write_kmcpp_file{false};
   bool use_xtb{false};

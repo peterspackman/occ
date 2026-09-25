@@ -65,6 +65,9 @@ struct CrystalGrowthCalculatorOptions {
   /// occ::io::MemoryJsonCache keeps them in this process only.
   std::shared_ptr<occ::io::JsonCache> cache{
       std::make_shared<occ::io::FileJsonCache>()};
+  /// Keep converged pair energies on disk as well; see
+  /// LatticeConvergenceSettings::cache_pair_energies.
+  bool cache_pair_energies{true};
 };
 
 class CrystalGrowthCalculator {

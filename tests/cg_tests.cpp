@@ -816,6 +816,22 @@ TEST_CASE("CG: xtb monomers are reused from a shared in-memory cache",
   REQUIRE(second.m_solvated_energies == first.m_solvated_energies);
 }
 
+TEST_CASE("CG: without caching, a lattice energy leaves nothing on disk",
+          "[cg][xtb][cache]") {
+  const auto dir = fresh_directory("no_cache");
+  occ::driver::CrystalGrowthCalculatorOptions opts;
+  opts.solvation_model = occ::driver::SolvationModelKind::None;
+  opts.basename = (dir / "acetic_acid").string();
+  opts.cache = std::make_shared<occ::io::MemoryJsonCache>();
+  opts.cache_pair_energies = false;
+
+  occ::driver::XTBCrystalGrowthCalculator calc(acetic_acid_crystal(), opts);
+  calc.init_monomer_energies();
+  calc.converge_lattice_energy();
+
+  REQUIRE(std::filesystem::is_empty(dir));
+}
+
 TEST_CASE("CG: xtb growth calculator rejects cosmo-rs",
           "[cg][xtb][solvation]") {
   occ::driver::CrystalGrowthCalculatorOptions opts;

@@ -19,6 +19,9 @@ struct LatticeConvergenceSettings {
   std::string multiplicity_string;
   std::string external_command{""};
   bool normalize_hydrogens{false};
+  /// Keep converged pair energies in `<basename>_<model>_dimers/`, so a repeat
+  /// run reuses them. Off keeps them in memory for this run only.
+  bool cache_pair_energies{true};
 
   // Elastic fitting options
   bool run_elastic_fitting{false};

@@ -67,6 +67,10 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                "don't calculate any interaction energies, but calculate a net "
                "and structure file");
   cg->add_flag("-d,--dump", config->write_dump_files, "Write dump files");
+  cg->add_flag("--no-cache", config->no_cache,
+               "don't write or reuse cached wavefunctions, monomer energies, "
+               "solvation surfaces or pair energies; results files are still "
+               "written");
   cg->add_flag("--atomic", config->crystal_is_atomic,
                "Crystal is atomic (i.e. no bonds)");
   cg->add_flag(
