@@ -122,6 +122,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a30fc34259bc37d135f097f14525aa1e8" id="r_a30fc34259bc37d135f097f14525aa1e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a30fc34259bc37d135f097f14525aa1e8">update_from_atom_charges</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;atom_charges)</td></tr>
 <tr class="memdesc:a30fc34259bc37d135f097f14525aa1e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atom-resolved: from input atomic charges, compute φ = B·q, σ = G·q, V_atom = J_solv·q, E_es = ½ q·V_atom.  <br /></td></tr>
 <tr class="separator:a30fc34259bc37d135f097f14525aa1e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47ac743eb5b911c34e4f14c4fff4f49d" id="r_a47ac743eb5b911c34e4f14c4fff4f49d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a47ac743eb5b911c34e4f14c4fff4f49d">update_from_atom_multipoles</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;atom_charges, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;dipoles, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;quadrupoles)</td></tr>
+<tr class="memdesc:a47ac743eb5b911c34e4f14c4fff4f49d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atom-resolved including the anisotropic part of the solute density.  <br /></td></tr>
+<tr class="separator:a47ac743eb5b911c34e4f14c4fff4f49d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bc019546e4d701fad44209be015ca21" id="r_a2bc019546e4d701fad44209be015ca21"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a2bc019546e4d701fad44209be015ca21">set_multipole_damping</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;rco_bohr, double kdmp3, double kdmp5)</td></tr>
+<tr class="memdesc:a2bc019546e4d701fad44209be015ca21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Short-range damping for the atom→cavity dipole and quadrupole kernels (see <code><a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html" title="Short-range damping of the dipole and quadrupole kernels, f_n(d) = 1/(1 + 6·(rco/d)^kdmp_n),...">detail::MultipoleDamping</a></code>).  <br /></td></tr>
+<tr class="separator:a2bc019546e4d701fad44209be015ca21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71245c6690811306cb740d8a429c5c5a" id="r_a71245c6690811306cb740d8a429c5c5a"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a71245c6690811306cb740d8a429c5c5a">energy</a> () const</td></tr>
 <tr class="memdesc:a71245c6690811306cb740d8a429c5c5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total cached solvation energy: E_es + E_cds.  <br /></td></tr>
 <tr class="separator:a71245c6690811306cb740d8a429c5c5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -132,6 +138,14 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:adf807cf860773c82aeda8003620b6343" id="r_adf807cf860773c82aeda8003620b6343"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#adf807cf860773c82aeda8003620b6343">atom_potential</a> () const</td></tr>
 <tr class="memdesc:adf807cf860773c82aeda8003620b6343"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cached per-atom screening potential V_atom (Hartree, length = natom).  <br /></td></tr>
 <tr class="separator:adf807cf860773c82aeda8003620b6343"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b27c5fef2418564c18d9385c27e599a" id="r_a7b27c5fef2418564c18d9385c27e599a"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a7b27c5fef2418564c18d9385c27e599a">dipole_potential</a> () const</td></tr>
+<tr class="memdesc:a7b27c5fef2418564c18d9385c27e599a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conjugates of the atomic dipoles (3 × natom) and quadrupoles (6 × natom, in the input layout) at the last update.  <br /></td></tr>
+<tr class="separator:a7b27c5fef2418564c18d9385c27e599a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0365237fb60850bd58fd90bd28af04d6" id="r_a0365237fb60850bd58fd90bd28af04d6"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a0365237fb60850bd58fd90bd28af04d6">quadrupole_potential</a> () const</td></tr>
+<tr class="separator:a0365237fb60850bd58fd90bd28af04d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ba42c7e0e68d790a966b4a51a7c8aeb" id="r_a8ba42c7e0e68d790a966b4a51a7c8aeb"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a8ba42c7e0e68d790a966b4a51a7c8aeb">damping_radius_gradient</a> () const</td></tr>
+<tr class="memdesc:a8ba42c7e0e68d790a966b4a51a7c8aeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">∂E_es/∂R_co per atom at the last update (empty when the kernels are undamped).  <br /></td></tr>
+<tr class="separator:a8ba42c7e0e68d790a966b4a51a7c8aeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24d6d07e6ba07e92196e0f1604db0804" id="r_a24d6d07e6ba07e92196e0f1604db0804"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a24d6d07e6ba07e92196e0f1604db0804">surface_charges</a> () const</td></tr>
 <tr class="memdesc:a24d6d07e6ba07e92196e0f1604db0804"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cached apparent surface charges σ on the ES cavity.  <br /></td></tr>
 <tr class="separator:a24d6d07e6ba07e92196e0f1604db0804"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -314,6 +328,34 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a8ba42c7e0e68d790a966b4a51a7c8aeb" name="a8ba42c7e0e68d790a966b4a51a7c8aeb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ba42c7e0e68d790a966b4a51a7c8aeb">&#9670;&#160;</a></span>damping_radius_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp; occ::scrf::ReactionFieldEngine::damping_radius_gradient </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>∂E_es/∂R_co per atom at the last update (empty when the kernels are undamped). </p>
+<p>Cut-off radii that depend on the geometry contribute to the nuclear gradient through this; the caller owns that chain because it owns the radii. </p>
+
+</div>
+</div>
 <a id="af168b5c4374f1cf83b01795181b5a51f" name="af168b5c4374f1cf83b01795181b5a51f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af168b5c4374f1cf83b01795181b5a51f">&#9670;&#160;</a></span>dielectric()</h2>
 
@@ -336,6 +378,34 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7b27c5fef2418564c18d9385c27e599a" name="a7b27c5fef2418564c18d9385c27e599a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b27c5fef2418564c18d9385c27e599a">&#9670;&#160;</a></span>dipole_potential()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp; occ::scrf::ReactionFieldEngine::dipole_potential </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Conjugates of the atomic dipoles (3 × natom) and quadrupoles (6 × natom, in the input layout) at the last update. </p>
+<p>Both are empty unless that update went through <code>update_from_atom_multipoles</code>. </p>
 
 </div>
 </div>
@@ -535,7 +605,8 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Frozen-cavity analytical gradient (Hartree/Bohr, 3 × natom). </p>
-<p>Requires a prior <code>update_from_atom_charges(q)</code> — returns an empty matrix otherwise. When <code>include_cds</code>, adds an FD CDS contribution on top. </p>
+<p>Requires a prior atom-resolved update — returns a zero matrix otherwise. When <code>include_cds</code>, adds an FD CDS contribution on top.</p>
+<p>This is the explicit derivative at frozen moments. After <code>update_from_atom_multipoles</code> the dipoles and quadrupoles are included in the source field, but their own response to the geometry (∂μ/∂R, ∂Θ/∂R) belongs to the caller's density-Pulay chain, exactly as it does for the charges. </p>
 
 </div>
 </div>
@@ -670,6 +741,68 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a0365237fb60850bd58fd90bd28af04d6" name="a0365237fb60850bd58fd90bd28af04d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0365237fb60850bd58fd90bd28af04d6">&#9670;&#160;</a></span>quadrupole_potential()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp; occ::scrf::ReactionFieldEngine::quadrupole_potential </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2bc019546e4d701fad44209be015ca21" name="a2bc019546e4d701fad44209be015ca21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bc019546e4d701fad44209be015ca21">&#9670;&#160;</a></span>set_multipole_damping()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::scrf::ReactionFieldEngine::set_multipole_damping </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
+          <td class="paramname"><em>rco_bohr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>kdmp3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>kdmp5</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Short-range damping for the atom→cavity dipole and quadrupole kernels (see <code><a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html" title="Short-range damping of the dipole and quadrupole kernels, f_n(d) = 1/(1 + 6·(rco/d)^kdmp_n),...">detail::MultipoleDamping</a></code>). </p>
+<p><code>rco_bohr</code> is one cut-off radius per atom; pass it empty to switch damping off. The radii belong to whatever model produced the moments — for GFN2 they are its own CN-dependent multipole radii — so the engine takes them rather than choosing them. </p>
+
+</div>
+</div>
 <a id="a87017b2de9e170e9d5af66d620603729" name="a87017b2de9e170e9d5af66d620603729"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a87017b2de9e170e9d5af66d620603729">&#9670;&#160;</a></span>smd_parameters()</h2>
 
@@ -794,6 +927,48 @@ Public Member Functions</h2></td></tr>
 
 <p>Atom-resolved: from input atomic charges, compute φ = B·q, σ = G·q, V_atom = J_solv·q, E_es = ½ q·V_atom. </p>
 <p>Updates all cached state; subsequent <code><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#a71245c6690811306cb740d8a429c5c5a" title="Total cached solvation energy: E_es + E_cds.">energy()</a></code>, <code><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#afbfd143d75c8f7f9447c11bd09097f06" title="Per-element decomposition of the latest update.">surfaces()</a></code>, and <code><a class="el" href="classocc_1_1scrf_1_1ReactionFieldEngine.html#ac5d60f5f81e07b2de2dd6df5295cea61" title="Frozen-cavity analytical gradient (Hartree/Bohr, 3 × natom).">gradient()</a></code> reflect this update. </p>
+
+</div>
+</div>
+<a id="a47ac743eb5b911c34e4f14c4fff4f49d" name="a47ac743eb5b911c34e4f14c4fff4f49d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47ac743eb5b911c34e4f14c4fff4f49d">&#9670;&#160;</a></span>update_from_atom_multipoles()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::scrf::ReactionFieldEngine::update_from_atom_multipoles </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
+          <td class="paramname"><em>atom_charges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>dipoles</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>quadrupoles</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Atom-resolved including the anisotropic part of the solute density. </p>
+<p>The cavity potential comes from the atom-centred multipole expansion</p>
+<p>φ_i = Σ_A [ q_A/d + μ_A·d/d³ + Σ_αβ Θ^A_αβ d_α d_β/d⁵ ], d = r_i − R_A</p>
+<p>so that a solute with no net atomic charges — benzene, say — still polarises the continuum through its quadrupoles. Caches the conjugate of every moment, each being that moment's own kernel contracted with σ:</p>
+<p>V_atom = ∂E_es/∂q, V_dipole = ∂E_es/∂μ, V_quad = ∂E_es/∂Θ</p>
+<p><code>dipoles</code> is 3 × natom. <code>quadrupoles</code> is 6 × natom, traceless, ordered (xx, xy, yy, xz, yz, zz) with the off-diagonal components entering φ twice — the layout and normalisation of <code><a class="el" href="structocc_1_1xtb_1_1CammMoments.html#a283feb7c7d8067c3e01162a0acc0add0">occ::xtb::CammMoments::qp</a></code>, so the potentials come back conjugate to the stored components directly.</p>
+<p>Costs one LU solve per call: the pre-solved response <code>G</code> only covers the charge column, and widening it to the dipoles and quadrupoles would make it nine times larger for no saving on the systems this is used for. </p>
 
 </div>
 </div>

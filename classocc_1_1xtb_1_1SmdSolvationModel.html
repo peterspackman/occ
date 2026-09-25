@@ -127,8 +127,22 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ace05d6a710ef1df8e7b9079dab2cec4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ed858af34400af461d820b9a9eca62b" id="r_a1ed858af34400af461d820b9a9eca62b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1SmdSolvationModel.html#a1ed858af34400af461d820b9a9eca62b">update</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;atomic_charges) override</td></tr>
 <tr class="separator:a1ed858af34400af461d820b9a9eca62b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bc249d6087e3efe8ddea51304215d93" id="r_a2bc249d6087e3efe8ddea51304215d93"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1SmdSolvationModel.html#a2bc249d6087e3efe8ddea51304215d93">update</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;atomic_charges, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;dipoles, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;quadrupoles) override</td></tr>
+<tr class="memdesc:a2bc249d6087e3efe8ddea51304215d93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update from the atomic charges together with the CAMM atomic dipoles (3 × N) and traceless quadrupoles (6 × N, <code><a class="el" href="structocc_1_1xtb_1_1CammMoments.html#a283feb7c7d8067c3e01162a0acc0add0">CammMoments::qp</a></code> layout), so the anisotropic part of the density polarises the continuum too.  <br /></td></tr>
+<tr class="separator:a2bc249d6087e3efe8ddea51304215d93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a659d951c0f24b9d04299a2ed018b2c24" id="r_a659d951c0f24b9d04299a2ed018b2c24"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1SmdSolvationModel.html#a659d951c0f24b9d04299a2ed018b2c24">set_multipole_damping</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;rco_bohr, double kdmp3, double kdmp5) override</td></tr>
+<tr class="memdesc:a659d951c0f24b9d04299a2ed018b2c24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hand the model the solute's own short-range damping radii for the atom→cavity dipole and quadrupole kernels, so a multipolar reaction field treats the CAMM moments the way the rest of the method does.  <br /></td></tr>
+<tr class="separator:a659d951c0f24b9d04299a2ed018b2c24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4efef989a8bd97740da3873d4e33a752" id="r_a4efef989a8bd97740da3873d4e33a752"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1SmdSolvationModel.html#a4efef989a8bd97740da3873d4e33a752">atom_potential</a> () const override</td></tr>
 <tr class="separator:a4efef989a8bd97740da3873d4e33a752"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2467d5ad3180fbc482f5605144a3d84" id="r_ab2467d5ad3180fbc482f5605144a3d84"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1SmdSolvationModel.html#ab2467d5ad3180fbc482f5605144a3d84">dipole_potential</a> () const override</td></tr>
+<tr class="memdesc:ab2467d5ad3180fbc482f5605144a3d84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conjugates of the atomic dipoles and quadrupoles at the last update: ∂E_solv/∂μ (3 × N) and ∂E_solv/∂Θ (6 × N, same layout as the input).  <br /></td></tr>
+<tr class="separator:ab2467d5ad3180fbc482f5605144a3d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7996a499c67f223bf7d11ee9afcb95cb" id="r_a7996a499c67f223bf7d11ee9afcb95cb"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1SmdSolvationModel.html#a7996a499c67f223bf7d11ee9afcb95cb">quadrupole_potential</a> () const override</td></tr>
+<tr class="separator:a7996a499c67f223bf7d11ee9afcb95cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7daeda01bad4e1d5dac49a26a861e03" id="r_aa7daeda01bad4e1d5dac49a26a861e03"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1SmdSolvationModel.html#aa7daeda01bad4e1d5dac49a26a861e03">damping_radius_gradient</a> () const override</td></tr>
+<tr class="memdesc:aa7daeda01bad4e1d5dac49a26a861e03"><td class="mdescLeft">&#160;</td><td class="mdescRight">∂E_solv/∂R_co per atom, for damping radii that depend on the geometry.  <br /></td></tr>
+<tr class="separator:aa7daeda01bad4e1d5dac49a26a861e03"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a989b6fbe8690721047d596e58934fdd8" id="r_a989b6fbe8690721047d596e58934fdd8"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1SmdSolvationModel.html#a989b6fbe8690721047d596e58934fdd8">energy</a> () const override</td></tr>
 <tr class="separator:a989b6fbe8690721047d596e58934fdd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a659a42c2a3c42573c12549e967f1e6ad" id="r_a659a42c2a3c42573c12549e967f1e6ad"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1xtb_1_1SmdSolvationModel.html#a659a42c2a3c42573c12549e967f1e6ad">name</a> () const override</td></tr>
@@ -280,6 +294,36 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="aa7daeda01bad4e1d5dac49a26a861e03" name="aa7daeda01bad4e1d5dac49a26a861e03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7daeda01bad4e1d5dac49a26a861e03">&#9670;&#160;</a></span>damping_radius_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp; occ::xtb::SmdSolvationModel::damping_radius_gradient </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>∂E_solv/∂R_co per atom, for damping radii that depend on the geometry. </p>
+<p>The caller closes the chain through its own ∂R_co/∂CN and ∂CN/∂R. Empty when the model applies no damping. </p>
+
+<p>Reimplemented from <a class="el" href="classocc_1_1xtb_1_1XtbSolvationModel.html#a178a673ec83b6645346dc57ea3f1a775">occ::xtb::XtbSolvationModel</a>.</p>
+
+</div>
+</div>
 <a id="a67776e5de137999dcd1f535a02c4fbf5" name="a67776e5de137999dcd1f535a02c4fbf5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a67776e5de137999dcd1f535a02c4fbf5">&#9670;&#160;</a></span>dielectric()</h2>
 
@@ -302,6 +346,36 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab2467d5ad3180fbc482f5605144a3d84" name="ab2467d5ad3180fbc482f5605144a3d84"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2467d5ad3180fbc482f5605144a3d84">&#9670;&#160;</a></span>dipole_potential()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp; occ::xtb::SmdSolvationModel::dipole_potential </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Conjugates of the atomic dipoles and quadrupoles at the last update: ∂E_solv/∂μ (3 × N) and ∂E_solv/∂Θ (6 × N, same layout as the input). </p>
+<p>The SCC folds these into its anisotropic potentials so the reaction field reaches the Fock matrix through the multipole channels as well as the charge one. Both are empty unless the model took the multipole update. </p>
+
+<p>Reimplemented from <a class="el" href="classocc_1_1xtb_1_1XtbSolvationModel.html#a0531a83f77ef3fc5f6760fe380009b05">occ::xtb::XtbSolvationModel</a>.</p>
 
 </div>
 </div>
@@ -604,6 +678,80 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a7996a499c67f223bf7d11ee9afcb95cb" name="a7996a499c67f223bf7d11ee9afcb95cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7996a499c67f223bf7d11ee9afcb95cb">&#9670;&#160;</a></span>quadrupole_potential()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp; occ::xtb::SmdSolvationModel::quadrupole_potential </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented from <a class="el" href="classocc_1_1xtb_1_1XtbSolvationModel.html#a4bd48bbc7643843722dce65d7af06a11">occ::xtb::XtbSolvationModel</a>.</p>
+
+</div>
+</div>
+<a id="a659d951c0f24b9d04299a2ed018b2c24" name="a659d951c0f24b9d04299a2ed018b2c24"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a659d951c0f24b9d04299a2ed018b2c24">&#9670;&#160;</a></span>set_multipole_damping()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::xtb::SmdSolvationModel::set_multipole_damping </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Hand the model the solute's own short-range damping radii for the atom→cavity dipole and quadrupole kernels, so a multipolar reaction field treats the CAMM moments the way the rest of the method does. </p>
+<p>Called once per geometry, before the first <code>update</code>. The default ignores them. </p>
+
+<p>Reimplemented from <a class="el" href="classocc_1_1xtb_1_1XtbSolvationModel.html#a3d6aedd3e42134fed57fd1928f0c4aa9">occ::xtb::XtbSolvationModel</a>.</p>
+
+</div>
+</div>
 <a id="a085f58861d95f2e0e8c79d96759e47cb" name="a085f58861d95f2e0e8c79d96759e47cb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a085f58861d95f2e0e8c79d96759e47cb">&#9670;&#160;</a></span>surface_charges()</h2>
 
@@ -662,7 +810,7 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a id="a1ed858af34400af461d820b9a9eca62b" name="a1ed858af34400af461d820b9a9eca62b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1ed858af34400af461d820b9a9eca62b">&#9670;&#160;</a></span>update()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ed858af34400af461d820b9a9eca62b">&#9670;&#160;</a></span>update() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -686,6 +834,53 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Implements <a class="el" href="classocc_1_1xtb_1_1XtbSolvationModel.html#abe515dbc7594ad66dddb188a21ec5b9c">occ::xtb::XtbSolvationModel</a>.</p>
+
+</div>
+</div>
+<a id="a2bc249d6087e3efe8ddea51304215d93" name="a2bc249d6087e3efe8ddea51304215d93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bc249d6087e3efe8ddea51304215d93">&#9670;&#160;</a></span>update() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::xtb::SmdSolvationModel::update </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
+          <td class="paramname"><em>atomic_charges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Update from the atomic charges together with the CAMM atomic dipoles (3 × N) and traceless quadrupoles (6 × N, <code><a class="el" href="structocc_1_1xtb_1_1CammMoments.html#a283feb7c7d8067c3e01162a0acc0add0">CammMoments::qp</a></code> layout), so the anisotropic part of the density polarises the continuum too. </p>
+<p>The default drops them, which leaves charge-only models unchanged. </p>
+
+<p>Reimplemented from <a class="el" href="classocc_1_1xtb_1_1XtbSolvationModel.html#a3279293a9319afd3da142e9ca71aca5a">occ::xtb::XtbSolvationModel</a>.</p>
 
 </div>
 </div>

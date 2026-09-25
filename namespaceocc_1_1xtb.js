@@ -46,6 +46,7 @@ var namespaceocc_1_1xtb =
     [ "SolvationSurface", "namespaceocc_1_1xtb.html#ad4ca318e06a1ddddf26feee7f3d12757", null ],
     [ "SolvationSurfaces", "namespaceocc_1_1xtb.html#a8fbf5c7bcb0c65b514d24d94fd56c497", null ],
     [ "accumulate_camm_kpoint", "namespaceocc_1_1xtb.html#ab025839e156a2d3667ca48a7850b835a", null ],
+    [ "add_multipole_potentials", "namespaceocc_1_1xtb.html#a0979925a347752ba5260ac3742b3bf80", null ],
     [ "alpha_beta_occupation", "namespaceocc_1_1xtb.html#af04075533c52cc796ebbb898fcfdcaee", null ],
     [ "anisotropic_density_pulay_gradient", "namespaceocc_1_1xtb.html#ab9df8e8540adaee012b207418c205f41", null ],
     [ "anisotropic_energy", "namespaceocc_1_1xtb.html#ab6223c033595d85e11c6ff846b0669dd", null ],

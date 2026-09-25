@@ -138,6 +138,9 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a8f11df8a2d95d745fcd41065f3a43268"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6dbd779c34005ae446a98724fede3f4c" id="r_a6dbd779c34005ae446a98724fede3f4c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1EnergyTotal.html">cg::EnergyTotal</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MoleculeResult.html#a6dbd779c34005ae446a98724fede3f4c">total</a></td></tr>
 <tr class="separator:a6dbd779c34005ae446a98724fede3f4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada0cbe516e73cee24ef2c1211d635ccb" id="r_ada0cbe516e73cee24ef2c1211d635ccb"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="structocc_1_1cg_1_1FreeEnergySummary.html">FreeEnergySummary</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MoleculeResult.html#ada0cbe516e73cee24ef2c1211d635ccb">free_energy</a></td></tr>
+<tr class="memdesc:ada0cbe516e73cee24ef2c1211d635ccb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set once the crystal growth calculation has evaluated this molecule.  <br /></td></tr>
+<tr class="separator:ada0cbe516e73cee24ef2c1211d635ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a4298f4e57d9dd31ba27ee1ec87c22cc9" name="a4298f4e57d9dd31ba27ee1ec87c22cc9"></a>
@@ -284,10 +287,26 @@ Public Attributes</h2></td></tr>
 <b>Initial value:</b><div class="fragment"><div class="line">{{<a class="code hl_variable" href="namespaceocc_1_1cg_1_1components.html#a52191a7a043727249b9a432722c9b621">components::total</a>, 0.0},</div>
 <div class="line">                                       {<a class="code hl_variable" href="namespaceocc_1_1cg_1_1components.html#a96b2395fd4b8fedbb8f19dd2de466764">components::crystal_total</a>, 0.0},</div>
 <div class="line">                                       {<a class="code hl_variable" href="namespaceocc_1_1cg_1_1components.html#a0a2d99d1c8a2a5cc2ce8ffa559ce9c29">components::solvation_total</a>, 0.0}}</div>
-<div class="ttc" id="anamespaceocc_1_1cg_1_1components_html_a0a2d99d1c8a2a5cc2ce8ffa559ce9c29"><div class="ttname"><a href="namespaceocc_1_1cg_1_1components.html#a0a2d99d1c8a2a5cc2ce8ffa559ce9c29">occ::cg::components::solvation_total</a></div><div class="ttdeci">constexpr const char * solvation_total</div><div class="ttdef"><b>Definition</b> result_types.h:22</div></div>
-<div class="ttc" id="anamespaceocc_1_1cg_1_1components_html_a52191a7a043727249b9a432722c9b621"><div class="ttname"><a href="namespaceocc_1_1cg_1_1components.html#a52191a7a043727249b9a432722c9b621">occ::cg::components::total</a></div><div class="ttdeci">constexpr const char * total</div><div class="ttdef"><b>Definition</b> result_types.h:17</div></div>
-<div class="ttc" id="anamespaceocc_1_1cg_1_1components_html_a96b2395fd4b8fedbb8f19dd2de466764"><div class="ttname"><a href="namespaceocc_1_1cg_1_1components.html#a96b2395fd4b8fedbb8f19dd2de466764">occ::cg::components::crystal_total</a></div><div class="ttdeci">constexpr const char * crystal_total</div><div class="ttdef"><b>Definition</b> result_types.h:18</div></div>
+<div class="ttc" id="anamespaceocc_1_1cg_1_1components_html_a0a2d99d1c8a2a5cc2ce8ffa559ce9c29"><div class="ttname"><a href="namespaceocc_1_1cg_1_1components.html#a0a2d99d1c8a2a5cc2ce8ffa559ce9c29">occ::cg::components::solvation_total</a></div><div class="ttdeci">constexpr const char * solvation_total</div><div class="ttdef"><b>Definition</b> result_types.h:23</div></div>
+<div class="ttc" id="anamespaceocc_1_1cg_1_1components_html_a52191a7a043727249b9a432722c9b621"><div class="ttname"><a href="namespaceocc_1_1cg_1_1components.html#a52191a7a043727249b9a432722c9b621">occ::cg::components::total</a></div><div class="ttdeci">constexpr const char * total</div><div class="ttdef"><b>Definition</b> result_types.h:18</div></div>
+<div class="ttc" id="anamespaceocc_1_1cg_1_1components_html_a96b2395fd4b8fedbb8f19dd2de466764"><div class="ttname"><a href="namespaceocc_1_1cg_1_1components.html#a96b2395fd4b8fedbb8f19dd2de466764">occ::cg::components::crystal_total</a></div><div class="ttdeci">constexpr const char * crystal_total</div><div class="ttdef"><b>Definition</b> result_types.h:19</div></div>
 </div><!-- fragment -->
+</div>
+</div>
+<a id="ada0cbe516e73cee24ef2c1211d635ccb" name="ada0cbe516e73cee24ef2c1211d635ccb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada0cbe516e73cee24ef2c1211d635ccb">&#9670;&#160;</a></span>free_energy</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt;<a class="el" href="structocc_1_1cg_1_1FreeEnergySummary.html">FreeEnergySummary</a>&gt; occ::cg::MoleculeResult::free_energy</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set once the crystal growth calculation has evaluated this molecule. </p>
+
 </div>
 </div>
 <a id="a929fa977963de19c3308a897dc1cad8f" name="a929fa977963de19c3308a897dc1cad8f"></a>

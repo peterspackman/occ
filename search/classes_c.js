@@ -53,10 +53,12 @@ var searchData=
   ['multipole_50',['Multipole',['../structocc_1_1core_1_1Multipole.html',1,'occ::core']]],
   ['multipolecalculator_51',['MultipoleCalculator',['../classocc_1_1dma_1_1MultipoleCalculator.html',1,'occ::dma']]],
   ['multipoleconfig_52',['MultipoleConfig',['../structocc_1_1mults_1_1MultipoleConfig.html',1,'occ::mults']]],
-  ['multipoleesp_53',['MultipoleESP',['../classocc_1_1mults_1_1MultipoleESP.html',1,'occ::mults']]],
-  ['multipoleinteractions_54',['MultipoleInteractions',['../classocc_1_1mults_1_1MultipoleInteractions.html',1,'occ::mults']]],
-  ['multipolepairtensors_55',['MultipolePairTensors',['../structocc_1_1xtb_1_1MultipolePairTensors.html',1,'occ::xtb']]],
-  ['multipoleradiiwithgradient_56',['MultipoleRadiiWithGradient',['../structocc_1_1xtb_1_1MultipoleRadiiWithGradient.html',1,'occ::xtb']]],
-  ['multipoleshifter_57',['MultipoleShifter',['../classocc_1_1dma_1_1MultipoleShifter.html',1,'occ::dma']]],
-  ['multipolesource_58',['MultipoleSource',['../classocc_1_1mults_1_1MultipoleSource.html',1,'occ::mults']]]
+  ['multipoledamping_53',['MultipoleDamping',['../structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html',1,'occ::scrf::detail']]],
+  ['multipoleesp_54',['MultipoleESP',['../classocc_1_1mults_1_1MultipoleESP.html',1,'occ::mults']]],
+  ['multipoleinteractions_55',['MultipoleInteractions',['../classocc_1_1mults_1_1MultipoleInteractions.html',1,'occ::mults']]],
+  ['multipolekernel_56',['MultipoleKernel',['../structocc_1_1scrf_1_1detail_1_1MultipoleKernel.html',1,'occ::scrf::detail']]],
+  ['multipolepairtensors_57',['MultipolePairTensors',['../structocc_1_1xtb_1_1MultipolePairTensors.html',1,'occ::xtb']]],
+  ['multipoleradiiwithgradient_58',['MultipoleRadiiWithGradient',['../structocc_1_1xtb_1_1MultipoleRadiiWithGradient.html',1,'occ::xtb']]],
+  ['multipoleshifter_59',['MultipoleShifter',['../classocc_1_1dma_1_1MultipoleShifter.html',1,'occ::dma']]],
+  ['multipolesource_60',['MultipoleSource',['../classocc_1_1mults_1_1MultipoleSource.html',1,'occ::mults']]]
 ];

@@ -14,6 +14,5 @@ var structocc_1_1driver_1_1CrystalGrowthCalculatorOptions =
     [ "use_crystal_polarization", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#ac4af5c391c9ecef826297882d32984c8", null ],
     [ "use_wolf_sum", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a6081c8847f494a57e98ee22db394bb20", null ],
     [ "wavefunction_choice", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a5760679b30588b899de05651c80915ff", null ],
-    [ "write_debug_output_files", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a7760b10637da3c750090de79e94b44c8", null ],
-    [ "xtb_solvation_model", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#acc9345a3f29790b7bd452f95a1c66756", null ]
+    [ "write_debug_output_files", "structocc_1_1driver_1_1CrystalGrowthCalculatorOptions.html#a7760b10637da3c750090de79e94b44c8", null ]
 ];

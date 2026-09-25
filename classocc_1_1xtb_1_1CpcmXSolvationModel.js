@@ -13,5 +13,7 @@ var classocc_1_1xtb_1_1CpcmXSolvationModel =
     [ "surface", "classocc_1_1xtb_1_1CpcmXSolvationModel.html#ad01daa3aebd6a9438bc5fa7c794bb7ff", null ],
     [ "surface_charges", "classocc_1_1xtb_1_1CpcmXSolvationModel.html#a0e89d7ab3d05e10082dad715e67870f2", null ],
     [ "surfaces", "classocc_1_1xtb_1_1CpcmXSolvationModel.html#aca31a785991ddb3d20b5143fcf08e7aa", null ],
-    [ "update", "classocc_1_1xtb_1_1CpcmXSolvationModel.html#aea3e0c297fbf5e230863297e875e2ddb", null ]
+    [ "update", "classocc_1_1xtb_1_1CpcmXSolvationModel.html#aea3e0c297fbf5e230863297e875e2ddb", null ],
+    [ "update", "classocc_1_1xtb_1_1CpcmXSolvationModel.html#abe515dbc7594ad66dddb188a21ec5b9c", null ],
+    [ "update", "classocc_1_1xtb_1_1CpcmXSolvationModel.html#a3279293a9319afd3da142e9ca71aca5a", null ]
 ];

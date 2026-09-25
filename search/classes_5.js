@@ -20,6 +20,7 @@ var searchData=
   ['formatter_3c_20occ_3a_3acrystal_3a_3ahkl_20_3e_17',['formatter&lt; occ::crystal::HKL &gt;',['../structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4.html',1,'fmt']]],
   ['formatter_3c_20occ_3a_3agto_3a_3ashell_20_3e_18',['formatter&lt; occ::gto::Shell &gt;',['../structfmt_1_1formatter_3_01occ_1_1gto_1_1Shell_01_4.html',1,'fmt']]],
   ['fraction_19',['Fraction',['../classocc_1_1core_1_1Fraction.html',1,'occ::core']]],
-  ['fullrigidbodyresult_20',['FullRigidBodyResult',['../structocc_1_1mults_1_1FullRigidBodyResult.html',1,'occ::mults']]],
-  ['funccomponent_21',['FuncComponent',['../structocc_1_1dft_1_1FuncComponent.html',1,'occ::dft']]]
+  ['freeenergysummary_20',['FreeEnergySummary',['../structocc_1_1cg_1_1FreeEnergySummary.html',1,'occ::cg']]],
+  ['fullrigidbodyresult_21',['FullRigidBodyResult',['../structocc_1_1mults_1_1FullRigidBodyResult.html',1,'occ::mults']]],
+  ['funccomponent_22',['FuncComponent',['../structocc_1_1dft_1_1FuncComponent.html',1,'occ::dft']]]
 ];

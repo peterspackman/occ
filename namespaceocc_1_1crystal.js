@@ -63,6 +63,7 @@ var namespaceocc_1_1crystal =
     [ "compute_powder_pattern", "namespaceocc_1_1crystal.html#ad0b338320e0437ad446e21bfdf406444", null ],
     [ "cubic_cell", "namespaceocc_1_1crystal.html#a78a9c35cd26a715ea7cfbee259ea95e5", null ],
     [ "d_spacing", "namespaceocc_1_1crystal.html#abfec31ba306fc8f477fa73b56d57122e", null ],
+    [ "face_images", "namespaceocc_1_1crystal.html#a937f0aa58404f0dc5a1855964ce4d297", null ],
     [ "find_subgroup_for_z_prime", "namespaceocc_1_1crystal.html#a99f1bccd4bc3a7c1fee4324283464906", null ],
     [ "friedel_mate_is_equivalent", "namespaceocc_1_1crystal.html#a70b14f2dd5620bf90e0dedd7647efb2c", null ],
     [ "from_json", "namespaceocc_1_1crystal.html#a1b0def4d76564c3bd44a0a26aaf20696", null ],

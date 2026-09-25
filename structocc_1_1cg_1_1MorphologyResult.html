@@ -119,6 +119,9 @@ Public Member Functions</h2></td></tr>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a0ee47a213c00a90ec3e111f927536e99" id="r_a0ee47a213c00a90ec3e111f927536e99"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MorphologyResult.html#a0ee47a213c00a90ec3e111f927536e99">shape</a> {&quot;wulff&quot;}</td></tr>
 <tr class="separator:a0ee47a213c00a90ec3e111f927536e99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a340a80be1799c6895cfbd9c2c02e3e43" id="r_a340a80be1799c6895cfbd9c2c02e3e43"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MorphologyResult.html#a340a80be1799c6895cfbd9c2c02e3e43">name</a></td></tr>
+<tr class="memdesc:a340a80be1799c6895cfbd9c2c02e3e43"><td class="mdescLeft">&#160;</td><td class="mdescRight">habit name, when a multi-shape file gave one  <br /></td></tr>
+<tr class="separator:a340a80be1799c6895cfbd9c2c02e3e43"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbc3af4258228f8167535c7da5d133f2" id="r_abbc3af4258228f8167535c7da5d133f2"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MorphologyResult.html#abbc3af4258228f8167535c7da5d133f2">mu_bulk</a> {0.0}</td></tr>
 <tr class="memdesc:abbc3af4258228f8167535c7da5d133f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">per-molecule lattice energy (0.5 * crystal_energy), kJ/mol  <br /></td></tr>
 <tr class="separator:abbc3af4258228f8167535c7da5d133f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -133,6 +136,15 @@ Public Attributes</h2></td></tr>
 <tr class="separator:af579e85fa920059a99609cbfcc07b6c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4600692311a3e8936e01dda8732be2ea" id="r_a4600692311a3e8936e01dda8732be2ea"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1cg_1_1ParticleSample.html">ParticleSample</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MorphologyResult.html#a4600692311a3e8936e01dda8732be2ea">samples</a></td></tr>
 <tr class="separator:a4600692311a3e8936e01dda8732be2ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51cee994e5ef04bb8f80b4016b199c09" id="r_a51cee994e5ef04bb8f80b4016b199c09"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1cg_1_1NeighbourBond.html">NeighbourBond</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MorphologyResult.html#a51cee994e5ef04bb8f80b4016b199c09">bonds</a></td></tr>
+<tr class="memdesc:a51cee994e5ef04bb8f80b4016b199c09"><td class="mdescLeft">&#160;</td><td class="mdescRight">only when MorphologyOptions::emit_bonds  <br /></td></tr>
+<tr class="separator:a51cee994e5ef04bb8f80b4016b199c09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a167f69cd3d077dcc5cf56fca40088db4" id="r_a167f69cd3d077dcc5cf56fca40088db4"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::array&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MorphologyResult.html#a167f69cd3d077dcc5cf56fca40088db4">uc_centroids</a></td></tr>
+<tr class="memdesc:a167f69cd3d077dcc5cf56fca40088db4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fractional centroids of the unit-cell molecules, in the order the bonds index them.  <br /></td></tr>
+<tr class="separator:a167f69cd3d077dcc5cf56fca40088db4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab93c2bd5dcd98dbf9e2c0feb70b50fcc" id="r_ab93c2bd5dcd98dbf9e2c0feb70b50fcc"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1cg_1_1ShapeFace.html">ShapeFace</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MorphologyResult.html#ab93c2bd5dcd98dbf9e2c0feb70b50fcc">shape_faces</a></td></tr>
+<tr class="memdesc:ab93c2bd5dcd98dbf9e2c0feb70b50fcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">emitted with the bonds  <br /></td></tr>
+<tr class="separator:ab93c2bd5dcd98dbf9e2c0feb70b50fcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Particle size/shape-dependent (surface + edge + corner) energies. </p>
@@ -163,6 +175,22 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a51cee994e5ef04bb8f80b4016b199c09" name="a51cee994e5ef04bb8f80b4016b199c09"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51cee994e5ef04bb8f80b4016b199c09">&#9670;&#160;</a></span>bonds</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structocc_1_1cg_1_1NeighbourBond.html">NeighbourBond</a>&gt; occ::cg::MorphologyResult::bonds</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>only when MorphologyOptions::emit_bonds </p>
+
+</div>
+</div>
 <a id="af579e85fa920059a99609cbfcc07b6c6" name="af579e85fa920059a99609cbfcc07b6c6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af579e85fa920059a99609cbfcc07b6c6">&#9670;&#160;</a></span>corners</h2>
 
@@ -237,6 +265,22 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a340a80be1799c6895cfbd9c2c02e3e43" name="a340a80be1799c6895cfbd9c2c02e3e43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a340a80be1799c6895cfbd9c2c02e3e43">&#9670;&#160;</a></span>name</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::cg::MorphologyResult::name</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>habit name, when a multi-shape file gave one </p>
+
+</div>
+</div>
 <a id="a4600692311a3e8936e01dda8732be2ea" name="a4600692311a3e8936e01dda8732be2ea"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4600692311a3e8936e01dda8732be2ea">&#9670;&#160;</a></span>samples</h2>
 
@@ -262,6 +306,39 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab93c2bd5dcd98dbf9e2c0feb70b50fcc" name="ab93c2bd5dcd98dbf9e2c0feb70b50fcc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab93c2bd5dcd98dbf9e2c0feb70b50fcc">&#9670;&#160;</a></span>shape_faces</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structocc_1_1cg_1_1ShapeFace.html">ShapeFace</a>&gt; occ::cg::MorphologyResult::shape_faces</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>emitted with the bonds </p>
+
+</div>
+</div>
+<a id="a167f69cd3d077dcc5cf56fca40088db4" name="a167f69cd3d077dcc5cf56fca40088db4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a167f69cd3d077dcc5cf56fca40088db4">&#9670;&#160;</a></span>uc_centroids</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;std::array&lt;double, 3&gt; &gt; occ::cg::MorphologyResult::uc_centroids</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Fractional centroids of the unit-cell molecules, in the order the bonds index them. </p>
+<p>Emitted with the bonds: a molecule reassembled independently can land in a different periodic image, which changes the cluster. </p>
 
 </div>
 </div>

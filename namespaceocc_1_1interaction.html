@@ -215,8 +215,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a1a221c7ae9914bd537f97657355b28d2" id="r_a1a221c7ae9914bd537f97657355b28d2"><td class="memTemplParams" colspan="2">template&lt;typename Procedure &gt; </td></tr>
 <tr class="memitem:a1a221c7ae9914bd537f97657355b28d2"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a1a221c7ae9914bd537f97657355b28d2">compute_polarization_energy</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;wfn_a, const Procedure &amp;proc_a, const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;wfn_b, const Procedure &amp;proc_b)</td></tr>
 <tr class="separator:a1a221c7ae9914bd537f97657355b28d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a851a8246a3c48018dc6440b39e67cf46" id="r_a851a8246a3c48018dc6440b39e67cf46"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a851a8246a3c48018dc6440b39e67cf46">ce_model_from_string</a> (const std::string &amp;s)</td></tr>
-<tr class="separator:a851a8246a3c48018dc6440b39e67cf46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6157c8a1e96bd59d00bfe593eba236ea" id="r_a6157c8a1e96bd59d00bfe593eba236ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a6157c8a1e96bd59d00bfe593eba236ea">ce_model_from_string</a> (const std::string &amp;name)</td></tr>
+<tr class="memdesc:a6157c8a1e96bd59d00bfe593eba236ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">The CrystalExplorer model called <code>name</code> (case-insensitive): ce-b3lyp, ce-hf, ce-1p, ce-2p or ce-5p, with their -xdm and -wb97m-v aliases.  <br /></td></tr>
+<tr class="separator:a6157c8a1e96bd59d00bfe593eba236ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a126aba50d6142b3642a92c4c61053351" id="r_a126aba50d6142b3642a92c4c61053351"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a126aba50d6142b3642a92c4c61053351">model_name_implies_xtb</a> (const std::string &amp;name)</td></tr>
+<tr class="memdesc:a126aba50d6142b3642a92c4c61053351"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether <code>name</code> selects the in-tree xtb backend, which implements GFN2-xTB only: xtb, gfn2 or gfn2-xtb, case-insensitive.  <br /></td></tr>
+<tr class="separator:a126aba50d6142b3642a92c4c61053351"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b13ad9a54dd22da274e948db722569b" id="r_a5b13ad9a54dd22da274e948db722569b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a5b13ad9a54dd22da274e948db722569b">ce_model_polarization_energy</a> (const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">occ::IVec</a> &amp;atomic_numbers, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;efield, bool charged=false)</td></tr>
 <tr class="separator:a5b13ad9a54dd22da274e948db722569b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f579e72d12f4f6e07a7aa8cae1217a7" id="r_a3f579e72d12f4f6e07a7aa8cae1217a7"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a3f579e72d12f4f6e07a7aa8cae1217a7">polarization_energy</a> (const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;polarizabilities, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;efield)</td></tr>
@@ -242,13 +246,17 @@ Variables</h2></td></tr>
 <tr class="separator:a7d76bec4434b729fd4be29391d667982"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2dfda909310a8cb15cc12f70eb0733b" id="r_aa2dfda909310a8cb15cc12f70eb0733b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#aa2dfda909310a8cb15cc12f70eb0733b">CE1_XDM_B3LYP</a></td></tr>
 <tr class="separator:aa2dfda909310a8cb15cc12f70eb0733b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b71f1a571ef3cd4f84493e7db9c81b8" id="r_a6b71f1a571ef3cd4f84493e7db9c81b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a6b71f1a571ef3cd4f84493e7db9c81b8">CE1_XDM_WB97MV</a></td></tr>
+<tr class="separator:a6b71f1a571ef3cd4f84493e7db9c81b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7e1048928103ee59062c395881283ff" id="r_ad7e1048928103ee59062c395881283ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ad7e1048928103ee59062c395881283ff">CE2_XDM_B3LYP</a></td></tr>
+<tr class="separator:ad7e1048928103ee59062c395881283ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ed614d8704386615f4091558ad2cb25" id="r_a1ed614d8704386615f4091558ad2cb25"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a1ed614d8704386615f4091558ad2cb25">CE2_XDM_WB97MV</a></td></tr>
 <tr class="separator:a1ed614d8704386615f4091558ad2cb25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac526e31db1b5554f038ea91b2d2b26e6" id="r_ac526e31db1b5554f038ea91b2d2b26e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ac526e31db1b5554f038ea91b2d2b26e6">CE5_XDM_WB97MV</a></td></tr>
 <tr class="separator:ac526e31db1b5554f038ea91b2d2b26e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4fdd0625bcd94a0ebf3bbe1a1c6b1f54" id="r_a4fdd0625bcd94a0ebf3bbe1a1c6b1f54"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a4fdd0625bcd94a0ebf3bbe1a1c6b1f54">CE1_XDM</a> = <a class="el" href="namespaceocc_1_1interaction.html#aa2dfda909310a8cb15cc12f70eb0733b">CE1_XDM_B3LYP</a></td></tr>
 <tr class="separator:a4fdd0625bcd94a0ebf3bbe1a1c6b1f54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae315fffa8a4ff6f089349659da887eed" id="r_ae315fffa8a4ff6f089349659da887eed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ae315fffa8a4ff6f089349659da887eed">CE2_XDM</a> = <a class="el" href="namespaceocc_1_1interaction.html#a1ed614d8704386615f4091558ad2cb25">CE2_XDM_WB97MV</a></td></tr>
+<tr class="memitem:ae315fffa8a4ff6f089349659da887eed" id="r_ae315fffa8a4ff6f089349659da887eed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ae315fffa8a4ff6f089349659da887eed">CE2_XDM</a> = <a class="el" href="namespaceocc_1_1interaction.html#ad7e1048928103ee59062c395881283ff">CE2_XDM_B3LYP</a></td></tr>
 <tr class="separator:ae315fffa8a4ff6f089349659da887eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad5ac21a5da9c78ebf52177569d7f513" id="r_aad5ac21a5da9c78ebf52177569d7f513"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#aad5ac21a5da9c78ebf52177569d7f513">CE5_XDM</a> = <a class="el" href="namespaceocc_1_1interaction.html#ac526e31db1b5554f038ea91b2d2b26e6">CE5_XDM_WB97MV</a></td></tr>
 <tr class="separator:aad5ac21a5da9c78ebf52177569d7f513"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -260,8 +268,8 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>interactions energies including CrystalExplorer model energies </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a851a8246a3c48018dc6440b39e67cf46" name="a851a8246a3c48018dc6440b39e67cf46"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a851a8246a3c48018dc6440b39e67cf46">&#9670;&#160;</a></span>ce_model_from_string()</h2>
+<a id="a6157c8a1e96bd59d00bfe593eba236ea" name="a6157c8a1e96bd59d00bfe593eba236ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6157c8a1e96bd59d00bfe593eba236ea">&#9670;&#160;</a></span>ce_model_from_string()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -273,7 +281,7 @@ Variables</h2></td></tr>
           <td class="memname"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a> occ::interaction::ce_model_from_string </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -283,6 +291,9 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>The CrystalExplorer model called <code>name</code> (case-insensitive): ce-b3lyp, ce-hf, ce-1p, ce-2p or ce-5p, with their -xdm and -wb97m-v aliases. </p>
+<p>An unknown name is an error. </p>
 
 </div>
 </div>
@@ -876,6 +887,35 @@ template&lt;&gt; </div>
 
 </div>
 </div>
+<a id="a126aba50d6142b3642a92c4c61053351" name="a126aba50d6142b3642a92c4c61053351"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a126aba50d6142b3642a92c4c61053351">&#9670;&#160;</a></span>model_name_implies_xtb()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::interaction::model_name_implies_xtb </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Whether <code>name</code> selects the in-tree xtb backend, which implements GFN2-xTB only: xtb, gfn2 or gfn2-xtb, case-insensitive. </p>
+<p>Any other name starting with "gfn" or "xtb" (gfn1, gfnff, ...) is an error. </p>
+
+</div>
+</div>
 <a id="a3f579e72d12f4f6e07a7aa8cae1217a7" name="a3f579e72d12f4f6e07a7aa8cae1217a7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3f579e72d12f4f6e07a7aa8cae1217a7">&#9670;&#160;</a></span>polarization_energy()</h2>
 
@@ -1231,7 +1271,32 @@ template&lt;&gt; </div>
 <b>Initial value:</b><div class="fragment"><div class="line">{</div>
 <div class="line">    1.0,     1.0,        <a class="code hl_variable" href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">CE1p_XDM_KREP</a>, <a class="code hl_variable" href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">CE1p_XDM_KREP</a>, 1.0, <span class="stringliteral">&quot;CE-1p-B3LYP&quot;</span>,</div>
 <div class="line">    <span class="stringliteral">&quot;b3lyp&quot;</span>, <span class="stringliteral">&quot;def2-svp&quot;</span>, <span class="keyword">true</span>,          0.65,          1.70}</div>
-<div class="ttc" id="anamespaceocc_1_1interaction_html_a7d76bec4434b729fd4be29391d667982"><div class="ttname"><a href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">occ::interaction::CE1p_XDM_KREP</a></div><div class="ttdeci">constexpr double CE1p_XDM_KREP</div><div class="ttdef"><b>Definition</b> pairinteraction.h:43</div></div>
+<div class="ttc" id="anamespaceocc_1_1interaction_html_a7d76bec4434b729fd4be29391d667982"><div class="ttname"><a href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">occ::interaction::CE1p_XDM_KREP</a></div><div class="ttdeci">constexpr double CE1p_XDM_KREP</div><div class="ttdef"><b>Definition</b> pairinteraction.h:46</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a6b71f1a571ef3cd4f84493e7db9c81b8" name="a6b71f1a571ef3cd4f84493e7db9c81b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b71f1a571ef3cd4f84493e7db9c81b8">&#9670;&#160;</a></span>CE1_XDM_WB97MV</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a> occ::interaction::CE1_XDM_WB97MV</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">    1.0,       1.0,        <a class="code hl_variable" href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">CE1p_XDM_KREP</a>, <a class="code hl_variable" href="namespaceocc_1_1interaction.html#a7d76bec4434b729fd4be29391d667982">CE1p_XDM_KREP</a>, 1.0, <span class="stringliteral">&quot;CE-1p-wB97M-V&quot;</span>,</div>
+<div class="line">    <span class="stringliteral">&quot;wb97m-v&quot;</span>, <span class="stringliteral">&quot;def2-svp&quot;</span>, <span class="keyword">true</span>,          0.65,          1.70}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -1267,7 +1332,7 @@ template&lt;&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a> occ::interaction::CE2_XDM = <a class="el" href="namespaceocc_1_1interaction.html#a1ed614d8704386615f4091558ad2cb25">CE2_XDM_WB97MV</a></td>
+          <td class="memname"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a> occ::interaction::CE2_XDM = <a class="el" href="namespaceocc_1_1interaction.html#ad7e1048928103ee59062c395881283ff">CE2_XDM_B3LYP</a></td>
         </tr>
       </table>
   </td>
@@ -1277,6 +1342,31 @@ template&lt;&gt; </div>
 </table>
 </div><div class="memdoc">
 
+</div>
+</div>
+<a id="ad7e1048928103ee59062c395881283ff" name="ad7e1048928103ee59062c395881283ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7e1048928103ee59062c395881283ff">&#9670;&#160;</a></span>CE2_XDM_B3LYP</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a> occ::interaction::CE2_XDM_B3LYP</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">    1.0,     0.485,      0.485, 0.803, 1.0, <span class="stringliteral">&quot;CE-2p-B3LYP&quot;</span>,</div>
+<div class="line">    <span class="stringliteral">&quot;b3lyp&quot;</span>, <span class="stringliteral">&quot;def2-svp&quot;</span>, <span class="keyword">true</span>,  0.65,  1.70}</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a1ed614d8704386615f4091558ad2cb25" name="a1ed614d8704386615f4091558ad2cb25"></a>
@@ -1299,8 +1389,8 @@ template&lt;&gt; </div>
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">{</div>
-<div class="line">    1.0,     0.485,      0.485, 0.803, 1.0, <span class="stringliteral">&quot;CE2p-XDM-wB97M-V&quot;</span>,</div>
-<div class="line">    <span class="stringliteral">&quot;b3lyp&quot;</span>, <span class="stringliteral">&quot;def2-svp&quot;</span>, <span class="keyword">true</span>,  0.65,  1.70}</div>
+<div class="line">    1.0,       0.485,      0.485, 0.803, 1.0, <span class="stringliteral">&quot;CE-2p-wB97M-V&quot;</span>,</div>
+<div class="line">    <span class="stringliteral">&quot;wb97m-v&quot;</span>, <span class="stringliteral">&quot;def2-svp&quot;</span>, <span class="keyword">true</span>,  0.65,  1.70}</div>
 </div><!-- fragment -->
 </div>
 </div>

@@ -16,7 +16,7 @@ var searchData=
   ['last_5freset_5fiteration_13',['last_reset_iteration',['../structocc_1_1qm_1_1SCF.html#ab0228eff8fdd8e608395b8fd8eb0d491',1,'occ::qm::SCF']]],
   ['last_5fupdate_14',['last_update',['../structocc_1_1core_1_1KalmanEstimator.html#a2a215c081da9e343043a05412da83586',1,'occ::core::KalmanEstimator']]],
   ['lattice_5fbohr_15',['lattice_bohr',['../structocc_1_1core_1_1charges_1_1EeqEwaldData.html#ab9ca25ae5873b6a0a712c0634b86f8e0',1,'occ::core::charges::EeqEwaldData::lattice_bohr'],['../structocc_1_1xtb_1_1PeriodicSystem.html#a662751c7e4580c497969cea59e26dbfd',1,'occ::xtb::PeriodicSystem::lattice_bohr']]],
-  ['lattice_5fenergy_16',['lattice_energy',['../structocc_1_1elastic__fit_1_1FittingResults.html#ada58ac4928387ac513aec63c8dbbf67c',1,'occ::elastic_fit::FittingResults::lattice_energy'],['../structocc_1_1interaction_1_1LatticeEnergyResult.html#a97c841825f8db6f415500754fccef514',1,'occ::interaction::LatticeEnergyResult::lattice_energy'],['../structocc_1_1main_1_1TbConfig.html#af3e67445db9b36e33c6d7d29c8c94cdc',1,'occ::main::TbConfig::lattice_energy']]],
+  ['lattice_5fenergy_16',['lattice_energy',['../structocc_1_1cg_1_1FreeEnergySummary.html#a4bd21fe239ea44c49bfea9de907a1d90',1,'occ::cg::FreeEnergySummary::lattice_energy'],['../structocc_1_1elastic__fit_1_1FittingResults.html#ada58ac4928387ac513aec63c8dbbf67c',1,'occ::elastic_fit::FittingResults::lattice_energy'],['../structocc_1_1interaction_1_1LatticeEnergyResult.html#a97c841825f8db6f415500754fccef514',1,'occ::interaction::LatticeEnergyResult::lattice_energy'],['../structocc_1_1main_1_1TbConfig.html#af3e67445db9b36e33c6d7d29c8c94cdc',1,'occ::main::TbConfig::lattice_energy']]],
   ['lattice_5fenergy_5fresult_17',['lattice_energy_result',['../structocc_1_1interaction_1_1ElatResults.html#ae6ea40f0d434085c1f06ee5f414b499a',1,'occ::interaction::ElatResults']]],
   ['lattice_5fsettings_18',['lattice_settings',['../structocc_1_1driver_1_1CGConfig.html#acd01a5983928b09880e457d9fdca61f5',1,'occ::driver::CGConfig']]],
   ['lattice_5fvectors_19',['lattice_vectors',['../structocc_1_1elastic__fit_1_1ElasticFitInput.html#a8fccbbeb066abae020a34c068ecad2c0',1,'occ::elastic_fit::ElasticFitInput']]],
@@ -37,7 +37,7 @@ var searchData=
   ['limits_34',['limits',['../structocc_1_1dma_1_1DMASites.html#a67724056cadc5fcd63acbfbb9fe305a4',1,'occ::dma::DMASites']]],
   ['linear_5fin_5fdensity_35',['linear_in_density',['../structocc_1_1qm_1_1FockBuildProperties.html#a97b82c024da2afa694c9fbcc67eb7c7d',1,'occ::qm::FockBuildProperties']]],
   ['link0_5fcommands_36',['link0_commands',['../structocc_1_1io_1_1GaussianInputFile.html#a13b4a72b783628f6c75c2ae92770433b',1,'occ::io::GaussianInputFile']]],
-  ['liquid_5fvolume_37',['liquid_volume',['../structocc_1_1driver_1_1CosmoRSSolvationSettings.html#a759d80d73f772fe9cf07cc6698b9955c',1,'occ::driver::CosmoRSSolvationSettings::liquid_volume'],['../structocc_1_1main_1_1CosmoRSConfig.html#a9032129c2561e8a491ebecd7735da48f',1,'occ::main::CosmoRSConfig::liquid_volume']]],
+  ['liquid_5fvolume_37',['liquid_volume',['../structocc_1_1main_1_1CosmoRSConfig.html#a9032129c2561e8a491ebecd7735da48f',1,'occ::main::CosmoRSConfig::liquid_volume'],['../structocc_1_1driver_1_1CosmoRSSolvationSettings.html#a759d80d73f772fe9cf07cc6698b9955c',1,'occ::driver::CosmoRSSolvationSettings::liquid_volume']]],
   ['list1_38',['list1',['../structocc_1_1qm_1_1cosx_1_1ScreenedShellPairs.html#ac9621eb5044da9f349183c44ea314524',1,'occ::qm::cosx::ScreenedShellPairs::list1'],['../structocc_1_1qm_1_1cosx_1_1ShellLists.html#abe4f186f76824fc201068bd3f193ec5b',1,'occ::qm::cosx::ShellLists::list1']]],
   ['list2_39',['list2',['../structocc_1_1qm_1_1cosx_1_1ScreenedShellPairs.html#aabe508770c9b3c470ad6e0666de21f51',1,'occ::qm::cosx::ScreenedShellPairs::list2'],['../structocc_1_1qm_1_1cosx_1_1ShellLists.html#a13319082505868db9b2fc60d52e58122',1,'occ::qm::cosx::ShellLists::list2']]],
   ['list3_40',['list3',['../structocc_1_1qm_1_1cosx_1_1ShellLists.html#af211a3730f99cdd32bd5bbf2b78c9ec0',1,'occ::qm::cosx::ShellLists']]],
@@ -46,5 +46,6 @@ var searchData=
   ['listcount_43',['listCount',['../structtinyply_1_1PlyProperty.html#a99574f7f41aea686235487fe27e3dd70',1,'tinyply::PlyProperty']]],
   ['listtype_44',['listType',['../structtinyply_1_1PlyProperty.html#ab401e48dbf2cec2f9f0128441ddc6dce',1,'tinyply::PlyProperty']]],
   ['lmax_45',['LMAX',['../namespaceocc_1_1ints.html#aa16749e7224830db026bc69dc82d401e',1,'occ::ints']]],
-  ['lower_46',['lower',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a2dab9abf817d75a7500d569f32ff6374',1,'occ::isosurface::AxisAlignedBoundingBox']]]
+  ['log_5fs_46',['log_S',['../structocc_1_1cg_1_1FreeEnergySummary.html#a8c47bdd06b37470ae1e9d74a10c1ed3f',1,'occ::cg::FreeEnergySummary']]],
+  ['lower_47',['lower',['../structocc_1_1isosurface_1_1AxisAlignedBoundingBox.html#a2dab9abf817d75a7500d569f32ff6374',1,'occ::isosurface::AxisAlignedBoundingBox']]]
 ];

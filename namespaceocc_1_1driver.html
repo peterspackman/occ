@@ -175,6 +175,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1MorphologyOptions.html">MorphologyOptions</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options for the particle size/shape-dependent energy calculation.  <a href="structocc_1_1driver_1_1MorphologyOptions.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1NamedShape.html">NamedShape</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">One named shape from a multi-shape file.  <a href="structocc_1_1driver_1_1NamedShape.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1SolventSpec.html">SolventSpec</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A solvent, possibly a mixture, at a temperature.  <a href="structocc_1_1driver_1_1SolventSpec.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -268,6 +271,12 @@ Functions</h2></td></tr>
 <tr class="memitem:aef1414f535e88fcf5919e6d30eb99ab5" id="r_aef1414f535e88fcf5919e6d30eb99ab5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1cg_1_1MorphologyResult.html">MorphologyResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#aef1414f535e88fcf5919e6d30eb99ab5">compute_crystal_morphology</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &amp;crystal, const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">occ::crystal::CrystalDimers</a> &amp;uc_dimers, const <a class="el" href="structocc_1_1driver_1_1CrystalSurfaceEnergies.html">CrystalSurfaceEnergies</a> &amp;surface_energies, const <a class="el" href="structocc_1_1cg_1_1CrystalGrowthResult.html">occ::cg::CrystalGrowthResult</a> &amp;growth_result, const <a class="el" href="structocc_1_1driver_1_1MorphologyOptions.html">MorphologyOptions</a> &amp;options={})</td></tr>
 <tr class="memdesc:aef1414f535e88fcf5919e6d30eb99ab5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the particle size/shape-dependent (surface + edge + corner) energy.  <br /></td></tr>
 <tr class="separator:aef1414f535e88fcf5919e6d30eb99ab5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3edf457472318956649c8f4c58bfb32" id="r_ac3edf457472318956649c8f4c58bfb32"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; <a class="el" href="structocc_1_1crystal_1_1HKL.html">occ::crystal::HKL</a>, double &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#ac3edf457472318956649c8f4c58bfb32">read_morphology_shape</a> (std::istream &amp;input)</td></tr>
+<tr class="memdesc:ac3edf457472318956649c8f4c58bfb32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a particle shape for <code><a class="el" href="structocc_1_1driver_1_1MorphologyOptions.html#a1251a702153bf610ff0f106542cac509" title="Optional user/growth morphology: (hkl -&gt; support distance).">MorphologyOptions::user_shifts</a></code>: one face per line as <code>h k l distance</code>, one face per form (its symmetry-equivalent faces are added), distances in any one unit since only their ratios matter.  <br /></td></tr>
+<tr class="separator:ac3edf457472318956649c8f4c58bfb32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52a05b085fa4e8b9e888ead2c509f99b" id="r_a52a05b085fa4e8b9e888ead2c509f99b"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1driver_1_1NamedShape.html">NamedShape</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a52a05b085fa4e8b9e888ead2c509f99b">read_morphology_shapes</a> (std::istream &amp;input)</td></tr>
+<tr class="memdesc:a52a05b085fa4e8b9e888ead2c509f99b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one or more shapes.  <br /></td></tr>
+<tr class="separator:a52a05b085fa4e8b9e888ead2c509f99b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abd9cb5b9a75ab755b120d6fdb6ceed71" id="r_abd9cb5b9a75ab755b120d6fdb6ceed71"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1driver_1_1CrystalSurfaceEnergies.html">CrystalSurfaceEnergies</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#abd9cb5b9a75ab755b120d6fdb6ceed71">calculate_crystal_surface_energies</a> (const std::string &amp;filename, const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &amp;crystal, const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">occ::crystal::CrystalDimers</a> &amp;uc_dimers, int max_number_of_surfaces, int sign=-1, double min_interplanar_spacing=0.0)</td></tr>
 <tr class="memdesc:abd9cb5b9a75ab755b120d6fdb6ceed71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Surface energies for the morphologically important faces.  <br /></td></tr>
 <tr class="separator:abd9cb5b9a75ab755b120d6fdb6ceed71"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1443,6 +1452,49 @@ template&lt;typename Proc &gt; </div>
 </div><div class="memdoc">
 
 <p>Load the crystal and build calculator options + charges from <code>config</code>. </p>
+
+</div>
+</div>
+<a id="ac3edf457472318956649c8f4c58bfb32" name="ac3edf457472318956649c8f4c58bfb32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3edf457472318956649c8f4c58bfb32">&#9670;&#160;</a></span>read_morphology_shape()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::pair&lt; <a class="el" href="structocc_1_1crystal_1_1HKL.html">occ::crystal::HKL</a>, double &gt; &gt; occ::driver::read_morphology_shape </td>
+          <td>(</td>
+          <td class="paramtype">std::istream &amp;&#160;</td>
+          <td class="paramname"><em>input</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Read a particle shape for <code><a class="el" href="structocc_1_1driver_1_1MorphologyOptions.html#a1251a702153bf610ff0f106542cac509" title="Optional user/growth morphology: (hkl -&gt; support distance).">MorphologyOptions::user_shifts</a></code>: one face per line as <code>h k l distance</code>, one face per form (its symmetry-equivalent faces are added), distances in any one unit since only their ratios matter. </p>
+<p>Blank lines and anything after '#' are ignored; a malformed line, or a distance that is not positive, is an error. </p>
+
+</div>
+</div>
+<a id="a52a05b085fa4e8b9e888ead2c509f99b" name="a52a05b085fa4e8b9e888ead2c509f99b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52a05b085fa4e8b9e888ead2c509f99b">&#9670;&#160;</a></span>read_morphology_shapes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structocc_1_1driver_1_1NamedShape.html">NamedShape</a> &gt; occ::driver::read_morphology_shapes </td>
+          <td>(</td>
+          <td class="paramtype">std::istream &amp;&#160;</td>
+          <td class="paramname"><em>input</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Read one or more shapes. </p>
+<p>A line <code>shape &lt;name&gt;</code> opens a named shape and the faces that follow belong to it; a file with no such line is a single unnamed shape, so every file <code>read_morphology_shape</code> accepts is still valid here.</p>
+<p>Scanning habits is what a user shape is for, and the shape itself is the cheap part of the calculation: the pair energies, the monomers and the surface enumeration are all independent of it. Reading the whole set at once lets those be done once rather than once per habit. </p>
 
 </div>
 </div>

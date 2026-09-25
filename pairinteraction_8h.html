@@ -105,18 +105,21 @@ $(document).ready(function(){initNavTree('pairinteraction_8h.html',''); initResi
   <div class="headertitle"><div class="title">pairinteraction.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;fmt/core.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;cctype&gt;</code><br />
+<code>#include &lt;fmt/core.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="log_8h.html">occ/core/log.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="units_8h.html">occ/core/units.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="polarization_8h.html">occ/interaction/polarization.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="hf__fwd_8h.html">occ/qm/hf_fwd.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="qm_2spinorbital_8h.html">occ/qm/spinorbital.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="wavefunction_8h.html">occ/qm/wavefunction.h</a>&gt;</code><br />
+<code>#include &lt;stdexcept&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for pairinteraction.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="pairinteraction_8h__incl.svg" width="2600" height="579"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="pairinteraction_8h__incl.svg" width="2668" height="579"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
@@ -150,8 +153,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a1a221c7ae9914bd537f97657355b28d2" id="r_a1a221c7ae9914bd537f97657355b28d2"><td class="memTemplParams" colspan="2">template&lt;typename Procedure &gt; </td></tr>
 <tr class="memitem:a1a221c7ae9914bd537f97657355b28d2"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a1a221c7ae9914bd537f97657355b28d2">occ::interaction::compute_polarization_energy</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;wfn_a, const Procedure &amp;proc_a, const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;wfn_b, const Procedure &amp;proc_b)</td></tr>
 <tr class="separator:a1a221c7ae9914bd537f97657355b28d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a851a8246a3c48018dc6440b39e67cf46" id="r_a851a8246a3c48018dc6440b39e67cf46"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a851a8246a3c48018dc6440b39e67cf46">occ::interaction::ce_model_from_string</a> (const std::string &amp;s)</td></tr>
-<tr class="separator:a851a8246a3c48018dc6440b39e67cf46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6157c8a1e96bd59d00bfe593eba236ea" id="r_a6157c8a1e96bd59d00bfe593eba236ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a6157c8a1e96bd59d00bfe593eba236ea">occ::interaction::ce_model_from_string</a> (const std::string &amp;name)</td></tr>
+<tr class="memdesc:a6157c8a1e96bd59d00bfe593eba236ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">The CrystalExplorer model called <code>name</code> (case-insensitive): ce-b3lyp, ce-hf, ce-1p, ce-2p or ce-5p, with their -xdm and -wb97m-v aliases.  <br /></td></tr>
+<tr class="separator:a6157c8a1e96bd59d00bfe593eba236ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a126aba50d6142b3642a92c4c61053351" id="r_a126aba50d6142b3642a92c4c61053351"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a126aba50d6142b3642a92c4c61053351">occ::interaction::model_name_implies_xtb</a> (const std::string &amp;name)</td></tr>
+<tr class="memdesc:a126aba50d6142b3642a92c4c61053351"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether <code>name</code> selects the in-tree xtb backend, which implements GFN2-xTB only: xtb, gfn2 or gfn2-xtb, case-insensitive.  <br /></td></tr>
+<tr class="separator:a126aba50d6142b3642a92c4c61053351"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -165,13 +172,17 @@ Variables</h2></td></tr>
 <tr class="separator:a7d76bec4434b729fd4be29391d667982"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2dfda909310a8cb15cc12f70eb0733b" id="r_aa2dfda909310a8cb15cc12f70eb0733b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#aa2dfda909310a8cb15cc12f70eb0733b">occ::interaction::CE1_XDM_B3LYP</a></td></tr>
 <tr class="separator:aa2dfda909310a8cb15cc12f70eb0733b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b71f1a571ef3cd4f84493e7db9c81b8" id="r_a6b71f1a571ef3cd4f84493e7db9c81b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a6b71f1a571ef3cd4f84493e7db9c81b8">occ::interaction::CE1_XDM_WB97MV</a></td></tr>
+<tr class="separator:a6b71f1a571ef3cd4f84493e7db9c81b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7e1048928103ee59062c395881283ff" id="r_ad7e1048928103ee59062c395881283ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ad7e1048928103ee59062c395881283ff">occ::interaction::CE2_XDM_B3LYP</a></td></tr>
+<tr class="separator:ad7e1048928103ee59062c395881283ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ed614d8704386615f4091558ad2cb25" id="r_a1ed614d8704386615f4091558ad2cb25"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a1ed614d8704386615f4091558ad2cb25">occ::interaction::CE2_XDM_WB97MV</a></td></tr>
 <tr class="separator:a1ed614d8704386615f4091558ad2cb25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac526e31db1b5554f038ea91b2d2b26e6" id="r_ac526e31db1b5554f038ea91b2d2b26e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ac526e31db1b5554f038ea91b2d2b26e6">occ::interaction::CE5_XDM_WB97MV</a></td></tr>
 <tr class="separator:ac526e31db1b5554f038ea91b2d2b26e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4fdd0625bcd94a0ebf3bbe1a1c6b1f54" id="r_a4fdd0625bcd94a0ebf3bbe1a1c6b1f54"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#a4fdd0625bcd94a0ebf3bbe1a1c6b1f54">occ::interaction::CE1_XDM</a> = <a class="el" href="namespaceocc_1_1interaction.html#aa2dfda909310a8cb15cc12f70eb0733b">CE1_XDM_B3LYP</a></td></tr>
 <tr class="separator:a4fdd0625bcd94a0ebf3bbe1a1c6b1f54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae315fffa8a4ff6f089349659da887eed" id="r_ae315fffa8a4ff6f089349659da887eed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ae315fffa8a4ff6f089349659da887eed">occ::interaction::CE2_XDM</a> = <a class="el" href="namespaceocc_1_1interaction.html#a1ed614d8704386615f4091558ad2cb25">CE2_XDM_WB97MV</a></td></tr>
+<tr class="memitem:ae315fffa8a4ff6f089349659da887eed" id="r_ae315fffa8a4ff6f089349659da887eed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#ae315fffa8a4ff6f089349659da887eed">occ::interaction::CE2_XDM</a> = <a class="el" href="namespaceocc_1_1interaction.html#ad7e1048928103ee59062c395881283ff">CE2_XDM_B3LYP</a></td></tr>
 <tr class="separator:ae315fffa8a4ff6f089349659da887eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad5ac21a5da9c78ebf52177569d7f513" id="r_aad5ac21a5da9c78ebf52177569d7f513"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1interaction_1_1CEParameterizedModel.html">CEParameterizedModel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1interaction.html#aad5ac21a5da9c78ebf52177569d7f513">occ::interaction::CE5_XDM</a> = <a class="el" href="namespaceocc_1_1interaction.html#ac526e31db1b5554f038ea91b2d2b26e6">CE5_XDM_WB97MV</a></td></tr>
 <tr class="separator:aad5ac21a5da9c78ebf52177569d7f513"><td class="memSeparator" colspan="2">&#160;</td></tr>

@@ -4,5 +4,7 @@ var morphology__types_8h =
     [ "occ::cg::EdgeMorphology", "structocc_1_1cg_1_1EdgeMorphology.html", "structocc_1_1cg_1_1EdgeMorphology" ],
     [ "occ::cg::CornerMorphology", "structocc_1_1cg_1_1CornerMorphology.html", "structocc_1_1cg_1_1CornerMorphology" ],
     [ "occ::cg::ParticleSample", "structocc_1_1cg_1_1ParticleSample.html", "structocc_1_1cg_1_1ParticleSample" ],
+    [ "occ::cg::NeighbourBond", "structocc_1_1cg_1_1NeighbourBond.html", "structocc_1_1cg_1_1NeighbourBond" ],
+    [ "occ::cg::ShapeFace", "structocc_1_1cg_1_1ShapeFace.html", "structocc_1_1cg_1_1ShapeFace" ],
     [ "occ::cg::MorphologyResult", "structocc_1_1cg_1_1MorphologyResult.html", "structocc_1_1cg_1_1MorphologyResult" ]
 ];

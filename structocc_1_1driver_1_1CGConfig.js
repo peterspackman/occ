@@ -12,6 +12,9 @@ var structocc_1_1driver_1_1CGConfig =
     [ "list_solvents", "structocc_1_1driver_1_1CGConfig.html#a84fd10570333df33f4ab0fbb5c898830", null ],
     [ "max_facets", "structocc_1_1driver_1_1CGConfig.html#a295019f93d6364c326d2fa1b27aee393", null ],
     [ "min_interplanar_spacing", "structocc_1_1driver_1_1CGConfig.html#a64960cf8de3aabf3ca9e7e5492d69833", null ],
+    [ "morphology_emit_bonds", "structocc_1_1driver_1_1CGConfig.html#a8e2fe27efc64e1117d86c6ca8ea8dbe3", null ],
+    [ "morphology_shape", "structocc_1_1driver_1_1CGConfig.html#a5f4256703c7f4986d6c8789daae5f2cf", null ],
+    [ "morphology_sizes", "structocc_1_1driver_1_1CGConfig.html#a6558945d489e5d7ed372eff51760c2ee", null ],
     [ "print_solvation_descriptors", "structocc_1_1driver_1_1CGConfig.html#a898f2a3662cf21a878bcdc1ec8371d3b", null ],
     [ "solvation_model", "structocc_1_1driver_1_1CGConfig.html#acb4c56b43a145438d4d63cbe2d9634b3", null ],
     [ "solvent", "structocc_1_1driver_1_1CGConfig.html#ace156c4eeafa8a3f41fd163e1eea0892", null ],
@@ -21,6 +24,5 @@ var structocc_1_1driver_1_1CGConfig =
     [ "use_xtb", "structocc_1_1driver_1_1CGConfig.html#ab162733d7d336ec655877b2978b4b863", null ],
     [ "wavefunction_choice", "structocc_1_1driver_1_1CGConfig.html#ac4fb8f12b8c2cda16b513bc43dbec34b", null ],
     [ "write_dump_files", "structocc_1_1driver_1_1CGConfig.html#a2cf02b8b037802c648d8103cf222836f", null ],
-    [ "write_kmcpp_file", "structocc_1_1driver_1_1CGConfig.html#a9805f0b940cec5dfca061659db9cfd37", null ],
-    [ "xtb_solvation_model", "structocc_1_1driver_1_1CGConfig.html#a45e7f1e54d379ae3cafcd71452cc6e7d", null ]
+    [ "write_kmcpp_file", "structocc_1_1driver_1_1CGConfig.html#a9805f0b940cec5dfca061659db9cfd37", null ]
 ];

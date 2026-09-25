@@ -284,6 +284,8 @@ Functions</h2></td></tr>
 <tr class="separator:a5335021498f706007caaef46466265ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae6bd0a42c4e32209d6f230c1109e551f" id="r_ae6bd0a42c4e32209d6f230c1109e551f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1xtb_1_1AnisotropicPotentials.html">AnisotropicPotentials</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xtb.html#ae6bd0a42c4e32209d6f230c1109e551f">anisotropic_potentials_ewald</a> (const std::vector&lt; <a class="el" href="structocc_1_1core_1_1Atom.html">core::Atom</a> &gt; &amp;atoms, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;q, const <a class="el" href="structocc_1_1xtb_1_1CammMoments.html">CammMoments</a> &amp;m, const <a class="el" href="structocc_1_1xtb_1_1MultipolePairTensors.html">MultipolePairTensors</a> &amp;tensors, const <a class="el" href="classocc_1_1xtb_1_1Gfn2Parameters.html">Gfn2Parameters</a> &amp;params)</td></tr>
 <tr class="separator:ae6bd0a42c4e32209d6f230c1109e551f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0979925a347752ba5260ac3742b3bf80" id="r_a0979925a347752ba5260ac3742b3bf80"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xtb.html#a0979925a347752ba5260ac3742b3bf80">add_multipole_potentials</a> (<a class="el" href="structocc_1_1xtb_1_1AnisotropicPotentials.html">AnisotropicPotentials</a> &amp;pot, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;vd_extra, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;vq_extra)</td></tr>
+<tr class="separator:a0979925a347752ba5260ac3742b3bf80"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22d57ed8fc270a1f77f4dc0ca877e79a" id="r_a22d57ed8fc270a1f77f4dc0ca877e79a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1MatTriple.html">MatTriple</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xtb.html#a22d57ed8fc270a1f77f4dc0ca877e79a">dipole_ao_matrices</a> (<a class="el" href="classocc_1_1qm_1_1IntegralEngine.html">qm::IntegralEngine</a> &amp;engine, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;origin=Vec3::Zero())</td></tr>
 <tr class="separator:a22d57ed8fc270a1f77f4dc0ca877e79a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a72fee547e88fc1c11c2af65080ed1a86" id="r_a72fee547e88fc1c11c2af65080ed1a86"><td class="memItemLeft" align="right" valign="top">std::array&lt; <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>, 6 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1xtb.html#a72fee547e88fc1c11c2af65080ed1a86">quadrupole_ao_matrices</a> (<a class="el" href="classocc_1_1qm_1_1IntegralEngine.html">qm::IntegralEngine</a> &amp;engine, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;origin=Vec3::Zero())</td></tr>
@@ -491,6 +493,40 @@ Functions</h2></td></tr>
           <td></td>
           <td class="paramtype"><a class="el" href="structocc_1_1xtb_1_1CammMoments.html">CammMoments</a> &amp;&#160;</td>
           <td class="paramname"><em>mom</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0979925a347752ba5260ac3742b3bf80" name="a0979925a347752ba5260ac3742b3bf80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0979925a347752ba5260ac3742b3bf80">&#9670;&#160;</a></span>add_multipole_potentials()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::xtb::add_multipole_potentials </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1xtb_1_1AnisotropicPotentials.html">AnisotropicPotentials</a> &amp;&#160;</td>
+          <td class="paramname"><em>pot</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>vd_extra</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>vq_extra</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

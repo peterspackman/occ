@@ -283,6 +283,9 @@ Functions</h2></td></tr>
 <tr class="memitem:abf1fbc5a0f5df6f6150f9d5e8d40f21f" id="r_abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#abf1fbc5a0f5df6f6150f9d5e8d40f21f">laue_orbit_partners</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, const std::vector&lt; <a class="el" href="classocc_1_1crystal_1_1Surface.html">Surface</a> &gt; &amp;surfaces, size_t i)</td></tr>
 <tr class="memdesc:abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Positions in <code>surfaces</code> that share a Laue-class orbit with <code>surfaces[i]</code>, including <code>i</code> itself.  <br /></td></tr>
 <tr class="separator:abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a937f0aa58404f0dc5a1855964ce4d297" id="r_a937f0aa58404f0dc5a1855964ce4d297"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>, <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#a937f0aa58404f0dc5a1855964ce4d297">face_images</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, const <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> &amp;hkl)</td></tr>
+<tr class="memdesc:a937f0aa58404f0dc5a1855964ce4d297"><td class="mdescLeft">&#160;</td><td class="mdescRight">The distinct faces equivalent to <code>hkl</code> under the crystal's point group, each with the first symmetry operation (R|t) that produces it: the image is R^-T hkl, and a cut at offset o on <code>hkl</code> maps to o + image.t on it.  <br /></td></tr>
+<tr class="separator:a937f0aa58404f0dc5a1855964ce4d297"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78a9c35cd26a715ea7cfbee259ea95e5" id="r_a78a9c35cd26a715ea7cfbee259ea95e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1crystal.html#a78a9c35cd26a715ea7cfbee259ea95e5">cubic_cell</a> (double length)</td></tr>
 <tr class="memdesc:a78a9c35cd26a715ea7cfbee259ea95e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a cubic unit cell from a given length.  <br /></td></tr>
 <tr class="separator:a78a9c35cd26a715ea7cfbee259ea95e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -508,6 +511,37 @@ Functions</h2></td></tr>
 
 <p>The d-spacing of a reflection, in Angstroms. </p>
 <dl class="section note"><dt>Note</dt><dd>This exists because <code><a class="el" href="structocc_1_1crystal_1_1HKL.html#a6a5d4c58ad5469a64a3ac169409fc25e" title="Calculates the magnitude of the lattice vector represented by this HKL object.">HKL::d</a>(cell.reciprocal())</code> returns the <em>reciprocal</em> lattice vector length |G| = 1/d, in Angstrom^-1, despite its name. Prefer this function whenever an actual d-spacing is wanted. </dd></dl>
+
+</div>
+</div>
+<a id="a937f0aa58404f0dc5a1855964ce4d297" name="a937f0aa58404f0dc5a1855964ce4d297"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a937f0aa58404f0dc5a1855964ce4d297">&#9670;&#160;</a></span>face_images()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::pair&lt; <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>, <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a> &gt; &gt; occ::crystal::face_images </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> &amp;&#160;</td>
+          <td class="paramname"><em>hkl</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The distinct faces equivalent to <code>hkl</code> under the crystal's point group, each with the first symmetry operation (R|t) that produces it: the image is R^-T hkl, and a cut at offset o on <code>hkl</code> maps to o + image.t on it. </p>
+<p>Exact integer arithmetic. Build facet normals from these images (reciprocal * image) rather than by rotating a cartesian normal, which is exact only when the cell has the full metric symmetry: on a relaxed cell that has drifted slightly, a face an operation leaves in place comes back as a near-duplicate of itself. </p>
 
 </div>
 </div>

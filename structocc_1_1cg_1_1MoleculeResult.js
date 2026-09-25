@@ -8,6 +8,7 @@ var structocc_1_1cg_1_1MoleculeResult =
     [ "descriptors", "structocc_1_1cg_1_1MoleculeResult.html#a8f11df8a2d95d745fcd41065f3a43268", null ],
     [ "dimer_results", "structocc_1_1cg_1_1MoleculeResult.html#a65ad2ccf6697b9e0263e7899232f393d", null ],
     [ "energy_components", "structocc_1_1cg_1_1MoleculeResult.html#aca1e80218c298c1ae665dc092903d1cd", null ],
+    [ "free_energy", "structocc_1_1cg_1_1MoleculeResult.html#ada0cbe516e73cee24ef2c1211d635ccb", null ],
     [ "has_inversion_symmetry", "structocc_1_1cg_1_1MoleculeResult.html#a929fa977963de19c3308a897dc1cad8f", null ],
     [ "total", "structocc_1_1cg_1_1MoleculeResult.html#a6dbd779c34005ae446a98724fede3f4c", null ]
 ];

@@ -119,10 +119,29 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a1251a702153bf610ff0f106542cac509" id="r_a1251a702153bf610ff0f106542cac509"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; <a class="el" href="structocc_1_1crystal_1_1HKL.html">occ::crystal::HKL</a>, double &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1MorphologyOptions.html#a1251a702153bf610ff0f106542cac509">user_shifts</a> {}</td></tr>
 <tr class="memdesc:a1251a702153bf610ff0f106542cac509"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional user/growth morphology: (hkl -&gt; support distance).  <br /></td></tr>
 <tr class="separator:a1251a702153bf610ff0f106542cac509"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d201ae65a9715d0fdf521346f2cda92" id="r_a4d201ae65a9715d0fdf521346f2cda92"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1MorphologyOptions.html#a4d201ae65a9715d0fdf521346f2cda92">emit_bonds</a> {false}</td></tr>
+<tr class="memdesc:a4d201ae65a9715d0fdf521346f2cda92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the stamped neighbour bonds into the result, so the broken-bond sum can be reproduced from outside.  <br /></td></tr>
+<tr class="separator:a4d201ae65a9715d0fdf521346f2cda92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Options for the particle size/shape-dependent energy calculation. </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a4d201ae65a9715d0fdf521346f2cda92" name="a4d201ae65a9715d0fdf521346f2cda92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d201ae65a9715d0fdf521346f2cda92">&#9670;&#160;</a></span>emit_bonds</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::driver::MorphologyOptions::emit_bonds {false}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Write the stamped neighbour bonds into the result, so the broken-bond sum can be reproduced from outside. </p>
+
+</div>
+</div>
 <a id="abe6df288f87bb99596a9fe76d6311e7d" name="abe6df288f87bb99596a9fe76d6311e7d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abe6df288f87bb99596a9fe76d6311e7d">&#9670;&#160;</a></span>sign</h2>
 
@@ -166,7 +185,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Optional user/growth morphology: (hkl -&gt; support distance). </p>
-<p>When non-empty it replaces the equilibrium (Wulff) shape. </p>
+<p>When non-empty it replaces the equilibrium (Wulff) shape. Each face still sits at its lowest-energy termination, so every face needs a computed surface energy. </p>
 
 </div>
 </div>

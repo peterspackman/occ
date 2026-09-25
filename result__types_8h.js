@@ -3,6 +3,7 @@ var result__types_8h =
     [ "occ::cg::DimerSolventTerm", "structocc_1_1cg_1_1DimerSolventTerm.html", "structocc_1_1cg_1_1DimerSolventTerm" ],
     [ "occ::cg::EnergyTotal", "structocc_1_1cg_1_1EnergyTotal.html", "structocc_1_1cg_1_1EnergyTotal" ],
     [ "occ::cg::DimerResult", "structocc_1_1cg_1_1DimerResult.html", "structocc_1_1cg_1_1DimerResult" ],
+    [ "occ::cg::FreeEnergySummary", "structocc_1_1cg_1_1FreeEnergySummary.html", "structocc_1_1cg_1_1FreeEnergySummary" ],
     [ "occ::cg::MoleculeResult", "structocc_1_1cg_1_1MoleculeResult.html", "structocc_1_1cg_1_1MoleculeResult" ],
     [ "occ::cg::CrystalGrowthResult", "structocc_1_1cg_1_1CrystalGrowthResult.html", "structocc_1_1cg_1_1CrystalGrowthResult" ],
     [ "CGEnergies", "result__types_8h.html#a2efdad243923360f192e3e2d5d48bfb0", null ],

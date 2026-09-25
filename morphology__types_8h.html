@@ -103,13 +103,14 @@ $(document).ready(function(){initNavTree('morphology__types_8h.html',''); initRe
   <div class="headertitle"><div class="title">morphology_types.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="hkl_8h.html">occ/crystal/hkl.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;array&gt;</code><br />
+<code>#include &lt;<a class="el" href="hkl_8h.html">occ/crystal/hkl.h</a>&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for morphology_types.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="morphology__types_8h__incl.svg" width="370" height="286"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="morphology__types_8h__incl.svg" width="390" height="286"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
@@ -130,6 +131,12 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1ParticleSample.html">occ::cg::ParticleSample</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Broken-bond excess energy of a finite particle at one size, decomposed by inclusion-exclusion so e_excess == e_surface + e_edge + e_corner exactly.  <a href="structocc_1_1cg_1_1ParticleSample.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1NeighbourBond.html">occ::cg::NeighbourBond</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">One stamped neighbour interaction, as the decomposition sees it.  <a href="structocc_1_1cg_1_1NeighbourBond.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1ShapeFace.html">occ::cg::ShapeFace</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">One active face of the particle shape, as the decomposition uses it: the support distance is per unit scale, and the optimal-cut offset and interplanar spacing are what snap it to a molecular termination.  <a href="structocc_1_1cg_1_1ShapeFace.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1cg_1_1MorphologyResult.html">occ::cg::MorphologyResult</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Particle size/shape-dependent (surface + edge + corner) energies.  <a href="structocc_1_1cg_1_1MorphologyResult.html#details">More...</a><br /></td></tr>

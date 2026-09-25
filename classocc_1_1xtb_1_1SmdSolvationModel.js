@@ -4,7 +4,9 @@ var classocc_1_1xtb_1_1SmdSolvationModel =
     [ "atom_potential", "classocc_1_1xtb_1_1SmdSolvationModel.html#a4efef989a8bd97740da3873d4e33a752", null ],
     [ "cds_energy_elements", "classocc_1_1xtb_1_1SmdSolvationModel.html#a1068685c71d981cbf2d33b0a69d79524", null ],
     [ "cds_surface", "classocc_1_1xtb_1_1SmdSolvationModel.html#ace323a0be3111bdacf7e1434afd5a4ab", null ],
+    [ "damping_radius_gradient", "classocc_1_1xtb_1_1SmdSolvationModel.html#aa7daeda01bad4e1d5dac49a26a861e03", null ],
     [ "dielectric", "classocc_1_1xtb_1_1SmdSolvationModel.html#a67776e5de137999dcd1f535a02c4fbf5", null ],
+    [ "dipole_potential", "classocc_1_1xtb_1_1SmdSolvationModel.html#ab2467d5ad3180fbc482f5605144a3d84", null ],
     [ "e_cds", "classocc_1_1xtb_1_1SmdSolvationModel.html#a62e6c90da8776e8599af9e4fbe89861d", null ],
     [ "e_es", "classocc_1_1xtb_1_1SmdSolvationModel.html#a0ec47674d682dc1a0e65da45476d9f88", null ],
     [ "energy", "classocc_1_1xtb_1_1SmdSolvationModel.html#a989b6fbe8690721047d596e58934fdd8", null ],
@@ -16,7 +18,10 @@ var classocc_1_1xtb_1_1SmdSolvationModel =
     [ "num_cds_surface_points", "classocc_1_1xtb_1_1SmdSolvationModel.html#a5db3ea83d37b05c481c618c1b0a40a8f", null ],
     [ "num_es_surface_points", "classocc_1_1xtb_1_1SmdSolvationModel.html#a833586e200ca9c5a40ad1606a3ff85dd", null ],
     [ "parameters", "classocc_1_1xtb_1_1SmdSolvationModel.html#ad28df3b9194ea436dee57147c780b2c9", null ],
+    [ "quadrupole_potential", "classocc_1_1xtb_1_1SmdSolvationModel.html#a7996a499c67f223bf7d11ee9afcb95cb", null ],
+    [ "set_multipole_damping", "classocc_1_1xtb_1_1SmdSolvationModel.html#a659d951c0f24b9d04299a2ed018b2c24", null ],
     [ "surface_charges", "classocc_1_1xtb_1_1SmdSolvationModel.html#a085f58861d95f2e0e8c79d96759e47cb", null ],
     [ "surfaces", "classocc_1_1xtb_1_1SmdSolvationModel.html#a1ade12e8e682a83cedbabbb20ecd4ea1", null ],
-    [ "update", "classocc_1_1xtb_1_1SmdSolvationModel.html#a1ed858af34400af461d820b9a9eca62b", null ]
+    [ "update", "classocc_1_1xtb_1_1SmdSolvationModel.html#a1ed858af34400af461d820b9a9eca62b", null ],
+    [ "update", "classocc_1_1xtb_1_1SmdSolvationModel.html#a2bc249d6087e3efe8ddea51304215d93", null ]
 ];

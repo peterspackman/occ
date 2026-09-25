@@ -112,6 +112,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1detail_1_1CosmoResponse.html">CosmoResponse</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pre-solved CPCM/COSMO response operator on a cavity, driven by atom- centred point-charge sources.  <a href="structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html">MultipoleDamping</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Short-range damping of the dipole and quadrupole kernels, <code>f_n(d) = 1/(1 + 6·(rco/d)^kdmp_n)</code>, applied to <code>t1</code> with <code>n = 3</code> and to <code>t2</code> with <code>n = 5</code>.  <a href="structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleKernel.html">MultipoleKernel</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Geometric factors of the atom-centred multipole expansion evaluated at a displacement <code>d = r_cavity − R_atom</code>:  <a href="structocc_1_1scrf_1_1detail_1_1MultipoleKernel.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -121,12 +127,17 @@ Functions</h2></td></tr>
 <tr class="memitem:aa2870e58b5203ef1b631a4998d502376" id="r_aa2870e58b5203ef1b631a4998d502376"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1scrf_1_1detail.html#aa2870e58b5203ef1b631a4998d502376">build_atom_cavity_coulomb</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;cavity_points, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;atom_positions)</td></tr>
 <tr class="memdesc:aa2870e58b5203ef1b631a4998d502376"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the atom↔cavity Coulomb operator B(i, a) = 1/|r_i − R_a|.  <br /></td></tr>
 <tr class="separator:aa2870e58b5203ef1b631a4998d502376"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae1a52fcb1969c1519b6cc919ffaf365" id="r_aae1a52fcb1969c1519b6cc919ffaf365"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleKernel.html">MultipoleKernel</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1scrf_1_1detail.html#aae1a52fcb1969c1519b6cc919ffaf365">multipole_kernel</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;d, <a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html">MultipoleDamping</a> damping={})</td></tr>
+<tr class="separator:aae1a52fcb1969c1519b6cc919ffaf365"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3058dc04adb6cae2cb462e121fea0ab8" id="r_a3058dc04adb6cae2cb462e121fea0ab8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1scrf_1_1detail.html#a3058dc04adb6cae2cb462e121fea0ab8">multipole_kernel_gradient</a> (const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;d, double q, const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;mu, const double *theta, <a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html">MultipoleDamping</a> damping={})</td></tr>
+<tr class="memdesc:a3058dc04adb6cae2cb462e121fea0ab8"><td class="mdescLeft">&#160;</td><td class="mdescRight">∂φ/∂d for one atom's moments, the gradient counterpart of <code>multipole_kernel</code>.  <br /></td></tr>
+<tr class="separator:a3058dc04adb6cae2cb462e121fea0ab8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3977eb49633053393ba36cf6c7d6b487" id="r_a3977eb49633053393ba36cf6c7d6b487"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1scrf_1_1detail_1_1CosmoResponse.html">CosmoResponse</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1scrf_1_1detail.html#a3977eb49633053393ba36cf6c7d6b487">build_cosmo_response</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;atom_positions_bohr, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;cavity_points, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;cavity_areas, double epsilon, double x)</td></tr>
 <tr class="memdesc:a3977eb49633053393ba36cf6c7d6b487"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the pre-solved response.  <br /></td></tr>
 <tr class="separator:a3977eb49633053393ba36cf6c7d6b487"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a47599ff582078120fb9e1c3c183de830" id="r_a47599ff582078120fb9e1c3c183de830"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1scrf_1_1detail.html#a47599ff582078120fb9e1c3c183de830">cosmo_gradient_frozen</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;atom_positions_bohr, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;cavity_points, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;cavity_areas, const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a> &amp;cavity_atom_index, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;atom_charges, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;sigma, double f_epsilon, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;atom_radii_bohr=<a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>(), double smoothing_width_bohr=0.0)</td></tr>
-<tr class="memdesc:a47599ff582078120fb9e1c3c183de830"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frozen-cavity analytical gradient of the polarisation energy with respect to atomic positions:  <br /></td></tr>
-<tr class="separator:a47599ff582078120fb9e1c3c183de830"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60556b9a5fec6fccbccec2e699d5f592" id="r_a60556b9a5fec6fccbccec2e699d5f592"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1scrf_1_1detail.html#a60556b9a5fec6fccbccec2e699d5f592">cosmo_gradient_frozen</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;atom_positions_bohr, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;cavity_points, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;cavity_areas, const <a class="el" href="namespaceocc.html#a1c36353e752d77ead2a53790410bfaee">IVec</a> &amp;cavity_atom_index, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;atom_charges, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;sigma, double f_epsilon, const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;atom_radii_bohr=<a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>(), double smoothing_width_bohr=0.0, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;atom_dipoles=<a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>(), const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;atom_quadrupoles=<a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>(), const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;damping_rco_bohr=<a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>(), double kdmp3=3.0, double kdmp5=4.0)</td></tr>
+<tr class="memdesc:a60556b9a5fec6fccbccec2e699d5f592"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frozen-cavity analytical gradient of the polarisation energy with respect to atomic positions:  <br /></td></tr>
+<tr class="separator:a60556b9a5fec6fccbccec2e699d5f592"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Self-consistent reaction-field (SCRF) primitives shared between the HF/DFT-side <code><a class="el" href="classocc_1_1solvent_1_1COSMO.html">occ::solvent::COSMO</a></code> driver and the xTB-side CPCM-X / SMD implicit-solvation models. </p>
@@ -243,8 +254,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a47599ff582078120fb9e1c3c183de830" name="a47599ff582078120fb9e1c3c183de830"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a47599ff582078120fb9e1c3c183de830">&#9670;&#160;</a></span>cosmo_gradient_frozen()</h2>
+<a id="a60556b9a5fec6fccbccec2e699d5f592" name="a60556b9a5fec6fccbccec2e699d5f592"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60556b9a5fec6fccbccec2e699d5f592">&#9670;&#160;</a></span>cosmo_gradient_frozen()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -301,7 +312,37 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>smoothing_width_bohr</em> = <code>0.0</code>&#160;</td>
+          <td class="paramname"><em>smoothing_width_bohr</em> = <code>0.0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>atom_dipoles</em> = <code><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>()</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>atom_quadrupoles</em> = <code><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>()</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> &amp;&#160;</td>
+          <td class="paramname"><em>damping_rco_bohr</em> = <code><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>()</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>kdmp3</em> = <code>3.0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>kdmp5</em> = <code>4.0</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -321,7 +362,85 @@ Functions</h2></td></tr>
 <p>With a boolean cavity (smoothing_width = 0), per-element areas are geometry-independent and ∂A_ii/∂R = 0. With a smooth cavity, each per- element area depends smoothly on every other atom's position through the erf-based smoothstep weight, giving</p>
 <p>∂A_ii/∂R_c = −½ A_ii · ∂ln(weight_i)/∂R_c ∂ln(weight_i)/∂R_c = Σ_{k ≠ a_i} (s'/s)|d_ik · ∂d_ik/∂R_c</p>
 <p>where <code>s(d) = ½(1 + erf((d − t_k)/w))</code>, <code>t_k = r_k</code>. Pass <code>atom_radii_bohr</code> and <code>smoothing_width_bohr &gt; 0</code> to enable this term; leave <code>smoothing_width_bohr = 0</code> to skip it (boolean-cavity default).</p>
-<p>Returns 3 × N_atoms in Hartree/Bohr. </p>
+<p>Returns 3 × N_atoms in Hartree/Bohr.</p>
+<p><code>atom_dipoles</code> (3 × N) and <code>atom_quadrupoles</code> (6 × N, <code>multipole_kernel</code> layout) extend the source from point charges to the full atom-centred expansion; pass them empty for the charge-only field. They enter through <code>g</code> and <code>h</code> only — the σ-on-σ and diagonal-A terms see the cavity, not the source, and are unchanged. </p>
+
+</div>
+</div>
+<a id="aae1a52fcb1969c1519b6cc919ffaf365" name="aae1a52fcb1969c1519b6cc919ffaf365"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae1a52fcb1969c1519b6cc919ffaf365">&#9670;&#160;</a></span>multipole_kernel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleKernel.html">MultipoleKernel</a> occ::scrf::detail::multipole_kernel </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html">MultipoleDamping</a>&#160;</td>
+          <td class="paramname"><em>damping</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3058dc04adb6cae2cb462e121fea0ab8" name="a3058dc04adb6cae2cb462e121fea0ab8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3058dc04adb6cae2cb462e121fea0ab8">&#9670;&#160;</a></span>multipole_kernel_gradient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> occ::scrf::detail::multipole_kernel_gradient </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#ae42d4cdd65ae47e7067b39d66ce2e0e1">Vec3</a> &amp;&#160;</td>
+          <td class="paramname"><em>mu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>theta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html">MultipoleDamping</a>&#160;</td>
+          <td class="paramname"><em>damping</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>∂φ/∂d for one atom's moments, the gradient counterpart of <code>multipole_kernel</code>. </p>
+<p><code>theta</code> points at six contiguous quadrupole components in the same layout, or is null for a charge-and-dipole source. </p>
 
 </div>
 </div>

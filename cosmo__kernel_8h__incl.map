@@ -1,11 +1,13 @@
 <map id="/home/runner/work/occ/occ/include/occ/scrf/cosmo_kernel.h" name="/home/runner/work/occ/occ/include/occ/scrf/cosmo_kernel.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="37,5,207,60"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="51,5,222,60"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,108,84,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,62,66,99,62,96,96,58"/>
-<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="108,108,293,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="148,58,183,96,179,99,144,62"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="88,181,180,207"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="192,135,156,173,152,169,188,132"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="204,181,328,207"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="213,132,248,169,244,173,209,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,62,69,100,65,96,107,58"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="109,108,165,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="139,60,139,94,134,94,134,60"/>
+<area shape="rect" id="Node000004" href="$linear__algebra_8h.html" title=" " alt="" coords="189,108,375,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="182,58,252,99,249,103,180,62"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="169,181,261,207"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="273,135,237,173,234,169,269,132"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="285,181,409,207"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="295,132,329,169,326,173,291,135"/>
 </map>
