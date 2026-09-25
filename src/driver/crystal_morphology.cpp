@@ -341,6 +341,24 @@ MorphologyResult compute_crystal_morphology(
       bonds[i].push_back({ib, shift, energy});
     }
   }
+  if (options.emit_bonds) {
+    for (const auto &f : uc_frac)
+      result.uc_centroids.push_back({f.x(), f.y(), f.z()});
+    for (size_t f = 0; f < shape.normals.size(); ++f)
+      result.shape_faces.push_back(ShapeFace{
+          shape.hkls[f],
+          {shape.normals[f].x(), shape.normals[f].y(), shape.normals[f].z()},
+          shape.distances[f],
+          shape.offsets[f],
+          shape.dspacings[f]});
+    for (size_t i = 0; i < bonds.size(); ++i)
+      for (const auto &b : bonds[i])
+        result.bonds.push_back(
+            NeighbourBond{static_cast<int>(i),
+                          b.target,
+                          {b.shift.x(), b.shift.y(), b.shift.z()},
+                          b.energy});
+  }
   if (!any_energy) {
     occ::log::warn("Morphology: all dimer interaction energies are zero - "
                    "uc_dimers must carry energies (InteractionMapper)");
@@ -590,6 +608,30 @@ void to_json(nlohmann::json &j, const MorphologyResult &m) {
           : "User-supplied morphology with fixed facet support distances.";
   j["mu_bulk"] = m.mu_bulk;
   j["molecular_volume"] = m.molecular_volume;
+  if (!m.bonds.empty()) {
+    nlohmann::json bonds = nlohmann::json::array();
+    for (const auto &b : m.bonds)
+      bonds.push_back({{"source", b.source},
+                       {"target", b.target},
+                       {"shift", {b.shift[0], b.shift[1], b.shift[2]}},
+                       {"energy", b.energy}});
+    j["bonds"] = bonds;
+    nlohmann::json centroids = nlohmann::json::array();
+    for (const auto &c : m.uc_centroids)
+      centroids.push_back({c[0], c[1], c[2]});
+    j["uc_centroids"] = centroids;
+    nlohmann::json faces = nlohmann::json::array();
+    for (const auto &f : m.shape_faces)
+      faces.push_back({{"hkl", {f.hkl.h, f.hkl.k, f.hkl.l}},
+                       {"normal", {f.normal[0], f.normal[1], f.normal[2]}},
+                       {"distance", f.distance},
+                       {"offset", f.offset},
+                       {"d_spacing", f.d_spacing}});
+    j["shape_faces"] = faces;
+    j["bonds_note"] =
+        "the stamped neighbour interactions the broken-bond decomposition "
+        "reads; one entry per (unit-cell molecule, neighbour)";
+  }
   nlohmann::json facets = nlohmann::json::array();
   for (const auto &f : m.facets)
     facets.push_back({{"hkl", {f.hkl.h, f.hkl.k, f.hkl.l}},

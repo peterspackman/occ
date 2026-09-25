@@ -418,6 +418,7 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
   if (config.compute_morphology && surface_energies) {
     occ::log::info("Computing particle size/shape-dependent energies");
     MorphologyOptions morphology_options;
+    morphology_options.emit_bonds = config.morphology_emit_bonds;
     if (!config.morphology_sizes.empty()) {
       if (std::any_of(config.morphology_sizes.begin(),
                       config.morphology_sizes.end(),

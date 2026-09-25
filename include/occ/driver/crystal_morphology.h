@@ -24,13 +24,18 @@ struct MorphologyOptions {
   /// it replaces the equilibrium (Wulff) shape. Each face still sits at its
   /// lowest-energy termination, so every face needs a computed surface energy.
   std::vector<std::pair<occ::crystal::HKL, double>> user_shifts{};
+  /// Write the stamped neighbour bonds into the result, so the broken-bond
+  /// sum can be reproduced from outside.
+  bool emit_bonds{false};
 };
 
 using occ::cg::CornerMorphology;
 using occ::cg::EdgeMorphology;
 using occ::cg::FacetMorphology;
 using occ::cg::MorphologyResult;
+using occ::cg::NeighbourBond;
 using occ::cg::ParticleSample;
+using occ::cg::ShapeFace;
 
 /// Compute the particle size/shape-dependent (surface + edge + corner) energy.
 ///

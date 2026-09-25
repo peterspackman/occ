@@ -37,6 +37,7 @@ struct CGConfig {
   std::vector<int> morphology_sizes{};
   /// File of `h k l distance` faces to use instead of the Wulff shape.
   std::string morphology_shape{};
+  bool morphology_emit_bonds{false};
   bool write_dump_files{false};
   bool spherical{false};
   bool write_kmcpp_file{false};

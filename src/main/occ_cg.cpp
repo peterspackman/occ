@@ -94,6 +94,9 @@ CLI::App *add_cg_subcommand(CLI::App &app) {
                  "particle sizes in molecules for --morphology, comma "
                  "separated (default 1000,2000,4000,8000,16000,32000)")
       ->delimiter(',');
+  cg->add_flag("--morphology-bonds", config->morphology_emit_bonds,
+               "write the stamped neighbour bonds the particle decomposition "
+               "uses into the results file");
   cg->add_option("--morphology-shape", config->morphology_shape,
                  "file of 'h k l distance' lines, one face per form, giving a "
                  "particle shape to use instead of the Wulff shape for "

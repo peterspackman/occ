@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <occ/crystal/hkl.h>
 #include <string>
 #include <vector>
@@ -45,6 +46,28 @@ struct ParticleSample {
   int n_corners{0};
 };
 
+/// One stamped neighbour interaction, as the decomposition sees it. Emitted
+/// only on request: it is the input an external check of the broken-bond sum
+/// needs, and the per-molecule pair list written elsewhere is a different
+/// object that need not agree bond by bond.
+struct NeighbourBond {
+  int source{0};         ///< unit-cell molecule the bond belongs to
+  int target{0};         ///< unit-cell molecule at the other end
+  int shift[3]{0, 0, 0}; ///< cell offset of the target
+  double energy{0.0};    ///< interaction_energy("Total"), kJ/mol
+};
+
+/// One active face of the particle shape, as the decomposition uses it: the
+/// support distance is per unit scale, and the optimal-cut offset and
+/// interplanar spacing are what snap it to a molecular termination.
+struct ShapeFace {
+  occ::crystal::HKL hkl;
+  double normal[3]{0.0, 0.0, 0.0}; ///< unit normal, Cartesian
+  double distance{0.0};            ///< support distance at unit scale
+  double offset{0.0};              ///< optimal cut offset, fraction of d
+  double d_spacing{0.0};           ///< interplanar spacing (Angstrom)
+};
+
 /// Particle size/shape-dependent (surface + edge + corner) energies.
 struct MorphologyResult {
   std::string shape{"wulff"};
@@ -55,6 +78,12 @@ struct MorphologyResult {
   std::vector<EdgeMorphology> edges;
   std::vector<CornerMorphology> corners;
   std::vector<ParticleSample> samples;
+  std::vector<NeighbourBond> bonds; ///< only when MorphologyOptions::emit_bonds
+  /// Fractional centroids of the unit-cell molecules, in the order the bonds
+  /// index them. Emitted with the bonds: a molecule reassembled independently
+  /// can land in a different periodic image, which changes the cluster.
+  std::vector<std::array<double, 3>> uc_centroids;
+  std::vector<ShapeFace> shape_faces; ///< emitted with the bonds
 
   bool empty() const { return facets.empty() && samples.empty(); }
 };

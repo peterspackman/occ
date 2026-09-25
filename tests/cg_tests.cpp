@@ -873,6 +873,93 @@ TEST_CASE("CG: morphology shape files", "[cg][morphology]") {
   }
 }
 
+TEST_CASE("CG: morphology bonds are emitted only on request",
+          "[cg][morphology]") {
+  using occ::driver::compute_crystal_morphology;
+  using occ::driver::MorphologyOptions;
+
+  const auto crystal = acetic_acid_crystal();
+  auto uc_dimers = crystal.unit_cell_dimers(7.0);
+  // Any energy that depends only on the pair geometry is symmetry-consistent,
+  // which is all the decomposition needs.
+  size_t n_neighbours = 0;
+  for (auto &neighbours : uc_dimers.molecule_neighbors) {
+    for (auto &srd : neighbours) {
+      const double r = srd.dimer.centroid_distance();
+      srd.dimer.set_interaction_energy(100.0 / (r * r));
+    }
+    n_neighbours += neighbours.size();
+  }
+
+  const auto dir = fresh_directory("morphology_bonds");
+  const auto surfaces = occ::driver::calculate_crystal_surface_energies(
+      (dir / "acetic").string(), crystal, uc_dimers, 0, 1, 3.0);
+
+  CrystalGrowthResult growth;
+  for (size_t i = 0; i < crystal.symmetry_unique_molecules().size(); ++i) {
+    MoleculeResult mr;
+    mr.total.crystal_energy = -50.0;
+    growth.molecule_results.push_back(mr);
+  }
+
+  MorphologyOptions options;
+  options.sizes = {200};
+  const auto plain =
+      compute_crystal_morphology(crystal, uc_dimers, surfaces, growth, options);
+  options.emit_bonds = true;
+  const auto emitted =
+      compute_crystal_morphology(crystal, uc_dimers, surfaces, growth, options);
+
+  REQUIRE_FALSE(plain.facets.empty());
+
+  SECTION("off by default, and absent from the JSON") {
+    REQUIRE(plain.bonds.empty());
+    REQUIRE(plain.uc_centroids.empty());
+    REQUIRE(plain.shape_faces.empty());
+    nlohmann::json j = plain;
+    REQUIRE_FALSE(j.contains("bonds"));
+  }
+
+  SECTION("one bond per stamped neighbour, indexed by unit-cell molecule") {
+    REQUIRE(emitted.bonds.size() == n_neighbours);
+    REQUIRE(emitted.uc_centroids.size() ==
+            crystal.unit_cell_molecules().size());
+    size_t k = 0;
+    for (size_t i = 0; i < uc_dimers.molecule_neighbors.size(); ++i) {
+      for (const auto &srd : uc_dimers.molecule_neighbors[i]) {
+        REQUIRE(emitted.bonds[k].source == static_cast<int>(i));
+        REQUIRE(emitted.bonds[k].energy ==
+                Approx(srd.dimer.interaction_energy("Total")));
+        ++k;
+      }
+    }
+  }
+
+  SECTION("shape faces are unit normals with a molecular termination") {
+    REQUIRE_FALSE(emitted.shape_faces.empty());
+    for (const auto &f : emitted.shape_faces) {
+      const double n2 = f.normal[0] * f.normal[0] + f.normal[1] * f.normal[1] +
+                        f.normal[2] * f.normal[2];
+      REQUIRE(n2 == Approx(1.0));
+      REQUIRE(f.distance > 0.0);
+      REQUIRE(f.d_spacing > 0.0);
+    }
+  }
+
+  SECTION("emitting bonds does not change the energies") {
+    REQUIRE(emitted.samples.size() == plain.samples.size());
+    for (size_t s = 0; s < plain.samples.size(); ++s)
+      REQUIRE(emitted.samples[s].e_excess == plain.samples[s].e_excess);
+  }
+
+  SECTION("the JSON carries all three blocks") {
+    nlohmann::json j = emitted;
+    REQUIRE(j["bonds"].size() == n_neighbours);
+    REQUIRE(j["uc_centroids"].size() == emitted.uc_centroids.size());
+    REQUIRE(j["shape_faces"].size() == emitted.shape_faces.size());
+  }
+}
+
 TEST_CASE("CG: free energy terms are kept per molecule", "[cg][xtb]") {
   namespace fs = std::filesystem;
   const auto dir = fs::temp_directory_path() / "occ_cg_tests_free_energy";
