@@ -80,7 +80,12 @@ export async function loadOCC(options = {}) {
       }
 
       // Set to single thread by default to avoid SharedArrayBuffer/CORS requirements in browser
-      // Users can call Module.setNumThreads(n) to enable multithreading when needed
+      // Users can call Module.setNumThreads(n) to enable multithreading when needed.
+      // This call is load-bearing: its first use also raises TBB's worker stacks
+      // from 64 KiB to 8 MiB (set_num_threads in occ/core/parallel.h), without
+      // which threaded DFT overflows them and corrupts memory. It cannot be done
+      // at static initialisation, so anything creating the module without
+      // loadOCC() must call setNumThreads itself before running a calculation.
       if (Module.setNumThreads) {
         Module.setNumThreads(1);
       }

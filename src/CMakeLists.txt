@@ -134,8 +134,11 @@ target_link_libraries(occjs PUBLIC
 
 # Emscripten-specific linker flags for JavaScript bindings
 # Note: static_partitioner in XDM code avoids Firefox WASM threading issues
+# MALLOC=mimalloc: the default allocator takes one lock per allocation, which
+# serialises the threaded grid code -- urea B3LYP/6-31G(d,p) went 4.1 s -> 1.8 s
+# at 4 threads (1 thread unchanged, energy to 6e-10 Ha, +0.5% wasm size).
 set_target_properties(occjs PROPERTIES
-    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=4GB -s STACK_SIZE=8MB -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORT_EXCEPTION_HANDLING_HELPERS=1 -fexceptions -pthread --bind -s EXPORTED_RUNTIME_METHODS=['FS'] --preload-file ${CMAKE_SOURCE_DIR}/share@/"
+    LINK_FLAGS "-s MODULARIZE=1 -s EXPORT_NAME='createOccModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=4GB -s STACK_SIZE=8MB -s MALLOC=mimalloc -s DISABLE_EXCEPTION_CATCHING=0 -s EXPORT_EXCEPTION_HANDLING_HELPERS=1 -fexceptions -pthread --bind -s EXPORTED_RUNTIME_METHODS=['FS'] --preload-file ${CMAKE_SOURCE_DIR}/share@/"
 )
 
 # Set output file extension
@@ -151,12 +154,13 @@ target_link_libraries(occ.wasm PUBLIC
     occ_main
 )
 
-# Emscripten-specific linker flags for CLI executable (matching occjs for performance).
+# Emscripten-specific linker flags for CLI executable (matching occjs for
+# performance, including MALLOC=mimalloc).
 # MODULARIZE + EXPORT_ES6: consumers instantiate with `createOccCliModule({...})`
 # (works identically in node, browser and workers — no global `Module` injection).
 # -lnodefs.js lets the node CLI wrapper mount the real filesystem.
 set_target_properties(occ.wasm PROPERTIES
-    LINK_FLAGS "-O3 -DNDEBUG -flto -s MODULARIZE=1 -s EXPORT_NAME='createOccCliModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=4GB -s STACK_SIZE=8MB -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread -s EXIT_RUNTIME=0 -s INVOKE_RUN=0 -s FORCE_FILESYSTEM=1 -s EXPORTED_RUNTIME_METHODS=['callMain','FS','ENV'] -lnodefs.js --preload-file ${CMAKE_SOURCE_DIR}/share@/ -s ASSERTIONS=0"
+    LINK_FLAGS "-O3 -DNDEBUG -flto -s MODULARIZE=1 -s EXPORT_NAME='createOccCliModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=4GB -s STACK_SIZE=8MB -s MALLOC=mimalloc -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread -s EXIT_RUNTIME=0 -s INVOKE_RUN=0 -s FORCE_FILESYSTEM=1 -s EXPORTED_RUNTIME_METHODS=['callMain','FS','ENV'] -lnodefs.js --preload-file ${CMAKE_SOURCE_DIR}/share@/ -s ASSERTIONS=0"
 )
 
 # Set output file extension (will generate occ.js and occ.wasm)
