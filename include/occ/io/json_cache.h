@@ -24,6 +24,9 @@ public:
   virtual std::optional<nlohmann::json> load(const std::string &key) const = 0;
 
   virtual void store(const std::string &key, const nlohmann::json &doc) = 0;
+
+  /// Where `key` lives, for log messages: "file <key>" or "memory [<key>]".
+  virtual std::string location(const std::string &key) const = 0;
 };
 
 /// Documents on disk, one file per key. Persists between runs.
@@ -31,6 +34,7 @@ class FileJsonCache final : public JsonCache {
 public:
   std::optional<nlohmann::json> load(const std::string &key) const override;
   void store(const std::string &key, const nlohmann::json &doc) override;
+  std::string location(const std::string &key) const override;
 };
 
 /// Documents held for the lifetime of the object; nothing touches the disk.
@@ -39,6 +43,7 @@ class MemoryJsonCache final : public JsonCache {
 public:
   std::optional<nlohmann::json> load(const std::string &key) const override;
   void store(const std::string &key, const nlohmann::json &doc) override;
+  std::string location(const std::string &key) const override;
 
   size_t size() const { return m_documents.size(); }
 

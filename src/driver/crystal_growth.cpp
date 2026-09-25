@@ -701,17 +701,18 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
           m_solvated_energies.push_back(e_solv);
           m_solvated_surface_properties.push_back(std::move(surfaces));
           occ::log::info("Loaded monomer {} xTB energies from {}", index,
-                         monomer_cache);
+                         opts.cache->location(monomer_cache));
           loaded = true;
         } else {
-          occ::log::warn("Cached xTB monomer {} is for another model, solvent "
-                         "or molecule; recomputing",
-                         monomer_cache);
+          occ::log::warn(
+              "Cached xTB monomer in {} is for another model, solvent "
+              "or molecule; recomputing",
+              opts.cache->location(monomer_cache));
         }
       }
     } catch (const std::exception &e) {
-      occ::log::warn("Could not read {} ({}); recomputing", monomer_cache,
-                     e.what());
+      occ::log::warn("Could not read {} ({}); recomputing",
+                     opts.cache->location(monomer_cache), e.what());
     }
     if (loaded) {
       occ::log::info("Solvation free energy: {:12.6f} (E(solv) = "
@@ -768,8 +769,8 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
       j["e_solv"] = e_solv;
       j["surfaces"] = m_solvated_surface_properties.back();
       opts.cache->store(monomer_cache, j);
-      occ::log::info("Cached monomer {} xTB energies as {}", index,
-                     monomer_cache);
+      occ::log::info("Cached monomer {} xTB energies in {}", index,
+                     opts.cache->location(monomer_cache));
     }
 
     occ::log::info("Solvation free energy: {:12.6f} (E(solv) = "

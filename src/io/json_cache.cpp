@@ -23,6 +23,10 @@ void FileJsonCache::store(const std::string &key, const nlohmann::json &doc) {
   ofs << doc;
 }
 
+std::string FileJsonCache::location(const std::string &key) const {
+  return fmt::format("file {}", key);
+}
+
 std::optional<nlohmann::json>
 MemoryJsonCache::load(const std::string &key) const {
   const auto it = m_documents.find(key);
@@ -33,6 +37,10 @@ MemoryJsonCache::load(const std::string &key) const {
 
 void MemoryJsonCache::store(const std::string &key, const nlohmann::json &doc) {
   m_documents[key] = doc;
+}
+
+std::string MemoryJsonCache::location(const std::string &key) const {
+  return fmt::format("memory [{}]", key);
 }
 
 } // namespace occ::io

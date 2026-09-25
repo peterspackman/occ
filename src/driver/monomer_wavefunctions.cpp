@@ -28,18 +28,20 @@ void compute_monomer_energies(const std::string &basename,
     bool loaded = false;
     if (const auto cached = cache.load(key)) {
       if (cached->contains("model") && (*cached)["model"] == model.name) {
-        occ::log::info("Loading monomer {} energies from {}", idx, key);
+        occ::log::info("Loading monomer {} energies from {}", idx,
+                       cache.location(key));
         wfn.energy = (*cached)["energy"].get<occ::qm::Energy>();
         loaded = true;
       } else {
-        occ::log::warn("Cached monomer energies {} are not for {}; recomputing",
-                       key, model.name);
+        occ::log::warn("Cached monomer energies in {} are not for {}; "
+                       "recomputing",
+                       cache.location(key), model.name);
       }
     }
     if (!loaded) {
       occ::log::info("Computing monomer {} energies", idx);
       interaction.compute_monomer_energies(wfn);
-      occ::log::info("Caching monomer energies as {}", key);
+      occ::log::info("Caching monomer energies in {}", cache.location(key));
       nlohmann::json j;
       j["model"] = model.name;
       j["energy"] = wfn.energy;
@@ -71,13 +73,15 @@ Wavefunction calculate_wavefunction(const Molecule &mol,
   if (const auto doc = cache.load(key)) {
     auto cached = doc->get<Wavefunction>();
     if (cached_level_matches(cached, method, basis, spherical)) {
-      occ::log::info("Loading gas phase wavefunction from {}", key);
+      occ::log::info("Loading gas phase wavefunction from {}",
+                     cache.location(key));
       return cached;
     }
-    occ::log::warn("Cached wavefunction {} was computed at a different level "
-                   "({}/{}, spherical={}); recomputing at {}/{} (spherical={})",
-                   key, cached.method, cached.basis.name(),
-                   cached.basis.is_pure(), method, basis, spherical);
+    occ::log::warn(
+        "Cached wavefunction in {} was computed at a different level "
+        "({}/{}, spherical={}); recomputing at {}/{} (spherical={})",
+        cache.location(key), cached.method, cached.basis.name(),
+        cached.basis.is_pure(), method, basis, spherical);
   }
 
   occ::io::OccInput input;

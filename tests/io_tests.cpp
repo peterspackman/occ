@@ -1056,6 +1056,11 @@ TEST_CASE("JsonCache backends", "[io][cache]") {
     REQUIRE(occ::io::FileJsonCache{}.load(key) == doc);
   }
 
+  SECTION("each backend says where a key lives") {
+    REQUIRE(occ::io::FileJsonCache{}.location("a.json") == "file a.json");
+    REQUIRE(occ::io::MemoryJsonCache{}.location("a.json") == "memory [a.json]");
+  }
+
   SECTION("file: a corrupt document is an error, not a miss") {
     const auto dir =
         std::filesystem::temp_directory_path() / "occ_io_tests_json_cache";

@@ -38,19 +38,20 @@ bool SMDCalculator::try_load_cached(const CacheKeys &keys,
       cached_wfn.basis.is_pure() == m_settings.pure_spherical &&
       (cached_wfn.method == "SCF" || cached_wfn.method == m_settings.method);
   if (!same_level) {
-    occ::log::warn("Cached solvated wavefunction {} was computed at a "
+    occ::log::warn("Cached solvated wavefunction in {} was computed at a "
                    "different level ({}/{}); recomputing at {}/{}",
-                   keys.wavefunction, cached_wfn.method,
+                   m_cache.location(keys.wavefunction), cached_wfn.method,
                    cached_wfn.basis.name(), m_settings.method,
                    m_settings.basis);
     return false;
   }
 
-  occ::log::info("Loading cached surface properties from {}", keys.surface);
+  occ::log::info("Loading cached surface properties from {}",
+                 m_cache.location(keys.surface));
   surfaces = surface_doc->get<SolvationData>();
 
   occ::log::info("Loading cached solvated wavefunction from {}",
-                 keys.wavefunction);
+                 m_cache.location(keys.wavefunction));
   wfn = std::move(cached_wfn);
   return true;
 }
@@ -109,10 +110,12 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
 void SMDCalculator::save_calculation(const CacheKeys &keys,
                                      const SolvationData &surfaces,
                                      occ::qm::Wavefunction &wfn) const {
-  occ::log::info("Caching solvated surface properties as {}", keys.surface);
+  occ::log::info("Caching solvated surface properties in {}",
+                 m_cache.location(keys.surface));
   m_cache.store(keys.surface, surfaces);
 
-  occ::log::info("Caching solvated wavefunction as {}", keys.wavefunction);
+  occ::log::info("Caching solvated wavefunction in {}",
+                 m_cache.location(keys.wavefunction));
   wfn.method = m_settings.method; // recorded for cache validation
   m_cache.store(keys.wavefunction, wfn);
 }
