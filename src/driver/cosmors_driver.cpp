@@ -2,10 +2,12 @@
 #include <occ/core/units.h>
 #include <occ/dft/dft.h>
 #include <occ/driver/cosmors_driver.h>
+#include <occ/driver/solvated_procedure.h>
 #include <occ/qm/scf.h>
 #include <occ/scrf/reaction_field.h>
 #include <occ/solvent/cosmors_io.h>
 #include <occ/solvent/solvation_correction.h>
+#include <tuple>
 
 namespace occ::driver {
 
@@ -74,18 +76,21 @@ ConductorResult conductor_profile(const qm::Wavefunction &gas_wavefunction,
       occ::gto::AOBasis::load(gas_wavefunction.atoms, settings.basis);
   basis.set_pure(settings.pure_spherical);
 
-  occ::dft::DFT ks(settings.method, basis);
-  occ::solvent::SolvationCorrectedProcedure<occ::dft::DFT> proc(
-      ks, occ::scrf::Options::conductor(settings.probe_radius_angs));
-  occ::qm::SCF<occ::solvent::SolvationCorrectedProcedure<occ::dft::DFT>> scf(
-      proc, gas_wavefunction.mo.kind);
-  scf.set_charge_multiplicity(gas_wavefunction.charge(),
-                              gas_wavefunction.multiplicity());
-
   ConductorResult result;
   result.energy_gas = gas_wavefunction.energy.total;
-  result.energy_conductor = scf.compute_scf_energy();
-  result.wavefunction = scf.wavefunction();
+  // The method comes from the energy model, so it may be HF (CE-HF) or DFT.
+  std::tie(result.energy_conductor, result.wavefunction) =
+      with_solvated_procedure(
+          settings.method, basis,
+          [&](auto &proc) {
+            occ::qm::SCF<std::remove_reference_t<decltype(proc)>> scf(
+                proc, gas_wavefunction.mo.kind);
+            scf.set_charge_multiplicity(gas_wavefunction.charge(),
+                                        gas_wavefunction.multiplicity());
+            const double energy = scf.compute_scf_energy();
+            return std::make_pair(energy, scf.wavefunction());
+          },
+          occ::scrf::Options::conductor(settings.probe_radius_angs));
   result.segments = conductor_segments(
       result.wavefunction, settings.parameters, settings.probe_radius_angs,
       settings.angular_points, settings.constrain_charge,

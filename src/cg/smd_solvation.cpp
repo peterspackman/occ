@@ -3,8 +3,11 @@
 #include <occ/cg/smd_solvation.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/core/point_group.h>
+#include <occ/driver/solvated_procedure.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/scf.h>
+#include <tuple>
+#include <type_traits>
 
 namespace occ::cg {
 
@@ -69,24 +72,26 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   occ::log::debug("Loaded basis set, {} shells, {} basis functions",
                   basis.size(), basis.nbf());
 
-  // Set up DFT calculation with solvation
-  occ::dft::DFT ks(m_settings.method, basis);
-  occ::solvent::SolvationCorrectedProcedure<occ::dft::DFT> proc_solv(ks,
-                                                                     m_solvent);
-  occ::qm::SCF<occ::solvent::SolvationCorrectedProcedure<occ::dft::DFT>> scf(
-      proc_solv, gas_wfn.mo.kind);
+  // The method comes from the energy model, so it may be HF (CE-HF) or DFT.
+  auto [solvated_energy, solvated_wfn, scrf_surfaces] =
+      occ::driver::with_solvated_procedure(
+          m_settings.method, basis,
+          [&](auto &proc_solv) {
+            occ::qm::SCF<std::remove_reference_t<decltype(proc_solv)>> scf(
+                proc_solv, gas_wfn.mo.kind);
+            scf.set_charge_multiplicity(gas_wfn.charge(),
+                                        gas_wfn.multiplicity());
+            const double energy = scf.compute_scf_energy();
+            // The SCRF engine reports per-element ES energies as
+            // ½σ_i·φ_total_i, which is algebraically identical to the legacy
+            // `nuc_i + elec_i + pol_i` decomposition (see
+            // `from_scrf_surfaces`); summed totals match to floating-point
+            // precision.
+            return std::make_tuple(energy, scf.wavefunction(),
+                                   proc_solv.solvation_surfaces());
+          },
+          m_solvent);
 
-  scf.set_charge_multiplicity(gas_wfn.charge(), gas_wfn.multiplicity());
-
-  // Perform SCF calculation
-  double solvated_energy = scf.compute_scf_energy();
-  auto solvated_wfn = scf.wavefunction();
-
-  // Collect surface data from the unified SCRF engine. The engine reports
-  // per-element ES energies as ½σ_i·φ_total_i, which is algebraically
-  // identical to the legacy `nuc_i + elec_i + pol_i` decomposition (see
-  // `from_scrf_surfaces`); summed totals match to floating-point precision.
-  auto scrf_surfaces = proc_solv.solvation_surfaces();
   SolvationData surfaces = occ::cg::from_scrf_surfaces(scrf_surfaces);
 
   double surface_energy = surfaces.total_energy();

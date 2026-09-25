@@ -422,6 +422,27 @@ TEST_CASE("Averaging a constant field is the identity", "[solvent][cosmors]") {
     REQUIRE(s.sigma_averaged(i) == Catch::Approx(0.007).epsilon(1e-12));
 }
 
+TEST_CASE("Ideal-conductor COSMO profile at Hartree-Fock",
+          "[solvent][cosmors][conductor]") {
+  // cg hands the conductor calculation the energy model's method, and CE-HF's
+  // is "hf", which is not a DFT functional.
+  auto mol = occ::io::molecule_from_xyz_string(WATER);
+  occ::gto::AOBasis basis = occ::gto::AOBasis::load(mol.atoms(), "sto-3g");
+  basis.set_pure(true);
+  occ::qm::HartreeFock gas_hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> gas_scf(gas_hf);
+  const double gas_energy = gas_scf.compute_scf_energy();
+
+  occ::driver::ConductorSettings settings;
+  settings.method = "hf";
+  settings.basis = "sto-3g";
+  const auto result =
+      occ::driver::conductor_profile(gas_scf.wavefunction(), settings);
+
+  REQUIRE(result.energy_conductor < gas_energy);
+  REQUIRE(result.segments.size() > 100);
+}
+
 TEST_CASE("Ideal-conductor COSMO profile for water",
           "[solvent][cosmors][conductor]") {
   auto mol = occ::io::molecule_from_xyz_string(WATER);

@@ -762,6 +762,35 @@ TEST_CASE("CG: solvated wavefunction cache is recomputed at a different basis",
   REQUIRE(second.calculate().wavefunctions[0].basis.name() == "sto-3g");
 }
 
+TEST_CASE("CG: SMD solvation runs at Hartree-Fock as well as DFT",
+          "[cg][solvation]") {
+  // CE-HF hands SMD the method "hf", which is not a DFT functional.
+  occ::io::MemoryJsonCache cache;
+  const std::vector<occ::core::Molecule> molecules{water_molecule()};
+  occ::cg::SMDSettings settings;
+  settings.basis = "sto-3g";
+
+  settings.method = "hf";
+  const auto gas_hf = occ::driver::calculate_wavefunctions(
+      "gas_hf", molecules, "hf", settings.basis, false, cache);
+  occ::cg::SMDCalculator hf("water_hf", molecules, gas_hf, "water", cache,
+                            settings);
+  const auto hf_result = hf.calculate();
+
+  settings.method = "b3lyp";
+  const auto gas_b3lyp = occ::driver::calculate_wavefunctions(
+      "gas_b3lyp", molecules, "b3lyp", settings.basis, false, cache);
+  occ::cg::SMDCalculator b3lyp("water_b3lyp", molecules, gas_b3lyp, "water",
+                               cache, settings);
+  const auto b3lyp_result = b3lyp.calculate();
+
+  const double e_hf = hf_result.surfaces[0].total_solvation_energy;
+  const double e_b3lyp = b3lyp_result.surfaces[0].total_solvation_energy;
+  REQUIRE(e_hf < 0.0);
+  REQUIRE(e_b3lyp < 0.0);
+  REQUIRE(e_hf != Approx(e_b3lyp).epsilon(1e-6));
+}
+
 TEST_CASE("CG: from_xtb_surfaces handles CPCM-X (no cds)",
           "[cg][xtb][solvation]") {
   // Synthesise an xtb SolvationSurfaces with only the coulomb branch and
