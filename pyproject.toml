@@ -35,6 +35,10 @@ build-dir = "build-{wheel_tag}"
 # Build stable ABI wheels for CPython 3.12+
 wheel.py-api = "cp312"
 cmake.targets = ["_occpy", "occ"]
+# Wheels run on machines other than the one that built them, so no
+# -march=native anywhere. For a faster local-only install:
+#   uv pip install . -C cmake.define.ENABLE_HOST_OPT=ON
+cmake.define = { ENABLE_HOST_OPT = "OFF" }
 
 [tool.cibuildwheel]
 # Necessary to see build output from the actual compilation

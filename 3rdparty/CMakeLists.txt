@@ -169,9 +169,11 @@ if(
     set(LIBCINT_BUILD_TYPE "CMAKE_BUILD_TYPE Release")
 endif()
 if(NOT USE_SYSTEM_LIBCINT)
-    # Add compiler flags to fix the implicit function declaration error
+    # Add compiler flags to fix the implicit function declaration error. Keep
+    # the build's own C flags too: this replaces CMAKE_C_FLAGS for libcint, and
+    # a release build's target architecture (e.g. -march=skylake) lives there.
     set(LIBCINT_C_FLAGS
-        "-Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE"
+        "${CMAKE_C_FLAGS} -Wno-implicit-function-declaration -Wno-deprecated-non-prototype -D_GNU_SOURCE"
     )
 
     CPMAddPackage(
@@ -184,7 +186,10 @@ if(NOT USE_SYSTEM_LIBCINT)
             "ENABLE_STATIC ON"
             "BUILD_SHARED_LIBS OFF"
             "PYPZPX ON"
-            "BUILD_MARCH_NATIVE ON"
+            # -march=native ties the objects to the build machine's CPU:
+            # binaries (and cached CI objects) then die with SIGILL on an
+            # older one. Only for host-optimised builds, like libxc's XHOST.
+            "BUILD_MARCH_NATIVE ${ENABLE_HOST_OPT}"
             "WITH_RANGE_COULOMB ON"
             "CMAKE_C_FLAGS ${LIBCINT_C_FLAGS}"
             ${LIBCINT_BUILD_TYPE}

@@ -72,24 +72,29 @@ jobs:
       run: |
         choco install ninja -y
 
+    # Both caches hold compiled objects that are restored on whichever runner
+    # picks up the next job, and GitHub's runners vary in CPU. The build must
+    # therefore target a fixed architecture, never the host (see the
+    # host-specific flags check below). v2 drops the caches built while
+    # libcint was compiled with -march=native, which crashed with SIGILL.
     - name: Cache CPM Dependencies
       uses: actions/cache@v4
       with:
         path: |
           ${{env.CPM_SOURCE_CACHE}}
           ${{github.workspace}}/build
-        key: ${{ matrix.name }}-occ-build-${{ hashFiles('**/CMakeLists.txt') }}
+        key: ${{ matrix.name }}-occ-build-v2-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: |
-          ${{ matrix.name }}-occ-build-
+          ${{ matrix.name }}-occ-build-v2-
 
     - name: Cache ccache
       if: runner.os != 'Windows'
       uses: actions/cache@v4
       with:
         path: ${{env.CCACHE_DIR}}
-        key: ${{ matrix.name }}-ccache-${{ github.sha }}
+        key: ${{ matrix.name }}-ccache-v2-${{ github.sha }}
         restore-keys: |
-          ${{ matrix.name }}-ccache-
+          ${{ matrix.name }}-ccache-v2-
 
     - name: Run build script (non-Windows)
       if: runner.os != 'Windows'
@@ -100,6 +105,16 @@ jobs:
     - name: ccache stats
       if: runner.os != 'Windows'
       run: ccache -s
+
+    - name: Check for host-specific CPU flags
+      if: runner.os != 'Windows'
+      run: |
+        # Code built for this runner's CPU dies with SIGILL on another one:
+        # the next CI runner (via the caches above), or a user's machine.
+        if grep -nE -- '-(march|mcpu|mtune)=native|-xHost' build/build.ninja; then
+          echo "::error::host-specific CPU flags in the build; a dependency is ignoring ENABLE_HOST_OPT=OFF"
+          exit 1
+        fi
 
     - name: Run build script (Windows)
       if: runner.os == 'Windows'
