@@ -26,15 +26,12 @@ M.FS.mkdir('/work');
 M.FS.mount(M.FS.filesystems.NODEFS, { root: process.cwd() }, '/work');
 M.FS.chdir('/work');
 
+// main() runs on a worker thread; runMain resolves with its exit status.
 let code = 0;
 try {
-  code = M.callMain(process.argv.slice(2));
+  code = await M.runMain(process.argv.slice(2));
 } catch (e) {
-  if (e && e.name === 'ExitStatus') {
-    code = e.status;
-  } else {
-    console.error(e);
-    code = 1;
-  }
+  console.error(e);
+  code = 1;
 }
 process.exit(code);

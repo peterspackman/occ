@@ -88,8 +88,20 @@ import createOccCliModule from '@peterspackman/occjs/cli';
 
 const M = await createOccCliModule({ noInitialRun: true, locateFile: ... });
 M.FS.writeFile('/water.xyz', xyzContents);
-const exitCode = M.callMain(['scf', 'water.xyz', 'ccsd(t)', '6-31g']);
+const exitCode = await M.runMain(['scf', 'water.xyz', 'ccsd(t)', '6-31g']);
+const wavefunction = M.FS.readFile('/water.owf.json');
 ```
+
+The module behaves like an executable: `main()` runs on its own thread, and
+`runMain` resolves with its exit status once it has finished and its output
+files are in `M.FS`. It rejects if occ aborts. Each module runs one command,
+so create a fresh one for the next.
+
+> **Migrating from `callMain`**: `M.callMain(args)` used to block until the
+> command finished and return its exit status. The CLI now runs `main()` on a
+> worker thread (without that, runs with 6 or more threads silently ran on
+> one), so `callMain` can no longer report completion and throws instead. Use
+> `await M.runMain(args)`, and a fresh module per command.
 
 > **Migrating from ≤0.9.x**: `occ.js` used to be a classic script configured
 > through a global `Module` object and loaded with `importScripts()`. It is

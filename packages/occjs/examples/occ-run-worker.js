@@ -10,10 +10,6 @@ self.onmessage = async function (e) {
     Module = await createOccCliModule({
       print: (text) => self.postMessage({ type: 'output', text }),
       printErr: (text) => self.postMessage({ type: 'error', text }),
-      onAbort: (msg) => {
-        self.postMessage({ type: 'error', text: `Module aborted: ${msg}` });
-        self.postMessage({ type: 'exit', code: 1, files: {} });
-      },
       noInitialRun: true,
       locateFile: (path) => new URL(`../dist/${path}`, import.meta.url).href,
     });
@@ -78,9 +74,11 @@ self.onmessage = async function (e) {
 
     self.postMessage({ type: 'ready' });
 
-    // Call main with arguments
+    // main() runs on its own thread: runMain resolves with its exit status
+    // once it has finished (non-zero included), and rejects if occ aborts.
+    // This module is then done; the next command gets a fresh one.
     const args = command.split(/\s+/).filter((a) => a.length > 0);
-    const exitCode = Module.callMain(args);
+    const exitCode = await Module.runMain(args);
 
     // Collect all files from filesystem to send back
     const outputFiles = {};
@@ -88,14 +86,7 @@ self.onmessage = async function (e) {
 
     self.postMessage({ type: 'exit', code: exitCode, files: outputFiles });
   } catch (error) {
-    if (error && error.name === 'ExitStatus') {
-      // Still collect files even on non-zero exit
-      const outputFiles = {};
-      collectFiles('/', outputFiles);
-      self.postMessage({ type: 'exit', code: error.status, files: outputFiles });
-    } else {
-      self.postMessage({ type: 'error', text: `Runtime error: ${error.message}` });
-      self.postMessage({ type: 'exit', code: 1, files: {} });
-    }
+    self.postMessage({ type: 'error', text: `Runtime error: ${error.message}` });
+    self.postMessage({ type: 'exit', code: 1, files: {} });
   }
 };

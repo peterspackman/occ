@@ -156,12 +156,22 @@ target_link_libraries(occ.wasm PUBLIC
 
 # Emscripten-specific linker flags for CLI executable (matching occjs for
 # performance, including MALLOC=mimalloc).
+# PROXY_TO_PTHREAD runs main() on a worker thread. On the JS thread, main()
+# never services the thread creations oneTBB's workers request, so any run
+# with 6 or more threads silently ran serially. The module then behaves like
+# an executable: EXIT_RUNTIME=1 flushes, runs destructors and stops every
+# thread when main() returns, and reports the status through Module.onExit.
+# One module per command; Module.runMain (main/occ_wasm_post.js) wraps that
+# as a promise, since callMain now returns before main() has started.
 # MODULARIZE + EXPORT_ES6: consumers instantiate with `createOccCliModule({...})`
 # (works identically in node, browser and workers — no global `Module` injection).
 # -lnodefs.js lets the node CLI wrapper mount the real filesystem.
 set_target_properties(occ.wasm PROPERTIES
-    LINK_FLAGS "-O3 -DNDEBUG -flto -s MODULARIZE=1 -s EXPORT_NAME='createOccCliModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=4GB -s STACK_SIZE=8MB -s MALLOC=mimalloc -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread -s EXIT_RUNTIME=0 -s INVOKE_RUN=0 -s FORCE_FILESYSTEM=1 -s EXPORTED_RUNTIME_METHODS=['callMain','FS','ENV'] -lnodefs.js --preload-file ${CMAKE_SOURCE_DIR}/share@/ -s ASSERTIONS=0"
+    LINK_FLAGS "-O3 -DNDEBUG -flto -s MODULARIZE=1 -s EXPORT_NAME='createOccCliModule' -s EXPORT_ES6=1 -s ENVIRONMENT='web,worker,node' -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=4GB -s STACK_SIZE=8MB -s MALLOC=mimalloc -s DISABLE_EXCEPTION_CATCHING=0 -fexceptions -pthread -s EXIT_RUNTIME=1 -s PROXY_TO_PTHREAD=1 -s INVOKE_RUN=0 -s FORCE_FILESYSTEM=1 -s EXPORTED_RUNTIME_METHODS=['callMain','FS','ENV'] -lnodefs.js --preload-file ${CMAKE_SOURCE_DIR}/share@/ --post-js ${CMAKE_CURRENT_SOURCE_DIR}/main/occ_wasm_post.js -s ASSERTIONS=0"
 )
+
+set_property(TARGET occ.wasm APPEND PROPERTY LINK_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/main/occ_wasm_post.js")
 
 # Set output file extension (will generate occ.js and occ.wasm)
 set_target_properties(occ.wasm PROPERTIES OUTPUT_NAME "occ" SUFFIX ".js")
