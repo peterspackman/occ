@@ -3,6 +3,7 @@
 #include <occ/cg/smd_solvation.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/core/point_group.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/scf.h>
 
 namespace occ::cg {
@@ -11,22 +12,27 @@ SMDCalculator::SMDCalculator(
     const std::string &basename,
     const std::vector<occ::core::Molecule> &molecules,
     const std::vector<occ::qm::Wavefunction> &wavefunctions,
-    const std::string &solvent, const SMDSettings &settings)
+    const std::string &solvent, occ::io::JsonCache &cache,
+    const SMDSettings &settings)
     : m_basename(basename), m_solvent(solvent), m_settings(settings),
-      m_molecules(molecules), m_gas_wavefunctions(wavefunctions) {}
+      m_molecules(molecules), m_gas_wavefunctions(wavefunctions),
+      m_cache(cache) {}
 
-bool SMDCalculator::try_load_cached(const CacheFiles &cache,
+bool SMDCalculator::try_load_cached(const CacheKeys &keys,
                                     SolvationData &surfaces,
                                     occ::qm::Wavefunction &wfn) const {
-  if (!cache.exists())
+  const auto wfn_doc = m_cache.load(keys.wavefunction);
+  if (!wfn_doc)
+    return false;
+  const auto surface_doc = m_cache.load(keys.surface);
+  if (!surface_doc)
     return false;
 
-  // Both files depend on the level of theory, which the filenames do not
+  // Both documents depend on the level of theory, which the keys do not
   // record: reuse them only when the cached wavefunction was computed at this
   // one. A wavefunction saved without its method says "SCF" and is judged on
   // the basis alone.
-  auto cached_wfn =
-      occ::qm::Wavefunction::load(cache.wavefunction_path.string());
+  auto cached_wfn = wfn_doc->get<occ::qm::Wavefunction>();
   const bool same_level =
       cached_wfn.basis.name() == m_settings.basis &&
       cached_wfn.basis.is_pure() == m_settings.pure_spherical &&
@@ -34,21 +40,17 @@ bool SMDCalculator::try_load_cached(const CacheFiles &cache,
   if (!same_level) {
     occ::log::warn("Cached solvated wavefunction {} was computed at a "
                    "different level ({}/{}); recomputing at {}/{}",
-                   cache.wavefunction_path.string(), cached_wfn.method,
+                   keys.wavefunction, cached_wfn.method,
                    cached_wfn.basis.name(), m_settings.method,
                    m_settings.basis);
     return false;
   }
 
-  occ::log::info("Loading cached surface properties from {}",
-                 cache.surface_path.string());
-
-  std::ifstream ifs(cache.surface_path.string());
-  auto jf = nlohmann::json::parse(ifs);
-  surfaces = jf.get<SolvationData>();
+  occ::log::info("Loading cached surface properties from {}", keys.surface);
+  surfaces = surface_doc->get<SolvationData>();
 
   occ::log::info("Loading cached solvated wavefunction from {}",
-                 cache.wavefunction_path.string());
+                 keys.wavefunction);
   wfn = std::move(cached_wfn);
   return true;
 }
@@ -104,21 +106,15 @@ SMDCalculator::perform_calculation(const occ::core::Molecule &mol,
   return {surfaces, solvated_wfn};
 }
 
-void SMDCalculator::save_calculation(const CacheFiles &cache,
+void SMDCalculator::save_calculation(const CacheKeys &keys,
                                      const SolvationData &surfaces,
                                      occ::qm::Wavefunction &wfn) const {
-  occ::log::info("Writing solvated surface properties to {}",
-                 cache.surface_path.string());
-  {
-    std::ofstream ofs(cache.surface_path.string());
-    nlohmann::json j = surfaces;
-    ofs << j;
-  }
+  occ::log::info("Writing solvated surface properties to {}", keys.surface);
+  m_cache.store(keys.surface, surfaces);
 
-  occ::log::info("Writing solvated wavefunction to {}",
-                 cache.wavefunction_path.string());
+  occ::log::info("Writing solvated wavefunction to {}", keys.wavefunction);
   wfn.method = m_settings.method; // recorded for cache validation
-  wfn.save(cache.wavefunction_path.string());
+  m_cache.store(keys.wavefunction, wfn);
 }
 
 void SMDCalculator::calculate_free_energy_components(
@@ -148,16 +144,16 @@ SMDCalculator::Result SMDCalculator::calculate() {
   result.wavefunctions.reserve(m_gas_wavefunctions.size());
 
   for (size_t i = 0; i < m_gas_wavefunctions.size(); ++i) {
-    CacheFiles cache(m_basename, i, m_solvent);
+    const CacheKeys keys(m_basename, i, m_solvent);
 
     SolvationData surfaces;
     occ::qm::Wavefunction wavefunction;
 
-    bool cached = try_load_cached(cache, surfaces, wavefunction);
+    bool cached = try_load_cached(keys, surfaces, wavefunction);
     if (!cached) {
       std::tie(surfaces, wavefunction) =
           perform_calculation(m_molecules[i], m_gas_wavefunctions[i], i);
-      save_calculation(cache, surfaces, wavefunction);
+      save_calculation(keys, surfaces, wavefunction);
     }
     result.surfaces.push_back(surfaces);
     result.wavefunctions.push_back(wavefunction);

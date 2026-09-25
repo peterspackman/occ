@@ -16,6 +16,7 @@
 #include <occ/driver/crystal_growth.h>
 #include <occ/driver/crystal_morphology.h>
 #include <occ/driver/monomer_wavefunctions.h>
+#include <occ/io/json_cache.h>
 #include <occ/solvent/surface.h>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
@@ -714,51 +715,50 @@ std::filesystem::path fresh_directory(const std::string &name) {
 
 TEST_CASE("CG: wavefunction cache is recomputed at a different basis",
           "[cg][cache]") {
-  const std::string name = (fresh_directory("gas_level") / "water_0").string();
-  const auto first = occ::driver::calculate_wavefunction(water_molecule(), name,
-                                                         "hf", "3-21g", false);
+  occ::io::MemoryJsonCache cache;
+  const auto first = occ::driver::calculate_wavefunction(
+      water_molecule(), "water_0", "hf", "3-21g", false, cache);
   const auto second = occ::driver::calculate_wavefunction(
-      water_molecule(), name, "hf", "sto-3g", false);
+      water_molecule(), "water_0", "hf", "sto-3g", false, cache);
   REQUIRE(first.basis.name() == "3-21g");
   REQUIRE(second.basis.name() == "sto-3g");
 }
 
 TEST_CASE("CG: monomer energy cache is reused only for the model that wrote it",
           "[cg][cache]") {
-  const std::string base =
-      (fresh_directory("monomer_energies") / "water").string();
+  occ::io::MemoryJsonCache cache;
   auto wavefunctions = occ::driver::calculate_wavefunctions(
-      base, {water_molecule()}, "hf", "3-21g", false);
-  const auto cached_model = [&base]() {
-    std::ifstream ifs(base + "_0_monomer_energies.json");
-    return nlohmann::json::parse(ifs).value("model", std::string{});
+      "water", {water_molecule()}, "hf", "3-21g", false, cache);
+  const auto cached_model = [&cache]() {
+    return cache.load("water_0_monomer_energies.json")
+        ->value("model", std::string{});
   };
 
-  occ::driver::compute_monomer_energies(base, wavefunctions, "ce-hf");
+  occ::driver::compute_monomer_energies("water", wavefunctions, "ce-hf", cache);
   REQUIRE(cached_model() == "CE-HF");
-  occ::driver::compute_monomer_energies(base, wavefunctions, "ce-b3lyp");
+  occ::driver::compute_monomer_energies("water", wavefunctions, "ce-b3lyp",
+                                        cache);
   REQUIRE(cached_model() == "CE-B3LYP");
 }
 
 TEST_CASE("CG: solvated wavefunction cache is recomputed at a different basis",
           "[cg][cache][solvation]") {
-  const auto dir = fresh_directory("solvated_level");
+  occ::io::MemoryJsonCache cache;
   const std::vector<occ::core::Molecule> molecules{water_molecule()};
-  const std::string base = (dir / "water").string();
 
   occ::cg::SMDSettings settings;
   settings.basis = "3-21g";
   const auto gas = occ::driver::calculate_wavefunctions(
-      (dir / "gas_321g").string(), molecules, settings.method, settings.basis,
-      false);
-  occ::cg::SMDCalculator first(base, molecules, gas, "water", settings);
+      "gas_321g", molecules, settings.method, settings.basis, false, cache);
+  occ::cg::SMDCalculator first("water", molecules, gas, "water", cache,
+                               settings);
   REQUIRE(first.calculate().wavefunctions[0].basis.name() == "3-21g");
 
   settings.basis = "sto-3g";
   const auto gas_sto3g = occ::driver::calculate_wavefunctions(
-      (dir / "gas_sto3g").string(), molecules, settings.method, settings.basis,
-      false);
-  occ::cg::SMDCalculator second(base, molecules, gas_sto3g, "water", settings);
+      "gas_sto3g", molecules, settings.method, settings.basis, false, cache);
+  occ::cg::SMDCalculator second("water", molecules, gas_sto3g, "water", cache,
+                                settings);
   REQUIRE(second.calculate().wavefunctions[0].basis.name() == "sto-3g");
 }
 
@@ -788,6 +788,7 @@ TEST_CASE("CG: xtb growth calculator with no solvation stays in the gas phase",
           "[cg][xtb][solvation]") {
   occ::driver::CrystalGrowthCalculatorOptions opts;
   opts.solvation_model = occ::driver::SolvationModelKind::None;
+  opts.cache = std::make_shared<occ::io::MemoryJsonCache>();
   occ::driver::XTBCrystalGrowthCalculator calc(acetic_acid_crystal(), opts);
   calc.init_monomer_energies();
 
@@ -795,6 +796,24 @@ TEST_CASE("CG: xtb growth calculator with no solvation stays in the gas phase",
   REQUIRE(calc.m_solvated_energies == calc.m_gas_phase_energies);
   for (auto &surfaces : calc.solvated_surface_properties())
     REQUIRE(surfaces.total_energy() == 0.0);
+}
+
+TEST_CASE("CG: xtb monomers are reused from a shared in-memory cache",
+          "[cg][xtb][cache]") {
+  occ::driver::CrystalGrowthCalculatorOptions opts;
+  opts.solvation_model = occ::driver::SolvationModelKind::None;
+  auto cache = std::make_shared<occ::io::MemoryJsonCache>();
+  opts.cache = cache;
+
+  occ::driver::XTBCrystalGrowthCalculator first(acetic_acid_crystal(), opts);
+  first.init_monomer_energies();
+  REQUIRE(cache->size() == first.m_gas_phase_energies.size());
+
+  occ::driver::XTBCrystalGrowthCalculator second(acetic_acid_crystal(), opts);
+  second.init_monomer_energies();
+  REQUIRE(cache->size() == first.m_gas_phase_energies.size());
+  REQUIRE(second.m_gas_phase_energies == first.m_gas_phase_energies);
+  REQUIRE(second.m_solvated_energies == first.m_solvated_energies);
 }
 
 TEST_CASE("CG: xtb growth calculator rejects cosmo-rs",

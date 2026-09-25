@@ -2,6 +2,7 @@
 #include <memory>
 #include <occ/cg/solvation_data.h>
 #include <occ/core/molecule.h>
+#include <occ/io/json_cache.h>
 #include <occ/qm/wavefunction.h>
 #include <string>
 #include <vector>
@@ -110,6 +111,10 @@ struct CGSolvationSettings {
   /// volume for its reference-state term; dissolving a crystal, the cell
   /// supplies it directly. Zero leaves that term out.
   double volume_per_molecule{0.0};
+  /// Where a model keeps its per-molecule results between runs (SMD does;
+  /// openCOSMO-RS keeps nothing).
+  std::shared_ptr<occ::io::JsonCache> cache{
+      std::make_shared<occ::io::FileJsonCache>()};
 };
 
 [[nodiscard]] std::unique_ptr<CGSolvationModel>

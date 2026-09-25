@@ -152,7 +152,7 @@ public:
     smd.temperature = solvent.temperature;
 
     cg::SMDCalculator calculator(basename, molecules, gas_wavefunctions,
-                                 solvent.single(), smd);
+                                 solvent.single(), *m_settings.cache, smd);
     auto result = calculator.calculate();
     return {std::move(result.surfaces), std::move(result.wavefunctions)};
   }

@@ -11,6 +11,7 @@ add_library(
     "${CMAKE_CURRENT_SOURCE_DIR}/dftb_gen.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/engrad.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/gmf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/json_cache.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/periodic_grid.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/kmcpp.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/load_geometry.cpp"

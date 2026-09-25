@@ -107,7 +107,8 @@ void DMACrystalGrowthCalculator::init_monomer_energies() {
   occ::log::info("DMA+exp-6 model: computing monomer wavefunctions at {}",
                  ref.label);
   gas_phase_wavefunctions() = occ::driver::calculate_wavefunctions(
-      opts.basename, molecules(), ref.method, ref.basis, /*spherical=*/false);
+      opts.basename, molecules(), ref.method, ref.basis, /*spherical=*/false,
+      *opts.cache);
   solvated_wavefunctions() = gas_phase_wavefunctions();
 
   m_monomers.clear();

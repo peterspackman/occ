@@ -407,7 +407,7 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
     sw.start();
     m_gas_phase_wavefunctions =
         calculate_wavefunctions(opts.basename, m_molecules, opts.energy_model,
-                                /*spherical=*/false);
+                                /*spherical=*/false, *opts.cache);
     sw.stop();
 
     occ::log::info("Gas phase wavefunctions took {:.6f} seconds", sw.read());
@@ -422,6 +422,7 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
     settings.method = parameterized_model.method;
     settings.basis = parameterized_model.basis;
     settings.probe_radius_angs = opts.solvent_probe_radius;
+    settings.cache = opts.cache;
     // Dissolving a crystal, the cell gives the condensed-phase volume per
     // molecule directly; openCOSMO-RS uses it for its reference-state term.
     if (const auto n = m_crystal.unit_cell_molecules().size(); n > 0)
@@ -459,7 +460,7 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
   sw.start();
   occ::log::info("Computing monomer energies for gas phase");
   compute_monomer_energies(opts.basename, m_gas_phase_wavefunctions,
-                           opts.energy_model);
+                           opts.energy_model, *opts.cache);
   // Only the solvated wavefunctions that will actually be used: a model whose
   // reference is the ideal conductor forces the gas-phase choice, and those
   // have already been done just above.
@@ -467,7 +468,7 @@ void CEModelCrystalGrowthCalculator::init_monomer_energies() {
     occ::log::info("Computing monomer energies for solution phase");
     compute_monomer_energies(
         fmt::format("{}_{}", opts.basename, opts.solvent_tag),
-        m_solvated_wavefunctions, opts.energy_model);
+        m_solvated_wavefunctions, opts.energy_model, *opts.cache);
   }
   sw.stop();
   occ::log::info("Computing monomer energies took {:.6f} seconds", sw.read());
@@ -684,33 +685,31 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
     // for another one is ignored rather than silently reused.
     const std::string cache_tag =
         use_smd ? fmt::format("gfn2_{}", opts.solvent_tag) : "gfn2_gas";
-    fs::path monomer_cache(
-        fmt::format("{}_{}_{}_xtb_monomer.json", opts.basename, index, cache_tag));
+    const std::string monomer_cache = fmt::format(
+        "{}_{}_{}_xtb_monomer.json", opts.basename, index, cache_tag);
     bool loaded = false;
-    if (fs::exists(monomer_cache)) {
-      try {
-        std::ifstream ifs(monomer_cache.string());
-        const auto cached = nlohmann::json::parse(ifs);
-        if (cached.value("tag", std::string{}) == cache_tag &&
-            cached.value("n_atoms", -1) == static_cast<int>(m.size())) {
-          e_gas = cached.at("e_gas").get<double>();
-          e_solv = cached.at("e_solv").get<double>();
+    try {
+      if (const auto cached = opts.cache->load(monomer_cache)) {
+        if (cached->value("tag", std::string{}) == cache_tag &&
+            cached->value("n_atoms", -1) == static_cast<int>(m.size())) {
+          e_gas = cached->at("e_gas").get<double>();
+          e_solv = cached->at("e_solv").get<double>();
+          auto surfaces = cached->at("surfaces").get<cg::SolvationData>();
           m_gas_phase_energies.push_back(e_gas);
           m_solvated_energies.push_back(e_solv);
-          m_solvated_surface_properties.push_back(
-              cached.at("surfaces").get<cg::SolvationData>());
+          m_solvated_surface_properties.push_back(std::move(surfaces));
           occ::log::info("Loaded monomer {} xTB energies from {}", index,
-                         monomer_cache.string());
+                         monomer_cache);
           loaded = true;
         } else {
           occ::log::warn("Cached xTB monomer {} is for another model, solvent "
                          "or molecule; recomputing",
-                         monomer_cache.string());
+                         monomer_cache);
         }
-      } catch (const std::exception &e) {
-        occ::log::warn("Could not read {} ({}); recomputing",
-                       monomer_cache.string(), e.what());
       }
+    } catch (const std::exception &e) {
+      occ::log::warn("Could not read {} ({}); recomputing", monomer_cache,
+                     e.what());
     }
     if (loaded) {
       occ::log::info("Solvation free energy: {:12.6f} (E(solv) = "
@@ -766,10 +765,9 @@ void XTBCrystalGrowthCalculator::init_monomer_energies() {
       j["e_gas"] = e_gas;
       j["e_solv"] = e_solv;
       j["surfaces"] = m_solvated_surface_properties.back();
-      std::ofstream ofs(monomer_cache.string());
-      ofs << j;
+      opts.cache->store(monomer_cache, j);
       occ::log::info("Wrote monomer {} xTB energies to {}", index,
-                     monomer_cache.string());
+                     monomer_cache);
     }
 
     occ::log::info("Solvation free energy: {:12.6f} (E(solv) = "

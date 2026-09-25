@@ -14,6 +14,7 @@
 #include <occ/driver/single_point.h>
 #include <occ/interaction/pair_energy.h>
 #include <occ/interaction/pairinteraction.h>
+#include <occ/io/json_cache.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/wavefunction.h>
 
@@ -59,6 +60,11 @@ struct CrystalGrowthCalculatorOptions {
   double inner_radius{3.8};
   double outer_radius{3.8};
   WavefunctionChoice wavefunction_choice{WavefunctionChoice::GasPhase};
+  /// Where monomer wavefunctions, energies and solvation surfaces are kept,
+  /// keyed on `basename`. Files by default, so a repeat run reuses them; an
+  /// occ::io::MemoryJsonCache keeps them in this process only.
+  std::shared_ptr<occ::io::JsonCache> cache{
+      std::make_shared<occ::io::FileJsonCache>()};
 };
 
 class CrystalGrowthCalculator {

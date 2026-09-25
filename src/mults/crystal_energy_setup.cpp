@@ -539,8 +539,9 @@ compute_multipoles(occ::crystal::Crystal &crystal,
     std::string energy_model = config.method;
     // The calculate_wavefunctions function expects the full model string
     // which maps to method + basis internally
+    occ::io::FileJsonCache cache;
     auto wavefunctions = occ::driver::calculate_wavefunctions(
-        config.basename, molecules, energy_model, false);
+        config.basename, molecules, energy_model, false, cache);
 
     std::vector<MultipoleSource> sources;
     sources.reserve(molecules.size());

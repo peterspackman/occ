@@ -6,6 +6,8 @@ namespace occ::qm {
 
 void from_json(const nlohmann::json &J, Energy &energy);
 void to_json(nlohmann::json &J, const Energy &energy);
+void from_json(const nlohmann::json &J, Wavefunction &wfn);
+void to_json(nlohmann::json &J, const Wavefunction &wfn);
 
 } // namespace occ::qm
 

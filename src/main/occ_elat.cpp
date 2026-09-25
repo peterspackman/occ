@@ -200,9 +200,12 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
     energy_model =
         std::make_unique<ExternalEnergyModel>(c, settings.external_command);
   } else {
+    occ::io::FileJsonCache cache;
     wfns = occ::driver::calculate_wavefunctions(
-        basename, molecules, settings.model_name, settings.spherical_basis);
-    occ::driver::compute_monomer_energies(basename, wfns, settings.model_name);
+        basename, molecules, settings.model_name, settings.spherical_basis,
+        cache);
+    occ::driver::compute_monomer_energies(basename, wfns, settings.model_name,
+                                          cache);
 
     auto ce_model = std::make_unique<CEEnergyModel>(c, wfns, wfns);
     ce_model->set_model_name(settings.model_name);

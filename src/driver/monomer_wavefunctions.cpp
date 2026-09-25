@@ -1,13 +1,10 @@
 #include <fmt/core.h>
-#include <filesystem>
 #include <occ/core/log.h>
+#include <occ/driver/monomer_wavefunctions.h>
 #include <occ/driver/single_point.h>
 #include <occ/interaction/pairinteraction.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/io/wavefunction_json.h>
-#include <occ/driver/monomer_wavefunctions.h>
-
-namespace fs = std::filesystem;
 
 namespace occ::driver {
 
@@ -17,40 +14,36 @@ using occ::qm::Wavefunction;
 
 void compute_monomer_energies(const std::string &basename,
                               WavefunctionList &wavefunctions,
-                              const std::string &model_name) {
+                              const std::string &model_name,
+                              occ::io::JsonCache &cache) {
   size_t idx = 0;
 
   auto model = occ::interaction::ce_model_from_string(model_name);
   occ::interaction::CEModelInteraction interaction(model);
   for (auto &wfn : wavefunctions) {
-    fs::path monomer_energies_path(
-        fmt::format("{}_{}_monomer_energies.json", basename, idx));
-    // Cached as {"model": ..., "energy": ...}. The filename does not name the
-    // model, so a file that names another model, or none, is recomputed.
+    const std::string key =
+        fmt::format("{}_{}_monomer_energies.json", basename, idx);
+    // Cached as {"model": ..., "energy": ...}. The key does not name the
+    // model, so a document that names another model, or none, is recomputed.
     bool loaded = false;
-    if (fs::exists(monomer_energies_path)) {
-      std::ifstream ifs(monomer_energies_path.string());
-      const auto cached = nlohmann::json::parse(ifs);
-      if (cached.contains("model") && cached["model"] == model.name) {
-        occ::log::info("Loading monomer {} energies from {}", idx,
-                       monomer_energies_path.string());
-        wfn.energy = cached["energy"].get<occ::qm::Energy>();
+    if (const auto cached = cache.load(key)) {
+      if (cached->contains("model") && (*cached)["model"] == model.name) {
+        occ::log::info("Loading monomer {} energies from {}", idx, key);
+        wfn.energy = (*cached)["energy"].get<occ::qm::Energy>();
         loaded = true;
       } else {
         occ::log::warn("Cached monomer energies {} are not for {}; recomputing",
-                       monomer_energies_path.string(), model.name);
+                       key, model.name);
       }
     }
     if (!loaded) {
       occ::log::info("Computing monomer {} energies", idx);
       interaction.compute_monomer_energies(wfn);
-      occ::log::info("Writing monomer energies to {}",
-                     monomer_energies_path.string());
-      std::ofstream ofs(monomer_energies_path.string());
+      occ::log::info("Writing monomer energies to {}", key);
       nlohmann::json j;
       j["model"] = model.name;
       j["energy"] = wfn.energy;
-      ofs << j;
+      cache.store(key, j);
     }
     idx++;
   }
@@ -72,20 +65,18 @@ bool cached_level_matches(const Wavefunction &cached, const std::string &method,
 Wavefunction calculate_wavefunction(const Molecule &mol,
                                     const std::string &name,
                                     const std::string &method,
-                                    const std::string &basis, bool spherical) {
-  fs::path json_path(fmt::format("{}.owf.json", name));
-  if (fs::exists(json_path)) {
-    using occ::io::JsonWavefunctionReader;
-    JsonWavefunctionReader json_wfn_reader(json_path.string());
-    auto cached = json_wfn_reader.wavefunction();
+                                    const std::string &basis, bool spherical,
+                                    occ::io::JsonCache &cache) {
+  const std::string key = fmt::format("{}.owf.json", name);
+  if (const auto doc = cache.load(key)) {
+    auto cached = doc->get<Wavefunction>();
     if (cached_level_matches(cached, method, basis, spherical)) {
-      occ::log::info("Loading gas phase wavefunction from {}",
-                     json_path.string());
+      occ::log::info("Loading gas phase wavefunction from {}", key);
       return cached;
     }
     occ::log::warn("Cached wavefunction {} was computed at a different level "
                    "({}/{}, spherical={}); recomputing at {}/{} (spherical={})",
-                   json_path.string(), cached.method, cached.basis.name(),
+                   key, cached.method, cached.basis.name(),
                    cached.basis.is_pure(), method, basis, spherical);
   }
 
@@ -99,17 +90,17 @@ Wavefunction calculate_wavefunction(const Molecule &mol,
   auto wfn = occ::driver::single_point(input);
   wfn.method = method; // recorded for cache validation
 
-  occ::io::JsonWavefunctionWriter writer;
-  writer.write(wfn, json_path.string());
+  cache.store(key, wfn);
   return wfn;
 }
 
 Wavefunction calculate_wavefunction(const Molecule &mol,
                                     const std::string &name,
                                     const std::string &energy_model,
-                                    bool spherical) {
+                                    bool spherical, occ::io::JsonCache &cache) {
   const auto pm = occ::interaction::ce_model_from_string(energy_model);
-  return calculate_wavefunction(mol, name, pm.method, pm.basis, spherical);
+  return calculate_wavefunction(mol, name, pm.method, pm.basis, spherical,
+                                cache);
 }
 
 namespace {
@@ -126,14 +117,15 @@ void log_molecule(size_t index, const Molecule &m) {
 WavefunctionList calculate_wavefunctions(const std::string &basename,
                                          const std::vector<Molecule> &molecules,
                                          const std::string &energy_model,
-                                         bool spherical) {
+                                         bool spherical,
+                                         occ::io::JsonCache &cache) {
   WavefunctionList wavefunctions;
   size_t index = 0;
   for (const auto &m : molecules) {
     log_molecule(index, m);
     std::string name = fmt::format("{}_{}", basename, index);
     wavefunctions.emplace_back(
-        calculate_wavefunction(m, name, energy_model, spherical));
+        calculate_wavefunction(m, name, energy_model, spherical, cache));
     index++;
   }
   return wavefunctions;
@@ -143,14 +135,15 @@ WavefunctionList calculate_wavefunctions(const std::string &basename,
                                          const std::vector<Molecule> &molecules,
                                          const std::string &method,
                                          const std::string &basis,
-                                         bool spherical) {
+                                         bool spherical,
+                                         occ::io::JsonCache &cache) {
   WavefunctionList wavefunctions;
   size_t index = 0;
   for (const auto &m : molecules) {
     log_molecule(index, m);
     std::string name = fmt::format("{}_{}", basename, index);
     wavefunctions.emplace_back(
-        calculate_wavefunction(m, name, method, basis, spherical));
+        calculate_wavefunction(m, name, method, basis, spherical, cache));
     index++;
   }
   return wavefunctions;

@@ -1,8 +1,12 @@
-#include <fmt/core.h>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <filesystem>
+#include <fmt/core.h>
+#include <fstream>
 #include <occ/core/format_matrix.h>
+#include <occ/io/cifparser.h>
+#include <occ/io/cifwriter.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/crystalgrower.h>
@@ -10,13 +14,12 @@
 #include <occ/io/dftb_gen.h>
 #include <occ/io/eigen_json.h>
 #include <occ/io/gmf.h>
-#include <occ/isosurface/isosurface_json.h>
-#include <occ/qm/io/orca_json.h>
-#include <occ/isosurface/ply.h>
-#include <occ/qm/io/qcschema.h>
+#include <occ/io/json_cache.h>
 #include <occ/io/shelxfile.h>
-#include <occ/io/cifparser.h>
-#include <occ/io/cifwriter.h>
+#include <occ/isosurface/isosurface_json.h>
+#include <occ/isosurface/ply.h>
+#include <occ/qm/io/orca_json.h>
+#include <occ/qm/io/qcschema.h>
 
 using occ::format_matrix;
 using occ::util::all_close;
@@ -1018,5 +1021,47 @@ TEST_CASE("CIF writer", "[io][cif][write]") {
       }
     }
     REQUIRE(found_atom_site);
+  }
+}
+
+TEST_CASE("JsonCache backends", "[io][cache]") {
+  const nlohmann::json doc = {{"model", "ce-b3lyp"}, {"energy", -1.5}};
+
+  SECTION("memory: a stored document comes back, a missing one does not") {
+    occ::io::MemoryJsonCache cache;
+    REQUIRE_FALSE(cache.load("a.json").has_value());
+    cache.store("a.json", doc);
+    REQUIRE(cache.load("a.json") == doc);
+    REQUIRE(cache.size() == 1);
+  }
+
+  SECTION("memory: storing again replaces the document") {
+    occ::io::MemoryJsonCache cache;
+    cache.store("a.json", doc);
+    cache.store("a.json", {{"model", "ce-hf"}});
+    REQUIRE(cache.load("a.json")->at("model") == "ce-hf");
+    REQUIRE(cache.size() == 1);
+  }
+
+  SECTION("file: the key is the path, and the document survives the object") {
+    const auto dir =
+        std::filesystem::temp_directory_path() / "occ_io_tests_json_cache";
+    std::filesystem::remove_all(dir);
+    std::filesystem::create_directories(dir);
+    const auto key = (dir / "a.json").string();
+
+    REQUIRE_FALSE(occ::io::FileJsonCache{}.load(key).has_value());
+    occ::io::FileJsonCache{}.store(key, doc);
+    REQUIRE(std::filesystem::exists(key));
+    REQUIRE(occ::io::FileJsonCache{}.load(key) == doc);
+  }
+
+  SECTION("file: a corrupt document is an error, not a miss") {
+    const auto dir =
+        std::filesystem::temp_directory_path() / "occ_io_tests_json_cache";
+    std::filesystem::create_directories(dir);
+    const auto key = (dir / "corrupt.json").string();
+    std::ofstream(key) << "{not json";
+    REQUIRE_THROWS(occ::io::FileJsonCache{}.load(key));
   }
 }
