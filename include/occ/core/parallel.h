@@ -34,6 +34,14 @@ inline void set_num_threads(int threads) {
   auto& control = get_tbb_control();
   control.reset(new tbb::global_control(
       tbb::global_control::max_allowed_parallelism, nthreads));
+#ifdef __EMSCRIPTEN__
+  // oneTBB hard-codes 64 KiB worker stacks under Emscripten; Eigen alone
+  // places up to 128 KiB of temporaries on the stack, so a threaded DFT grid
+  // overflows them and corrupts memory. Not at static initialisation: TBB
+  // can't be configured before the Emscripten runtime is up.
+  static tbb::global_control worker_stack(
+      tbb::global_control::thread_stack_size, 8 * 1024 * 1024);
+#endif
 }
 
 inline int get_num_threads() { return nthreads; }
