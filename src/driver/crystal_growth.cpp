@@ -1,8 +1,8 @@
 #include <filesystem>
-#include <fstream>
 #include <fmt/os.h>
-#include <occ/cg/distance_partition.h>
+#include <fstream>
 #include <occ/cg/cg_json.h>
+#include <occ/cg/distance_partition.h>
 #include <occ/cg/solvation_data.h>
 #include <occ/driver/crystal_growth.h>
 #include <occ/driver/monomer_wavefunctions.h>
@@ -11,6 +11,7 @@
 #include <occ/interaction/xtb_energy_model.h>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 using occ::interaction::CEEnergyModel;
@@ -508,9 +509,8 @@ void CEModelCrystalGrowthCalculator::converge_lattice_energy() {
   m_nearest_dimers = m_crystal.symmetry_unique_dimers(opts.inner_radius);
 
   if (m_full_dimers.unique_dimers.size() < 1) {
-    occ::log::error("No dimers found using neighbour radius {:.3f}",
-                    opts.outer_radius);
-    exit(0);
+    throw std::runtime_error(fmt::format(
+        "No dimers found using neighbour radius {:.3f}", opts.outer_radius));
   }
 }
 
@@ -623,9 +623,8 @@ void XTBCrystalGrowthCalculator::converge_lattice_energy() {
   m_nearest_dimers = m_crystal.symmetry_unique_dimers(opts.inner_radius);
 
   if (m_full_dimers.unique_dimers.size() < 1) {
-    occ::log::error("No dimers found using neighbour radius {:.3f}",
-                    opts.outer_radius);
-    exit(0);
+    throw std::runtime_error(fmt::format(
+        "No dimers found using neighbour radius {:.3f}", opts.outer_radius));
   }
 }
 
@@ -830,9 +829,8 @@ void DummyCrystalGrowthCalculator::converge_lattice_energy() {
   m_nearest_dimers = m_crystal.symmetry_unique_dimers(opts.inner_radius);
 
   if (m_full_dimers.unique_dimers.size() < 1) {
-    occ::log::error("No dimers found using neighbour radius {:.3f}",
-                    opts.outer_radius);
-    exit(0);
+    throw std::runtime_error(fmt::format(
+        "No dimers found using neighbour radius {:.3f}", opts.outer_radius));
   }
 
   // Create dummy energy components based on 1/r

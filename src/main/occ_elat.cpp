@@ -1,26 +1,27 @@
 #include <CLI/App.hpp>
 #include <filesystem>
-#include <fmt/os.h>
 #include <fmt/format.h>
+#include <fmt/os.h>
 #include <occ/core/log.h>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/crystal/dimer_mapping_table.h>
+#include <occ/driver/monomer_wavefunctions.h>
+#include <occ/elastic_fit/elastic_fitting.h>
 #include <occ/interaction/ce_energy_model.h>
 #include <occ/interaction/external_energy_model.h>
+#include <occ/interaction/interaction_json.h>
 #include <occ/interaction/lattice_energy.h>
 #include <occ/interaction/pairinteraction.h>
-#include <occ/interaction/interaction_json.h>
 #include <occ/interaction/xtb_energy_model.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/cifwriter.h>
 #include <occ/io/core_json.h>
 #include <occ/io/crystal_json.h>
 #include <occ/io/eigen_json.h>
-#include <occ/driver/monomer_wavefunctions.h>
 #include <occ/main/occ_elat.h>
 #include <occ/qm/wavefunction.h>
-#include <occ/elastic_fit/elastic_fitting.h>
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;
@@ -219,9 +220,8 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
 
   const auto &dimers = lattice_energy_result.dimers.unique_dimers;
   if (dimers.size() < 1) {
-    occ::log::error("No dimers found using neighbour radius {:.3f}",
-                    settings.max_radius);
-    exit(0);
+    throw std::runtime_error(fmt::format(
+        "No dimers found using neighbour radius {:.3f}", settings.max_radius));
   }
   std::optional<occ::crystal::CrystalDimers> uc_dimers;
   if (settings.write_all_pairs || settings.run_elastic_fitting) {
