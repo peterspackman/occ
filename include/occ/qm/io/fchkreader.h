@@ -11,8 +11,8 @@ namespace occ::io {
 class FchkReader {
 public:
   struct FchkBasis {
-    size_t num_shells;
-    size_t num_primitives;
+    size_t num_shells{0};
+    size_t num_primitives{0};
     std::vector<int> shell_types;
     std::vector<int> primitives_per_shell;
     std::vector<int> shell2atom;
@@ -31,6 +31,7 @@ public:
     NuclearCharges,
     AtomicPositions,
     NumBasisFunctions,
+    NumIndependentFunctions,
     NumAlpha,
     NumBeta,
     AlphaMO,
@@ -51,6 +52,10 @@ public:
     PureCartesianD,
     PureCartesianF,
     ECP_RNFroz,
+    ECP_KFirst,
+    ECP_KLast,
+    ECP_LMax,
+    ECP_LPSkip,
     ECP_NLP,
     ECP_CLP1,
     ECP_CLP2,
@@ -61,13 +66,19 @@ public:
   FchkReader(std::istream &);
 
   inline auto num_basis_functions() const { return m_num_basis_functions; }
-  inline auto num_orbitals() const { return m_num_basis_functions; }
+  // number of MOs: fewer than basis functions for linearly dependent bases
+  inline size_t num_orbitals() const {
+    return m_num_independent_functions > 0 ? m_num_independent_functions
+                                           : m_num_basis_functions;
+  }
   inline auto num_electrons() const { return m_num_electrons; }
   inline auto scf_energy() const { return m_scf_energy; }
   inline auto num_alpha() const { return m_num_alpha; }
   inline auto num_beta() const { return m_num_beta; }
 
   inline auto spinorbital_kind() const {
+    // restricted open-shell files have n_alpha != n_beta but alpha MOs only;
+    // they are read as unrestricted with shared spatial orbitals
     if ((m_num_alpha != m_num_beta) || (m_beta_mos.size() != 0))
       return occ::qm::SpinorbitalKind::Unrestricted;
     return occ::qm::SpinorbitalKind::Restricted;
@@ -90,26 +101,14 @@ public:
                                          m_atomic_positions.size() / 3);
   }
 
-  inline auto alpha_mo_coefficients() const {
-    return Eigen::Map<const occ::Mat, 0>(
-        m_alpha_mos.data(), m_num_basis_functions, m_num_basis_functions);
-  }
+  // MO coefficients (nbf x nbf, Gaussian AO order). When the file has fewer
+  // MOs than basis functions, the remaining columns are zero.
+  Mat alpha_mo_coefficients() const;
+  Vec alpha_mo_energies() const;
+  Mat beta_mo_coefficients() const;
+  Vec beta_mo_energies() const;
 
-  inline auto alpha_mo_energies() const {
-    return Eigen::Map<const occ::Vec, 0>(m_alpha_mo_energies.data(),
-                                         m_alpha_mo_energies.size());
-  }
-
-  inline auto beta_mo_coefficients() const {
-    return Eigen::Map<const occ::Mat, 0>(
-        m_beta_mos.data(), m_num_basis_functions, m_num_basis_functions);
-  }
-
-  inline auto beta_mo_energies() const {
-    return Eigen::Map<const occ::Vec, 0>(m_beta_mo_energies.data(),
-                                         m_beta_mo_energies.size());
-  }
-
+  // Half the total density stored in the file (occ's restricted convention)
   Mat scf_density_matrix() const;
   Mat mp2_density_matrix() const;
 
@@ -121,19 +120,22 @@ private:
   void parse(std::istream &);
   void open(const std::string &filename);
   void close();
-  void warn_about_ecp_reading();
+  void validate() const;
+  std::vector<occ::gto::Shell> ecp_shells() const;
+  Mat padded_mo_coefficients(const std::vector<double> &) const;
+  Vec padded_mo_energies(const std::vector<double> &) const;
 
   LineLabel resolve_line(const std::string &) const;
 
   std::ifstream m_fchk_file;
   size_t m_num_electrons{0};
   size_t m_num_basis_functions{0};
+  size_t m_num_independent_functions{0};
   size_t m_num_alpha{0};
   size_t m_num_beta{0};
   double m_scf_energy{0.0};
   bool m_cartesian_d{true};
   bool m_cartesian_f{true};
-  bool m_have_ecps{false};
 
   std::vector<int> m_atomic_numbers;
   std::vector<double> m_nuclear_charges;
@@ -145,6 +147,10 @@ private:
   std::vector<double> m_scf_density;
   std::vector<double> m_mp2_density;
   std::vector<double> m_ecp_frozen;
+  std::vector<int> m_ecp_kfirst;
+  std::vector<int> m_ecp_klast;
+  std::vector<int> m_ecp_lmax;
+  std::vector<int> m_ecp_lpskip;
   std::vector<int> m_ecp_nlp;
   std::vector<double> m_ecp_clp1;
   std::vector<double> m_ecp_clp2;

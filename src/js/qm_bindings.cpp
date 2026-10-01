@@ -6,21 +6,22 @@
 #include <occ/core/element.h>
 #include <occ/gto/density.h>
 #include <occ/gto/gto.h>
-#include <occ/qm/io/fchkreader.h>
-#include <occ/qm/io/fchkwriter.h>
+#include <occ/gto/shell.h>
 #include <occ/io/json_basis.h>
-#include <occ/qm/io/moldenreader.h>
-#include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/chelpg.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/external_potential.h>
+#include <occ/qm/gradients.h>
+#include <occ/qm/hessians.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine.h>
+#include <occ/qm/io/fchkreader.h>
+#include <occ/qm/io/fchkwriter.h>
+#include <occ/qm/io/moldenreader.h>
+#include <occ/qm/io/moldenwriter.h>
+#include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/scf.h>
-#include <occ/gto/shell.h>
 #include <occ/qm/spinorbital.h>
-#include <occ/qm/hessians.h>
-#include <occ/qm/gradients.h>
 
 using namespace emscripten;
 using namespace occ::qm;
@@ -221,8 +222,7 @@ void register_qm_bindings() {
       .property("molecularOrbitals", &Wavefunction::mo)
       .property("atoms", &Wavefunction::atoms)
       .property("basis", &Wavefunction::basis)
-      .property("totalEnergy",
-                optional_override([](const Wavefunction &wfn) {
+      .property("totalEnergy", optional_override([](const Wavefunction &wfn) {
                   return wfn.energy.total;
                 }))
       .function("mullikenCharges", &Wavefunction::mulliken_charges)
@@ -295,20 +295,8 @@ void register_qm_bindings() {
                 }))
       .function("toMoldenString",
                 optional_override([](const Wavefunction &wfn) {
-                  // Use stringstream to capture molden output
-                  // Note: If there's no direct molden writer that takes a
-                  // stream, we could implement a simple molden format output
-                  // here
                   std::ostringstream oss;
-                  oss << "[Molden Format]\n";
-                  oss << "[Title]\nWavefunction from OCC\n";
-                  oss << "[Atoms] AU\n";
-                  for (size_t i = 0; i < wfn.atoms.size(); ++i) {
-                    const auto &atom = wfn.atoms[i];
-                    oss << atom.atomic_number << " " << (i + 1) << " " << atom.x
-                        << " " << atom.y << " " << atom.z << "\n";
-                  }
-                  // For now, return basic molden format - could be expanded
+                  occ::io::write_molden(wfn, oss);
                   return oss.str();
                 }))
       .function("toJson", optional_override([](const Wavefunction &wfn) {
@@ -318,8 +306,8 @@ void register_qm_bindings() {
                   return json_writer.to_string(wfn);
                 }))
       .function(
-          "exportToString", optional_override([](Wavefunction &wfn,
-                                                 const std::string &format) {
+          "exportToString",
+          optional_override([](Wavefunction &wfn, const std::string &format) {
             if (format == "json") {
               occ::io::JsonWavefunctionWriter json_writer;
               json_writer.set_format(occ::io::JsonFormat::JSON);
@@ -332,16 +320,8 @@ void register_qm_bindings() {
               fchk_writer.write();
               return oss.str();
             } else if (format == "molden") {
-              // Basic molden format - just atoms for now
               std::ostringstream oss;
-              oss << "[Molden Format]\n";
-              oss << "[Title]\nWavefunction from OCC\n";
-              oss << "[Atoms] AU\n";
-              for (size_t i = 0; i < wfn.atoms.size(); ++i) {
-                const auto &atom = wfn.atoms[i];
-                oss << atom.atomic_number << " " << (i + 1) << " " << atom.x
-                    << " " << atom.y << " " << atom.z << "\n";
-              }
+              occ::io::write_molden(wfn, oss);
               return oss.str();
             }
             throw std::runtime_error("Unsupported export format: " + format);
@@ -357,7 +337,8 @@ void register_qm_bindings() {
                         return Wavefunction(reader);
                       }))
       .class_function("fromString",
-                      optional_override([](const std::string &content, const std::string &format) {
+                      optional_override([](const std::string &content,
+                                           const std::string &format) {
                         std::istringstream stream(content);
                         if (format == "fchk") {
                           auto reader = occ::io::FchkReader(stream);

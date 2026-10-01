@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -6,12 +8,13 @@
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
 #include <occ/gto/density.h>
+#include <occ/qm/hf.h>
 #include <occ/qm/io/conversion.h>
 #include <occ/qm/io/fchkreader.h>
 #include <occ/qm/io/fchkwriter.h>
 #include <occ/qm/io/moldenreader.h>
+#include <occ/qm/io/moldenwriter.h>
 #include <occ/qm/io/wavefunction_json.h>
-#include <occ/qm/hf.h>
 #include <occ/qm/merge.h>
 #include <occ/qm/opmatrix.h>
 #include <occ/qm/orb.h>
@@ -70,35 +73,27 @@ Wavefunction::Wavefunction(const OrcaJSONReader &json)
 Wavefunction::Wavefunction(const MoldenReader &molden)
     : num_electrons(molden.num_electrons()), basis(molden.basis_set()),
       nbf(molden.nbf()), atoms(molden.atoms()) {
-  size_t rows, cols;
+  // the reader has already converted coefficients to occ's AO convention
   nbf = basis.nbf();
   mo.kind = molden.spinorbital_kind();
   mo.n_alpha = molden.num_alpha();
   mo.n_beta = molden.num_beta();
   mo.n_ao = nbf;
 
-  if (mo.kind == SpinorbitalKind::General) {
-    throw std::runtime_error(
-        "Reading MOs from molden unsupported for General spinorbitals");
-  } else if (mo.kind == SpinorbitalKind::Unrestricted) {
-    std::tie(rows, cols) =
+  if (mo.kind == SpinorbitalKind::Unrestricted) {
+    auto [rows, cols] =
         occ::qm::matrix_dimensions<SpinorbitalKind::Unrestricted>(nbf);
     mo.C = Mat(rows, cols);
     mo.energies = Vec(rows);
+    mo.occupation = Vec(rows);
     block::a(mo.C) = molden.alpha_mo_coefficients();
     block::b(mo.C) = molden.beta_mo_coefficients();
     block::a(mo.energies) = molden.alpha_mo_energies();
     block::b(mo.energies) = molden.beta_mo_energies();
-    block::a(mo.C) = molden.convert_mo_coefficients_from_molden_convention(
-        basis, block::a(mo.C));
-    block::b(mo.C) = molden.convert_mo_coefficients_from_molden_convention(
-        basis, block::b(mo.C));
-    mo.occupation = Vec(rows);
     block::a(mo.occupation) = molden.alpha_occupations();
     block::b(mo.occupation) = molden.beta_occupations();
   } else {
     mo.C = molden.alpha_mo_coefficients();
-    mo.C = molden.convert_mo_coefficients_from_molden_convention(basis, mo.C);
     mo.energies = molden.alpha_mo_energies();
     mo.occupation = 0.5 * molden.alpha_occupations();
   }
@@ -226,8 +221,8 @@ void Wavefunction::save(FchkWriter &fchk) {
   fchk.set_scalar("Multiplicity", multiplicity());
   fchk.set_scalar("SCF Energy", energy.total);
   fchk.set_scalar("Number of electrons", num_electrons);
-  fchk.set_scalar("Number of alpha electrons", mo.n_alpha);
-  fchk.set_scalar("Number of beta electrons", mo.n_beta);
+  fchk.set_scalar("Number of alpha electrons", std::max(mo.n_alpha, mo.n_beta));
+  fchk.set_scalar("Number of beta electrons", std::min(mo.n_alpha, mo.n_beta));
   fchk.set_scalar("Number of basis functions", nbf);
   fchk.set_scalar("Number of independent functions", nbf);
   fchk.set_scalar("Number of point charges in /Mol/", 0);
@@ -251,38 +246,54 @@ void Wavefunction::save(FchkWriter &fchk) {
                   atomic_prop.array().round().cast<int>());
   fchk.set_vector("Real atomic weights", atomic_prop);
 
+  if (mo.kind == SpinorbitalKind::General) {
+    throw std::runtime_error(
+        "Writing general spinorbital wavefunctions to fchk is not supported");
+  }
+
+  // Rebuild the density in Gaussian AO order from the MOs and their actual
+  // occupations, so fractional occupations (e.g. natural orbitals) survive
   auto mo_fchk = occ::io::conversion::orb::to_gaussian_order(basis, mo);
-  Mat Dfchk;
+  if (mo_fchk.occupation.size() == mo_fchk.C.rows()) {
+    mo_fchk.update_occupied_orbitals_fractional();
+  } else {
+    mo_fchk.update_occupied_orbitals();
+  }
+  mo_fchk.update_density_matrix();
+  const Mat &Dfchk = mo_fchk.D;
 
   std::vector<double> density_lower_triangle, spin_density_lower_triangle;
+  density_lower_triangle.reserve(nbf * (nbf + 1) / 2);
 
   if (mo.kind == SpinorbitalKind::Unrestricted) {
-    fchk.set_vector("Alpha Orbital Energies", block::a(mo_fchk.energies));
-    fchk.set_vector("Alpha MO coefficients", block::a(mo_fchk.C));
-    fchk.set_vector("Beta Orbital Energies", block::b(mo_fchk.energies));
-    fchk.set_vector("Beta MO coefficients", block::b(mo_fchk.C));
-    Mat occ_fchk =
-        occ::qm::orb::occupied_unrestricted(mo_fchk.C, mo.n_alpha, mo.n_beta);
-    Dfchk = occ::qm::orb::density_matrix_unrestricted(occ_fchk, mo.n_alpha,
-                                                      mo.n_beta);
+    // Gaussian expects n_alpha >= n_beta, occ puts the extra electron in beta
+    const bool swap_spins = mo.n_beta > mo.n_alpha;
+    auto Ca = swap_spins ? block::b(mo_fchk.C) : block::a(mo_fchk.C);
+    auto Cb = swap_spins ? block::a(mo_fchk.C) : block::b(mo_fchk.C);
+    auto ea =
+        swap_spins ? block::b(mo_fchk.energies) : block::a(mo_fchk.energies);
+    auto eb =
+        swap_spins ? block::a(mo_fchk.energies) : block::b(mo_fchk.energies);
+    auto da = swap_spins ? block::b(Dfchk) : block::a(Dfchk);
+    auto db = swap_spins ? block::a(Dfchk) : block::b(Dfchk);
+    fchk.set_vector("Alpha Orbital Energies", ea);
+    fchk.set_vector("Alpha MO coefficients", Ca);
+    fchk.set_vector("Beta Orbital Energies", eb);
+    fchk.set_vector("Beta MO coefficients", Cb);
 
-    density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
-    spin_density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
-    auto da = block::a(Dfchk);
-    auto db = block::b(Dfchk);
+    spin_density_lower_triangle.reserve(nbf * (nbf + 1) / 2);
     for (Eigen::Index row = 0; row < nbf; row++) {
       for (Eigen::Index col = 0; col <= row; col++) {
+        // occ's unrestricted density blocks carry a factor of 1/2
         double va = da(row, col) * 2, vb = db(row, col) * 2;
         density_lower_triangle.push_back(va + vb);
-        spin_density_lower_triangle.push_back(vb - va);
+        // Gaussian's spin density is alpha - beta
+        spin_density_lower_triangle.push_back(va - vb);
       }
     }
   } else {
     fchk.set_vector("Alpha Orbital Energies", mo_fchk.energies);
     fchk.set_vector("Alpha MO coefficients", mo_fchk.C);
-    Mat occ_fchk = occ::qm::orb::occupied_restricted(mo_fchk.C, mo.n_alpha);
-    Dfchk = occ::qm::orb::density_matrix_restricted(occ_fchk);
-    density_lower_triangle.reserve(nbf * (nbf - 1) / 2);
     for (Eigen::Index row = 0; row < nbf; row++) {
       for (Eigen::Index col = 0; col <= row; col++) {
         density_lower_triangle.push_back(Dfchk(row, col) * 2);
@@ -304,46 +315,67 @@ void Wavefunction::save(FchkWriter &fchk) {
   fchk.set_vector("Shell to atom map", shell2atom);
 
   if (have_ecps) {
-    occ::log::warn("Writing ECP information to fchk - this is very likely "
-                   "unsupported and not working");
-    // TODO finish ECP writing routines
-    fchk.set_vector<int, double>("ECP-RNFroz", basis.ecp_electrons());
-    std::vector<double> ecp_clp1;
-    std::vector<double> ecp_clp2;
-    std::vector<int> ecp_nlp;
-    std::vector<double> ecp_zlp;
-    std::vector<int> ecp_lmax(atoms.size(), 0);
-    std::vector<int> ecp_kfirst;
-    std::vector<int> ecp_klast;
-    int ecp_max_length = 0;
+    // Gaussian's layout (see FchkReader::ecp_shells): per atom, 10 channel
+    // slots stored column-major (natom x 10) as 1-based primitive ranges.
+    // Slot 0 is the local channel (l = LMax), slot k > 0 has l = k - 1.
+    const size_t natom = atoms.size();
+    std::vector<int> ecp_lmax(natom, 0), ecp_lpskip(natom, 1);
     const auto &ecp_shell2atom = basis.ecp_shell_to_atom();
-    int shell_index = 0;
-    for (const auto &sh : basis.ecp_shells()) {
-      int atom_idx = ecp_shell2atom[shell_index];
-      ecp_max_length =
-          std::max(static_cast<int>(sh.num_primitives()), ecp_max_length);
-      ecp_lmax[atom_idx] = std::max(static_cast<int>(sh.l), ecp_lmax[atom_idx]);
-      for (int i = 0; i < sh.num_primitives(); i++) {
-        ecp_clp1.push_back(sh.contraction_coefficients(i, 0));
-        ecp_zlp.push_back(sh.exponents(i));
-        ecp_nlp.push_back(sh.ecp_r_exponents(i));
-        ecp_clp2.push_back(0.0);
-      }
-      shell_index++;
+    for (size_t s = 0; s < basis.ecp_shells().size(); s++) {
+      size_t a = ecp_shell2atom[s];
+      ecp_lmax[a] =
+          std::max(ecp_lmax[a], static_cast<int>(basis.ecp_shells()[s].l));
+      ecp_lpskip[a] = 0;
     }
-    fchk.set_scalar("ECP-MaxLECP", ecp_max_length);
+    std::vector<int> ecp_kfirst(10 * natom, 0), ecp_klast(10 * natom, 0);
+    std::vector<int> ecp_nlp;
+    std::vector<double> ecp_clp1, ecp_zlp;
+    for (size_t a = 0; a < natom; a++) {
+      if (ecp_lpskip[a] != 0)
+        continue;
+      for (int slot = 0; slot <= ecp_lmax[a]; slot++) {
+        const int l = slot == 0 ? ecp_lmax[a] : slot - 1;
+        if (slot > 0 && l == ecp_lmax[a])
+          continue;
+        const int first = static_cast<int>(ecp_nlp.size()) + 1;
+        for (size_t s = 0; s < basis.ecp_shells().size(); s++) {
+          const auto &sh = basis.ecp_shells()[s];
+          if (ecp_shell2atom[s] != a || static_cast<int>(sh.l) != l)
+            continue;
+          for (size_t i = 0; i < sh.num_primitives(); i++) {
+            ecp_nlp.push_back(sh.ecp_r_exponents(i));
+            ecp_zlp.push_back(sh.exponents(i));
+            ecp_clp1.push_back(sh.contraction_coefficients(i, 0));
+          }
+        }
+        if (static_cast<int>(ecp_nlp.size()) >= first) {
+          ecp_kfirst[a + natom * slot] = first;
+          ecp_klast[a + natom * slot] = static_cast<int>(ecp_nlp.size());
+        }
+      }
+    }
+    // array dimensions Gaussian writes alongside the ECP data
+    fchk.set_scalar("ECP-MxAtEC", 250000);
+    fchk.set_scalar("ECP-MaxLECP", 10);
+    fchk.set_scalar("ECP-MaxAtL", 2250000);
+    fchk.set_scalar("ECP-MxTECP", 11250000);
+    fchk.set_scalar("ECP-LenNCZ", ecp_nlp.size());
+    fchk.set_vector("ECP-KFirst", ecp_kfirst);
+    fchk.set_vector("ECP-KLast", ecp_klast);
     fchk.set_vector("ECP-LMax", ecp_lmax);
+    fchk.set_vector("ECP-LPSkip", ecp_lpskip);
+    fchk.set_vector<int, double>("ECP-RNFroz", basis.ecp_electrons());
     fchk.set_vector("ECP-NLP", ecp_nlp);
     fchk.set_vector("ECP-CLP1", ecp_clp1);
-    fchk.set_vector("ECP-CLP2", ecp_clp2);
+    fchk.set_vector("ECP-CLP2", std::vector<double>(ecp_nlp.size(), 0.0));
     fchk.set_vector("ECP-ZLP", ecp_zlp);
   }
 
-  // TODO fix this is wrong
-  // Does this works?
-  fchk.set_scalar("Virial ratio", - (energy.total - energy.kinetic) / energy.kinetic);
-  fchk.set_scalar("SCF ratio", energy.total);
-  fchk.set_scalar("Total ratio", energy.total);
+  // virial ratio -V/T; the kinetic energy is unknown for loaded wavefunctions
+  if (energy.kinetic != 0.0) {
+    fchk.set_scalar("Virial ratio",
+                    -(energy.total - energy.kinetic) / energy.kinetic);
+  }
 
   occ::timing::stop(occ::timing::category::io);
 }
@@ -437,10 +469,25 @@ Mat3N Wavefunction::electron_density_mo_gradient(const Mat3N &pos,
   }
 }
 
+namespace {
+// lower-cased extension; ".molden.input" (ORCA) counts as ".molden"
+std::string wavefunction_extension(const std::string &filename) {
+  std::string name = fs::path(filename).filename().string();
+  std::transform(name.begin(), name.end(), name.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  if (name.size() > 13 && name.ends_with(".molden.input"))
+    return ".molden";
+  return fs::path(name).extension().string();
+}
+
+bool is_fchk_extension(const std::string &ext) {
+  return ext == ".fchk" || ext == ".fch";
+}
+} // namespace
+
 Wavefunction Wavefunction::load(const std::string &filename) {
-  fs::path path(filename);
-  std::string ext = path.extension().string();
-  if (ext == ".fchk") {
+  std::string ext = wavefunction_extension(filename);
+  if (is_fchk_extension(ext)) {
     FchkReader reader(filename);
     return Wavefunction(reader);
   } else if (ext == ".molden" || ext == ".input") {
@@ -457,37 +504,29 @@ Wavefunction Wavefunction::load(const std::string &filename) {
 
 bool Wavefunction::is_likely_wavefunction_filename(
     const std::string &filename) {
-  fs::path path(filename);
-  std::string ext = path.extension().string();
-  if (ext == ".fchk")
-    return true;
-  else if (ext == ".molden")
-    return true;
-  else if (ext == ".input")
-    return true;
-  else if (io::valid_json_format_string(ext))
-    return true;
-  return false;
+  std::string ext = wavefunction_extension(filename);
+  return is_fchk_extension(ext) || ext == ".molden" || ext == ".input" ||
+         io::valid_json_format_string(ext);
 }
 
 bool Wavefunction::save(const std::string &filename) {
-  fs::path path(filename);
-  std::string ext = path.extension().string();
+  std::string ext = wavefunction_extension(filename);
   if (io::valid_json_format_string(ext)) {
     occ::io::JsonWavefunctionWriter json_writer;
     json_writer.set_format(ext);
-    json_writer.write(*this, path.string());
-    occ::log::info("wavefunction stored in {}", path.string());
-    return true;
-  } else if (ext == "fchk" || ext == ".fchk") {
-    occ::io::FchkWriter fchk_writer(path.string());
+    json_writer.write(*this, filename);
+  } else if (is_fchk_extension(ext)) {
+    occ::io::FchkWriter fchk_writer(filename);
     save(fchk_writer);
     fchk_writer.write();
-    occ::log::info("wavefunction stored in {}", path.string());
-    return true;
+  } else if (ext == ".molden") {
+    occ::io::write_molden(*this, filename);
+  } else {
+    occ::log::warn("Unknown wavefunction format: '{}', skipping writing", ext);
+    return false;
   }
-  occ::log::warn("Unknown wavefunction format: '{}', skipping writing", ext);
-  return false;
+  occ::log::info("wavefunction stored in {}", filename);
+  return true;
 }
 
 } // namespace occ::qm

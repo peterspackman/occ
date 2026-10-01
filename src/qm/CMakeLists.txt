@@ -36,6 +36,7 @@ add_library(occ_qm_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/io/fchkwriter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/gaussian_input_file.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/moldenreader.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/io/moldenwriter.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/orca_json.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/qcschema.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/wavefunction_json.cpp"

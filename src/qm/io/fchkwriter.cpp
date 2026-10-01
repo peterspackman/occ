@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fmt/ostream.h>
 #include <occ/core/util.h>
 #include <occ/qm/io/fchkwriter.h>
@@ -7,19 +8,13 @@ namespace occ::io {
 namespace impl {
 
 static const std::array<const char *, 15> fchk_type_strings{
-    "SP",
-    "FOPT",
-    "POPT",
-    "FTS",
-    "FSADDLE",
-    "PSADDLE",
-    "FORCE",
-    "FREQ",
-    "SCAN",
-    "GUESS=ONLY",
-    "LST",
-    "STABILITY",
-    "REARCHIVE/MS-RESTART",
+    "SP",         "FOPT",
+    "POPT",       "FTS",
+    "PTS",        "FSADDLE",
+    "PSADDLE",    "FORCE",
+    "FREQ",       "SCAN",
+    "GUESS=ONLY", "LST",
+    "STABILITY",  "REARCHIVE/MS-RESTART",
     "MIXED"};
 
 static const std::vector<std::string> fchk_key_order{
@@ -81,7 +76,7 @@ static const std::vector<std::string> fchk_key_order{
     "ECP-LenNCZ",
     "ECP-KFirst",
     "ECP-KLast",
-    "ECP-Lmax",
+    "ECP-LMax",
     "ECP-LPSkip",
     "ECP-RNFroz",
     "ECP-NLP",
@@ -211,9 +206,9 @@ void FchkWriter::set_basis(const occ::gto::AOBasis &basis) {
   for (size_t i = 0; i < basis.size(); i++) {
     const auto &sh = basis.shells()[i];
     int l = sh.l;
+    l_max = std::max(l, l_max);
     if (l > 1 && sh.is_pure())
       l = -l;
-    l_max = std::max(l, l_max);
     int nprim = sh.num_primitives();
     number_primitive_shells += nprim;
     largest_contraction = std::max(nprim, largest_contraction);
@@ -263,6 +258,23 @@ void FchkWriter::write() {
     if (m_vectors.contains(key)) {
       vector_writer.key = key;
       std::visit(vector_writer, m_vectors[key]);
+    }
+  }
+  // keys without a standard position go at the end rather than being dropped
+  auto is_ordered = [](const std::string &key) {
+    return std::find(impl::fchk_key_order.begin(), impl::fchk_key_order.end(),
+                     key) != impl::fchk_key_order.end();
+  };
+  for (auto &[key, value] : m_scalars) {
+    if (!is_ordered(key)) {
+      scalar_writer.key = key;
+      std::visit(scalar_writer, value);
+    }
+  }
+  for (auto &[key, value] : m_vectors) {
+    if (!is_ordered(key)) {
+      vector_writer.key = key;
+      std::visit(vector_writer, value);
     }
   }
 }

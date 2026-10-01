@@ -92,9 +92,32 @@ inline void iterate_over_shell(F &&f, int l) {
       }
     }
   } else if constexpr (order == ShellOrder::Molden) {
-    // only spherical case here
-    for (int m = 0; m != l + 1; m = (m > 0 ? -m : 1 - m)) {
-      f(l, m);
+    if constexpr (cartesian) {
+      // d and f match Gaussian; g is the [15G] order from the Molden format
+      // specification, which differs. Molden defines nothing beyond g.
+      if (l == 4) {
+        f(4, 0, 0, l); // xxxx
+        f(0, 4, 0, l); // yyyy
+        f(0, 0, 4, l); // zzzz
+        f(3, 1, 0, l); // xxxy
+        f(3, 0, 1, l); // xxxz
+        f(1, 3, 0, l); // yyyx
+        f(0, 3, 1, l); // yyyz
+        f(1, 0, 3, l); // zzzx
+        f(0, 1, 3, l); // zzzy
+        f(2, 2, 0, l); // xxyy
+        f(2, 0, 2, l); // xxzz
+        f(0, 2, 2, l); // yyzz
+        f(2, 1, 1, l); // xxyz
+        f(1, 2, 1, l); // yyxz
+        f(1, 1, 2, l); // zzxy
+      } else {
+        iterate_over_shell<true, ShellOrder::Gaussian>(f, l);
+      }
+    } else {
+      for (int m = 0; m != l + 1; m = (m > 0 ? -m : 1 - m)) {
+        f(l, m);
+      }
     }
   }
 }
@@ -120,6 +143,21 @@ inline int shell_index_cartesian<ShellOrder::Gaussian>(int i, int j, int k,
     idx++;
   };
   iterate_over_shell<true, ShellOrder::Gaussian>(f, l);
+  return idx_found;
+}
+
+template <>
+inline int shell_index_cartesian<ShellOrder::Molden>(int i, int j, int k,
+                                                     int l) {
+  int idx_found = -1;
+  int idx = 0;
+  auto f = [&](int pi, int pj, int pk, int l) {
+    if (pi == i && pj == j && pk == k) {
+      idx_found = idx;
+    }
+    idx++;
+  };
+  iterate_over_shell<true, ShellOrder::Molden>(f, l);
   return idx_found;
 }
 

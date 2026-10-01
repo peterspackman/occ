@@ -41,6 +41,7 @@ catch_discover_tests(crystal_tests)
 
 add_executable(dft_tests "${CMAKE_CURRENT_SOURCE_DIR}/dft_tests.cpp")
 target_link_libraries(dft_tests PRIVATE occ_dft occ_qm Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(dft_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 catch_discover_tests(dft_tests)
 
 add_executable(dft_gradient_tests "${CMAKE_CURRENT_SOURCE_DIR}/dft_gradient_tests.cpp")
@@ -78,6 +79,7 @@ catch_discover_tests(io_periodic_grid_tests)
 
 add_executable(wavefunction_io_tests "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction_io_tests.cpp")
 target_link_libraries(wavefunction_io_tests PRIVATE occ_io occ_qm Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(wavefunction_io_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 catch_discover_tests(wavefunction_io_tests)
 
 add_executable(interaction_tests "${CMAKE_CURRENT_SOURCE_DIR}/interaction_tests.cpp")

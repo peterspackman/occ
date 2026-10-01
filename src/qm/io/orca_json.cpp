@@ -1,6 +1,9 @@
+#include <cmath>
+#include <fmt/core.h>
 #include <nlohmann/json.hpp>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
+#include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/io/orca_json.h>
@@ -101,7 +104,7 @@ OrcaJSONReader::OrcaJSONReader(std::istream &filehandle) {
 void OrcaJSONReader::open(const std::string &filename) {
   m_json_file.open(filename);
   if (m_json_file.fail() || m_json_file.bad()) {
-    throw std::runtime_error("Unable to open fchk file: " + filename);
+    throw std::runtime_error("Unable to open ORCA JSON file: " + filename);
   }
 }
 
@@ -143,7 +146,8 @@ int string_to_l(const std::string &shell_label) {
   case 'K':
     return 7;
   default:
-    return 0;
+    throw std::runtime_error(
+        fmt::format("ORCA JSON: unknown shell label '{}'", shell_label));
   }
 }
 
@@ -160,18 +164,31 @@ void OrcaJSONReader::parse(std::istream &stream) {
   m_atom_positions = Mat3N(3, num_atoms);
   std::vector<occ::gto::Shell> shells;
 
+  // ORCA 5 writes coordinates in bohr ("Bohrs"), ORCA 6 in angstrom ("Angs")
+  std::string units = mol.value("CoordinateUnits", std::string("Bohrs"));
+  occ::util::to_lower(units);
+  const double factor = occ::util::startswith(units, "ang", false)
+                            ? occ::units::ANGSTROM_TO_BOHR
+                            : 1.0;
+
   for (const auto &atom : atoms_json) {
-    size_t idx = atom["Idx"];
-    m_atomic_numbers(idx) = atom["ElementNumber"];
-    m_atom_labels[idx] = atom["ElementLabel"];
-    const auto &pos = atom["Coords"];
-    m_atom_positions(0, idx) = pos[0];
-    m_atom_positions(1, idx) = pos[1];
-    m_atom_positions(2, idx) = pos[2];
+    size_t idx = atom.at("Idx");
+    if (idx >= num_atoms)
+      throw std::runtime_error("ORCA JSON: atom index out of range");
+    m_atomic_numbers(idx) = atom.at("ElementNumber");
+    m_atom_labels[idx] = atom.at("ElementLabel");
+    const auto &pos = atom.at("Coords");
+    std::array<double, 3> pos_array = {pos[0].get<double>() * factor,
+                                       pos[1].get<double>() * factor,
+                                       pos[2].get<double>() * factor};
+    m_atom_positions(0, idx) = pos_array[0];
+    m_atom_positions(1, idx) = pos_array[1];
+    m_atom_positions(2, idx) = pos_array[2];
 
-    std::array<double, 3> pos_array = {pos[0], pos[1], pos[2]};
-
-    for (const auto &bf : atom["BasisFunctions"]) {
+    // ORCA 5: "BasisFunctions", ORCA 6: "Basis"
+    const auto &basis_json =
+        atom.contains("Basis") ? atom.at("Basis") : atom.at("BasisFunctions");
+    for (const auto &bf : basis_json) {
       std::vector<double> alpha;
       std::vector<double> coeffs;
       const auto &coeff = bf["Coefficients"];
@@ -194,71 +211,96 @@ void OrcaJSONReader::parse(std::istream &stream) {
   size_t nbf = m_basis.nbf();
   occ::log::debug("num atoms {}", num_atoms);
 
-  bool unrestricted = mol["HFTyp"] == "UHF";
+  const std::string hftyp = mol.value("HFTyp", std::string("RHF"));
+  const bool unrestricted = hftyp == "UHF";
+  occ::log::debug("HFTyp: {}, nbf: {}", hftyp, nbf);
 
+  const auto &mos = mol.at("MolecularOrbitals").at("MOs");
+  const auto &mo_labels = mol.at("MolecularOrbitals").at("OrbitalLabels");
+  // ORCA writes all alpha MOs followed by all beta MOs, with no spin label.
+  // With linearly dependent bases there are fewer MOs than functions.
+  const size_t total_mos = mos.size();
+  if (unrestricted && total_mos % 2 != 0)
+    throw std::runtime_error("ORCA JSON: odd number of MOs for UHF");
+  const size_t nmo = unrestricted ? total_mos / 2 : total_mos;
+  if (nmo > nbf)
+    throw std::runtime_error(fmt::format(
+        "ORCA JSON: {} MOs per spin for {} basis functions", nmo, nbf));
+
+  m_alpha_energies = Vec::Zero(nbf);
+  m_alpha_coeffs = Mat::Zero(nbf, nbf);
+  Vec alpha_occ = Vec::Zero(nbf), beta_occ = Vec::Zero(nbf);
   if (unrestricted) {
-    m_spinorbital_kind = qm::SpinorbitalKind::Unrestricted;
-  }
-  occ::log::debug("unrestricted: {}", unrestricted);
-  occ::log::debug("nbf: {}", nbf);
-
-  const auto &mos = mol["MolecularOrbitals"]["MOs"];
-  const auto &mo_labels = mol["MolecularOrbitals"]["OrbitalLabels"];
-  m_alpha_energies = Vec(nbf);
-  m_alpha_coeffs = Mat(nbf, nbf);
-  m_alpha_labels.reserve(nbf);
-  if (unrestricted) {
-    m_beta_energies = Vec(nbf);
-    m_beta_coeffs = Mat(nbf, nbf);
-    m_beta_labels.reserve(nbf);
+    m_beta_energies = Vec::Zero(nbf);
+    m_beta_coeffs = Mat::Zero(nbf, nbf);
   }
 
-  size_t mo_idx = 0;
-  for (const auto &mo : mos) {
-    bool alpha_block = mo_idx < nbf;
+  for (size_t mo_idx = 0; mo_idx < total_mos; mo_idx++) {
+    const auto &mo = mos[mo_idx];
+    const bool alpha_block = mo_idx < nmo;
     auto &e = alpha_block ? m_alpha_energies : m_beta_energies;
     auto &c = alpha_block ? m_alpha_coeffs : m_beta_coeffs;
-    auto &n = alpha_block ? m_num_alpha : m_num_beta;
+    auto &o = alpha_block ? alpha_occ : beta_occ;
     auto &l = alpha_block ? m_alpha_labels : m_beta_labels;
 
-    const auto &coeffs = mo["MOCoefficients"];
-    Eigen::Index j = mo_idx % nbf;
-    for (size_t i = 0; i < coeffs.size(); i++) {
+    const auto &coeffs = mo.at("MOCoefficients");
+    if (coeffs.size() != nbf)
+      throw std::runtime_error(fmt::format(
+          "ORCA JSON: MO {} has {} coefficients for {} basis functions", mo_idx,
+          coeffs.size(), nbf));
+    Eigen::Index j = alpha_block ? mo_idx : mo_idx - nmo;
+    for (size_t i = 0; i < nbf; i++) {
       c(i, j) = coeffs[i];
     }
-    e(j) = mo["OrbitalEnergy"];
-    size_t occn = static_cast<size_t>(mo["Occupancy"]);
-    l.push_back(mo_labels[mo_idx]);
-    m_num_electrons += occn;
-    n += unrestricted ? occn : occn / 2;
-    mo_idx++;
+    e(j) = mo.at("OrbitalEnergy");
+    o(j) = mo.at("Occupancy");
+    if (mo_idx < mo_labels.size())
+      l.push_back(mo_labels[mo_idx]);
   }
 
+  auto count = [](const Vec &occ) {
+    return static_cast<size_t>(std::llround(occ.sum()));
+  };
+  m_alpha_coeffs =
+      convert_mo_coefficients_from_orca_convention(m_basis, m_alpha_coeffs);
   if (unrestricted) {
-    m_alpha_coeffs =
-        convert_mo_coefficients_from_orca_convention(m_basis, m_alpha_coeffs);
     m_beta_coeffs =
         convert_mo_coefficients_from_orca_convention(m_basis, m_beta_coeffs);
+    m_num_alpha = count(alpha_occ);
+    m_num_beta = count(beta_occ);
+  } else if (((alpha_occ.array() - 1.0).abs() < 1e-6).any()) {
+    // restricted open-shell (or singly occupied orbitals): read as
+    // unrestricted sharing spatial orbitals
+    m_spinorbital_kind = qm::SpinorbitalKind::Unrestricted;
+    m_beta_coeffs = m_alpha_coeffs;
+    m_beta_energies = m_alpha_energies;
+    m_beta_labels = m_alpha_labels;
+    m_num_alpha = count(alpha_occ.array().min(1.0).matrix());
+    m_num_beta = count((alpha_occ.array() - 1.0).max(0.0).matrix());
   } else {
+    m_num_alpha = count(alpha_occ) / 2;
     m_num_beta = m_num_alpha;
-    m_alpha_coeffs =
-        convert_mo_coefficients_from_orca_convention(m_basis, m_alpha_coeffs);
   }
+  if (unrestricted)
+    m_spinorbital_kind = qm::SpinorbitalKind::Unrestricted;
+  m_num_electrons = m_num_alpha + m_num_beta;
 
   occ::log::debug("Num electrons: {}", m_num_electrons);
   occ::log::debug("Num alpha electrons {}", m_num_alpha);
   occ::log::debug("Num beta electrons {}", m_num_beta);
 
-  const auto &S = mol["S-Matrix"];
-  size_t bf1 = 0;
-  m_overlap = Mat(nbf, nbf);
-  for (const auto &row : S) {
-    size_t bf2 = 0;
-    for (const auto &x : row) {
-      m_overlap(bf1, bf2) = x;
-      bf2++;
+  if (mol.contains("S-Matrix")) {
+    const auto &S = mol.at("S-Matrix");
+    size_t bf1 = 0;
+    m_overlap = Mat(nbf, nbf);
+    for (const auto &row : S) {
+      size_t bf2 = 0;
+      for (const auto &x : row) {
+        m_overlap(bf1, bf2) = x;
+        bf2++;
+      }
+      bf1++;
     }
-    bf1++;
   }
 }
 

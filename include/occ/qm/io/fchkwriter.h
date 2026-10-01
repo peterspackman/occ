@@ -67,7 +67,7 @@ public:
   template <typename T>
   void set_scalar(const std::string &key, const T &value) {
     if constexpr (std::is_integral<T>::value) {
-      if constexpr (std::is_same<decltype(value), bool>::value) {
+      if constexpr (std::is_same<T, bool>::value) {
         m_scalars[key] = value;
       } else {
         m_scalars[key] = static_cast<int>(value);

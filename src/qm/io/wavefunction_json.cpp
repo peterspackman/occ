@@ -1,8 +1,9 @@
+#include <fmt/core.h>
 #include <nlohmann/json.hpp>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
-#include <occ/io/eigen_json.h>
 #include <occ/gto/json.h>
+#include <occ/io/eigen_json.h>
 #include <occ/io/json_basis.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/mo.h>
@@ -26,6 +27,14 @@ void from_json(const nlohmann::json &J, occ::qm::MolecularOrbitals &mo) {
   J.at("occupied orbital coefficients").get_to(mo.Cocc);
   J.at("density matrix").get_to(mo.D);
   J.at("orbital energies").get_to(mo.energies);
+  // older files lack occupations; fall back to aufbau occupations
+  if (J.contains("occupations")) {
+    J.at("occupations").get_to(mo.occupation);
+  } else if (mo.C.size() > 0) {
+    Mat Cocc = mo.Cocc;
+    mo.update_occupied_orbitals();
+    mo.Cocc = Cocc;
+  }
 }
 
 void to_json(nlohmann::json &J, const occ::qm::MolecularOrbitals &mo) {
@@ -37,6 +46,7 @@ void to_json(nlohmann::json &J, const occ::qm::MolecularOrbitals &mo) {
   J["occupied orbital coefficients"] = mo.Cocc;
   J["density matrix"] = mo.D;
   J["orbital energies"] = mo.energies;
+  J["occupations"] = mo.occupation;
 }
 
 void from_json(const nlohmann::json &J, occ::qm::Energy &energy) {
@@ -81,7 +91,6 @@ namespace occ::qm {
 void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
   wfn.atoms.clear();
   J.at("electrons").get_to(wfn.num_electrons);
-  J.at("frozen electrons").get_to(wfn.num_electrons);
   J.at("basis functions").get_to(wfn.nbf);
 
   J.at("molecular orbitals").get_to(wfn.mo);
@@ -244,7 +253,7 @@ JsonWavefunctionReader::JsonWavefunctionReader(const std::string &filename,
                                                JsonFormat fmt)
     : m_format(fmt), m_filename{filename} {
   occ::timing::start(occ::timing::category::io);
-  std::ios_base::openmode mode = std::ios_base::out;
+  std::ios_base::openmode mode = std::ios_base::in;
   switch (m_format) {
   case JsonFormat::JSON:
     break;
@@ -256,6 +265,11 @@ JsonWavefunctionReader::JsonWavefunctionReader(const std::string &filename,
     break;
   }
   std::ifstream file(filename, mode);
+  if (!file) {
+    occ::timing::stop(occ::timing::category::io);
+    throw std::runtime_error(
+        fmt::format("Unable to open wavefunction file: '{}'", filename));
+  }
   parse(file);
   occ::timing::stop(occ::timing::category::io);
 }
@@ -336,6 +350,10 @@ void JsonWavefunctionWriter::write(const qm::Wavefunction &wfn,
   }
 
   std::ofstream dest(filename, mode);
+  if (!dest) {
+    throw std::runtime_error(
+        fmt::format("Unable to open '{}' for writing", filename));
+  }
   occ::timing::start(occ::timing::category::io);
   nlohmann::json j = wfn;
   switch (m_format) {

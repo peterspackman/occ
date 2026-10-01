@@ -7,6 +7,10 @@
 #include <occ/core/multipole.h>
 #include <occ/core/util.h>
 #include <occ/dft/dft.h>
+#include <occ/qm/io/fchkreader.h>
+#include <occ/qm/io/fchkwriter.h>
+#include <sstream>
+#include <occ/qm/wavefunction.h>
 #include <occ/numint/grid_types.h>
 #include <occ/numint/grid_utils.h>
 #include <occ/dft/hirshfeld.h>
@@ -1808,4 +1812,61 @@ TEST_CASE("Incremental Fock: DFT opts out because XC is not linear in D",
   auto properties = dft.fock_build_properties();
   REQUIRE_FALSE(properties.linear_in_density);
   REQUIRE_FALSE(occ::qm::supports_incremental_fock_build(properties));
+}
+
+TEST_CASE("ECPs read from a Gaussian fchk reproduce the Gaussian energy",
+          "[dft][ecp][fchk]") {
+  // [Mo4OCl4]2- RB3LYP from cclib's test data (data/FChk/basicGaussian09,
+  // BSD-3). Mo and the four Cl atoms carry ECPs (the Cl share one set of
+  // primitives in the file), O is all-electron.
+  occ::io::FchkReader reader(std::string(OCC_TEST_DATA_DIR) +
+                             "/fchk/Mo4OCl4-sp_g09.fchk");
+  occ::qm::Wavefunction wfn(reader);
+  REQUIRE(wfn.basis.have_ecps());
+  REQUIRE(wfn.basis.ecp_electrons() == std::vector<int>{28, 0, 10, 10, 10, 10});
+
+  // Mulliken charges stored by Gaussian
+  occ::Vec charges = wfn.mulliken_charges();
+  const std::vector<double> expected_charges{0.623319437,  -0.466094542,
+                                             -0.539302802, -0.539306156,
+                                             -0.539309780, -0.539306156};
+  for (int i = 0; i < 6; i++) {
+    REQUIRE(charges(i) == Approx(expected_charges[i]).margin(1e-6));
+  }
+
+  occ::dft::DFT dft("b3lyp", wfn.basis);
+  occ::qm::SCF<occ::dft::DFT> scf(dft);
+  scf.set_charge_multiplicity(-2, 1);
+  double e = scf.compute_scf_energy();
+  // Gaussian: -202.7136225752580; the difference is the integration grid
+  REQUIRE(e == Approx(-202.7136225752580).margin(1e-4));
+}
+
+TEST_CASE("ECPs survive an fchk write/read round trip", "[dft][ecp][fchk]") {
+  occ::io::FchkReader reader(std::string(OCC_TEST_DATA_DIR) +
+                             "/fchk/Mo4OCl4-sp_g09.fchk");
+  occ::qm::Wavefunction wfn(reader);
+  std::ostringstream os;
+  {
+    occ::io::FchkWriter writer(os);
+    wfn.save(writer);
+    writer.write();
+  }
+  std::istringstream is(os.str());
+  occ::io::FchkReader reader2(is);
+  occ::qm::Wavefunction wfn2(reader2);
+
+  const auto &ecp1 = wfn.basis.ecp_shells();
+  const auto &ecp2 = wfn2.basis.ecp_shells();
+  REQUIRE(ecp1.size() == ecp2.size());
+  for (size_t i = 0; i < ecp1.size(); i++) {
+    REQUIRE(ecp1[i].l == ecp2[i].l);
+    REQUIRE(ecp1[i].exponents.isApprox(ecp2[i].exponents, 1e-7));
+    REQUIRE(ecp1[i].contraction_coefficients.isApprox(
+        ecp2[i].contraction_coefficients, 1e-7));
+    REQUIRE(ecp1[i].ecp_r_exponents == ecp2[i].ecp_r_exponents);
+  }
+  REQUIRE(wfn2.basis.ecp_electrons() == wfn.basis.ecp_electrons());
+  REQUIRE(occ::util::all_close(wfn2.mulliken_charges(), wfn.mulliken_charges(),
+                               1e-6, 1e-6));
 }

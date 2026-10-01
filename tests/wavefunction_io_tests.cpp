@@ -8,6 +8,7 @@
 #include <occ/qm/io/fchkwriter.h>
 #include <occ/qm/io/gaussian_input_file.h>
 #include <occ/qm/io/moldenreader.h>
+#include <occ/qm/io/moldenwriter.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
@@ -512,6 +513,114 @@ TEST_CASE("Read H2 fchk contents", "[read]") {
   fmt::print("Density matrix\n{}\n", format_matrix(density));
 
   REQUIRE(density(1, 0) == Catch::Approx(0.301228));
+}
+
+namespace {
+std::string replace_once(std::string s, const std::string &from,
+                         const std::string &to) {
+  auto pos = s.find(from);
+  REQUIRE(pos != std::string::npos);
+  s.replace(pos, from.size(), to);
+  return s;
+}
+} // namespace
+
+TEST_CASE("fchk with fewer MOs than basis functions", "[read][fchk]") {
+  // Gaussian writes nbf x nindep coefficients for linearly dependent bases
+  std::string contents = replace_once(
+      fchk_contents, "Number of independent functions            I                2",
+      "Number of independent functions            I                1");
+  contents = replace_once(contents,
+                          "Alpha Orbital Energies                     R   N=           2\n"
+                          " -4.14539570E-01  4.27590260E-01",
+                          "Alpha Orbital Energies                     R   N=           1\n"
+                          " -4.14539570E-01");
+  contents = replace_once(contents,
+                          "Alpha MO coefficients                      R   N=           4\n"
+                          "  5.48842275E-01  5.48842275E-01  1.21245192E+00 -1.21245192E+00",
+                          "Alpha MO coefficients                      R   N=           2\n"
+                          "  5.48842275E-01  5.48842275E-01");
+  std::istringstream fchk(contents);
+  occ::io::FchkReader reader(fchk);
+  REQUIRE(reader.num_orbitals() == 1);
+  occ::qm::Wavefunction wfn(reader);
+  REQUIRE(wfn.mo.C.rows() == 2);
+  REQUIRE(wfn.mo.C.cols() == 2);
+  REQUIRE(wfn.mo.C(0, 1) == 0.0);
+  // density is unchanged by the missing virtual
+  REQUIRE(wfn.mo.D(1, 0) == Catch::Approx(0.301228).epsilon(1e-5));
+}
+
+TEST_CASE("Truncated or malformed fchk fails with an error", "[read][fchk]") {
+  SECTION("truncated inside an array") {
+    std::string contents = fchk_contents;
+    contents = contents.substr(0, contents.find("Alpha MO coefficients") + 90);
+    std::istringstream fchk(contents);
+    REQUIRE_THROWS(occ::io::FchkReader(fchk));
+  }
+  SECTION("wrong array length") {
+    std::istringstream fchk(replace_once(
+        fchk_contents, "Alpha MO coefficients                      R   N=           4\n"
+                       "  5.48842275E-01  5.48842275E-01  1.21245192E+00 -1.21245192E+00",
+        "Alpha MO coefficients                      R   N=           3\n"
+        "  5.48842275E-01  5.48842275E-01  1.21245192E+00"));
+    REQUIRE_THROWS(occ::io::FchkReader(fchk));
+  }
+}
+
+TEST_CASE("Unrestricted fchk round trip", "[read][write][fchk]") {
+  // water cation from PySCF, written to fchk by occ, read back
+  using occ::qm::SpinComponent;
+  occ::io::MoldenReader molden(std::string(OCC_TEST_DATA_DIR) +
+                               "/molden/water_uhf_sph.molden");
+  occ::qm::Wavefunction wfn(molden);
+  std::ostringstream os;
+  {
+    occ::io::FchkWriter writer(os);
+    wfn.save(writer);
+    writer.write();
+  }
+  const std::string written = os.str();
+
+  occ::Mat3N pts(3, 3);
+  pts << 0.3, 0.1, -0.8, -0.2, 1.2, 0.4, 0.5, -0.7, 0.9;
+  auto spin_density = [&](const occ::qm::Wavefunction &w) {
+    return occ::Vec(w.electron_density(pts, SpinComponent::Alpha) -
+                    w.electron_density(pts, SpinComponent::Beta));
+  };
+
+  SECTION("density and spin density survive") {
+    std::istringstream is(written);
+    occ::io::FchkReader reader(is);
+    REQUIRE(reader.num_alpha() >= reader.num_beta());
+    occ::qm::Wavefunction wfn2(reader);
+    REQUIRE(all_close(wfn.electron_density(pts), wfn2.electron_density(pts),
+                      1e-6, 1e-6));
+    // magnitudes agree; the sign follows Gaussian's n_alpha >= n_beta
+    REQUIRE(all_close(spin_density(wfn).cwiseAbs(),
+                      spin_density(wfn2).cwiseAbs(), 1e-6, 1e-6));
+  }
+
+  SECTION("restricted open-shell file without beta MOs") {
+    // drop the beta blocks: alpha orbitals are then shared by both spins
+    auto drop_block = [](std::string s, const std::string &label) {
+      auto start = s.find(label);
+      REQUIRE(start != std::string::npos);
+      // the block ends at the next header line (starts with a letter)
+      auto end = start;
+      do {
+        end = s.find('\n', end) + 1;
+      } while (end < s.size() && !std::isalpha(static_cast<unsigned char>(s[end])));
+      return s.substr(0, start) + s.substr(end);
+    };
+    std::string rohf = drop_block(written, "Beta Orbital Energies");
+    rohf = drop_block(rohf, "Beta MO coefficients");
+    std::istringstream is(rohf);
+    occ::io::FchkReader reader(is);
+    occ::qm::Wavefunction wfn2(reader);
+    REQUIRE(wfn2.mo.kind == occ::qm::SpinorbitalKind::Unrestricted);
+    REQUIRE(wfn2.num_electrons == 9);
+  }
 }
 
 TEST_CASE("Write H2 fchk contents", "[write]") {
@@ -2460,6 +2569,209 @@ TEST_CASE("Read molden output formamide molecule", "[read]") {
   }
 }
 
+// Molden files written by PySCF 2.14 (tests/data/molden). Water uses a
+// small custom basis with d, f and g shells on O so every ordering is
+// exercised; reference densities (bohr^-3) and Mulliken charges from PySCF.
+
+namespace {
+
+struct MoldenReference {
+  const char *name;
+  int num_electrons;
+  std::vector<double> rho;
+  std::vector<double> spin;
+  std::vector<double> mulliken;
+};
+
+occ::Mat3N molden_reference_points() {
+  occ::Mat3N pts(3, 6);
+  pts << 0.0, 0.3, 0.1, -0.8, 1.1, 0.05, //
+      0.0, -0.2, 1.2, 0.4, -1.3, 0.05,   //
+      0.0, 0.5, -0.7, 0.9, 0.2, 0.25;
+  return pts;
+}
+
+std::string molden_test_file(const std::string &name) {
+  return std::string(OCC_TEST_DATA_DIR) + "/molden/" + name + ".molden";
+}
+
+const std::vector<MoldenReference> molden_references{
+    {"water_rhf_sph", 10, {1.039125347275e+01, 1.291057951152e+00, 3.827067174807e-01, 3.619572091637e-01, 6.705753210735e-02, 9.557443069776e+01},
+     {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+     {-3.531193412986e-01, 1.765596706493e-01, 1.765596706493e-01}},
+    {"water_rhf_cart", 10, {1.032418816652e+01, 1.298672577259e+00, 3.901202612990e-01, 3.545113413853e-01, 6.571328012986e-02, 9.498604874809e+01},
+     {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+     {-1.162982695707e-01, 5.814913478532e-02, 5.814913478535e-02}},
+    {"water_uhf_sph", 9, {1.043503407217e+01, 1.133276424312e+00, 3.305514109481e-01, 3.003482547574e-01, 5.519953464855e-02, 9.570219779464e+01},
+     {2.010068541891e-03, 2.140599237294e-01, -1.601418655417e-02, 7.403760180974e-02, 1.115897282823e-02, 1.105147776457e-01},
+     {6.958851919715e-02, 4.652057404014e-01, 4.652057404014e-01}},
+    {"water_uhf_cart", 9, {1.040818304450e+01, 1.201616625787e+00, 3.427918834118e-01, 2.935822738152e-01, 5.150530778938e-02, 9.524805438791e+01},
+     {7.646196913051e-03, 2.367736541585e-01, -1.700750670664e-02, 7.375719617647e-02, 1.010349782368e-02, 1.169269747719e-01},
+     {2.678412602143e-01, 3.660793698929e-01, 3.660793698929e-01}},
+    {"water_rohf_sph", 9, {1.043483947004e+01, 1.133257454583e+00, 3.303697249445e-01, 3.005088859321e-01, 5.525114986315e-02, 9.570735836003e+01},
+     {0.0, 2.084307752096e-01, 2.903977586059e-04, 6.837104158449e-02, 1.063495760931e-02, 1.939416202158e-02},
+     {6.834875410913e-02, 4.658256229454e-01, 4.658256229454e-01}},
+    {"water_def2svp", 10, {1.037107493416e+01, 1.323638699628e+00, 3.556907022667e-01, 3.104909228373e-01, 7.181300582393e-02, 9.197695070082e+01},
+     {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+     {-3.474903062275e-01, 1.737451531138e-01, 1.737451531138e-01}},
+    // 17 MOs for 18 basis functions (linear dependency removed)
+    {"he2_lindep", 4, {3.224342448877e+00, 5.266800004531e-01, 3.523718108606e-02, 1.196277582833e-01, 5.511540730444e-03, 1.443799181314e+00},
+     {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+     {-1.255435189700e-04, 1.255435189709e-04}},
+    // water_rhf_sph wavefunction written as [5D10F]: spherical d, Cartesian
+    // f and g. Read as a Cartesian basis, so Mulliken charges differ.
+    {"water_rhf_5d10f", 10, {1.039125347275e+01, 1.291057951152e+00, 3.827067174807e-01, 3.619572091637e-01, 6.705753210735e-02, 9.557443069776e+01},
+     {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+     {}},
+};
+
+} // namespace
+
+TEST_CASE("Read PySCF molden files", "[read][molden]") {
+  using occ::qm::SpinComponent;
+  const occ::Mat3N pts = molden_reference_points();
+  for (const auto &ref : molden_references) {
+    DYNAMIC_SECTION(ref.name) {
+      occ::io::MoldenReader reader(molden_test_file(ref.name));
+      occ::qm::Wavefunction wfn(reader);
+      REQUIRE(wfn.num_electrons == ref.num_electrons);
+
+      occ::Vec rho = wfn.electron_density(pts);
+      occ::Vec spin = wfn.electron_density(pts, SpinComponent::Alpha) -
+                      wfn.electron_density(pts, SpinComponent::Beta);
+      for (int i = 0; i < pts.cols(); i++) {
+        CAPTURE(i);
+        REQUIRE(rho(i) == Catch::Approx(ref.rho[i]).epsilon(1e-8));
+        REQUIRE(spin(i) == Catch::Approx(ref.spin[i]).margin(1e-8));
+      }
+
+      if (!ref.mulliken.empty()) {
+        occ::Vec charges = wfn.mulliken_charges();
+        for (size_t i = 0; i < ref.mulliken.size(); i++) {
+          REQUIRE(charges(i) == Catch::Approx(ref.mulliken[i]).margin(1e-8));
+        }
+      }
+    }
+  }
+}
+
+TEST_CASE("Molden write/read round trip", "[read][write][molden]") {
+  using occ::qm::SpinComponent;
+  const occ::Mat3N pts = molden_reference_points();
+  for (const auto &ref : molden_references) {
+    DYNAMIC_SECTION(ref.name) {
+      occ::io::MoldenReader reader(molden_test_file(ref.name));
+      occ::qm::Wavefunction wfn(reader);
+      std::ostringstream os;
+      occ::io::write_molden(wfn, os);
+      std::istringstream is(os.str());
+      occ::io::MoldenReader reader2(is);
+      occ::qm::Wavefunction wfn2(reader2);
+      REQUIRE(wfn2.num_electrons == wfn.num_electrons);
+      REQUIRE(wfn2.mo.kind == wfn.mo.kind);
+      REQUIRE(wfn2.basis.is_pure() == wfn.basis.is_pure());
+      REQUIRE(all_close(wfn2.electron_density(pts), wfn.electron_density(pts),
+                        1e-10, 1e-10));
+      occ::Vec spin = wfn.electron_density(pts, SpinComponent::Alpha) -
+                      wfn.electron_density(pts, SpinComponent::Beta);
+      occ::Vec spin2 = wfn2.electron_density(pts, SpinComponent::Alpha) -
+                       wfn2.electron_density(pts, SpinComponent::Beta);
+      REQUIRE(all_close(spin2, spin, 1e-10, 1e-10));
+    }
+  }
+}
+
+TEST_CASE("Molden spin handling", "[read][molden]") {
+  using occ::qm::SpinorbitalKind;
+  SECTION("UHF is unrestricted with alpha >= beta") {
+    occ::io::MoldenReader reader(molden_test_file("water_uhf_sph"));
+    REQUIRE(reader.spinorbital_kind() == SpinorbitalKind::Unrestricted);
+    REQUIRE(reader.num_alpha() == 5);
+    REQUIRE(reader.num_beta() == 4);
+  }
+  SECTION("ROHF is read as unrestricted") {
+    occ::io::MoldenReader reader(molden_test_file("water_rohf_sph"));
+    REQUIRE(reader.spinorbital_kind() == SpinorbitalKind::Unrestricted);
+    REQUIRE(reader.num_alpha() == 5);
+    REQUIRE(reader.num_beta() == 4);
+  }
+  SECTION("RHF is restricted") {
+    occ::io::MoldenReader reader(molden_test_file("water_rhf_sph"));
+    REQUIRE(reader.spinorbital_kind() == SpinorbitalKind::Restricted);
+    REQUIRE(reader.num_alpha() == 5);
+    REQUIRE(reader.num_beta() == 5);
+  }
+}
+
+TEST_CASE("Molden format variants", "[read][molden]") {
+  // minimal H2 file; the variants below must all give the same density
+  const std::string h2 = R"([Molden Format]
+[Atoms] AU
+H 1 1 0.0 0.0 0.0
+H 2 1 0.0 0.0 1.4
+[GTO]
+1 0
+s 2 1.00
+ 1.0 0.6
+ 0.2 0.5
+
+2 0
+s 2 1.00
+ 1.0 0.6
+ 0.2 0.5
+
+[MO]
+ Sym= A
+ Ene= -0.5
+ Spin= Alpha
+ Occup= 2.0
+ 1 0.5
+ 2 0.5
+)";
+  auto density = [](const std::string &contents) {
+    std::istringstream is(contents);
+    occ::io::MoldenReader reader(is);
+    occ::qm::Wavefunction wfn(reader);
+    occ::Mat3N pts(3, 2);
+    pts << 0.0, 0.1, 0.0, 0.2, 0.7, 1.0;
+    return wfn.electron_density(pts);
+  };
+  occ::Vec ref = density(h2);
+
+  auto replace = [](std::string s, const std::string &from,
+                    const std::string &to) {
+    s.replace(s.find(from), from.size(), to);
+    return s;
+  };
+
+  SECTION("Angstrom units") {
+    occ::Vec rho = density(replace(replace(h2, "[Atoms] AU", "[ATOMS] (Angs)"),
+                                   "1.4", "0.740848"));
+    REQUIRE(all_close(rho, ref, 1e-5, 1e-5));
+  }
+  SECTION("Fortran exponents, CRLF line endings, no Sym line") {
+    std::string s = replace(h2, " Sym= A\n", "");
+    s = replace(s, " 1.0 0.6", " 1.0D+00 6.0D-01");
+    std::string crlf;
+    for (char c : s) {
+      if (c == '\n')
+        crlf += '\r';
+      crlf += c;
+    }
+    REQUIRE(all_close(density(crlf), ref, 1e-12, 1e-12));
+  }
+  SECTION("Bracketed text outside section headers") {
+    REQUIRE(all_close(
+        density(replace(h2, "[Molden Format]\n",
+                        "[Molden Format]\nmade by pyscf v[2.14.0]\n")),
+        ref, 1e-12, 1e-12));
+  }
+  SECTION("Coefficient index past the basis is an error") {
+    std::istringstream is(replace(h2, " 2 0.5\n", " 2 0.5\n 3 0.1\n"));
+    REQUIRE_THROWS(occ::io::MoldenReader(is));
+  }
+}
+
 // Orca JSON
 
 using occ::Mat;
@@ -2610,6 +2922,21 @@ TEST_CASE("Read orca output JSON H2", "[read]") {
   fmt::print("OUR Overlap matrix:\n{}\n", format_matrix(S2));
   fmt::print("Difference\n{}\n", format_matrix(S2 - S1));
   REQUIRE(occ::util::all_close(S1, S2));
+}
+
+TEST_CASE("Read orca output JSON UHF water cation", "[read]") {
+  // ORCA 6.1 UHF/def2-SVP; Mulliken charges from the ORCA output
+  occ::io::OrcaJSONReader reader(std::string(OCC_TEST_DATA_DIR) +
+                                 "/orca/water_cation_uhf_def2svp.json");
+  REQUIRE(reader.spinorbital_kind() ==
+          occ::qm::SpinorbitalKind::Unrestricted);
+  REQUIRE(reader.num_alpha() == 5);
+  REQUIRE(reader.num_beta() == 4);
+  occ::qm::Wavefunction wfn(reader);
+  occ::Vec charges = wfn.mulliken_charges();
+  REQUIRE(charges(0) == Catch::Approx(0.381622).margin(1e-5));
+  REQUIRE(charges(1) == Catch::Approx(0.309189).margin(1e-5));
+  REQUIRE(charges(2) == Catch::Approx(0.309189).margin(1e-5));
 }
 
 TEST_CASE("Read/Write Wavefunction JSON", "[JSON]") {
