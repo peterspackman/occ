@@ -12,7 +12,8 @@ var searchData=
   ['numelectrons_9',['NumElectrons',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a92c7369aa57b8b1c183cfe2385b1afe1',1,'occ::io::FchkReader']]],
   ['numerical_10',['Numerical',['../classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288a5225763efc97aebd39e5a303fceb57ac',1,'occ::core::ElasticTensor']]],
   ['numgrid_11',['NumGrid',['../namespaceocc_1_1numint.html#aeeaf359544ddf0e24334035092df774ba5268eb265372a3bf6d86e32e9af2a1cd',1,'occ::numint']]],
-  ['numprimitiveshells_12',['NumPrimitiveShells',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a3da591efe5a074bf2e268a80728dff6d',1,'occ::io::FchkReader']]],
-  ['numshells_13',['NumShells',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a75fd0853d7b22d51979fac635c4d4be9',1,'occ::io::FchkReader']]],
-  ['nwchem_14',['nwchem',['../classocc_1_1io_1_1MoldenReader.html#ac815691851c154237c9ca13b5310d227a929a60543a3d798bb289678dcbebcb2b',1,'occ::io::MoldenReader::NWChem'],['../namespaceocc_1_1numint.html#aeeaf359544ddf0e24334035092df774ba929a60543a3d798bb289678dcbebcb2b',1,'occ::numint::NWChem']]]
+  ['numindependentfunctions_12',['NumIndependentFunctions',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a6f947851c341f041b436734101fea2e0',1,'occ::io::FchkReader']]],
+  ['numprimitiveshells_13',['NumPrimitiveShells',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a3da591efe5a074bf2e268a80728dff6d',1,'occ::io::FchkReader']]],
+  ['numshells_14',['NumShells',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a75fd0853d7b22d51979fac635c4d4be9',1,'occ::io::FchkReader']]],
+  ['nwchem_15',['nwchem',['../classocc_1_1io_1_1MoldenReader.html#ac815691851c154237c9ca13b5310d227a929a60543a3d798bb289678dcbebcb2b',1,'occ::io::MoldenReader::NWChem'],['../namespaceocc_1_1numint.html#aeeaf359544ddf0e24334035092df774ba929a60543a3d798bb289678dcbebcb2b',1,'occ::numint::NWChem']]]
 ];

@@ -34,6 +34,7 @@ var namespaceocc_1_1gto =
     [ "shell_index_cartesian", "namespaceocc_1_1gto.html#ac81fa206815622f494788230b8362747", null ],
     [ "shell_index_cartesian< ShellOrder::Default >", "namespaceocc_1_1gto.html#a1f3774891a924ae6969f8bbf666b652f", null ],
     [ "shell_index_cartesian< ShellOrder::Gaussian >", "namespaceocc_1_1gto.html#a3ef414ace2b5e1c44c70a873a1607820", null ],
+    [ "shell_index_cartesian< ShellOrder::Molden >", "namespaceocc_1_1gto.html#a489fdef6967459bd3c0cb3613d7b3097", null ],
     [ "shell_index_spherical", "namespaceocc_1_1gto.html#ae1fc550ecc167c5e9f735e6f4232babc", null ],
     [ "shell_index_spherical< ShellOrder::Default >", "namespaceocc_1_1gto.html#a528b424cc83130361c07394c6c50526f", null ],
     [ "shell_index_spherical< ShellOrder::Gaussian >", "namespaceocc_1_1gto.html#a7112dcd1500ad3712dff469e32c4a6ea", null ],

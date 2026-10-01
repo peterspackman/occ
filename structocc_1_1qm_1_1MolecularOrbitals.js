@@ -16,6 +16,7 @@ var structocc_1_1qm_1_1MolecularOrbitals =
     [ "symmetrically_orthonormalized", "structocc_1_1qm_1_1MolecularOrbitals.html#a37b87111ecefe7abdd1fb708dc5173ad", null ],
     [ "to_cartesian", "structocc_1_1qm_1_1MolecularOrbitals.html#a8dba8226ec196b2eff33a266f488d7f0", null ],
     [ "to_spherical", "structocc_1_1qm_1_1MolecularOrbitals.html#a8105d19fe3bf101b657249855e76cf93", null ],
+    [ "total_density_matrix", "structocc_1_1qm_1_1MolecularOrbitals.html#ac721f8d8807d3a5e2490e94a1f8b4cb0", null ],
     [ "update", "structocc_1_1qm_1_1MolecularOrbitals.html#a42ecb5682f81b685d1ede3638156c102", null ],
     [ "update_density_matrix", "structocc_1_1qm_1_1MolecularOrbitals.html#a990f27714faa71015ad31e2bca3742f3", null ],
     [ "update_occupied_orbitals", "structocc_1_1qm_1_1MolecularOrbitals.html#a5387188d07730670762b780d38fa02d0", null ],

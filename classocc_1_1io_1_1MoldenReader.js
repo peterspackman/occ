@@ -15,10 +15,10 @@ var classocc_1_1io_1_1MoldenReader =
     [ "beta_mo_coefficients", "classocc_1_1io_1_1MoldenReader.html#ae83242f0968ac4eedc0654bdf0af431f", null ],
     [ "beta_mo_energies", "classocc_1_1io_1_1MoldenReader.html#af678ba8ece8aef5bfc5d4ce74ff808e2", null ],
     [ "beta_occupations", "classocc_1_1io_1_1MoldenReader.html#ac8a6140dd2a34b6e0213eb88f3c4f514", null ],
-    [ "convert_mo_coefficients_from_molden_convention", "classocc_1_1io_1_1MoldenReader.html#a41b6357ad30c834eeef858dc355169ff", null ],
     [ "nbf", "classocc_1_1io_1_1MoldenReader.html#ab0c86a4fffb651664bb180d15c489d0e", null ],
     [ "num_alpha", "classocc_1_1io_1_1MoldenReader.html#aee2a5e60f498e8e0042b223545d159dd", null ],
     [ "num_beta", "classocc_1_1io_1_1MoldenReader.html#ab9ef73f7ffa05db731bc136f6bfc7f8a", null ],
     [ "num_electrons", "classocc_1_1io_1_1MoldenReader.html#a9132f1b4f221fc8eeb0019f462fea4e8", null ],
-    [ "spinorbital_kind", "classocc_1_1io_1_1MoldenReader.html#a8e1b9425c4b3d3d28598113fefba1d87", null ]
+    [ "source", "classocc_1_1io_1_1MoldenReader.html#ad8f3ea54e90c624f10fc76f0f2df3b51", null ],
+    [ "spinorbital_kind", "classocc_1_1io_1_1MoldenReader.html#acdd26c78e7e3d19f3fab10bfa8a47560", null ]
 ];

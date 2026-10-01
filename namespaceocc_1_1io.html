@@ -201,6 +201,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1MethodInput.html">MethodInput</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1io_1_1MoldenReader.html">MoldenReader</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reader for Molden format wavefunction files.  <a href="classocc_1_1io_1_1MoldenReader.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1MoleculeSite.html">MoleculeSite</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -386,6 +387,11 @@ Functions</h2></td></tr>
 <tr class="separator:a8b8b6eb8568d47e85b96130c3c57268d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc79d4aa61d69bc8446855d324216a01" id="r_acc79d4aa61d69bc8446855d324216a01"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#acc79d4aa61d69bc8446855d324216a01">write_ply_mesh</a> (const std::string &amp;filename, const <a class="el" href="structocc_1_1isosurface_1_1Isosurface.html">isosurface::Isosurface</a> &amp;isosurface, bool binary=true)</td></tr>
 <tr class="separator:acc79d4aa61d69bc8446855d324216a01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a695203fab052f6461488485aae9c9f0e" id="r_a695203fab052f6461488485aae9c9f0e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a695203fab052f6461488485aae9c9f0e">write_molden</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;wfn, std::ostream &amp;os)</td></tr>
+<tr class="memdesc:a695203fab052f6461488485aae9c9f0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a wavefunction in Molden format.  <br /></td></tr>
+<tr class="separator:a695203fab052f6461488485aae9c9f0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b8dfd8e4593f5c7e7424dfaaf2e8dd8" id="r_a8b8dfd8e4593f5c7e7424dfaaf2e8dd8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a8b8dfd8e4593f5c7e7424dfaaf2e8dd8">write_molden</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;wfn, const std::string &amp;filename)</td></tr>
+<tr class="separator:a8b8dfd8e4593f5c7e7424dfaaf2e8dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a099816a1d1f5ac39efdf73b50c8f6efc" id="r_a099816a1d1f5ac39efdf73b50c8f6efc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3">JsonFormat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a099816a1d1f5ac39efdf73b50c8f6efc">json_format</a> (const std::string &amp;str)</td></tr>
 <tr class="separator:a099816a1d1f5ac39efdf73b50c8f6efc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a03fbffee6c9f175af30275db3fe30f69" id="r_a03fbffee6c9f175af30275db3fe30f69"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a03fbffee6c9f175af30275db3fe30f69">valid_json_format_string</a> (const std::string &amp;str)</td></tr>
@@ -1579,6 +1585,65 @@ template&lt;typename PropertyFunctor &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8b8dfd8e4593f5c7e7424dfaaf2e8dd8" name="a8b8dfd8e4593f5c7e7424dfaaf2e8dd8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b8dfd8e4593f5c7e7424dfaaf2e8dd8">&#9670;&#160;</a></span>write_molden() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::io::write_molden </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;&#160;</td>
+          <td class="paramname"><em>wfn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a695203fab052f6461488485aae9c9f0e" name="a695203fab052f6461488485aae9c9f0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a695203fab052f6461488485aae9c9f0e">&#9670;&#160;</a></span>write_molden() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::io::write_molden </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">occ::qm::Wavefunction</a> &amp;&#160;</td>
+          <td class="paramname"><em>wfn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>os</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Write a wavefunction in Molden format. </p>
+<p>Coordinates are in bohr. Spherical bases are flagged with [5D] [7F] [9G]; Cartesian functions are written unit-normalized, as the format requires. Unrestricted wavefunctions are written as alpha then beta orbitals in one [MO] section. ECPs cannot be represented in Molden files. </p>
 
 </div>
 </div>
