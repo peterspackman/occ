@@ -3,29 +3,25 @@
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/units.h>
-#include <occ/numint/molecular_grid.h>
+#include <occ/core/util.h>
 #include <occ/dma/gauss_hermite.h>
 #include <occ/dma/multipole_calculator.h>
 #include <occ/dma/multipole_shifter.h>
 #include <occ/gto/gto.h>
 #include <occ/gto/shell_order.h>
+#include <occ/numint/molecular_grid.h>
 #include <occ/qm/hf.h>
 #include <random>
 
 namespace occ::dma {
 
+// sqrt((2L-1)!! / ((2l-1)!! (2m-1)!! (2n-1)!!)) for L = l + m + n: the ratio
+// of the axis-aligned (x^L) Cartesian norm to that of x^l y^m z^n
 inline double get_normalization_factor(int l, int m, int n) {
-  int angular_momenta = l + m + n;
-  if (angular_momenta == 2 && ((l == 1) || (m == 1) || (n == 1))) {
-    return std::sqrt(3.0);
-  }
-  if (angular_momenta == 3 && ((l == 2) || (m == 2) || (n == 2))) {
-    return std::sqrt(5.0);
-  }
-  if (angular_momenta == 3 && ((l == 1) && (m == 1) && (n == 1))) {
-    return std::sqrt(15.0);
-  }
-  return 1.0;
+  using occ::util::double_factorial_2n_1;
+  return std::sqrt(double_factorial_2n_1(l + m + n) /
+                   (double_factorial_2n_1(l) * double_factorial_2n_1(m) *
+                    double_factorial_2n_1(n)));
 }
 
 // AnalyticalIntegrator implementation
@@ -369,7 +365,7 @@ void MultipoleCalculator::setup_normalized_density_matrix() {
                     .sqrt()
                     .matrix()
                     .asDiagonal();
-  m_normalized_density = 2 * m_mo.D;
+  m_normalized_density = m_mo.total_density_matrix();
   m_normalized_density = bf_norm * m_normalized_density * bf_norm;
 
   // Apply normalization factors to density matrix

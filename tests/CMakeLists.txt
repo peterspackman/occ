@@ -163,6 +163,7 @@ catch_discover_tests(cg_tests)
 
 add_executable(dma_tests "${CMAKE_CURRENT_SOURCE_DIR}/dma_tests.cpp")
 target_link_libraries(dma_tests PRIVATE occ_dma occ_io occ_driver occ_mults Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(dma_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 catch_discover_tests(dma_tests)
 
 add_executable(volume_calculator_tests "${CMAKE_CURRENT_SOURCE_DIR}/volume_calculator_tests.cpp")

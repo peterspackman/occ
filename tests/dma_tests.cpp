@@ -1,5 +1,6 @@
 #include <fmt/core.h>
 #include <catch2/catch_approx.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <nlohmann/json.hpp>
@@ -12,6 +13,7 @@
 #include <occ/driver/dma_driver.h>
 #include <occ/mults/dma_force_field.h>
 #include <occ/qm/io/fchkreader.h>
+#include <occ/qm/io/moldenreader.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/wavefunction.h>
@@ -1792,4 +1794,27 @@ TEST_CASE("DMA force-field basis labels sites for the chosen set",
       }
     }
   }
+}
+
+TEST_CASE("DMA of unrestricted wavefunctions", "[dma]") {
+  // UHF water cation from PySCF; dipoles (au, about the origin) from PySCF.
+  // The spherical case goes through the spherical -> Cartesian density
+  // transform, which used to reject unrestricted wavefunctions.
+  auto [name, dipole_z] = GENERATE(std::make_pair("water_uhf_sph", -0.794048443),
+                                   std::make_pair("water_uhf_cart", -0.721793781));
+  CAPTURE(name);
+  occ::io::MoldenReader reader(std::string(OCC_TEST_DATA_DIR) + "/molden/" +
+                               name + ".molden");
+  occ::qm::Wavefunction wfn(reader);
+  occ::dma::DMACalculator calc(wfn);
+  occ::dma::DMASettings settings;
+  settings.max_rank = 1;
+  settings.big_exponent = 0.0; // analytical only, so totals are exact
+  calc.update_settings(settings);
+  auto result = calc.compute_multipoles();
+  auto total = calc.compute_total_multipoles(result);
+  REQUIRE(total.Q00() == Approx(1.0).margin(1e-6));
+  REQUIRE(total.Q10() == Approx(dipole_z).margin(1e-5));
+  REQUIRE(total.Q11c() == Approx(0.0).margin(1e-6));
+  REQUIRE(total.Q11s() == Approx(0.0).margin(1e-6));
 }

@@ -258,13 +258,30 @@ void MolecularOrbitals::update_density_matrix() {
     D = orb::density_matrix_restricted(Cocc);
     break;
   case SpinorbitalKind::Unrestricted:
-    D = orb::density_matrix_unrestricted(Cocc, n_alpha, n_beta);
+    // Cocc columns past n_alpha/n_beta are zero for aufbau occupations, but
+    // with fractional occupations occupied orbitals need not come first
+    D = orb::density_matrix_unrestricted(Cocc, Cocc.cols(), Cocc.cols());
     break;
   case SpinorbitalKind::General:
     D = orb::density_matrix_general(Cocc);
     break;
   }
   occ::timing::stop(occ::timing::category::la);
+}
+
+Mat MolecularOrbitals::total_density_matrix() const {
+  // occ's density matrices all carry a factor of 1/2 relative to the
+  // electron count (restricted: one spin; unrestricted/general: 0.5 C C^T).
+  // Only the diagonal spin blocks contribute to the charge density; the
+  // off-diagonal blocks of a general D describe spin magnetization.
+  switch (kind) {
+  case SpinorbitalKind::Unrestricted:
+    return 2 * (block::a(D) + block::b(D));
+  case SpinorbitalKind::General:
+    return 2 * (block::aa(D) + block::bb(D));
+  default:
+    return 2 * D;
+  }
 }
 
 Mat MolecularOrbitals::energy_weighted_density_matrix() const {
@@ -354,26 +371,57 @@ void MolecularOrbitals::incorporate_norm(Eigen::Ref<const Vec> norms) {
   update_density_matrix();
 }
 
+namespace {
+
+// Apply a per-spin-block transform to a density matrix in occ's layout:
+// restricted n x n, unrestricted [Da; Db] (2n x n), general 2n x 2n
+template <typename F>
+Mat transform_density_blocks(SpinorbitalKind kind, const Mat &D, F &&f) {
+  switch (kind) {
+  case SpinorbitalKind::Unrestricted: {
+    Mat a = f(block::a(D));
+    Mat b = f(block::b(D));
+    Mat result(2 * a.rows(), a.cols());
+    block::a(result) = a;
+    block::b(result) = b;
+    return result;
+  }
+  case SpinorbitalKind::General: {
+    Mat aa = f(block::aa(D));
+    const auto n = aa.rows();
+    Mat result(2 * n, 2 * n);
+    block::aa(result) = aa;
+    block::ab(result) = f(block::ab(D));
+    block::ba(result) = f(block::ba(D));
+    block::bb(result) = f(block::bb(D));
+    return result;
+  }
+  default:
+    return f(D);
+  }
+}
+
+} // namespace
+
 void MolecularOrbitals::to_cartesian(const AOBasis &bspure,
                                      const AOBasis &bscart) {
-  occ::log::debug("Converting MO from spherical to Cartesian using density matrix transformation");
+  occ::log::debug("Converting MO from spherical to Cartesian using density "
+                  "matrix transformation");
 
   // fail early if we already have cartesian basis
   if (!bspure.is_pure() || bspure.nbf() == bscart.nbf())
     return;
 
-  if (kind != SpinorbitalKind::Restricted) {
-    throw std::runtime_error("Density matrix transformation for spherical->cartesian conversion "
-                            "is currently only implemented for restricted spin orbitals");
-  }
+  D = transform_density_blocks(kind, D, [&](const Mat &block) {
+    return occ::gto::transform_density_matrix_spherical_to_cartesian(bspure,
+                                                                     block);
+  });
 
-  // Transform the density matrix directly
-  D = occ::gto::transform_density_matrix_spherical_to_cartesian(bspure, D);
-  
   // Update the number of AOs
   n_ao = bscart.nbf();
-  
-  // Clear MO coefficients since they're no longer valid after density matrix transformation
+
+  // Clear MO coefficients since they're no longer valid after density matrix
+  // transformation
   C = Mat();
   Cocc = Mat();
   energies = Vec();
@@ -381,24 +429,23 @@ void MolecularOrbitals::to_cartesian(const AOBasis &bspure,
 
 void MolecularOrbitals::to_spherical(const AOBasis &bscart,
                                      const AOBasis &bspure) {
-  occ::log::debug("Converting MO from Cartesian to spherical using density matrix transformation");
+  occ::log::debug("Converting MO from Cartesian to spherical using density "
+                  "matrix transformation");
 
   // fail early if we already have spherical basis
   if (bscart.is_pure() || bspure.nbf() == bscart.nbf())
     return;
 
-  if (kind != SpinorbitalKind::Restricted) {
-    throw std::runtime_error("Density matrix transformation for cartesian->spherical conversion "
-                            "is currently only implemented for restricted spin orbitals");
-  }
+  D = transform_density_blocks(kind, D, [&](const Mat &block) {
+    return occ::gto::transform_density_matrix_cartesian_to_spherical(bscart,
+                                                                     block);
+  });
 
-  // Transform the density matrix directly
-  D = occ::gto::transform_density_matrix_cartesian_to_spherical(bscart, D);
-  
   // Update the number of AOs
   n_ao = bspure.nbf();
-  
-  // Clear MO coefficients since they're no longer valid after density matrix transformation
+
+  // Clear MO coefficients since they're no longer valid after density matrix
+  // transformation
   C = Mat();
   Cocc = Mat();
   energies = Vec();

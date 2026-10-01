@@ -67,6 +67,8 @@ struct MolecularOrbitals {
     }
   }
 
+  /// Total (alpha + beta) electron density matrix, n_ao x n_ao
+  Mat total_density_matrix() const;
   Mat energy_weighted_density_matrix() const;
   Mat density_matrix_single_mo(int mo_index) const;
 
