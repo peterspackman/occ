@@ -133,6 +133,10 @@ const char *json_input_contents = R""""({
 TEST_CASE("Read QCSchema formatted input water b3lyp/6-31G", "[read]") {
   std::istringstream json(json_input_contents);
   occ::io::QCSchemaReader reader(json);
+  // QCSchema geometry is in bohr: O-H is 1.8897 bohr = 1 angstrom
+  auto mol = reader.as_occ_input().geometry.molecule();
+  occ::Vec3 oh = mol.positions().col(1) - mol.positions().col(0);
+  REQUIRE(oh.norm() == Catch::Approx(1.0).margin(1e-4));
 }
 
 TEST_CASE("Serial Molecule & Dimer to JSON", "[json,write]") {

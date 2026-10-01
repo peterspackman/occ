@@ -2,6 +2,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <occ/core/timings.h>
+#include <occ/core/units.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/io/qcschema.h>
 #include <vector>
@@ -16,9 +17,13 @@ void from_json(const nlohmann::json &J, QCSchemaModel &model) {
 void from_json(const nlohmann::json &J, QCSchemaTopology &mol) {
   std::vector<double> positions;
   J.at("geometry").get_to(positions);
+  if (positions.size() % 3 != 0)
+    throw std::runtime_error("QCSchema geometry length is not a multiple of 3");
+  // QCSchema geometry is in bohr; occ input geometry is in angstrom
+  constexpr double f = occ::units::BOHR_TO_ANGSTROM;
   for (size_t i = 0; i < positions.size(); i += 3) {
     mol.positions.emplace_back(std::array<double, 3>{
-        positions[i], positions[i + 1], positions[i + 2]});
+        positions[i] * f, positions[i + 1] * f, positions[i + 2] * f});
   }
   std::vector<std::string> symbols;
   J.at("symbols").get_to(symbols);
