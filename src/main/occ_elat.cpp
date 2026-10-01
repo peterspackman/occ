@@ -280,7 +280,11 @@ void calculate_lattice_energy(const LatticeConvergenceSettings settings) {
     settings.model_name
   };
 
-  std::string json_filename = fmt::format("{}_elat_results.json", basename);
+  std::string json_filename =
+      settings.output_json_filename.empty()
+          ? fmt::format("{}_elat_results.json", basename)
+          : settings.output_json_filename;
+  occ::log::info("Writing lattice energy results to '{}'", json_filename);
   occ::interaction::write_elat_json(json_filename, elat_results);
 
   // Run elastic fitting if requested
@@ -330,8 +334,9 @@ CLI::App *add_elat_subcommand(CLI::App &app) {
   elat->add_option("-m,--model", config->model_name,
                    "energy model: ce-b3lyp (default), ce-hf, ce-1p, ce-2p, "
                    "ce-5p, or gfn2 (also gfn2-xtb, xtb) for tight binding");
-  elat->add_option("--json", config->output_json_filename,
-                   "JSON filename for output");
+  elat->add_option(
+      "--json", config->output_json_filename,
+      "JSON filename for output (default: {basename}_elat_results.json)");
   elat->add_option("-r,--radius", config->max_radius,
                    "maximum radius (Angstroms) for neighbours");
   elat->add_option("--charges", config->charge_string, "system net charge");
