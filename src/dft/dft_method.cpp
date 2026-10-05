@@ -148,6 +148,7 @@ DFTMethod create_dft_method_from_definition(const MethodDefinition &def) {
     }
 
     if (comp.hfx > 0.0) {
+      func.set_exchange_factor(comp.hfx);
       func_pol.set_exchange_factor(comp.hfx);
     }
 
@@ -210,6 +211,8 @@ DFTMethod get_dft_method(const std::string &method_string) {
         }
 
         if (comp.hfx > 0.0) {
+          // both copies: exchange_factor() reads only the unpolarised list
+          func.set_exchange_factor(comp.hfx);
           func_pol.set_exchange_factor(comp.hfx);
         }
 

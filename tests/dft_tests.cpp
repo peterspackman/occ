@@ -605,6 +605,53 @@ TEST_CASE("wB97X open-shell (UKS) range-separated: COSX matches exact",
   REQUIRE(std::abs(e_cosx - e_exact) < 2e-4);
 }
 
+TEST_CASE("Composite hybrids (pbe0 = 0.75 PBE_x + PBE_c + 0.25 HF) match "
+          "libxc's single-id pbeh",
+          "[dft][method][scf]") {
+  // b86bpbeh takes the same path but lives only in share/methods
+  for (const auto *name : {"pbe0", "pbe1pbe"}) {
+    auto method = occ::dft::get_dft_method(name);
+    REQUIRE(method.exchange_factor() == Approx(0.25));
+    REQUIRE(method.functionals[0].scale_factor() == Approx(0.75));
+  }
+
+  // RKS water and UKS OH radical: the composite must reproduce hyb_gga_xc_pbeh
+  // (same weights, same components), not plain PBE.
+  occ::Vec3 O{0.000000000, 0.000000000, 0.117176000};
+  occ::Vec3 H1{0.000000000, 0.755453000, -0.468704000};
+  occ::Vec3 H2{0.000000000, -0.755453000, -0.468704000};
+  occ::Mat3N pos(3, 3);
+  pos << O(0), H1(0), H2(0), O(1), H1(1), H2(1), O(2), H1(2), H2(2);
+  occ::IVec atomic_numbers(3);
+  atomic_numbers << 8, 1, 1;
+  occ::core::Molecule water(atomic_numbers, pos);
+  std::vector<occ::core::Atom> oh{{8, 0.0, 0.0, 0.0}, {1, 0.0, 0.0, 1.8324}};
+
+  auto run = [](const std::vector<occ::core::Atom> &atoms,
+                const std::string &method, bool unrestricted) {
+    auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+    basis.set_pure(true);
+    occ::dft::DFT dft(method, basis);
+    occ::qm::SCF<occ::dft::DFT> scf(
+        dft, unrestricted ? occ::qm::SpinorbitalKind::Unrestricted
+                          : occ::qm::SpinorbitalKind::Restricted);
+    if (unrestricted)
+      scf.set_charge_multiplicity(0, 2);
+    return scf.compute_scf_energy();
+  };
+
+  for (bool u : {false, true}) {
+    const auto &atoms = u ? oh : water.atoms();
+    double e_pbeh = run(atoms, "pbeh", u);
+    double e_pbe0 = run(atoms, "pbe0", u);
+    double e_pbe = run(atoms, "pbe", u);
+    fmt::print("{} pbeh={:.10f} pbe0={:.10f} pbe={:.10f}\n", u ? "UKS" : "RKS",
+               e_pbeh, e_pbe0, e_pbe);
+    REQUIRE(e_pbe0 == Approx(e_pbeh).margin(1e-7));
+    REQUIRE(std::abs(e_pbe0 - e_pbe) > 1e-3);
+  }
+}
+
 TEST_CASE("COSX geometric screening robust for diffuse basis",
           "[cosx][diffuse][screening]") {
   // Augmented (diffuse) basis: the geometric screen must not drop the

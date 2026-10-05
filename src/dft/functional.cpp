@@ -61,6 +61,15 @@ DensityFunctional::evaluate(const Params &params) const {
     throw std::runtime_error("Unhandled functional family");
   }
   xc_func_end(&func);
+  // composite methods (e.g. pbe0 = 0.75 x gga_x_pbe + ...): E and every
+  // potential term are linear in the component weight
+  if (m_factor != 1.0) {
+    result.exc *= m_factor;
+    result.vrho *= m_factor;
+    result.vsigma *= m_factor;
+    result.vlaplacian *= m_factor;
+    result.vtau *= m_factor;
+  }
   return result;
 }
 
