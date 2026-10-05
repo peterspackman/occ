@@ -335,7 +335,7 @@ Mat SemiNumericalExchange::compute_overlap_matrix() const {
       Mat rho(BLOCKSIZE, 1);
 
       Eigen::Index l = block * BLOCKSIZE;
-      Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
+      Eigen::Index u = std::min(npt_total, (block + 1) * BLOCKSIZE);
       Eigen::Index npt = u - l;
       if (npt <= 0)
         return;
@@ -575,7 +575,7 @@ Mat SemiNumericalExchange::compute_K_restricted(const qm::MolecularOrbitals &mo,
     occ::gto::GTOValues ao;
     for (size_t block = 0; block < num_blocks; block++) {
       Eigen::Index l = block * BLOCKSIZE;
-      Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
+      Eigen::Index u = std::min(npt_total, (block + 1) * BLOCKSIZE);
       Eigen::Index npt = u - l;
       if (npt <= 0)
         continue;

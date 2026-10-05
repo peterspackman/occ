@@ -185,7 +185,7 @@ void VoronoiPartition::compute_voronoi_weights(
       auto &num_e = tl_num_electrons.local();
 
       Eigen::Index l = block * BLOCKSIZE;
-      Eigen::Index u = std::min(npt_total - 1, (block + 1) * BLOCKSIZE);
+      Eigen::Index u = std::min(npt_total, (block + 1) * BLOCKSIZE);
       Eigen::Index npt = u - l;
       if (npt <= 0)
         return;
