@@ -115,8 +115,11 @@ jobs:
       working-directory: packages/occjs
       run: npm run test:coverage
 
+    # Coverage upload problems must not block the artifact upload below,
+    # which npm publishing depends on
     - name: Upload test coverage
       if: matrix.node-version == 20
+      continue-on-error: true
       uses: codecov/codecov-action@v4
       with:
         directory: packages/occjs/coverage
