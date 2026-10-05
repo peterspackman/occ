@@ -11,9 +11,9 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1qm_1_1cc_1_1LaplaceGrid.html" target="_top" xlink:title="Least&#45;squares &quot;Laplace&quot; quadrature for the inverse function on a range: 1/x ~= sum_k weights(k) * exp...">
+<g id="a_Node000000"><a xlink:href="structocc_1_1qm_1_1cc_1_1CCSDResult.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="135,-19 0,-19 0,0 135,0 135,-19"/>
-<text text-anchor="middle" x="67.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::cc::LaplaceGrid</text>
+<text text-anchor="middle" x="67.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">occ::qm::cc::CCSDResult</text>
 </a>
 </g>
 </g>

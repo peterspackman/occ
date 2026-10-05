@@ -113,7 +113,9 @@ var namespaceocc_1_1isosurface =
       [ "PromoleculeDensity", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172ae967f43f155367921c6672f4d67f09ef", null ],
       [ "DeformationDensity", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172ab6a4c26ef4ae489affedf8ddbbd75432", null ],
       [ "XCDensity", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a663338112696cbace1bdf50d77c7285d", null ],
-      [ "CrystalVoid", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a952816358b862ae659756eaacb56a8cb", null ]
+      [ "CrystalVoid", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172a952816358b862ae659756eaacb56a8cb", null ],
+      [ "MO", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172aeb0459bfce4185888ecf61fb07987581", null ],
+      [ "MODensity", "namespaceocc_1_1isosurface.html#a892a09f5074cddf4752e4c8298399172aec04fb678dc7ffb1777e741eb70f4c55", null ]
     ] ],
     [ "add_cell_caps", "namespaceocc_1_1isosurface.html#ab6f9d036fd8d470b6edb1a555e4d6248", null ],
     [ "available_surface_types", "namespaceocc_1_1isosurface.html#a245fa3a4f90b584784c01f35b671d15d", null ],

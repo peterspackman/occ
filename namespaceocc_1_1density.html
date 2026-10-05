@@ -131,6 +131,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ad1c082a27c8964d750f29ef2768d12a3" id="r_ad1c082a27c8964d750f29ef2768d12a3"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
 <tr class="memitem:ad1c082a27c8964d750f29ef2768d12a3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1density.html#ad1c082a27c8964d750f29ef2768d12a3">evaluate_density&lt; 2, SpinorbitalKind::Unrestricted &gt;</a> (<a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> D, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_values, <a class="el" href="namespaceocc.html#a28d8f76813bbc3604b54259e3fca3820">MatRef</a> rho)</td></tr>
 <tr class="separator:ad1c082a27c8964d750f29ef2768d12a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a88493fccb4d3cf75b8dcc2df8ac006" id="r_a6a88493fccb4d3cf75b8dcc2df8ac006"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1density.html#a6a88493fccb4d3cf75b8dcc2df8ac006">evaluate_orbitals_on_grid</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;basis, <a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a> C, const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;points)</td></tr>
+<tr class="memdesc:a6a88493fccb4d3cf75b8dcc2df8ac006"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signed orbital amplitudes psi_i(r) = sum_mu C(mu, i) phi_mu(r) for each column of C, returned as an (npoints x ncols) matrix.  <br /></td></tr>
+<tr class="separator:a6a88493fccb4d3cf75b8dcc2df8ac006"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2938359ef35efe125d1773215908e802" id="r_a2938359ef35efe125d1773215908e802"><td class="memTemplParams" colspan="2">template&lt;size_t max_derivative, SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted&gt; </td></tr>
 <tr class="memitem:a2938359ef35efe125d1773215908e802"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1density.html#a2938359ef35efe125d1773215908e802">evaluate_density</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;D, const <a class="el" href="structocc_1_1gto_1_1GTOValues.html">occ::gto::GTOValues</a> &amp;gto_values)</td></tr>
 <tr class="separator:a2938359ef35efe125d1773215908e802"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -534,6 +537,43 @@ template&lt;size_t max_derivative&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6a88493fccb4d3cf75b8dcc2df8ac006" name="a6a88493fccb4d3cf75b8dcc2df8ac006"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a88493fccb4d3cf75b8dcc2df8ac006">&#9670;&#160;</a></span>evaluate_orbitals_on_grid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> occ::density::evaluate_orbitals_on_grid </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">occ::gto::AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc.html#ab1a478ffb0d7260c682e8a81b45a3558">MatConstRef</a>&#160;</td>
+          <td class="paramname"><em>C</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">occ::Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>points</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Signed orbital amplitudes psi_i(r) = sum_mu C(mu, i) phi_mu(r) for each column of C, returned as an (npoints x ncols) matrix. </p>
+<p>Uses the same AO values as the density evaluation, so the occupation weighted sum of psi_i^2 reproduces evaluate_density. Points are processed in parallel blocks, so memory stays bounded for large grids. </p>
 
 </div>
 </div>

@@ -165,6 +165,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a6574d882427708d9b76eddf66a8f140e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad359584b249ac59547ab8abc73298640" id="r_ad359584b249ac59547ab8abc73298640"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html#ad359584b249ac59547ab8abc73298640">electron_density_mo</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;points, int mo_index) const</td></tr>
 <tr class="separator:ad359584b249ac59547ab8abc73298640"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90982c4c541170add4f297159e8d518b" id="r_a90982c4c541170add4f297159e8d518b"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html#a90982c4c541170add4f297159e8d518b">mo_amplitude</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;points, int mo_index, <a class="el" href="namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1">SpinComponent</a> spin=<a class="el" href="namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1a96b0141273eabab320119c467cdcaf17">SpinComponent::Total</a>) const</td></tr>
+<tr class="memdesc:a90982c4c541170add4f297159e8d518b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signed amplitude psi_i(r) of MO i (0-based) at each point, in bohr^-3/2.  <br /></td></tr>
+<tr class="separator:a90982c4c541170add4f297159e8d518b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9c41ce01930b500d91bfd2f7d3138df" id="r_ad9c41ce01930b500d91bfd2f7d3138df"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html#ad9c41ce01930b500d91bfd2f7d3138df">electron_density_mo_gradient</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;points, int mo_index) const</td></tr>
 <tr class="separator:ad9c41ce01930b500d91bfd2f7d3138df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a010f948b01866ec5d3992b3e4c17cb5e" id="r_a010f948b01866ec5d3992b3e4c17cb5e"><td class="memItemLeft" align="right" valign="top">Vec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html#a010f948b01866ec5d3992b3e4c17cb5e">electric_potential</a> (const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;points) const</td></tr>
@@ -689,6 +692,43 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a90982c4c541170add4f297159e8d518b" name="a90982c4c541170add4f297159e8d518b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90982c4c541170add4f297159e8d518b">&#9670;&#160;</a></span>mo_amplitude()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Vec occ::qm::Wavefunction::mo_amplitude </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a9dcff6c717bd7b042c3eaa6af9a69b8b">Mat3N</a> &amp;&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>mo_index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1">SpinComponent</a>&#160;</td>
+          <td class="paramname"><em>spin</em> = <code><a class="el" href="namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1a96b0141273eabab320119c467cdcaf17">SpinComponent::Total</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Signed amplitude psi_i(r) of MO i (0-based) at each point, in bohr^-3/2. </p>
+<p>The overall sign of an orbital is arbitrary. For unrestricted wavefunctions spin must be Alpha or Beta. </p>
 
 </div>
 </div>

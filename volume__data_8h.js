@@ -10,6 +10,8 @@ var volume__data_8h =
       [ "PromoleculeDensity", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172ae967f43f155367921c6672f4d67f09ef", null ],
       [ "DeformationDensity", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172ab6a4c26ef4ae489affedf8ddbbd75432", null ],
       [ "XCDensity", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172a663338112696cbace1bdf50d77c7285d", null ],
-      [ "CrystalVoid", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172a952816358b862ae659756eaacb56a8cb", null ]
+      [ "CrystalVoid", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172a952816358b862ae659756eaacb56a8cb", null ],
+      [ "MO", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172aeb0459bfce4185888ecf61fb07987581", null ],
+      [ "MODensity", "volume__data_8h.html#a892a09f5074cddf4752e4c8298399172aec04fb678dc7ffb1777e741eb70f4c55", null ]
     ] ]
 ];

@@ -1,5 +1,6 @@
 var NAVTREEINDEX26 =
 {
+"dir_737cf82dfc93877bbe50a83dfe5e1c2d.html":[6,0,1,0,19],
 "dir_7ab1db0ec535273aaa16e13087447790.html":[6,0,1,0,4],
 "dir_887d2295614e9dc3eeb401126e7efc97.html":[6,0,1,0,15],
 "dir_8b7861ad11e4db9a5e6a6da237b17e56.html":[6,0,1,0],
@@ -151,8 +152,8 @@ var NAVTREEINDEX26 =
 "functions_eval_r.html":[5,3,5,11],
 "functions_eval_s.html":[5,3,5,12],
 "functions_f.html":[5,3,0,6],
-"functions_func.html":[5,3,1,0],
 "functions_func.html":[5,3,1],
+"functions_func.html":[5,3,1,0],
 "functions_func_b.html":[5,3,1,1],
 "functions_func_c.html":[5,3,1,2],
 "functions_func_d.html":[5,3,1,3],
@@ -248,6 +249,5 @@ var NAVTREEINDEX26 =
 "gemm_8h.html#ad175eea5c8fb01593e8261467749f11a":[6,0,1,0,19,0,1,3],
 "gensqrtinv_8h.html":[6,0,1,0,1,16],
 "gensqrtinv_8h.html#ab25be21637f89ed6ac96910483c65e51":[6,0,1,0,1,16,1],
-"geometry__optimization_8h.html":[6,0,1,0,7,11],
-"geometry__optimization_8h.html#a7c3d0f87ea6ffbf435a9a2a0fb1dd595":[6,0,1,0,7,11,0]
+"geometry__optimization_8h.html":[6,0,1,0,7,11]
 };

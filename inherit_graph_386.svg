@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1CrystalOptimizerSettings.html" target="_top" xlink:title="Settings for crystal structure optimization.">
+<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1CrystalOptimizerResult.html" target="_top" xlink:title="Result from crystal structure optimization.">
 <polygon fill="white" stroke="#666666" points="155,-30 0,-30 0,0 155,0 155,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">occ::mults::CrystalOptimizer</text>
-<text text-anchor="middle" x="77.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Settings</text>
+<text text-anchor="middle" x="77.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Result</text>
 </a>
 </g>
 </g>

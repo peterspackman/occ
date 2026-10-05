@@ -371,6 +371,7 @@ var hierarchy =
     [ "occ::driver::MethodSpec", "structocc_1_1driver_1_1MethodSpec.html", null ],
     [ "occ::geometry::MIndex", "structocc_1_1geometry_1_1MIndex.html", null ],
     [ "occ::geometry::MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", null ],
+    [ "occ::isosurface::pointwise::MOFunctor", "structocc_1_1isosurface_1_1pointwise_1_1MOFunctor.html", null ],
     [ "occ::qm::MOIntegralEngine", "classocc_1_1qm_1_1MOIntegralEngine.html", null ],
     [ "occ::io::MoldenReader", "classocc_1_1io_1_1MoldenReader.html", null ],
     [ "occ::core::MolecularAxisCalculator", "classocc_1_1core_1_1MolecularAxisCalculator.html", null ],

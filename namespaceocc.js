@@ -37,6 +37,7 @@ var namespaceocc =
       [ "evaluate_density_on_grid", "namespaceocc_1_1density.html#a24577651553647722e9c29b1323ae5ab", null ],
       [ "evaluate_density_on_grid", "namespaceocc_1_1density.html#a0ed33c1c2b124280a416c29383e8b208", null ],
       [ "evaluate_density_on_grid", "namespaceocc_1_1density.html#a6e0f211ca1b17f8b15f28527673195a6", null ],
+      [ "evaluate_orbitals_on_grid", "namespaceocc_1_1density.html#a6a88493fccb4d3cf75b8dcc2df8ac006", null ],
       [ "num_components", "namespaceocc_1_1density.html#aede17985150ad037bb98e3eec4c221ed", null ]
     ] ],
     [ "descriptors", "namespaceocc_1_1descriptors.html", "namespaceocc_1_1descriptors" ],
