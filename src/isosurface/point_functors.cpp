@@ -80,6 +80,18 @@ void ElectronDensityFunctor::operator()(Eigen::Ref<const Mat3N> points,
   }
 }
 
+MOFunctor::MOFunctor(const Wavefunction &w, int idx, SpinComponent s, bool sq)
+    : wfn(w), mo_index(idx), spin(s), squared(sq) {}
+
+void MOFunctor::operator()(Eigen::Ref<const Mat3N> points,
+                           Eigen::Ref<Vec> dest) {
+  Vec psi = wfn.mo_amplitude(points, mo_index, spin);
+  if (squared)
+    dest += psi.array().square().matrix();
+  else
+    dest += psi;
+}
+
 DeformationDensityFunctor::DeformationDensityFunctor(const Wavefunction &wfn,
                                                      SpinComponent spin)
     : pro_func(wfn.atoms), rho_func(wfn, spin) {}

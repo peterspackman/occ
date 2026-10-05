@@ -24,7 +24,9 @@ enum class VolumePropertyKind {
     PromoleculeDensity,   // "promolecule"
     DeformationDensity,   // "deformation_density"
     XCDensity,            // "xc"
-    CrystalVoid           // "void" (alias for promolecule with crystal)
+    CrystalVoid,          // "void" (alias for promolecule with crystal)
+    MO,                   // "mo", "orbital": signed amplitude psi_i
+    MODensity             // "mo_density", "orbital_density": psi_i^2
 };
 
 /**

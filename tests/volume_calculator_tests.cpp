@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include <occ/isosurface/volume_calculator.h>
+#include <occ/qm/io/moldenreader.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/core/molecule.h>
 #include <occ/crystal/crystal.h>
@@ -339,4 +340,47 @@ TEST_CASE("VolumeCalculator grid parameter edge cases", "[volume_calculator]") {
         REQUIRE(volume.basis(1, 2) == Approx(0.0));
         REQUIRE(volume.basis(0, 2) == Approx(0.0));
     }
+}
+TEST_CASE("VolumeCalculator MO amplitude and density", "[volume_calculator][mo]") {
+  using occ::isosurface::VolumeCalculator;
+  using occ::isosurface::VolumeGenerationParameters;
+  using occ::isosurface::VolumePropertyKind;
+
+  REQUIRE(VolumeCalculator::property_from_string("mo") == VolumePropertyKind::MO);
+  REQUIRE(VolumeCalculator::property_from_string("orbital") == VolumePropertyKind::MO);
+  REQUIRE(VolumeCalculator::property_from_string("mo_density") ==
+          VolumePropertyKind::MODensity);
+  REQUIRE(VolumeCalculator::property_from_string("orbital_density") ==
+          VolumePropertyKind::MODensity);
+
+  occ::io::MoldenReader reader(std::string(OCC_TEST_DATA_DIR) +
+                               "/molden/water_uhf_sph.molden");
+  occ::qm::Wavefunction wfn(reader);
+  VolumeCalculator calc;
+  calc.set_wavefunction(wfn);
+
+  VolumeGenerationParameters params;
+  params.property = VolumePropertyKind::MO;
+  params.steps = {16, 16, 16};
+  params.da = {0.4};
+  params.db = {0.4};
+  params.dc = {0.4};
+
+  SECTION("needs an orbital") {
+    REQUIRE_THROWS(calc.compute_volume(params));
+  }
+
+  // beta HOMO of the cation: a p-type lone pair, so both signs appear
+  params.mo_number = static_cast<int>(wfn.mo.n_beta) - 1;
+  params.spin = occ::isosurface::SpinComponent::Beta;
+  auto mo = calc.compute_volume(params);
+  Eigen::Tensor<double, 0> max_val = mo.data.maximum();
+  Eigen::Tensor<double, 0> min_val = mo.data.minimum();
+  REQUIRE(max_val() > 0.05);
+  REQUIRE(min_val() < -0.05);
+
+  params.property = VolumePropertyKind::MODensity;
+  auto density = calc.compute_volume(params);
+  Eigen::Tensor<double, 0> diff = (density.data - mo.data.square()).abs().maximum();
+  REQUIRE(diff() < 1e-12);
 }

@@ -119,6 +119,14 @@ struct Wavefunction {
   Mat3N electron_density_gradient(const Mat3N &points) const;
 
   Vec electron_density_mo(const Mat3N &points, int mo_index) const;
+
+  /**
+   * Signed amplitude psi_i(r) of MO i (0-based) at each point, in bohr^-3/2.
+   * The overall sign of an orbital is arbitrary. For unrestricted
+   * wavefunctions spin must be Alpha or Beta.
+   */
+  Vec mo_amplitude(const Mat3N &points, int mo_index,
+                   SpinComponent spin = SpinComponent::Total) const;
   Mat3N electron_density_mo_gradient(const Mat3N &points, int mo_index) const;
 
   Vec electric_potential(const Mat3N &points) const;

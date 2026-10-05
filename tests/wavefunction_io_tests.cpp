@@ -2681,6 +2681,117 @@ TEST_CASE("Molden write/read round trip", "[read][write][molden]") {
   }
 }
 
+// MO amplitudes psi_i(r), checked against PySCF's own AO evaluation
+// (mol.eval_gto(...) @ mo_coeff) for the same molden files. The overall sign
+// of an orbital is arbitrary, so it is aligned before comparing.
+TEST_CASE("MO amplitudes match PySCF", "[mo]") {
+  using Spin = occ::qm::SpinComponent;
+  struct Ref {
+    const char *name;
+    Spin spin;
+    int index;
+    std::vector<double> psi;
+  };
+  const std::vector<Ref> refs{
+    {"water_rhf_sph", Spin::Total, 4, {4.177359976825e-17, 4.510633151338e-01, 1.881651496158e-02, -2.611544196573e-01, 1.057760164677e-01, 1.369899212211e-01}},
+    {"water_rhf_sph", Spin::Total, 5, {-2.229317824413e-01, 1.035058038470e-01, 1.758342697053e-01, 2.611939179003e-02, 3.610235941901e-02, 7.239290488433e-01}},
+    {"water_rhf_sph", Spin::Total, 33, {7.706784239736e-16, 1.058851113961e-02, -1.554288446773e-01, -2.827907653834e-03, 9.589775070661e-02, 2.575944388091e-02}},
+    {"water_rhf_cart", Spin::Total, 4, {8.557520842258e-16, 4.476729330389e-01, 1.877142813968e-02, -2.618376578198e-01, 1.066142303775e-01, 1.359620028318e-01}},
+    {"water_rhf_cart", Spin::Total, 5, {-2.124335539636e-01, 1.035636006826e-01, 1.781223381451e-01, 3.451940928590e-02, 3.043984867021e-02, 6.483195844665e-01}},
+    {"water_rhf_cart", Spin::Total, 43, {-2.257158426620e-01, 6.368659528967e-01, -3.864220700119e-02, -2.004752972029e-01, -2.773649158605e-02, -2.717191456926e+00}},
+    {"water_uhf_sph", Spin::Alpha, 4, {-5.402498451530e-01, 4.749366204786e-01, -1.735036605651e-01, 2.775215470505e-01, 1.720998712777e-02, -3.542191114939e-01}},
+    {"water_uhf_sph", Spin::Alpha, 5, {-1.919706995842e-01, 7.795861694002e-02, 2.236569200487e-01, 1.134306976686e-02, 4.194344585399e-02, 6.855210357479e-01}},
+    {"water_uhf_sph", Spin::Alpha, 33, {-1.211105322134e-15, -1.070504437427e-02, 1.593494703604e-01, -1.680999679188e-04, -9.377604896671e-02, -2.387563555583e-02}},
+    {"water_uhf_sph", Spin::Beta, 3, {-5.407089900095e-01, 4.814548906486e-01, -1.669653341573e-01, 2.789490737282e-01, 2.041388023430e-02, -4.133739085803e-01}},
+    {"water_uhf_sph", Spin::Beta, 4, {-3.483210251751e-16, 4.434941279223e-01, 2.035850546430e-02, -2.570010060274e-01, 1.072992682595e-01, 1.345966605065e-01}},
+    {"water_uhf_sph", Spin::Beta, 33, {1.166239988024e-15, -1.029272360894e-02, 1.599109261854e-01, 1.036564294946e-03, -9.354875619985e-02, -2.455197066369e-02}},
+  };
+  const occ::Mat3N pts = molden_reference_points();
+  for (const auto &ref : refs) {
+    DYNAMIC_SECTION(ref.name << " " << ref.index << " spin "
+                              << static_cast<int>(ref.spin)) {
+      occ::io::MoldenReader reader(molden_test_file(ref.name));
+      occ::qm::Wavefunction wfn(reader);
+      occ::Vec psi = wfn.mo_amplitude(pts, ref.index, ref.spin);
+      occ::Vec expected = Eigen::Map<const occ::Vec>(ref.psi.data(), 6);
+      double sign = psi.dot(expected) < 0 ? -1.0 : 1.0;
+      REQUIRE(all_close(sign * psi, expected, 1e-8, 1e-8));
+    }
+  }
+}
+
+TEST_CASE("MO amplitudes are consistent with densities", "[mo]") {
+  using Spin = occ::qm::SpinComponent;
+  const occ::Mat3N pts = molden_reference_points();
+
+  SECTION("psi^2 equals the existing single-MO density") {
+    occ::io::MoldenReader reader(molden_test_file("water_rhf_sph"));
+    occ::qm::Wavefunction wfn(reader);
+    for (int i : {0, 4, 5, 20}) {
+      occ::Vec psi = wfn.mo_amplitude(pts, i);
+      REQUIRE(all_close(occ::Vec(psi.array().square()),
+                        wfn.electron_density_mo(pts, i), 1e-12, 1e-12));
+    }
+  }
+
+  SECTION("restricted: sum over occupied 2 psi^2 is the density") {
+    for (const char *name : {"water_rhf_sph", "water_rhf_cart"}) {
+      occ::io::MoldenReader reader(molden_test_file(name));
+      occ::qm::Wavefunction wfn(reader);
+      occ::Vec rho = occ::Vec::Zero(pts.cols());
+      for (size_t i = 0; i < wfn.mo.n_alpha; i++)
+        rho += 2 * wfn.mo_amplitude(pts, i).array().square().matrix();
+      REQUIRE(all_close(rho, wfn.electron_density(pts), 1e-10, 1e-10));
+    }
+  }
+
+  SECTION("unrestricted: alpha and beta sums are the spin densities") {
+    occ::io::MoldenReader reader(molden_test_file("water_uhf_sph"));
+    occ::qm::Wavefunction wfn(reader);
+    occ::Vec rho_a = occ::Vec::Zero(pts.cols()), rho_b = rho_a;
+    for (size_t i = 0; i < wfn.mo.n_alpha; i++)
+      rho_a += wfn.mo_amplitude(pts, i, Spin::Alpha).array().square().matrix();
+    for (size_t i = 0; i < wfn.mo.n_beta; i++)
+      rho_b += wfn.mo_amplitude(pts, i, Spin::Beta).array().square().matrix();
+    REQUIRE(all_close(rho_a, wfn.electron_density(pts, Spin::Alpha), 1e-10,
+                      1e-10));
+    REQUIRE(all_close(rho_b, wfn.electron_density(pts, Spin::Beta), 1e-10,
+                      1e-10));
+    REQUIRE_THROWS(wfn.mo_amplitude(pts, 0, Spin::Total));
+  }
+}
+
+TEST_CASE("MO amplitudes change sign across a nodal plane", "[mo]") {
+  // water lies in the yz plane, so its HOMO (1b1, an O p_x lone pair) is
+  // odd under x -> -x
+  occ::io::MoldenReader reader(molden_test_file("water_rhf_sph"));
+  occ::qm::Wavefunction wfn(reader);
+  occ::Mat3N pts(3, 2);
+  pts << 0.4, -0.4, //
+      0.1, 0.1,     //
+      0.3, 0.3;
+  occ::Vec psi = wfn.mo_amplitude(pts, wfn.mo.n_alpha - 1);
+  REQUIRE(std::abs(psi(0)) > 0.1);
+  REQUIRE(psi(1) == Catch::Approx(-psi(0)).epsilon(1e-10));
+}
+
+TEST_CASE("MO amplitudes agree between spherical and Cartesian bases",
+          "[mo]") {
+  // the same wavefunction written with spherical d, f, g and as [5D10F],
+  // which occ reads as a Cartesian basis (f and g shells Cartesian)
+  occ::io::MoldenReader sph_reader(molden_test_file("water_rhf_sph"));
+  occ::io::MoldenReader cart_reader(molden_test_file("water_rhf_5d10f"));
+  occ::qm::Wavefunction sph(sph_reader), cart(cart_reader);
+  REQUIRE(sph.basis.is_pure());
+  REQUIRE(cart.basis.is_cartesian());
+  const occ::Mat3N pts = molden_reference_points();
+  for (int i = 0; i < static_cast<int>(sph.mo.C.cols()); i++) {
+    CAPTURE(i);
+    REQUIRE(all_close(cart.mo_amplitude(pts, i), sph.mo_amplitude(pts, i),
+                      1e-9, 1e-9));
+  }
+}
+
 TEST_CASE("Molden spin handling", "[read][molden]") {
   using occ::qm::SpinorbitalKind;
   SECTION("UHF is unrestricted with alpha >= beta") {

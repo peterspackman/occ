@@ -387,8 +387,7 @@ FVec IsosurfaceCalculator::compute_surface_property(PropertyKind prop) const {
     auto func = ElectronDensityFunctor(m_wavefunction, -1);
     int prev_calls = 0;
     for (const auto &orbital_index : m_params.property_orbital_indices) {
-      func.set_orbital_index(orbital_index.resolve(m_wavefunction.mo.n_alpha,
-                                                   m_wavefunction.mo.n_beta));
+      func.set_orbital_index(orbital_index.resolve(m_wavefunction.mo.n_alpha));
       func.batch(vertices * occ::units::ANGSTROM_TO_BOHR, result);
       occ::log::debug("Computed Orbital {} Density for {} vertices",
                       orbital_index.format(), func.num_calls() - prev_calls);
@@ -539,7 +538,7 @@ void IsosurfaceCalculator::compute_isosurface() {
   case SurfaceKind::Orbital: {
     int orbital_index =
         (m_params.surface_orbital_index)
-            .resolve(m_wavefunction.mo.n_alpha, m_wavefunction.mo.n_beta);
+            .resolve(m_wavefunction.mo.n_alpha);
     occ::log::info("Surface orbital index = {}", orbital_index);
     auto func =
         MCElectronDensityFunctor(m_wavefunction, separation, orbital_index);

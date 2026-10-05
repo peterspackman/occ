@@ -168,6 +168,7 @@ catch_discover_tests(dma_tests)
 
 add_executable(volume_calculator_tests "${CMAKE_CURRENT_SOURCE_DIR}/volume_calculator_tests.cpp")
 target_link_libraries(volume_calculator_tests PRIVATE occ_isosurface occ_main occ_io occ_crystal Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(volume_calculator_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 catch_discover_tests(volume_calculator_tests)
 
 add_executable(mesh_quality_tests "${CMAKE_CURRENT_SOURCE_DIR}/mesh_quality_tests.cpp")

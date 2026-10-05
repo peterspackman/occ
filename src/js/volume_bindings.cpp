@@ -20,7 +20,9 @@ void register_volume_bindings() {
         .value("PromoleculeDensity", isosurface::VolumePropertyKind::PromoleculeDensity)
         .value("DeformationDensity", isosurface::VolumePropertyKind::DeformationDensity)
         .value("XCDensity", isosurface::VolumePropertyKind::XCDensity)
-        .value("CrystalVoid", isosurface::VolumePropertyKind::CrystalVoid);
+        .value("CrystalVoid", isosurface::VolumePropertyKind::CrystalVoid)
+        .value("MO", isosurface::VolumePropertyKind::MO)
+        .value("MODensity", isosurface::VolumePropertyKind::MODensity);
 
     // Register SpinComponent enum
     enum_<isosurface::SpinComponent>("SpinComponent")

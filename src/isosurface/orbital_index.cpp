@@ -18,8 +18,8 @@ std::string OrbitalIndex::format() const {
   throw std::runtime_error("Invalid orbital reference type");
 }
 
-int OrbitalIndex::resolve(int num_alpha, int num_beta) const {
-  int homo = num_alpha - 1;
+int OrbitalIndex::resolve(int num_occupied) const {
+  int homo = num_occupied - 1;
   switch (reference) {
   case Reference::Absolute:
     return offset;

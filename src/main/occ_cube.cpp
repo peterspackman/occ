@@ -20,6 +20,7 @@ using occ::qm::Wavefunction;
 using occ::isosurface::pointwise::ElectronDensityFunctor;
 using occ::isosurface::pointwise::EspFunctor;
 using occ::isosurface::pointwise::EEQEspFunctor;
+using occ::isosurface::pointwise::MOFunctor;
 using occ::isosurface::pointwise::PromolDensityFunctor;
 using occ::isosurface::pointwise::DeformationDensityFunctor;
 using occ::isosurface::pointwise::XCDensityFunctor;
@@ -237,6 +238,21 @@ void evaluate_custom_points(const Wavefunction &wfn, CubeConfig const &config,
     func.spin = SpinComponent::Beta;
     func.mo_index = config.mo_number;
     func(points, data);
+  } else if (config.property == "mo" || config.property == "orbital" ||
+             config.property == "mo_amplitude" ||
+             config.property == "mo_density" ||
+             config.property == "orbital_density") {
+    require_wfn(config, have_wfn);
+    if (config.mo_number < 0)
+      throw std::runtime_error(
+          fmt::format("Property '{}' needs an orbital (e.g. --orbital homo)",
+                      config.property));
+    bool squared =
+        config.property == "mo_density" || config.property == "orbital_density";
+    MOFunctor func(wfn, config.mo_number,
+                   isosurface::VolumeCalculator::spin_from_string(config.spin),
+                   squared);
+    func(points, data);
   } else if (config.property == "esp") {
     require_wfn(config, have_wfn);
     EspFunctor func(wfn);
@@ -284,6 +300,18 @@ void run_cube_subcommand(CubeConfig const &config_in) {
     
     // Parse orbital specification if property uses wavefunction
     auto property_kind = isosurface::VolumeCalculator::property_from_string(config.property);
+    const bool is_mo_property =
+        property_kind == isosurface::VolumePropertyKind::MO ||
+        property_kind == isosurface::VolumePropertyKind::MODensity;
+    if (is_mo_property &&
+        wfn.mo.kind == occ::qm::SpinorbitalKind::Unrestricted &&
+        isosurface::VolumeCalculator::spin_from_string(config.spin) ==
+            SpinComponent::Total) {
+      throw std::runtime_error(
+          fmt::format("Wavefunction is unrestricted: give the spin for '{}' "
+                      "(e.g. occ cube {} {} alpha --orbital homo)",
+                      config.property, config.input_filename, config.property));
+    }
     if (isosurface::VolumeCalculator::requires_wavefunction(property_kind)) {
       if (config.orbitals_input == "all") {
         // "all" means use all orbitals (mo_number = -1, which is already the default)
@@ -294,7 +322,14 @@ void run_cube_subcommand(CubeConfig const &config_in) {
           if (orbital_indices.size() != 1) {
             throw std::runtime_error("Cube generation supports only one orbital at a time");
           }
-          config.mo_number = orbital_indices[0].resolve(wfn.mo.n_alpha, wfn.mo.n_beta);
+          // HOMO/LUMO are relative to the selected spin's occupied orbitals
+          auto spin =
+              isosurface::VolumeCalculator::spin_from_string(config.spin);
+          int n_occ = static_cast<int>(wfn.mo.n_alpha);
+          if (wfn.mo.kind == occ::qm::SpinorbitalKind::Unrestricted &&
+              spin == SpinComponent::Beta)
+            n_occ = static_cast<int>(wfn.mo.n_beta);
+          config.mo_number = orbital_indices[0].resolve(n_occ);
           occ::log::info("Orbital specification '{}' resolved to MO index {}", 
                         config.orbitals_input, config.mo_number);
         } catch (const std::exception& e) {

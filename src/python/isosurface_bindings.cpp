@@ -178,7 +178,9 @@ nb::module_ register_isosurface_bindings(nb::module_ &m) {
       .value("PromoleculeDensity", VolumePropertyKind::PromoleculeDensity)
       .value("DeformationDensity", VolumePropertyKind::DeformationDensity)
       .value("XCDensity", VolumePropertyKind::XCDensity)
-      .value("CrystalVoid", VolumePropertyKind::CrystalVoid);
+      .value("CrystalVoid", VolumePropertyKind::CrystalVoid)
+      .value("MO", VolumePropertyKind::MO)
+      .value("MODensity", VolumePropertyKind::MODensity);
 
   nb::enum_<SpinComponent>(m, "SpinComponent")
       .value("Total", SpinComponent::Total)

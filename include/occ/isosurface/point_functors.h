@@ -56,6 +56,18 @@ struct ElectronDensityFunctor {
   int mo_index{-1};
 };
 
+// Signed amplitude psi_i(r) of one MO, or its density psi_i(r)^2
+struct MOFunctor {
+  MOFunctor(const Wavefunction &wfn, int mo_index,
+            SpinComponent spin = SpinComponent::Total, bool squared = false);
+  void operator()(Eigen::Ref<const Mat3N> points, Eigen::Ref<Vec> dest);
+
+  const Wavefunction &wfn;
+  int mo_index{0};
+  SpinComponent spin{SpinComponent::Total};
+  bool squared{false};
+};
+
 struct DeformationDensityFunctor {
   DeformationDensityFunctor(const Wavefunction &wfn,
                             SpinComponent = SpinComponent::Total);

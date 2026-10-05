@@ -119,6 +119,10 @@ VolumePropertyKind VolumeCalculator::property_from_string(const std::string& nam
         return VolumePropertyKind::XCDensity;
     } else if (name == "void") {
         return VolumePropertyKind::CrystalVoid;
+    } else if (name == "mo" || name == "orbital" || name == "mo_amplitude") {
+        return VolumePropertyKind::MO;
+    } else if (name == "mo_density" || name == "orbital_density") {
+        return VolumePropertyKind::MODensity;
     }
     throw std::runtime_error("Unknown property: " + name);
 }
@@ -134,6 +138,8 @@ std::string VolumeCalculator::property_to_string(VolumePropertyKind prop) {
         case VolumePropertyKind::DeformationDensity: return "deformation_density";
         case VolumePropertyKind::XCDensity: return "xc";
         case VolumePropertyKind::CrystalVoid: return "void";
+        case VolumePropertyKind::MO: return "mo";
+        case VolumePropertyKind::MODensity: return "mo_density";
     }
     throw std::runtime_error("Unknown property kind");
 }
@@ -168,6 +174,10 @@ void VolumeCalculator::list_supported_properties() {
     occ::log::info("  rho_alpha                       - Alpha spin density (requires wavefunction)");  
     occ::log::info("  rho_beta                        - Beta spin density (requires wavefunction)");
     occ::log::info("");
+    occ::log::info("Molecular orbital properties (select the orbital with --orbital):");
+    occ::log::info("  mo, orbital                     - Signed orbital amplitude psi (requires wavefunction)");
+    occ::log::info("  mo_density, orbital_density     - Orbital density psi^2 (requires wavefunction)");
+    occ::log::info("");
     occ::log::info("Electrostatic properties:");
     occ::log::info("  esp                             - Electrostatic potential (requires wavefunction)");
     occ::log::info("  eeqesp                          - EEQ electrostatic potential (atomic charges only)");
@@ -196,6 +206,8 @@ bool VolumeCalculator::requires_wavefunction(VolumePropertyKind property) {
         case VolumePropertyKind::ElectricPotential:
         case VolumePropertyKind::DeformationDensity:
         case VolumePropertyKind::XCDensity:
+        case VolumePropertyKind::MO:
+        case VolumePropertyKind::MODensity:
             return true;
         case VolumePropertyKind::EEQ_ESP:
         case VolumePropertyKind::PromoleculeDensity:
@@ -364,6 +376,16 @@ void VolumeCalculator::setup_grid_parameters(VolumeData& volume, const VolumeGen
                 }
                 break;
             }
+            case VolumePropertyKind::MO:
+            case VolumePropertyKind::MODensity: {
+                if (m_wavefunction.has_value()) {
+                    // bound on psi^2 so both lobes are treated alike
+                    MOFunctor func(m_wavefunction.value(), params.mo_number,
+                                   params.spin, true);
+                    apply_adaptive_bounds(func, params, atoms, volume);
+                }
+                break;
+            }
             default:
                 occ::log::warn("Adaptive bounds not supported for property: {}, using regular grid", 
                               property_to_string(params.property));
@@ -511,6 +533,13 @@ void VolumeCalculator::fill_volume_data(VolumeData& volume, const VolumeGenerati
             func(points, values);
             break;
         }
+        case VolumePropertyKind::MO:
+        case VolumePropertyKind::MODensity: {
+            MOFunctor func(m_wavefunction.value(), params.mo_number, params.spin,
+                           params.property == VolumePropertyKind::MODensity);
+            func(points, values);
+            break;
+        }
     }
     
     // Copy values back to tensor
@@ -535,6 +564,14 @@ void VolumeCalculator::validate_parameters(const VolumeGenerationParameters& par
         throw std::runtime_error("Property requires a crystal structure: " + property_to_string(params.property));
     }
     
+    if ((params.property == VolumePropertyKind::MO ||
+         params.property == VolumePropertyKind::MODensity) &&
+        params.mo_number < 0) {
+        throw std::runtime_error(fmt::format(
+            "Property '{}' needs an orbital (e.g. --orbital homo)",
+            property_to_string(params.property)));
+    }
+
     if (params.mo_number >= 0 && !requires_wavefunction(params.property)) {
         throw std::runtime_error("MO index specified but property does not use wavefunction");
     }
@@ -613,6 +650,13 @@ Vec VolumeCalculator::evaluate_at_points(const Mat3N& points, const VolumeGenera
         }
         case VolumePropertyKind::XCDensity: {
             XCDensityFunctor func(m_wavefunction.value(), params.functional);
+            func(points, result);
+            break;
+        }
+        case VolumePropertyKind::MO:
+        case VolumePropertyKind::MODensity: {
+            MOFunctor func(m_wavefunction.value(), params.mo_number, params.spin,
+                           params.property == VolumePropertyKind::MODensity);
             func(points, result);
             break;
         }

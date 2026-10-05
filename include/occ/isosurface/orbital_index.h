@@ -10,7 +10,9 @@ struct OrbitalIndex {
   int offset{0};
   Reference reference{Reference::Absolute};
 
-  int resolve(int nalpha, int nbeta) const;
+  // 0-based MO index; HOMO/LUMO are relative to the occupied orbitals of
+  // the spin in question (alpha, or beta for unrestricted beta orbitals)
+  int resolve(int num_occupied) const;
   std::string format() const;
 };
 

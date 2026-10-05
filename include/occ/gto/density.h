@@ -49,6 +49,17 @@ template <>
 void evaluate_density<2, SpinorbitalKind::Unrestricted>(
     MatConstRef D, const occ::gto::GTOValues &gto_values, MatRef rho);
 
+/**
+ * Signed orbital amplitudes psi_i(r) = sum_mu C(mu, i) phi_mu(r) for each
+ * column of C, returned as an (npoints x ncols) matrix.
+ *
+ * Uses the same AO values as the density evaluation, so the occupation
+ * weighted sum of psi_i^2 reproduces evaluate_density. Points are processed
+ * in parallel blocks, so memory stays bounded for large grids.
+ */
+Mat evaluate_orbitals_on_grid(const occ::gto::AOBasis &basis, MatConstRef C,
+                              const occ::Mat3N &points);
+
 template <size_t max_derivative,
           SpinorbitalKind spinorbital_kind = SpinorbitalKind::Restricted>
 Mat evaluate_density(const Mat &D, const occ::gto::GTOValues &gto_values) {

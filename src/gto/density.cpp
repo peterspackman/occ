@@ -1,9 +1,36 @@
+#include <fmt/core.h>
+#include <occ/core/parallel.h>
 #include <occ/gto/density.h>
 
 namespace occ::density {
 
 constexpr auto R = occ::qm::SpinorbitalKind::Restricted;
 constexpr auto U = occ::qm::SpinorbitalKind::Unrestricted;
+
+Mat evaluate_orbitals_on_grid(const occ::gto::AOBasis &basis, MatConstRef C,
+                              const occ::Mat3N &points) {
+  if (C.rows() != static_cast<Eigen::Index>(basis.nbf())) {
+    throw std::runtime_error(fmt::format(
+        "evaluate_orbitals_on_grid: {} coefficient rows for {} basis "
+        "functions",
+        C.rows(), basis.nbf()));
+  }
+  constexpr Eigen::Index block_size = 4096;
+  const Eigen::Index npts = points.cols();
+  Mat result(npts, C.cols());
+  const size_t num_blocks = (npts + block_size - 1) / block_size;
+
+  occ::parallel::thread_local_storage<occ::gto::GTOValues> gto_vals_local;
+  occ::parallel::parallel_for(size_t(0), num_blocks, [&](size_t block) {
+    auto &gto_vals = gto_vals_local.local();
+    const Eigen::Index l = block * block_size;
+    const Eigen::Index n = std::min(block_size, npts - l);
+    occ::gto::evaluate_basis(basis, points.middleCols(l, n), gto_vals, 0);
+    // phi is (n x nbf), so this is psi_i at each point
+    result.middleRows(l, n).noalias() = gto_vals.phi * C;
+  });
+  return result;
+}
 
 template <>
 void evaluate_density<0, R>(MatConstRef D,

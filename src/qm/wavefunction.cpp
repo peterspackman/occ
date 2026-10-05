@@ -453,6 +453,29 @@ Vec Wavefunction::electron_density_mo(const Mat3N &pos, int mo_index) const {
   }
 }
 
+Vec Wavefunction::mo_amplitude(const Mat3N &pos, int mo_index,
+                               SpinComponent spin) const {
+  auto evaluate = [&](const auto &C) {
+    if (mo_index < 0 || mo_index >= C.cols())
+      throw std::runtime_error(fmt::format("Invalid MO index {} (have {} MOs)",
+                                           mo_index, C.cols()));
+    return occ::density::evaluate_orbitals_on_grid(basis, C.col(mo_index), pos);
+  };
+  switch (mo.kind) {
+  case SpinorbitalKind::Restricted:
+    return evaluate(mo.C);
+  case SpinorbitalKind::Unrestricted:
+    if (spin == SpinComponent::Total)
+      throw std::runtime_error("MO amplitudes of an unrestricted wavefunction "
+                               "need a spin: alpha or beta");
+    return spin == SpinComponent::Alpha ? evaluate(block::a(mo.C))
+                                        : evaluate(block::b(mo.C));
+  default:
+    throw std::runtime_error(
+        "MO amplitudes are not implemented for general spinorbitals");
+  }
+}
+
 Mat3N Wavefunction::electron_density_mo_gradient(const Mat3N &pos,
                                                  int mo_index) const {
   constexpr auto R = SpinorbitalKind::Restricted;
