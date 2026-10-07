@@ -51,10 +51,10 @@ public:
   /**
    * Construct an Element instance from its atomic number.
    *
-   * \param num the atomic number of the element, should be in range [1,103]
+   * \param num the atomic number of the element, in range [0,103] (0 is the
+   * dummy element)
    *
-   * \warning Does not checking that the provided number is in the range
-   * [1,103] providing a number outside this range will likely segfault.
+   * \throws std::out_of_range if num is outside [0,103]
    */
   Element(int num);
 
@@ -64,7 +64,7 @@ public:
    * \returns string representation of the element symbol, capitalized.
    *
    */
-  inline const std::string &symbol() const { return m_data.symbol; }
+  inline const std::string &symbol() const { return m_data->symbol; }
 
   /**
    * The Element name e.g. `"hydrogen", "helium", "lithium"`
@@ -72,7 +72,7 @@ public:
    * \returns string representation of the element name, lower case.
    *
    */
-  inline const std::string &name() const { return m_data.name; }
+  inline const std::string &name() const { return m_data->name; }
 
   /**
    * The average isotopic mass of this Element e.g.
@@ -83,7 +83,7 @@ public:
    * units.
    *
    */
-  inline float mass() const { return m_data.mass; }
+  inline float mass() const { return m_data->mass; }
 
   /**
    * The covalent radius of this Element.
@@ -91,7 +91,7 @@ public:
    * \returns a float representing the covalent radius in Angstroms.
    *
    */
-  inline float covalent_radius() const { return m_data.cov_radius; }
+  inline float covalent_radius() const { return m_data->cov_radius; }
 
   /**
    * The van der Waals radius of this Element.
@@ -99,7 +99,7 @@ public:
    * \returns a float representing the van der Waals radius in Angstroms.
    *
    */
-  inline float van_der_waals_radius() const { return m_data.vdw_radius; }
+  inline float van_der_waals_radius() const { return m_data->vdw_radius; }
 
   /**
    * The atomic number this Element.
@@ -107,7 +107,7 @@ public:
    * \returns an int representing the atomic number.
    *
    */
-  inline int atomic_number() const { return m_data.atomic_number; }
+  inline int atomic_number() const { return m_data->atomic_number; }
 
   /**
    *
@@ -121,7 +121,7 @@ public:
    *
    */
   bool operator<(const Element &rhs) const {
-    return m_data.atomic_number < rhs.m_data.atomic_number;
+    return m_data->atomic_number < rhs.m_data->atomic_number;
   }
 
   /**
@@ -136,7 +136,7 @@ public:
    *
    */
   bool operator>(const Element &rhs) const {
-    return m_data.atomic_number > rhs.m_data.atomic_number;
+    return m_data->atomic_number > rhs.m_data->atomic_number;
   }
 
   /**
@@ -152,7 +152,7 @@ public:
    *
    */
   bool operator==(const Element &rhs) const {
-    return m_data.atomic_number == rhs.m_data.atomic_number;
+    return m_data->atomic_number == rhs.m_data->atomic_number;
   }
 
   /**
@@ -168,7 +168,7 @@ public:
    *
    */
   bool operator!=(const Element &rhs) const {
-    return m_data.atomic_number != rhs.m_data.atomic_number;
+    return m_data->atomic_number != rhs.m_data->atomic_number;
   }
 
   /**
@@ -185,7 +185,7 @@ public:
 
 private:
   /// \internal
-  ElementData m_data;
+  const ElementData *m_data;
 };
 
 /**

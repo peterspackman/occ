@@ -1,4 +1,7 @@
 #include <algorithm>
+#include <array>
+#include <fmt/core.h>
+#include <stdexcept>
 #include <string_view>
 #include <occ/core/element.h>
 #include <occ/core/util.h>
@@ -122,33 +125,49 @@ constexpr ElementTableEntry ELEMENT_TABLE[ELEMENT_MAX + 1] = {
     {102, "nobelium", "No", 1.50f, 2.46f, 259.0f},
     {103, "lawrencium", "Lr", 1.50f, 2.00f, 262.0f}};
 
-ElementData element_data(const ElementTableEntry &e) {
-  return {e.atomic_number, std::string(e.name), std::string(e.symbol),
-          e.cov_radius,    e.vdw_radius,        e.mass};
+// Built once on first use, so Elements constructed during static
+// initialization elsewhere still see a populated table.
+const std::array<ElementData, ELEMENT_MAX + 1> &element_table() {
+  static const auto table = [] {
+    std::array<ElementData, ELEMENT_MAX + 1> result;
+    for (size_t i = 0; i < result.size(); i++) {
+      const auto &e = ELEMENT_TABLE[i];
+      result[i] = {e.atomic_number, std::string(e.name),
+                   std::string(e.symbol), e.cov_radius,
+                   e.vdw_radius, e.mass};
+    }
+    return result;
+  }();
+  return table;
 }
 
 } // namespace
 
-Element::Element(int atomicNumber)
-    : m_data(element_data(ELEMENT_TABLE[atomicNumber])) {}
+Element::Element(int atomicNumber) {
+  if (atomicNumber < 0 || atomicNumber > ELEMENT_MAX)
+    throw std::out_of_range(
+        fmt::format("Invalid atomic number {}, must be in range [0, {}]",
+                    atomicNumber, ELEMENT_MAX));
+  m_data = &element_table()[atomicNumber];
+}
 
 Element::Element(const std::string &s, bool exact_match)
-    : m_data(element_data(ELEMENT_TABLE[0])) {
+    : m_data(&element_table()[0]) {
   const auto symbol = occ::util::trim_copy(s);
-  const ElementTableEntry *best = nullptr;
-  for (size_t i = ELEMENT_MAX; i > 0; i--) {
-    const auto &dat = ELEMENT_TABLE[i];
-    if (!std::string_view(symbol).starts_with(dat.symbol))
+  size_t match_length = 0;
+  for (int i = ELEMENT_MAX; i > 0; i--) {
+    const std::string_view candidate = ELEMENT_TABLE[i].symbol;
+    if (!std::string_view(symbol).starts_with(candidate))
       continue;
-    if (exact_match && symbol.size() != dat.symbol.size())
+    if (exact_match && symbol.size() != candidate.size())
       continue;
-    if (!best || dat.symbol.size() > best->symbol.size())
-      best = &dat;
-    if (symbol.size() == dat.symbol.size())
+    if (candidate.size() > match_length) {
+      m_data = &element_table()[i];
+      match_length = candidate.size();
+    }
+    if (symbol.size() == candidate.size())
       break;
   }
-  if (best)
-    m_data = element_data(*best);
 }
 
 std::string chemical_formula(const std::vector<Element> &els) {
@@ -216,10 +235,12 @@ double Element::polarizability(bool charged) const {
       161.00, 123.00, 118.00, 0.00,   0.00,   0.00,   0.00,   0.00,   0.00,
       0.00,   0.00};
 
+  if (m_data->atomic_number == 0)
+    return 0.0;
   if (charged)
-    return charged_atomic_polarizability[m_data.atomic_number - 1];
+    return charged_atomic_polarizability[m_data->atomic_number - 1];
   else
-    return thakkar_atomic_polarizability[m_data.atomic_number - 1];
+    return thakkar_atomic_polarizability[m_data->atomic_number - 1];
 }
 
 double total_atomic_mass(const IVec &atomic_numbers) {

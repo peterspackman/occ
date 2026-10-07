@@ -120,6 +120,17 @@ TEST_CASE("Element exact match rejects labels", "[element]") {
   REQUIRE(Element("He", true).atomic_number() == 2);
 }
 
+TEST_CASE("Element rejects out of range atomic numbers", "[element]") {
+  using occ::core::Element;
+  REQUIRE_THROWS_AS(Element(104), std::out_of_range);
+  REQUIRE_THROWS_AS(Element(-1), std::out_of_range);
+}
+
+TEST_CASE("Element dummy has zero polarizability", "[element]") {
+  using occ::core::Element;
+  REQUIRE(Element(0).polarizability(false) == 0.0);
+}
+
 TEST_CASE("Element unknown symbol gives dummy", "[element]") {
   using occ::core::Element;
   REQUIRE(Element("Q").symbol() == "Xx");
