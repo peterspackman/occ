@@ -108,6 +108,23 @@ TEST_CASE("Element constructor", "[element]") {
   REQUIRE(Element("Na").symbol() == "Na");
 }
 
+TEST_CASE("Element lookup covers the whole table", "[element]") {
+  using occ::core::Element;
+  REQUIRE(Element("Lr").atomic_number() == 103);
+  REQUIRE(Element(103).symbol() == "Lr");
+}
+
+TEST_CASE("Element exact match rejects labels", "[element]") {
+  using occ::core::Element;
+  REQUIRE(Element("He1", true).atomic_number() == 0);
+  REQUIRE(Element("He", true).atomic_number() == 2);
+}
+
+TEST_CASE("Element unknown symbol gives dummy", "[element]") {
+  using occ::core::Element;
+  REQUIRE(Element("Q").symbol() == "Xx");
+}
+
 // Molecule
 
 TEST_CASE("Molecule constructor", "[molecule]") {
