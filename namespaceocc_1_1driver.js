@@ -76,6 +76,7 @@ var namespaceocc_1_1driver =
     [ "df_exchange_memory_budget", "namespaceocc_1_1driver.html#a872da57e2f48d36d2c5c5d31a6ac64d1", null ],
     [ "geometry_optimization", "namespaceocc_1_1driver.html#a7c3d0f87ea6ffbf435a9a2a0fb1dd595", null ],
     [ "geometry_optimization_with_frequencies", "namespaceocc_1_1driver.html#ad489b251984fd33fdfbd881589d676a3", null ],
+    [ "is_lower_cut", "namespaceocc_1_1driver.html#ad300a263f5a614338525acc1d42ceae3", null ],
     [ "make_cg_solvation_model", "namespaceocc_1_1driver.html#a6ec6d3854c717b84b84990d7298613bf", null ],
     [ "method_kind_from_string", "namespaceocc_1_1driver.html#a504c89def5003baf6ace3599fc4bdc8e", null ],
     [ "parse_method_string", "namespaceocc_1_1driver.html#a06b5eb876a13190e85ce890f06198dea", null ],

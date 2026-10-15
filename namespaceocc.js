@@ -191,5 +191,8 @@ var namespaceocc =
     [ "Vec6", "namespaceocc.html#a8165087ef72495abb134eb0a03ea6ec2", null ],
     [ "format_matrix", "namespaceocc.html#a1628129daf6f63dc508b04725802fceb", null ],
     [ "get_data_directory", "namespaceocc.html#afa32fefbea02db8ab45a078cf71f067a", null ],
-    [ "set_data_directory", "namespaceocc.html#a223c31d3958c15f46692ca64b5a47e0e", null ]
+    [ "git_commit", "namespaceocc.html#a750d55984cad47e8511a34feb584f360", null ],
+    [ "set_data_directory", "namespaceocc.html#a223c31d3958c15f46692ca64b5a47e0e", null ],
+    [ "version", "namespaceocc.html#a6e9f86cba9668089136499618ad53cf7", null ],
+    [ "version_string", "namespaceocc.html#acdf347c18dcd172b88795b129dc8b09e", null ]
 ];

@@ -45,5 +45,6 @@ var dir_a9a9bd00ca35510371062c24de1517b5 =
     [ "timings.h", "timings_8h.html", "timings_8h" ],
     [ "units.h", "units_8h.html", "units_8h" ],
     [ "util.h", "util_8h.html", "util_8h" ],
+    [ "version.h", "core_2version_8h.html", "core_2version_8h" ],
     [ "vibration.h", "vibration_8h.html", "vibration_8h" ]
 ];

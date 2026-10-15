@@ -277,6 +277,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a52a05b085fa4e8b9e888ead2c509f99b" id="r_a52a05b085fa4e8b9e888ead2c509f99b"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1driver_1_1NamedShape.html">NamedShape</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a52a05b085fa4e8b9e888ead2c509f99b">read_morphology_shapes</a> (std::istream &amp;input)</td></tr>
 <tr class="memdesc:a52a05b085fa4e8b9e888ead2c509f99b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one or more shapes.  <br /></td></tr>
 <tr class="separator:a52a05b085fa4e8b9e888ead2c509f99b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad300a263f5a614338525acc1d42ceae3" id="r_ad300a263f5a614338525acc1d42ceae3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#ad300a263f5a614338525acc1d42ceae3">is_lower_cut</a> (double energy, double offset, double best_energy, double best_offset)</td></tr>
+<tr class="memdesc:ad300a263f5a614338525acc1d42ceae3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether a cut (energy, offset) should replace the best one so far.  <br /></td></tr>
+<tr class="separator:ad300a263f5a614338525acc1d42ceae3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abd9cb5b9a75ab755b120d6fdb6ceed71" id="r_abd9cb5b9a75ab755b120d6fdb6ceed71"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1driver_1_1CrystalSurfaceEnergies.html">CrystalSurfaceEnergies</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#abd9cb5b9a75ab755b120d6fdb6ceed71">calculate_crystal_surface_energies</a> (const std::string &amp;filename, const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &amp;crystal, const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">occ::crystal::CrystalDimers</a> &amp;uc_dimers, int max_number_of_surfaces, int sign=-1, double min_interplanar_spacing=0.0)</td></tr>
 <tr class="memdesc:abd9cb5b9a75ab755b120d6fdb6ceed71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Surface energies for the morphologically important faces.  <br /></td></tr>
 <tr class="separator:abd9cb5b9a75ab755b120d6fdb6ceed71"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1298,6 +1301,57 @@ template&lt;typename Proc &gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pair of optimized wavefunction and vibrational modes (empty if not computed) </dd></dl>
+
+</div>
+</div>
+<a id="ad300a263f5a614338525acc1d42ceae3" name="ad300a263f5a614338525acc1d42ceae3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad300a263f5a614338525acc1d42ceae3">&#9670;&#160;</a></span>is_lower_cut()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::driver::is_lower_cut </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>energy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>best_energy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>best_offset</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Whether a cut (energy, offset) should replace the best one so far. </p>
+<p>Symmetry-equivalent terminations of a face have equal energies up to summation-order noise, which differs run to run under threading. Treat energies within a relative 1e-9 as tied and keep the lower offset, so the chosen termination, and the particle built from it, is reproducible. </p>
 
 </div>
 </div>

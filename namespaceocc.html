@@ -337,6 +337,15 @@ Functions</h2></td></tr>
 <tr class="memitem:a1628129daf6f63dc508b04725802fceb" id="r_a1628129daf6f63dc508b04725802fceb"><td class="memTemplParams" colspan="2">template&lt;typename Derived &gt; </td></tr>
 <tr class="memitem:a1628129daf6f63dc508b04725802fceb"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceocc.html#a1628129daf6f63dc508b04725802fceb">format_matrix</a> (const Eigen::DenseBase&lt; Derived &gt; &amp;matrix, std::string_view fmt_str=&quot;{:12.5f}&quot;)</td></tr>
 <tr class="separator:a1628129daf6f63dc508b04725802fceb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e9f86cba9668089136499618ad53cf7" id="r_a6e9f86cba9668089136499618ad53cf7"><td class="memItemLeft" align="right" valign="top">std::string_view&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html#a6e9f86cba9668089136499618ad53cf7">version</a> ()</td></tr>
+<tr class="memdesc:a6e9f86cba9668089136499618ad53cf7"><td class="mdescLeft">&#160;</td><td class="mdescRight">The occ release version, e.g. "0.9.6".  <br /></td></tr>
+<tr class="separator:a6e9f86cba9668089136499618ad53cf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a750d55984cad47e8511a34feb584f360" id="r_a750d55984cad47e8511a34feb584f360"><td class="memItemLeft" align="right" valign="top">std::string_view&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html#a750d55984cad47e8511a34feb584f360">git_commit</a> ()</td></tr>
+<tr class="memdesc:a750d55984cad47e8511a34feb584f360"><td class="mdescLeft">&#160;</td><td class="mdescRight">The git commit occ was built from, with a "-dirty" suffix if the checkout had uncommitted changes, or "unknown" when built outside a git checkout.  <br /></td></tr>
+<tr class="separator:a750d55984cad47e8511a34feb584f360"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdf347c18dcd172b88795b129dc8b09e" id="r_acdf347c18dcd172b88795b129dc8b09e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html#acdf347c18dcd172b88795b129dc8b09e">version_string</a> ()</td></tr>
+<tr class="memdesc:acdf347c18dcd172b88795b129dc8b09e"><td class="mdescLeft">&#160;</td><td class="mdescRight">"&lt;version&gt; (&lt;git commit&gt;)", for banners and output provenance.  <br /></td></tr>
+<tr class="separator:acdf347c18dcd172b88795b129dc8b09e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="adcde17020b7a59d8967444a69ade46e7" name="adcde17020b7a59d8967444a69ade46e7"></a>
@@ -1241,6 +1250,26 @@ template&lt;typename Derived &gt; </div>
 
 </div>
 </div>
+<a id="a750d55984cad47e8511a34feb584f360" name="a750d55984cad47e8511a34feb584f360"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a750d55984cad47e8511a34feb584f360">&#9670;&#160;</a></span>git_commit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view occ::git_commit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The git commit occ was built from, with a "-dirty" suffix if the checkout had uncommitted changes, or "unknown" when built outside a git checkout. </p>
+<p>Captured at build time, so it is never stale. </p>
+
+</div>
+</div>
 <a id="a223c31d3958c15f46692ca64b5a47e0e" name="a223c31d3958c15f46692ca64b5a47e0e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a223c31d3958c15f46692ca64b5a47e0e">&#9670;&#160;</a></span>set_data_directory()</h2>
 
@@ -1256,6 +1285,44 @@ template&lt;typename Derived &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6e9f86cba9668089136499618ad53cf7" name="a6e9f86cba9668089136499618ad53cf7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e9f86cba9668089136499618ad53cf7">&#9670;&#160;</a></span>version()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string_view occ::version </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The occ release version, e.g. "0.9.6". </p>
+
+</div>
+</div>
+<a id="acdf347c18dcd172b88795b129dc8b09e" name="acdf347c18dcd172b88795b129dc8b09e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acdf347c18dcd172b88795b129dc8b09e">&#9670;&#160;</a></span>version_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::version_string </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>"&lt;version&gt; (&lt;git commit&gt;)", for banners and output provenance. </p>
 
 </div>
 </div>
