@@ -169,7 +169,9 @@ CrystalSurfaceEnergies calculate_crystal_surface_energies(
 
         log::debug("Surface energy (S) (J/m^2)  = {:12.6f}", surface_energy);
 
-        if ((surface_energy > 0.0) && (surface_energy < min_energy)) {
+        if ((surface_energy > 0.0) &&
+            (!found_valid_cut ||
+             is_lower_cut(surface_energy, cut, min_energy, min_shift))) {
           min_shift = cut;
           min_energy = surface_energy;
           found_valid_cut = true;

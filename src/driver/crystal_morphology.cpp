@@ -112,7 +112,8 @@ std::vector<UniqueFacet> unique_facets(const std::vector<FacetEnergies> &facets,
     if (f.energy <= 1e-6)
       continue;
     auto it = best.find(key);
-    if (it == best.end() || f.energy < it->second.gamma)
+    if (it == best.end() || is_lower_cut(f.energy, f.offset, it->second.gamma,
+                                         it->second.offset))
       best[key] = UniqueFacet{f.hkl, f.energy, f.offset, 0.0};
   }
   for (const auto &[key, emin] : min_energy) {

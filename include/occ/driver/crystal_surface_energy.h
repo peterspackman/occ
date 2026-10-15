@@ -1,5 +1,7 @@
 #pragma once
+#include <algorithm>
 #include <ankerl/unordered_dense.h>
+#include <cmath>
 #include <nlohmann/json.hpp>
 #include <occ/crystal/crystal.h>
 #include <occ/crystal/hkl.h>
@@ -25,6 +27,21 @@ struct CrystalSurfaceEnergies {
   std::vector<double> unique_interaction_energies;
   std::vector<FacetEnergies> facets;
 };
+
+/// Whether a cut (energy, offset) should replace the best one so far.
+///
+/// Symmetry-equivalent terminations of a face have equal energies up to
+/// summation-order noise, which differs run to run under threading. Treat
+/// energies within a relative 1e-9 as tied and keep the lower offset, so the
+/// chosen termination, and the particle built from it, is reproducible.
+inline bool is_lower_cut(double energy, double offset, double best_energy,
+                         double best_offset) {
+  const double tol =
+      1e-9 * std::max(std::abs(energy), std::abs(best_energy));
+  if (std::abs(energy - best_energy) <= tol)
+    return offset < best_offset;
+  return energy < best_energy;
+}
 
 /// Surface energies for the morphologically important faces.
 ///

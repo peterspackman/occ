@@ -1024,6 +1024,57 @@ TEST_CASE("CG: morphology bonds are emitted only on request",
   }
 }
 
+TEST_CASE("CG: morphology does not depend on last-bit noise in cut energies",
+          "[cg][morphology]") {
+  using occ::driver::compute_crystal_morphology;
+  using occ::driver::MorphologyOptions;
+
+  const auto crystal = acetic_acid_crystal();
+  auto uc_dimers = crystal.unit_cell_dimers(7.0);
+  for (auto &neighbours : uc_dimers.molecule_neighbors) {
+    for (auto &srd : neighbours) {
+      const double r = srd.dimer.centroid_distance();
+      srd.dimer.set_interaction_energy(100.0 / (r * r));
+    }
+  }
+
+  const auto dir = fresh_directory("morphology_ties");
+  const auto surfaces = occ::driver::calculate_crystal_surface_energies(
+      (dir / "acetic").string(), crystal, uc_dimers, 0, 1, 3.0);
+
+  CrystalGrowthResult growth;
+  for (size_t i = 0; i < crystal.symmetry_unique_molecules().size(); ++i) {
+    MoleculeResult mr;
+    mr.total.crystal_energy = -50.0;
+    growth.molecule_results.push_back(mr);
+  }
+
+  // Symmetry-equivalent terminations of a face have equal surface energies,
+  // so summation-order noise decides which is lowest. Tilt every tie one way,
+  // then the other: the particle must not follow.
+  auto nudged = [&](double sign) {
+    auto s = surfaces;
+    for (auto &f : s.facets)
+      f.energy *= 1.0 + sign * 1e-13 * f.offset;
+    return s;
+  };
+
+  MorphologyOptions options;
+  options.sizes = {200, 1000};
+  options.emit_bonds = true;
+  const auto up = compute_crystal_morphology(crystal, uc_dimers, nudged(1.0),
+                                             growth, options);
+  const auto down = compute_crystal_morphology(crystal, uc_dimers, nudged(-1.0),
+                                               growth, options);
+
+  REQUIRE(up.shape_faces.size() == down.shape_faces.size());
+  for (size_t f = 0; f < up.shape_faces.size(); ++f)
+    REQUIRE(up.shape_faces[f].offset == down.shape_faces[f].offset);
+  REQUIRE(up.samples.size() == down.samples.size());
+  for (size_t s = 0; s < up.samples.size(); ++s)
+    REQUIRE(up.samples[s].n_molecules == down.samples[s].n_molecules);
+}
+
 TEST_CASE("CG: free energy terms are kept per molecule", "[cg][xtb]") {
   namespace fs = std::filesystem;
   const auto dir = fs::temp_directory_path() / "occ_cg_tests_free_energy";
