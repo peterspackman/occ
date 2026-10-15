@@ -1,5 +1,7 @@
 var NAVTREEINDEX52 =
 {
+"structocc_1_1io_1_1MethodInput.html#afaa101be9c969d1c16afc0b7352d2268":[3,0,2,15,39,17],
+"structocc_1_1io_1_1MoleculeSite.html":[5,0,2,13,39],
 "structocc_1_1io_1_1MoleculeSite.html":[3,0,2,15,41],
 "structocc_1_1io_1_1MoleculeSite.html#a0953d1db8226eba1805d96c6bb75e730":[3,0,2,15,41,3],
 "structocc_1_1io_1_1MoleculeSite.html#a0953d1db8226eba1805d96c6bb75e730":[5,0,2,13,39,3],
@@ -247,7 +249,5 @@ var NAVTREEINDEX52 =
 "structocc_1_1io_1_1StructureInput.html#a1ca23a4758fb62cfad8f0011aafb1e2a":[5,0,2,13,61,7],
 "structocc_1_1io_1_1StructureInput.html#a210dca8ec6aba791e77ba470f6cd8b45":[5,0,2,13,61,0],
 "structocc_1_1io_1_1StructureInput.html#a210dca8ec6aba791e77ba470f6cd8b45":[3,0,2,15,63,0],
-"structocc_1_1io_1_1StructureInput.html#a75d9d090199bc57d575462e42c8e492b":[5,0,2,13,61,2],
-"structocc_1_1io_1_1StructureInput.html#a75d9d090199bc57d575462e42c8e492b":[3,0,2,15,63,2],
-"structocc_1_1io_1_1StructureInput.html#a8259ca12db506b407f35ea9022a8197e":[5,0,2,13,61,6]
+"structocc_1_1io_1_1StructureInput.html#a75d9d090199bc57d575462e42c8e492b":[5,0,2,13,61,2]
 };

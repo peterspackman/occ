@@ -1,5 +1,7 @@
 var NAVTREEINDEX36 =
 {
+"neighbor__atoms_8h.html":[6,0,1,0,0,4],
+"nonlocal__correlation_8h.html":[6,0,1,0,4,6],
 "numpy_8h.html":[6,0,1,0,1,31],
 "numpy_8h.html#a063b4da702d0848b26040006a619f461":[6,0,1,0,1,31,15],
 "numpy_8h.html#a2335b1bdc527dcac65288a0fddb1cc56":[6,0,1,0,1,31,16],
@@ -247,7 +249,5 @@ var NAVTREEINDEX36 =
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5ab713e6323a68d3ddabf4855826c50148":[6,0,1,0,1,36,3,5],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5ab9ece18c950afbfa6b0fdbfa4ff731d3":[6,0,1,0,1,36,3,45],
 "point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5aba12bd18c96a46abc3e563e7dc98ff9f":[6,0,1,0,1,36,3,33],
-"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5abcb13235d6ea92dcb52c4cdcf74eb81a":[6,0,1,0,1,36,3,41],
-"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5abdcfe354a125e7f1ca16ab3bd0642bb0":[6,0,1,0,1,36,3,15],
-"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5ac2eb5c75162ad772c191b2497249b1e4":[6,0,1,0,1,36,3,10]
+"point__group_8h.html#a116490d5f388f6e526b65a85d1c7e8a5abcb13235d6ea92dcb52c4cdcf74eb81a":[6,0,1,0,1,36,3,41]
 };

@@ -1,5 +1,7 @@
 var NAVTREEINDEX64 =
 {
+"structocc_1_1qm_1_1cc_1_1ThcOptions.html#af9664fb1b770fa4bcd2dd5057f065b5e":[3,0,2,23,2,7,7],
+"structocc_1_1qm_1_1cc_1_1ThcOptions.html#aff380a4e98cb78c17abfb6ad2fbfed70":[3,0,2,23,2,7,1],
 "structocc_1_1qm_1_1cc_1_1ThcOptions.html#aff380a4e98cb78c17abfb6ad2fbfed70":[5,0,2,19,0,7,1],
 "structocc_1_1qm_1_1cc_1_1UCCIntegrals.html":[5,0,2,19,0,8],
 "structocc_1_1qm_1_1cc_1_1UCCIntegrals.html":[3,0,2,23,2,8],
@@ -247,7 +249,5 @@ var NAVTREEINDEX64 =
 "structocc_1_1scrf_1_1SolvationSurface.html#ac880e553e2d40ae0ee2393a2efdbc06e":[5,0,2,20,3,0],
 "structocc_1_1scrf_1_1SolvationSurface.html#af1fdf81ba9a7732d4bfdda9e08a5f3db":[5,0,2,20,3,3],
 "structocc_1_1scrf_1_1SolvationSurface.html#af1fdf81ba9a7732d4bfdda9e08a5f3db":[3,0,2,25,3,3],
-"structocc_1_1scrf_1_1SolvationSurfaces.html":[3,0,2,25,4],
-"structocc_1_1scrf_1_1SolvationSurfaces.html":[5,0,2,20,4],
-"structocc_1_1scrf_1_1SolvationSurfaces.html#a339721f68704d9e52209e246c1ac0161":[3,0,2,25,4,2]
+"structocc_1_1scrf_1_1SolvationSurfaces.html":[3,0,2,25,4]
 };

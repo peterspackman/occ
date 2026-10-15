@@ -1,5 +1,7 @@
 var NAVTREEINDEX60 =
 {
+"structocc_1_1mults_1_1SiteHessianDerivatives.html#a2456a572dac346fb400243eca302e1d4":[5,0,2,16,69,6],
+"structocc_1_1mults_1_1SiteHessianDerivatives.html#a58122b0abde9df7d0968d4c2749a793d":[3,0,2,19,72,2],
 "structocc_1_1mults_1_1SiteHessianDerivatives.html#a58122b0abde9df7d0968d4c2749a793d":[5,0,2,16,69,2],
 "structocc_1_1mults_1_1SiteHessianDerivatives.html#a6548016a8aa52027fce525ab71841725":[5,0,2,16,69,0],
 "structocc_1_1mults_1_1SiteHessianDerivatives.html#a6548016a8aa52027fce525ab71841725":[3,0,2,19,72,0],
@@ -247,7 +249,5 @@ var NAVTREEINDEX60 =
 "structocc_1_1opt_1_1BernyOptimizer.html#a1184af5d9e26b43f2014bae90e9ff260":[3,0,2,21,1,2],
 "structocc_1_1opt_1_1BernyOptimizer.html#a155f15f74a71b17db175ca4839064ebb":[3,0,2,21,1,1],
 "structocc_1_1opt_1_1BernyOptimizer.html#a155f15f74a71b17db175ca4839064ebb":[5,0,2,18,1,1],
-"structocc_1_1opt_1_1BernyOptimizer.html#a35f8eb4f12e8464df7711f4a368120fc":[5,0,2,18,1,6],
-"structocc_1_1opt_1_1BernyOptimizer.html#a35f8eb4f12e8464df7711f4a368120fc":[3,0,2,21,1,6],
-"structocc_1_1opt_1_1BernyOptimizer.html#a5c870d0d37d8c857d5f5a24291786522":[5,0,2,18,1,7]
+"structocc_1_1opt_1_1BernyOptimizer.html#a35f8eb4f12e8464df7711f4a368120fc":[5,0,2,18,1,6]
 };

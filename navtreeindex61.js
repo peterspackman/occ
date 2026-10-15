@@ -1,5 +1,7 @@
 var NAVTREEINDEX61 =
 {
+"structocc_1_1opt_1_1BernyOptimizer.html#a35f8eb4f12e8464df7711f4a368120fc":[3,0,2,21,1,6],
+"structocc_1_1opt_1_1BernyOptimizer.html#a5c870d0d37d8c857d5f5a24291786522":[5,0,2,18,1,7],
 "structocc_1_1opt_1_1BernyOptimizer.html#a5c870d0d37d8c857d5f5a24291786522":[3,0,2,21,1,7],
 "structocc_1_1opt_1_1BernyOptimizer.html#a9479c4f7ff0abf35745222e5a6ec6c9d":[3,0,2,21,1,5],
 "structocc_1_1opt_1_1BernyOptimizer.html#a9479c4f7ff0abf35745222e5a6ec6c9d":[5,0,2,18,1,5],
@@ -247,7 +249,5 @@ var NAVTREEINDEX61 =
 "structocc_1_1qm_1_1MolecularOrbitals.html#a2b43899d050235b2bae0b56e19e778c2":[3,0,2,23,28,27],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a3124c3227fc0adfff138689f2bd893e4":[3,0,2,23,28,2],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a3124c3227fc0adfff138689f2bd893e4":[5,0,2,19,24,2],
-"structocc_1_1qm_1_1MolecularOrbitals.html#a37b87111ecefe7abdd1fb708dc5173ad":[3,0,2,23,28,13],
-"structocc_1_1qm_1_1MolecularOrbitals.html#a37b87111ecefe7abdd1fb708dc5173ad":[5,0,2,19,24,13],
-"structocc_1_1qm_1_1MolecularOrbitals.html#a42ecb5682f81b685d1ede3638156c102":[5,0,2,19,24,17]
+"structocc_1_1qm_1_1MolecularOrbitals.html#a37b87111ecefe7abdd1fb708dc5173ad":[3,0,2,23,28,13]
 };

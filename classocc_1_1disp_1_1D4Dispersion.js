@@ -1,6 +1,7 @@
 var classocc_1_1disp_1_1D4Dispersion =
 [
     [ "D4Dispersion", "classocc_1_1disp_1_1D4Dispersion.html#a9c8b16adc63b33d31d57f69668aadae0", null ],
+    [ "charge_potential", "classocc_1_1disp_1_1D4Dispersion.html#ad917362c6102f6514c5444348fbb7d5b", null ],
     [ "covalent_coordination_numbers", "classocc_1_1disp_1_1D4Dispersion.html#ac6b26430e2c3acb7f55a93c182b78561", null ],
     [ "covalent_coordination_numbers_periodic", "classocc_1_1disp_1_1D4Dispersion.html#aa69c8a76fb67043f817cf97a206912b3", null ],
     [ "energy", "classocc_1_1disp_1_1D4Dispersion.html#af7c9f9250296df0a13eab63b7f634930", null ],

@@ -1,5 +1,7 @@
 var NAVTREEINDEX62 =
 {
+"structocc_1_1qm_1_1MolecularOrbitals.html#a37b87111ecefe7abdd1fb708dc5173ad":[5,0,2,19,24,13],
+"structocc_1_1qm_1_1MolecularOrbitals.html#a42ecb5682f81b685d1ede3638156c102":[5,0,2,19,24,17],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a42ecb5682f81b685d1ede3638156c102":[3,0,2,23,28,17],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a5094978d6f838ecb6d1928556cf7bfed":[3,0,2,23,28,11],
 "structocc_1_1qm_1_1MolecularOrbitals.html#a5094978d6f838ecb6d1928556cf7bfed":[5,0,2,19,24,11],
@@ -247,7 +249,5 @@ var NAVTREEINDEX62 =
 "structocc_1_1qm_1_1SCFConvergenceSettings.html#af88fdeac87a925ad8e60a16016ae499c":[3,0,2,23,36,4],
 "structocc_1_1qm_1_1Wavefunction.html":[5,0,2,19,36],
 "structocc_1_1qm_1_1Wavefunction.html":[3,0,2,23,40],
-"structocc_1_1qm_1_1Wavefunction.html#a010f948b01866ec5d3992b3e4c17cb5e":[5,0,2,19,36,12],
-"structocc_1_1qm_1_1Wavefunction.html#a010f948b01866ec5d3992b3e4c17cb5e":[3,0,2,23,40,12],
-"structocc_1_1qm_1_1Wavefunction.html#a067477e22aebe64b240d178b2d9b308a":[5,0,2,19,36,2]
+"structocc_1_1qm_1_1Wavefunction.html#a010f948b01866ec5d3992b3e4c17cb5e":[5,0,2,19,36,12]
 };

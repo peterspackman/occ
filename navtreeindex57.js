@@ -1,5 +1,7 @@
 var NAVTREEINDEX57 =
 {
+"structocc_1_1mults_1_1CrystalOptimizerResult.html#a388fa61bdded7fe672261935669a7506":[5,0,2,16,15,2],
+"structocc_1_1mults_1_1CrystalOptimizerResult.html#a3ef6979a6a67b783c2b66e89d2d80047":[5,0,2,16,15,6],
 "structocc_1_1mults_1_1CrystalOptimizerResult.html#a3ef6979a6a67b783c2b66e89d2d80047":[3,0,2,19,18,6],
 "structocc_1_1mults_1_1CrystalOptimizerResult.html#a511e833e5270a41177ef8e78e506e482":[5,0,2,16,15,4],
 "structocc_1_1mults_1_1CrystalOptimizerResult.html#a511e833e5270a41177ef8e78e506e482":[3,0,2,19,18,4],
@@ -247,7 +249,5 @@ var NAVTREEINDEX57 =
 "structocc_1_1mults_1_1InteractionTensorBatch.html#a94e40b7430d0a5964abc320c004c1a08":[5,0,2,16,36,1],
 "structocc_1_1mults_1_1InteractionTensorBatch.html#aa59d6e49020b58e902ab39f10511b1b6":[5,0,2,16,36,4],
 "structocc_1_1mults_1_1InteractionTensorBatch.html#aa59d6e49020b58e902ab39f10511b1b6":[3,0,2,19,39,4],
-"structocc_1_1mults_1_1InteractionTensorBatch.html#ad5f6e4af9760dd223305335035f292eb":[3,0,2,19,39,0],
-"structocc_1_1mults_1_1InteractionTensorBatch.html#ad5f6e4af9760dd223305335035f292eb":[5,0,2,16,36,0],
-"structocc_1_1mults_1_1LBFGSResult.html":[5,0,2,16,38]
+"structocc_1_1mults_1_1InteractionTensorBatch.html#ad5f6e4af9760dd223305335035f292eb":[3,0,2,19,39,0]
 };

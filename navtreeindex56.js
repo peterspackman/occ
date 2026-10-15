@@ -1,5 +1,7 @@
 var NAVTREEINDEX56 =
 {
+"structocc_1_1main_1_1TbConfig.html#a6a10abef8fec8af2edc1bb7d58e0f39f":[3,0,2,18,15,3],
+"structocc_1_1main_1_1TbConfig.html#a84bcb97c30be517189f54b79dcbb158d":[3,0,2,18,15,6],
 "structocc_1_1main_1_1TbConfig.html#a84bcb97c30be517189f54b79dcbb158d":[5,0,2,15,14,6],
 "structocc_1_1main_1_1TbConfig.html#a9c4fc34c963c6e0ea86a76d069bf0a8b":[5,0,2,15,14,2],
 "structocc_1_1main_1_1TbConfig.html#a9c4fc34c963c6e0ea86a76d069bf0a8b":[3,0,2,18,15,2],
@@ -247,7 +249,5 @@ var NAVTREEINDEX56 =
 "structocc_1_1mults_1_1CrystalEnergy_1_1MoleculeGeometry.html#ac704c4e7b88bc32b009582a4d4de3e57":[3,0,2,19,13,1,1],
 "structocc_1_1mults_1_1CrystalOptimizerResult.html":[5,0,2,16,15],
 "structocc_1_1mults_1_1CrystalOptimizerResult.html":[3,0,2,19,18],
-"structocc_1_1mults_1_1CrystalOptimizerResult.html#a388fa61bdded7fe672261935669a7506":[3,0,2,19,18,2],
-"structocc_1_1mults_1_1CrystalOptimizerResult.html#a388fa61bdded7fe672261935669a7506":[5,0,2,16,15,2],
-"structocc_1_1mults_1_1CrystalOptimizerResult.html#a3ef6979a6a67b783c2b66e89d2d80047":[5,0,2,16,15,6]
+"structocc_1_1mults_1_1CrystalOptimizerResult.html#a388fa61bdded7fe672261935669a7506":[3,0,2,19,18,2]
 };
