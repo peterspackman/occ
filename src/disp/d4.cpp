@@ -1179,4 +1179,17 @@ std::pair<double, Mat3N> D4Dispersion::energy_and_gradient() const {
   return {g2.energy + g3.energy, grad};
 }
 
+Vec D4Dispersion::charge_potential() const {
+  const auto cn = d4_coordination_numbers(m_atoms, m_cutoff_cn,
+                                          /*with_grad=*/false);
+  const auto ref_alpha = build_reference_alpha(m_atoms, m_scaling, m_refq_mode);
+  const auto wgrad = compute_reference_weights_with_grad(
+      m_atoms, m_scaling, m_refq_mode, cn.cn, m_q);
+  const auto c6grad = compute_c6_matrix_with_grad(m_atoms, wgrad, ref_alpha);
+  return dispersion_2body_with_grad(m_atoms, m_damping, c6grad.c6,
+                                    c6grad.dc6_dcn, c6grad.dc6_dq,
+                                    m_cutoff_disp2)
+      .dE_dq;
+}
+
 } // namespace occ::disp

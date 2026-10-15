@@ -2435,8 +2435,8 @@ TEST_CASE("XtbCalculator: analytical gradient self-consistency vs FD of the "
   auto g_an = calc.compute_gradient_analytical();
   const double e_an = calc.last_result().total_energy;
 
-  // FD of the SAME charge-only-SCC + native-D4 expression that produced
-  // g_an. (compute_gradient_analytical sets m_last_result to that energy.)
+  // FD of the same energy expression that produced g_an
+  // (compute_gradient_analytical sets m_last_result to that energy).
   // 5-point central differences in Bohr.
   occ::Mat3N g_fd = occ::Mat3N::Zero(3, atoms.size());
   const double h = 1e-3; // Bohr
@@ -2460,12 +2460,9 @@ TEST_CASE("XtbCalculator: analytical gradient self-consistency vs FD of the "
   calc.update_structure(original); // restore
   INFO("analytical:\n" << g_an);
   INFO("FD (same charge-only expr):\n" << g_fd);
-  // Tolerance loosened to ~10 µHa/Bohr: the missing piece is the chain
-  // ∂E_disp/∂q · ∂q_SCC/∂R (CPSCF-style). For SCC-coupled D4 (q from
-  // Mulliken populations of the SCC, not from EEQ) this term requires the
-  // coupled-perturbed SCF response — Phase 5d-equivalent for D4. xtb has
-  // the same gap and accepts it as part of the SCC-coupled-D4 convention.
-  REQUIRE((g_an - g_fd).cwiseAbs().maxCoeff() < 5e-5);
+  // D4 is self-consistent (its charge potential is in H), so there is no
+  // ∂q/∂R response term to miss.
+  REQUIRE((g_an - g_fd).cwiseAbs().maxCoeff() < 1e-5);
   // Translation invariance.
   REQUIRE(g_an.rowwise().sum().norm() < 1e-9);
   // Sanity: the energy is in the right ballpark.
@@ -3661,3 +3658,66 @@ TEST_CASE("AOBasis: overlap eigenvalues vs tblite (methane)",
 }
 #endif // OCC_HAVE_TBLITE
 
+
+namespace {
+occ::core::Molecule molecule_from_angstrom(const std::vector<int> &z,
+                                           const std::vector<double> &xyz) {
+  occ::Mat3N pos(3, z.size());
+  occ::IVec nums(z.size());
+  for (size_t i = 0; i < z.size(); ++i) {
+    nums(i) = z[i];
+    for (int k = 0; k < 3; ++k)
+      pos(k, i) = xyz[3 * i + k];
+  }
+  return occ::core::Molecule(nums, pos);
+}
+} // namespace
+
+// Issue #58: polar and charged molecules, where the D4 charge response and the
+// multipole switch both show up in the gradient.
+TEST_CASE("XtbCalculator: analytical gradient matches FD of the energy for "
+          "polar and charged molecules",
+          "[xtb][native][gradient][analytical]") {
+  using occ::xtb::XtbCalculator;
+  const auto methanol = molecule_from_angstrom(
+      {6, 8, 1, 1, 1, 1},
+      {0.710740386051, -0.032987127098, 0.000050626626,   //
+       -0.694980495325, 0.097758941003, 0.000191055761,   //
+       1.078901716537, -0.554107721792, 0.890997615956,   //
+       1.078699360227, -0.554229785921, -0.890911756010,  //
+       1.125163425663, 0.974429848833, -0.000055762213,   //
+       -1.085225432952, -0.776663621225, 0.000823548981});
+  const auto cyclopropenyl_anion = molecule_from_angstrom(
+      {6, 1, 6, 6, 1, 1},
+      {-0.38805807296094, -0.55379677203097, -0.00000516874794,  //
+       1.96428381555042, -0.33618719672166, 0.00000798989796,    //
+       -0.48171296253220, 0.79178857900362, -0.00000671254584,   //
+       0.90831673450787, -0.18163055167206, -0.00000886276546,   //
+       -1.01558024601627, -1.45147946730454, 0.00000575624305,   //
+       -0.98794926854887, 1.73130540872561, 0.00000699791823});
+
+  auto check = [](const occ::core::Molecule &mol, double charge,
+                  bool multipoles) {
+    XtbCalculator calc(mol);
+    calc.set_charge(charge);
+    calc.set_include_multipoles(multipoles);
+    const double e_sp = calc.single_point_energy();
+    const auto [e, g] = calc.compute_energy_and_gradient();
+    const occ::Mat3N g_fd = calc.gradient_numerical(1e-3);
+    const double max_err = (g - g_fd).cwiseAbs().maxCoeff();
+    INFO("charge = " << charge << ", multipoles = " << multipoles);
+    INFO("max |analytical - FD| = " << max_err);
+    // the gradient belongs to the same energy surface as single_point
+    REQUIRE(e == Approx(e_sp).margin(1e-8));
+    REQUIRE(max_err < 1e-5);
+  };
+
+  for (bool multipoles : {true, false}) {
+    SECTION(multipoles ? "methanol, multipoles on" : "methanol, multipoles off") {
+      check(methanol, 0.0, multipoles);
+    }
+    SECTION(multipoles ? "anion, multipoles on" : "anion, multipoles off") {
+      check(cyclopropenyl_anion, -1.0, multipoles);
+    }
+  }
+}

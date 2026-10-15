@@ -88,9 +88,9 @@ The implementation was developed with reference to Grimme's xTB and the
 - Periodic SCC (Gamma-only and Monkhorst-Pack k-point sampling) on real
   molecular crystals, with multipole AES, Ewald-summed gamma, and
   lattice-summed D4.
-- Analytical molecular gradient (charge-only SCC variant), validated to
-  5e-5 Ha/Bohr against finite differences; numerical Hessian for
-  frequencies.
+- Analytical molecular gradient, with or without multipoles, validated
+  to 1e-5 Ha/Bohr against finite differences of the energy; numerical
+  Hessian for frequencies.
 - Implicit solvation via CPCM-X and SMD-xTB.
 - Bindings via the `XtbCalculator` class in Python (nanobind) and
   JS/WASM (emscripten/embind).
@@ -98,9 +98,6 @@ The implementation was developed with reference to Grimme's xTB and the
 **Current limitations**
 
 - Periodic gradient and crystal-cell optimisation are not yet wired up.
-- The "multipole-on" analytical gradient still has a known ~1 mHa gap
-  versus FD-of-energy from missing AO-multipole integral derivatives --
-  the charge-only gradient is the production variant.
 - Open-shell GFN2 (and GFN1/GFN0) are out of scope for v1.
 - Periodic energies on dense molecular crystals are ~0.4-0.6 mHa/atom too
   bound versus tblite (missing WSC-image averaging in the gamma build is

@@ -206,13 +206,13 @@ public:
   // Gradient
   // ---------------------------------------------------------------------
 
-  /// Analytical nuclear gradient (Hartree/Bohr, 3 × N). Runs a charge-only
-  /// SCC internally (no anisotropic multipole contribution to the gradient
-  /// energy) so the returned (energy, gradient) pair is self-consistent;
-  /// see `compute_gradient_analytical` body for the breakdown.
+  /// Analytical nuclear gradient (Hartree/Bohr, 3 × N). Runs the same SCC as
+  /// `single_point()` — multipole-on or charge-only per
+  /// `include_multipoles()` — so `last_result().total_energy` and the
+  /// returned gradient are an exact (energy, gradient) pair.
   Mat3N gradient();
-  /// Numerical 5-point central-difference gradient. Slow (6N SCC evals);
-  /// useful as an oracle to validate the analytical version.
+  /// Numerical central-difference gradient. Slow (6N SCC evals); useful as
+  /// an oracle to validate the analytical version.
   Mat3N gradient_numerical(double step_bohr = 1e-3);
   /// (energy, gradient) pair. Uses analytical by default; pass
   /// `numerical = true` for the FD oracle.
@@ -224,12 +224,11 @@ public:
   // Hessian / vibrations
   // ---------------------------------------------------------------------
 
-  /// Numerical 3N×3N Hessian (Hartree/Bohr²) via 5-point central
+  /// Numerical 3N×3N Hessian (Hartree/Bohr²) via central
   /// differences of `gradient()`. Costs `6N` analytical-gradient evaluations
   /// (each is one multipole-on SCC + the analytical gradient assembly).
   /// The returned matrix is symmetrised. Inherits `gradient()`'s
-  /// convention — full multipole-on (CAMM AES + on-site polarization)
-  /// since Phase 5d-rest landed.
+  /// convention, so it follows `include_multipoles()`.
   Mat compute_hessian_numerical(double step_bohr = 0.005);
 
   /// Convenience: build the Hessian and run a normal-mode analysis,

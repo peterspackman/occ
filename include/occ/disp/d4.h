@@ -98,6 +98,13 @@ public:
   // (energy, gradient) where gradient is 3 × N_atoms in Hartree/Bohr.
   std::pair<double, Mat3N> energy_and_gradient() const;
 
+  // ∂E/∂q_i at the current charges (Hartree per unit charge): the potential
+  // a self-consistent method (GFN2-xTB) adds to its Hamiltonian. Without it
+  // the SCC density is not variational in the dispersion energy, and the
+  // fixed-charge gradient misses the charge response. Only the 2-body term
+  // depends on q; ATM uses neutral C6.
+  Vec charge_potential() const;
+
   // Periodic 2-body dispersion energy. Driven by the lattice (columns =
   // a, b, c in Bohr); two real-space sums are taken internally with cutoffs
   // `m_cutoff_disp2` (BJ damped 1/R^6+8) and `m_cutoff_cn` (CN counting

@@ -227,12 +227,12 @@ nb::module_ register_xtb_bindings(nb::module_ &parent) {
 
       // Gradient
       .def("gradient", &XtbCalculator::gradient,
-           "Analytical nuclear gradient in Hartree/Bohr (3 × N). Runs a "
-           "charge-only SCC internally so the (energy, gradient) pair is "
-           "self-consistent.")
+           "Analytical nuclear gradient in Hartree/Bohr (3 × N). Runs the "
+           "same SCC as single_point(), following include_multipoles, so "
+           "total_energy and the gradient are an exact pair.")
       .def("gradient_numerical", &XtbCalculator::gradient_numerical,
            "step_bohr"_a = 1e-3,
-           "Five-point central-difference gradient. Slow (6N SCC evals); "
+           "Central-difference gradient. Slow (6N SCC evals); "
            "useful as an oracle to validate the analytical version.")
       .def("energy_and_gradient", &XtbCalculator::compute_energy_and_gradient,
            "numerical"_a = false, "step_bohr"_a = 1e-3,

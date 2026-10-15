@@ -204,8 +204,8 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
                         : 0.0;
   const Mat W = unrestricted ? spin_coupling(opts.spin_polarization) : Mat();
 
-  // Re-evaluated each SCC iteration at the current charges, matching xtb's
-  // self-consistent D4 to within a few µHa.
+  // Self-consistent, as in xtb: its charge potential enters H each iteration
+  // and its energy is evaluated at the output charges.
   std::optional<occ::disp::D4Dispersion> native_d4;
   if (opts.include_dispersion) {
     native_d4.emplace(m_atoms);
@@ -297,6 +297,16 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
       const Vec &v_solv = m_solvation->atom_potential();
       for (Eigen::Index s = 0; s < V.size(); ++s) {
         V(s) += v_solv(m_shells.atom[s]);
+      }
+    }
+    // D4 depends on the charges, so ∂E_disp/∂q shifts H like any other
+    // atom-resolved potential. Without it the density is not variational in
+    // the dispersion energy and the analytical gradient misses its response.
+    if (native_d4) {
+      native_d4->set_charges(atom_q);
+      const Vec v_disp = native_d4->charge_potential();
+      for (Eigen::Index s = 0; s < V.size(); ++s) {
+        V(s) += v_disp(m_shells.atom[s]);
       }
     }
 

@@ -72,10 +72,8 @@ H  0.2575   0.04212 0.00522`);
 
     it('returns energy + analytical gradient', () => {
       const eg = calc.energyAndGradient(false, 1e-3);
-      // The analytical gradient runs charge-only SCC for self-consistency,
-      // so its energy is ~1 mHa above the multipole-on single_point total.
-      // See xtb_calculator.h docstring on gradient().
-      expect(eg.energy).toBeCloseTo(-5.07, 1);
+      // The gradient runs the same SCC as singlePoint, so the energies agree.
+      expect(eg.energy).toBeCloseTo(-5.0702559, 4);
       expect(eg.gradient.rows()).toBe(3);
       expect(eg.gradient.cols()).toBe(3);
     });
