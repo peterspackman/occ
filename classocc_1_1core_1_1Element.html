@@ -241,11 +241,16 @@ Public Member Functions</h2></td></tr>
 <p>Construct an <a class="el" href="classocc_1_1core_1_1Element.html" title="Utility class representing and holding data for a chemical element.">Element</a> instance from its atomic number. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">num</td><td>the atomic number of the element, should be in range [1,103]</td></tr>
+    <tr><td class="paramname">num</td><td>the atomic number of the element, in range [0,103] (0 is the dummy element)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section warning"><dt>Warning</dt><dd>Does not checking that the provided number is in the range [1,103] providing a number outside this range will likely segfault. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::out_of_range</td><td>if num is outside [0,103] </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
