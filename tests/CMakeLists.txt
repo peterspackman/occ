@@ -33,6 +33,7 @@ include(Catch)
 
 add_executable(core_tests "${CMAKE_CURRENT_SOURCE_DIR}/core_tests.cpp")
 target_link_libraries(core_tests PRIVATE occ_core Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(core_tests PRIVATE OCC_TEST_PROJECT_VERSION="${PROJECT_VERSION}")
 catch_discover_tests(core_tests)
 
 add_executable(crystal_tests "${CMAKE_CURRENT_SOURCE_DIR}/crystal_tests.cpp")

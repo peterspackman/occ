@@ -21,6 +21,7 @@
 #include <occ/core/table.h>
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
+#include <occ/core/version.h>
 
 /* Dimer tests */
 using occ::core::Dimer;
@@ -1078,4 +1079,13 @@ TEST_CASE("Coincident atoms are rejected up front", "[molecule][geometry]") {
     pinched(1, 2) = 0.4;
     REQUIRE_NOTHROW(validate_geometry(Molecule(water_numbers, pinched)));
   }
+}
+
+TEST_CASE("Build info identifies the version and commit", "[version]") {
+  // the project version, as set in CMakeLists.txt
+  REQUIRE(occ::version() == OCC_TEST_PROJECT_VERSION);
+  // a commit hash (optionally -dirty), or "unknown" outside a git checkout
+  REQUIRE_FALSE(occ::git_commit().empty());
+  REQUIRE(occ::version_string() ==
+          fmt::format("{} ({})", occ::version(), occ::git_commit()));
 }

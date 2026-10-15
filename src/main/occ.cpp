@@ -3,6 +3,7 @@
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
+#include <occ/core/version.h>
 #include <occ/main/occ_cg.h>
 #include <occ/main/occ_cube.h>
 #include <occ/main/occ_describe.h>
@@ -34,6 +35,8 @@ int main(int argc, char *argv[]) {
                  "Read configuration from an ini or TOML file", false);
 
   app.set_help_all_flag("--help-all", "Show help for all sub commands");
+  app.set_version_flag("--version",
+                       fmt::format("occ {}", occ::version_string()));
 
   auto *threads_option = app.add_flag_function(
       "--threads{1}",
@@ -85,6 +88,10 @@ int main(int argc, char *argv[]) {
 
   // ensure we have a subcommand
   app.require_subcommand();
+
+  // identify the build in every log, so any output can be traced to a commit
+  app.parse_complete_callback(
+      [] { occ::log::info("occ {}", occ::version_string()); });
 
   constexpr auto *error_format = "exception:\n    {}\nterminating program.\n";
   try {

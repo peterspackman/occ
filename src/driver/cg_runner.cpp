@@ -5,6 +5,7 @@
 #include <occ/cg/interaction_mapper.h>
 #include <occ/core/kabsch.h>
 #include <occ/core/point_group.h>
+#include <occ/core/version.h>
 #include <occ/crystal/dimer_labeller.h>
 #include <occ/crystal/surface.h>
 #include <occ/dft/dft.h>
@@ -480,6 +481,8 @@ CrystalGrowthResult run_cg_pipeline(CrystalGrowthCalculator &calc,
       uc_dimers);
 
   nlohmann::json results_json;
+  results_json["occ"] = {{"version", occ::version()},
+                         {"git_commit", occ::git_commit()}};
   serialize_cg_results(results_json, opts, calc.crystal());
   serialize_cg_dimers(results_json, calc.crystal(), result,
                       cg_interaction_labels);

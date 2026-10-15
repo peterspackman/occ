@@ -1,3 +1,19 @@
+# version + git commit, regenerated on every build (see cmake/BuildInfo.cmake)
+set(OCC_BUILD_INFO_CPP "${CMAKE_CURRENT_BINARY_DIR}/build_info.cpp")
+set(OCC_BUILD_INFO_ARGS
+    -DSRC_DIR=${PROJECT_SOURCE_DIR}
+    -DOCC_VERSION=${PROJECT_VERSION}
+    -DTEMPLATE=${CMAKE_CURRENT_SOURCE_DIR}/build_info.cpp.in
+    -DOUT=${OCC_BUILD_INFO_CPP}
+    -P ${PROJECT_SOURCE_DIR}/cmake/BuildInfo.cmake
+)
+execute_process(COMMAND ${CMAKE_COMMAND} ${OCC_BUILD_INFO_ARGS})
+add_custom_target(occ_build_info
+    COMMAND ${CMAKE_COMMAND} ${OCC_BUILD_INFO_ARGS}
+    BYPRODUCTS ${OCC_BUILD_INFO_CPP}
+    COMMENT "Recording occ version and git commit"
+)
+
 add_library(
     occ_core_obj
     OBJECT
@@ -31,8 +47,10 @@ add_library(
     "${CMAKE_CURRENT_SOURCE_DIR}/table.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/timings.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/vibration.cpp"
+    ${OCC_BUILD_INFO_CPP}
     ${OCC_CORE_INCLUDE_FILES}
 )
+add_dependencies(occ_core_obj occ_build_info)
 add_library(occ_core $<TARGET_OBJECTS:occ_core_obj>)
 target_include_directories(occ_core_obj PUBLIC ${OCC_INCLUDE_DIR})
 
