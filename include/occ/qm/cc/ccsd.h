@@ -15,6 +15,9 @@ struct CCSDResult {
 struct CCSDOptions {
   int max_cycle{100};
   double tol{1e-9}; ///< convergence on the correlation energy
+  /// if > 0, converge instead on max |R|, R = D (t_new - t_old) the amplitude
+  /// residual (ORCA's MDCI STol)
+  double residual_tol{0.0};
   bool diis{true};
 };
 

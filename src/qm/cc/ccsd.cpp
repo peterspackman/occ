@@ -276,6 +276,19 @@ CCSDResult ccsd(const CCIntegrals &eris, const CCSDOptions &opts) {
     for (Eigen::Index k = 0; k < n2; ++k)
       err(n1 + k, 0) = t2n.data()[k] - t2.data()[k];
     const double rnorm = err.norm();
+    // max |R| with R = D (t_new - t_old), D = e_i (+ e_j) - e_a (- e_b)
+    double rmax = 0.0;
+    for (int i = 0; i < o; ++i)
+      for (int a = 0; a < v; ++a)
+        rmax = std::max(rmax, std::abs(err(i + a * o, 0) *
+                                       (mo_e(i) - mo_e(o + a))));
+    for (Eigen::Index k = 0; k < n2; ++k) {
+      const Eigen::Index i = k % o, j = (k / o) % o, a = (k / (o * o)) % v,
+                         b = k / (Eigen::Index(o) * o * v);
+      rmax = std::max(rmax, std::abs(err(n1 + k, 0) *
+                                     (mo_e(i) + mo_e(j) - mo_e(o + a) -
+                                      mo_e(o + b))));
+    }
 
     if (opts.diis) {
       diis.extrapolate(x, err);
@@ -300,7 +313,8 @@ CCSDResult ccsd(const CCIntegrals &eris, const CCSDOptions &opts) {
 
     result.iterations = it + 1;
     e_old = e_new;
-    if (std::abs(de) < opts.tol) {
+    if (opts.residual_tol > 0.0 ? rmax < opts.residual_tol
+                                : std::abs(de) < opts.tol) {
       result.converged = true;
       break;
     }
