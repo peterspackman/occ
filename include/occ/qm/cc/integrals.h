@@ -6,6 +6,10 @@
 #include <occ/qm/mo.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 
+namespace occ::qm {
+class DFIntegrals;
+}
+
 namespace occ::qm::cc {
 
 using occ::gto::AOBasis;
@@ -52,6 +56,12 @@ CCIntegrals exact_eris(const AOBasis &basis, const MolecularOrbitals &mo,
 CCIntegrals df_eris(const AOBasis &basis, const AOBasis &aux_basis,
                     const MolecularOrbitals &mo, int n_frozen = 0,
                     size_t memory_budget = (size_t(1) << 30));
+
+/// The DF backend on a prepared DFIntegrals: the same blocks and ladder, without
+/// rebuilding the 3-center store -- for callers that need integrals for many
+/// orbital sets of one molecule (local correlation clusters).
+CCIntegrals df_eris(DFIntegrals &df, const MolecularOrbitals &mo,
+                    int n_frozen = 0);
 
 /// THC backend: the <=2-virtual blocks come from DF (scalable); ovvv and the
 /// vvvv ladder are applied through the THC factors (X, V) -- the ladder as three

@@ -303,6 +303,11 @@ CCIntegrals df_eris(const AOBasis &basis, const AOBasis &aux_basis,
   return df_blocks(df, mo);
 }
 
+CCIntegrals df_eris(DFIntegrals &df, const MolecularOrbitals &mo_in,
+                    int n_frozen) {
+  return df_blocks(df, freeze_core(mo_in, n_frozen));
+}
+
 CCIntegrals thc_eris(const AOBasis &basis, const AOBasis &aux_basis,
                      const MolecularOrbitals &mo_in, const ThcOptions &opts,
                      int n_frozen, size_t memory_budget) {
