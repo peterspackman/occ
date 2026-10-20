@@ -4,6 +4,7 @@
 #include <occ/core/timings.h>
 #include <occ/qm/cc/ccsd.h>
 #include <occ/qm/cc/gemm.h> // pcon2 (parallel 2-index contraction)
+#include <occ/qm/cc/triples.h>
 
 // Restricted closed-shell CCSD, a direct port of the thc_cct reference
 // rccsd.py (PySCF/Hirata RCCSD equations). The O(V^4) vvvv ladder term goes
@@ -328,6 +329,54 @@ CCSDResult ccsd(const CCIntegrals &eris, const CCSDOptions &opts) {
   result.t2 = t2;
   occ::timing::stop(occ::timing::category::ccsd);
   return result;
+}
+
+MPnEnergies mpn_energies(const CCIntegrals &eris, bool triples) {
+  const int o = eris.nocc, v = eris.nvir;
+  const Vec &mo_e = eris.mo_energy;
+  // first-order doubles t = (ia|jb) / D; t1 stays zero (Brillouin)
+  const T4 g = eris.ovov.shuffle(Sh4{0, 2, 1, 3});
+  T4 d(o, o, v, v);
+  for (int b = 0; b < v; ++b)
+    for (int a = 0; a < v; ++a)
+      for (int j = 0; j < o; ++j)
+        for (int i = 0; i < o; ++i)
+          d(i, j, a, b) = mo_e(i) + mo_e(j) - mo_e(o + a) - mo_e(o + b);
+  T2 d1(o, v);
+  for (int a = 0; a < v; ++a)
+    for (int i = 0; i < o; ++i)
+      d1(i, a) = mo_e(i) - mo_e(o + a);
+  T2 zero(o, v);
+  zero.setZero();
+  const T4 t = g / d;
+  // <x|y> with the closed-shell metric x~ = 2 x - x(ba)
+  auto pair = [](const T4 &x, const T4 &y) {
+    const T4 xt = 2.0 * x - x.shuffle(Sh4{0, 1, 3, 2});
+    const Eigen::Tensor<double, 0> s = (xt * y).sum();
+    return s(0);
+  };
+  // update_amps returns residual / D; with t1 = 0 the doubles residual is
+  // g + L(t) + Q(t), so residuals at t and 2t separate L and Q exactly
+  const auto [r1, r2a] = update_amps(zero, t, eris);
+  const T4 t_twice = 2.0 * t;
+  const T4 r2b = update_amps(zero, t_twice, eris).second;
+  const T4 Ra = r2a * d, Rb = r2b * d;
+  const T4 L = 0.5 * (4.0 * Ra - Rb - 3.0 * g);
+  const T4 Q = 0.5 * (Rb - 2.0 * Ra + g);
+  const T2 S = r1 * d1; // singles residual, linear in t
+  MPnEnergies e;
+  e.e2 = pair(t, g);
+  e.e3 = pair(t, L);
+  const T4 t2nd = L / d;
+  e.e4_doubles = pair(t2nd, L);
+  const Eigen::Tensor<double, 0> s2 = (S * S / d1).sum();
+  e.e4_singles = 2.0 * s2(0);
+  e.e4_quadruples = pair(t, Q);
+  if (triples)
+    e.e4_triples = ccsd_t(zero, t, eris);
+  occ::log::info("MP2 {:.12f}  MP3 {:.12f}  MP4(SDQ) {:.12f}  MP4 {:.12f}",
+                 e.e2, e.mp3(), e.mp4_sdq(), e.mp4());
+  return e;
 }
 
 } // namespace occ::qm::cc

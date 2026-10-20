@@ -2,7 +2,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <occ/core/units.h>
+#include <occ/qm/cc/ccsd.h>
 #include <occ/qm/cc/density.h>
+#include <occ/qm/cc/integrals.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <array>
@@ -14,7 +16,8 @@ using occ::qm::cc::CorrelatedDensityOptions;
 // Water cc-pVDZ (spherical), all electrons. References: PySCF RHF 1e-12, CCSD
 // 1e-11, ccsd_lambda 1e-10 and make_rdm1; CCSD(T) from ccsd_t,
 // ccsd_t_lambda_slow and ccsd_t_rdm_slow (for_grad=True); relaxed MP2 from
-// ORCA 6.1.0 (! MP2 NoRI, %mp2 density relaxed, Z_Tol 1e-9).
+// ORCA 6.1.0 (! MP2 NoRI, %mp2 density relaxed, Z_Tol 1e-9); MP3/MP4 from
+// ORCA 6.1.0 AutoCI (! AUTOCI-MP4 NoRI).
 
 namespace {
 
@@ -128,4 +131,20 @@ TEST_CASE("Spanning local clusters reproduce the canonical density",
                    WithinAbs(canonical.occupations(k), 1e-8));
     REQUIRE_THAT(local.e_corr, WithinAbs(canonical.e_corr, 1e-9));
   }
+}
+
+TEST_CASE("MP3 and MP4 energies match ORCA", "[cc][mpn]") {
+  // ORCA's TightSCF orbitals move E2 and E3 by ~2e-8
+  const auto all = occ::qm::cc::mpn_energies(
+      occ::qm::cc::exact_eris(rhf().basis, rhf().mo, 0));
+  REQUIRE_THAT(all.e2, WithinAbs(-0.204003540949, 1e-7));
+  REQUIRE_THAT(all.e3, WithinAbs(-0.006789427245, 5e-8));
+  REQUIRE_THAT(all.mp4_sdq() - all.mp3(), WithinAbs(-0.002229769988, 1e-8));
+  REQUIRE_THAT(all.mp4() - all.mp3(), WithinAbs(-0.005233365840, 1e-8));
+  const auto fc = occ::qm::cc::mpn_energies(
+      occ::qm::cc::exact_eris(rhf().basis, rhf().mo, 1));
+  REQUIRE_THAT(fc.e2, WithinAbs(-0.201665956431, 1e-7));
+  REQUIRE_THAT(fc.e3, WithinAbs(-0.006997609515, 5e-8));
+  REQUIRE_THAT(fc.mp4_sdq() - fc.mp3(), WithinAbs(-0.002257817888, 1e-8));
+  REQUIRE_THAT(fc.mp4() - fc.mp3(), WithinAbs(-0.005236880343, 1e-8));
 }
