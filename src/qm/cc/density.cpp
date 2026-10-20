@@ -591,9 +591,11 @@ struct Triples {
   double e_t = 0.0;
 };
 
+// t2_vo: the doubles r6(W) is contracted with for the vo block (t2 if null)
 Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
-                const occ::Mat *proj = nullptr) {
+                const occ::Mat *proj = nullptr, const Tn *t2_vo = nullptr) {
   const int o = e.o, v = e.v;
+  const Tn &tvo = t2_vo ? *t2_vo : t2;
   const size_t vv = size_t(v) * v, v3 = vv * v;
   const Tn L1 = T(e.ovvv, {0, 1, 3, 2}); //[i][a][b][f] = (ia|fb)
   const Tn L2 = T(e.ovvv, {0, 3, 1, 2}); //[k][e][f][b] = (kf|be)
@@ -689,7 +691,7 @@ Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
          at(ovoo_t, size_t(k) * o + j, size_t(v) * o), o, m, iv, 1.0,
          joovv.v.data() + size_t(i) * o * vv, ivv);
     const Eigen::VectorXd dv = CMapR(rw, vv, v).transpose() *
-                               CMapR(at(t2, size_t(i) * o + j, vv), vv, 1);
+                               CMapR(at(tvo, size_t(i) * o + j, vv), vv, 1);
     for (int c = 0; c < v; c++)
       dvo_i[i].at(c, k) += 0.5 * dv(c);
     if (!mirror)
@@ -704,7 +706,7 @@ Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
     for (int a = 0; a < v; a++)
       dvm.noalias() +=
           CMapR(rw + size_t(a) * vv, v, v) *
-          CMapR(at(t2, size_t(i) * o + k, vv) + size_t(a) * v, v, 1);
+          CMapR(at(tvo, size_t(i) * o + k, vv) + size_t(a) * v, v, 1);
     for (int c = 0; c < v; c++)
       dvo_i[i].at(c, j) += 0.5 * dvm(c);
   };
@@ -863,6 +865,18 @@ void unflatten(const occ::Mat &x, Tn &l1, Tn &l2) {
 // CCSD, the triples terms and the Lambda equations on prepared integrals. proj
 // (o x n, optional) holds the occupied directions whose share of the triples vv
 // block is formed too (a local cluster's central orbitals)
+// W + V/2 and r6(W) for every i of one (j, k), two re-laid-out ovvv, eight v^3
+// buffers per thread
+void check_triples_memory(const Eris &e, const double max_gb) {
+  const double v3 = std::pow(double(e.v), 3);
+  const double gb = 8.0 * (4.0 * e.o * v3 + 8.0 * v3 * worker_count()) /
+                    (1024.0 * 1024.0 * 1024.0);
+  check(gb <= max_gb, "The triples terms of the density need about " +
+                          std::to_string(gb) + " GB here, over the " +
+                          std::to_string(max_gb) +
+                          " GB budget (max_memory_gb)");
+}
+
 struct CcSolution {
   Tn t1, t2, l1, l2;
   Triples tr;
@@ -891,15 +905,7 @@ CcSolution solve_cc(const occ::qm::cc::CCIntegrals &cc_eris,
   const Imds m = make_intermediates(t1, t2, e);
   mark("Lambda intermediates");
   if (opts.triples) {
-    // W + V/2 and r6(W) for every i of one (j, k), two re-laid-out ovvv, eight
-    // v^3 buffers per thread
-    const double v3 = std::pow(double(e.v), 3);
-    const double gb = 8.0 * (4.0 * e.o * v3 + 8.0 * v3 * worker_count()) /
-                      (1024.0 * 1024.0 * 1024.0);
-    check(gb <= opts.max_memory_gb,
-          "The CCSD(T) density needs about " + std::to_string(gb) +
-              " GB here, over the " + std::to_string(opts.max_memory_gb) +
-              " GB budget (max_memory_gb)");
+    check_triples_memory(e, opts.max_memory_gb);
     s.tr = triples(t1, t2, e, proj);
     mark("triples terms");
   }
@@ -1312,6 +1318,96 @@ CorrelatedDensity mp2_relaxed_density(const occ::qm::Wavefunction &scf,
   mark("density and natural orbitals");
   result.n_occ = o - nf;
   result.n_vir = v;
+  result.backend = backend;
+  result.aux_basis = aux_name;
+  return result;
+}
+
+CorrelatedDensity mpn_density(const occ::qm::Wavefunction &scf, const int order,
+                              const CorrelatedDensityOptions &opts) {
+  check(order == 3 || order == 4, "The MPn density is for order 3 or 4");
+  check(scf.mo.kind == occ::qm::SpinorbitalKind::Restricted &&
+            scf.mo.n_alpha == scf.mo.n_beta,
+        "The MPn density needs a closed-shell (restricted) reference");
+  const bool with_t = order == 4 && opts.triples;
+  const std::string name = order == 3 ? "MP3" : (with_t ? "MP4" : "MP4(SDQ)");
+  CorrelatedDensity result;
+  auto clock = std::chrono::steady_clock::now();
+  auto mark = [&clock, &name](const char *stage) {
+    const auto now = std::chrono::steady_clock::now();
+    occ::log::info("{} density: {} took {:.3f} s", name, stage,
+                   std::chrono::duration<double>(now - clock).count());
+    clock = now;
+  };
+  const int nocc_total = static_cast<int>(scf.mo.n_alpha);
+  const int nmo = static_cast<int>(scf.mo.C.cols());
+  result.n_frozen = std::max(
+      0, std::min(opts.n_frozen < 0 ? occ::qm::cc::num_frozen_core(scf.basis)
+                                    : opts.n_frozen,
+                  nocc_total - 1));
+  std::string backend, aux_name;
+  const occ::qm::cc::CCIntegrals cc_eris =
+      build_eris(scf.basis, scf.mo, result.n_frozen, opts, backend, aux_name);
+  mark("MO integrals");
+  check(result.n_frozen + cc_eris.nocc + cc_eris.nvir == nmo,
+        "MPn density: the correlated space does not cover the MOs");
+  const occ::qm::cc::MPnAmplitudes a = occ::qm::cc::mpn_amplitudes(cc_eris);
+  mark("amplitudes");
+  const Eris e = convert(cc_eris);
+  const Tn t = from_tensor(a.t), u = from_tensor(a.u);
+  const Tn zero1({e.o, e.v});
+  // the Lagrangian's multiplier of D t = g is -l2 below; gamma1 with (t, l2)
+  // gives its share of the density
+  Gamma1 g;
+  if (order == 3) {
+    // E3's gradient is 2 L(t), L self-adjoint
+    g = gamma1(zero1, t, zero1, t + u * 2.0);
+    result.e_corr = a.energies.mp3();
+  } else {
+    const Tn s = from_tensor(a.s), q = from_tensor(a.q);
+    // the Lambda update at t1 = 0 is t plus adjoint terms over D: (0, s, u)
+    // carries S^+(s) and L(u), (t, 0, t) L(t) and Q'(t)^+ t
+    auto lambda = [&](const Tn &t2, const Tn &l1, const Tn &l2) {
+      Tn l1new, l2new;
+      update_lambda(zero1, t2, l1, l2, e, make_intermediates(zero1, t2, e),
+                    l1new, l2new);
+      return l2new;
+    };
+    Tn l2 = u - t * 2.0 + lambda(Tn({e.o, e.o, e.v, e.v}), s, u) * 2.0 + q +
+            lambda(t, zero1, t);
+    mark("Lagrange multipliers");
+    Triples tr;
+    if (with_t) {
+      check_triples_memory(e, opts.max_memory_gb);
+      tr = triples(zero1, t, e, nullptr, &u);
+      l2 += tr.l2_t;
+      mark("triples terms");
+    }
+    g = gamma1(zero1, t, zero1, l2);
+    const Gamma1 gu = gamma1(zero1, u, zero1, u);
+    g.doo += gu.doo - einsum("ia,ja->ij", s, s);
+    g.dvv += gu.dvv + einsum("ia,ib->ab", s, s);
+    // ov: the singles-doubles coupling of the second-order wavefunction
+    g.dvo += einsum("imae,me->ai", u * 2.0 - T(u, {0, 1, 3, 2}), s);
+    if (with_t) {
+      g.doo -= tr.goo * 0.5;
+      g.dvv += tr.gvv * 0.5;
+      g.dvo += tr.dvo;
+    }
+    result.e_triples = tr.e_t;
+    result.e_corr = a.energies.mp4_sdq() + tr.e_t;
+  }
+  const int nf = result.n_frozen;
+  occ::Mat dm = occ::Mat::Zero(nmo, nmo);
+  for (int k = 0; k < nf; k++)
+    dm(k, k) = 2.0;
+  dm.block(nf, nf, nmo - nf, nmo - nf) = rdm1(g, zero1);
+  natural_orbitals(scf, dm, name, scf.energy.total + result.e_corr, result);
+  mark("density and natural orbitals");
+  occ::log::info("{} correlation energy {:.12f}", name, result.e_corr);
+  result.n_occ = cc_eris.nocc;
+  result.n_vir = cc_eris.nvir;
+  result.t2_norm = t.norm();
   result.backend = backend;
   result.aux_basis = aux_name;
   return result;

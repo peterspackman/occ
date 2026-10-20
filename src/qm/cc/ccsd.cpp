@@ -331,7 +331,7 @@ CCSDResult ccsd(const CCIntegrals &eris, const CCSDOptions &opts) {
   return result;
 }
 
-MPnEnergies mpn_energies(const CCIntegrals &eris, bool triples) {
+MPnAmplitudes mpn_amplitudes(const CCIntegrals &eris) {
   const int o = eris.nocc, v = eris.nvir;
   const Vec &mo_e = eris.mo_energy;
   // first-order doubles t = (ia|jb) / D; t1 stays zero (Brillouin)
@@ -363,17 +363,29 @@ MPnEnergies mpn_energies(const CCIntegrals &eris, bool triples) {
   const T4 Ra = r2a * d, Rb = r2b * d;
   const T4 L = 0.5 * (4.0 * Ra - Rb - 3.0 * g);
   const T4 Q = 0.5 * (Rb - 2.0 * Ra + g);
-  const T2 S = r1 * d1; // singles residual, linear in t
-  MPnEnergies e;
+  MPnAmplitudes r;
+  r.t = t;
+  r.s = r1; // the singles residual is linear in t
+  r.u = L / d;
+  r.q = Q / d;
+  MPnEnergies &e = r.energies;
   e.e2 = pair(t, g);
   e.e3 = pair(t, L);
-  const T4 t2nd = L / d;
-  e.e4_doubles = pair(t2nd, L);
-  const Eigen::Tensor<double, 0> s2 = (S * S / d1).sum();
+  e.e4_doubles = pair(r.u, L);
+  const Eigen::Tensor<double, 0> s2 = (r1 * r1 * d1).sum();
   e.e4_singles = 2.0 * s2(0);
   e.e4_quadruples = pair(t, Q);
-  if (triples)
-    e.e4_triples = ccsd_t(zero, t, eris);
+  return r;
+}
+
+MPnEnergies mpn_energies(const CCIntegrals &eris, bool triples) {
+  const MPnAmplitudes a = mpn_amplitudes(eris);
+  MPnEnergies e = a.energies;
+  if (triples) {
+    T2 zero(eris.nocc, eris.nvir);
+    zero.setZero();
+    e.e4_triples = ccsd_t(zero, a.t, eris);
+  }
   occ::log::info("MP2 {:.12f}  MP3 {:.12f}  MP4(SDQ) {:.12f}  MP4 {:.12f}",
                  e.e2, e.mp3(), e.mp4_sdq(), e.mp4());
   return e;

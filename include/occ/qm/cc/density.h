@@ -27,7 +27,7 @@ struct CorrelatedDensityOptions {
 struct CorrelatedDensity {
   Wavefunction natural;
   Vec occupations;       ///< natural occupations, descending, sum = N
-  double e_corr{0.0};    ///< MP2 or CCSD correlation energy
+  double e_corr{0.0};    ///< MPn or CCSD correlation energy
   double e_triples{0.0}; ///< (T), from the arrays entering the density
   int n_frozen{0};
   int n_occ{0}, n_vir{0};   ///< correlated occupied / virtual orbitals
@@ -58,5 +58,13 @@ CorrelatedDensity local_ccsd_density(const Wavefunction &scf,
 CorrelatedDensity
 mp2_relaxed_density(const Wavefunction &scf,
                     const CorrelatedDensityOptions &opts = {});
+
+/// Unrelaxed MP3 (order 3) or MP4 (order 4; MP4(SDQ) unless opts.triples)
+/// density from the MPn Lagrangian, H0 the Fock operator: the oo and vv blocks
+/// are the energy derivative, the ov block (MP4 only) the singles-doubles and
+/// doubles-triples couplings in the second-order wavefunction. ORCA's AutoCI
+/// unrelaxed densities.
+CorrelatedDensity mpn_density(const Wavefunction &scf, int order,
+                              const CorrelatedDensityOptions &opts = {});
 
 } // namespace occ::qm::cc

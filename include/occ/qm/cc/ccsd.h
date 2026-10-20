@@ -47,4 +47,14 @@ struct MPnEnergies {
 /// is ccsd_t on t (with triples). Costs two CCSD residuals plus (T).
 MPnEnergies mpn_energies(const CCIntegrals &eris, bool triples = true);
 
+/// The amplitudes behind mpn_energies: first-order doubles t = g/D, the
+/// second-order singles s and doubles u = L(t)/D, and q = Q(t)/D; the energies
+/// without E4(T).
+struct MPnAmplitudes {
+  Eigen::Tensor<double, 4> t, u, q;
+  Eigen::Tensor<double, 2> s;
+  MPnEnergies energies;
+};
+MPnAmplitudes mpn_amplitudes(const CCIntegrals &eris);
+
 } // namespace occ::qm::cc

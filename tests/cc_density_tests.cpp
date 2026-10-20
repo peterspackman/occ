@@ -1,6 +1,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <Eigen/Dense>
 #include <occ/core/units.h>
 #include <occ/qm/cc/ccsd.h>
 #include <occ/qm/cc/density.h>
@@ -147,4 +148,68 @@ TEST_CASE("MP3 and MP4 energies match ORCA", "[cc][mpn]") {
   REQUIRE_THAT(fc.e3, WithinAbs(-0.006997609515, 5e-8));
   REQUIRE_THAT(fc.mp4_sdq() - fc.mp3(), WithinAbs(-0.002257817888, 1e-8));
   REQUIRE_THAT(fc.mp4() - fc.mp3(), WithinAbs(-0.005236880343, 1e-8));
+}
+
+namespace {
+
+// ORCA 6.1.0 AutoCI unrelaxed densities (%autoci density unrelaxed)
+constexpr std::array<double, 24> mp3_occ{
+    1.999915773813, 1.985661784135, 1.973702071950, 1.968648639902,
+    1.966229357415, 0.024377209706, 0.022180608905, 0.016239111965,
+    0.010783938325, 0.006074443783, 0.005773204255, 0.005311825070,
+    0.004663934998, 0.004554560921, 0.001125255748, 0.001125093303,
+    0.000734889516, 0.000664915046, 0.000587592294, 0.000548531000,
+    0.000513285935, 0.000490790207, 0.000052501593, 0.000040680215};
+
+constexpr std::array<double, 24> mp4_sdq_occ{
+    1.999915945826, 1.984711924471, 1.973070814366, 1.967314715391,
+    1.964745794384, 0.025970440535, 0.023919231243, 0.016933633869,
+    0.011456444716, 0.005959616296, 0.005679385498, 0.005147216186,
+    0.004537916329, 0.004426693801, 0.001213224596, 0.001152612750,
+    0.000741770946, 0.000740148418, 0.000675373039, 0.000555525988,
+    0.000522202536, 0.000504326705, 0.000060552809, 0.000044489303};
+
+constexpr std::array<double, 24> mp4_occ{
+    1.999914406247, 1.984274300365, 1.971968172897, 1.965625772591,
+    1.962719664667, 0.027364938764, 0.025005173092, 0.017577711958,
+    0.011817408725, 0.006274482577, 0.005958985372, 0.005377166917,
+    0.004664419368, 0.004547821106, 0.001349431881, 0.001250163400,
+    0.000858402579, 0.000817711751, 0.000782625933, 0.000609186636,
+    0.000558469763, 0.000558076384, 0.000071783877, 0.000053723150};
+
+// singular values of the ov block in the canonical MOs, invariant to occupied
+// and virtual rotations (so to MO phases)
+occ::Vec ov_singular_values(const occ::qm::cc::CorrelatedDensity &r) {
+  const occ::Mat Ci = rhf().mo.C.inverse();
+  const occ::Mat P = 2.0 * Ci * r.natural.mo.D * Ci.transpose();
+  return Eigen::JacobiSVD<occ::Mat>(P.topRightCorner(5, 19)).singularValues();
+}
+
+void check_ov(const occ::qm::cc::CorrelatedDensity &r,
+              const std::array<double, 5> &ref) {
+  const occ::Vec sv = ov_singular_values(r);
+  for (size_t k = 0; k < ref.size(); k++)
+    REQUIRE_THAT(sv(k), WithinAbs(ref[k], 2e-9));
+}
+
+} // namespace
+
+TEST_CASE("MP3 and MP4 densities match ORCA", "[cc][density][mpn]") {
+  constexpr double e2 = -0.204003540949, e3 = -0.006789427245;
+  auto opts = tight_all_electron();
+  const auto mp3 = occ::qm::cc::mpn_density(rhf(), 3, opts);
+  REQUIRE_THAT(mp3.e_corr, WithinAbs(e2 + e3, 1e-7));
+  check_occupations(mp3.occupations, mp3_occ, 2e-7);
+  REQUIRE(ov_singular_values(mp3).maxCoeff() < 1e-12); // no ov block
+  const auto sdq = occ::qm::cc::mpn_density(rhf(), 4, opts);
+  REQUIRE_THAT(sdq.e_corr, WithinAbs(e2 + e3 - 0.002229769988, 1e-7));
+  check_occupations(sdq.occupations, mp4_sdq_occ, 2e-7);
+  check_ov(sdq, {4.050671e-05, 3.225539e-05, 2.398397e-05, 9.162272e-06,
+                 1.977190e-06});
+  opts.triples = true;
+  const auto mp4 = occ::qm::cc::mpn_density(rhf(), 4, opts);
+  REQUIRE_THAT(mp4.e_corr, WithinAbs(e2 + e3 - 0.005233365840, 1e-7));
+  check_occupations(mp4.occupations, mp4_occ, 2e-7);
+  check_ov(mp4, {6.326736e-05, 6.116768e-05, 3.684343e-05, 1.884559e-05,
+                 2.634308e-06});
 }
