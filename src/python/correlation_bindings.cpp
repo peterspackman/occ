@@ -189,8 +189,9 @@ nb::module_ register_correlation_bindings(nb::module_ &m) {
   m.def("num_frozen_core", &cc::num_frozen_core, "basis"_a,
         "Chemical-core frozen orbital count for a basis (CCSD(T) default)");
   m.def("exact_eris", &cc::exact_eris, "basis"_a, "mo"_a, "n_frozen"_a = 0,
-        "memory_budget"_a = size_t(1) << 30,
-        "Exact MO integral blocks (stores the O(V^4) vvvv ladder)");
+        "memory_budget"_a = size_t(1) << 30, "with_ladder"_a = true,
+        "Exact MO integral blocks (stores the O(V^4) vvvv ladder unless "
+        "with_ladder is false)");
   m.def("df_eris", &cc::df_eris, "basis"_a, "aux_basis"_a, "mo"_a,
         "n_frozen"_a = 0, "memory_budget"_a = size_t(1) << 30,
         "Density-fitted MO integral blocks (vvvv never formed)");

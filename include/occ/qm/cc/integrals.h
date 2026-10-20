@@ -47,9 +47,12 @@ int num_frozen_core(const AOBasis &basis);
 /// Exact backend: all blocks (incl. ovvv and the dense vvvv ladder) from a
 /// semidirect AO->MO transform (no nao^4 tensor). Reference for the others.
 /// `n_frozen` lowest occupied orbitals are excluded from the correlation space.
+/// `with_ladder = false` skips the O(V^4) vvvv store (MP2-type users); calling
+/// the ladder then throws.
 CCIntegrals exact_eris(const AOBasis &basis, const MolecularOrbitals &mo,
                        int n_frozen = 0,
-                       size_t memory_budget = (size_t(1) << 30));
+                       size_t memory_budget = (size_t(1) << 30),
+                       bool with_ladder = true);
 
 /// Density-fitted (RI) backend: every block from the metric-folded DF B-tensor;
 /// the ladder is contracted through B so (ac|bd) is never formed.
