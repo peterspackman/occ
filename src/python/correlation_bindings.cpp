@@ -192,7 +192,10 @@ nb::module_ register_correlation_bindings(nb::module_ &m) {
         "memory_budget"_a = size_t(1) << 30, "with_ladder"_a = true,
         "Exact MO integral blocks (stores the O(V^4) vvvv ladder unless "
         "with_ladder is false)");
-  m.def("df_eris", &cc::df_eris, "basis"_a, "aux_basis"_a, "mo"_a,
+  m.def("df_eris",
+        nb::overload_cast<const AOBasis &, const AOBasis &,
+                          const MolecularOrbitals &, int, size_t>(&cc::df_eris),
+        "basis"_a, "aux_basis"_a, "mo"_a,
         "n_frozen"_a = 0, "memory_budget"_a = size_t(1) << 30,
         "Density-fitted MO integral blocks (vvvv never formed)");
   m.def("thc_eris", &cc::thc_eris, "basis"_a, "aux_basis"_a, "mo"_a,
