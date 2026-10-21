@@ -110,6 +110,7 @@ public:
 
   // Half the total density stored in the file (occ's restricted convention)
   Mat scf_density_matrix() const;
+  bool has_scf_density() const { return !m_scf_density.empty(); }
   Mat mp2_density_matrix() const;
 
   std::vector<occ::core::Atom> atoms() const;
