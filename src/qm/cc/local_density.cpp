@@ -112,10 +112,7 @@ CorrelatedDensity local_ccsd_density(const occ::qm::Wavefunction &scf,
   const occ::Mat &C = scf.mo.C;
   const int nbf = static_cast<int>(C.rows()), nmo = static_cast<int>(C.cols()),
             nocc = static_cast<int>(scf.mo.n_alpha);
-  result.n_frozen = std::max(
-      0, std::min(opts.n_frozen < 0 ? occ::qm::cc::num_frozen_core(basis)
-                                    : opts.n_frozen,
-                  nocc - 1));
+  result.n_frozen = frozen_core_count(scf, opts.n_frozen);
   const int nf = result.n_frozen;
   const occ::qm::IntegralEngine engine(basis);
   const occ::Mat S =

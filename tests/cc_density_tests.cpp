@@ -6,6 +6,7 @@
 #include <occ/qm/cc/ccsd.h>
 #include <occ/qm/cc/density.h>
 #include <occ/qm/cc/integrals.h>
+#include <occ/qm/correlation/mp2.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <array>
@@ -149,7 +150,30 @@ TEST_CASE("DF densities track the exact backend", "[cc][density][df]") {
   REQUIRE((ccsd_df.occupations - ccsd.occupations).cwiseAbs().maxCoeff() <
           1e-4);
   REQUIRE_THAT(mp2_df.e_corr, WithinAbs(mp2.e_corr, 1e-4));
+  // the DF Lagrangian's energy is RI-MP2's on the same auxiliary basis
+  auto aux = occ::gto::AOBasis::load(rhf().basis.atoms(), "def2-svp-rifit");
+  aux.set_pure(rhf().basis.is_pure());
+  occ::qm::MP2 ri(rhf().basis, aux, rhf().mo, rhf().energy.total);
+  ri.set_algorithm(occ::qm::MP2::RI);
+  ri.set_orbital_energy_cutoffs(-1e6, 1e6); // no frozen core
+  REQUIRE_THAT(mp2_df.e_corr,
+               WithinAbs(ri.compute_correlation_energy(), 1e-10));
   REQUIRE((mp2_df.occupations - mp2.occupations).cwiseAbs().maxCoeff() < 2e-5);
+  // B_vv streamed one row of a at a time gives the same density
+  auto tiny = opts;
+  tiny.max_memory_gb = 1e-9;
+  const auto mp2_tiny = occ::qm::cc::mp2_relaxed_density(rhf(), tiny);
+  REQUIRE_THAT(mp2_tiny.e_corr, WithinAbs(mp2_df.e_corr, 1e-12));
+  REQUIRE((mp2_tiny.occupations - mp2_df.occupations).cwiseAbs().maxCoeff() <
+          1e-10);
+  // frozen core: the frozen-core block of P and its response
+  opts.n_frozen = 1;
+  const auto fc_df = occ::qm::cc::mp2_relaxed_density(rhf(), opts);
+  opts.backend = "exact";
+  const auto fc = occ::qm::cc::mp2_relaxed_density(rhf(), opts);
+  REQUIRE_THAT(fc_df.e_corr, WithinAbs(fc.e_corr, 1e-4));
+  REQUIRE((fc_df.occupations - fc.occupations).cwiseAbs().maxCoeff() < 2e-5);
+  REQUIRE(fc_df.occupations(0) > 2.0);
 }
 
 TEST_CASE("Truncated local clusters approach the canonical density",

@@ -9,6 +9,7 @@ add_library(
     "${CMAKE_CURRENT_SOURCE_DIR}/einsum.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/local_density.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/mp2_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/triples.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/uccsd_so.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/uintegrals.cpp"

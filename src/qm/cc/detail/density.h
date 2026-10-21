@@ -55,6 +55,21 @@ CcSolution solve_cc(const CCIntegrals &cc_eris,
                     const std::function<void(const char *)> &mark,
                     const occ::Mat *proj = nullptr);
 
+// "exact" or "df" from opts.backend (auto, conventional and ri accepted)
+std::string resolve_backend(const CorrelatedDensityOptions &opts);
+
+// the correlation fitting basis: opts.aux_basis, or the one matched to basis
+occ::gto::AOBasis load_aux_basis(const occ::gto::AOBasis &basis,
+                                 const CorrelatedDensityOptions &opts,
+                                 std::string &aux_name);
+
+// the frozen-core count for a closed-shell reference, as occ's CCSD driver:
+// -1 is the chemical core, and at least one occupied orbital stays correlated
+int frozen_core_count(const Wavefunction &scf, int n_frozen);
+
+// opts.max_memory_gb in bytes
+size_t memory_budget(const CorrelatedDensityOptions &opts);
+
 // occ's integral blocks for mo (exact or DF, as opts.backend), the n_frozen
 // lowest occupied left out; the exact vvvv ladder only with_ladder (DF never
 // stores it)

@@ -641,13 +641,8 @@ CcSolution solve_cc(const occ::qm::cc::CCIntegrals &cc_eris,
   return s;
 }
 
-occ::qm::cc::CCIntegrals build_eris(const occ::gto::AOBasis &basis,
-                                    const occ::qm::MolecularOrbitals &mo,
-                                    const int n_frozen,
-                                    const CorrelatedDensityOptions &opts,
-                                    std::string &backend, std::string &aux_name,
-                                    const bool with_ladder) {
-  backend = occ::util::to_lower_copy(opts.backend);
+std::string resolve_backend(const CorrelatedDensityOptions &opts) {
+  std::string backend = occ::util::to_lower_copy(opts.backend);
   if (backend.empty() || backend == "auto" || backend == "conventional")
     backend = "exact";
   if (backend == "ri")
@@ -655,17 +650,45 @@ occ::qm::cc::CCIntegrals build_eris(const occ::gto::AOBasis &basis,
   check(backend == "exact" || backend == "df",
         "Correlated density backend '" + opts.backend +
             "' is not supported (exact | df)");
-  const size_t budget =
-      static_cast<size_t>(opts.max_memory_gb * 1024.0 * 1024.0 * 1024.0);
-  if (backend == "exact")
-    return occ::qm::cc::exact_eris(basis, mo, n_frozen, budget, with_ladder);
+  return backend;
+}
+
+occ::gto::AOBasis load_aux_basis(const occ::gto::AOBasis &basis,
+                                 const CorrelatedDensityOptions &opts,
+                                 std::string &aux_name) {
   aux_name = opts.aux_basis.empty()
                  ? occ::qm::resolve_fitting_basis(
                        basis.name(), occ::qm::FittingKind::Correlation)
                  : opts.aux_basis;
   auto aux = occ::gto::AOBasis::load(basis.atoms(), aux_name);
   aux.set_pure(basis.is_pure());
-  return occ::qm::cc::df_eris(basis, aux, mo, n_frozen, budget);
+  return aux;
+}
+
+int frozen_core_count(const occ::qm::Wavefunction &scf, const int n_frozen) {
+  const int nocc = static_cast<int>(scf.mo.n_alpha);
+  return std::max(0, std::min(n_frozen < 0
+                                  ? occ::qm::cc::num_frozen_core(scf.basis)
+                                  : n_frozen,
+                              nocc - 1));
+}
+
+size_t memory_budget(const CorrelatedDensityOptions &opts) {
+  return static_cast<size_t>(opts.max_memory_gb * 1024.0 * 1024.0 * 1024.0);
+}
+
+occ::qm::cc::CCIntegrals build_eris(const occ::gto::AOBasis &basis,
+                                    const occ::qm::MolecularOrbitals &mo,
+                                    const int n_frozen,
+                                    const CorrelatedDensityOptions &opts,
+                                    std::string &backend, std::string &aux_name,
+                                    const bool with_ladder) {
+  backend = resolve_backend(opts);
+  if (backend == "exact")
+    return occ::qm::cc::exact_eris(basis, mo, n_frozen, memory_budget(opts),
+                                   with_ladder);
+  const auto aux = load_aux_basis(basis, opts, aux_name);
+  return occ::qm::cc::df_eris(basis, aux, mo, n_frozen, memory_budget(opts));
 }
 
 void natural_orbitals(const occ::qm::Wavefunction &scf, const occ::Mat &dm,
@@ -706,14 +729,8 @@ CorrelatedDensity ccsd_density(const occ::qm::Wavefunction &scf,
                    std::chrono::duration<double>(now - clock).count());
     clock = now;
   };
-  const int nocc_total = static_cast<int>(scf.mo.n_alpha);
   const int nmo = static_cast<int>(scf.mo.C.cols());
-  // as occ's CCSD driver: -1 is the chemical core, and at least one occupied
-  // orbital stays correlated
-  result.n_frozen = std::max(
-      0, std::min(opts.n_frozen < 0 ? occ::qm::cc::num_frozen_core(scf.basis)
-                                    : opts.n_frozen,
-                  nocc_total - 1));
+  result.n_frozen = frozen_core_count(scf, opts.n_frozen);
   std::string backend, aux_name;
   const occ::qm::cc::CCIntegrals cc_eris =
       build_eris(scf.basis, scf.mo, result.n_frozen, opts, backend, aux_name);
@@ -756,119 +773,6 @@ CorrelatedDensity ccsd_density(const occ::qm::Wavefunction &scf,
   return result;
 }
 
-CorrelatedDensity mp2_relaxed_density(const occ::qm::Wavefunction &scf,
-                                      const CorrelatedDensityOptions &opts) {
-  check(scf.mo.kind == occ::qm::SpinorbitalKind::Restricted &&
-            scf.mo.n_alpha == scf.mo.n_beta,
-        "The MP2 density needs a closed-shell (restricted) reference");
-  CorrelatedDensity result;
-  auto clock = std::chrono::steady_clock::now();
-  auto mark = [&clock](const char *stage) {
-    const auto now = std::chrono::steady_clock::now();
-    occ::log::info("MP2 density: {} took {:.3f} s", stage,
-                   std::chrono::duration<double>(now - clock).count());
-    clock = now;
-  };
-  const int o = static_cast<int>(scf.mo.n_alpha),
-            nmo = static_cast<int>(scf.mo.C.cols());
-  result.n_frozen = std::max(
-      0, std::min(opts.n_frozen < 0 ? occ::qm::cc::num_frozen_core(scf.basis)
-                                    : opts.n_frozen,
-                  o - 1));
-  const int nf = result.n_frozen;
-  std::string backend, aux_name;
-  // every occupied orbital: the orbital response couples the frozen core
-  const CCIntegrals cc_eris =
-      build_eris(scf.basis, scf.mo, 0, opts, backend, aux_name, false);
-  const Eris e(cc_eris);
-  mark("MO integrals");
-  const int v = e.v;
-  // t_ij^ab = (ia|jb) / D_ij^ab on correlated pairs, tt = 2 t - t(ba); E2 = sum
-  // tt (ia|jb)
-  const T4 g = transpose(e.ovov, {0, 2, 1, 3});
-  T4 t2 = g;
-  for (int b = 0; b < v; b++)
-    for (int a = 0; a < v; a++)
-      for (int j = 0; j < o; j++)
-        for (int i = 0; i < o; i++)
-          t2(i, j, a, b) =
-              i < nf || j < nf
-                  ? 0.0
-                  : g(i, j, a, b) / (e.eo(i) + e.eo(j) - e.ev(a) - e.ev(b));
-  const T4 tt = t2 * 2.0 - transpose(t2, {0, 1, 3, 2});
-  result.e_corr = dot(tt, g);
-  // PySCF grad/mp2.py: P_ij = -2 t_ki^ab tt_kj^ab, P_ab = 2 t_ij^ca tt_ij^cb;
-  // Lagrangian I_kc = -2 (ik|jb) tt_ij^cb, I_dk = -2 (ad|jb) tt_kj^ab, I_mk =
-  // -2 (ma|jb) tt_kj^ab; frozen-core block P_fk = I_fk / (e_f - e_k)
-  const T2 p_vv = einsum<2>("ijca,ijcb->ab", t2, tt) * 2.0;
-  T2 p_oo = einsum<2>("kiab,kjab->ij", t2, tt) * -2.0;
-  const T2 i_oc = einsum<2>("jbik,ijcb->kc", e.ovoo, tt) * -2.0;
-  const T2 i_vo = einsum<2>("jbad,kjab->dk", e.ovvv, tt) * -2.0;
-  const T2 i_oo = einsum<2>("majb,kjab->mk", e.ovov, tt) * -2.0;
-  for (int f = 0; f < nf; f++)
-    for (int k = nf; k < o; k++)
-      p_oo(f, k) = p_oo(k, f) = i_oo(f, k) / (e.eo(f) - e.eo(k));
-  // X_am = sum_pq P_pq [2 (am|pq) - (ap|qm)] + I_ma - I_am
-  T2 x = einsum<2>("majk,jk->am", e.ovoo, p_oo) * 2.0 -
-         einsum<2>("jakm,jk->am", e.ovoo, p_oo);
-  x += einsum<2>("mabc,bc->am", e.ovvv, p_vv) * 2.0 -
-       einsum<2>("mcab,bc->am", e.ovvv, p_vv);
-  x += transpose(i_oc, {1, 0}) - i_vo;
-  // Z-vector: (e_a - e_m) z_am + sum_bn [4 (am|bn) - (ab|mn) - (an|bm)] z_bn =
-  // -X_am, conjugate gradients preconditioned by e_a - e_m (the RHF orbital
-  // Hessian is positive definite)
-  auto hessian = [&](const T2 &z) {
-    T2 r = einsum<2>("manb,bn->am", e.ovov, z) * 4.0 -
-           einsum<2>("mnab,bn->am", e.oovv, z) -
-           einsum<2>("namb,bn->am", e.ovov, z);
-    for (int a = 0; a < v; a++)
-      for (int m = 0; m < o; m++)
-        r(a, m) += (e.ev(a) - e.eo(m)) * z(a, m);
-    return r;
-  };
-  auto precondition = [&](const T2 &r) {
-    T2 s = r;
-    for (int m = 0; m < o; m++)
-      for (int a = 0; a < v; a++)
-        s(a, m) /= e.ev(a) - e.eo(m);
-    return s;
-  };
-  const T2 minus_x = x * -1.0;
-  T2 z = precondition(minus_x);
-  T2 res = minus_x - hessian(z);
-  T2 s = precondition(res), dir = s;
-  double rs = dot(res, s);
-  int it = 0;
-  for (; it < opts.max_cycle && max_abs(res) > 1e-10; it++) {
-    const T2 hd = hessian(dir);
-    const double alpha = rs / dot(dir, hd);
-    z += dir * alpha;
-    res -= hd * alpha;
-    s = precondition(res);
-    const double rs_new = dot(res, s);
-    dir = s + dir * (rs_new / rs);
-    rs = rs_new;
-  }
-  check(max_abs(res) <= 1e-10,
-        "The MP2 Z-vector equations did not converge in " +
-            std::to_string(opts.max_cycle) + " iterations");
-  result.lambda_iterations = it;
-  mark("Z-vector");
-  occ::Mat dm = occ::Mat::Zero(nmo, nmo);
-  dm.topLeftCorner(o, o) = as_matrix(p_oo);
-  dm.topLeftCorner(o, o).diagonal().array() += 2.0;
-  dm.bottomLeftCorner(v, o) = as_matrix(z);
-  dm.topRightCorner(o, v) = as_matrix(z).transpose();
-  dm.bottomRightCorner(v, v) = as_matrix(p_vv);
-  natural_orbitals(scf, dm, "MP2", scf.energy.total + result.e_corr, result);
-  mark("density and natural orbitals");
-  result.n_occ = o - nf;
-  result.n_vir = v;
-  result.backend = backend;
-  result.aux_basis = aux_name;
-  return result;
-}
-
 CorrelatedDensity mpn_density(const occ::qm::Wavefunction &scf, const int order,
                               const CorrelatedDensityOptions &opts) {
   check(order == 3 || order == 4, "The MPn density is for order 3 or 4");
@@ -885,12 +789,8 @@ CorrelatedDensity mpn_density(const occ::qm::Wavefunction &scf, const int order,
                    std::chrono::duration<double>(now - clock).count());
     clock = now;
   };
-  const int nocc_total = static_cast<int>(scf.mo.n_alpha);
   const int nmo = static_cast<int>(scf.mo.C.cols());
-  result.n_frozen = std::max(
-      0, std::min(opts.n_frozen < 0 ? occ::qm::cc::num_frozen_core(scf.basis)
-                                    : opts.n_frozen,
-                  nocc_total - 1));
+  result.n_frozen = frozen_core_count(scf, opts.n_frozen);
   std::string backend, aux_name;
   const occ::qm::cc::CCIntegrals cc_eris =
       build_eris(scf.basis, scf.mo, result.n_frozen, opts, backend, aux_name);

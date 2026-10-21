@@ -11,7 +11,9 @@ struct CorrelatedDensityOptions {
   std::string backend{"exact"}; ///< exact | df (ri is accepted for df)
   std::string aux_basis{};      ///< df and local MP2 screening; empty = auto
   double max_memory_gb{1.0};    ///< integrals and (T) buffers
-  double tol{1e-5}; ///< CCSD and Lambda: max |D (t_new - t_old)| (ORCA STol)
+  /// CCSD and Lambda: max |D (t_new - t_old)| (ORCA STol); MP2: max
+  /// |Z-vector residual|
+  double tol{1e-5};
   int max_cycle{200};
   bool triples{false}; ///< CCSD(T): (T) terms in Lambda and in the density
   // cluster-in-molecule (local_ccsd_density)
@@ -26,8 +28,8 @@ struct CorrelatedDensityOptions {
 /// density in natural.mo.D (occ's restricted conventions).
 struct CorrelatedDensity {
   Wavefunction natural;
-  Vec occupations;       ///< natural occupations, descending, sum = N
-  double e_corr{0.0};    ///< MPn or CCSD correlation energy
+  Vec occupations;    ///< natural occupations, descending, sum = N
+  double e_corr{0.0}; ///< MPn or CCSD correlation energy
   /// (T), from the arrays entering the density; for local_ccsd_density the sum
   /// of each cluster's share for its central LMOs
   double e_triples{0.0};
@@ -56,7 +58,11 @@ CorrelatedDensity local_ccsd_density(const Wavefunction &scf,
                                      const CorrelatedDensityOptions &opts = {});
 
 /// Relaxed MP2 density: the MP2 Lagrangian with the Z-vector orbital response
-/// (as PySCF grad/mp2.py), the frozen core relaxed too.
+/// (as PySCF grad/mp2.py), the frozen core relaxed too. With the df backend the
+/// MP2 part is built from the B tensors one occupied orbital at a time (no
+/// ovvv or vvvv intermediates; B_vv streamed within max_memory_gb). The orbital
+/// response always uses four-centre Coulomb and exchange builds, i.e. it
+/// assumes the SCF was converged with exact (not density-fitted) J and K.
 CorrelatedDensity
 mp2_relaxed_density(const Wavefunction &scf,
                     const CorrelatedDensityOptions &opts = {});
