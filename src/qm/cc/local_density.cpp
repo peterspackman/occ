@@ -20,6 +20,7 @@ namespace occ::qm::cc {
 namespace {
 using namespace detail;
 using bvec = std::vector<bool>;
+using ivec = std::vector<int>;
 using ivec2 = std::vector<ivec>;
 
 // one cluster's half-density H (H + H^T: the correlation part of the 1-RDM) in
@@ -29,76 +30,65 @@ using ivec2 = std::vector<ivec>;
 // through proj
 occ::Mat cluster_half_density(const CcSolution &s, const occ::Mat &R,
                               const ivec &central, const bool with_triples) {
-  const int o = s.t1.d[0], v = s.t1.d[1];
-  const Tn Rt = as_tn(R);
-  auto occ1 = [&](const Tn &x) { return einsum("ki,ia->ka", Rt, x); };
-  auto occ2 = [&](const Tn &x) {
-    return einsum("lj,kjab->klab", Rt, einsum("ki,ijab->kjab", Rt, x));
+  const int o = static_cast<int>(s.t1.dimension(0)),
+            v = static_cast<int>(s.t1.dimension(1));
+  const T2 Rt = as_tensor(R);
+  auto occ1 = [&](const T2 &x) { return einsum<2>("ki,ia->ka", Rt, x); };
+  auto occ2 = [&](const T4 &x) {
+    return einsum<4>("lj,kjab->klab", Rt, einsum<4>("ki,ijab->kjab", Rt, x));
   };
-  const Tn t1 = occ1(s.t1), l1 = occ1(s.l1), t2 = occ2(s.t2), l2 = occ2(s.l2);
+  const T2 t1 = occ1(s.t1), l1 = occ1(s.l1);
+  const T4 t2 = occ2(s.t2), l2 = occ2(s.l2);
   bvec is_c(o, false);
   for (int c = 0; c < static_cast<int>(central.size()); c++)
     is_c[central[c]] = true;
   const Gamma1 g = gamma1(t1, t2, l1, l2);
-  Tn l1c = l1, l2c = l2;
-  const size_t ovv = size_t(o) * v * v;
+  // Lambda restricted to the central LMOs as its first occupied index
+  T2 l1c = l1;
+  T4 l2c = l2;
   for (int k = 0; k < o; k++)
     if (!is_c[k]) {
-      std::fill_n(l1c.v.begin() + size_t(k) * v, v, 0.0);
-      std::fill_n(l2c.v.begin() + size_t(k) * ovv, ovv, 0.0);
+      l1c.chip(k, 0).setZero();
+      l2c.chip(k, 0).setZero();
     }
-  const Tn theta = t2 * 2.0 - T(t2, {0, 1, 3, 2});
-  Tn dvv = einsum("ia,ib->ab", t1, l1c) + einsum("jica,jicb->ab", theta, l2c);
-  occ::Mat doo(o, o), dvo(v, o);
-  for (int k = 0; k < o; k++) {
-    for (int j = 0; j < o; j++)
-      doo(k, j) = g.doo.at(k, j);
-    for (int a = 0; a < v; a++)
-      dvo(a, k) = g.dvo.at(a, k);
-  }
+  const T4 theta = t2 * 2.0 - transpose(t2, {0, 1, 3, 2});
+  T2 dvv =
+      einsum<2>("ia,ib->ab", t1, l1c) + einsum<2>("jica,jicb->ab", theta, l2c);
+  occ::Mat doo = as_matrix(g.doo), dvo = as_matrix(g.dvo);
   if (with_triples) {
-    occ::Mat goo(o, o), dvo_t(v, o);
-    for (int i = 0; i < o; i++) {
-      for (int j = 0; j < o; j++)
-        goo(i, j) = s.tr.goo.at(i, j);
-      for (int a = 0; a < v; a++)
-        dvo_t(a, i) = s.tr.dvo.at(a, i);
-    }
-    doo -= 0.5 * R * goo * R.transpose();
-    dvo += dvo_t * R.transpose();
+    doo -= 0.5 * R * as_matrix(s.tr.goo) * R.transpose();
+    dvo += as_matrix(s.tr.dvo) * R.transpose();
     dvv += s.tr.gvv_c * 0.5;
   }
+  const occ::Mat L1 = as_matrix(l1);
   occ::Mat H = occ::Mat::Zero(o + v, o + v);
   for (int c = 0; c < static_cast<int>(central.size()); c++) {
     const int k = central[c];
     H.block(k, 0, 1, o) = doo.row(k);
-    for (int a = 0; a < v; a++)
-      H(k, o + a) = l1.at(k, a) + dvo(a, k);
+    H.block(k, o, 1, v) = L1.row(k) + dvo.col(k).transpose();
   }
-  for (int a = 0; a < v; a++)
-    for (int b = 0; b < v; b++)
-      H(o + a, o + b) = dvv.at(a, b);
+  H.bottomRightCorner(v, v) = as_matrix(dvv);
   return H;
 }
 
 // the cluster's share of E(CCSD corr), sum_jab [2 (Ia|jb) - (Ib|ja)] tau_Ij^ab
 // with LMO I central
-double cluster_energy(const CcSolution &s, const occ::Mat &R, const Tn &ovov,
+double cluster_energy(const CcSolution &s, const occ::Mat &R, const T4 &ovov,
                       const int I) {
-  const int o = s.t1.d[0], v = s.t1.d[1];
-  const Tn Rt = as_tn(R);
-  const Tn t1 = einsum("ki,ia->ka", Rt, s.t1);
-  const Tn t2 = einsum("lj,kjab->klab", Rt, einsum("ki,ijab->kjab", Rt, s.t2));
-  const Tn g = einsum("lj,kajb->kalb", Rt, einsum("ki,iajb->kajb", Rt, ovov));
+  const int o = static_cast<int>(s.t1.dimension(0)),
+            v = static_cast<int>(s.t1.dimension(1));
+  const T2 Rt = as_tensor(R);
+  const T2 t1 = einsum<2>("ki,ia->ka", Rt, s.t1);
+  const T4 t2 =
+      einsum<4>("lj,kjab->klab", Rt, einsum<4>("ki,ijab->kjab", Rt, s.t2));
+  const T4 g =
+      einsum<4>("lj,kajb->kalb", Rt, einsum<4>("ki,iajb->kajb", Rt, ovov));
   double e = 0.0;
-  for (int j = 0; j < o; j++)
+  for (int b = 0; b < v; b++)
     for (int a = 0; a < v; a++)
-      for (int b = 0; b < v; b++) {
-        const double tau = t2.v[((size_t(I) * o + j) * v + a) * v + b] +
-                           t1.at(I, a) * t1.at(j, b);
-        e += (2.0 * g.v[((size_t(I) * v + a) * o + j) * v + b] -
-              g.v[((size_t(I) * v + b) * o + j) * v + a]) *
-             tau;
+      for (int j = 0; j < o; j++) {
+        const double tau = t2(I, j, a, b) + t1(I, a) * t1(j, b);
+        e += (2.0 * g(I, a, j, b) - g(I, b, j, a)) * tau;
       }
   return e;
 }
@@ -362,9 +352,8 @@ CorrelatedDensity local_ccsd_density(const occ::qm::Wavefunction &scf,
     occ::Mat Ccl(nbf, o + v);
     Ccl << Co, Cvs;
     Dhalf += Ccl * H * Ccl.transpose();
-    const Tn ovov = from_tensor(eris.ovov);
     for (int m = 0; m < static_cast<int>(g.size()); m++)
-      e_corr += cluster_energy(s, R, ovov, central[m]);
+      e_corr += cluster_energy(s, R, eris.ovov, central[m]);
     e_t += s.tr.e_t_c; // (T) of the cluster's central LMOs
     sum_o += o;
     sum_v += v;

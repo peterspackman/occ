@@ -22,237 +22,281 @@ namespace occ::qm::cc {
 namespace detail {
 namespace {
 
-// occ's integral blocks in the row-major form the equations use, plus the vvvv
-// ladder
-struct Eris {
-  int o = 0, v = 0;
-  Tn foo, fov, fvv, oooo, ovoo, oovv, ovov, ovvo, ovvv;
-  occ::Vec eo, ev;
-  std::function<Eigen::Tensor<double, 4>(const Eigen::Tensor<double, 4> &)>
-      ladder;
-};
+using vec = std::vector<double>;
+using RowMat =
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+using MapR = Eigen::Map<RowMat>;
+using CMapR = Eigen::Map<const RowMat>;
 
-Eris convert(const occ::qm::cc::CCIntegrals &e) {
-  Eris r;
-  r.o = e.nocc;
-  r.v = e.nvir;
-  r.eo = e.mo_energy.head(e.nocc);
-  r.ev = e.mo_energy.tail(e.nvir);
-  occ::Mat f = e.fock;
-  if (f.rows() != e.nocc + e.nvir)
-    f = e.mo_energy.asDiagonal();
-  r.foo = block(f, 0, 0, r.o, r.o);
-  r.fov = block(f, 0, r.o, r.o, r.v);
-  r.fvv = block(f, r.o, r.o, r.v, r.v);
-  r.oooo = from_tensor(e.oooo);
-  r.ovoo = from_tensor(e.ovoo);
-  r.oovv = from_tensor(e.oovv);
-  r.ovov = from_tensor(e.ovov);
-  r.ovvo = from_tensor(e.ovvo);
-  r.ovvv = from_tensor(e.ovvv);
-  r.ladder = e.ladder;
-  return r;
+// C = alpha op(A) op(B) + beta C on row-major arrays with leading dimensions
+// (cblas_dgemm's row-major form), serial: the (T) kernels' per-triple products,
+// already inside a parallel loop
+void gemm_rm(const bool ta, const bool tb, const int m, const int n,
+             const int k, const double alpha, const double *A, const int lda,
+             const double *B, const int ldb, const double beta, double *C,
+             const int ldc) {
+  using Stride = Eigen::OuterStride<>;
+  Eigen::Map<RowMat, 0, Stride> Cm(C, m, n, Stride(ldc));
+  const Eigen::Map<const RowMat, 0, Stride> Am(A, ta ? k : m, ta ? m : k,
+                                               Stride(lda)),
+      Bm(B, tb ? n : k, tb ? k : n, Stride(ldb));
+  if (beta == 0.0)
+    Cm.setZero();
+  else if (beta != 1.0)
+    Cm *= beta;
+  if (!ta && !tb)
+    Cm.noalias() += alpha * Am * Bm;
+  else if (ta && !tb)
+    Cm.noalias() += alpha * Am.transpose() * Bm;
+  else if (!ta && tb)
+    Cm.noalias() += alpha * Am * Bm.transpose();
+  else
+    Cm.noalias() += alpha * Am.transpose() * Bm.transpose();
 }
 
+// occ's integral blocks under the names the equations use (references, no
+// copies), the Fock blocks and the orbital energies
+struct Eris {
+  explicit Eris(const CCIntegrals &e)
+      : o(e.nocc), v(e.nvir), eo(e.mo_energy.head(e.nocc)),
+        ev(e.mo_energy.tail(e.nvir)), oooo(e.oooo), ovoo(e.ovoo), oovv(e.oovv),
+        ovov(e.ovov), ovvo(e.ovvo), ovvv(e.ovvv), ladder(e.ladder) {
+    const occ::Mat f =
+        e.fock.rows() == o + v ? e.fock : occ::Mat(e.mo_energy.asDiagonal());
+    foo = as_tensor(f.topLeftCorner(o, o));
+    fov = as_tensor(f.topRightCorner(o, v));
+    fvv = as_tensor(f.bottomRightCorner(v, v));
+  }
+  int o, v;
+  occ::Vec eo, ev;
+  T2 foo, fov, fvv;
+  const T4 &oooo, &ovoo, &oovv, &ovov, &ovvo, &ovvv;
+  const std::function<T4(const T4 &)> &ladder;
+};
+
 struct Imds {
-  Tn w1, w2, w3, w4, woooo, wvooo, wVOov, wvOOv, wvvov;
+  T2 w1, w2, w3, w4;
+  T4 woooo, wvooo, wVOov, wvOOv, wvvov;
 };
 
 // PySCF ccsd_lambda.make_intermediates, unblocked
-Imds make_intermediates(const Tn &t1, const Tn &t2, const Eris &e) {
-  const Tn &ovvv = e.ovvv, &ovoo = e.ovoo, &ovvo = e.ovvo, &oovv = e.oovv,
-           &oooo = e.oooo, &fov = e.fov;
-  Tn w1 = e.fvv - einsum("ja,jb->ba", fov, t1);
-  Tn w2 = e.foo + einsum("ib,jb->ij", fov, t1);
-  Tn w3 = einsum("kc,jkbc->bj", fov, t2) * 2.0 + T(fov, {1, 0});
-  w3 -= einsum("kc,kjbc->bj", fov, t2);
-  w3 += einsum("cb,jc->bj", einsum("kc,kb->cb", fov, t1), t1);
-  Tn w4 = fov;
-  const Tn vvov = T(ovvv, {2, 3, 0, 1});
-  w1 += einsum("jcba,jc->ba", ovvv, t1 * 2.0);
-  w1 -= einsum("jabc,jc->ba", ovvv, t1);
-  Tn theta = t2 * 2.0 - T(t2, {1, 0, 2, 3});
-  w3 += einsum("jkcd,kdcb->bj", theta, ovvv);
-  Tn wVOov = einsum("jbcd,kd->bjkc", ovvv, t1);
-  Tn wvOOv = einsum("cbjd,kd->cjkb", vvov, t1 * -1.0);
-  const Tn tau = t2 + einsum("ia,jb->ijab", t1, t1);
-  Tn wvooo = einsum("cibd,jkbd->ckij",
-                    T(vvov, {0, 2, 1, 3}) * 2.0 - T(vvov, {0, 2, 3, 1}), tau);
+Imds make_intermediates(const T2 &t1, const T4 &t2, const Eris &e) {
+  const T4 &ovvv = e.ovvv, &ovoo = e.ovoo, &ovvo = e.ovvo, &oovv = e.oovv,
+           &oooo = e.oooo;
+  const T2 &fov = e.fov;
+  T2 w1 = e.fvv - einsum<2>("ja,jb->ba", fov, t1);
+  T2 w2 = e.foo + einsum<2>("ib,jb->ij", fov, t1);
+  T2 w3 = einsum<2>("kc,jkbc->bj", fov, t2) * 2.0 + transpose(fov, {1, 0});
+  w3 -= einsum<2>("kc,kjbc->bj", fov, t2);
+  w3 += einsum<2>("cb,jc->bj", einsum<2>("kc,kb->cb", fov, t1), t1);
+  T2 w4 = fov;
+  const T4 vvov = transpose(ovvv, {2, 3, 0, 1});
+  w1 += einsum<2>("jcba,jc->ba", ovvv, t1 * 2.0);
+  w1 -= einsum<2>("jabc,jc->ba", ovvv, t1);
+  T4 theta = t2 * 2.0 - transpose(t2, {1, 0, 2, 3});
+  w3 += einsum<2>("jkcd,kdcb->bj", theta, ovvv);
+  T4 wVOov = einsum<4>("jbcd,kd->bjkc", ovvv, t1);
+  T4 wvOOv = einsum<4>("cbjd,kd->cjkb", vvov, t1 * -1.0);
+  const T4 tau = t2 + einsum<4>("ia,jb->ijab", t1, t1);
+  T4 wvooo = einsum<4>(
+      "cibd,jkbd->ckij",
+      transpose(vvov, {0, 2, 1, 3}) * 2.0 - transpose(vvov, {0, 2, 3, 1}), tau);
 
-  Tn wvvov = einsum("jabd,jkcd->abkc", ovvv, t2) * -1.5;
-  wvvov += T(vvov, {0, 3, 2, 1}) * 2.0;
+  T4 wvvov = einsum<4>("jabd,jkcd->abkc", ovvv, t2) * -1.5;
+  wvvov += transpose(vvov, {0, 3, 2, 1}) * 2.0;
   wvvov -= vvov;
   {
-    const Tn vackb =
-        einsum("acjd,kjbd->ackb", vvov * 2.0 - T(ovvv, {1, 2, 0, 3}),
-               t2 * 2.0 - T(t2, {0, 1, 3, 2}));
-    wvvov += T(vackb, {0, 3, 2, 1});
+    const T4 vackb =
+        einsum<4>("acjd,kjbd->ackb", vvov * 2.0 - transpose(ovvv, {1, 2, 0, 3}),
+                  t2 * 2.0 - transpose(t2, {0, 1, 3, 2}));
+    wvvov += transpose(vackb, {0, 3, 2, 1});
     wvvov -= vackb * 0.5;
   }
 
-  w2 += einsum("kbij,kb->ij", ovoo, t1) * 2.0;
-  w2 -= einsum("ibkj,kb->ij", ovoo, t1);
-  theta = T(t2, {1, 0, 2, 3}) * 2.0 - t2;
-  w3 -= einsum("lckj,klcb->bj", ovoo, theta);
+  w2 += einsum<2>("kbij,kb->ij", ovoo, t1) * 2.0;
+  w2 -= einsum<2>("ibkj,kb->ij", ovoo, t1);
+  theta = transpose(t2, {1, 0, 2, 3}) * 2.0 - t2;
+  w3 -= einsum<2>("lckj,klcb->bj", ovoo, theta);
 
-  Tn woooo = einsum("lc,jcik->ijkl", t1, ovoo);
-  woooo += T(woooo, {1, 0, 3, 2});
-  wvOOv += einsum("lbjk,lc->bjkc", ovoo, t1);
-  wVOov -= einsum("jbkl,lc->bjkc", ovoo, t1);
-  wvooo += T(ovoo, {1, 3, 2, 0}) * 2.0;
-  wvooo -= T(ovoo, {1, 0, 2, 3});
-  wvooo -= einsum("klbc,iblj->ckij", t2, ovoo * 1.5);
-  const Tn g2ovoo = ovoo * 2.0 - T(ovoo, {2, 1, 0, 3});
+  T4 woooo = einsum<4>("lc,jcik->ijkl", t1, ovoo);
+  woooo += transpose(woooo, {1, 0, 3, 2});
+  wvOOv += einsum<4>("lbjk,lc->bjkc", ovoo, t1);
+  wVOov -= einsum<4>("jbkl,lc->bjkc", ovoo, t1);
+  wvooo += transpose(ovoo, {1, 3, 2, 0}) * 2.0;
+  wvooo -= transpose(ovoo, {1, 0, 2, 3});
+  wvooo -= einsum<4>("klbc,iblj->ckij", t2, ovoo * 1.5);
+  const T4 g2ovoo = ovoo * 2.0 - transpose(ovoo, {2, 1, 0, 3});
   {
-    const Tn vcjik =
-        einsum("jlcb,lbki->cjki", t2 * 2.0 - T(t2, {1, 0, 2, 3}), g2ovoo);
-    wvooo += T(vcjik, {0, 3, 2, 1});
+    const T4 vcjik = einsum<4>("jlcb,lbki->cjki",
+                               t2 * 2.0 - transpose(t2, {1, 0, 2, 3}), g2ovoo);
+    wvooo += transpose(vcjik, {0, 3, 2, 1});
     wvooo -= vcjik * 0.5;
   }
 
-  const Tn voov = T(ovvo, {1, 0, 3, 2});
-  woooo += einsum("cijd,klcd->ijkl", voov, tau);
-  const Tn g2voov = voov * 2.0 - T(voov, {0, 2, 1, 3});
-  const Tn tmpw4 = einsum("ckld,ld->kc", g2voov, t1);
-  w1 -= einsum("ckja,kjcb->ba", g2voov, t2);
-  w1 -= einsum("ja,jb->ba", tmpw4, t1);
-  w2 += einsum("jkbc,bikc->ij", t2, g2voov);
-  w2 += einsum("ib,jb->ij", tmpw4, t1);
-  w3 += einsum("bc,jc->bj", einsum("kb,kc->bc", t1, tmpw4), t1);
+  const T4 voov = transpose(ovvo, {1, 0, 3, 2});
+  woooo += einsum<4>("cijd,klcd->ijkl", voov, tau);
+  const T4 g2voov = voov * 2.0 - transpose(voov, {0, 2, 1, 3});
+  const T2 tmpw4 = einsum<2>("ckld,ld->kc", g2voov, t1);
+  w1 -= einsum<2>("ckja,kjcb->ba", g2voov, t2);
+  w1 -= einsum<2>("ja,jb->ba", tmpw4, t1);
+  w2 += einsum<2>("jkbc,bikc->ij", t2, g2voov);
+  w2 += einsum<2>("ib,jb->ij", tmpw4, t1);
+  w3 += einsum<2>("bc,jc->bj", einsum<2>("kb,kc->bc", t1, tmpw4), t1);
   w4 += tmpw4;
-  wvOOv += einsum("bljk,lc->bjkc", einsum("bljd,kd->bljk", voov, t1), t1);
-  wVOov -= einsum("bjlk,lc->bjkc", einsum("bjld,kd->bjlk", voov, t1), t1);
-  Tn VOov = einsum("bjld,klcd->bjkc", g2voov, t2);
-  VOov -= einsum("bjld,kldc->bjkc", voov, t2);
+  wvOOv += einsum<4>("bljk,lc->bjkc", einsum<4>("bljd,kd->bljk", voov, t1), t1);
+  wVOov -= einsum<4>("bjlk,lc->bjkc", einsum<4>("bjld,kd->bjlk", voov, t1), t1);
+  T4 VOov = einsum<4>("bjld,klcd->bjkc", g2voov, t2);
+  VOov -= einsum<4>("bjld,kldc->bjkc", voov, t2);
   VOov += voov;
-  Tn vOOv = einsum("bljd,kldc->bjkc", voov, t2);
-  vOOv -= T(oovv, {2, 1, 0, 3});
+  T4 vOOv = einsum<4>("bljd,kldc->bjkc", voov, t2);
+  vOOv -= transpose(oovv, {2, 1, 0, 3});
   wVOov += VOov;
   wvOOv += vOOv;
-  const Tn ov1 = vOOv * 2.0 + VOov, ov2 = VOov * 2.0 + vOOv;
-  wvooo -= einsum("jb,bikc->ckij", t1, ov1);
-  wvooo += einsum("kb,bijc->ckij", t1, ov2);
-  w3 += einsum("ckjb,kc->bj", ov2, t1);
-  wvvov += einsum("ajkc,jb->abkc", ov1, t1);
-  wvvov -= einsum("ajkb,jc->abkc", ov2, t1);
-  wvvov += einsum("laki,klbc->abic", g2ovoo, tau);
-  woooo += T(oooo, {0, 2, 1, 3});
-  w3 += einsum("bc,jc->bj", w1, t1);
-  w3 -= einsum("kj,kb->bj", w2, t1);
+  const T4 ov1 = vOOv * 2.0 + VOov, ov2 = VOov * 2.0 + vOOv;
+  wvooo -= einsum<4>("jb,bikc->ckij", t1, ov1);
+  wvooo += einsum<4>("kb,bijc->ckij", t1, ov2);
+  w3 += einsum<2>("ckjb,kc->bj", ov2, t1);
+  wvvov += einsum<4>("ajkc,jb->abkc", ov1, t1);
+  wvvov -= einsum<4>("ajkb,jc->abkc", ov2, t1);
+  wvvov += einsum<4>("laki,klbc->abic", g2ovoo, tau);
+  woooo += transpose(oooo, {0, 2, 1, 3});
+  w3 += einsum<2>("bc,jc->bj", w1, t1);
+  w3 -= einsum<2>("kj,kb->bj", w2, t1);
   return {w1, w2, w3, w4, woooo, wvooo, wVOov, wvOOv, wvvov};
 }
 
 // PySCF ccsd_lambda.update_lambda, unblocked: the next (l1, l2) from the
 // current ones
-void update_lambda(const Tn &t1, const Tn &t2, const Tn &l1, const Tn &l2,
-                   const Eris &e, const Imds &m, Tn &l1new, Tn &l2new) {
+void update_lambda(const T2 &t1, const T4 &t2, const T2 &l1, const T4 &l2,
+                   const Eris &e, const Imds &m, T2 &l1new, T4 &l2new) {
   const int o = e.o, v = e.v;
-  const Tn theta = t2 * 2.0 - T(t2, {0, 1, 3, 2});
-  const Tn mba = einsum("klca,klcb->ba", l2, theta);
-  const Tn mij = einsum("ikcd,jkcd->ij", l2, theta);
-  const Tn mba1 = einsum("jc,jb->bc", l1, t1) + mba;
-  const Tn mij1 = einsum("kb,jb->kj", l1, t1) + mij;
-  Tn mia1 = t1 + einsum("kc,jkbc->jb", l1, t2) * 2.0;
-  mia1 -= einsum("kc,jkcb->jb", l1, t2);
-  mia1 -= einsum("jk,kb->jb", einsum("ja,ka->jk", t1, l1), t1);
-  mia1 -= einsum("bd,jd->jb", mba, t1);
-  mia1 -= einsum("lj,lb->jb", mij, t1);
-  l2new = from_tensor(e.ladder(to_tensor(l2))); // sum_cd (ac|bd) l2(i,j,c,d)
-  l1new = einsum("ijab,jb->ia", l2new, t1) * 2.0;
-  l1new -= einsum("jiab,jb->ia", l2new, t1);
-  l2new *= 0.5; // the (ia)<->(jb) symmetrisation at the end doubles it back
+  const T4 theta = t2 * 2.0 - transpose(t2, {0, 1, 3, 2});
+  const T2 mba = einsum<2>("klca,klcb->ba", l2, theta);
+  const T2 mij = einsum<2>("ikcd,jkcd->ij", l2, theta);
+  const T2 mba1 = einsum<2>("jc,jb->bc", l1, t1) + mba;
+  const T2 mij1 = einsum<2>("kb,jb->kj", l1, t1) + mij;
+  T2 mia1 = t1 + einsum<2>("kc,jkbc->jb", l1, t2) * 2.0;
+  mia1 -= einsum<2>("kc,jkcb->jb", l1, t2);
+  mia1 -= einsum<2>("jk,kb->jb", einsum<2>("ja,ka->jk", t1, l1), t1);
+  mia1 -= einsum<2>("bd,jd->jb", mba, t1);
+  mia1 -= einsum<2>("lj,lb->jb", mij, t1);
+  l2new = e.ladder(l2); // sum_cd (ac|bd) l2(i,j,c,d)
+  l1new = einsum<2>("ijab,jb->ia", l2new, t1) * 2.0;
+  l1new -= einsum<2>("jiab,jb->ia", l2new, t1);
+  l2new = l2new * 0.5; // the (ia)<->(jb) symmetrisation doubles it back
 
-  Tn w1 = m.w1, w2 = m.w2;
+  T2 w1 = m.w1, w2 = m.w2;
   for (int a = 0; a < v; a++)
-    w1.at(a, a) -= e.ev(a);
+    w1(a, a) -= e.ev(a);
   for (int i = 0; i < o; i++)
-    w2.at(i, i) -= e.eo(i);
+    w2(i, i) -= e.eo(i);
   l1new += e.fov;
-  l1new += einsum("ib,ba->ia", l1, w1);
-  l1new -= einsum("ja,ij->ia", l1, w2);
-  l1new -= einsum("ik,ka->ia", mij, m.w4);
-  l1new -= einsum("ca,ic->ia", mba, m.w4);
-  l1new += einsum("ijab,bj->ia", l2, m.w3) * 2.0;
-  l1new -= einsum("ijba,bj->ia", l2, m.w3);
-  l2new += einsum("ia,jb->ijab", l1, m.w4);
-  l2new += einsum("jibc,ca->jiba", l2, w1);
-  l2new -= einsum("jk,kiba->jiba", w2, l2);
-  l1new -= einsum("iajk,kj->ia", e.ovoo, mij1) * 2.0;
-  l1new += einsum("jaik,kj->ia", e.ovoo, mij1);
-  l2new -= einsum("jbki,ka->jiba", e.ovoo, l1);
-  const Tn tau = t2 + einsum("ia,jb->ijab", t1, t1);
-  const Tn l2tau = einsum("ijcd,klcd->ijkl", l2, tau);
-  const Tn l2t1 = einsum("jidc,kc->ijkd", l2, t1);
-  l1new -= einsum("jb,jiab->ia", l1, e.oovv);
-  l1new += einsum("iabc,bc->ia", e.ovvv, mba1) * 2.0;
-  l1new -= einsum("ibca,bc->ia", e.ovvv, mba1);
-  l2new += einsum("jbac,ic->jiba", e.ovvv, l1);
+  l1new += einsum<2>("ib,ba->ia", l1, w1);
+  l1new -= einsum<2>("ja,ij->ia", l1, w2);
+  l1new -= einsum<2>("ik,ka->ia", mij, m.w4);
+  l1new -= einsum<2>("ca,ic->ia", mba, m.w4);
+  l1new += einsum<2>("ijab,bj->ia", l2, m.w3) * 2.0;
+  l1new -= einsum<2>("ijba,bj->ia", l2, m.w3);
+  l2new += einsum<4>("ia,jb->ijab", l1, m.w4);
+  l2new += einsum<4>("jibc,ca->jiba", l2, w1);
+  l2new -= einsum<4>("jk,kiba->jiba", w2, l2);
+  l1new -= einsum<2>("iajk,kj->ia", e.ovoo, mij1) * 2.0;
+  l1new += einsum<2>("jaik,kj->ia", e.ovoo, mij1);
+  l2new -= einsum<4>("jbki,ka->jiba", e.ovoo, l1);
+  const T4 tau = t2 + einsum<4>("ia,jb->ijab", t1, t1);
+  const T4 l2tau = einsum<4>("ijcd,klcd->ijkl", l2, tau);
+  const T4 l2t1 = einsum<4>("jidc,kc->ijkd", l2, t1);
+  l1new -= einsum<2>("jb,jiab->ia", l1, e.oovv);
+  l1new += einsum<2>("iabc,bc->ia", e.ovvv, mba1) * 2.0;
+  l1new -= einsum<2>("ibca,bc->ia", e.ovvv, mba1);
+  l2new += einsum<4>("jbac,ic->jiba", e.ovvv, l1);
   {
-    const Tn m4 = einsum("ijkd,kadb->ijab", l2t1, e.ovvv);
+    const T4 m4 = einsum<4>("ijkd,kadb->ijab", l2t1, e.ovvv);
     l2new -= m4;
-    l1new -= einsum("ijab,jb->ia", m4, t1) * 2.0;
-    l1new -= einsum("ijab,ia->jb", m4, t1) * 2.0;
-    l1new += einsum("jiab,jb->ia", m4, t1);
-    l1new += einsum("jiab,ia->jb", m4, t1);
+    l1new -= einsum<2>("ijab,jb->ia", m4, t1) * 2.0;
+    l1new -= einsum<2>("ijab,ia->jb", m4, t1) * 2.0;
+    l1new += einsum<2>("jiab,jb->ia", m4, t1);
+    l1new += einsum<2>("jiab,ia->jb", m4, t1);
   }
 
-  const Tn voov = T(e.ovvo, {1, 0, 3, 2});
-  l1new += einsum("jb,aijb->ia", l1, voov) * 2.0;
-  l2new += T(voov, {1, 2, 0, 3}) * 0.5;
-  l2new -= einsum("bjic,ca->jiba", voov, mba1);
-  l2new -= einsum("bjka,ik->jiba", voov, mij1);
-  l1new += einsum("aijb,jb->ia", voov, mia1) * 2.0;
-  l1new -= einsum("bija,jb->ia", voov, mia1);
+  const T4 voov = transpose(e.ovvo, {1, 0, 3, 2});
+  l1new += einsum<2>("jb,aijb->ia", l1, voov) * 2.0;
+  l2new += transpose(voov, {1, 2, 0, 3}) * 0.5;
+  l2new -= einsum<4>("bjic,ca->jiba", voov, mba1);
+  l2new -= einsum<4>("bjka,ik->jiba", voov, mij1);
+  l1new += einsum<2>("aijb,jb->ia", voov, mia1) * 2.0;
+  l1new -= einsum<2>("bija,jb->ia", voov, mia1);
   {
-    const Tn m4 = einsum("ijkl,aklb->ijab", l2tau, voov);
+    const T4 m4 = einsum<4>("ijkl,aklb->ijab", l2tau, voov);
     l2new += m4 * 0.5;
-    l1new += einsum("ijab,jb->ia", m4, t1) * 2.0;
-    l1new -= einsum("ijba,jb->ia", m4, t1);
+    l1new += einsum<2>("ijab,jb->ia", m4, t1) * 2.0;
+    l1new -= einsum<2>("ijba,jb->ia", m4, t1);
   }
 
-  l1new -= einsum("ckij,jkca->ia", m.wvooo, l2);
-  l1new += einsum("abkc,kibc->ia", m.wvvov, l2);
+  l1new -= einsum<2>("ckij,jkca->ia", m.wvooo, l2);
+  l1new += einsum<2>("abkc,kibc->ia", m.wvvov, l2);
   l2new +=
-      einsum("iakc,bjkc->jiba", T(l2, {0, 2, 1, 3}) - T(l2, {0, 3, 1, 2}) * 0.5,
-             m.wVOov * 2.0 + m.wvOOv);
+      einsum<4>("iakc,bjkc->jiba",
+                transpose(l2, {0, 2, 1, 3}) - transpose(l2, {0, 3, 1, 2}) * 0.5,
+                m.wVOov * 2.0 + m.wvOOv);
   {
-    const Tn tmp = einsum("jkca,bikc->jiba", l2, m.wvOOv);
+    const T4 tmp = einsum<4>("jkca,bikc->jiba", l2, m.wvOOv);
     l2new += tmp;
-    l2new += T(tmp, {1, 0, 2, 3}) * 0.5;
+    l2new += transpose(tmp, {1, 0, 2, 3}) * 0.5;
   }
   {
-    const Tn m3 = einsum("ijkl,klab->ijab", m.woooo, l2);
+    const T4 m3 = einsum<4>("ijkl,klab->ijab", m.woooo, l2);
     l2new += m3 * 0.5;
-    l1new += einsum("ijab,jb->ia", m3, t1) * 2.0;
-    l1new -= einsum("ijba,jb->ia", m3, t1);
+    l1new += einsum<2>("ijab,jb->ia", m3, t1) * 2.0;
+    l1new -= einsum<2>("ijba,jb->ia", m3, t1);
   }
 
-  for (int i = 0; i < o; i++)
+  for (int a = 0; a < v; a++)
+    for (int i = 0; i < o; i++)
+      l1new(i, a) /= e.eo(i) - e.ev(a);
+  l2new += transpose(l2new, {1, 0, 3, 2});
+  for (int b = 0; b < v; b++)
     for (int a = 0; a < v; a++)
-      l1new.at(i, a) /= e.eo(i) - e.ev(a);
-  l2new += T(l2new, {1, 0, 3, 2});
-  size_t w = 0;
-  for (int i = 0; i < o; i++)
-    for (int j = 0; j < o; j++)
-      for (int a = 0; a < v; a++)
-        for (int b = 0; b < v; b++)
-          l2new.v[w++] /= e.eo(i) - e.ev(a) + e.eo(j) - e.ev(b);
+      for (int j = 0; j < o; j++)
+        for (int i = 0; i < o; i++)
+          l2new(i, j, a, b) /= e.eo(i) - e.ev(a) + e.eo(j) - e.ev(b);
+}
+
+// The (T) kernels index v^3 blocks by raw offsets, PySCF-style, in row-major
+// order: row_major(x, perm) is a tensor whose memory is the row-major layout of
+// transpose(x, perm) (a row-major [i0]..[in] array is the column-major one
+// with its axes reversed), and the outputs are accumulated the same way and
+// turned back at the end.
+template <int R>
+Eigen::Tensor<double, R> row_major(const Eigen::Tensor<double, R> &x,
+                                   std::array<int, R> perm) {
+  std::reverse(perm.begin(), perm.end());
+  return transpose(x, perm);
+}
+
+template <int R>
+Eigen::Tensor<double, R> zeros(Eigen::array<Eigen::Index, R> d) {
+  Eigen::Tensor<double, R> t(d);
+  t.setZero();
+  return t;
 }
 
 // t2_vo: the doubles r6(W) is contracted with for the vo block (t2 if null)
-Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
-                const occ::Mat *proj = nullptr, const Tn *t2_vo = nullptr) {
+Triples triples(const T2 &t1_in, const T4 &t2, const Eris &e,
+                const occ::Mat *proj = nullptr, const T4 *t2_vo = nullptr) {
   const int o = e.o, v = e.v;
-  const Tn &tvo = t2_vo ? *t2_vo : t2;
   const size_t vv = size_t(v) * v, v3 = vv * v;
-  const Tn L1 = T(e.ovvv, {0, 1, 3, 2}); //[i][a][b][f] = (ia|fb)
-  const Tn L2 = T(e.ovvv, {0, 3, 1, 2}); //[k][e][f][b] = (kf|be)
-  const Tn t2T = T(t2, {0, 1, 3, 2});    //[k][j][f][c] = t2(kj,cf)
-  const Tn t2_t = T(t2, {1, 0, 2, 3});   //[k][m][b][c] = t2(mk,bc)
-  const Tn ovoo_t = T(e.ovoo, {0, 2, 1, 3}),
-           ovov_t = T(e.ovov, {0, 2, 1, 3}); //[i][j][a][m], [i][j][a][b]
-  auto at = [](const Tn &a, const size_t block, const size_t size) {
-    return a.v.data() + block * size;
+  const T4 L1 = row_major(e.ovvv, {0, 1, 3, 2}); //[i][a][b][f] = (ia|fb)
+  const T4 L2 = row_major(e.ovvv, {0, 3, 1, 2}); //[k][e][f][b] = (kf|be)
+  const T4 t2T = row_major(t2, {0, 1, 3, 2});    //[k][j][f][c] = t2(kj,cf)
+  const T4 t2_t = row_major(t2, {1, 0, 2, 3});   //[k][m][b][c] = t2(mk,bc)
+  const T4 ovoo_t = row_major(e.ovoo, {0, 2, 1, 3}),
+           ovov_t =
+               row_major(e.ovov, {0, 2, 1, 3}); //[i][j][a][m], [i][j][a][b]
+  const T4 tvo = row_major(t2_vo ? *t2_vo : t2, {0, 1, 2, 3});
+  const T2 t1 = row_major(t1_in, {0, 1});
+  auto at = [](const auto &a, const size_t block, const size_t size) {
+    return a.data() + block * size;
   };
   auto ix = [v](const int a, const int b, const int c) {
     return (size_t(a) * v + b) * v + c;
@@ -276,14 +320,12 @@ Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
   };
 
   Triples r;
-  r.l1_t = Tn({o, v});
-  r.goo = Tn({o, o});
-  r.gvv = Tn({v, v});
-  r.dvo = Tn({v, o});
-  if (proj)
-    r.gvv_c = Tn({v, v});
-  Tn joovv({o, o, v, v});
-  std::vector<Tn> gvv_i(o, Tn({v, v})), dvo_i(o, Tn({v, o}));
+  // row-major accumulators (see row_major): l1 (o, v), goo (o, o), gvv and its
+  // projected share (v, v), joovv (o, o, v, v); dvo is indexed logically
+  T2 l1_rm = zeros<2>({v, o}), goo_rm = zeros<2>({o, o}),
+     gvv_c_rm = zeros<2>({v, v});
+  T4 joovv_rm = zeros<4>({v, v, o, o});
+  std::vector<T2> gvv_i(o, zeros<2>({v, v})), dvo_i(o, zeros<2>({v, o}));
   vec e_i(o, 0.0);
   // W + V/2 and r6(W) of every i of the current (j, k): the oo block pairs
   // W[ijk] with W[i'jk]
@@ -330,30 +372,30 @@ Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
     e_i[i] += weight * et / 3.0;
     // l1_t[i] and joovv[i] are this i's alone; the vv, vo parts are per i and
     // summed after the loop
-    MapR(r.l1_t.v.data() + size_t(i) * v, 1, v).noalias() +=
+    MapR(l1_rm.data() + size_t(i) * v, 1, v).noalias() +=
         weight *
         (CMapR(rw, v, vv) * CMapR(at(ovov_t, size_t(j) * o + k, vv), vv, 1))
             .transpose();
     gemm(false, true, iv, iv, ivv, weight, wv, ivv, rw, ivv, 1.0,
-         gvv_i[i].v.data(), iv);
+         gvv_i[i].data(), iv);
     // joovv[i, j] += m L2[k]; joovv[i, J, ab] -= sum_c (kc|jJ) m[ab, c]; the
     // mirror with j <-> k and m'
     gemm(false, false, iv, iv, ivv, 1.0, m, ivv, at(L2, k, v3), iv, 1.0,
-         joovv.v.data() + (size_t(i) * o + j) * vv, iv);
+         joovv_rm.data() + (size_t(i) * o + j) * vv, iv);
     gemm(true, true, o, ivv, iv, -1.0,
          at(ovoo_t, size_t(k) * o + j, size_t(v) * o), o, m, iv, 1.0,
-         joovv.v.data() + size_t(i) * o * vv, ivv);
+         joovv_rm.data() + size_t(i) * o * vv, ivv);
     const Eigen::VectorXd dv = CMapR(rw, vv, v).transpose() *
                                CMapR(at(tvo, size_t(i) * o + j, vv), vv, 1);
     for (int c = 0; c < v; c++)
-      dvo_i[i].at(c, k) += 0.5 * dv(c);
+      dvo_i[i](c, k) += 0.5 * dv(c);
     if (!mirror)
       return;
     gemm(false, false, iv, iv, ivv, 1.0, mm, ivv, at(L2, j, v3), iv, 1.0,
-         joovv.v.data() + (size_t(i) * o + k) * vv, iv);
+         joovv_rm.data() + (size_t(i) * o + k) * vv, iv);
     gemm(true, true, o, ivv, iv, -1.0,
          at(ovoo_t, size_t(j) * o + k, size_t(v) * o), o, mm, iv, 1.0,
-         joovv.v.data() + size_t(i) * o * vv, ivv);
+         joovv_rm.data() + size_t(i) * o * vv, ivv);
     // the mirror's dv(c) = sum_ab r6(W)[acb] t2(ik, ab)
     Eigen::VectorXd dvm = Eigen::VectorXd::Zero(v);
     for (int a = 0; a < v; a++)
@@ -361,7 +403,7 @@ Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
           CMapR(rw + size_t(a) * vv, v, v) *
           CMapR(at(tvo, size_t(i) * o + k, vv) + size_t(a) * v, v, 1);
     for (int c = 0; c < v; c++)
-      dvo_i[i].at(c, j) += 0.5 * dvm(c);
+      dvo_i[i](c, j) += 0.5 * dvm(c);
   };
 
   for (int j = 0; j < o; j++)
@@ -421,7 +463,7 @@ Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
           const Eigen::VectorXd wp = WV.transpose() * proj->col(c),
                                 rp = RW.transpose() * proj->col(c);
           gemm(false, true, iv, iv, ivv, weight, wp.data(), ivv, rp.data(), ivv,
-               1.0, r.gvv_c.v.data(), iv);
+               1.0, gvv_c_rm.data(), iv);
           // sum_i p_i D_i r6(W)_i with D_i = e_i + base
           const Eigen::VectorXd zp =
               base.cwiseProduct(rp) +
@@ -447,58 +489,63 @@ Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
             part[b].noalias() =
                 WV.middleCols(c0, nc) * RW.middleCols(c0, nc).transpose();
         });
-        MapR goo(r.goo.v.data(), o, o);
+        MapR goo(goo_rm.data(), o, o);
         for (size_t b = 0; b < nb; b++)
           goo += (j == k ? 1.0 : 2.0) * part[b];
       }
     }
+  T2 gvv_rm = zeros<2>({v, v});
+  r.dvo = zeros<2>({v, o});
   for (int i = 0; i < o; i++) {
-    r.gvv += gvv_i[i];
+    gvv_rm += gvv_i[i];
     r.dvo += dvo_i[i];
     r.e_t += e_i[i];
-    for (int a = 0; a < v; a++)
-      r.l1_t.at(i, a) *= 0.5 / (e.eo(i) - e.ev(a));
   }
-  joovv += T(joovv, {1, 0, 3, 2});
-  r.l2_t = joovv;
-  size_t n = 0;
-  for (int i = 0; i < o; i++)
-    for (int j = 0; j < o; j++)
-      for (int a = 0; a < v; a++)
-        for (int b = 0; b < v; b++)
-          r.l2_t.v[n++] /= e.eo(i) - e.ev(a) + e.eo(j) - e.ev(b);
+  r.gvv = transpose(gvv_rm, {1, 0});
+  r.goo = transpose(goo_rm, {1, 0});
+  if (proj)
+    r.gvv_c = transpose(gvv_c_rm, {1, 0});
+  r.l1_t = transpose(l1_rm, {1, 0});
+  for (int a = 0; a < v; a++)
+    for (int i = 0; i < o; i++)
+      r.l1_t(i, a) *= 0.5 / (e.eo(i) - e.ev(a));
+  const T4 joovv = transpose(joovv_rm, {3, 2, 1, 0});
+  r.l2_t = joovv + transpose(joovv, {1, 0, 3, 2});
+  for (int b = 0; b < v; b++)
+    for (int a = 0; a < v; a++)
+      for (int j = 0; j < o; j++)
+        for (int i = 0; i < o; i++)
+          r.l2_t(i, j, a, b) /= e.eo(i) - e.ev(a) + e.eo(j) - e.ev(b);
   return r;
 }
 
 // PySCF ccsd_rdm._make_rdm1: the spin-traced density in the correlated MOs,
 // reference occupation included; symmetric, so no question of <p+q> against
 // <q+p>
-occ::Mat rdm1(const Gamma1 &g, const Tn &l1) {
-  const int o = l1.d[0], v = l1.d[1];
+occ::Mat rdm1(const Gamma1 &g, const T2 &l1) {
+  const int o = static_cast<int>(l1.dimension(0)),
+            v = static_cast<int>(l1.dimension(1));
+  const occ::Mat doo = as_matrix(g.doo), dvv = as_matrix(g.dvv);
   occ::Mat dm = occ::Mat::Zero(o + v, o + v);
-  for (int i = 0; i < o; i++) {
-    for (int j = 0; j < o; j++)
-      dm(i, j) = g.doo.at(i, j) + g.doo.at(j, i);
-    dm(i, i) += 2.0;
-    for (int a = 0; a < v; a++)
-      dm(i, o + a) = dm(o + a, i) = l1.at(i, a) + g.dvo.at(a, i);
-  }
-  for (int a = 0; a < v; a++)
-    for (int b = 0; b < v; b++)
-      dm(o + a, o + b) = g.dvv.at(a, b) + g.dvv.at(b, a);
+  dm.topLeftCorner(o, o) = doo + doo.transpose();
+  dm.topLeftCorner(o, o).diagonal().array() += 2.0;
+  dm.topRightCorner(o, v) = as_matrix(l1) + as_matrix(g.dvo).transpose();
+  dm.bottomLeftCorner(v, o) = dm.topRightCorner(o, v).transpose();
+  dm.bottomRightCorner(v, v) = dvv + dvv.transpose();
   return dm;
 }
 
-occ::Mat flatten(const Tn &l1, const Tn &l2) {
-  occ::Mat x(l1.v.size() + l2.v.size(), 1);
-  std::copy(l1.v.begin(), l1.v.end(), x.data());
-  std::copy(l2.v.begin(), l2.v.end(), x.data() + l1.v.size());
+// (l1, l2) as one vector for DIIS, and back
+occ::Mat flatten(const T2 &l1, const T4 &l2) {
+  occ::Mat x(l1.size() + l2.size(), 1);
+  std::copy_n(l1.data(), l1.size(), x.data());
+  std::copy_n(l2.data(), l2.size(), x.data() + l1.size());
   return x;
 }
 
-void unflatten(const occ::Mat &x, Tn &l1, Tn &l2) {
-  std::copy(x.data(), x.data() + l1.v.size(), l1.v.begin());
-  std::copy(x.data() + l1.v.size(), x.data() + x.size(), l2.v.begin());
+void unflatten(const occ::Mat &x, T2 &l1, T4 &l2) {
+  std::copy_n(x.data(), l1.size(), l1.data());
+  std::copy_n(x.data() + l1.size(), l2.size(), l2.data());
 }
 
 // W + V/2 and r6(W) for every i of one (j, k), two re-laid-out ovvv, eight v^3
@@ -516,17 +563,18 @@ void check_triples_memory(const Eris &e, const double max_gb) {
 
 } // namespace
 
-Gamma1 gamma1(const Tn &t1, const Tn &t2, const Tn &l1, const Tn &l2) {
+Gamma1 gamma1(const T2 &t1, const T4 &t2, const T2 &l1, const T4 &l2) {
   Gamma1 g;
-  g.doo = einsum("ja,ia->ij", t1, l1) * -1.0;
-  g.dvv = einsum("ia,ib->ab", t1, l1);
-  g.dvo = T(t1, {1, 0}) - einsum("im,ma->ai", einsum("ie,me->im", t1, l1), t1);
-  const Tn theta = t2 * 2.0 - T(t2, {0, 1, 3, 2});
-  g.doo -= einsum("jkab,ikab->ij", theta, l2);
-  g.dvv += einsum("jica,jicb->ab", theta, l2);
-  g.dvo += einsum("imae,me->ai", theta, l1);
-  g.dvo -= einsum("mi,ma->ai", einsum("mnef,inef->mi", l2, theta), t1);
-  g.dvo -= einsum("ie,ae->ai", t1, einsum("mnaf,mnef->ea", l2, theta));
+  g.doo = einsum<2>("ja,ia->ij", t1, l1) * -1.0;
+  g.dvv = einsum<2>("ia,ib->ab", t1, l1);
+  g.dvo = transpose(t1, {1, 0}) -
+          einsum<2>("im,ma->ai", einsum<2>("ie,me->im", t1, l1), t1);
+  const T4 theta = t2 * 2.0 - transpose(t2, {0, 1, 3, 2});
+  g.doo -= einsum<2>("jkab,ikab->ij", theta, l2);
+  g.dvv += einsum<2>("jica,jicb->ab", theta, l2);
+  g.dvo += einsum<2>("imae,me->ai", theta, l1);
+  g.dvo -= einsum<2>("mi,ma->ai", einsum<2>("mnef,inef->mi", l2, theta), t1);
+  g.dvo -= einsum<2>("ie,ae->ai", t1, einsum<2>("mnaf,mnef->ea", l2, theta));
   return g;
 }
 
@@ -544,10 +592,11 @@ CcSolution solve_cc(const occ::qm::cc::CCIntegrals &cc_eris,
   s.e_corr = cc.e_corr;
   s.cc_iterations = cc.iterations;
   mark("CCSD amplitudes");
-  const Eris e = convert(cc_eris);
-  s.t1 = from_tensor(cc.t1);
-  s.t2 = from_tensor(cc.t2);
-  const Tn &t1 = s.t1, &t2 = s.t2;
+  const Eris e(cc_eris);
+  s.t1 = cc.t1;
+  s.t2 = cc.t2;
+  const T2 &t1 = s.t1;
+  const T4 &t2 = s.t2;
   const Imds m = make_intermediates(t1, t2, e);
   mark("Lambda intermediates");
   if (opts.triples) {
@@ -557,8 +606,8 @@ CcSolution solve_cc(const occ::qm::cc::CCIntegrals &cc_eris,
   }
   s.l1 = t1;
   s.l2 = t2;
-  Tn &l1 = s.l1, &l2 = s.l2;
-  Tn l1new, l2new;
+  T2 &l1 = s.l1, l1new;
+  T4 &l2 = s.l2, l2new;
   occ::core::diis::DIIS diis(2, 8);
   bool converged = false;
   for (int it = 1; it <= opts.max_cycle && !converged; it++) {
@@ -569,16 +618,16 @@ CcSolution solve_cc(const occ::qm::cc::CCIntegrals &cc_eris,
     }
     occ::Mat x = flatten(l1new, l2new);
     occ::Mat dl = x - flatten(l1, l2);
-    // max |R|, R = D (l_new - l_old)
+    // max |R|, R = D (l_new - l_old), in flatten's (column-major) order
     double rmax = 0.0;
-    size_t n = 0;
-    for (int i = 0; i < e.o; i++)
-      for (int a = 0; a < e.v; a++)
+    Eigen::Index n = 0;
+    for (int a = 0; a < e.v; a++)
+      for (int i = 0; i < e.o; i++)
         rmax = std::max(rmax, std::abs(dl(n++) * (e.eo(i) - e.ev(a))));
-    for (int i = 0; i < e.o; i++)
-      for (int j = 0; j < e.o; j++)
-        for (int a = 0; a < e.v; a++)
-          for (int b = 0; b < e.v; b++)
+    for (int b = 0; b < e.v; b++)
+      for (int a = 0; a < e.v; a++)
+        for (int j = 0; j < e.o; j++)
+          for (int i = 0; i < e.o; i++)
             rmax = std::max(rmax, std::abs(dl(n++) * (e.eo(i) + e.eo(j) -
                                                       e.ev(a) - e.ev(b))));
     diis.extrapolate(x, dl);
@@ -675,12 +724,13 @@ CorrelatedDensity ccsd_density(const occ::qm::Wavefunction &scf,
   result.e_corr = s.e_corr;
   result.e_triples = s.tr.e_t;
   result.lambda_iterations = s.lambda_iterations;
-  const Tn &t1 = s.t1, &t2 = s.t2, &l1 = s.l1, &l2 = s.l2;
+  const T2 &t1 = s.t1, &l1 = s.l1;
+  const T4 &t2 = s.t2, &l2 = s.l2;
   const Triples &tr = s.tr;
-  result.t1_norm = t1.norm();
-  result.t2_norm = t2.norm();
-  result.l1_norm = l1.norm();
-  result.l2_norm = l2.norm();
+  result.t1_norm = norm(t1);
+  result.t2_norm = norm(t2);
+  result.l1_norm = norm(l1);
+  result.l2_norm = norm(l2);
 
   // frozen orbitals stay doubly occupied and uncoupled
   const int nf = result.n_frozen;
@@ -728,71 +778,69 @@ CorrelatedDensity mp2_relaxed_density(const occ::qm::Wavefunction &scf,
   const int nf = result.n_frozen;
   std::string backend, aux_name;
   // every occupied orbital: the orbital response couples the frozen core
-  const Eris e =
-      convert(build_eris(scf.basis, scf.mo, 0, opts, backend, aux_name, false));
+  const CCIntegrals cc_eris =
+      build_eris(scf.basis, scf.mo, 0, opts, backend, aux_name, false);
+  const Eris e(cc_eris);
   mark("MO integrals");
   const int v = e.v;
   // t_ij^ab = (ia|jb) / D_ij^ab on correlated pairs, tt = 2 t - t(ba); E2 = sum
   // tt (ia|jb)
-  const Tn g = T(e.ovov, {0, 2, 1, 3});
-  Tn t2 = g;
-  size_t w = 0;
-  for (int i = 0; i < o; i++)
-    for (int j = 0; j < o; j++)
-      for (int a = 0; a < v; a++)
-        for (int b = 0; b < v; b++, w++)
-          t2.v[w] = i < nf || j < nf
-                        ? 0.0
-                        : g.v[w] / (e.eo(i) + e.eo(j) - e.ev(a) - e.ev(b));
-  const Tn tt = t2 * 2.0 - T(t2, {0, 1, 3, 2});
+  const T4 g = transpose(e.ovov, {0, 2, 1, 3});
+  T4 t2 = g;
+  for (int b = 0; b < v; b++)
+    for (int a = 0; a < v; a++)
+      for (int j = 0; j < o; j++)
+        for (int i = 0; i < o; i++)
+          t2(i, j, a, b) =
+              i < nf || j < nf
+                  ? 0.0
+                  : g(i, j, a, b) / (e.eo(i) + e.eo(j) - e.ev(a) - e.ev(b));
+  const T4 tt = t2 * 2.0 - transpose(t2, {0, 1, 3, 2});
   result.e_corr = dot(tt, g);
   // PySCF grad/mp2.py: P_ij = -2 t_ki^ab tt_kj^ab, P_ab = 2 t_ij^ca tt_ij^cb;
   // Lagrangian I_kc = -2 (ik|jb) tt_ij^cb, I_dk = -2 (ad|jb) tt_kj^ab, I_mk =
   // -2 (ma|jb) tt_kj^ab; frozen-core block P_fk = I_fk / (e_f - e_k)
-  const Tn p_vv = einsum("ijca,ijcb->ab", t2, tt) * 2.0;
-  Tn p_oo = einsum("kiab,kjab->ij", t2, tt) * -2.0;
-  const Tn i_oc = einsum("jbik,ijcb->kc", e.ovoo, tt) * -2.0;
-  const Tn i_vo = einsum("jbad,kjab->dk", e.ovvv, tt) * -2.0;
-  const Tn i_oo = einsum("majb,kjab->mk", e.ovov, tt) * -2.0;
+  const T2 p_vv = einsum<2>("ijca,ijcb->ab", t2, tt) * 2.0;
+  T2 p_oo = einsum<2>("kiab,kjab->ij", t2, tt) * -2.0;
+  const T2 i_oc = einsum<2>("jbik,ijcb->kc", e.ovoo, tt) * -2.0;
+  const T2 i_vo = einsum<2>("jbad,kjab->dk", e.ovvv, tt) * -2.0;
+  const T2 i_oo = einsum<2>("majb,kjab->mk", e.ovov, tt) * -2.0;
   for (int f = 0; f < nf; f++)
     for (int k = nf; k < o; k++)
-      p_oo.at(f, k) = p_oo.at(k, f) = i_oo.at(f, k) / (e.eo(f) - e.eo(k));
+      p_oo(f, k) = p_oo(k, f) = i_oo(f, k) / (e.eo(f) - e.eo(k));
   // X_am = sum_pq P_pq [2 (am|pq) - (ap|qm)] + I_ma - I_am
-  Tn x = einsum("majk,jk->am", e.ovoo, p_oo) * 2.0 -
-         einsum("jakm,jk->am", e.ovoo, p_oo);
-  x += einsum("mabc,bc->am", e.ovvv, p_vv) * 2.0 -
-       einsum("mcab,bc->am", e.ovvv, p_vv);
-  x += T(i_oc, {1, 0}) - i_vo;
+  T2 x = einsum<2>("majk,jk->am", e.ovoo, p_oo) * 2.0 -
+         einsum<2>("jakm,jk->am", e.ovoo, p_oo);
+  x += einsum<2>("mabc,bc->am", e.ovvv, p_vv) * 2.0 -
+       einsum<2>("mcab,bc->am", e.ovvv, p_vv);
+  x += transpose(i_oc, {1, 0}) - i_vo;
   // Z-vector: (e_a - e_m) z_am + sum_bn [4 (am|bn) - (ab|mn) - (an|bm)] z_bn =
   // -X_am, conjugate gradients preconditioned by e_a - e_m (the RHF orbital
   // Hessian is positive definite)
-  auto hessian = [&](const Tn &z) {
-    Tn r = einsum("manb,bn->am", e.ovov, z) * 4.0 -
-           einsum("mnab,bn->am", e.oovv, z) - einsum("namb,bn->am", e.ovov, z);
+  auto hessian = [&](const T2 &z) {
+    T2 r = einsum<2>("manb,bn->am", e.ovov, z) * 4.0 -
+           einsum<2>("mnab,bn->am", e.oovv, z) -
+           einsum<2>("namb,bn->am", e.ovov, z);
     for (int a = 0; a < v; a++)
       for (int m = 0; m < o; m++)
-        r.at(a, m) += (e.ev(a) - e.eo(m)) * z.at(a, m);
+        r(a, m) += (e.ev(a) - e.eo(m)) * z(a, m);
     return r;
   };
-  auto precondition = [&](const Tn &r) {
-    Tn s = r;
-    for (int a = 0; a < v; a++)
-      for (int m = 0; m < o; m++)
-        s.at(a, m) /= e.ev(a) - e.eo(m);
+  auto precondition = [&](const T2 &r) {
+    T2 s = r;
+    for (int m = 0; m < o; m++)
+      for (int a = 0; a < v; a++)
+        s(a, m) /= e.ev(a) - e.eo(m);
     return s;
   };
-  Tn z = precondition(x * -1.0), res = x * -1.0 - hessian(z);
-  Tn s = precondition(res), dir = s;
+  const T2 minus_x = x * -1.0;
+  T2 z = precondition(minus_x);
+  T2 res = minus_x - hessian(z);
+  T2 s = precondition(res), dir = s;
   double rs = dot(res, s);
   int it = 0;
-  const auto max_abs = [](const Tn &a) {
-    double m = 0.0;
-    for (size_t k = 0; k < a.v.size(); k++)
-      m = std::max(m, std::abs(a.v[k]));
-    return m;
-  };
   for (; it < opts.max_cycle && max_abs(res) > 1e-10; it++) {
-    const Tn hd = hessian(dir);
+    const T2 hd = hessian(dir);
     const double alpha = rs / dot(dir, hd);
     z += dir * alpha;
     res -= hd * alpha;
@@ -807,16 +855,11 @@ CorrelatedDensity mp2_relaxed_density(const occ::qm::Wavefunction &scf,
   result.lambda_iterations = it;
   mark("Z-vector");
   occ::Mat dm = occ::Mat::Zero(nmo, nmo);
-  for (int i = 0; i < o; i++) {
-    dm(i, i) = 2.0;
-    for (int j = 0; j < o; j++)
-      dm(i, j) += p_oo.at(i, j);
-    for (int a = 0; a < v; a++)
-      dm(o + a, i) = dm(i, o + a) = z.at(a, i);
-  }
-  for (int a = 0; a < v; a++)
-    for (int b = 0; b < v; b++)
-      dm(o + a, o + b) = p_vv.at(a, b);
+  dm.topLeftCorner(o, o) = as_matrix(p_oo);
+  dm.topLeftCorner(o, o).diagonal().array() += 2.0;
+  dm.bottomLeftCorner(v, o) = as_matrix(z);
+  dm.topRightCorner(o, v) = as_matrix(z).transpose();
+  dm.bottomRightCorner(v, v) = as_matrix(p_vv);
   natural_orbitals(scf, dm, "MP2", scf.energy.total + result.e_corr, result);
   mark("density and natural orbitals");
   result.n_occ = o - nf;
@@ -856,9 +899,9 @@ CorrelatedDensity mpn_density(const occ::qm::Wavefunction &scf, const int order,
         "MPn density: the correlated space does not cover the MOs");
   const occ::qm::cc::MPnAmplitudes a = occ::qm::cc::mpn_amplitudes(cc_eris);
   mark("amplitudes");
-  const Eris e = convert(cc_eris);
-  const Tn t = from_tensor(a.t), u = from_tensor(a.u);
-  const Tn zero1({e.o, e.v});
+  const Eris e(cc_eris);
+  const T4 &t = a.t, &u = a.u;
+  const T2 zero1 = zeros<2>({e.o, e.v});
   // the Lagrangian's multiplier of D t = g is -l2 below; gamma1 with (t, l2)
   // gives its share of the density
   Gamma1 g;
@@ -867,17 +910,19 @@ CorrelatedDensity mpn_density(const occ::qm::Wavefunction &scf, const int order,
     g = gamma1(zero1, t, zero1, t + u * 2.0);
     result.e_corr = a.energies.mp3();
   } else {
-    const Tn s = from_tensor(a.s), q = from_tensor(a.q);
+    const T2 &s = a.s;
+    const T4 &q = a.q;
     // the Lambda update at t1 = 0 is t plus adjoint terms over D: (0, s, u)
     // carries S^+(s) and L(u), (t, 0, t) L(t) and Q'(t)^+ t
-    auto lambda = [&](const Tn &t2, const Tn &l1, const Tn &l2) {
-      Tn l1new, l2new;
+    auto lambda = [&](const T4 &t2, const T2 &l1, const T4 &l2) {
+      T2 l1new;
+      T4 l2new;
       update_lambda(zero1, t2, l1, l2, e, make_intermediates(zero1, t2, e),
                     l1new, l2new);
       return l2new;
     };
-    Tn l2 = u - t * 2.0 + lambda(Tn({e.o, e.o, e.v, e.v}), s, u) * 2.0 + q +
-            lambda(t, zero1, t);
+    T4 l2 = u - t * 2.0 + lambda(zeros<4>({e.o, e.o, e.v, e.v}), s, u) * 2.0 +
+            q + lambda(t, zero1, t);
     mark("Lagrange multipliers");
     Triples tr;
     if (with_t) {
@@ -888,10 +933,10 @@ CorrelatedDensity mpn_density(const occ::qm::Wavefunction &scf, const int order,
     }
     g = gamma1(zero1, t, zero1, l2);
     const Gamma1 gu = gamma1(zero1, u, zero1, u);
-    g.doo += gu.doo - einsum("ia,ja->ij", s, s);
-    g.dvv += gu.dvv + einsum("ia,ib->ab", s, s);
+    g.doo += gu.doo - einsum<2>("ia,ja->ij", s, s);
+    g.dvv += gu.dvv + einsum<2>("ia,ib->ab", s, s);
     // ov: the singles-doubles coupling of the second-order wavefunction
-    g.dvo += einsum("imae,me->ai", u * 2.0 - T(u, {0, 1, 3, 2}), s);
+    g.dvo += einsum<2>("imae,me->ai", u * 2.0 - transpose(u, {0, 1, 3, 2}), s);
     if (with_t) {
       g.doo -= tr.goo * 0.5;
       g.dvv += tr.gvv * 0.5;
@@ -910,7 +955,7 @@ CorrelatedDensity mpn_density(const occ::qm::Wavefunction &scf, const int order,
   occ::log::info("{} correlation energy {:.12f}", name, result.e_corr);
   result.n_occ = cc_eris.nocc;
   result.n_vir = cc_eris.nvir;
-  result.t2_norm = t.norm();
+  result.t2_norm = norm(t);
   result.backend = backend;
   result.aux_basis = aux_name;
   return result;

@@ -1,13 +1,16 @@
 #pragma once
 // Internal to occ_cc: what the canonical correlated densities (density.cpp)
 // share with the cluster-in-molecule route (local_density.cpp).
-#include "einsum.h"
 #include <functional>
 #include <occ/qm/cc/density.h>
+#include <occ/qm/cc/einsum.h>
 #include <occ/qm/cc/integrals.h>
 #include <string>
 
 namespace occ::qm::cc::detail {
+
+using T2 = Eigen::Tensor<double, 2>;
+using T4 = Eigen::Tensor<double, 4>;
 
 inline void check(const bool ok, const std::string &what) {
   if (!ok)
@@ -20,9 +23,10 @@ inline void check(const bool ok, const std::string &what) {
 // (likewise V for v), already divided by D, as a v^3 block; nothing o^3 v^3 is
 // ever formed.
 struct Triples {
-  Tn l1_t, l2_t; // constant terms added to every Lambda update
-  Tn goo, gvv, dvo;
-  Tn gvv_c; // the vv block's share of the occupied directions in proj (local
+  T2 l1_t; // constant terms added to every Lambda update
+  T4 l2_t;
+  T2 goo, gvv, dvo;
+  T2 gvv_c; // the vv block's share of the occupied directions in proj (local
             // clusters)
   double e_t = 0.0;
   double e_t_c = 0.0; // E(T)'s share of the occupied directions in proj
@@ -30,13 +34,14 @@ struct Triples {
 
 // PySCF ccsd_rdm._gamma1_intermediates: the CCSD blocks before symmetrisation
 struct Gamma1 {
-  Tn doo, dvv, dvo;
+  T2 doo, dvv, dvo;
 };
 
-Gamma1 gamma1(const Tn &t1, const Tn &t2, const Tn &l1, const Tn &l2);
+Gamma1 gamma1(const T2 &t1, const T4 &t2, const T2 &l1, const T4 &l2);
 
 struct CcSolution {
-  Tn t1, t2, l1, l2;
+  T2 t1, l1;
+  T4 t2, l2;
   Triples tr;
   double e_corr = 0.0;
   int cc_iterations = 0, lambda_iterations = 0;
