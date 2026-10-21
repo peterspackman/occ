@@ -2,6 +2,10 @@
 #include <occ/qm/wavefunction.h>
 #include <string>
 
+namespace occ::qm {
+class HartreeFock;
+}
+
 namespace occ::qm::cc {
 
 /// Options for the correlated one-particle densities of a closed-shell RHF
@@ -21,6 +25,10 @@ struct CorrelatedDensityOptions {
   double domain_threshold{0.01}; ///< Mulliken population for PAO domains
   double pair_threshold{1e-5};   ///< |MP2 pair energy| (Eh) to join a cluster
   double lno_threshold{1e-6};    ///< MP2 virtual NO occupation kept
+  /// relaxed MP2: the SCF's own Coulomb and exchange (density fitting, COSX)
+  /// for the orbital response; null = four-centre. Not owned; it must outlive
+  /// the call
+  const HartreeFock *scf_jk{nullptr};
 };
 
 /// A correlated density as natural orbitals of the SCF basis. The natural
@@ -61,8 +69,9 @@ CorrelatedDensity local_ccsd_density(const Wavefunction &scf,
 /// (as PySCF grad/mp2.py), the frozen core relaxed too. With the df backend the
 /// MP2 part is built from the B tensors one occupied orbital at a time (no
 /// ovvv or vvvv intermediates; B_vv streamed within max_memory_gb). The orbital
-/// response always uses four-centre Coulomb and exchange builds, i.e. it
-/// assumes the SCF was converged with exact (not density-fitted) J and K.
+/// response builds Coulomb and exchange with opts.scf_jk, which must be set up
+/// as the SCF was (density fitting, COSX) for the response to match it; without
+/// it the builds are four-centre, right for an SCF with exact J and K.
 CorrelatedDensity
 mp2_relaxed_density(const Wavefunction &scf,
                     const CorrelatedDensityOptions &opts = {});

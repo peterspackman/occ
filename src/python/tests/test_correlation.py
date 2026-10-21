@@ -194,6 +194,33 @@ def test_relaxed_mp2_density_df_and_fchk_roundtrip(water_wfn, tmp_path):
     assert np.allclose(_dipole(back), _dipole(d.natural), atol=1e-6)
 
 
+def test_relaxed_mp2_density_with_scf_jk(water_atoms):
+    from occpy import (
+        CorrelatedDensityOptions,
+        CorrelationOptions,
+        mp2_relaxed_density,
+        run_correlated_density,
+    )
+
+    basis = AOBasis.load(water_atoms, "6-31G")
+    hf = HartreeFock(basis)
+    hf.set_density_fitting_basis("def2-universal-jkfit")
+    scf = hf.scf()
+    scf.convergence_settings.energy_threshold = 1e-10
+    scf.compute_scf_energy()
+    wfn = scf.wavefunction()
+    # the response through the SCF's DF J/K differs from the four-centre one
+    dopts = CorrelatedDensityOptions()
+    dopts.tol = 1e-8
+    df = mp2_relaxed_density(wfn, dopts, scf_jk=hf)
+    exact = mp2_relaxed_density(wfn, dopts)
+    assert np.abs(_dipole(df.natural) - _dipole(exact.natural)).max() > 1e-7
+    opts = CorrelationOptions()
+    opts.method = "mp2"
+    driver = run_correlated_density(wfn, opts, scf_jk=hf)
+    assert np.allclose(_dipole(driver.natural), _dipole(df.natural), atol=1e-9)
+
+
 def test_correlated_density_refuses_unsupported(water_wfn):
     from occpy import run_correlated_density
 

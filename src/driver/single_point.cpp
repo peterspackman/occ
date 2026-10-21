@@ -246,12 +246,14 @@ Wavefunction correlated_density_wavefunction(const Wavefunction &scf_wfn,
                                              const CorrelationOptions &opts,
                                              const OccInput &config) {
   const bool local = config.method.correlated_density_local;
-  if (parse_method_string(opts.method).kind == MethodKind::MP2 &&
-      config.method.ri_policy != occ::io::RIPolicy::None)
-    occ::log::warn("The relaxed MP2 density's orbital response uses exact "
-                   "Coulomb and exchange, but this SCF used density fitting "
-                   "or COSX; pass --ri none for a fully consistent density");
-  return run_correlated_density(scf_wfn, opts, local).natural;
+  if (parse_method_string(opts.method).kind != MethodKind::MP2)
+    return run_correlated_density(scf_wfn, opts, local).natural;
+  // the relaxed MP2 orbital response takes J and K as the SCF built them
+  occ::log::info("MP2 orbital response, Coulomb and exchange as in the SCF:");
+  HartreeFock scf_jk(scf_wfn.basis);
+  apply_acceleration(scf_jk, scf_wfn.basis.nbf(), config);
+  scf_jk.set_precision(config.method.integral_precision);
+  return run_correlated_density(scf_wfn, opts, local, &scf_jk).natural;
 }
 
 Wavefunction run_mp2_method(const Wavefunction &scf_wfn,

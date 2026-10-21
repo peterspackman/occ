@@ -65,10 +65,13 @@ CorrelationResult run_correlation(const qm::Wavefunction &wfn,
  * unrelaxed (Lambda equations) for CCSD and CCSD(T); with `local` the
  * cluster-in-molecule CCSD / CCSD(T) density. Method prefixes, backend (exact
  * or df; thc has no density), auxiliary basis and frozen core resolve as in
- * run_correlation. SCS/SOS scaling has no density and is refused.
+ * run_correlation. SCS/SOS scaling has no density and is refused. `scf_jk`,
+ * set up as the SCF was (density fitting, COSX), gives the relaxed MP2 orbital
+ * response the SCF's own Coulomb and exchange; null = four-centre.
  */
 qm::cc::CorrelatedDensity
 run_correlated_density(const qm::Wavefunction &wfn,
-                       const CorrelationOptions &opts = {}, bool local = false);
+                       const CorrelationOptions &opts = {}, bool local = false,
+                       const qm::HartreeFock *scf_jk = nullptr);
 
 } // namespace occ::driver

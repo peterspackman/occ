@@ -335,6 +335,28 @@ H  0.6276 -0.6276 -0.6276`);
       expect(result.nFrozen).toBe(1);
     }, 120000);
 
+    it('should compute the relaxed MP2 density', async () => {
+      const calc = await createQMCalculation(waterMolecule, '6-31g');
+      await calc.runHF();
+
+      const d = await calc.runCorrelatedDensity('mp2');
+      const n = d.occupations.reduce((a, b) => a + b, 0);
+      expect(n).toBeCloseTo(10, 8);
+      expect(d.occupations[0]).toBeGreaterThan(d.occupations[d.occupations.length - 1]);
+      expect(d.correlationEnergy).toBeLessThan(0);
+      expect(d.wavefunction).toBeDefined();
+    }, 60000);
+
+    it('should compute the CCSD(T) density', async () => {
+      const calc = await createQMCalculation(waterMolecule, '6-31g');
+      await calc.runHF();
+
+      const d = await calc.runCorrelatedDensity('ccsd(t)');
+      expect(d.occupations.reduce((a, b) => a + b, 0)).toBeCloseTo(10, 8);
+      expect(d.triplesCorrection).toBeLessThan(0);
+      expect(d.nFrozen).toBe(1);
+    }, 120000);
+
     it('should fail correlation without reference wavefunction', async () => {
       const calc = await createQMCalculation(waterMolecule, 'sto-3g');
       await expect(calc.runCorrelation('mp2')).rejects.toThrow(

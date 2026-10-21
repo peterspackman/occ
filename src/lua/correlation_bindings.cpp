@@ -9,6 +9,7 @@
 #include <occ/qm/cc/uccsd.h>
 #include <occ/qm/correlation/mp2.h>
 #include <occ/qm/fitting_basis.h>
+#include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>
 
 namespace occ::lua_bindings {
@@ -68,6 +69,15 @@ CorrelationOptions options_from_ref(const lb::LuaRef &ref) {
 
 // Accept nil (defaults), a CorrelatedDensityOptions userdata, or a plain table
 // of option fields.
+// an optional occ.HartreeFock argument: nil = none
+const occ::qm::HartreeFock *hf_from_ref(const lb::LuaRef &ref) {
+  if (ref.isNil())
+    return nullptr;
+  if (!ref.isUserdata())
+    throw std::runtime_error("expected an occ.HartreeFock (the SCF's J and K)");
+  return ref.unsafe_cast<occ::qm::HartreeFock *>();
+}
+
 cc::CorrelatedDensityOptions density_options_from_ref(const lb::LuaRef &ref) {
   cc::CorrelatedDensityOptions o;
   if (ref.isNil())
@@ -234,9 +244,13 @@ void register_correlation_bindings(lua_State *L) {
           })
       .addFunction(
           "mp2_relaxed_density",
-          +[](const Wavefunction &wfn, const lb::LuaRef &options) {
-            return cc::mp2_relaxed_density(wfn,
-                                           density_options_from_ref(options));
+          // occ.mp2_relaxed_density(wfn [, options [, scf_hf]]): scf_hf gives
+          // the orbital response the SCF's J and K
+          +[](const Wavefunction &wfn, const lb::LuaRef &options,
+              const lb::LuaRef &scf_jk) {
+            auto opts = density_options_from_ref(options);
+            opts.scf_jk = hf_from_ref(scf_jk);
+            return cc::mp2_relaxed_density(wfn, opts);
           })
       .addFunction(
           "mpn_density",
@@ -250,12 +264,14 @@ void register_correlation_bindings(lua_State *L) {
             return cc::local_ccsd_density(wfn,
                                           density_options_from_ref(options));
           })
-      // occ.run_correlated_density(wfn, "ccsd(t)" | {method=...} [, local])
+      // occ.run_correlated_density(wfn, "ccsd(t)" | {method=...} [, local
+      // [, scf_hf]])
       .addFunction(
           "run_correlated_density",
-          +[](const Wavefunction &wfn, const lb::LuaRef &options, bool local) {
+          +[](const Wavefunction &wfn, const lb::LuaRef &options, bool local,
+              const lb::LuaRef &scf_jk) {
             return occ::driver::run_correlated_density(
-                wfn, options_from_ref(options), local);
+                wfn, options_from_ref(options), local, hf_from_ref(scf_jk));
           })
 
       // Low-level surface for building on the internals.

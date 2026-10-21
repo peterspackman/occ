@@ -8,7 +8,8 @@
 // size o v^3 or v^4 is formed, only O(o v n_aux) B and Gamma plus an o v^2
 // amplitude buffer and B_vv streamed in blocks. The SCF-like parts (the
 // relaxed density's Fock response X and the orbital Hessian in the Z-vector
-// equations) are AO Coulomb / exchange builds, as in the SCF itself.
+// equations) are AO Coulomb / exchange builds, with the SCF's own engines when
+// opts.scf_jk is given.
 #include "detail/density.h"
 #include <Eigen/Dense>
 #include <chrono>
@@ -16,6 +17,7 @@
 #include <occ/core/parallel.h>
 #include <occ/qm/cc/gemm.h>
 #include <occ/qm/correlation/df_integrals.h>
+#include <occ/qm/hf.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
 #include <tbb/enumerable_thread_specific.h>
@@ -210,22 +212,55 @@ CorrelatedDensity mp2_relaxed_density(const occ::qm::Wavefunction &scf,
     for (int k = nf; k < o; k++)
       L.p_oo(f, k) = L.p_oo(k, f) = L.i_oo(f, k) / (eo(f) - eo(k));
 
-  // AO Coulomb and exchange of a (symmetric) MO-basis density. occ's
-  // restricted engine returns 2 J[D] and K[D] for the density D in mo.D
+  // AO Coulomb and exchange of a symmetric MO-basis density M (D = C M C^T).
+  // occ's restricted engines return 2 J[D] and K[D] for the density in mo.D
   const IntegralEngine engine(scf.basis);
   const occ::Mat schwarz = engine.schwarz();
+  const HartreeFock *scf_jk = opts.scf_jk;
+  // DF exchange is built from mo.Cocc, not mo.D (COSX and the four-centre
+  // build read mo.D), so it needs D = C+ C+^T - C- C-^T, from M's eigenpairs
+  const bool factored =
+      scf_jk && scf_jk->using_density_fitting() && !scf_jk->using_cosx();
   occ::qm::MolecularOrbitals jk_mo = scf.mo;
-  auto jk = [&](const occ::Mat &D_ao) {
-    jk_mo.D = D_ao;
-    return engine.coulomb_and_exchange(occ::qm::SpinorbitalKind::Restricted,
-                                       jk_mo, schwarz);
+  auto build = [&](const occ::Mat &D, const occ::Mat &Cocc) {
+    jk_mo.D = D;
+    jk_mo.Cocc = Cocc;
+    return scf_jk ? scf_jk->compute_JK(jk_mo, schwarz)
+                  : engine.coulomb_and_exchange(
+                        occ::qm::SpinorbitalKind::Restricted, jk_mo, schwarz);
+  };
+  auto jk = [&](const occ::Mat &M) {
+    if (!factored)
+      return build(scf.mo.C * M * scf.mo.C.transpose(), scf.mo.Cocc);
+    Eigen::SelfAdjointEigenSolver<occ::Mat> eig(M);
+    const occ::Vec &w = eig.eigenvalues();
+    const double cut = 1e-14 * w.cwiseAbs().maxCoeff();
+    const auto nbf = scf.mo.C.rows();
+    occ::qm::JKPair r{occ::Mat::Zero(nbf, nbf), occ::Mat::Zero(nbf, nbf)};
+    for (const double sign : {1.0, -1.0}) {
+      std::vector<int> keep;
+      for (int k = 0; k < w.size(); k++)
+        if (sign * w(k) > cut)
+          keep.push_back(k);
+      if (keep.empty())
+        continue;
+      occ::Mat Cf(scf.mo.C.rows(), keep.size());
+      for (size_t k = 0; k < keep.size(); k++)
+        Cf.col(k) = std::sqrt(sign * w(keep[k])) *
+                    (scf.mo.C * eig.eigenvectors().col(keep[k]));
+      const auto part = build(Cf * Cf.transpose(), Cf);
+      r.J += sign * part.J;
+      r.K += sign * part.K;
+    }
+    return r;
   };
   // X_am = sum_pq P_pq [2 (am|pq) - (ap|qm)] + I_ma - I_am
   occ::Mat x;
   {
-    const occ::Mat D =
-        C_occ * L.p_oo * C_occ.transpose() + C_vir * L.p_vv * C_vir.transpose();
-    const auto r = jk(D);
+    occ::Mat P = occ::Mat::Zero(nmo, nmo);
+    P.topLeftCorner(o, o) = L.p_oo;
+    P.bottomRightCorner(v, v) = L.p_vv;
+    const auto r = jk(P);
     x = C_vir.transpose() * (r.J - r.K) * C_occ + L.i_oc.transpose() - L.i_vo;
   }
   // Z-vector: (e_a - e_m) z_am + sum_bn [4 (am|bn) - (ab|mn) - (an|bm)] z_bn
@@ -242,8 +277,10 @@ CorrelatedDensity mp2_relaxed_density(const occ::qm::Wavefunction &scf,
     const double scale = z.cwiseAbs().maxCoeff();
     if (scale == 0.0)
       return occ::Mat(occ::Mat::Zero(v, o));
-    const occ::Mat Dz = C_vir * (z / scale) * C_occ.transpose();
-    const auto r = jk(0.5 * (Dz + Dz.transpose()));
+    occ::Mat Mz = occ::Mat::Zero(nmo, nmo);
+    Mz.bottomLeftCorner(v, o) = 0.5 * z / scale;
+    Mz.topRightCorner(o, v) = Mz.bottomLeftCorner(v, o).transpose();
+    const auto r = jk(Mz);
     return occ::Mat(scale * C_vir.transpose() * (2.0 * r.J - 2.0 * r.K) *
                         C_occ +
                     d_vo.cwiseProduct(z));

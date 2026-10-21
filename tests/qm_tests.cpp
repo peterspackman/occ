@@ -1643,6 +1643,18 @@ TEST_CASE("resolve_fitting_basis maps orbital basis to auxiliary basis",
             "def2-tzvpp-rifit");
   }
 
+  SECTION("every matched RIFIT basis covers H-Ar") {
+    std::vector<occ::core::Atom> atoms;
+    for (int z = 1; z <= 18; z++)
+      atoms.push_back({z, 0.0, 0.0, 2.0 * z});
+    for (const auto *orbital : {"cc-pvdz", "cc-pvtz", "cc-pvqz", "def2-svp",
+                                "def2-tzvp", "def2-tzvpp"}) {
+      const auto aux = resolve_fitting_basis(orbital, FittingKind::Correlation);
+      CAPTURE(aux);
+      REQUIRE_NOTHROW(occ::gto::AOBasis::load(atoms, aux));
+    }
+  }
+
   SECTION("matching is case-insensitive") {
     REQUIRE(resolve_fitting_basis("cc-pVTZ", FittingKind::Correlation) ==
             "cc-pvtz-rifit");

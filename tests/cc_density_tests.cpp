@@ -9,6 +9,7 @@
 #include <occ/qm/cc/integrals.h>
 #include <occ/qm/cc/triples.h>
 #include <occ/qm/correlation/mp2.h>
+#include <occ/qm/external_potential.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
 #include <vector>
@@ -130,6 +131,60 @@ TEST_CASE("Relaxed MP2 density matches ORCA", "[cc][density][mp2]") {
   REQUIRE_THAT(f.e_corr, WithinAbs(-0.201665956, 1e-7));
   REQUIRE_THAT(f.occupations(0), WithinAbs(2.00000262, 1e-6));
   REQUIRE(f.occupations(0) > 2.0);
+}
+
+// The relaxed density is the energy's response: with a point charge q at R,
+// dE/dq is the electrostatic potential of the relaxed density (and nuclei) at
+// R, provided the orbital response uses the SCF's own J and K. Each engine is
+// held to its SCF's own match (COSX exchange is not exactly the derivative of
+// the COSX energy, so its SCF misses by ~1e-6 already).
+TEST_CASE("Relaxed MP2 density is the energy derivative with DF and COSX SCF",
+          "[cc][density][mp2][jk]") {
+  constexpr double A = occ::units::ANGSTROM_TO_BOHR;
+  const std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.1173 * A},
+                                           {1, 0.0, 0.7572 * A, -0.4692 * A},
+                                           {1, 0.0, -0.7572 * A, -0.4692 * A}};
+  auto basis = occ::gto::AOBasis::load(atoms, "cc-pvdz");
+  basis.set_pure(true);
+  const occ::Vec3 site(0.8, -0.5, 3.5);
+  constexpr double h = 1e-3;
+  auto opts = tight_all_electron();
+  opts.tol = 1e-10;
+  for (const bool cosx : {false, true}) {
+    CAPTURE(cosx);
+    occ::qm::HartreeFock hf(basis);
+    hf.set_density_fitting_basis("def2-universal-jkfit");
+    if (cosx)
+      hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
+    auto scf_at = [&](double q) {
+      occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+      scf.convergence_settings.energy_threshold = 1e-12;
+      scf.convergence_settings.commutator_threshold = 1e-10;
+      if (q != 0.0)
+        scf.set_external_potential(
+            occ::qm::PointChargePotential{{occ::core::PointCharge(q, site)}});
+      scf.compute_scf_energy();
+      REQUIRE(scf.ctx.converged);
+      return scf.wavefunction();
+    };
+    auto esp = [&](const occ::qm::Wavefunction &w) {
+      return w.electric_potential(site)(0);
+    };
+    opts.scf_jk = &hf;
+    const auto plus = scf_at(h), minus = scf_at(-h), wfn = scf_at(0.0);
+    const double scf_miss =
+        esp(wfn) - (plus.energy.total - minus.energy.total) / (2 * h);
+    auto e_mp2 = [&](const occ::qm::Wavefunction &w) {
+      return occ::qm::cc::mp2_relaxed_density(w, opts).natural.energy.total;
+    };
+    const double de = (e_mp2(plus) - e_mp2(minus)) / (2 * h);
+    const auto r = occ::qm::cc::mp2_relaxed_density(wfn, opts);
+    REQUIRE_THAT(esp(r.natural) - de, WithinAbs(scf_miss, 1e-7));
+    // with four-centre J/K the response no longer matches this SCF
+    opts.scf_jk = nullptr;
+    const auto exact = occ::qm::cc::mp2_relaxed_density(wfn, opts);
+    REQUIRE(std::abs(esp(exact.natural) - de - scf_miss) > 2e-7);
+  }
 }
 
 TEST_CASE("Spanning local clusters reproduce the canonical density",

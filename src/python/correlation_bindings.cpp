@@ -14,6 +14,7 @@
 #include <occ/qm/cc/uccsd.h>
 #include <occ/qm/correlation/mp2.h>
 #include <occ/qm/fitting_basis.h>
+#include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>
 
 using namespace nb::literals;
@@ -159,9 +160,18 @@ nb::module_ register_correlation_bindings(nb::module_ &m) {
         "options"_a = cc::CorrelatedDensityOptions{},
         "Unrelaxed CCSD (options.triples: CCSD(T)) density from the Lambda "
         "equations");
-  m.def("mp2_relaxed_density", &cc::mp2_relaxed_density, "wavefunction"_a,
-        "options"_a = cc::CorrelatedDensityOptions{},
-        "Relaxed MP2 density (Z-vector orbital response)");
+  m.def(
+      "mp2_relaxed_density",
+      [](const Wavefunction &wfn, cc::CorrelatedDensityOptions opts,
+         const occ::qm::HartreeFock *scf_jk) {
+        opts.scf_jk = scf_jk;
+        return cc::mp2_relaxed_density(wfn, opts);
+      },
+      "wavefunction"_a, "options"_a = cc::CorrelatedDensityOptions{},
+      "scf_jk"_a = nb::none(),
+      "Relaxed MP2 density (Z-vector orbital response); scf_jk, the SCF's "
+      "HartreeFock, gives the response its J and K (density fitting); None = "
+      "four-centre");
   m.def("mpn_density", &cc::mpn_density, "wavefunction"_a, "order"_a,
         "options"_a = cc::CorrelatedDensityOptions{},
         "Unrelaxed MP3 (order 3) or MP4(SDQ) / MP4 (order 4) density");
@@ -170,9 +180,10 @@ nb::module_ register_correlation_bindings(nb::module_ &m) {
         "Cluster-in-molecule CCSD / CCSD(T) density");
   m.def("run_correlated_density", &occ::driver::run_correlated_density,
         "wavefunction"_a, "options"_a = CorrelationOptions{}, "local"_a = false,
+        "scf_jk"_a = nb::none(),
         "The density of options.method (mp2 relaxed, ccsd / ccsd(t) "
         "unrelaxed; local = cluster-in-molecule) with the CLI's method, "
-        "backend and frozen-core handling");
+        "backend and frozen-core handling; scf_jk as for mp2_relaxed_density");
 
   // Low-level surface for building on the internals.
   nb::class_<MP2> mp2(m, "MP2");

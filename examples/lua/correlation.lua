@@ -53,3 +53,12 @@ print(string.format("CCSD(T) NO occupations: %.6f %.6f ... %.6f %.6f",
 local mp2d = occ.mp2_relaxed_density(wfn, { backend = "df" })
 print(string.format("Relaxed RI-MP2 energy: %18.10f (%d Z-vector iterations)",
                     mp2d.natural.total_energy, mp2d.lambda_iterations))
+
+-- With a density-fitted SCF, pass its HartreeFock so the MP2 orbital response
+-- uses the same J and K (otherwise it is four-centre, right for an exact SCF).
+local hf_df = occ.HartreeFock(basis)
+hf_df:set_density_fitting_basis("def2-universal-jkfit", 1e-4)
+local scf_df = hf_df:scf()
+scf_df:run()
+local mp2d_df = occ.mp2_relaxed_density(scf_df:wavefunction(), nil, hf_df)
+print(string.format("Relaxed MP2 on DF-SCF: %18.10f", mp2d_df.natural.total_energy))

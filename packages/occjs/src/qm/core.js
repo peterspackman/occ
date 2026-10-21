@@ -204,6 +204,46 @@ export class QMCalculation {
   }
 
   /**
+   * Correlated one-particle density as natural orbitals of the SCF basis
+   * @param {string} method - mp2 (relaxed), mp3, mp4(sdq), mp4, ccsd or ccsd(t),
+   *   with an optional ri-/df- prefix
+   * @param {Object} options - backend, auxBasis, nFrozen, maxMemoryGb, maxCycle,
+   *   local (cluster-in-molecule CCSD/CCSD(T))
+   * @returns {Promise<Object>} natural wavefunction, occupations and energies
+   */
+  async runCorrelatedDensity(method = 'mp2', options = {}) {
+    if (!this.wavefunction) {
+      throw new Error('Correlated densities require a reference wavefunction. Run HF first.');
+    }
+
+    const opts = new this.module.CorrelationOptions();
+    opts.method = method;
+    for (const key of ['backend', 'auxBasis', 'nFrozen', 'maxMemoryGb', 'maxCycle']) {
+      if (options[key] !== undefined) {
+        opts[key] = options[key];
+      }
+    }
+
+    const result = this.module.runCorrelatedDensity(
+      this.wavefunction, opts, options.local === true);
+    const occ = result.occupations;
+    const occupations = Array.from({ length: occ.size() }, (_, i) => occ.get(i));
+
+    return {
+      wavefunction: result.natural,
+      occupations,
+      correlationEnergy: result.eCorr,
+      triplesCorrection: result.eTriples,
+      nFrozen: result.nFrozen,
+      ccIterations: result.ccIterations,
+      lambdaIterations: result.lambdaIterations,
+      backend: result.backend,
+      auxBasis: result.auxBasis,
+      nClusters: result.nClusters,
+    };
+  }
+
+  /**
    * Run MP2 calculation
    * @param {Object} options - MP2 options (backend, auxBasis, spinScaling, nFrozen, ...)
    * @returns {Promise<number>} MP2 total energy

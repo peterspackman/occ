@@ -2,6 +2,7 @@
 #include <emscripten/bind.h>
 #include <occ/driver/correlation.h>
 #include <occ/qm/cc/ccsd.h>
+#include <occ/qm/cc/density.h>
 #include <occ/qm/cc/integrals.h>
 #include <occ/qm/cc/triples.h>
 #include <occ/qm/cc/uccsd.h>
@@ -75,6 +76,29 @@ void register_correlation_bindings() {
                [](const Wavefunction &wfn, const CorrelationOptions &opts) {
                  return occ::driver::run_correlation(wfn, opts);
                }));
+
+  // Correlated one-particle densities as natural orbitals:
+  // runCorrelatedDensity(wfn, options, local). options.method picks relaxed
+  // MP2, MP3/MP4 or CCSD/CCSD(T); local selects cluster-in-molecule CCSD(T).
+  class_<cc::CorrelatedDensity>("CorrelatedDensity")
+      .property("natural", &cc::CorrelatedDensity::natural)
+      .property("occupations", &cc::CorrelatedDensity::occupations)
+      .property("eCorr", &cc::CorrelatedDensity::e_corr)
+      .property("eTriples", &cc::CorrelatedDensity::e_triples)
+      .property("nFrozen", &cc::CorrelatedDensity::n_frozen)
+      .property("nOcc", &cc::CorrelatedDensity::n_occ)
+      .property("nVir", &cc::CorrelatedDensity::n_vir)
+      .property("ccIterations", &cc::CorrelatedDensity::cc_iterations)
+      .property("lambdaIterations", &cc::CorrelatedDensity::lambda_iterations)
+      .property("backend", &cc::CorrelatedDensity::backend)
+      .property("auxBasis", &cc::CorrelatedDensity::aux_basis)
+      .property("nClusters", &cc::CorrelatedDensity::n_clusters);
+
+  function("runCorrelatedDensity",
+           optional_override([](const Wavefunction &wfn,
+                                const CorrelationOptions &opts, bool local) {
+             return occ::driver::run_correlated_density(wfn, opts, local);
+           }));
 
   // Low-level surface for building on the internals.
   class_<MP2>("MP2")

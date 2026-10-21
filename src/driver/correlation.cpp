@@ -348,7 +348,8 @@ void log_natural_occupations(const cc::CorrelatedDensity &d) {
 
 cc::CorrelatedDensity run_correlated_density(const qm::Wavefunction &wfn,
                                              const CorrelationOptions &opts,
-                                             const bool local) {
+                                             const bool local,
+                                             const qm::HartreeFock *scf_jk) {
   if (wfn.mo.kind != SpinorbitalKind::Restricted ||
       wfn.mo.n_alpha != wfn.mo.n_beta)
     throw std::runtime_error("Correlated densities need a closed-shell "
@@ -384,6 +385,7 @@ cc::CorrelatedDensity run_correlated_density(const qm::Wavefunction &wfn,
   // on the energy to opts.tol) instead of differing in the 7th decimal
   dopts.tol = 1e-8;
   dopts.triples = mspec.kind == MethodKind::CCSD_T;
+  dopts.scf_jk = scf_jk;
   // local clusters always fit on one DF store; the backend picks their CC
   // integrals
   cc::CorrelatedDensity d = is_mp2  ? cc::mp2_relaxed_density(wfn, dopts)
