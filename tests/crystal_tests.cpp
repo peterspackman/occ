@@ -2988,3 +2988,69 @@ TEST_CASE("Face images are the distinct R^-T hkl over the point group",
     }
   }
 }
+
+// Two molecules half a cell apart in plane, but with their (0 0 1) centroid
+// depths only 0.007 angstrom apart, so the cut between them lies far closer to
+// both centroids than the fixed 1e-3 of the slab depth that the molecule and
+// neighbour windows were once offset by.
+auto near_degenerate_layers_crystal() {
+  const std::vector<std::string> labels = {"Ne1", "Ne2"};
+  occ::IVec nums(labels.size());
+  occ::Mat positions(labels.size(), 3);
+  for (size_t i = 0; i < labels.size(); i++) {
+    nums(i) = occ::core::Element(labels[i]).atomic_number();
+  }
+  positions << 0.0, 0.0, 0.000, 0.5, 0.5, 0.001;
+  AsymmetricUnit asym(positions.transpose(), nums, labels);
+  return Crystal(asym, SpaceGroup(1),
+                 occ::crystal::orthorhombic_cell(8.0, 8.0, 7.0));
+}
+
+TEST_CASE("A cut severs the same interactions at both slab boundaries",
+          "[crystal][surface][cut]") {
+  // The slab is a whole number of interplanar spacings deep, so a lattice
+  // translation carries its lower boundary onto its upper one. Every
+  // interaction severed above the slab therefore pairs with one severed below
+  // it, whatever the symmetry of the crystal or the depth of the cut.
+  Crystal c = near_degenerate_layers_crystal();
+  const auto dimers = c.unit_cell_dimers(10.0);
+
+  Mat3N centroids(3, c.unit_cell_molecules().size());
+  {
+    int i = 0;
+    for (const auto &mol : c.unit_cell_molecules()) {
+      centroids.col(i) = mol.centroid();
+      i++;
+    }
+  }
+  REQUIRE(centroids.cols() == 2);
+
+  Surface surf(HKL{0, 0, 1}, c);
+  const auto cuts = surf.possible_cuts(centroids);
+  REQUIRE(cuts.size() == 2);
+
+  auto total = [](const occ::crystal::SurfaceCutResult::DimerCounts &counts) {
+    int n = 0;
+    for (const auto &neighbours : counts) {
+      for (int count : neighbours) {
+        n += count;
+      }
+    }
+    return n;
+  };
+
+  int severing_cuts = 0;
+  for (double cut : cuts) {
+    const auto result = surf.count_crystal_dimers_cut_by_surface(dimers, cut);
+    REQUIRE(total(result.above) == total(result.below));
+    // every neighbour is binned exactly once
+    REQUIRE(total(result.above) + total(result.below) + total(result.slab) ==
+            total(result.bulk));
+    if (total(result.above) > 0) {
+      severing_cuts++;
+    }
+  }
+  // the cut between the near-degenerate pair is the one at risk, and it does
+  // sever interactions rather than trivially satisfying the equality at zero
+  REQUIRE(severing_cuts == 2);
+}

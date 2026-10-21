@@ -389,7 +389,7 @@ nb::module_ register_crystal_bindings(nb::module_ &m) {
       .def("basis_matrix", &Surface::basis_matrix, "depth_scale"_a = 1.0)
       .def("find_molecule_cell_translations",
            &Surface::find_molecule_cell_translations, "unit_cell_mols"_a,
-           "depth"_a, "cut_offset"_a = 0.0)
+           "depth"_a, "cut_offset"_a = 0.0, "depth_epsilon"_a = 1e-3)
       .def("count_crystal_dimers_cut_by_surface",
            &Surface::count_crystal_dimers_cut_by_surface, "dimers"_a,
            "cut_offset"_a = 0.0)

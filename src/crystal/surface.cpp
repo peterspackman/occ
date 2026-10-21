@@ -364,7 +364,8 @@ bool Surface::faces_are_equivalent(const Crystal &crystal, const HKL &hkl1,
 
 std::vector<Molecule>
 Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
-                                         double depth, double cut_offset) {
+                                         double depth, double cut_offset,
+                                         double depth_epsilon) {
   const double epsilon = 1e-3;
   const int num_mols = mols.size();
   std::vector<Molecule> result;
@@ -398,9 +399,13 @@ Surface::find_molecule_cell_translations(const std::vector<Molecule> &mols,
 
   // get box corners in surface coordinates
   Vec3 zeros = Vec3(0.0, 0.0, 0.0);
-  Vec3 upper_vec_surface = origin_surf.array() + epsilon + 1.0;
+  // In-plane a centroid can sit exactly on a cell boundary, and the shift is
+  // what lets exactly one of its two images into the window. Along the depth
+  // it must instead stay inside the layer spacing - see depth_tolerance.
+  const Vec3 offset(epsilon, epsilon, depth_epsilon);
+  Vec3 upper_vec_surface = origin_surf + offset + Vec3(1.0, 1.0, 1.0);
   Vec3 ones = Vec3(1.0, 1.0, 1.0);
-  Vec3 lower_vec_surface = origin_surf.array() + epsilon;
+  Vec3 lower_vec_surface = origin_surf + offset;
 
   occ::log::debug("Origin (crystal) = [{:9.3f}, {:9.3f} {:9.3f}]",
                   origin_crystal(0), origin_crystal(1), origin_crystal(2));
@@ -599,6 +604,37 @@ SurfaceCutResult::SurfaceCutResult(const CrystalDimers &dimers) {
   }
 }
 
+// Both the window that selects the slab molecules and the one that sorts their
+// neighbours into above/below have to be shifted off the cut so that no
+// centroid lands on an edge, but a shift wider than the layer spacing puts the
+// edge inside the next layer instead. Cuts lie midway between layers, so a
+// quarter of the closest spacing clears every centroid by a factor of two.
+static double depth_tolerance(const Mat3 &basis_inverse,
+                              const std::vector<Molecule> &mols,
+                              double depth_scale, double max_tolerance) {
+  std::vector<double> z;
+  z.reserve(mols.size());
+  for (const auto &mol : mols) {
+    // std::fmod keeps the sign of its argument, so wrap rather than fmod:
+    // a negative depth fraction would otherwise order ahead of the rest and
+    // make the cyclic gap below negative.
+    const double f = (basis_inverse * mol.centroid())(2);
+    z.push_back(f - std::floor(f));
+  }
+  std::sort(z.begin(), z.end());
+  // depths this close are one layer to the cut enumeration (possible_cuts)
+  z.erase(
+      std::unique(z.begin(), z.end(),
+                  [](double a, double b) { return std::abs(a - b) < 1e-6; }),
+      z.end());
+  if (z.size() < 2)
+    return max_tolerance;
+  double min_gap = z.front() + 1.0 - z.back();
+  for (size_t i = 1; i < z.size(); i++)
+    min_gap = std::min(min_gap, z[i] - z[i - 1]);
+  return std::min(max_tolerance, 0.25 * min_gap / depth_scale);
+}
+
 SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
     const CrystalDimers &crystal_dimers, double cut_offset) {
   const double epsilon = 1e-3;
@@ -621,8 +657,12 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
   occ::log::debug("Required depth = {} x depth ({:12.6f} angs)", depth_scale,
                   required_depth);
 
-  result.molecules =
-      find_molecule_cell_translations(molecules, depth_scale, cut_offset);
+  const double depth_epsilon = depth_tolerance(basis_matrix(1.0).inverse(),
+                                               molecules, depth_scale, epsilon);
+  occ::log::debug("Depth tolerance = {:12.3e} (of slab depth)", depth_epsilon);
+
+  result.molecules = find_molecule_cell_translations(molecules, depth_scale,
+                                                     cut_offset, depth_epsilon);
 
   Mat3 basis = basis_matrix(depth_scale);
   occ::log::debug("Basis");
@@ -640,8 +680,9 @@ SurfaceCutResult Surface::count_crystal_dimers_cut_by_surface(
   occ::log::debug("Origin: [{:9.3f}, {:9.3f}, {:9.3f}]", origin(0), origin(1),
                   origin(2));
 
-  const double upper_bound = (1.0 + cut_offset / depth_scale) - epsilon;
-  const double lower_bound = (cut_offset / depth_scale) - epsilon;
+  // same window find_molecule_cell_translations just selected the slab with
+  const double upper_bound = (1.0 + cut_offset / depth_scale) + depth_epsilon;
+  const double lower_bound = (cut_offset / depth_scale) + depth_epsilon;
   Mat3 basis_inverse = basis.inverse();
   result.basis = basis;
 

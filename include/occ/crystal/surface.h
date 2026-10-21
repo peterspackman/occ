@@ -95,7 +95,8 @@ public:
   // interplanar spacing
   std::vector<Molecule>
   find_molecule_cell_translations(const std::vector<Molecule> &unit_cell_mols,
-                                  double depth, double cut_offset = 0.0);
+                                  double depth, double cut_offset = 0.0,
+                                  double depth_epsilon = 1e-3);
 
   SurfaceCutResult count_crystal_dimers_cut_by_surface(const CrystalDimers &,
                                                        double cut_offset = 0.0);
