@@ -12,6 +12,11 @@
 
 #pragma once
 
+// C11 aligned_alloc requires the size to be a multiple of the alignment (the
+// generated code asks for e.g. 64-byte alignment of nprim doubles), so round
+// it up wherever aligned_alloc is used.
+#define GG_ALIGNED_SIZE(alignment, size)                     ((((size) + (alignment) - 1) / (alignment)) * (alignment))
+
 
 #if defined(__GG_NO_PRAGMA)
     // Turn everything off if there are issues
@@ -67,7 +72,7 @@
 #elif defined(__GNUC__) || defined(__GNUG__)
     // pragmas for GCC
 
-    #define ALIGNED_MALLOC(alignment, size)                  aligned_alloc(alignment, size)
+    #define ALIGNED_MALLOC(alignment, size)                  aligned_alloc(alignment, GG_ALIGNED_SIZE(alignment, size))
     #define ALIGNED_FREE(ptr)                                free(ptr)
     #define ASSUME_ALIGNED(ptr, width)
 
@@ -88,7 +93,7 @@
 #elif defined(__PGI)
     // pragmas for PGI
 
-    #define ALIGNED_MALLOC(alignment, size)                  aligned_alloc(alignment, size)
+    #define ALIGNED_MALLOC(alignment, size)                  aligned_alloc(alignment, GG_ALIGNED_SIZE(alignment, size))
     #define ALIGNED_FREE(ptr)                                free(ptr)
     #define ASSUME_ALIGNED(ptr, width)
 

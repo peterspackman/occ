@@ -109,40 +109,20 @@ Mat compute_sap_matrix(const std::vector<occ::core::Atom> &atoms,
   IntegralEngine engine(basis);
   engine.set_auxiliary_basis(sap_basis.shells(), false); // true = dummy atoms
 
-  const auto nbf = basis.nbf();
-  Mat V_sap = Mat::Zero(nbf, nbf);
-
   // The fit expands the screened electronic charge Z^el(r) in error
   // functions, which are the Coulomb potentials of unit-charge s-Gaussians:
   // V^el_ij = -sum_p c_p (ij|a_p). So these are three-centre *two-electron*
-  // integrals, the same ones density fitting uses.
-
-  // Lambda to collect 3-center integrals and contract with SAP coefficients
-  auto collect_integrals = [&](const IntegralEngine::IntegralResult<3> &args) {
-    // Map buffer to matrix for this auxiliary function
-    Eigen::Map<const Mat> eri_matrix(args.buffer, args.dims[0], args.dims[1]);
-
-    // Add contribution to SAP matrix (coefficients already have correct sign)
-    V_sap.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
-        eri_matrix;
-
-    // Handle symmetry (ij) = (ji)
-    if (args.bf[0] != args.bf[1]) {
-      V_sap.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0]) +=
-          eri_matrix.transpose();
-    }
-  };
-
-  // Call the 3-center kernel directly with TBB
-  if (engine.is_spherical()) {
-    detail::three_center_aux_kernel<Shell::Kind::Spherical>(
-        collect_integrals, engine.env(), engine.aobasis(), engine.auxbasis(),
-        engine.shellpairs());
-  } else {
-    detail::three_center_aux_kernel<Shell::Kind::Cartesian>(
-        collect_integrals, engine.env(), engine.aobasis(), engine.auxbasis(),
-        engine.shellpairs());
-  }
+  // integrals summed over the fit, which is what the point-charge kernel
+  // assembles (accumulating per thread, as its parallel loop requires).
+  const auto nbf = basis.nbf();
+  const Mat V_sap =
+      engine.is_spherical()
+          ? detail::point_charge_potential_kernel<Shell::Kind::Spherical>(
+                engine.env(), engine.aobasis(), engine.auxbasis(),
+                engine.shellpairs())
+          : detail::point_charge_potential_kernel<Shell::Kind::Cartesian>(
+                engine.env(), engine.aobasis(), engine.auxbasis(),
+                engine.shellpairs());
 
   occ::log::debug("SAP matrix computed with {} x {} elements", nbf, nbf);
   // The tabulated coefficients sum to -Z, and the screening enters as
