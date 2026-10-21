@@ -7,6 +7,7 @@
 #include <occ/qm/cc/ccsd.h>
 #include <occ/qm/cc/density.h>
 #include <occ/qm/cc/integrals.h>
+#include <occ/qm/cc/triples.h>
 #include <occ/qm/correlation/mp2.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
@@ -100,6 +101,22 @@ TEST_CASE("CCSD(T) density matches PySCF", "[cc][density]") {
   REQUIRE_THAT(r.l1_norm, WithinAbs(0.0135673060, 1e-8));
   REQUIRE_THAT(r.l2_norm, WithinAbs(0.2202679718, 1e-8));
   check_occupations(r.occupations, ccsd_t_occ, 1e-8);
+}
+
+TEST_CASE("The density's (T) energy is ccsd_t's on the same amplitudes",
+          "[cc][density]") {
+  // the density loops over occupied triples, ccsd_t over virtual ones: two
+  // implementations of one energy that must not drift apart
+  auto opts = tight_all_electron();
+  opts.triples = true;
+  const auto r = occ::qm::cc::ccsd_density(rhf(), opts);
+  const auto eris = occ::qm::cc::exact_eris(rhf().basis, rhf().mo, 0);
+  occ::qm::cc::CCSDOptions copts;
+  copts.max_cycle = opts.max_cycle;
+  copts.residual_tol = opts.tol;
+  const auto cc = occ::qm::cc::ccsd(eris, copts);
+  REQUIRE_THAT(r.e_triples,
+               WithinAbs(occ::qm::cc::ccsd_t(cc.t1, cc.t2, eris), 1e-12));
 }
 
 TEST_CASE("Relaxed MP2 density matches ORCA", "[cc][density][mp2]") {
