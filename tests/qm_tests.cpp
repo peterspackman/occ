@@ -14,6 +14,7 @@
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
+#include <occ/qm/localization.h>
 #include <occ/qm/mo.h>
 #include <occ/qm/split_ri_j.h>
 #include <occ/qm/auto_aux_basis.h>
@@ -2068,4 +2069,129 @@ TEST_CASE("Long-range exchange needs no toggling", "[range-separated]") {
   // Asking again gives the same long-range matrix.
   CHECK((hf.compute_K_long_range(mo, 0.3) - K_lr).cwiseAbs().maxCoeff() ==
         Catch::Approx(0.0).margin(1e-12));
+}
+
+// Localization
+
+namespace {
+
+occ::qm::Wavefunction
+rhf_wavefunction(const std::vector<occ::core::Atom> &atoms,
+                 const std::string &basis_name) {
+  auto basis = occ::gto::AOBasis::load(atoms, basis_name);
+  HartreeFock hf(basis);
+  occ::qm::SCF<HartreeFock> scf(hf);
+  scf.convergence_settings.energy_threshold = 1e-10;
+  scf.compute_scf_energy();
+  return scf.wavefunction();
+}
+
+} // namespace
+
+TEST_CASE("Pipek-Mezey localization of water", "[localization]") {
+  constexpr double A = occ::units::ANGSTROM_TO_BOHR;
+  const auto wfn = rhf_wavefunction({{8, 0.0, 0.0, 0.1173 * A},
+                                     {1, 0.0, 0.7572 * A, -0.4692 * A},
+                                     {1, 0.0, -0.7572 * A, -0.4692 * A}},
+                                    "6-31g");
+  const occ::qm::IntegralEngine engine(wfn.basis);
+  const Mat S = engine.one_electron_operator(occ::qm::cint::Operator::overlap);
+  const Mat C_occ = wfn.mo.C.leftCols(wfn.mo.n_alpha);
+
+  for (const auto kind :
+       {occ::qm::PopulationKind::Mulliken, occ::qm::PopulationKind::Lowdin}) {
+    occ::qm::PipekMezeySettings settings;
+    settings.population = kind;
+    const auto lmo = occ::qm::pipek_mezey(wfn.basis, S, C_occ, settings);
+    settings.max_sweeps = 0; // the canonical orbitals' populations
+    const auto canonical = occ::qm::pipek_mezey(wfn.basis, S, C_occ, settings);
+    const Eigen::Index n = C_occ.cols();
+
+    REQUIRE(lmo.converged);
+    REQUIRE(lmo.functional > canonical.functional);
+    REQUIRE(all_close(lmo.U.transpose() * lmo.U, Mat::Identity(n, n), 1e-12,
+                      1e-12));
+    REQUIRE(all_close(lmo.C.transpose() * S * lmo.C, Mat::Identity(n, n), 1e-10,
+                      1e-10));
+    // a rotation within the occupied space: the density is unchanged
+    REQUIRE(all_close(lmo.C * lmo.C.transpose(), C_occ * C_occ.transpose(),
+                      1e-10, 1e-10));
+    for (Eigen::Index k = 0; k < n; k++)
+      REQUIRE_THAT(lmo.populations.col(k).sum(), WithinAbs(1.0, 1e-10));
+
+    // the two O-H bonds are mirror images
+    Eigen::Index b1, b2;
+    lmo.populations.row(1).maxCoeff(&b1);
+    lmo.populations.row(2).maxCoeff(&b2);
+    REQUIRE(b1 != b2);
+    REQUIRE_THAT(lmo.populations(1, b1),
+                 WithinAbs(lmo.populations(2, b2), 1e-6));
+    REQUIRE_THAT(lmo.populations(0, b1),
+                 WithinAbs(lmo.populations(0, b2), 1e-6));
+    REQUIRE(lmo.populations(1, b1) > 0.3);
+  }
+}
+
+TEST_CASE("Pipek-Mezey gives four equivalent C-H bonds in methane",
+          "[localization]") {
+  constexpr double a = 1.09 / 1.7320508075688772 * occ::units::ANGSTROM_TO_BOHR;
+  const auto wfn = rhf_wavefunction({{6, 0.0, 0.0, 0.0},
+                                     {1, a, a, a},
+                                     {1, -a, -a, a},
+                                     {1, -a, a, -a},
+                                     {1, a, -a, -a}},
+                                    "6-31g");
+  const auto lmo = occ::qm::pipek_mezey(wfn, 1); // 1s core left out
+  REQUIRE(lmo.converged);
+  REQUIRE(lmo.C.cols() == 4);
+  const double q_h = lmo.populations.col(0).tail(4).maxCoeff();
+  std::vector<bool> seen(5, false);
+  for (Eigen::Index k = 0; k < 4; k++) {
+    Eigen::Index h;
+    lmo.populations.col(k).tail(4).maxCoeff(&h);
+    seen[h + 1] = true;
+    REQUIRE_THAT(lmo.populations(h + 1, k), WithinAbs(q_h, 1e-6));
+    REQUIRE_THAT(lmo.populations(0, k), WithinAbs(lmo.populations(0, 0), 1e-6));
+  }
+  for (int atom = 1; atom <= 4; atom++)
+    REQUIRE(seen[atom]); // one bond per hydrogen
+  REQUIRE_THROWS(occ::qm::pipek_mezey(wfn, 5));
+}
+
+TEST_CASE("Pipek-Mezey converges for benzene", "[localization]") {
+  // a slightly distorted benzene: some orbital pairs keep rotating by ~1e-7
+  // rad per sweep long after the functional has settled, so a rotation-angle
+  // criterion never converges here
+  constexpr double A = occ::units::ANGSTROM_TO_BOHR;
+  const std::vector<occ::core::Atom> atoms{
+      {6, 6.94143 * A, 1.31221 * A, 6.76301 * A},
+      {6, 6.3724 * A, 0.421074 * A, 7.66806 * A},
+      {6, 7.95903 * A, 0.902436 * A, 5.90767 * A},
+      {1, 6.61701 * A, 2.35688 * A, 6.72624 * A},
+      {1, 5.57354 * A, 0.735702 * A, 8.33612 * A},
+      {1, 8.40317 * A, 1.5835 * A, 5.20284 * A},
+      {6, 6.82097 * A, -0.902436 * A, 7.71232 * A},
+      {6, 8.4076 * A, -0.421074 * A, 5.95194 * A},
+      {6, 7.83857 * A, -1.31221 * A, 6.85699 * A},
+      {1, 6.37683 * A, -1.5835 * A, 8.41716 * A},
+      {1, 9.20646 * A, -0.735702 * A, 5.28388 * A},
+      {1, 8.16299 * A, -2.35688 * A, 6.89376 * A}};
+  const auto wfn = rhf_wavefunction(atoms, "6-31g");
+  for (const auto kind :
+       {occ::qm::PopulationKind::Mulliken, occ::qm::PopulationKind::Lowdin}) {
+    occ::qm::PipekMezeySettings settings;
+    settings.population = kind;
+    const auto lmo = occ::qm::pipek_mezey(wfn, 6, settings);
+    REQUIRE(lmo.converged);
+    int n_ch = 0; // C-H bonds: LMOs with a large hydrogen population
+    for (Eigen::Index k = 0; k < lmo.C.cols(); k++) {
+      double q = 0.0;
+      for (size_t atom = 0; atom < atoms.size(); atom++)
+        if (atoms[atom].atomic_number == 1)
+          q = std::max(q, lmo.populations(atom, k));
+      if (q > 0.3)
+        n_ch++;
+    }
+    REQUIRE(n_ch == 6);
+  }
 }

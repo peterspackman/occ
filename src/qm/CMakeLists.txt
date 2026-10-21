@@ -20,6 +20,7 @@ add_library(occ_qm_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_grad1.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_grad2.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_df.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/localization.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/mo.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/oniom.cpp"

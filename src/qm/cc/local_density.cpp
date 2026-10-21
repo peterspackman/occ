@@ -13,6 +13,7 @@
 #include <occ/qm/fitting_basis.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
+#include <occ/qm/localization.h>
 
 namespace occ::qm::cc {
 
@@ -20,58 +21,6 @@ namespace {
 using namespace detail;
 using bvec = std::vector<bool>;
 using ivec2 = std::vector<ivec>;
-
-// Pipek-Mezey localisation with Mulliken charges by Jacobi sweeps (Pipek &
-// Mezey, JCP 90, 4916 (1989)): rotates C's columns among themselves to maximise
-// sum_k sum_A (Q^A_kk)^2
-occ::Mat pipek_mezey(occ::Mat C, const occ::Mat &S, const ivec &bf_atom,
-                     const int natoms) {
-  const int nbf = static_cast<int>(C.rows()), n = static_cast<int>(C.cols());
-  occ::Mat SC = S * C;
-  vec qss(natoms), qtt(natoms), qst(natoms);
-  double max_rot = 1.0;
-  int sweep = 0;
-  for (; sweep < 500 && max_rot > 1e-8; sweep++) {
-    max_rot = 0.0;
-    for (int a = 0; a < n; a++)
-      for (int b = a + 1; b < n; b++) {
-        std::fill(qss.begin(), qss.end(), 0.0);
-        std::fill(qtt.begin(), qtt.end(), 0.0);
-        std::fill(qst.begin(), qst.end(), 0.0);
-        for (int mu = 0; mu < nbf; mu++) {
-          const int A = bf_atom[mu];
-          qss[A] += C(mu, a) * SC(mu, a);
-          qtt[A] += C(mu, b) * SC(mu, b);
-          qst[A] += 0.5 * (C(mu, a) * SC(mu, b) + C(mu, b) * SC(mu, a));
-        }
-        double x = 0.0, y = 0.0;
-        for (int A = 0; A < natoms; A++) {
-          const double d = qss[A] - qtt[A];
-          x += qst[A] * qst[A] - 0.25 * d * d;
-          y += qst[A] * d;
-        }
-        if (x * x + y * y < 1e-30)
-          continue;
-        // cos 4g = -x / r, sin 4g = y / r maximises the functional for this
-        // pair
-        const double g = 0.25 * std::atan2(y, -x);
-        if (std::abs(g) < 1e-14)
-          continue;
-        max_rot = std::max(max_rot, std::abs(g));
-        const double c = std::cos(g), sn = std::sin(g);
-        const occ::Vec ca = C.col(a), cb = C.col(b), sa = SC.col(a),
-                       sb = SC.col(b);
-        C.col(a) = c * ca + sn * cb;
-        C.col(b) = c * cb - sn * ca;
-        SC.col(a) = c * sa + sn * sb;
-        SC.col(b) = c * sb - sn * sa;
-      }
-  }
-  if (max_rot > 1e-8)
-    occ::log::warn("Pipek-Mezey: largest rotation still {:.3e} after {} sweeps",
-                   max_rot, sweep);
-  return C;
-}
 
 // one cluster's half-density H (H + H^T: the correlation part of the 1-RDM) in
 // [cluster LMOs | virtuals], R(k, i) = <LMO k | semicanonical i>; a term
@@ -192,15 +141,11 @@ CorrelatedDensity local_ccsd_density(const occ::qm::Wavefunction &scf,
       occ::Mat::Identity(nbf, nbf) - Cocc * (Cocc.transpose() * S);
   const auto &bf_atom = basis.bf_to_atom();
   const int natoms = static_cast<int>(basis.atoms().size());
-  const occ::Mat L =
-      pipek_mezey(C.middleCols(nf, nocc - nf), S, bf_atom, natoms);
+  const occ::qm::LocalizedOrbitals lmo =
+      occ::qm::pipek_mezey(basis, S, C.middleCols(nf, nocc - nf));
+  const occ::Mat &L = lmo.C;
   const int n = static_cast<int>(L.cols());
-  const occ::Mat SL = S * L;
-  occ::Mat pop =
-      occ::Mat::Zero(natoms, n); // Mulliken population of LMO k on atom A
-  for (int mu = 0; mu < nbf; mu++)
-    for (int k = 0; k < n; k++)
-      pop(bf_atom[mu], k) += L(mu, k) * SL(mu, k);
+  const occ::Mat &pop = lmo.populations; // Mulliken population of LMO k on A
   occ::Mat centre = occ::Mat::Zero(3, n);
   for (int k = 0; k < n; k++) {
     for (int A = 0; A < natoms; A++)

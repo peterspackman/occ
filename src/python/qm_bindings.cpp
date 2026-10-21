@@ -12,6 +12,7 @@
 #include <occ/qm/io/fchkwriter.h>
 #include <occ/qm/io/moldenreader.h>
 #include <occ/qm/chelpg.h>
+#include <occ/qm/localization.h>
 #include <occ/qm/expectation.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
@@ -604,6 +605,42 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
         return fmt::format("<OrbitalSmearing kind={} sigma={:.6f} mu={:.6f}>",
                            kind_str, os.sigma, os.mu);
       });
+
+  nb::enum_<PopulationKind>(m, "PopulationKind")
+      .value("Mulliken", PopulationKind::Mulliken)
+      .value("Lowdin", PopulationKind::Lowdin);
+
+  nb::class_<PipekMezeySettings>(m, "PipekMezeySettings")
+      .def(nb::init<>())
+      .def_rw("population", &PipekMezeySettings::population)
+      .def_rw("max_sweeps", &PipekMezeySettings::max_sweeps)
+      .def_rw("tolerance", &PipekMezeySettings::tolerance);
+
+  nb::class_<LocalizedOrbitals>(m, "LocalizedOrbitals")
+      .def_ro("C", &LocalizedOrbitals::C)
+      .def_ro("U", &LocalizedOrbitals::U)
+      .def_ro("populations", &LocalizedOrbitals::populations)
+      .def_ro("functional", &LocalizedOrbitals::functional)
+      .def_ro("sweeps", &LocalizedOrbitals::sweeps)
+      .def_ro("converged", &LocalizedOrbitals::converged)
+      .def("__repr__", [](const LocalizedOrbitals &l) {
+        return fmt::format("<LocalizedOrbitals n={} functional={:.6f} "
+                           "sweeps={} converged={}>",
+                           l.C.cols(), l.functional, l.sweeps, l.converged);
+      });
+
+  m.def("pipek_mezey",
+        nb::overload_cast<const AOBasis &, const Mat &, const Mat &,
+                          const PipekMezeySettings &>(&pipek_mezey),
+        "basis"_a, "overlap"_a, "C"_a, "settings"_a = PipekMezeySettings{},
+        "Pipek-Mezey localization of the columns of C (AO overlap given)");
+  m.def(
+      "pipek_mezey",
+      nb::overload_cast<const Wavefunction &, int, const PipekMezeySettings &>(
+          &pipek_mezey),
+      "wavefunction"_a, "n_frozen"_a = 0, "settings"_a = PipekMezeySettings{},
+      "Pipek-Mezey localization of the occupied orbitals of a closed-shell "
+      "restricted wavefunction, the n_frozen lowest left out");
 
   nb::enum_<IntegralEngineDF::Policy>(m, "IntegralEngineDFPolicy")
       .value("Choose", IntegralEngineDF::Policy::Choose)
