@@ -25,6 +25,7 @@ struct Triples {
   Tn gvv_c; // the vv block's share of the occupied directions in proj (local
             // clusters)
   double e_t = 0.0;
+  double e_t_c = 0.0; // E(T)'s share of the occupied directions in proj
 };
 
 // PySCF ccsd_rdm._gamma1_intermediates: the CCSD blocks before symmetrisation

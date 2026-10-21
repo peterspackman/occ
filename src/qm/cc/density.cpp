@@ -405,15 +405,30 @@ Triples triples(const Tn &t1, const Tn &t2, const Eris &e,
       occ::parallel::parallel_for(size_t(0), size_t(o), [&](const size_t i) {
         triple(static_cast<int>(i));
       });
-      // the vv block attributed by the block's first occupied index, projected
-      // onto proj's directions
-      if (proj)
+      // the vv block and E(T) attributed by the block's first occupied index,
+      // projected onto proj's directions. E(T) = 1/3 sum_i <D_i r6(W)_i |
+      // (W + V/2)_i>, a sum over i of products, so rotating i to the projected
+      // directions partitions it exactly when proj spans the occupied space
+      if (proj) {
+        Eigen::VectorXd base(static_cast<Eigen::Index>(v3));
+        const double ejk = e.eo(j) + e.eo(k);
+        for (int a = 0; a < v; a++)
+          for (int b = 0; b < v; b++)
+            for (int c = 0; c < v; c++)
+              base(ix(a, b, c)) = ejk - e.ev(a) - e.ev(b) - e.ev(c);
+        const double weight = j == k ? 1.0 : 2.0;
         for (int c = 0; c < proj->cols(); c++) {
           const Eigen::VectorXd wp = WV.transpose() * proj->col(c),
                                 rp = RW.transpose() * proj->col(c);
-          gemm(false, true, iv, iv, ivv, j == k ? 1.0 : 2.0, wp.data(), ivv,
-               rp.data(), ivv, 1.0, r.gvv_c.v.data(), iv);
+          gemm(false, true, iv, iv, ivv, weight, wp.data(), ivv, rp.data(), ivv,
+               1.0, r.gvv_c.v.data(), iv);
+          // sum_i p_i D_i r6(W)_i with D_i = e_i + base
+          const Eigen::VectorXd zp =
+              base.cwiseProduct(rp) +
+              RW.transpose() * proj->col(c).cwiseProduct(e.eo);
+          r.e_t_c += weight * zp.dot(wp) / 3.0;
         }
+      }
       // the response form (PySCF for_grad=True): the full oo block, not only
       // its diagonal; the output is only o x o, so the v^3 sum is split over
       // the threads

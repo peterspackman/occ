@@ -28,7 +28,9 @@ struct CorrelatedDensity {
   Wavefunction natural;
   Vec occupations;       ///< natural occupations, descending, sum = N
   double e_corr{0.0};    ///< MPn or CCSD correlation energy
-  double e_triples{0.0}; ///< (T), from the arrays entering the density
+  /// (T), from the arrays entering the density; for local_ccsd_density the sum
+  /// of each cluster's share for its central LMOs
+  double e_triples{0.0};
   int n_frozen{0};
   int n_occ{0}, n_vir{0};   ///< correlated occupied / virtual orbitals
   int cc_iterations{0};     ///< CCSD amplitude iterations

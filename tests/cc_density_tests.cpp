@@ -131,7 +131,77 @@ TEST_CASE("Spanning local clusters reproduce the canonical density",
       REQUIRE_THAT(local.occupations(k),
                    WithinAbs(canonical.occupations(k), 1e-8));
     REQUIRE_THAT(local.e_corr, WithinAbs(canonical.e_corr, 1e-9));
+    REQUIRE_THAT(local.e_triples, WithinAbs(canonical.e_triples, 1e-9));
   }
+}
+
+TEST_CASE("DF densities track the exact backend", "[cc][density][df]") {
+  auto opts = tight_all_electron();
+  opts.tol = 1e-7;
+  const auto ccsd = occ::qm::cc::ccsd_density(rhf(), opts);
+  const auto mp2 = occ::qm::cc::mp2_relaxed_density(rhf(), opts);
+  opts.backend = "df";
+  opts.aux_basis = "def2-svp-rifit";
+  const auto ccsd_df = occ::qm::cc::ccsd_density(rhf(), opts);
+  const auto mp2_df = occ::qm::cc::mp2_relaxed_density(rhf(), opts);
+  REQUIRE(ccsd_df.backend == "df");
+  REQUIRE_THAT(ccsd_df.e_corr, WithinAbs(ccsd.e_corr, 2e-4));
+  REQUIRE((ccsd_df.occupations - ccsd.occupations).cwiseAbs().maxCoeff() <
+          1e-4);
+  REQUIRE_THAT(mp2_df.e_corr, WithinAbs(mp2.e_corr, 1e-4));
+  REQUIRE((mp2_df.occupations - mp2.occupations).cwiseAbs().maxCoeff() < 2e-5);
+}
+
+TEST_CASE("Truncated local clusters approach the canonical density",
+          "[cc][density][local]") {
+  // water dimer cc-pVDZ: radius 1 A gives one cluster per monomer, 3 A lets
+  // each cluster take in most of the other monomer
+  constexpr double A = occ::units::ANGSTROM_TO_BOHR;
+  const std::vector<occ::core::Atom> atoms{
+      {8, -1.551007 * A, -0.114520 * A, 0.0},
+      {1, -1.934259 * A, 0.762503 * A, 0.0},
+      {1, -0.599677 * A, 0.040712 * A, 0.0},
+      {8, 1.350625 * A, 0.111469 * A, 0.0},
+      {1, 1.680398 * A, -0.373741 * A, -0.758561 * A},
+      {1, 1.680398 * A, -0.373741 * A, 0.758561 * A}};
+  auto basis = occ::gto::AOBasis::load(atoms, "cc-pvdz");
+  basis.set_pure(true);
+  occ::qm::HartreeFock hf(basis);
+  occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+  scf.convergence_settings.energy_threshold = 1e-11;
+  scf.compute_scf_energy();
+  REQUIRE(scf.ctx.converged);
+  const auto wfn = scf.wavefunction();
+
+  CorrelatedDensityOptions opts;
+  opts.n_frozen = 0;
+  opts.tol = 1e-7;
+  opts.triples = true;
+  opts.aux_basis = "def2-svp-rifit";
+  const auto canonical = occ::qm::cc::ccsd_density(wfn, opts);
+  auto local_at = [&](const double radius) {
+    opts.cluster_radius = radius;
+    const auto r = occ::qm::cc::local_ccsd_density(wfn, opts);
+    REQUIRE(r.n_lmo == 10);
+    REQUIRE(r.n_clusters == 2);
+    REQUIRE(r.max_cluster_occ < r.n_lmo);         // truncated occupied space
+    REQUIRE(r.max_cluster_vir < canonical.n_vir); // and virtual space
+    REQUIRE_THAT(r.occupations.sum(), WithinAbs(20.0, 1e-10));
+    return r;
+  };
+  const auto near = local_at(1.0), far = local_at(3.0);
+  auto max_dn = [&](const occ::qm::cc::CorrelatedDensity &r) {
+    return (r.occupations - canonical.occupations).cwiseAbs().maxCoeff();
+  };
+  // 99.5 % and 99.9 % of the CCSD correlation energy; (T) partitioned by
+  // central LMO converges with the cluster too
+  REQUIRE(near.e_corr / canonical.e_corr > 0.994);
+  REQUIRE(far.e_corr / canonical.e_corr > 0.999);
+  REQUIRE(std::abs(far.e_triples - canonical.e_triples) <
+          std::abs(near.e_triples - canonical.e_triples));
+  REQUIRE_THAT(far.e_triples, WithinAbs(canonical.e_triples, 2e-4));
+  REQUIRE(max_dn(near) < 1e-3);
+  REQUIRE(max_dn(far) < max_dn(near));
 }
 
 TEST_CASE("MP3 and MP4 energies match ORCA", "[cc][mpn]") {

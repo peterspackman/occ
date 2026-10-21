@@ -420,8 +420,7 @@ CorrelatedDensity local_ccsd_density(const occ::qm::Wavefunction &scf,
     const Tn ovov = from_tensor(eris.ovov);
     for (int m = 0; m < static_cast<int>(g.size()); m++)
       e_corr += cluster_energy(s, R, ovov, central[m]);
-    e_t += s.tr.e_t * g.size() /
-           o; // a log figure: (T) shared evenly by the cluster's LMOs
+    e_t += s.tr.e_t_c; // (T) of the cluster's central LMOs
     sum_o += o;
     sum_v += v;
     max_o = std::max(max_o, o);
