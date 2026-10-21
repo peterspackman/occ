@@ -187,22 +187,28 @@ CCIntegrals exact_eris(const AOBasis &basis, const MolecularOrbitals &mo_in,
   //   L(ij, ab) = sum_cd tau(ij, cd) W(cd, ab)
   // is one parallel GEMM straight on the column-major tau and result tensors:
   // no permute per call, and no serial Eigen tensor contraction.
-  const Eigen::Index vv = static_cast<Eigen::Index>(v) * v;
-  auto W = std::make_shared<Mat>(vv, vv);
-  occ::parallel::parallel_for(size_t(0), static_cast<size_t>(v), [&](size_t bu) {
-    const int b = static_cast<int>(bu);
-    for (int a = 0; a < v; ++a)
-      for (int d = 0; d < v; ++d)
-        for (int c = 0; c < v; ++c)
-          (*W)(c + v * d, a + v * b) = vvvv_full(a, c, b, d);
-  });
-  vvvv_full = T4();
-  e.ladder = [W, o, v](const T4 &tau) -> T4 {
+  // The relayout is done in place: (ac|bd) = (ca|db) = vvvv_full(c,a,d,b) sits
+  // at c + v*a + v^2*d + v^3*b, so W is vvvv_full with a and d swapped for each
+  // (c, b), and no second V^4 buffer is ever allocated.
+  auto vvvv = std::make_shared<T4>(std::move(vvvv_full));
+  {
+    double *x = vvvv->data();
+    const size_t sv = static_cast<size_t>(v);
+    occ::parallel::parallel_for(size_t(0), sv, [&](size_t b) {
+      for (size_t a = 0; a < sv; ++a)
+        for (size_t d = a + 1; d < sv; ++d)
+          for (size_t c = 0; c < sv; ++c)
+            std::swap(x[c + sv * (a + sv * (d + sv * b))],
+                      x[c + sv * (d + sv * (a + sv * b))]);
+    });
+  }
+  e.ladder = [vvvv, o, v](const T4 &tau) -> T4 {
     const Eigen::Index oo = static_cast<Eigen::Index>(o) * o;
-    const Eigen::Index nvv = static_cast<Eigen::Index>(v) * v;
+    const Eigen::Index vv = static_cast<Eigen::Index>(v) * v;
     T4 out(o, o, v, v);
-    Eigen::Map<Mat> L(out.data(), oo, nvv);
-    pgemm(L, Eigen::Map<const Mat>(tau.data(), oo, nvv), *W);
+    Eigen::Map<Mat> L(out.data(), oo, vv);
+    pgemm(L, Eigen::Map<const Mat>(tau.data(), oo, vv),
+          Eigen::Map<const Mat>(vvvv->data(), vv, vv));
     return out;
   };
   occ::timing::stop(occ::timing::category::cc_ao2mo);
