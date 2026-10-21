@@ -180,6 +180,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1JKTriple.html">JKTriple</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1LocalizedOrbitals.html">LocalizedOrbitals</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orbitals localized by an orthogonal rotation of the input set.  <a href="structocc_1_1qm_1_1LocalizedOrbitals.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1qm_1_1MOIntegralEngine.html">MOIntegralEngine</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lightweight holder of molecular-orbital information for post-HF methods, plus a brute-force single MO electron-repulsion integral evaluator kept as a reference/testing utility.  <a href="classocc_1_1qm_1_1MOIntegralEngine.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -190,6 +193,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1Oniom.html">Oniom</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1OrbitalSmearing.html">OrbitalSmearing</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1PipekMezeySettings.html">PipekMezeySettings</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1PointChargePotential.html">PointChargePotential</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Plain external point charges (vacuum Coulomb).  <a href="structocc_1_1qm_1_1PointChargePotential.html#details">More...</a><br /></td></tr>
@@ -266,6 +271,11 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:ab76983d7f2f4d9156c8ccebb15d6a4ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method for computing Coulomb matrix in density fitting.  <a href="namespaceocc_1_1qm.html#ab76983d7f2f4d9156c8ccebb15d6a4ca">More...</a><br /></td></tr>
 <tr class="separator:ab76983d7f2f4d9156c8ccebb15d6a4ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f3e3a648da5b41710c02b5e839f7164" id="r_a7f3e3a648da5b41710c02b5e839f7164"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164">PopulationKind</a> { <a class="el" href="namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164acd767d8a9b2b590bc3a2804bf09a4a57">Mulliken</a>
+, <a class="el" href="namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164a827897bed51ff121df81b3171808220d">Lowdin</a>
+ }</td></tr>
+<tr class="memdesc:a7f3e3a648da5b41710c02b5e839f7164"><td class="mdescLeft">&#160;</td><td class="mdescRight">Atomic population entering the Pipek-Mezey functional.  <a href="namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164">More...</a><br /></td></tr>
+<tr class="separator:a7f3e3a648da5b41710c02b5e839f7164"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed277318daf206bcae7523f0c4f9cacc" id="r_aed277318daf206bcae7523f0c4f9cacc"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#aed277318daf206bcae7523f0c4f9cacc">DiisStrategy</a> { <a class="el" href="namespaceocc_1_1qm.html#aed277318daf206bcae7523f0c4f9cacca07211349a1d2a7508564984b69ba75a6">CDIIS</a>
 , <a class="el" href="namespaceocc_1_1qm.html#aed277318daf206bcae7523f0c4f9caccac0b5e171e0bafffca5721251753907ae">EDIIS_CDIIS</a>
 , <a class="el" href="namespaceocc_1_1qm.html#aed277318daf206bcae7523f0c4f9caccac07f5498a51754a657bc3eff47cb222b">ADIIS_CDIIS</a>
@@ -323,6 +333,12 @@ Functions</h2></td></tr>
 <tr class="separator:a02da566540a2e35f95f9bfc8e376995c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4c77f061de3434308206c3503d499ff" id="r_ae4c77f061de3434308206c3503d499ff"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#ae4c77f061de3434308206c3503d499ff">to_json</a> (nlohmann::json &amp;J, const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;wfn)</td></tr>
 <tr class="separator:ae4c77f061de3434308206c3503d499ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24a6f579087916559ae6f2745add2123" id="r_a24a6f579087916559ae6f2745add2123"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1LocalizedOrbitals.html">LocalizedOrbitals</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a24a6f579087916559ae6f2745add2123">pipek_mezey</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">AOBasis</a> &amp;basis, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;S, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;C, const <a class="el" href="structocc_1_1qm_1_1PipekMezeySettings.html">PipekMezeySettings</a> &amp;settings={})</td></tr>
+<tr class="memdesc:a24a6f579087916559ae6f2745add2123"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pipek-Mezey localization (Pipek &amp; Mezey, JCP 90, 4916 (1989)) of the columns of C by Jacobi sweeps: maximizes sum_k sum_A (q_A^k)^2, the atomic populations of each orbital, over rotations among the columns of C.  <br /></td></tr>
+<tr class="separator:a24a6f579087916559ae6f2745add2123"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a481bf0ec0535c82f77ac5f9b8bb0368e" id="r_a481bf0ec0535c82f77ac5f9b8bb0368e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1LocalizedOrbitals.html">LocalizedOrbitals</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a481bf0ec0535c82f77ac5f9b8bb0368e">pipek_mezey</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;wfn, int n_frozen=0, const <a class="el" href="structocc_1_1qm_1_1PipekMezeySettings.html">PipekMezeySettings</a> &amp;settings={})</td></tr>
+<tr class="memdesc:a481bf0ec0535c82f77ac5f9b8bb0368e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pipek-Mezey localization of the occupied orbitals of a closed-shell restricted wavefunction, the n_frozen lowest left out.  <br /></td></tr>
+<tr class="separator:a481bf0ec0535c82f77ac5f9b8bb0368e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac09cf4fe46928c8b388e9b9253147cf6" id="r_ac09cf4fe46928c8b388e9b9253147cf6"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a>, Vec &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#ac09cf4fe46928c8b388e9b9253147cf6">merge_molecular_orbitals</a> (const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;, const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;, const Vec &amp;, const Vec &amp;, bool sort_by_energy=false)</td></tr>
 <tr class="separator:ac09cf4fe46928c8b388e9b9253147cf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a096777b12f35eca1e096b98cb195817c" id="r_a096777b12f35eca1e096b98cb195817c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1gto_1_1AOBasis.html">AOBasis</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm.html#a096777b12f35eca1e096b98cb195817c">merge_basis_sets</a> (const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">AOBasis</a> &amp;, const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">AOBasis</a> &amp;)</td></tr>
@@ -569,6 +585,36 @@ Variables</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="aff54e60746f41e12e35dff6049d04775ad71828f502a7ec49e91266601030925b" name="aff54e60746f41e12e35dff6049d04775ad71828f502a7ec49e91266601030925b"></a>AtomicScf&#160;</td><td class="fielddoc"><p>Superposition of converged isolated-atom densities, one small <a class="el" href="structocc_1_1qm_1_1SCF.html">SCF</a> per element in this calculation's own basis. </p>
 <p>Costs more than the others and works wherever the orbital basis does, ECPs included. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="a7f3e3a648da5b41710c02b5e839f7164" name="a7f3e3a648da5b41710c02b5e839f7164"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f3e3a648da5b41710c02b5e839f7164">&#9670;&#160;</a></span>PopulationKind</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164">occ::qm::PopulationKind</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Atomic population entering the Pipek-Mezey functional. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a7f3e3a648da5b41710c02b5e839f7164acd767d8a9b2b590bc3a2804bf09a4a57" name="a7f3e3a648da5b41710c02b5e839f7164acd767d8a9b2b590bc3a2804bf09a4a57"></a>Mulliken&#160;</td><td class="fielddoc"><p>q_A = sum_{mu in A} C_mu (S C)_mu, the original PM choice </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a7f3e3a648da5b41710c02b5e839f7164a827897bed51ff121df81b3171808220d" name="a7f3e3a648da5b41710c02b5e839f7164a827897bed51ff121df81b3171808220d"></a>Lowdin&#160;</td><td class="fielddoc"><p>q_A = sum_{mu in A} (S^1/2 C)_mu^2, never negative </p>
 </td></tr>
 </table>
 
@@ -1127,6 +1173,85 @@ template&lt;SpinorbitalKind kind&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a24a6f579087916559ae6f2745add2123" name="a24a6f579087916559ae6f2745add2123"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24a6f579087916559ae6f2745add2123">&#9670;&#160;</a></span>pipek_mezey() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1qm_1_1LocalizedOrbitals.html">LocalizedOrbitals</a> occ::qm::pipek_mezey </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1gto_1_1AOBasis.html">AOBasis</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>S</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">Mat</a> &amp;&#160;</td>
+          <td class="paramname"><em>C</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1PipekMezeySettings.html">PipekMezeySettings</a> &amp;&#160;</td>
+          <td class="paramname"><em>settings</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pipek-Mezey localization (Pipek &amp; Mezey, JCP 90, 4916 (1989)) of the columns of C by Jacobi sweeps: maximizes sum_k sum_A (q_A^k)^2, the atomic populations of each orbital, over rotations among the columns of C. </p>
+<p>The span of C is unchanged; S is the AO overlap. </p>
+
+</div>
+</div>
+<a id="a481bf0ec0535c82f77ac5f9b8bb0368e" name="a481bf0ec0535c82f77ac5f9b8bb0368e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a481bf0ec0535c82f77ac5f9b8bb0368e">&#9670;&#160;</a></span>pipek_mezey() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1qm_1_1LocalizedOrbitals.html">LocalizedOrbitals</a> occ::qm::pipek_mezey </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">Wavefunction</a> &amp;&#160;</td>
+          <td class="paramname"><em>wfn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n_frozen</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1PipekMezeySettings.html">PipekMezeySettings</a> &amp;&#160;</td>
+          <td class="paramname"><em>settings</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pipek-Mezey localization of the occupied orbitals of a closed-shell restricted wavefunction, the n_frozen lowest left out. </p>
 
 </div>
 </div>

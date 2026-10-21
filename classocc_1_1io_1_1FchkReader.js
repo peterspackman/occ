@@ -50,6 +50,7 @@ var classocc_1_1io_1_1FchkReader =
     [ "basis_set", "classocc_1_1io_1_1FchkReader.html#acbe6558bfd364d352b83fd186ffbbdee", null ],
     [ "beta_mo_coefficients", "classocc_1_1io_1_1FchkReader.html#a2410b0e5500504f991dacf1278880a35", null ],
     [ "beta_mo_energies", "classocc_1_1io_1_1FchkReader.html#a8cf01d3277878bcbbcd0b06304d16667", null ],
+    [ "has_scf_density", "classocc_1_1io_1_1FchkReader.html#a77b65b95ce1dd94dcc0ef23b4cbb9ba2", null ],
     [ "mp2_density_matrix", "classocc_1_1io_1_1FchkReader.html#a1c72dfbb1f4b7646ec45ce8fe5f568a3", null ],
     [ "nuclear_charges", "classocc_1_1io_1_1FchkReader.html#ade95265ff1dc3fa92e1235b92b20c8f6", null ],
     [ "num_alpha", "classocc_1_1io_1_1FchkReader.html#aa36dd81308f9fd16eda7b5ad4ddf5129", null ],

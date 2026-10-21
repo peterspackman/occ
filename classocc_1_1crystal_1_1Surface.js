@@ -10,7 +10,7 @@ var classocc_1_1crystal_1_1Surface =
     [ "depth", "classocc_1_1crystal_1_1Surface.html#a63fe34f4472ecb401d49a45650e47ab9", null ],
     [ "depth_vector", "classocc_1_1crystal_1_1Surface.html#af1e93e9b61fdf1af39674dc99590b0ef", null ],
     [ "dipole", "classocc_1_1crystal_1_1Surface.html#a4e7032f4e9bbc7cc347b5185533ab7d9", null ],
-    [ "find_molecule_cell_translations", "classocc_1_1crystal_1_1Surface.html#a4ae19853ee4dac33c7b4a27fe69eb807", null ],
+    [ "find_molecule_cell_translations", "classocc_1_1crystal_1_1Surface.html#a88da93f9be941bcde6e9df535c6c7aa3", null ],
     [ "hkl", "classocc_1_1crystal_1_1Surface.html#a983171cb592f7dcd0a6d619b617eb282", null ],
     [ "normal_vector", "classocc_1_1crystal_1_1Surface.html#a45f037c499af57243668675fa0a5523c", null ],
     [ "possible_cuts", "classocc_1_1crystal_1_1Surface.html#ab81a0b7f412ad79f7b3ab5762c6ba3eb", null ],

@@ -104,12 +104,13 @@ $(document).ready(function(){initNavTree('correlation_8h.html',''); initResizabl
   <div class="headertitle"><div class="title">correlation.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="wavefunction_8h.html">occ/qm/wavefunction.h</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="qm_2cc_2density_8h.html">occ/qm/cc/density.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="wavefunction_8h.html">occ/qm/wavefunction.h</a>&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for correlation.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="correlation_8h__incl.svg" width="1880" height="579"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="correlation_8h__incl.svg" width="2024" height="652"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -133,6 +134,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a4aa548e9c40e80857f05d1dccd308b82" id="r_a4aa548e9c40e80857f05d1dccd308b82"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1driver_1_1CorrelationResult.html">CorrelationResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a4aa548e9c40e80857f05d1dccd308b82">occ::driver::run_correlation</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;wfn, const <a class="el" href="structocc_1_1driver_1_1CorrelationOptions.html">CorrelationOptions</a> &amp;opts={})</td></tr>
 <tr class="memdesc:a4aa548e9c40e80857f05d1dccd308b82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run an MP2 / CCSD / <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a> calculation on a converged SCF wavefunction, with the same backend dispatch, auxiliary-basis resolution and frozen-core handling as the CLI.  <br /></td></tr>
 <tr class="separator:a4aa548e9c40e80857f05d1dccd308b82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20223333a57a3d66189ae30d22726fd8" id="r_a20223333a57a3d66189ae30d22726fd8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1cc_1_1CorrelatedDensity.html">qm::cc::CorrelatedDensity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a20223333a57a3d66189ae30d22726fd8">occ::driver::run_correlated_density</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;wfn, const <a class="el" href="structocc_1_1driver_1_1CorrelationOptions.html">CorrelationOptions</a> &amp;opts={}, bool local=false, const <a class="el" href="classocc_1_1qm_1_1HartreeFock.html">qm::HartreeFock</a> *scf_jk=nullptr)</td></tr>
+<tr class="memdesc:a20223333a57a3d66189ae30d22726fd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The one-particle density of a correlation method on a converged closed-shell RHF wavefunction, as natural orbitals: relaxed for MP2, unrelaxed (Lambda equations) for CCSD and <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a>; with <code>local</code> the cluster-in-molecule CCSD / <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a> density.  <br /></td></tr>
+<tr class="separator:a20223333a57a3d66189ae30d22726fd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

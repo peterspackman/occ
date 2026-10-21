@@ -1,0 +1,5 @@
+<map id="occ::qm::cc::MPnAmplitudes" name="occ::qm::cc::MPnAmplitudes">
+<area shape="rect" id="Node000001" title="The amplitudes behind mpn_energies: first&#45;order doubles t = g/D, the second&#45;order singles s and doubl..." alt="" coords="5,93,211,119"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1qm_1_1cc_1_1MPnEnergies.html" title="Moller&#45;Plesset correlation energies through fourth order (canonical RHF)." alt="" coords="15,5,201,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,45,111,93,105,93,105,45"/>
+</map>

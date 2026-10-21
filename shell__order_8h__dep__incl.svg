@@ -140,7 +140,7 @@
 <!-- Node13 -->
 <g id="Node000013" class="node">
 <title>Node13</title>
-<g id="a_Node000013"><a xlink:href="density_8h.html" target="_top" xlink:title=" ">
+<g id="a_Node000013"><a xlink:href="gto_2density_8h.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="378,-503 250,-503 250,-462 378,-462 378,-503"/>
 <text text-anchor="start" x="258" y="-491" font-family="Helvetica,sans-Serif" font-size="10.00">/home/runner/work/occ</text>
 <text text-anchor="start" x="258" y="-480" font-family="Helvetica,sans-Serif" font-size="10.00">/occ/include/occ/gto</text>

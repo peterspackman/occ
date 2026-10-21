@@ -118,6 +118,12 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1cc_1_1CCSDOptions.html">occ::qm::cc::CCSDOptions</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1cc_1_1MPnEnergies.html">occ::qm::cc::MPnEnergies</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Moller-Plesset correlation energies through fourth order (canonical RHF).  <a href="structocc_1_1qm_1_1cc_1_1MPnEnergies.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1qm_1_1cc_1_1MPnAmplitudes.html">occ::qm::cc::MPnAmplitudes</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The amplitudes behind mpn_energies: first-order doubles t = g/D, the second-order singles s and doubles u = L(t)/D, and q = Q(t)/D; the energies without E4(T).  <a href="structocc_1_1qm_1_1cc_1_1MPnAmplitudes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
@@ -137,6 +143,11 @@ Functions</h2></td></tr>
 <tr class="memitem:a6441bae7a4e1b5af16e7473e3ea01aeb" id="r_a6441bae7a4e1b5af16e7473e3ea01aeb"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm_1_1cc.html#a6441bae7a4e1b5af16e7473e3ea01aeb">occ::qm::cc::ccsd_energy</a> (const Eigen::Tensor&lt; double, 2 &gt; &amp;t1, const Eigen::Tensor&lt; double, 4 &gt; &amp;t2, const <a class="el" href="structocc_1_1qm_1_1cc_1_1CCIntegrals.html">CCIntegrals</a> &amp;eris)</td></tr>
 <tr class="memdesc:a6441bae7a4e1b5af16e7473e3ea01aeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">CCSD correlation energy for given amplitudes (exposed for testing).  <br /></td></tr>
 <tr class="separator:a6441bae7a4e1b5af16e7473e3ea01aeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b6f72b66a90acdc84f9b0bb1f91c766" id="r_a6b6f72b66a90acdc84f9b0bb1f91c766"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1cc_1_1MPnEnergies.html">MPnEnergies</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm_1_1cc.html#a6b6f72b66a90acdc84f9b0bb1f91c766">occ::qm::cc::mpn_energies</a> (const <a class="el" href="structocc_1_1qm_1_1cc_1_1CCIntegrals.html">CCIntegrals</a> &amp;eris, bool triples=true)</td></tr>
+<tr class="memdesc:a6b6f72b66a90acdc84f9b0bb1f91c766"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classocc_1_1qm_1_1MP2.html">MP2</a>, MP3 and MP4(SDQ / SDTQ) from the CCSD residual: with t1 = 0 the doubles residual is g + L(t) + Q(t), so the first-order amplitudes t give E3 = &lt;t~|L&gt;, E4(D) = &lt;L~|L/D&gt;, E4(S) = 2 |S|^2/D, E4(Q) = &lt;t~|Q&gt;, and E4(T) is ccsd_t on t (with triples).  <br /></td></tr>
+<tr class="separator:a6b6f72b66a90acdc84f9b0bb1f91c766"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ee8841221fc22a4e96a88e692669713" id="r_a8ee8841221fc22a4e96a88e692669713"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1cc_1_1MPnAmplitudes.html">MPnAmplitudes</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1qm_1_1cc.html#a8ee8841221fc22a4e96a88e692669713">occ::qm::cc::mpn_amplitudes</a> (const <a class="el" href="structocc_1_1qm_1_1cc_1_1CCIntegrals.html">CCIntegrals</a> &amp;eris)</td></tr>
+<tr class="separator:a8ee8841221fc22a4e96a88e692669713"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

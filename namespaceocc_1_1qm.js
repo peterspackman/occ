@@ -56,11 +56,13 @@ var namespaceocc_1_1qm =
     [ "IntegralEngineDF", "classocc_1_1qm_1_1IntegralEngineDF.html", "classocc_1_1qm_1_1IntegralEngineDF" ],
     [ "JKPair", "structocc_1_1qm_1_1JKPair.html", "structocc_1_1qm_1_1JKPair" ],
     [ "JKTriple", "structocc_1_1qm_1_1JKTriple.html", "structocc_1_1qm_1_1JKTriple" ],
+    [ "LocalizedOrbitals", "structocc_1_1qm_1_1LocalizedOrbitals.html", "structocc_1_1qm_1_1LocalizedOrbitals" ],
     [ "MOIntegralEngine", "classocc_1_1qm_1_1MOIntegralEngine.html", "classocc_1_1qm_1_1MOIntegralEngine" ],
     [ "MolecularOrbitals", "structocc_1_1qm_1_1MolecularOrbitals.html", "structocc_1_1qm_1_1MolecularOrbitals" ],
     [ "MP2", "classocc_1_1qm_1_1MP2.html", "classocc_1_1qm_1_1MP2" ],
     [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
     [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
+    [ "PipekMezeySettings", "structocc_1_1qm_1_1PipekMezeySettings.html", "structocc_1_1qm_1_1PipekMezeySettings" ],
     [ "PointChargePotential", "structocc_1_1qm_1_1PointChargePotential.html", "structocc_1_1qm_1_1PointChargePotential" ],
     [ "PostHFMethod", "classocc_1_1qm_1_1PostHFMethod.html", "classocc_1_1qm_1_1PostHFMethod" ],
     [ "SCF", "structocc_1_1qm_1_1SCF.html", "structocc_1_1qm_1_1SCF" ],
@@ -103,6 +105,10 @@ var namespaceocc_1_1qm =
       [ "Sap", "namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775aa5734424887783d782c4136b7aff71c5", null ],
       [ "AtomicScf", "namespaceocc_1_1qm.html#aff54e60746f41e12e35dff6049d04775ad71828f502a7ec49e91266601030925b", null ]
     ] ],
+    [ "PopulationKind", "namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164", [
+      [ "Mulliken", "namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164acd767d8a9b2b590bc3a2804bf09a4a57", null ],
+      [ "Lowdin", "namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164a827897bed51ff121df81b3171808220d", null ]
+    ] ],
     [ "SpinComponent", "namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1", [
       [ "Total", "namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1a96b0141273eabab320119c467cdcaf17", null ],
       [ "Alpha", "namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1a6132295fcf5570fb8b0a944ef322a598", null ],
@@ -126,6 +132,8 @@ var namespaceocc_1_1qm =
     [ "merge_molecular_orbitals", "namespaceocc_1_1qm.html#ac09cf4fe46928c8b388e9b9253147cf6", null ],
     [ "minimal_basis_covers", "namespaceocc_1_1qm.html#a8cf1931c2abe451e2c42afda315cc9ef", null ],
     [ "mulliken_partition", "namespaceocc_1_1qm.html#abbd3ff1729602847daf45753f527aa15", null ],
+    [ "pipek_mezey", "namespaceocc_1_1qm.html#a24a6f579087916559ae6f2745add2123", null ],
+    [ "pipek_mezey", "namespaceocc_1_1qm.html#a481bf0ec0535c82f77ac5f9b8bb0368e", null ],
     [ "resolve_fitting_basis", "namespaceocc_1_1qm.html#a879a0c61d5547c7ddd07c0c8c42f9f6e", null ],
     [ "ScopedRangeSeparation", "namespaceocc_1_1qm.html#aef47b81ceac345d2af78ef9fc38bfcc7", null ],
     [ "select_guess", "namespaceocc_1_1qm.html#aacfe509f9f92d0fee7151b5328b48427", null ],

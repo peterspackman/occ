@@ -7,6 +7,8 @@ var structocc_1_1io_1_1MethodInput =
     [ "ccsd_thc_grid_angular", "structocc_1_1io_1_1MethodInput.html#ac1d3917e391e384bf91ed8fbf315a356", null ],
     [ "ccsd_thc_grid_radial", "structocc_1_1io_1_1MethodInput.html#a809ec9379dfc339f65a76c8589abe4de", null ],
     [ "ccsd_thc_method", "structocc_1_1io_1_1MethodInput.html#a955c77083f3bb1a1d3301f85b7a496c3", null ],
+    [ "correlated_density", "structocc_1_1io_1_1MethodInput.html#acedeb985dd16ef7f55f2d01533e39e58", null ],
+    [ "correlated_density_local", "structocc_1_1io_1_1MethodInput.html#afd510f36ff9329e1638d524867e448fb", null ],
     [ "cosx", "structocc_1_1io_1_1MethodInput.html#a3e16f01652410f1236dbb91fc10e8d2c", null ],
     [ "cosx_grid_level", "structocc_1_1io_1_1MethodInput.html#ae82deca2168e7bf0ab03faaaac9c07c6", null ],
     [ "dft_grid", "structocc_1_1io_1_1MethodInput.html#ae421844e58ba074671bc2868e3176808", null ],

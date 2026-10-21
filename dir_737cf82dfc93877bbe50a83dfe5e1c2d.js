@@ -23,6 +23,7 @@ var dir_737cf82dfc93877bbe50a83dfe5e1c2d =
     [ "initial_guess.h", "initial__guess_8h.html", "initial__guess_8h" ],
     [ "integral_engine.h", "integral__engine_8h.html", "integral__engine_8h" ],
     [ "integral_engine_df.h", "integral__engine__df_8h.html", "integral__engine__df_8h" ],
+    [ "localization.h", "localization_8h.html", "localization_8h" ],
     [ "merge.h", "merge_8h.html", "merge_8h" ],
     [ "mo.h", "mo_8h.html", "mo_8h" ],
     [ "oniom.h", "oniom_8h.html", "oniom_8h" ],

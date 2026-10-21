@@ -46,7 +46,8 @@ var searchData=
   ['lj_5fa_43',['LJ_A',['../namespaceocc_1_1elastic__fit.html#a2bc5d23df97676c1c631687652ef45bda684cce8e597d42fa061d1369dc222171',1,'occ::elastic_fit']]],
   ['lmg_44',['LMG',['../namespaceocc_1_1numint.html#adfae001d345ff26f124a72c71d63856fac6acc5eb0596138dc4ae5a2c3108bbb6',1,'occ::numint']]],
   ['log_45',['Log',['../namespaceocc_1_1core.html#af6f9457912400951cbbcec98cc5b2e35a2b2df24d50ce1857a720db0836d538b8',1,'occ::core']]],
-  ['lst_46',['LST',['../classocc_1_1io_1_1FchkWriter.html#adef69bf2291f5e23817021844e874db1a9ee00d0786f3f3e8803edf6e8416946d',1,'occ::io::FchkWriter']]],
-  ['lu_47',['LU',['../namespaceocc_1_1elastic__fit.html#ac3e8c91ec2f8e6a091ce339e4f700e97a920d0c66f3d2ad926a6d590a5d244bd9',1,'occ::elastic_fit']]],
-  ['lumo_48',['LUMO',['../structocc_1_1isosurface_1_1OrbitalIndex.html#a7de04a530b8bbf2e95cca3ed9992f6f8abcffe56f50ef869386d23838602f9308',1,'occ::isosurface::OrbitalIndex']]]
+  ['lowdin_46',['Lowdin',['../namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164a827897bed51ff121df81b3171808220d',1,'occ::qm']]],
+  ['lst_47',['LST',['../classocc_1_1io_1_1FchkWriter.html#adef69bf2291f5e23817021844e874db1a9ee00d0786f3f3e8803edf6e8416946d',1,'occ::io::FchkWriter']]],
+  ['lu_48',['LU',['../namespaceocc_1_1elastic__fit.html#ac3e8c91ec2f8e6a091ce339e4f700e97a920d0c66f3d2ad926a6d590a5d244bd9',1,'occ::elastic_fit']]],
+  ['lumo_49',['LUMO',['../structocc_1_1isosurface_1_1OrbitalIndex.html#a7de04a530b8bbf2e95cca3ed9992f6f8abcffe56f50ef869386d23838602f9308',1,'occ::isosurface::OrbitalIndex']]]
 ];

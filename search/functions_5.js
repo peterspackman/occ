@@ -27,7 +27,7 @@ var searchData=
   ['find_24',['find',['../structocc_1_1cg_1_1SolvationData.html#a14e3273e046434e610e981a641d7d140',1,'occ::cg::SolvationData']]],
   ['find_5fatom_5findex_25',['find_atom_index',['../structocc_1_1gto_1_1Shell.html#aa90108f2896c85c4f20a41d1ef8b6414',1,'occ::gto::Shell']]],
   ['find_5fk_5fnearest_26',['find_k_nearest',['../classocc_1_1descriptors_1_1FastNeighborFinder.html#ac86c57522dfa4d9c93b6051ac98a4205',1,'occ::descriptors::FastNeighborFinder']]],
-  ['find_5fmolecule_5fcell_5ftranslations_27',['find_molecule_cell_translations',['../classocc_1_1crystal_1_1Surface.html#a4ae19853ee4dac33c7b4a27fe69eb807',1,'occ::crystal::Surface']]],
+  ['find_5fmolecule_5fcell_5ftranslations_27',['find_molecule_cell_translations',['../classocc_1_1crystal_1_1Surface.html#a88da93f9be941bcde6e9df535c6c7aa3',1,'occ::crystal::Surface']]],
   ['find_5fmultiple_5fk_5fnearest_28',['find_multiple_k_nearest',['../namespaceocc_1_1descriptors.html#acaba97e817771dcad72be736ad51c1b9',1,'occ::descriptors']]],
   ['find_5fsubgroup_5ffor_5fz_5fprime_29',['find_subgroup_for_z_prime',['../namespaceocc_1_1crystal.html#a99f1bccd4bc3a7c1fee4324283464906',1,'occ::crystal']]],
   ['find_5fthreshold_30',['find_threshold',['../classocc_1_1core_1_1Interpolator1D.html#a44a35addd871012eca73e2bb2ea2b8b3',1,'occ::core::Interpolator1D']]],

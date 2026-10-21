@@ -13,6 +13,7 @@ var searchData=
   ['linear_5fmultipole_5fshifter_2eh_10',['linear_multipole_shifter.h',['../linear__multipole__shifter_8h.html',1,'']]],
   ['linear_5fsearch_2eh_11',['linear_search.h',['../linear__search_8h.html',1,'']]],
   ['load_5fgeometry_2eh_12',['load_geometry.h',['../load__geometry_8h.html',1,'']]],
-  ['log_2eh_13',['log.h',['../log_8h.html',1,'']]],
-  ['logsumexp_2eh_14',['logsumexp.h',['../logsumexp_8h.html',1,'']]]
+  ['localization_2eh_13',['localization.h',['../localization_8h.html',1,'']]],
+  ['log_2eh_14',['log.h',['../log_8h.html',1,'']]],
+  ['logsumexp_2eh_15',['logsumexp.h',['../logsumexp_8h.html',1,'']]]
 ];

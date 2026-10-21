@@ -1,7 +1,7 @@
 var dir_cfc5afc38a17fd298438dc647b813568 =
 [
     [ "io", "dir_eea259a2e03c5cbfbd6154429b16ce04.html", "dir_eea259a2e03c5cbfbd6154429b16ce04" ],
-    [ "density.h", "density_8h.html", "density_8h" ],
+    [ "density.h", "gto_2density_8h.html", "gto_2density_8h" ],
     [ "gto.h", "gto_8h.html", "gto_8h" ],
     [ "json.h", "gto_2json_8h.html", "gto_2json_8h" ],
     [ "rotation.h", "gto_2rotation_8h.html", "gto_2rotation_8h" ],

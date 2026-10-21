@@ -248,6 +248,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a4aa548e9c40e80857f05d1dccd308b82" id="r_a4aa548e9c40e80857f05d1dccd308b82"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1driver_1_1CorrelationResult.html">CorrelationResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a4aa548e9c40e80857f05d1dccd308b82">run_correlation</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;wfn, const <a class="el" href="structocc_1_1driver_1_1CorrelationOptions.html">CorrelationOptions</a> &amp;opts={})</td></tr>
 <tr class="memdesc:a4aa548e9c40e80857f05d1dccd308b82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run an MP2 / CCSD / <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a> calculation on a converged SCF wavefunction, with the same backend dispatch, auxiliary-basis resolution and frozen-core handling as the CLI.  <br /></td></tr>
 <tr class="separator:a4aa548e9c40e80857f05d1dccd308b82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20223333a57a3d66189ae30d22726fd8" id="r_a20223333a57a3d66189ae30d22726fd8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1cc_1_1CorrelatedDensity.html">qm::cc::CorrelatedDensity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a20223333a57a3d66189ae30d22726fd8">run_correlated_density</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;wfn, const <a class="el" href="structocc_1_1driver_1_1CorrelationOptions.html">CorrelationOptions</a> &amp;opts={}, bool local=false, const <a class="el" href="classocc_1_1qm_1_1HartreeFock.html">qm::HartreeFock</a> *scf_jk=nullptr)</td></tr>
+<tr class="memdesc:a20223333a57a3d66189ae30d22726fd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The one-particle density of a correlation method on a converged closed-shell RHF wavefunction, as natural orbitals: relaxed for MP2, unrelaxed (Lambda equations) for CCSD and <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a>; with <code>local</code> the cluster-in-molecule CCSD / <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a> density.  <br /></td></tr>
+<tr class="separator:a20223333a57a3d66189ae30d22726fd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d245c7f2b8a0dabe7ea8faadb2b1635" id="r_a8d245c7f2b8a0dabe7ea8faadb2b1635"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1solvent_1_1cosmors_1_1Segments.html">solvent::cosmors::Segments</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a8d245c7f2b8a0dabe7ea8faadb2b1635">conductor_segments</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;wavefunction, const <a class="el" href="structocc_1_1solvent_1_1cosmors_1_1Parameters.html">solvent::cosmors::Parameters</a> &amp;params={}, double probe_radius_angs=0.0, int angular_points=590, bool constrain_charge=true, <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> *dielectric_energies=nullptr, double *cavity_volume_angs3=nullptr)</td></tr>
 <tr class="memdesc:a8d245c7f2b8a0dabe7ea8faadb2b1635"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build segments from a wavefunction that has already been converged in the ideal-conductor reaction field, with both σ and σ⊥ averaged on <code>params</code>.  <br /></td></tr>
 <tr class="separator:a8d245c7f2b8a0dabe7ea8faadb2b1635"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1637,6 +1640,49 @@ template&lt;typename Proc &gt; </div>
 </div><div class="memdoc">
 
 <p>Run the full crystal-growth pipeline on an already-constructed calculator: monomer energies -&gt; lattice convergence -&gt; molecular surroundings -&gt; surface energies / morphology -&gt; JSON serialization. </p>
+
+</div>
+</div>
+<a id="a20223333a57a3d66189ae30d22726fd8" name="a20223333a57a3d66189ae30d22726fd8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20223333a57a3d66189ae30d22726fd8">&#9670;&#160;</a></span>run_correlated_density()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1qm_1_1cc_1_1CorrelatedDensity.html">qm::cc::CorrelatedDensity</a> occ::driver::run_correlated_density </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;&#160;</td>
+          <td class="paramname"><em>wfn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1driver_1_1CorrelationOptions.html">CorrelationOptions</a> &amp;&#160;</td>
+          <td class="paramname"><em>opts</em> = <code>{}</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>local</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1qm_1_1HartreeFock.html">qm::HartreeFock</a> *&#160;</td>
+          <td class="paramname"><em>scf_jk</em> = <code>nullptr</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The one-particle density of a correlation method on a converged closed-shell RHF wavefunction, as natural orbitals: relaxed for MP2, unrelaxed (Lambda equations) for CCSD and <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a>; with <code>local</code> the cluster-in-molecule CCSD / <a class="el" href="namespaceocc_1_1driver.html#a4f703dc6567193263b605f59f16c1ef5a8dfaf159be1a26cba0db2963d8d35d03">CCSD(T)</a> density. </p>
+<p>Method prefixes, backend (exact or df; thc has no density), auxiliary basis and frozen core resolve as in run_correlation. SCS/SOS scaling has no density and is refused. <code>scf_jk</code>, set up as the SCF was (density fitting, COSX), gives the relaxed MP2 orbital response the SCF's own Coulomb and exchange; null = four-centre. </p>
 
 </div>
 </div>

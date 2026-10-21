@@ -1,6 +1,8 @@
 var dir_39e12efca88ac6fb9de1cd8d013301c7 =
 [
     [ "ccsd.h", "ccsd_8h.html", "ccsd_8h" ],
+    [ "density.h", "qm_2cc_2density_8h.html", "qm_2cc_2density_8h" ],
+    [ "einsum.h", "einsum_8h.html", "einsum_8h" ],
     [ "gemm.h", "gemm_8h.html", "gemm_8h" ],
     [ "integrals.h", "integrals_8h.html", "integrals_8h" ],
     [ "laplace.h", "laplace_8h.html", "laplace_8h" ],

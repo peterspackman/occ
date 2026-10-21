@@ -87,6 +87,7 @@ var namespaceocc_1_1driver =
     [ "read_morphology_shapes", "namespaceocc_1_1driver.html#a52a05b085fa4e8b9e888ead2c509f99b", null ],
     [ "run_cg", "namespaceocc_1_1driver.html#a7694b64538d99dde2da027e9b9fb651b", null ],
     [ "run_cg_pipeline", "namespaceocc_1_1driver.html#aea42beb3f7e608dd644645693b47cd2b", null ],
+    [ "run_correlated_density", "namespaceocc_1_1driver.html#a20223333a57a3d66189ae30d22726fd8", null ],
     [ "run_correlation", "namespaceocc_1_1driver.html#a4aa548e9c40e80857f05d1dccd308b82", null ],
     [ "single_point", "namespaceocc_1_1driver.html#accef768763f0a6d014a16c15da275e19", null ],
     [ "single_point", "namespaceocc_1_1driver.html#a63944c06595e866576b466517b29f80a", null ],

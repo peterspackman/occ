@@ -19,6 +19,7 @@ var searchData=
   ['lj_5fa_16',['LJ_A',['../structocc_1_1elastic__fit_1_1LJ__A.html',1,'occ::elastic_fit']]],
   ['lj_5fawrapper_17',['LJ_AWrapper',['../classocc_1_1elastic__fit_1_1LJ__AWrapper.html',1,'occ::elastic_fit']]],
   ['ljwrapper_18',['LJWrapper',['../classocc_1_1elastic__fit_1_1LJWrapper.html',1,'occ::elastic_fit']]],
-  ['logsumexpfunctor_19',['LogSumExpFunctor',['../classocc_1_1isosurface_1_1LogSumExpFunctor.html',1,'occ::isosurface']]],
-  ['luaconfig_20',['LuaConfig',['../structocc_1_1main_1_1LuaConfig.html',1,'occ::main']]]
+  ['localizedorbitals_19',['LocalizedOrbitals',['../structocc_1_1qm_1_1LocalizedOrbitals.html',1,'occ::qm']]],
+  ['logsumexpfunctor_20',['LogSumExpFunctor',['../classocc_1_1isosurface_1_1LogSumExpFunctor.html',1,'occ::isosurface']]],
+  ['luaconfig_21',['LuaConfig',['../structocc_1_1main_1_1LuaConfig.html',1,'occ::main']]]
 ];
