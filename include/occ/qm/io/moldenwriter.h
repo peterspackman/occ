@@ -3,7 +3,7 @@
 #include <string>
 
 namespace occ::qm {
-class Wavefunction;
+struct Wavefunction; // the class-key must match: MSVC mangles class and struct differently
 }
 
 namespace occ::io {

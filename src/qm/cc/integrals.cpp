@@ -1,7 +1,9 @@
+#include <algorithm>
 #include <memory>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
+#include <occ/qm/cc/gemm.h>
 #include <occ/qm/cc/integrals.h>
 #include <occ/qm/cc/thc.h>
 #include <occ/qm/correlation/df_integrals.h>
@@ -179,17 +181,35 @@ CCIntegrals exact_eris(const AOBasis &basis, const MolecularOrbitals &mo_in,
   e.ovvo = slice_block(G, o, o, v, o, v, 0, o);
   e.ovvv = slice_block(G, o, o, v, o, v, o, v);
 
-  // Exact vvvv ladder. Store a single O(V^4) tensor W(a,b,c,d)=(ab|cd) (the
-  // dense vvvv is inherent to the *exact* backend -- use df/thc to avoid it) and
-  // contract with the (c,d) index mapping so no second (ac|bd) copy is formed.
+  // Exact vvvv ladder. Store a single O(V^4) matrix (the dense vvvv is inherent
+  // to the *exact* backend -- use df/thc to avoid it), laid out once as
+  // W(c + v*d, a + v*b) = (ac|bd) so that the ladder
+  //   L(ij, ab) = sum_cd tau(ij, cd) W(cd, ab)
+  // is one parallel GEMM straight on the column-major tau and result tensors:
+  // no permute per call, and no serial Eigen tensor contraction.
+  // The relayout is done in place: (ac|bd) = (ca|db) = vvvv_full(c,a,d,b) sits
+  // at c + v*a + v^2*d + v^3*b, so W is vvvv_full with a and d swapped for each
+  // (c, b), and no second V^4 buffer is ever allocated.
   auto vvvv = std::make_shared<T4>(std::move(vvvv_full));
-  e.ladder = [vvvv](const T4 &tau) -> T4 {
-    // L_ij^ab = sum_cd (ac|bd) tau_ij^cd = sum_cd W(a,c,b,d) tau(i,j,c,d):
-    // contract W's c(axis1) and d(axis3) with tau's c(axis2),d(axis3).
-    const Eigen::array<Eigen::IndexPair<int>, 2> cd = {
-        Eigen::IndexPair<int>(1, 2), Eigen::IndexPair<int>(3, 3)};
-    const T4 abij = vvvv->contract(tau, cd); // (a,b,i,j)
-    return abij.shuffle(Eigen::array<int, 4>{2, 3, 0, 1});
+  {
+    double *x = vvvv->data();
+    const size_t sv = static_cast<size_t>(v);
+    occ::parallel::parallel_for(size_t(0), sv, [&](size_t b) {
+      for (size_t a = 0; a < sv; ++a)
+        for (size_t d = a + 1; d < sv; ++d)
+          for (size_t c = 0; c < sv; ++c)
+            std::swap(x[c + sv * (a + sv * (d + sv * b))],
+                      x[c + sv * (d + sv * (a + sv * b))]);
+    });
+  }
+  e.ladder = [vvvv, o, v](const T4 &tau) -> T4 {
+    const Eigen::Index oo = static_cast<Eigen::Index>(o) * o;
+    const Eigen::Index vv = static_cast<Eigen::Index>(v) * v;
+    T4 out(o, o, v, v);
+    Eigen::Map<Mat> L(out.data(), oo, vv);
+    pgemm(L, Eigen::Map<const Mat>(tau.data(), oo, vv),
+          Eigen::Map<const Mat>(vvvv->data(), vv, vv));
+    return out;
   };
   occ::timing::stop(occ::timing::category::cc_ao2mo);
   return e;
@@ -225,37 +245,46 @@ static CCIntegrals df_blocks(DFIntegrals &df, const MolecularOrbitals &mo) {
   e.ovvo = unpack(Bov * Bvo.transpose(), o, v, v, o);
   e.ovvv = unpack(Bov * Bvv.transpose(), o, v, v, v);
 
-  // DF ladder: B3(a,c,P) = Bvv row a*nvir+c. For each occ pair (i,j):
-  //   L_ij(a,b) = sum_cd (ac|bd) tau_ij(c,d) = sum_P [B3_a tau_ij B3_b^T]_P
-  const Eigen::Index naux = Bvv.cols();
-  using T3 = Eigen::Tensor<double, 3>;
-  auto B3 = std::make_shared<T3>(v, v, naux); // [a, c, P]
-  for (int a = 0; a < v; ++a)
-    for (int c = 0; c < v; ++c)
-      for (Eigen::Index P = 0; P < naux; ++P)
-        (*B3)(a, c, P) = Bvv(a * v + c, P);
-
-  e.ladder = [B3, o, v](const T4 &tau) -> T4 {
-    T4 result(o, o, v, v);
-    const Eigen::array<Eigen::IndexPair<int>, 1> c1 = {
-        Eigen::IndexPair<int>(1, 0)}; // contract c
-    const Eigen::array<Eigen::IndexPair<int>, 2> Pd = {
-        Eigen::IndexPair<int>(1, 2),
-        Eigen::IndexPair<int>(2, 1)}; // contract P,d
-    occ::parallel::parallel_for(size_t(0), static_cast<size_t>(o) * o,
-                                [&](size_t ij) {
-      const int i = static_cast<int>(ij / o);
-      const int j = static_cast<int>(ij % o);
-      const Eigen::Tensor<double, 2> tau_ij = tau.chip(i, 0).chip(j, 0);
-      // M(a,P,d) = sum_c B3(a,c,P) tau_ij(c,d)
-      const Eigen::Tensor<double, 3> M = B3->contract(tau_ij, c1);
-      // out_ij(a,b) = sum_{P,d} M(a,P,d) B3(b,d,P)
-      const Eigen::Tensor<double, 2> Lij = M.contract(*B3, Pd);
-      for (int a = 0; a < v; ++a)
-        for (int b = 0; b < v; ++b)
-          result(i, j, a, b) = Lij(a, b);
-    });
-    return result;
+  // DF ladder, (ac|bd) built in blocks of a and never stored whole. Bvv row
+  // a*v + c holds (ac|P). For a block of na values of a:
+  //   X(al*v + c, b*v + d) = sum_P (ac|P)(bd|P)            one GEMM
+  //   W(c + v*d, al + na*b) = X(al*v + c, b*v + d)         re-laid out
+  //   L(ij, al + na*b)    = sum_cd tau(ij, cd) W(cd, .)    one GEMM
+  // n_aux v^4 + o^2 v^4 flops per call, as parallel GEMMs, instead of
+  // 4 o^2 v^3 n_aux in serial per-pair tensor contractions; X and W take
+  // 2 na v^3 doubles, sized from the budget below (na >= 1).
+  auto BT = std::make_shared<Mat>(Bvv.transpose()); // (naux x v*v)
+  e.ladder = [BT, o, v](const T4 &tau) -> T4 {
+    constexpr size_t block_bytes = size_t(1) << 28; // X and W together
+    const Eigen::Index oo = static_cast<Eigen::Index>(o) * o;
+    const Eigen::Index vv = static_cast<Eigen::Index>(v) * v;
+    const Eigen::Index na = std::clamp<Eigen::Index>(
+        static_cast<Eigen::Index>(block_bytes / (2 * sizeof(double) * vv * v)), 1, v);
+    const Eigen::Map<const Mat> Tau(tau.data(), oo, vv);
+    T4 out(o, o, v, v);
+    Eigen::Map<Mat> L(out.data(), oo, vv); // column a + v*b
+    Mat X, W, Lb;
+    for (Eigen::Index a0 = 0; a0 < v; a0 += na) {
+      const Eigen::Index nb = std::min(na, static_cast<Eigen::Index>(v) - a0);
+      X.resize(nb * v, vv);
+      pgemm(X, BT->middleCols(a0 * v, nb * v), *BT, false, true);
+      W.resize(vv, nb * v);
+      occ::parallel::parallel_for(size_t(0), static_cast<size_t>(v), [&](size_t bu) {
+        const Eigen::Index b = static_cast<Eigen::Index>(bu);
+        for (Eigen::Index al = 0; al < nb; ++al)
+          for (Eigen::Index d = 0; d < v; ++d)
+            for (Eigen::Index c = 0; c < v; ++c)
+              W(c + v * d, al + nb * b) = X(al * v + c, b * v + d);
+      });
+      Lb.resize(oo, nb * v);
+      pgemm(Lb, Tau, W);
+      occ::parallel::parallel_for(size_t(0), static_cast<size_t>(v), [&](size_t bu) {
+        const Eigen::Index b = static_cast<Eigen::Index>(bu);
+        for (Eigen::Index al = 0; al < nb; ++al)
+          L.col(a0 + al + v * b) = Lb.col(al + nb * b);
+      });
+    }
+    return out;
   };
   return e;
 }
