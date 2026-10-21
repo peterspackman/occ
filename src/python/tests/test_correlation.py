@@ -140,3 +140,68 @@ def test_uhf_ccsd(water_atoms):
     opts.with_triples = False
     low = uccsd(wfn.basis, wfn.molecular_orbitals, opts)
     assert pytest.approx(low.e_corr, abs=1e-8) == res.correlation_energy
+
+
+def _dipole(wfn):
+    from occpy import IntegralEngine
+
+    return np.asarray(IntegralEngine(wfn.basis).multipole(1, wfn.molecular_orbitals))
+
+
+def test_ccsd_density_natural_orbitals(water_wfn):
+    from occpy import CorrelatedDensityOptions, ccsd_density
+
+    opts = CorrelatedDensityOptions()
+    opts.n_frozen = 0
+    opts.tol = 1e-8
+    d = ccsd_density(water_wfn, opts)
+    n = np.asarray(d.occupations)
+    nelec = 10
+    assert pytest.approx(n.sum(), abs=1e-10) == nelec
+    assert np.all(np.diff(n) <= 1e-12)  # descending
+    assert n[0] <= 2.0 + 1e-10 and n[-1] >= -1e-10
+    # the same energy as the energy-converged CCSD
+    ref = run_correlation(water_wfn, method="ccsd", n_frozen=0, tol=1e-11)
+    assert pytest.approx(d.e_corr, abs=1e-8) == ref.correlation_energy
+    # correlation lowers the water dipole
+    assert np.linalg.norm(_dipole(d.natural)) < np.linalg.norm(_dipole(water_wfn))
+
+
+def test_run_correlated_density_matches_driver_energy(water_wfn):
+    from occpy import run_correlated_density
+
+    opts = CorrelationOptions()
+    opts.method = "ccsd(t)"
+    d = run_correlated_density(water_wfn, opts)
+    ref = run_correlation(water_wfn, method="ccsd(t)")
+    assert pytest.approx(d.natural.energy.total, abs=1e-8) == ref.total_energy
+    assert "CCSD(T)" in repr(d)
+
+
+def test_relaxed_mp2_density_df_and_fchk_roundtrip(water_wfn, tmp_path):
+    from occpy import CorrelatedDensityOptions, Wavefunction, mp2_relaxed_density
+
+    opts = CorrelatedDensityOptions()
+    opts.backend = "df"
+    d = mp2_relaxed_density(water_wfn, opts)
+    assert d.backend == "df"
+    ri = run_correlation(water_wfn, method="ri-mp2", aux_basis=d.aux_basis)
+    assert pytest.approx(d.e_corr, abs=1e-9) == ri.correlation_energy
+    # the natural orbitals' density survives an fchk round trip
+    path = str(tmp_path / "mp2.fchk")
+    d.natural.to_fchk(path)
+    back = Wavefunction.from_fchk(path)
+    assert np.allclose(_dipole(back), _dipole(d.natural), atol=1e-6)
+
+
+def test_correlated_density_refuses_unsupported(water_wfn):
+    from occpy import run_correlated_density
+
+    opts = CorrelationOptions()
+    opts.method = "thc-ccsd"
+    with pytest.raises(RuntimeError):
+        run_correlated_density(water_wfn, opts)
+    opts.method = "mp2"
+    opts.spin_scaling = "scs"
+    with pytest.raises(RuntimeError):
+        run_correlated_density(water_wfn, opts)

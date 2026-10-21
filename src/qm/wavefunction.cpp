@@ -37,6 +37,23 @@ Wavefunction::Wavefunction(const FchkReader &fchk)
   energy.total = fchk.scf_energy();
   set_molecular_orbitals(fchk);
   compute_density_matrix();
+  // A natural-orbital fchk (a correlated density, fractional occupations)
+  // carries its density only in "Total SCF Density": rebuilt from the MOs with
+  // integer occupations it would be the wrong one, so prefer the stored density
+  if (mo.kind == SpinorbitalKind::Restricted && fchk.has_scf_density()) {
+    namespace conv = occ::io::conversion::orb;
+    auto rows = [&](const Mat &m) {
+      return basis.is_pure() ? conv::from_gaussian_order_spherical(basis, m)
+                             : conv::from_gaussian_order_cartesian(basis, m);
+    };
+    const Mat stored =
+        rows(rows(fchk.scf_density_matrix()).transpose()).transpose();
+    if ((stored - mo.D).cwiseAbs().maxCoeff() > 1e-6) {
+      occ::log::info("Using the density stored in the fchk file: it differs "
+                     "from the occupied orbitals' (natural orbitals?)");
+      mo.D = stored;
+    }
+  }
 }
 
 Wavefunction::Wavefunction(const OrcaJSONReader &json)

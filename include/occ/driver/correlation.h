@@ -1,4 +1,5 @@
 #pragma once
+#include <occ/qm/cc/density.h>
 #include <occ/qm/wavefunction.h>
 #include <string>
 
@@ -57,5 +58,17 @@ struct CorrelationResult {
  */
 CorrelationResult run_correlation(const qm::Wavefunction &wfn,
                                   const CorrelationOptions &opts = {});
+
+/**
+ * @brief The one-particle density of a correlation method on a converged
+ * closed-shell RHF wavefunction, as natural orbitals: relaxed for MP2,
+ * unrelaxed (Lambda equations) for CCSD and CCSD(T); with `local` the
+ * cluster-in-molecule CCSD / CCSD(T) density. Method prefixes, backend (exact
+ * or df; thc has no density), auxiliary basis and frozen core resolve as in
+ * run_correlation. SCS/SOS scaling has no density and is refused.
+ */
+qm::cc::CorrelatedDensity
+run_correlated_density(const qm::Wavefunction &wfn,
+                       const CorrelationOptions &opts = {}, bool local = false);
 
 } // namespace occ::driver

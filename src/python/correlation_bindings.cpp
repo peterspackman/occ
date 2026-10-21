@@ -7,6 +7,7 @@
 #include <nanobind/stl/string.h>
 #include <occ/driver/correlation.h>
 #include <occ/qm/cc/ccsd.h>
+#include <occ/qm/cc/density.h>
 #include <occ/qm/cc/integrals.h>
 #include <occ/qm/cc/thc_mp2.h>
 #include <occ/qm/cc/triples.h>
@@ -114,6 +115,65 @@ nb::module_ register_correlation_bindings(nb::module_ &m) {
       "n_frozen"_a = -1, "max_memory_gb"_a = 1.0, "max_cycle"_a = 100,
       "tol"_a = 1e-9);
 
+  // Correlated one-particle densities (closed-shell RHF references)
+  nb::class_<cc::CorrelatedDensityOptions>(m, "CorrelatedDensityOptions")
+      .def(nb::init<>())
+      .def_rw("n_frozen", &cc::CorrelatedDensityOptions::n_frozen,
+              "-1 = auto (chemical core), 0 = all-electron")
+      .def_rw("backend", &cc::CorrelatedDensityOptions::backend, "exact | df")
+      .def_rw("aux_basis", &cc::CorrelatedDensityOptions::aux_basis)
+      .def_rw("max_memory_gb", &cc::CorrelatedDensityOptions::max_memory_gb)
+      .def_rw("tol", &cc::CorrelatedDensityOptions::tol,
+              "max residual: CC amplitudes, Lambda, MP2 Z-vector")
+      .def_rw("max_cycle", &cc::CorrelatedDensityOptions::max_cycle)
+      .def_rw("triples", &cc::CorrelatedDensityOptions::triples,
+              "CCSD(T) rather than CCSD (MP4 rather than MP4(SDQ))")
+      .def_rw("cluster_radius", &cc::CorrelatedDensityOptions::cluster_radius,
+              "local: Angstrom between LMO centres")
+      .def_rw("domain_threshold",
+              &cc::CorrelatedDensityOptions::domain_threshold)
+      .def_rw("pair_threshold", &cc::CorrelatedDensityOptions::pair_threshold)
+      .def_rw("lno_threshold", &cc::CorrelatedDensityOptions::lno_threshold);
+
+  nb::class_<cc::CorrelatedDensity>(m, "CorrelatedDensity")
+      .def_ro("natural", &cc::CorrelatedDensity::natural,
+              "natural orbitals as a Wavefunction (n/2 in mo.occupation, the "
+              "alpha density in mo.D)")
+      .def_ro("occupations", &cc::CorrelatedDensity::occupations)
+      .def_ro("e_corr", &cc::CorrelatedDensity::e_corr)
+      .def_ro("e_triples", &cc::CorrelatedDensity::e_triples)
+      .def_ro("n_frozen", &cc::CorrelatedDensity::n_frozen)
+      .def_ro("n_occ", &cc::CorrelatedDensity::n_occ)
+      .def_ro("n_vir", &cc::CorrelatedDensity::n_vir)
+      .def_ro("cc_iterations", &cc::CorrelatedDensity::cc_iterations)
+      .def_ro("lambda_iterations", &cc::CorrelatedDensity::lambda_iterations)
+      .def_ro("backend", &cc::CorrelatedDensity::backend)
+      .def_ro("aux_basis", &cc::CorrelatedDensity::aux_basis)
+      .def_ro("n_clusters", &cc::CorrelatedDensity::n_clusters)
+      .def("__repr__", [](const cc::CorrelatedDensity &d) {
+        return fmt::format("<CorrelatedDensity {} E={:.10f} Ecorr={:.10f}>",
+                           d.natural.method, d.natural.energy.total, d.e_corr);
+      });
+
+  m.def("ccsd_density", &cc::ccsd_density, "wavefunction"_a,
+        "options"_a = cc::CorrelatedDensityOptions{},
+        "Unrelaxed CCSD (options.triples: CCSD(T)) density from the Lambda "
+        "equations");
+  m.def("mp2_relaxed_density", &cc::mp2_relaxed_density, "wavefunction"_a,
+        "options"_a = cc::CorrelatedDensityOptions{},
+        "Relaxed MP2 density (Z-vector orbital response)");
+  m.def("mpn_density", &cc::mpn_density, "wavefunction"_a, "order"_a,
+        "options"_a = cc::CorrelatedDensityOptions{},
+        "Unrelaxed MP3 (order 3) or MP4(SDQ) / MP4 (order 4) density");
+  m.def("local_ccsd_density", &cc::local_ccsd_density, "wavefunction"_a,
+        "options"_a = cc::CorrelatedDensityOptions{},
+        "Cluster-in-molecule CCSD / CCSD(T) density");
+  m.def("run_correlated_density", &occ::driver::run_correlated_density,
+        "wavefunction"_a, "options"_a = CorrelationOptions{}, "local"_a = false,
+        "The density of options.method (mp2 relaxed, ccsd / ccsd(t) "
+        "unrelaxed; local = cluster-in-molecule) with the CLI's method, "
+        "backend and frozen-core handling");
+
   // Low-level surface for building on the internals.
   nb::class_<MP2> mp2(m, "MP2");
 
@@ -189,9 +249,13 @@ nb::module_ register_correlation_bindings(nb::module_ &m) {
   m.def("num_frozen_core", &cc::num_frozen_core, "basis"_a,
         "Chemical-core frozen orbital count for a basis (CCSD(T) default)");
   m.def("exact_eris", &cc::exact_eris, "basis"_a, "mo"_a, "n_frozen"_a = 0,
-        "memory_budget"_a = size_t(1) << 30,
-        "Exact MO integral blocks (stores the O(V^4) vvvv ladder)");
-  m.def("df_eris", &cc::df_eris, "basis"_a, "aux_basis"_a, "mo"_a,
+        "memory_budget"_a = size_t(1) << 30, "with_ladder"_a = true,
+        "Exact MO integral blocks (stores the O(V^4) vvvv ladder unless "
+        "with_ladder is false)");
+  m.def("df_eris",
+        nb::overload_cast<const AOBasis &, const AOBasis &,
+                          const MolecularOrbitals &, int, size_t>(&cc::df_eris),
+        "basis"_a, "aux_basis"_a, "mo"_a,
         "n_frozen"_a = 0, "memory_budget"_a = size_t(1) << 30,
         "Density-fitted MO integral blocks (vvvv never formed)");
   m.def("thc_eris", &cc::thc_eris, "basis"_a, "aux_basis"_a, "mo"_a,

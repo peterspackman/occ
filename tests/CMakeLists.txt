@@ -115,6 +115,10 @@ add_executable(cc_tests "${CMAKE_CURRENT_SOURCE_DIR}/cc_tests.cpp")
 target_link_libraries(cc_tests PRIVATE occ_qm occ_cc occ_correlation Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(cc_tests)
 
+add_executable(cc_density_tests "${CMAKE_CURRENT_SOURCE_DIR}/cc_density_tests.cpp")
+target_link_libraries(cc_density_tests PRIVATE occ_qm occ_cc occ_correlation Catch2::Catch2WithMain Threads::Threads)
+catch_discover_tests(cc_density_tests)
+
 add_executable(sht_tests "${CMAKE_CURRENT_SOURCE_DIR}/sht_tests.cpp")
 target_link_libraries(sht_tests PRIVATE occ_sht Catch2::Catch2WithMain Threads::Threads)
 catch_discover_tests(sht_tests)
@@ -224,6 +228,7 @@ add_custom_target(all_tests ALL
         qm_hessian_tests
         mp2_tests
         cc_tests
+        cc_density_tests
         sht_tests
         slater_tests
         descriptors_tests

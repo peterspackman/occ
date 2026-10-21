@@ -41,3 +41,15 @@ print(string.format("CCSD (low level):      %18.10f after %d iterations",
                     res.e_corr, res.iterations))
 local et = occ.ccsd_t(res, eris)
 print(string.format("(T)  (low level):      %18.10f", et))
+
+-- Correlated one-particle densities as natural orbitals (closed-shell RHF):
+-- relaxed MP2, unrelaxed CCSD / CCSD(T); `natural` is a Wavefunction, so it
+-- can be written out or used for properties like any SCF wavefunction.
+local d = occ.run_correlated_density(wfn, "ccsd(t)")
+print(d)
+local n = d.occupations
+print(string.format("CCSD(T) NO occupations: %.6f %.6f ... %.6f %.6f",
+                    n[1], n[2], n[5], n[6]))
+local mp2d = occ.mp2_relaxed_density(wfn, { backend = "df" })
+print(string.format("Relaxed RI-MP2 energy: %18.10f (%d Z-vector iterations)",
+                    mp2d.natural.total_energy, mp2d.lambda_iterations))

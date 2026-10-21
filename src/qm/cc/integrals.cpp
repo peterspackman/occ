@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <memory>
+#include <stdexcept>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
@@ -128,7 +129,7 @@ int num_frozen_core(const AOBasis &basis) {
 }
 
 CCIntegrals exact_eris(const AOBasis &basis, const MolecularOrbitals &mo_in,
-                       int n_frozen, size_t memory_budget) {
+                       int n_frozen, size_t memory_budget, bool with_ladder) {
   const MolecularOrbitals mo = freeze_core(mo_in, n_frozen);
   const Mat &C = mo.C;
   const int nmo = static_cast<int>(C.cols());
@@ -155,7 +156,9 @@ CCIntegrals exact_eris(const AOBasis &basis, const MolecularOrbitals &mo_in,
   const size_t packed_bytes = npair * npair * sizeof(double);
   const bool in_core = (2 * packed_bytes <= memory_budget);
   const double vvvv_mb =
-      static_cast<double>(nvir) * nvir * nvir * nvir * 8.0 / 1024.0 / 1024.0;
+      with_ladder
+          ? static_cast<double>(nvir) * nvir * nvir * nvir * 8.0 / 1024.0 / 1024.0
+          : 0.0;
   occ::log::info("Exact backend: AO->MO transform ({}); stores vvvv = {:.1f} MB",
                  in_core ? "in-core packed GEMM" : "semidirect, occ-blocked",
                  vvvv_mb);
@@ -167,11 +170,13 @@ CCIntegrals exact_eris(const AOBasis &basis, const MolecularOrbitals &mo_in,
   if (in_core) {
     const Mat A = engine.four_center_integrals_packed(); // packed, one AO pass
     G = mo_transform_packed(A, C_occ, C, C, C);
-    vvvv_full = mo_transform_packed(A, C_virt, C_virt, C_virt, C_virt); // (ab|cd)
+    if (with_ladder)
+      vvvv_full = mo_transform_packed(A, C_virt, C_virt, C_virt, C_virt); // (ab|cd)
   } else {
     G = mo_eri_general(engine, C_occ, C, C, C, memory_budget);
-    vvvv_full = mo_eri_general(engine, C_virt, C_virt, C_virt, C_virt,
-                               memory_budget);
+    if (with_ladder)
+      vvvv_full = mo_eri_general(engine, C_virt, C_virt, C_virt, C_virt,
+                                 memory_budget);
   }
   e.oooo = slice_block(G, o, 0, o, 0, o, 0, o);
   e.ooov = slice_block(G, o, 0, o, 0, o, o, v);
@@ -180,6 +185,13 @@ CCIntegrals exact_eris(const AOBasis &basis, const MolecularOrbitals &mo_in,
   e.ovov = slice_block(G, o, o, v, 0, o, o, v);
   e.ovvo = slice_block(G, o, o, v, o, v, 0, o);
   e.ovvv = slice_block(G, o, o, v, o, v, o, v);
+  if (!with_ladder) {
+    e.ladder = [](const T4 &) -> T4 {
+      throw std::runtime_error("exact_eris(with_ladder = false) has no vvvv ladder");
+    };
+    occ::timing::stop(occ::timing::category::cc_ao2mo);
+    return e;
+  }
 
   // Exact vvvv ladder. Store a single O(V^4) matrix (the dense vvvv is inherent
   // to the *exact* backend -- use df/thc to avoid it), laid out once as
@@ -307,6 +319,11 @@ CCIntegrals df_eris(const AOBasis &basis, const AOBasis &aux_basis,
   std::unique_ptr<IntegralEngineDF> engine;
   DFIntegrals df = make_df(basis, aux_basis, memory_budget, engine);
   return df_blocks(df, mo);
+}
+
+CCIntegrals df_eris(DFIntegrals &df, const MolecularOrbitals &mo_in,
+                    int n_frozen) {
+  return df_blocks(df, freeze_core(mo_in, n_frozen));
 }
 
 CCIntegrals thc_eris(const AOBasis &basis, const AOBasis &aux_basis,

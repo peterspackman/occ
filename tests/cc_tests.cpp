@@ -5,6 +5,7 @@
 #include <occ/core/units.h>
 #include <occ/gto/shell.h>
 #include <occ/qm/cc/ccsd.h>
+#include <occ/qm/cc/einsum.h>
 #include <occ/qm/cc/integrals.h>
 #include <occ/qm/cc/laplace.h>
 #include <occ/qm/cc/thc.h>
@@ -620,5 +621,100 @@ TEST_CASE("THC-MP2 unrestricted vs DF-UMP2", "[thc][mp2][uhf]") {
     INFO("THC os=" << thc.opposite_spin << " ss=" << thc.same_spin
                    << " tot=" << thc.total << " n_isdf=" << thc.n_isdf);
     REQUIRE_THAT(thc.total, WithinAbs(ref.total_correlation, 2e-3));
+  }
+}
+
+namespace {
+
+template <int R>
+Eigen::Tensor<double, R> random_tensor(Eigen::array<Eigen::Index, R> d) {
+  Eigen::Tensor<double, R> t(d);
+  t.setRandom();
+  return t;
+}
+
+template <int R>
+double max_diff(const Eigen::Tensor<double, R> &a,
+                const Eigen::Tensor<double, R> &b) {
+  REQUIRE(occ::qm::cc::detail::dims_of(a) == occ::qm::cc::detail::dims_of(b));
+  const Eigen::Tensor<double, 0> d = (a - b).abs().maximum();
+  return d();
+}
+
+} // namespace
+
+TEST_CASE("einsum and transpose match explicit loops", "[cc][einsum]") {
+  using occ::qm::cc::einsum;
+  using occ::qm::cc::transpose;
+  constexpr int o = 3, v = 5;
+  const auto t2 = random_tensor<4>({o, o, v, v});
+  const auto g = random_tensor<4>({o, v, o, v});
+  const auto t1 = random_tensor<2>({o, v});
+  const auto f = random_tensor<2>({v, v});
+
+  SECTION("transpose follows numpy's convention") {
+    const auto t = transpose(g, {2, 0, 3, 1}); // (j, i, b, a)
+    REQUIRE(t.dimension(0) == o);
+    REQUIRE(t.dimension(1) == o);
+    for (int a = 0; a < v; a++)
+      for (int b = 0; b < v; b++)
+        for (int i = 0; i < o; i++)
+          for (int j = 0; j < o; j++)
+            REQUIRE(t(j, i, b, a) == g(i, a, j, b));
+  }
+
+  SECTION("operands needing no permute, a permute, or A as [summed, free]") {
+    Eigen::Tensor<double, 4> ref(o, o, v, v);
+    ref.setZero();
+    // ijab,bc->ijac: A already [free, summed]
+    for (int i = 0; i < o; i++)
+      for (int j = 0; j < o; j++)
+        for (int a = 0; a < v; a++)
+          for (int c = 0; c < v; c++)
+            for (int b = 0; b < v; b++)
+              ref(i, j, a, c) += t2(i, j, a, b) * f(b, c);
+    REQUIRE(max_diff(einsum<4>("ijab,bc->ijac", t2, f), ref) < 1e-12);
+    // the same through a permuted output
+    REQUIRE(max_diff(einsum<4>("ijab,bc->acij", t2, f),
+                     transpose(ref, {2, 3, 0, 1})) < 1e-12);
+
+    // ba,ijb->...: A stored as [summed, free] (the transposed GEMM)
+    Eigen::Tensor<double, 2> ref2(v, o);
+    ref2.setZero();
+    for (int a = 0; a < v; a++)
+      for (int i = 0; i < o; i++)
+        for (int b = 0; b < v; b++)
+          ref2(a, i) += f(b, a) * t1(i, b);
+    REQUIRE(max_diff(einsum<2>("ba,ib->ai", f, t1), ref2) < 1e-12);
+
+    // iajb,jb->ia: two summed labels, B permuted
+    Eigen::Tensor<double, 2> ref3(o, v);
+    ref3.setZero();
+    for (int i = 0; i < o; i++)
+      for (int a = 0; a < v; a++)
+        for (int j = 0; j < o; j++)
+          for (int b = 0; b < v; b++)
+            ref3(i, a) += g(i, a, j, b) * t1(j, b);
+    REQUIRE(max_diff(einsum<2>("iajb,jb->ia", g, t1), ref3) < 1e-12);
+  }
+
+  SECTION("outer products and expression operands") {
+    const auto tau = einsum<4>("ia,jb->ijab", t1 * 2.0, t1);
+    for (int i = 0; i < o; i++)
+      for (int j = 0; j < o; j++)
+        for (int a = 0; a < v; a++)
+          for (int b = 0; b < v; b++)
+            REQUIRE_THAT(
+                tau(i, j, a, b),
+                Catch::Matchers::WithinAbs(2.0 * t1(i, a) * t1(j, b), 1e-14));
+  }
+
+  SECTION("malformed specs throw") {
+    REQUIRE_THROWS(einsum<2>("ijab,jb", t2, t1));       // no output
+    REQUIRE_THROWS(einsum<2>("ija,jb->ia", t2, t1));    // rank mismatch
+    REQUIRE_THROWS(einsum<4>("ijab,jb->ia", t2, t1));   // result rank
+    REQUIRE_THROWS(einsum<2>("iiab,jb->ia", t2, t1));   // repeated label
+    REQUIRE_THROWS(einsum<4>("ijab,ib->ijab", t2, t1)); // batch label
+    REQUIRE_THROWS(einsum<2>("ijab,ab->ij", t2, t1));   // unequal sum dims
   }
 }

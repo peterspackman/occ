@@ -4,6 +4,7 @@
 #include <occ/core/timings.h>
 #include <occ/qm/cc/ccsd.h>
 #include <occ/qm/cc/gemm.h> // pcon2 (parallel 2-index contraction)
+#include <occ/qm/cc/triples.h>
 
 // Restricted closed-shell CCSD, a direct port of the thc_cct reference
 // rccsd.py (PySCF/Hirata RCCSD equations). The O(V^4) vvvv ladder term goes
@@ -276,6 +277,21 @@ CCSDResult ccsd(const CCIntegrals &eris, const CCSDOptions &opts) {
     for (Eigen::Index k = 0; k < n2; ++k)
       err(n1 + k, 0) = t2n.data()[k] - t2.data()[k];
     const double rnorm = err.norm();
+    // max |R| with R = D (t_new - t_old), D = e_i (+ e_j) - e_a (- e_b)
+    double rmax = 0.0;
+    if (opts.residual_tol > 0.0) {
+      for (int i = 0; i < o; ++i)
+        for (int a = 0; a < v; ++a)
+          rmax = std::max(rmax, std::abs(err(i + a * o, 0) *
+                                         (mo_e(i) - mo_e(o + a))));
+      for (Eigen::Index k = 0; k < n2; ++k) {
+        const Eigen::Index i = k % o, j = (k / o) % o, a = (k / (o * o)) % v,
+                           b = k / (Eigen::Index(o) * o * v);
+        rmax = std::max(rmax, std::abs(err(n1 + k, 0) *
+                                       (mo_e(i) + mo_e(j) - mo_e(o + a) -
+                                        mo_e(o + b))));
+      }
+    }
 
     if (opts.diis) {
       diis.extrapolate(x, err);
@@ -300,7 +316,8 @@ CCSDResult ccsd(const CCIntegrals &eris, const CCSDOptions &opts) {
 
     result.iterations = it + 1;
     e_old = e_new;
-    if (std::abs(de) < opts.tol) {
+    if (opts.residual_tol > 0.0 ? rmax < opts.residual_tol
+                                : std::abs(de) < opts.tol) {
       result.converged = true;
       break;
     }
@@ -314,6 +331,66 @@ CCSDResult ccsd(const CCIntegrals &eris, const CCSDOptions &opts) {
   result.t2 = t2;
   occ::timing::stop(occ::timing::category::ccsd);
   return result;
+}
+
+MPnAmplitudes mpn_amplitudes(const CCIntegrals &eris) {
+  const int o = eris.nocc, v = eris.nvir;
+  const Vec &mo_e = eris.mo_energy;
+  // first-order doubles t = (ia|jb) / D; t1 stays zero (Brillouin)
+  const T4 g = eris.ovov.shuffle(Sh4{0, 2, 1, 3});
+  T4 d(o, o, v, v);
+  for (int b = 0; b < v; ++b)
+    for (int a = 0; a < v; ++a)
+      for (int j = 0; j < o; ++j)
+        for (int i = 0; i < o; ++i)
+          d(i, j, a, b) = mo_e(i) + mo_e(j) - mo_e(o + a) - mo_e(o + b);
+  T2 d1(o, v);
+  for (int a = 0; a < v; ++a)
+    for (int i = 0; i < o; ++i)
+      d1(i, a) = mo_e(i) - mo_e(o + a);
+  T2 zero(o, v);
+  zero.setZero();
+  const T4 t = g / d;
+  // <x|y> with the closed-shell metric x~ = 2 x - x(ba)
+  auto pair = [](const T4 &x, const T4 &y) {
+    const T4 xt = 2.0 * x - x.shuffle(Sh4{0, 1, 3, 2});
+    const Eigen::Tensor<double, 0> s = (xt * y).sum();
+    return s(0);
+  };
+  // update_amps returns residual / D; with t1 = 0 the doubles residual is
+  // g + L(t) + Q(t), so residuals at t and 2t separate L and Q exactly
+  const auto [r1, r2a] = update_amps(zero, t, eris);
+  const T4 t_twice = 2.0 * t;
+  const T4 r2b = update_amps(zero, t_twice, eris).second;
+  const T4 Ra = r2a * d, Rb = r2b * d;
+  const T4 L = 0.5 * (4.0 * Ra - Rb - 3.0 * g);
+  const T4 Q = 0.5 * (Rb - 2.0 * Ra + g);
+  MPnAmplitudes r;
+  r.t = t;
+  r.s = r1; // the singles residual is linear in t
+  r.u = L / d;
+  r.q = Q / d;
+  MPnEnergies &e = r.energies;
+  e.e2 = pair(t, g);
+  e.e3 = pair(t, L);
+  e.e4_doubles = pair(r.u, L);
+  const Eigen::Tensor<double, 0> s2 = (r1 * r1 * d1).sum();
+  e.e4_singles = 2.0 * s2(0);
+  e.e4_quadruples = pair(t, Q);
+  return r;
+}
+
+MPnEnergies mpn_energies(const CCIntegrals &eris, bool triples) {
+  const MPnAmplitudes a = mpn_amplitudes(eris);
+  MPnEnergies e = a.energies;
+  if (triples) {
+    T2 zero(eris.nocc, eris.nvir);
+    zero.setZero();
+    e.e4_triples = ccsd_t(zero, a.t, eris);
+  }
+  occ::log::info("MP2 {:.12f}  MP3 {:.12f}  MP4(SDQ) {:.12f}  MP4 {:.12f}",
+                 e.e2, e.mp3(), e.mp4_sdq(), e.mp4());
+  return e;
 }
 
 } // namespace occ::qm::cc

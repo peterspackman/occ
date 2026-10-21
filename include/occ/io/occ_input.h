@@ -97,6 +97,11 @@ struct MethodInput {
   std::string ccsd_thc_method{"cholesky"}; // THC ISDF selector: cholesky | qr
   int ccsd_thc_grid_angular{110};          // THC candidate-grid max angular pts
   double ccsd_thc_grid_radial{1e-7};       // THC candidate-grid radial precision
+  // MP2 / CCSD / CCSD(T): return the correlated density's natural orbitals
+  // (relaxed for MP2, unrelaxed for CC) instead of the SCF orbitals, so written
+  // wavefunctions and properties use it; local = cluster-in-molecule CC
+  bool correlated_density{false};
+  bool correlated_density_local{false};
 };
 
 struct BasisSetInput {

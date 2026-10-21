@@ -10,6 +10,7 @@ set(OCC_QM_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/initial_guess.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_df.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/localization.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/mo.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/oniom.h"
