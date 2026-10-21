@@ -240,6 +240,20 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
   }
 }
 
+// --density: the correlation method's natural orbitals become the returned
+// wavefunction, so written files and properties carry the correlated density
+Wavefunction correlated_density_wavefunction(const Wavefunction &scf_wfn,
+                                             const CorrelationOptions &opts,
+                                             const OccInput &config) {
+  const bool local = config.method.correlated_density_local;
+  if (parse_method_string(opts.method).kind == MethodKind::MP2 &&
+      config.method.ri_policy != occ::io::RIPolicy::None)
+    occ::log::warn("The relaxed MP2 density's orbital response uses exact "
+                   "Coulomb and exchange, but this SCF used density fitting "
+                   "or COSX; pass --ri none for a fully consistent density");
+  return run_correlated_density(scf_wfn, opts, local).natural;
+}
+
 Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
                             const OccInput &config) {
   CorrelationOptions opts;
@@ -251,6 +265,9 @@ Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
   opts.thc_c_isdf = config.method.mp2_thc_c_isdf;
   opts.thc_isdf_method = config.method.mp2_thc_method;
   opts.laplace_points = config.method.mp2_laplace_points;
+  if (config.method.correlated_density ||
+      config.method.correlated_density_local)
+    return correlated_density_wavefunction(scf_wfn, opts, config);
 
   const auto result = run_correlation(scf_wfn, opts);
 
@@ -281,6 +298,10 @@ Wavefunction run_ccsd_method(const Wavefunction &scf_wfn,
   if (!with_triples && parse_method_string(opts.method).kind ==
                            MethodKind::CCSD_T)
     method_opts.method = "ccsd";
+
+  if (config.method.correlated_density ||
+      config.method.correlated_density_local)
+    return correlated_density_wavefunction(scf_wfn, method_opts, config);
 
   const auto result = run_correlation(scf_wfn, method_opts);
 

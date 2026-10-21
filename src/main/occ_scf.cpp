@@ -298,6 +298,15 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                   "CCSD(T) frozen core orbitals: -1 auto (chemical core, "
                   "default), 0 all-electron, N freeze N lowest")
       ->group(gCC);
+  scf->add_flag("--density", config->method.correlated_density,
+                "mp2 / ccsd / ccsd(t): compute the correlated one-particle "
+                "density (relaxed for MP2, unrelaxed Lambda density for CC) "
+                "and use its natural orbitals for the written wavefunction "
+                "and the printed properties. Closed-shell RHF only.");
+  scf->add_flag("--density-local", config->method.correlated_density_local,
+                "ccsd / ccsd(t) with --density: the cluster-in-molecule "
+                "(local) density instead of the canonical one")
+      ->group(gCC);
   scf->add_option("--ccsd-max-memory", config->method.ccsd_max_memory_gb,
                   "CCSD(T) integral-build memory budget in GiB (default: 1.0)")
       ->group(gCC);

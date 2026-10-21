@@ -3,6 +3,7 @@
 #include <occ/driver/correlation.h>
 #include <occ/driver/method_parser.h>
 #include <occ/qm/cc/ccsd.h>
+#include <occ/qm/cc/density.h>
 #include <occ/qm/cc/integrals.h>
 #include <occ/qm/cc/thc_mp2.h>
 #include <occ/qm/cc/triples.h>
@@ -329,7 +330,68 @@ CorrelationResult run_ccsd(const Wavefunction &wfn,
   return result;
 }
 
+void log_natural_occupations(const cc::CorrelatedDensity &d) {
+  const auto &n = d.occupations;
+  const Eigen::Index nocc = static_cast<Eigen::Index>(d.natural.mo.n_alpha);
+  occ::log::info("{} natural orbitals: sum of occupations {:.10f}",
+                 d.natural.method, n.sum());
+  // the frontier: the last strongly and the first weakly occupied
+  const Eigen::Index lo = std::max<Eigen::Index>(0, nocc - 3),
+                     hi = std::min<Eigen::Index>(n.size(), nocc + 3);
+  for (Eigen::Index k = lo; k < hi; k++)
+    occ::log::info("  NO {:4d}  occupation {:14.10f}", k + 1, n(k));
+  occ::log::info("{:<33s} {: 20.12f}",
+                 d.natural.method + " total energy:", d.natural.energy.total);
+}
+
 } // namespace
+
+cc::CorrelatedDensity run_correlated_density(const qm::Wavefunction &wfn,
+                                             const CorrelationOptions &opts,
+                                             const bool local) {
+  if (wfn.mo.kind != SpinorbitalKind::Restricted ||
+      wfn.mo.n_alpha != wfn.mo.n_beta)
+    throw std::runtime_error("Correlated densities need a closed-shell "
+                             "restricted (RHF) reference");
+  const auto mspec = parse_method_string(opts.method);
+  const bool is_mp2 = mspec.kind == MethodKind::MP2;
+  if (!is_mp2 && mspec.kind != MethodKind::CCSD &&
+      mspec.kind != MethodKind::CCSD_T)
+    throw std::runtime_error("run_correlated_density: method '" + opts.method +
+                             "' has no density (expected mp2 | ccsd | "
+                             "ccsd(t))");
+  if (local && is_mp2)
+    throw std::runtime_error("The local (cluster-in-molecule) density is "
+                             "CCSD or CCSD(T) only");
+  const std::string scaling = occ::util::to_lower_copy(opts.spin_scaling);
+  if (is_mp2 && !scaling.empty() && scaling != "none")
+    throw std::runtime_error("SCS/SOS-MP2 has no relaxed density; use "
+                             "--mp2-spin-scaling none");
+
+  std::string backend = resolve_backend(opts, mspec, is_mp2);
+  if (backend == "conventional")
+    backend = "exact";
+  if (backend == "thc")
+    throw std::runtime_error("The THC backend has no density; use exact or df");
+
+  cc::CorrelatedDensityOptions dopts;
+  dopts.backend = backend;
+  dopts.aux_basis = opts.aux_basis;
+  dopts.n_frozen = opts.n_frozen;
+  dopts.max_memory_gb = opts.max_memory_gb;
+  dopts.max_cycle = opts.max_cycle;
+  // residuals to 1e-8: the energy then matches run_correlation's (converged
+  // on the energy to opts.tol) instead of differing in the 7th decimal
+  dopts.tol = 1e-8;
+  dopts.triples = mspec.kind == MethodKind::CCSD_T;
+  // local clusters always fit on one DF store; the backend picks their CC
+  // integrals
+  cc::CorrelatedDensity d = is_mp2  ? cc::mp2_relaxed_density(wfn, dopts)
+                            : local ? cc::local_ccsd_density(wfn, dopts)
+                                    : cc::ccsd_density(wfn, dopts);
+  log_natural_occupations(d);
+  return d;
+}
 
 CorrelationResult run_correlation(const qm::Wavefunction &wfn,
                                   const CorrelationOptions &opts) {

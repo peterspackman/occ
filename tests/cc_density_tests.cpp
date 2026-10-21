@@ -1,7 +1,8 @@
+#include <Eigen/Dense>
+#include <array>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include <Eigen/Dense>
 #include <occ/core/units.h>
 #include <occ/qm/cc/ccsd.h>
 #include <occ/qm/cc/density.h>
@@ -9,7 +10,6 @@
 #include <occ/qm/correlation/mp2.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
-#include <array>
 #include <vector>
 
 using Catch::Matchers::WithinAbs;

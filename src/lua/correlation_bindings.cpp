@@ -3,6 +3,7 @@
 #include <fmt/core.h>
 #include <occ/driver/correlation.h>
 #include <occ/qm/cc/ccsd.h>
+#include <occ/qm/cc/density.h>
 #include <occ/qm/cc/integrals.h>
 #include <occ/qm/cc/triples.h>
 #include <occ/qm/cc/uccsd.h>
@@ -65,6 +66,43 @@ CorrelationOptions options_from_ref(const lb::LuaRef &ref) {
   return o;
 }
 
+// Accept nil (defaults), a CorrelatedDensityOptions userdata, or a plain table
+// of option fields.
+cc::CorrelatedDensityOptions density_options_from_ref(const lb::LuaRef &ref) {
+  cc::CorrelatedDensityOptions o;
+  if (ref.isNil())
+    return o;
+  if (ref.isUserdata())
+    return ref.unsafe_cast<cc::CorrelatedDensityOptions>();
+  if (!ref.isTable())
+    throw std::runtime_error("expected an occ.CorrelatedDensityOptions or a "
+                             "table of options");
+  auto get_str = [&](const char *key, std::string &out) {
+    lb::LuaRef v = ref[key];
+    if (!v.isNil())
+      out = v.unsafe_cast<std::string>();
+  };
+  auto get_num = [&](const char *key, auto &out) {
+    lb::LuaRef v = ref[key];
+    if (!v.isNil())
+      out = static_cast<std::decay_t<decltype(out)>>(v.unsafe_cast<double>());
+  };
+  lb::LuaRef triples = ref["triples"];
+  if (!triples.isNil())
+    o.triples = triples.unsafe_cast<bool>();
+  get_str("backend", o.backend);
+  get_str("aux_basis", o.aux_basis);
+  get_num("n_frozen", o.n_frozen);
+  get_num("max_memory_gb", o.max_memory_gb);
+  get_num("tol", o.tol);
+  get_num("max_cycle", o.max_cycle);
+  get_num("cluster_radius", o.cluster_radius);
+  get_num("domain_threshold", o.domain_threshold);
+  get_num("pair_threshold", o.pair_threshold);
+  get_num("lno_threshold", o.lno_threshold);
+  return o;
+}
+
 occ::qm::FittingKind fitting_kind_from_string(const std::string &s) {
   if (s == "jk" || s == "JK")
     return occ::qm::FittingKind::JK;
@@ -89,8 +127,7 @@ void register_correlation_bindings(lua_State *L) {
       .addPropertyReadWrite("aux_basis", &CorrelationOptions::aux_basis)
       .addPropertyReadWrite("spin_scaling", &CorrelationOptions::spin_scaling)
       .addPropertyReadWrite("n_frozen", &CorrelationOptions::n_frozen)
-      .addPropertyReadWrite("max_memory_gb",
-                            &CorrelationOptions::max_memory_gb)
+      .addPropertyReadWrite("max_memory_gb", &CorrelationOptions::max_memory_gb)
       .addPropertyReadWrite("max_cycle", &CorrelationOptions::max_cycle)
       .addPropertyReadWrite("tol", &CorrelationOptions::tol)
       .addPropertyReadWrite("thc_c_isdf", &CorrelationOptions::thc_c_isdf)
@@ -107,21 +144,19 @@ void register_correlation_bindings(lua_State *L) {
       .beginClass<CorrelationResult>("CorrelationResult")
       .addProperty("method", &CorrelationResult::method)
       .addProperty("scf_energy", &CorrelationResult::scf_energy)
-      .addProperty("correlation_energy",
-                   &CorrelationResult::correlation_energy)
+      .addProperty("correlation_energy", &CorrelationResult::correlation_energy)
       .addProperty("total_energy", &CorrelationResult::total_energy)
       .addProperty("same_spin", &CorrelationResult::same_spin)
       .addProperty("opposite_spin", &CorrelationResult::opposite_spin)
-      .addProperty("scaled_correlation",
-                   &CorrelationResult::scaled_correlation)
+      .addProperty("scaled_correlation", &CorrelationResult::scaled_correlation)
       .addProperty("ccsd_correlation", &CorrelationResult::ccsd_correlation)
-      .addProperty("triples_correction",
-                   &CorrelationResult::triples_correction)
+      .addProperty("triples_correction", &CorrelationResult::triples_correction)
       .addProperty("iterations", &CorrelationResult::iterations)
       .addProperty("converged", &CorrelationResult::converged)
       .addProperty("n_frozen", &CorrelationResult::n_frozen)
       .addFunction(
-          "__tostring", +[](const CorrelationResult *r) {
+          "__tostring",
+          +[](const CorrelationResult *r) {
             return fmt::format("<CorrelationResult {} E={:.10f}>", r->method,
                                r->total_energy);
           })
@@ -136,6 +171,91 @@ void register_correlation_bindings(lua_State *L) {
           +[](const Wavefunction &wfn, const lb::LuaRef &options) {
             return occ::driver::run_correlation(wfn,
                                                 options_from_ref(options));
+          })
+
+      // Correlated one-particle densities (closed-shell RHF references)
+      .beginClass<cc::CorrelatedDensityOptions>("CorrelatedDensityOptions")
+      .addConstructor<void (*)()>()
+      .addPropertyReadWrite("n_frozen", &cc::CorrelatedDensityOptions::n_frozen)
+      .addPropertyReadWrite("backend", &cc::CorrelatedDensityOptions::backend)
+      .addPropertyReadWrite("aux_basis",
+                            &cc::CorrelatedDensityOptions::aux_basis)
+      .addPropertyReadWrite("max_memory_gb",
+                            &cc::CorrelatedDensityOptions::max_memory_gb)
+      .addPropertyReadWrite("tol", &cc::CorrelatedDensityOptions::tol)
+      .addPropertyReadWrite("max_cycle",
+                            &cc::CorrelatedDensityOptions::max_cycle)
+      .addPropertyReadWrite("triples", &cc::CorrelatedDensityOptions::triples)
+      .addPropertyReadWrite("cluster_radius",
+                            &cc::CorrelatedDensityOptions::cluster_radius)
+      .addPropertyReadWrite("domain_threshold",
+                            &cc::CorrelatedDensityOptions::domain_threshold)
+      .addPropertyReadWrite("pair_threshold",
+                            &cc::CorrelatedDensityOptions::pair_threshold)
+      .addPropertyReadWrite("lno_threshold",
+                            &cc::CorrelatedDensityOptions::lno_threshold)
+      .endClass()
+
+      .beginClass<cc::CorrelatedDensity>("CorrelatedDensity")
+      .addProperty(
+          "natural",
+          +[](const cc::CorrelatedDensity *d) -> Wavefunction {
+            return d->natural;
+          })
+      .addProperty(
+          "occupations",
+          +[](const cc::CorrelatedDensity *d) -> occ::Vec {
+            return d->occupations;
+          })
+      .addProperty("e_corr", &cc::CorrelatedDensity::e_corr)
+      .addProperty("e_triples", &cc::CorrelatedDensity::e_triples)
+      .addProperty("n_frozen", &cc::CorrelatedDensity::n_frozen)
+      .addProperty("n_occ", &cc::CorrelatedDensity::n_occ)
+      .addProperty("n_vir", &cc::CorrelatedDensity::n_vir)
+      .addProperty("cc_iterations", &cc::CorrelatedDensity::cc_iterations)
+      .addProperty("lambda_iterations",
+                   &cc::CorrelatedDensity::lambda_iterations)
+      .addProperty("backend", &cc::CorrelatedDensity::backend)
+      .addProperty("aux_basis", &cc::CorrelatedDensity::aux_basis)
+      .addProperty("n_clusters", &cc::CorrelatedDensity::n_clusters)
+      .addFunction(
+          "__tostring",
+          +[](const cc::CorrelatedDensity *d) {
+            return fmt::format("<CorrelatedDensity {} E={:.10f}>",
+                               d->natural.method, d->natural.energy.total);
+          })
+      .endClass()
+
+      // occ.ccsd_density(wfn), occ.ccsd_density(wfn, {triples=true}), ...
+      .addFunction(
+          "ccsd_density",
+          +[](const Wavefunction &wfn, const lb::LuaRef &options) {
+            return cc::ccsd_density(wfn, density_options_from_ref(options));
+          })
+      .addFunction(
+          "mp2_relaxed_density",
+          +[](const Wavefunction &wfn, const lb::LuaRef &options) {
+            return cc::mp2_relaxed_density(wfn,
+                                           density_options_from_ref(options));
+          })
+      .addFunction(
+          "mpn_density",
+          +[](const Wavefunction &wfn, int order, const lb::LuaRef &options) {
+            return cc::mpn_density(wfn, order,
+                                   density_options_from_ref(options));
+          })
+      .addFunction(
+          "local_ccsd_density",
+          +[](const Wavefunction &wfn, const lb::LuaRef &options) {
+            return cc::local_ccsd_density(wfn,
+                                          density_options_from_ref(options));
+          })
+      // occ.run_correlated_density(wfn, "ccsd(t)" | {method=...} [, local])
+      .addFunction(
+          "run_correlated_density",
+          +[](const Wavefunction &wfn, const lb::LuaRef &options, bool local) {
+            return occ::driver::run_correlated_density(
+                wfn, options_from_ref(options), local);
           })
 
       // Low-level surface for building on the internals.
@@ -186,7 +306,8 @@ void register_correlation_bindings(lua_State *L) {
       .addProperty("nocc", &cc::CCIntegrals::nocc)
       .addProperty("nvir", &cc::CCIntegrals::nvir)
       .addFunction(
-          "__tostring", +[](const cc::CCIntegrals *e) {
+          "__tostring",
+          +[](const cc::CCIntegrals *e) {
             return fmt::format("<CCIntegrals nocc={} nvir={}>", e->nocc,
                                e->nvir);
           })
@@ -208,16 +329,14 @@ void register_correlation_bindings(lua_State *L) {
       .addFunction("num_frozen_core", &cc::num_frozen_core)
       .addFunction(
           "exact_eris",
-          +[](const AOBasis &basis, const MolecularOrbitals &mo,
-              int n_frozen) {
+          +[](const AOBasis &basis, const MolecularOrbitals &mo, int n_frozen) {
             return cc::exact_eris(basis, mo, n_frozen);
           })
       .addFunction(
           "df_eris",
           +[](const AOBasis &basis, const AOBasis &aux,
-              const MolecularOrbitals &mo, int n_frozen) {
-            return cc::df_eris(basis, aux, mo, n_frozen);
-          })
+              const MolecularOrbitals &mo,
+              int n_frozen) { return cc::df_eris(basis, aux, mo, n_frozen); })
       .addFunction(
           "ccsd",
           +[](const cc::CCIntegrals &eris, const lb::LuaRef &options) {
