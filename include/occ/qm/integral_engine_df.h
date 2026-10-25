@@ -2,6 +2,7 @@
 #include <Eigen/Cholesky>
 #include <Eigen/IterativeLinearSolvers>
 #include <occ/qm/coulomb_metric.h>
+#include <occ/qm/df_packed_store.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/split_ri_j.h>
 
@@ -37,6 +38,18 @@ public:
 
   inline void set_integral_policy(Policy p) { m_policy = p; }
   inline Policy integral_policy() const { return m_policy; }
+
+  /// Bytes the packed 3-centre store may take under `Policy::Choose`; what
+  /// does not fit is recomputed every build.
+  inline void set_integral_store_memory_limit(size_t bytes) {
+    m_integral_store_memory_limit = bytes;
+  }
+  inline size_t integral_store_memory_limit() const {
+    return m_integral_store_memory_limit;
+  }
+  /// The packed store the Coulomb and exchange builds use (empty until the
+  /// first build under a storing policy).
+  inline const PackedDFStore &packed_store() const { return m_packed; }
 
   /// Set the method used for Coulomb matrix computation
   void set_coulomb_method(CoulombMethod method);
@@ -91,6 +104,18 @@ private:
     return nbf * nbf * ndf * sizeof(double);
   }
 
+  /// Bytes a packed store of every screened shell pair would take.
+  size_t packed_storage_bytes() const {
+    return PackedDFStore::bytes_for(
+        m_ao_engine.aobasis(), m_ao_engine.shellpairs(), m_aux_engine.nbf());
+  }
+
+  /// Builds the packed store on first use: every pair under `Stored`, what
+  /// fits the memory limit under `Choose`. False when nothing is stored.
+  bool ensure_packed_store();
+  Mat packed_coulomb(const MolecularOrbitals &mo);
+  Mat packed_exchange(const MolecularOrbitals &mo);
+
   inline bool use_stored_integrals() const {
     // The store holds one operator's three-centre integrals and does not
     // record which, and `compute_stored_integrals` fills it only once -- so
@@ -101,10 +126,7 @@ private:
     // overwriting the caller's policy when omega changes.
     if (m_omega != 0.0)
       return false;
-    if (m_policy == Policy::Choose) {
-      return (integral_storage_bytes() < m_integral_store_memory_limit);
-    }
-    return (m_policy == Policy::Stored);
+    return m_policy != Policy::Direct;
   }
 
   double m_precision{1e-12};
@@ -117,6 +139,7 @@ private:
   double m_omega{0.0};          ///< omega the active factorization belongs to
   double m_lr_omega{0.0};       ///< omega of the cached long-range metric
   Mat m_integral_store;
+  PackedDFStore m_packed;
   /// Direct by default: recomputing the 3-centre integrals each iteration
   /// costs time, whereas storing them costs an allocation that scales as
   /// nbf^2 x ndf and cannot be recovered from when it fails -- which is what
