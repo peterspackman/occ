@@ -735,7 +735,7 @@ Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
   }
 
   block::aa(K) += block::aa(K).transpose().eval();
-  block::bb(K) += block::ab(K).transpose().eval();
+  block::ab(K) += block::ab(K).transpose().eval();
   block::ba(K) += block::ba(K).transpose().eval();
   block::bb(K) += block::bb(K).transpose().eval();
   K *= 0.5;

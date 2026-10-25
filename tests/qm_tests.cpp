@@ -1209,6 +1209,16 @@ TEST_CASE("DF Coulomb matrix consistency") {
     // Check that DF and non-DF give similar results (relaxed tolerance for DF
     // approximation + random variations)
     REQUIRE(all_close(jk_nodf.J, j_df_direct, 1e-2, 1e-4));
+
+    // Exchange: the direct kernel symmetrises each spin block at the end, the
+    // stored one does not; random spinors are spin-mixed, so ab/ba are filled
+    engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Direct);
+    auto k_df_direct = engine_df.exchange(mo_g);
+    engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Stored);
+    auto k_df_stored = engine_df.exchange(mo_g);
+    fmt::print("Max difference K DF direct vs stored: {}\n",
+               (k_df_direct - k_df_stored).array().abs().maxCoeff());
+    REQUIRE(all_close(k_df_direct, k_df_stored, 1e-10, 1e-12));
   }
 
   SECTION("General Hartree-Fock open-shell water") {
@@ -1270,6 +1280,16 @@ TEST_CASE("DF Coulomb matrix consistency") {
     // Check that DF and non-DF give similar results (relaxed tolerance for DF
     // approximation + random variations)
     REQUIRE(all_close(jk_nodf.J, j_df_direct, 1e-2, 1e-4));
+
+    // Exchange: the direct kernel symmetrises each spin block at the end, the
+    // stored one does not; random spinors are spin-mixed, so ab/ba are filled
+    engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Direct);
+    auto k_df_direct = engine_df.exchange(mo_g);
+    engine_df.set_integral_policy(occ::qm::IntegralEngineDF::Stored);
+    auto k_df_stored = engine_df.exchange(mo_g);
+    fmt::print("Max difference K DF direct vs stored: {}\n",
+               (k_df_direct - k_df_stored).array().abs().maxCoeff());
+    REQUIRE(all_close(k_df_direct, k_df_stored, 1e-10, 1e-12));
   }
 }
 
