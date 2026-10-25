@@ -53,6 +53,10 @@ public:
     m_hf.set_density_fitting_policy(policy);
   }
 
+  inline void set_density_fitting_memory_limit(size_t bytes) {
+    m_hf.set_density_fitting_memory_limit(bytes);
+  }
+
   inline void set_coulomb_method(qm::CoulombMethod method) {
     m_hf.set_coulomb_method(method);
   }

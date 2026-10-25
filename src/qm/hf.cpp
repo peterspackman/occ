@@ -54,6 +54,12 @@ void HartreeFock::set_density_fitting_policy(IntegralEngineDF::Policy policy) {
   }
 }
 
+void HartreeFock::set_density_fitting_memory_limit(size_t bytes) {
+  if (m_df_engine) {
+    m_df_engine->set_integral_store_memory_limit(bytes);
+  }
+}
+
 void HartreeFock::set_coulomb_method(CoulombMethod method) {
   if (m_df_engine) {
     m_df_engine->set_coulomb_method(method);

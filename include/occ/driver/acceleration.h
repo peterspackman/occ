@@ -239,12 +239,20 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
   if (!accel.df_basis.empty()) {
     proc.set_density_fitting_basis(accel.df_basis,
                                    config.basis.df_auto_threshold);
-    // Direct is the default -- storing the three-centre integrals needs
-    // nbf^2 x ndf doubles, which is what exhausted the browser heap. The flag
-    // is kept because it still forces the issue for a caller that has changed
-    // the policy itself; on the default path it is a no-op.
-    if (config.method.use_direct_df_kernels)
-      proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
+    // Natively the screened, packed integrals are stored as far as the memory
+    // limit allows and the rest recomputed. The browser stays direct: its
+    // heap is what the old dense store exhausted.
+#ifdef __EMSCRIPTEN__
+    const bool direct = true;
+#else
+    const bool direct = config.method.use_direct_df_kernels;
+#endif
+    proc.set_density_fitting_policy(
+        direct ? occ::qm::IntegralEngineDF::Policy::Direct
+               : occ::qm::IntegralEngineDF::Policy::Choose);
+    if (config.method.df_store_memory_mb > 0.0)
+      proc.set_density_fitting_memory_limit(
+          static_cast<size_t>(config.method.df_store_memory_mb * 1048576.0));
     if (config.method.use_split_ri_j)
       proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
   }

@@ -74,6 +74,9 @@ struct MethodInput {
   occ::qm::GuessKind guess{occ::qm::GuessKind::Auto};
   RIPolicy ri_policy{RIPolicy::Auto}; // Automatic DF/COSX selection (see RIPolicy)
   bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
+  // Memory for the packed 3-centre DF integrals, MiB; 0 keeps the engine's
+  // default. Pairs that do not fit are recomputed every Fock build.
+  double df_store_memory_mb{0.0};
   bool use_split_ri_j{false}; // Use Split-RI-J for Coulomb matrix (Neese 2003)
   bool use_cosx{false}; // Use COSX seminumerical exchange
   occ::numint::COSXGridLevel cosx_grid_level{occ::numint::COSXGridLevel::Grid1}; // COSX grid quality

@@ -2207,3 +2207,116 @@ TEST_CASE("Pipek-Mezey converges for benzene", "[localization]") {
     REQUIRE(n_ch == 6);
   }
 }
+
+// Packed 3-centre store against the integral-direct builds on the same
+// orbitals: stored whole, stored in part under a budget (J semi-direct, K
+// direct) and not at all.
+namespace {
+using DFPolicy = occ::qm::IntegralEngineDF::Policy;
+
+struct DFStoreCase {
+  std::vector<occ::core::Atom> atoms;
+  occ::gto::AOBasis basis, aux;
+  MolecularOrbitals mo;
+};
+
+template <SpinorbitalKind kind>
+DFStoreCase df_store_case(std::vector<occ::core::Atom> atoms, int na,
+                          int nb) {
+  DFStoreCase c{atoms, occ::gto::AOBasis::load(atoms, "def2-svp"),
+                occ::gto::AOBasis::load(atoms, "def2-universal-jkfit"), {}};
+  c.mo.kind = kind;
+  c.mo.n_ao = c.basis.nbf();
+  c.mo.n_alpha = na;
+  c.mo.n_beta = nb;
+  auto [rows, cols] = occ::qm::matrix_dimensions<kind>(c.mo.n_ao);
+  c.mo.C = Mat::Random(rows, cols);
+  c.mo.update_occupied_orbitals();
+  c.mo.update_density_matrix();
+  return c;
+}
+
+// two waters 14 Angstrom apart: the shell-pair screen drops the pairs across
+// the gap, so the store really is packed
+std::vector<occ::core::Atom> two_waters() {
+  const double x = 26.456;
+  return {{8, 0.0, 0.0, 0.221},     {1, 0.0, 1.431, -0.886},
+          {1, 0.0, -1.431, -0.886}, {8, x, 0.0, 0.221},
+          {1, x, 1.431, -0.886},    {1, x, -1.431, -0.886}};
+}
+
+std::vector<occ::core::Atom> methyl() {
+  return {{6, 0.0, 0.0, 0.0},
+          {1, 2.039, 0.0, 0.0},
+          {1, -1.020, 1.767, 0.0},
+          {1, -1.020, -1.767, 0.0}};
+}
+
+std::unique_ptr<occ::qm::IntegralEngineDF>
+df_store_engine(const DFStoreCase &c, DFPolicy p, size_t limit = 0) {
+  auto df = std::make_unique<occ::qm::IntegralEngineDF>(
+      c.atoms, c.basis.shells(), c.aux.shells());
+  df->set_integral_policy(p);
+  if (limit)
+    df->set_integral_store_memory_limit(limit);
+  return df;
+}
+
+double max_abs(const Mat &m) { return m.cwiseAbs().maxCoeff(); }
+
+void require_same_jk(const DFStoreCase &c, occ::qm::IntegralEngineDF &df) {
+  auto direct = df_store_engine(c, DFPolicy::Direct);
+  const Mat Jd = direct->coulomb(c.mo), Kd = direct->exchange(c.mo);
+  const Mat J = df.coulomb(c.mo), K = df.exchange(c.mo);
+  REQUIRE(J.rows() == Jd.rows());
+  REQUIRE(K.cols() == Kd.cols());
+  REQUIRE(max_abs(J - Jd) < 1e-10);
+  REQUIRE(max_abs(K - Kd) < 1e-10);
+  // a second build reuses the store (and, after the first exchange, its
+  // folded form)
+  REQUIRE(max_abs(df.coulomb(c.mo) - Jd) < 1e-10);
+  REQUIRE(max_abs(df.exchange(c.mo) - Kd) < 1e-10);
+}
+} // namespace
+
+TEST_CASE("Packed DF store matches the direct builds", "[df][df-store]") {
+  SECTION("Restricted, stored whole and packed") {
+    auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
+    auto df = df_store_engine(c, DFPolicy::Stored);
+    require_same_jk(c, *df);
+    const auto &st = df->packed_store();
+    REQUIRE_FALSE(st.empty());
+    REQUIRE(st.complete());
+    REQUIRE(st.folded());
+    const size_t nbf = c.basis.nbf();
+    REQUIRE(st.bytes() < nbf * nbf * c.aux.nbf() * sizeof(double) / 2);
+  }
+
+  SECTION("Unrestricted, stored whole") {
+    auto c = df_store_case<SpinorbitalKind::Unrestricted>(methyl(), 5, 4);
+    auto df = df_store_engine(c, DFPolicy::Stored);
+    require_same_jk(c, *df);
+  }
+
+  SECTION("Choose under half the budget stores part") {
+    auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
+    auto probe = df_store_engine(c, DFPolicy::Direct);
+    const size_t full = occ::qm::PackedDFStore::bytes_for(
+        probe->ao_engine().aobasis(), probe->ao_engine().shellpairs(),
+        probe->aux_engine().nbf());
+    auto df = df_store_engine(c, DFPolicy::Choose, full / 2);
+    require_same_jk(c, *df);
+    const auto &st = df->packed_store();
+    REQUIRE_FALSE(st.empty());
+    REQUIRE_FALSE(st.complete());
+    REQUIRE_FALSE(st.folded());
+    REQUIRE(st.bytes() <= full / 2);
+  }
+
+  SECTION("Choose under a tiny budget stores nothing") {
+    auto c = df_store_case<SpinorbitalKind::Unrestricted>(methyl(), 5, 4);
+    auto df = df_store_engine(c, DFPolicy::Choose, 1);
+    require_same_jk(c, *df);
+    REQUIRE(df->packed_store().empty());
+  }
+}

@@ -153,24 +153,12 @@ Mat IntegralEngineDF::build_b_direct(Eigen::Ref<const Mat> C_left,
 Mat IntegralEngineDF::exchange(const MolecularOrbitals &mo) {
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;
-  bool direct = !use_stored_integrals();
-  if (!direct) {
-    compute_stored_integrals();
-    switch (mo.kind) {
-    default: // Restricted
-      return detail::stored_exchange_kernel_r(
-          m_integral_store, m_ao_engine.aobasis(), m_ao_engine.auxbasis(), mo,
-          V_LLt);
-    case U:
-      return detail::stored_exchange_kernel_u(
-          m_integral_store, m_ao_engine.aobasis(), m_ao_engine.auxbasis(), mo,
-          V_LLt);
-    case G:
-      return detail::stored_exchange_kernel_g(
-          m_integral_store, m_ao_engine.aobasis(), m_ao_engine.auxbasis(), mo,
-          V_LLt);
-    }
-  } else if (m_ao_engine.is_spherical()) {
+  // Exchange contracts every pair with every occupied orbital, so a partial
+  // store would need the remainder's integrals for all of them: it stays
+  // direct then, and only J uses what is stored.
+  if (use_stored_integrals() && ensure_packed_store() && m_packed.complete())
+    return packed_exchange(mo);
+  if (m_ao_engine.is_spherical()) {
     occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
     switch (mo.kind) {
     default: // Restricted
@@ -214,26 +202,11 @@ Mat IntegralEngineDF::coulomb(const MolecularOrbitals &mo) {
   }
 
   // Traditional RI-J path
-  bool direct = !use_stored_integrals();
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;
-  if (!direct) {
-    compute_stored_integrals();
-    switch (mo.kind) {
-    default: // Restricted
-      return detail::stored_coulomb_kernel_r(m_integral_store,
-                                             m_ao_engine.aobasis(),
-                                             m_ao_engine.auxbasis(), mo, V_LLt);
-    case U:
-      return detail::stored_coulomb_kernel_u(m_integral_store,
-                                             m_ao_engine.aobasis(),
-                                             m_ao_engine.auxbasis(), mo, V_LLt);
-    case G:
-      return detail::stored_coulomb_kernel_g(m_integral_store,
-                                             m_ao_engine.aobasis(),
-                                             m_ao_engine.auxbasis(), mo, V_LLt);
-    }
-  } else if (m_ao_engine.is_spherical()) {
+  if (use_stored_integrals() && ensure_packed_store())
+    return packed_coulomb(mo);
+  if (m_ao_engine.is_spherical()) {
     occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
     switch (mo.kind) {
     default: // Restricted
@@ -265,11 +238,9 @@ Mat IntegralEngineDF::coulomb(const MolecularOrbitals &mo) {
 JKPair IntegralEngineDF::coulomb_and_exchange(const MolecularOrbitals &mo) {
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;
-  bool direct = !use_stored_integrals();
-  if (!direct) {
-    compute_stored_integrals();
+  if (use_stored_integrals() && ensure_packed_store())
     return {coulomb(mo), exchange(mo)};
-  } else if (m_ao_engine.is_spherical()) {
+  if (m_ao_engine.is_spherical()) {
     occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
     switch (mo.kind) {
     default: // Restricted
@@ -302,6 +273,172 @@ Mat IntegralEngineDF::fock_operator(const MolecularOrbitals &mo) {
   auto [J, K] = coulomb_and_exchange(mo);
   J.noalias() -= K;
   return J;
+}
+
+namespace {
+
+// The Coulomb contribution of the shell pairs the packed store left out:
+// with x null it adds g(P,c) = sum D_c(μ,ν) (μν|P) over them, else it adds
+// J_c(μ,ν) = sum_P (μν|P) x(P,c) into J.
+template <ShellKind kind>
+void unstored_coulomb(IntegralEngine &engine, const ShellPairList &pairs,
+                      const std::vector<Mat> &D, Mat &g, const Mat *x,
+                      std::vector<Mat> &J) {
+  const size_t nc = D.size(), nbf = engine.nbf(),
+               naux = engine.auxbasis().nbf();
+  occ::parallel::thread_local_storage<Mat> g_local(
+      [&]() { return Mat::Zero(naux, nc); });
+  occ::parallel::thread_local_storage<std::vector<Mat>> J_local(
+      [&]() { return std::vector<Mat>(x ? nc : 0, Mat::Zero(nbf, nbf)); });
+  auto f = [&](const IntegralResult &args) {
+    const bool offdiag = args.bf[0] != args.bf[1];
+    const size_t n = size_t(args.dims[0]) * args.dims[1];
+    for (int P = 0; P < args.dims[2]; P++) {
+      Eigen::Map<const Mat> M(args.buffer + P * n, args.dims[0], args.dims[1]);
+      const size_t r = args.bf[2] + P;
+      for (size_t c = 0; c < nc; c++) {
+        if (x) {
+          auto &Jc = J_local.local()[c];
+          Jc.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) +=
+              (*x)(r, c) * M;
+          if (offdiag)
+            Jc.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0]) +=
+                (*x)(r, c) * M.transpose();
+          continue;
+        }
+        double v =
+            (D[c].block(args.bf[0], args.bf[1], args.dims[0], args.dims[1])
+                 .array() *
+             M.array())
+                .sum();
+        if (offdiag)
+          v += (D[c].block(args.bf[1], args.bf[0], args.dims[1], args.dims[0])
+                    .array() *
+                M.transpose().array())
+                   .sum();
+        g_local.local()(r, c) += v;
+      }
+    }
+  };
+  cint::Optimizer opt(engine.env(), Op::coulomb, 3);
+  detail::compute_three_center_integrals_tbb<kind>(
+      f, engine.env(), engine.aobasis(), engine.auxbasis(), pairs, opt);
+  if (x) {
+    for (const auto &local : J_local)
+      for (size_t c = 0; c < nc; c++)
+        J[c] += local[c];
+  } else {
+    for (const auto &local : g_local)
+      g += local;
+  }
+}
+
+} // namespace
+
+bool IntegralEngineDF::ensure_packed_store() {
+  if (m_packed.empty() && m_packed.unstored().empty()) {
+    occ::timing::start(occ::timing::category::df);
+    m_packed.build(m_ao_engine, m_policy == Policy::Stored
+                                    ? 0
+                                    : m_integral_store_memory_limit);
+    occ::timing::stop(occ::timing::category::df);
+  }
+  return !m_packed.empty();
+}
+
+Mat IntegralEngineDF::packed_coulomb(const MolecularOrbitals &mo) {
+  constexpr auto U = SpinorbitalKind::Unrestricted;
+  constexpr auto G = SpinorbitalKind::General;
+  occ::timing::start(occ::timing::category::df);
+  std::vector<Mat> D;
+  switch (mo.kind) {
+  default:
+    D = {mo.D};
+    break;
+  case U:
+    D = {block::a(mo.D) + block::b(mo.D)};
+    break;
+  case G:
+    D = {2 * block::aa(mo.D), 2 * block::bb(mo.D)};
+    break;
+  }
+  Mat g = m_packed.contract(D);
+  const bool partial = !m_packed.complete();
+  std::vector<Mat> rest;
+  const bool spherical = m_ao_engine.is_spherical();
+  if (partial) {
+    if (spherical)
+      unstored_coulomb<ShellKind::Spherical>(m_ao_engine, m_packed.unstored(),
+                                             D, g, nullptr, rest);
+    else
+      unstored_coulomb<ShellKind::Cartesian>(m_ao_engine, m_packed.unstored(),
+                                             D, g, nullptr, rest);
+  }
+  // A folded store already carries L^-1: its g is L^-1 (μν|P) D, and
+  // expanding with it again applies L^-T, so V^-1 is complete
+  const Mat x = m_packed.folded() ? g : Mat(V_LLt.solve(g));
+  std::vector<Mat> J = m_packed.expand(x);
+  if (partial) {
+    if (spherical)
+      unstored_coulomb<ShellKind::Spherical>(m_ao_engine, m_packed.unstored(),
+                                             D, g, &x, J);
+    else
+      unstored_coulomb<ShellKind::Cartesian>(m_ao_engine, m_packed.unstored(),
+                                             D, g, &x, J);
+  }
+  occ::timing::stop(occ::timing::category::df);
+  const size_t nbf = m_ao_engine.nbf();
+  switch (mo.kind) {
+  default:
+    return 2 * J[0];
+  case U: {
+    Mat result(2 * nbf, nbf);
+    block::a(result) = 2 * J[0];
+    block::b(result) = 2 * J[0];
+    return result;
+  }
+  case G: {
+    Mat result = Mat::Zero(2 * nbf, 2 * nbf);
+    block::aa(result) = 2 * J[0];
+    block::bb(result) = 2 * J[1];
+    return result;
+  }
+  }
+}
+
+Mat IntegralEngineDF::packed_exchange(const MolecularOrbitals &mo) {
+  constexpr auto U = SpinorbitalKind::Unrestricted;
+  constexpr auto G = SpinorbitalKind::General;
+  occ::timing::start(occ::timing::category::df);
+  m_packed.fold(V_LLt);
+  const size_t nbf = m_ao_engine.nbf();
+  Mat result;
+  switch (mo.kind) {
+  default:
+    result = m_packed.exchange({mo.Cocc}, {{0, 0}})[0];
+    break;
+  case U: {
+    const auto K = m_packed.exchange(
+        {Mat(block::a(mo.Cocc)), Mat(block::b(mo.Cocc))}, {{0, 0}, {1, 1}});
+    result = Mat(2 * nbf, nbf);
+    block::a(result) = K[0];
+    block::b(result) = K[1];
+    break;
+  }
+  case G: {
+    const auto K =
+        m_packed.exchange({Mat(block::a(mo.Cocc)), Mat(block::b(mo.Cocc))},
+                          {{0, 0}, {1, 1}, {0, 1}});
+    result = Mat(2 * nbf, 2 * nbf);
+    block::aa(result) = K[0];
+    block::bb(result) = K[1];
+    block::ab(result) = K[2] + K[2].transpose();
+    block::ba(result) = K[2] + K[2].transpose();
+    break;
+  }
+  }
+  occ::timing::stop(occ::timing::category::df);
+  return result;
 }
 
 void IntegralEngineDF::set_range_separated_omega(double omega) {
