@@ -327,7 +327,8 @@ Mat IntegralEngineDF::packed_coulomb(const MolecularOrbitals &mo) {
     D = {block::a(mo.D) + block::b(mo.D)};
     break;
   case G:
-    D = {2 * block::aa(mo.D), 2 * block::bb(mo.D)};
+    // both diagonal blocks see the field of the whole density
+    D = {block::aa(mo.D) + block::bb(mo.D)};
     break;
   }
   Mat g = m_packed.contract(D);
@@ -369,7 +370,7 @@ Mat IntegralEngineDF::packed_coulomb(const MolecularOrbitals &mo) {
   case G: {
     Mat result = Mat::Zero(2 * nbf, 2 * nbf);
     block::aa(result) = 2 * J[0];
-    block::bb(result) = 2 * J[1];
+    block::bb(result) = 2 * J[0];
     return result;
   }
   }
@@ -397,11 +398,13 @@ Mat IntegralEngineDF::packed_exchange(const MolecularOrbitals &mo) {
     const auto K =
         m_packed.exchange({Mat(block::a(mo.Cocc)), Mat(block::b(mo.Cocc))},
                           {{0, 0}, {1, 1}, {0, 1}});
+    // K[2] = sum_P (B_P C_a)(B_P C_b)^T is the alpha-row, beta-column block,
+    // which is block::ba; K_ab is its transpose
     result = Mat(2 * nbf, 2 * nbf);
     block::aa(result) = K[0];
     block::bb(result) = K[1];
-    block::ab(result) = K[2] + K[2].transpose();
-    block::ba(result) = K[2] + K[2].transpose();
+    block::ba(result) = K[2];
+    block::ab(result) = K[2].transpose();
     break;
   }
   }
