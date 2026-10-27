@@ -13,8 +13,9 @@ namespace occ::qm {
 /// code recovers MO integrals with a single GEMM and no per-pair metric solves.
 ///
 /// Depending on the memory budget, the 3-center integrals are either read from
-/// the engine's packed, metric-folded store (built once and shared with an SCF
-/// on the same engine) or streamed integral-direct per call (bounded memory).
+/// the engine's packed, metric-folded store (built once, or reused if the
+/// engine already holds it) or streamed integral-direct per call (bounded
+/// memory).
 /// Either way the returned B̃ is identical.
 class DFIntegrals {
 public:

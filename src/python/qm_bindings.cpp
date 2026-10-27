@@ -270,7 +270,11 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
       .def("set_density_fitting_policy",
            &HartreeFock::set_density_fitting_policy, "policy"_a,
            "Direct recomputes the 3-centre integrals each iteration; Stored "
-           "keeps them, at nbf^2 x ndf doubles")
+           "keeps them, packed over the screened shell pairs; Choose stores "
+           "what fits the memory limit")
+      .def("set_density_fitting_memory_limit",
+           &HartreeFock::set_density_fitting_memory_limit, "bytes"_a,
+           "Bytes the stored 3-centre integrals may take under Choose")
       .def("kinetic_matrix", &HartreeFock::compute_kinetic_matrix)
       .def("overlap_matrix", &HartreeFock::compute_overlap_matrix)
       .def("overlap_matrix_for_basis",

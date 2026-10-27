@@ -275,7 +275,7 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
       ->group(gMP2);
   scf->add_option("--mp2-max-memory", config->method.mp2_max_memory_gb,
                   "MP2 memory budget in GiB (controls occupied blocking and "
-                  "whether the dense 3-center store is used; default: 1.0)")
+                  "whether the 3-center store is used; default: 1.0)")
       ->group(gMP2);
   scf->add_option("--mp2-thc-c", config->method.mp2_thc_c_isdf,
                   "THC interpolation rank = c * nbf for --mp2-backend thc "

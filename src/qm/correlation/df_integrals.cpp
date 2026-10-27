@@ -8,10 +8,9 @@ DFIntegrals::DFIntegrals(IntegralEngineDF &df_engine, size_t memory_budget)
   m_nbf = m_df.ao_engine().aobasis().nbf();
   m_naux = m_df.aux_engine().nbf();
 
-  // The packed (μν|P) store is shared with the SCF on the same engine: reuse
-  // it when that already built it whole, else build it if it comfortably
-  // fits the budget; otherwise build B integral-direct per call to keep
-  // memory bounded.
+  // Use the engine's packed (μν|P) store if it is already complete, else
+  // build it if it comfortably fits the budget; otherwise build B
+  // integral-direct per call to keep memory bounded.
   m_direct = !m_df.ensure_complete_packed_store(m_store_limit);
 
   occ::log::debug(

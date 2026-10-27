@@ -87,7 +87,11 @@ nb::module_ register_dft_bindings(nb::module_ &m) {
       .def("set_density_fitting_policy", &DFT::set_density_fitting_policy,
            "policy"_a,
            "Direct recomputes the 3-centre integrals each iteration; Stored "
-           "keeps them, at nbf^2 x ndf doubles")
+           "keeps them, packed over the screened shell pairs; Choose stores "
+           "what fits the memory limit")
+      .def("set_density_fitting_memory_limit",
+           &DFT::set_density_fitting_memory_limit, "bytes"_a,
+           "Bytes the stored 3-centre integrals may take under Choose")
       .def("overlap_matrix", &DFT::compute_overlap_matrix)
       .def("nuclear_repulsion", &DFT::nuclear_repulsion_energy)
       .def("set_precision", &DFT::set_precision)
