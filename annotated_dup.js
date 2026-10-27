@@ -609,6 +609,7 @@ var annotated_dup =
         [ "MP2", "classocc_1_1qm_1_1MP2.html", "classocc_1_1qm_1_1MP2" ],
         [ "Oniom", "structocc_1_1qm_1_1Oniom.html", "structocc_1_1qm_1_1Oniom" ],
         [ "OrbitalSmearing", "structocc_1_1qm_1_1OrbitalSmearing.html", "structocc_1_1qm_1_1OrbitalSmearing" ],
+        [ "PackedDFStore", "classocc_1_1qm_1_1PackedDFStore.html", "classocc_1_1qm_1_1PackedDFStore" ],
         [ "PipekMezeySettings", "structocc_1_1qm_1_1PipekMezeySettings.html", "structocc_1_1qm_1_1PipekMezeySettings" ],
         [ "PointChargePotential", "structocc_1_1qm_1_1PointChargePotential.html", "structocc_1_1qm_1_1PointChargePotential" ],
         [ "PostHFMethod", "classocc_1_1qm_1_1PostHFMethod.html", "classocc_1_1qm_1_1PostHFMethod" ],

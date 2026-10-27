@@ -54,6 +54,7 @@ var classocc_1_1dft_1_1DFT =
     [ "set_cosx_settings", "classocc_1_1dft_1_1DFT.html#a641073ec59491876616874b954f294db", null ],
     [ "set_coulomb_method", "classocc_1_1dft_1_1DFT.html#ab50d3f8e1465eba4645da932436fb6a7", null ],
     [ "set_density_fitting_basis", "classocc_1_1dft_1_1DFT.html#a346ba254b9ca9b0db93031104437787c", null ],
+    [ "set_density_fitting_memory_limit", "classocc_1_1dft_1_1DFT.html#ad9a40c1662a919d7b565806549bf9c74", null ],
     [ "set_density_fitting_policy", "classocc_1_1dft_1_1DFT.html#a5219c663b82922ae4b8138e1a3e31006", null ],
     [ "set_integration_grid", "classocc_1_1dft_1_1DFT.html#a1335c160ee018e6f925d8b1ce6720cf5", null ],
     [ "set_method", "classocc_1_1dft_1_1DFT.html#abb30ad8fddfa487ad5973303f283e7b6", null ],

@@ -44,6 +44,7 @@ var classocc_1_1qm_1_1HartreeFock =
     [ "set_cosx_settings", "classocc_1_1qm_1_1HartreeFock.html#afd7faa48cc2bb4c3158a41cfa00f4945", null ],
     [ "set_coulomb_method", "classocc_1_1qm_1_1HartreeFock.html#a9a6a8b55c0cc64bebbf6b3d545486b8b", null ],
     [ "set_density_fitting_basis", "classocc_1_1qm_1_1HartreeFock.html#aa2ed341f30e62bf6be8814fc0baf41b1", null ],
+    [ "set_density_fitting_memory_limit", "classocc_1_1qm_1_1HartreeFock.html#a928364bd830e1e9be96696eec92545e7", null ],
     [ "set_density_fitting_policy", "classocc_1_1qm_1_1HartreeFock.html#a91c2a2885110639679d4fa9db1e52ff2", null ],
     [ "set_precision", "classocc_1_1qm_1_1HartreeFock.html#a168713e4bc2cf713330c415d46f4f1fc", null ],
     [ "update_core_hamiltonian", "classocc_1_1qm_1_1HartreeFock.html#a71462ff1772e705ed36cfc5d8e084142", null ],
