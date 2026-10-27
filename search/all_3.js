@@ -593,7 +593,7 @@ var searchData=
   ['cpcmxsolvationmodel_590',['cpcmxsolvationmodel',['../classocc_1_1xtb_1_1CpcmXSolvationModel.html#a8eef6aae2865d69e01cab2eaed948b41',1,'occ::xtb::CpcmXSolvationModel::CpcmXSolvationModel()'],['../classocc_1_1xtb_1_1CpcmXSolvationModel.html',1,'occ::xtb::CpcmXSolvationModel']]],
   ['cr_5fka_591',['Cr_Ka',['../namespaceocc_1_1crystal_1_1xray__wavelength.html#a4aff1413cfbf398c63fd71f1d3e2974a',1,'occ::crystal::xray_wavelength']]],
   ['cr_5fka1_592',['Cr_Ka1',['../namespaceocc_1_1crystal_1_1xray__wavelength.html#a20c66a1fa4a066d9b1a9c180c9858307',1,'occ::crystal::xray_wavelength']]],
-  ['create_5fdft_5fmethod_5ffrom_5fdefinition_593',['create_dft_method_from_definition',['../namespaceocc_1_1dft.html#a42fcb81f45e1d3f7cc6b9ed8c044a63a',1,'occ::dft']]],
+  ['create_5fdft_5fmethod_5ffrom_5fdefinition_593',['create_dft_method_from_definition',['../namespaceocc_1_1dft.html#a92527ca08fcf3cda33e564aaae3a91a7',1,'occ::dft']]],
   ['create_5fnpy_5fheader_594',['create_npy_header',['../namespaceocc_1_1core_1_1numpy.html#a75424cb8169f776e068f2ccc3aaf7ff1',1,'occ::core::numpy']]],
   ['create_5fprimitive_5fsupercell_595',['create_primitive_supercell',['../classocc_1_1crystal_1_1Crystal.html#a4d4ea535cdfd79d7cbe3d98baf155972',1,'occ::crystal::Crystal']]],
   ['criteria_596',['criteria',['../structocc_1_1opt_1_1OptimizationState.html#a66b7285655be075606da9a598ed99bd1',1,'occ::opt::OptimizationState']]],

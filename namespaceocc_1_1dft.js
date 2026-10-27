@@ -22,7 +22,7 @@ var namespaceocc_1_1dft =
     [ "calculate_hirshfeld_charges", "namespaceocc_1_1dft.html#a73599737489f46d634245c5985292f30", null ],
     [ "calculate_hirshfeld_multipoles", "namespaceocc_1_1dft.html#a179b373127772122365cdae68cf147ad", null ],
     [ "calculate_voronoi_charges", "namespaceocc_1_1dft.html#ab46dd6d047711d38cfd44e353343b64e", null ],
-    [ "create_dft_method_from_definition", "namespaceocc_1_1dft.html#a42fcb81f45e1d3f7cc6b9ed8c044a63a", null ],
+    [ "create_dft_method_from_definition", "namespaceocc_1_1dft.html#a92527ca08fcf3cda33e564aaae3a91a7", null ],
     [ "dfid_to_string", "namespaceocc_1_1dft.html#a70f0a7522541ba34eecfed52b8460f6e", null ],
     [ "export_method_definitions", "namespaceocc_1_1dft.html#ac203cc9206e770c0f96f08d25836ee8f", null ],
     [ "get_dft_method", "namespaceocc_1_1dft.html#aa623fba569469a5cf78a36d0422777cc", null ],
