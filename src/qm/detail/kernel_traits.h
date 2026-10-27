@@ -63,13 +63,18 @@ void accumulate_operator_symmetric(const Mat &source, Mat &dest) {
     occ::qm::block::a(dest).noalias() += (source_a + source_a.transpose());
     occ::qm::block::b(dest).noalias() += (source_b + source_b.transpose());
   } else if constexpr (sk == SpinorbitalKind::General) {
+    // The kernels (`jk.h`) accumulate the off-diagonal exchange as its
+    // symmetric part in the ab block and its antisymmetric part in the ba
+    // block; K_ab is their sum and K_ba its transpose.
     auto source_aa = occ::qm::block::aa(source);
-    auto source_ab = occ::qm::block::ab(source);
-    auto source_ba = occ::qm::block::ba(source);
+    auto source_sym = occ::qm::block::ab(source);
+    auto source_anti = occ::qm::block::ba(source);
     auto source_bb = occ::qm::block::bb(source);
     occ::qm::block::aa(dest).noalias() += (source_aa + source_aa.transpose());
-    occ::qm::block::ab(dest).noalias() += (source_ab + source_ab.transpose());
-    occ::qm::block::ba(dest).noalias() += (source_ba + source_ba.transpose());
+    const Mat ab = source_sym + source_sym.transpose() + source_anti -
+                   source_anti.transpose();
+    occ::qm::block::ab(dest).noalias() += ab;
+    occ::qm::block::ba(dest).noalias() += ab.transpose();
     occ::qm::block::bb(dest).noalias() += (source_bb + source_bb.transpose());
   }
 }

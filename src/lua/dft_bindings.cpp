@@ -117,6 +117,10 @@ void register_dft_bindings(lua_State *L) {
                 threshold.isNumber() ? threshold.unsafe_cast<double>() : 1e-4;
             dft->set_density_fitting_basis(name, t);
           })
+      .addFunction("set_density_fitting_policy",
+                   &DFT::set_density_fitting_policy)
+      .addFunction("set_density_fitting_memory_limit",
+                   &DFT::set_density_fitting_memory_limit)
       // nuclear_repulsion_energy is inherited from SCFMethodBase; LB3's
       // addProperty can't deduce the inherited member-fn pointer here,
       // so it stays as a method call.

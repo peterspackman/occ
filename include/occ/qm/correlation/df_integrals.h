@@ -12,19 +12,21 @@ namespace occ::qm {
 /// i.e. the metric is folded in once (B̃ = B·L⁻ᵀ with V = L Lᵀ), so downstream
 /// code recovers MO integrals with a single GEMM and no per-pair metric solves.
 ///
-/// Depending on the memory budget, the 3-center integrals are either stored
-/// densely once and reused (fast, O(nbf²·naux) memory) or streamed
-/// integral-direct per call (bounded memory, no dense store). Either way the
-/// returned B̃ is identical.
+/// Depending on the memory budget, the 3-center integrals are either read from
+/// the engine's packed, metric-folded store (built once, or reused if the
+/// engine already holds it) or streamed integral-direct per call (bounded
+/// memory).
+/// Either way the returned B̃ is identical.
 class DFIntegrals {
 public:
-  /// memory_budget (bytes): if the dense (μν|P) store comfortably fits, it is
-  /// built once and reused; otherwise B is built integral-direct per call.
+  /// memory_budget (bytes): if the packed (μν|P) store comfortably fits (or
+  /// is already complete), it is used; otherwise B is built integral-direct
+  /// per call.
   DFIntegrals(IntegralEngineDF &df_engine, size_t memory_budget);
 
   size_t nbf() const { return m_nbf; }
   size_t naux() const { return m_naux; }
-  /// True if B is built integral-direct (no dense (μν|P) store).
+  /// True if B is built integral-direct (no stored (μν|P)).
   bool uses_direct() const { return m_direct; }
 
   /// Build the metric-folded B tensor for the given MO coefficient blocks.
@@ -34,10 +36,8 @@ public:
                     Eigen::Ref<const Mat> C_right) const;
 
 private:
-  Mat build_b_stored(Eigen::Ref<const Mat> C_left,
-                     Eigen::Ref<const Mat> C_right) const;
-
   IntegralEngineDF &m_df;
+  size_t m_store_limit{0};
   size_t m_nbf{0};
   size_t m_naux{0};
   bool m_direct{false};

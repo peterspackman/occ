@@ -11,6 +11,7 @@
 #include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
 #include <occ/qm/gradients.h>
+#include <occ/qm/expectation.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
@@ -22,6 +23,7 @@
 #include <occ/driver/acceleration.h>
 #include <occ/driver/method_parser.h>
 #include <occ/qm/fitting_basis.h>
+#include <occ/qm/correlation/df_integrals.h>
 #include <occ/qm/correlation/mo_integral_engine.h>
 #include <occ/qm/oniom.h>
 #include <occ/qm/partitioning.h>
@@ -2225,5 +2227,343 @@ TEST_CASE("Pipek-Mezey converges for benzene", "[localization]") {
         n_ch++;
     }
     REQUIRE(n_ch == 6);
+  }
+}
+
+// General (two-component) Hartree-Fock. Every closed-shell check passes even
+// with the spin blocks wired up wrongly, since then Daa = Dbb and Dab = 0;
+// these use open shells and spin-mixed spinors instead.
+namespace {
+
+std::vector<occ::core::Atom> ghf_water() {
+  return {{8, 0.0, 0.0, 0.221668},
+          {1, 0.0, 1.431042, -0.886659},
+          {1, 0.0, -1.431042, -0.886659}};
+}
+
+// A doublet whose singly occupied orbital is not degenerate (OH's is: GHF
+// can then settle on a spin-mixed combination of the two pi orbitals, which
+// is a different stationary point)
+std::vector<occ::core::Atom> amidogen() {
+  return {{7, 0.0, 0.0, 0.270610},
+          {1, 0.0, 1.516320, -0.946941},
+          {1, 0.0, -1.516320, -0.946941}};
+}
+
+// Random, spin-mixed spinors: D_ab is filled and not symmetric
+MolecularOrbitals random_spinors(size_t nbf, int nocc) {
+  MolecularOrbitals mo;
+  mo.kind = SpinorbitalKind::General;
+  mo.n_ao = nbf;
+  mo.n_alpha = nocc;
+  mo.n_beta = 0;
+  mo.C = Mat::Random(2 * nbf, 2 * nbf);
+  mo.update_occupied_orbitals();
+  mo.update_density_matrix();
+  return mo;
+}
+
+// The same spinors with the spin axis turned by theta: (a, b) ->
+// (c a - s b, s a + c b), a real rotation the spin-free Hamiltonian ignores
+MolecularOrbitals spin_rotated(const MolecularOrbitals &mo, double theta) {
+  MolecularOrbitals r = mo;
+  const double c = std::cos(theta), s = std::sin(theta);
+  const size_t nbf = mo.n_ao;
+  r.C.topRows(nbf) = c * mo.C.topRows(nbf) - s * mo.C.bottomRows(nbf);
+  r.C.bottomRows(nbf) = s * mo.C.topRows(nbf) + c * mo.C.bottomRows(nbf);
+  r.update_occupied_orbitals();
+  r.update_density_matrix();
+  return r;
+}
+
+double two_electron_energy(const MolecularOrbitals &mo,
+                           const occ::qm::JKPair &jk) {
+  const Mat G = jk.J - jk.K;
+  return occ::qm::expectation<SpinorbitalKind::General>(mo.D, G);
+}
+
+double ghf_scf_energy(HartreeFock &hf, SpinorbitalKind kind) {
+  occ::qm::SCF<HartreeFock> scf(hf, kind);
+  scf.set_charge_multiplicity(0, 2);
+  scf.convergence_settings.energy_threshold = 1e-10;
+  return scf.compute_scf_energy();
+}
+
+} // namespace
+
+TEST_CASE("GHF two-electron energy is invariant under a spin rotation",
+          "[ghf]") {
+  const auto atoms = ghf_water();
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+  const auto mo = random_spinors(basis.nbf(), 7);
+  const auto rotated = spin_rotated(mo, 0.7);
+
+  auto check = [&](HartreeFock &hf, double tolerance) {
+    const double e = two_electron_energy(mo, hf.compute_JK(mo));
+    const double e_rot = two_electron_energy(rotated, hf.compute_JK(rotated));
+    INFO("E2 " << e << " rotated " << e_rot);
+    REQUIRE(std::abs(e - e_rot) < tolerance * std::abs(e));
+  };
+
+  SECTION("four-centre") {
+    HartreeFock hf(basis);
+    check(hf, 1e-12);
+  }
+  SECTION("density fitted, direct and stored") {
+    for (const auto policy : {occ::qm::IntegralEngineDF::Policy::Direct,
+                              occ::qm::IntegralEngineDF::Policy::Stored}) {
+      HartreeFock hf(basis);
+      hf.set_density_fitting_basis("def2-universal-jkfit");
+      hf.set_density_fitting_policy(policy);
+      check(hf, 1e-12);
+    }
+  }
+  SECTION("COSX exchange") {
+    HartreeFock hf(basis);
+    hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
+    // its screening depends on the density, so it is linear (and the
+    // energy invariant) only to about the screening threshold
+    check(hf, 1e-6);
+  }
+}
+
+TEST_CASE("GHF off-diagonal exchange agrees between engines", "[ghf]") {
+  // K_ab = K[D_ab], built three independent ways; its antisymmetric part
+  // is what a symmetrising build loses
+  const auto atoms = ghf_water();
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+  const auto mo = random_spinors(basis.nbf(), 7);
+
+  HartreeFock exact(basis);
+  const Mat K = exact.compute_JK(mo).K;
+  const Mat K_ab = occ::qm::block::ab(K);
+  const double scale = K_ab.cwiseAbs().maxCoeff();
+  REQUIRE((K_ab - K_ab.transpose()).cwiseAbs().maxCoeff() > 1e-2 * scale);
+  REQUIRE((occ::qm::block::ba(K) - K_ab.transpose()).cwiseAbs().maxCoeff() <
+          1e-12 * scale);
+
+  HartreeFock df(basis);
+  df.set_density_fitting_basis("def2-universal-jkfit");
+  const Mat K_df = df.compute_JK(mo).K;
+  INFO("max |K_ab| " << scale);
+  REQUIRE((occ::qm::block::ab(K_df) - K_ab).cwiseAbs().maxCoeff() <
+          1e-2 * scale);
+
+  HartreeFock cosx(basis);
+  cosx.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
+  const Mat K_cosx = cosx.compute_JK(mo).K;
+  REQUIRE((occ::qm::block::ab(K_cosx) - K_ab).cwiseAbs().maxCoeff() <
+          1e-2 * scale);
+}
+
+TEST_CASE("GHF on a collinear radical matches UHF", "[ghf][scf]") {
+  // NH2's UHF ground state is a stationary point of GHF too, so starting from
+  // the collinear guess GHF has to land on the same energy
+  const auto atoms = amidogen();
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+
+  SECTION("four-centre") {
+    HartreeFock uhf(basis), ghf(basis);
+    const double e_u = ghf_scf_energy(uhf, SpinorbitalKind::Unrestricted);
+    const double e_g = ghf_scf_energy(ghf, SpinorbitalKind::General);
+    REQUIRE(e_g == Catch::Approx(e_u).margin(1e-7));
+  }
+  SECTION("density fitted") {
+    HartreeFock uhf(basis), ghf(basis);
+    uhf.set_density_fitting_basis("def2-universal-jkfit");
+    ghf.set_density_fitting_basis("def2-universal-jkfit");
+    const double e_u = ghf_scf_energy(uhf, SpinorbitalKind::Unrestricted);
+    const double e_g = ghf_scf_energy(ghf, SpinorbitalKind::General);
+    REQUIRE(e_g == Catch::Approx(e_u).margin(1e-7));
+  }
+}
+
+// Packed 3-centre store against the integral-direct builds on the same
+// orbitals: stored whole, stored in part under a budget (J semi-direct, K
+// direct) and not at all.
+namespace {
+using DFPolicy = occ::qm::IntegralEngineDF::Policy;
+
+struct DFStoreCase {
+  std::vector<occ::core::Atom> atoms;
+  occ::gto::AOBasis basis, aux;
+  MolecularOrbitals mo;
+};
+
+template <SpinorbitalKind kind>
+DFStoreCase df_store_case(std::vector<occ::core::Atom> atoms, int na,
+                          int nb) {
+  DFStoreCase c{atoms, occ::gto::AOBasis::load(atoms, "def2-svp"),
+                occ::gto::AOBasis::load(atoms, "def2-universal-jkfit"), {}};
+  c.mo.kind = kind;
+  c.mo.n_ao = c.basis.nbf();
+  c.mo.n_alpha = na;
+  c.mo.n_beta = nb;
+  auto [rows, cols] = occ::qm::matrix_dimensions<kind>(c.mo.n_ao);
+  c.mo.C = Mat::Random(rows, cols);
+  c.mo.update_occupied_orbitals();
+  c.mo.update_density_matrix();
+  return c;
+}
+
+// two waters 14 Angstrom apart: the shell-pair screen drops the pairs across
+// the gap, so the store really is packed
+std::vector<occ::core::Atom> two_waters() {
+  const double x = 26.456;
+  return {{8, 0.0, 0.0, 0.221},     {1, 0.0, 1.431, -0.886},
+          {1, 0.0, -1.431, -0.886}, {8, x, 0.0, 0.221},
+          {1, x, 1.431, -0.886},    {1, x, -1.431, -0.886}};
+}
+
+std::vector<occ::core::Atom> methyl() {
+  return {{6, 0.0, 0.0, 0.0},
+          {1, 2.039, 0.0, 0.0},
+          {1, -1.020, 1.767, 0.0},
+          {1, -1.020, -1.767, 0.0}};
+}
+
+std::unique_ptr<occ::qm::IntegralEngineDF>
+df_store_engine(const DFStoreCase &c, DFPolicy p, size_t limit = 0) {
+  auto df = std::make_unique<occ::qm::IntegralEngineDF>(
+      c.atoms, c.basis.shells(), c.aux.shells());
+  df->set_integral_policy(p);
+  if (limit)
+    df->set_integral_store_memory_limit(limit);
+  return df;
+}
+
+double max_abs(const Mat &m) { return m.cwiseAbs().maxCoeff(); }
+
+size_t engine_packed_bytes(const DFStoreCase &c) {
+  return df_store_engine(c, DFPolicy::Direct)->packed_storage_bytes();
+}
+
+void require_same_jk(const DFStoreCase &c, occ::qm::IntegralEngineDF &df) {
+  auto direct = df_store_engine(c, DFPolicy::Direct);
+  const Mat Jd = direct->coulomb(c.mo), Kd = direct->exchange(c.mo);
+  const Mat J = df.coulomb(c.mo), K = df.exchange(c.mo);
+  REQUIRE(J.rows() == Jd.rows());
+  REQUIRE(K.cols() == Kd.cols());
+  // relative to the matrix: random orbitals give large entries, and a
+  // complete store applies L^-1 before the contraction, the direct build after
+  const double tol_J = 1e-12 * std::max(1.0, max_abs(Jd));
+  const double tol_K = 1e-12 * std::max(1.0, max_abs(Kd));
+  INFO("max |J| " << max_abs(Jd) << " max |dJ| " << max_abs(J - Jd)
+                  << " max |K| " << max_abs(Kd) << " max |dK| "
+                  << max_abs(K - Kd));
+  REQUIRE(max_abs(J - Jd) < tol_J);
+  REQUIRE(max_abs(K - Kd) < tol_K);
+  // a second build reuses the store
+  REQUIRE(max_abs(df.coulomb(c.mo) - Jd) < tol_J);
+  REQUIRE(max_abs(df.exchange(c.mo) - Kd) < tol_K);
+}
+} // namespace
+
+TEST_CASE("Packed DF store matches the direct builds", "[df][df-store]") {
+  SECTION("Restricted, stored whole and packed") {
+    auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
+    auto df = df_store_engine(c, DFPolicy::Stored);
+    require_same_jk(c, *df);
+    const auto &st = df->packed_store();
+    REQUIRE_FALSE(st.empty());
+    REQUIRE(st.complete());
+    const size_t nbf = c.basis.nbf();
+    REQUIRE(st.bytes() < nbf * nbf * c.aux.nbf() * sizeof(double) / 2);
+  }
+
+  SECTION("Unrestricted, stored whole") {
+    auto c = df_store_case<SpinorbitalKind::Unrestricted>(methyl(), 5, 4);
+    auto df = df_store_engine(c, DFPolicy::Stored);
+    require_same_jk(c, *df);
+  }
+
+  SECTION("General, stored whole") {
+    // random spinors are spin-mixed, so the ab/ba exchange blocks are filled
+    auto c = df_store_case<SpinorbitalKind::General>(methyl(), 5, 4);
+    auto df = df_store_engine(c, DFPolicy::Stored);
+    require_same_jk(c, *df);
+  }
+
+  SECTION("Choose under half the budget stores part") {
+    auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
+    const size_t full = engine_packed_bytes(c);
+    auto df = df_store_engine(c, DFPolicy::Choose, full / 2);
+    require_same_jk(c, *df);
+    const auto &st = df->packed_store();
+    REQUIRE_FALSE(st.empty());
+    REQUIRE_FALSE(st.complete());
+    REQUIRE(st.bytes() <= full / 2);
+  }
+
+  SECTION("Choose that cannot store everything builds nothing for J+K") {
+    // exchange only uses a complete store, so a partial one would be memory
+    // spent on nothing; a J-only build still stores what fits
+    auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
+    auto df =
+        df_store_engine(c, DFPolicy::Choose, engine_packed_bytes(c) / 2);
+    auto direct = df_store_engine(c, DFPolicy::Direct);
+    const auto jk = df->coulomb_and_exchange(c.mo);
+    const auto jk_direct = direct->coulomb_and_exchange(c.mo);
+    REQUIRE_FALSE(df->packed_store().built());
+    REQUIRE(max_abs(jk.J - jk_direct.J) < 1e-10);
+    REQUIRE(max_abs(jk.K - jk_direct.K) < 1e-10);
+    df->coulomb(c.mo);
+    REQUIRE_FALSE(df->packed_store().empty());
+    REQUIRE_FALSE(df->packed_store().complete());
+  }
+
+  SECTION("Choose under a tiny budget stores nothing") {
+    auto c = df_store_case<SpinorbitalKind::Unrestricted>(methyl(), 5, 4);
+    auto df = df_store_engine(c, DFPolicy::Choose, 1);
+    require_same_jk(c, *df);
+    REQUIRE(df->packed_store().empty());
+  }
+}
+
+TEST_CASE("Correlated DF integrals share the packed store",
+          "[df][df-store][correlation]") {
+  auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
+  const Mat C_occ = c.mo.C.leftCols(10);
+  const Mat C_virt = c.mo.C.rightCols(c.mo.C.cols() - 10);
+
+  auto direct_engine = df_store_engine(c, DFPolicy::Direct);
+  occ::qm::DFIntegrals direct(*direct_engine, 0);
+  REQUIRE(direct.uses_direct());
+  const Mat B_direct = direct.build_b_tilde(C_occ, C_virt);
+  // The two paths apply L^-1 before and after the MO transform; with a
+  // JK-fitting metric's conditioning that differs by ~1e-10 relative.
+  auto same_b = [&](const Mat &B) {
+    const double scale = max_abs(B_direct);
+    INFO("max |B| " << scale << " max |dB| " << max_abs(B - B_direct)
+                    << " max |d(ia|jb)| "
+                    << max_abs(B * B.transpose() -
+                               B_direct * B_direct.transpose()));
+    return max_abs(B - B_direct) < 1e-8 * scale;
+  };
+
+  SECTION("built for the correlated method when it fits the budget") {
+    auto engine = df_store_engine(c, DFPolicy::Direct);
+    occ::qm::DFIntegrals stored(*engine, size_t(1) << 32);
+    REQUIRE_FALSE(stored.uses_direct());
+    REQUIRE(engine->packed_store().complete());
+    REQUIRE(same_b(stored.build_b_tilde(C_occ, C_virt)));
+  }
+
+  SECTION("reused from the SCF's builds whatever the budget") {
+    auto engine = df_store_engine(c, DFPolicy::Stored);
+    engine->coulomb(c.mo);
+    occ::qm::DFIntegrals stored(*engine, 0);
+    REQUIRE_FALSE(stored.uses_direct());
+    REQUIRE(same_b(stored.build_b_tilde(C_occ, C_virt)));
+  }
+
+  SECTION("a partial SCF store is not used") {
+    auto engine = df_store_engine(c, DFPolicy::Choose,
+                                  engine_packed_bytes(c) / 2);
+    engine->coulomb(c.mo);
+    REQUIRE_FALSE(engine->packed_store().complete());
+    occ::qm::DFIntegrals df(*engine, 0);
+    REQUIRE(df.uses_direct());
+    REQUIRE(same_b(df.build_b_tilde(C_occ, C_virt)));
   }
 }

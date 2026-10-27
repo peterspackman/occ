@@ -250,3 +250,50 @@ TEST_CASE("UHF gradient CH3 radical 3-21G", "[uhf][gradient]") {
 
   REQUIRE(all_close(gradient, expected, 1e-5, 1e-5));
 }
+
+// =============================================================================
+// GHF Gradient Tests
+// =============================================================================
+
+TEST_CASE("GHF gradient of a collinear radical matches UHF",
+          "[ghf][gradient]") {
+  // NH2: GHF converges to the UHF state (non-degenerate singly occupied
+  // orbital), so the two gradients must agree. Turning the spin axis of the
+  // converged spinors gives another GHF solution with the same gradient, and
+  // that one has filled, non-symmetric ab blocks.
+  std::vector<occ::core::Atom> atoms{{7, 0.0, 0.0, 0.270610},
+                                     {1, 0.0, 1.516320, -0.946941},
+                                     {1, 0.1, -1.516320, -0.946941}};
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+
+  auto converged = [&](occ::qm::SpinorbitalKind kind, HartreeFock &hf) {
+    occ::qm::SCF<HartreeFock> scf(hf, kind);
+    scf.set_charge_multiplicity(0, 2);
+    scf.convergence_settings.energy_threshold = 1e-11;
+    scf.convergence_settings.commutator_threshold = 1e-9;
+    scf.compute_scf_energy();
+    return scf.molecular_orbitals();
+  };
+
+  HartreeFock uhf(basis), ghf(basis);
+  const auto mo_u = converged(occ::qm::SpinorbitalKind::Unrestricted, uhf);
+  const auto mo_g = converged(occ::qm::SpinorbitalKind::General, ghf);
+  const Mat3N g_u = occ::qm::GradientEvaluator(uhf)(mo_u);
+  const Mat3N g_g = occ::qm::GradientEvaluator(ghf)(mo_g);
+  fmt::print("UHF gradient\n{}\nGHF gradient\n{}\n", format_matrix(g_u),
+             format_matrix(g_g));
+  REQUIRE(all_close(g_g, g_u, 1e-6, 1e-6));
+
+  auto rotated = mo_g;
+  const size_t nbf = basis.nbf();
+  const double c = std::cos(0.9), s = std::sin(0.9);
+  rotated.C.topRows(nbf) = c * mo_g.C.topRows(nbf) - s * mo_g.C.bottomRows(nbf);
+  rotated.C.bottomRows(nbf) =
+      s * mo_g.C.topRows(nbf) + c * mo_g.C.bottomRows(nbf);
+  rotated.update_occupied_orbitals();
+  rotated.update_density_matrix();
+  REQUIRE(occ::qm::block::ab(rotated.D).cwiseAbs().maxCoeff() > 1e-2);
+  const Mat3N g_rot = occ::qm::GradientEvaluator(ghf)(rotated);
+  fmt::print("GHF gradient, spin axis turned\n{}\n", format_matrix(g_rot));
+  REQUIRE(all_close(g_rot, g_u, 1e-6, 1e-6));
+}

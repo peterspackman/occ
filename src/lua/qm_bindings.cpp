@@ -445,6 +445,10 @@ void register_hf_and_scf(lua_State *L) {
           +[](HartreeFock *hf, const std::string &name) {
             hf->set_density_fitting_basis(name, 1e-4);
           })
+      .addFunction("set_density_fitting_policy",
+                   &HartreeFock::set_density_fitting_policy)
+      .addFunction("set_density_fitting_memory_limit",
+                   &HartreeFock::set_density_fitting_memory_limit)
       .addFunction(
           "kinetic_matrix",
           +[](HartreeFock *hf, lua_State *S) {
