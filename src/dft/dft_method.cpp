@@ -131,6 +131,26 @@ get_method_definitions() {
   return builtin_definitions;
 }
 
+namespace {
+
+// Both spin variants get the same weight and HF exchange fraction:
+// `DFTMethod::exchange_factor()` reads the unpolarised list, the UKS kernels
+// evaluate the polarised one.
+void add_component(DFTMethod &method, const FuncComponent &comp) {
+  DensityFunctional func(comp.id, false);
+  DensityFunctional func_pol(comp.id, true);
+  func.set_scale_factor(comp.factor);
+  func_pol.set_scale_factor(comp.factor);
+  if (comp.hfx > 0.0) {
+    func.set_exchange_factor(comp.hfx);
+    func_pol.set_exchange_factor(comp.hfx);
+  }
+  method.functionals.push_back(func);
+  method.functionals_polarized.push_back(func_pol);
+}
+
+} // namespace
+
 DFTMethod create_dft_method_from_definition(const MethodDefinition &def) {
 
   DFTMethod result;
@@ -138,22 +158,8 @@ DFTMethod create_dft_method_from_definition(const MethodDefinition &def) {
   result.gcp = def.gcp;
   result.basis_set = def.basis_set;
 
-  for (const auto &comp : def.components) {
-    auto func = DensityFunctional(comp.id, false);
-    auto func_pol = DensityFunctional(comp.id, true);
-
-    if (comp.factor != 1.0) {
-      func.set_scale_factor(comp.factor);
-      func_pol.set_scale_factor(comp.factor);
-    }
-
-    if (comp.hfx > 0.0) {
-      func_pol.set_exchange_factor(comp.hfx);
-    }
-
-    result.functionals.push_back(func);
-    result.functionals_polarized.push_back(func_pol);
-  }
+  for (const auto &comp : def.components)
+    add_component(result, comp);
 
   return result;
 }
@@ -197,24 +203,14 @@ DFTMethod get_dft_method(const std::string &method_string) {
       }
 
       for (const auto &comp : def.components) {
-        occ::log::debug("Component id: {}", static_cast<int>(comp.id));
-        auto func = DensityFunctional(comp.id, false);
-        auto func_pol = DensityFunctional(comp.id, true);
-
-        if (comp.factor != 1.0) {
-          func.set_scale_factor(comp.factor);
-          func_pol.set_scale_factor(comp.factor);
+        add_component(result, comp);
+        const auto &func = result.functionals.back();
+        if (comp.factor != 1.0)
           occ::log::info("    {} x {}", comp.factor, func.name());
-        } else {
+        else
           occ::log::info("    {}", func.name());
-        }
-
-        if (comp.hfx > 0.0) {
-          func_pol.set_exchange_factor(comp.hfx);
-        }
-
-        result.functionals.push_back(func);
-        result.functionals_polarized.push_back(func_pol);
+        if (comp.hfx > 0.0)
+          occ::log::info("    {} x HF exchange", comp.hfx);
       }
     } else {
       occ::log::info("    {} (custom)", m);

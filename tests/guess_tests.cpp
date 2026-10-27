@@ -242,6 +242,29 @@ TEST_CASE("Every guess leaves behind a usable set of orbitals", "[guess]") {
   }
 }
 
+TEST_CASE("Unrestricted guesses repeat the restricted Fock in both spins",
+          "[guess]") {
+  // A guess supplies one square density, so for closed-shell water the
+  // alpha and beta blocks of the unrestricted guess Fock must each equal the
+  // restricted one. The atomic guess is already in the orbital basis and
+  // takes a different build from the projected guesses.
+  const auto basis = load(water(), "def2-svp");
+  for (const auto kind :
+       {GuessKind::Soad, GuessKind::Sap, GuessKind::AtomicScf}) {
+    INFO("guess " << occ::qm::guess_kind_name(kind));
+    HartreeFock hf(basis);
+    occ::qm::SCF<HartreeFock> rhf(hf, SpinorbitalKind::Restricted);
+    occ::qm::SCF<HartreeFock> uhf(hf, SpinorbitalKind::Unrestricted);
+    rhf.set_guess_kind(kind);
+    uhf.set_guess_kind(kind);
+    rhf.compute_initial_guess();
+    uhf.compute_initial_guess();
+    namespace block = occ::qm::block;
+    CHECK((block::a(uhf.ctx.F) - rhf.ctx.F).cwiseAbs().maxCoeff() < 1e-10);
+    CHECK((block::b(uhf.ctx.F) - rhf.ctx.F).cwiseAbs().maxCoeff() < 1e-10);
+  }
+}
+
 TEST_CASE("The guess does not change where the SCF converges", "[guess]") {
   // Different starting points, same answer: the guess may only affect how
   // many iterations it takes.

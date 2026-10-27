@@ -253,7 +253,10 @@ void SCF<P>::add_guess_density(const Guess &guess) {
   if (guess.density_in_orbital_basis) {
     // Already in this method's basis, so no projection is needed -- just a
     // Fock build from a density, screened on the density and on Schwarz.
-    ctx.F += m_procedure.compute_fock_from_density(mo_guess, ctx.K);
+    // The density is a single square block, so the build is the restricted
+    // one, spread over the spin blocks afterwards.
+    mo_guess.kind = SpinorbitalKind::Restricted;
+    add_guess_potential(m_procedure.compute_fock_from_density(mo_guess, ctx.K));
   } else {
     ctx.F += m_procedure.compute_fock_mixed_basis(
         mo_guess, guess.density_basis, guess.density_is_shell_diagonal);
