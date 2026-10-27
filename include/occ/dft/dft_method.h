@@ -36,8 +36,7 @@ struct DFTMethod {
 
 DFTMethod get_dft_method(const std::string &method_string);
 
-DFTMethod create_dft_method_from_definition(const MethodDefinition &def,
-                                            bool polarized = false);
+DFTMethod create_dft_method_from_definition(const MethodDefinition &def);
 
 ankerl::unordered_dense::map<std::string, MethodDefinition>
 load_method_definitions(const std::string &filename);
