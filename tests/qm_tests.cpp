@@ -2495,6 +2495,23 @@ TEST_CASE("Packed DF store matches the direct builds", "[df][df-store]") {
     REQUIRE(st.bytes() <= full / 2);
   }
 
+  SECTION("Choose that cannot store everything builds nothing for J+K") {
+    // exchange only uses a complete store, so a partial one would be memory
+    // spent on nothing; a J-only build still stores what fits
+    auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
+    auto df =
+        df_store_engine(c, DFPolicy::Choose, engine_packed_bytes(c) / 2);
+    auto direct = df_store_engine(c, DFPolicy::Direct);
+    const auto jk = df->coulomb_and_exchange(c.mo);
+    const auto jk_direct = direct->coulomb_and_exchange(c.mo);
+    REQUIRE_FALSE(df->packed_store().built());
+    REQUIRE(max_abs(jk.J - jk_direct.J) < 1e-10);
+    REQUIRE(max_abs(jk.K - jk_direct.K) < 1e-10);
+    df->coulomb(c.mo);
+    REQUIRE_FALSE(df->packed_store().empty());
+    REQUIRE_FALSE(df->packed_store().complete());
+  }
+
   SECTION("Choose under a tiny budget stores nothing") {
     auto c = df_store_case<SpinorbitalKind::Unrestricted>(methyl(), 5, 4);
     auto df = df_store_engine(c, DFPolicy::Choose, 1);

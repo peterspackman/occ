@@ -107,7 +107,7 @@ Mat IntegralEngineDF::exchange(const MolecularOrbitals &mo) {
   // Exchange contracts every pair with every occupied orbital, so a partial
   // store would need the remainder's integrals for all of them: it stays
   // direct then, and only J uses what is stored.
-  if (use_stored_integrals() && ensure_packed_store() && m_packed.complete())
+  if (ensure_complete_store_for_exchange())
     return packed_exchange(mo);
   if (m_ao_engine.is_spherical()) {
     occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
@@ -192,7 +192,7 @@ JKPair IntegralEngineDF::coulomb_and_exchange(const MolecularOrbitals &mo) {
   // A partial store only helps J; K would then recompute every integral
   // anyway, so the fused direct kernel, which computes each once for both, is
   // cheaper than semi-direct J plus direct K.
-  if (use_stored_integrals() && ensure_packed_store() && m_packed.complete())
+  if (ensure_complete_store_for_exchange())
     return {coulomb(mo), exchange(mo)};
   if (m_ao_engine.is_spherical()) {
     occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
@@ -303,6 +303,15 @@ bool IntegralEngineDF::ensure_packed_store() {
                            ? PackedDFStore::unlimited
                            : m_integral_store_memory_limit);
   return !m_packed.empty();
+}
+
+bool IntegralEngineDF::ensure_complete_store_for_exchange() {
+  if (!use_stored_integrals())
+    return false;
+  if (!m_packed.built() && m_policy == Policy::Choose &&
+      packed_storage_bytes() > m_integral_store_memory_limit)
+    return false;
+  return ensure_packed_store() && m_packed.complete();
 }
 
 bool IntegralEngineDF::ensure_complete_packed_store(size_t max_bytes) {

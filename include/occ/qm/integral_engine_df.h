@@ -95,6 +95,9 @@ private:
   /// Builds the packed store on first use: every pair under `Stored`, what
   /// fits the memory limit under `Choose`. False when nothing is stored.
   bool ensure_packed_store();
+  /// For builds that include exchange: only a complete store helps them, so
+  /// under `Choose` a store that would not fit whole is not built for them.
+  bool ensure_complete_store_for_exchange();
   void build_packed_store(size_t max_bytes);
   Mat packed_coulomb(const MolecularOrbitals &mo);
   Mat packed_exchange(const MolecularOrbitals &mo);
