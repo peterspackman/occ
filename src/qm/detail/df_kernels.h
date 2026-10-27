@@ -724,21 +724,22 @@ Mat direct_exchange_operator_kernel_g(IntegralEngine &engine,
   Mat K = Mat::Zero(rows, cols);
   Mat Xa(nbf, ndf), Xb(nbf, ndf);
   
-  // Contract exchange matrix with cross-terms for general case
+  // iuPa/iuPb hold both halves of every canonical pair, so each block is
+  // complete. block::ab is the lower-left (beta rows, alpha columns), so
+  // K_ab = sum_i (μ i_b|P) V^-1 (P|ν i_a); it is not symmetric, and K_ba is
+  // its transpose. Only the diagonal blocks are symmetrised, to drop
+  // rounding asymmetry.
   for (size_t i = 0; i < nocc; i++) {
     Xa = V_LLt.solve(iuPa[i].transpose());
     Xb = V_LLt.solve(iuPb[i].transpose());
     block::aa(K).noalias() += iuPa[i] * Xa;
     block::bb(K).noalias() += iuPb[i] * Xb;
-    block::ab(K).noalias() += (iuPa[i] * Xb) + (iuPb[i] * Xa);
-    block::ba(K).noalias() += (iuPa[i] * Xb) + (iuPb[i] * Xa);
+    block::ab(K).noalias() += iuPb[i] * Xa;
   }
 
-  block::aa(K) += block::aa(K).transpose().eval();
-  block::ab(K) += block::ab(K).transpose().eval();
-  block::ba(K) += block::ba(K).transpose().eval();
-  block::bb(K) += block::bb(K).transpose().eval();
-  K *= 0.5;
+  block::aa(K) = 0.5 * (block::aa(K) + block::aa(K).transpose()).eval();
+  block::bb(K) = 0.5 * (block::bb(K) + block::bb(K).transpose()).eval();
+  block::ba(K) = block::ab(K).transpose();
   occ::timing::stop(occ::timing::category::df);
 
   return K;
@@ -996,9 +997,10 @@ Mat direct_coulomb_operator_kernel_g(IntegralEngine &engine,
     gbb_total += gbb;
   }
   
-  // Apply factor of 2 before solving, matching stored kernel exactly  
-  Vec d_aa = V_LLt.solve(2 * gaa_total);
-  Vec d_bb = V_LLt.solve(2 * gbb_total);
+  // Both diagonal blocks see the Coulomb field of the whole density,
+  // Daa + Dbb (as `direct_coulomb_operator_kernel_u` does for Da + Db)
+  Vec d_aa = V_LLt.solve(gaa_total + gbb_total);
+  const Vec &d_bb = d_aa;
 
   // TBB thread-local storage for Coulomb matrix
   occ::parallel::thread_local_storage<Mat> tl_J(Mat::Zero(rows, cols));
@@ -1359,10 +1361,11 @@ JKPair direct_coulomb_and_exchange_operator_kernel_g(
     gbb_total += gbb;
   }
   
-  // Solve for Coulomb coefficients (apply factor of 2 like stored kernel)
+  // Both diagonal blocks see the Coulomb field of the whole density,
+  // Daa + Dbb (as `direct_coulomb_and_exchange_operator_kernel_u` does)
   occ::timing::start(occ::timing::category::la);
-  Vec d_aa = V_LLt.solve(2 * gaa_total);
-  Vec d_bb = V_LLt.solve(2 * gbb_total);
+  Vec d_aa = V_LLt.solve(gaa_total + gbb_total);
+  const Vec &d_bb = d_aa;
   occ::timing::stop(occ::timing::category::la);
 
   // Build Coulomb matrix using TBB
@@ -1409,21 +1412,22 @@ JKPair direct_coulomb_and_exchange_operator_kernel_g(
   Mat K = Mat::Zero(rows, cols);
   Mat Xa(nbf, ndf), Xb(nbf, ndf);
   
-  // Contract exchange matrix with cross-terms for general case
+  // iuPa/iuPb hold both halves of every canonical pair, so each block is
+  // complete. block::ab is the lower-left (beta rows, alpha columns), so
+  // K_ab = sum_i (μ i_b|P) V^-1 (P|ν i_a); it is not symmetric, and K_ba is
+  // its transpose. Only the diagonal blocks are symmetrised, to drop
+  // rounding asymmetry.
   for (size_t i = 0; i < nocc; i++) {
     Xa = V_LLt.solve(iuPa_total[i].transpose());
     Xb = V_LLt.solve(iuPb_total[i].transpose());
     block::aa(K).noalias() += iuPa_total[i] * Xa;
     block::bb(K).noalias() += iuPb_total[i] * Xb;
-    block::ab(K).noalias() += (iuPa_total[i] * Xb) + (iuPb_total[i] * Xa);
-    block::ba(K).noalias() += (iuPa_total[i] * Xb) + (iuPb_total[i] * Xa);
+    block::ab(K).noalias() += iuPb_total[i] * Xa;
   }
 
-  block::aa(K) += block::aa(K).transpose().eval();
-  block::bb(K) += block::bb(K).transpose().eval();
-  block::ba(K) += block::ba(K).transpose().eval();
-  block::ab(K) += block::ab(K).transpose().eval();
-  K *= 0.5;
+  block::aa(K) = 0.5 * (block::aa(K) + block::aa(K).transpose()).eval();
+  block::bb(K) = 0.5 * (block::bb(K) + block::bb(K).transpose()).eval();
+  block::ba(K) = block::ab(K).transpose();
 
   // Apply final factor of 2 to match stored kernel exactly
   J *= 2;
@@ -1518,7 +1522,8 @@ inline Mat stored_coulomb_kernel_g(const Mat &ints, const AOBasis &aobasis,
       occ::qm::matrix_dimensions<occ::qm::SpinorbitalKind::General>(nbf);
 
   // Parallelize g-vector computation
-  // only alpha-alpha and beta-beta contributions to coulomb
+  // only alpha-alpha and beta-beta contributions to coulomb; both diagonal
+  // blocks see the field of the whole density, Daa + Dbb
   Vec gaa(ndf), gbb(ndf);
   occ::parallel::parallel_for(size_t(0), size_t(ndf), [&](size_t r) {
     const auto tr = Eigen::Map<const Mat>(ints.col(r).data(), nbf, nbf);
@@ -1526,7 +1531,8 @@ inline Mat stored_coulomb_kernel_g(const Mat &ints, const AOBasis &aobasis,
     gbb(r) = 2 * (block::bb(mo.D).array() * tr.array()).sum();
   });
 
-  Vec daa = V_LLt.solve(gaa), dbb = V_LLt.solve(gbb);
+  const Vec daa = V_LLt.solve(0.5 * (gaa + gbb));
+  const Vec &dbb = daa;
 
   // Parallelize J matrix reconstruction using thread-local accumulators
   occ::parallel::thread_local_storage<Mat> J_local([rows, cols]() {
@@ -1698,15 +1704,15 @@ inline Mat stored_exchange_kernel_g(const Mat &ints, const AOBasis &aobasis,
     Xb = V_LLt.solve(iuPb.transpose());
     block::aa(K_tl).noalias() += iuPa * Xa;
     block::bb(K_tl).noalias() += iuPb * Xb;
-    block::ab(K_tl).noalias() += (iuPa * Xb) + (iuPb * Xa);
-    block::ba(K_tl).noalias() += (iuPa * Xb) + (iuPb * Xa);
+    block::ab(K_tl).noalias() += iuPb * Xa;
   });
 
-  // Reduce thread-local results
+  // Reduce thread-local results; K_ab is not symmetric, K_ba its transpose
   Mat K = Mat::Zero(rows, cols);
   for (const auto &K_thread : K_local) {
     K.noalias() += K_thread;
   }
+  block::ba(K) = block::ab(K).transpose();
 
   return K;
 }

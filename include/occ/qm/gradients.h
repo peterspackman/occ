@@ -57,7 +57,11 @@ inline double accumulate2(SpinorbitalKind sk, int r, Mat op, Mat D) {
     break;
   }
   case SpinorbitalKind::General: {
-    result += 16 * op.row(r).dot(D.row(r));
+    // every spin block, as the unrestricted case: rows r and nbf + r hold
+    // the aa/ba and ab/bb blocks of basis function r
+    const int nbf = D.rows() / 2;
+    result += 4 * op.row(r).dot(D.row(r));
+    result += 4 * op.row(nbf + r).dot(D.row(nbf + r));
     break;
   }
   default: {

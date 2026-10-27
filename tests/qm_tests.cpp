@@ -11,6 +11,7 @@
 #include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
 #include <occ/qm/gradients.h>
+#include <occ/qm/expectation.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine.h>
 #include <occ/qm/integral_engine_df.h>
@@ -2225,5 +2226,153 @@ TEST_CASE("Pipek-Mezey converges for benzene", "[localization]") {
         n_ch++;
     }
     REQUIRE(n_ch == 6);
+  }
+}
+
+// General (two-component) Hartree-Fock. Every closed-shell check passes even
+// with the spin blocks wired up wrongly, since then Daa = Dbb and Dab = 0;
+// these use open shells and spin-mixed spinors instead.
+namespace {
+
+std::vector<occ::core::Atom> ghf_water() {
+  return {{8, 0.0, 0.0, 0.221668},
+          {1, 0.0, 1.431042, -0.886659},
+          {1, 0.0, -1.431042, -0.886659}};
+}
+
+// A doublet whose singly occupied orbital is not degenerate (OH's is: GHF
+// can then settle on a spin-mixed combination of the two pi orbitals, which
+// is a different stationary point)
+std::vector<occ::core::Atom> amidogen() {
+  return {{7, 0.0, 0.0, 0.270610},
+          {1, 0.0, 1.516320, -0.946941},
+          {1, 0.0, -1.516320, -0.946941}};
+}
+
+// Random, spin-mixed spinors: D_ab is filled and not symmetric
+MolecularOrbitals random_spinors(size_t nbf, int nocc) {
+  MolecularOrbitals mo;
+  mo.kind = SpinorbitalKind::General;
+  mo.n_ao = nbf;
+  mo.n_alpha = nocc;
+  mo.n_beta = 0;
+  mo.C = Mat::Random(2 * nbf, 2 * nbf);
+  mo.update_occupied_orbitals();
+  mo.update_density_matrix();
+  return mo;
+}
+
+// The same spinors with the spin axis turned by theta: (a, b) ->
+// (c a - s b, s a + c b), a real rotation the spin-free Hamiltonian ignores
+MolecularOrbitals spin_rotated(const MolecularOrbitals &mo, double theta) {
+  MolecularOrbitals r = mo;
+  const double c = std::cos(theta), s = std::sin(theta);
+  const size_t nbf = mo.n_ao;
+  r.C.topRows(nbf) = c * mo.C.topRows(nbf) - s * mo.C.bottomRows(nbf);
+  r.C.bottomRows(nbf) = s * mo.C.topRows(nbf) + c * mo.C.bottomRows(nbf);
+  r.update_occupied_orbitals();
+  r.update_density_matrix();
+  return r;
+}
+
+double two_electron_energy(const MolecularOrbitals &mo,
+                           const occ::qm::JKPair &jk) {
+  const Mat G = jk.J - jk.K;
+  return occ::qm::expectation<SpinorbitalKind::General>(mo.D, G);
+}
+
+double ghf_scf_energy(HartreeFock &hf, SpinorbitalKind kind) {
+  occ::qm::SCF<HartreeFock> scf(hf, kind);
+  scf.set_charge_multiplicity(0, 2);
+  scf.convergence_settings.energy_threshold = 1e-10;
+  return scf.compute_scf_energy();
+}
+
+} // namespace
+
+TEST_CASE("GHF two-electron energy is invariant under a spin rotation",
+          "[ghf]") {
+  const auto atoms = ghf_water();
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+  const auto mo = random_spinors(basis.nbf(), 7);
+  const auto rotated = spin_rotated(mo, 0.7);
+
+  auto check = [&](HartreeFock &hf, double tolerance) {
+    const double e = two_electron_energy(mo, hf.compute_JK(mo));
+    const double e_rot = two_electron_energy(rotated, hf.compute_JK(rotated));
+    INFO("E2 " << e << " rotated " << e_rot);
+    REQUIRE(std::abs(e - e_rot) < tolerance * std::abs(e));
+  };
+
+  SECTION("four-centre") {
+    HartreeFock hf(basis);
+    check(hf, 1e-12);
+  }
+  SECTION("density fitted, direct and stored") {
+    for (const auto policy : {occ::qm::IntegralEngineDF::Policy::Direct,
+                              occ::qm::IntegralEngineDF::Policy::Stored}) {
+      HartreeFock hf(basis);
+      hf.set_density_fitting_basis("def2-universal-jkfit");
+      hf.set_density_fitting_policy(policy);
+      check(hf, 1e-12);
+    }
+  }
+  SECTION("COSX exchange") {
+    HartreeFock hf(basis);
+    hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
+    // its screening depends on the density, so it is linear (and the
+    // energy invariant) only to about the screening threshold
+    check(hf, 1e-6);
+  }
+}
+
+TEST_CASE("GHF off-diagonal exchange agrees between engines", "[ghf]") {
+  // K_ab = K[D_ab], built three independent ways; its antisymmetric part
+  // is what a symmetrising build loses
+  const auto atoms = ghf_water();
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+  const auto mo = random_spinors(basis.nbf(), 7);
+
+  HartreeFock exact(basis);
+  const Mat K = exact.compute_JK(mo).K;
+  const Mat K_ab = occ::qm::block::ab(K);
+  const double scale = K_ab.cwiseAbs().maxCoeff();
+  REQUIRE((K_ab - K_ab.transpose()).cwiseAbs().maxCoeff() > 1e-2 * scale);
+  REQUIRE((occ::qm::block::ba(K) - K_ab.transpose()).cwiseAbs().maxCoeff() <
+          1e-12 * scale);
+
+  HartreeFock df(basis);
+  df.set_density_fitting_basis("def2-universal-jkfit");
+  const Mat K_df = df.compute_JK(mo).K;
+  INFO("max |K_ab| " << scale);
+  REQUIRE((occ::qm::block::ab(K_df) - K_ab).cwiseAbs().maxCoeff() <
+          1e-2 * scale);
+
+  HartreeFock cosx(basis);
+  cosx.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
+  const Mat K_cosx = cosx.compute_JK(mo).K;
+  REQUIRE((occ::qm::block::ab(K_cosx) - K_ab).cwiseAbs().maxCoeff() <
+          1e-2 * scale);
+}
+
+TEST_CASE("GHF on a collinear radical matches UHF", "[ghf][scf]") {
+  // NH2's UHF ground state is a stationary point of GHF too, so starting from
+  // the collinear guess GHF has to land on the same energy
+  const auto atoms = amidogen();
+  auto basis = occ::gto::AOBasis::load(atoms, "6-31G");
+
+  SECTION("four-centre") {
+    HartreeFock uhf(basis), ghf(basis);
+    const double e_u = ghf_scf_energy(uhf, SpinorbitalKind::Unrestricted);
+    const double e_g = ghf_scf_energy(ghf, SpinorbitalKind::General);
+    REQUIRE(e_g == Catch::Approx(e_u).margin(1e-7));
+  }
+  SECTION("density fitted") {
+    HartreeFock uhf(basis), ghf(basis);
+    uhf.set_density_fitting_basis("def2-universal-jkfit");
+    ghf.set_density_fitting_basis("def2-universal-jkfit");
+    const double e_u = ghf_scf_energy(uhf, SpinorbitalKind::Unrestricted);
+    const double e_g = ghf_scf_energy(ghf, SpinorbitalKind::General);
+    REQUIRE(e_g == Catch::Approx(e_u).margin(1e-7));
   }
 }

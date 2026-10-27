@@ -14,34 +14,31 @@ inline void k_inner_r_grad(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> K, int bf0,
   K(bf0, bf3) -= D(bf1, bf2) * value;
 }
 
+// General spinorbitals follow the unrestricted kernels block by block: both
+// diagonal blocks see the Coulomb field of Daa + Dbb, and every spin block,
+// including the non-symmetric ab and ba, exchanges with itself. The energy
+// sums over all four blocks, so no block needs its transpose.
 inline void j_inner_g_grad(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0,
                            int bf1, int bf2, int bf3, double value) {
   auto Jaa = occ::qm::block::aa(J);
   auto Jbb = occ::qm::block::bb(J);
   const auto Daa = occ::qm::block::aa(D);
   const auto Dbb = occ::qm::block::bb(D);
-  Jaa(bf0, bf1) += Daa(bf2, bf3) * value;
-  Jbb(bf0, bf1) += Dbb(bf2, bf3) * value;
+  const double d = (Daa(bf2, bf3) + Dbb(bf2, bf3)) * value;
+  Jaa(bf0, bf1) += d;
+  Jbb(bf0, bf1) += d;
 }
 
 inline void k_inner_g_grad(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> K, int bf0,
                            int bf1, int bf2, int bf3, double value) {
-  auto Kaa = occ::qm::block::aa(K);
-  auto Kab = occ::qm::block::ab(K);
-  auto Kba = occ::qm::block::ba(K);
-  auto Kbb = occ::qm::block::bb(K);
-  const auto Daa = occ::qm::block::aa(D);
-  const auto Dab = occ::qm::block::ab(D);
-  const auto Dba = occ::qm::block::ba(D);
-  const auto Dbb = occ::qm::block::bb(D);
-  Kaa(bf0, bf2) -= Daa(bf1, bf3) * value;
-  Kaa(bf0, bf3) -= Daa(bf1, bf2) * value;
-  Kbb(bf0, bf2) -= Dbb(bf1, bf3) * value;
-  Kbb(bf0, bf3) -= Dbb(bf1, bf2) * value;
-  Kab(bf0, bf2) -= (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-  Kab(bf0, bf3) -= (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
-  Kba(bf0, bf2) -= (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-  Kba(bf0, bf3) -= (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
+  auto exchange = [&](auto Kx, const auto Dx) {
+    Kx(bf0, bf2) -= 2 * Dx(bf1, bf3) * value;
+    Kx(bf0, bf3) -= 2 * Dx(bf1, bf2) * value;
+  };
+  exchange(occ::qm::block::aa(K), occ::qm::block::aa(D));
+  exchange(occ::qm::block::ab(K), occ::qm::block::ab(D));
+  exchange(occ::qm::block::ba(K), occ::qm::block::ba(D));
+  exchange(occ::qm::block::bb(K), occ::qm::block::bb(D));
 }
 
 inline void j_inner_u_grad(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0,

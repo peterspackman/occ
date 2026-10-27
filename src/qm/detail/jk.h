@@ -91,105 +91,81 @@ inline void jk_inner_u(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J,
   Kb(bf1, bf2) += 0.5 * Db(bf0, bf3) * value;
 }
 
-inline void fock_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0,
-                         int bf1, int bf2, int bf3, double value) {
-  auto Faa = occ::qm::block::aa(F);
-  auto Fab = occ::qm::block::ab(F);
-  auto Fba = occ::qm::block::ba(F);
-  auto Fbb = occ::qm::block::bb(F);
-  const auto Daa = occ::qm::block::aa(D);
-  const auto Dab = occ::qm::block::ab(D);
-  const auto Dba = occ::qm::block::ba(D);
-  const auto Dbb = occ::qm::block::bb(D);
-
-  // J aa
-  Faa(bf0, bf1) += 2 * Daa(bf2, bf3) * value;
-  Faa(bf2, bf3) += 2 * Daa(bf0, bf1) * value;
-  // J bb
-  Fbb(bf0, bf1) += 2 * Dbb(bf2, bf3) * value;
-  Fbb(bf2, bf3) += 2 * Dbb(bf0, bf1) * value;
-
-  // K aa
-  Faa(bf0, bf2) -= 0.5 * Daa(bf1, bf3) * value;
-  Faa(bf1, bf3) -= 0.5 * Daa(bf0, bf2) * value;
-  Faa(bf0, bf3) -= 0.5 * Daa(bf1, bf2) * value;
-  Faa(bf1, bf2) -= 0.5 * Daa(bf0, bf3) * value;
-
-  // K bb
-  Fbb(bf0, bf2) -= 0.5 * Dbb(bf1, bf3) * value;
-  Fbb(bf1, bf3) -= 0.5 * Dbb(bf0, bf2) * value;
-  Fbb(bf0, bf3) -= 0.5 * Dbb(bf1, bf2) * value;
-  Fbb(bf1, bf2) -= 0.5 * Dbb(bf0, bf3) * value;
-
-  // Kab, Kba
-  Fab(bf0, bf2) -= 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-  Fab(bf1, bf3) -= 0.5 * (Dab(bf0, bf2) + Dba(bf0, bf2)) * value;
-  Fab(bf0, bf3) -= 0.5 * (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
-  Fab(bf1, bf2) -= 0.5 * (Dab(bf0, bf3) + Dba(bf0, bf3)) * value;
-  Fba(bf0, bf2) -= 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-  Fba(bf1, bf3) -= 0.5 * (Dab(bf0, bf2) + Dba(bf0, bf2)) * value;
-  Fba(bf0, bf3) -= 0.5 * (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
-  Fba(bf1, bf2) -= 0.5 * (Dab(bf0, bf3) + Dba(bf0, bf3)) * value;
-}
-
-inline void j_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0,
-                      int bf1, int bf2, int bf3, double value) {
+// General (two-component) spinorbitals. Every spin block of D carries the
+// same factor 1/2 as the unrestricted ones, so the diagonal blocks follow
+// `fock_inner_u`: both see the Coulomb field of the whole density, Daa + Dbb,
+// and exchange with their own block.
+//
+// The off-diagonal exchange is K[D_ab], and D_ab is not symmetric. The
+// kernel visits each unique integral once and the accumulation finishes the
+// other half by a transpose, which is only right for a symmetric density, so
+// D_ab is split: its symmetric part accumulates in the ab block, its
+// antisymmetric part in the ba block, and `accumulate_operator_symmetric`
+// finishes them as X + X^T and X - X^T. (D_ba = D_ab^T, as D is symmetric.)
+inline void j_inner_g_diag(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0,
+                           int bf1, int bf2, int bf3, double value) {
   auto Jaa = occ::qm::block::aa(J);
   auto Jbb = occ::qm::block::bb(J);
   const auto Daa = occ::qm::block::aa(D);
   const auto Dbb = occ::qm::block::bb(D);
+  const double d23 = (Daa(bf2, bf3) + Dbb(bf2, bf3)) * value;
+  const double d01 = (Daa(bf0, bf1) + Dbb(bf0, bf1)) * value;
+  Jaa(bf0, bf1) += d23;
+  Jaa(bf2, bf3) += d01;
+  Jbb(bf0, bf1) += d23;
+  Jbb(bf2, bf3) += d01;
+}
 
-  // J aa
-  Jaa(bf0, bf1) += 2 * Daa(bf2, bf3) * value;
-  Jaa(bf2, bf3) += 2 * Daa(bf0, bf1) * value;
-  // J bb
-  Jbb(bf0, bf1) += 2 * Dbb(bf2, bf3) * value;
-  Jbb(bf2, bf3) += 2 * Dbb(bf0, bf1) * value;
+inline void k_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> K, int bf0,
+                      int bf1, int bf2, int bf3, double value) {
+  auto Kaa = occ::qm::block::aa(K);
+  auto Kbb = occ::qm::block::bb(K);
+  auto Ksym = occ::qm::block::ab(K);
+  auto Kanti = occ::qm::block::ba(K);
+  const auto Daa = occ::qm::block::aa(D);
+  const auto Dab = occ::qm::block::ab(D);
+  const auto Dba = occ::qm::block::ba(D);
+  const auto Dbb = occ::qm::block::bb(D);
+  const double w = 0.5 * value;
+  const double ws = 0.25 * value;
+
+  Kaa(bf0, bf2) += w * Daa(bf1, bf3);
+  Kaa(bf1, bf3) += w * Daa(bf0, bf2);
+  Kaa(bf0, bf3) += w * Daa(bf1, bf2);
+  Kaa(bf1, bf2) += w * Daa(bf0, bf3);
+
+  Kbb(bf0, bf2) += w * Dbb(bf1, bf3);
+  Kbb(bf1, bf3) += w * Dbb(bf0, bf2);
+  Kbb(bf0, bf3) += w * Dbb(bf1, bf2);
+  Kbb(bf1, bf2) += w * Dbb(bf0, bf3);
+
+  Ksym(bf0, bf2) += ws * (Dab(bf1, bf3) + Dba(bf1, bf3));
+  Ksym(bf1, bf3) += ws * (Dab(bf0, bf2) + Dba(bf0, bf2));
+  Ksym(bf0, bf3) += ws * (Dab(bf1, bf2) + Dba(bf1, bf2));
+  Ksym(bf1, bf2) += ws * (Dab(bf0, bf3) + Dba(bf0, bf3));
+
+  Kanti(bf0, bf2) += ws * (Dab(bf1, bf3) - Dba(bf1, bf3));
+  Kanti(bf1, bf3) += ws * (Dab(bf0, bf2) - Dba(bf0, bf2));
+  Kanti(bf0, bf3) += ws * (Dab(bf1, bf2) - Dba(bf1, bf2));
+  Kanti(bf1, bf2) += ws * (Dab(bf0, bf3) - Dba(bf0, bf3));
+}
+
+inline void fock_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> F, int bf0,
+                         int bf1, int bf2, int bf3, double value) {
+  j_inner_g_diag(D, F, bf0, bf1, bf2, bf3, value);
+  k_inner_g(D, F, bf0, bf1, bf2, bf3, -value);
+}
+
+inline void j_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J, int bf0,
+                      int bf1, int bf2, int bf3, double value) {
+  j_inner_g_diag(D, J, bf0, bf1, bf2, bf3, value);
 }
 
 inline void jk_inner_g(Eigen::Ref<const Mat> D, Eigen::Ref<Mat> J,
                        Eigen::Ref<Mat> K, int bf0, int bf1, int bf2, int bf3,
                        double value) {
-  auto Jaa = occ::qm::block::aa(J);
-  auto Jbb = occ::qm::block::bb(J);
-  auto Kaa = occ::qm::block::aa(K);
-  auto Kab = occ::qm::block::ab(K);
-  auto Kba = occ::qm::block::ba(K);
-  auto Kbb = occ::qm::block::bb(K);
-
-  const auto Daa = occ::qm::block::aa(D);
-  const auto Dab = occ::qm::block::ab(D);
-  const auto Dba = occ::qm::block::ba(D);
-  const auto Dbb = occ::qm::block::bb(D);
-
-  // J aa
-  Jaa(bf0, bf1) += 2 * Daa(bf2, bf3) * value;
-  Jaa(bf2, bf3) += 2 * Daa(bf0, bf1) * value;
-  // J bb
-  Jbb(bf0, bf1) += 2 * Dbb(bf2, bf3) * value;
-  Jbb(bf2, bf3) += 2 * Dbb(bf0, bf1) * value;
-
-  // K aa
-  Kaa(bf0, bf2) += 0.5 * Daa(bf1, bf3) * value;
-  Kaa(bf1, bf3) += 0.5 * Daa(bf0, bf2) * value;
-  Kaa(bf0, bf3) += 0.5 * Daa(bf1, bf2) * value;
-  Kaa(bf1, bf2) += 0.5 * Daa(bf0, bf3) * value;
-
-  // K bb
-  Kbb(bf0, bf2) += 0.5 * Dbb(bf1, bf3) * value;
-  Kbb(bf1, bf3) += 0.5 * Dbb(bf0, bf2) * value;
-  Kbb(bf0, bf3) += 0.5 * Dbb(bf1, bf2) * value;
-  Kbb(bf1, bf2) += 0.5 * Dbb(bf0, bf3) * value;
-
-  // Kab, Kba
-  Kab(bf0, bf2) += 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-  Kab(bf1, bf3) += 0.5 * (Dab(bf0, bf2) + Dba(bf0, bf2)) * value;
-  Kab(bf0, bf3) += 0.5 * (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
-  Kab(bf1, bf2) += 0.5 * (Dab(bf0, bf3) + Dba(bf0, bf3)) * value;
-  Kba(bf0, bf2) += 0.5 * (Dab(bf1, bf3) + Dba(bf1, bf3)) * value;
-  Kba(bf1, bf3) += 0.5 * (Dab(bf0, bf2) + Dba(bf0, bf2)) * value;
-  Kba(bf0, bf3) += 0.5 * (Dab(bf1, bf2) + Dba(bf1, bf2)) * value;
-  Kba(bf1, bf2) += 0.5 * (Dab(bf0, bf3) + Dba(bf0, bf3)) * value;
+  j_inner_g_diag(D, J, bf0, bf1, bf2, bf3, value);
+  k_inner_g(D, K, bf0, bf1, bf2, bf3, value);
 }
 
 template <occ::qm::SpinorbitalKind sk>
