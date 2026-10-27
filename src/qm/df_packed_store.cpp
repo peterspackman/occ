@@ -1,9 +1,12 @@
 #include "detail/df_kernels.h"
 #include <algorithm>
+#include <fmt/core.h>
+#include <new>
 #include <numeric>
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/qm/df_packed_store.h>
+#include <stdexcept>
 
 namespace occ::qm {
 
@@ -23,12 +26,14 @@ void PackedDFStore::clear() {
   m_ints.resize(0, 0);
   m_blocks.clear();
   m_unstored.clear();
+  m_built = false;
   m_complete = false;
-  m_folded = false;
 }
 
-void PackedDFStore::build(IntegralEngine &engine, size_t max_bytes) {
+void PackedDFStore::build(IntegralEngine &engine, const CoulombMetric &metric,
+                          size_t max_bytes) {
   clear();
+  m_built = true;
   const auto &ao = engine.aobasis();
   const auto &aux = engine.auxbasis();
   const auto &sp = engine.shellpairs();
@@ -37,8 +42,9 @@ void PackedDFStore::build(IntegralEngine &engine, size_t max_bytes) {
   m_nbf = ao.nbf();
   m_naux = aux.nbf();
 
-  // Pairs ranked by the cost of recomputing them per stored byte: contraction
-  // depth and angular momentum make a pair dear, its size makes it big.
+  // Pairs ranked by a rough estimate of the cost of recomputing them per
+  // stored byte: contraction depth and angular momentum make a pair dear, its
+  // size makes it big. A heuristic, not a measured cost model.
   struct Candidate {
     int p, q;
     double priority;
@@ -53,7 +59,7 @@ void PackedDFStore::build(IntegralEngine &engine, size_t max_bytes) {
     }
   const size_t row_bytes = m_naux * sizeof(double);
   std::vector<char> keep(candidates.size(), 1);
-  if (max_bytes > 0 && bytes_for(ao, sp, m_naux) > max_bytes) {
+  if (bytes_for(ao, sp, m_naux) > max_bytes) {
     std::vector<size_t> order(candidates.size());
     std::iota(order.begin(), order.end(), 0);
     std::stable_sort(order.begin(), order.end(), [&](size_t a, size_t b) {
@@ -96,7 +102,15 @@ void PackedDFStore::build(IntegralEngine &engine, size_t max_bytes) {
                  double(m_nbf) * m_nbf * row_bytes / 1048576.0);
   // Uninitialised, then zeroed one column per task: the first touch of a
   // multi-GiB array is what costs, and it parallelises.
-  m_ints.resize(rows, m_naux);
+  try {
+    m_ints.resize(rows, m_naux);
+  } catch (const std::bad_alloc &) {
+    throw std::runtime_error(fmt::format(
+        "could not allocate {:.0f} MiB for the stored 3-centre integrals "
+        "({} basis functions, {} auxiliary). Use the direct density fitting "
+        "policy, or a smaller store memory limit.",
+        rows * row_bytes / 1048576.0, m_nbf, m_naux));
+  }
   occ::parallel::parallel_for(size_t(0), m_naux,
                               [&](size_t P) { m_ints.col(P).setZero(); });
 
@@ -115,12 +129,12 @@ void PackedDFStore::build(IntegralEngine &engine, size_t max_bytes) {
   else
     detail::compute_three_center_integrals_tbb<ShellKind::Cartesian>(
         store, engine.env(), ao, aux, stored, opt);
+  if (m_complete)
+    fold(metric);
 }
 
 void PackedDFStore::fold(const CoulombMetric &metric) {
-  if (m_folded || !m_complete || m_blocks.empty())
-    return;
-  occ::log::info("Folding the Coulomb metric into the packed integrals");
+  occ::log::debug("Folding the Coulomb metric into the packed integrals");
   const size_t rows = m_ints.rows(), chunk = 512;
   const size_t nchunks = (rows + chunk - 1) / chunk;
   // The eigen fallback of the metric drops vectors: fewer columns survive
@@ -133,7 +147,16 @@ void PackedDFStore::fold(const CoulombMetric &metric) {
       kept = t.rows();
   });
   m_naux = kept;
-  m_folded = true;
+}
+
+void PackedDFStore::unpack(size_t P, Mat &dense) const {
+  const double *col = m_ints.col(P).data();
+  for (const auto &b : m_blocks) {
+    Eigen::Map<const Mat> M(col + b.row, b.np, b.nq);
+    dense.block(b.fp, b.fq, b.np, b.nq) = M;
+    if (b.p != b.q)
+      dense.block(b.fq, b.fp, b.nq, b.np) = M.transpose();
+  }
 }
 
 Mat PackedDFStore::contract(const std::vector<Mat> &densities) const {
@@ -186,15 +209,8 @@ PackedDFStore::exchange(const std::vector<Mat> &C,
   occ::parallel::thread_local_storage<std::vector<Mat>> K_local(
       [&]() { return std::vector<Mat>(np, Mat::Zero(nbf, nbf)); });
   occ::parallel::parallel_for(size_t(0), m_naux, [&](size_t P) {
-    // Screened positions are never written, so the scratch stays zero there
     Mat &B = dense.local();
-    const double *col = m_ints.col(P).data();
-    for (const auto &b : m_blocks) {
-      Eigen::Map<const Mat> M(col + b.row, b.np, b.nq);
-      B.block(b.fp, b.fq, b.np, b.nq) = M;
-      if (b.p != b.q)
-        B.block(b.fq, b.fp, b.nq, b.np) = M.transpose();
-    }
+    unpack(P, B);
     auto &w = W.local();
     for (size_t s = 0; s < ns; s++)
       w[s].noalias() = B * C[s];
@@ -215,6 +231,22 @@ PackedDFStore::exchange(const std::vector<Mat> &C,
     if (pairs[k].first == pairs[k].second)
       K[k] = K[k].selfadjointView<Eigen::Lower>();
   return K;
+}
+
+Mat PackedDFStore::half_transform(Eigen::Ref<const Mat> C_left,
+                                  Eigen::Ref<const Mat> C_right) const {
+  const Eigen::Index nL = C_left.cols(), nR = C_right.cols();
+  const size_t nbf = m_nbf;
+  occ::parallel::thread_local_storage<Mat> dense(
+      [nbf]() { return Mat::Zero(nbf, nbf); });
+  Mat B(nL * nR, m_naux);
+  occ::parallel::parallel_for(size_t(0), m_naux, [&](size_t P) {
+    Mat &BP = dense.local();
+    unpack(P, BP);
+    Eigen::Map<Mat>(B.col(P).data(), nR, nL).noalias() =
+        C_right.transpose() * (BP * C_left);
+  });
+  return B;
 }
 
 } // namespace occ::qm

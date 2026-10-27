@@ -23,6 +23,7 @@
 #include <occ/driver/acceleration.h>
 #include <occ/driver/method_parser.h>
 #include <occ/qm/fitting_basis.h>
+#include <occ/qm/correlation/df_integrals.h>
 #include <occ/qm/correlation/mo_integral_engine.h>
 #include <occ/qm/oniom.h>
 #include <occ/qm/partitioning.h>
@@ -2433,18 +2434,28 @@ df_store_engine(const DFStoreCase &c, DFPolicy p, size_t limit = 0) {
 
 double max_abs(const Mat &m) { return m.cwiseAbs().maxCoeff(); }
 
+size_t engine_packed_bytes(const DFStoreCase &c) {
+  return df_store_engine(c, DFPolicy::Direct)->packed_storage_bytes();
+}
+
 void require_same_jk(const DFStoreCase &c, occ::qm::IntegralEngineDF &df) {
   auto direct = df_store_engine(c, DFPolicy::Direct);
   const Mat Jd = direct->coulomb(c.mo), Kd = direct->exchange(c.mo);
   const Mat J = df.coulomb(c.mo), K = df.exchange(c.mo);
   REQUIRE(J.rows() == Jd.rows());
   REQUIRE(K.cols() == Kd.cols());
-  REQUIRE(max_abs(J - Jd) < 1e-10);
-  REQUIRE(max_abs(K - Kd) < 1e-10);
-  // a second build reuses the store (and, after the first exchange, its
-  // folded form)
-  REQUIRE(max_abs(df.coulomb(c.mo) - Jd) < 1e-10);
-  REQUIRE(max_abs(df.exchange(c.mo) - Kd) < 1e-10);
+  // relative to the matrix: random orbitals give large entries, and a
+  // complete store applies L^-1 before the contraction, the direct build after
+  const double tol_J = 1e-12 * std::max(1.0, max_abs(Jd));
+  const double tol_K = 1e-12 * std::max(1.0, max_abs(Kd));
+  INFO("max |J| " << max_abs(Jd) << " max |dJ| " << max_abs(J - Jd)
+                  << " max |K| " << max_abs(Kd) << " max |dK| "
+                  << max_abs(K - Kd));
+  REQUIRE(max_abs(J - Jd) < tol_J);
+  REQUIRE(max_abs(K - Kd) < tol_K);
+  // a second build reuses the store
+  REQUIRE(max_abs(df.coulomb(c.mo) - Jd) < tol_J);
+  REQUIRE(max_abs(df.exchange(c.mo) - Kd) < tol_K);
 }
 } // namespace
 
@@ -2456,7 +2467,6 @@ TEST_CASE("Packed DF store matches the direct builds", "[df][df-store]") {
     const auto &st = df->packed_store();
     REQUIRE_FALSE(st.empty());
     REQUIRE(st.complete());
-    REQUIRE(st.folded());
     const size_t nbf = c.basis.nbf();
     REQUIRE(st.bytes() < nbf * nbf * c.aux.nbf() * sizeof(double) / 2);
   }
@@ -2467,18 +2477,21 @@ TEST_CASE("Packed DF store matches the direct builds", "[df][df-store]") {
     require_same_jk(c, *df);
   }
 
+  SECTION("General, stored whole") {
+    // random spinors are spin-mixed, so the ab/ba exchange blocks are filled
+    auto c = df_store_case<SpinorbitalKind::General>(methyl(), 5, 4);
+    auto df = df_store_engine(c, DFPolicy::Stored);
+    require_same_jk(c, *df);
+  }
+
   SECTION("Choose under half the budget stores part") {
     auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
-    auto probe = df_store_engine(c, DFPolicy::Direct);
-    const size_t full = occ::qm::PackedDFStore::bytes_for(
-        probe->ao_engine().aobasis(), probe->ao_engine().shellpairs(),
-        probe->aux_engine().nbf());
+    const size_t full = engine_packed_bytes(c);
     auto df = df_store_engine(c, DFPolicy::Choose, full / 2);
     require_same_jk(c, *df);
     const auto &st = df->packed_store();
     REQUIRE_FALSE(st.empty());
     REQUIRE_FALSE(st.complete());
-    REQUIRE_FALSE(st.folded());
     REQUIRE(st.bytes() <= full / 2);
   }
 
@@ -2487,5 +2500,53 @@ TEST_CASE("Packed DF store matches the direct builds", "[df][df-store]") {
     auto df = df_store_engine(c, DFPolicy::Choose, 1);
     require_same_jk(c, *df);
     REQUIRE(df->packed_store().empty());
+  }
+}
+
+TEST_CASE("Correlated DF integrals share the packed store",
+          "[df][df-store][correlation]") {
+  auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
+  const Mat C_occ = c.mo.C.leftCols(10);
+  const Mat C_virt = c.mo.C.rightCols(c.mo.C.cols() - 10);
+
+  auto direct_engine = df_store_engine(c, DFPolicy::Direct);
+  occ::qm::DFIntegrals direct(*direct_engine, 0);
+  REQUIRE(direct.uses_direct());
+  const Mat B_direct = direct.build_b_tilde(C_occ, C_virt);
+  // The two paths apply L^-1 before and after the MO transform; with a
+  // JK-fitting metric's conditioning that differs by ~1e-10 relative.
+  auto same_b = [&](const Mat &B) {
+    const double scale = max_abs(B_direct);
+    INFO("max |B| " << scale << " max |dB| " << max_abs(B - B_direct)
+                    << " max |d(ia|jb)| "
+                    << max_abs(B * B.transpose() -
+                               B_direct * B_direct.transpose()));
+    return max_abs(B - B_direct) < 1e-8 * scale;
+  };
+
+  SECTION("built for the correlated method when it fits the budget") {
+    auto engine = df_store_engine(c, DFPolicy::Direct);
+    occ::qm::DFIntegrals stored(*engine, size_t(1) << 32);
+    REQUIRE_FALSE(stored.uses_direct());
+    REQUIRE(engine->packed_store().complete());
+    REQUIRE(same_b(stored.build_b_tilde(C_occ, C_virt)));
+  }
+
+  SECTION("reused from the SCF's builds whatever the budget") {
+    auto engine = df_store_engine(c, DFPolicy::Stored);
+    engine->coulomb(c.mo);
+    occ::qm::DFIntegrals stored(*engine, 0);
+    REQUIRE_FALSE(stored.uses_direct());
+    REQUIRE(same_b(stored.build_b_tilde(C_occ, C_virt)));
+  }
+
+  SECTION("a partial SCF store is not used") {
+    auto engine = df_store_engine(c, DFPolicy::Choose,
+                                  engine_packed_bytes(c) / 2);
+    engine->coulomb(c.mo);
+    REQUIRE_FALSE(engine->packed_store().complete());
+    occ::qm::DFIntegrals df(*engine, 0);
+    REQUIRE(df.uses_direct());
+    REQUIRE(same_b(df.build_b_tilde(C_occ, C_virt)));
   }
 }

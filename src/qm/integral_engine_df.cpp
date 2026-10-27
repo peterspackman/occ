@@ -1,7 +1,4 @@
 #include <Eigen/Cholesky>
-#include <fmt/core.h>
-#include <new>
-#include <stdexcept>
 #include "detail/df_kernels.h"
 
 namespace occ::qm {
@@ -15,7 +12,7 @@ using IntegralResult = IntegralEngine::IntegralResult<3>;
 
 IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
                                    const ShellList &df)
-    : m_ao_engine(atoms, ao), m_aux_engine(atoms, df), m_integral_store(0, 0) {
+    : m_ao_engine(atoms, ao), m_aux_engine(atoms, df) {
   m_ao_engine.set_auxiliary_basis(df, false);
   occ::timing::start(occ::timing::category::df);
   // don't use the shellpair list for this, results in
@@ -55,52 +52,6 @@ void IntegralEngineDF::set_coulomb_method(CoulombMethod method) {
   if (method != CoulombMethod::SplitRIJ) {
     m_split_rij.reset();
   }
-}
-
-void IntegralEngineDF::compute_stored_integrals() {
-  occ::timing::start(occ::timing::category::df);
-  if (m_integral_store.rows() == 0) {
-    size_t nbf = m_ao_engine.nbf();
-    size_t ndf = m_aux_engine.nbf();
-    const double mib = integral_storage_bytes() / (1024.0 * 1024.0);
-    occ::log::info("Storing 3-center integrals ({} x {} x {}, {:.0f} MiB), "
-                   "computing with {} threads",
-                   nbf, nbf, ndf, mib, occ::parallel::get_num_threads());
-    try {
-      m_integral_store = Mat::Zero(nbf * nbf, ndf);
-    } catch (const std::bad_alloc &) {
-      throw std::runtime_error(fmt::format(
-          "could not allocate {:.0f} MiB for the stored 3-centre integrals "
-          "({} basis functions, {} auxiliary). Use the direct density fitting "
-          "policy, which recomputes them instead of storing them.",
-          mib, nbf, ndf));
-    }
-    auto lambda = [&](const IntegralResult &args) {
-      size_t offset = 0;
-      for (size_t i = args.bf[2]; i < args.bf[2] + args.dims[2]; i++) {
-        auto x = Eigen::Map<Mat>(m_integral_store.col(i).data(), nbf, nbf);
-        Eigen::Map<const Mat> buf_mat(args.buffer + offset, args.dims[0],
-                                      args.dims[1]);
-        x.block(args.bf[0], args.bf[1], args.dims[0], args.dims[1]) = buf_mat;
-        if (args.bf[0] != args.bf[1])
-          x.block(args.bf[1], args.bf[0], args.dims[1], args.dims[0]) =
-              buf_mat.transpose();
-        offset += args.dims[0] * args.dims[1];
-      }
-    };
-
-    occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
-    if (m_ao_engine.is_spherical()) {
-      detail::compute_three_center_integrals_tbb<ShellKind::Spherical>(
-          lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
-          m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt);
-    } else {
-      detail::compute_three_center_integrals_tbb<ShellKind::Cartesian>(
-          lambda, m_ao_engine.env(), m_ao_engine.aobasis(),
-          m_ao_engine.auxbasis(), m_ao_engine.shellpairs(), opt);
-    }
-  }
-  occ::timing::stop(occ::timing::category::df);
 }
 
 Mat IntegralEngineDF::build_b_direct(Eigen::Ref<const Mat> C_left,
@@ -238,7 +189,10 @@ Mat IntegralEngineDF::coulomb(const MolecularOrbitals &mo) {
 JKPair IntegralEngineDF::coulomb_and_exchange(const MolecularOrbitals &mo) {
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;
-  if (use_stored_integrals() && ensure_packed_store())
+  // A partial store only helps J; K would then recompute every integral
+  // anyway, so the fused direct kernel, which computes each once for both, is
+  // cheaper than semi-direct J plus direct K.
+  if (use_stored_integrals() && ensure_packed_store() && m_packed.complete())
     return {coulomb(mo), exchange(mo)};
   if (m_ao_engine.is_spherical()) {
     occ::qm::cint::Optimizer opt(m_ao_engine.env(), Op::coulomb, 3);
@@ -335,15 +289,29 @@ void unstored_coulomb(IntegralEngine &engine, const ShellPairList &pairs,
 
 } // namespace
 
+void IntegralEngineDF::build_packed_store(size_t max_bytes) {
+  // Only ever the full Coulomb operator (see `use_stored_integrals`), so the
+  // metric folded in is the omega = 0 one whatever is active
+  occ::timing::start(occ::timing::category::df);
+  m_packed.build(m_ao_engine, m_V_LLt_full, max_bytes);
+  occ::timing::stop(occ::timing::category::df);
+}
+
 bool IntegralEngineDF::ensure_packed_store() {
-  if (m_packed.empty() && m_packed.unstored().empty()) {
-    occ::timing::start(occ::timing::category::df);
-    m_packed.build(m_ao_engine, m_policy == Policy::Stored
-                                    ? 0
-                                    : m_integral_store_memory_limit);
-    occ::timing::stop(occ::timing::category::df);
-  }
+  if (!m_packed.built())
+    build_packed_store(m_policy == Policy::Stored
+                           ? PackedDFStore::unlimited
+                           : m_integral_store_memory_limit);
   return !m_packed.empty();
+}
+
+bool IntegralEngineDF::ensure_complete_packed_store(size_t max_bytes) {
+  if (m_packed.complete())
+    return true;
+  if (m_omega != 0.0 || packed_storage_bytes() > max_bytes)
+    return false;
+  build_packed_store(PackedDFStore::unlimited);
+  return true;
 }
 
 Mat IntegralEngineDF::packed_coulomb(const MolecularOrbitals &mo) {
@@ -364,19 +332,20 @@ Mat IntegralEngineDF::packed_coulomb(const MolecularOrbitals &mo) {
   }
   Mat g = m_packed.contract(D);
   const bool partial = !m_packed.complete();
-  std::vector<Mat> rest;
+  std::vector<Mat> unused;
   const bool spherical = m_ao_engine.is_spherical();
   if (partial) {
     if (spherical)
       unstored_coulomb<ShellKind::Spherical>(m_ao_engine, m_packed.unstored(),
-                                             D, g, nullptr, rest);
+                                             D, g, nullptr, unused);
     else
       unstored_coulomb<ShellKind::Cartesian>(m_ao_engine, m_packed.unstored(),
-                                             D, g, nullptr, rest);
+                                             D, g, nullptr, unused);
   }
-  // A folded store already carries L^-1: its g is L^-1 (μν|P) D, and
-  // expanding with it again applies L^-T, so V^-1 is complete
-  const Mat x = m_packed.folded() ? g : Mat(V_LLt.solve(g));
+  // A complete store is folded and already carries L^-1: its g is
+  // L^-1 (μν|P) D, and expanding with it again applies L^-T, so V^-1 is
+  // complete
+  const Mat x = partial ? Mat(V_LLt.solve(g)) : g;
   std::vector<Mat> J = m_packed.expand(x);
   if (partial) {
     if (spherical)
@@ -410,7 +379,6 @@ Mat IntegralEngineDF::packed_exchange(const MolecularOrbitals &mo) {
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;
   occ::timing::start(occ::timing::category::df);
-  m_packed.fold(V_LLt);
   const size_t nbf = m_ao_engine.nbf();
   Mat result;
   switch (mo.kind) {
@@ -475,6 +443,9 @@ void IntegralEngineDF::set_range_separated_omega(double omega) {
 }
 
 void IntegralEngineDF::set_precision(double precision) {
+  // the shell-pair screen, and with it the stored pairs, depend on it
+  if (precision != m_precision)
+    m_packed.clear();
   m_precision = precision;
   m_ao_engine.set_precision(precision);
   m_aux_engine.set_precision(precision);
