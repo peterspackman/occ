@@ -248,6 +248,12 @@ void register_mo_and_wfn(lua_State *L) {
       .addProperty(
           "mulliken_charges",
           +[](const Wavefunction *w) -> Vec { return w->mulliken_charges(); })
+      .addProperty(
+          "lowdin_charges",
+          +[](const Wavefunction *w) -> Vec { return w->lowdin_charges(); })
+      .addProperty(
+          "mayer_bond_orders",
+          +[](const Wavefunction *w) -> Mat { return w->mayer_bond_orders(); })
       .addFunction(
           "rotate",
           +[](Wavefunction *w, const lb::LuaRef &rotation) {

@@ -10,7 +10,9 @@
 #include <occ/core/units.h>
 #include <occ/dma/dma.h>
 #include <occ/dma/linear_multipole_calculator.h>
+#include <occ/core/util.h>
 #include <occ/driver/dma_driver.h>
+#include <occ/driver/population.h>
 #include <occ/mults/dma_force_field.h>
 #include <occ/qm/io/fchkreader.h>
 #include <occ/qm/io/moldenreader.h>
@@ -1762,6 +1764,45 @@ TEST_CASE("DMA of a spherical s/p-only basis matches the Cartesian one",
     total += spherical.result.multipoles[i].Q00();
   }
   CHECK(total == Approx(0.0).margin(1e-6));
+}
+
+TEST_CASE("DMADriver reports partial charges and Mayer bond orders",
+          "[dma][driver][json][population]") {
+  std::istringstream fchk(h2o_contents);
+  occ::qm::FchkReader reader(fchk);
+  occ::qm::Wavefunction wfn(reader);
+
+  occ::driver::DMAConfig config;
+  config.write_punch = false;
+  config.settings.max_rank = 1;
+  config.charge_schemes = {"mulliken", "lowdin", "eeq"};
+  config.bond_orders = true;
+  auto output = occ::driver::DMADriver(config).run(wfn);
+
+  REQUIRE(output.charges.size() == 3);
+  CHECK(occ::util::all_close(output.charges.at("mulliken"),
+                             wfn.mulliken_charges(), 1e-10, 1e-10));
+  for (const auto &[scheme, q] : output.charges) {
+    INFO(scheme);
+    CHECK(q.sum() == Approx(wfn.charge()).margin(1e-6));
+  }
+  REQUIRE(output.bond_orders.rows() == 3);
+  CHECK(output.bond_orders(0, 1) == Approx(output.bond_orders(1, 0)));
+  CHECK(output.bond_orders(0, 1) > 0.5);
+
+  auto j = nlohmann::json::parse(
+      occ::driver::DMADriver::generate_json(config, output));
+  CHECK(j["units"]["charge"] == "e");
+  CHECK(j["charges"]["lowdin"].size() == 3);
+  CHECK(j["bond_orders"]["method"] == "mayer");
+  CHECK(j["bond_orders"]["matrix"].size() == 3);
+  CHECK(j["bond_orders"]["valences"][0].get<double>() ==
+        Approx(output.bond_orders.row(0).sum()));
+
+  SECTION("schemes that do not apply are refused") {
+    CHECK_THROWS(occ::driver::partial_charges(wfn, "xtb"));
+    CHECK_THROWS(occ::driver::partial_charges(wfn, "nonsense"));
+  }
 }
 
 TEST_CASE("DMA force-field basis labels sites for the chosen set",

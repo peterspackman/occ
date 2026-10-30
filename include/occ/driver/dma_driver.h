@@ -3,6 +3,7 @@
 #include <occ/dma/dma.h>
 #include <occ/qm/wavefunction.h>
 #include <string>
+#include <vector>
 
 namespace occ::driver {
 
@@ -41,6 +42,11 @@ struct DMAConfig {
     // occ::mults::short_range_model_from_string(), see
     // occ/mults/dimer_interaction.h.
     std::string csp_force_field{"w99"};
+
+    // Population analysis alongside the multipoles: partial charges by scheme
+    // (see occ/driver/population.h) and Mayer bond orders.
+    std::vector<std::string> charge_schemes;
+    bool bond_orders{false};
 };
 
 class DMADriver {
@@ -70,6 +76,15 @@ public:
         /// for (--write-csp-input promotes "none" to "moi").
         std::string axis_method{"none"};
         std::vector<int> axis_atoms;
+
+        /// Partial charges (e) per requested scheme, in wavefunction atom
+        /// order. Empty unless DMAConfig::charge_schemes is set.
+        std::map<std::string, occ::Vec> charges;
+        /// charges.at(scheme), with an error naming what was computed.
+        const occ::Vec &charges_for(const std::string &scheme) const;
+        /// Mayer bond orders (atoms × atoms, zero diagonal); empty unless
+        /// DMAConfig::bond_orders is set.
+        occ::Mat bond_orders;
     };
 
     // Main driver function that loads wavefunction and performs DMA

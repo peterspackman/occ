@@ -3,7 +3,6 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/qm/chelpg.h>
-#include <occ/qm/hf.h>
 #include <occ/qm/wavefunction.h>
 
 namespace occ::qm {
@@ -67,12 +66,10 @@ Vec chelpg_charges(const Wavefunction &wfn) {
   grid_points.conservativeResize(3, current);
   distances.conservativeResize(current, num_atoms);
 
-  HartreeFock hf(wfn.basis);
-  hf.set_system_charge(wfn.charge());
-  Vec esp = hf.electronic_electric_potential_contribution(wfn.mo, grid_points) +
-            hf.nuclear_electric_potential_contribution(grid_points);
+  // The wavefunction's own ESP: for GFN2-xTB its point-multipole model
+  Vec esp = wfn.electric_potential(grid_points);
 
-  double net_charge = hf.system_charge();
+  double net_charge = wfn.charge();
   Mat inverse_distances = 1.0 / distances.array();
   Mat G = Mat::Zero(num_atoms, num_atoms);
   Vec e = Vec::Zero(num_atoms);

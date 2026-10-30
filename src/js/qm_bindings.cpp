@@ -226,6 +226,8 @@ void register_qm_bindings() {
                   return wfn.energy.total;
                 }))
       .function("mullikenCharges", &Wavefunction::mulliken_charges)
+      .function("lowdinCharges", &Wavefunction::lowdin_charges)
+      .function("mayerBondOrders", &Wavefunction::mayer_bond_orders)
       .function("multiplicity", &Wavefunction::multiplicity)
       .function("rotate", &Wavefunction::apply_rotation)
       .function("translate", &Wavefunction::apply_translation)

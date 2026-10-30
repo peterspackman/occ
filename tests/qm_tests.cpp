@@ -868,6 +868,55 @@ TEST_CASE("Mulliken partition", "[partitioning]") {
   REQUIRE(energies.sum() == Catch::Approx(total));
 }
 
+namespace {
+occ::qm::Wavefunction water_321g_wavefunction(int charge, int multiplicity) {
+  std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
+                                     {1, -1.93166418, 1.60017351, -0.02171049},
+                                     {1, 0.48664409, 0.07959806, 0.00986248}};
+  HartreeFock hf(occ::gto::AOBasis::load(atoms, "3-21G"));
+  const auto kind = multiplicity == 1 ? occ::qm::SpinorbitalKind::Restricted
+                                      : occ::qm::SpinorbitalKind::Unrestricted;
+  occ::qm::SCF<HartreeFock> scf(hf, kind);
+  scf.set_charge_multiplicity(charge, multiplicity);
+  scf.convergence_settings.energy_threshold = 1e-10;
+  scf.compute_scf_energy();
+  return scf.wavefunction();
+}
+} // namespace
+
+// Reference values from PySCF (S^1/2 P S^1/2 and the Mayer PS products on
+// the same geometry and basis).
+TEST_CASE("Lowdin charges", "[partitioning]") {
+  SECTION("RHF water") {
+    occ::Vec expected(3);
+    expected << -0.4632168, 0.2312577, 0.2319591;
+    REQUIRE(all_close(expected, water_321g_wavefunction(0, 1).lowdin_charges(),
+                      1e-5, 1e-5));
+  }
+  SECTION("UHF water cation") {
+    occ::Vec expected(3);
+    expected << 0.2422840, 0.3770035, 0.3807125;
+    REQUIRE(all_close(expected, water_321g_wavefunction(1, 2).lowdin_charges(),
+                      1e-5, 1e-5));
+  }
+}
+
+TEST_CASE("Mayer bond orders", "[partitioning]") {
+  SECTION("RHF water") {
+    const occ::Mat b = water_321g_wavefunction(0, 1).mayer_bond_orders();
+    REQUIRE(b(0, 1) == Catch::Approx(0.8314385).margin(1e-5));
+    REQUIRE(b(0, 2) == Catch::Approx(0.8333681).margin(1e-5));
+    REQUIRE(b(1, 2) == Catch::Approx(0.0046385).margin(1e-5));
+    REQUIRE(b(1, 0) == Catch::Approx(b(0, 1)));
+  }
+  SECTION("UHF water cation") {
+    const occ::Mat b = water_321g_wavefunction(1, 2).mayer_bond_orders();
+    REQUIRE(b(0, 1) == Catch::Approx(0.6641281).margin(1e-5));
+    REQUIRE(b(0, 2) == Catch::Approx(0.6628677).margin(1e-5));
+    REQUIRE(b(1, 2) == Catch::Approx(0.0039339).margin(1e-5));
+  }
+}
+
 TEST_CASE("Shell ordering", "[shell]") {
   using occ::gto::AOBasis;
   using occ::gto::Shell;

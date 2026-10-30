@@ -6,6 +6,7 @@
 #include <occ/dma/mult.h>
 #include <occ/dma/multipole_calculator.h>
 #include <occ/driver/dma_driver.h>
+#include <occ/driver/population.h>
 #include <occ/qm/wavefunction.h>
 
 namespace occ::lua_bindings {
@@ -172,6 +173,9 @@ void register_dma_bindings(lua_State *L) {
       .addPropertyReadWrite("csp_force_field",
                             &occ::driver::DMAConfig::csp_force_field)
       .addPropertyReadWrite("write_punch", &occ::driver::DMAConfig::write_punch)
+      .addPropertyReadWrite("charge_schemes",
+                            &occ::driver::DMAConfig::charge_schemes)
+      .addPropertyReadWrite("bond_orders", &occ::driver::DMAConfig::bond_orders)
       // Per-element overrides: maps aren't Stack-convertible, so expose the
       // setters rather than the containers.
       .addFunction(
@@ -198,6 +202,24 @@ void register_dma_bindings(lua_State *L) {
       .addProperty("total", &occ::driver::DMADriver::DMAOutput::total)
       .addProperty("axis_method",
                    &occ::driver::DMADriver::DMAOutput::axis_method)
+      .addProperty(
+          "bond_orders",
+          +[](const occ::driver::DMADriver::DMAOutput *o) -> Mat {
+            return o->bond_orders;
+          })
+      // Partial charges are keyed by scheme; ask for one at a time
+      .addProperty("charge_schemes",
+                   +[](const occ::driver::DMADriver::DMAOutput *o) {
+                     std::vector<std::string> schemes;
+                     for (const auto &[scheme, q] : o->charges)
+                       schemes.push_back(scheme);
+                     return schemes;
+                   })
+      .addFunction("charges",
+                   +[](const occ::driver::DMADriver::DMAOutput *o,
+                       const std::string &scheme) -> Vec {
+                     return o->charges_for(scheme);
+                   })
       .endClass()
 
       .beginClass<occ::driver::DMADriver>("DMADriver")
@@ -226,6 +248,11 @@ void register_dma_bindings(lua_State *L) {
                          &occ::driver::DMADriver::generate_json)
       .addStaticFunction("write_json", &occ::driver::DMADriver::write_json)
       .endClass()
+
+      // occ.partial_charges(wfn, "mulliken") -> per-atom charges (e)
+      .addFunction("partial_charge_schemes",
+                   &occ::driver::partial_charge_schemes)
+      .addFunction("partial_charges", &occ::driver::partial_charges)
 
       .endNamespace();
 }

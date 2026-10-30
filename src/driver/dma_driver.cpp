@@ -8,6 +8,7 @@
 #include <occ/core/molecular_axis.h>
 #include <occ/core/units.h>
 #include <occ/driver/dma_driver.h>
+#include <occ/driver/population.h>
 #include <sstream>
 
 namespace occ::driver {
@@ -186,6 +187,11 @@ DMADriver::DMAOutput DMADriver::run(const occ::qm::Wavefunction& wfn) {
     // site vectors, so both have to be in the same frame.
     output.total = calc.compute_total_multipoles(output.result);
 
+    for (const auto &scheme : m_config.charge_schemes)
+        output.charges[scheme] = partial_charges(oriented_wfn, scheme);
+    if (m_config.bond_orders)
+        output.bond_orders = oriented_wfn.mayer_bond_orders();
+
     if (m_config.write_punch && !m_config.punch_filename.empty()) {
         write_punch_file(m_config.punch_filename, output.result, output.sites);
         occ::log::info("Wrote punch file to: {}", m_config.punch_filename);
@@ -197,6 +203,20 @@ DMADriver::DMAOutput DMADriver::run(const occ::qm::Wavefunction& wfn) {
     }
 
     return output;
+}
+
+const occ::Vec &
+DMADriver::DMAOutput::charges_for(const std::string &scheme) const {
+    auto it = charges.find(scheme);
+    if (it == charges.end()) {
+        std::string computed;
+        for (const auto &[name, q] : charges)
+            computed += (computed.empty() ? "" : ", ") + name;
+        throw std::runtime_error(fmt::format(
+            "No '{}' charges: computed schemes are [{}] (set charge_schemes)",
+            scheme, computed));
+    }
+    return it->second;
 }
 
 std::string DMADriver::generate_punch_file(const occ::dma::DMAResult& result,
@@ -317,6 +337,30 @@ std::string DMADriver::generate_json(const DMAConfig &config,
         {"rank", output.total.max_rank},
         {"multipoles", multipole_components(output.total)},
     };
+
+    // Per atom, in wavefunction atom order (the sites' atom_index)
+    if (!output.charges.empty()) {
+        nlohmann::json charges;
+        for (const auto &[scheme, q] : output.charges)
+            charges[scheme] = std::vector<double>(q.data(), q.data() + q.size());
+        j["charges"] = charges;
+        j["units"]["charge"] = "e";
+    }
+    if (output.bond_orders.size() > 0) {
+        const auto &b = output.bond_orders;
+        nlohmann::json rows = nlohmann::json::array();
+        for (int r = 0; r < b.rows(); r++) {
+            const occ::Vec row = b.row(r).transpose();
+            rows.push_back(std::vector<double>(row.data(), row.data() + row.size()));
+        }
+        const occ::Vec valences = b.rowwise().sum();
+        j["bond_orders"] = {
+            {"method", "mayer"},
+            {"matrix", rows},
+            {"valences", std::vector<double>(valences.data(),
+                                             valences.data() + valences.size())},
+        };
+    }
 
     return j.dump(2) + "\n";
 }

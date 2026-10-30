@@ -1,5 +1,6 @@
 #include "dma_bindings.h"
 #include <occ/driver/dma_driver.h>
+#include <occ/driver/population.h>
 #include <occ/dma/dma.h>
 #include <occ/dma/mult.h>
 #include <occ/core/element.h>
@@ -88,6 +89,8 @@ void register_dma_bindings() {
         .property("cspInputFilename", &DMAConfig::csp_input_filename)
         .property("cspForceField", &DMAConfig::csp_force_field)
         .property("writePunch", &DMAConfig::write_punch)
+        .property("chargeSchemes", &DMAConfig::charge_schemes)
+        .property("bondOrders", &DMAConfig::bond_orders)
         .function("setWfnRotation", optional_override([](DMAConfig& config, const occ::Mat3& rotation) {
             config.wfn_rotation = rotation;
         }))
@@ -116,7 +119,21 @@ void register_dma_bindings() {
         .property("result", &DMADriver::DMAOutput::result)
         .property("sites", &DMADriver::DMAOutput::sites)
         .property("total", &DMADriver::DMAOutput::total)
-        .property("axisMethod", &DMADriver::DMAOutput::axis_method);
+        .property("axisMethod", &DMADriver::DMAOutput::axis_method)
+        .property("bondOrders", &DMADriver::DMAOutput::bond_orders)
+        // Partial charges are keyed by scheme; ask for one at a time
+        .function("chargeSchemes",
+                  optional_override([](const DMADriver::DMAOutput &o) {
+                      std::vector<std::string> schemes;
+                      for (const auto &[scheme, q] : o.charges)
+                          schemes.push_back(scheme);
+                      return schemes;
+                  }))
+        .function("charges",
+                  optional_override([](const DMADriver::DMAOutput &o,
+                                       const std::string &scheme) {
+                      return o.charges_for(scheme);
+                  }));
 
     // DMADriver class
     class_<DMADriver>("DMADriver")
@@ -130,4 +147,6 @@ void register_dma_bindings() {
     // Static helper functions
     function("generate_punch_file", &DMADriver::generate_punch_file);
     function("generate_dma_json", &DMADriver::generate_json);
+    function("partialChargeSchemes", &partial_charge_schemes);
+    function("partialCharges", &partial_charges);
 }

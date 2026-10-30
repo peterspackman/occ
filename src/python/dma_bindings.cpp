@@ -13,6 +13,7 @@
 #include <occ/dma/mult.h>
 #include <occ/dma/multipole_calculator.h>
 #include <occ/driver/dma_driver.h>
+#include <occ/driver/population.h>
 #include <occ/qm/wavefunction.h>
 
 using namespace nb::literals;
@@ -177,6 +178,10 @@ nb::module_ register_dma_bindings(nb::module_ &m) {
               "(w99, fit, williams-de, none)")
       .def_rw("write_punch", &occ::driver::DMAConfig::write_punch,
               "whether to write punch file (default: True)")
+      .def_rw("charge_schemes", &occ::driver::DMAConfig::charge_schemes,
+              "partial charge schemes to compute (see partial_charge_schemes)")
+      .def_rw("bond_orders", &occ::driver::DMAConfig::bond_orders,
+              "whether to compute Mayer bond orders")
       .def("__repr__", [](const occ::driver::DMAConfig &config) {
         return fmt::format("<DMAConfig wavefunction='{}' punch='{}' write_punch={}>",
                            config.wavefunction_filename, config.punch_filename,
@@ -198,6 +203,10 @@ nb::module_ register_dma_bindings(nb::module_ &m) {
               "axis method that actually ran (not always the one requested)")
       .def_rw("axis_atoms", &occ::driver::DMADriver::DMAOutput::axis_atoms,
               "atom indices that defined the axis frame")
+      .def_rw("charges", &occ::driver::DMADriver::DMAOutput::charges,
+              "partial charges (e) per scheme, in wavefunction atom order")
+      .def_rw("bond_orders", &occ::driver::DMADriver::DMAOutput::bond_orders,
+              "Mayer bond orders (empty unless requested)")
       .def("__repr__", [](const occ::driver::DMADriver::DMAOutput &output) {
         return fmt::format("<DMAOutput num_sites={} max_rank={}>",
                            output.sites.size(), output.result.max_rank);
@@ -226,6 +235,13 @@ nb::module_ register_dma_bindings(nb::module_ &m) {
       .def("__repr__", [](const occ::driver::DMADriver &driver) {
         return fmt::format("<DMADriver>");
       });
+
+  m.def("partial_charge_schemes", &occ::driver::partial_charge_schemes,
+        "names accepted by partial_charges");
+  m.def("partial_charges", &occ::driver::partial_charges, "wavefunction"_a,
+        "scheme"_a,
+        "partial atomic charges (e): mulliken, lowdin, chelpg, hirshfeld, "
+        "eeq or xtb");
 
   // Convenience function for punch file generation
   m.def("generate_punch_file", &occ::driver::DMADriver::generate_punch_file,

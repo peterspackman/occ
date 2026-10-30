@@ -6,6 +6,7 @@
 #include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/driver/dma_driver.h>
+#include <occ/driver/population.h>
 #include <occ/io/structure_format.h>
 #include <occ/main/occ_dma.h>
 #include <occ/main/version.h>
@@ -103,12 +104,45 @@ std::string force_field_help() {
   return help;
 }
 
+void log_population(const occ::driver::DMADriver::DMAOutput &output) {
+  const auto &atoms = output.sites.atoms;
+  auto symbol = [&](int i) {
+    return occ::core::Element(atoms[i].atomic_number).symbol();
+  };
+  if (!output.charges.empty()) {
+    log::info("{:-<72s}", "Partial charges (e)  ");
+    std::string header = fmt::format("{:>4s} {:<4s}", "#", "");
+    for (const auto &[scheme, q] : output.charges)
+      header += fmt::format(" {:>10s}", scheme);
+    log::info("{}", header);
+    for (int i = 0; i < static_cast<int>(atoms.size()); i++) {
+      std::string row = fmt::format("{:>4d} {:<4s}", i, symbol(i));
+      for (const auto &[scheme, q] : output.charges)
+        row += fmt::format(" {:>10.5f}", q(i));
+      log::info("{}", row);
+    }
+  }
+  const auto &b = output.bond_orders;
+  if (b.size() > 0) {
+    // Listing every pair is noise; small values are not bonds
+    constexpr double threshold = 0.1;
+    log::info("{:-<72s}", "Mayer bond orders (> 0.1)  ");
+    for (int i = 0; i < b.rows(); i++)
+      for (int j = i + 1; j < b.cols(); j++)
+        if (b(i, j) > threshold)
+          log::info("{:>4d} {:<4s} {:>4d} {:<4s} {:10.5f}", i, symbol(i), j,
+                    symbol(j), b(i, j));
+  }
+}
+
 } // namespace
 
 CLI::App *add_dma_subcommand(CLI::App &app) {
 
   CLI::App *dma = app.add_subcommand(
-      "dma", "compute distributed multipoles using DMA algorithm");
+      "dma", "distributed multipoles (DMA), partial charges and bond orders");
+  // Population analysis lives here too, so give it a name that says so
+  dma->alias("population");
   auto config = std::make_shared<DMAConfig>();
 
   dma->add_option("wavefunction", config->wavefunction_filename,
@@ -123,6 +157,16 @@ CLI::App *add_dma_subcommand(CLI::App &app) {
   dma->add_option("--json", config->json_filename,
                   "JSON file with the settings, frame and effective per-site "
                   "radii/limits alongside the multipoles");
+
+  // --- population analysis --------------------------------------------
+  dma->add_option("--charges", config->charge_schemes,
+                  "partial charge schemes to report and write to --json, "
+                  "comma separated")
+      ->delimiter(',')
+      ->transform(CLI::IsMember(occ::driver::partial_charge_schemes(),
+                                CLI::ignore_case));
+  dma->add_flag("--bond-orders", config->bond_orders,
+                "report Mayer bond orders and write them to --json");
 
   // --- site model -----------------------------------------------------
   dma->add_option("--max-rank,--limit", config->settings.max_rank,
@@ -277,6 +321,8 @@ void run_dma_subcommand(const DMAConfig &config) {
   occ::log::info("Total multipoles referred to origin at:");
   occ::log::info("{}", format_matrix(origin * occ::units::BOHR_TO_ANGSTROM));
   occ::log::info("{}", output.total.to_string(output.total.max_rank));
+
+  log_population(output);
 
   if (!config.csp_input_filename.empty()) {
     occ::mults::DMAForceFieldOptions options;

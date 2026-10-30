@@ -1,3 +1,4 @@
+#include <Eigen/Eigenvalues>
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
@@ -460,6 +461,53 @@ Vec Wavefunction::mulliken_charges() const {
     charges(i) += atoms[i].atomic_number - ecp_electrons[i];
   }
   return charges;
+}
+
+Vec Wavefunction::lowdin_charges() const {
+  Eigen::SelfAdjointEigenSolver<Mat> solver(overlap_matrix());
+  const Mat sqrt_s = solver.eigenvectors() *
+                     solver.eigenvalues().cwiseSqrt().asDiagonal() *
+                     solver.eigenvectors().transpose();
+  const Vec pop = (sqrt_s * mo.total_density_matrix() * sqrt_s).diagonal();
+
+  const auto bf_to_atom = basis.bf_to_atom();
+  const auto &ecp_electrons = basis.ecp_electrons();
+  Vec charges(atoms.size());
+  for (size_t i = 0; i < atoms.size(); i++)
+    charges(i) = atoms[i].atomic_number - ecp_electrons[i];
+  for (Eigen::Index u = 0; u < pop.size(); u++)
+    charges(bf_to_atom[u]) -= pop(u);
+  return charges;
+}
+
+Mat Wavefunction::mayer_bond_orders() const {
+  // Per-spin densities with electron-count normalisation: occ's D is half
+  // the spin density when unrestricted, and the α density when restricted.
+  std::vector<Mat> spin_densities;
+  switch (mo.kind) {
+  case SpinorbitalKind::Restricted:
+    spin_densities = {mo.D, mo.D};
+    break;
+  case SpinorbitalKind::Unrestricted:
+    spin_densities = {2 * block::a(mo.D), 2 * block::b(mo.D)};
+    break;
+  default:
+    throw std::runtime_error(
+        "Mayer bond orders are not implemented for general spinorbitals");
+  }
+
+  const Mat S = overlap_matrix();
+  const auto bf_to_atom = basis.bf_to_atom();
+  Mat bond_orders = Mat::Zero(atoms.size(), atoms.size());
+  for (const auto &P : spin_densities) {
+    const Mat PS = P * S;
+    const Mat products = PS.cwiseProduct(PS.transpose());
+    for (Eigen::Index u = 0; u < products.rows(); u++)
+      for (Eigen::Index v = 0; v < products.cols(); v++)
+        bond_orders(bf_to_atom[u], bf_to_atom[v]) += 2 * products(u, v);
+  }
+  bond_orders.diagonal().setZero();
+  return bond_orders;
 }
 
 Vec Wavefunction::electron_density(const Mat3N &pos, SpinComponent spin) const {

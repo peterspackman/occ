@@ -138,6 +138,9 @@ nb::module_ register_qm_bindings(nb::module_ &m) {
                    [](const Wavefunction &wfn) { return wfn.energy.total; })
       .def_ro("atoms", &Wavefunction::atoms)
       .def("mulliken_charges", &Wavefunction::mulliken_charges)
+      .def("lowdin_charges", &Wavefunction::lowdin_charges)
+      .def("mayer_bond_orders", &Wavefunction::mayer_bond_orders,
+           "Mayer bond orders, atoms x atoms with a zero diagonal")
       .def("multiplicity", &Wavefunction::multiplicity)
       .def("copy", [](const Wavefunction &self) { return Wavefunction(self); })
       .def("rotate", &Wavefunction::apply_rotation)

@@ -112,6 +112,11 @@ struct Wavefunction {
   occ::IVec atomic_numbers() const;
 
   Vec mulliken_charges() const;
+  /// Löwdin charges, from the diagonal of S^½ P S^½.
+  Vec lowdin_charges() const;
+  /// Mayer bond orders B_AB = 2 Σ_{μ∈A,ν∈B} Σ_σ (P^σ S)_μν (P^σ S)_νμ,
+  /// atoms × atoms with a zero diagonal. Restricted and unrestricted only.
+  Mat mayer_bond_orders() const;
   Mat overlap_matrix() const;
 
   Vec electron_density(const Mat3N &points,
