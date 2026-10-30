@@ -82,11 +82,14 @@ void from_json(const nlohmann::json &J, QCSchemaInput &qc) {
   if (J.contains("threads")) {
     J.at("threads").get_to(qc.threads);
   }
-  if (qc.driver == "energy") {
+  // occ's geometry optimization driver is "opt"
+  if (qc.driver == "optimization")
+    qc.driver = "opt";
+  if (qc.driver == "pair_energy") {
+    J.at("monomers").get_to(qc.pair_input);
+  } else {
     J.at("molecule").get_to(qc.topology);
     J.at("model").get_to(qc.model);
-  } else if (qc.driver == "pair_energy") {
-    J.at("monomers").get_to(qc.pair_input);
   }
 }
 

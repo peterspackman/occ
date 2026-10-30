@@ -142,7 +142,8 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
       },
       "use unrestricted SCF");
 
-  scf->add_option("--driver", config->driver.driver, "override driver");
+  auto *driver_opt = scf->add_option("--driver", config->driver.driver,
+                                     "override driver");
 
   scf->add_option("--basis-set-directory,--basis_set_directory",
                   config->basis.basis_set_directory,
@@ -402,19 +403,24 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                 "Compute vibrational frequencies after geometry optimization")
       ->group(gOpt);
 
-  scf->callback([config]() { run_scf_subcommand(*config); });
+  scf->callback([config, driver_opt]() {
+    run_scf_subcommand(*config, driver_opt->count() > 0);
+  });
   return scf;
 }
 
-void run_scf_subcommand(occ::io::OccInput config) {
+void run_scf_subcommand(occ::io::OccInput config, bool driver_from_cli) {
 
   occ::main::print_header();
 
   occ::timing::start(occ::timing::category::io);
 
   config.name = config.filename;
-  // read input file first so we can override with command line settings
+  // An explicit --driver beats the one named in the input file
+  const std::string cli_driver = config.driver.driver;
   read_input_file(config.filename, config);
+  if (driver_from_cli)
+    config.driver.driver = cli_driver;
   if (config.filename.empty()) {
     config.filename = config.name;
   }

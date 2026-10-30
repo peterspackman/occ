@@ -139,6 +139,17 @@ TEST_CASE("Read QCSchema formatted input water b3lyp/6-31G", "[read]") {
   REQUIRE(oh.norm() == Catch::Approx(1.0).margin(1e-4));
 }
 
+TEST_CASE("QCSchema optimization input keeps molecule and model", "[read]") {
+  auto j = nlohmann::json::parse(json_input_contents);
+  j["driver"] = "optimization";
+  std::istringstream json(j.dump());
+  auto input = occ::io::QCSchemaReader(json).as_occ_input();
+  REQUIRE(input.driver.driver == "opt");
+  REQUIRE(input.geometry.elements.size() == 3);
+  REQUIRE(input.method.name == "b3lyp");
+  REQUIRE(input.basis.name == "6-31g");
+}
+
 TEST_CASE("Serial Molecule & Dimer to JSON", "[json,write]") {
   fmt::print("Molecule to JSON\n");
   auto acetic = acetic_crystal();
