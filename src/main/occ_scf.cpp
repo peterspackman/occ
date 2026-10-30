@@ -398,6 +398,9 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   scf->add_flag("--opt-write-wavefunctions,--opt_write_wavefunctions",
                 config->optimization.write_wavefunction_steps,
                 "Write wavefunction at each optimization step");
+  scf->add_flag("--opt-step-log,--opt_step_log",
+                config->optimization.write_step_log,
+                "Write per-step geometry and gradient to occ_step_log.txt");
   scf->add_flag("--frequencies,--freq",
                 config->optimization.compute_frequencies,
                 "Compute vibrational frequencies after geometry optimization")

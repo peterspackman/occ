@@ -97,6 +97,7 @@ OccInput read_occ_input_file(const std::string path) {
   result.optimization.early_gradient_integral_precision = scf["opt_early_gradient_precision"].value_or(result.optimization.early_gradient_integral_precision);
   result.optimization.tight_gradient_threshold = scf["opt_tight_threshold"].value_or(result.optimization.tight_gradient_threshold);
   result.optimization.write_wavefunction_steps = scf["opt_write_wavefunctions"].value_or(result.optimization.write_wavefunction_steps);
+  result.optimization.write_step_log = scf["opt_step_log"].value_or(result.optimization.write_step_log);
   result.optimization.compute_frequencies = scf["frequencies"].value_or(result.optimization.compute_frequencies);
 
   return result;

@@ -141,6 +141,7 @@ struct OptimizationInput {
 
   // Output options
   bool write_wavefunction_steps{false}; // Write wavefunction at each optimization step
+  bool write_step_log{false};           // Write per-step detail to occ_step_log.txt
 
   // Frequency analysis
   bool compute_frequencies{false};  // Compute vibrational frequencies after optimization

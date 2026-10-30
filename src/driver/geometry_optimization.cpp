@@ -14,6 +14,7 @@
 #include <occ/qm/scf.h>
 #include <occ/xdm/xdm.h>
 #include <memory>
+#include <optional>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
 
@@ -325,6 +326,37 @@ optimization_step_driver(const OccInput &config, const Molecule &m,
   }
 }
 
+// Per-step detail for the opt-in step log (--opt-step-log).
+void log_step_geometry(fmt::ostream &log, int step, const Molecule &m) {
+  const auto &el = m.elements();
+  const auto &pos = m.positions();
+  log.print("STEP {} INPUT:\n", step);
+  log.print("Geometry (Angstrom):\n");
+  for (int i = 0; i < el.size(); i++) {
+    log.print("  {} {:2d}:  {:12.8f}  {:12.8f}  {:12.8f}\n", el[i].symbol(), i,
+              pos(0, i), pos(1, i), pos(2, i));
+  }
+  log.print("\n");
+}
+
+void log_step_results(fmt::ostream &log, int step, const Molecule &m,
+                      double energy, const Mat3N &gradient) {
+  const auto &el = m.elements();
+  log.print("STEP {} RESULTS:\n", step);
+  log.print("Energy: {:.12f} Ha\n", energy);
+  log.print("|gradient|: {:.8f}\n", gradient.norm());
+  log.print("RMS gradient: {:.8f}\n",
+            gradient.norm() / std::sqrt(gradient.size()));
+  log.print("Max gradient: {:.8f}\n", gradient.cwiseAbs().maxCoeff());
+  log.print("Gradient (Hartree/Angstrom):\n");
+  for (int i = 0; i < el.size(); i++) {
+    log.print("  {} {:2d}:  {:11.8f}  {:11.8f}  {:11.8f}\n", el[i].symbol(), i,
+              gradient(0, i), gradient(1, i), gradient(2, i));
+  }
+  log.print("\n");
+  log.flush();
+}
+
 Wavefunction geometry_optimization(const OccInput &config) {
 
   Wavefunction wfn;
@@ -366,10 +398,13 @@ Wavefunction geometry_optimization(const OccInput &config) {
   }
   occ::log::info("  Max iterations:  {}", criteria.max_iterations);
 
-  // Open detailed step log
-  auto step_log = fmt::output_file("occ_step_log.txt");
-  step_log.print("OCC BernyOptimizer Step-by-Step Log\n");
-  step_log.print("===================================\n\n");
+  // Detailed step log, only when asked for
+  std::optional<fmt::ostream> step_log;
+  if (config.optimization.write_step_log) {
+    step_log.emplace(fmt::output_file("occ_step_log.txt"));
+    step_log->print("OCC BernyOptimizer Step-by-Step Log\n");
+    step_log->print("===================================\n\n");
+  }
   
   // GFN2 stateful cache: reused across opt steps so the basis / engine /
   // shell tables / γ matrix don't get rebuilt every iteration AND the
@@ -393,27 +428,10 @@ Wavefunction geometry_optimization(const OccInput &config) {
   }
   traj.flush();
 
-  // Log initial step details
-  step_log.print("STEP {} INPUT:\n", current_step);
-  step_log.print("Geometry (Angstrom):\n");
-  for (int i = 0; i < el.size(); i++) {
-    step_log.print("  {} {:2d}:  {:12.8f}  {:12.8f}  {:12.8f}\n", el[i].symbol(), i,
-                   positions(0, i), positions(1, i), positions(2, i));
+  if (step_log) {
+    log_step_geometry(*step_log, current_step, m);
+    log_step_results(*step_log, current_step, m, wfn.energy.total, gradient);
   }
-  step_log.print("\n");
-  
-  step_log.print("STEP {} RESULTS:\n", current_step);
-  step_log.print("Energy: {:.12f} Ha\n", wfn.energy.total);
-  step_log.print("|gradient|: {:.8f}\n", gradient.norm());
-  step_log.print("RMS gradient: {:.8f}\n", gradient.norm() / std::sqrt(gradient.size()));
-  step_log.print("Max gradient: {:.8f}\n", gradient.cwiseAbs().maxCoeff());
-  step_log.print("Gradient (Hartree/Angstrom):\n");
-  for (int i = 0; i < el.size(); i++) {
-    step_log.print("  {} {:2d}:  {:11.8f}  {:11.8f}  {:11.8f}\n", el[i].symbol(), i,
-                   gradient(0, i), gradient(1, i), gradient(2, i));
-  }
-  step_log.print("\n");
-  step_log.flush();
 
   occ::log::info("Initial energy:          {:.12f} Ha", wfn.energy.total);
   occ::log::info("Initial RMS gradient:    {:.5e} Ha/Angstrom", 
@@ -448,14 +466,8 @@ Wavefunction geometry_optimization(const OccInput &config) {
     Molecule m_new = optimizer.get_next_geometry();
     const auto &new_positions = m_new.positions();
     
-    // Log input geometry for this step
-    step_log.print("STEP {} INPUT:\n", current_step);
-    step_log.print("Geometry (Angstrom):\n");
-    for (int i = 0; i < el.size(); i++) {
-      step_log.print("  {} {:2d}:  {:12.8f}  {:12.8f}  {:12.8f}\n", el[i].symbol(), i,
-                     new_positions(0, i), new_positions(1, i), new_positions(2, i));
-    }
-    step_log.print("\n");
+    if (step_log)
+      log_step_geometry(*step_log, current_step, m_new);
     
     occ::log::info("Computing wavefunction for optimization step {}", current_step);
     
@@ -480,18 +492,9 @@ Wavefunction geometry_optimization(const OccInput &config) {
     double rms_gradient = gradient.norm() / std::sqrt(gradient.size());
     double max_gradient = gradient.cwiseAbs().maxCoeff();
     
-    step_log.print("STEP {} RESULTS:\n", current_step);
-    step_log.print("Energy: {:.12f} Ha\n", wfn.energy.total);
-    step_log.print("|gradient|: {:.8f}\n", gradient.norm());
-    step_log.print("RMS gradient: {:.8f}\n", rms_gradient);
-    step_log.print("Max gradient: {:.8f}\n", max_gradient);
-    step_log.print("Gradient (Hartree/Angstrom):\n");
-    for (int i = 0; i < el.size(); i++) {
-      step_log.print("  {} {:2d}:  {:11.8f}  {:11.8f}  {:11.8f}\n", el[i].symbol(), i,
-                     gradient(0, i), gradient(1, i), gradient(2, i));
-    }
-    step_log.print("\n");
-    step_log.flush();
+    if (step_log)
+      log_step_results(*step_log, current_step, m_new, wfn.energy.total,
+                       gradient);
     
     occ::log::info("Step {:2d} (Cartesian coordinates):", current_step);
     occ::log::info("  Energy:           {:.12f} Ha", wfn.energy.total);
@@ -512,13 +515,17 @@ Wavefunction geometry_optimization(const OccInput &config) {
 
   if (converged) {
     occ::log::info("Optimization converged successfully after {} steps", current_step);
-    step_log.print("Optimization converged after {} steps!\n", current_step);
+    if (step_log)
+      step_log->print("Optimization converged after {} steps!\n", current_step);
   } else {
     occ::log::warn("Optimization did not converge after {} steps", current_step);
-    step_log.print("Optimization did not converge after {} steps.\n", current_step);
+    if (step_log)
+      step_log->print("Optimization did not converge after {} steps.\n",
+                      current_step);
   }
   
-  step_log.print("Final energy: {:20.12f} Ha\n", wfn.energy.total);
+  if (step_log)
+    step_log->print("Final energy: {:20.12f} Ha\n", wfn.energy.total);
   occ::log::info("Final energy: {:20.12f}", wfn.energy.total);
 
   // Write final optimized geometry
