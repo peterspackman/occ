@@ -314,6 +314,12 @@ Functions</h2></td></tr>
 <tr class="separator:a90dedff28ada5801cff5c5585bd9b6db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6834bcbe2a7b2017a37da18e23f13f0c" id="r_a6834bcbe2a7b2017a37da18e23f13f0c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a6834bcbe2a7b2017a37da18e23f13f0c">compute_monomer_energies</a> (const std::string &amp;basename, <a class="el" href="namespaceocc_1_1driver.html#a4101b59c9be71941ddbc0cb8983a2760">WavefunctionList</a> &amp;wavefunctions, const std::string &amp;model_name, <a class="el" href="classocc_1_1io_1_1JsonCache.html">occ::io::JsonCache</a> &amp;cache)</td></tr>
 <tr class="separator:a6834bcbe2a7b2017a37da18e23f13f0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae1fb105caa96ec6aa8d5749dedfbed4" id="r_aae1fb105caa96ec6aa8d5749dedfbed4"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; std::string &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#aae1fb105caa96ec6aa8d5749dedfbed4">partial_charge_schemes</a> ()</td></tr>
+<tr class="memdesc:aae1fb105caa96ec6aa8d5749dedfbed4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Names accepted by <a class="el" href="namespaceocc_1_1driver.html#aad3cc6b871b5c336af32d92b409f49ae" title="Partial atomic charges (e) of a wavefunction by scheme.">partial_charges()</a>, in a stable order.  <br /></td></tr>
+<tr class="separator:aae1fb105caa96ec6aa8d5749dedfbed4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad3cc6b871b5c336af32d92b409f49ae" id="r_aad3cc6b871b5c336af32d92b409f49ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#aad3cc6b871b5c336af32d92b409f49ae">partial_charges</a> (const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;wfn, const std::string &amp;scheme)</td></tr>
+<tr class="memdesc:aad3cc6b871b5c336af32d92b409f49ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Partial atomic charges (e) of a wavefunction by scheme.  <br /></td></tr>
+<tr class="separator:aad3cc6b871b5c336af32d92b409f49ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:accef768763f0a6d014a16c15da275e19" id="r_accef768763f0a6d014a16c15da275e19"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#accef768763f0a6d014a16c15da275e19">single_point</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;)</td></tr>
 <tr class="separator:accef768763f0a6d014a16c15da275e19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63944c06595e866576b466517b29f80a" id="r_a63944c06595e866576b466517b29f80a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1driver.html#a63944c06595e866576b466517b29f80a">single_point</a> (const <a class="el" href="structocc_1_1io_1_1OccInput.html">io::OccInput</a> &amp;, const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;)</td></tr>
@@ -1457,6 +1463,56 @@ template&lt;typename Proc &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aae1fb105caa96ec6aa8d5749dedfbed4" name="aae1fb105caa96ec6aa8d5749dedfbed4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae1fb105caa96ec6aa8d5749dedfbed4">&#9670;&#160;</a></span>partial_charge_schemes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::vector&lt; std::string &gt; &amp; occ::driver::partial_charge_schemes </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Names accepted by <a class="el" href="namespaceocc_1_1driver.html#aad3cc6b871b5c336af32d92b409f49ae" title="Partial atomic charges (e) of a wavefunction by scheme.">partial_charges()</a>, in a stable order. </p>
+
+</div>
+</div>
+<a id="aad3cc6b871b5c336af32d92b409f49ae" name="aad3cc6b871b5c336af32d92b409f49ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad3cc6b871b5c336af32d92b409f49ae">&#9670;&#160;</a></span>partial_charges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">Vec</a> occ::driver::partial_charges </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1qm_1_1Wavefunction.html">qm::Wavefunction</a> &amp;&#160;</td>
+          <td class="paramname"><em>wfn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>scheme</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Partial atomic charges (e) of a wavefunction by scheme. </p>
+<p>mulliken and lowdin partition the density matrix; chelpg fits the wavefunction's ESP (for GFN2-xTB its point-multipole ESP); hirshfeld partitions an all-electron density against free-atom densities; eeq uses the geometry and total charge only; xtb returns the stored GFN2-xTB charges. Throws for an unknown scheme, or one that does not apply to <code>wfn</code> (xtb without xTB data, hirshfeld on a valence-only GFN2-xTB density). </p>
 
 </div>
 </div>

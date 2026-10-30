@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['s_0',['s',['../structocc_1_1qm_1_1cc_1_1MPnAmplitudes.html#a0586fe19d5fcec50cb5ee8be7dc0655d',1,'occ::qm::cc::MPnAmplitudes::s'],['../structocc_1_1qm_1_1SCFContext.html#a09d1aba781bdb4ba8ac2b846847b05fd',1,'occ::qm::SCFContext::S']]],
+  ['s_0',['s',['../structocc_1_1qm_1_1SCFContext.html#a09d1aba781bdb4ba8ac2b846847b05fd',1,'occ::qm::SCFContext::S'],['../structocc_1_1qm_1_1cc_1_1MPnAmplitudes.html#a0586fe19d5fcec50cb5ee8be7dc0655d',1,'occ::qm::cc::MPnAmplitudes::s']]],
   ['s0_1',['s0',['../structocc_1_1mults_1_1SFunctions_1_1SFunctionResult.html#a13ddb7523afe3dab8654a7bcfb1235b2',1,'occ::mults::SFunctions::SFunctionResult::s0'],['../structocc_1_1mults_1_1SFunctionResult.html#a73c35199aebe28b3c0b795108b271fe3',1,'occ::mults::SFunctionResult::s0']]],
   ['s1_2',['s1',['../structocc_1_1mults_1_1SFunctions_1_1SFunctionResult.html#aa77a637ae6a71516e94a1f9278c5e34f',1,'occ::mults::SFunctions::SFunctionResult::s1'],['../structocc_1_1mults_1_1SFunctionResult.html#ac94913091d78c5face975a1884a0c9e0',1,'occ::mults::SFunctionResult::s1']]],
   ['s1_5fcxx_3',['S1_CXX',['../classocc_1_1mults_1_1SFunctions.html#a1c3d0ad78bb69a6e2ca72aae791d9b9e',1,'occ::mults::SFunctions']]],

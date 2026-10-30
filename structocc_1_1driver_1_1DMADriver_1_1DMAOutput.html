@@ -98,6 +98,7 @@ $(document).ready(function(){initNavTree('structocc_1_1driver_1_1DMADriver_1_1DM
 
 <div class="header">
   <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">occ::driver::DMADriver::DMAOutput Struct Reference</div></div>
@@ -111,6 +112,12 @@ Collaboration diagram for occ::driver::DMADriver::DMAOutput:</div>
 <div class="center"><iframe scrolling="no" frameborder="0" src="structocc_1_1driver_1_1DMADriver_1_1DMAOutput__coll__graph.svg" width="492" height="139"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a1220ff3fcfe958305d0cedc493827107" id="r_a1220ff3fcfe958305d0cedc493827107"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#a1220ff3fcfe958305d0cedc493827107">charges_for</a> (const std::string &amp;scheme) const</td></tr>
+<tr class="memdesc:a1220ff3fcfe958305d0cedc493827107"><td class="mdescLeft">&#160;</td><td class="mdescRight">charges.at(scheme), with an error naming what was computed.  <br /></td></tr>
+<tr class="separator:a1220ff3fcfe958305d0cedc493827107"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:af3b112a125c7b688165f0de4b5b35409" id="r_af3b112a125c7b688165f0de4b5b35409"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1dma_1_1DMAResult.html">occ::dma::DMAResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#af3b112a125c7b688165f0de4b5b35409">result</a></td></tr>
@@ -130,7 +137,34 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a7a705943ecbbaf67a582684115ac1bcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c767a70d6dc2325805a3a9911a62efd" id="r_a0c767a70d6dc2325805a3a9911a62efd"><td class="memItemLeft" align="right" valign="top">std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#a0c767a70d6dc2325805a3a9911a62efd">axis_atoms</a></td></tr>
 <tr class="separator:a0c767a70d6dc2325805a3a9911a62efd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b7f4b928077c2e465eeeafb52635a8c" id="r_a4b7f4b928077c2e465eeeafb52635a8c"><td class="memItemLeft" align="right" valign="top">std::map&lt; std::string, <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#a4b7f4b928077c2e465eeeafb52635a8c">charges</a></td></tr>
+<tr class="memdesc:a4b7f4b928077c2e465eeeafb52635a8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Partial charges (e) per requested scheme, in wavefunction atom order.  <br /></td></tr>
+<tr class="separator:a4b7f4b928077c2e465eeeafb52635a8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4fd7f72ddc741d05887592a95978f10" id="r_ac4fd7f72ddc741d05887592a95978f10"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1driver_1_1DMADriver_1_1DMAOutput.html#ac4fd7f72ddc741d05887592a95978f10">bond_orders</a></td></tr>
+<tr class="memdesc:ac4fd7f72ddc741d05887592a95978f10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mayer bond orders (atoms × atoms, zero diagonal); empty unless <a class="el" href="structocc_1_1driver_1_1DMAConfig.html#abbd14483068f9ef7e195b71a5c95a970">DMAConfig::bond_orders</a> is set.  <br /></td></tr>
+<tr class="separator:ac4fd7f72ddc741d05887592a95978f10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a1220ff3fcfe958305d0cedc493827107" name="a1220ff3fcfe958305d0cedc493827107"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1220ff3fcfe958305d0cedc493827107">&#9670;&#160;</a></span>charges_for()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a> &amp; occ::driver::DMADriver::DMAOutput::charges_for </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>scheme</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>charges.at(scheme), with an error naming what was computed. </p>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a0c767a70d6dc2325805a3a9911a62efd" name="a0c767a70d6dc2325805a3a9911a62efd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0c767a70d6dc2325805a3a9911a62efd">&#9670;&#160;</a></span>axis_atoms</h2>
@@ -159,6 +193,39 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Axis method that actually ran, which is not always the one asked for (&ndash;write-csp-input promotes "none" to "moi"). </p>
+
+</div>
+</div>
+<a id="ac4fd7f72ddc741d05887592a95978f10" name="ac4fd7f72ddc741d05887592a95978f10"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4fd7f72ddc741d05887592a95978f10">&#9670;&#160;</a></span>bond_orders</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a96a6c94f06b8bd220e5edf14b7655e3f">occ::Mat</a> occ::driver::DMADriver::DMAOutput::bond_orders</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mayer bond orders (atoms × atoms, zero diagonal); empty unless <a class="el" href="structocc_1_1driver_1_1DMAConfig.html#abbd14483068f9ef7e195b71a5c95a970">DMAConfig::bond_orders</a> is set. </p>
+
+</div>
+</div>
+<a id="a4b7f4b928077c2e465eeeafb52635a8c" name="a4b7f4b928077c2e465eeeafb52635a8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b7f4b928077c2e465eeeafb52635a8c">&#9670;&#160;</a></span>charges</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::map&lt;std::string, <a class="el" href="namespaceocc.html#af51d15e9008089919e6a8c5a09724f7f">occ::Vec</a>&gt; occ::driver::DMADriver::DMAOutput::charges</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Partial charges (e) per requested scheme, in wavefunction atom order. </p>
+<p>Empty unless <a class="el" href="structocc_1_1driver_1_1DMAConfig.html#ab6cb2ee0d6a5f09bb263dcbd1dc8f312">DMAConfig::charge_schemes</a> is set. </p>
 
 </div>
 </div>

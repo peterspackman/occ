@@ -81,6 +81,8 @@ var namespaceocc_1_1driver =
     [ "method_kind_from_string", "namespaceocc_1_1driver.html#a504c89def5003baf6ace3599fc4bdc8e", null ],
     [ "parse_method_string", "namespaceocc_1_1driver.html#a06b5eb876a13190e85ce890f06198dea", null ],
     [ "parse_solvation_model", "namespaceocc_1_1driver.html#ab09124a3e876babffb6d1eb74b5ee2d0", null ],
+    [ "partial_charge_schemes", "namespaceocc_1_1driver.html#aae1fb105caa96ec6aa8d5749dedfbed4", null ],
+    [ "partial_charges", "namespaceocc_1_1driver.html#aad3cc6b871b5c336af32d92b409f49ae", null ],
     [ "plan_acceleration", "namespaceocc_1_1driver.html#a5829b88f4cdf883e791fa3884a6e3ddf", null ],
     [ "prepare_cg", "namespaceocc_1_1driver.html#afe7e1e5bd9b65d51b7a24363764ca306", null ],
     [ "read_morphology_shape", "namespaceocc_1_1driver.html#ac3edf457472318956649c8f4c58bfb32", null ],

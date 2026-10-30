@@ -5,6 +5,8 @@ var structocc_1_1driver_1_1DMAConfig =
     [ "axis_atoms", "structocc_1_1driver_1_1DMAConfig.html#aa09aa90de15d41c7ba52cc25488b2b90", null ],
     [ "axis_filename", "structocc_1_1driver_1_1DMAConfig.html#a571063f8c0fd5897f0cec75d76335df1", null ],
     [ "axis_method", "structocc_1_1driver_1_1DMAConfig.html#af66e7a9fd4044c848f0d148128899d1e", null ],
+    [ "bond_orders", "structocc_1_1driver_1_1DMAConfig.html#abbd14483068f9ef7e195b71a5c95a970", null ],
+    [ "charge_schemes", "structocc_1_1driver_1_1DMAConfig.html#ab6cb2ee0d6a5f09bb263dcbd1dc8f312", null ],
     [ "csp_force_field", "structocc_1_1driver_1_1DMAConfig.html#a79a40e1d0a626d68e33c22e29dd0e00f", null ],
     [ "csp_input_filename", "structocc_1_1driver_1_1DMAConfig.html#a34911c8a933c5d5b6b374629abf1076c", null ],
     [ "json_filename", "structocc_1_1driver_1_1DMAConfig.html#a60074d4631ea52137fea1b1109ce372e", null ],

@@ -18,6 +18,8 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "electron_density_mo", "structocc_1_1qm_1_1Wavefunction.html#ad359584b249ac59547ab8abc73298640", null ],
     [ "electron_density_mo_gradient", "structocc_1_1qm_1_1Wavefunction.html#ad9c41ce01930b500d91bfd2f7d3138df", null ],
     [ "is_restricted", "structocc_1_1qm_1_1Wavefunction.html#a1db590c06712d9e41a17a70b126381d7", null ],
+    [ "lowdin_charges", "structocc_1_1qm_1_1Wavefunction.html#a47a0adcbc6f6cf52b701cbcc4ddf105b", null ],
+    [ "mayer_bond_orders", "structocc_1_1qm_1_1Wavefunction.html#a8ab310ef1bbe8a13512d38d2419a11d0", null ],
     [ "mo_amplitude", "structocc_1_1qm_1_1Wavefunction.html#a90982c4c541170add4f297159e8d518b", null ],
     [ "mulliken_charges", "structocc_1_1qm_1_1Wavefunction.html#ae35e51e1af138bb7ddcea5091abb6b50", null ],
     [ "multiplicity", "structocc_1_1qm_1_1Wavefunction.html#acf001664b44d7693881b72d19643a18e", null ],
