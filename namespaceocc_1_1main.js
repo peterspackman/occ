@@ -53,7 +53,7 @@ var namespaceocc_1_1main =
     [ "run_pair_subcommand", "namespaceocc_1_1main.html#a608fdd74696cf1352fcd7d9ec6879158", null ],
     [ "run_ropt_subcommand", "namespaceocc_1_1main.html#a03d7c48ecc2387cccce5f52aedb13802", null ],
     [ "run_scf_external", "namespaceocc_1_1main.html#a640588d16f48b5e0b22aa76154a8415e", null ],
-    [ "run_scf_subcommand", "namespaceocc_1_1main.html#aa6e0de5b65ad14e7e280e4005f7291ce", null ],
+    [ "run_scf_subcommand", "namespaceocc_1_1main.html#a8b464dac3ba2fc93daca687d9442a352", null ],
     [ "run_surface_cuts_subcommand", "namespaceocc_1_1main.html#aae3df6594d05a9ba23c3faa1775bf850", null ],
     [ "run_tb_subcommand", "namespaceocc_1_1main.html#a0312636d2f94705235b6febc1eb6cdc9", null ]
 ];

@@ -1,7 +1,9 @@
 var structocc_1_1xtb_1_1XtbResult =
 [
     [ "atomic_charges", "structocc_1_1xtb_1_1XtbResult.html#aeb72bbc515c79f7fc41254682c8e1a4a", null ],
+    [ "atomic_dipoles", "structocc_1_1xtb_1_1XtbResult.html#ae2184100359d08b20f0d0362f1e694f7", null ],
     [ "atomic_magnetization", "structocc_1_1xtb_1_1XtbResult.html#ab7fb2f2ded12a71e01e3a3731f8d0670", null ],
+    [ "atomic_quadrupoles", "structocc_1_1xtb_1_1XtbResult.html#a58b75ebed538d56dcc5910744b620d1f", null ],
     [ "converged", "structocc_1_1xtb_1_1XtbResult.html#ab1ccc63f27fbc798069b906d0d40997d", null ],
     [ "density_matrix", "structocc_1_1xtb_1_1XtbResult.html#aa48e317b08040757d02e6856440e2058", null ],
     [ "density_matrix_alpha", "structocc_1_1xtb_1_1XtbResult.html#a8edbc9d2a1a900d852b87f4cc992ccd3", null ],

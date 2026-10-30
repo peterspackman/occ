@@ -11,5 +11,6 @@ var structocc_1_1io_1_1OptimizationInput =
     [ "step_rms", "structocc_1_1io_1_1OptimizationInput.html#a6eb94bb8dd6b5f93058948eaa638b69f", null ],
     [ "tight_gradient_threshold", "structocc_1_1io_1_1OptimizationInput.html#a6981cc7297883f0db2a1f7adeb439ad0", null ],
     [ "use_energy_criterion", "structocc_1_1io_1_1OptimizationInput.html#a282a4b58a7fe003d057bfc5a64f9fc6f", null ],
+    [ "write_step_log", "structocc_1_1io_1_1OptimizationInput.html#a86e5ebe4bb7be290212d524f581dc305", null ],
     [ "write_wavefunction_steps", "structocc_1_1io_1_1OptimizationInput.html#a842faf0fcccf733cc7e4e282809f7fc4", null ]
 ];

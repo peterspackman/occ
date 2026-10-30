@@ -27,6 +27,7 @@ var searchData=
   ['write_5fkmcpp_5ffile_24',['write_kmcpp_file',['../structocc_1_1driver_1_1CGConfig.html#a9805f0b940cec5dfca061659db9cfd37',1,'occ::driver::CGConfig']]],
   ['write_5foriented_5fxyz_25',['write_oriented_xyz',['../structocc_1_1driver_1_1DMAConfig.html#a245c8725a1f97d9f1a8c01325593b8d6',1,'occ::driver::DMAConfig']]],
   ['write_5fpunch_26',['write_punch',['../structocc_1_1driver_1_1DMAConfig.html#a8185e123e61add780f1620404aea074c',1,'occ::driver::DMAConfig']]],
-  ['write_5ftrajectory_27',['write_trajectory',['../structocc_1_1main_1_1RoptSettings.html#a5373d2b4ed49c5fbb792f4c61b6e5f2c',1,'occ::main::RoptSettings']]],
-  ['write_5fwavefunction_5fsteps_28',['write_wavefunction_steps',['../structocc_1_1io_1_1OptimizationInput.html#a842faf0fcccf733cc7e4e282809f7fc4',1,'occ::io::OptimizationInput']]]
+  ['write_5fstep_5flog_27',['write_step_log',['../structocc_1_1io_1_1OptimizationInput.html#a86e5ebe4bb7be290212d524f581dc305',1,'occ::io::OptimizationInput']]],
+  ['write_5ftrajectory_28',['write_trajectory',['../structocc_1_1main_1_1RoptSettings.html#a5373d2b4ed49c5fbb792f4c61b6e5f2c',1,'occ::main::RoptSettings']]],
+  ['write_5fwavefunction_5fsteps_29',['write_wavefunction_steps',['../structocc_1_1io_1_1OptimizationInput.html#a842faf0fcccf733cc7e4e282809f7fc4',1,'occ::io::OptimizationInput']]]
 ];

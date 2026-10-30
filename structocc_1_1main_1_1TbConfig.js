@@ -12,6 +12,7 @@ var structocc_1_1main_1_1TbConfig =
     [ "kpoints", "structocc_1_1main_1_1TbConfig.html#aa70fecf9cb49790b07264d5959d99f89", null ],
     [ "lattice_energy", "structocc_1_1main_1_1TbConfig.html#af3e67445db9b36e33c6d7d29c8c94cdc", null ],
     [ "multiplicity", "structocc_1_1main_1_1TbConfig.html#aaa91b98d15e6c1f5141e67e4367038f0", null ],
+    [ "opt_max_iterations", "structocc_1_1main_1_1TbConfig.html#acf58a934a69a1bc95e6b5eec8dfbf234", null ],
     [ "optimize", "structocc_1_1main_1_1TbConfig.html#a2d405eff0eede0a1236276d6dc6e5630", null ],
     [ "solvent", "structocc_1_1main_1_1TbConfig.html#af5d07834ede2044bac39fd7e47d6cbc9", null ],
     [ "spin_polarization", "structocc_1_1main_1_1TbConfig.html#a3380bfa8fc5379e3ba68f54c0822a180", null ]

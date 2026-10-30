@@ -17,7 +17,7 @@ var searchData=
   ['raw_5frbz_14',['raw_rbz',['../structocc_1_1mults_1_1CoordinateSystem.html#a862166835c14b3b71716a97fff0d5e28',1,'occ::mults::CoordinateSystem::raw_rbz()'],['../classocc_1_1mults_1_1SFunctions.html#a047489fa23fd4290e085ae8e0dd563f4',1,'occ::mults::SFunctions::raw_rbz()']]],
   ['rax_15',['rax',['../structocc_1_1mults_1_1CoordinateSystem.html#a8cf3e78f0ff58bbeae77bcc6d4b989fa',1,'occ::mults::CoordinateSystem::rax()'],['../classocc_1_1mults_1_1SFunctions.html#addf0696d73e772ca59cedbbadd20578b',1,'occ::mults::SFunctions::rax()']]],
   ['raxyz_16',['raxyz',['../structocc_1_1mults_1_1CoordinateSystem.html#adff27feee3e53823d818a7d1397af81d',1,'occ::mults::CoordinateSystem']]],
-  ['ray_17',['ray',['../structquickhull_1_1Ray.html#aa09dfdbe0f383dd5b0e46ed7a823a9e8',1,'quickhull::Ray::Ray()'],['../classocc_1_1mults_1_1SFunctions.html#a213171fdba4d36916c64f55b5b0cfbe3',1,'occ::mults::SFunctions::ray()'],['../structocc_1_1mults_1_1CoordinateSystem.html#aab9867a44a9772497ff55ca92831c162',1,'occ::mults::CoordinateSystem::ray() const']]],
+  ['ray_17',['ray',['../classocc_1_1mults_1_1SFunctions.html#a213171fdba4d36916c64f55b5b0cfbe3',1,'occ::mults::SFunctions::ray()'],['../structocc_1_1mults_1_1CoordinateSystem.html#aab9867a44a9772497ff55ca92831c162',1,'occ::mults::CoordinateSystem::ray()'],['../structquickhull_1_1Ray.html#aa09dfdbe0f383dd5b0e46ed7a823a9e8',1,'quickhull::Ray::Ray()']]],
   ['raz_18',['raz',['../structocc_1_1mults_1_1CoordinateSystem.html#a7bf0751e2a4c4ab8b2f7817a61a3840e',1,'occ::mults::CoordinateSystem::raz()'],['../classocc_1_1mults_1_1SFunctions.html#ac96fef18eb1f275848685e2688d8b2c5',1,'occ::mults::SFunctions::raz()']]],
   ['rbx_19',['rbx',['../structocc_1_1mults_1_1CoordinateSystem.html#a6c1e69bed9c923f62fa8e50b4855cb21',1,'occ::mults::CoordinateSystem::rbx()'],['../classocc_1_1mults_1_1SFunctions.html#ade1c278bc18c6758f4456aec3d450777',1,'occ::mults::SFunctions::rbx()']]],
   ['rbxyz_20',['rbxyz',['../structocc_1_1mults_1_1CoordinateSystem.html#a4bd1095585a2f5e0835864d61a44445b',1,'occ::mults::CoordinateSystem']]],
@@ -138,7 +138,7 @@ var searchData=
   ['run_5fperiodic_5fscc_5fkpoints_135',['run_periodic_scc_kpoints',['../namespaceocc_1_1xtb.html#a609f64c74470802133b4215ddc2c019f',1,'occ::xtb']]],
   ['run_5fropt_5fsubcommand_136',['run_ropt_subcommand',['../namespaceocc_1_1main.html#a03d7c48ecc2387cccce5f52aedb13802',1,'occ::main']]],
   ['run_5fscf_5fexternal_137',['run_scf_external',['../namespaceocc_1_1main.html#a640588d16f48b5e0b22aa76154a8415e',1,'occ::main']]],
-  ['run_5fscf_5fsubcommand_138',['run_scf_subcommand',['../namespaceocc_1_1main.html#aa6e0de5b65ad14e7e280e4005f7291ce',1,'occ::main']]],
+  ['run_5fscf_5fsubcommand_138',['run_scf_subcommand',['../namespaceocc_1_1main.html#a8b464dac3ba2fc93daca687d9442a352',1,'occ::main']]],
   ['run_5fsurface_5fcuts_5fsubcommand_139',['run_surface_cuts_subcommand',['../namespaceocc_1_1main.html#aae3df6594d05a9ba23c3faa1775bf850',1,'occ::main']]],
   ['run_5ftb_5fsubcommand_140',['run_tb_subcommand',['../namespaceocc_1_1main.html#a0312636d2f94705235b6febc1eb6cdc9',1,'occ::main']]]
 ];
