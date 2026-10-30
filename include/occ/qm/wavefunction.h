@@ -165,6 +165,18 @@ struct Wavefunction {
   bool xtb_converged{false};
   int xtb_n_iterations{0};
 
+  // Post-HF (MP2 / CCSD / CCSD(T)) breakdown, likewise preserved through
+  // .owf.json. `wfn.energy.total` carries the correlated total; these keep
+  // the reference SCF energy and the correlation split. Components that do
+  // not apply to the method run stay zero.
+  bool have_correlation_data{false};
+  double scf_reference_energy{0.0};
+  double correlation_energy{0.0}; // as in energy.total: incl. scaling and (T)
+  double mp2_same_spin_energy{0.0};
+  double mp2_opposite_spin_energy{0.0};
+  double ccsd_correlation_energy{0.0}; // excl. (T)
+  double triples_correction{0.0};
+
   /// Whether the SCF that produced these orbitals converged. Anything
   /// derived from an unconverged density is meaningless.
   bool converged{true};

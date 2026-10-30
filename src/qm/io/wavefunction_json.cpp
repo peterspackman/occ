@@ -169,6 +169,16 @@ void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
     xtb.at("converged").get_to(wfn.xtb_converged);
     xtb.at("scc iterations").get_to(wfn.xtb_n_iterations);
   }
+  if (J.contains("correlation")) {
+    wfn.have_correlation_data = true;
+    const auto &corr = J.at("correlation");
+    corr.at("scf energy").get_to(wfn.scf_reference_energy);
+    corr.at("correlation energy").get_to(wfn.correlation_energy);
+    corr.at("same-spin energy").get_to(wfn.mp2_same_spin_energy);
+    corr.at("opposite-spin energy").get_to(wfn.mp2_opposite_spin_energy);
+    corr.at("ccsd correlation energy").get_to(wfn.ccsd_correlation_energy);
+    corr.at("triples correction").get_to(wfn.triples_correction);
+  }
   if (J.contains("method")) {
     J.at("method").get_to(wfn.method);
   }
@@ -241,6 +251,16 @@ void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
     xtb["converged"] = wfn.xtb_converged;
     xtb["scc iterations"] = wfn.xtb_n_iterations;
     J["xtb"] = xtb;
+  }
+  if (wfn.have_correlation_data) {
+    nlohmann::json corr;
+    corr["scf energy"] = wfn.scf_reference_energy;
+    corr["correlation energy"] = wfn.correlation_energy;
+    corr["same-spin energy"] = wfn.mp2_same_spin_energy;
+    corr["opposite-spin energy"] = wfn.mp2_opposite_spin_energy;
+    corr["ccsd correlation energy"] = wfn.ccsd_correlation_energy;
+    corr["triples correction"] = wfn.triples_correction;
+    J["correlation"] = corr;
   }
   J["method"] = wfn.method;
   J["converged"] = wfn.converged;

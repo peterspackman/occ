@@ -240,20 +240,49 @@ Wavefunction run_solvated_method(const Wavefunction &wfn,
   }
 }
 
+// The correlated wavefunction keeps the reference SCF energy and the
+// correlation split next to the correlated total, so .owf.json carries both
+Wavefunction correlated_wavefunction(const Wavefunction &scf_wfn,
+                                     const CorrelationResult &result) {
+  Wavefunction wfn = scf_wfn;
+  wfn.energy.total = result.total_energy;
+  wfn.method = result.method;
+  wfn.have_correlation_data = true;
+  wfn.scf_reference_energy = result.scf_energy;
+  wfn.correlation_energy = result.correlation_energy;
+  wfn.mp2_same_spin_energy = result.same_spin;
+  wfn.mp2_opposite_spin_energy = result.opposite_spin;
+  wfn.ccsd_correlation_energy = result.ccsd_correlation;
+  wfn.triples_correction = result.triples_correction;
+  return wfn;
+}
+
 // --density: the correlation method's natural orbitals become the returned
 // wavefunction, so written files and properties carry the correlated density
 Wavefunction correlated_density_wavefunction(const Wavefunction &scf_wfn,
                                              const CorrelationOptions &opts,
                                              const OccInput &config) {
   const bool local = config.method.correlated_density_local;
-  if (parse_method_string(opts.method).kind != MethodKind::MP2)
-    return run_correlated_density(scf_wfn, opts, local).natural;
-  // the relaxed MP2 orbital response takes J and K as the SCF built them
-  occ::log::info("MP2 orbital response, Coulomb and exchange as in the SCF:");
-  HartreeFock scf_jk(scf_wfn.basis);
-  apply_acceleration(scf_jk, scf_wfn.basis.nbf(), config);
-  scf_jk.set_precision(config.method.integral_precision);
-  return run_correlated_density(scf_wfn, opts, local, &scf_jk).natural;
+  const bool mp2 = parse_method_string(opts.method).kind == MethodKind::MP2;
+  occ::qm::cc::CorrelatedDensity density;
+  if (mp2) {
+    // the relaxed MP2 orbital response takes J and K as the SCF built them
+    occ::log::info("MP2 orbital response, Coulomb and exchange as in the SCF:");
+    HartreeFock scf_jk(scf_wfn.basis);
+    apply_acceleration(scf_jk, scf_wfn.basis.nbf(), config);
+    scf_jk.set_precision(config.method.integral_precision);
+    density = run_correlated_density(scf_wfn, opts, local, &scf_jk);
+  } else {
+    density = run_correlated_density(scf_wfn, opts, local);
+  }
+  Wavefunction wfn = std::move(density.natural);
+  wfn.have_correlation_data = true;
+  wfn.scf_reference_energy = scf_wfn.energy.total;
+  wfn.correlation_energy = density.e_corr + density.e_triples;
+  if (!mp2)
+    wfn.ccsd_correlation_energy = density.e_corr;
+  wfn.triples_correction = density.e_triples;
+  return wfn;
 }
 
 Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
@@ -271,12 +300,7 @@ Wavefunction run_mp2_method(const Wavefunction &scf_wfn,
       config.method.correlated_density_local)
     return correlated_density_wavefunction(scf_wfn, opts, config);
 
-  const auto result = run_correlation(scf_wfn, opts);
-
-  Wavefunction mp2_wfn = scf_wfn;
-  mp2_wfn.energy.total = result.total_energy;
-  mp2_wfn.method = result.method;
-  return mp2_wfn;
+  return correlated_wavefunction(scf_wfn, run_correlation(scf_wfn, opts));
 }
 
 Wavefunction run_ccsd_method(const Wavefunction &scf_wfn,
@@ -305,12 +329,8 @@ Wavefunction run_ccsd_method(const Wavefunction &scf_wfn,
       config.method.correlated_density_local)
     return correlated_density_wavefunction(scf_wfn, method_opts, config);
 
-  const auto result = run_correlation(scf_wfn, method_opts);
-
-  Wavefunction cc_wfn = scf_wfn;
-  cc_wfn.energy.total = result.total_energy;
-  cc_wfn.method = result.method;
-  return cc_wfn;
+  return correlated_wavefunction(scf_wfn,
+                                 run_correlation(scf_wfn, method_opts));
 }
 
 

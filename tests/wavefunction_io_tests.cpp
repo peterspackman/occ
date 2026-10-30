@@ -3079,6 +3079,37 @@ TEST_CASE("Read/Write Wavefunction JSON", "[JSON]") {
   REQUIRE(wfn.atoms.size() == wfn2.atoms.size());
 }
 
+TEST_CASE("Wavefunction JSON keeps the correlation energy breakdown",
+          "[JSON]") {
+  using occ::io::JsonWavefunctionReader;
+  using occ::io::JsonWavefunctionWriter;
+  std::vector<occ::core::Atom> atoms{{8, -1.32695761, -0.10593856, 0.01878821},
+                                     {1, -1.93166418, 1.60017351, -0.02171049},
+                                     {1, 0.48664409, 0.07959806, 0.00986248}};
+  HartreeFock hf(occ::gto::AOBasis::load(atoms, "sto-3g"));
+  occ::qm::SCF<HartreeFock> scf(hf);
+  scf.compute_scf_energy();
+  occ::qm::Wavefunction wfn = scf.wavefunction();
+  wfn.have_correlation_data = true;
+  wfn.scf_reference_energy = -75.0;
+  wfn.correlation_energy = -0.25;
+  wfn.mp2_same_spin_energy = -0.05;
+  wfn.mp2_opposite_spin_energy = -0.15;
+  wfn.ccsd_correlation_energy = -0.24;
+  wfn.triples_correction = -0.01;
+
+  std::istringstream json_stream(JsonWavefunctionWriter().to_string(wfn));
+  auto wfn2 = JsonWavefunctionReader(json_stream).wavefunction();
+
+  REQUIRE(wfn2.have_correlation_data);
+  REQUIRE(wfn2.scf_reference_energy == -75.0);
+  REQUIRE(wfn2.correlation_energy == -0.25);
+  REQUIRE(wfn2.mp2_same_spin_energy == -0.05);
+  REQUIRE(wfn2.mp2_opposite_spin_energy == -0.15);
+  REQUIRE(wfn2.ccsd_correlation_energy == -0.24);
+  REQUIRE(wfn2.triples_correction == -0.01);
+}
+
 TEST_CASE("Read/Write Wavefunction JSON with ECP", "[JSON]") {
   using occ::io::JsonWavefunctionReader;
   using occ::io::JsonWavefunctionWriter;
