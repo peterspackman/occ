@@ -819,6 +819,9 @@ occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
   wfn.xtb_atomic_charges = m_last_result.atomic_charges;
   wfn.xtb_atomic_dipoles = m_last_result.atomic_dipoles;
   wfn.xtb_atomic_quadrupoles = m_last_result.atomic_quadrupoles;
+  wfn.xtb_multipole_radii = m_last_result.multipole_radii;
+  wfn.xtb_multipole_damping_exponents = {m_params.globals().aesdmp3,
+                                         m_params.globals().aesdmp5};
   wfn.xtb_converged = m_last_result.converged;
   wfn.xtb_n_iterations = m_last_result.n_iterations;
   wfn.converged = m_last_result.converged;

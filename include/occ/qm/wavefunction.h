@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <fmt/core.h>
 #include <occ/core/linear_algebra.h>
 #include <occ/qm/io/fchkreader.h>
@@ -137,8 +138,9 @@ struct Wavefunction {
   /// ESP at `points` (bohr). For a GFN2-xTB wavefunction this is GFN2's own
   /// electrostatic model, see xtb_electric_potential.
   Vec electric_potential(const Mat3N &points) const;
-  /// Undamped point-multipole ESP from the xTB atomic charges and, when
-  /// present, the CAMM dipoles and quadrupoles. Requires have_xtb_data.
+  /// Point-multipole ESP from the xTB atomic charges and, when present, the
+  /// CAMM dipoles and quadrupoles, with GFN2's damping of the dipole and
+  /// quadrupole terms when the radii are stored. Requires have_xtb_data.
   Vec xtb_electric_potential(const Mat3N &points) const;
   Mat3N electric_field(const Mat3N &points) const;
 
@@ -176,6 +178,11 @@ struct Wavefunction {
   // [xx, xy, yy, xz, yz, zz]); empty without multipoles. See XtbResult.
   Mat3N xtb_atomic_dipoles;
   Mat xtb_atomic_quadrupoles;
+  // GFN2 damping of the dipole and quadrupole kernels, 1/(1 + 6 (r₀/r)^k):
+  // per-atom r₀ (bohr) and k for the dipole and quadrupole terms. Empty
+  // radii leave xtb_electric_potential undamped (files written before 0.9.7).
+  Vec xtb_multipole_radii;
+  std::array<double, 2> xtb_multipole_damping_exponents{3.0, 4.0};
   bool xtb_converged{false};
   int xtb_n_iterations{0};
 

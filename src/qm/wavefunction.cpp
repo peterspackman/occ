@@ -412,6 +412,8 @@ Vec Wavefunction::xtb_electric_potential(const Mat3N &points) const {
     throw std::runtime_error(
         "xtb_electric_potential: wavefunction has no xTB atomic charges");
   const bool multipoles = xtb_atomic_dipoles.cols() == atoms.size();
+  const bool damped = xtb_multipole_radii.size() == atoms.size();
+  const auto [k3, k5] = xtb_multipole_damping_exponents;
   Vec result = Vec::Zero(points.cols());
   for (size_t a = 0; a < atoms.size(); a++) {
     const Vec3 pos(atoms[a].x, atoms[a].y, atoms[a].z);
@@ -422,9 +424,19 @@ Vec Wavefunction::xtb_electric_potential(const Mat3N &points) const {
     result.array() += xtb_atomic_charges(a) * inv_r.array();
     if (!multipoles)
       continue;
+    // GFN2's AES damping, as its reaction field applies it at cavity points
+    // (occ::scrf::multipole_kernel): CAMM moments are partitioned density,
+    // and the bare kernels overshoot close to the atom. r₀ is the atom's own
+    // radius; a point probe has none to average with.
+    Eigen::ArrayXd f3 = Eigen::ArrayXd::Ones(points.cols()), f5 = f3;
+    if (damped) {
+      const Eigen::ArrayXd ratio = xtb_multipole_radii(a) * inv_r.array();
+      f3 = 1.0 / (1.0 + 6.0 * ratio.pow(k3));
+      f5 = 1.0 / (1.0 + 6.0 * ratio.pow(k5));
+    }
     result.array() +=
         (xtb_atomic_dipoles.col(a).transpose() * r).transpose().array() *
-        inv_r3.array();
+        inv_r3.array() * f3;
     // Θ_kl r_k r_l / r⁵ with Θ in [xx, xy, yy, xz, yz, zz] order
     const auto &q = xtb_atomic_quadrupoles.col(a);
     const auto x = r.row(0).array(), y = r.row(1).array(),
@@ -432,7 +444,8 @@ Vec Wavefunction::xtb_electric_potential(const Mat3N &points) const {
     const Eigen::ArrayXd theta_rr =
         q(0) * x * x + q(2) * y * y + q(5) * z * z +
         2.0 * (q(1) * x * y + q(3) * x * z + q(4) * y * z);
-    result.array() += theta_rr * inv_r3.array() * inv_r.array().square();
+    result.array() +=
+        theta_rr * inv_r3.array() * inv_r.array().square() * f5;
   }
   return result;
 }

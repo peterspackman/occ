@@ -175,6 +175,11 @@ void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
       xtb.at("atomic quadrupoles").get_to(quadrupoles);
       wfn.xtb_atomic_quadrupoles = quadrupoles.transpose();
     }
+    if (xtb.contains("multipole radii")) {
+      xtb.at("multipole radii").get_to(wfn.xtb_multipole_radii);
+      xtb.at("multipole damping exponents")
+          .get_to(wfn.xtb_multipole_damping_exponents);
+    }
     xtb.at("converged").get_to(wfn.xtb_converged);
     xtb.at("scc iterations").get_to(wfn.xtb_n_iterations);
   }
@@ -260,6 +265,11 @@ void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
     if (wfn.xtb_atomic_dipoles.size() > 0) {
       xtb["atomic dipoles"] = Mat(wfn.xtb_atomic_dipoles.transpose());
       xtb["atomic quadrupoles"] = Mat(wfn.xtb_atomic_quadrupoles.transpose());
+    }
+    if (wfn.xtb_multipole_radii.size() > 0) {
+      const auto &r = wfn.xtb_multipole_radii;
+      xtb["multipole radii"] = std::vector<double>(r.data(), r.data() + r.size());
+      xtb["multipole damping exponents"] = wfn.xtb_multipole_damping_exponents;
     }
     xtb["converged"] = wfn.xtb_converged;
     xtb["scc iterations"] = wfn.xtb_n_iterations;

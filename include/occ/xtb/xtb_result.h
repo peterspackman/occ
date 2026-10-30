@@ -32,6 +32,10 @@ struct XtbResult {
   /// the SCC ran without multipoles, and from the periodic drivers.
   Mat3N atomic_dipoles;
   Mat atomic_quadrupoles;
+  /// GFN2 multipole damping radii (bohr, CN dependent), same lifetime as the
+  /// moments above: the dipole and quadrupole kernels are damped by
+  /// 1/(1 + 6 (r₀/r)^k) with k = aesdmp3 and aesdmp5.
+  Vec multipole_radii;
 
   /// Orbital energies ε at Γ (Hartree), α channel when unrestricted.
   Vec orbital_energies;

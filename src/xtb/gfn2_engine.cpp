@@ -476,6 +476,7 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
     if (include_multipoles) {
       result.atomic_dipoles = fresh.multipoles.dipm;
       result.atomic_quadrupoles = fresh.multipoles.qp;
+      result.multipole_radii = m_mp_radii;
     }
     result.orbital_energies = orbital_energies;
     result.orbital_occupations = orbital_occupations;

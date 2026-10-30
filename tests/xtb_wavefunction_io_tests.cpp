@@ -146,6 +146,26 @@ TEST_CASE("XtbCalculator: CAMM multipoles round-trip and give the far-field ESP"
   REQUIRE((wfn2.xtb_atomic_quadrupoles - wfn.xtb_atomic_quadrupoles)
               .cwiseAbs()
               .maxCoeff() < 1e-12);
+  REQUIRE(wfn.xtb_multipole_radii.size() == 3);
+  REQUIRE((wfn2.xtb_multipole_radii - wfn.xtb_multipole_radii)
+              .cwiseAbs()
+              .maxCoeff() < 1e-12);
+  REQUIRE(wfn2.xtb_multipole_damping_exponents ==
+          wfn.xtb_multipole_damping_exponents);
+
+  // Next to a hydrogen the undamped dipole term (1/r²) beats its small
+  // positive charge (1/r) and the ESP turns negative at the nucleus; GFN2's
+  // damping keeps it positive, as the real potential near a proton is.
+  for (int h = 1; h < 3; h++) {
+    const occ::Vec3 pos(wfn.atoms[h].x, wfn.atoms[h].y, wfn.atoms[h].z);
+    occ::Mat3N near(3, 6);
+    for (int k = 0; k < 3; k++) {
+      near.col(2 * k) = pos + 0.3 * occ::Vec3::Unit(k);
+      near.col(2 * k + 1) = pos - 0.3 * occ::Vec3::Unit(k);
+    }
+    INFO("hydrogen " << h);
+    REQUIRE(wfn.electric_potential(near).minCoeff() > 0.0);
+  }
 
   // Far from the molecule the CAMM expansion must reproduce the ESP of the
   // valence density it partitions (valence nuclear charges O 6, H 1), and do
