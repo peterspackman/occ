@@ -2,6 +2,7 @@
 #include <CLI/Formatter.hpp>
 #include <filesystem>
 #include <fmt/core.h>
+#include <fstream>
 #include <occ/core/log.h>
 #include <occ/core/molecule.h>
 #include <occ/core/timings.h>
@@ -10,6 +11,7 @@
 #include <occ/core/vibration.h>
 #include <occ/driver/geometry_optimization.h>
 #include <occ/io/cifparser.h>
+#include <occ/io/core_json.h>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/io/dftb_gen.h>
 #include <occ/io/load_geometry.h>
@@ -161,6 +163,28 @@ void run_periodic(const TbConfig &cfg) {
   }
 }
 
+// Save the vibrational analysis next to the input geometry as
+// `<stem>_freq.json`, the same layout `occ scf --driver=opt --freq` writes
+// (frequencies, mass-weighted normal modes, Hessian).
+void write_frequencies(const occ::core::VibrationalModes &modes,
+                       const TbConfig &cfg) {
+  fs::path base(cfg.filename);
+  fs::path path =
+      base.parent_path() / fmt::format("{}_freq.json", base.stem().string());
+  nlohmann::json j;
+  occ::core::to_json(j, modes);
+  j["method"] = "gfn2";
+  j["step_size_bohr"] = cfg.freq_step_bohr;
+  j["projected_tr_rot"] = cfg.freq_project_tr_rot;
+  std::ofstream file(path);
+  if (!file) {
+    throw std::runtime_error(
+        fmt::format("occ tb: could not open '{}' for writing", path.string()));
+  }
+  file << j.dump(4);
+  occ::log::info("Vibrational analysis written to {}", path.string());
+}
+
 void run_frequencies(occ::xtb::XtbCalculator &calc, const TbConfig &cfg) {
   // Numerical Hessian via FD of the (multipole-on) analytical gradient,
   // then mass-weighted diagonalisation with optional t/r projection. Cost
@@ -172,6 +196,7 @@ void run_frequencies(occ::xtb::XtbCalculator &calc, const TbConfig &cfg) {
                   cfg.freq_project_tr_rot ? "yes (ORCA-style)" : "no");
   auto modes = calc.compute_vibrational_modes(cfg.freq_step_bohr,
                                                cfg.freq_project_tr_rot);
+  write_frequencies(modes, cfg);
   occ::log::info("");
   // Sorted ascending — translations + rotations come first (≈0 with t/r
   // projection on, otherwise some imaginary "soft" modes).
@@ -214,6 +239,7 @@ void run_molecular(const TbConfig &cfg) {
     input.electronic.spin_polarization = cfg.spin_polarization;
     input.electronic.electronic_temperature = cfg.electronic_temperature;
     input.solvent.solvent_name = cfg.solvent;
+    input.optimization.max_iterations = cfg.opt_max_iterations;
     input.filename = cfg.filename;
     occ::log::info("{:-<72s}", "GFN2-xTB molecular optimization ");
     occ::log::info("input          : {}", cfg.filename);
@@ -361,10 +387,15 @@ CLI::App *add_tb_subcommand(CLI::App &app) {
                 "Geometry optimization (Berny / internal coords). "
                 "Molecular only. Writes <input>_opt.xyz on convergence and "
                 "<input>_trj.xyz with the trajectory.");
+  tb->add_option("--opt-max-iterations,--opt_max_iterations",
+                  cfg->opt_max_iterations,
+                  "Maximum number of optimization steps (default 100)")
+      ->check(CLI::PositiveNumber);
   tb->add_flag("--freq,--frequencies", cfg->frequencies,
                 "After SCC, compute the numerical Hessian (FD of the "
                 "multipole-on analytical gradient, ~6N gradient calls) and "
-                "report vibrational frequencies. Molecular only.");
+                "report vibrational frequencies. Molecular only. Writes "
+                "<input>_freq.json with the frequencies and normal modes.");
   tb->add_option("--freq-step", cfg->freq_step_bohr,
                   "Hessian FD step size in Bohr (default 0.005).");
   tb->add_flag("--no-project-tr-rot{false}", cfg->freq_project_tr_rot,

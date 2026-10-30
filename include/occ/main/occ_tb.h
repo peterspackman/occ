@@ -33,8 +33,11 @@ struct TbConfig {
   // Uses the analytical gradient. Writes <input>_opt.xyz on convergence and
   // <input>_trj.xyz with the trajectory.
   bool optimize{false};
+  // Maximum optimization steps; mirrors `occ scf --opt-max-iterations`.
+  int opt_max_iterations{100};
   // Compute the numerical Hessian and report vibrational frequencies.
-  // Molecular only. Costs `6N` analytical-gradient evaluations.
+  // Molecular only. Costs `6N` analytical-gradient evaluations. Writes
+  // <input>_freq.json with the frequencies and normal modes.
   bool frequencies{false};
   // Step size (Bohr) for the FD Hessian.
   double freq_step_bohr{0.005};
