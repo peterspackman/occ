@@ -143,7 +143,9 @@ void LinearMultipoleCalculator::process_nuclear_contributions(
     // Create temporary multipole with nuclear charge
     Mult qt(m_settings.max_rank + 1);
     qt.q.setZero();
-    qt.q(0) = atoms[atom_i].atomic_number;
+    // ECP (or GFN2-xTB core) electrons are not in the density
+    qt.q(0) = atoms[atom_i].atomic_number -
+              m_wfn.basis.ecp_electrons()[atom_i];
 
     // Move to nearest site
     LinearMultipoleShifter shifter(zi, qt, m_sites, m_site_radii, m_site_limits,

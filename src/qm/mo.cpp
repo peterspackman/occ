@@ -408,8 +408,9 @@ void MolecularOrbitals::to_cartesian(const AOBasis &bspure,
   occ::log::debug("Converting MO from spherical to Cartesian using density "
                   "matrix transformation");
 
-  // fail early if we already have cartesian basis
-  if (!bspure.is_pure() || bspure.nbf() == bscart.nbf())
+  // Nothing to do for a Cartesian basis. Equal nbf (s/p shells only) is not
+  // a shortcut: spherical p is ordered y, z, x and Cartesian p x, y, z.
+  if (!bspure.is_pure())
     return;
 
   D = transform_density_blocks(kind, D, [&](const Mat &block) {
@@ -432,8 +433,9 @@ void MolecularOrbitals::to_spherical(const AOBasis &bscart,
   occ::log::debug("Converting MO from Cartesian to spherical using density "
                   "matrix transformation");
 
-  // fail early if we already have spherical basis
-  if (bscart.is_pure() || bspure.nbf() == bscart.nbf())
+  // Nothing to do for a spherical basis; equal nbf is not a shortcut (see
+  // to_cartesian).
+  if (bscart.is_pure())
     return;
 
   D = transform_density_blocks(kind, D, [&](const Mat &block) {

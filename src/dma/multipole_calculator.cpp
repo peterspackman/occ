@@ -417,7 +417,10 @@ void MultipoleCalculator::process_nuclear_contributions(
     Mult qt;
     qt.q = Vec::Zero(m_settings.max_rank * m_settings.max_rank +
                      2 * m_settings.max_rank + 1);
-    qt.Q00() = m_sites.atoms[atom_i].atomic_number;
+    // Electrons held by an ECP (or, for GFN2-xTB, the core) are not in the
+    // density, so the matching nuclear charge is screened too
+    qt.Q00() = m_sites.atoms[atom_i].atomic_number -
+               m_basis.ecp_electrons()[atom_i];
 
     MultipoleShifter shifter(pos_i, qt, m_sites, site_multipoles,
                              m_settings.max_rank);

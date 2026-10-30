@@ -5,6 +5,7 @@
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
+#include <occ/dma/dma.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/wavefunction.h>
@@ -176,6 +177,32 @@ TEST_CASE("XtbCalculator: CAMM multipoles round-trip and give the far-field ESP"
     REQUIRE(std::abs(esp(i) - reference(i)) <
             std::abs(esp_q(i) - reference(i)));
   }
+}
+
+TEST_CASE("DMA of a GFN2-xTB wavefunction is neutral and symmetric",
+          "[xtb][wavefunction][dma]") {
+  // Valence-only density in a spherical s/p basis: needs the core electrons
+  // off the nuclear charges and the spherical p ordering handled.
+  std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.2217},
+                                     {1, 0.0, 1.4309, -0.8867},
+                                     {1, 0.0, -1.4309, -0.8867}};
+  occ::core::Molecule mol(atoms);
+  occ::xtb::XtbCalculator calc(mol);
+  (void)calc.single_point_energy();
+  REQUIRE(calc.last_result().converged);
+
+  occ::dma::DMACalculator dma(calc.to_wavefunction());
+  auto settings = dma.settings();
+  settings.max_rank = 1;
+  dma.update_settings(settings);
+  dma.set_radius_for_element(1, 0.35); // occ dma's hydrogen default
+  const auto multipoles = dma.compute_multipoles().multipoles;
+
+  const double q_o = multipoles[0].Q00(), q_h1 = multipoles[1].Q00(),
+               q_h2 = multipoles[2].Q00();
+  CHECK(q_o + q_h1 + q_h2 == Approx(0.0).margin(1e-6));
+  CHECK(q_h1 == Approx(q_h2).margin(1e-6));
+  CHECK(q_o < 0.0);
 }
 
 TEST_CASE("XtbCalculator: unrestricted wavefunction round-trips through JSON",

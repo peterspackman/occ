@@ -1733,6 +1733,37 @@ TEST_CASE("DMADriver JSON reports the effective site settings and frame",
   }
 }
 
+TEST_CASE("DMA of a spherical s/p-only basis matches the Cartesian one",
+          "[dma][spherical]") {
+  // Spherical and Cartesian s/p shells span the same space but order p
+  // differently (y, z, x vs x, y, z), so the density has to be reordered even
+  // though nbf is unchanged. GFN2-xTB wavefunctions are exactly this case.
+  std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.2217},
+                                     {1, 0.0, 1.4309, -0.8867},
+                                     {1, 0.0, -1.4309, -0.8867}};
+  auto dma_of = [&](bool pure) {
+    auto basis = occ::gto::AOBasis::load(atoms, "3-21G");
+    basis.set_pure(pure);
+    occ::qm::HartreeFock hf(basis);
+    occ::qm::SCF<occ::qm::HartreeFock> scf(hf);
+    scf.compute_scf_energy();
+    occ::driver::DMAConfig config;
+    config.write_punch = false;
+    config.settings.max_rank = 1;
+    return occ::driver::DMADriver(config).run(scf.wavefunction());
+  };
+  const auto cartesian = dma_of(false);
+  const auto spherical = dma_of(true);
+  double total = 0.0;
+  for (int i = 0; i < 3; i++) {
+    INFO("site " << i);
+    CHECK(spherical.result.multipoles[i].Q00() ==
+          Approx(cartesian.result.multipoles[i].Q00()).margin(1e-6));
+    total += spherical.result.multipoles[i].Q00();
+  }
+  CHECK(total == Approx(0.0).margin(1e-6));
+}
+
 TEST_CASE("DMA force-field basis labels sites for the chosen set",
           "[dma][forcefield]") {
   std::istringstream fchk(h2o_contents);

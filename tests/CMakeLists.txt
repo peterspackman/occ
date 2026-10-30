@@ -151,7 +151,7 @@ target_compile_definitions(xtb_native_tests PRIVATE
 catch_discover_tests(xtb_native_tests)
 
 add_executable(xtb_wavefunction_io_tests "${CMAKE_CURRENT_SOURCE_DIR}/xtb_wavefunction_io_tests.cpp")
-target_link_libraries(xtb_wavefunction_io_tests PRIVATE occ_xtb Catch2::Catch2WithMain Threads::Threads)
+target_link_libraries(xtb_wavefunction_io_tests PRIVATE occ_xtb occ_dma Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(xtb_wavefunction_io_tests PRIVATE
     OCC_GFN2_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
 catch_discover_tests(xtb_wavefunction_io_tests)
