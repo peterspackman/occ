@@ -473,6 +473,10 @@ SccResult Gfn2Engine::single_point(const SccOptions &opts,
     result.total_energy = total_energy;
     result.shell_charges = qsh_new;
     result.atomic_charges = atom_q_new;
+    if (include_multipoles) {
+      result.atomic_dipoles = fresh.multipoles.dipm;
+      result.atomic_quadrupoles = fresh.multipoles.qp;
+    }
     result.orbital_energies = orbital_energies;
     result.orbital_occupations = orbital_occupations;
     result.density_matrix = P;

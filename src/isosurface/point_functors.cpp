@@ -21,6 +21,11 @@ EspFunctor::EspFunctor(const Wavefunction &w) : wfn(w), hf(w.basis) {}
 
 void EspFunctor::operator()(Eigen::Ref<const Mat3N> points,
                             Eigen::Ref<Vec> result) {
+  // GFN2-xTB: its own point-multipole electrostatics, not the ESP operator
+  if (wfn.have_xtb_data) {
+    result += wfn.xtb_electric_potential(points);
+    return;
+  }
   result += hf.electronic_electric_potential_contribution(wfn.mo, points);
   result += hf.nuclear_electric_potential_contribution(points);
 }

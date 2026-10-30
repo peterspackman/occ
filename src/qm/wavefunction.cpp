@@ -398,10 +398,42 @@ void Wavefunction::save(FchkWriter &fchk) {
 }
 
 Vec Wavefunction::electric_potential(const Mat3N &points) const {
+  if (have_xtb_data)
+    return xtb_electric_potential(points);
   HartreeFock hf(basis);
   Vec esp_e = hf.electronic_electric_potential_contribution(mo, points);
   Vec esp_n = hf.nuclear_electric_potential_contribution(points);
   return esp_e + esp_n;
+}
+
+Vec Wavefunction::xtb_electric_potential(const Mat3N &points) const {
+  if (!have_xtb_data)
+    throw std::runtime_error(
+        "xtb_electric_potential: wavefunction has no xTB atomic charges");
+  const bool multipoles = xtb_atomic_dipoles.cols() == atoms.size();
+  Vec result = Vec::Zero(points.cols());
+  for (size_t a = 0; a < atoms.size(); a++) {
+    const Vec3 pos(atoms[a].x, atoms[a].y, atoms[a].z);
+    const Mat3N r = points.colwise() - pos;
+    const Vec r2 = r.colwise().squaredNorm();
+    const Vec inv_r = r2.array().rsqrt();
+    const Vec inv_r3 = inv_r.array().cube();
+    result.array() += xtb_atomic_charges(a) * inv_r.array();
+    if (!multipoles)
+      continue;
+    result.array() +=
+        (xtb_atomic_dipoles.col(a).transpose() * r).transpose().array() *
+        inv_r3.array();
+    // Θ_kl r_k r_l / r⁵ with Θ in [xx, xy, yy, xz, yz, zz] order
+    const auto &q = xtb_atomic_quadrupoles.col(a);
+    const auto x = r.row(0).array(), y = r.row(1).array(),
+               z = r.row(2).array();
+    const Eigen::ArrayXd theta_rr =
+        q(0) * x * x + q(2) * y * y + q(5) * z * z +
+        2.0 * (q(1) * x * y + q(3) * x * z + q(4) * y * z);
+    result.array() += theta_rr * inv_r3.array() * inv_r.array().square();
+  }
+  return result;
 }
 
 Mat3N Wavefunction::electric_field(const Mat3N &points) const {

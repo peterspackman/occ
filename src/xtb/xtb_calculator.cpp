@@ -817,6 +817,8 @@ occ::qm::Wavefunction XtbCalculator::to_wavefunction() const {
   wfn.xtb_repulsion_energy = m_last_result.repulsion_energy;
   wfn.xtb_dispersion_energy = m_last_result.dispersion_energy;
   wfn.xtb_atomic_charges = m_last_result.atomic_charges;
+  wfn.xtb_atomic_dipoles = m_last_result.atomic_dipoles;
+  wfn.xtb_atomic_quadrupoles = m_last_result.atomic_quadrupoles;
   wfn.xtb_converged = m_last_result.converged;
   wfn.xtb_n_iterations = m_last_result.n_iterations;
   wfn.converged = m_last_result.converged;

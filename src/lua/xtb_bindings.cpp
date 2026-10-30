@@ -39,6 +39,12 @@ void register_xtb_bindings(lua_State *L) {
           "atomic_charges",
           +[](const XtbResult *r) -> Vec { return r->atomic_charges; })
       .addProperty(
+          "atomic_dipoles",
+          +[](const XtbResult *r) -> Mat3N { return r->atomic_dipoles; })
+      .addProperty(
+          "atomic_quadrupoles",
+          +[](const XtbResult *r) -> Mat { return r->atomic_quadrupoles; })
+      .addProperty(
           "orbital_energies",
           +[](const XtbResult *r) -> Vec { return r->orbital_energies; })
       .addProperty(

@@ -13,6 +13,11 @@ public:
                     Eigen::Ref<FVec> layer) const {
     m_num_calls += layer.size();
     Mat3N dpos = pos.cast<double>().array();
+    // GFN2-xTB: its own point-multipole electrostatics, not the ESP operator
+    if (m_wfn.have_xtb_data) {
+      layer = m_wfn.xtb_electric_potential(dpos).cast<float>();
+      return;
+    }
     Vec esp = m_hf.electronic_electric_potential_contribution(m_wfn.mo, dpos);
     esp += m_hf.nuclear_electric_potential_contribution(dpos);
     layer = esp.cast<float>();

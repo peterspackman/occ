@@ -5,6 +5,7 @@
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/crystal/crystal.h>
+#include <occ/qm/hf.h>
 #include <occ/qm/io/wavefunction_json.h>
 #include <occ/qm/wavefunction.h>
 #include <occ/xtb/xtb_calculator.h>
@@ -124,6 +125,57 @@ TEST_CASE("XtbCalculator(Molecule): to_wavefunction round-trips through JSON",
   // Density is non-negative everywhere and non-trivial somewhere.
   REQUIRE(rho1.minCoeff() >= -1e-12);
   REQUIRE(rho1.maxCoeff() > 1e-3);
+}
+
+TEST_CASE("XtbCalculator: CAMM multipoles round-trip and give the far-field ESP",
+          "[xtb][wavefunction][io][esp]") {
+  occ::core::Molecule mol(water_atoms_bohr());
+  occ::xtb::XtbCalculator calc(mol);
+  (void)calc.single_point_energy();
+  REQUIRE(calc.last_result().converged);
+  const occ::qm::Wavefunction wfn = calc.to_wavefunction();
+  REQUIRE(wfn.xtb_atomic_dipoles.cols() == 3);
+  REQUIRE(wfn.xtb_atomic_quadrupoles.rows() == 6);
+  REQUIRE(wfn.xtb_atomic_quadrupoles.cols() == 3);
+
+  const auto wfn2 = round_trip_json(wfn);
+  REQUIRE((wfn2.xtb_atomic_dipoles - wfn.xtb_atomic_dipoles)
+              .cwiseAbs()
+              .maxCoeff() < 1e-12);
+  REQUIRE((wfn2.xtb_atomic_quadrupoles - wfn.xtb_atomic_quadrupoles)
+              .cwiseAbs()
+              .maxCoeff() < 1e-12);
+
+  // Far from the molecule the CAMM expansion must reproduce the ESP of the
+  // valence density it partitions (valence nuclear charges O 6, H 1), and do
+  // better than the charges alone.
+  occ::Mat3N pts(3, 4);
+  pts.col(0) = occ::Vec3(20.0, 0.0, 0.0);
+  pts.col(1) = occ::Vec3(0.0, 20.0, 0.0);
+  pts.col(2) = occ::Vec3(-14.0, 14.0, 0.0);
+  pts.col(3) = occ::Vec3(0.0, -12.0, 16.0);
+  occ::qm::HartreeFock hf(wfn.basis);
+  occ::Vec reference =
+      hf.electronic_electric_potential_contribution(wfn.mo, pts);
+  const double z_valence[3] = {6.0, 1.0, 1.0};
+  for (int a = 0; a < 3; a++) {
+    const occ::Vec3 pos(wfn.atoms[a].x, wfn.atoms[a].y, wfn.atoms[a].z);
+    reference.array() +=
+        z_valence[a] / (pts.colwise() - pos).colwise().norm().array();
+  }
+
+  const occ::Vec esp = wfn.electric_potential(pts);
+  auto charges_only = wfn;
+  charges_only.xtb_atomic_dipoles.resize(3, 0);
+  const occ::Vec esp_q = charges_only.electric_potential(pts);
+  for (int i = 0; i < pts.cols(); i++) {
+    INFO("point " << i << ": reference " << reference(i) << ", multipole "
+                  << esp(i) << ", charges only " << esp_q(i));
+    REQUIRE(std::abs(esp(i) - reference(i)) <
+            0.02 * std::abs(reference(i)));
+    REQUIRE(std::abs(esp(i) - reference(i)) <
+            std::abs(esp_q(i) - reference(i)));
+  }
 }
 
 TEST_CASE("XtbCalculator: unrestricted wavefunction round-trips through JSON",

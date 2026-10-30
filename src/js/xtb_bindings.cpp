@@ -22,6 +22,8 @@ void register_xtb_bindings() {
       .property("totalEnergy", &XtbResult::total_energy)
       .property("shellCharges", &XtbResult::shell_charges)
       .property("atomicCharges", &XtbResult::atomic_charges)
+      .property("atomicDipoles", &XtbResult::atomic_dipoles)
+      .property("atomicQuadrupoles", &XtbResult::atomic_quadrupoles)
       .property("orbitalEnergies", &XtbResult::orbital_energies)
       .property("orbitalOccupations", &XtbResult::orbital_occupations)
       .property("densityMatrix", &XtbResult::density_matrix)

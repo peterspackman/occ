@@ -166,6 +166,15 @@ void from_json(const nlohmann::json &J, occ::qm::Wavefunction &wfn) {
     xtb.at("repulsion energy").get_to(wfn.xtb_repulsion_energy);
     xtb.at("dispersion energy").get_to(wfn.xtb_dispersion_energy);
     xtb.at("atomic charges").get_to(wfn.xtb_atomic_charges);
+    // Atom-major on disk (N × 3, N × 6), column per atom in memory
+    if (xtb.contains("atomic dipoles")) {
+      Mat dipoles;
+      xtb.at("atomic dipoles").get_to(dipoles);
+      wfn.xtb_atomic_dipoles = dipoles.transpose();
+      Mat quadrupoles;
+      xtb.at("atomic quadrupoles").get_to(quadrupoles);
+      wfn.xtb_atomic_quadrupoles = quadrupoles.transpose();
+    }
     xtb.at("converged").get_to(wfn.xtb_converged);
     xtb.at("scc iterations").get_to(wfn.xtb_n_iterations);
   }
@@ -248,6 +257,10 @@ void to_json(nlohmann::json &J, const occ::qm::Wavefunction &wfn) {
     xtb["repulsion energy"] = wfn.xtb_repulsion_energy;
     xtb["dispersion energy"] = wfn.xtb_dispersion_energy;
     xtb["atomic charges"] = wfn.xtb_atomic_charges;
+    if (wfn.xtb_atomic_dipoles.size() > 0) {
+      xtb["atomic dipoles"] = Mat(wfn.xtb_atomic_dipoles.transpose());
+      xtb["atomic quadrupoles"] = Mat(wfn.xtb_atomic_quadrupoles.transpose());
+    }
     xtb["converged"] = wfn.xtb_converged;
     xtb["scc iterations"] = wfn.xtb_n_iterations;
     J["xtb"] = xtb;

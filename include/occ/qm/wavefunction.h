@@ -129,7 +129,12 @@ struct Wavefunction {
                    SpinComponent spin = SpinComponent::Total) const;
   Mat3N electron_density_mo_gradient(const Mat3N &points, int mo_index) const;
 
+  /// ESP at `points` (bohr). For a GFN2-xTB wavefunction this is GFN2's own
+  /// electrostatic model, see xtb_electric_potential.
   Vec electric_potential(const Mat3N &points) const;
+  /// Undamped point-multipole ESP from the xTB atomic charges and, when
+  /// present, the CAMM dipoles and quadrupoles. Requires have_xtb_data.
+  Vec xtb_electric_potential(const Mat3N &points) const;
   Mat3N electric_field(const Mat3N &points) const;
 
   void save(FchkWriter &);
@@ -162,6 +167,10 @@ struct Wavefunction {
   double xtb_repulsion_energy{0.0};
   double xtb_dispersion_energy{0.0};
   Vec xtb_atomic_charges;
+  // CAMM atomic dipoles (3 × N) and traceless quadrupoles (6 × N,
+  // [xx, xy, yy, xz, yz, zz]); empty without multipoles. See XtbResult.
+  Mat3N xtb_atomic_dipoles;
+  Mat xtb_atomic_quadrupoles;
   bool xtb_converged{false};
   int xtb_n_iterations{0};
 

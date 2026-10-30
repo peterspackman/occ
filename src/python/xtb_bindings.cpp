@@ -38,6 +38,12 @@ nb::module_ register_xtb_bindings(nb::module_ &parent) {
               "Per-shell partial charges q_shell = ref_occ − Mulliken_pop.")
       .def_ro("atomic_charges", &XtbResult::atomic_charges,
               "Per-atom partial charges (Mulliken).")
+      .def_ro("atomic_dipoles", &XtbResult::atomic_dipoles,
+              "CAMM atomic dipoles (3 × N, e·bohr); empty without "
+              "multipoles.")
+      .def_ro("atomic_quadrupoles", &XtbResult::atomic_quadrupoles,
+              "CAMM traceless atomic quadrupoles (6 × N, [xx, xy, yy, xz, "
+              "yz, zz], e·bohr²); empty without multipoles.")
       .def_ro("orbital_energies", &XtbResult::orbital_energies,
               "Orbital energies ε at Γ (Hartree); α channel when unrestricted.")
       .def_ro("orbital_occupations", &XtbResult::orbital_occupations,

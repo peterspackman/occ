@@ -26,6 +26,12 @@ struct XtbResult {
   /// Per-atom partial charges q_atom = Σ q_shell over the atom's shells.
   /// Length = N_atoms.
   Vec atomic_charges;
+  /// CAMM atomic dipoles (3 × N_atoms, e·bohr) and traceless Cartesian
+  /// quadrupoles (6 × N_atoms, [xx, xy, yy, xz, yz, zz], Buckingham
+  /// Θ = ½Σ q (3 r r − r² δ), e·bohr²) at the converged density. Empty when
+  /// the SCC ran without multipoles, and from the periodic drivers.
+  Mat3N atomic_dipoles;
+  Mat atomic_quadrupoles;
 
   /// Orbital energies ε at Γ (Hartree), α channel when unrestricted.
   Vec orbital_energies;
