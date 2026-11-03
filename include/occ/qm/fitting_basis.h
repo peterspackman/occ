@@ -6,6 +6,7 @@ namespace occ::qm {
 // Which family of auxiliary (fitting) basis to resolve.
 enum class FittingKind {
   JK,          // Coulomb(+exchange) fitting for SCF density fitting
+  J,           // Coulomb-only fitting (RI-J with exact, COSX or no exchange)
   Correlation, // RI/C fitting for RI-MP2 / DF-CCSD
 };
 

@@ -10,6 +10,7 @@
 #include <ankerl/unordered_dense.h>
 #include <vector>
 #include <memory>
+#include <mutex>
 
 namespace occ::qm::cosx {
 
@@ -36,13 +37,22 @@ using occ::numint::MolecularGrid;
 using occ::numint::AtomGrid;
 using occ::numint::GridSettings;
 
+/// The exchange grid in point batches: every atomic grid's points and
+/// weights concatenated, each batch a contiguous (start, count) range of one
+/// atom's points.
+struct GridBatches {
+    occ::Mat3N points;
+    occ::Vec weights;
+    std::vector<std::pair<Eigen::Index, Eigen::Index>> ranges;
+};
+
 struct GridBatchInfo {
     occ::Vec3 center;      // Centroid of grid points in batch
     double radius;         // Max distance from center to any point in batch
 };
 
 // Compute bounding sphere for a batch of grid points
-GridBatchInfo compute_batch_info(const occ::Mat3N &pts_block);
+GridBatchInfo compute_batch_info(Eigen::Ref<const occ::Mat3N> pts_block);
 
 struct ScreenedShellPairs {
     std::vector<size_t> list1;  // Shell pair indices where both shells are near
@@ -140,7 +150,35 @@ public:
       const qm::MolecularOrbitals &mo, double alpha, double beta, double omega,
       double precision = std::numeric_limits<double>::epsilon()) const;
 
+  /// K[D_k] for several densities in shared grid sweeps, in the convention
+  /// of compute_K for a restricted mo.D = D_k (CPHF response densities).
+  std::vector<Mat> compute_K_response(const std::vector<Mat> &D,
+                                      double omega = 0.0) const;
+
   Mat compute_overlap_matrix() const;
+
+  /// Nuclear gradient (3 x natoms) of the COSX exchange energy, -tr(D K)
+  /// restricted or -1/2 sum_s tr(P^s K[P^s]) unrestricted, for the operator
+  /// selected by `omega` as in compute_K.
+  /// Includes the basis-function, ESP-integral, grid-point, partition-weight
+  /// and overlap-fitting (Q = S_num^{-1} S) derivatives. `threshold` screens
+  /// shell pairs on charge x |u| x |v|.
+  Mat3N compute_K_gradient(const qm::MolecularOrbitals &mo, double omega = 0.0,
+                           double threshold = 1e-12) const;
+
+  /// Second-derivative terms of the COSX exchange energy E_x = -tr(D K)
+  /// (restricted, D = C_o C_o^T) at fixed AO density, with every dependence
+  /// compute_K_gradient differentiates, for the operator selected by `omega`.
+  struct SecondDerivatives {
+    Mat hessian;                  ///< d2 E_x / dR dR (3N x 3N)
+    std::vector<Mat> fock;        ///< dK/dR C_o, K the SCF's exchange matrix
+    /// d/dR (-1/2 dE_x/dD) C_o: the COSX Fock is not exactly dE_x/dD, and
+    /// it is this, not `fock`, whose density response the gradient sees.
+    std::vector<Mat> energy_fock;
+  };
+  SecondDerivatives compute_K_second_derivatives(const qm::MolecularOrbitals &mo,
+                                                 double omega = 0.0,
+                                                 double threshold = 1e-12) const;
 
   const auto &engine() const { return m_engine; }
 
@@ -155,6 +193,12 @@ public:
   /// Configuration settings
   void set_settings(const Settings &settings);
   const Settings &settings() const { return m_settings; }
+
+  /// Whether the exchange build's pair screen uses the far-field form of the
+  /// charge bound (on by default). A difference-density SCF build turns it
+  /// off: there the looser screen's errors accumulate over the incremental
+  /// builds instead of being redone each time.
+  void set_far_field_screening(bool on) { m_far_field_screening = on; }
 
   /// Range-separation parameter for the exchange operator.
   /// Get grid information
@@ -185,9 +229,21 @@ private:
                                      double w_full, double w_lr,
                                      double omega) const;
 
+  // sum_g w phi (A Z phi)^T for each Z = D2q[k]^T, the screen applied to
+  // each density scaled to unit size (shared multi-density sweeps).
+  std::vector<Mat> exchange_sweep(const std::vector<Mat> &D2q,
+                                  double omega) const;
+
+  // S_num^X Y for every nuclear coordinate X (basis functions, points moving
+  // with their parent atoms, partition weights).
+  std::vector<Mat> numerical_overlap_derivatives(const Mat &Y) const;
+
   // Precompute the significant shell-pair list and the per-pair geometry used
   // for per-batch geometric screening. Idempotent (only runs once).
   void prepare_screening() const;
+
+  // Spatial batches of the grid, built once on first use.
+  const GridBatches &grid_batches() const;
 
   std::vector<occ::core::Atom> m_atoms;
   gto::AOBasis m_basis;
@@ -214,8 +270,15 @@ private:
   // in seminumerical_exchange.cpp). Pairs sharing an origin are pinned to 1:
   // their overlap can vanish by symmetry while their ESP does not.
   mutable Vec m_pair_charge;
+  // far-field bound {q1, spread} (ESPEvaluator::pair_far_estimate): the
+  // charge bound tightened to q1 / (R - spread) at distance R, tail kept
+  mutable Mat m_pair_far;
+  bool m_far_field_screening{true};
   mutable Mat3N m_pair_centers;
   mutable Vec m_pair_extents;
+
+  mutable GridBatches m_batches;
+  mutable std::once_flag m_batches_once;
 
   // Shell extents for screening (calculated with screen_threshold, not shell extent threshold)
   Vec m_screening_extents;

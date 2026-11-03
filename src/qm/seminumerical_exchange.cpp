@@ -7,6 +7,8 @@
 #include <occ/numint/spatial_grid_hierarchy.h>
 #include <occ/gto/gto.h>
 #include <occ/ints/boys.h>
+#include "detail/cosx_contract.h"
+#include "detail/cosx_grid.h"
 
 namespace occ::qm::cosx {
 
@@ -20,19 +22,11 @@ using IntegralResult = qm::IntegralEngine::IntegralResult<3>;
 
 // Compute bounding sphere for a batch of grid points
 // pts_block is a 3 x N matrix where each column is a grid point
-GridBatchInfo compute_batch_info(const occ::Mat3N &pts_block) {
+GridBatchInfo compute_batch_info(Eigen::Ref<const occ::Mat3N> pts_block) {
     GridBatchInfo info;
-
-    // Compute centroid as mean of all points
     info.center = pts_block.rowwise().mean();
-
-    // Compute radius as max distance from center to any point
-    info.radius = 0.0;
-    for (Eigen::Index i = 0; i < pts_block.cols(); ++i) {
-        double dist = (pts_block.col(i) - info.center).norm();
-        info.radius = std::max(info.radius, dist);
-    }
-
+    info.radius =
+        (pts_block.colwise() - info.center).colwise().norm().maxCoeff();
     return info;
 }
 
@@ -466,6 +460,7 @@ void SemiNumericalExchange::prepare_screening() const {
   m_pair_centers.resize(3, np);
   m_pair_extents.resize(np);
   m_pair_charge.resize(np);
+  m_pair_far.resize(2, np);
   for (const auto &[flat_idx, esp_idx] : m_shell_pair_map) {
     auto c = m_esp_evaluator->pair_center(esp_idx);
     m_pair_centers(0, esp_idx) = c[0];
@@ -474,6 +469,9 @@ void SemiNumericalExchange::prepare_screening() const {
     m_pair_extents(esp_idx) = m_esp_evaluator->pair_extent(esp_idx);
 
     m_pair_charge(esp_idx) = m_esp_evaluator->pair_estimate(esp_idx);
+    const auto far = m_esp_evaluator->pair_far_estimate(esp_idx);
+    m_pair_far(0, esp_idx) = far[0];
+    m_pair_far(1, esp_idx) = far[1];
   }
 }
 
@@ -645,8 +643,8 @@ Mat SemiNumericalExchange::compute_K_unrestricted(const qm::MolecularOrbitals &m
     Mat Kb = compute_K_for_density(Dbq, precision, omega);
 
     // Symmetrize with factor 0.5 (vs 0.25 for RHF which has 2x density)
-    Ka = 0.5 * (Ka + Ka.transpose());
-    Kb = 0.5 * (Kb + Kb.transpose());
+    Ka = 0.5 * (Ka + Ka.transpose()).eval();
+    Kb = 0.5 * (Kb + Kb.transpose()).eval();
 
     // Combine into (2*nbf, nbf) result
     Mat K(2 * nbf, nbf);
@@ -692,8 +690,8 @@ Mat SemiNumericalExchange::compute_K_general(const qm::MolecularOrbitals &mo,
     Mat Kbb = compute_K_for_density(Dbbq, precision, omega);
 
     // Symmetrize diagonal blocks - use 0.5 factor (same as unrestricted)
-    Kaa = 0.5 * (Kaa + Kaa.transpose());
-    Kbb = 0.5 * (Kbb + Kbb.transpose());
+    Kaa = 0.5 * (Kaa + Kaa.transpose()).eval();
+    Kbb = 0.5 * (Kbb + Kbb.transpose()).eval();
     // Off-diagonal blocks: Kab and Kba are transposes of each other
     Mat Kab_sym = 0.5 * (Kab + Kba.transpose());
     Mat Kba_sym = 0.5 * (Kba + Kab.transpose());
@@ -717,11 +715,34 @@ Mat SemiNumericalExchange::compute_K_general(const qm::MolecularOrbitals &mo,
 
 namespace {
 
+// The exchange grid in batches of at most max_batch consecutive points of
+// one atomic grid, concatenated into a single point/weight array. (Spatially
+// compact batches gain nothing: the max|F| screen below drops the same
+// fraction of shell pairs whatever the batch shape.)
+GridBatches build_grid_batches(const std::vector<occ::numint::AtomGrid> &atom_grids,
+                               Eigen::Index max_batch) {
+  Eigen::Index n = 0;
+  for (const auto &g : atom_grids)
+    n += g.points.cols();
+  GridBatches result;
+  result.points.resize(3, n);
+  result.weights.resize(n);
+  Eigen::Index off = 0;
+  for (const auto &g : atom_grids) {
+    const Eigen::Index m = g.points.cols();
+    result.points.middleCols(off, m) = g.points;
+    result.weights.segment(off, m) = g.weights;
+    for (Eigen::Index s = 0; s < m; s += max_batch)
+      result.ranges.push_back({off + s, std::min(max_batch, m - s)});
+    off += m;
+  }
+  return result;
+}
+
 // Shared seminumerical-exchange grid sweep. `fill_v` populates the per
 // shell-pair operator integrals (the V buffer); the grid batching, basis-value
 // evaluation, density contraction, screening and back-contraction are shared
 // between the single- and dual-operator (range-separated) exchange builds.
-// Shell-pair screening note.
 //
 // The quantity built here is the ESP integral of a shell pair at a grid point,
 // A_pq(g) = \int rho_pq(r) / |r - g| dr, which decays as 1/|g - P|. It must NOT
@@ -729,63 +750,42 @@ namespace {
 // Coulomb tail and the SCF collapses variationally. Screen instead on the
 // product of the pair's charge magnitude and the F intermediate it contracts
 // with, both of which really do vanish.
+//
+// Several densities share one sweep: each pair's integrals are evaluated once
+// per batch and contracted with every density (the CPHF response builds K for
+// all perturbations at once), and the screen takes the largest F over them.
 template <typename FillV>
-Mat seminumerical_exchange_sweep(
-    const gto::AOBasis &basis, const std::vector<occ::numint::AtomGrid> &atom_grids,
+std::vector<Mat> seminumerical_exchange_sweep(
+    const gto::AOBasis &basis, const GridBatches &grid,
     const ankerl::unordered_dense::map<size_t, size_t> &shell_pair_map,
     const occ::ints::ESPEvaluator<double> &esp, const Vec &pair_charge,
-    double threshold, const Mat &D2q, double precision,
-    FillV &&fill_v) {
+    const Mat3N &pair_centers, const Mat &pair_far, bool far_field,
+    double threshold, const std::vector<Mat> &D2qs, double precision,
+    FillV &&fill_v, const double *fused_omega = nullptr) {
+  const size_t nd = D2qs.size();
   const size_t nbf = basis.nbf();
   const auto &shells = basis.shells();
   const auto &first_bf = basis.first_bf();
-  constexpr size_t BLOCKSIZE = 128;
-
-  Mat K = Mat::Zero(nbf, nbf);
-
-  // Build batch list
-  struct BatchInfo {
-    size_t atom_idx;
-    size_t block_idx;
-    Eigen::Index start;
-    Eigen::Index count;
-  };
-  std::vector<BatchInfo> batches;
-
-  for (size_t atom_idx = 0; atom_idx < atom_grids.size(); ++atom_idx) {
-    const auto& atom_grid = atom_grids[atom_idx];
-    const size_t npt_total = atom_grid.points.cols();
-    const size_t num_blocks = (npt_total + BLOCKSIZE - 1) / BLOCKSIZE;
-
-    for (size_t block_idx = 0; block_idx < num_blocks; ++block_idx) {
-      Eigen::Index start = block_idx * BLOCKSIZE;
-      Eigen::Index end = std::min(static_cast<Eigen::Index>(npt_total),
-                                   static_cast<Eigen::Index>((block_idx + 1) * BLOCKSIZE));
-      Eigen::Index count = end - start;
-      if (count > 0) {
-        batches.push_back({atom_idx, block_idx, start, count});
-      }
-    }
-  }
+  constexpr int PAD = occ::ints::ESPEvaluator<double>::soa_padding;
+  const size_t max_nab = basis.max_shell_size() * basis.max_shell_size();
 
   // Thread-local storage for K matrices
-  occ::parallel::thread_local_storage<Mat> K_local([nbf]() { return Mat::Zero(nbf, nbf); });
+  occ::parallel::thread_local_storage<std::vector<Mat>> K_local(
+      [nbf, nd]() { return std::vector<Mat>(nd, Mat::Zero(nbf, nbf)); });
 
-  // Thread-local buffers for ESP evaluator
-  using MatRM = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-  occ::parallel::thread_local_storage<MatRM> esp_workspace_local;
-  occ::parallel::thread_local_storage<MatRM> esp_integrals_local;
+  // Per-thread scratch: point coordinates in structure-of-arrays form padded
+  // to the ESP kernel's chunk size, and the pair's integrals laid out
+  // point-fastest, V[ab * ldv + pt].
+  struct Scratch {
+    std::vector<double> x, y, z, V;
+  };
+  occ::parallel::thread_local_storage<Scratch> scratch_local;
 
-  // Process batches in parallel
-  occ::parallel::parallel_for(size_t(0), batches.size(), [&](size_t batch_idx) {
-    const auto& batch = batches[batch_idx];
-    const auto& atom_grid = atom_grids[batch.atom_idx];
+  occ::parallel::parallel_for(size_t(0), grid.ranges.size(), [&](size_t batch_idx) {
+    const auto [start, npt] = grid.ranges[batch_idx];
+    auto pts_block = grid.points.middleCols(start, npt);
+    auto weights_block = grid.weights.segment(start, npt);
 
-    auto pts_block = atom_grid.points.middleCols(batch.start, batch.count);
-    auto weights_block = atom_grid.weights.segment(batch.start, batch.count);
-    Eigen::Index npt = batch.count;
-
-    // Quick screening using traditional evaluation
     occ::gto::GTOValues ao;
     occ::gto::evaluate_basis(basis, pts_block, ao, 0);
 
@@ -803,18 +803,48 @@ Mat seminumerical_exchange_sweep(
     Vec sqrt_w = weights_block.array().abs().sqrt();
     Vec signed_sqrt_w =
         sqrt_w.array() * weights_block.array().sign();
-    Mat xao = ao.phi.array().colwise() * signed_sqrt_w.array();
-    Mat xao_bra = ao.phi.array().colwise() * sqrt_w.array();
-    Mat Fg = xao * D2q;
-    Mat Gg = Mat::Zero(npt, nbf);
 
-    // Largest |F| over this batch for each shell: the density-side factor of
-    // the screening bound, maximised over the batch.
-    Vec max_F(shells.size());
-    for (size_t s = 0; s < shells.size(); ++s)
-      max_F(s) = Fg.middleCols(first_bf[s], shells[s].size())
-                     .cwiseAbs()
-                     .maxCoeff();
+    // Basis functions negligible over the whole batch drop out of both dense
+    // products, F = X D and K -= X^T G: only their rows of D and of K are
+    // touched, so the products shrink to the batch's significant functions.
+    constexpr double basis_cutoff = 1e-12;
+    std::vector<int> sig;
+    sig.reserve(nbf);
+    for (size_t s = 0; s < shells.size(); ++s) {
+      const int b0 = first_bf[s], nb = shells[s].size();
+      if (ao.phi.middleCols(b0, nb).cwiseAbs().maxCoeff() >= basis_cutoff)
+        for (int b = b0; b < b0 + nb; ++b)
+          sig.push_back(b);
+    }
+    const Eigen::Index nsig = sig.size();
+    // F and G are padded to the ESP kernel's block size (zero rows of X, so
+    // zero rows of F and G) so the contraction runs on whole blocks.
+    const int npad = static_cast<int>((npt + PAD - 1) / PAD * PAD);
+    Mat xao = Mat::Zero(npad, nsig);
+    Mat xao_bra(npt, nsig), Dsig(nsig, nbf);
+    for (Eigen::Index k = 0; k < nsig; ++k) {
+      xao.col(k).head(npt) = ao.phi.col(sig[k]).cwiseProduct(signed_sqrt_w);
+      xao_bra.col(k) = ao.phi.col(sig[k]).cwiseProduct(sqrt_w);
+    }
+    std::vector<Mat> Fgs(nd), Ggs(nd, Mat::Zero(npad, nbf));
+    for (size_t d = 0; d < nd; ++d) {
+      for (Eigen::Index k = 0; k < nsig; ++k)
+        Dsig.row(k) = D2qs[d].row(sig[k]);
+      Fgs[d].noalias() = xao * Dsig;
+    }
+
+    // Largest |F| over this batch for each shell and density: the
+    // density-side factor of the screening bound, maximised over the batch.
+    // A pair is evaluated if any density needs it, and contracted with each
+    // density that does (CPHF densities of nuclear displacements are local).
+    Mat max_Fd(shells.size(), nd);
+    for (size_t d = 0; d < nd; ++d)
+      for (size_t s = 0; s < shells.size(); ++s)
+        max_Fd(s, d) = Fgs[d]
+                           .middleCols(first_bf[s], shells[s].size())
+                           .cwiseAbs()
+                           .maxCoeff();
+    const Vec max_F = max_Fd.rowwise().maxCoeff();
 
     // F now carries sqrt(w), so its scale still tracks grid density: a fixed
     // absolute cutoff screens harder as the grid is refined, and the screening
@@ -822,76 +852,151 @@ Mat seminumerical_exchange_sweep(
     // by the same sqrt(w) removes that drift, so the threshold means the same
     // thing at every grid level.
     const double cutoff = threshold * std::sqrt(weights_block.cwiseAbs().maxCoeff());
+    const GridBatchInfo sphere = compute_batch_info(pts_block);
 
-    // Get thread-local buffers for this batch
-    auto& workspace = esp_workspace_local.local();
-    auto& integrals = esp_integrals_local.local();
+    auto &ws = scratch_local.local();
+    detail::soa_coordinates(pts_block, npad, ws.x, ws.y, ws.z);
+    if (ws.V.size() < max_nab * npad)
+      ws.V.resize(max_nab * npad);
+    double *V = ws.V.data();
 
-    // Process all shell pairs sequentially within this batch
     for (const auto& [pair_idx, esp_idx] : shell_pair_map) {
       auto [p, q] = pair_index_to_shells(pair_idx);
 
       // Charge x density screen. Both factors decay; the 1/R falloff of the
-      // integral itself deliberately plays no part (see the note above).
-      if (pair_charge(esp_idx) * std::max(max_F(p), max_F(q)) < cutoff)
+      // integral enters only through the far-field form of the charge bound,
+      // which tightens it and never cuts the tail off (see the note above).
+      const double fmax = std::max(max_F(p), max_F(q));
+      const double charge =
+          far_field ? detail::pair_charge_bound(pair_charge(esp_idx),
+                                                pair_centers.col(esp_idx),
+                                                pair_far.col(esp_idx).data(),
+                                                sphere)
+                    : pair_charge(esp_idx);
+      if (charge * fmax < cutoff)
         continue;
 
-      int bf_p = first_bf[p];
-      int bf_q = first_bf[q];
-      int size_p = shells[p].size();
-      int size_q = shells[q].size();
+      const int bf_p = first_bf[p];
+      const int bf_q = first_bf[q];
+      const int size_p = shells[p].size();
+      const int size_q = shells[q].size();
 
-      int nab = esp.nab(esp_idx);
-      int nherm = esp.nherm(esp_idx);
-
-      // Resize buffers if needed
-      if (workspace.rows() != npt || workspace.cols() != nherm) {
-        workspace.resize(npt, nherm);
+      // One density and a plain ESP operator: the integrals go straight into
+      // G as they are formed, chunk by chunk, without the nab x npad V.
+      if (fused_omega && nd == 1) {
+        esp.evaluate_soa_contract(esp_idx, ws.x.data(), ws.y.data(),
+                                  ws.z.data(), npad, Fgs[0].data(),
+                                  Ggs[0].data(), npad, bf_p, bf_q, p != q,
+                                  *fused_omega);
+        continue;
       }
-      if (integrals.rows() != npt || integrals.cols() != nab) {
-        integrals.resize(npt, nab);
-      }
+      fill_v(esp_idx, ws.x.data(), ws.y.data(), ws.z.data(), npad, V);
 
-      // Build the per-shell-pair operator integrals (V) into `integrals`.
-      fill_v(esp_idx, pts_block, npt, nab, integrals, workspace);
-
-      // Contract integrals with Fg and accumulate into Gg
-      for (Eigen::Index pt = 0; pt < npt; pt++) {
-        Eigen::Map<const MatRM> V(integrals.row(pt).data(), size_p, size_q);
-        Gg.row(pt).segment(bf_q, size_q).noalias() -=
-            Fg.row(pt).segment(bf_p, size_p) * V;
-        if (p != q) {
-          Gg.row(pt).segment(bf_p, size_p).noalias() -=
-              Fg.row(pt).segment(bf_q, size_q) * V.transpose();
-        }
-      }
+      for (size_t d = 0; d < nd; ++d)
+        if (charge * std::max(max_Fd(p, d), max_Fd(q, d)) >= cutoff)
+          detail::contract_pair(Fgs[d].data(), Ggs[d].data(), npad, V, bf_p,
+                                size_p, bf_q, size_q, p != q);
     }
 
-    K_local.local().noalias() -= xao_bra.transpose() * Gg;
+    auto &Kl = K_local.local();
+    for (size_t d = 0; d < nd; ++d) {
+      Mat Ksig = xao_bra.transpose() * Ggs[d].topRows(npt);
+      for (Eigen::Index k = 0; k < nsig; ++k)
+        Kl[d].row(sig[k]) -= Ksig.row(k);
+    }
   });
 
   // Combine results from all threads
-  for (const auto& K_thread : K_local) {
-    K.noalias() += K_thread;
-  }
-
+  std::vector<Mat> K(nd, Mat::Zero(nbf, nbf));
+  for (const auto &K_thread : K_local)
+    for (size_t d = 0; d < nd; ++d)
+      K[d].noalias() += K_thread[d];
   return K;
 }
 
 } // namespace
 
+const GridBatches &SemiNumericalExchange::grid_batches() const {
+  constexpr Eigen::Index max_batch = 128;
+  std::call_once(m_batches_once, [&] {
+    m_batches = build_grid_batches(m_atom_grids, max_batch);
+  });
+  return m_batches;
+}
+
 Mat SemiNumericalExchange::compute_K_for_density(const Mat &D2q,
                                                  double precision,
                                                  double omega) const {
-  using MatRM =
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+  const auto &esp = *m_esp_evaluator;
   return seminumerical_exchange_sweep(
-      m_basis, m_atom_grids, m_shell_pair_map, *m_esp_evaluator, m_pair_charge,
-      m_settings.f_threshold, D2q, precision,
-      [this, omega](std::size_t esp_idx, const auto &pts, Eigen::Index /*npt*/,
-             int /*nab*/, MatRM &V, MatRM &ws) {
-        m_esp_evaluator->evaluate(esp_idx, pts, V, ws, omega);
-      });
+      m_basis, grid_batches(), m_shell_pair_map, esp, m_pair_charge,
+      m_pair_centers, m_pair_far, m_far_field_screening,
+      m_settings.f_threshold, std::vector<Mat>{D2q}, precision,
+      [&esp, omega](std::size_t esp_idx, const double *x, const double *y,
+                    const double *z, int npad, double *V) {
+        esp.evaluate_soa(esp_idx, x, y, z, npad, V, npad, omega);
+      },
+      &omega)[0];
+}
+
+std::vector<Mat>
+SemiNumericalExchange::exchange_sweep(const std::vector<Mat> &D2q,
+                                      double omega) const {
+  prepare_screening();
+  const auto &esp = *m_esp_evaluator;
+  const size_t nbf = m_basis.nbf();
+  // Each thread holds one K per density in the sweep, so densities go in
+  // chunks that keep that under ~1 GB in total.
+  const size_t per_density =
+      nbf * nbf * sizeof(double) * occ::parallel::get_num_threads();
+  const size_t chunk =
+      std::max<size_t>(1, std::min<size_t>(D2q.size(), (size_t(1) << 30) /
+                                                           std::max<size_t>(
+                                                               per_density, 1)));
+  std::vector<Mat> result;
+  result.reserve(D2q.size());
+  for (size_t c0 = 0; c0 < D2q.size(); c0 += chunk) {
+    // The screen is absolute, so each density is scaled to unit size before
+    // the sweep and K scaled back (K is linear): otherwise small densities,
+    // such as late CPHF search directions, lose pairs a larger one keeps and
+    // the operator stops being linear.
+    std::vector<Mat> scaled;
+    std::vector<double> scale;
+    for (size_t k = c0; k < std::min(D2q.size(), c0 + chunk); k++) {
+      const double m = D2q[k].cwiseAbs().maxCoeff();
+      scale.push_back(m > 0.0 ? m : 1.0);
+      scaled.push_back(D2q[k] / scale.back());
+    }
+    auto K = seminumerical_exchange_sweep(
+        m_basis, grid_batches(), m_shell_pair_map, esp, m_pair_charge,
+        m_pair_centers, m_pair_far, m_far_field_screening,
+        m_settings.f_threshold, scaled, std::numeric_limits<double>::epsilon(),
+        [&esp, omega](std::size_t esp_idx, const double *x, const double *y,
+                      const double *z, int npad, double *V) {
+          esp.evaluate_soa(esp_idx, x, y, z, npad, V, npad, omega);
+        });
+    for (size_t k = 0; k < K.size(); k++)
+      result.push_back(scale[k] * K[k]);
+  }
+  return result;
+}
+
+std::vector<Mat>
+SemiNumericalExchange::compute_K_response(const std::vector<Mat> &D,
+                                          double omega) const {
+  if (!m_use_esp)
+    throw std::runtime_error("COSX response exchange requires ESP mode");
+  occ::timing::start(occ::timing::category::cosx);
+  std::vector<Mat> D2q;
+  D2q.reserve(D.size());
+  for (const auto &d : D)
+    D2q.push_back(m_overlap_projector * (2.0 * d));
+  auto K = exchange_sweep(D2q, omega);
+  // Same convention as compute_K for a restricted density D.
+  for (auto &k : K)
+    k = 0.25 * (k + k.transpose()).eval();
+  occ::timing::stop(occ::timing::category::cosx);
+  return K;
 }
 
 Mat SemiNumericalExchange::compute_K_range_separated(
@@ -925,8 +1030,8 @@ Mat SemiNumericalExchange::compute_K_range_separated(
     Mat Dbq = m_overlap_projector * (2.0 * qm::block::b(mo.D));
     Mat Ka = compute_K_fused_rs_for_density(Daq, precision, w_full, w_lr, omega);
     Mat Kb = compute_K_fused_rs_for_density(Dbq, precision, w_full, w_lr, omega);
-    Ka = 0.5 * (Ka + Ka.transpose());
-    Kb = 0.5 * (Kb + Kb.transpose());
+    Ka = 0.5 * (Ka + Ka.transpose()).eval();
+    Kb = 0.5 * (Kb + Kb.transpose()).eval();
     result = Mat(2 * nbf, nbf);
     qm::block::a(result) = Ka;
     qm::block::b(result) = Kb;
@@ -949,21 +1054,24 @@ Mat SemiNumericalExchange::compute_K_range_separated(
 Mat SemiNumericalExchange::compute_K_fused_rs_for_density(
     const Mat &D2q, double precision, double w_full, double w_lr,
     double omega) const {
-  using MatRM =
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-  occ::parallel::thread_local_storage<MatRM> lr_local;
+  const auto &esp = *m_esp_evaluator;
+  occ::parallel::thread_local_storage<std::vector<double>> lr_local;
   return seminumerical_exchange_sweep(
-      m_basis, m_atom_grids, m_shell_pair_map, *m_esp_evaluator, m_pair_charge,
-      m_settings.f_threshold, D2q, precision,
-      [&, w_full, w_lr, omega](std::size_t esp_idx, const auto &pts,
-                               Eigen::Index npt, int nab, MatRM &V, MatRM &ws) {
-        m_esp_evaluator->evaluate(esp_idx, pts, V, ws, 0.0);
-        MatRM &V_lr = lr_local.local();
-        if (V_lr.rows() != npt || V_lr.cols() != nab)
-          V_lr.resize(npt, nab);
-        m_esp_evaluator->evaluate(esp_idx, pts, V_lr, ws, omega);
-        V.array() = w_full * V.array() + w_lr * V_lr.array();
-      });
+      m_basis, grid_batches(), m_shell_pair_map, esp, m_pair_charge,
+      m_pair_centers, m_pair_far, m_far_field_screening,
+      m_settings.f_threshold, std::vector<Mat>{D2q}, precision,
+      [&, w_full, w_lr, omega](std::size_t esp_idx, const double *x,
+                               const double *y, const double *z, int npad,
+                               double *V) {
+        const size_t n = static_cast<size_t>(esp.nab(esp_idx)) * npad;
+        auto &V_lr = lr_local.local();
+        if (V_lr.size() < n)
+          V_lr.resize(n);
+        esp.evaluate_soa(esp_idx, x, y, z, npad, V, npad, 0.0);
+        esp.evaluate_soa(esp_idx, x, y, z, npad, V_lr.data(), npad, omega);
+        for (size_t k = 0; k < n; ++k)
+          V[k] = w_full * V[k] + w_lr * V_lr[k];
+      })[0];
 }
 
 } // namespace occ::qm::cosx

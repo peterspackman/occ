@@ -16,6 +16,13 @@ int DFT::density_derivative() const {
   return deriv;
 }
 
+bool DFT::needs_laplacian() const {
+  for (const auto &func : m_method.functionals)
+    if (func.needs_laplacian())
+      return true;
+  return false;
+}
+
 DFT::DFT(const std::string &method, const AOBasis &basis,
          const occ::numint::GridSettings &grid_settings)
     : SCFMethodBase(basis.atoms()), m_hf(basis), m_grid(basis, grid_settings) {
@@ -42,19 +49,18 @@ DFT DFT::with_new_basis(const AOBasis &new_basis) const {
   new_dft.set_precision(this->integral_precision());
   new_dft.m_density_threshold = m_density_threshold;
   new_dft.m_blocksize = m_blocksize;
+  new_dft.m_xc_screening_threshold = m_xc_screening_threshold;
+  new_dft.m_grid_response = m_grid_response;
   
-  // Copy DF basis if present
-  // Note: This is a limitation - we'd need to store the DF basis name to properly copy it
-  if (m_hf.using_density_fitting()) {
-    occ::log::warn("Density fitting basis not preserved in "
-                   "DFT::with_new_basis - needs implementation");
-  }
-  
+  m_hf.copy_two_electron_setup_to(new_dft.m_hf);
+
   return new_dft;
 }
 
 void DFT::set_method(const std::string &method_string) {
-  if (m_method_string == method_string)
+  // The name alone is not enough: m_method_string starts out as the default
+  // ("svwn5") before any functional has been set up.
+  if (m_method_string == method_string && !m_method.functionals.empty())
     return;
 
   if (m_method_string != method_string) {

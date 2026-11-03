@@ -378,6 +378,18 @@ JKPair coulomb_and_exchange_kernel(cint::IntegralEnvironment &env,
   return result;
 }
 
+// Shell-block density norms for screening a batch of densities: the
+// elementwise maximum over the batch. One integral pass serves every
+// density, so a quartet may only be skipped if it is negligible for all.
+template <SpinorbitalKind sk, ShellKind kind>
+Mat batch_shellblock_norm(const AOBasis &basis,
+                          const std::vector<MolecularOrbitals> &mos) {
+  Mat Dnorm = shellblock_norm<sk, kind>(basis, mos[0].D);
+  for (size_t i = 1; i < mos.size(); i++)
+    Dnorm = Dnorm.cwiseMax(shellblock_norm<sk, kind>(basis, mos[i].D));
+  return Dnorm;
+}
+
 template <SpinorbitalKind sk, ShellKind kind = ShellKind::Cartesian>
 std::vector<JKPair> coulomb_and_exchange_kernel_list(
     cint::IntegralEnvironment &env, const AOBasis &basis,
@@ -391,7 +403,7 @@ std::vector<JKPair> coulomb_and_exchange_kernel_list(
   const int rows = mos[0].D.rows();
   const int cols = mos[0].D.cols();
 
-  Mat Dnorm = shellblock_norm<sk, kind>(basis, mos[0].D);
+  const Mat Dnorm = batch_shellblock_norm<sk, kind>(basis, mos);
 
   // Thread-local storage for multiple MO JK pairs
   occ::parallel::thread_local_storage<std::vector<JKPair>> jkpairs_local(
@@ -467,7 +479,7 @@ coulomb_kernel_list(cint::IntegralEnvironment &env, const AOBasis &basis,
   const int rows = mos[0].D.rows();
   const int cols = mos[0].D.cols();
 
-  Mat Dnorm = shellblock_norm<sk, kind>(basis, mos[0].D);
+  const Mat Dnorm = batch_shellblock_norm<sk, kind>(basis, mos);
 
   // Thread-local storage for multiple MO J matrices
   occ::parallel::thread_local_storage<std::vector<Mat>> js_local(

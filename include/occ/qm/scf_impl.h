@@ -455,6 +455,10 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
   Mat D_diff = ctx.mo.D;
   Mat D_last;
   Mat FD_comm = Mat::Zero(ctx.F.rows(), ctx.F.cols());
+  // Set when the Fock matrix changes definition (a finer COSX grid, a fresh
+  // frozen correction): the next build must be full whatever the incremental
+  // bookkeeping says, including on the iteration incremental builds start.
+  bool fock_redefined = false;
   update_scf_energy(incremental);
   log::info("starting {} scf iterations", scf_kind());
   log::debug("{} electrons total", ctx.n_electrons);
@@ -473,15 +477,27 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
     m_procedure.update_core_hamiltonian(ctx.mo, ctx.H);
     incremental = true;
 
+    // Below the procedure's floor, difference-density builds would carry
+    // their screening error into the converged result: build in full.
+    double incremental_floor = 0.0;
+    if constexpr (requires(P &p) { p.incremental_fock_floor(); })
+      incremental_floor = m_procedure.incremental_fock_floor();
+    const bool above_floor = diis_error >= incremental_floor;
+    if (incremental_Fbuild_started && !above_floor) {
+      incremental_Fbuild_started = false;
+      log::debug("stopping incremental fock build");
+    }
     if (incremental_fock_supported() && not incremental_Fbuild_started &&
-        convergence_settings.start_incremental_fock(diis_error)) {
+        above_floor && convergence_settings.start_incremental_fock(diis_error)) {
       incremental_Fbuild_started = true;
       reset_incremental_fock_formation = false;
       last_reset_iteration = iter - 1;
       next_reset_threshold = diis_error / 10;
       log::debug("starting incremental fock build");
     }
-    if (reset_incremental_fock_formation || not incremental_Fbuild_started) {
+    if (reset_incremental_fock_formation || not incremental_Fbuild_started ||
+        fock_redefined) {
+      fock_redefined = false;
       ctx.F = ctx.H;
       D_diff = ctx.mo.D;
       incremental = false;
@@ -497,6 +513,8 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
       ++num_incremental_fock_builds;
 
     // build a new Fock matrix
+    if constexpr (requires(P &p) { p.set_scf_fock_incremental(true); })
+      m_procedure.set_scf_fock_incremental(incremental);
     std::swap(ctx.mo.D, D_diff);
     ctx.F += m_procedure.compute_fock(ctx.mo, ctx.K);
     std::swap(ctx.mo.D, D_diff);
@@ -544,7 +562,43 @@ template <SCFMethod P> double SCF<P>::compute_scf_energy() {
 
     ctx.converged = convergence_settings.energy_and_commutator_converged(
         ediff_rel, diis_error);
+    // A procedure may refine its integration grid near convergence (COSX):
+    // the Fock matrix then changes definition, so rebuild it in full and keep
+    // iterating on the finer grid.
+    if constexpr (requires(P &p) { p.advance_scf_grid(1.0, false); }) {
+      if (m_procedure.advance_scf_grid(diis_error, ctx.converged)) {
+        ctx.converged = false;
+        fock_redefined = true;
+        convergence_accelerator.reset();
+      }
+    }
+    // Converged on a Fock matrix built with a frozen grid correction: the
+    // next build is exact and refreshes it, and only that counts.
+    if constexpr (requires(P &p) {
+                    p.scf_fock_approximate();
+                    p.refresh_scf_fock_correction();
+                  }) {
+      if (ctx.converged && m_procedure.scf_fock_approximate()) {
+        m_procedure.refresh_scf_fock_correction();
+        ctx.converged = false;
+        fock_redefined = true;
+      }
+    }
   } while (!ctx.converged && (iter < maxiter));
+
+  if constexpr (requires(P &p, const MolecularOrbitals &mo) {
+                  p.final_energy_correction(mo);
+                }) {
+    if (ctx.converged) {
+      const double dE = m_procedure.final_energy_correction(ctx.mo);
+      if (dE != 0.0) {
+        ctx.energy["electronic.final_grid_correction"] = dE;
+        ctx.energy["electronic"] += dE;
+        ctx.energy["electronic.2e"] += dE;
+        ctx.energy["total"] += dE;
+      }
+    }
+  }
 
   if (ctx.converged) {
     log::info("{} spinorbital SCF energy converged after {:.5f} seconds",
