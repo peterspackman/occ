@@ -11,6 +11,7 @@
 #include <occ/core/molecule.h>
 #include <occ/core/point_charge.h>
 #include <cmath>
+#include "fd_test_utils.h"
 
 using Catch::Approx;
 using namespace occ::ints;
@@ -278,6 +279,70 @@ TEST_CASE("ESPEvaluator high-level API", "[esp][evaluator]") {
     REQUIRE(true);  // If we get here, evaluator was created
 }
 
+// The structure-of-arrays kernel used by the COSX exchange build must agree
+// with the row-major evaluate() path for every (la, lb), with and without
+// range separation, including the padded tail of a point block.
+TEST_CASE("ESPEvaluator SoA kernel matches row-major evaluate", "[esp][evaluator][soa]") {
+    using MatRM = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    const auto& b = boys();
+    const std::array<double, 3> A{0.0, 0.0, 0.0};
+    const std::array<double, 3> B{1.3, -0.7, 0.45};
+    const std::vector<double> exps_a{31.0, 3.1, 0.72};
+    const std::vector<double> exps_b{2.4, 0.53};
+    const std::vector<double> c_a{0.2, 0.42, 0.68};
+    const std::vector<double> c_b{0.55, 0.61};
+
+    // 37 points spanning near (small Boys argument) to far (asymptotic) from
+    // the pair; padded to the kernel's block size with copies of the last.
+    const int npt = 37;
+    const int pad = ESPEvaluator<double>::soa_padding;
+    const int npad = (npt + pad - 1) / pad * pad;
+    occ::Mat3N pts(3, npt);
+    for (int i = 0; i < npt; ++i) {
+        const double s = 0.03 + 0.35 * i;
+        pts.col(i) << s * std::cos(0.7 * i), s * std::sin(1.3 * i) - 0.2,
+            0.4 * std::cos(0.37 * i) * s;
+    }
+    std::vector<double> x(npad), y(npad), z(npad);
+    for (int i = 0; i < npad; ++i) {
+        const int c = std::min(i, npt - 1);
+        x[i] = pts(0, c);
+        y[i] = pts(1, c);
+        z[i] = pts(2, c);
+    }
+
+    for (bool spherical : {false, true}) {
+        for (int la = 0; la <= 4; ++la) {
+            for (int lb = 0; lb <= 4; ++lb) {
+                ESPEvaluator<double> esp(b.table());
+                const size_t idx = esp.add_shell_pair(
+                    la, lb, 3, 2, exps_a.data(), exps_b.data(), c_a.data(),
+                    c_b.data(), A.data(), B.data(), spherical);
+                const int nab = esp.nab(idx);
+                for (double omega : {0.0, 0.4}) {
+                    MatRM ref(npt, nab), work(npt, esp.nherm(idx));
+                    esp.evaluate(idx, pts, ref, work, omega);
+                    std::vector<double> V(nab * npad, 99.0);
+                    esp.evaluate_soa(idx, x.data(), y.data(), z.data(), npad,
+                                     V.data(), npad, omega);
+                    double max_diff = 0.0, max_ref = 0.0;
+                    for (int ab = 0; ab < nab; ++ab) {
+                        for (int i = 0; i < npt; ++i) {
+                            max_diff = std::max(
+                                max_diff, std::abs(V[ab * npad + i] - ref(i, ab)));
+                            max_ref = std::max(max_ref, std::abs(ref(i, ab)));
+                        }
+                    }
+                    INFO((spherical ? "spherical" : "cartesian")
+                         << " la=" << la << " lb=" << lb << " omega=" << omega
+                         << " max|ref|=" << max_ref);
+                    REQUIRE(max_diff <= 1e-12 * std::max(1.0, max_ref));
+                }
+            }
+        }
+    }
+}
+
 // The COSX exchange build drives ESPEvaluator over every significant shell
 // pair of the orbital basis: contracted shells, mixed angular momenta, and
 // two different centres. Check that path against libcint for every (la, lb)
@@ -459,4 +524,227 @@ TEST_CASE("Overlap integrals spherical", "[overlap][spherical][libcint]") {
     for (int i = 0; i < basis.nbf(); ++i) {
         REQUIRE(S(i, i) > 0.0);
     }
+}
+
+namespace esp_pair {
+// A contracted shell pair (three and two primitives) on nearby centres, for
+// the ESP derivative tests below.
+constexpr double ea[3] = {2.1, 0.7, 0.18}, eb[2] = {0.9, 0.22};
+constexpr double ca[3] = {0.3, 0.6, 0.5}, cb[2] = {0.7, 0.4};
+constexpr double A0[3] = {0.1, -0.2, 0.3}, B0[3] = {-0.4, 0.5, -0.1};
+} // namespace esp_pair
+
+// Centre derivatives of ESP pair integrals (the first-derivative rows of a
+// Hessian pair) against central differences of the integrals in the centres.
+TEST_CASE("ESP pair centre derivatives vs finite differences", "[esp][ints]") {
+  using occ::ints::ESPEvaluator;
+  using namespace esp_pair;
+  constexpr int PAD = ESPEvaluator<double>::soa_padding;
+  std::vector<double> x(PAD), y(PAD), z(PAD);
+  for (int g = 0; g < PAD; g++) {
+    x[g] = 0.8 * std::sin(1.3 * g);
+    y[g] = 0.9 * std::cos(0.7 * g) - 0.3;
+    z[g] = 0.5 + 0.04 * g;
+  }
+  const double h = 1e-5;
+  double worst = 0.0;
+  for (bool sph : {false, true})
+    for (int la = 0; la <= 4; la++)
+      for (int lb = 0; lb <= 4; lb++)
+        for (double omega : {0.0, 0.3}) {
+          auto values = [&](const double *A, const double *B) {
+            ESPEvaluator<double> esp(occ::ints::boys().table());
+            const size_t k =
+                esp.add_shell_pair(la, lb, 3, 2, ea, eb, ca, cb, A, B, sph);
+            std::vector<double> V(esp.nab(k) * PAD);
+            esp.evaluate_soa(k, x.data(), y.data(), z.data(), PAD, V.data(),
+                             PAD, omega);
+            return V;
+          };
+          ESPEvaluator<double> esp(occ::ints::boys().table());
+          esp.resize_hessian_pairs(1);
+          esp.set_shell_pair_hessian(0, la, lb, 3, 2, ea, eb, ca, cb, A0, B0,
+                                     sph);
+          const int nab = static_cast<int>(values(A0, B0).size()) / PAD;
+          std::vector<double> D(7 * nab * PAD);
+          esp.evaluate_soa_hessian(0, x.data(), y.data(), z.data(), PAD,
+                                   D.data(), PAD, nullptr, 0, nullptr, omega);
+          for (int centre = 0; centre < 2; centre++)
+            for (int d = 0; d < 3; d++) {
+              double Ap[3], Am[3], Bp[3], Bm[3];
+              std::copy(A0, A0 + 3, Ap);
+              std::copy(A0, A0 + 3, Am);
+              std::copy(B0, B0 + 3, Bp);
+              std::copy(B0, B0 + 3, Bm);
+              (centre == 0 ? Ap : Bp)[d] += h;
+              (centre == 0 ? Am : Bm)[d] -= h;
+              const auto Vp = values(Ap, Bp), Vm = values(Am, Bm);
+              for (int ab = 0; ab < nab; ab++)
+                for (int g = 0; g < PAD; g++) {
+                  const double fd =
+                      (Vp[ab * PAD + g] - Vm[ab * PAD + g]) / (2 * h);
+                  const double an =
+                      D[((1 + 3 * centre + d) * nab + ab) * PAD + g];
+                  worst = std::max(worst, std::abs(an - fd));
+                }
+            }
+        }
+  INFO("max |analytic - FD| = " << worst);
+  REQUIRE(worst < 1e-7);
+}
+
+// Hessian pairs: values against the value pairs, and the second derivatives
+// contracted with per-point weights against central differences of the
+// contracted first derivatives.
+TEST_CASE("ESP Hessian pairs vs finite differences", "[esp][ints]") {
+  using occ::ints::ESPEvaluator;
+  using namespace esp_pair;
+  // a fixed generic unit direction over (A_xyz, B_xyz)
+  const occ::Vec w = occ::test::generic_direction(6);
+  constexpr int PAD = ESPEvaluator<double>::soa_padding;
+  const int npts = 2 * PAD, npt = npts - 5; // padding points carry W = 0
+  std::vector<double> x(npts), y(npts), z(npts);
+  for (int g = 0; g < npts; g++) {
+    x[g] = 1.1 * std::sin(1.3 * g);
+    y[g] = 0.9 * std::cos(0.7 * g) - 0.3;
+    z[g] = 0.5 + 0.02 * g;
+  }
+  const double h = 1e-5;
+  double worst_v = 0.0, worst_h = 0.0;
+  for (bool sph : {false, true})
+    for (int la = 0; la <= 4; la++)
+      for (int lb = 0; lb <= 4; lb++)
+        for (double omega : {0.0, 0.3}) {
+          if (la + lb > 6 && omega != 0.0)
+            continue;
+          auto hessian = [&](const double *A, const double *B,
+                             std::vector<double> &V, const double *W, int ldw,
+                             double *out) {
+            ESPEvaluator<double> esp(occ::ints::boys().table());
+            esp.resize_hessian_pairs(1);
+            esp.set_shell_pair_hessian(0, la, lb, 3, 2, ea, eb, ca, cb, A, B,
+                                       sph);
+            esp.evaluate_soa_hessian(0, x.data(), y.data(), z.data(), npts,
+                                     V.data(), npts, W, ldw, out, omega);
+          };
+          ESPEvaluator<double> esp(occ::ints::boys().table());
+          const size_t k =
+              esp.add_shell_pair(la, lb, 3, 2, ea, eb, ca, cb, A0, B0, sph);
+          const int nab = esp.nab(k);
+          const int ldw = npts + 3;
+          std::vector<double> W(nab * ldw, 0.0);
+          for (int ab = 0; ab < nab; ab++)
+            for (int g = 0; g < npt; g++)
+              W[ab * ldw + g] = std::cos(0.37 * g + 1.1 * ab);
+          std::vector<double> V(nab * npts), Hv(7 * nab * npts);
+          esp.evaluate_soa(k, x.data(), y.data(), z.data(), npts, V.data(),
+                           npts, omega);
+          double out[21] = {};
+          hessian(A0, B0, Hv, W.data(), ldw, out);
+          for (int i = 0; i < nab * npts; i++)
+            worst_v = std::max(worst_v, std::abs(Hv[i] - V[i]));
+          // d/dc' of sum W d/dc A, c the derivative rows of V
+          auto first = [&](const std::vector<double> &Hd, int c) {
+            double s = 0.0;
+            for (int ab = 0; ab < nab; ab++)
+              for (int g = 0; g < npts; g++)
+                s += W[ab * ldw + g] * Hd[((1 + c) * nab + ab) * npts + g];
+            return s;
+          };
+          // Both centres move together along one generic direction w over
+          // their six coordinates: the w-derivative of each contracted first
+          // derivative against the second derivatives contracted with w.
+          static const int sym[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
+          double Ap[3], Am[3], Bp[3], Bm[3];
+          for (int e = 0; e < 3; e++) {
+            Ap[e] = A0[e] + h * w(e);
+            Am[e] = A0[e] - h * w(e);
+            Bp[e] = B0[e] + h * w(3 + e);
+            Bm[e] = B0[e] - h * w(3 + e);
+          }
+          std::vector<double> Vp(7 * nab * npts), Vm(7 * nab * npts);
+          hessian(Ap, Bp, Vp, nullptr, ldw, nullptr);
+          hessian(Am, Bm, Vm, nullptr, ldw, nullptr);
+          for (int c = 0; c < 6; c++) {
+            const double fd = (first(Vp, c) - first(Vm, c)) / (2 * h);
+            const int cc = c / 3, d = c % 3;
+            double an = 0.0;
+            for (int centre = 0; centre < 2; centre++)
+              for (int e = 0; e < 3; e++) {
+                double second;
+                if (cc == centre)
+                  second = out[(cc == 0 ? 0 : 15) + sym[d][e]];
+                else
+                  second = cc == 0 ? out[6 + 3 * d + e] : out[6 + 3 * e + d];
+                an += w(3 * centre + e) * second;
+              }
+            worst_h =
+                std::max(worst_h, std::abs(an - fd) / (1.0 + std::abs(fd)));
+          }
+        }
+  INFO("values " << worst_v << " second derivatives " << worst_h);
+  REQUIRE(worst_v < 1e-12);
+  REQUIRE(worst_h < 1e-6);
+}
+
+// The fused pass (values plus derivatives contracted with per-point weights)
+// against the separate values and the first-derivative rows of a Hessian
+// pair.
+TEST_CASE("ESP fused value and derivative contraction", "[esp][ints]") {
+  using occ::ints::ESPEvaluator;
+  using namespace esp_pair;
+  constexpr int PAD = ESPEvaluator<double>::soa_padding;
+  const int npts = 3 * PAD, npt = npts - 5; // padding points carry W = 0
+  std::vector<double> x(npts), y(npts), z(npts);
+  for (int g = 0; g < npts; g++) {
+    x[g] = 1.1 * std::sin(1.3 * g);
+    y[g] = 0.9 * std::cos(0.7 * g) - 0.3;
+    z[g] = 0.5 + 0.02 * g;
+  }
+  double worst_v = 0.0, worst_d = 0.0;
+  for (bool sph : {false, true})
+    for (int la = 0; la <= 4; la++)
+      for (int lb = 0; lb <= 4; lb++)
+        for (int ncent : {1, 2}) {
+          ESPEvaluator<double> esp(occ::ints::boys().table());
+          const size_t k =
+              esp.add_shell_pair(la, lb, 3, 2, ea, eb, ca, cb, A0, B0, sph);
+          esp.resize_derivative_pairs(1);
+          esp.set_shell_pair_derivative(0, la, lb, 3, 2, ea, eb, ca, cb, A0,
+                                        B0, sph);
+          esp.resize_hessian_pairs(1);
+          esp.set_shell_pair_hessian(0, la, lb, 3, 2, ea, eb, ca, cb, A0, B0,
+                                     sph);
+          const int nab = esp.nab(k);
+          const int ldw = npts + 3;
+          std::vector<double> W(nab * ldw, 0.0);
+          for (int ab = 0; ab < nab; ab++)
+            for (int g = 0; g < npt; g++)
+              W[ab * ldw + g] = std::cos(0.37 * g + 1.1 * ab);
+          std::vector<double> V(nab * npts), H(7 * nab * npts), A(nab * npts);
+          esp.evaluate_soa(k, x.data(), y.data(), z.data(), npts, V.data(),
+                           npts);
+          esp.evaluate_soa_hessian(0, x.data(), y.data(), z.data(), npts,
+                                   H.data(), npts, nullptr, 0, nullptr);
+          const double *D = H.data() + nab * npts; // d/dA_xyz, d/dB_xyz
+          double out[6] = {0, 0, 0, 0, 0, 0};
+          esp.evaluate_soa_value_and_derivative_contraction(
+              0, x.data(), y.data(), z.data(), npts, A.data(), npts, W.data(),
+              ldw, ncent, out);
+          for (int i = 0; i < nab * npts; i++)
+            worst_v = std::max(worst_v, std::abs(A[i] - V[i]));
+          for (int c = 0; c < 3 * ncent; c++) {
+            double ref = 0.0;
+            for (int ab = 0; ab < nab; ab++)
+              for (int g = 0; g < npts; g++)
+                ref += W[ab * ldw + g] * D[(c * nab + ab) * npts + g];
+            worst_d = std::max(worst_d,
+                               std::abs(out[c] - ref) / (1.0 + std::abs(ref)));
+          }
+          for (int c = 3 * ncent; c < 6; c++)
+            worst_d = std::max(worst_d, std::abs(out[c]));
+        }
+  INFO("values " << worst_v << " contracted derivatives " << worst_d);
+  REQUIRE(worst_v < 1e-12);
+  REQUIRE(worst_d < 1e-11);
 }

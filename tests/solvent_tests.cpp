@@ -22,7 +22,11 @@
 #include <occ/driver/cosmors_driver.h>
 #include <occ/driver/cosmors_solvation.h>
 #include <occ/io/xyz.h>
+#include <occ/qm/cphf.h>
+#include <occ/qm/gradients.h>
+#include <occ/qm/hessians.h>
 #include <occ/qm/hf.h>
+#include <occ/qm/integral_engine.h>
 #include <occ/qm/scf.h>
 #include <occ/scrf/reaction_field.h>
 #include <occ/solvent/cosmo.h>
@@ -34,6 +38,7 @@
 #include <occ/solvent/smd.h>
 #include <occ/solvent/solvation_correction.h>
 #include <occ/solvent/surface.h>
+#include "fd_test_utils.h"
 
 using occ::format_matrix;
 using occ::Mat;
@@ -1062,12 +1067,10 @@ TEST_CASE("Incremental Fock: solvation opts out on the core Hamiltonian",
 // Solvated geometry optimization
 // ============================================================================
 
-TEST_CASE("Geometry optimization: GFN2 optimises in solvent, other methods "
-          "refuse", "[solvent][opt][gfn2]") {
+TEST_CASE("Geometry optimization in solvent: GFN2 and HF optimise, methods "
+          "without gradients refuse", "[solvent][opt][gfn2]") {
   // `occ tb --opt --solvent X` used to drop the solvent on the floor and
-  // optimise in the gas phase without saying so. GFN2 is the one method whose
-  // SMD implementation has a gradient, so it is the one method the optimizer
-  // accepts a solvent for.
+  // optimise in the gas phase without saying so.
   using occ::core::Molecule;
 
   occ::IVec nums(3);
@@ -1107,14 +1110,410 @@ TEST_CASE("Geometry optimization: GFN2 optimises in solvent, other methods "
   // solvent gives exactly the gas-phase geometry back.
   REQUIRE(r_solv > r_gas + 1e-3);
 
-  // Everything else still refuses rather than quietly optimising in vacuum.
-  REQUIRE_THROWS_WITH(occ::driver::geometry_optimization(input("hf", "water")),
-                      Catch::Matchers::ContainsSubstring("Solvated gradients"));
+  // Hartree-Fock (and DFT) have analytic solvated gradients too; the point is
+  // again that the solvent changes the result, not the direction (at
+  // HF/STO-3G the bond shortens slightly).
+  const double r_hf_gas =
+      bond_length(occ::driver::geometry_optimization(input("hf", "")));
+  const double r_hf_solv =
+      bond_length(occ::driver::geometry_optimization(input("hf", "water")));
+  INFO("HF r(OH) gas = " << r_hf_gas << " A, in water = " << r_hf_solv
+                         << " A");
+  REQUIRE(std::abs(r_hf_solv - r_hf_gas) > 1e-3);
+
+  // Methods without gradients still refuse rather than optimising in vacuum.
+  REQUIRE_THROWS(occ::driver::geometry_optimization(input("mp2", "water")));
 
   // The driver writes these into the working directory with fallback names
   // when the input has no filename; don't leave them in the source tree.
   for (const char *f : {"opt_traj.xyz", "occ_step_log.txt", "optimized.xyz"}) {
     std::error_code ec;
     std::filesystem::remove(f, ec);
+  }
+}
+
+// ============================================================================
+// Nuclear derivatives of the continuum solvation energy (HF/DFT)
+// ============================================================================
+
+namespace {
+
+using occ::IVec;
+using occ::qm::MolecularOrbitals;
+using occ::qm::SpinorbitalKind;
+
+// Distorted water (Bohr): no symmetry to hide a sign error.
+std::vector<occ::core::Atom> distorted_water() {
+  return {{8, 0.05, -0.03, 0.2217561},
+          {1, 0.0, 1.4309485, -0.8870244},
+          {1, 0.1, -1.38, -0.92}};
+}
+
+// Cyanoacetamide (Angstrom): every SMD surface-tension term that has a
+// non-zero coefficient in water or 1-octanol, including N,C(3) and the
+// three-body N,C term.
+occ::Mat3N cyanoacetamide_bohr(IVec &Z) {
+  Z.resize(10);
+  Z << 6, 6, 7, 6, 8, 7, 1, 1, 1, 1;
+  occ::Mat3N pos(3, 10);
+  pos << 0.00, -1.46, -2.61, 1.52, 2.13, 2.17, -0.36, -0.37, 3.17, 1.64, //
+      0.00, 0.05, 0.10, 0.02, 1.07, -1.16, -0.52, -0.50, -1.21, -2.02,   //
+      0.00, 0.02, 0.03, -0.03, 0.02, 0.05, 0.89, -0.88, 0.10, 0.04;
+  return pos * occ::units::ANGSTROM_TO_BOHR;
+}
+
+occ::scrf::Options smd_options(const std::string &solvent, bool cds) {
+  occ::scrf::Options o;
+  o.radii = occ::scrf::Options::Radii::SmdIntrinsicCoulomb;
+  o.solvent = solvent;
+  o.include_cds = cds;
+  o.smoothing_width_bohr = 0.1;
+  return o;
+}
+
+using occ::test::displaced_along;
+using occ::test::flat;
+using occ::test::generic_direction;
+
+template <typename Proc>
+double tight_scf(Proc &proc, SpinorbitalKind sk, int charge, int mult,
+                 MolecularOrbitals *mo = nullptr, const Mat &Vext = Mat()) {
+  occ::qm::SCF<Proc> scf(proc, sk);
+  scf.set_charge_multiplicity(charge, mult);
+  scf.convergence_settings.energy_threshold = 1e-11;
+  scf.convergence_settings.commutator_threshold = 1e-9;
+  if (Vext.size() > 0)
+    scf.set_external_potential(Vext, 0.0, "field");
+  const double e = scf.compute_scf_energy();
+  if (mo)
+    *mo = scf.molecular_orbitals();
+  return e;
+}
+
+// The analytic solvated gradient along a generic direction v against the
+// central difference of the solvated SCF energy; returns |g . v - FD|.
+template <typename MakeProc>
+double solvated_gradient_error(MakeProc make, SpinorbitalKind sk, int charge,
+                               int mult) {
+  using occ::solvent::SolvationCorrectedProcedure;
+  const auto atoms0 = distorted_water();
+  auto energy = [&](const std::vector<occ::core::Atom> &atoms,
+                    occ::Mat3N *grad) {
+    auto basis = occ::gto::AOBasis::load(atoms, "6-31g");
+    auto proc = make(basis);
+    proc.set_system_charge(charge);
+    SolvationCorrectedProcedure<decltype(proc)> solv(proc, "water");
+    MolecularOrbitals mo;
+    const double e = tight_scf(solv, sk, charge, mult, &mo);
+    if (grad)
+      *grad = occ::qm::GradientEvaluator(solv)(mo);
+    return e;
+  };
+  occ::Mat3N g;
+  energy(atoms0, &g);
+  const Vec v = generic_direction(atoms0);
+  const double fd = occ::test::directional_difference(
+      atoms0, v, 5e-4,
+      [&](const std::vector<occ::core::Atom> &a) { return energy(a, nullptr); });
+  return std::abs(flat(g).dot(v) - fd);
+}
+
+} // namespace
+
+TEST_CASE("CDS gradient is the derivative of the CDS energy",
+          "[solvent][gradient][cds]") {
+  const std::string solvent = GENERATE(as<std::string>{}, "water", "1-octanol");
+  IVec Z;
+  const occ::Mat3N pos = cyanoacetamide_bohr(Z);
+  auto cds_energy = [&](const occ::Mat3N &p) {
+    occ::scrf::ReactionFieldEngine engine(smd_options(solvent, true));
+    engine.initialize(p, Z);
+    return engine.energy_cds();
+  };
+  occ::scrf::ReactionFieldEngine engine(smd_options(solvent, true));
+  engine.initialize(pos, Z);
+  const Vec g = flat(engine.cds_gradient());
+  const Vec v = generic_direction(g.size());
+  const occ::Mat3N dv = Eigen::Map<const occ::Mat3N>(v.data(), 3, Z.size());
+  const double h = 1e-4;
+  const double fd =
+      (cds_energy(pos + h * dv) - cds_energy(pos - h * dv)) / (2 * h);
+  const double err = std::abs(g.dot(v) - fd);
+  fmt::print("CDS gradient ({}): |g| {:.3e}, |g.v - FD| {:.2e}\n", solvent,
+             g.norm(), err);
+  REQUIRE(g.norm() > 1e-4);
+  REQUIRE(err < 1e-9);
+}
+
+TEST_CASE("Cavity derivative pieces vs finite differences",
+          "[solvent][hessian][cavity]") {
+  // Atom-charge source, fixed sigma: dphi, (dA/dx) sigma and the fixed-sigma
+  // Hessian each against central differences along v of the quantity they
+  // differentiate, then the full Hessian of E_es = 1/2 q.J.q.
+  IVec Z;
+  const occ::Mat3N pos = cyanoacetamide_bohr(Z);
+  const Vec q = Z.cast<double>() * 0.1 - Vec::Constant(Z.size(), 0.3);
+  const auto opts = smd_options("water", false);
+  auto make = [&](const occ::Mat3N &p) {
+    occ::scrf::ReactionFieldEngine e(opts);
+    e.initialize(p, Z);
+    return e;
+  };
+  auto engine = make(pos);
+  engine.update_from_atom_charges(q);
+  const Vec sigma = engine.surface_charges();
+  const double f = engine.f_epsilon();
+  const auto d = engine.es_derivatives(sigma, q);
+  const Mat W = f * d.dphi + d.dA_sigma;
+  const Mat H = d.hessian + W.transpose() * (-engine.solve_cavity(W)) / f;
+
+  // The smooth cavity's areas vary steeply (elements near a neighbour's
+  // sphere), so central differences need a small step: h^2 truncation is
+  // 1e-4 of the largest Hessian element at h = 1e-4.
+  const double h = 2e-6;
+  const Vec v = generic_direction(3 * Z.size());
+  const occ::Mat3N dv = Eigen::Map<const occ::Mat3N>(v.data(), 3, Z.size());
+  auto ep = make(pos + h * dv), em = make(pos - h * dv);
+  REQUIRE(ep.num_es_surface_points() == engine.num_es_surface_points());
+  REQUIRE(em.num_es_surface_points() == engine.num_es_surface_points());
+  const Vec dphi = (ep.B() - em.B()) * q / (2 * h);
+  const Mat Ap = occ::scrf::detail::build_cosmo_A(ep.es_cavity().vertices,
+                                                  ep.es_cavity().areas);
+  const Mat Am = occ::scrf::detail::build_cosmo_A(em.es_cavity().vertices,
+                                                  em.es_cavity().areas);
+  const Vec dA = (Ap - Am) * sigma / (2 * h);
+  const Vec dfixed =
+      (flat(ep.es_gradient(sigma, q)) - flat(em.es_gradient(sigma, q))) /
+      (2 * h);
+  ep.update_from_atom_charges(q);
+  em.update_from_atom_charges(q);
+  const Vec dfull = (flat(ep.gradient()) - flat(em.gradient())) / (2 * h);
+  const double err_phi = (dphi - d.dphi * v).cwiseAbs().maxCoeff();
+  const double err_A = (dA - d.dA_sigma * v).cwiseAbs().maxCoeff();
+  const double err_fixed = (dfixed - d.hessian * v).cwiseAbs().maxCoeff();
+  const double err_full = (dfull - H * v).cwiseAbs().maxCoeff();
+  fmt::print("cavity pieces along v, max |analytic - FD|: dphi {:.2e}, "
+             "dA.sigma {:.2e}, fixed-sigma Hessian {:.2e}, full Hessian {:.2e} "
+             "(|H| {:.2e})\n",
+             err_phi, err_A, err_fixed, err_full, H.cwiseAbs().maxCoeff());
+  REQUIRE(err_phi < 1e-7);
+  REQUIRE(err_A < 1e-7);
+  REQUIRE(err_fixed < 1e-7);
+  REQUIRE(err_full < 1e-7);
+  REQUIRE((H - H.transpose()).cwiseAbs().maxCoeff() <
+          1e-10 * std::max(1.0, H.cwiseAbs().maxCoeff()));
+}
+
+TEST_CASE("Point-charge integral derivatives vs finite differences",
+          "[solvent][gradient][hessian][ints]") {
+  // Charges riding on atoms 0, 1, 2 and one fixed in space; a fixed AO
+  // density while the basis functions move with their atoms.
+  const auto atoms0 = distorted_water();
+  occ::Mat3N offsets(3, 4);
+  offsets << 2.1, -1.0, 0.3, 1.5, //
+      0.4, 2.2, -1.9, 0.2,        //
+      -1.3, 0.5, 1.1, 2.4;
+  IVec owner(4);
+  owner << 0, 1, 2, -1;
+  Vec q(4);
+  q << 0.3, -0.7, 0.45, 0.2;
+  auto points_at = [&](const std::vector<occ::core::Atom> &atoms) {
+    occ::Mat3N p = offsets;
+    for (int k = 0; k < 4; k++)
+      if (owner(k) >= 0)
+        p.col(k) += atoms[owner(k)].position();
+    return p;
+  };
+  auto basis0 = occ::gto::AOBasis::load(atoms0, "6-31g(d,p)");
+  const auto nbf = basis0.nbf();
+  Mat D = Mat::Random(nbf, nbf);
+  D = (0.5 * (D + D.transpose())).eval();
+
+  occ::qm::HartreeFock hf0(basis0);
+  const auto &ints0 = hf0.integral_engine();
+  const Mat3N pts0 = points_at(atoms0);
+  const Mat G = ints0.point_charge_potential_derivatives(D, pts0, owner);
+  const Mat H = ints0.point_charge_hessian(D, q, pts0, owner);
+  const auto F1 = ints0.point_charge_derivative_matrices(q, pts0, owner);
+  // Consistency of the matrices with the potentials.
+  const auto M = ints0.point_charge_matrices(q, pts0);
+  const Mat V = ints0.point_charge_potentials({D}, pts0);
+  REQUIRE(std::abs(D.cwiseProduct(M[0]).sum() - q.dot(V.col(0))) < 1e-10);
+
+  const double h = 1e-4;
+  const Vec v = generic_direction(atoms0);
+  Mat F1v = Mat::Zero(nbf, nbf);
+  for (int k = 0; k < 9; k++)
+    F1v += v(k) * F1[k];
+  const auto ap = displaced_along(atoms0, v, h),
+             am = displaced_along(atoms0, v, -h);
+  occ::qm::HartreeFock hp(occ::gto::AOBasis::load(ap, "6-31g(d,p)"));
+  occ::qm::HartreeFock hm(occ::gto::AOBasis::load(am, "6-31g(d,p)"));
+  const auto &ip = hp.integral_engine(), &im = hm.integral_engine();
+  const Mat3N pp = points_at(ap), pm = points_at(am);
+  const Vec dV = (ip.point_charge_potentials({D}, pp) -
+                  im.point_charge_potentials({D}, pm)) /
+                 (2 * h);
+  const Vec dG = (ip.point_charge_potential_derivatives(D, pp, owner) -
+                  im.point_charge_potential_derivatives(D, pm, owner)) *
+                 q / (2 * h);
+  const Mat dM = (ip.point_charge_matrices(q, pp)[0] -
+                  im.point_charge_matrices(q, pm)[0]) /
+                 (2 * h);
+  const double err_g = (dV - G.transpose() * v).cwiseAbs().maxCoeff();
+  const double err_h = (dG - H * v).cwiseAbs().maxCoeff();
+  const double err_f = (dM - F1v).cwiseAbs().maxCoeff();
+  fmt::print("point-charge integrals along v, max |analytic - FD|: potential "
+             "derivatives {:.2e}, Hessian {:.2e}, derivative matrices "
+             "{:.2e}\n",
+             err_g, err_h, err_f);
+  REQUIRE(err_g < 1e-7);
+  REQUIRE(err_h < 1e-7);
+  REQUIRE(err_f < 1e-7);
+}
+
+TEST_CASE("Solvated SCF gradients vs finite differences",
+          "[solvent][gradient]") {
+  occ::log::set_log_level(spdlog::level::warn);
+  SECTION("RHF") {
+    const double err = solvated_gradient_error(
+        [](const occ::gto::AOBasis &b) { return occ::qm::HartreeFock(b); },
+        SpinorbitalKind::Restricted, 0, 1);
+    fmt::print("RHF/6-31G in water: |g.v - FD| = {:.2e}\n", err);
+    REQUIRE(err < 1e-6);
+  }
+  SECTION("UHF") {
+    const double err = solvated_gradient_error(
+        [](const occ::gto::AOBasis &b) { return occ::qm::HartreeFock(b); },
+        SpinorbitalKind::Unrestricted, 1, 2);
+    fmt::print("UHF/6-31G H2O+ in water: |g.v - FD| = {:.2e}\n", err);
+    REQUIRE(err < 1e-6);
+  }
+  SECTION("PBE") {
+    const double err = solvated_gradient_error(
+        [&](const occ::gto::AOBasis &b) {
+          return occ::dft::DFT("pbe", b, occ::test::coarse_grid());
+        },
+        SpinorbitalKind::Restricted, 0, 1);
+    fmt::print("PBE/6-31G in water: |g.v - FD| = {:.2e}\n", err);
+    REQUIRE(err < 1e-5);
+  }
+}
+
+TEST_CASE("CPHF polarisability in solvent matches finite field",
+          "[solvent][cphf][polarisability]") {
+  occ::log::set_log_level(spdlog::level::warn);
+  using occ::solvent::SolvationCorrectedProcedure;
+  auto basis = occ::gto::AOBasis::load(distorted_water(), "6-31g(d,p)");
+  occ::qm::HartreeFock hf(basis);
+  SolvationCorrectedProcedure<occ::qm::HartreeFock> solv(hf, "water");
+  constexpr auto R = SpinorbitalKind::Restricted;
+  MolecularOrbitals mo;
+  tight_scf(solv, R, 0, 1, &mo);
+  const auto r = hf.integral_engine().dipole_matrices();
+  auto solve = [&](auto &proc) {
+    occ::qm::cphf::Solver solver(
+        mo, [&](const std::vector<Mat> &Cx) {
+          return proc.compute_response_fock_occ(mo, Cx);
+        });
+    std::vector<Mat> B;
+    for (int x = 0; x < 3; x++)
+      B.push_back(-solver.vo_block(r[x]));
+    auto res = solver.solve(B);
+    REQUIRE(res.converged);
+    occ::Mat3 alpha;
+    for (int x = 0; x < 3; x++)
+      for (int y = 0; y < 3; y++)
+        alpha(x, y) =
+            -4.0 * solver.vo_block(r[x]).cwiseProduct(res.U[y]).sum();
+    return alpha;
+  };
+  const occ::Mat3 alpha = solve(solv);
+  // Without the reaction field's response (gas-phase kernel at the solvated
+  // orbitals) the answer is visibly different.
+  const occ::Mat3 alpha_frozen = solve(hf);
+  // alpha f against the finite-field derivative of the electronic dipole,
+  // for one generic field direction f.
+  const double h = 5e-4;
+  const Vec f = generic_direction(3);
+  const Mat Vf = f(0) * r[0] + f(1) * r[1] + f(2) * r[2];
+  MolecularOrbitals mp, mm;
+  tight_scf(solv, R, 0, 1, &mp, Mat(h * Vf));
+  tight_scf(solv, R, 0, 1, &mm, Mat(-h * Vf));
+  const Vec fd = -(occ::test::electronic_dipole(mp, r) -
+                   occ::test::electronic_dipole(mm, r)) /
+                 (2 * h);
+  const Vec af = alpha * f, af_frozen = alpha_frozen * f;
+  const double err = (af - fd).cwiseAbs().maxCoeff();
+  fmt::print("alpha f in water: |CPHF - finite field| {:.2e} (no solvent "
+             "response {:.2e})\n",
+             err, (af_frozen - fd).cwiseAbs().maxCoeff());
+  REQUIRE(err < 1e-4 * af.cwiseAbs().maxCoeff());
+  REQUIRE((af_frozen - fd).cwiseAbs().maxCoeff() > 1e-2);
+  REQUIRE((alpha - alpha.transpose()).cwiseAbs().maxCoeff() < 1e-7);
+}
+
+TEST_CASE("Analytic solvated Hessian vs finite differences of the gradient",
+          "[solvent][hessian]") {
+  occ::log::set_log_level(spdlog::level::warn);
+  using occ::qm::HessianEvaluator;
+  using occ::solvent::SolvationCorrectedProcedure;
+  // H v against the central difference of the analytic solvated gradient
+  // along a generic direction v; for COSX, whose gradient Jacobian is not
+  // symmetric, projections on two directions of its symmetric part.
+  auto run = [](auto &proc, const std::string &label,
+                SpinorbitalKind kind = SpinorbitalKind::Restricted,
+                int charge = 0, int multiplicity = 1, bool cosx = false) {
+    using P = SolvationCorrectedProcedure<std::remove_reference_t<decltype(proc)>>;
+    P solv(proc, "water");
+    REQUIRE(solv.analytic_hessian_unsupported(kind).empty());
+    const auto convergence = occ::test::scf_convergence(1e-11, 1e-9);
+    occ::qm::SCF<P> scf(solv, kind);
+    scf.set_charge_multiplicity(charge, multiplicity);
+    scf.convergence_settings = convergence;
+    scf.compute_scf_energy();
+    auto wfn = scf.wavefunction();
+
+    HessianEvaluator<P> analytic(solv);
+    analytic.set_method(HessianEvaluator<P>::Method::Analytical);
+    const Mat H = analytic(wfn);
+    double err;
+    if (cosx) {
+      err = occ::test::symmetric_projection_error(solv, wfn, H, 1e-3,
+                                                  convergence);
+    } else {
+      const Vec v = generic_direction(solv.atoms());
+      err = occ::test::max_abs(H * v - occ::test::gradient_difference_along(
+                                           solv, wfn, v, 1e-3, convergence));
+    }
+    const double tsum = occ::test::translational_sum_error(H);
+    fmt::print("{} in water: max |analytic - FD| along {} = {:.2e}, "
+               "translational sum {:.1e}\n",
+               label, cosx ? "v1, v2" : "v", err, tsum);
+    REQUIRE(err < 1e-5);
+    REQUIRE(tsum < 1e-7);
+    REQUIRE(occ::test::asymmetry(H) < 1e-10 * std::max(1.0, occ::test::max_abs(H)));
+  };
+  auto basis = occ::gto::AOBasis::load(distorted_water(), "6-31g");
+  SECTION("RHF") {
+    occ::qm::HartreeFock hf(basis);
+    run(hf, "RHF/6-31G");
+  }
+  SECTION("UHF cation") {
+    occ::qm::HartreeFock hf(basis);
+    run(hf, "UHF/6-31G H2O+", SpinorbitalKind::Unrestricted, 1, 2);
+  }
+  SECTION("RHF COSX") {
+    occ::qm::HartreeFock hf(basis);
+    hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid1);
+    occ::qm::cosx::Settings cs;
+    cs.f_threshold = 1e-14;
+    hf.set_cosx_settings(cs);
+    run(hf, "RHF/COSX/6-31G", SpinorbitalKind::Restricted, 0, 1, true);
+  }
+  SECTION("PBE") {
+    occ::dft::DFT dft("pbe", basis, occ::test::coarse_grid());
+    dft.set_xc_screening_threshold(0.0);
+    run(dft, "PBE/6-31G");
   }
 }

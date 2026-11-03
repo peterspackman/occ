@@ -1850,9 +1850,10 @@ TEST_CASE("plan_acceleration applies the ORCA-style policy", "[acceleration]") {
   const std::size_t large = static_cast<std::size_t>(crossover) + 1;
 
   SECTION("Auto density-fits the Coulomb term for a pure GGA, no COSX") {
+    // only J is fitted, so the Coulomb-only fitting basis (def2/J)
     auto p = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large,
                                /*exact_exchange=*/0.0, "", false);
-    REQUIRE(p.df_basis == "def2-universal-jkfit");
+    REQUIRE(p.df_basis == "def2-universal-jfit");
     REQUIRE_FALSE(p.use_cosx);
   }
 
@@ -1866,7 +1867,7 @@ TEST_CASE("plan_acceleration applies the ORCA-style policy", "[acceleration]") {
   SECTION("Auto switches to COSX above the crossover for exact exchange") {
     auto hf = plan_acceleration(RIPolicy::Auto, "def2-tzvp", large,
                                 /*exact_exchange=*/1.0, "", false);
-    REQUIRE(hf.df_basis == "def2-universal-jkfit");
+    REQUIRE(hf.df_basis == "def2-universal-jfit"); // RIJCOSX: J-only fit
     REQUIRE(hf.use_cosx);
 
     // hybrid DFT (nonzero exact exchange) behaves like HF
@@ -1902,7 +1903,7 @@ TEST_CASE("plan_acceleration applies the ORCA-style policy", "[acceleration]") {
 
     auto cosx = plan_acceleration(RIPolicy::COSX, "def2-tzvp", small, 1.0, "",
                                   false);
-    REQUIRE(cosx.df_basis == "def2-universal-jkfit");
+    REQUIRE(cosx.df_basis == "def2-universal-jfit");
     REQUIRE(cosx.use_cosx);
 
     // COSX requested but pure GGA -> no exact exchange to replace
@@ -2003,6 +2004,44 @@ TEST_CASE("Incremental Fock: converged energy is unchanged",
   }
 }
 
+// COSX exchange is linear on its grid, so difference-density builds are
+// valid; they stop below the screen's floor, so the converged energy is the
+// full build's. Covers a fixed grid and the frozen-correction schedule.
+TEST_CASE("Incremental Fock: COSX converges to the full-build energy",
+          "[scf][incremental][cosx]") {
+  auto basis = occ::gto::AOBasis::load(incremental_test_atoms(), "def2-svp");
+  const auto sched = occ::qm::COSXGridSchedule::for_gradients();
+  auto run = [&](int schedule, bool allow_incremental) {
+    HartreeFock hf(basis);
+    if (schedule)
+      hf.set_cosx_grid_schedule(sched);
+    else
+      hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid2);
+    occ::qm::SCF<HartreeFock> scf(hf);
+    scf.convergence_settings.energy_threshold = 1e-10;
+    scf.convergence_settings.commutator_threshold = 1e-8;
+    // Schedule 2: incremental builds start on the very iteration after the
+    // grid switch, which must still be a full build.
+    if (schedule == 2)
+      scf.convergence_settings.incremental_fock_threshold =
+          sched.refine_threshold;
+    if (!allow_incremental)
+      scf.convergence_settings.incremental_fock_threshold = 0.0;
+    IncrementalRun r;
+    r.energy = scf.compute_scf_energy();
+    r.incremental_builds = scf.num_incremental_fock_builds;
+    REQUIRE(scf.ctx.converged);
+    return r;
+  };
+  for (int schedule : {0, 1, 2}) {
+    INFO("schedule = " << schedule);
+    auto on = run(schedule, true), off = run(schedule, false);
+    REQUIRE(on.incremental_builds > 0);
+    REQUIRE(off.incremental_builds == 0);
+    REQUIRE(on.energy == Catch::Approx(off.energy).margin(1e-9));
+  }
+}
+
 TEST_CASE("Incremental Fock: disabled when the Fock build isn't incremental-safe",
           "[scf][incremental]") {
   auto atoms = incremental_test_atoms();
@@ -2011,16 +2050,6 @@ TEST_CASE("Incremental Fock: disabled when the Fock build isn't incremental-safe
   SECTION("density fitting") {
     HartreeFock hf(basis);
     hf.set_density_fitting_basis("def2-universal-jkfit");
-    REQUIRE_FALSE(supports_incremental_fock_build(hf.fock_build_properties()));
-    occ::qm::SCF<HartreeFock> scf(hf);
-    REQUIRE_FALSE(scf.incremental_fock_supported());
-    (void)scf.compute_scf_energy();
-    REQUIRE(scf.num_incremental_fock_builds == 0);
-  }
-
-  SECTION("COSX") {
-    HartreeFock hf(basis);
-    hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid1);
     REQUIRE_FALSE(supports_incremental_fock_build(hf.fock_build_properties()));
     occ::qm::SCF<HartreeFock> scf(hf);
     REQUIRE_FALSE(scf.incremental_fock_supported());
@@ -2487,7 +2516,10 @@ size_t engine_packed_bytes(const DFStoreCase &c) {
   return df_store_engine(c, DFPolicy::Direct)->packed_storage_bytes();
 }
 
-void require_same_jk(const DFStoreCase &c, occ::qm::IntegralEngineDF &df) {
+// rel_J: split RI-J (what `Choose` uses for J when the complete store does
+// not fit) screens its primitive integrals, so it agrees to ~1e-11 relative.
+void require_same_jk(const DFStoreCase &c, occ::qm::IntegralEngineDF &df,
+                     double rel_J = 1e-12) {
   auto direct = df_store_engine(c, DFPolicy::Direct);
   const Mat Jd = direct->coulomb(c.mo), Kd = direct->exchange(c.mo);
   const Mat J = df.coulomb(c.mo), K = df.exchange(c.mo);
@@ -2495,7 +2527,7 @@ void require_same_jk(const DFStoreCase &c, occ::qm::IntegralEngineDF &df) {
   REQUIRE(K.cols() == Kd.cols());
   // relative to the matrix: random orbitals give large entries, and a
   // complete store applies L^-1 before the contraction, the direct build after
-  const double tol_J = 1e-12 * std::max(1.0, max_abs(Jd));
+  const double tol_J = rel_J * std::max(1.0, max_abs(Jd));
   const double tol_K = 1e-12 * std::max(1.0, max_abs(Kd));
   INFO("max |J| " << max_abs(Jd) << " max |dJ| " << max_abs(J - Jd)
                   << " max |K| " << max_abs(Kd) << " max |dK| "
@@ -2533,15 +2565,12 @@ TEST_CASE("Packed DF store matches the direct builds", "[df][df-store]") {
     require_same_jk(c, *df);
   }
 
-  SECTION("Choose under half the budget stores part") {
+  SECTION("Choose under half the budget uses split RI-J, stores nothing") {
     auto c = df_store_case<SpinorbitalKind::Restricted>(two_waters(), 10, 10);
     const size_t full = engine_packed_bytes(c);
     auto df = df_store_engine(c, DFPolicy::Choose, full / 2);
-    require_same_jk(c, *df);
-    const auto &st = df->packed_store();
-    REQUIRE_FALSE(st.empty());
-    REQUIRE_FALSE(st.complete());
-    REQUIRE(st.bytes() <= full / 2);
+    require_same_jk(c, *df, 1e-10);
+    REQUIRE_FALSE(df->packed_store().built());
   }
 
   SECTION("Choose that cannot store everything builds nothing for J+K") {
@@ -2556,16 +2585,17 @@ TEST_CASE("Packed DF store matches the direct builds", "[df][df-store]") {
     REQUIRE_FALSE(df->packed_store().built());
     REQUIRE(max_abs(jk.J - jk_direct.J) < 1e-10);
     REQUIRE(max_abs(jk.K - jk_direct.K) < 1e-10);
-    df->coulomb(c.mo);
-    REQUIRE_FALSE(df->packed_store().empty());
-    REQUIRE_FALSE(df->packed_store().complete());
+    // ...and J goes to split RI-J rather than a partial store
+    REQUIRE(max_abs(df->coulomb(c.mo) - jk_direct.J) <
+            1e-10 * std::max(1.0, max_abs(jk_direct.J)));
+    REQUIRE_FALSE(df->packed_store().built());
   }
 
   SECTION("Choose under a tiny budget stores nothing") {
     auto c = df_store_case<SpinorbitalKind::Unrestricted>(methyl(), 5, 4);
     auto df = df_store_engine(c, DFPolicy::Choose, 1);
-    require_same_jk(c, *df);
-    REQUIRE(df->packed_store().empty());
+    require_same_jk(c, *df, 1e-10);
+    REQUIRE_FALSE(df->packed_store().built());
   }
 }
 

@@ -1,10 +1,15 @@
 #include <fmt/core.h>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <occ/core/format_matrix.h>
 #include <occ/core/util.h>
 #include <occ/qm/hf.h>
+#include <occ/qm/integral_engine_df.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/gradients.h>
+#include <occ/qm/seminumerical_exchange.h>
+#include <functional>
+#include "fd_test_utils.h"
 
 using occ::format_matrix;
 using occ::Mat;
@@ -296,4 +301,400 @@ TEST_CASE("GHF gradient of a collinear radical matches UHF",
   const Mat3N g_rot = occ::qm::GradientEvaluator(ghf)(rotated);
   fmt::print("GHF gradient, spin axis turned\n{}\n", format_matrix(g_rot));
   REQUIRE(all_close(g_rot, g_u, 1e-6, 1e-6));
+}
+
+
+// =============================================================================
+// ECP, COSX and density-fitted gradients
+// =============================================================================
+
+namespace {
+
+using occ::qm::MolecularOrbitals;
+using occ::qm::SpinorbitalKind;
+using occ::test::Atoms;
+using occ::test::distorted_water;
+using occ::test::directional_difference;
+using occ::test::generic_direction;
+using occ::test::max_abs;
+using occ::Vec;
+
+struct Spin {
+  SpinorbitalKind kind{SpinorbitalKind::Restricted};
+  int charge{0}, multiplicity{1};
+  const char *label() const {
+    return kind == SpinorbitalKind::Restricted ? "RHF" : "UHF";
+  }
+};
+// The water cation: a non-degenerate doublet, so the state cannot switch
+// between displaced geometries.
+constexpr Spin closed_shell{};
+constexpr Spin water_cation{SpinorbitalKind::Unrestricted, 1, 2};
+
+using Setup = std::function<void(HartreeFock &)>;
+using Converged = std::function<void(HartreeFock &, const MolecularOrbitals &)>;
+
+// Tightly converged HF energy on `atoms`, `setup` choosing the J/K
+// approximation; `done` sees the converged procedure and orbitals.
+double hf_energy(const Atoms &atoms, const std::string &basis_name, Spin spin,
+                 const Setup &setup, const Converged &done = {}) {
+  HartreeFock hf(occ::gto::AOBasis::load(atoms, basis_name));
+  setup(hf);
+  occ::qm::SCF<HartreeFock> scf(hf, spin.kind);
+  scf.set_charge_multiplicity(spin.charge, spin.multiplicity);
+  scf.convergence_settings.energy_threshold = 1e-12;
+  scf.convergence_settings.commutator_threshold = 1e-10;
+  const double e = scf.compute_scf_energy();
+  if (done)
+    done(hf, scf.molecular_orbitals());
+  return e;
+}
+
+// Orbitals at default convergence: for tests that hold the density fixed.
+MolecularOrbitals scf_orbitals(HartreeFock &hf, Spin spin = closed_shell) {
+  occ::qm::SCF<HartreeFock> scf(hf, spin.kind);
+  scf.set_charge_multiplicity(spin.charge, spin.multiplicity);
+  scf.compute_scf_energy();
+  return scf.molecular_orbitals();
+}
+
+// COSX exchange on a fixed grid level, unscreened so that finite differences
+// see a smooth surface.
+Setup cosx(occ::numint::COSXGridLevel level) {
+  return [level](HartreeFock &hf) {
+    hf.set_cosx_exchange(level);
+    occ::qm::cosx::Settings cs;
+    cs.f_threshold = 1e-14;
+    hf.set_cosx_settings(cs);
+  };
+}
+
+occ::gto::AOBasis load_basis(const Atoms &atoms, const char *name, bool pure) {
+  auto b = occ::gto::AOBasis::load(atoms, name);
+  b.set_pure(pure);
+  return b;
+}
+
+// def2-SVP with the def2 universal JK fitting basis.
+occ::qm::IntegralEngineDF df_engine(const Atoms &atoms, bool pure,
+                                    double omega = 0.0) {
+  occ::qm::IntegralEngineDF df(
+      atoms, load_basis(atoms, "def2-svp", pure).shells(),
+      load_basis(atoms, "def2-universal-jkfit", pure).shells());
+  df.set_range_separated_omega(omega);
+  return df;
+}
+
+// The SCF density alone (RI-J builds from D, not the orbitals).
+MolecularOrbitals density_only(const MolecularOrbitals &mo) {
+  MolecularOrbitals m;
+  m.kind = mo.kind;
+  m.D = mo.D;
+  return m;
+}
+
+const char *basis_kind(bool pure) { return pure ? "spherical" : "Cartesian"; }
+
+// |g . v - fd|: an analytic gradient against the central difference of its
+// energy along the unit direction v.
+double error_along(const Mat3N &g, const occ::Vec &v, double fd) {
+  return std::abs(occ::test::flat(g).dot(v) - fd);
+}
+
+// sum_k v_k M_k: per-coordinate derivative matrices along v.
+Mat along(const std::vector<Mat> &M, const occ::Vec &v) {
+  Mat sum = Mat::Zero(M[0].rows(), M[0].cols());
+  for (size_t k = 0; k < M.size(); k++)
+    sum += v(k) * M[k];
+  return sum;
+}
+
+} // namespace
+
+// Effective core potentials: the ECP derivative term, the effective (not bare)
+// charge in the Hellmann-Feynman term, and both spin blocks for open shells.
+TEST_CASE("ECP gradient vs finite differences (HI def2-SVP)",
+          "[gradient][ecp]") {
+  const Spin spin{GENERATE(SpinorbitalKind::Restricted,
+                           SpinorbitalKind::Unrestricted)};
+  // bohr, off-axis so every component is exercised
+  const Atoms atoms{{53, 0.05, -0.02, 0.0}, {1, 0.31, 0.22, 3.02}};
+  REQUIRE(occ::gto::AOBasis::load(atoms, "def2-svp").have_ecps());
+  const Setup none = [](HartreeFock &) {};
+  Mat3N g;
+  hf_energy(atoms, "def2-svp", spin, none,
+            [&](HartreeFock &hf, const MolecularOrbitals &mo) {
+              g = occ::qm::GradientEvaluator<HartreeFock>(hf)(mo);
+            });
+  const Vec v = generic_direction(atoms);
+  const double fd = directional_difference(atoms, v, 1e-3, [&](const Atoms &a) {
+    return hf_energy(a, "def2-svp", spin, none);
+  });
+  const double gv = occ::test::flat(g).dot(v);
+  fmt::print("ECP gradient ({}): |g.v - FD| = {:.2e}\n", spin.label(),
+             std::abs(gv - fd));
+  REQUIRE(occ::util::is_close(gv, fd, 1e-6, 1e-6));
+}
+
+// The COSX exchange gradient, at fixed AO density (basis functions and grid
+// move with the atoms): every term (basis functions, ESP integrals, grid
+// points, partition weights, overlap fitting) against central differences.
+TEST_CASE("COSX exchange gradient at fixed density vs finite differences",
+          "[gradient][cosx]") {
+  const Atoms atoms = distorted_water();
+  const double omega = GENERATE(0.0, 0.3);
+  const Spin spin = GENERATE(closed_shell, water_cation);
+  const Setup grid1 = cosx(occ::numint::COSXGridLevel::Grid1);
+  auto mk = [&](const Atoms &a) {
+    HartreeFock hf(occ::gto::AOBasis::load(a, "def2-svp"));
+    grid1(hf);
+    return hf;
+  };
+  auto hf = mk(atoms);
+  const auto mo = scf_orbitals(hf, spin);
+  // -tr(D K) is the exchange energy for both kinds (occ's unrestricted
+  // density blocks are half the spin densities).
+  const Mat3N g = hf.compute_exchange_gradient(mo, 1.0, omega);
+  const Vec v = generic_direction(atoms);
+  const double fd = directional_difference(atoms, v, 1e-4, [&](const Atoms &a) {
+    auto h = mk(a);
+    const Mat K =
+        omega == 0.0 ? h.compute_JK(mo).K : h.compute_K_long_range(mo, omega);
+    return -mo.D.cwiseProduct(K).sum();
+  });
+  const double err = error_along(g, v, fd);
+  fmt::print("COSX fixed-density {} exchange gradient (omega {}): |analytic "
+             "- FD| = {:.2e}\n",
+             spin.label(), omega, err);
+  REQUIRE(err < 1e-7);
+  REQUIRE(g.rowwise().sum().norm() < 1e-10);
+}
+
+// Full SCF gradient with COSX against finite differences of the COSX energy.
+// The COSX Fock matrix (K symmetrised with the overlap-fitting projector on
+// one side) is not exactly dE_x/dD, so the COSX SCF is not variational and a
+// residual of the grid-error size remains; it must still be far below the
+// error of using the exact-integral gradient on the COSX surface.
+TEST_CASE("COSX SCF gradient vs finite differences of the COSX energy",
+          "[gradient][cosx]") {
+  using occ::numint::COSXGridLevel;
+  // GRIDX1, GRIDX3 (open shell), and the gradient schedule (GRIDX1 ->
+  // GRIDX3, restricted). The energy schedule is left out: its GRIDX3 energy
+  // at GRIDX2 orbitals is not stationary, see COSXGridSchedule.
+  struct Case {
+    const char *label;
+    Setup setup;
+    Spin spin;
+  };
+  const auto c = GENERATE_COPY(
+      Case{"GRIDX1", cosx(COSXGridLevel::Grid1), closed_shell},
+      Case{"GRIDX3", cosx(COSXGridLevel::Grid3), water_cation},
+      Case{"gradient schedule",
+           [](HartreeFock &hf) {
+             hf.set_cosx_grid_schedule(
+                 occ::qm::COSXGridSchedule::for_gradients());
+             occ::qm::cosx::Settings cs;
+             cs.f_threshold = 1e-14;
+             hf.set_cosx_settings(cs);
+           },
+           closed_shell});
+  const Atoms atoms = distorted_water();
+  Mat3N g, g_exact;
+  hf_energy(atoms, "def2-svp", c.spin, c.setup,
+            [&](HartreeFock &hf, const MolecularOrbitals &mo) {
+              g = occ::qm::GradientEvaluator<HartreeFock>(hf)(mo);
+              g_exact = g - hf.compute_exchange_gradient(mo, 1.0) +
+                        hf.compute_jk_gradient(mo, 0.0, 1.0);
+            });
+  const Vec v = generic_direction(atoms);
+  const double fd = directional_difference(atoms, v, 1e-3, [&](const Atoms &a) {
+    return hf_energy(a, "def2-svp", c.spin, c.setup);
+  });
+  const double err = error_along(g, v, fd),
+               err_exact = error_along(g_exact, v, fd);
+  fmt::print("COSX {} {}: |COSX gradient - FD| = {:.2e} (exact-integral "
+             "gradient {:.2e})\n",
+             c.spin.label(), c.label, err, err_exact);
+  REQUIRE(err < 0.25 * err_exact);
+}
+
+// ORCA's COSX schedule (GRIDX1 -> GRIDX2, final energy on GRIDX3) lands on
+// the GRIDX3 energy without iterating on GRIDX3.
+TEST_CASE("COSX grid schedule matches a fixed GRIDX3 SCF", "[cosx]") {
+  auto basis = occ::gto::AOBasis::load(distorted_water(), "def2-svp");
+  auto run = [&](bool schedule) {
+    HartreeFock hf(basis);
+    if (schedule)
+      hf.set_cosx_grid_schedule();
+    else
+      hf.set_cosx_exchange(occ::numint::COSXGridLevel::Grid3);
+    occ::qm::SCF<HartreeFock> scf(hf);
+    scf.convergence_settings.energy_threshold = 1e-10;
+    scf.convergence_settings.commutator_threshold = 1e-8;
+    return scf.compute_scf_energy();
+  };
+  const double e_sched = run(true), e_fixed = run(false);
+  fmt::print("COSX schedule {:.10f}  fixed GRIDX3 {:.10f}  diff {:.2e}\n",
+             e_sched, e_fixed, e_sched - e_fixed);
+  REQUIRE(std::abs(e_sched - e_fixed) < 5e-6);
+}
+
+// tr(D J_DF[D]) at a fixed AO density: its derivative is the RI-J skeleton
+// gradient, in the convention of compute_jk_gradient(mo, 1, 0).
+TEST_CASE("RI-J Coulomb gradient at fixed density vs finite differences",
+          "[gradient][df]") {
+  const Atoms atoms = distorted_water();
+  const bool pure = GENERATE(true, false);
+  HartreeFock hf(load_basis(atoms, "def2-svp", pure));
+  const auto mo = scf_orbitals(hf);
+  const auto m = density_only(mo);
+  const Mat3N g = df_engine(atoms, pure).coulomb_gradient(mo);
+  const Vec v = generic_direction(atoms);
+  const double fd = directional_difference(atoms, v, 1e-4, [&](const Atoms &a) {
+    return mo.D.cwiseProduct(df_engine(a, pure).coulomb(m)).sum();
+  });
+  fmt::print("RI-J gradient ({}): |analytic - FD| = {:.2e}, |RI-J - exact J| "
+             "= {:.2e}\n",
+             basis_kind(pure), error_along(g, v, fd),
+             max_abs(g - hf.compute_jk_gradient(mo, 1.0, 0.0)));
+  REQUIRE(error_along(g, v, fd) < 1e-7);
+  REQUIRE(g.rowwise().sum().norm() < 1e-10);
+}
+
+// RI-J second-derivative pieces at fixed AO density, against central
+// differences of the RI-J gradient and of the RI-J Coulomb matrix, and the
+// batched response against the plain RI-J build.
+TEST_CASE("RI-J Hessian, derivative Fock and response at fixed density",
+          "[hessian][df]") {
+  const Atoms atoms = distorted_water();
+  const bool pure = GENERATE(true, false);
+  HartreeFock hf(load_basis(atoms, "def2-svp", pure));
+  const auto mo = scf_orbitals(hf);
+  const auto m = density_only(mo);
+
+  auto df = df_engine(atoms, pure);
+  const Mat H = df.coulomb_hessian(mo);
+  const auto F1 = df.coulomb_derivative_fock(mo);
+  const double h = 1e-4;
+  const Vec v = generic_direction(atoms);
+  auto dp = df_engine(occ::test::displaced_along(atoms, v, h), pure);
+  auto dm = df_engine(occ::test::displaced_along(atoms, v, -h), pure);
+  const Vec Hv_fd = occ::test::flat(
+      (dp.coulomb_gradient(mo) - dm.coulomb_gradient(mo)) / (2 * h));
+  const Mat dJ = (dp.coulomb(m) - dm.coulomb(m)) / (2 * h);
+  const double fock_err = max_abs(along(F1, v) - dJ);
+  // Response: the RI-J build on each density, here two at once. Symmetric,
+  // as CPHF densities are (and as the batched build assumes).
+  const Mat R0 = Mat::Random(mo.D.rows(), mo.D.cols());
+  auto mr = m;
+  mr.D = 0.5 * (R0 + R0.transpose());
+  const auto J1 = df.coulomb_response({mo.D, mr.D});
+  // Relative: the two builds sum the same terms in different orders.
+  const Mat J0 = df.coulomb(m), Jr = df.coulomb(mr);
+  const double resp_err = std::max(max_abs(J1[0] - J0) / max_abs(J0),
+                                   max_abs(J1[1] - Jr) / max_abs(Jr));
+  fmt::print("RI-J ({}): |H v - FD| = {:.2e}, |dJ/dv - FD| = {:.2e}, "
+             "|response - J build| / |J| = {:.2e}\n",
+             basis_kind(pure), max_abs(H * v - Hv_fd), fock_err, resp_err);
+  REQUIRE(max_abs(H * v - Hv_fd) < 1e-6);
+  REQUIRE(fock_err < 1e-6);
+  REQUIRE(resp_err < 1e-12);
+}
+
+// RI-K exchange at fixed occupied coefficients: tr(D K_DF) against central
+// differences, with the four-centre exchange gradient for scale.
+TEST_CASE("RI-K exchange gradient at fixed density vs finite differences",
+          "[gradient][df][rik]") {
+  const Atoms atoms = distorted_water();
+  const bool pure = GENERATE(true, false);
+  const double omega = GENERATE(0.0, 0.3);
+  HartreeFock hf(load_basis(atoms, "def2-svp", pure));
+  const auto mo = scf_orbitals(hf);
+  const Mat3N g = df_engine(atoms, pure, omega).exchange_gradient(mo);
+  const Vec v = generic_direction(atoms);
+  const double fd = directional_difference(atoms, v, 1e-4, [&](const Atoms &a) {
+    return mo.D.cwiseProduct(df_engine(a, pure, omega).exchange(mo)).sum();
+  });
+  // compute_jk_gradient differentiates -tr(D K), the exchange energy as it
+  // enters the total.
+  const Mat3N g_exact = omega == 0.0
+                            ? hf.compute_jk_gradient(mo, 0.0, 1.0)
+                            : hf.compute_exchange_gradient(mo, 1.0, omega);
+  fmt::print("RI-K gradient ({}, omega {}): |analytic - FD| = {:.2e}, "
+             "|RI-K + exact K| = {:.2e}\n",
+             basis_kind(pure), omega, error_along(g, v, fd), max_abs(g + g_exact));
+  REQUIRE(error_along(g, v, fd) < 1e-7);
+  REQUIRE(g.rowwise().sum().norm() < 1e-10);
+}
+
+// HF with RI-JK: Coulomb and exchange gradients both differentiate the
+// density-fitted energy.
+TEST_CASE("RI-JK HF gradient vs finite differences of the SCF energy",
+          "[gradient][df][rik][finite_diff]") {
+  const Spin spin = GENERATE(closed_shell, water_cation);
+  const Atoms atoms = distorted_water();
+  const Setup rijk = [](HartreeFock &hf) {
+    hf.set_density_fitting_basis("def2-universal-jkfit");
+  };
+  Mat3N g;
+  hf_energy(atoms, "def2-svp", spin, rijk,
+            [&](HartreeFock &hf, const MolecularOrbitals &mo) {
+              g = occ::qm::GradientEvaluator<HartreeFock>(hf)(mo);
+            });
+  const Vec v = generic_direction(atoms);
+  const double fd = directional_difference(atoms, v, 1e-3, [&](const Atoms &a) {
+    return hf_energy(a, "def2-svp", spin, rijk);
+  });
+  const double err = error_along(g, v, fd);
+  fmt::print("HF/RI-JK {}: |analytic - FD| = {:.2e}\n", spin.label(), err);
+  REQUIRE(err < 1e-6);
+}
+
+// RI-K second-derivative pieces at fixed occupied coefficients.
+TEST_CASE("RI-K Hessian, derivative Fock and response at fixed density",
+          "[hessian][df][rik]") {
+  const Atoms atoms = distorted_water();
+  const bool pure = GENERATE(true, false);
+  const double omega = GENERATE(0.0, 0.3);
+  HartreeFock hf(load_basis(atoms, "def2-svp", pure));
+  const auto mo = scf_orbitals(hf);
+  auto df = df_engine(atoms, pure, omega);
+  const Mat H = df.exchange_hessian(mo);
+  const auto F1 = df.exchange_derivative_fock(mo);
+  // contracted with C directly, as the Hessian uses it
+  const auto F1o = df.exchange_derivative_fock_occ(mo);
+  double occ_err = 0.0;
+  for (size_t X = 0; X < F1.size(); X++)
+    occ_err = std::max(occ_err, max_abs(F1o[X] - F1[X] * mo.Cocc));
+  REQUIRE(occ_err < 1e-12);
+  // The Cartesian gradients carry more noise (the FD error grows as 1/h),
+  // so the step is a little larger than the spherical basis alone needs.
+  const double h = 2e-4;
+  const Vec v = generic_direction(atoms);
+  auto dp = df_engine(occ::test::displaced_along(atoms, v, h), pure, omega);
+  auto dm = df_engine(occ::test::displaced_along(atoms, v, -h), pure, omega);
+  const Vec Hv_fd = occ::test::flat(
+      (dp.exchange_gradient(mo) - dm.exchange_gradient(mo)) / (2 * h));
+  const Mat dK = (dp.exchange(mo) - dm.exchange(mo)) / (2 * h);
+  const double fock_err = max_abs(along(F1, v) - dK);
+  // Response: K is quadratic in C, so the central difference in C along Cx
+  // is exactly K[Cx C^T + C Cx^T].
+  const Mat Cx = Mat::Random(mo.Cocc.rows(), mo.Cocc.cols());
+  const auto K1 = df.exchange_response(mo.Cocc, {Cx, Mat(-2.0 * Cx)});
+  auto mp = mo, mm = mo;
+  const double e = 1e-3;
+  mp.Cocc = mo.Cocc + e * Cx;
+  mm.Cocc = mo.Cocc - e * Cx;
+  const Mat Kc = (df.exchange(mp) - df.exchange(mm)) / (2 * e);
+  const double resp_err = max_abs(K1[0] - Kc) / max_abs(Kc);
+  fmt::print("RI-K ({}, omega {}): |H v - FD| = {:.2e}, |dK/dv - FD| = "
+             "{:.2e}, |response - dK/dC| / |K| = {:.2e}\n",
+             basis_kind(pure), omega, max_abs(H * v - Hv_fd), fock_err, resp_err);
+  // Attenuated: the regularised metric is still poorly conditioned, which
+  // amplifies the noise in the differenced gradients.
+  const double tol = omega == 0.0 ? 1e-6 : 2e-6;
+  REQUIRE(max_abs(H * v - Hv_fd) < tol);
+  REQUIRE(fock_err < tol);
+  REQUIRE(resp_err < 1e-10);
+  REQUIRE(max_abs(K1[1] + 2.0 * K1[0]) < 1e-12);
 }
