@@ -8,6 +8,7 @@
 #include <occ/numint/lebedev.h>
 #include <occ/solvent/smd.h>
 #include <occ/solvent/surface.h>
+#include <numbers>
 
 namespace occ::solvent::surface {
 

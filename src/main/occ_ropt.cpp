@@ -24,6 +24,7 @@
 #include <occ/mults/crystal_optimizer.h>
 #include <occ/mults/crystal_energy_setup.h>
 #include <occ/mults/multipole_source.h>
+#include <numbers>
 
 namespace fs = std::filesystem;
 using occ::crystal::Crystal;

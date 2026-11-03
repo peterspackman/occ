@@ -9,6 +9,7 @@
 #include <occ/core/molecule.h>
 #include <occ/core/units.h>
 #include <occ/core/util.h>
+#include <numbers>
 
 namespace occ::core {
 

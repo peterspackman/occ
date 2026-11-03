@@ -20,6 +20,7 @@
 #include <occ/isosurface/ply.h>
 #include <occ/qm/io/orca_json.h>
 #include <occ/qm/io/qcschema.h>
+#include <numbers>
 
 using occ::format_matrix;
 using occ::util::all_close;

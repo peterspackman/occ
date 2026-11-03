@@ -7,6 +7,7 @@
 #include <occ/core/util.h>
 #include <occ/gto/gto.h>
 #include <occ/qm/io/orca_json.h>
+#include <numbers>
 
 namespace occ::io {
 

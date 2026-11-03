@@ -12,6 +12,7 @@
 #include <occ/mults/cartesian_multipole.h>
 #include <occ/mults/cartesian_rotation.h>
 #include <fmt/core.h>
+#include <numbers>
 
 using namespace occ;
 using namespace occ::mults;

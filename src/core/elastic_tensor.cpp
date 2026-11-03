@@ -2,6 +2,7 @@
 #include <Eigen/Eigenvalues>
 #include <occ/core/elastic_tensor.h>
 #include <occ/core/units.h>
+#include <numbers>
 
 namespace occ::core {
 

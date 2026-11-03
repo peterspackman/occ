@@ -22,6 +22,7 @@
 #include <occ/crystal/crystal.h>
 #include <occ/io/xyz.h>
 #include <spdlog/spdlog.h>
+#include <numbers>
 
 using occ::IVec;
 using occ::Mat;

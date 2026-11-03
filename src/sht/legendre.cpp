@@ -1,4 +1,5 @@
 #include <occ/sht/legendre.h>
+#include <numbers>
 
 namespace occ::sht {
 

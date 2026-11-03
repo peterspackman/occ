@@ -12,6 +12,7 @@
 #include <occ/interaction/wolf.h>
 #include <stdexcept>
 #include <string>
+#include <numbers>
 
 /* Dimer tests */
 using occ::crystal::AsymmetricUnit;

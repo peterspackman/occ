@@ -31,6 +31,7 @@
 #include <occ/gto/shell.h>
 #include <occ/qm/spinorbital.h>
 #include <vector>
+#include <numbers>
 
 using Catch::Matchers::WithinAbs;
 using occ::format_matrix;

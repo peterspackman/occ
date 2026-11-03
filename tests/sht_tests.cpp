@@ -8,6 +8,7 @@
 #include <occ/sht/sht.h>
 #include <occ/sht/spherical_harmonics.h>
 #include <occ/sht/wigner3j.h>
+#include <numbers>
 
 double func(double theta, double phi) {
   return (1.0 + 0.01 * std::cos(theta) +

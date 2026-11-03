@@ -1,6 +1,7 @@
 
 #include <occ/core/log.h>
 #include <occ/gto/gto.h>
+#include <numbers>
 
 namespace occ::gto {
 
