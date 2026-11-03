@@ -53,6 +53,11 @@ struct BernyOptimizer {
    */
   void update(double energy, const Mat3N &gradient);
 
+  /// Add `shift` to every stored energy, when the energy surface itself moves
+  /// by a constant (e.g. a change of COSX grid), so trust-radius updates and
+  /// line searches compare energies on one surface.
+  void shift_energy_reference(double shift);
+
   /**
    * @brief Check if optimization has converged
    *
@@ -85,14 +90,6 @@ private:
   OptimizationState state;
   InternalCoordinates coords;
   core::Molecule molecule;
-
-  // Step logging
-  bool step_logging_enabled_ = false;
-  std::string step_log_prefix_ = "opt_step_";
-
-  void log_optimization_step(const Mat3N &input_coords,
-                             const Mat3N &input_gradients,
-                             const Mat3N &output_coords) const;
 };
 
 } // namespace occ::opt

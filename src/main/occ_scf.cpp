@@ -142,8 +142,10 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
       },
       "use unrestricted SCF");
 
-  auto *driver_opt = scf->add_option("--driver", config->driver.driver,
-                                     "override driver");
+  auto *driver_opt = scf->add_option(
+      "--driver", config->driver.driver,
+      "calculation: energy (default), opt (geometry optimization) or grad "
+      "(energy and nuclear gradient); overrides the input file");
 
   scf->add_option("--basis-set-directory,--basis_set_directory",
                   config->basis.basis_set_directory,
@@ -217,7 +219,8 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                 "force COSX seminumerical exchange (see --ri cosx)")
       ->group(kHidden);
   scf->add_option("--cosx-grid", config->method.cosx_grid_level,
-                  "COSX grid level: 1=Grid1 (fast), 2=Grid2, 3=Grid3 (accurate)")
+                  "COSX on a single fixed grid: 1=Grid1 (fast), 2=Grid2, 3=Grid3 "
+                  "(accurate); default is ORCA's schedule (1 -> 2, final energy on 3)")
       ->transform(CLI::CheckedTransformer(
           std::map<std::string, occ::numint::COSXGridLevel>{
               {"1", occ::numint::COSXGridLevel::Grid1},
@@ -228,6 +231,9 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
               {"grid3", occ::numint::COSXGridLevel::Grid3},
           },
           CLI::ignore_case))
+      ->each([config](const std::string &) {
+        config->method.cosx_fixed_grid = true;
+      })
       ->group(kHidden);
   scf->add_option("--cosx-screen-threshold", config->method.cosx.screen_threshold,
                   "COSX shell screening threshold (default 1e-4)")
@@ -367,43 +373,66 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   // Optimization convergence criteria
   scf->add_option("--opt-gradient-max,--opt_gradient_max",
                   config->optimization.gradient_max,
-                  "Maximum gradient component for convergence (Ha/Angstrom)");
+                  "Maximum internal-coordinate gradient for convergence "
+                  "(Ha/Bohr, Ha/rad for angles)")
+      ->group(gOpt);
   scf->add_option("--opt-gradient-rms,--opt_gradient_rms",
                   config->optimization.gradient_rms,
-                  "RMS gradient for convergence (Ha/Angstrom)");
+                  "RMS internal-coordinate gradient for convergence "
+                  "(Ha/Bohr, Ha/rad for angles)")
+      ->group(gOpt);
   scf->add_option("--opt-step-max,--opt_step_max",
                   config->optimization.step_max,
-                  "Maximum displacement for convergence (Angstrom)");
+                  "Maximum internal-coordinate step for convergence "
+                  "(Bohr, rad for angles)")
+      ->group(gOpt);
   scf->add_option("--opt-step-rms,--opt_step_rms",
                   config->optimization.step_rms,
-                  "RMS displacement for convergence (Angstrom)");
+                  "RMS internal-coordinate step for convergence "
+                  "(Bohr, rad for angles)")
+      ->group(gOpt);
   scf->add_option("--opt-energy-change,--opt_energy_change",
                   config->optimization.energy_change,
-                  "Energy change threshold for convergence (Hartree)");
+                  "Energy change threshold for convergence (Hartree), with "
+                  "--opt-use-energy")
+      ->group(gOpt);
   scf->add_flag("--opt-use-energy,--opt_use_energy",
                 config->optimization.use_energy_criterion,
-                "Use energy change as convergence criterion");
+                "Use energy change as convergence criterion")
+      ->group(gOpt);
   scf->add_option("--opt-max-iterations,--opt_max_iterations",
                   config->optimization.max_iterations,
-                  "Maximum number of optimization steps");
+                  "Maximum number of optimization steps")
+      ->group(gOpt);
   scf->add_option("--opt-gradient-precision,--opt_gradient_precision",
                   config->optimization.gradient_integral_precision,
-                  "Final gradient integral precision");
+                  "Gradient integral precision near convergence")
+      ->group(kHidden);
   scf->add_option("--opt-early-gradient-precision,--opt_early_gradient_precision",
                   config->optimization.early_gradient_integral_precision,
-                  "Looser gradient integral precision for early steps");
+                  "Looser gradient integral precision for early steps")
+      ->group(kHidden);
   scf->add_option("--opt-tight-threshold,--opt_tight_threshold",
                   config->optimization.tight_gradient_threshold,
-                  "Energy change threshold to switch to tight gradient precision (Hartree)");
+                  "Energy change threshold to switch to tight gradient precision (Hartree)")
+      ->group(kHidden);
   scf->add_flag("--opt-write-wavefunctions,--opt_write_wavefunctions",
                 config->optimization.write_wavefunction_steps,
-                "Write wavefunction at each optimization step");
+                "Write wavefunction at each optimization step")
+      ->group(gOpt);
   scf->add_flag("--opt-step-log,--opt_step_log",
                 config->optimization.write_step_log,
-                "Write per-step geometry and gradient to occ_step_log.txt");
+                "Write per-step geometry and gradient to occ_step_log.txt")
+      ->group(gOpt);
   scf->add_flag("--frequencies,--freq",
                 config->optimization.compute_frequencies,
                 "Compute vibrational frequencies after geometry optimization")
+      ->group(gOpt);
+  scf->add_option("--hessian-method,--hessian_method",
+                  config->optimization.hessian_method,
+                  "Hessian for frequencies: auto (analytic where supported, "
+                  "else finite differences), analytic, or fd")
+      ->check(CLI::IsMember({"auto", "analytic", "fd"}))
       ->group(gOpt);
 
   scf->callback([config, driver_opt]() {
@@ -443,6 +472,10 @@ void run_scf_subcommand(occ::io::OccInput config, bool driver_from_cli) {
       Wavefunction wfn = driver::geometry_optimization(config);
       write_output_files(config, wfn);
     }
+  } else if (config.driver.driver == "grad" ||
+             config.driver.driver == "gradient") {
+    auto [wfn, gradient] = driver::energy_and_gradient(config);
+    write_output_files(config, wfn);
   } else {
     // store solvent name so we can do an unsolvated calculation first
     std::string stored_solvent_name = config.solvent.solvent_name;

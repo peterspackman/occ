@@ -363,75 +363,12 @@ Vec InternalCoordinates::to_vector(const Mat3N &positions) const {
 
 Vec InternalCoordinates::to_vector_with_template(const Mat3N &positions,
                                                  const Vec &template_q) const {
-  // Get raw coordinates first
   Vec q = to_vector(positions);
-
-  // Log detailed coordinate breakdown
-  occ::log::trace("=== to_vector_with_template DEBUG ===");
-  occ::log::trace(
-      "positions shape: ({}, {}), first atom: [{:.8f}, {:.8f}, {:.8f}]",
-      positions.rows(), positions.cols(), positions(0, 0), positions(1, 0),
-      positions(2, 0));
-
-  // Log bonds
-  occ::log::trace("Number of bonds: {}", m_bonds.size());
-  if (m_bonds.size() > 0) {
-    double bond_norm = 0.0;
-    for (size_t i = 0; i < std::min(size_t(5), m_bonds.size()); i++) {
-      occ::log::trace("  Bond {}: {:.8f}", i, q(i));
-      bond_norm += q(i) * q(i);
-    }
-    occ::log::trace("  First 5 bonds RMS: {:.8f}",
-                    std::sqrt(bond_norm / std::min(size_t(5), m_bonds.size())));
-  }
-
-  // Log angles
-  occ::log::trace("Number of angles: {}", m_angles.size());
-  if (m_angles.size() > 0) {
-    int angle_start = m_bonds.size();
-    double angle_norm = 0.0;
-    for (size_t i = 0; i < std::min(size_t(5), m_angles.size()); i++) {
-      occ::log::trace("  Angle {}: {:.8f}", i, q(angle_start + i));
-      angle_norm += q(angle_start + i) * q(angle_start + i);
-    }
-    occ::log::trace(
-        "  First 5 angles RMS: {:.8f}",
-        std::sqrt(angle_norm / std::min(size_t(5), m_angles.size())));
-  }
-
-  // Log dihedrals
-  occ::log::trace("Number of dihedrals: {}", m_dihedrals.size());
-  if (m_dihedrals.size() > 0) {
-    int dih_start = m_bonds.size() + m_angles.size();
-    double dih_norm = 0.0;
-    for (size_t i = 0; i < std::min(size_t(5), m_dihedrals.size()); i++) {
-      occ::log::trace("  Dihedral {}: {:.8f}", i, q(dih_start + i));
-      dih_norm += q(dih_start + i) * q(dih_start + i);
-    }
-    occ::log::trace(
-        "  First 5 dihedrals RMS: {:.8f}",
-        std::sqrt(dih_norm / std::min(size_t(5), m_dihedrals.size())));
-  }
-
-  occ::log::trace("Total q norm: {:.8f}, RMS: {:.8f}", q.norm(),
-                  std::sqrt(q.squaredNorm() / q.size()));
-
-  if (template_q.size() != q.size()) {
-    occ::log::trace("No template or size mismatch - returning raw coordinates");
+  if (template_q.size() != q.size())
     return q;
-  }
 
-  // Apply discontinuity handling
-  occ::log::trace("=== DISCONTINUITY HANDLING DEBUG ===");
-  occ::log::trace("Input q norm: {:.8f}, template_q norm: {:.8f}", q.norm(),
-                  template_q.norm());
-  occ::log::trace("First 5 diffs: [{:.8f}, {:.8f}, {:.8f}, {:.8f}, {:.8f}]",
-                  q(0) - template_q(0), q(1) - template_q(1),
-                  q(2) - template_q(2), q(3) - template_q(3),
-                  q(4) - template_q(4));
-
-  // Approach: iterate through all coordinates and handle each type
-  // Track swapped dihedrals
+  // Undo discontinuities relative to the template: dihedrals that wrapped by
+  // 2 pi or flipped by pi, and the angles a flip implies were swapped.
   std::vector<int> swapped_dihedrals;
   ankerl::unordered_dense::set<int> candidate_angles;
 
@@ -541,9 +478,6 @@ Vec InternalCoordinates::to_vector_with_template(const Mat3N &positions,
                       old_val, q(coord_idx));
     }
   }
-
-  occ::log::trace("After discontinuity handling - q norm: {:.8f}, RMS: {:.8f}",
-                  q.norm(), std::sqrt(q.squaredNorm() / q.size()));
 
   return q;
 }
@@ -679,38 +613,9 @@ std::pair<Vec, Mat3N> update_geometry(const Vec &current_q,
                                       const InternalCoordinates &coords,
                                       const Mat3N &positions,
                                       const Mat &B_inv) {
-  // Use the fixed transform_step_to_cartesian function to avoid duplicate logic
-  // Log inputs for debugging
-  occ::log::trace("=== update_geometry INPUTS ===");
-  occ::log::trace(
-      "current_q size: {}, first 5: [{:.8f}, {:.8f}, {:.8f}, {:.8f}, {:.8f}]",
-      current_q.size(), current_q(0), current_q(1), current_q(2), current_q(3),
-      current_q(4));
-  occ::log::trace("internal_step size: {}, first 5: [{:.8f}, {:.8f}, {:.8f}, "
-                  "{:.8f}, {:.8f}]",
-                  internal_step.size(), internal_step(0), internal_step(1),
-                  internal_step(2), internal_step(3), internal_step(4));
-  occ::log::trace("dq norm: {:.8f}", std::sqrt(internal_step.squaredNorm() /
-                                               internal_step.size()));
-  occ::log::trace("positions shape: ({}, {}), atom 0: [{:.8f}, {:.8f}, {:.8f}]",
-                  positions.rows(), positions.cols(), positions(0, 0),
-                  positions(1, 0), positions(2, 0));
-  occ::log::trace("B_inv shape: ({}, {}), norm: {:.6e}, max: {:.6e}",
-                  B_inv.rows(), B_inv.cols(), B_inv.norm(),
-                  B_inv.cwiseAbs().maxCoeff());
-
-  // Call the fixed coordinate transformation function
   Mat3N new_positions =
       transform_step_to_cartesian(internal_step, coords, positions, B_inv);
   Vec new_q = coords.to_vector_with_template(new_positions, current_q);
-
-  occ::log::trace("=== update_geometry OUTPUTS ===");
-  occ::log::trace(
-      "final q size: {}, first 5: [{:.8f}, {:.8f}, {:.8f}, {:.8f}, {:.8f}]",
-      new_q.size(), new_q(0), new_q(1), new_q(2), new_q(3), new_q(4));
-  occ::log::trace("final positions atom 0: [{:.8f}, {:.8f}, {:.8f}]",
-                  new_positions(0, 0), new_positions(1, 0),
-                  new_positions(2, 0));
 
   return {new_q, new_positions};
 }
