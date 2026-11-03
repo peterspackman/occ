@@ -150,4 +150,49 @@ cosmo_gradient_frozen(const Mat3N &atom_positions_bohr,
                       const Vec &damping_rco_bohr = Vec(),
                       double kdmp3 = 3.0, double kdmp5 = 4.0);
 
+/// A cavity whose points ride rigidly on their owner atoms, for derivatives
+/// beyond the frozen-cavity gradient. With `smoothing_width > 0` each area is
+/// `a0_k · w_k`, the smooth weight of `solvent::surface::solvent_surface`,
+///
+///   w_k = Π_{l ≠ owner(k)} s(|r_k − R_l|),  s(d) = ½(1 + erf((d − r_l)/width)),
+///
+/// so areas, and the A diagonal built from them, depend on the geometry; with
+/// zero width they are fixed. Derivatives are with respect to the 3N nuclear
+/// coordinates, index 3·atom + xyz.
+struct CavityGeometry {
+  const Mat3N &atom_positions; // 3 x N, Bohr
+  const Mat3N &points;         // 3 x M, Bohr
+  const Vec &areas;            // M, Bohr²
+  const IVec &owner;           // M
+  const Vec &atom_radii;       // N, the radii the smooth weight was built with
+  double smoothing_width{0.0}; // Bohr
+};
+
+/// ∂ ln w_k / ∂x (M x 3N); zero for a boolean cavity. Areas follow as
+/// ∂a_k/∂x = a_k ∂ ln w_k/∂x.
+Mat cavity_log_weight_gradient(const CavityGeometry &cavity);
+
+/// Σ_k c_k ∂² ln w_k / ∂x∂y (3N x 3N); zero for a boolean cavity.
+Mat cavity_log_weight_hessian(const CavityGeometry &cavity, const Vec &c);
+
+/// (∂A/∂x) σ (M x 3N): the point-pair Coulomb terms plus, on a smooth cavity,
+/// the diagonal ∂A_kk/∂x = −½ A_kk ∂ ln w_k/∂x. `dlnw` is
+/// `cavity_log_weight_gradient(cavity)`.
+Mat cosmo_A_derivative_product(const CavityGeometry &cavity, const Mat &dlnw,
+                               const Vec &sigma);
+
+/// σᵀ (∂²A/∂x∂y) σ (3N x 3N), using ∂²A_kk = A_kk (¼ g gᵀ − ½ ∂² ln w_k)
+/// with g = ∂ ln w_k on the diagonal.
+Mat cosmo_A_second_derivative(const CavityGeometry &cavity, const Mat &dlnw,
+                              const Vec &sigma);
+
+/// ∂φ_k/∂x (M x 3N) for the potential φ_k = Σ_a Z_a / |r_k − R_a| of
+/// atom-centred point charges Z at the cavity points.
+Mat atom_cavity_potential_derivatives(const CavityGeometry &cavity,
+                                      const Vec &atom_charges);
+
+/// Σ_k σ_k ∂²φ_k/∂x∂y (3N x 3N) for the same potential.
+Mat atom_cavity_potential_hessian(const CavityGeometry &cavity,
+                                  const Vec &atom_charges, const Vec &sigma);
+
 } // namespace occ::scrf::detail
