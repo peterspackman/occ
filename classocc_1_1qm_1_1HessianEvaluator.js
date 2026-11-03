@@ -5,10 +5,12 @@ var classocc_1_1qm_1_1HessianEvaluator =
       [ "Analytical", "classocc_1_1qm_1_1HessianEvaluator.html#aeb4f78f6ba44108226169e270785a231a607b56b49ff25410a090c25286efb7cc", null ]
     ] ],
     [ "HessianEvaluator", "classocc_1_1qm_1_1HessianEvaluator.html#af978607720c438a2b2f3ddd9b3951429", null ],
+    [ "compute_analytical", "classocc_1_1qm_1_1HessianEvaluator.html#ab1845494a5d2cf1551dd52412ef89655", null ],
     [ "method", "classocc_1_1qm_1_1HessianEvaluator.html#a9a3ea8a68cc27d3f0a52d55a328a86d5", null ],
     [ "nuclear_repulsion", "classocc_1_1qm_1_1HessianEvaluator.html#a96b998a90838f7182ec2b2e060b522ac", null ],
     [ "operator()", "classocc_1_1qm_1_1HessianEvaluator.html#a431772a87938aa1ec3198a0f8f150862", null ],
     [ "scf_convergence_settings", "classocc_1_1qm_1_1HessianEvaluator.html#ae8e3e5c381528fc80e96f9685b39bbf6", null ],
+    [ "set_cphf_settings", "classocc_1_1qm_1_1HessianEvaluator.html#a685a0523fd6b92be97fcf30070d8ed22", null ],
     [ "set_method", "classocc_1_1qm_1_1HessianEvaluator.html#af113c7472cdff7b4cbc18c2d7cf84c49", null ],
     [ "set_scf_convergence_settings", "classocc_1_1qm_1_1HessianEvaluator.html#ac08d0f1733e6b6fd6e4f0f4e47f8809d", null ],
     [ "set_step_size", "classocc_1_1qm_1_1HessianEvaluator.html#ac87c9a002b0a27aa7c93476fc02e1c60", null ],

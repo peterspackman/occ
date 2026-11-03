@@ -1,7 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/timings.h" name="/home/runner/work/occ/occ/include/occ/core/timings.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,176,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="15,108,81,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,61,62,97,58,94,75,59"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="105,108,164,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="106,59,125,94,120,97,102,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,176,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="15,115,80,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,66,63,102,58,99,74,69"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="104,115,162,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="106,65,123,101,118,100,103,70"/>
 </map>

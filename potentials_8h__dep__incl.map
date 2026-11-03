@@ -1,12 +1,12 @@
 <map id="/home/runner/work/occ/occ/include/occ/elastic_fit/potentials.h" name="/home/runner/work/occ/occ/include/occ/elastic_fit/potentials.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="139,5,311,60"/>
-<area shape="rect" id="Node000002" href="$pes_8h.html" title=" " alt="" coords="77,108,249,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,73,182,109,177,107,199,70"/>
-<area shape="rect" id="Node000005" href="$occ__elastic__fit_8h.html" title=" " alt="" coords="202,211,373,265"/>
-<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="249,71,265,107,279,162,287,210,282,211,274,163,259,109,244,73"/>
-<area shape="rect" id="Node000003" href="$elastic__fitting_8h.html" title=" " alt="" coords="5,211,177,265"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="139,175,112,212,108,209,134,172"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="208,169,257,208,253,213,205,174"/>
-<area shape="rect" id="Node000004" href="$elastic__fit__json_8h.html" title=" " alt="" coords="5,313,177,368"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="94,279,94,313,89,313,89,279"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="139,5,310,67"/>
+<area shape="rect" id="Node000002" href="$pes_8h.html" title=" " alt="" coords="77,115,249,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="201,78,183,116,178,113,198,83"/>
+<area shape="rect" id="Node000005" href="$occ__elastic__fit_8h.html" title=" " alt="" coords="200,225,371,286"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="247,78,263,114,277,172,285,225,280,224,272,173,258,116,246,84"/>
+<area shape="rect" id="Node000003" href="$elastic__fitting_8h.html" title=" " alt="" coords="5,225,177,286"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="133,192,113,226,109,223,136,187"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="209,184,254,224,249,225,208,190"/>
+<area shape="rect" id="Node000004" href="$elastic__fit__json_8h.html" title=" " alt="" coords="5,334,177,396"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="93,300,94,335,88,333,89,304"/>
 </map>

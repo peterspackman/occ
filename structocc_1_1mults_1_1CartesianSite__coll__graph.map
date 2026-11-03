@@ -1,5 +1,5 @@
 <map id="occ::mults::CartesianSite" name="occ::mults::CartesianSite">
-<area shape="rect" id="Node000001" title="A single site with precomputed Cartesian multipole and cached rank." alt="" coords="43,93,227,119"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1mults_1_1CartesianMultipole.html" title=" " alt="" coords="5,5,264,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,45,137,93,132,93,132,45"/>
+<area shape="rect" id="Node000001" title="A single site with precomputed Cartesian multipole and cached rank." alt="" coords="42,106,226,134"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1mults_1_1CartesianMultipole.html" title=" " alt="" coords="5,5,263,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,47,136,106,132,104,132,50"/>
 </map>

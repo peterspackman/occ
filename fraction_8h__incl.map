@@ -1,9 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/fraction.h" name="/home/runner/work/occ/occ/include/occ/core/fraction.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="48,5,219,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,72,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,62,63,101,60,97,103,58"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="96,108,171,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="136,60,136,94,131,94,131,60"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="195,108,253,133"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="163,58,204,96,200,100,159,62"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="46,5,216,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,71,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,66,64,106,61,102,98,69"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="94,115,168,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="133,65,134,100,129,98,130,69"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="193,115,251,143"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="163,65,201,104,196,104,161,70"/>
 </map>

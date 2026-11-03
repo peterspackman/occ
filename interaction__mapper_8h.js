@@ -1,11 +1,11 @@
 var interaction__mapper_8h =
 [
     [ "occ::cg::InteractionMapper", "classocc_1_1cg_1_1InteractionMapper.html", "classocc_1_1cg_1_1InteractionMapper" ],
-    [ "Crystal", "interaction__mapper_8h.html#acd7d47e16532c73173d12b90d06e49c9", null ],
-    [ "CrystalDimers", "interaction__mapper_8h.html#a1f8bf1f1e231e8523c8b980bc7a12a6b", null ],
-    [ "Dimer", "interaction__mapper_8h.html#a8ad0bd6de4b759b02bebad74d9e96030", null ],
-    [ "DimerIndex", "interaction__mapper_8h.html#a0d4f146ed087a390c32e410d5900a861", null ],
-    [ "DimerIndexHash", "interaction__mapper_8h.html#afceb600c659eaf0f9fbe708e012065c6", null ],
-    [ "DimerMappingTable", "interaction__mapper_8h.html#a0dfeb00c945a2636ceca813dda43172a", null ],
-    [ "Molecule", "interaction__mapper_8h.html#a517ba4d39b87b4103ed1390ecbcabffc", null ]
+    [ "occ::cg::Crystal", "namespaceocc_1_1cg.html#adca50b8be64b102f7c1bc22e8af8cb1a", null ],
+    [ "occ::cg::CrystalDimers", "namespaceocc_1_1cg.html#a08f8f9ad75e9a1db641a77db42eeeba0", null ],
+    [ "occ::cg::Dimer", "namespaceocc_1_1cg.html#a5f605ef94cb5a818a484126836abdb0b", null ],
+    [ "occ::cg::DimerIndex", "namespaceocc_1_1cg.html#a6d8b569a8a9471b627fc0725e954483e", null ],
+    [ "occ::cg::DimerIndexHash", "namespaceocc_1_1cg.html#ad1637caf712dd6b443d2b1827c0cb1fd", null ],
+    [ "occ::cg::DimerMappingTable", "namespaceocc_1_1cg.html#a01cbca8e7be22de1aab64d9d2539908e", null ],
+    [ "occ::cg::Molecule", "namespaceocc_1_1cg.html#a6677328c771d1879c484610dd1f42bec", null ]
 ];

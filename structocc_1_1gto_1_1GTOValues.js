@@ -1,8 +1,12 @@
 var structocc_1_1gto_1_1GTOValues =
 [
+    [ "first", "structocc_1_1gto_1_1GTOValues.html#adec4c1081383b8581d165624355d6823", null ],
     [ "reserve", "structocc_1_1gto_1_1GTOValues.html#ac33ab44c79ab0de7cd751cc3fbdc4c8b", null ],
+    [ "second", "structocc_1_1gto_1_1GTOValues.html#a2d0a85ed2aa6c737e3a9f8aafe923455", null ],
     [ "set_zero", "structocc_1_1gto_1_1GTOValues.html#a587e0eaf2d43a5f3ba7d1530ba9144b2", null ],
+    [ "third", "structocc_1_1gto_1_1GTOValues.html#a1c93a136722ef5aa987078066588f7d3", null ],
     [ "phi", "structocc_1_1gto_1_1GTOValues.html#a13d88d741a57c1f639681c1117f3b1aa", null ],
+    [ "phi3", "structocc_1_1gto_1_1GTOValues.html#a244a6e37fba216f6ca27731d6499d0ba", null ],
     [ "phi_x", "structocc_1_1gto_1_1GTOValues.html#a1416abfdbe621a813b51dbb40159c3aa", null ],
     [ "phi_xx", "structocc_1_1gto_1_1GTOValues.html#a8b4dec558c011261989f071a94e0baac", null ],
     [ "phi_xy", "structocc_1_1gto_1_1GTOValues.html#ada34830badc7441efe5c1601be5ea83e", null ],

@@ -1,7 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/main/occ_describe.h" name="/home/runner/work/occ/occ/include/occ/main/occ_describe.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="21,5,192,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,104,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,61,71,98,66,95,89,59"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="129,108,191,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="125,59,148,95,143,98,121,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="21,5,192,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,104,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,66,72,103,67,100,87,69"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="127,115,190,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="125,65,146,102,141,101,123,70"/>
 </map>

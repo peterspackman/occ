@@ -1,7 +1,7 @@
 var classocc_1_1core_1_1ElasticTensor =
 [
-    [ "AngularDirection", "classocc_1_1core_1_1ElasticTensor.html#a16b58532c9162fd7b89f596baa177fff", null ],
-    [ "CartesianDirection", "classocc_1_1core_1_1ElasticTensor.html#a388fe418684a58557509da35c2fc2f6b", null ],
+    [ "AngularDirection", "classocc_1_1core_1_1ElasticTensor.html#aebe13a86fb6152b23b0723729d5391ac", null ],
+    [ "CartesianDirection", "classocc_1_1core_1_1ElasticTensor.html#a9d2d5778abf2c9e81471914a9ce781bd", null ],
     [ "AveragingScheme", "classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288", [
       [ "Voigt", "classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288ab5f46d37dc922d0ef00f516d54ce762b", null ],
       [ "Reuss", "classocc_1_1core_1_1ElasticTensor.html#a7e167ee61b873810127ea20c40bc6288a3dc3695fc9e843f20e16fafe553449fa", null ],

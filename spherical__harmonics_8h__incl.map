@@ -1,12 +1,12 @@
 <map id="/home/runner/work/occ/occ/include/occ/sht/spherical_harmonics.h" name="/home/runner/work/occ/occ/include/occ/sht/spherical_harmonics.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="31,5,203,60"/>
-<area shape="rect" id="Node000002" href="$linear__algebra_8h.html" title=" " alt="" coords="24,181,209,207"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,61,92,96,90,114,91,133,105,168,100,170,86,134,84,114,87,94,99,59"/>
-<area shape="rect" id="Node000005" href="$legendre_8h.html" title=" " alt="" coords="101,108,242,133"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="136,59,159,95,154,98,131,62"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="5,255,97,280"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="108,209,73,246,69,243,104,205"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="121,255,245,280"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="130,205,165,243,161,246,126,209"/>
-<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="164,135,136,172,132,169,160,132"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="31,5,202,67"/>
+<area shape="rect" id="Node000002" href="$linear__algebra_8h.html" title=" " alt="" coords="24,191,208,218"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="102,65,92,104,89,123,91,142,104,177,98,177,86,143,84,123,86,103,100,70"/>
+<area shape="rect" id="Node000005" href="$legendre_8h.html" title=" " alt="" coords="101,115,241,143"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="135,65,158,101,152,102,134,70"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,266,97,294"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="107,218,74,257,71,253,102,220"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="121,266,245,294"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="129,216,164,255,158,255,127,221"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="163,141,137,180,133,176,159,145"/>
 </map>

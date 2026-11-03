@@ -1,17 +1,17 @@
 <map id="/home/runner/work/occ/occ/include/occ/geometry/plane.h" name="/home/runner/work/occ/occ/include/occ/geometry/plane.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="139,5,331,60"/>
-<area shape="rect" id="Node000002" href="$math__utils_8h.html" title=" " alt="" coords="5,108,197,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,70,138,110,135,106,187,66"/>
-<area shape="rect" id="Node000003" href="$quickhull_8h.html" title=" " alt="" coords="189,313,381,368"/>
-<area shape="poly" id="edge9_Node000001_Node000003" title=" " alt="" coords="244,73,284,312,278,313,239,74"/>
-<area shape="rect" id="Node000004" href="$mesh_8h.html" title=" " alt="" coords="297,108,489,163"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="289,65,353,106,350,110,286,69"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="135,171,218,264,262,311,259,315,214,267,131,175"/>
-<area shape="poly" id="edge8_Node000004_Node000003" title=" " alt="" coords="346,173,328,192,313,212,302,237,294,264,288,313,283,313,289,263,297,235,308,209,324,188,342,170"/>
-<area shape="rect" id="Node000005" href="$convex__hull_8h.html" title=" " alt="" coords="323,211,515,265"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="406,175,415,210,409,211,401,177"/>
-<area shape="rect" id="Node000006" href="$half__edge__mesh_8h.html" title=" " alt="" coords="539,211,731,265"/>
-<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="470,165,573,208,571,213,468,170"/>
-<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="375,276,322,315,319,311,371,271"/>
-<area shape="poly" id="edge7_Node000006_Node000003" title=" " alt="" coords="532,272,377,316,376,311,530,266"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="139,5,330,67"/>
+<area shape="rect" id="Node000002" href="$math__utils_8h.html" title=" " alt="" coords="5,115,197,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="184,79,140,116,136,113,187,75"/>
+<area shape="rect" id="Node000003" href="$quickhull_8h.html" title=" " alt="" coords="189,334,381,396"/>
+<area shape="poly" id="edge9_Node000001_Node000003" title=" " alt="" coords="244,81,283,334,278,334,239,84"/>
+<area shape="rect" id="Node000004" href="$mesh_8h.html" title=" " alt="" coords="297,115,489,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="292,73,351,114,346,115,292,79"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="136,187,218,285,260,334,255,334,214,288,134,191"/>
+<area shape="poly" id="edge8_Node000004_Node000003" title=" " alt="" coords="342,186,313,226,301,253,294,282,287,335,283,332,289,281,296,251,308,223,338,189"/>
+<area shape="rect" id="Node000005" href="$convex__hull_8h.html" title=" " alt="" coords="323,225,514,286"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="405,190,414,225,409,223,402,194"/>
+<area shape="rect" id="Node000006" href="$half__edge__mesh_8h.html" title=" " alt="" coords="539,225,730,286"/>
+<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="475,181,569,224,564,224,474,186"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="372,295,323,336,321,332,367,297"/>
+<area shape="poly" id="edge7_Node000006_Node000003" title=" " alt="" coords="526,290,382,337,381,332,521,291"/>
 </map>

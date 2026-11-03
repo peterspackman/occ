@@ -1,5 +1,5 @@
 <map id="tinyply::PlyData" name="tinyply::PlyData">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,93,131,119"/>
-<area shape="rect" id="Node000002" href="$classtinyply_1_1Buffer.html" title=" " alt="" coords="11,5,125,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="71,45,71,93,65,93,65,45"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,106,130,134"/>
+<area shape="rect" id="Node000002" href="$classtinyply_1_1Buffer.html" title=" " alt="" coords="11,5,124,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="70,47,70,106,65,105,65,50"/>
 </map>

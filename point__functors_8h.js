@@ -7,5 +7,6 @@ var point__functors_8h =
     [ "occ::isosurface::pointwise::MOFunctor", "structocc_1_1isosurface_1_1pointwise_1_1MOFunctor.html", "structocc_1_1isosurface_1_1pointwise_1_1MOFunctor" ],
     [ "occ::isosurface::pointwise::DeformationDensityFunctor", "structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html", "structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor" ],
     [ "occ::isosurface::pointwise::XCDensityFunctor", "structocc_1_1isosurface_1_1pointwise_1_1XCDensityFunctor.html", "structocc_1_1isosurface_1_1pointwise_1_1XCDensityFunctor" ],
-    [ "AtomList", "point__functors_8h.html#ae204e804e4727bc8cb19890ab2e38950", null ]
+    [ "occ::isosurface::Wavefunction", "structocc_1_1isosurface_1_1Wavefunction.html", "structocc_1_1isosurface_1_1Wavefunction" ],
+    [ "occ::isosurface::AtomList", "namespaceocc_1_1isosurface.html#add2a27d9683456d4b2ce0ac1624765de", null ]
 ];

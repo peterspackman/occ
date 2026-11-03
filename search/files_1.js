@@ -7,5 +7,6 @@ var searchData=
   ['binomial_2eh_4',['binomial.h',['../binomial_8h.html',1,'']]],
   ['bond_5fcoordinate_2eh_5',['bond_coordinate.h',['../bond__coordinate_8h.html',1,'']]],
   ['bondgraph_2eh_6',['bondgraph.h',['../bondgraph_8h.html',1,'']]],
-  ['boys_2eh_7',['boys.h',['../boys_8h.html',1,'']]]
+  ['boys_2eh_7',['boys.h',['../boys_8h.html',1,'']]],
+  ['boys_5fsimd_2eh_8',['boys_simd.h',['../boys__simd_8h.html',1,'']]]
 ];

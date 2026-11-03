@@ -1,7 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/linear_algebra.h" name="/home/runner/work/occ/occ/include/occ/core/linear_algebra.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="31,5,202,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,97,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="99,62,71,99,66,95,95,58"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="121,108,245,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="139,58,168,95,164,99,135,62"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="31,5,202,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,97,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,66,71,104,67,100,92,69"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="121,115,245,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="140,65,167,103,162,102,137,70"/>
 </map>

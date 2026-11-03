@@ -1,7 +1,7 @@
 var structocc_1_1mults_1_1RigidMolecule =
 [
-    [ "Atom", "structocc_1_1mults_1_1RigidMolecule_1_1Atom.html", "structocc_1_1mults_1_1RigidMolecule_1_1Atom" ],
     [ "Site", "structocc_1_1mults_1_1RigidMolecule_1_1Site.html", "structocc_1_1mults_1_1RigidMolecule_1_1Site" ],
+    [ "Atom", "structocc_1_1mults_1_1RigidMolecule_1_1Atom.html", "structocc_1_1mults_1_1RigidMolecule_1_1Atom" ],
     [ "proper_rotation_matrix", "structocc_1_1mults_1_1RigidMolecule.html#af38b113e447ed3741bdecc9a774d44ff", null ],
     [ "rotation_matrix", "structocc_1_1mults_1_1RigidMolecule.html#ac7daddb15c47fb50e824e333aa19ea02", null ],
     [ "angle_axis", "structocc_1_1mults_1_1RigidMolecule.html#a5d887ce8eb20cf68b071ddf47f04ca00", null ],

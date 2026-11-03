@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['jsonformat_0',['JsonFormat',['../namespaceocc_1_1io.html#ac216ed773cc0fb9fcb04e266ac5c24a3',1,'occ::io']]]
+  ['identifier_0',['Identifier',['../classocc_1_1dft_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb',1,'occ::dft::DensityFunctional::Identifier'],['../classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fb',1,'occ::dft::impl::DensityFunctional::Identifier']]],
+  ['isdfmethod_1',['IsdfMethod',['../namespaceocc_1_1qm_1_1cc.html#af7d3c977e3150a5a3beabfceb4ce75e7',1,'occ::qm::cc']]]
 ];

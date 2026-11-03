@@ -1,23 +1,21 @@
 <map id="occ::qm::SCF&lt; Procedure &gt;" name="occ::qm::SCF&lt; Procedure &gt;">
-<area shape="rect" id="Node000001" title=" " alt="" coords="1173,79,1375,104"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1qm_1_1SCFConvergenceSettings.html" title=" " alt="" coords="713,5,957,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="971,27,1060,39,1150,54,1234,76,1232,81,1149,59,1059,44,971,33"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="792,55,879,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="892,68,1173,83,1173,89,892,73"/>
-<area shape="rect" id="Node000004" href="$structocc_1_1qm_1_1SCFContext.html" title=" " alt="" coords="757,104,914,129"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="928,112,1149,102,1173,100,1173,105,1150,107,928,117"/>
-<area shape="rect" id="Node000005" href="$classocc_1_1qm_1_1CanonicalOrthogonalizer.html" title=" " alt="" coords="325,55,567,80"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="569,79,690,94,757,103,756,108,689,99,568,84"/>
-<area shape="rect" id="Node000006" href="$classocc_1_1core_1_1EnergyComponents.html" title="Storage class for components of energy, separated by the dot character." alt="" coords="339,104,553,129"/>
-<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="567,114,756,114,756,119,567,119"/>
-<area shape="rect" id="Node000007" title=" " alt="" coords="5,93,212,133"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="226,111,338,113,338,118,226,117"/>
-<area shape="rect" id="Node000008" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="348,157,544,183"/>
-<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="553,153,689,134,756,125,757,130,690,139,554,158"/>
-<area shape="rect" id="Node000009" title=" " alt="" coords="48,157,169,183"/>
-<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="183,167,348,167,348,173,183,173"/>
-<area shape="rect" id="Node000010" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="15,207,202,232"/>
-<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="209,202,358,180,359,185,210,207"/>
-<area shape="rect" id="Node000011" href="$classocc_1_1qm_1_1ConvergenceAccelerator.html" title="Encapsulates SCF convergence acceleration strategies (CDIIS, EDIIS, ADIIS)" alt="" coords="715,153,955,179"/>
-<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="968,157,1058,147,1149,131,1198,117,1241,102,1243,107,1200,123,1150,137,1058,152,969,162"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="1180,92,1381,120"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1qm_1_1SCFConvergenceSettings.html" title=" " alt="" coords="718,8,961,36"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="977,27,1066,37,1157,55,1207,71,1252,92,1246,91,1205,76,1156,60,1066,43,977,32"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="796,64,883,92"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="899,79,1183,99,1177,100,899,84"/>
+<area shape="rect" id="Node000004" href="$structocc_1_1qm_1_1SCFContext.html" title=" " alt="" coords="762,120,918,148"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="933,133,1040,132,1156,125,1208,120,1213,120,1157,131,1041,138,934,139"/>
+<area shape="rect" id="Node000005" href="$classocc_1_1qm_1_1CanonicalOrthogonalizer.html" title=" " alt="" coords="328,64,568,92"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="584,90,694,104,768,119,762,119,694,110,583,95"/>
+<area shape="rect" id="Node000006" href="$classocc_1_1core_1_1EnergyComponents.html" title="Storage class for components of energy, separated by the dot character." alt="" coords="341,119,555,146"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="571,130,764,133,758,134,571,135"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="5,110,211,155"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="226,130,343,132,338,133,226,135"/>
+<area shape="rect" id="Node000008" href="$structocc_1_1qm_1_1MolecularOrbitals.html" title=" " alt="" coords="350,177,546,205"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="561,178,694,161,773,148,779,148,694,167,561,184"/>
+<area shape="rect" id="Node000009" href="$structocc_1_1qm_1_1OrbitalSmearing.html" title=" " alt="" coords="15,179,201,206"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="216,189,352,191,347,192,216,195"/>
+<area shape="rect" id="Node000010" href="$classocc_1_1qm_1_1ConvergenceAccelerator.html" title="Encapsulates SCF convergence acceleration strategies (CDIIS, EDIIS, ADIIS)." alt="" coords="720,176,959,204"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="974,189,1065,182,1156,164,1211,143,1255,121,1260,119,1213,147,1157,169,1065,187,975,194"/>
 </map>

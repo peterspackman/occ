@@ -1,10 +1,10 @@
 var searchData=
 [
-  ['radialgridmethod_0',['RadialGridMethod',['../namespaceocc_1_1numint.html#adfae001d345ff26f124a72c71d63856f',1,'occ::numint']]],
-  ['radii_1',['Radii',['../structocc_1_1scrf_1_1Options.html#a0b9411a28016afa046f22632a68ef2cb',1,'occ::scrf::Options']]],
-  ['radiuskind_2',['RadiusKind',['../classocc_1_1isosurface_1_1RadiusMetric.html#aa64744e03a919ce49762b023f568afca',1,'occ::isosurface::RadiusMetric']]],
-  ['reference_3',['Reference',['../structocc_1_1isosurface_1_1OrbitalIndex.html#a7de04a530b8bbf2e95cca3ed9992f6f8',1,'occ::isosurface::OrbitalIndex']]],
-  ['refqmode_4',['RefqMode',['../namespaceocc_1_1disp.html#ae268b9e322e6fbd4f8332f8795e7b59b',1,'occ::disp']]],
-  ['ripolicy_5',['RIPolicy',['../namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50',1,'occ::io']]],
-  ['rotor_6',['Rotor',['../namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6',1,'occ::core::rotor']]]
+  ['partitionfunction_0',['PartitionFunction',['../namespaceocc_1_1numint.html#a8946bc323d1808ed23151b97866785e6',1,'occ::numint']]],
+  ['pointgroup_1',['PointGroup',['../namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5',1,'occ::core']]],
+  ['policy_2',['Policy',['../classocc_1_1qm_1_1IntegralEngineDF.html#a3b2bf91c59b450bbe05ab570c317710d',1,'occ::qm::IntegralEngineDF']]],
+  ['populationkind_3',['PopulationKind',['../namespaceocc_1_1qm.html#a7f3e3a648da5b41710c02b5e839f7164',1,'occ::qm']]],
+  ['potentialtype_4',['PotentialType',['../namespaceocc_1_1elastic__fit.html#a2bc5d23df97676c1c631687652ef45bd',1,'occ::elastic_fit::PotentialType'],['../namespaceocc_1_1main.html#a2bc5d23df97676c1c631687652ef45bd',1,'occ::main::PotentialType']]],
+  ['propertykind_5',['PropertyKind',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cb',1,'occ::isosurface']]],
+  ['pruningscheme_6',['PruningScheme',['../namespaceocc_1_1numint.html#aeeaf359544ddf0e24334035092df774b',1,'occ::numint']]]
 ];

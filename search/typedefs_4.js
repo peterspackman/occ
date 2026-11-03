@@ -1,7 +1,25 @@
 var searchData=
 [
-  ['edgedescriptor_0',['EdgeDescriptor',['../classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b',1,'occ::core::graph::Graph']]],
-  ['edgemap_1',['EdgeMap',['../structocc_1_1geometry_1_1mc_1_1LinearHashedMarchingCubes.html#a8eb069f9634b3bd11257960651c7f2b0',1,'occ::geometry::mc::LinearHashedMarchingCubes']]],
-  ['edges_2',['Edges',['../classocc_1_1core_1_1graph_1_1Graph.html#ad3441b6a794d3c502e093c58ea1a1cbe',1,'occ::core::graph::Graph']]],
-  ['elementmap_3',['ElementMap',['../namespaceocc_1_1gto_1_1io.html#a2836acb1b4dde85ac73698ab0789a39f',1,'occ::gto::io']]]
+  ['darray_0',['DArray',['../namespaceocc.html#ac7f19f3a87066b363dd80cbc0245d0e7',1,'occ']]],
+  ['defaults_1',['Defaults',['../structocc_1_1io_1_1OptimizationInput.html#a437f6058192564aaff454af6680d540b',1,'occ::io::OptimizationInput']]],
+  ['dfid_2',['dfid',['../namespaceocc_1_1dft.html#a2790ae881e38680f8a0383e94d587d91',1,'occ::dft']]],
+  ['dimer_3',['Dimer',['../namespaceocc_1_1cg.html#a5f605ef94cb5a818a484126836abdb0b',1,'occ::cg']]],
+  ['dimercounts_4',['DimerCounts',['../structocc_1_1crystal_1_1SurfaceCutResult.html#a9d890beea88b8f19869b8c086f17050f',1,'occ::crystal::SurfaceCutResult']]],
+  ['dimerindex_5',['DimerIndex',['../namespaceocc_1_1cg.html#a6d8b569a8a9471b627fc0725e954483e',1,'occ::cg']]],
+  ['dimerindexhash_6',['DimerIndexHash',['../namespaceocc_1_1cg.html#ad1637caf712dd6b443d2b1827c0cb1fd',1,'occ::cg']]],
+  ['dimermappinggraph_7',['DimerMappingGraph',['../namespaceocc_1_1crystal.html#a9eb8db4dcb80ba7b7fd4835fc3a23959',1,'occ::crystal']]],
+  ['dimermappingtable_8',['DimerMappingTable',['../namespaceocc_1_1cg.html#a01cbca8e7be22de1aab64d9d2539908e',1,'occ::cg']]],
+  ['dimerresults_9',['DimerResults',['../namespaceocc_1_1cg.html#a3fe7249edd9a95b0dbbd91af5d26b89f',1,'occ::cg']]],
+  ['dipole_10',['Dipole',['../structocc_1_1core_1_1Multipole.html#af3c48eb12303f014d0d1dfe3e3295b61',1,'occ::core::Multipole']]],
+  ['dipolegradao_11',['DipoleGradAO',['../namespaceocc_1_1xtb.html#a74f7c5844a034d4555640269c87d6aa3',1,'occ::xtb']]],
+  ['dispersiongradientfunc_12',['DispersionGradientFunc',['../namespaceocc_1_1qm.html#a32e726f5005421195b460ae5cf961e44',1,'occ::qm']]],
+  ['dmat_13',['DMat',['../namespaceocc.html#a5f947561c598a5a80bfe4f356cecf6a6',1,'occ']]],
+  ['dmat3_14',['DMat3',['../namespaceocc.html#ae6946a298511e6a06d6a2920ab3952b9',1,'occ']]],
+  ['dmat3n_15',['DMat3N',['../namespaceocc.html#a3fac0a18e626164b5d03c1d65e4f4603',1,'occ']]],
+  ['dmat4_16',['DMat4',['../namespaceocc.html#ac9a0b568fb49cebd5f9f0dc75582f1b6',1,'occ']]],
+  ['dmatn3_17',['DMatN3',['../namespaceocc.html#a6a74692c5949888c38f63f1262a45c97',1,'occ']]],
+  ['dmatrm_18',['DMatRM',['../namespaceocc.html#a974f9d4322330c1b4cab9afb1a804e4a',1,'occ']]],
+  ['duration_5ft_19',['duration_t',['../namespaceocc_1_1timing.html#acaf1bb03ec9a7d5484ba381605b4100f',1,'occ::timing']]],
+  ['dvec_20',['DVec',['../namespaceocc.html#a58ec857f49d7fd1a61d3b4416fd0a960',1,'occ']]],
+  ['dvec3_21',['DVec3',['../namespaceocc.html#a68d6ad80a41efec2dd84fea9837b6c7c',1,'occ']]]
 ];

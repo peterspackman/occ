@@ -1,5 +1,7 @@
 var structocc_1_1ints_1_1PrimitivePairData =
 [
+    [ "a", "structocc_1_1ints_1_1PrimitivePairData.html#aa34ae9ac5f55ba3d90689ed656dd4f99", null ],
+    [ "b", "structocc_1_1ints_1_1PrimitivePairData.html#a1120883fd10b28ef1e7cffb83bb1707c", null ],
     [ "E_matrix", "structocc_1_1ints_1_1PrimitivePairData.html#aed0537a3eadf64409bd265ff8da0e9a6", null ],
     [ "nab", "structocc_1_1ints_1_1PrimitivePairData.html#a859fe5b9bdf891cb343f61825d63b91f", null ],
     [ "nherm", "structocc_1_1ints_1_1PrimitivePairData.html#af4acf7d42b9ff35da8d2325bf4dbf1d5", null ],

@@ -1,7 +1,18 @@
 var searchData=
 [
-  ['t4_0',['T4',['../structocc_1_1qm_1_1cc_1_1UCCIntegrals.html#a71db7fef72d36e91ed210380ba5c15ed',1,'occ::qm::cc::UCCIntegrals']]],
-  ['tensor4_1',['Tensor4',['../structocc_1_1qm_1_1cc_1_1CCIntegrals.html#a8d56733c47da4dc19ade74b8c4d68c24',1,'occ::qm::cc::CCIntegrals']]],
-  ['thread_5flocal_5fstorage_2',['thread_local_storage',['../namespaceocc_1_1parallel.html#a02331d2d0c473690c8cf5bd86f6a7d8f',1,'occ::parallel']]],
-  ['time_5fpoint_5ft_3',['time_point_t',['../namespaceocc_1_1timing.html#ac322722ef93738b18db0c38c559f9806',1,'occ::timing']]]
+  ['sccresult_0',['SccResult',['../namespaceocc_1_1xtb.html#a47403fbcaf772b1b4a888f6ab872ffe3',1,'occ::xtb']]],
+  ['sgdata_1',['SGData',['../namespaceocc_1_1crystal.html#adde80b2176f8547db1bc556e8eeb3846',1,'occ::crystal']]],
+  ['shellkind_2',['ShellKind',['../classocc_1_1qm_1_1IntegralEngine.html#aad6e359ffc13cdfc74206628f401bdcb',1,'occ::qm::IntegralEngine::ShellKind'],['../classocc_1_1qm_1_1IntegralEngineDF.html#a29db451c79bd0a390387b2cd9d2fe430',1,'occ::qm::IntegralEngineDF::ShellKind'],['../classocc_1_1qm_1_1cc_1_1IntegralEngine.html#aad6e359ffc13cdfc74206628f401bdcb',1,'occ::qm::cc::IntegralEngine::ShellKind']]],
+  ['shelllist_3',['ShellList',['../classocc_1_1gto_1_1AOBasis.html#af10e2f1bdb7ba7f958ab3fc65fdb26ca',1,'occ::gto::AOBasis::ShellList'],['../classocc_1_1qm_1_1IntegralEngine.html#a258ba56c84633fd533b698e0142889b6',1,'occ::qm::IntegralEngine::ShellList'],['../classocc_1_1qm_1_1IntegralEngineDF.html#a3d4b5b79a3b49a350be881aab1a27af0',1,'occ::qm::IntegralEngineDF::ShellList'],['../classocc_1_1numint_1_1AOBasis.html#af10e2f1bdb7ba7f958ab3fc65fdb26ca',1,'occ::numint::AOBasis::ShellList'],['../classocc_1_1qm_1_1AOBasis.html#af10e2f1bdb7ba7f958ab3fc65fdb26ca',1,'occ::qm::AOBasis::ShellList'],['../classocc_1_1qm_1_1cc_1_1AOBasis.html#af10e2f1bdb7ba7f958ab3fc65fdb26ca',1,'occ::qm::cc::AOBasis::ShellList'],['../classocc_1_1qm_1_1cc_1_1IntegralEngine.html#a258ba56c84633fd533b698e0142889b6',1,'occ::qm::cc::IntegralEngine::ShellList'],['../classocc_1_1qm_1_1cint_1_1AOBasis.html#af10e2f1bdb7ba7f958ab3fc65fdb26ca',1,'occ::qm::cint::AOBasis::ShellList'],['../classocc_1_1qm_1_1guess_1_1AOBasis.html#af10e2f1bdb7ba7f958ab3fc65fdb26ca',1,'occ::qm::guess::AOBasis::ShellList']]],
+  ['shellpairlist_4',['ShellPairList',['../classocc_1_1qm_1_1PackedDFStore.html#ad5b6530f6f13975f03ce1acb851ffd5c',1,'occ::qm::PackedDFStore::ShellPairList'],['../classocc_1_1qm_1_1IntegralEngine.html#a1a882dd9e46b59e0e2048112a0b26dcb',1,'occ::qm::IntegralEngine::ShellPairList'],['../classocc_1_1qm_1_1IntegralEngineDF.html#a6182b24c8b6f90e0d566329464a8fadb',1,'occ::qm::IntegralEngineDF::ShellPairList'],['../classocc_1_1qm_1_1cc_1_1IntegralEngine.html#a1a882dd9e46b59e0e2048112a0b26dcb',1,'occ::qm::cc::IntegralEngine::ShellPairList'],['../namespaceocc_1_1qm.html#ae96667680137fac2585dab11134c9079',1,'occ::qm::ShellPairList']]],
+  ['sitemappinggraph_5',['SiteMappingGraph',['../namespaceocc_1_1crystal.html#a935c1989f160e53c1af808bd20c116bc',1,'occ::crystal']]],
+  ['slaterbasissetmap_6',['SlaterBasisSetMap',['../namespaceocc_1_1slater.html#aa78d8f0034bef7742da1967dd0d09c41',1,'occ::slater']]],
+  ['solvationsurface_7',['SolvationSurface',['../namespaceocc_1_1xtb.html#aa2b1bcd48e55cce75e90be4035c4d607',1,'occ::xtb']]],
+  ['solvationsurfaces_8',['SolvationSurfaces',['../namespaceocc_1_1xtb.html#aa153c79d56aa3cfaec5f7d643bf85ab5',1,'occ::xtb']]],
+  ['sortedk100distances_9',['SortedK100Distances',['../namespaceocc_1_1descriptors.html#a3aef781f0c9e4c75ecc728eadb36b1c2',1,'occ::descriptors']]],
+  ['sortedk10distances_10',['SortedK10Distances',['../namespaceocc_1_1descriptors.html#a803a80319158190e78e8c78d986b34f6',1,'occ::descriptors']]],
+  ['sortedk1distance_11',['SortedK1Distance',['../namespaceocc_1_1descriptors.html#a9e11525a5d568629278d7efb92159f59',1,'occ::descriptors']]],
+  ['sortedk20distances_12',['SortedK20Distances',['../namespaceocc_1_1descriptors.html#ac96d004b1c56dde326805d7443f92155',1,'occ::descriptors']]],
+  ['sortedk50distances_13',['SortedK50Distances',['../namespaceocc_1_1descriptors.html#a9c7041e01b5fa897671d418918165b66',1,'occ::descriptors']]],
+  ['sortedk5distances_14',['SortedK5Distances',['../namespaceocc_1_1descriptors.html#a48bfc891fca164aa9605d912ca22f75a',1,'occ::descriptors']]]
 ];

@@ -1,7 +1,8 @@
 var classocc_1_1dft_1_1DensityFunctional =
 [
-    [ "Params", "structocc_1_1dft_1_1DensityFunctional_1_1Params.html", "structocc_1_1dft_1_1DensityFunctional_1_1Params" ],
     [ "Result", "structocc_1_1dft_1_1DensityFunctional_1_1Result.html", "structocc_1_1dft_1_1DensityFunctional_1_1Result" ],
+    [ "SecondDerivatives", "structocc_1_1dft_1_1DensityFunctional_1_1SecondDerivatives.html", "structocc_1_1dft_1_1DensityFunctional_1_1SecondDerivatives" ],
+    [ "Params", "structocc_1_1dft_1_1DensityFunctional_1_1Params.html", "structocc_1_1dft_1_1DensityFunctional_1_1Params" ],
     [ "Family", "classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadf", [
       [ "LDA", "classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa39eaecd91101b7fc8fa2cc0f9df38e74", null ],
       [ "GGA", "classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfac408bfb4a6f6549d1e7c68083fe41d2e", null ],
@@ -380,6 +381,7 @@ var classocc_1_1dft_1_1DensityFunctional =
     [ "DensityFunctional", "classocc_1_1dft_1_1DensityFunctional.html#ae2a70f3e803201853c99c4790f5fc48e", null ],
     [ "derivative_order", "classocc_1_1dft_1_1DensityFunctional.html#afcc6c15ae8cf9fe39f18f9e495e823b1", null ],
     [ "evaluate", "classocc_1_1dft_1_1DensityFunctional.html#a24da3b86a7d94ddf79fcb9405bb24827", null ],
+    [ "evaluate_second_derivatives", "classocc_1_1dft_1_1DensityFunctional.html#a6b271710f98b6acaffd4a3b50f8a72da", null ],
     [ "exact_exchange_factor", "classocc_1_1dft_1_1DensityFunctional.html#a71d7ef494b9b7ce10c97c29e0eb96c72", null ],
     [ "family", "classocc_1_1dft_1_1DensityFunctional.html#abecc0a59a365ad908763722bcc5a9590", null ],
     [ "family_string", "classocc_1_1dft_1_1DensityFunctional.html#ab946ee80dc74f2fff8c8d6ef9046fae2", null ],
@@ -387,6 +389,7 @@ var classocc_1_1dft_1_1DensityFunctional =
     [ "kind", "classocc_1_1dft_1_1DensityFunctional.html#a6e18aea8633c8be13c7ff7a062acfe39", null ],
     [ "kind_string", "classocc_1_1dft_1_1DensityFunctional.html#ac3dc4dfba3f753903774490403e2aab4", null ],
     [ "name", "classocc_1_1dft_1_1DensityFunctional.html#a937b4dbe3b5db864d8bdcb6220b887e1", null ],
+    [ "needs_laplacian", "classocc_1_1dft_1_1DensityFunctional.html#ae3c4532e6522536c7c0f4bc2e866b55a", null ],
     [ "needs_nlc_correction", "classocc_1_1dft_1_1DensityFunctional.html#acd2ba08a314b100c1d67bd08a743500c", null ],
     [ "polarized", "classocc_1_1dft_1_1DensityFunctional.html#a4170e5c5289b80add943202b7563da2c", null ],
     [ "range_separated_parameters", "classocc_1_1dft_1_1DensityFunctional.html#a9804e4eb0e152498ecc9818eb3b1d969", null ],

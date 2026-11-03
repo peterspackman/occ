@@ -1,7 +1,7 @@
 var classquickhull_1_1MeshBuilder =
 [
-    [ "Face", "structquickhull_1_1MeshBuilder_1_1Face.html", "structquickhull_1_1MeshBuilder_1_1Face" ],
     [ "HalfEdge", "structquickhull_1_1MeshBuilder_1_1HalfEdge.html", "structquickhull_1_1MeshBuilder_1_1HalfEdge" ],
+    [ "Face", "structquickhull_1_1MeshBuilder_1_1Face.html", "structquickhull_1_1MeshBuilder_1_1Face" ],
     [ "MeshBuilder", "classquickhull_1_1MeshBuilder.html#add932898956d5140a5b8b8b964a59157", null ],
     [ "addFace", "classquickhull_1_1MeshBuilder.html#abb7ac0d29bc44c2f141dc37ff5c824a6", null ],
     [ "addHalfEdge", "classquickhull_1_1MeshBuilder.html#a5da5150fc876b9536f83fc717fe5c9d1", null ],

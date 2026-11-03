@@ -1,7 +1,7 @@
 var classquickhull_1_1HalfEdgeMesh =
 [
-    [ "Face", "structquickhull_1_1HalfEdgeMesh_1_1Face.html", "structquickhull_1_1HalfEdgeMesh_1_1Face" ],
     [ "HalfEdge", "structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html", "structquickhull_1_1HalfEdgeMesh_1_1HalfEdge" ],
+    [ "Face", "structquickhull_1_1HalfEdgeMesh_1_1Face.html", "structquickhull_1_1HalfEdgeMesh_1_1Face" ],
     [ "HalfEdgeMesh", "classquickhull_1_1HalfEdgeMesh.html#a39c068f72403abd3d39a73ad53d4e5c2", null ],
     [ "getVertexIndicesOfFace", "classquickhull_1_1HalfEdgeMesh.html#a1107ebbe3c06a9855e5e7b531997122b", null ],
     [ "m_faces", "classquickhull_1_1HalfEdgeMesh.html#a956e909d12915cafee65d484168aab9e", null ],

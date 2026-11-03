@@ -1,12 +1,12 @@
 <map id="/home/runner/work/occ/occ/include/occ/cg/solvation_contribution.h" name="/home/runner/work/occ/occ/include/occ/cg/solvation_contribution.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="84,5,292,60"/>
-<area shape="rect" id="Node000002" href="$distance__partition_8h.html" title=" " alt="" coords="17,108,220,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,73,139,109,135,106,160,70"/>
-<area shape="rect" id="Node000003" href="$crystal__growth_8h.html" title=" " alt="" coords="103,211,273,265"/>
-<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="218,71,235,107,239,135,235,163,224,189,211,212,206,209,219,187,229,162,234,135,229,109,213,73"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="147,173,172,209,168,212,142,176"/>
-<area shape="rect" id="Node000004" href="$cg__pipeline_8h.html" title=" " alt="" coords="5,313,176,368"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="155,277,118,315,114,311,151,273"/>
-<area shape="rect" id="Node000005" href="$dma__cg_8h.html" title=" " alt="" coords="200,313,371,368"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="225,273,262,311,258,315,221,277"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="84,5,292,67"/>
+<area shape="rect" id="Node000002" href="$distance__partition_8h.html" title=" " alt="" coords="17,115,220,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="159,82,140,116,136,113,162,78"/>
+<area shape="rect" id="Node000003" href="$crystal__growth_8h.html" title=" " alt="" coords="103,225,273,286"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="218,78,234,114,240,146,234,177,225,203,212,226,208,222,220,200,229,176,234,146,229,116,217,83"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="146,187,171,224,166,224,146,192"/>
+<area shape="rect" id="Node000004" href="$cg__pipeline_8h.html" title=" " alt="" coords="5,334,176,396"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="153,296,120,336,116,332,148,299"/>
+<area shape="rect" id="Node000005" href="$dma__cg_8h.html" title=" " alt="" coords="200,334,370,396"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="226,295,261,334,255,334,224,300"/>
 </map>

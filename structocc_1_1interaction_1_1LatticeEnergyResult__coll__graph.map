@@ -1,5 +1,5 @@
 <map id="occ::interaction::LatticeEnergyResult" name="occ::interaction::LatticeEnergyResult">
-<area shape="rect" id="Node000001" title=" " alt="" coords="17,93,191,133"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1crystal_1_1CrystalDimers.html" title="A class representing the molecular dimers in a crystal lattice." alt="" coords="5,5,203,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,44,107,93,101,93,101,44"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="17,106,190,151"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1crystal_1_1CrystalDimers.html" title="A class representing the molecular dimers in a crystal lattice." alt="" coords="5,5,202,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,47,106,106,101,105,102,51"/>
 </map>

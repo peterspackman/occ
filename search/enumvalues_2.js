@@ -1,7 +1,7 @@
 var searchData=
 [
   ['ba_0',['BA',['../classocc_1_1core_1_1Dimer.html#a8cc4dd8b808d057f2cd1f73977e06aada5fc810cf62601df84b7923b9964c53e6',1,'occ::core::Dimer']]],
-  ['becke_1',['becke',['../namespaceocc_1_1numint.html#a8946bc323d1808ed23151b97866785e6a18cf5657f88a943304168f3fe466545b',1,'occ::numint::Becke'],['../namespaceocc_1_1numint.html#adfae001d345ff26f124a72c71d63856fa18cf5657f88a943304168f3fe466545b',1,'occ::numint::Becke']]],
+  ['becke_1',['Becke',['../namespaceocc_1_1numint.html#a8946bc323d1808ed23151b97866785e6a18cf5657f88a943304168f3fe466545b',1,'occ::numint::Becke'],['../namespaceocc_1_1numint.html#adfae001d345ff26f124a72c71d63856fa18cf5657f88a943304168f3fe466545b',1,'occ::numint::Becke']]],
   ['beta_2',['Beta',['../namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1a0b87d66b88c72957dfea8c9605016442',1,'occ::qm']]],
   ['betamo_3',['BetaMO',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a375f7f72812cfa8e61f28e034bceb7e2',1,'occ::io::FchkReader']]],
   ['betamoenergies_4',['BetaMOEnergies',['../classocc_1_1io_1_1FchkReader.html#ae5426b39483e1c312a5363ea71148f41a8a7de86d5914f5dbb0b0da4799dbe36f',1,'occ::io::FchkReader']]],

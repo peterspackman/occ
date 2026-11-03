@@ -1,7 +1,7 @@
 <map id="occ::opt::OptimizationState" name="occ::opt::OptimizationState">
-<area shape="rect" id="Node000001" title=" " alt="" coords="75,167,273,192"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1opt_1_1OptPoint.html" title=" " alt="" coords="5,5,143,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,41,169,165,164,168,86,44"/>
-<area shape="rect" id="Node000003" href="$structocc_1_1opt_1_1ConvergenceCriteria.html" title=" " alt="" coords="167,5,381,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="274,45,263,94,253,120,237,144,222,159,205,169,202,164,219,154,233,141,248,118,258,92,269,44"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="73,218,271,245"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1opt_1_1OptPoint.html" title=" " alt="" coords="5,5,142,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="88,45,169,216,163,218,84,49"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1opt_1_1ConvergenceCriteria.html" title=" " alt="" coords="166,5,379,33"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="276,46,278,81,274,119,264,159,245,195,231,209,214,220,212,215,228,205,241,192,259,157,269,118,272,80,273,51"/>
 </map>

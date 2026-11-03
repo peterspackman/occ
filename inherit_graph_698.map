@@ -1,0 +1,24 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,462,123,489"/>
+<area shape="rect" id="Node000001" href="$structocc_1_1core_1_1numpy_1_1impl_1_1is__complex_3_01std_1_1complex_3_01T_01_4_01_4.html" title=" " alt="" coords="189,295,391,357"/>
+<area shape="poly" id="edge34_Node000000_Node000001" title=" " alt="" coords="83,448,121,406,169,367,193,355,189,360,172,371,125,410,88,450"/>
+<area shape="rect" id="Node000003" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform_3_01T_00_01std_1_1void__t_3_01declt2cec5ff47cede2234f4d8b7c5c4da8f3.html" title=" " alt="" coords="193,381,386,477"/>
+<area shape="poly" id="edge35_Node000000_Node000003" title=" " alt="" coords="136,458,195,447,191,451,139,463"/>
+<area shape="rect" id="Node000004" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate_3_01T_00_01std_1_1void__t_3_01decltyd8f4a973e2c27f11c09ac684b529e03b.html" title=" " alt="" coords="171,5,409,135"/>
+<area shape="poly" id="edge36_Node000000_Node000004" title=" " alt="" coords="72,446,168,146,183,133,180,138,173,149,77,448"/>
+<area shape="rect" id="Node000005" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate_3_01T_00_01std_1_1void__t_3_01decltydd3f0790f5deda28bdbab41371fbc688.html" title=" " alt="" coords="188,159,392,272"/>
+<area shape="poly" id="edge37_Node000000_Node000005" title=" " alt="" coords="73,446,108,367,136,322,169,282,189,266,186,271,173,285,140,325,113,370,78,448"/>
+<area shape="rect" id="Node000006" href="$structocc_1_1core_1_1numpy_1_1impl_1_1is__complex.html" title=" " alt="" coords="206,501,374,546"/>
+<area shape="poly" id="edge38_Node000000_Node000006" title=" " alt="" coords="137,488,207,504,203,507,138,494"/>
+<area shape="rect" id="Node000007" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html" title=" " alt="" coords="193,570,386,632"/>
+<area shape="poly" id="edge39_Node000000_Node000007" title=" " alt="" coords="91,497,129,527,172,556,196,569,191,570,169,560,126,532,92,502"/>
+<area shape="rect" id="Node000008" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html" title=" " alt="" coords="196,655,384,717"/>
+<area shape="poly" id="edge40_Node000000_Node000008" title=" " alt="" coords="77,501,114,572,140,609,172,641,198,659,193,660,169,646,136,613,109,575,76,507"/>
+<area shape="rect" id="Node000009" href="$structocc_1_1geometry_1_1mc_1_1impl_1_1has__point__evaluate.html" title=" " alt="" coords="197,741,382,802"/>
+<area shape="poly" id="edge41_Node000000_Node000009" title=" " alt="" coords="70,502,83,552,102,612,131,673,150,702,172,727,199,747,194,747,169,731,146,705,126,676,97,614,78,554,69,508"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="8,258,120,285"/>
+<area shape="poly" id="edge42_Node000002_Node000001" title=" " alt="" coords="133,286,191,300,186,303,136,291"/>
+<area shape="poly" id="edge43_Node000002_Node000003" title=" " alt="" coords="88,294,127,330,172,367,195,382,190,384,169,371,124,334,89,299"/>
+<area shape="poly" id="edge44_Node000002_Node000004" title=" " alt="" coords="82,244,120,196,169,146,186,133,184,138,172,149,124,200,86,246"/>
+<area shape="poly" id="edge45_Node000002_Node000005" title=" " alt="" coords="133,252,189,239,186,243,137,256"/>
+</map>

@@ -1,14 +1,14 @@
 <map id="/home/runner/work/occ/occ/include/occ/solvent/parameters.h" name="/home/runner/work/occ/occ/include/occ/solvent/parameters.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="255,5,432,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,196,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="270,63,147,106,145,101,268,58"/>
-<area shape="rect" id="Node000003" href="$solvent_2json_8h.html" title=" " alt="" coords="221,108,359,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="329,61,307,98,302,95,325,59"/>
-<area shape="rect" id="Node000005" href="$smd__parameters_8h.html" title=" " alt="" coords="285,181,508,207"/>
-<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="356,59,374,107,392,167,387,169,369,109,351,61"/>
-<area shape="rect" id="Node000006" title=" " alt="" coords="434,108,493,133"/>
-<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="382,58,437,98,434,102,378,62"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="114,181,261,207"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="275,136,217,175,214,171,272,131"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="309,131,369,171,366,176,306,136"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="253,5,430,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,195,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="259,69,150,112,148,107,263,66"/>
+<area shape="rect" id="Node000003" href="$solvent_2json_8h.html" title=" " alt="" coords="219,115,357,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="326,66,305,103,302,99,321,69"/>
+<area shape="rect" id="Node000005" href="$smd__parameters_8h.html" title=" " alt="" coords="284,191,505,218"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="354,65,372,114,390,177,385,175,367,116,351,70"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="432,115,490,143"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="382,65,435,106,429,105,381,70"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="114,191,259,218"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="272,142,218,184,216,179,267,144"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="308,141,366,182,361,182,306,146"/>
 </map>

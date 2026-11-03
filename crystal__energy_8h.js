@@ -8,5 +8,5 @@ var crystal__energy_8h =
     [ "occ::mults::CrystalEnergy", "classocc_1_1mults_1_1CrystalEnergy.html", "classocc_1_1mults_1_1CrystalEnergy" ],
     [ "occ::mults::CrystalEnergy::MoleculeGeometry", "structocc_1_1mults_1_1CrystalEnergy_1_1MoleculeGeometry.html", "structocc_1_1mults_1_1CrystalEnergy_1_1MoleculeGeometry" ],
     [ "occ::mults::CrystalEnergy::MoleculeCache", "structocc_1_1mults_1_1CrystalEnergy_1_1MoleculeCache.html", "structocc_1_1mults_1_1CrystalEnergy_1_1MoleculeCache" ],
-    [ "voigt_basis_matrices", "crystal__energy_8h.html#a10bfa586aac05201f64b88a874a5299e", null ]
+    [ "occ::mults::voigt_basis_matrices", "namespaceocc_1_1mults.html#a10bfa586aac05201f64b88a874a5299e", null ]
 ];

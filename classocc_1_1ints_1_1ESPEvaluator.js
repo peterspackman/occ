@@ -12,6 +12,10 @@ var classocc_1_1ints_1_1ESPEvaluator =
     [ "clear", "classocc_1_1ints_1_1ESPEvaluator.html#abf2a487f4c0cecfb3073ab5dea1f9ca0", null ],
     [ "evaluate", "classocc_1_1ints_1_1ESPEvaluator.html#a879186f5725f83d2efb48746b4392d7b", null ],
     [ "evaluate_overlap", "classocc_1_1ints_1_1ESPEvaluator.html#a78303c770d1b4f93ed37af80da49760a", null ],
+    [ "evaluate_soa", "classocc_1_1ints_1_1ESPEvaluator.html#aa7a8f43765af595650c6389728b3fcf1", null ],
+    [ "evaluate_soa_contract", "classocc_1_1ints_1_1ESPEvaluator.html#ac0453e79c856751f8f964d7439930e0e", null ],
+    [ "evaluate_soa_hessian", "classocc_1_1ints_1_1ESPEvaluator.html#a445bf38ddc12fac4a69b7fe40fa6abe4", null ],
+    [ "evaluate_soa_value_and_derivative_contraction", "classocc_1_1ints_1_1ESPEvaluator.html#aaf0510a13b8ff2b8700401fcb33cbe61", null ],
     [ "is_spherical", "classocc_1_1ints_1_1ESPEvaluator.html#a3a365ab6e13cc8aec013b04410119b54", null ],
     [ "nab", "classocc_1_1ints_1_1ESPEvaluator.html#a6208ddfa390d4e16cb0ad495600fab0a", null ],
     [ "nherm", "classocc_1_1ints_1_1ESPEvaluator.html#a3803e93556d73133f387661a4df457c6", null ],
@@ -21,5 +25,10 @@ var classocc_1_1ints_1_1ESPEvaluator =
     [ "pair_center", "classocc_1_1ints_1_1ESPEvaluator.html#a5a64e10c2a96608e4668173c3739f6fa", null ],
     [ "pair_estimate", "classocc_1_1ints_1_1ESPEvaluator.html#a7cb418fdecd632bfa8e477e8ca99e2f3", null ],
     [ "pair_extent", "classocc_1_1ints_1_1ESPEvaluator.html#af798a21940f35bbbc3926a52646f6967", null ],
+    [ "pair_far_estimate", "classocc_1_1ints_1_1ESPEvaluator.html#afb762bdceb8d159565291e76867caa9b", null ],
+    [ "resize_derivative_pairs", "classocc_1_1ints_1_1ESPEvaluator.html#a51682b0c992bc24810ea4c8d9efb3e37", null ],
+    [ "resize_hessian_pairs", "classocc_1_1ints_1_1ESPEvaluator.html#adac863f95aed5e7b0975856e90c43d63", null ],
+    [ "set_shell_pair_derivative", "classocc_1_1ints_1_1ESPEvaluator.html#aac47fa676d22b7268c2183866662db9e", null ],
+    [ "set_shell_pair_hessian", "classocc_1_1ints_1_1ESPEvaluator.html#a1f24f167d503bcb2363b043b228fcde2", null ],
     [ "workspace_size", "classocc_1_1ints_1_1ESPEvaluator.html#a96a09f553fd38c95acf2dfca0364558f", null ]
 ];

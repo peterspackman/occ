@@ -1,11 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/dma/gauss_hermite.h" name="/home/runner/work/occ/occ/include/occ/dma/gauss_hermite.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="20,5,191,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,61,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,62,54,99,50,96,81,58"/>
-<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="86,108,271,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="130,58,162,96,158,99,126,62"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="66,181,158,207"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="170,135,134,173,130,169,166,132"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="182,181,306,207"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="191,132,226,169,222,173,187,135"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="20,5,190,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,61,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,70,55,104,51,101,82,65"/>
+<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="85,115,269,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="130,65,160,103,155,103,128,70"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="65,191,156,218"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="168,142,134,181,131,177,163,144"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="181,191,304,218"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="190,141,224,179,218,179,188,146"/>
 </map>

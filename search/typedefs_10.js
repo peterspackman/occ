@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['result_0',['Result',['../classocc_1_1core_1_1Combinations.html#a3e796a96cef7e89b91eba7c1c1fb898d',1,'occ::core::Combinations']]],
-  ['rotationmatrix_1',['RotationMatrix',['../namespaceocc_1_1mults.html#a6f232afdc9f899a884421acc4265474d',1,'occ::mults']]],
-  ['rowvec_2',['RowVec',['../namespaceocc.html#a2be511c632e07bd3b62cfa0005ce443d',1,'occ']]],
-  ['rowvec3_3',['RowVec3',['../namespaceocc.html#a24fc356bbdefdca4157997750ee02964',1,'occ']]],
-  ['rowvec4_4',['RowVec4',['../namespaceocc.html#a8a1b01836705169c4372c04b71bd6ec6',1,'occ']]]
+  ['quadrupole_0',['Quadrupole',['../structocc_1_1core_1_1Multipole.html#adf1de0d6cb980103be5a0caa764fda9d',1,'occ::core::Multipole']]],
+  ['quadrupolegradao_1',['QuadrupoleGradAO',['../namespaceocc_1_1xtb.html#a5b05109c1daf9ccc91b4c7ec5b963ebc',1,'occ::xtb']]]
 ];

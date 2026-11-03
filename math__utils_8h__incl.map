@@ -1,13 +1,13 @@
 <map id="/home/runner/work/occ/occ/include/occ/geometry/math_utils.h" name="/home/runner/work/occ/occ/include/occ/geometry/math_utils.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="133,5,325,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,132,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,62,104,104,101,99,179,58"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="237,181,340,207"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="211,61,195,97,193,115,198,132,218,156,245,173,242,178,215,160,193,135,187,115,190,95,206,59"/>
-<area shape="rect" id="Node000004" href="$plane_8h.html" title=" " alt="" coords="207,108,370,133"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="249,59,275,95,270,98,245,62"/>
-<area shape="rect" id="Node000005" href="$ray_8h.html" title=" " alt="" coords="394,108,541,133"/>
-<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="302,58,423,101,422,106,301,63"/>
-<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="291,134,291,168,286,168,286,134"/>
-<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="440,136,331,179,329,174,438,131"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="132,5,323,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,132,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="173,69,106,109,103,105,176,65"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="236,191,338,218"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="207,65,193,105,191,124,196,141,215,164,240,184,235,183,211,168,191,144,186,124,187,104,204,69"/>
+<area shape="rect" id="Node000004" href="$plane_8h.html" title=" " alt="" coords="206,115,368,143"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="248,65,273,102,267,101,246,70"/>
+<area shape="rect" id="Node000005" href="$ray_8h.html" title=" " alt="" coords="392,115,537,143"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="307,65,419,109,413,110,306,70"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="289,141,289,176,285,173,285,145"/>
+<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="435,143,333,187,332,182,430,144"/>
 </map>

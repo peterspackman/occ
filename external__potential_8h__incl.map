@@ -1,24 +1,24 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/external_potential.h" name="/home/runner/work/occ/occ/include/occ/qm/external_potential.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="225,5,433,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,95,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="244,63,101,107,99,102,243,58"/>
-<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="131,255,316,280"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="226,60,189,80,173,94,160,109,148,134,145,156,150,179,160,205,175,227,194,244,190,248,171,230,156,208,145,180,140,156,143,132,156,107,169,90,186,76,223,55"/>
-<area shape="rect" id="Node000006" href="$point__charge_8h.html" title=" " alt="" coords="170,108,346,133"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="309,62,278,99,274,96,305,58"/>
-<area shape="rect" id="Node000009" title=" " alt="" coords="370,108,429,133"/>
-<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="352,58,383,96,379,99,348,62"/>
-<area shape="rect" id="Node000010" title=" " alt="" coords="453,108,551,133"/>
-<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="383,58,468,99,465,104,380,62"/>
-<area shape="rect" id="Node000011" title=" " alt="" coords="575,108,637,133"/>
-<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="414,58,562,103,560,108,413,63"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="112,328,204,353"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="215,282,180,320,176,316,211,279"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="228,328,352,353"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="236,279,272,316,268,320,232,282"/>
-<area shape="rect" id="Node000007" title=" " alt="" coords="170,181,226,207"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="250,135,219,173,214,169,246,132"/>
-<area shape="rect" id="Node000008" href="$atom_8h.html" title=" " alt="" coords="251,181,377,207"/>
-<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="269,132,299,169,294,172,265,135"/>
-<area shape="poly" id="edge8_Node000008_Node000003" title=" " alt="" coords="301,209,251,248,247,244,298,205"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="223,5,430,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,94,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="233,70,106,112,103,107,236,65"/>
+<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="128,266,312,294"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="221,65,187,86,171,100,158,116,146,142,143,165,148,189,159,217,172,238,190,257,185,257,168,241,154,220,142,191,137,165,141,141,154,114,168,96,184,82,225,61"/>
+<area shape="rect" id="Node000006" href="$point__charge_8h.html" title=" " alt="" coords="168,115,344,143"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="305,65,278,104,274,101,302,69"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="368,115,427,143"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="351,65,380,103,375,102,350,70"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="451,115,547,143"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="384,65,463,107,458,108,384,70"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="572,115,634,143"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="419,65,559,112,554,113,419,70"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="109,342,200,370"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="211,293,178,333,175,328,206,296"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="225,342,348,370"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="233,292,268,331,262,330,231,297"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="168,191,224,218"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="247,141,218,180,215,177,244,145"/>
+<area shape="rect" id="Node000008" href="$atom_8h.html" title=" " alt="" coords="248,191,374,218"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="267,141,295,178,289,178,265,146"/>
+<area shape="poly" id="edge8_Node000008_Node000003" title=" " alt="" coords="297,218,250,259,247,254,292,220"/>
 </map>

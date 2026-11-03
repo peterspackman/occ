@@ -1,7 +1,9 @@
 var dir_8d7890f3643d6be959559588d2eb1af6 =
 [
     [ "boys.h", "boys_8h.html", "boys_8h" ],
+    [ "boys_simd.h", "boys__simd_8h.html", "boys__simd_8h" ],
     [ "ecoeffs.h", "ecoeffs_8h.html", "ecoeffs_8h" ],
+    [ "ecp.h", "ecp_8h.html", "ecp_8h" ],
     [ "eri3.h", "eri3_8h.html", "eri3_8h" ],
     [ "esp.h", "ints_2esp_8h.html", "ints_2esp_8h" ],
     [ "hermite_kernels.h", "hermite__kernels_8h.html", "hermite__kernels_8h" ],

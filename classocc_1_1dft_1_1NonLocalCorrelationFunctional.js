@@ -1,8 +1,8 @@
 var classocc_1_1dft_1_1NonLocalCorrelationFunctional =
 [
-    [ "GradientResult", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1GradientResult.html", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1GradientResult" ],
     [ "Parameters", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters" ],
     [ "Result", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result" ],
+    [ "GradientResult", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1GradientResult.html", "structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1GradientResult" ],
     [ "Kind", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#ad6e5077d648574a4085675e346468882", [
       [ "VV10", "classocc_1_1dft_1_1NonLocalCorrelationFunctional.html#ad6e5077d648574a4085675e346468882a9c9dad2092baa26ddc51e438626eba23", null ]
     ] ],

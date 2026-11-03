@@ -10,6 +10,7 @@ var structocc_1_1io_1_1MethodInput =
     [ "correlated_density", "structocc_1_1io_1_1MethodInput.html#acedeb985dd16ef7f55f2d01533e39e58", null ],
     [ "correlated_density_local", "structocc_1_1io_1_1MethodInput.html#afd510f36ff9329e1638d524867e448fb", null ],
     [ "cosx", "structocc_1_1io_1_1MethodInput.html#a3e16f01652410f1236dbb91fc10e8d2c", null ],
+    [ "cosx_fixed_grid", "structocc_1_1io_1_1MethodInput.html#a11ca9b1f7b9716518c26a3aa63013af0", null ],
     [ "cosx_grid_level", "structocc_1_1io_1_1MethodInput.html#ae82deca2168e7bf0ab03faaaac9c07c6", null ],
     [ "dft_grid", "structocc_1_1io_1_1MethodInput.html#ae421844e58ba074671bc2868e3176808", null ],
     [ "dft_xc_screening_threshold", "structocc_1_1io_1_1MethodInput.html#abf0ebd5ec6682f2f8ae4160d63f99f3c", null ],

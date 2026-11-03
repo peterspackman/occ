@@ -1,5 +1,5 @@
 <map id="occ::io::GMFWriter::Facet" name="occ::io::GMFWriter::Facet">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,93,148,133"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice." alt="" coords="11,5,142,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,44,79,93,74,93,74,44"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,106,147,151"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice." alt="" coords="11,5,141,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,47,79,106,73,105,74,50"/>
 </map>

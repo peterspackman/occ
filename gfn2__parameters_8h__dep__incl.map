@@ -1,11 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/xtb/gfn2_parameters.h" name="/home/runner/work/occ/occ/include/occ/xtb/gfn2_parameters.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="128,5,299,60"/>
-<area shape="rect" id="Node000002" href="$gfn2__engine_8h.html" title=" " alt="" coords="5,108,176,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,71,124,110,121,106,169,67"/>
-<area shape="rect" id="Node000003" href="$xtb__calculator_8h.html" title=" " alt="" coords="128,211,299,265"/>
-<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="216,74,216,210,211,210,211,74"/>
-<area shape="rect" id="Node000004" href="$gfn2__periodic__calculator_8h.html" title=" " alt="" coords="251,108,447,163"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="261,66,315,106,312,110,258,70"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="135,169,183,209,180,213,132,174"/>
-<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="304,173,251,213,247,208,301,169"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="128,5,298,67"/>
+<area shape="rect" id="Node000002" href="$gfn2__engine_8h.html" title=" " alt="" coords="5,115,176,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,79,127,116,123,113,169,75"/>
+<area shape="rect" id="Node000003" href="$xtb__calculator_8h.html" title=" " alt="" coords="128,225,298,286"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="215,81,216,225,211,224,211,84"/>
+<area shape="rect" id="Node000004" href="$gfn2__periodic__calculator_8h.html" title=" " alt="" coords="250,115,446,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="263,74,313,114,308,115,262,80"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="137,184,181,224,176,225,135,190"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="301,186,252,227,249,222,296,188"/>
 </map>

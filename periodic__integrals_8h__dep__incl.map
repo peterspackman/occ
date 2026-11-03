@@ -1,17 +1,17 @@
 <map id="/home/runner/work/occ/occ/include/occ/xtb/periodic_integrals.h" name="/home/runner/work/occ/occ/include/occ/xtb/periodic_integrals.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="148,5,319,60"/>
-<area shape="rect" id="Node000002" href="$anisotropic_8h.html" title=" " alt="" coords="25,108,196,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,71,144,110,141,106,189,67"/>
-<area shape="rect" id="Node000003" href="$gfn2__engine_8h.html" title=" " alt="" coords="25,313,196,368"/>
-<area shape="poly" id="edge8_Node000001_Node000003" title=" " alt="" coords="241,73,243,116,240,165,230,218,210,267,189,294,162,315,159,311,185,290,206,264,225,216,235,165,237,116,235,74"/>
-<area shape="rect" id="Node000006" href="$camm_8h.html" title=" " alt="" coords="271,108,441,163"/>
-<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="278,67,326,106,322,110,275,71"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="50,172,31,190,16,212,8,238,16,264,35,290,61,311,58,315,31,294,11,267,3,238,11,210,27,187,47,169"/>
-<area shape="rect" id="Node000005" href="$multipole__ewald_8h.html" title=" " alt="" coords="25,211,196,265"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="113,176,113,211,108,211,108,176"/>
-<area shape="rect" id="Node000004" href="$xtb__calculator_8h.html" title=" " alt="" coords="25,416,196,471"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="113,382,113,416,108,416,108,382"/>
-<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="113,279,113,313,108,313,108,279"/>
-<area shape="rect" id="Node000007" href="$scc__state_8h.html" title=" " alt="" coords="271,211,441,265"/>
-<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="359,176,359,211,353,211,353,176"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="149,5,319,67"/>
+<area shape="rect" id="Node000002" href="$anisotropic_8h.html" title=" " alt="" coords="26,115,197,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,80,148,116,144,113,190,75"/>
+<area shape="rect" id="Node000003" href="$gfn2__engine_8h.html" title=" " alt="" coords="26,334,197,396"/>
+<area shape="poly" id="edge8_Node000001_Node000003" title=" " alt="" coords="240,80,244,128,242,180,232,236,211,288,191,314,166,336,163,332,187,311,207,285,227,234,236,180,239,128,239,85"/>
+<area shape="rect" id="Node000006" href="$camm_8h.html" title=" " alt="" coords="272,115,442,177"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="280,75,325,114,320,115,280,80"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="44,189,30,206,17,226,8,256,17,285,35,311,60,333,55,335,31,314,12,287,3,256,12,224,26,202,46,184"/>
+<area shape="rect" id="Node000005" href="$multipole__ewald_8h.html" title=" " alt="" coords="26,225,197,286"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="112,190,114,225,109,224,111,195"/>
+<area shape="rect" id="Node000004" href="$xtb__calculator_8h.html" title=" " alt="" coords="26,444,197,506"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="113,409,114,444,109,443,110,414"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="112,299,114,334,109,333,111,304"/>
+<area shape="rect" id="Node000007" href="$scc__state_8h.html" title=" " alt="" coords="272,225,442,286"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="358,190,359,225,354,223,356,195"/>
 </map>

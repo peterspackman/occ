@@ -1,7 +1,7 @@
 var occ__scf_8h =
 [
-    [ "add_scf_subcommand", "occ__scf_8h.html#ae511686fd65aa890b10a84b0e8b04aa7", null ],
-    [ "read_input_file", "occ__scf_8h.html#a696e8d3cc65b1c7e4c9bf7c517b2e706", null ],
-    [ "run_scf_external", "occ__scf_8h.html#a640588d16f48b5e0b22aa76154a8415e", null ],
-    [ "run_scf_subcommand", "occ__scf_8h.html#a8b464dac3ba2fc93daca687d9442a352", null ]
+    [ "occ::main::add_scf_subcommand", "namespaceocc_1_1main.html#ae511686fd65aa890b10a84b0e8b04aa7", null ],
+    [ "occ::main::read_input_file", "namespaceocc_1_1main.html#a696e8d3cc65b1c7e4c9bf7c517b2e706", null ],
+    [ "occ::main::run_scf_external", "namespaceocc_1_1main.html#a640588d16f48b5e0b22aa76154a8415e", null ],
+    [ "occ::main::run_scf_subcommand", "namespaceocc_1_1main.html#a8b464dac3ba2fc93daca687d9442a352", null ]
 ];

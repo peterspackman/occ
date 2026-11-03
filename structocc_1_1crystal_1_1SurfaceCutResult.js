@@ -1,6 +1,6 @@
 var structocc_1_1crystal_1_1SurfaceCutResult =
 [
-    [ "DimerCounts", "structocc_1_1crystal_1_1SurfaceCutResult.html#a92ff1948c9ee78b6d34fea71e24361f9", null ],
+    [ "DimerCounts", "structocc_1_1crystal_1_1SurfaceCutResult.html#a9d890beea88b8f19869b8c086f17050f", null ],
     [ "SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html#ad63c9859fc9f5dae8e20b450fa6a977a", null ],
     [ "total_above", "structocc_1_1crystal_1_1SurfaceCutResult.html#a6f39531704112ccf1b15bb86cd120414", null ],
     [ "total_below", "structocc_1_1crystal_1_1SurfaceCutResult.html#a0bb8d8c0be67aba971dff19b3b60d107", null ],

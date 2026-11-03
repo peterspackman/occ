@@ -1,11 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/solvent/draco.h" name="/home/runner/work/occ/occ/include/occ/solvent/draco.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="141,5,319,60"/>
-<area shape="rect" id="Node000002" href="$linear__algebra_8h.html" title=" " alt="" coords="24,108,209,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,62,145,102,142,97,194,58"/>
-<area shape="rect" id="Node000005" href="$smd__parameters_8h.html" title=" " alt="" coords="233,108,456,133"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="267,58,319,97,316,102,263,62"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="5,181,97,207"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="108,135,73,173,69,169,104,132"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="121,181,245,207"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="130,132,165,169,161,173,126,135"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="142,5,318,67"/>
+<area shape="rect" id="Node000002" href="$linear__algebra_8h.html" title=" " alt="" coords="24,115,208,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="190,69,146,107,143,103,194,66"/>
+<area shape="rect" id="Node000005" href="$smd__parameters_8h.html" title=" " alt="" coords="232,115,454,143"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="268,65,318,105,312,105,267,70"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,191,97,218"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="107,142,74,181,71,177,102,144"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="121,191,245,218"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="129,141,164,179,158,179,127,146"/>
 </map>

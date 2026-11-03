@@ -1,8 +1,8 @@
 var namespaceocc_1_1core =
 [
-    [ "charges", "namespaceocc_1_1core_1_1charges.html", "namespaceocc_1_1core_1_1charges" ],
-    [ "diis", "namespaceocc_1_1core_1_1diis.html", "namespaceocc_1_1core_1_1diis" ],
     [ "graph", "namespaceocc_1_1core_1_1graph.html", "namespaceocc_1_1core_1_1graph" ],
+    [ "diis", "namespaceocc_1_1core_1_1diis.html", "namespaceocc_1_1core_1_1diis" ],
+    [ "charges", "namespaceocc_1_1core_1_1charges.html", "namespaceocc_1_1core_1_1charges" ],
     [ "linalg", "namespaceocc_1_1core_1_1linalg.html", [
       [ "kabsch_rotation_matrix", "namespaceocc_1_1core_1_1linalg.html#a9e103d9ebbd8d958bd03c6b3f33c9d0e", null ]
     ] ],
@@ -31,19 +31,22 @@ var namespaceocc_1_1core =
     [ "GenSqrtInvResult", "structocc_1_1core_1_1GenSqrtInvResult.html", "structocc_1_1core_1_1GenSqrtInvResult" ],
     [ "Interpolator1D", "classocc_1_1core_1_1Interpolator1D.html", "classocc_1_1core_1_1Interpolator1D" ],
     [ "KalmanEstimator", "structocc_1_1core_1_1KalmanEstimator.html", "structocc_1_1core_1_1KalmanEstimator" ],
-    [ "MolecularAxisCalculator", "classocc_1_1core_1_1MolecularAxisCalculator.html", "classocc_1_1core_1_1MolecularAxisCalculator" ],
     [ "MolecularAxisResult", "structocc_1_1core_1_1MolecularAxisResult.html", "structocc_1_1core_1_1MolecularAxisResult" ],
-    [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
+    [ "NeighcrysAxisInfo", "structocc_1_1core_1_1NeighcrysAxisInfo.html", "structocc_1_1core_1_1NeighcrysAxisInfo" ],
+    [ "MolecularAxisCalculator", "classocc_1_1core_1_1MolecularAxisCalculator.html", "classocc_1_1core_1_1MolecularAxisCalculator" ],
+    [ "SymmetryMappingResult", "structocc_1_1core_1_1SymmetryMappingResult.html", "structocc_1_1core_1_1SymmetryMappingResult" ],
     [ "Molecule", "classocc_1_1core_1_1Molecule.html", "classocc_1_1core_1_1Molecule" ],
     [ "Multipole", "structocc_1_1core_1_1Multipole.html", "structocc_1_1core_1_1Multipole" ],
-    [ "NeighcrysAxisInfo", "structocc_1_1core_1_1NeighcrysAxisInfo.html", "structocc_1_1core_1_1NeighcrysAxisInfo" ],
     [ "PointCharge", "classocc_1_1core_1_1PointCharge.html", "classocc_1_1core_1_1PointCharge" ],
-    [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ],
-    [ "SymmetryMappingResult", "structocc_1_1core_1_1SymmetryMappingResult.html", "structocc_1_1core_1_1SymmetryMappingResult" ],
     [ "SymOp", "structocc_1_1core_1_1SymOp.html", "structocc_1_1core_1_1SymOp" ],
+    [ "MolecularPointGroup", "classocc_1_1core_1_1MolecularPointGroup.html", "classocc_1_1core_1_1MolecularPointGroup" ],
     [ "TerminalSize", "structocc_1_1core_1_1TerminalSize.html", "structocc_1_1core_1_1TerminalSize" ],
+    [ "ProgressTracker", "classocc_1_1core_1_1ProgressTracker.html", "classocc_1_1core_1_1ProgressTracker" ],
     [ "VibrationalModes", "structocc_1_1core_1_1VibrationalModes.html", "structocc_1_1core_1_1VibrationalModes" ],
-    [ "KDTree", "namespaceocc_1_1core.html#acfa0e22cd0e47292fb5034e99d2432cb", null ],
+    [ "IVec", "namespaceocc_1_1core.html#ac6e3d82e4db5caf8abce0f2c0ca6a501", null ],
+    [ "KDTree", "namespaceocc_1_1core.html#a8da9008c7ceaa247fb35ce3525d3c9c6", null ],
+    [ "Mat3N", "namespaceocc_1_1core.html#ab6d17e19d8356947a061a4923326ab1a", null ],
+    [ "Vec", "namespaceocc_1_1core.html#afb4f065d0c87d84c47ba4a25f8a74e59", null ],
     [ "AtomMatchingMethod", "namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3b", [
       [ "NearestNeighborGreedy", "namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3bac999d3de5a76b7cd208f0a63e2a784ca", null ],
       [ "Hungarian", "namespaceocc_1_1core.html#a900c4b0c0e817535925d528082d3af3ba7b86112ec6401fd8f06ab5251d1a68fe", null ]
@@ -119,6 +122,7 @@ var namespaceocc_1_1core =
       [ "I", "namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5add7536794b63bf90eccfd37f9b147d7f", null ],
       [ "Ih", "namespaceocc_1_1core.html#a116490d5f388f6e526b65a85d1c7e8a5a88c76da6f1765be3b493b1a553401488", null ]
     ] ],
+    [ "Rotor", "namespaceocc_1_1core.html#ae72a79f0509c18c91fbbe23883c2c2c6", null ],
     [ "SpinorbitalKind", "namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406", [
       [ "Restricted", "namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406a88a7224cbd336625fbcc1d66d6a8b04b", null ],
       [ "Unrestricted", "namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406a99fc205ab9717bdfa73f4696f622fb33", null ],

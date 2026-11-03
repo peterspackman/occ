@@ -1,7 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/numint/grid_settings.h" name="/home/runner/work/occ/occ/include/occ/numint/grid_settings.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,180,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="25,108,81,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="83,61,66,97,61,94,78,59"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="105,108,163,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="108,59,125,94,120,97,103,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,180,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="25,115,80,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="81,66,67,102,62,99,77,69"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="105,115,163,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="108,65,124,101,119,100,105,70"/>
 </map>

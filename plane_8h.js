@@ -1,4 +1,4 @@
 var plane_8h =
 [
-    [ "quickhull::Plane< T >", "classquickhull_1_1Plane.html", "classquickhull_1_1Plane" ]
+    [ "quickhull::Plane&lt; T &gt;", "classquickhull_1_1Plane.html", "classquickhull_1_1Plane" ]
 ];

@@ -1,11 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/rotor.h" name="/home/runner/work/occ/occ/include/occ/core/rotor.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="103,5,273,60"/>
-<area shape="rect" id="Node000002" href="$point__group_8h.html" title=" " alt="" coords="103,108,273,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,74,191,108,185,108,185,74"/>
-<area shape="rect" id="Node000003" href="$crystal__growth_8h.html" title=" " alt="" coords="103,211,273,265"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="191,176,191,211,185,211,185,176"/>
-<area shape="rect" id="Node000004" href="$cg__pipeline_8h.html" title=" " alt="" coords="5,313,176,368"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="155,277,118,315,114,311,151,273"/>
-<area shape="rect" id="Node000005" href="$dma__cg_8h.html" title=" " alt="" coords="200,313,371,368"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="225,273,262,311,258,315,221,277"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="103,5,273,67"/>
+<area shape="rect" id="Node000002" href="$point__group_8h.html" title=" " alt="" coords="103,115,273,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,80,190,115,185,114,187,85"/>
+<area shape="rect" id="Node000003" href="$crystal__growth_8h.html" title=" " alt="" coords="103,225,273,286"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="189,190,190,225,185,223,187,195"/>
+<area shape="rect" id="Node000004" href="$cg__pipeline_8h.html" title=" " alt="" coords="5,334,176,396"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="153,296,120,336,116,332,148,299"/>
+<area shape="rect" id="Node000005" href="$dma__cg_8h.html" title=" " alt="" coords="200,334,370,396"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="226,295,261,334,255,334,224,300"/>
 </map>

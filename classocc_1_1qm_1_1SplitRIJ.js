@@ -1,6 +1,7 @@
 var classocc_1_1qm_1_1SplitRIJ =
 [
     [ "SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html#af685331b61ba59fa7757505c0f5a07b5", null ],
+    [ "SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html#af9468aa69b4492e84df056b74591be5c", null ],
     [ "~SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html#a289c16880dd0b3d3470e1f6180fd13ba", null ],
     [ "SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html#a73f4d33e56e71a22260f87a61a1dc0ea", null ],
     [ "SplitRIJ", "classocc_1_1qm_1_1SplitRIJ.html#a4aab6ac110aa9474e4f3f67df445e782", null ],
@@ -11,5 +12,6 @@ var classocc_1_1qm_1_1SplitRIJ =
     [ "naux", "classocc_1_1qm_1_1SplitRIJ.html#a672e87ef1f1e1d43a79cd0607c3a97aa", null ],
     [ "nbf", "classocc_1_1qm_1_1SplitRIJ.html#a08da6ab48fe044f728fcf0f24cfd8c61", null ],
     [ "operator=", "classocc_1_1qm_1_1SplitRIJ.html#a8a48d5ecd82a788e57694f6de3421ef0", null ],
-    [ "operator=", "classocc_1_1qm_1_1SplitRIJ.html#a619283e9e465e4fc01c661380f0d62f2", null ]
+    [ "operator=", "classocc_1_1qm_1_1SplitRIJ.html#a619283e9e465e4fc01c661380f0d62f2", null ],
+    [ "three_center_gradient", "classocc_1_1qm_1_1SplitRIJ.html#a2fde860b69fdc6e618f4593ff13b9913", null ]
 ];

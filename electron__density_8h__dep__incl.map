@@ -1,14 +1,14 @@
 <map id="/home/runner/work/occ/occ/include/occ/isosurface/electron_density.h" name="/home/runner/work/occ/occ/include/occ/isosurface/electron_density.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="244,5,440,60"/>
-<area shape="rect" id="Node000002" href="$deformation__density_8h.html" title=" " alt="" coords="176,108,372,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="319,73,294,109,290,106,314,70"/>
-<area shape="rect" id="Node000003" href="$isosurface_8h.html" title=" " alt="" coords="244,211,440,265"/>
-<area shape="poly" id="edge6_Node000001_Node000003" title=" " alt="" coords="371,71,387,107,392,135,387,163,377,189,364,212,359,209,372,187,382,162,387,135,382,109,366,73"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="302,173,326,209,322,212,297,176"/>
-<area shape="rect" id="Node000004" href="$isosurface__json_8h.html" title=" " alt="" coords="5,313,201,368"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="268,273,167,316,164,311,266,268"/>
-<area shape="rect" id="Node000005" href="$obj_8h.html" title=" " alt="" coords="226,321,458,361"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="345,279,345,320,339,320,339,279"/>
-<area shape="rect" id="Node000006" href="$ply_8h.html" title=" " alt="" coords="483,321,713,361"/>
-<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="422,268,551,318,549,323,420,273"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="243,5,438,67"/>
+<area shape="rect" id="Node000002" href="$deformation__density_8h.html" title=" " alt="" coords="176,115,371,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="315,78,294,116,290,113,312,82"/>
+<area shape="rect" id="Node000003" href="$isosurface_8h.html" title=" " alt="" coords="243,225,438,286"/>
+<area shape="poly" id="edge6_Node000001_Node000003" title=" " alt="" coords="370,78,386,114,391,146,386,177,376,203,363,226,360,222,371,200,380,176,385,146,380,116,368,83"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="301,187,324,225,319,224,300,193"/>
+<area shape="rect" id="Node000004" href="$isosurface__json_8h.html" title=" " alt="" coords="5,334,201,396"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="262,292,171,336,169,331,257,294"/>
+<area shape="rect" id="Node000005" href="$obj_8h.html" title=" " alt="" coords="225,343,456,388"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="342,300,343,344,338,341,338,304"/>
+<area shape="rect" id="Node000006" href="$ply_8h.html" title=" " alt="" coords="480,343,710,388"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="427,290,546,342,541,342,426,295"/>
 </map>

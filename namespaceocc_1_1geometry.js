@@ -1,5 +1,6 @@
 var namespaceocc_1_1geometry =
 [
+    [ "mc", "namespaceocc_1_1geometry_1_1mc.html", "namespaceocc_1_1geometry_1_1mc" ],
     [ "constants", "namespaceocc_1_1geometry_1_1constants.html", [
       [ "dilateM0", "namespaceocc_1_1geometry_1_1constants.html#a592768353d7a42e030df52fbbd9ed021", null ],
       [ "dilateM1", "namespaceocc_1_1geometry_1_1constants.html#a010534004696eacdb05cb19ddaed11f9", null ],
@@ -22,17 +23,16 @@ var namespaceocc_1_1geometry =
       [ "shift2A", "namespaceocc_1_1geometry_1_1constants.html#aa7b612e46691dffc4dda7c25c76f1713", null ],
       [ "shift2B", "namespaceocc_1_1geometry_1_1constants.html#aa384f5658b6af633506bcf119cbed129", null ]
     ] ],
-    [ "mc", "namespaceocc_1_1geometry_1_1mc.html", "namespaceocc_1_1geometry_1_1mc" ],
-    [ "Facet", "structocc_1_1geometry_1_1Facet.html", "structocc_1_1geometry_1_1Facet" ],
     [ "HalfEdgeMesh", "classocc_1_1geometry_1_1HalfEdgeMesh.html", "classocc_1_1geometry_1_1HalfEdgeMesh" ],
     [ "IcosphereMesh", "classocc_1_1geometry_1_1IcosphereMesh.html", "classocc_1_1geometry_1_1IcosphereMesh" ],
     [ "LinearHashedOctree", "structocc_1_1geometry_1_1LinearHashedOctree.html", "structocc_1_1geometry_1_1LinearHashedOctree" ],
     [ "MIndex", "structocc_1_1geometry_1_1MIndex.html", "structocc_1_1geometry_1_1MIndex" ],
     [ "MIndexHash", "structocc_1_1geometry_1_1MIndexHash.html", "structocc_1_1geometry_1_1MIndexHash" ],
     [ "VolumeGrid", "classocc_1_1geometry_1_1VolumeGrid.html", "classocc_1_1geometry_1_1VolumeGrid" ],
-    [ "WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ],
+    [ "Facet", "structocc_1_1geometry_1_1Facet.html", "structocc_1_1geometry_1_1Facet" ],
     [ "WulffEdge", "structocc_1_1geometry_1_1WulffEdge.html", "structocc_1_1geometry_1_1WulffEdge" ],
-    [ "floating_type", "namespaceocc_1_1geometry.html#acf080699dbc8adfc07ad0f98fa4b5e14", null ],
-    [ "integer_type", "namespaceocc_1_1geometry.html#a2dd3b248b105650e26e3fbc372043957", null ],
+    [ "WulffConstruction", "classocc_1_1geometry_1_1WulffConstruction.html", "classocc_1_1geometry_1_1WulffConstruction" ],
+    [ "floating_type", "namespaceocc_1_1geometry.html#ac17bcdb6cd4d29c3dd4d35e2389613c5", null ],
+    [ "integer_type", "namespaceocc_1_1geometry.html#a71009f9174069bd9b91b45e9a70c891c", null ],
     [ "project_to_plane", "namespaceocc_1_1geometry.html#a9732049bcf1992f1891ecd54b7b1d31a", null ]
 ];

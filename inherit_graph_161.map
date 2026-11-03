@@ -1,3 +1,11 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structocc_1_1driver_1_1FacetEnergies.html" title=" " alt="" coords="5,5,193,31"/>
+<area shape="rect" id="Node000000" href="$classocc_1_1driver_1_1CrystalGrowthCalculator.html" title=" " alt="" coords="5,75,196,119"/>
+<area shape="rect" id="Node000001" href="$classocc_1_1driver_1_1CEModelCrystalGrowthCalculator.html" title=" " alt="" coords="252,5,452,50"/>
+<area shape="poly" id="edge8_Node000000_Node000001" title=" " alt="" coords="198,68,271,49,266,52,199,73"/>
+<area shape="rect" id="Node000003" href="$classocc_1_1driver_1_1DummyCrystalGrowthCalculator.html" title=" " alt="" coords="254,75,450,119"/>
+<area shape="poly" id="edge10_Node000000_Node000003" title=" " alt="" coords="211,94,256,96,251,98,212,100"/>
+<area shape="rect" id="Node000004" href="$classocc_1_1driver_1_1XTBCrystalGrowthCalculator.html" title=" " alt="" coords="244,144,460,189"/>
+<area shape="poly" id="edge11_Node000000_Node000004" title=" " alt="" coords="199,121,271,143,266,144,198,127"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1mults_1_1DMACrystalGrowthCalculator.html" title="Crystal&#45;growth calculator using a DMA&#45;multipole + exp&#45;6 (Williams) interaction model." alt="" coords="508,5,728,50"/>
+<area shape="poly" id="edge9_Node000001_Node000002" title=" " alt="" coords="467,25,510,27,505,28,468,30"/>
 </map>

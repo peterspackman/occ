@@ -1,3 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structocc_1_1xtb_1_1RepulsionEnergyGradient.html" title=" " alt="" coords="5,5,196,45"/>
+<area shape="rect" id="Node000000" href="$classocc_1_1qm_1_1SCFMethodBase.html" title=" " alt="" coords="5,32,192,60"/>
+<area shape="rect" id="Node000001" href="$classocc_1_1dft_1_1DFT.html" title=" " alt="" coords="269,5,370,33"/>
+<area shape="poly" id="edge29_Node000000_Node000001" title=" " alt="" coords="206,30,271,25,266,26,207,35"/>
+<area shape="rect" id="Node000002" href="$classocc_1_1qm_1_1HartreeFock.html" title=" " alt="" coords="240,57,399,85"/>
+<area shape="poly" id="edge30_Node000000_Node000002" title=" " alt="" coords="207,56,242,62,236,62,207,61"/>
 </map>

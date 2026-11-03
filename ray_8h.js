@@ -1,4 +1,4 @@
 var ray_8h =
 [
-    [ "quickhull::Ray< T >", "structquickhull_1_1Ray.html", "structquickhull_1_1Ray" ]
+    [ "quickhull::Ray&lt; T &gt;", "structquickhull_1_1Ray.html", "structquickhull_1_1Ray" ]
 ];

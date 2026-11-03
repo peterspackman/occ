@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['wavefunction_0',['Wavefunction',['../structocc_1_1qm_1_1Wavefunction.html',1,'occ::qm']]],
+  ['wavefunction_0',['Wavefunction',['../structocc_1_1driver_1_1Wavefunction.html',1,'occ::driver::Wavefunction'],['../structocc_1_1interaction_1_1Wavefunction.html',1,'occ::interaction::Wavefunction'],['../structocc_1_1isosurface_1_1Wavefunction.html',1,'occ::isosurface::Wavefunction'],['../structocc_1_1main_1_1Wavefunction.html',1,'occ::main::Wavefunction'],['../structocc_1_1qm_1_1Wavefunction.html',1,'occ::qm::Wavefunction']]],
   ['wavefunctiontransformer_1',['WavefunctionTransformer',['../classocc_1_1interaction_1_1transform_1_1WavefunctionTransformer.html',1,'occ::interaction::transform']]],
   ['weighttable_2',['WeightTable',['../structocc_1_1mults_1_1kernel__detail_1_1WeightTable.html',1,'occ::mults::kernel_detail']]],
   ['wolfcouplingresult_3',['WolfCouplingResult',['../structocc_1_1interaction_1_1WolfCouplingResult.html',1,'occ::interaction']]],

@@ -3,6 +3,9 @@ var namespaceocc_1_1qm_1_1cint =
     [ "impl", "namespaceocc_1_1qm_1_1cint_1_1impl.html", "namespaceocc_1_1qm_1_1cint_1_1impl" ],
     [ "IntegralEnvironment", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment.html", "classocc_1_1qm_1_1cint_1_1IntegralEnvironment" ],
     [ "Optimizer", "classocc_1_1qm_1_1cint_1_1Optimizer.html", "classocc_1_1qm_1_1cint_1_1Optimizer" ],
+    [ "Shell", "structocc_1_1qm_1_1cint_1_1Shell.html", "structocc_1_1qm_1_1cint_1_1Shell" ],
+    [ "AOBasis", "classocc_1_1qm_1_1cint_1_1AOBasis.html", "classocc_1_1qm_1_1cint_1_1AOBasis" ],
+    [ "Atom", "structocc_1_1qm_1_1cint_1_1Atom.html", "structocc_1_1qm_1_1cint_1_1Atom" ],
     [ "Operator", "namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bf", [
       [ "overlap", "namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa9c126c20047e421bde49e44ed51ae805", null ],
       [ "nuclear", "namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfa3dc183cf4b0ea0778a1819994ad6cf25", null ],

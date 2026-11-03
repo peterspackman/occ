@@ -1,9 +1,9 @@
 var namespaceocc_1_1timing =
 [
     [ "StopWatch", "classocc_1_1timing_1_1StopWatch.html", "classocc_1_1timing_1_1StopWatch" ],
-    [ "clock_t", "namespaceocc_1_1timing.html#a569e4ae0cf6bae02ad21601b764f6518", null ],
-    [ "duration_t", "namespaceocc_1_1timing.html#a477674a5f397a1fbcbefec4bd9b46eef", null ],
-    [ "time_point_t", "namespaceocc_1_1timing.html#ac322722ef93738b18db0c38c559f9806", null ],
+    [ "clock_t", "namespaceocc_1_1timing.html#ad90c9292f51549c7746bf70242296fe9", null ],
+    [ "duration_t", "namespaceocc_1_1timing.html#acaf1bb03ec9a7d5484ba381605b4100f", null ],
+    [ "time_point_t", "namespaceocc_1_1timing.html#ae786fc4cd5d0c146992b704c9f3b2e6b", null ],
     [ "category", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16", [
       [ "ints1e", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a757d2d8f94e79f3f1b09ddc2adcaf912", null ],
       [ "ints4c2e", "namespaceocc_1_1timing.html#a089c88a4231531abae301355d6ba8c16a6133ac4a61ef60d89310056ea76b9473", null ],

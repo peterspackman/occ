@@ -1,9 +1,9 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,77,140,102"/>
-<area shape="rect" id="Node000001" href="$structfmt_1_1formatter_3_01occ_1_1crystal_1_1DimerIndex_01_4.html" title=" " alt="" coords="188,5,361,45"/>
-<area shape="poly" id="edge4_Node000000_Node000001" title=" " alt="" coords="126,70,210,43,212,48,128,75"/>
-<area shape="rect" id="Node000002" href="$structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4.html" title=" " alt="" coords="199,69,351,109"/>
-<area shape="poly" id="edge5_Node000000_Node000002" title=" " alt="" coords="154,87,199,87,199,92,154,92"/>
-<area shape="rect" id="Node000003" href="$structfmt_1_1formatter_3_01occ_1_1gto_1_1Shell_01_4.html" title=" " alt="" coords="199,133,351,173"/>
-<area shape="poly" id="edge6_Node000000_Node000003" title=" " alt="" coords="128,104,212,131,210,136,126,109"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,83,140,111"/>
+<area shape="rect" id="Node000001" href="$structfmt_1_1formatter_3_01occ_1_1crystal_1_1DimerIndex_01_4.html" title=" " alt="" coords="188,5,360,50"/>
+<area shape="poly" id="edge4_Node000000_Node000001" title=" " alt="" coords="128,75,209,49,205,52,130,80"/>
+<area shape="rect" id="Node000002" href="$structfmt_1_1formatter_3_01occ_1_1crystal_1_1HKL_01_4.html" title=" " alt="" coords="198,75,350,119"/>
+<area shape="poly" id="edge5_Node000000_Node000002" title=" " alt="" coords="155,94,200,96,195,98,156,100"/>
+<area shape="rect" id="Node000003" href="$structfmt_1_1formatter_3_01occ_1_1gto_1_1Shell_01_4.html" title=" " alt="" coords="198,144,350,189"/>
+<area shape="poly" id="edge6_Node000000_Node000003" title=" " alt="" coords="130,114,209,142,204,144,129,119"/>
 </map>

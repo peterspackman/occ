@@ -1,11 +1,11 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/kdtree.h" name="/home/runner/work/occ/occ/include/occ/core/kdtree.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="127,5,298,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,204,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,62,132,101,129,97,178,58"/>
-<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="228,108,413,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="247,58,297,97,293,101,244,62"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="208,181,300,207"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="312,135,276,173,272,169,308,132"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="324,181,448,207"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="333,132,368,169,364,173,329,135"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="127,5,298,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,204,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="175,69,133,107,130,103,179,66"/>
+<area shape="rect" id="Node000003" href="$linear__algebra_8h.html" title=" " alt="" coords="228,115,413,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="249,65,296,105,291,105,248,70"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="208,191,300,218"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="311,142,277,181,274,177,306,144"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="324,191,448,218"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="333,141,367,180,362,179,331,146"/>
 </map>

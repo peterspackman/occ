@@ -1,9 +1,9 @@
 <map id="/home/runner/work/occ/occ/include/occ/core/energy_components.h" name="/home/runner/work/occ/occ/include/occ/core/energy_components.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="187,5,358,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,108,196,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="221,62,137,104,135,99,219,58"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="220,108,325,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="275,60,275,94,270,94,270,60"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="349,108,412,133"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="307,58,357,97,353,101,304,62"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="186,5,356,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,115,195,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="216,67,139,110,137,105,211,68"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="218,115,323,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="273,66,273,101,268,98,269,69"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="348,115,410,143"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="308,65,354,105,349,105,306,70"/>
 </map>

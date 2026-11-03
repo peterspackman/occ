@@ -1,9 +1,9 @@
 var multipole__ewald_8h =
 [
     [ "occ::xtb::MultipolePairTensors", "structocc_1_1xtb_1_1MultipolePairTensors.html", "structocc_1_1xtb_1_1MultipolePairTensors" ],
-    [ "add_multipole_potentials", "multipole__ewald_8h.html#a0979925a347752ba5260ac3742b3bf80", null ],
-    [ "anisotropic_energy_ewald", "multipole__ewald_8h.html#a5335021498f706007caaef46466265ae", null ],
-    [ "anisotropic_potentials_ewald", "multipole__ewald_8h.html#ae6bd0a42c4e32209d6f230c1109e551f", null ],
-    [ "build_molecular_multipole_tensors", "multipole__ewald_8h.html#a6b85158cb58a79ce6c62c3df4198a6c2", null ],
-    [ "build_multipole_ewald_tensors", "multipole__ewald_8h.html#a5bc050b36b3804838ef475dddb669edb", null ]
+    [ "occ::xtb::add_multipole_potentials", "namespaceocc_1_1xtb.html#a0979925a347752ba5260ac3742b3bf80", null ],
+    [ "occ::xtb::anisotropic_energy_ewald", "namespaceocc_1_1xtb.html#a5335021498f706007caaef46466265ae", null ],
+    [ "occ::xtb::anisotropic_potentials_ewald", "namespaceocc_1_1xtb.html#ae6bd0a42c4e32209d6f230c1109e551f", null ],
+    [ "occ::xtb::build_molecular_multipole_tensors", "namespaceocc_1_1xtb.html#a6b85158cb58a79ce6c62c3df4198a6c2", null ],
+    [ "occ::xtb::build_multipole_ewald_tensors", "namespaceocc_1_1xtb.html#a5bc050b36b3804838ef475dddb669edb", null ]
 ];

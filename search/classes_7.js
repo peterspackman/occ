@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['halfedge_0',['halfedge',['../structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html',1,'quickhull::HalfEdgeMesh&lt; FloatType, IndexType &gt;::HalfEdge'],['../structquickhull_1_1MeshBuilder_1_1HalfEdge.html',1,'quickhull::MeshBuilder&lt; T &gt;::HalfEdge']]],
-  ['halfedgemesh_1',['halfedgemesh',['../classocc_1_1geometry_1_1HalfEdgeMesh.html',1,'occ::geometry::HalfEdgeMesh'],['../classquickhull_1_1HalfEdgeMesh.html',1,'quickhull::HalfEdgeMesh&lt; FloatType, IndexType &gt;']]],
-  ['hartreefock_2',['HartreeFock',['../classocc_1_1qm_1_1HartreeFock.html',1,'occ::qm']]],
+  ['halfedge_0',['HalfEdge',['../structquickhull_1_1HalfEdgeMesh_1_1HalfEdge.html',1,'quickhull::HalfEdgeMesh&lt; FloatType, IndexType &gt;::HalfEdge'],['../structquickhull_1_1MeshBuilder_1_1HalfEdge.html',1,'quickhull::MeshBuilder&lt; T &gt;::HalfEdge']]],
+  ['halfedgemesh_1',['HalfEdgeMesh',['../classocc_1_1geometry_1_1HalfEdgeMesh.html',1,'occ::geometry::HalfEdgeMesh'],['../classquickhull_1_1HalfEdgeMesh.html',1,'quickhull::HalfEdgeMesh&lt; FloatType, IndexType &gt;']]],
+  ['hartreefock_2',['HartreeFock',['../classocc_1_1interaction_1_1HartreeFock.html',1,'occ::interaction::HartreeFock'],['../classocc_1_1qm_1_1HartreeFock.html',1,'occ::qm::HartreeFock']]],
   ['has_5fbasis_5ftransform_3',['has_basis_transform',['../structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform.html',1,'occ::geometry::mc::impl']]],
   ['has_5fbasis_5ftransform_3c_20t_2c_20std_3a_3avoid_5ft_3c_20decltype_28std_3a_3adeclval_3c_20t_20_3e_28_29_2ebasis_5ftransform_28_29_29_3e_20_3e_4',['has_basis_transform&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().basis_transform())&gt; &gt;',['../structocc_1_1geometry_1_1mc_1_1impl_1_1has__basis__transform_3_01T_00_01std_1_1void__t_3_01declt2cec5ff47cede2234f4d8b7c5c4da8f3.html',1,'occ::geometry::mc::impl']]],
   ['has_5fbatch_5fevaluate_5',['has_batch_evaluate',['../structocc_1_1geometry_1_1mc_1_1impl_1_1has__batch__evaluate.html',1,'occ::geometry::mc::impl']]],

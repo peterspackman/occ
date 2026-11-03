@@ -1,5 +1,5 @@
 <map id="occ::geometry::mc::impl::Edge" name="occ::geometry::mc::impl::Edge">
-<area shape="rect" id="Node000001" title=" " alt="" coords="15,108,166,148"/>
-<area shape="rect" id="Node000002" href="$structocc_1_1geometry_1_1MIndex.html" title=" " alt="" coords="5,5,176,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,45,93,108,88,108,88,45"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="15,128,165,173"/>
+<area shape="rect" id="Node000002" href="$structocc_1_1geometry_1_1MIndex.html" title=" " alt="" coords="5,5,175,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="92,47,93,129,87,128,88,50"/>
 </map>

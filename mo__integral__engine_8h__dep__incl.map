@@ -1,7 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/qm/correlation/mo_integral_engine.h" name="/home/runner/work/occ/occ/include/occ/qm/correlation/mo_integral_engine.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="28,5,252,60"/>
-<area shape="rect" id="Node000002" href="$post__hf__method_8h.html" title=" " alt="" coords="28,108,252,163"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,74,143,108,137,108,137,74"/>
-<area shape="rect" id="Node000003" href="$mp2_8h.html" title=" " alt="" coords="5,211,275,251"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="143,176,143,211,137,211,137,176"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="28,5,251,67"/>
+<area shape="rect" id="Node000002" href="$post__hf__method_8h.html" title=" " alt="" coords="28,115,251,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,80,142,115,137,114,138,85"/>
+<area shape="rect" id="Node000003" href="$mp2_8h.html" title=" " alt="" coords="5,225,274,269"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="141,190,142,225,137,223,138,194"/>
 </map>

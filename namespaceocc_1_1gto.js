@@ -1,14 +1,15 @@
 var namespaceocc_1_1gto =
 [
+    [ "io", "namespaceocc_1_1gto_1_1io.html", "namespaceocc_1_1gto_1_1io" ],
     [ "basis_sets", "namespaceocc_1_1gto_1_1basis__sets.html", [
       [ "build_sto3g_shells", "namespaceocc_1_1gto_1_1basis__sets.html#a4d89e8670d842828f2c9bda7a9960fb3", null ]
     ] ],
-    [ "io", "namespaceocc_1_1gto_1_1io.html", "namespaceocc_1_1gto_1_1io" ],
-    [ "AOBasis", "classocc_1_1gto_1_1AOBasis.html", "classocc_1_1gto_1_1AOBasis" ],
     [ "GTOValues", "structocc_1_1gto_1_1GTOValues.html", "structocc_1_1gto_1_1GTOValues" ],
     [ "Momenta", "structocc_1_1gto_1_1Momenta.html", "structocc_1_1gto_1_1Momenta" ],
     [ "MomentaSpherical", "structocc_1_1gto_1_1MomentaSpherical.html", "structocc_1_1gto_1_1MomentaSpherical" ],
     [ "Shell", "structocc_1_1gto_1_1Shell.html", "structocc_1_1gto_1_1Shell" ],
+    [ "AOBasis", "classocc_1_1gto_1_1AOBasis.html", "classocc_1_1gto_1_1AOBasis" ],
+    [ "Atom", "structocc_1_1gto_1_1Atom.html", "structocc_1_1gto_1_1Atom" ],
     [ "ShellOrder", "namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894", [
       [ "Default", "namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894ab06e5df293429275849103ebe2e53fea", null ],
       [ "Gaussian", "namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894adf2160db9f5d5a7d7b6c660268b53eea", null ],

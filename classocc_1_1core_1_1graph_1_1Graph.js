@@ -1,9 +1,9 @@
 var classocc_1_1core_1_1graph_1_1Graph =
 [
-    [ "AdjacencyList", "classocc_1_1core_1_1graph_1_1Graph.html#abb882b718ba7b061a878356df3e3ceea", null ],
+    [ "AdjacencyList", "classocc_1_1core_1_1graph_1_1Graph.html#a9d85544631c68ca473321db491704418", null ],
     [ "EdgeDescriptor", "classocc_1_1core_1_1graph_1_1Graph.html#a23b85985d095cb6cd7d75a8bc3f4a98b", null ],
     [ "Edges", "classocc_1_1core_1_1graph_1_1Graph.html#ad3441b6a794d3c502e093c58ea1a1cbe", null ],
-    [ "NeighborList", "classocc_1_1core_1_1graph_1_1Graph.html#ac292a906add129ea2cc5f6b06e20b5c9", null ],
+    [ "NeighborList", "classocc_1_1core_1_1graph_1_1Graph.html#aa46c8a3247f7d89f957126f2dacc5eab", null ],
     [ "VertexDescriptor", "classocc_1_1core_1_1graph_1_1Graph.html#a69eec975dcb7bc0b236c59de7fd36dbe", null ],
     [ "Vertices", "classocc_1_1core_1_1graph_1_1Graph.html#a42bd137b797bc7ae5de78317a20b5ae6", null ],
     [ "Graph", "classocc_1_1core_1_1graph_1_1Graph.html#a2ab79cc981b388c21e679f3c7fd1f801", null ],

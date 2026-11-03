@@ -1,7 +1,7 @@
 <map id="/home/runner/work/occ/occ/include/occ/isosurface/orbital_index.h" name="/home/runner/work/occ/occ/include/occ/isosurface/orbital_index.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,201,60"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="31,108,90,133"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,61,75,97,70,94,88,59"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="115,108,177,133"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="119,59,136,94,132,97,114,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,201,67"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="32,115,91,143"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,66,76,102,72,99,87,69"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="114,115,177,143"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="119,65,136,101,130,100,116,70"/>
 </map>

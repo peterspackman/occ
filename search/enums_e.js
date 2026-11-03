@@ -1,10 +1,11 @@
 var searchData=
 [
-  ['shellorder_0',['ShellOrder',['../namespaceocc_1_1gto.html#adfb6b6abb9aeb83b8928392ee43ae894',1,'occ::gto']]],
-  ['solvationmodelkind_1',['SolvationModelKind',['../namespaceocc_1_1driver.html#a8db8cc178b579bd5d1d4f63f507e9be0',1,'occ::driver']]],
-  ['source_2',['Source',['../classocc_1_1io_1_1MoldenReader.html#ac815691851c154237c9ca13b5310d227',1,'occ::io::MoldenReader']]],
-  ['spincomponent_3',['SpinComponent',['../namespaceocc_1_1qm.html#a42516c145cd4f504f6ad11a8db8248e1',1,'occ::qm']]],
-  ['spinorbitalkind_4',['SpinorbitalKind',['../namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406',1,'occ::core']]],
-  ['subgrouptype_5',['SubgroupType',['../namespaceocc_1_1crystal.html#a09f76dd95223241e4a17e32f9a361fdb',1,'occ::crystal']]],
-  ['surfacekind_6',['SurfaceKind',['../namespaceocc_1_1isosurface.html#a54e925e1f128c403a4e138c8de1cf726',1,'occ::isosurface']]]
+  ['radialgridmethod_0',['RadialGridMethod',['../namespaceocc_1_1numint.html#adfae001d345ff26f124a72c71d63856f',1,'occ::numint']]],
+  ['radii_1',['Radii',['../structocc_1_1scrf_1_1Options.html#a0b9411a28016afa046f22632a68ef2cb',1,'occ::scrf::Options']]],
+  ['radiuskind_2',['RadiusKind',['../classocc_1_1isosurface_1_1RadiusMetric.html#aa64744e03a919ce49762b023f568afca',1,'occ::isosurface::RadiusMetric']]],
+  ['reference_3',['Reference',['../structocc_1_1isosurface_1_1OrbitalIndex.html#a7de04a530b8bbf2e95cca3ed9992f6f8',1,'occ::isosurface::OrbitalIndex']]],
+  ['refqmode_4',['RefqMode',['../namespaceocc_1_1disp.html#ae268b9e322e6fbd4f8332f8795e7b59b',1,'occ::disp']]],
+  ['responsemode_5',['ResponseMode',['../classocc_1_1qm_1_1HartreeFock.html#a7a76c1fba07685ce730da0efb9caeae1',1,'occ::qm::HartreeFock::ResponseMode'],['../classocc_1_1interaction_1_1HartreeFock.html#a7a76c1fba07685ce730da0efb9caeae1',1,'occ::interaction::HartreeFock::ResponseMode']]],
+  ['ripolicy_6',['RIPolicy',['../namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50',1,'occ::io']]],
+  ['rotor_7',['Rotor',['../namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6',1,'occ::core::rotor::Rotor'],['../namespaceocc_1_1core.html#ae72a79f0509c18c91fbbe23883c2c2c6',1,'occ::core::Rotor']]]
 ];
