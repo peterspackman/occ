@@ -361,17 +361,17 @@ bool BeckeWeightDerivative::operator()(const Vec3 &r, double wg, int A,
   constexpr int nscreen = 6;
   // the nscreen + 1 atoms nearest the point, nearest first
   const int nnear = std::min(natom, nscreen + 1);
-  int near[nscreen + 1];
+  int nearest[nscreen + 1];
   int nfound = 0;
   for (int C = 0; C < natom; C++) {
-    if (nfound == nnear && dist[C] >= dist[near[nnear - 1]])
+    if (nfound == nnear && dist[C] >= dist[nearest[nnear - 1]])
       continue;
     int k = (nfound < nnear) ? nfound++ : nnear - 1;
-    while (k > 0 && dist[near[k - 1]] > dist[C]) {
-      near[k] = near[k - 1];
+    while (k > 0 && dist[nearest[k - 1]] > dist[C]) {
+      nearest[k] = nearest[k - 1];
       k--;
     }
-    near[k] = C;
+    nearest[k] = C;
   }
   double pmax = t.P(A);
   auto visit = [&](int C) {
@@ -379,7 +379,7 @@ bool BeckeWeightDerivative::operator()(const Vec3 &r, double wg, int A,
     double p = 1.0;
     int tried = 0;
     for (int k = 0; k < nnear && tried < nscreen; k++) {
-      const int D = near[k];
+      const int D = nearest[k];
       if (D == C)
         continue;
       tried++;
@@ -401,14 +401,14 @@ bool BeckeWeightDerivative::operator()(const Vec3 &r, double wg, int A,
   };
   // nearest cells first (the largest P), then the rest
   for (int k = 0; k < nnear; k++)
-    if (near[k] != A)
-      visit(near[k]);
+    if (nearest[k] != A)
+      visit(nearest[k]);
   for (int C = 0; C < natom; C++) {
     if (C == A)
       continue;
     bool done = false;
     for (int k = 0; k < nnear; k++)
-      done |= (near[k] == C);
+      done |= (nearest[k] == C);
     if (!done)
       visit(C);
   }
@@ -1082,9 +1082,9 @@ RadialGrid generate_lmg_radial_grid(size_t atomic_number,
 // Mura-Knowles [JCP 104, 9848 (1996) - doi:10.1063/1.471749] log3 quadrature
 RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge) {
   RadialGrid result(num_points);
-  double far = 5.2;
+  double far_bound = 5.2;
 
-  // Adjust far parameter based on atomic number
+  // Adjust far_bound parameter based on atomic number
   switch (charge) {
   case 3:
   case 4:
@@ -1092,7 +1092,7 @@ RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge) {
   case 12:
   case 19:
   case 20:
-    far = 7;
+    far_bound = 7;
     break;
   }
 
@@ -1100,8 +1100,8 @@ RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge) {
     double x = (i + 0.5) / num_points;
     double x2 = x * x;
     double x3 = x2 * x;
-    result.points(i) = -far * std::log(1 - x3);
-    result.weights(i) = far * 3 * x2 / ((1 - x3) * num_points);
+    result.points(i) = -far_bound * std::log(1 - x3);
+    result.weights(i) = far_bound * 3 * x2 / ((1 - x3) * num_points);
   }
 
   return result;

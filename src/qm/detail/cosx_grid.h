@@ -67,10 +67,10 @@ inline void soa_coordinates(Eigen::Ref<const Mat3N> pts, int npad,
 /// sphere is a distance R - spread > 0 beyond the pair's spread (far = {q1,
 /// spread}, ESPEvaluator::pair_far_estimate). The 1/R tail is never cut.
 inline double pair_charge_bound(double charge, const Vec3 &pair_centre,
-                                const double *far, const GridBatchInfo &batch) {
+                                const double *far_bound, const GridBatchInfo &batch) {
   const double R =
-      (pair_centre - batch.center).norm() - batch.radius - far[1];
-  return R > 0.0 ? std::min(charge, far[0] / R) : charge;
+      (pair_centre - batch.center).norm() - batch.radius - far_bound[1];
+  return R > 0.0 ? std::min(charge, far_bound[0] / R) : charge;
 }
 
 } // namespace occ::qm::cosx::detail

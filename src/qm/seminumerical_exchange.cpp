@@ -469,9 +469,9 @@ void SemiNumericalExchange::prepare_screening() const {
     m_pair_extents(esp_idx) = m_esp_evaluator->pair_extent(esp_idx);
 
     m_pair_charge(esp_idx) = m_esp_evaluator->pair_estimate(esp_idx);
-    const auto far = m_esp_evaluator->pair_far_estimate(esp_idx);
-    m_pair_far(0, esp_idx) = far[0];
-    m_pair_far(1, esp_idx) = far[1];
+    const auto far_bound = m_esp_evaluator->pair_far_estimate(esp_idx);
+    m_pair_far(0, esp_idx) = far_bound[0];
+    m_pair_far(1, esp_idx) = far_bound[1];
   }
 }
 

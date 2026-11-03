@@ -727,17 +727,17 @@ void xc_derivative_fock_occ_block(
       Mat Ct = X0T * t;                        // X0^T t
       Ct.noalias() += Left.transpose() * phi;  // (t Co - C_B Co_B)^T phi
       Ct.noalias() -= (YB * CoB).transpose() * wA;
-      Mat small = X0T * CB + wACoT * YB; // o x nb
+      Mat block_o = X0T * CB + wACoT * YB; // o x nb
       if constexpr (deriv == 2) {
         for (int i = 0; i < 3; i++) {
           Lt = (Xg0[i].array().colwise() * (0.5 * dvt)).matrix();
           Lt.array() -= (HB[i] * CoB).array().colwise() * (0.5 * w.array() * vt);
           Ct.noalias() += Lt.transpose() * (*dphi[i]);
-          small.noalias() += wvtXg[i].transpose() * HB[i];
+          block_o.noalias() += wvtXg[i].transpose() * HB[i];
         }
       }
       for (Eigen::Index k = 0; k < nb; k++)
-        Ct.col(fns[k]) -= small.col(k);
+        Ct.col(fns[k]) -= block_o.col(k);
       Ssum += Ct;
       scatter(3 * latoms[l] + x, Ct);
     }
@@ -862,10 +862,10 @@ void xc_derivative_fock_occ_block_unrestricted(
         Mat Ct = X0[s].transpose() * t;
         Ct.noalias() += Left.transpose() * phi;
         Ct.noalias() -= (YB * CoB[s]).transpose() * wA[s];
-        const Mat small = X0[s].transpose() * CB[s] +
+        const Mat block_o = X0[s].transpose() * CB[s] +
                           (wA[s] * sb.C[s]).transpose() * YB;
         for (Eigen::Index k = 0; k < nb; k++)
-          Ct.col(fns[k]) -= small.col(k);
+          Ct.col(fns[k]) -= block_o.col(k);
         Ssum[s] += Ct;
         scatter(3 * latoms[l] + x, s, Ct);
       }
