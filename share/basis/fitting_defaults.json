@@ -1,6 +1,7 @@
 {
   "description": "Default auxiliary (fitting) basis sets per orbital basis. 'jk' is the Coulomb(+exchange) fitting basis used for SCF density fitting; 'corr' is the correlation (RI/C) fitting basis used for RI-MP2 / DF-CCSD. Names are matched case-insensitively against the orbital basis name. Entries may omit a key, in which case the corresponding default below is used. Unknown orbital bases fall back to the defaults.",
   "scf_jk_default": "def2-universal-jkfit",
+  "scf_j_default": "def2-universal-jfit",
   "corr_default": "def2-tzvp-rifit",
   "policy": {
     "description": "Thresholds for the automatic (--ri auto) acceleration policy.",

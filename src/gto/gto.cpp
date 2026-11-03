@@ -68,7 +68,6 @@ Vec evaluate_decay_cutoff(const gto::AOBasis &basis, double threshold) {
 
 void evaluate_basis(const gto::AOBasis &basis, Mat3NConstRef grid_pts,
                     GTOValues &gto_values, int max_derivative) {
-  occ::timing::start(occ::timing::category::gto);
   size_t nbf = basis.nbf();
   size_t npts = grid_pts.cols();
   size_t natoms = basis.atoms().size();
@@ -81,7 +80,6 @@ void evaluate_basis(const gto::AOBasis &basis, Mat3NConstRef grid_pts,
   int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
   for (size_t i = 0; i < natoms; i++) {
     for (const auto &shell_idx : atom2shell[i]) {
-      occ::timing::start(occ::timing::category::gto_shell);
       size_t bf = shell2bf[shell_idx];
       double *output = gto_values.phi.col(bf).data();
       const double *xyz = grid_pts.data();
@@ -132,17 +130,35 @@ void evaluate_basis(const gto::AOBasis &basis, Mat3NConstRef grid_pts,
         gto_values.phi_yy.block(0, bf, npts, sh.size()) *= fac;
         gto_values.phi_yz.block(0, bf, npts, sh.size()) *= fac;
         gto_values.phi_zz.block(0, bf, npts, sh.size()) *= fac;
+      } else if (max_derivative == 3) {
+        auto &t = gto_values.phi3;
+        gg_collocation_deriv3(
+            L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs, alpha,
+            center, order, output, gto_values.phi_x.col(bf).data(),
+            gto_values.phi_y.col(bf).data(), gto_values.phi_z.col(bf).data(),
+            gto_values.phi_xx.col(bf).data(), gto_values.phi_xy.col(bf).data(),
+            gto_values.phi_xz.col(bf).data(), gto_values.phi_yy.col(bf).data(),
+            gto_values.phi_yz.col(bf).data(), gto_values.phi_zz.col(bf).data(),
+            t[0].col(bf).data(), t[1].col(bf).data(), t[2].col(bf).data(),
+            t[3].col(bf).data(), t[4].col(bf).data(), t[5].col(bf).data(),
+            t[6].col(bf).data(), t[7].col(bf).data(), t[8].col(bf).data(),
+            t[9].col(bf).data());
+        for (Mat *m : {&gto_values.phi, &gto_values.phi_x, &gto_values.phi_y,
+                       &gto_values.phi_z, &gto_values.phi_xx,
+                       &gto_values.phi_xy, &gto_values.phi_xz,
+                       &gto_values.phi_yy, &gto_values.phi_yz,
+                       &gto_values.phi_zz})
+          m->block(0, bf, npts, sh.size()) *= fac;
+        for (auto &m : t)
+          m.block(0, bf, npts, sh.size()) *= fac;
       }
-      occ::timing::stop(occ::timing::category::gto_shell);
     }
   }
-  occ::timing::stop(occ::timing::category::gto);
 }
 
 void evaluate_basis_for_shells(const gto::AOBasis &basis, Mat3NConstRef grid_pts,
                                GTOValues &gto_values, int max_derivative,
                                const std::vector<size_t> &shell_indices) {
-  occ::timing::start(occ::timing::category::gto);
   size_t nbf = basis.nbf();
   size_t npts = grid_pts.cols();
   gto_values.reserve(nbf, npts, max_derivative);
@@ -152,7 +168,6 @@ void evaluate_basis_for_shells(const gto::AOBasis &basis, Mat3NConstRef grid_pts
   int order = spherical ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
 
   for (size_t shell_idx : shell_indices) {
-    occ::timing::start(occ::timing::category::gto_shell);
     size_t bf = shell2bf[shell_idx];
     double *output = gto_values.phi.col(bf).data();
     const double *xyz = grid_pts.data();
@@ -204,15 +219,14 @@ void evaluate_basis_for_shells(const gto::AOBasis &basis, Mat3NConstRef grid_pts
       gto_values.phi_yz.block(0, bf, npts, sh.size()) *= fac;
       gto_values.phi_zz.block(0, bf, npts, sh.size()) *= fac;
     }
-    occ::timing::stop(occ::timing::category::gto_shell);
   }
-  occ::timing::stop(occ::timing::category::gto);
 }
 
 GTOValues evaluate_basis_subset(const gto::AOBasis &basis,
                                 Mat3NConstRef grid_pts, int max_derivative,
                                 const std::vector<int> &shell_indices) {
-  occ::timing::start(occ::timing::category::gto);
+  // No occ::timing here: this runs inside parallel grid loops, and the
+  // global stopwatch is neither thread-safe nor cheap under contention.
   size_t npts = grid_pts.cols();
   size_t nbf_local = 0;
   for (int shell_idx : shell_indices)
@@ -228,21 +242,27 @@ GTOValues evaluate_basis_subset(const gto::AOBasis &basis,
   const double *xyz = grid_pts.data();
   long int xyz_stride = 3;
 
+  // The angular normalisation is folded into the contraction coefficients
+  // (collocation is linear in them) instead of rescaling every output
+  // column afterwards.
+  std::vector<double> scaled;
   size_t bf = 0; // local (packed) basis-function offset
   for (int shell_idx : shell_indices) {
-    occ::timing::start(occ::timing::category::gto_shell);
     const auto &sh = basis[shell_idx];
-    const double *coeffs = sh.contraction_coefficients.data();
     const double *alpha = sh.exponents.data();
     const double *center = sh.origin.data();
     int L = sh.l;
-    double fac = common_fac(L, spherical);
+    const double fac = common_fac(L, spherical);
+    scaled.assign(sh.contraction_coefficients.data(),
+                  sh.contraction_coefficients.data() + sh.num_primitives());
+    for (double &c : scaled)
+      c *= fac;
+    const double *coeffs = scaled.data();
     double *output = gto_values.phi.col(bf).data();
 
     if (max_derivative == 0) {
       gg_collocation(L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs,
                      alpha, center, order, output);
-      gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
     } else if (max_derivative == 1) {
       double *x_out = gto_values.phi_x.col(bf).data();
       double *y_out = gto_values.phi_y.col(bf).data();
@@ -250,10 +270,6 @@ GTOValues evaluate_basis_subset(const gto::AOBasis &basis,
       gg_collocation_deriv1(L, npts, xyz, xyz_stride, sh.num_primitives(),
                             coeffs, alpha, center, order, output, x_out, y_out,
                             z_out);
-      gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_x.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_y.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_z.block(0, bf, npts, sh.size()) *= fac;
     } else if (max_derivative == 2) {
       double *x_out = gto_values.phi_x.col(bf).data();
       double *y_out = gto_values.phi_y.col(bf).data();
@@ -268,21 +284,22 @@ GTOValues evaluate_basis_subset(const gto::AOBasis &basis,
                             coeffs, alpha, center, order, output, x_out, y_out,
                             z_out, xx_out, xy_out, xz_out, yy_out, yz_out,
                             zz_out);
-      gto_values.phi.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_x.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_y.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_z.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_xx.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_xy.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_xz.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_yy.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_yz.block(0, bf, npts, sh.size()) *= fac;
-      gto_values.phi_zz.block(0, bf, npts, sh.size()) *= fac;
+    } else if (max_derivative == 3) {
+      auto &t = gto_values.phi3;
+      gg_collocation_deriv3(
+          L, npts, xyz, xyz_stride, sh.num_primitives(), coeffs, alpha,
+          center, order, output, gto_values.phi_x.col(bf).data(),
+          gto_values.phi_y.col(bf).data(), gto_values.phi_z.col(bf).data(),
+          gto_values.phi_xx.col(bf).data(), gto_values.phi_xy.col(bf).data(),
+          gto_values.phi_xz.col(bf).data(), gto_values.phi_yy.col(bf).data(),
+          gto_values.phi_yz.col(bf).data(), gto_values.phi_zz.col(bf).data(),
+          t[0].col(bf).data(), t[1].col(bf).data(), t[2].col(bf).data(),
+          t[3].col(bf).data(), t[4].col(bf).data(), t[5].col(bf).data(),
+          t[6].col(bf).data(), t[7].col(bf).data(), t[8].col(bf).data(),
+          t[9].col(bf).data());
     }
-    occ::timing::stop(occ::timing::category::gto_shell);
     bf += sh.size();
   }
-  occ::timing::stop(occ::timing::category::gto);
   return gto_values;
 }
 

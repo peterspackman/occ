@@ -32,13 +32,14 @@ Mat evaluate_orbitals_on_grid(const occ::gto::AOBasis &basis, MatConstRef C,
   return result;
 }
 
+// Dphi = phi D is a plain GEMM into a column-major temporary throughout:
+// Eigen's symmetric product is slower than its GEMM, and matching storage
+// orders keeps the elementwise products contiguous.
+
 template <>
 void evaluate_density<0, R>(MatConstRef D,
                             const occ::gto::GTOValues &gto_values, MatRef rho) {
-  // use a MatRM as a row major temporary, selfadjointView also speeds things
-  // up a little.
-  // Genuine bottleneck ~ 50% of the time for DFT XC is spent here for hybrids
-  MatRM Dphi = gto_values.phi * D.selfadjointView<Eigen::Upper>();
+  Mat Dphi = gto_values.phi * D;
   rho.col(0) = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
 }
 
@@ -47,7 +48,7 @@ void evaluate_density<0, U>(MatConstRef D,
                             const occ::gto::GTOValues &gto_values, MatRef rho) {
   // alpha part first
   auto Da = occ::qm::block::a(D);
-  MatRM Dphi = gto_values.phi * Da;
+  Mat Dphi = gto_values.phi * Da;
   auto rho_a = occ::qm::block::a(rho);
   rho_a.col(0) = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
   auto Db = occ::qm::block::b(D);
@@ -59,10 +60,7 @@ void evaluate_density<0, U>(MatConstRef D,
 template <>
 void evaluate_density<1, R>(MatConstRef D,
                             const occ::gto::GTOValues &gto_values, MatRef rho) {
-  // use a MatRM as a row major temporary, selfadjointView also speeds things
-  // up a little.
-  // Genuine bottleneck ~ 50% of the time for DFT XC is spent here for hybrids
-  MatRM Dphi = gto_values.phi * D.selfadjointView<Eigen::Upper>();
+  Mat Dphi = gto_values.phi * D;
   rho.col(0) = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
   rho.col(1) = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
   rho.col(2) = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
@@ -74,7 +72,7 @@ void evaluate_density<1, U>(MatConstRef D,
                             const occ::gto::GTOValues &gto_values, MatRef rho) {
   // alpha part first
   auto Da = occ::qm::block::a(D);
-  MatRM Dphi = gto_values.phi * Da;
+  Mat Dphi = gto_values.phi * Da;
   auto rho_a = occ::qm::block::a(rho);
   rho_a.col(0) = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
   /*
@@ -99,10 +97,7 @@ void evaluate_density<1, U>(MatConstRef D,
 template <>
 void evaluate_density<2, R>(MatConstRef D,
                             const occ::gto::GTOValues &gto_values, MatRef rho) {
-  // use a MatRM as a row major temporary, selfadjointView also speeds things
-  // up a little.
-  // Genuine bottleneck ~ 50% of the time for DFT XC is spent here for hybrids
-  MatRM Dphi = gto_values.phi * D.selfadjointView<Eigen::Upper>();
+  Mat Dphi = gto_values.phi * D;
   rho.col(0) = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
   rho.col(1) = 2 * (gto_values.phi_x.array() * Dphi.array()).rowwise().sum();
   rho.col(2) = 2 * (gto_values.phi_y.array() * Dphi.array()).rowwise().sum();
@@ -130,13 +125,9 @@ void evaluate_density<2, R>(MatConstRef D,
 template <>
 void evaluate_density<2, U>(MatConstRef D,
                             const occ::gto::GTOValues &gto_values, MatRef rho) {
-  occ::timing::start(occ::timing::category::fft);
-  // use a MatRM as a row major temporary, selfadjointView also speeds things
-  // up a little.
-  // Genuine bottleneck ~ 50% of the time for DFT XC is spent here for hybrids
   // alpha part first
   auto Da = occ::qm::block::a(D);
-  MatRM Dphi = gto_values.phi * Da;
+  Mat Dphi = gto_values.phi * Da;
   auto rho_a = occ::qm::block::a(rho);
   rho_a.col(0) = (gto_values.phi.array() * Dphi.array()).rowwise().sum();
   /*

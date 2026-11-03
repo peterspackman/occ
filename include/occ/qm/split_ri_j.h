@@ -1,6 +1,7 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
 #include <occ/gto/gto.h>
+#include <occ/qm/coulomb_metric.h>
 #include <occ/qm/mo.h>
 #include <memory>
 #include <vector>
@@ -39,7 +40,17 @@ public:
   SplitRIJ(const gto::AOBasis& ao_basis, const gto::AOBasis& aux_basis,
            const ShellPairList& shellpairs, const Mat& schwarz = Mat());
 
+  /// As above, reusing a factorization of the Coulomb metric V = (P|Q) the
+  /// caller already has, and sqrt(V_PP) (for screening).
+  SplitRIJ(const gto::AOBasis& ao_basis, const gto::AOBasis& aux_basis,
+           const ShellPairList& shellpairs, const Mat& schwarz,
+           const CoulombMetric& metric, const Vec& V_diag_sqrt);
+
   ~SplitRIJ();
+
+  /// Whether the compiled kernels cover these bases (AO l <= 4, auxiliary
+  /// l <= 6); the constructor throws otherwise.
+  static bool supports(const gto::AOBasis& ao_basis, const gto::AOBasis& aux_basis);
 
   // Non-copyable, movable
   SplitRIJ(const SplitRIJ&) = delete;
@@ -56,6 +67,13 @@ public:
   /// @param D  Density matrix (nbf × nbf)
   /// @return J matrix (nbf × nbf)
   Mat coulomb_from_density(const Mat& D) const;
+
+  /// Nuclear gradient (3 x natom) of d^T g, g_P = sum_mn (mn|P) D_mn, at
+  /// fixed fitted coefficients d = V^-1 g (the 3-centre part of the RI-J
+  /// energy gradient; the metric part is d^T dV d). D is the density whose
+  /// g is fitted (off-diagonal elements counted once each way, as in J).
+  /// @param fitted  if given, receives d
+  Mat3N three_center_gradient(const Mat& D, Vec* fitted = nullptr) const;
 
   /// Get the auxiliary basis
   const gto::AOBasis& aux_basis() const;

@@ -98,8 +98,9 @@ Mat evaluate_density_on_grid(const qm::Wavefunction &wfn,
   case U:
     return evaluate_density<max_derivative, U>(wfn.mo.D * 2, gto_values);
   case G:
-    throw std::runtime_error("Invalid spinorbital kind (general)");
+    break;
   }
+  throw std::runtime_error("Invalid spinorbital kind (general)");
 }
 
 inline Mat evaluate_density_on_grid(const qm::Wavefunction &wfn,

@@ -32,6 +32,7 @@ add_library(occ_qm_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/scf_method.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/seminumerical_exchange.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/split_ri_j.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/split_ri_j_kernels.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/conversion.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/fchkreader.cpp"
@@ -77,3 +78,13 @@ target_include_directories(
 )
 
 target_compile_features(occ_qm PUBLIC cxx_std_20)
+
+# The split RI-J kernels pass vector types between always-inlined helpers, so
+# GCC's note that their ABI differs between targets does not apply.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set_source_files_properties(
+        "${CMAKE_CURRENT_SOURCE_DIR}/split_ri_j_kernels.cpp"
+        PROPERTIES COMPILE_OPTIONS "-Wno-psabi"
+                   SKIP_UNITY_BUILD_INCLUSION ON
+    )
+endif()
