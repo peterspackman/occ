@@ -5,7 +5,6 @@
 #include <cmath>
 #include <occ/core/eeq.h>
 #include <occ/core/units.h>
-#include <libecpint/mathutil.hpp> 
 
 namespace occ::core::charges {
 namespace impl {

@@ -1,5 +1,4 @@
 #include <catch2/catch_all.hpp>
-#include <libecpint/mathutil.hpp>
 #include <fmt/core.h>
 #include <nlohmann/json.hpp>
 #include <occ/core/linear_algebra.h>

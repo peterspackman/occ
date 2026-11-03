@@ -1,11 +1,9 @@
-#include "detail/ecp_kernels.h"
+#include "detail/ecp_native_kernels.h"
 #include "detail/multipole_kernel.h"
 #include "detail/schwarz_kernel.h"
 #include "detail/two_center_kernels.h"
 
-#if HAVE_ECPINT
-  #include <occ/core/log.h> 
-#endif
+#include <occ/core/log.h>
 
 namespace occ::qm {
 
@@ -98,97 +96,83 @@ Mat IntegralEngine::rinv_operator_atom_center(size_t atom_index,
   return result;
 }
 
-#if HAVE_ECPINT
-
 Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
   if (!have_effective_core_potentials())
     throw std::runtime_error(
         "Called effective_core_potential without any ECPs");
 
   occ::timing::start(occ::timing::category::ecp);
-  bool spherical = is_spherical();
   constexpr auto Cart = ShellKind::Cartesian;
   constexpr auto Sph = ShellKind::Spherical;
   ShellPairList empty_shellpairs = {};
   const auto &shellpairs = use_shellpair_list ? m_shellpairs : empty_shellpairs;
   Mat result;
-  if (spherical) {
-    result = detail::ecp_operator_kernel<Sph>(m_aobasis, m_ecp_gaussian_shells,
-                                              m_ecp, m_ecp_ao_max_l,
-                                              m_ecp_max_l, shellpairs);
-  } else {
-    result = detail::ecp_operator_kernel<Cart>(m_aobasis, m_ecp_gaussian_shells,
-                                               m_ecp, m_ecp_ao_max_l,
-                                               m_ecp_max_l, shellpairs);
-  }
+  if (is_spherical())
+    result = detail::ecp_native_operator_kernel<Sph>(m_aobasis, *m_ecp_native,
+                                                     shellpairs);
+  else
+    result = detail::ecp_native_operator_kernel<Cart>(m_aobasis, *m_ecp_native,
+                                                      shellpairs);
   occ::timing::stop(occ::timing::category::ecp);
   return result;
 }
 
+Mat3N IntegralEngine::effective_core_potential_gradient(
+    const Mat &D, bool use_shellpair_list) const {
+  if (!have_effective_core_potentials())
+    return Mat3N::Zero(3, m_aobasis.atoms().size());
+
+  constexpr auto Cart = ShellKind::Cartesian;
+  constexpr auto Sph = ShellKind::Spherical;
+  ShellPairList empty_shellpairs = {};
+  const auto &shellpairs = use_shellpair_list ? m_shellpairs : empty_shellpairs;
+  if (is_spherical())
+    return detail::ecp_native_gradient_kernel<Sph>(m_aobasis, *m_ecp_native,
+                                                   shellpairs, D);
+  return detail::ecp_native_gradient_kernel<Cart>(m_aobasis, *m_ecp_native,
+                                                  shellpairs, D);
+}
+
+Mat IntegralEngine::effective_core_potential_hessian(const Mat &P) const {
+  const int natom = static_cast<int>(m_aobasis.atoms().size());
+  if (!have_effective_core_potentials())
+    return Mat::Zero(3 * natom, 3 * natom);
+  if (is_spherical())
+    return detail::ecp_native_hessian_kernel<ShellKind::Spherical>(
+        m_aobasis, *m_ecp_native, m_shellpairs, P);
+  return detail::ecp_native_hessian_kernel<ShellKind::Cartesian>(
+      m_aobasis, *m_ecp_native, m_shellpairs, P);
+}
+
+void IntegralEngine::add_effective_core_potential_derivatives(
+    std::vector<Mat> &H1) const {
+  if (!have_effective_core_potentials())
+    return;
+  if (is_spherical())
+    detail::ecp_native_derivative_matrices_kernel<ShellKind::Spherical>(
+        m_aobasis, *m_ecp_native, m_shellpairs, H1);
+  else
+    detail::ecp_native_derivative_matrices_kernel<ShellKind::Cartesian>(
+        m_aobasis, *m_ecp_native, m_shellpairs, H1);
+}
+
 void IntegralEngine::set_effective_core_potentials(
     const ShellList &ecp_shells, const std::vector<int> &ecp_electrons) {
+  if (ecp_shells != m_aobasis.ecp_shells())
+    throw std::invalid_argument(
+        "set_effective_core_potentials: ECP shells must be the basis's own "
+        "(AOBasis::ecp_shells)");
   const auto &atoms = m_aobasis.atoms();
-  for (const auto &sh : m_aobasis.shells()) {
-    libecpint::GaussianShell ecpint_shell(
-        {sh.origin(0), sh.origin(1), sh.origin(2)}, sh.l);
-    const Mat &coeffs_norm = sh.contraction_coefficients;
-    m_ecp_ao_max_l = std::max(static_cast<int>(sh.l), m_ecp_ao_max_l);
-    for (int i = 0; i < sh.num_primitives(); i++) {
-      double c = coeffs_norm(i, 0);
-      if (sh.l == 0) {
-        c *= 0.28209479177387814; // 1 / (2 * sqrt(pi))
-      }
-      if (sh.l == 1) {
-        c *= 0.4886025119029199; // sqrt(3) / (2 * sqrt(pi))
-      }
-      ecpint_shell.addPrim(sh.exponents(i), c);
-    }
-    m_ecp_gaussian_shells.push_back(ecpint_shell);
-  }
   for (int i = 0; i < ecp_electrons.size(); i++) {
     int charge = atoms[i].atomic_number - ecp_electrons[i];
     occ::log::debug("setting atom {} charge to {}", i, charge);
     m_env.set_atom_charge(i, charge);
   }
-
-  Vec3 pt = ecp_shells[0].origin;
-  // For some reason need to merge all shells that share a center.
-  // This code relies on shells with the same center being grouped.
-  //
-  libecpint::ECP ecp(pt.data());
-  for (const auto &sh : ecp_shells) {
-    if ((pt - sh.origin).norm() > 1e-3) {
-      ecp.sort();
-      ecp.atom_id = m_ecp.size();
-      m_ecp.push_back(ecp);
-      pt = sh.origin;
-      ecp = libecpint::ECP(pt.data());
-    }
-    for (int i = 0; i < sh.num_primitives(); i++) {
-      m_ecp_max_l = std::max(static_cast<int>(sh.l), m_ecp_max_l);
-      ecp.addPrimitive(sh.ecp_r_exponents(i), sh.l, sh.exponents(i),
-                       sh.contraction_coefficients(i, 0), false);
-    }
-  }
-
-  // add the last ECP to the end
-  ecp.sort();
-  ecp.atom_id = m_ecp.size();
-  m_ecp.push_back(ecp);
-
+  // The evaluator takes the ECP shells (grouped by atom) from the basis, with
+  // derivatives up to second order for gradients and Hessians.
+  m_ecp_native = std::make_shared<const occ::ints::EcpEvaluator>(m_aobasis, 2);
   m_have_ecp = true;
 }
-#else
-
-Mat IntegralEngine::effective_core_potential(bool use_shellpair_list) const {
-  throw std::runtime_error("Not compiled with libecpint");
-}
-void IntegralEngine::set_effective_core_potentials(
-    const ShellList &ecp_shells, const std::vector<int> &ecp_electrons) {
-  throw std::runtime_error("Not compiled with libecpint");
-}
-
-#endif
 
 Vec IntegralEngine::multipole(int order, const MolecularOrbitals &mo,
                               const Vec3 &origin) const {
@@ -362,6 +346,45 @@ Mat IntegralEngine::schwarz() const {
     return detail::schwarz_kernel<ShellKind::Cartesian>(m_env, m_aobasis,
                                                         m_shellpairs);
   }
+}
+
+namespace {
+template <ShellKind kind>
+MatTriple dipole_matrices_kernel(const AOBasis &basis, IntEnv &env,
+                                 const ShellPairList &shellpairs,
+                                 const Vec3 &origin) {
+  const auto nbf = basis.nbf();
+  const auto &first_bf = basis.first_bf();
+  MatTriple result = MatTriple::Zero(nbf, nbf);
+  env.set_common_origin({origin.x(), origin.y(), origin.z()});
+  auto buffer = std::make_unique<double[]>(env.buffer_size_1e(Op::dipole));
+  for (size_t p = 0; p < basis.size(); p++) {
+    for (const auto q : shellpairs[p]) {
+      std::array<int, 2> idxs{static_cast<int>(p), static_cast<int>(q)};
+      auto dims = env.two_center_helper<Op::dipole, kind>(idxs, nullptr,
+                                                          buffer.get(), nullptr);
+      if (dims[0] < 0)
+        continue;
+      const size_t n = static_cast<size_t>(dims[0]) * dims[1];
+      for (int x = 0; x < 3; x++) {
+        Eigen::Map<const Mat> blk(buffer.get() + x * n, dims[0], dims[1]);
+        result[x].block(first_bf[p], first_bf[q], dims[0], dims[1]) = blk;
+        result[x].block(first_bf[q], first_bf[p], dims[1], dims[0]) =
+            blk.transpose();
+      }
+    }
+  }
+  env.set_common_origin({0.0, 0.0, 0.0});
+  return result;
+}
+} // namespace
+
+MatTriple IntegralEngine::dipole_matrices(const Vec3 &origin) const {
+  if (is_spherical())
+    return dipole_matrices_kernel<ShellKind::Spherical>(m_aobasis, m_env,
+                                                        m_shellpairs, origin);
+  return dipole_matrices_kernel<ShellKind::Cartesian>(m_aobasis, m_env,
+                                                      m_shellpairs, origin);
 }
 
 } // namespace occ::qm

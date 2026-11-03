@@ -79,7 +79,6 @@ target_link_libraries(
         spdlog::spdlog
         Threads::Threads
         unordered_dense::unordered_dense
-        libecpint_static
         _subprocess
 )
 
@@ -108,7 +107,6 @@ target_link_libraries(
     PUBLIC
         Eigen3::Eigen
         fmt::fmt
-        libecpint_static
         LBFGSpp::LBFGSpp
         scn::scn
         spdlog::spdlog

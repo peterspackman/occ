@@ -2,6 +2,7 @@
 #include <occ/core/log.h>
 #include <occ/core/parallel.h>
 #include <occ/core/timings.h>
+#include <occ/ints/ecp.h>
 #include <occ/ints/esp.h>
 #include <occ/qm/cint_interface.h>
 #include <occ/qm/expectation.h>
@@ -9,10 +10,6 @@
 #include <occ/qm/shellblock_norm.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 
-
-#if HAVE_ECPINT
-#include <libecpint.hpp>
-#endif
 
 namespace occ::qm {
 
@@ -111,6 +108,7 @@ public:
       combined.insert(combined.end(), m_auxbasis.shells().begin(),
                       m_auxbasis.shells().end());
       m_env = IntEnv(m_aobasis.atoms(), combined);
+      apply_ecp_effective_charges();
     } else {
       AtomList dummy_atoms;
       dummy_atoms.reserve(bs.size());
@@ -133,11 +131,13 @@ public:
     combined.insert(combined.end(), m_auxbasis.shells().begin(),
                     m_auxbasis.shells().end());
     m_env = IntEnv(combined_sites, combined);
+    apply_ecp_effective_charges();
   }
 
   inline void clear_auxiliary_basis() {
     m_auxbasis = AOBasis();
     m_env = IntEnv(m_aobasis.atoms(), m_aobasis.shells());
+    apply_ecp_effective_charges();
   }
 
   inline bool have_auxiliary_basis() const noexcept {
@@ -171,6 +171,26 @@ public:
                                     bool use_shellpair_list = true) const;
 
   Mat effective_core_potential(bool use_shellpair_list = true) const;
+
+  /// Nuclear gradient of Tr(D V_ecp), per atom (3 x natoms). Zero when there
+  /// are no ECPs.
+  Mat3N effective_core_potential_gradient(const Mat &D,
+                                          bool use_shellpair_list = true) const;
+
+  /// Skeleton ECP Hessian sum P d2 V_ecp / dR dR (3N x 3N), P the total
+  /// density. Zero when there are no ECPs.
+  Mat effective_core_potential_hessian(const Mat &P) const;
+
+  /// Add dV_ecp/dR for every nuclear coordinate into H1 (3N matrices).
+  void add_effective_core_potential_derivatives(std::vector<Mat> &H1) const;
+
+  /// Nuclear charge each atom's operators carry: Z minus its ECP electrons.
+  double effective_nuclear_charge(size_t atom) const {
+    const auto &e = m_aobasis.ecp_electrons();
+    return m_aobasis.atoms()[atom].atomic_number -
+           (atom < e.size() ? e[atom] : 0);
+  }
+
   Mat fock_operator(SpinorbitalKind, const MolecularOrbitals &mo,
                     const Mat &Schwarz = Mat()) const;
   Mat fock_operator_mixed_basis(const Mat &D, const AOBasis &D_bs,
@@ -196,6 +216,53 @@ public:
 
   JKTriple coulomb_exchange_grad(SpinorbitalKind, const MolecularOrbitals &mo,
                                  const Mat &Schwarz = Mat()) const;
+
+  /// Skeleton one-electron Hessian (3N x 3N): sum P h^{xy} - sum Q S^{xy}
+  /// for total density P and total energy-weighted density Q, including the
+  /// nuclear-attraction operator-centre terms. No ECPs.
+  Mat one_electron_hessian(const Mat &P, const Mat &Q) const;
+
+  /// First-derivative AO matrices for every nuclear coordinate (index
+  /// 3 * atom + xyz): S^{(x)} and h^{(x)} = T^{(x)} + V^{(x)}, the latter
+  /// including the Hellmann-Feynman operator derivative. Full derivatives
+  /// (bra and ket), symmetric.
+  void one_electron_derivative_matrices(std::vector<Mat> &S1,
+                                        std::vector<Mat> &H1) const;
+
+  /// Skeleton two-electron Hessian (3N x 3N) of jf * E_J + kf * E_K at fixed
+  /// density, contracted over unique quartets with second-derivative
+  /// integrals; blocks of the omitted centre by translational invariance.
+  Mat jk_hessian(const MolecularOrbitals &mo, double jf, double kf,
+                 const Mat &Schwarz = Mat()) const;
+
+  /// Skeleton two-electron Fock derivatives for every nuclear coordinate:
+  /// jf J^{(x)}[P_total] - kf K^{(x)}[P_spin], derivative integrals with the
+  /// density held fixed. Unrestricted: one per spin, alpha rows over beta
+  /// rows.
+  std::vector<Mat> jk_derivative_fock(const MolecularOrbitals &mo, double jf,
+                                      double kf,
+                                      const Mat &Schwarz = Mat()) const;
+
+  /// Restricted two-electron response for a batch of symmetric per-spin
+  /// densities: jf * 2 J[D1] - kf * K[D1] for each, the last
+  /// `exchange_only` of them without the Coulomb term. One integral pass per
+  /// chunk of densities, digested as small dense products over the whole
+  /// chunk (density index fastest), so the cost per extra density is close to
+  /// the arithmetic, not memory traffic. Used by CPHF.
+  std::vector<Mat> coulomb_exchange_response(const std::vector<Mat> &D,
+                                             double jf, double kf,
+                                             const Mat &Schwarz = Mat(),
+                                             size_t exchange_only = 0) const;
+
+  /// Nuclear gradient (3 x natom) of the two-electron energy
+  ///   jf * E_J[D] + kf * E_K[D]
+  /// where E_K is the full exact-exchange energy (negative), so a global
+  /// hybrid passes kf = its exact-exchange fraction and Coulomb-only passes
+  /// kf = 0. Contracted inside the integral loop over unique shell quartets;
+  /// nothing nbf x nbf is formed. Restricted and unrestricted use the
+  /// contracted kernel, general spinorbitals the matrix path.
+  Mat3N jk_gradient(const MolecularOrbitals &mo, double jf, double kf,
+                    const Mat &Schwarz = Mat()) const;
   JKPair coulomb_and_exchange(SpinorbitalKind, const MolecularOrbitals &mo,
                               const Mat &Schwarz = Mat()) const;
 
@@ -246,6 +313,33 @@ public:
   /// @return  Electric potential at each point [npts]
   Vec electric_potential_mmd(const MolecularOrbitals &mo, const Mat3N &points) const;
 
+  // Point-charge integrals L^k = <mu| 1/|r - s_k| |nu> at `points` (3 x M),
+  // exact point charges, contracted in the shell-pair loop. Where charges
+  // move, `owner(k)` is the atom point k rides on (< 0: fixed in space).
+
+  /// sum_{mu nu} D_{mu nu} L^k_{mu nu} for each symmetric D: M x D.size().
+  Mat point_charge_potentials(const std::vector<Mat> &D,
+                              const Mat3N &points) const;
+
+  /// sum_k Q(k, v) L^k for each column v of Q (M x nv): nv matrices.
+  std::vector<Mat> point_charge_matrices(const Mat &Q,
+                                         const Mat3N &points) const;
+
+  /// d/dx sum_{mu nu} D_{mu nu} L^k_{mu nu} for every nuclear coordinate x
+  /// (row 3 * atom + xyz) and point k (column): 3N x M, D symmetric.
+  Mat point_charge_potential_derivatives(const Mat &D, const Mat3N &points,
+                                         const IVec &owner) const;
+
+  /// sum_k q_k sum_{mu nu} D_{mu nu} d2 L^k_{mu nu} / dx dy: 3N x 3N.
+  Mat point_charge_hessian(const Mat &D, const Vec &q, const Mat3N &points,
+                           const IVec &owner) const;
+
+  /// d/dx sum_k q_k L^k for every nuclear coordinate x: 3N symmetric
+  /// matrices, basis-function and charge-position derivatives together.
+  std::vector<Mat> point_charge_derivative_matrices(const Vec &q,
+                                                    const Mat3N &points,
+                                                    const IVec &owner) const;
+
   template <ShellKind kind>
   inline void compute_shellpairs(double threshold = 1e-12) {
     occ::log::debug("computing shellpairs (threshold = {}, kind = {}",
@@ -290,6 +384,11 @@ public:
   Vec multipole(int order, const MolecularOrbitals &mo,
                 const Vec3 &origin = {0, 0, 0}) const;
 
+  /// AO matrices <mu| r_a - O_a |nu> for a = x, y, z (symmetric, nbf x nbf).
+  /// The electric-field perturbation operator: an applied field F adds
+  /// F . r to the one-electron Hamiltonian of an electron.
+  MatTriple dipole_matrices(const Vec3 &origin = {0, 0, 0}) const;
+
   Mat schwarz() const;
 
   inline bool is_spherical() const {
@@ -324,15 +423,29 @@ private:
   mutable std::unique_ptr<occ::ints::ESPEvaluator<double>> m_esp_evaluator;
   mutable bool m_esp_initialized{false};
 
+  /// Re-apply the ECP-reduced nuclear charges to the integral environment.
+  ///
+  /// IntEnv is constructed with bare atomic numbers, and
+  /// set_effective_core_potentials patches them to Z - n_ecp. Any code that
+  /// rebuilds m_env (auxiliary-basis setup/teardown, dummy bases) silently
+  /// throws that patch away, leaving libcint charging ECP atoms at their bare
+  /// Z. The cached core Hamiltonian survives -- it is built before the guess
+  /// -- but anything recomputed afterwards, the nuclear-attraction gradient
+  /// especially, gets the wrong operator. No-op without ECPs.
+  inline void apply_ecp_effective_charges() {
+    if (!m_have_ecp)
+      return;
+    const auto &ats = m_aobasis.atoms();
+    const auto &ecp_electrons = m_aobasis.ecp_electrons();
+    // set_dummy_basis appends its sites *after* the real atoms, so real-atom
+    // indices are unchanged in all three rebuild sites.
+    for (size_t i = 0; i < ecp_electrons.size() && i < ats.size(); i++)
+      m_env.set_atom_charge(static_cast<int>(i),
+                            ats[i].atomic_number - ecp_electrons[i]);
+  }
+
   bool m_have_ecp{false};
-#if HAVE_ECPINT
-  std::vector<libecpint::GaussianShell> m_ecp_gaussian_shells;
-  std::vector<libecpint::GaussianShell> m_ecp_aux_gaussian_shells;
-  std::vector<libecpint::ECP>
-      m_ecp; // might need to track center info for derivatives
-#endif
-  int m_ecp_ao_max_l{0};
-  int m_ecp_max_l{0};
+  std::shared_ptr<const occ::ints::EcpEvaluator> m_ecp_native;
 };
 
 /// Applies a range-separation parameter for the duration of a scope, and puts

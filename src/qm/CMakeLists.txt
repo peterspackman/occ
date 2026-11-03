@@ -57,9 +57,7 @@ target_link_libraries(
         occ_io
         nlohmann_json::nlohmann_json
         libcint::libcint
-        libecpint_static
 )
-target_compile_definitions(occ_qm_obj PUBLIC HAVE_ECPINT=1)
 
 target_link_libraries(
     occ_qm
@@ -72,13 +70,10 @@ target_link_libraries(
         occ_io
         nlohmann_json::nlohmann_json
         libcint::libcint
-        libecpint_static
 )
 target_include_directories(
     occ_qm
     PUBLIC ${OCC_INCLUDE_DIR} ${GEMMI_INCLUDE_DIR}
 )
-
-target_compile_definitions(occ_qm PUBLIC HAVE_ECPINT=1)
 
 target_compile_features(occ_qm PUBLIC cxx_std_20)

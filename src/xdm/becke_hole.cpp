@@ -1,5 +1,5 @@
 #include <cmath>
-#include <libecpint/mathutil.hpp>
+#include <numbers>
 #include <occ/xdm/becke_hole.h>
 
 namespace occ::xdm {

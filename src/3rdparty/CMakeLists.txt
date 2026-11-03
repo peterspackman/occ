@@ -35,4 +35,3 @@ if("${MSVC}")
 endif()
 
 add_subdirectory(gau2grid)
-add_subdirectory(libecpint)
