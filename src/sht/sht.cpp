@@ -2,6 +2,7 @@
 #include <occ/core/meshgrid.h>
 #include <occ/sht/quadrature.h>
 #include <occ/sht/sht.h>
+#include <numbers>
 
 namespace occ::sht {
 

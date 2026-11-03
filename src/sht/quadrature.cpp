@@ -1,5 +1,4 @@
 #include <cmath>
-#include <libecpint/mathutil.hpp>
 #include <occ/core/log.h>
 #include <occ/sht/quadrature.h>
 #include <numbers>    

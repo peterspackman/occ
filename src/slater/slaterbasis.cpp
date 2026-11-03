@@ -8,6 +8,7 @@
 #include <occ/core/util.h>
 #include <occ/slater/slaterbasis.h>
 #include <occ/slater/thakkar_basis.h>
+#include <numbers>
 
 namespace occ::slater {
 

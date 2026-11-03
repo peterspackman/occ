@@ -22,6 +22,7 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
                                              false); // V = (P|Q) in df basis
   occ::timing::stop(occ::timing::category::df);
 
+  m_V_diag_sqrt = V.diagonal().array().sqrt();
   occ::timing::start(occ::timing::category::la);
   occ::log::debug("Factorizing the Coulomb metric V");
   V_LLt.compute(V);
@@ -139,14 +140,25 @@ Mat IntegralEngineDF::exchange(const MolecularOrbitals &mo) {
 }
 
 Mat IntegralEngineDF::coulomb(const MolecularOrbitals &mo) {
-  // Check for Split-RI-J method first
-  if (m_coulomb_method == CoulombMethod::SplitRIJ) {
+  // Split-RI-J when asked for, and under `Choose` whenever the complete
+  // 3-centre store would not fit: its Hermite-space contraction is about
+  // twice as fast as the direct 3-centre build, and a partial store leaves
+  // most pairs on the direct path anyway.
+  const bool split =
+      m_coulomb_method == CoulombMethod::SplitRIJ ||
+      (m_policy == Policy::Choose && m_omega == 0.0 &&
+       SplitRIJ::supports(m_ao_engine.aobasis(), m_ao_engine.auxbasis()) &&
+       (m_packed.built() ? !m_packed.complete()
+                         : packed_storage_bytes() >
+                               m_integral_store_memory_limit));
+  if (split) {
     // Lazy-initialize SplitRIJ engine
     if (!m_split_rij) {
       occ::log::debug("Initializing Split-RI-J engine");
       m_split_rij = std::make_unique<SplitRIJ>(
           m_ao_engine.aobasis(), m_ao_engine.auxbasis(),
-          m_ao_engine.shellpairs(), m_ao_engine.schwarz());
+          m_ao_engine.shellpairs(), m_ao_engine.schwarz(), m_V_LLt_full,
+          m_V_diag_sqrt);
     }
     // Split-RI-J doesn't compute (μν|P) integrals - no stored/direct mode
     return m_split_rij->coulomb(mo);
@@ -442,6 +454,14 @@ void IntegralEngineDF::set_range_separated_omega(double omega) {
     // attenuated kernel damps the high-exponent auxiliary functions, so a
     // JK-fitting basis is close to linearly dependent under it. CoulombMetric
     // drops the resulting near-null space.
+    // Regularised rather than truncated: (V + lambda I)^-1 is smooth in the
+    // geometry, so dW = -W dV W holds exactly and the RI-K derivatives
+    // differentiate the energy actually computed, whereas a pseudo-inverse
+    // over a truncated eigenspace rotates with the geometry. lambda = 1e-7 of
+    // the largest diagonal moves the wB97X/def2-SVP water energy by
+    // 8e-7 Eh, well inside the fitting error.
+    constexpr double ridge = 1e-7;
+    V.diagonal().array() += ridge * V.diagonal().maxCoeff();
     V_LLt.compute(V);
     occ::timing::stop(occ::timing::category::la);
     if (!V_LLt.uses_cholesky())

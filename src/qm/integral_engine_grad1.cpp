@@ -1,5 +1,6 @@
 #include "detail/gradient_kernels.h"
 #include "detail/jk_grad.h"
+#include "detail/jk_gradient_contracted.h"
 #include "detail/kernel_traits.h"
 #include <occ/core/timings.h>
 #include <occ/gto/gto.h>
@@ -598,6 +599,59 @@ MatTriple IntegralEngine::fock_operator_grad(SpinorbitalKind sk,
                                        m_precision, Schwarz);
     }
   }
+}
+
+Mat3N IntegralEngine::jk_gradient(const MolecularOrbitals &mo, double jf,
+                                  double kf, const Mat &Schwarz) const {
+  const SpinorbitalKind sk = mo.kind;
+  constexpr auto R = SpinorbitalKind::Restricted;
+  constexpr auto U = SpinorbitalKind::Unrestricted;
+  constexpr auto Sph = ShellKind::Spherical;
+  constexpr auto Cart = ShellKind::Cartesian;
+  const bool spherical = is_spherical();
+  occ::timing::start(occ::timing::category::fock);
+  Mat3N result;
+  if (sk == R) {
+    result = spherical
+                 ? detail::jk_gradient_contracted<R, Sph>(
+                       m_env, m_aobasis, m_shellpairs, mo, jf, kf, m_precision,
+                       Schwarz)
+                 : detail::jk_gradient_contracted<R, Cart>(
+                       m_env, m_aobasis, m_shellpairs, mo, jf, kf, m_precision,
+                       Schwarz);
+  } else if (sk == U) {
+    result = spherical
+                 ? detail::jk_gradient_contracted<U, Sph>(
+                       m_env, m_aobasis, m_shellpairs, mo, jf, kf, m_precision,
+                       Schwarz)
+                 : detail::jk_gradient_contracted<U, Cart>(
+                       m_env, m_aobasis, m_shellpairs, mo, jf, kf, m_precision,
+                       Schwarz);
+  } else {
+    // General spinorbitals: derivative matrices, contracted per atom over
+    // the rows of the bra function's atom, every spin block.
+    auto [J, K] = coulomb_exchange_grad(sk, mo, Schwarz);
+    const auto &basis = m_aobasis;
+    const auto &atom_to_shell = basis.atom_to_shell();
+    const auto &first_bf = basis.first_bf();
+    const int nbf = static_cast<int>(basis.nbf());
+    result = Mat3N::Zero(3, basis.atoms().size());
+    const Mat f[3] = {jf * J.x - kf * K.x, jf * J.y - kf * K.y,
+                      jf * J.z - kf * K.z};
+    for (size_t atom = 0; atom < atom_to_shell.size(); atom++) {
+      for (int s : atom_to_shell[atom]) {
+        for (int r = first_bf[s]; r < first_bf[s] + int(basis[s].size());
+             r++) {
+          for (int x = 0; x < 3; x++) {
+            result(x, atom) += 4 * f[x].row(r).dot(mo.D.row(r)) +
+                               4 * f[x].row(nbf + r).dot(mo.D.row(nbf + r));
+          }
+        }
+      }
+    }
+  }
+  occ::timing::stop(occ::timing::category::fock);
+  return result;
 }
 
 } // namespace occ::qm

@@ -5,6 +5,7 @@
 #include <occ/core/format_matrix.h>
 #include <occ/core/molecule.h>
 #include <occ/core/multipole.h>
+#include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/dft/dft.h>
 #include <occ/qm/io/fchkreader.h>
@@ -27,6 +28,7 @@
 #include <occ/qm/scf.h>
 #include <occ/gto/shell.h>
 #include <occ/qm/wavefunction.h>
+#include <array>
 #include <vector>
 #include <chrono>
 
@@ -320,6 +322,66 @@ TEST_CASE("Becke partitioned atom grid H2", "[grid]") {
   occ::numint::MolecularGrid mgrid(basis);
 
   auto grid = mgrid.get_partitioned_atom_grid(0);
+}
+
+TEST_CASE("COSX grids reproduce ORCA 6.1 GRIDX 1/2/3", "[grid][cosx]") {
+  using occ::numint::COSXGridLevel;
+  const std::array<COSXGridLevel, 3> levels{
+      COSXGridLevel::Grid1, COSXGridLevel::Grid2, COSXGridLevel::Grid3};
+
+  SECTION("free-atom grids: point counts and weight sums") {
+    // From the grids ORCA 6.1.1 writes for the free atom (HF/def2-SVP,
+    // RIJCOSX): number of points and sum of weights per level.
+    struct Ref {
+      int z;
+      std::array<size_t, 3> npts;
+      std::array<double, 3> wsum;
+    };
+    const std::vector<Ref> refs{
+        {1, {450, 822, 1806}, {6.9251831012e+03, 2.1530956564e+04, 5.7334681638e+04}},
+        {6, {772, 1892, 4224}, {5.5346599672e+03, 4.0150294697e+04, 4.1991784645e+04}},
+        {16, {1978, 1978, 5032}, {1.0284355589e+04, 1.0284355589e+04, 3.1302520938e+04}},
+        {53, {6268, 6268, 6268}, {6.6838320940e+05, 6.6838320940e+05, 6.6838320940e+05}},
+        {86, {7880, 7880, 7880}, {5.4506338490e+06, 5.4506338490e+06, 5.4506338490e+06}},
+    };
+    for (const auto &ref : refs) {
+      for (int l = 0; l < 3; l++) {
+        const auto settings = occ::numint::GridSettings::for_cosx(levels[l]);
+        const auto grid = occ::numint::generate_atom_grid(ref.z, settings);
+        CAPTURE(ref.z, l + 1);
+        REQUIRE(grid.num_points() == ref.npts[l]);
+        REQUIRE(grid.weights.sum() == Catch::Approx(ref.wsum[l]).epsilon(1e-8));
+      }
+    }
+    // Outermost carbon GRIDX 1 shell, r = xi / ln2 * ln(2 / (1 - x_1)).
+    const auto c1 = occ::numint::generate_atom_grid(
+        6, occ::numint::GridSettings::for_cosx(COSXGridLevel::Grid1));
+    REQUIRE(c1.points.colwise().norm().maxCoeff() ==
+            Catch::Approx(9.09430128).epsilon(1e-8));
+  }
+
+  SECTION("water: partitioned point counts match ORCA") {
+    // ORCA prints 1652 / 3498 / 7780 COSX grid points for this water.
+    std::vector<occ::core::Atom> atoms{{8, 0.0, 0.0, 0.0},
+                                       {1, 0.0, 0.757, 0.587},
+                                       {1, 0.0, -0.757, 0.587}};
+    for (auto &a : atoms) {
+      a.x *= occ::units::ANGSTROM_TO_BOHR;
+      a.y *= occ::units::ANGSTROM_TO_BOHR;
+      a.z *= occ::units::ANGSTROM_TO_BOHR;
+    }
+    auto basis = occ::gto::AOBasis::load(atoms, "def2-svp");
+    const std::array<std::array<size_t, 2>, 3> expected{
+        {{772, 440}, {1886, 806}, {4224, 1778}}};
+    for (int l = 0; l < 3; l++) {
+      occ::numint::MolecularGrid grid(
+          basis, occ::numint::GridSettings::for_cosx(levels[l]));
+      CAPTURE(l + 1);
+      REQUIRE(grid.get_partitioned_atom_grid(0).num_points() == expected[l][0]);
+      REQUIRE(grid.get_partitioned_atom_grid(1).num_points() == expected[l][1]);
+      REQUIRE(grid.get_partitioned_atom_grid(2).num_points() == expected[l][1]);
+    }
+  }
 }
 
 // Seminumerical Exchange

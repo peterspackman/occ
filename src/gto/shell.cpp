@@ -8,10 +8,7 @@
 #include <occ/gto/shell.h>
 #include <occ/gto/io/json_basis.h>
 #include <occ/gto/sto3g_basis.h>
-#include <numbers>    
-#ifndef M_2_SQRTPI
-#define M_2_SQRTPI 1.1283791670955125585606993
-#endif
+#include <numbers>
 
 namespace fs = std::filesystem;
 
@@ -20,16 +17,6 @@ namespace occ::gto {
 double gint(int n, double alpha) {
   double n1_2 = 0.5 * (n + 1);
   return std::tgamma(n1_2) / (2 * std::pow(alpha, n1_2));
-}
-
-double psi4_primitive_normalization(int n, double alpha) {
-  double tmp1 = n + 1.5;
-  double g = 2.0 * alpha;
-  double z = std::pow(g, tmp1);
-  double normg =
-      std::sqrt((pow(2.0, n) * z) /
-                (std::numbers::pi_v<double> * std::sqrt(std::numbers::pi_v<double>) * occ::util::double_factorial_2n_1(n)));
-  return normg;
 }
 
 double gto_norm(int l, double alpha) {
@@ -143,39 +130,6 @@ double Shell::norm() const {
 
 double Shell::max_exponent() const { return exponents.maxCoeff(); }
 double Shell::min_exponent() const { return exponents.minCoeff(); }
-
-Mat Shell::coeffs_normalized_for_libecpint() const {
-  Mat result = contraction_coefficients;
-  for (int i = 0; i < num_primitives(); ++i) {
-    double normalization = psi4_primitive_normalization(l, exponents(i));
-    result(i, 0) *= normalization;
-  }
-  double e_sum = 0.0, g, z;
-
-  for (int i = 0; i < num_primitives(); ++i) {
-    for (int j = 0; j < num_primitives(); ++j) {
-      g = exponents(i) + exponents(j);
-      z = std::pow(g, l + 1.5);
-      e_sum += result(i, 0) * result(j, 0) / z;
-    }
-  }
-
-  double tmp =
-      ((2.0 * std::numbers::pi_v<double> / M_2_SQRTPI) * occ::util::double_factorial_2n_1(l)) /
-      std::pow(2.0, l);
-  double norm = std::sqrt(1.0 / (tmp * e_sum));
-
-  // Set the normalization
-  for (int i = 0; i < num_primitives(); ++i) {
-    result(i, 0) *= norm;
-  }
-
-  if (norm != norm) {
-    for (int i = 0; i < num_primitives(); ++i)
-      result(i, 0) = 1.0;
-  }
-  return result;
-}
 
 void Shell::incorporate_shell_norm() {
   for (size_t i = 0; i < num_primitives(); i++) {

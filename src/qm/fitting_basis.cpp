@@ -15,6 +15,7 @@ namespace {
 
 struct FittingDefaults {
   std::string jk_default{"def2-universal-jkfit"};
+  std::string j_default{"def2-universal-jfit"};
   std::string corr_default{"def2-tzvp-rifit"};
   int cosx_nbf_crossover{600};
   // orbital basis name -> {jk, corr}; either may be empty (use default).
@@ -57,6 +58,8 @@ FittingDefaults load_defaults() {
 
     if (j.contains("scf_jk_default"))
       defaults.jk_default = j.at("scf_jk_default").get<std::string>();
+    if (j.contains("scf_j_default"))
+      defaults.j_default = j.at("scf_j_default").get<std::string>();
     if (j.contains("corr_default"))
       defaults.corr_default = j.at("corr_default").get<std::string>();
     if (j.contains("policy") && j.at("policy").contains("cosx_nbf_crossover"))
@@ -92,6 +95,14 @@ const FittingDefaults &defaults() {
 std::string resolve_fitting_basis(const std::string &orbital_basis_name,
                                   FittingKind kind) {
   const FittingDefaults &d = defaults();
+  // Coulomb-only fitting: a basis-specific JK fit if there is one (it serves
+  // J as well), else the universal J fit (def2/J).
+  if (kind == FittingKind::J) {
+    auto it = d.map.find(canonical_key(orbital_basis_name));
+    if (it != d.map.end() && !it->second.first.empty())
+      return it->second.first;
+    return d.j_default;
+  }
   const std::string &fallback =
       (kind == FittingKind::JK) ? d.jk_default : d.corr_default;
 

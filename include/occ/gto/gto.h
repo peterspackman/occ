@@ -57,6 +57,38 @@ struct GTOValues {
       phi_yz = Mat(npts, nbf);
       phi_zz = Mat(npts, nbf);
     }
+    if (derivative_order > 2) {
+      for (auto &m : phi3)
+        m = Mat(npts, nbf);
+    }
+  }
+
+  /// First derivative d_i phi by Cartesian index.
+  inline const Mat &first(int i) const {
+    return i == 0 ? phi_x : (i == 1 ? phi_y : phi_z);
+  }
+
+  /// Second derivative d_i d_j phi by Cartesian indices (any order).
+  inline const Mat &second(int i, int j) const {
+    static const int index[3][3] = {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}};
+    const Mat *m[6] = {&phi_xx, &phi_xy, &phi_xz, &phi_yy, &phi_yz, &phi_zz};
+    return *m[index[i][j]];
+  }
+
+  /// Third derivatives d_i d_j d_k phi, i <= j <= k, in the order
+  /// xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz (when evaluated with
+  /// derivative order 3).
+  std::array<Mat, 10> phi3;
+
+  /// Third derivative by Cartesian indices (any order).
+  inline const Mat &third(int i, int j, int k) const {
+    int a[3] = {i, j, k};
+    std::sort(a, a + 3);
+    static const int index[3][3][3] = {
+        {{0, 1, 2}, {1, 3, 4}, {2, 4, 5}},
+        {{1, 3, 4}, {3, 6, 7}, {4, 7, 8}},
+        {{2, 4, 5}, {4, 7, 8}, {5, 8, 9}}};
+    return phi3[index[a[0]][a[1]][a[2]]];
   }
 
   inline void set_zero() {
@@ -70,6 +102,8 @@ struct GTOValues {
     phi_yy.setZero();
     phi_yz.setZero();
     phi_zz.setZero();
+    for (auto &m : phi3)
+      m.setZero();
   }
   Mat phi;
   Mat phi_x;

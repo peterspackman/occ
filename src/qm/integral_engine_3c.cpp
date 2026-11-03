@@ -106,28 +106,6 @@ Mat IntegralEngine::wolf_point_charge_potential(
   return Vext - Vintra + background_term * S;
 }
 
-#if HAVE_ECPINT
-Vec electric_potential_ecp_kernel(std::vector<libecpint::ECP> &ecps,
-                                  int ecp_lmax, const Mat3N &points) {
-  Vec result = Vec::Zero(points.cols());
-  for (int pt = 0; pt < points.cols(); pt++) {
-    for (const auto &U : ecps) {
-      double dx = points(0, pt) - U.center_[0];
-      double dy = points(1, pt) - U.center_[1];
-      double dz = points(2, pt) - U.center_[2];
-      double r = std::sqrt(dx * dx + dy * dy + dz * dz);
-
-      double fac = 1.0;
-      for (int l = 0; l <= U.getL(); l++) {
-        result(pt) += fac * U.evaluate(r, l);
-        fac *= r;
-      }
-    }
-  }
-  return result;
-}
-#endif
-
 Vec IntegralEngine::electric_potential(const MolecularOrbitals &mo,
                                        const Mat3N &points) {
   constexpr auto R = SpinorbitalKind::Restricted;
@@ -142,14 +120,6 @@ Vec IntegralEngine::electric_potential(const MolecularOrbitals &mo,
     dummy_shells.push_back(Shell(PointCharge(1.0, points.col(i))));
   }
   set_auxiliary_basis(dummy_shells, true);
-
-  // Below code could be used if ECPs are needed for electric potential,
-  // not sure if it's correct
-  /*
-  if (m_have_ecp) {
-      result += electric_potential_ecp_kernel(m_ecp, m_ecp_max_l, points);
-  }
-  */
 
   if (is_spherical()) {
     switch (mo.kind) {

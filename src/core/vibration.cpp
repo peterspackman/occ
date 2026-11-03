@@ -6,6 +6,7 @@
 #include <Eigen/Eigenvalues>
 #include <fmt/core.h>
 #include <fmt/format.h>
+#include <numbers>
 
 
 namespace occ::core {

@@ -21,6 +21,12 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     )
 endif()
 
+# The integral kernels are written with GCC/Clang vector extensions (AVX2,
+# AVX-512 and NEON from one source); on Windows use clang-cl or MinGW GCC.
+if(MSVC AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    message(FATAL_ERROR "occ needs GCC or Clang (clang-cl on Windows), not MSVC cl")
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Emit compile_commands.json so clangd/IDE tooling sees our include paths and
@@ -112,7 +118,11 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
         "Build JavaScript/WASM bindings using Emscripten"
         OFF
     )
-    option(ENABLE_HOST_OPT "Enable -march=native and similar flags" ON)
+    # Off by default so a plain build runs on any CPU of its architecture.
+    # ON compiles occ and its dependencies for the build machine
+    # (-march=native); for a specific target instead, leave this OFF and pass
+    # e.g. -DCMAKE_CXX_FLAGS="-march=x86-64-v3".
+    option(ENABLE_HOST_OPT "Compile occ and its dependencies for the build machine (-march=native)" OFF)
     if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
         set(CMAKE_BUILD_TYPE
             Release
@@ -211,6 +221,20 @@ if(${EMSCRIPTEN})
 endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")
+
+# Host optimisation reaches occ's own code too, not only the dependencies that
+# take their own flag (libxc's XHOST and similar).
+if(ENABLE_HOST_OPT AND NOT EMSCRIPTEN AND NOT MSVC)
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag("-march=native" OCC_HAS_MARCH_NATIVE)
+    check_cxx_compiler_flag("-mcpu=native" OCC_HAS_MCPU_NATIVE)
+    if(OCC_HAS_MARCH_NATIVE)
+        add_compile_options(-march=native)
+    elseif(OCC_HAS_MCPU_NATIVE)
+        add_compile_options(-mcpu=native)
+    endif()
+endif()
+
 # don't use install commands from third party
 if(BUILD_UNIFIED_LIB)
     add_subdirectory(3rdparty)

@@ -1,5 +1,5 @@
 #include <occ/sht/legendre.h>
-#include <libecpint/mathutil.hpp>
+#include <numbers>
 
 namespace occ::sht {
 

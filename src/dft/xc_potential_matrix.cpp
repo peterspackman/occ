@@ -1,4 +1,3 @@
-
 #include <occ/dft/xc_potential_matrix.h>
 
 namespace occ::dft {
@@ -6,14 +5,59 @@ using occ::qm::SpinorbitalKind::Restricted;
 using occ::qm::SpinorbitalKind::Unrestricted;
 namespace block = occ::qm::block;
 
+// Each of these writes (assigns) H with V_xc = H + H^T for the batch, so that
+// the caller can accumulate H over batches and symmetrize once at the end.
+
+namespace {
+
+// H = phi^T X for the GGA combination
+//   X = phi vrho / 2 + phi_x g_x + phi_y g_y + phi_z g_z
+// (g = 2 vsigma grad rho for a closed shell), built column by column.
+void gga_half(const occ::gto::GTOValues &gv, const double *vr,
+              const double *gx, const double *gy, const double *gz, MatRef H,
+              Mat &X) {
+  const Eigen::Index npt = gv.phi.rows(), nbf = gv.phi.cols();
+  X.resize(npt, nbf);
+  for (Eigen::Index mu = 0; mu < nbf; mu++) {
+    const double *p = gv.phi.col(mu).data();
+    const double *px = gv.phi_x.col(mu).data();
+    const double *py = gv.phi_y.col(mu).data();
+    const double *pz = gv.phi_z.col(mu).data();
+    double *x = X.col(mu).data();
+    for (Eigen::Index g = 0; g < npt; g++)
+      x[g] = p[g] * vr[g] + px[g] * gx[g] + py[g] * gy[g] + pz[g] * gz[g];
+  }
+  H.noalias() = gv.phi.transpose() * X;
+}
+
+// H += (phi_x^T (phi_x t) + phi_y^T (phi_y t) + phi_z^T (phi_z t)) for the
+// meta-GGA tau term (t = vtau / 4: half of the symmetric vtau / 2 term).
+void tau_half(const occ::gto::GTOValues &gv, const Array &t, MatRef H, Mat &X) {
+  X = gv.phi_x.array().colwise() * t;
+  H.noalias() += gv.phi_x.transpose() * X;
+  X = gv.phi_y.array().colwise() * t;
+  H.noalias() += gv.phi_y.transpose() * X;
+  X = gv.phi_z.array().colwise() * t;
+  H.noalias() += gv.phi_z.transpose() * X;
+}
+
+// E_xc of the batch for an unrestricted density (exc per unit total density).
+double unrestricted_energy(const DensityFunctional::Result &res,
+                           MatConstRef rho) {
+  return res.exc.dot(block::a(rho).col(0)) + res.exc.dot(block::b(rho).col(0));
+}
+
+} // namespace
+
 template <>
 void xc_potential_matrix<Restricted, 0>(const DensityFunctional::Result &res,
                                         MatConstRef rho,
                                         const occ::gto::GTOValues &gto_vals,
                                         MatRef Vxc, double &energy) {
   energy += rho.col(0).dot(res.exc);
-  Vxc = gto_vals.phi.transpose() *
-        (gto_vals.phi.array().colwise() * res.vrho.col(0).array()).matrix();
+  const Array vr = 0.5 * res.vrho.col(0).array();
+  Mat X = gto_vals.phi.array().colwise() * vr;
+  Vxc.noalias() = gto_vals.phi.transpose() * X;
 }
 
 template <>
@@ -21,23 +65,14 @@ void xc_potential_matrix<Restricted, 1>(const DensityFunctional::Result &res,
                                         MatConstRef rho,
                                         const occ::gto::GTOValues &gto_vals,
                                         MatRef Vxc, double &energy) {
-  const auto &p = gto_vals.phi;
-  const auto &px = gto_vals.phi_x.array();
-  const auto &py = gto_vals.phi_y.array();
-  const auto &pz = gto_vals.phi_z.array();
-  const auto &vrho = res.vrho.col(0).array();
-  const auto &dx = rho.col(1).array();
-  const auto &dy = rho.col(2).array();
-  const auto &dz = rho.col(3).array();
-
   energy += rho.col(0).dot(res.exc);
-  const auto &vsigma = res.vsigma.col(0).array();
-  Mat ktmp =
-      p.transpose() *
-      (0.5 * (p.array().colwise() * vrho) + 2 * (px.colwise() * (dx * vsigma)) +
-       2 * (py.colwise() * (dy * vsigma)) + 2 * (pz.colwise() * (dz * vsigma)))
-          .matrix();
-  Vxc.noalias() += ktmp + ktmp.transpose();
+  const Array vr = 0.5 * res.vrho.col(0).array();
+  const auto vsigma = res.vsigma.col(0).array();
+  const Array gx = 2 * (rho.col(1).array() * vsigma);
+  const Array gy = 2 * (rho.col(2).array() * vsigma);
+  const Array gz = 2 * (rho.col(3).array() * vsigma);
+  Mat X;
+  gga_half(gto_vals, vr.data(), gx.data(), gy.data(), gz.data(), Vxc, X);
 }
 
 template <>
@@ -46,15 +81,8 @@ void xc_potential_matrix<Restricted, 2>(const DensityFunctional::Result &res,
                                         const occ::gto::GTOValues &gto_vals,
                                         MatRef Vxc, double &energy) {
   xc_potential_matrix<Restricted, 1>(res, rho, gto_vals, Vxc, energy);
-  // unsure about factors for vtau, vlaplacian
-  // xx + yy + zz = rho(4)
-  Array t2 = 0.5 * res.vtau.col(0);
-  Vxc.noalias() += gto_vals.phi_x.transpose() *
-                   (gto_vals.phi_x.array().colwise() * t2).matrix();
-  Vxc.noalias() += gto_vals.phi_y.transpose() *
-                   (gto_vals.phi_y.array().colwise() * t2).matrix();
-  Vxc.noalias() += gto_vals.phi_z.transpose() *
-                   (gto_vals.phi_z.array().colwise() * t2).matrix();
+  Mat X;
+  tau_half(gto_vals, 0.25 * res.vtau.col(0).array(), Vxc, X);
 }
 
 template <>
@@ -62,13 +90,11 @@ void xc_potential_matrix<Unrestricted, 0>(const DensityFunctional::Result &res,
                                           MatConstRef rho,
                                           const occ::gto::GTOValues &gto_vals,
                                           MatRef Vxc, double &energy) {
-  double e_alpha = res.exc.dot(block::a(rho).col(0));
-  double e_beta = res.exc.dot(block::b(rho).col(0));
-  energy += e_alpha + e_beta;
-  Mat phi_vrho_a = gto_vals.phi.array().colwise() * res.vrho.col(0).array();
-  Mat phi_vrho_b = gto_vals.phi.array().colwise() * res.vrho.col(1).array();
-  block::a(Vxc).noalias() = gto_vals.phi.transpose() * phi_vrho_a;
-  block::b(Vxc).noalias() = gto_vals.phi.transpose() * phi_vrho_b;
+  energy += unrestricted_energy(res, rho);
+  Mat X = gto_vals.phi.array().colwise() * (0.5 * res.vrho.col(0).array());
+  block::a(Vxc).noalias() = gto_vals.phi.transpose() * X;
+  X = gto_vals.phi.array().colwise() * (0.5 * res.vrho.col(1).array());
+  block::b(Vxc).noalias() = gto_vals.phi.transpose() * X;
 }
 
 template <>
@@ -76,35 +102,23 @@ void xc_potential_matrix<Unrestricted, 1>(const DensityFunctional::Result &res,
                                           MatConstRef rho,
                                           const occ::gto::GTOValues &gto_vals,
                                           MatRef Vxc, double &energy) {
-  Eigen::Index npt = res.npts;
-  // LDA into K0
-  xc_potential_matrix<Unrestricted, 0>(res, rho, gto_vals, Vxc, energy);
-
-  const auto &phi = gto_vals.phi;
-  const auto &phi_x = gto_vals.phi_x;
-  const auto &phi_y = gto_vals.phi_y;
-  const auto &phi_z = gto_vals.phi_z;
+  const Eigen::Index npt = res.npts;
+  energy += unrestricted_energy(res, rho);
 
   // factor of 2 for vsigma up up, 1 for up down
-  auto ga = block::a(rho).block(0, 1, npt, 3).array().colwise() *
-                (2 * res.vsigma.col(0).array()) +
-            block::b(rho).block(0, 1, npt, 3).array().colwise() *
-                res.vsigma.col(1).array();
-  auto gb = block::b(rho).block(0, 1, npt, 3).array().colwise() *
-                (2 * res.vsigma.col(2).array()) +
-            block::a(rho).block(0, 1, npt, 3).array().colwise() *
-                res.vsigma.col(1).array();
-
-  Mat gamma_a = phi_x.array().colwise() * ga.col(0).array() +
-                phi_y.array().colwise() * ga.col(1).array() +
-                phi_z.array().colwise() * ga.col(2).array();
-  Mat gamma_b = phi_x.array().colwise() * gb.col(0).array() +
-                phi_y.array().colwise() * gb.col(1).array() +
-                phi_z.array().colwise() * gb.col(2).array();
-  Mat ktmp = (phi.transpose() * gamma_a);
-  block::a(Vxc).noalias() += (ktmp + ktmp.transpose());
-  ktmp = (phi.transpose() * gamma_b);
-  block::b(Vxc).noalias() += (ktmp + ktmp.transpose());
+  const auto ra = block::a(rho).block(0, 1, npt, 3).array();
+  const auto rb = block::b(rho).block(0, 1, npt, 3).array();
+  const Eigen::ArrayXXd ga = ra.colwise() * (2 * res.vsigma.col(0).array()) +
+                             rb.colwise() * res.vsigma.col(1).array();
+  const Eigen::ArrayXXd gb = rb.colwise() * (2 * res.vsigma.col(2).array()) +
+                             ra.colwise() * res.vsigma.col(1).array();
+  const Array vra = 0.5 * res.vrho.col(0).array();
+  const Array vrb = 0.5 * res.vrho.col(1).array();
+  Mat X;
+  gga_half(gto_vals, vra.data(), ga.col(0).data(), ga.col(1).data(),
+           ga.col(2).data(), block::a(Vxc), X);
+  gga_half(gto_vals, vrb.data(), gb.col(0).data(), gb.col(1).data(),
+           gb.col(2).data(), block::b(Vxc), X);
 }
 
 template <>
@@ -113,26 +127,9 @@ void xc_potential_matrix<Unrestricted, 2>(const DensityFunctional::Result &res,
                                           const occ::gto::GTOValues &gto_vals,
                                           MatRef Vxc, double &energy) {
   xc_potential_matrix<Unrestricted, 1>(res, rho, gto_vals, Vxc, energy);
-
-  const auto &phi_x = gto_vals.phi_x;
-  const auto &phi_y = gto_vals.phi_y;
-  const auto &phi_z = gto_vals.phi_z;
-
-  Array t2 = 0.5 * res.vtau.col(0); // alpha
-  block::a(Vxc).noalias() +=
-      phi_x.transpose() * (phi_x.array().colwise() * t2).matrix();
-  block::a(Vxc).noalias() +=
-      phi_y.transpose() * (phi_y.array().colwise() * t2).matrix();
-  block::a(Vxc).noalias() +=
-      phi_z.transpose() * (phi_z.array().colwise() * t2).matrix();
-
-  t2 = 0.5 * res.vtau.col(1); // beta
-  block::b(Vxc).noalias() +=
-      phi_x.transpose() * (phi_x.array().colwise() * t2).matrix();
-  block::b(Vxc).noalias() +=
-      phi_y.transpose() * (phi_y.array().colwise() * t2).matrix();
-  block::b(Vxc).noalias() +=
-      phi_z.transpose() * (phi_z.array().colwise() * t2).matrix();
+  Mat X;
+  tau_half(gto_vals, 0.25 * res.vtau.col(0).array(), block::a(Vxc), X);
+  tau_half(gto_vals, 0.25 * res.vtau.col(1).array(), block::b(Vxc), X);
 }
 
 } // namespace occ::dft

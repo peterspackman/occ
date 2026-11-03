@@ -33,6 +33,34 @@ public:
 
   Mat exchange(const MolecularOrbitals &mo);
   Mat coulomb(const MolecularOrbitals &mo);
+  /// Nuclear gradient (3 x natom) of the RI-J Coulomb energy, derivative
+  /// integrals only (the orbital response enters through the energy-weighted
+  /// density as for any SCF gradient). Restricted and unrestricted.
+  Mat3N coulomb_gradient(const MolecularOrbitals &mo);
+  /// Nuclear gradient (3 x natom) of the RI-K exchange energy, derivative
+  /// integrals only, from the occupied coefficients (mo.Cocc).
+  Mat3N exchange_gradient(const MolecularOrbitals &mo);
+  /// RI-K second derivatives of tr(D K) at fixed density (unrestricted:
+  /// 1/2 sum_s tr(P^s K[P^s])), the skeleton derivatives of K (unrestricted:
+  /// K[P^s] per spin, alpha rows over beta rows), and K[D1] for densities
+  /// D1 = Cx C^T + C Cx^T given by their factors Cx (C the occupied
+  /// coefficients).
+  Mat exchange_hessian(const MolecularOrbitals &mo);
+  std::vector<Mat> exchange_derivative_fock(const MolecularOrbitals &mo);
+  /// exchange_derivative_fock contracted with the occupied coefficients
+  /// (nbf x o each; unrestricted, alpha and beta side by side).
+  std::vector<Mat> exchange_derivative_fock_occ(const MolecularOrbitals &mo);
+  std::vector<Mat> exchange_response(const Mat &C, const std::vector<Mat> &Cx);
+  /// exchange_response contracted with C, K[D1] C (nbf x o each): one
+  /// integral pass for every density, nothing per density stored.
+  std::vector<Mat> exchange_response_occ(const Mat &C,
+                                         const std::vector<Mat> &Cx);
+  /// RI-J second derivatives at fixed density (3N x 3N), the skeleton Fock
+  /// derivatives d(J)/dX (3N matrices) and the J response to each density
+  /// in D1 (the RI-J build on D1), all in the convention of coulomb().
+  Mat coulomb_hessian(const MolecularOrbitals &mo);
+  std::vector<Mat> coulomb_derivative_fock(const MolecularOrbitals &mo);
+  std::vector<Mat> coulomb_response(const std::vector<Mat> &D1);
   JKPair coulomb_and_exchange(const MolecularOrbitals &mo);
   Mat fock_operator(const MolecularOrbitals &mo);
 
@@ -121,16 +149,21 @@ private:
   mutable IntegralEngine m_aux_engine; // engine with just aux basis
   CoulombMetric V_LLt;        ///< metric factorization for the active omega
   CoulombMetric m_V_LLt_full; ///< cached omega = 0 factorization
+  Vec m_V_diag_sqrt;          ///< sqrt(V_PP), omega = 0 (split RI-J screening)
   CoulombMetric m_V_LLt_lr;   ///< cached factorization for m_lr_omega
   double m_omega{0.0};          ///< omega the active factorization belongs to
   double m_lr_omega{0.0};       ///< omega of the cached long-range metric
   PackedDFStore m_packed;
-  /// Direct by default: recomputing the 3-centre integrals each iteration
-  /// costs time, whereas storing them costs an allocation that grows with
-  /// the screened pairs times ndf and cannot be recovered from when it
-  /// fails -- which is what browsers, with a 1 GB heap, kept hitting. Ask for
-  /// `Stored` or `Choose` explicitly when the memory is known to be there.
+  /// Natively, store the 3-centre integrals when they fit the limit below
+  /// (otherwise they are recomputed every SCF iteration). In the browser,
+  /// direct: a failed allocation of the store cannot be recovered from, and
+  /// the heap is capped at 1 GB. Ask for `Stored` or `Direct` explicitly to
+  /// override either.
+#ifdef __EMSCRIPTEN__
   Policy m_policy{Policy::Direct};
+#else
+  Policy m_policy{Policy::Choose};
+#endif
   /// Ceiling on the stored 3-centre integrals, only consulted by
   /// `Policy::Choose`. The browser gets a much smaller share: its whole heap
   /// is capped at 1 GB and the wavefunction, grids and Fock matrices have to

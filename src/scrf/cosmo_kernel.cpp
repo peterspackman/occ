@@ -1,9 +1,14 @@
 #include <Eigen/LU>
 #include <cmath>
 #include <occ/scrf/cosmo_kernel.h>
-#include <numbers>    
+#include <numbers>
 
 namespace occ::scrf::detail {
+
+namespace {
+// The COSMO self-interaction: A_ii = 1.07 √(4π / S_i) = this / √S_i.
+constexpr double cosmo_diagonal_factor = 3.793051240937804;
+} // namespace
 
 Mat build_cosmo_A(const Mat3N &cavity_points, const Vec &cavity_areas) {
   const Eigen::Index n = cavity_points.cols();
@@ -16,8 +21,7 @@ Mat build_cosmo_A(const Mat3N &cavity_points, const Vec &cavity_areas) {
       A(j, i) = off;
     }
   }
-  // 1.07 · √(4π) ≈ 3.793051240937804.
-  A.diagonal().array() = 3.793051240937804 / cavity_areas.array().sqrt();
+  A.diagonal().array() = cosmo_diagonal_factor / cavity_areas.array().sqrt();
   return A;
 }
 
@@ -236,8 +240,7 @@ Mat3N cosmo_gradient_frozen(const Mat3N &atom_positions_bohr,
     const double sqrt_pi = std::sqrt(std::numbers::pi_v<double>);
     for (Eigen::Index i = 0; i < ncav; ++i) {
       const int atom_i = cavity_atom_index(i);
-      // A_ii = 1.07·√(4π/area_i) = 3.793051240937804 / √area_i
-      const double a_ii = 3.793051240937804 / std::sqrt(cavity_areas(i));
+      const double a_ii = cosmo_diagonal_factor / std::sqrt(cavity_areas(i));
       const double prefac = -0.25 / f_epsilon * sigma(i) * sigma(i) * a_ii;
       const Vec3 r_i = cavity_points.col(i);
       for (Eigen::Index k = 0; k < natom; ++k) {
@@ -264,6 +267,193 @@ Mat3N cosmo_gradient_frozen(const Mat3N &atom_positions_bohr,
   }
 
   return grad;
+}
+
+namespace {
+
+// First and second derivatives of ln s(d), s(d) = ½(1 + erf((d − t)/w)).
+struct LogStep {
+  double d1{0.0}, d2{0.0};
+};
+
+inline LogStep log_smoothstep(double d, double t, double w) {
+  const double arg = (d - t) / w;
+  if (arg > 8.0) // s = 1 to double precision, flat
+    return {};
+  const double s = 0.5 * std::erfc(-arg);
+  const double s1 =
+      std::exp(-arg * arg) / (w * std::sqrt(std::numbers::pi_v<double>));
+  const double s2 = -2.0 * arg / w * s1;
+  const double d1 = s1 / s;
+  return {d1, s2 / s - d1 * d1};
+}
+
+// ∇∇(1/|r|) with respect to r.
+inline Mat3 coulomb_hessian(const Vec3 &r) {
+  const double r2 = r.squaredNorm();
+  const double r1 = std::sqrt(r2);
+  const double inv5 = 1.0 / (r2 * r2 * r1);
+  return (3.0 * r * r.transpose() - r2 * Mat3::Identity()) * inv5;
+}
+
+// A coupling T between two points riding on atoms a and b (T the Hessian of
+// a function of r_a − r_b) enters the 3N x 3N Hessian with these signs.
+inline void add_pair_block(Mat &H, int a, int b, const Mat3 &T) {
+  if (a == b)
+    return;
+  H.block<3, 3>(3 * a, 3 * a) += T;
+  H.block<3, 3>(3 * b, 3 * b) += T;
+  H.block<3, 3>(3 * a, 3 * b) -= T;
+  H.block<3, 3>(3 * b, 3 * a) -= T;
+}
+
+} // namespace
+
+Mat cavity_log_weight_gradient(const CavityGeometry &cavity) {
+  const Eigen::Index natom = cavity.atom_positions.cols();
+  const Eigen::Index ncav = cavity.points.cols();
+  Mat result = Mat::Zero(ncav, 3 * natom);
+  if (cavity.smoothing_width <= 0.0)
+    return result;
+  for (Eigen::Index k = 0; k < ncav; ++k) {
+    const int a = cavity.owner(k);
+    for (Eigen::Index l = 0; l < natom; ++l) {
+      if (l == a)
+        continue;
+      const Vec3 r = cavity.points.col(k) - cavity.atom_positions.col(l);
+      const double d = r.norm();
+      const auto step =
+          log_smoothstep(d, cavity.atom_radii(l), cavity.smoothing_width);
+      if (step.d1 == 0.0)
+        continue;
+      const Vec3 g = step.d1 * r / d;
+      result.block<1, 3>(k, 3 * a) += g.transpose();
+      result.block<1, 3>(k, 3 * l) -= g.transpose();
+    }
+  }
+  return result;
+}
+
+Mat cavity_log_weight_hessian(const CavityGeometry &cavity, const Vec &c) {
+  const Eigen::Index natom = cavity.atom_positions.cols();
+  const Eigen::Index ncav = cavity.points.cols();
+  Mat H = Mat::Zero(3 * natom, 3 * natom);
+  if (cavity.smoothing_width <= 0.0)
+    return H;
+  for (Eigen::Index k = 0; k < ncav; ++k) {
+    if (c(k) == 0.0)
+      continue;
+    const int a = cavity.owner(k);
+    for (Eigen::Index l = 0; l < natom; ++l) {
+      if (l == a)
+        continue;
+      const Vec3 r = cavity.points.col(k) - cavity.atom_positions.col(l);
+      const double d = r.norm();
+      const auto step =
+          log_smoothstep(d, cavity.atom_radii(l), cavity.smoothing_width);
+      if (step.d1 == 0.0)
+        continue;
+      // ∇∇ φ(|r|) = φ'' r̂r̂ᵀ + (φ'/|r|)(I − r̂r̂ᵀ)
+      const Vec3 u = r / d;
+      const Mat3 uu = u * u.transpose();
+      const Mat3 T =
+          c(k) * (step.d2 * uu + step.d1 / d * (Mat3::Identity() - uu));
+      add_pair_block(H, a, static_cast<int>(l), T);
+    }
+  }
+  return H;
+}
+
+Mat cosmo_A_derivative_product(const CavityGeometry &cavity, const Mat &dlnw,
+                               const Vec &sigma) {
+  const Eigen::Index natom = cavity.atom_positions.cols();
+  const Eigen::Index ncav = cavity.points.cols();
+  Mat result = Mat::Zero(ncav, 3 * natom);
+  for (Eigen::Index i = 0; i < ncav; ++i) {
+    const int a = cavity.owner(i);
+    for (Eigen::Index j = 0; j < ncav; ++j) {
+      const int b = cavity.owner(j);
+      if (a == b)
+        continue;
+      const Vec3 r = cavity.points.col(i) - cavity.points.col(j);
+      const double d2 = r.squaredNorm();
+      if (d2 < 1e-12)
+        continue;
+      // ∂(1/|r|)/∂r_i = −r/|r|³
+      const Vec3 g = sigma(j) * r / (d2 * std::sqrt(d2));
+      result.block<1, 3>(i, 3 * a) -= g.transpose();
+      result.block<1, 3>(i, 3 * b) += g.transpose();
+    }
+    const double a_ii =
+        cosmo_diagonal_factor / std::sqrt(cavity.areas(i));
+    result.row(i) -= 0.5 * a_ii * sigma(i) * dlnw.row(i);
+  }
+  return result;
+}
+
+Mat cosmo_A_second_derivative(const CavityGeometry &cavity, const Mat &dlnw,
+                              const Vec &sigma) {
+  const Eigen::Index natom = cavity.atom_positions.cols();
+  const Eigen::Index ncav = cavity.points.cols();
+  Mat H = Mat::Zero(3 * natom, 3 * natom);
+  for (Eigen::Index i = 0; i < ncav; ++i) {
+    const int a = cavity.owner(i);
+    for (Eigen::Index j = i + 1; j < ncav; ++j) {
+      const int b = cavity.owner(j);
+      if (a == b)
+        continue;
+      const Vec3 r = cavity.points.col(i) - cavity.points.col(j);
+      if (r.squaredNorm() < 1e-12)
+        continue;
+      add_pair_block(H, a, b, 2.0 * sigma(i) * sigma(j) * coulomb_hessian(r));
+    }
+  }
+  if (cavity.smoothing_width > 0.0) {
+    const Vec a_diag =
+        cosmo_diagonal_factor * cavity.areas.array().rsqrt();
+    const Vec c = sigma.array().square() * a_diag.array();
+    H += 0.25 * dlnw.transpose() * c.asDiagonal() * dlnw;
+    H += cavity_log_weight_hessian(cavity, -0.5 * c);
+  }
+  return H;
+}
+
+Mat atom_cavity_potential_derivatives(const CavityGeometry &cavity,
+                                      const Vec &atom_charges) {
+  const Eigen::Index natom = cavity.atom_positions.cols();
+  const Eigen::Index ncav = cavity.points.cols();
+  Mat result = Mat::Zero(ncav, 3 * natom);
+  for (Eigen::Index k = 0; k < ncav; ++k) {
+    const int a = cavity.owner(k);
+    for (Eigen::Index l = 0; l < natom; ++l) {
+      if (l == a)
+        continue;
+      const Vec3 r = cavity.points.col(k) - cavity.atom_positions.col(l);
+      const double d2 = r.squaredNorm();
+      const Vec3 g = atom_charges(l) * r / (d2 * std::sqrt(d2));
+      result.block<1, 3>(k, 3 * a) -= g.transpose();
+      result.block<1, 3>(k, 3 * l) += g.transpose();
+    }
+  }
+  return result;
+}
+
+Mat atom_cavity_potential_hessian(const CavityGeometry &cavity,
+                                  const Vec &atom_charges, const Vec &sigma) {
+  const Eigen::Index natom = cavity.atom_positions.cols();
+  const Eigen::Index ncav = cavity.points.cols();
+  Mat H = Mat::Zero(3 * natom, 3 * natom);
+  for (Eigen::Index k = 0; k < ncav; ++k) {
+    const int a = cavity.owner(k);
+    for (Eigen::Index l = 0; l < natom; ++l) {
+      if (l == a)
+        continue;
+      const Vec3 r = cavity.points.col(k) - cavity.atom_positions.col(l);
+      add_pair_block(H, a, static_cast<int>(l),
+                     sigma(k) * atom_charges(l) * coulomb_hessian(r));
+    }
+  }
+  return H;
 }
 
 } // namespace occ::scrf::detail

@@ -22,6 +22,7 @@
 #include <occ/core/timings.h>
 #include <occ/core/util.h>
 #include <occ/core/version.h>
+#include <numbers>
 
 /* Dimer tests */
 using occ::core::Dimer;

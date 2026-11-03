@@ -11,12 +11,15 @@ namespace occ::scrf {
 
 namespace {
 
-// CDS energy of a candidate geometry — used by initialize() to lay down the
-// per-element baseline and by gradient() to FD over an explicit displacement.
-double evaluate_cds_energy(const Mat3N &pos_bohr, const IVec &Z,
-                           const occ::solvent::SMDSolventParameters &params,
-                           double probe_radius_angs,
-                           double smoothing_width_bohr) {
+// Analytic CDS gradient at a candidate geometry. E_cds = Σ_k (σ_a + γ) a_k
+// over the CDS cavity elements k on atom a: the surface tensions σ_a depend on
+// the interatomic distances and, on a smooth cavity, the areas a_k on the
+// geometry too.
+Mat3N evaluate_cds_gradient(const Mat3N &pos_bohr, const IVec &Z,
+                            const occ::solvent::SMDSolventParameters &params,
+                            double probe_radius_angs,
+                            double smoothing_width_bohr) {
+  const Eigen::Index natom = Z.size();
   Vec cds_r = occ::solvent::smd::cds_radii(Z, params);
   auto cds_surf =
       occ::solvent::surface::solvent_surface(cds_r, Z, pos_bohr,
@@ -28,17 +31,30 @@ double evaluate_cds_energy(const Mat3N &pos_bohr, const IVec &Z,
       occ::solvent::smd::atomic_surface_tension(params, Z, pos_angs);
   const double gamma_macro =
       occ::solvent::smd::molecular_surface_tension(params);
-  const double area_conv =
-      occ::units::BOHR_TO_ANGSTROM * occ::units::BOHR_TO_ANGSTROM;
-  const double scale_to_hartree =
-      1.0 / (1000.0 * occ::units::AU_TO_KCAL_PER_MOL);
-  double e = 0.0;
-  for (Eigen::Index i = 0; i < cds_surf.areas.size(); ++i) {
-    const int a = cds_surf.atom_index(i);
-    const double area_angs = area_conv * cds_surf.areas(i);
-    e += (sigma_atom(a) + gamma_macro) * area_angs;
+  // Hartree per Bohr² of area per unit surface tension.
+  const double scale = occ::units::BOHR_TO_ANGSTROM *
+                       occ::units::BOHR_TO_ANGSTROM /
+                       (1000.0 * occ::units::AU_TO_KCAL_PER_MOL);
+
+  Vec atom_area = Vec::Zero(natom);
+  for (Eigen::Index k = 0; k < cds_surf.areas.size(); ++k)
+    atom_area(cds_surf.atom_index(k)) += cds_surf.areas(k);
+  Mat3N grad = (scale * occ::units::BOHR_TO_ANGSTROM) *
+               occ::solvent::smd::atomic_surface_tension_gradient(
+                   params, Z, pos_angs, atom_area);
+
+  if (smoothing_width_bohr > 0.0) {
+    const detail::CavityGeometry cavity{pos_bohr, cds_surf.vertices,
+                                        cds_surf.areas, cds_surf.atom_index,
+                                        cds_r, smoothing_width_bohr};
+    Vec c(cds_surf.areas.size());
+    for (Eigen::Index k = 0; k < c.size(); ++k)
+      c(k) = scale * (sigma_atom(cds_surf.atom_index(k)) + gamma_macro) *
+             cds_surf.areas(k);
+    const Vec g = detail::cavity_log_weight_gradient(cavity).transpose() * c;
+    grad += Eigen::Map<const Mat3N>(g.data(), 3, natom);
   }
-  return e * scale_to_hartree;
+  return grad;
 }
 
 } // namespace
@@ -362,32 +378,68 @@ Mat3N ReactionFieldEngine::gradient() const {
         m_atomic_quadrupoles, m_damping_rco, m_kdmp3, m_kdmp5);
   }
 
-  // CDS branch — FD over the geometry-only CDS energy. Rebuilding the cavity
-  // at each displaced geometry is necessary with smooth masking (weights, and
-  // hence per-atom areas, depend on geometry). For a boolean cavity it's
-  // slightly wasteful but produces the same answer.
-  if (m_opts.include_cds) {
-    const double h = 1e-4; // Bohr
-    for (Eigen::Index a = 0; a < natom; ++a) {
-      for (int k = 0; k < 3; ++k) {
-        Mat3N pos_p = m_atom_positions;
-        pos_p(k, a) += h;
-        Mat3N pos_m = m_atom_positions;
-        pos_m(k, a) -= h;
-        const double e_p =
-            evaluate_cds_energy(pos_p, m_atomic_numbers, m_smd_params,
-                                m_opts.probe_radius_angs,
-                                m_opts.smoothing_width_bohr);
-        const double e_m =
-            evaluate_cds_energy(pos_m, m_atomic_numbers, m_smd_params,
-                                m_opts.probe_radius_angs,
-                                m_opts.smoothing_width_bohr);
-        grad(k, a) += (e_p - e_m) / (2.0 * h);
-      }
-    }
-  }
+  if (m_opts.include_cds)
+    grad += cds_gradient();
 
   return grad;
+}
+
+Mat3N ReactionFieldEngine::es_gradient(const Vec &sigma,
+                                       const Vec &atom_charges) const {
+  return detail::cosmo_gradient_frozen(
+      m_atom_positions, m_es_surface.vertices, m_es_surface.areas,
+      m_es_surface.atom_index, atom_charges, sigma, m_f_eps, m_es_radii,
+      m_opts.smoothing_width_bohr);
+}
+
+ReactionFieldEngine::EsDerivatives
+ReactionFieldEngine::es_derivatives(const Vec &sigma,
+                                    const Vec &atom_charges) const {
+  const detail::CavityGeometry cavity{
+      m_atom_positions,         m_es_surface.vertices,
+      m_es_surface.areas,       m_es_surface.atom_index,
+      m_es_radii,               m_opts.smoothing_width_bohr};
+  const Mat dlnw = detail::cavity_log_weight_gradient(cavity);
+  EsDerivatives out;
+  out.dphi = detail::atom_cavity_potential_derivatives(cavity, atom_charges);
+  out.dA_sigma = detail::cosmo_A_derivative_product(cavity, dlnw, sigma);
+  out.hessian =
+      detail::atom_cavity_potential_hessian(cavity, atom_charges, sigma) +
+      (0.5 / m_f_eps) * detail::cosmo_A_second_derivative(cavity, dlnw, sigma);
+  return out;
+}
+
+Mat3N ReactionFieldEngine::cds_gradient() const {
+  if (!m_opts.include_cds)
+    return Mat3N::Zero(3, m_atom_positions.cols());
+  return evaluate_cds_gradient(m_atom_positions, m_atomic_numbers,
+                               m_smd_params, m_opts.probe_radius_angs,
+                               m_opts.smoothing_width_bohr);
+}
+
+Mat ReactionFieldEngine::cds_hessian() const {
+  const Eigen::Index n3 = 3 * m_atom_positions.cols();
+  Mat H = Mat::Zero(n3, n3);
+  if (!m_opts.include_cds)
+    return H;
+  const double h = 1e-4; // Bohr
+  for (Eigen::Index x = 0; x < n3; ++x) {
+    Mat3N pos_p = m_atom_positions, pos_m = m_atom_positions;
+    pos_p(x % 3, x / 3) += h;
+    pos_m(x % 3, x / 3) -= h;
+    const Mat3N gp =
+        evaluate_cds_gradient(pos_p, m_atomic_numbers, m_smd_params,
+                              m_opts.probe_radius_angs,
+                              m_opts.smoothing_width_bohr);
+    const Mat3N gm =
+        evaluate_cds_gradient(pos_m, m_atomic_numbers, m_smd_params,
+                              m_opts.probe_radius_angs,
+                              m_opts.smoothing_width_bohr);
+    H.col(x) = (Eigen::Map<const Vec>(gp.data(), n3) -
+                Eigen::Map<const Vec>(gm.data(), n3)) /
+               (2.0 * h);
+  }
+  return 0.5 * (H + H.transpose());
 }
 
 } // namespace occ::scrf

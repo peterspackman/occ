@@ -648,6 +648,109 @@ Vec atomic_surface_tension(const SMDSolventParameters &params, const IVec &nums,
   return result;
 }
 
+Mat3N atomic_surface_tension_gradient(const SMDSolventParameters &params,
+                                      const IVec &nums, const Mat3N &positions,
+                                      const Vec &weights) {
+  using namespace detail;
+  const int N = nums.rows();
+  Mat3N grad = Mat3N::Zero(3, N);
+  if (N == 0)
+    return grad;
+  const Mat cot = cot_matrix(params, nums, positions);
+  const Mat sigma_mat = sigma_matrix(params, nums);
+  const int max_number = nums.maxCoeff();
+  auto prefactor = [&](int z1, int z2) {
+    return (z1 > max_number || z2 > max_number) ? 0.0 : sigma_mat(z1, z2);
+  };
+
+  // dE/dcot(i, j) for E = sum_i w_i sigma_i, following atomic_surface_tension
+  // term by term; the N,C(3) term depends on distances directly.
+  Mat dcot = Mat::Zero(N, N);
+  auto add_pair_terms = [&](int i, int z, double c) {
+    for (int j = 0; j < N; j++)
+      if (j != i && nums(j) == z)
+        dcot(i, j) += c;
+  };
+  auto add_distance_term = [&](int i, int j, ElementPair p, double c) {
+    const Vec3 rij = positions.col(i) - positions.col(j);
+    const double r = rij.norm();
+    const double rz = rzz(p), drz = delta_rzz(p);
+    if (r >= rz + drz)
+      return;
+    const double x = r - rz - drz;
+    const double dT = T_switching_function(p, r) * (-drz / (x * x));
+    const Vec3 g = c * dT * rij / r;
+    grad.col(i) += g;
+    grad.col(j) -= g;
+  };
+
+  for (int i = 0; i < N; i++) {
+    const double w = weights(i);
+    if (w == 0.0)
+      continue;
+    switch (nums(i)) {
+    case 1:
+      add_pair_terms(i, 6, w * prefactor(1, 6));
+      add_pair_terms(i, 8, w * prefactor(1, 8));
+      break;
+    case 6: {
+      add_pair_terms(i, 6, w * prefactor(6, 6));
+      const double cn_sigma = prefactor(6, 7);
+      if (cn_sigma != 0.0)
+        add_pair_terms(i, 7, w * cn_sigma * 2.0 * pair_term(i, 7, nums, cot));
+      break;
+    }
+    case 7: {
+      // (sum_kp csum_kp^2 cot(i, kp))^1.3, csum_kp = sum_kpp cot(kp, kpp)
+      const double nc_sigma = sigma_mat(7, 6);
+      if (nc_sigma != 0.0) {
+        double inner = 0.0;
+        Vec csum = Vec::Zero(N);
+        for (int kp = 0; kp < N; kp++) {
+          if (nums(kp) != 6)
+            continue;
+          for (int kpp = 0; kpp < N; kpp++)
+            if (kpp != i && kpp != kp)
+              csum(kp) += cot(kp, kpp);
+          inner += csum(kp) * csum(kp) * cot(i, kp);
+        }
+        if (inner > 0.0) {
+          const double g = w * nc_sigma * 1.3 * std::pow(inner, 0.3);
+          for (int kp = 0; kp < N; kp++) {
+            if (nums(kp) != 6)
+              continue;
+            dcot(i, kp) += g * csum(kp) * csum(kp);
+            for (int kpp = 0; kpp < N; kpp++)
+              if (kpp != i && kpp != kp)
+                dcot(kp, kpp) += g * 2.0 * csum(kp) * cot(i, kp);
+          }
+        }
+      }
+      const double nc3_sigma = element_pair_prefactor(params, N_C3);
+      if (nc3_sigma != 0.0)
+        for (int j = 0; j < N; j++)
+          if (j != i && nums(j) == 6)
+            add_distance_term(i, j, N_C3, w * nc3_sigma);
+      break;
+    }
+    case 8:
+      for (int z = 6; z < 9; z++)
+        add_pair_terms(i, z, w * prefactor(8, z));
+      add_pair_terms(i, 15, w * prefactor(8, 15));
+      break;
+    default:
+      break;
+    }
+  }
+
+  for (int i = 0; i < N; i++)
+    for (int j = 0; j < N; j++)
+      if (dcot(i, j) != 0.0)
+        add_distance_term(i, j, get_element_pair(nums(i), nums(j)),
+                          dcot(i, j));
+  return grad;
+}
+
 double molecular_surface_tension(const SMDSolventParameters &params) {
   if (params.is_water)
     return 0.0;

@@ -68,6 +68,71 @@ public:
                   Eigen::Ref<MatRM> workspace,
                   T omega = T(0));
 
+    /// Structure-of-arrays evaluation, vectorised over points.
+    /// @param x,y,z  Point coordinates; npts must be a multiple of
+    ///               soa_padding, with padding entries holding any finite
+    ///               coordinates (their outputs are computed and ignored)
+    /// @param V      Output [nab x ldv], V[ab * ldv + pt] (point fastest)
+    /// @param omega  As for evaluate()
+    void evaluate_soa(size_t shell_idx, const T *x, const T *y, const T *z,
+                      int npts, T *V, int ldv, T omega = T(0)) const;
+
+    /// The pair's integrals contracted as they are formed, for
+    /// seminumerical exchange: with V as from evaluate_soa,
+    ///   G[(bf_q + b) * ld + i] -= sum_a F[(bf_p + a) * ld + i] V_ab(i)
+    /// and, when both, G[(bf_p + a) * ld + i] -= sum_b F[(bf_q + b) * ld + i]
+    /// V_ab(i) (a over the pair's first shell, b its second). V is never
+    /// stored in full. npts as for evaluate_soa, ld >= npts.
+    void evaluate_soa_contract(size_t shell_idx, const T *x, const T *y,
+                               const T *z, int npts, const T *F, T *G, int ld,
+                               int bf_p, int bf_q, bool both,
+                               T omega = T(0)) const;
+
+    /// Shell pairs for centre derivatives (seminumerical exchange
+    /// gradients), the same shells as add_shell_pair: resize_derivative_pairs(n)
+    /// once, then set_shell_pair_derivative for each idx < n (distinct indices
+    /// may be set concurrently). Angular momenta up to 5.
+    void resize_derivative_pairs(size_t n);
+    void set_shell_pair_derivative(size_t idx, int la, int lb, int na_prim,
+                                   int nb_prim, const T *exponents_a,
+                                   const T *exponents_b, const T *coeffs_a,
+                                   const T *coeffs_b, const T *A, const T *B,
+                                   bool spherical);
+    /// One pass over a derivative pair giving both its integrals and their
+    /// centre derivatives contracted with per-point weights:
+    ///   A[ab * lda + i] = (a b | 1/|r - x_i|)           (nab rows, as evaluate_soa)
+    ///   out[c] += sum_i sum_ab W[ab * ldw + i] d/dc A_ab(x_i)
+    /// c = A_x, A_y, A_z (and B_x, B_y, B_z when ncentres == 2). The derivative
+    /// integrals are never stored. W must be zero on padding points.
+    void evaluate_soa_value_and_derivative_contraction(
+        size_t idx, const T *x, const T *y, const T *z, int npts, T *A,
+        int lda, const T *W, int ldw, int ncentres, T *out,
+        T omega = T(0)) const;
+
+    /// Shell pairs for second derivatives (seminumerical exchange Hessians),
+    /// set like the derivative pairs: resize_hessian_pairs(n) once, then
+    /// set_shell_pair_hessian for each idx < n (distinct indices may be set
+    /// concurrently). Angular momenta up to 4.
+    void resize_hessian_pairs(size_t n);
+    void set_shell_pair_hessian(size_t idx, int la, int lb, int na_prim,
+                                int nb_prim, const T *exponents_a,
+                                const T *exponents_b, const T *coeffs_a,
+                                const T *coeffs_b, const T *A, const T *B,
+                                bool spherical);
+    /// One pass over a Hessian pair, point-fastest like evaluate_soa:
+    ///   V[(k * nab + ab) * ldv + i], k = 0 the integrals (a b | 1/|r - x_i|),
+    ///   1..3 their d/dA_{x,y,z}, 4..6 d/dB_{x,y,z};
+    /// and, unless W is null, second derivatives contracted with per-point
+    /// weights, out[k] += sum_i sum_ab W[ab * ldw + i] d2/dc_k (a b | ...),
+    /// 21 values: AA (xx, xy, xz, yy, yz, zz), AB (A_d B_e at 3 d + e), BB
+    /// (as AA). W must be zero on padding points.
+    void evaluate_soa_hessian(size_t idx, const T *x, const T *y, const T *z,
+                              int npts, T *V, int ldv, const T *W, int ldw,
+                              T *out, T omega = T(0)) const;
+
+    /// Point counts passed to evaluate_soa must be a multiple of this.
+    static constexpr int soa_padding = 32;
+
     /// Get required workspace size for a shell pair
     size_t workspace_size(size_t shell_idx, int npts) const;
 
@@ -110,6 +175,12 @@ public:
     /// on. Cheaper and tighter than the overlap, which is this times
     /// sqrt(pi/p)/2 and so understates compact pairs badly.
     T pair_estimate(size_t shell_idx) const;
+
+    /// Far-field form of the same bound, {q1, spread}: at a point C with
+    /// R = |C - pair_center| > spread the pair's ESP integrals are at most
+    /// q1 / (R - spread) (each primitive's F_0(T) <= sqrt(pi/T)/2). The 1/R
+    /// tail is kept: this only tightens the bound, it never cuts it off.
+    std::array<T, 2> pair_far_estimate(size_t shell_idx) const;
 
 private:
     struct Impl;

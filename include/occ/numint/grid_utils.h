@@ -3,6 +3,9 @@
 #include <cmath>
 #include <occ/numint/grid_types.h>
 
+#include <utility>
+#include <vector>
+
 namespace occ::numint {
 
 /**
@@ -69,6 +72,66 @@ Vec stratmann_scuseria_partition(const Vec &w);
  * @return Mat Matrix of interatomic distances
  */
 Mat calculate_interatomic_distances(const Mat3N &positions);
+
+/**
+ * @brief Grid-weight response: sum_g e_g dw_g/dR_B for every atom B.
+ *
+ * w_g = w0_g P_A(r_g) / sum_C P_C(r_g) is the Becke-partitioned weight of a
+ * point attached to its parent atom A (the point moves with A). This returns
+ * the derivative of sum_g e_g w_g with e_g held fixed, 3 x natoms. Only the
+ * Becke partition (with Becke or Treutler-Ahlrichs size adjustment, exactly as
+ * calculate_atomic_grid_weights builds it) is supported.
+ *
+ * @param points all grid points (3 x N), grouped by parent atom
+ * @param weights the partitioned weights w_g
+ * @param atom_blocks (offset, count) of each atom's points
+ * @param e per-point quantity e_g (e.g. the XC energy density)
+ * @param positions atomic positions (3 x natoms)
+ * @param radii atomic radii used by the size adjustment
+ * @param treutler_ahlrichs whether the Treutler-Ahlrichs adjustment was used
+ */
+Mat3N becke_weight_gradient(
+    const Mat3N &points, const Vec &weights,
+    const std::vector<std::pair<size_t, size_t>> &atom_blocks, const Vec &e,
+    const Mat3N &positions, const Vec &radii, bool treutler_ahlrichs);
+
+/**
+ * @brief Per-point derivatives of Becke-partitioned weights.
+ *
+ * For a point r attached to parent atom A with partitioned weight w,
+ * operator() fills dw (3 x natoms) with dw/dR_B for every atom B, the
+ * parent's column by translational invariance. Same partition (Becke cell
+ * function, Becke or Treutler-Ahlrichs size adjustment) as
+ * calculate_atomic_grid_weights.
+ */
+class BeckeWeightDerivative {
+public:
+  BeckeWeightDerivative(const Mat3N &positions, const Vec &radii,
+                        bool treutler_ahlrichs);
+  /// Returns false (dw zero) when the weight vanishes.
+  bool operator()(const Vec3 &r, double w, int parent, Mat3N &dw) const;
+  /// The same for a batch of points with one parent: row g holds dw_g
+  /// (3 x natom, column-major: 3 A + x).
+  Mat batch(Eigen::Ref<const Mat3N> points, Eigen::Ref<const Vec> w,
+            int parent) const;
+
+private:
+  Mat3N m_positions;
+  // 1 / R (zero diagonal) and a^T: column C holds row C of 1 / R and a, so
+  // a cell's functions s(C, .) are formed from contiguous memory.
+  Mat m_invR, m_aT;
+  int m_natom{0};
+};
+
+/**
+ * @brief Second-order grid-weight response: sum_g e_g d2 w_g / dR_X dR_Y
+ * (3N x 3N), points moving with their parent atoms, e_g held fixed. Same
+ * partition as becke_weight_gradient.
+ */
+Mat becke_weight_hessian(
+    const Mat3N &points, const Vec &weights,
+    const std::vector<std::pair<size_t, size_t>> &atom_blocks, const Vec &e,
+    const Mat3N &positions, const Vec &radii, bool treutler_ahlrichs);
 
 /**
  * @brief Calculate Becke atomic weights for grid points
@@ -155,6 +218,34 @@ RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge);
  * @return RadialGrid The generated radial grid
  */
 RadialGrid generate_treutler_alrichs_radial_grid(size_t num_points);
+
+/**
+ * @brief Perez-Jorda Gauss-Chebyshev (second kind) quadrature with the
+ * Treutler-Ahlrichs M3 mapping r = xi / ln 2 * ln(2 / (1 - x)).
+ *
+ * Nodes x_i = (n+1-2i)/(n+1) + 2/pi (1 + 2/3 sin^2 t_i) cos t_i sin t_i,
+ * weights 16/(3(n+1)) sin^4 t_i, t_i = i pi / (n+1) [Perez-Jorda, San-Fabian,
+ * Moscardo, Comput. Phys. Commun. 70, 271 (1992)]. This is ORCA's "OptM3 with
+ * GC (2021)" radial grid. Weights include r^2 (not 4 pi); points ascending.
+ */
+RadialGrid generate_perez_jorda_m3_radial_grid(size_t num_points, double xi);
+
+/// One ORCA 6.1 COSX atomic grid: number of radial shells, the M3 scaling
+/// xi (bohr), and the angular grid as runs of (Lebedev order, shell count)
+/// from the nucleus outwards.
+struct OrcaCOSXAtomicGrid {
+  int num_radial{0};
+  double xi{0.0};
+  const std::vector<std::pair<int, int>> *angular_runs{nullptr};
+};
+
+/**
+ * @brief ORCA 6.1 COSX atomic grid for an element and GRIDX level (1-3).
+ *
+ * Measured from the grids ORCA 6.1.1 writes for single atoms (exact to
+ * 1e-9 in radii and weights). Returns num_radial == 0 for Z > 86.
+ */
+OrcaCOSXAtomicGrid orca_cosx_atomic_grid(int atomic_number, int level);
 
 /**
  * @brief Generate a Gauss-Chebyshev radial grid

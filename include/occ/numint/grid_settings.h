@@ -94,6 +94,21 @@ struct GridSettings {
   /// If non-empty, overrides min/max_angular_points with per-region Lebedev counts
   std::array<size_t, 5> angular_regions = {0, 0, 0, 0, 0};
 
+  /// @brief ORCA 6 COSX grid level (1-3; 0 = not an ORCA COSX grid).
+  /// When set, the atomic grids of H-Rn are ORCA 6.1's GRIDX atomic grids
+  /// (Perez-Jorda Gauss-Chebyshev + M3 radial grid, per-element scaling and
+  /// shell profile; see orca_cosx_atomic_grid); heavier elements fall back
+  /// to int_acc/angular_regions.
+  int orca_cosx_level = 0;
+
+  /// @brief Drop partitioned points whose Becke partition weight
+  /// P_A / sum_B P_B is below this (ORCA's WCut; 0 keeps every point).
+  double partition_weight_cutoff = 0.0;
+
+  /// @brief Bragg radii for the size adjustment in bohr rounded to three
+  /// decimals, as ORCA tabulates them (moves H-X adjustments by ~1e-4).
+  bool rounded_bragg_radii = false;
+
   inline bool operator==(const GridSettings &rhs) const = default;
   inline bool operator!=(const GridSettings &rhs) const = default;
 

@@ -1,3 +1,4 @@
+#include <occ/core/parallel.h>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -128,7 +129,7 @@ struct TreutlerAlrichsAdjustment {
     if (std::fabs(r_i - r_j) > 1e-14) {
       double xi = sqrt(r_i / r_j);
       double u_ij = (xi - 1) / (xi + 1);
-      double a_ij = u_ij / (u_ij * u_ij - 1.0);
+      double a_ij = std::clamp(u_ij / (u_ij * u_ij - 1.0), -0.5, 0.5);
       w.array() += a_ij * (1 - w.array() * w.array());
     }
   }
@@ -140,7 +141,7 @@ struct BeckeAdjustment {
     if (std::fabs(r_i - r_j) > 1e-14) {
       double xi = r_i / r_j;
       double u_ij = (xi - 1) / (xi + 1);
-      double a_ij = u_ij / (u_ij * u_ij - 1.0);
+      double a_ij = std::clamp(u_ij / (u_ij * u_ij - 1.0), -0.5, 0.5);
       w.array() += a_ij * (1 - w.array() * w.array());
     }
   }
@@ -197,6 +198,571 @@ Mat calculate_atomic_grid_weights_impl(const Mat &grid_points,
   }
 
   return weights;
+}
+
+namespace {
+
+// Size-adjustment parameter a_ij exactly as the adjustment functors above
+// compute it for the ordered pair (i, j), i > j, including Becke's clamp to
+// |a_ij| <= 1/2 (beyond it nu(mu) is no longer monotonic; reached for H next
+// to the heavy alkali metals).
+inline double size_adjustment(double r_i, double r_j, bool treutler_ahlrichs) {
+  if (std::fabs(r_i - r_j) <= 1e-14)
+    return 0.0;
+  const double xi = treutler_ahlrichs ? std::sqrt(r_i / r_j) : r_i / r_j;
+  const double u = (xi - 1) / (xi + 1);
+  return std::clamp(u / (u * u - 1.0), -0.5, 0.5);
+}
+
+// a(i, j) for every ordered pair, a(j, i) = -a(i, j).
+Mat size_adjustment_matrix(const Vec &radii, bool treutler_ahlrichs) {
+  const Eigen::Index n = radii.size();
+  Mat a = Mat::Zero(n, n);
+  for (Eigen::Index i = 0; i < n; i++)
+    for (Eigen::Index j = 0; j < i; j++) {
+      a(i, j) = size_adjustment(radii(i), radii(j), treutler_ahlrichs);
+      a(j, i) = -a(i, j);
+    }
+  return a;
+}
+
+// Becke's iterated polynomial f(nu) = p(p(p(nu))), p(x) = (3 - x^2) x / 2,
+// and its derivative.
+inline void becke_f(double nu, double &f, double &df) {
+  double x = nu, d = 1.0;
+  for (int k = 0; k < 3; k++) {
+    d *= 1.5 * (1.0 - x * x);
+    x = 0.5 * (3.0 - x * x) * x;
+  }
+  f = x;
+  df = d;
+}
+
+// f, f' and f'' of the iterated Becke polynomial f = p(p(p(nu))).
+inline void becke_f2(double nu, double &f, double &df, double &d2f) {
+  // chain rule through three applications of p(x) = (3 - x^2) x / 2,
+  // p' = 3/2 (1 - x^2), p'' = -3 x
+  double x = nu, d = 1.0, dd = 0.0;
+  for (int k = 0; k < 3; k++) {
+    const double p1 = 1.5 * (1.0 - x * x), p2 = -3.0 * x;
+    dd = p2 * d * d + p1 * dd;
+    d = p1 * d;
+    x = 0.5 * (3.0 - x * x) * x;
+  }
+  f = x;
+  df = d;
+  d2f = dd;
+}
+
+} // namespace
+
+BeckeWeightDerivative::BeckeWeightDerivative(const Mat3N &positions,
+                                             const Vec &radii,
+                                             bool treutler_ahlrichs)
+    : m_positions(positions), m_natom(static_cast<int>(positions.cols())) {
+  const Mat R = calculate_interatomic_distances(positions);
+  m_invR = Mat::Zero(m_natom, m_natom);
+  for (int i = 0; i < m_natom; i++)
+    for (int j = 0; j < m_natom; j++)
+      if (i != j)
+        m_invR(i, j) = 1.0 / R(i, j);
+  m_aT = size_adjustment_matrix(radii, treutler_ahlrichs).transpose();
+}
+
+Mat BeckeWeightDerivative::batch(Eigen::Ref<const Mat3N> points,
+                                 Eigen::Ref<const Vec> w, int parent) const {
+  const Eigen::Index n3 = 3 * m_natom;
+  Mat dW = Mat::Zero(points.cols(), n3);
+  Mat3N dw(3, m_natom);
+  for (Eigen::Index g = 0; g < points.cols(); g++)
+    if ((*this)(points.col(g), w(g), parent, dw))
+      dW.row(g) = Eigen::Map<const Vec>(dw.data(), n3).transpose();
+  return dW;
+}
+
+bool BeckeWeightDerivative::operator()(const Vec3 &r, double wg, int A,
+                                       Mat3N &dw) const {
+  const int natom = m_natom;
+  dw.setZero(3, natom);
+  if (natom < 2 || wg == 0.0)
+    return false;
+  const Mat3N &positions = m_positions;
+
+  // Called once per grid point: per-thread scratch, no allocation here.
+  // S(D, C) = s(C, D) and DS(D, C) = ds(C, D)/dmu_CD, column per cell.
+  struct Scratch {
+    Vec dist, ux, uy, uz, P;
+    Vec dZx, dZy, dZz, dPx, dPy, dPz, cx, cy, cz;
+    Mat S, DS;
+    std::vector<char> full;
+    void resize(int n) {
+      if (dist.size() == n)
+        return;
+      for (Vec *v : {&dist, &ux, &uy, &uz, &P, &dZx, &dZy, &dZz, &dPx, &dPy,
+                     &dPz, &cx, &cy, &cz})
+        v->resize(n);
+      S.resize(n, n);
+      DS.resize(n, n);
+      full.resize(n);
+    }
+  };
+  thread_local Scratch t;
+  t.resize(natom);
+  for (int C = 0; C < natom; C++) {
+    const Vec3 d = r - positions.col(C);
+    const double dc = d.norm();
+    t.dist(C) = dc;
+    const double inv = dc > 0 ? 1.0 / dc : 0.0;
+    t.ux(C) = d(0) * inv;
+    t.uy(C) = d(1) * inv;
+    t.uz(C) = d(2) * inv;
+  }
+  const double *dist = t.dist.data();
+
+  // Cell functions s(C, D) and ds(C, D)/dmu_CD for ordered pairs, with
+  // nu_CD = mu_CD + a_CD (1 - mu_CD^2), mu_CD = (r_C - r_D) / R_CD, and
+  // P_C = prod_D s(C, D) (s(C, C) = 1).
+  auto cell_row = [&](int C) {
+    const double *ir = m_invR.col(C).data();
+    const double *ac = m_aT.col(C).data();
+    double *sc = t.S.col(C).data();
+    double *dsc = t.DS.col(C).data();
+    const double dC = dist[C];
+    for (int D = 0; D < natom; D++) {
+      const double mu = (dC - dist[D]) * ir[D];
+      const double aa = ac[D];
+      double x = mu + aa * (1.0 - mu * mu), d = 1.0;
+      for (int k = 0; k < 3; k++) {
+        d *= 1.5 * (1.0 - x * x);
+        x = 0.5 * (3.0 - x * x) * x;
+      }
+      sc[D] = 0.5 * (1.0 - x);
+      dsc[D] = -0.5 * d * (1.0 - 2.0 * aa * mu);
+    }
+    sc[C] = 1.0;
+    dsc[C] = 0.0;
+    double p = 1.0;
+    for (int D = 0; D < natom; D++)
+      p *= sc[D];
+    t.P(C) = p;
+    t.full[C] = 1;
+  };
+  cell_row(A);
+  if (t.P(A) == 0.0)
+    return false;
+
+  // Only cells with P_C >= 1e-18 Z are needed (below). Since s <= 1 a
+  // partial product only decreases, and Z >= every P, a cell whose product
+  // over a few of its factors is already under 1e-18 max(P so far) is one
+  // of those skipped; Z keeps that partial product (an upper bound below
+  // 1e-18 Z). The factors tried are those of the atoms nearest the point
+  // (the smallest s(C, D)), and cells are visited nearest first (the
+  // largest P); the parent's cell is always complete.
+  constexpr int nscreen = 6;
+  // the nscreen + 1 atoms nearest the point, nearest first
+  const int nnear = std::min(natom, nscreen + 1);
+  int nearest[nscreen + 1];
+  int nfound = 0;
+  for (int C = 0; C < natom; C++) {
+    if (nfound == nnear && dist[C] >= dist[nearest[nnear - 1]])
+      continue;
+    int k = (nfound < nnear) ? nfound++ : nnear - 1;
+    while (k > 0 && dist[nearest[k - 1]] > dist[C]) {
+      nearest[k] = nearest[k - 1];
+      k--;
+    }
+    nearest[k] = C;
+  }
+  double pmax = t.P(A);
+  auto visit = [&](int C) {
+    const double skip = 1e-18 * pmax;
+    double p = 1.0;
+    int tried = 0;
+    for (int k = 0; k < nnear && tried < nscreen; k++) {
+      const int D = nearest[k];
+      if (D == C)
+        continue;
+      tried++;
+      const double mu = (dist[C] - dist[D]) * m_invR(D, C);
+      const double nu = mu + m_aT(D, C) * (1.0 - mu * mu);
+      double f, df;
+      becke_f(nu, f, df);
+      p *= 0.5 * (1.0 - f);
+      if (p < skip)
+        break;
+    }
+    if (p < skip) {
+      t.P(C) = p;
+      t.full[C] = 0;
+    } else {
+      cell_row(C);
+      pmax = std::max(pmax, t.P(C));
+    }
+  };
+  // nearest cells first (the largest P), then the rest
+  for (int k = 0; k < nnear; k++)
+    if (nearest[k] != A)
+      visit(nearest[k]);
+  for (int C = 0; C < natom; C++) {
+    if (C == A)
+      continue;
+    bool done = false;
+    for (int k = 0; k < nnear; k++)
+      done |= (nearest[k] == C);
+    if (!done)
+      visit(C);
+  }
+  const double Z = t.P.sum();
+  if (Z == 0.0)
+    return false;
+  // A cell's derivatives scale as P_C ds/s, and near saturation s ~
+  // (1 - nu)^8 so ds/s ~ 8 / (1 - nu): for P_C < 1e-18 Z that is still
+  // below 1e-12 of Z, so such cells are skipped (the parent never is).
+  const double pcut = 1e-18 * Z;
+
+  // dP_C/dR_B = sum_{D != C} (prod_{E != C, D} s_CE) ds_CD/dmu dmu_CD/dR_B,
+  //   dmu/dR_C = -u_C / R_CD - mu (R_C - R_D) / R_CD^2
+  //   dmu/dR_D =  u_D / R_CD + mu (R_C - R_D) / R_CD^2   (r fixed)
+  t.dZx.setZero();
+  t.dZy.setZero();
+  t.dZz.setZero();
+  t.dPx.setZero();
+  t.dPy.setZero();
+  t.dPz.setZero();
+  const double *px = positions.data(); // 3 x n, column-major
+  for (int C = 0; C < natom; C++) {
+    if (!t.full[C])
+      continue;
+    const double *sc = t.S.col(C).data();
+    const double *dsc = t.DS.col(C).data();
+    int nzero = 0, zero_at = -1;
+    for (int D = 0; D < natom; D++)
+      if (sc[D] == 0.0) {
+        nzero++;
+        zero_at = D;
+      }
+    // A zero s_CD makes P_C zero while its own derivative term need not
+    // be; keep those cells (rare: exactly saturated pairs).
+    if (C != A && t.P(C) < pcut && nzero == 0)
+      continue;
+    if (nzero > 1)
+      continue;
+    double pnz = 1.0;
+    if (nzero == 1) {
+      for (int D = 0; D < natom; D++)
+        if (D != zero_at)
+          pnz *= sc[D];
+    } else {
+      pnz = t.P(C);
+    }
+    const double *ir = m_invR.col(C).data();
+    const double xC = px[3 * C], yC = px[3 * C + 1], zC = px[3 * C + 2];
+    const double uxC = t.ux(C), uyC = t.uy(C), uzC = t.uz(C);
+    const double dC = dist[C];
+    const bool parent = (C == A);
+    for (int D = 0; D < natom; D++) {
+      const double excl =
+          (nzero == 1) ? ((D == zero_at) ? pnz : 0.0) : pnz / sc[D];
+      const double c = excl * dsc[D]; // zero for D == C
+      const double inv = ir[D], inv2 = inv * inv;
+      const double mu = (dC - dist[D]) * inv;
+      const double rx = xC - px[3 * D], ry = yC - px[3 * D + 1],
+                   rz = zC - px[3 * D + 2];
+      const double cm = c * mu * inv2, ci = c * inv;
+      // c dmu_dD; c dmu_dC = -c (u_C / R) - c mu R_CD / R^2
+      const double gx = t.ux(D) * ci + cm * rx;
+      const double gy = t.uy(D) * ci + cm * ry;
+      const double gz = t.uz(D) * ci + cm * rz;
+      t.cx(D) = -uxC * ci - cm * rx;
+      t.cy(D) = -uyC * ci - cm * ry;
+      t.cz(D) = -uzC * ci - cm * rz;
+      t.dZx(D) += gx;
+      t.dZy(D) += gy;
+      t.dZz(D) += gz;
+      if (parent) {
+        t.dPx(D) += gx;
+        t.dPy(D) += gy;
+        t.dPz(D) += gz;
+      }
+    }
+    const double sx = t.cx.sum(), sy = t.cy.sum(), sz = t.cz.sum();
+    t.dZx(C) += sx;
+    t.dZy(C) += sy;
+    t.dZz(C) += sz;
+    if (parent) {
+      t.dPx(C) += sx;
+      t.dPy(C) += sy;
+      t.dPz(C) += sz;
+    }
+  }
+  // dw/dR_B = w (dP_A/dR_B / P_A - dZ/dR_B / Z) for B != A; the parent by
+  // translational invariance (the point moves with A).
+  const double fa = wg / t.P(A), fz = wg / Z;
+  Vec3 total = Vec3::Zero();
+  for (int B = 0; B < natom; B++) {
+    if (B == A)
+      continue;
+    dw(0, B) = fa * t.dPx(B) - fz * t.dZx(B);
+    dw(1, B) = fa * t.dPy(B) - fz * t.dZy(B);
+    dw(2, B) = fa * t.dPz(B) - fz * t.dZz(B);
+    total += dw.col(B);
+  }
+  dw.col(A) = -total;
+  return true;
+}
+
+Mat becke_weight_hessian(
+    const Mat3N &points, const Vec &weights,
+    const std::vector<std::pair<size_t, size_t>> &atom_blocks, const Vec &e,
+    const Mat3N &positions, const Vec &radii, bool treutler_ahlrichs) {
+  const int natom = static_cast<int>(positions.cols());
+  const int n3 = 3 * natom;
+  Mat result = Mat::Zero(n3, n3);
+  if (natom < 2)
+    return result;
+  const Mat R = calculate_interatomic_distances(positions);
+  const Mat a = size_adjustment_matrix(radii, treutler_ahlrichs);
+  const Mat3 I3 = Mat3::Identity();
+
+  // Per point, with kappa_C = e w0 P_C (delta_CA / Z - P_A / Z^2), the
+  // point-fixed second derivative of e w is
+  //
+  //   sum_C kappa_C (BS_C + gl_C gl_C^T)
+  //     - e w0 (gPA gZ^T + gZ gPA^T) / Z^2 + 2 e w0 P_A gZ gZ^T / Z^3,
+  //
+  // where BS_C (the d2 ln s terms) touches only the 3x3 blocks of C with
+  // each D. Those blocks are added directly; the rank-1 terms are queued as
+  // column pairs and applied as one GEMM per batch, so no point builds a
+  // dense 3N x 3N matrix.
+  struct Scratch {
+    Mat H, U, V;
+    Eigen::Index ncol{0};
+    Vec dist, P;
+    Mat s;
+    std::vector<Vec3> u, gC, gD;
+    std::vector<Mat3> hCC, hCD, hDD;
+    std::vector<Vec> gl;
+    Vec gZ, gPA;
+    // queue the rank-1 term scale * a b^T
+    void push(const Vec &a, const Vec &b, double scale) {
+      if (ncol == U.cols()) {
+        H.noalias() += U * V.transpose();
+        ncol = 0;
+      }
+      U.col(ncol) = a;
+      V.col(ncol) = scale * b;
+      ++ncol;
+    }
+    void flush() {
+      if (ncol > 0)
+        H.noalias() += U.leftCols(ncol) * V.leftCols(ncol).transpose();
+      ncol = 0;
+    }
+  };
+  constexpr Eigen::Index batch_cols = 512;
+
+  for (int A = 0; A < natom; A++) {
+    const auto [off, cnt] = atom_blocks[A];
+    occ::parallel::thread_local_storage<Scratch> tls([n3, natom]() {
+      Scratch t;
+      t.H = Mat::Zero(n3, n3);
+      t.U.resize(n3, batch_cols);
+      t.V.resize(n3, batch_cols);
+      t.dist.resize(natom);
+      t.P.resize(natom);
+      t.s.resize(natom, natom);
+      t.u.resize(natom);
+      t.gC.resize(natom * natom);
+      t.gD.resize(natom * natom);
+      t.hCC.resize(natom * natom);
+      t.hCD.resize(natom * natom);
+      t.hDD.resize(natom * natom);
+      t.gl.assign(natom, Vec(n3));
+      t.gZ.resize(n3);
+      t.gPA.resize(n3);
+      return t;
+    });
+    occ::parallel::parallel_for(size_t(0), cnt, [&](size_t k) {
+      const size_t g = off + k;
+      const double wg = weights(g), eg = e(g);
+      if (wg == 0.0 || eg == 0.0)
+        return;
+      auto &t = tls.local();
+      const Vec3 r = points.col(g);
+      for (int C = 0; C < natom; C++) {
+        Vec3 d = r - positions.col(C);
+        t.dist(C) = d.norm();
+        t.u[C] = t.dist(C) > 0 ? Vec3(d / t.dist(C)) : Vec3::Zero();
+      }
+      // s(C, D) for every pair (the cell functions need them all), then
+      // the derivatives only for pairs whose first atom has a cell that
+      // contributes (P_C >= 1e-18 Z, or the parent): typically a few atoms.
+      t.s.setOnes();
+      for (int C = 0; C < natom; C++)
+        for (int D = 0; D < natom; D++) {
+          if (C == D)
+            continue;
+          const double mu = (t.dist(C) - t.dist(D)) / R(C, D);
+          const double nu = mu + a(C, D) * (1.0 - mu * mu);
+          double f, df, d2f;
+          becke_f2(nu, f, df, d2f);
+          t.s(C, D) = 0.5 * (1.0 - f);
+        }
+      for (int C = 0; C < natom; C++) {
+        double p = 1.0;
+        for (int D = 0; D < natom; D++)
+          if (D != C)
+            p *= t.s(C, D);
+        t.P(C) = p;
+      }
+      {
+        const double Zs = t.P.sum();
+        for (int C = 0; C < natom; C++) {
+          if (t.P(C) == 0.0 || (C != A && t.P(C) < 1e-18 * Zs))
+            continue;
+          for (int D = 0; D < natom; D++) {
+            if (C == D)
+              continue;
+            const double Rcd = R(C, D);
+            const double N = t.dist(C) - t.dist(D);
+            const double mu = N / Rcd;
+            const Vec3 eCD = (positions.col(C) - positions.col(D)) / Rcd;
+            const Vec3 dN_C = -t.u[C], dN_D = t.u[D];
+            const Vec3 dR_C = eCD, dR_D = -eCD;
+            const Mat3 d2N_CC =
+                t.dist(C) > 0
+                    ? Mat3((I3 - t.u[C] * t.u[C].transpose()) / t.dist(C))
+                    : Mat3(Mat3::Zero());
+            const Mat3 d2N_DD =
+                t.dist(D) > 0
+                    ? Mat3(-(I3 - t.u[D] * t.u[D].transpose()) / t.dist(D))
+                    : Mat3(Mat3::Zero());
+            const Mat3 Pe = (I3 - eCD * eCD.transpose()) / Rcd;
+            const Mat3 d2R_CC = Pe, d2R_DD = Pe, d2R_CD = -Pe;
+            const double R2 = Rcd * Rcd, R3 = R2 * Rcd;
+            auto dmu = [&](const Vec3 &dN, const Vec3 &dR) -> Vec3 {
+              return dN / Rcd - N * dR / R2;
+            };
+            auto d2mu = [&](const Mat3 &d2N, const Vec3 &dNx,
+                            const Vec3 &dRx, const Vec3 &dNy,
+                            const Vec3 &dRy, const Mat3 &d2R) -> Mat3 {
+              return d2N / Rcd -
+                     (dNx * dRy.transpose() + dRx * dNy.transpose()) / R2 -
+                     N * d2R / R2 + 2.0 * N * dRx * dRy.transpose() / R3;
+            };
+            const Vec3 mC = dmu(dN_C, dR_C), mD = dmu(dN_D, dR_D);
+            const Mat3 mCC = d2mu(d2N_CC, dN_C, dR_C, dN_C, dR_C, d2R_CC);
+            const Mat3 mDD = d2mu(d2N_DD, dN_D, dR_D, dN_D, dR_D, d2R_DD);
+            const Mat3 mCD =
+                d2mu(Mat3::Zero(), dN_C, dR_C, dN_D, dR_D, d2R_CD);
+            const double acd = a(C, D);
+            const double nu = mu + acd * (1.0 - mu * mu);
+            const double dnu = 1.0 - 2.0 * acd * mu;
+            double f, df, d2f;
+            becke_f2(nu, f, df, d2f);
+            const double s1 = -0.5 * df, s2 = -0.5 * d2f;
+            const Vec3 nC = dnu * mC, nD = dnu * mD;
+            const Mat3 nCC = dnu * mCC - 2.0 * acd * mC * mC.transpose();
+            const Mat3 nDD = dnu * mDD - 2.0 * acd * mD * mD.transpose();
+            const Mat3 nCD = dnu * mCD - 2.0 * acd * mC * mD.transpose();
+            const int k2 = C * natom + D;
+            t.gC[k2] = s1 * nC;
+            t.gD[k2] = s1 * nD;
+            t.hCC[k2] = s2 * nC * nC.transpose() + s1 * nCC;
+            t.hDD[k2] = s2 * nD * nD.transpose() + s1 * nDD;
+            t.hCD[k2] = s2 * nC * nD.transpose() + s1 * nCD;
+          }
+        }
+      }
+      const double Z = t.P.sum();
+      const double PA = t.P(A);
+      if (PA <= 0.0 || Z <= 0.0)
+        return;
+      const double w0 = wg * Z / PA;
+      // Cells with P_C < 1e-18 Z are skipped (see BeckeWeightDerivative:
+      // their derivative terms stay below ~1e-12 of Z even though d2s/s
+      // grows near saturation); exactly zero cells contribute nothing.
+      const double pcut = 1e-18 * Z;
+      Vec &gZ = t.gZ, &gPA = t.gPA;
+      gZ.setZero();
+      gPA.setZero();
+      for (int C = 0; C < natom; C++) {
+        if (t.P(C) == 0.0 || (C != A && t.P(C) < pcut))
+          continue;
+        const double kappa =
+            eg * w0 * t.P(C) * ((C == A ? 1.0 / Z : 0.0) - PA / (Z * Z));
+        Vec &gl = t.gl[C];
+        gl.setZero();
+        for (int D = 0; D < natom; D++) {
+          if (D == C)
+            continue;
+          const int k2 = C * natom + D;
+          const double sc = t.s(C, D);
+          const Vec3 vC = t.gC[k2] / sc, vD = t.gD[k2] / sc;
+          gl.segment<3>(3 * C) += vC;
+          gl.segment<3>(3 * D) += vD;
+          t.H.block<3, 3>(3 * C, 3 * C) +=
+              kappa * (t.hCC[k2] / sc - vC * vC.transpose());
+          t.H.block<3, 3>(3 * D, 3 * D) +=
+              kappa * (t.hDD[k2] / sc - vD * vD.transpose());
+          const Mat3 cd = kappa * (t.hCD[k2] / sc - vC * vD.transpose());
+          t.H.block<3, 3>(3 * C, 3 * D) += cd;
+          t.H.block<3, 3>(3 * D, 3 * C) += cd.transpose();
+        }
+        t.push(gl, gl, kappa);
+        gZ += t.P(C) * gl;
+        if (C == A)
+          gPA = t.P(C) * gl;
+      }
+      const double c1 = -eg * w0 / (Z * Z);
+      t.push(gPA, gZ, c1);
+      t.push(gZ, gPA, c1);
+      t.push(gZ, gZ, 2.0 * eg * w0 * PA / (Z * Z * Z));
+    });
+    Mat Hfix = Mat::Zero(n3, n3);
+    for (auto &t : tls) {
+      t.flush();
+      Hfix += t.H;
+    }
+    // The points move with A: d_X = d_X|fixed - delta_{XA} sum_E d_E|fixed,
+    // per Cartesian direction.
+    Mat T = Mat::Identity(n3, n3);
+    for (int E = 0; E < natom; E++)
+      for (int x = 0; x < 3; x++)
+        T(3 * A + x, 3 * E + x) -= 1.0;
+    result += T * Hfix * T.transpose();
+  }
+  return result;
+}
+
+Mat3N becke_weight_gradient(
+    const Mat3N &points, const Vec &weights,
+    const std::vector<std::pair<size_t, size_t>> &atom_blocks, const Vec &e,
+    const Mat3N &positions, const Vec &radii, bool treutler_ahlrichs) {
+  const int natom = static_cast<int>(positions.cols());
+  Mat3N result = Mat3N::Zero(3, natom);
+  if (natom < 2)
+    return result;
+  const BeckeWeightDerivative dwdr(positions, radii, treutler_ahlrichs);
+  occ::parallel::thread_local_storage<std::pair<Mat3N, Mat3N>> tls(
+      [natom]() {
+        return std::make_pair(Mat3N(Mat3N::Zero(3, natom)),
+                              Mat3N(Mat3N::Zero(3, natom)));
+      });
+  for (int A = 0; A < natom; A++) {
+    const auto [off, cnt] = atom_blocks[A];
+    occ::parallel::parallel_for(size_t(0), cnt, [&](size_t k) {
+      const size_t g = off + k;
+      if (weights(g) == 0.0 || e(g) == 0.0)
+        return;
+      auto &[acc, dw] = tls.local();
+      if (dwdr(points.col(g), weights(g), A, dw))
+        acc += e(g) * dw;
+    });
+  }
+  for (const auto &t : tls)
+    result += t.first;
+  return result;
 }
 
 Mat calculate_atomic_grid_weights(PartitionMethod method,
@@ -516,9 +1082,9 @@ RadialGrid generate_lmg_radial_grid(size_t atomic_number,
 // Mura-Knowles [JCP 104, 9848 (1996) - doi:10.1063/1.471749] log3 quadrature
 RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge) {
   RadialGrid result(num_points);
-  double far = 5.2;
+  double far_bound = 5.2;
 
-  // Adjust far parameter based on atomic number
+  // Adjust far_bound parameter based on atomic number
   switch (charge) {
   case 3:
   case 4:
@@ -526,7 +1092,7 @@ RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge) {
   case 12:
   case 19:
   case 20:
-    far = 7;
+    far_bound = 7;
     break;
   }
 
@@ -534,8 +1100,8 @@ RadialGrid generate_mura_knowles_radial_grid(size_t num_points, size_t charge) {
     double x = (i + 0.5) / num_points;
     double x2 = x * x;
     double x3 = x2 * x;
-    result.points(i) = -far * std::log(1 - x3);
-    result.weights(i) = far * 3 * x2 / ((1 - x3) * num_points);
+    result.points(i) = -far_bound * std::log(1 - x3);
+    result.weights(i) = far_bound * 3 * x2 / ((1 - x3) * num_points);
   }
 
   return result;
@@ -571,11 +1137,72 @@ RadialGrid generate_treutler_alrichs_radial_grid(size_t num_points) {
   return result;
 }
 
-// In grid_utils.cpp, implement the function with a switch statement:
+RadialGrid generate_perez_jorda_m3_radial_grid(size_t num_points, double xi) {
+  RadialGrid result(num_points);
+  const double pi = std::numbers::pi_v<double>;
+  const double n1 = static_cast<double>(num_points + 1);
+  const double scale = xi / std::log(2.0);
+  for (size_t i = 1; i <= num_points; i++) {
+    const double t = i * pi / n1;
+    const double st = std::sin(t), ct = std::cos(t);
+    const double x =
+        (n1 - 2.0 * i) / n1 + 2.0 / pi * (1.0 + 2.0 / 3.0 * st * st) * ct * st;
+    const double wx = 16.0 / (3.0 * n1) * st * st * st * st;
+    const double r = scale * std::log(2.0 / (1.0 - x));
+    const double drdx = scale / (1.0 - x);
+    // x decreases with i, so r does too: store innermost first.
+    result.points(num_points - i) = r;
+    result.weights(num_points - i) = wx * drdx * r * r;
+  }
+  return result;
+}
+
+namespace {
+
+// ORCA 6.1 COSX atomic grid from the measured tables (no partitioning).
+AtomGrid generate_orca_cosx_atom_grid(size_t atomic_number,
+                                      const OrcaCOSXAtomicGrid &spec) {
+  const RadialGrid radial =
+      generate_perez_jorda_m3_radial_grid(spec.num_radial, spec.xi);
+  size_t total = 0;
+  for (const auto &[order, count] : *spec.angular_runs)
+    total += static_cast<size_t>(order) * count;
+  AtomGrid result(total);
+  size_t shell = 0, offset = 0;
+  for (const auto &[order, count] : *spec.angular_runs) {
+    const auto lebedev = grid::lebedev(order);
+    const Eigen::Index n = lebedev.rows();
+    for (int k = 0; k < count; k++, shell++) {
+      const double r = radial.points(shell);
+      const double w = 4 * std::numbers::pi_v<double> * radial.weights(shell);
+      result.points.block(0, offset, 3, n) = lebedev.leftCols(3).transpose() * r;
+      result.weights.segment(offset, n) = lebedev.col(3) * w;
+      offset += n;
+    }
+  }
+  result.atomic_number = atomic_number;
+  return result;
+}
+
+} // namespace
 
 AtomGrid generate_atom_grid(size_t atomic_number, const GridSettings &settings,
                             RadialGridMethod method, double alpha_max,
                             int l_max, const Vec &alpha_min) {
+
+  if (settings.orca_cosx_level > 0) {
+    const auto spec = orca_cosx_atomic_grid(static_cast<int>(atomic_number),
+                                            settings.orca_cosx_level);
+    if (spec.num_radial > 0) {
+      occ::timing::start(occ::timing::category::grid_init);
+      AtomGrid result = generate_orca_cosx_atom_grid(atomic_number, spec);
+      occ::log::debug("ORCA GRIDX {} grid for Z={}: {} shells, xi={}, {} points",
+                      settings.orca_cosx_level, atomic_number, spec.num_radial,
+                      spec.xi, result.num_points());
+      occ::timing::stop(occ::timing::category::grid_init);
+      return result;
+    }
+  }
 
   // Start timer
   occ::timing::start(occ::timing::category::grid_init);

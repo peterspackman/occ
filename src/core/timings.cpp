@@ -50,9 +50,9 @@ const char *category_name(category cat) {
   case dft_nlc:
     return "DFT NLC";
   case dft_gradient:
-    return "DFT Gradient";
+    return "DFT XC gradient";
   case dft_fock_gradient:
-    return "DFT Fock Gradient";
+    return "DFT J+K gradient";
   case xc_func_init:
     return "DFT XC func init";
   case xc_func_end:

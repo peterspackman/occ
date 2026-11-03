@@ -1,22 +1,21 @@
 #pragma once
 #include <occ/core/linear_algebra.h>
-#include <vector>
+#include <cmath>
 
 namespace occ::opt {
 
 struct ConvergenceCriteria {
-  // Gradient convergence thresholds (Hartree/Angstrom for Cartesian, unitless for internal coords)
-  double gradient_max = 0.45e-3; // Maximum gradient component 
-  double gradient_rms = 0.15e-3; // Root-mean-square of gradient
-  
-  // Step convergence thresholds (Angstrom for Cartesian, unitless for internal coords)
-  double step_max = 1.8e-3;      // Maximum displacement component
-  double step_rms = 1.2e-3;      // Root-mean-square of displacement
-  
-  // Energy convergence (optional, in Hartree)
-  double energy_change = 1e-6;   // Maximum energy change between steps
-  bool use_energy_criterion = false; // Whether to use energy as a convergence criterion
-  
+  // ORCA's NormalOpt: gradients in Hartree/Bohr (Hartree/radian for angles),
+  // steps in Bohr (radian), in internal coordinates
+  double gradient_max = 3e-4;
+  double gradient_rms = 1e-4;
+  double step_max = 4e-3;
+  double step_rms = 2e-3;
+
+  // Energy change between steps (Hartree), used only on request
+  double energy_change = 5e-6;
+  bool use_energy_criterion = false;
+
   // Maximum iterations
   int max_iterations = 100;
 };
@@ -36,7 +35,6 @@ struct OptPoint {
 struct OptimizationState {
   // Geometry and coordinates
   Mat3N positions; // Current Cartesian positions (Angstroms)
-  Vec current_q;   // Current internal coordinates
 
   // Energy and gradients from latest calculation
   double energy = 0.0;
@@ -52,16 +50,12 @@ struct OptimizationState {
 
   // Optimization data
   Mat hessian; // Approximate Hessian in internal coordinates (s.H)
-  Vec weights; // Coordinate weights (s.weights)
   double trust_radius = 0.3; // Trust radius (s.trust, default value)
 
   // Control flags
   bool first_step = true; // s.first
   int step_number = 0;
   bool converged = false;
-
-  // History for debugging/analysis
-  std::vector<OptPoint> history;
 
   ConvergenceCriteria criteria;
 };
@@ -112,12 +106,6 @@ inline ConvergenceInfo check_convergence(const Vec &gradient, const Vec &step,
                    info.energy_converged;
 
   return info;
-}
-
-// Backward compatibility overload
-inline ConvergenceInfo check_convergence(const Vec &gradient, const Vec &step,
-                                         const ConvergenceCriteria &criteria) {
-  return check_convergence(gradient, step, 0.0, criteria);
 }
 
 } // namespace occ::opt

@@ -92,11 +92,18 @@ GridSettings GridSettings::for_cosx(COSXGridLevel level) {
     break;
   }
 
-  // COSX uses Treutler-Alrichs M3 mapping with Gauss-Chebyshev
+  // H-Rn: ORCA 6.1's measured GRIDX atomic grids (orca_cosx_grids.cpp).
+  // The IntAcc/angular-region settings above only serve heavier elements.
+  settings.orca_cosx_level = static_cast<int>(level) + 1;
+  // Becke partitioning with the Treutler-Ahlrichs sqrt size adjustment on
+  // Bragg radii, as ORCA 6.1 does (verified on its partition weights),
+  // including ORCA's rounding of the radii and its WCut on the partition.
   settings.treutler_alrichs_adjustment = true;
-  // Reduced grid for H/He (one angular level lower)
+  settings.rounded_bragg_radii = true;
+  settings.partition_weight_cutoff = 1e-14;
+  // Reduced grid for H/He (one angular level lower; fallback path only)
   settings.reduced_first_row_element_grid = true;
-  // Radial points calculated per-atom using IntAcc formula
+  // Radial points calculated per-atom using IntAcc formula (fallback path)
   settings.radial_points = 0; // Will be calculated per-atom
 
   return settings;
@@ -192,7 +199,10 @@ void print_cosx_grid_summary(const GridSettings& settings, COSXGridLevel level,
   fmt::print("{:-<{}}\n", "", cosx_grid_level_to_string(level).length());
 
   fmt::print("{:<44} {:>12}\n", "General Integration Accuracy", fmt::format("IntAcc      ... {:.3f}", settings.int_acc));
-  fmt::print("{:<44} {:>12}\n", "Radial Grid Type", "RadialGrid  ... M3 (Treutler-Alrichs)");
+  fmt::print("{:<44} {:>12}\n", "Radial Grid Type",
+             settings.orca_cosx_level > 0
+                 ? "RadialGrid  ... OptM3 with GC (ORCA 6.1 tables)"
+                 : "RadialGrid  ... M3 (Treutler-Alrichs)");
 
   // Angular grid info
   int angular_level = 0;
@@ -201,7 +211,10 @@ void print_cosx_grid_summary(const GridSettings& settings, COSXGridLevel level,
   else if (level == COSXGridLevel::Grid3) angular_level = 3;
   fmt::print("{:<44} {:>12}\n", "Angular Grid (max. ang.)",
              fmt::format("AngularGrid ... {} (Lebedev-{})", angular_level, settings.max_angular_points));
-  fmt::print("{:<44} {:>12}\n", "Angular grid pruning method", "GridPruning ... 5-region (ORCA-style)");
+  fmt::print("{:<44} {:>12}\n", "Angular grid pruning method",
+             settings.orca_cosx_level > 0
+                 ? "GridPruning ... ORCA 6.1 per-element shell profiles"
+                 : "GridPruning ... 5-region (ORCA-style)");
   fmt::print("{:<44} {:>12}\n", "Weight generation scheme", "WeightScheme... Becke");
 
   if (settings.reduced_first_row_element_grid) {

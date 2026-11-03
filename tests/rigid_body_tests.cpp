@@ -15,6 +15,7 @@
 #include <occ/core/units.h>
 #include <fmt/core.h>
 #include <cmath>
+#include <numbers>
 
 using namespace occ;
 using namespace occ::mults;

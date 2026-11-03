@@ -14,13 +14,21 @@ add_library(occ_qm_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/guess_density.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/initial_guess.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cphf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_2c.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_3c.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_4c.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_esp.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_grad1.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_grad2.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_hess.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_point_charges.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_response.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/seminumerical_exchange_grad.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/seminumerical_exchange_hess.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_df.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_df_grad.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/integral_engine_df_khess.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/localization.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/merge.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/mo.cpp"
@@ -32,6 +40,7 @@ add_library(occ_qm_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/scf_method.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/seminumerical_exchange.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/split_ri_j.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/split_ri_j_kernels.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wavefunction.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/conversion.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/io/fchkreader.cpp"
@@ -57,9 +66,7 @@ target_link_libraries(
         occ_io
         nlohmann_json::nlohmann_json
         libcint::libcint
-        libecpint_static
 )
-target_compile_definitions(occ_qm_obj PUBLIC HAVE_ECPINT=1)
 
 target_link_libraries(
     occ_qm
@@ -72,13 +79,20 @@ target_link_libraries(
         occ_io
         nlohmann_json::nlohmann_json
         libcint::libcint
-        libecpint_static
 )
 target_include_directories(
     occ_qm
     PUBLIC ${OCC_INCLUDE_DIR} ${GEMMI_INCLUDE_DIR}
 )
 
-target_compile_definitions(occ_qm PUBLIC HAVE_ECPINT=1)
-
 target_compile_features(occ_qm PUBLIC cxx_std_20)
+
+# The split RI-J kernels pass vector types between always-inlined helpers, so
+# GCC's note that their ABI differs between targets does not apply.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set_source_files_properties(
+        "${CMAKE_CURRENT_SOURCE_DIR}/split_ri_j_kernels.cpp"
+        PROPERTIES COMPILE_OPTIONS "-Wno-psabi"
+                   SKIP_UNITY_BUILD_INCLUSION ON
+    )
+endif()

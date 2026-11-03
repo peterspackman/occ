@@ -6,6 +6,7 @@
 #include <occ/gto/shell.h>
 #include <occ/io/occ_input.h>
 #include <occ/qm/fitting_basis.h>
+#include <occ/qm/hf.h>
 #include <occ/qm/integral_engine_df.h>
 #include <occ/qm/seminumerical_exchange.h>
 #include <string>
@@ -98,6 +99,12 @@ plan_acceleration(io::RIPolicy policy, const std::string &orbital_basis_name,
   plan.use_cosx = user_cosx;
 
   const bool has_exact_exchange = exact_exchange != 0.0;
+  // Only the Coulomb is fitted when exchange is COSX or absent: then the
+  // Coulomb-only fitting basis (def2/J for def2), as RIJCOSX does.
+  auto fitting_kind = [&]() {
+    return plan.use_cosx || !has_exact_exchange ? FittingKind::J
+                                                : FittingKind::JK;
+  };
 
   switch (policy) {
   case io::RIPolicy::None:
@@ -110,16 +117,13 @@ plan_acceleration(io::RIPolicy policy, const std::string &orbital_basis_name,
     plan.use_cosx = false;
     break;
   case io::RIPolicy::COSX:
-    if (plan.df_basis.empty())
-      plan.df_basis =
-          resolve_fitting_basis(orbital_basis_name, FittingKind::JK);
     plan.use_cosx = has_exact_exchange;
+    if (plan.df_basis.empty())
+      plan.df_basis = resolve_fitting_basis(orbital_basis_name, fitting_kind());
     break;
   case io::RIPolicy::Auto:
     // Only act if the user hasn't already chosen DF or COSX explicitly.
     if (plan.df_basis.empty() && !plan.use_cosx) {
-      plan.df_basis =
-          resolve_fitting_basis(orbital_basis_name, FittingKind::JK);
       if (has_exact_exchange &&
           nbf > static_cast<std::size_t>(occ::qm::cosx_nbf_crossover()))
         plan.use_cosx = true;
@@ -136,26 +140,47 @@ plan_acceleration(io::RIPolicy policy, const std::string &orbital_basis_name,
             df_exchange_memory_budget() / (1024 * 1024));
         plan.use_cosx = true;
       }
+      plan.df_basis = resolve_fitting_basis(orbital_basis_name, fitting_kind());
     }
     break;
   }
   return plan;
 }
 
+/// What an SCF set up by apply_acceleration is for.
+/// CoarseGradient keeps COSX on GRIDX1 for the whole SCF, for optimisation
+/// steps far from convergence.
+enum class AccelerationUse { Energy, Gradient, CoarseGradient, NoCOSX };
+
+/// The COSX grid apply_acceleration sets up, for the log.
+inline std::string cosx_grid_description(const io::OccInput &config,
+                                         AccelerationUse use) {
+  if (config.method.cosx_fixed_grid)
+    return occ::numint::cosx_grid_level_to_string(
+        config.method.cosx_grid_level);
+  if (use == AccelerationUse::CoarseGradient)
+    return occ::numint::cosx_grid_level_to_string(
+        occ::numint::COSXGridLevel::Grid1);
+  return "GRIDX schedule";
+}
+
 /**
  * @brief Apply the active acceleration policy (DF / COSX) to an SCF procedure.
  *
  * Works for both HartreeFock and DFT (both expose the DF and COSX setters).
- * COSX is only enabled for exact exchange, never for range-separated hybrids
- * (COSX cannot handle range separation).
+ * COSX is only enabled when there is exact exchange to replace, full-range
+ * or long-range (range-separated hybrids).
  *
- * @param allow_cosx pass false for gradient-producing calculations (geometry
- *        optimisation, frequencies): COSX has no analytic gradient, so it is
- *        downgraded to DF exchange there.
+ * @param use what the SCF is for. Energy runs COSX on ORCA's energy schedule
+ *        (GRIDX1 -> GRIDX2, final energy on GRIDX3). Gradient refines on
+ *        GRIDX3 so the COSX gradient matches the reported energy. NoCOSX
+ *        downgrades COSX to DF exchange (finite-difference Hessians, whose
+ *        displaced SCFs do not carry COSX).
  */
 template <typename Proc>
 void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
-                        bool allow_cosx = true) {
+                        AccelerationUse use = AccelerationUse::Energy) {
+  const bool allow_cosx = use != AccelerationUse::NoCOSX;
   double exchange_factor = 1.0; // HF: full exact exchange
   bool range_separated = false;
   if constexpr (std::is_same<Proc, occ::dft::DFT>::value) {
@@ -163,10 +188,9 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
     range_separated = proc.range_separated_parameters().omega != 0.0;
   }
   const bool has_exact_exchange = exchange_factor != 0.0 || range_separated;
-  // COSX now supports range separation (long-range erf exchange), so a
-  // range-separated hybrid is eligible for the COSX crossover. Treat it as
-  // having exact exchange even when the short-range fraction is zero (e.g.
-  // LC-omegaPBE), since the long-range exact exchange still needs a K build.
+  // A range-separated hybrid has exact exchange even when its short-range
+  // fraction is zero (e.g. LC-omegaPBE): the long-range part still needs a K
+  // build, which COSX handles.
   const double cosx_exchange = range_separated ? 1.0 : exchange_factor;
 
   // Size the DF-K intermediate so the policy can weigh memory as well as
@@ -199,13 +223,12 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
       config.method.ri_policy, config.basis.name, nbf, cosx_exchange,
       config.basis.df_name, config.method.use_cosx, df_exchange_bytes);
 
-  // COSX has no analytic gradient; gradient-producing drivers downgrade it to
-  // DF exchange (the gradient itself stays on exact integrals regardless).
   if (!allow_cosx && accel.use_cosx) {
-    occ::log::warn("COSX has no gradient; using DF exchange for this "
-                   "gradient calculation");
+    occ::log::warn("COSX not supported here; using DF exchange");
     accel.use_cosx = false;
-    if (accel.df_basis.empty())
+    // the plan picked a Coulomb-only fit to go with COSX; exchange needs the
+    // JK fit unless the user named one
+    if (config.basis.df_name.empty())
       accel.df_basis = occ::qm::resolve_fitting_basis(
           config.basis.name, occ::qm::FittingKind::JK);
   }
@@ -227,8 +250,7 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
     if (has_exact_exchange) {
       if (accel.use_cosx)
         occ::log::info("Exchange (K): seminumerical exchange (COSX, {})",
-                       occ::numint::cosx_grid_level_to_string(
-                           config.method.cosx_grid_level));
+                       cosx_grid_description(config, use));
       else if (!accel.df_basis.empty())
         occ::log::info("Exchange (K): density fitting [{}]", accel.df_basis);
       else
@@ -239,10 +261,9 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
   if (!accel.df_basis.empty()) {
     proc.set_density_fitting_basis(accel.df_basis,
                                    config.basis.df_auto_threshold);
-    // Direct is the default -- storing the three-centre integrals needs
-    // nbf^2 x ndf doubles, which is what exhausted the browser heap. The flag
-    // is kept because it still forces the issue for a caller that has changed
-    // the policy itself; on the default path it is a no-op.
+    // Natively the default stores the three-centre integrals when they fit
+    // the engine's memory limit; in the browser it is direct, since the
+    // nbf^2 x ndf store is what exhausted its heap. The flag forces direct.
     if (config.method.use_direct_df_kernels)
       proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
     if (config.method.use_split_ri_j)
@@ -250,7 +271,14 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
   }
 
   if (accel.use_cosx) {
-    proc.set_cosx_exchange(config.method.cosx_grid_level);
+    if (config.method.cosx_fixed_grid)
+      proc.set_cosx_exchange(config.method.cosx_grid_level);
+    else if (use == AccelerationUse::CoarseGradient)
+      proc.set_cosx_exchange(occ::numint::COSXGridLevel::Grid1);
+    else if (use == AccelerationUse::Gradient)
+      proc.set_cosx_grid_schedule(occ::qm::COSXGridSchedule::for_gradients());
+    else
+      proc.set_cosx_grid_schedule();
     occ::qm::cosx::Settings cosx_settings;
     cosx_settings.screen_threshold = config.method.cosx.screen_threshold;
     cosx_settings.margin = config.method.cosx.margin;

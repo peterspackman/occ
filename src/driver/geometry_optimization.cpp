@@ -12,9 +12,11 @@
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
+#include <occ/solvent/solvation_correction.h>
 #include <occ/xdm/xdm.h>
 #include <memory>
 #include <optional>
+#include <tuple>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
 
@@ -39,12 +41,34 @@ occ::gto::AOBasis load_basis_set_opt(const Molecule &m, const std::string &name,
   return basis;
 }
 
+// COSX grid control across optimisation steps. Steps far from convergence
+// run the whole SCF and gradient on GRIDX1; the rest use the gradient
+// schedule, which converges on GRIDX3. GRIDX1's gradient error is large:
+// against GRIDX3, aspirin HF/def2-SVP at a near-converged geometry has errors
+// up to 5e-3 Eh/bohr (rms 1.4e-3), more than the gradient itself there. So
+// GRIDX1 is used only while the gradient is an order of magnitude above that,
+// and the geometry at which a step leaves it is re-evaluated on the gradient
+// grids before the optimiser sees it: no step is taken on a GRIDX1 gradient
+// that is mostly grid error, and the energy difference between the two grids
+// at that geometry moves the optimiser's history onto the new surface.
+struct OptCOSXStep {
+  bool coarse{false};    // in: fixed GRIDX1 for this step
+  bool used_cosx{false}; // out: the SCF ran COSX
+};
+
+template <SpinorbitalKind SK, typename P, typename T>
+std::pair<Wavefunction, Mat3N>
+scf_and_gradient(P &scf_proc, T &proc, const Molecule &m,
+                 const OccInput &config, const Wavefunction *prev_wfn,
+                 OptCOSXStep *cosx_step, double gradient_precision);
+
 template <typename T, SpinorbitalKind SK>
 std::pair<Wavefunction, Mat3N>
 run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
                             const OccInput &config,
                             const Wavefunction *prev_wfn = nullptr,
-                            double energy_change = 1.0) {
+                            double energy_change = 1.0,
+                            OptCOSXStep *cosx_step = nullptr) {
 
   // Parse method name to extract dispersion correction
   auto method_spec = parse_method_string(config.method.name);
@@ -56,10 +80,12 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
       return T(basis);
   }();
 
-  // Density fitting (same policy as the single-point energy driver), but never
-  // COSX: it has no analytic gradient, and the optimiser drives the exact
-  // gradient to zero, so DF energy + exact gradient is only a small mismatch.
-  apply_acceleration(proc, basis.nbf(), config, /*allow_cosx=*/false);
+  // Same policy as the single-point driver, with COSX refining on GRIDX3 so
+  // its analytic gradient matches the energy being minimised.
+  const bool coarse = cosx_step && cosx_step->coarse;
+  apply_acceleration(proc, basis.nbf(), config,
+                     coarse ? AccelerationUse::CoarseGradient
+                            : AccelerationUse::Gradient);
 
   occ::log::info("Spinorbital kind: {}", spinorbital_kind_to_string(SK));
 
@@ -79,7 +105,27 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
   occ::log::trace("Setting integral precision: {}", integral_precision);
   proc.set_precision(integral_precision);
 
-  SCF<T> scf(proc, SK);
+  if (!config.solvent.solvent_name.empty()) {
+    occ::solvent::SolvationCorrectedProcedure<T> solvated(
+        proc, config.solvent.solvent_name, config.solvent.radii_scaling);
+    return scf_and_gradient<SK>(solvated, proc, m, config, prev_wfn,
+                                cosx_step, gradient_precision);
+  }
+  return scf_and_gradient<SK>(proc, proc, m, config, prev_wfn, cosx_step,
+                              gradient_precision);
+}
+
+// The SCF and gradient of one optimisation step. `scf_proc` is the procedure
+// the SCF runs (the method itself, or the method in solvent); `proc` is the
+// method underneath.
+template <SpinorbitalKind SK, typename P, typename T>
+std::pair<Wavefunction, Mat3N>
+scf_and_gradient(P &scf_proc, T &proc, const Molecule &m,
+                 const OccInput &config, const Wavefunction *prev_wfn,
+                 OptCOSXStep *cosx_step, double gradient_precision) {
+  auto method_spec = parse_method_string(config.method.name);
+  const double integral_precision = config.method.integral_precision;
+  SCF<P> scf(scf_proc, SK);
   occ::log::trace("Setting system charge: {}", config.electronic.charge);
   occ::log::trace("Setting system multiplicity: {}",
                   config.electronic.multiplicity);
@@ -101,6 +147,8 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
   }
 
   double e = scf.compute_scf_energy();
+  if (cosx_step)
+    cosx_step->used_cosx = proc.using_cosx();
   if constexpr (std::is_same<T, DFT>::value) {
     double enlc = proc.post_scf_nlc_correction(scf.ctx.mo);
     if (enlc != 0.0) {
@@ -192,25 +240,12 @@ run_method_for_optimization(const Molecule &m, const occ::gto::AOBasis &basis,
     }
   }
 
+  // Hartree/Bohr: the optimizer's internal coordinates are in Bohr (its
+  // Cartesian steps are converted back to Angstrom), as in pyberny.
   Mat3N gradient = eval(wfn.mo);
-  // Convert gradients from Hartree/Bohr to Hartree/Angstrom for optimizer
-  gradient /= occ::units::ANGSTROM_TO_BOHR;
   return {wfn, gradient};
 }
 
-// Single GFN2-xTB optimization step. Mirrors the run_method_for_optimization
-// shape: returns (Wavefunction, gradient in Hartree/Angstrom). The
-// Wavefunction is a thin wrapper built from XtbCalculator's converged
-// state — enough to feed back into BernyOptimizer and to produce the same
-// post-step printout as the SCF case.
-//
-// `cached` (when non-null) holds an XtbCalculator that's reused across opt
-// steps: the basis / IntegralEngine / shell tables / γ matrix are all
-// geometry-derived caches that get rebuilt cheaply by `update_structure`,
-// AND the converged shell charges are seeded as the next SCC's
-// initial guess (warm-start). Constructing fresh each step would discard
-// both, costing 1× full Gfn2Engine construction + ~3 SCC iterations per
-// step.
 void configure(occ::xtb::XtbCalculator &calc, const OccInput &config) {
   calc.set_charge(config.electronic.charge);
   calc.set_num_unpaired_electrons(config.electronic.multiplicity - 1);
@@ -222,6 +257,19 @@ void configure(occ::xtb::XtbCalculator &calc, const OccInput &config) {
   }
 }
 
+// Single GFN2-xTB optimization step. Mirrors the run_method_for_optimization
+// shape: returns (Wavefunction, gradient in Hartree/Bohr). The
+// Wavefunction is a thin wrapper built from XtbCalculator's converged
+// state — enough to feed back into BernyOptimizer and to produce the same
+// post-step printout as the SCF case.
+//
+// `cached` (when non-null) holds an XtbCalculator that's reused across opt
+// steps: the basis / IntegralEngine / shell tables / γ matrix are all
+// geometry-derived caches that get rebuilt cheaply by `update_structure`,
+// AND the converged shell charges are seeded as the next SCC's
+// initial guess (warm-start). Constructing fresh each step would discard
+// both, costing 1× full Gfn2Engine construction + ~3 SCC iterations per
+// step.
 std::pair<Wavefunction, Mat3N>
 run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
                           std::optional<occ::xtb::XtbCalculator> *cached =
@@ -249,9 +297,7 @@ run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
   log::info("GFN2-xTB gradient norm:         {: 20.12f} Ha/Bohr", g.norm());
 
   Wavefunction wfn = calc.to_wavefunction();
-  // Convert to Hartree/Angstrom for the optimizer.
-  g /= occ::units::ANGSTROM_TO_BOHR;
-  return {wfn, g};
+  return {wfn, g}; // Hartree/Bohr, as the optimizer expects
 }
 
 std::pair<Wavefunction, Mat3N>
@@ -259,7 +305,8 @@ optimization_step_driver(const OccInput &config, const Molecule &m,
                          const Wavefunction *prev_wfn = nullptr,
                          double energy_change = 1.0,
                          std::optional<occ::xtb::XtbCalculator> *gfn2_cache =
-                             nullptr) {
+                             nullptr,
+                         OptCOSXStep *cosx_step = nullptr) {
   constexpr auto R = SpinorbitalKind::Restricted;
   constexpr auto U = SpinorbitalKind::Unrestricted;
   constexpr auto G = SpinorbitalKind::General;
@@ -275,55 +322,45 @@ optimization_step_driver(const OccInput &config, const Molecule &m,
       config.method.name, config.electronic.multiplicity, method_kind);
   auto conf_sk = config.electronic.spinorbital_kind;
 
-  if (config.solvent.solvent_name.empty()) {
-    switch (method_kind) {
-    case MethodKind::HF: {
-      if (guess_sk == U || conf_sk == U)
-        return run_method_for_optimization<HartreeFock, U>(m, basis, config, prev_wfn, energy_change);
-      else if (guess_sk == G || conf_sk == G)
-        return run_method_for_optimization<HartreeFock, G>(m, basis, config, prev_wfn, energy_change);
-      else
-        return run_method_for_optimization<HartreeFock, R>(m, basis, config, prev_wfn, energy_change);
-      break;
-    }
-    case MethodKind::DFT: {
-      if (guess_sk == U || conf_sk == U)
-        return run_method_for_optimization<DFT, U>(m, basis, config, prev_wfn, energy_change);
-      else if (guess_sk == G || conf_sk == G)
-        throw std::runtime_error(
-            "Not implemented: DFT general spinorbital gradients");
-      else
-        return run_method_for_optimization<DFT, R>(m, basis, config, prev_wfn, energy_change);
-
-      break;
-    }
-    case MethodKind::MP2: {
-      throw std::runtime_error(
-          "Not implemented: MP2 gradients for geometry optimization");
-      break;
-    }
-    case MethodKind::CCSD:
-    case MethodKind::CCSD_T: {
-      throw std::runtime_error(
-          "Not implemented: coupled-cluster gradients for geometry optimization");
-      break;
-    }
-    case MethodKind::GFN2: {
-      return run_gfn2_for_optimization(m, config, gfn2_cache);
-    }
-    }
-  } else if (method_kind == MethodKind::GFN2) {
-    // GFN2 is the one method with a solvated gradient: SMD reaches it through
-    // XtbSolvationModel::gradient() — the frozen-cavity analytical
-    // electrostatic term plus a finite-difference CDS piece, checked against
-    // FD on the energy in tests/xtb_native_tests.cpp. The cavity is rebuilt at
-    // each geometry inside the SCC, so the cached calculator stays valid.
-    return run_gfn2_for_optimization(m, config, gfn2_cache);
-  } else {
-    // SolvationCorrectedProcedure is energy-only: no gradient methods, and
-    // its boolean cavity has no continuous derivative anyway.
-    throw std::runtime_error("Not implemented: Solvated gradients");
+  switch (method_kind) {
+  case MethodKind::HF: {
+    if (guess_sk == U || conf_sk == U)
+      return run_method_for_optimization<HartreeFock, U>(m, basis, config, prev_wfn, energy_change, cosx_step);
+    else if (guess_sk == G || conf_sk == G)
+      return run_method_for_optimization<HartreeFock, G>(m, basis, config, prev_wfn, energy_change, cosx_step);
+    else
+      return run_method_for_optimization<HartreeFock, R>(m, basis, config, prev_wfn, energy_change, cosx_step);
+    break;
   }
+  case MethodKind::DFT: {
+    if (guess_sk == U || conf_sk == U)
+      return run_method_for_optimization<DFT, U>(m, basis, config, prev_wfn, energy_change, cosx_step);
+    else if (guess_sk == G || conf_sk == G)
+      throw std::runtime_error(
+          "Not implemented: DFT general spinorbital gradients");
+    else
+      return run_method_for_optimization<DFT, R>(m, basis, config, prev_wfn, energy_change, cosx_step);
+
+    break;
+  }
+  case MethodKind::MP2: {
+    throw std::runtime_error(
+        "Not implemented: MP2 gradients for geometry optimization");
+    break;
+  }
+  case MethodKind::CCSD:
+  case MethodKind::CCSD_T: {
+    throw std::runtime_error(
+        "Not implemented: coupled-cluster gradients for geometry optimization");
+    break;
+  }
+  case MethodKind::GFN2: {
+    // The cavity is rebuilt at each geometry inside the SCC, so the cached
+    // calculator stays valid in solvent too.
+    return run_gfn2_for_optimization(m, config, gfn2_cache);
+  }
+  }
+  throw std::runtime_error("Unknown method kind for geometry optimization");
 }
 
 // Per-step detail for the opt-in step log (--opt-step-log).
@@ -348,13 +385,30 @@ void log_step_results(fmt::ostream &log, int step, const Molecule &m,
   log.print("RMS gradient: {:.8f}\n",
             gradient.norm() / std::sqrt(gradient.size()));
   log.print("Max gradient: {:.8f}\n", gradient.cwiseAbs().maxCoeff());
-  log.print("Gradient (Hartree/Angstrom):\n");
+  log.print("Gradient (Hartree/Bohr):\n");
   for (int i = 0; i < el.size(); i++) {
     log.print("  {} {:2d}:  {:11.8f}  {:11.8f}  {:11.8f}\n", el[i].symbol(), i,
               gradient(0, i), gradient(1, i), gradient(2, i));
   }
   log.print("\n");
   log.flush();
+}
+
+std::pair<Wavefunction, Mat3N> energy_and_gradient(const OccInput &config) {
+  Molecule m = config.geometry.molecule();
+  // COSX on the gradient grids from the start (no GRIDX1 stage) and tight
+  // gradient integrals (energy change 0): one evaluation as a converged
+  // optimisation step would make it.
+  auto [wfn, g] = optimization_step_driver(config, m, nullptr, 0.0);
+  const auto &el = m.elements();
+  occ::log::info("Total energy: {:20.12f} Ha", wfn.energy.total);
+  occ::log::info("Gradient (Hartree/Bohr):");
+  for (int i = 0; i < el.size(); i++)
+    occ::log::info("  {:>2s} {:3d}  {:16.10f} {:16.10f} {:16.10f}",
+                   el[i].symbol(), i, g(0, i), g(1, i), g(2, i));
+  occ::log::info("|g| = {:.10f}  max|g_i| = {:.10f} Ha/Bohr", g.norm(),
+                 g.cwiseAbs().maxCoeff());
+  return {std::move(wfn), std::move(g)};
 }
 
 Wavefunction geometry_optimization(const OccInput &config) {
@@ -415,9 +469,40 @@ Wavefunction geometry_optimization(const OccInput &config) {
 
   // Step 0: Compute initial energy and gradient
   occ::log::info("Computing initial wavefunction for optimization");
-  std::tie(wfn, gradient) =
-      optimization_step_driver(config, m, nullptr, 1.0, &gfn2_cache);
-  
+  // COSX starts coarse unless the user fixed the grid.
+  OptCOSXStep cosx_step;
+  cosx_step.coarse = !config.method.cosx_fixed_grid;
+  // Largest gradient component (Ha/Bohr) below which GRIDX1 is left: about
+  // ten times GRIDX1's own gradient error (5e-3 Ha/Bohr on aspirin).
+  constexpr double cosx_fine_gradient = 5e-2;
+  // Energy and gradient at a geometry. Returns the energy difference between
+  // the gradient grids and GRIDX1 there when this evaluation left GRIDX1.
+  auto evaluate = [&](const Molecule &mol, const Wavefunction *prev,
+                      double energy_change)
+      -> std::tuple<Wavefunction, Mat3N, double> {
+    auto [w, g] = optimization_step_driver(config, mol, prev, energy_change,
+                                           &gfn2_cache, &cosx_step);
+    if (!cosx_step.coarse)
+      return {std::move(w), std::move(g), 0.0};
+    if (!cosx_step.used_cosx) {
+      cosx_step.coarse = false;
+      return {std::move(w), std::move(g), 0.0};
+    }
+    const double gmax = g.cwiseAbs().maxCoeff();
+    if (gmax >= cosx_fine_gradient)
+      return {std::move(w), std::move(g), 0.0};
+    cosx_step.coarse = false;
+    occ::log::info("COSX: max gradient {:.2e} Ha/Bohr is near GRIDX1's "
+                   "error, re-evaluating this geometry on the gradient grids",
+                   gmax);
+    auto [wf, gf] = optimization_step_driver(config, mol, &w, energy_change,
+                                             &gfn2_cache, &cosx_step);
+    const double shift = wf.energy.total - w.energy.total;
+    occ::log::info("COSX: GRIDX1 -> gradient grid energy shift {:.10f}", shift);
+    return {std::move(wf), std::move(gf), shift};
+  };
+  std::tie(wfn, gradient, std::ignore) = evaluate(m, nullptr, 1.0);
+
   // Write initial geometry to trajectory
   const auto &el = m.elements();
   const auto &positions = m.positions();
@@ -434,9 +519,9 @@ Wavefunction geometry_optimization(const OccInput &config) {
   }
 
   occ::log::info("Initial energy:          {:.12f} Ha", wfn.energy.total);
-  occ::log::info("Initial RMS gradient:    {:.5e} Ha/Angstrom", 
+  occ::log::info("Initial RMS gradient:    {:.5e} Ha/Bohr", 
                  gradient.norm() / std::sqrt(gradient.size()));
-  occ::log::info("Initial max gradient:    {:.5e} Ha/Angstrom", 
+  occ::log::info("Initial max gradient:    {:.5e} Ha/Bohr", 
                  gradient.cwiseAbs().maxCoeff());
 
   // Write initial wavefunction if requested
@@ -451,7 +536,9 @@ Wavefunction geometry_optimization(const OccInput &config) {
   
   // Main optimization loop
   bool converged = false;
-  
+  // the last step's energy change sets the next SCF's integral accuracy
+  double last_energy_change = 1.0;
+
   while (!converged && current_step < criteria.max_iterations) {
     current_step++;
     
@@ -473,10 +560,14 @@ Wavefunction geometry_optimization(const OccInput &config) {
     
     // Compute energy and gradient at new geometry, using previous wavefunction as guess
     double prev_energy = wfn.energy.total;
-    // For step 1, use large energy change; for later steps, use previous step's change
-    static double last_energy_change = 1.0;
-    std::tie(wfn, gradient) = optimization_step_driver(
-        config, m_new, &wfn, last_energy_change, &gfn2_cache);
+    double cosx_shift = 0.0;
+    std::tie(wfn, gradient, cosx_shift) =
+        evaluate(m_new, &wfn, last_energy_change);
+    if (cosx_shift != 0.0) {
+      // Earlier energies were on GRIDX1: move them onto this surface.
+      optimizer.shift_energy_reference(cosx_shift);
+      prev_energy += cosx_shift;
+    }
     
     // Write geometry to trajectory
     traj.print("{}\nStep {} Energy={:.9f}\n", el.size(), current_step, wfn.energy.total);
@@ -499,8 +590,8 @@ Wavefunction geometry_optimization(const OccInput &config) {
     occ::log::info("Step {:2d} (Cartesian coordinates):", current_step);
     occ::log::info("  Energy:           {:.12f} Ha", wfn.energy.total);
     occ::log::info("  Energy change:    {:.5e} Ha", energy_change);
-    occ::log::info("  RMS gradient:     {:.5e} Ha/Angstrom", rms_gradient);
-    occ::log::info("  Max gradient:     {:.5e} Ha/Angstrom", max_gradient);
+    occ::log::info("  RMS gradient:     {:.5e} Ha/Bohr", rms_gradient);
+    occ::log::info("  Max gradient:     {:.5e} Ha/Bohr", max_gradient);
     
     // Write wavefunction if requested
     if (config.optimization.write_wavefunction_steps) {
@@ -569,8 +660,18 @@ geometry_optimization_with_frequencies(const io::OccInput &config, bool run_freq
     // Configure vibrational analysis
     VibrationalAnalysisConfig vib_config;
     vib_config.compute_frequencies = true;
-    vib_config.project_tr_rot = false;  // Default: don't project modes
+    // The solvent cavity's Lebedev points keep their orientation in space as
+    // the molecule turns, so the solvated energy is not invariant to rigid
+    // rotations: project them out rather than report them as low modes.
+    vib_config.project_tr_rot = !config.solvent.solvent_name.empty();
     vib_config.step_size = 0.005;       // ORCA-like default
+    {
+      using HM = VibrationalAnalysisConfig::HessianMethod;
+      const auto &hm = config.optimization.hessian_method;
+      vib_config.hessian_method = hm == "analytic" ? HM::Analytic
+                                  : hm == "fd"     ? HM::FiniteDifferences
+                                                   : HM::Auto;
+    }
     vib_config.use_acoustic_sum_rule = true;  // Efficient computation
     vib_config.save_hessian = true;     // Save for later analysis
     vib_config.save_results = true;     // Save frequency analysis

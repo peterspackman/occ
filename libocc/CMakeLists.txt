@@ -9,7 +9,6 @@ if(BUILD_UNIFIED_LIB)
         $<TARGET_OBJECTS:_subprocess>
         $<TARGET_OBJECTS:occ_xtb>
         $<TARGET_OBJECTS:cint>
-        $<TARGET_OBJECTS:libecpint_static>
     )
 endif()
 
@@ -75,13 +74,5 @@ install(
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/ DESTINATION include)
 install(
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../src/3rdparty/gau2grid/gau2grid
-    DESTINATION include
-)
-install(
-    FILES ${CMAKE_CURRENT_SOURCE_DIR}/../src/3rdparty/libecpint/libecpint.hpp
-    DESTINATION include
-)
-install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../src/3rdparty/libecpint/libecpint
     DESTINATION include
 )

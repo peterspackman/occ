@@ -18,6 +18,7 @@
 #include <occ/crystal/spacegroup.h>
 #include <occ/crystal/unitcell.h>
 #include <occ/descriptors/sorted_k_distances.h>
+#include <numbers>
 
 // Custom Catch2 matcher for matrix comparison with detailed debugging
 template<typename ExpectedType>

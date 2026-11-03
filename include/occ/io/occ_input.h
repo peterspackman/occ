@@ -7,6 +7,7 @@
 #include <occ/core/spinorbital.h>
 #include <occ/crystal/crystal.h>
 #include <occ/numint/grid_settings.h>
+#include <occ/opt/optimization_state.h>
 #include <occ/qm/guess_kind.h>
 
 namespace occ::io {
@@ -76,7 +77,11 @@ struct MethodInput {
   bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
   bool use_split_ri_j{false}; // Use Split-RI-J for Coulomb matrix (Neese 2003)
   bool use_cosx{false}; // Use COSX seminumerical exchange
-  occ::numint::COSXGridLevel cosx_grid_level{occ::numint::COSXGridLevel::Grid1}; // COSX grid quality
+  // COSX follows ORCA's grid schedule (GRIDX1 -> GRIDX2, final energy on
+  // GRIDX3) unless cosx_fixed_grid, set by an explicit --cosx-grid, fixes
+  // cosx_grid_level for the whole calculation.
+  occ::numint::COSXGridLevel cosx_grid_level{occ::numint::COSXGridLevel::Grid1};
+  bool cosx_fixed_grid{false};
   COSXSettings cosx; // COSX settings
   double mp2_max_memory_gb{1.0}; // MP2 B-tensor / half-transform memory budget
   std::string mp2_spin_scaling{"none"}; // MP2 spin scaling: none | scs | sos
@@ -125,14 +130,16 @@ struct RuntimeInput {
 };
 
 struct OptimizationInput {
-  // Convergence criteria
-  double gradient_max{0.15e-3};     // Maximum gradient component (Ha/Angstrom) - more strict, ~ORCA's 3e-4 Ha/bohr
-  double gradient_rms{0.05e-3};     // RMS gradient (Ha/Angstrom) - more strict, ~ORCA's 1e-4 Ha/bohr
-  double step_max{1.8e-3};          // Maximum step (Angstrom)
-  double step_rms{1.2e-3};          // RMS step (Angstrom)
-  double energy_change{1e-6};       // Energy convergence (Hartree)
-  bool use_energy_criterion{false}; // Whether to use energy criterion
-  int max_iterations{100};          // Maximum optimization steps
+  // Convergence criteria in internal coordinates, defaulting to the
+  // optimizer's own (ORCA's NormalOpt)
+  using Defaults = occ::opt::ConvergenceCriteria;
+  double gradient_max{Defaults{}.gradient_max};   // Hartree/Bohr
+  double gradient_rms{Defaults{}.gradient_rms};   // Hartree/Bohr
+  double step_max{Defaults{}.step_max};           // Bohr
+  double step_rms{Defaults{}.step_rms};           // Bohr
+  double energy_change{Defaults{}.energy_change}; // Hartree, if enabled
+  bool use_energy_criterion{Defaults{}.use_energy_criterion};
+  int max_iterations{Defaults{}.max_iterations};
 
   // Integral accuracy control
   double gradient_integral_precision{1e-10}; // Final gradient integral cutoff
@@ -145,6 +152,9 @@ struct OptimizationInput {
 
   // Frequency analysis
   bool compute_frequencies{false};  // Compute vibrational frequencies after optimization
+  // Hessian for frequencies: "auto" (analytic where supported, else finite
+  // differences), "analytic" or "fd".
+  std::string hessian_method{"auto"};
 };
 
 struct DispersionCorrectionInput {

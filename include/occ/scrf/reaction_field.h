@@ -93,7 +93,7 @@ struct Options {
 ///   3. per-iteration: `update_from_atom_charges(q)` OR `solve_asc(phi)`,
 ///   4. `energy()`, `surfaces()`, `gradient()` reflect the latest update.
 ///
-/// `gradient()` is the frozen-cavity analytical gradient (plus FD CDS when
+/// `gradient()` is the frozen-cavity analytical gradient (plus CDS when
 /// `include_cds`). It requires an atom-resolved update (it goes through the
 /// SCC's Mulliken charges); calling it after a pure Eulerian solve returns an
 /// empty matrix.
@@ -194,7 +194,7 @@ public:
 
   /// Frozen-cavity analytical gradient (Hartree/Bohr, 3 × natom). Requires a
   /// prior atom-resolved update — returns a zero matrix otherwise. When
-  /// `include_cds`, adds an FD CDS contribution on top.
+  /// `include_cds`, adds the CDS gradient on top.
   ///
   /// This is the explicit derivative at frozen moments. After
   /// `update_from_atom_multipoles` the dipoles and quadrupoles are included in
@@ -202,6 +202,38 @@ public:
   /// belongs to the caller's density-Pulay chain, exactly as it does for the
   /// charges.
   Mat3N gradient() const;
+
+  /// A⁻¹ b with the pre-factored COSMO matrix (b is ncav x ncol).
+  Mat solve_cavity(const Mat &b) const { return m_es_lu.solve(b); }
+
+  /// Explicit nuclear derivative (3 x N) of E_es = ½ σ·φ = −(f/2) φᵀA⁻¹φ for
+  /// the given σ, when φ is the potential of the atom-centred charges
+  /// `atom_charges` (the nuclei, say): σᵀ ∂φ/∂x + (1/2f) σᵀ (∂A/∂x) σ, cavity
+  /// points moving with their atoms. A caller whose φ has another source as
+  /// well (an electron density) adds σᵀ ∂φ_source/∂x itself. Stationary in σ,
+  /// so σ need only be the self-consistent one.
+  Mat3N es_gradient(const Vec &sigma, const Vec &atom_charges) const;
+
+  /// Fixed-σ second-derivative pieces of E_es for the same split of φ, from
+  /// which the caller assembles
+  ///
+  ///   ∂²E_es/∂x∂y = hessian + σᵀ ∂²φ_src/∂x∂y − (1/f) Wᵀ A⁻¹ W,
+  ///   W = f (dphi + ∂φ_src/∂x) + dA_sigma,
+  ///
+  /// and the first-order charges ∂σ/∂x = −A⁻¹ W at fixed source.
+  struct EsDerivatives {
+    Mat dphi;     ///< ∂φ/∂x of the atom-charge potential, ncav x 3N
+    Mat dA_sigma; ///< (∂A/∂x) σ, ncav x 3N
+    Mat hessian;  ///< σᵀ ∂²φ/∂x∂y + (1/2f) σᵀ (∂²A/∂x∂y) σ, 3N x 3N
+  };
+  EsDerivatives es_derivatives(const Vec &sigma, const Vec &atom_charges) const;
+
+  /// Analytic nuclear gradient of the CDS energy (3 x N; zero without CDS).
+  Mat3N cds_gradient() const;
+  /// CDS Hessian (3N x 3N), central differences of the analytic gradient:
+  /// the term depends on the geometry alone, so this costs 6N cavity builds
+  /// and no electronic structure.
+  Mat cds_hessian() const;
 
   // ---------------------------------------------------------------------
   // Inspection

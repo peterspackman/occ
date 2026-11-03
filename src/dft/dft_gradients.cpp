@@ -53,9 +53,41 @@ qm::JKTriple DFT::compute_JK_gradient(const MolecularOrbitals &mo,
   return {J, K};
 }
 
+Mat3N DFT::two_electron_gradient(const MolecularOrbitals &mo,
+                                 const Mat &Schwarz) const {
+  occ::timing::start(occ::timing::category::dft_fock_gradient);
+  const RangeSeparatedParameters rs = range_separated_parameters();
+  Mat3N result;
+  if (!m_hf.using_cosx() && !m_hf.using_density_fitting()) {
+    // Exact integrals: Coulomb and full-range exchange in one quartet pass.
+    const double kf =
+        rs.omega != 0.0 ? rs.alpha + rs.beta : exact_exchange_factor();
+    result = m_hf.compute_jk_gradient(mo, 1.0, kf, Schwarz);
+    if (rs.omega != 0.0 && rs.beta != 0.0)
+      result += m_hf.compute_exchange_gradient(mo, -rs.beta, rs.omega, Schwarz);
+  } else {
+    // Coulomb for the operator in use (RI-J or four-centre), then exchange
+    // consistent with the COSX energy where COSX is on.
+    result = m_hf.compute_coulomb_gradient(mo, Schwarz);
+    if (rs.omega != 0.0) {
+      // E_x^HF = (alpha + beta) E_K[1/r] - beta E_K[erf(omega r)/r]
+      if (rs.alpha + rs.beta != 0.0)
+        result += m_hf.compute_exchange_gradient(mo, rs.alpha + rs.beta, 0.0,
+                                                 Schwarz);
+      if (rs.beta != 0.0)
+        result +=
+            m_hf.compute_exchange_gradient(mo, -rs.beta, rs.omega, Schwarz);
+    } else if (exact_exchange_factor() != 0.0) {
+      result += m_hf.compute_exchange_gradient(mo, exact_exchange_factor(), 0.0,
+                                               Schwarz);
+    }
+  }
+  occ::timing::stop(occ::timing::category::dft_fock_gradient);
+  return result;
+}
+
 MatTriple DFT::compute_fock_gradient(const MolecularOrbitals &mo,
                                      const Mat &Schwarz) {
-  occ::timing::start(occ::timing::category::dft_fock_gradient);
   auto [J, K] = compute_JK_gradient(mo, Schwarz);
 
   J.x -= K.x;

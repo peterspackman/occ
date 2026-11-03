@@ -25,9 +25,10 @@ occ::scrf::Options build_engine_options(const std::string &solvent) {
   o.solvent = solvent;
   o.f_eps_x = 0.0;
   o.probe_radius_angs = 0.0;       // DFT/HF SMD historically uses no probe
-  o.smoothing_width_bohr = 0.0;    // boolean cavity (energy-only — gradients
-                                   // go through the SCF response, not the
-                                   // frozen-cavity engine path)
+  // Smooth cavity, as for GFN2's SMD: a boolean one drops and adds elements
+  // discontinuously as atoms move, so its energy has no usable derivative
+  // for optimisations or frequencies.
+  o.smoothing_width_bohr = 0.1;
   o.include_cds = true;            // SMD CDS always on
   return o;
 }

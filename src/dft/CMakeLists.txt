@@ -4,6 +4,8 @@ add_library(occ_dft_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_kernels.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_gradient_kernels.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_gradients.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dft_response.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dft_hessian.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/dft_method.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/functional.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/hirshfeld.cpp"

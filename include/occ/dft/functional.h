@@ -470,6 +470,48 @@ public:
     }
   };
 
+  /// First and second derivatives of the energy density (libxc layouts:
+  /// unpolarized 1 column each; polarized vrho 2, vsigma 3, v2rho2 3,
+  /// v2rhosigma 6, v2sigma2 6, vtau 2, v2rhotau 4, v2sigmatau 6, v2tau2 3).
+  /// LDA leaves the sigma terms empty, LDA and GGA the tau terms.
+  struct SecondDerivatives {
+    MatRM vrho, vsigma, v2rho2, v2rhosigma, v2sigma2;
+    MatRM vtau, v2rhotau, v2sigmatau, v2tau2;
+    bool gga{false};
+    bool mgga{false};
+    SecondDerivatives &operator+=(const SecondDerivatives &r) {
+      vrho += r.vrho;
+      v2rho2 += r.v2rho2;
+      if (r.gga) {
+        if (!gga) {
+          vsigma = r.vsigma;
+          v2rhosigma = r.v2rhosigma;
+          v2sigma2 = r.v2sigma2;
+          gga = true;
+        } else {
+          vsigma += r.vsigma;
+          v2rhosigma += r.v2rhosigma;
+          v2sigma2 += r.v2sigma2;
+        }
+      }
+      if (r.mgga) {
+        if (!mgga) {
+          vtau = r.vtau;
+          v2rhotau = r.v2rhotau;
+          v2sigmatau = r.v2sigmatau;
+          v2tau2 = r.v2tau2;
+          mgga = true;
+        } else {
+          vtau += r.vtau;
+          v2rhotau += r.v2rhotau;
+          v2sigmatau += r.v2sigmatau;
+          v2tau2 += r.v2tau2;
+        }
+      }
+      return *this;
+    }
+  };
+
   struct Params {
     Params(size_t npt, Family family, SpinorbitalKind kind) : npts(npt) {
       if (kind == SpinorbitalKind::Restricted) {
@@ -617,6 +659,14 @@ public:
   }
 
   Result evaluate(const Params &params) const;
+
+  /// First and second functional derivatives at the given densities, scaled
+  /// by the component factor. Laplacian-dependent meta-GGAs throw.
+  SecondDerivatives evaluate_second_derivatives(const Params &params) const;
+
+  /// Whether the functional depends on the density Laplacian (occ's V_xc
+  /// and its derivatives carry only the tau dependence of a meta-GGA).
+  bool needs_laplacian() const;
 
   std::string family_string() const {
     switch (family()) {

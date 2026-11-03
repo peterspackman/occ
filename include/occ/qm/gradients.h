@@ -124,16 +124,27 @@ public:
     auto ovlp = m_proc.compute_overlap_gradient();
     auto en = m_proc.compute_nuclear_attraction_gradient();
     auto kin = m_proc.compute_kinetic_gradient();
-    occ::log::info("computing fock gradient with Schwarz screening");
-    auto f = m_proc.compute_fock_gradient(mo, m_schwarz);
+    // Two-electron part, contracted inside the integral loop (no derivative
+    // Fock matrices).
+    result += m_proc.two_electron_gradient(mo, m_schwarz);
+    // ECP derivative; the factor of two matches the other one-electron terms
+    // below (E_1e = 2 Tr(D H)).
+    result += 2.0 * m_proc.compute_ecp_gradient(mo);
     auto hcore = en + kin;
 
     Mat Dweighted = mo.energy_weighted_density_matrix();
+    const auto &frozen = m_proc.frozen_electrons();
 
     for (size_t atom = 0; atom < atoms.size(); atom++) {
       auto grad_rinv = m_proc.compute_rinv_gradient_for_atom(atom);
 
-      grad_rinv.scale_by(-1.0 * atoms[atom].atomic_number);
+      // Effective, not bare, nuclear charge: the Hellmann-Feynman term carries
+      // the charge of the operator in V, Z - n_ecp with an ECP (as in
+      // nuclear_repulsion_gradient).
+      const double z_eff =
+          atoms[atom].atomic_number -
+          (atom < frozen.size() ? frozen[atom] : 0);
+      grad_rinv.scale_by(-1.0 * z_eff);
 
       double x = 0.0, y = 0.0, z = 0.0;
 
@@ -144,10 +155,6 @@ public:
           grad_rinv.x.row(bf0) -= hcore.x.row(bf0);
           grad_rinv.y.row(bf0) -= hcore.y.row(bf0);
           grad_rinv.z.row(bf0) -= hcore.z.row(bf0);
-
-          x += impl::accumulate2(mo.kind, bf0, f.x, mo.D);
-          y += impl::accumulate2(mo.kind, bf0, f.y, mo.D);
-          z += impl::accumulate2(mo.kind, bf0, f.z, mo.D);
 
           x -= impl::accumulate1(mo.kind, bf0, ovlp.x, Dweighted);
           y -= impl::accumulate1(mo.kind, bf0, ovlp.y, Dweighted);

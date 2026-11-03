@@ -11,7 +11,7 @@
 #include <Eigen/Eigenvalues>
 #include <fmt/core.h>
 #include <cmath>
-#include <occ/core/format_matrix.h>
+#include <limits>
 #include <occ/core/log.h>
 #include <occ/opt/berny_optimizer.h>
 #include <occ/opt/internal_coordinates.h>
@@ -55,7 +55,6 @@ template <typename Func> inline double find_root_newton(Func f, double lim) {
   return x;
 }
 
-// Forward declarations for internal helper functions
 inline void update_hessian_bfgs(Mat &H, const Vec &dq, const Vec &dg) {
   double dq_dg = dq.dot(dg);
 
@@ -72,7 +71,6 @@ inline void update_hessian_bfgs(Mat &H, const Vec &dq, const Vec &dg) {
 
 inline double update_trust_radius(double trust, double predicted_change,
                                   double actual_change, const Vec &step) {
-  // Trust radius update function
   double step_norm = step.norm();
 
   // Fletcher's parameter: ratio of actual to predicted change
@@ -85,18 +83,17 @@ inline double update_trust_radius(double trust, double predicted_change,
 
   log::debug("Trust update: Fletcher's parameter: {:.6f}", ratio);
 
-  // Update trust radius based on Fletcher's parameter
   if (ratio < 0.25) {
     return step_norm / 4.0;
   } else if (ratio > 0.75 && std::abs(step_norm - trust) < 1e-10) {
     return 2.0 * trust;
   }
 
-  return trust; // Keep current trust radius
+  return trust;
 }
 
 inline Vec compute_quadratic_step(const Vec &g, const Mat &H, double trust,
-                                  bool &on_sphere, int step_number = -1) {
+                                  bool &on_sphere, int step_number) {
   // Compute eigenvalues of symmetrized Hessian
   Mat H_sym = (H + H.transpose()) / 2.0;
   Eigen::SelfAdjointEigenSolver<Mat> eigen_solver(H_sym);
@@ -119,9 +116,6 @@ inline Vec compute_quadratic_step(const Vec &g, const Mat &H, double trust,
   // Extract step from eigenvector: dq = V[:-1, 0] / V[-1, 0], lambda = D[0]
   Vec dq = V.block(0, 0, n, 1) / V(n, 0);
   double lambda = D(0);
-
-  log::trace("RFO: g={:.6f}, H_diag={:.6f}, raw_dq={:.6f}, lambda={:.6f}", g(0),
-             H(0, 0), dq(0), lambda);
 
   // If step is within trust radius, use it directly
   if (dq.norm() <= trust) {
@@ -151,27 +145,13 @@ inline Vec compute_quadratic_step(const Vec &g, const Mat &H, double trust,
   // Predicted energy change from quadratic model
   double dE = g.dot(dq) + 0.5 * dq.transpose() * H * dq;
 
-  // RFO step logging
-  if (step_number >= 0) {
-    double step_rms = std::sqrt(dq.squaredNorm() / dq.size());
-    double step_max = dq.cwiseAbs().maxCoeff();
-
-    // Step summary for debug level
-    log::debug("Step {}: trust={:.3f}, step_rms={:.4f}, dE={:.5f}", step_number,
-               trust, step_rms, dE);
-
-    // Detailed step info for debug level
-    if (on_sphere) {
-      log::debug("Step {}: sphere minimization performed", step_number);
-    } else {
-      log::debug("Step {}: pure RFO step performed", step_number);
-    }
-    log::debug("Step {}: trust_radius={:.6f}, neg_evals={}, "
-               "min_eval={:.5f}, lambda={:.6f}",
-               step_number, trust, (ev.array() < 0).count(), ev(0), lambda);
-    log::debug("Step {}: step_rms={:.6f}, step_max={:.6f}, predicted_dE={:.8f}",
-               step_number, step_rms, step_max, dE);
-  }
+  log::debug("Step {}: {} step, trust={:.6f}, neg_evals={}, min_eval={:.5f}, "
+             "lambda={:.6f}",
+             step_number, on_sphere ? "sphere-minimised" : "pure RFO", trust,
+             (ev.array() < 0).count(), ev(0), lambda);
+  log::debug("Step {}: step_rms={:.6f}, step_max={:.6f}, predicted_dE={:.8f}",
+             step_number, std::sqrt(dq.squaredNorm() / dq.size()),
+             dq.cwiseAbs().maxCoeff(), dE);
 
   return dq;
 }
@@ -185,36 +165,21 @@ BernyOptimizer::BernyOptimizer(const core::Molecule &mol,
   state.converged = false;
   state.energy = 0.0;
   state.first_step = true;
-
-  // Initialize gradient to zero
   state.gradient_cartesian = Mat3N::Zero(3, mol.size());
-
-  // Use default trust radius
   state.trust_radius = 0.3;
-
-  // (gradient_internal removed - now computed on demand)
-
-  // Initialize Hessian guess
   state.hessian = coords.hessian_guess();
 
-  // Initialize current internal coordinates
-  state.current_q = coords.to_vector(state.positions);
-
-  // Initialize optimization state points
-  state.future.q = state.current_q;
-  state.future.E = 0.0; // Will be set when we get first energy
+  // The first point to be evaluated is the input geometry
+  state.future.q = coords.to_vector(state.positions);
+  state.future.E = 0.0;
   state.future.g = Vec::Zero(coords.size());
 
-  // Initialize best point to a very high energy so first real point becomes
-  // best
+  // Best point starts at a very high energy so the first real point replaces
+  // it
   state.best.q = Vec::Zero(coords.size());
   state.best.E = std::numeric_limits<double>::max();
   state.best.g = Vec::Zero(coords.size());
 
-  // Initialize weights
-  state.weights = Vec::Ones(coords.size()); // Simple uniform weights for now
-
-  // Validate initialization
   if (coords.size() == 0) {
     throw std::runtime_error(
         "BernyOptimizer: No internal coordinates generated");
@@ -230,47 +195,17 @@ BernyOptimizer::BernyOptimizer(const core::Molecule &mol,
              coords.angles().size(), coords.dihedrals().size());
 }
 
+// One iteration of pyberny's Berny.send(): BFGS and trust-radius updates
+// against the best point so far, a linear search between the current and best
+// points, then an RFO step from the interpolated point.
 bool BernyOptimizer::step() {
-
-  // This follows Berny algorithm's send() method
-  log::trace("===== STEP {} PROCESSING START =====", state.step_number);
-  log::trace("Input energy: {:.12f}", state.energy);
-
-  // Log state at BEGINNING of step
-  log::trace("STATE AT STEP START:");
-  if (state.predicted.q.size() > 0) {
-    log::trace("  predicted.E: {:.12f}", state.predicted.E);
-    log::trace("  predicted.q: [{:.12f}]", state.predicted.q(0));
-  } else {
-    log::trace("  predicted: EMPTY");
-  }
-  if (state.interpolated.q.size() > 0) {
-    log::trace("  interpolated.E: {:.12f}", state.interpolated.E);
-    log::trace("  interpolated.q: [{:.12f}]", state.interpolated.q(0));
-  } else {
-    log::trace("  interpolated: EMPTY");
-  }
-  if (state.previous.q.size() > 0) {
-    log::trace("  previous.E: {:.12f}", state.previous.E);
-    log::trace("  previous.q: [{:.12f}]", state.previous.q(0));
-  } else {
-    log::trace("  previous: EMPTY");
-  }
-  if (state.best.q.size() > 0) {
-    log::trace("  best.E: {:.12f}", state.best.E);
-    log::trace("  best.q: [{:.12f}]", state.best.q(0));
-  } else {
-    log::trace("  best: EMPTY");
-  }
-
-  // Validate that we have gradient data
   if (state.gradient_cartesian.size() == 0) {
     throw std::runtime_error("BernyOptimizer::step(): No gradient data "
                              "available. Call update() first.");
   }
 
-  // Compute B-matrix and transform gradient to internal coordinates
-  // Use FULL B-matrix - redundancy handled in pseudoinverse
+  // Gradient in internal coordinates, through the generalised inverse of the
+  // full (redundant) Wilson B matrix
   Mat B = coords.wilson_b_matrix(state.positions);
 
   Mat BBT = B * B.transpose();
@@ -282,65 +217,41 @@ bool BernyOptimizer::step() {
     grad_flat.segment(3 * i, 3) = state.gradient_cartesian.col(i);
   }
 
-  // Create current optimization point
-  // Use s.future.q from previous step, NOT fresh computation
+  // The coordinates are those the previous step predicted (future.q), not a
+  // fresh evaluation at the new positions
   state.current =
       OptPoint(state.future.q, state.energy, B_inv.transpose() * grad_flat);
 
-  // Energy info for debug level
-  log::debug("Step {}: E={:.8f}", state.step_number, state.current.E);
-
-  // Detailed coordinate summary for debug
-  log::debug("Step {}: coords={}({}b,{}a,{}d)", state.step_number,
+  log::debug("Step {}: E={:.8f}, |g|={:.6f}, coords={}({}b,{}a,{}d)",
+             state.step_number, state.current.E, state.current.g.norm(),
              coords.size(), coords.bonds().size(), coords.angles().size(),
              coords.dihedrals().size());
 
-  log::debug("Step {}: E={:.8f}, |g|={:.6f}", state.step_number,
-             state.current.E, state.current.g.norm());
-  
-  // Log internal coordinate gradients at debug level
   log::debug("Internal coordinate gradients:");
   log::debug("  Type  Atoms              Gradient");
   log::debug("  ----  ----------------   ----------------");
   size_t idx = 0;
-  // Bonds (unitless - derivative of energy w.r.t. bond length in Angstrom)
   for (size_t i = 0; i < coords.bonds().size(); i++, idx++) {
     const auto &bond = coords.bonds()[i];
     std::string atoms = fmt::format("{}-{}", bond.i, bond.j);
     log::debug("  B     {:<16s}   {:12.8f}", atoms, state.current.g(idx));
   }
-  // Angles (units: Hartree/radian)
   for (size_t i = 0; i < coords.angles().size(); i++, idx++) {
     const auto &angle = coords.angles()[i];
     std::string atoms = fmt::format("{}-{}-{}", angle.i, angle.j, angle.k);
     log::debug("  A     {:<16s}   {:12.8f}", atoms, state.current.g(idx));
   }
-  // Dihedrals (units: Hartree/radian)
   for (size_t i = 0; i < coords.dihedrals().size(); i++, idx++) {
     const auto &dihedral = coords.dihedrals()[i];
-    std::string atoms = fmt::format("{}-{}-{}-{}", 
-                                    dihedral.i, dihedral.j, dihedral.k, dihedral.l);
+    std::string atoms = fmt::format("{}-{}-{}-{}", dihedral.i, dihedral.j,
+                                    dihedral.k, dihedral.l);
     log::debug("  D     {:<16s}   {:12.8f}", atoms, state.current.g(idx));
   }
-  if (coords.bonds().size() > 0) {
-    log::debug("  Units: B=Hartree/Angstrom, A/D=Hartree/radian");
-  }
-  log::trace(
-      "GEOMETRY STEP {}: [{:.8f}, {:.8f}, {:.8f}] [{:.8f}, {:.8f}, {:.8f}]",
-      state.step_number, state.positions(0, 0), state.positions(1, 0),
-      state.positions(2, 0), state.positions(0, 1), state.positions(1, 1),
-      state.positions(2, 1));
+  log::debug("  Units: B=Hartree/Bohr, A/D=Hartree/radian");
 
   if (!state.first_step) {
-    log::trace("Processing subsequent step - doing BFGS and trust updates");
-
-    // Update Hessian with BFGS
     Vec dq = state.current.q - state.best.q;
     Vec dg = state.current.g - state.best.g;
-
-    log::trace("BFGS update: dq norm = {:.6f}, dg norm = {:.6f}", dq.norm(),
-               dg.norm());
-
     if (dq.norm() > 1e-8 && dg.norm() > 1e-8 && dq.dot(dg) > 1e-8) {
       update_hessian_bfgs(state.hessian, dq, dg);
       log::debug("BFGS update applied");
@@ -348,176 +259,66 @@ bool BernyOptimizer::step() {
       log::debug("BFGS update skipped (insufficient change)");
     }
 
-    // Trust radius update
-    // Use previous step's predicted and interpolated values (from previous
-    // iteration)
+    // Trust radius from how well the previous step's model predicted the
+    // energy change it produced
     double predicted_change = state.predicted.E - state.interpolated.E;
     double actual_change = state.current.E - state.previous.E;
     Vec step_taken = state.predicted.q - state.interpolated.q;
-
-    log::trace("Trust update:");
-    log::trace("  current.E: {:.12f}", state.current.E);
-    log::trace("  previous.E: {:.12f}", state.previous.E);
-    log::trace("  actual_change: {:.12f}", actual_change);
-    log::trace("  predicted.E: {:.12f}", state.predicted.E);
-    log::trace("  interpolated.E: {:.12f}", state.interpolated.E);
-    log::trace("  predicted_change: {:.12f}", predicted_change);
-    log::trace("  step_taken norm: {:.12f}", step_taken.norm());
-
     state.trust_radius = update_trust_radius(
         state.trust_radius, predicted_change, actual_change, step_taken);
 
-    // Linear interpolation between current and best
+    // Linear search between current and best
     Vec dq_interp = state.best.q - state.current.q;
     double g0 = state.current.g.dot(dq_interp);
     double g1 = state.best.g.dot(dq_interp);
-
-    log::trace("Linear search setup:");
-    log::trace("  dq (best - current): {:.6f}", dq_interp(0));
-    log::trace("  current.g: {:.6f}", state.current.g(0));
-    log::trace("  best.g: {:.6f}", state.best.g(0));
-    log::trace("  current.g · dq: {:.6f}", g0);
-    log::trace("  best.g · dq: {:.6f}", g1);
-
-    // Use linear search method
     auto [t, E] = linear_search(state.current.E, state.best.E, g0, g1);
-
     log::debug("Linear search: t={:.6f}, E={:.12f}", t, E);
 
-    // Update interpolated point for this iteration
     state.interpolated.q = state.current.q + t * dq_interp;
-    state.interpolated.E = E; // Use the energy from linear fit
+    state.interpolated.E = E;
     state.interpolated.g =
         state.current.g + t * (state.best.g - state.current.g);
-
   } else {
-    // First step: set interpolated = current
     state.interpolated = state.current;
-    log::debug("First step - using current as interpolated");
   }
 
-  // Check convergence before computing new step
-  double grad_rms = std::sqrt(state.interpolated.g.dot(state.interpolated.g) /
-                              state.interpolated.g.size());
-  double grad_max = state.interpolated.g.cwiseAbs().maxCoeff();
-
-  // Will check step convergence after we compute the step
-  // For now just log current gradient status
-  log::trace("Pre-step convergence: RMS grad={:.6f} (tol={:.6f}), Max "
-             "grad={:.6f} (tol={:.6f})",
-             grad_rms, state.criteria.gradient_rms, grad_max,
-             state.criteria.gradient_max);
-
-  if (grad_rms < state.criteria.gradient_rms &&
-      grad_max < state.criteria.gradient_max) {
-    state.converged = true;
-    log::info("Optimization converged!");
-    return true;
-  }
-
-  // Check trust radius
   if (state.trust_radius < 1e-6) {
     throw std::runtime_error("The trust radius got too small, check forces?");
   }
 
-  // Compute projected Hessian and gradient
+  // Projected Hessian and gradient: redundant directions are made stiff so
+  // the step stays in the space the coordinates can realise
   Mat proj = B * B_inv;
   Mat H_proj = proj * state.hessian * proj +
                1000.0 * (Mat::Identity(coords.size(), coords.size()) - proj);
   Vec g_proj = proj * state.interpolated.g;
 
-  // Quadratic step with trust region
   bool on_sphere;
   Vec dq = compute_quadratic_step(g_proj, H_proj, state.trust_radius, on_sphere,
                                   state.step_number);
 
-  // Predicted point
   state.predicted.q = state.interpolated.q + dq;
   state.predicted.E = state.interpolated.E + state.interpolated.g.dot(dq) +
                       0.5 * dq.transpose() * state.hessian * dq;
   state.predicted.g = Vec::Zero(coords.size()); // Not used
 
-  log::debug("Trust region step norm: {:.6f}", dq.norm());
   log::debug("Predicted energy change: {:.8f}",
              state.predicted.E - state.current.E);
-
-  // Check if trust radius is actually being enforced
-  log::trace("Step size check: trust={:.8f}, step_norm={:.8f}, ratio={:.2f}",
-             state.trust_radius, dq.norm(), dq.norm() / state.trust_radius);
   if (dq.norm() > state.trust_radius * 1.01) {
     log::error("BUG: Internal step exceeds trust radius!");
   }
 
-  // Compute the step from current to predicted state
   Vec current_to_predicted = state.predicted.q - state.current.q;
 
-  double step_rms = std::sqrt(current_to_predicted.squaredNorm() /
-                              current_to_predicted.size());
-  double step_norm = current_to_predicted.norm();
-  double step_max = current_to_predicted.cwiseAbs().maxCoeff();
-
-  log::debug("Step {}: step_rms={:.4f}, step_max={:.3f}, step_norm={:.6f}",
-             state.step_number, step_rms, step_max, step_norm);
-  log::debug("{} Step: current->predicted norm={:.6f}", state.step_number,
-             step_norm);
-
-  log::trace("dq {}", format_matrix(current_to_predicted));
-  log::trace("Internal step: dq = [{:.8f}]", current_to_predicted(0));
-  log::trace("Current q: [{:.8f}], predicted q: [{:.8f}]", state.current.q(0),
-             state.predicted.q(0));
-
-  // Use update_geometry logic: q, s.geom = s.coords.update_geom(...)
-  // Use the step from current to predicted (like s.future.q - current.q)
-  auto [new_q, new_positions] = update_geometry(
-      state.current.q, current_to_predicted, coords, state.positions, B_inv);
-
-  // Log transformation results
-  // The convergence info is logged inside update_geometry function
-
-  log::trace("Before position update: [{:.8f}, {:.8f}]", state.positions(0, 1),
-             state.positions(0, 0));
-  Mat3N cart_step = new_positions - state.positions;
-  log::trace("Cartesian step: [{:.8f}, {:.8f}]", cart_step(0, 0),
-             cart_step(0, 1));
-  state.positions = new_positions;
-
-  // Set future = OptPoint(q, None, None) - use the NEW q from update_geometry
-  state.future = OptPoint(
-      new_q, 0.0,
-      Vec::Zero(new_q.size())); // Will be updated with real energy/gradient
-  log::trace("After position update: [{:.8f}, {:.8f}]", state.positions(0, 1),
-             state.positions(0, 0));
-
-  // Check final bond length
-  double final_bond = (state.positions.col(0) - state.positions.col(1)).norm();
-  log::trace("Final bond length: {:.8f}, expected: {:.8f}", final_bond,
-             state.predicted.q(0));
-
-  // Set future and previous optimization points
-  // future.q already set correctly above from update_geometry
-  // Just reset energy and gradient for next iteration
-  state.future.E = 0.0; // Will be set when we get next energy
-  state.future.g = Vec::Zero(state.future.q.size()); // Match the q size
-
-  state.previous = state.current;
-
-  // Update best point at the end
-  if (state.first_step || state.current.E < state.best.E) {
-    state.best = state.current;
-    log::debug("Updated best point to current: E={:.8f}", state.best.E);
-  } else {
-    log::debug("Kept previous best point: E={:.8f}", state.best.E);
-  }
-
-  // Convergence check using unified system
-  double energy_change = state.first_step ? 0.0 : 
-                         (state.current.E - state.previous.E);
-  
+  // Converged at the current (evaluated) geometry: its gradient and the step
+  // the model proposes from it are both small. The geometry is then left
+  // where it is, so the result is a point whose energy was computed.
+  const double energy_change =
+      state.first_step ? 0.0 : state.current.E - state.previous.E;
   auto conv_info = check_convergence(state.current.g, current_to_predicted,
                                      energy_change, state.criteria);
-  
-  // Clear convergence status log
-  log::info("Step {:2d} convergence check (internal coordinates):", state.step_number);
+  log::info("Step {:2d} convergence check (internal coordinates):",
+            state.step_number);
   log::info("  RMS gradient:    {:.5e} (threshold: {:.2e}) {}",
             conv_info.rms_gradient, state.criteria.gradient_rms,
             conv_info.gradient_rms_converged ? "✓" : "✗");
@@ -530,28 +331,34 @@ bool BernyOptimizer::step() {
   log::info("  Max step:        {:.5e} (threshold: {:.2e}) {}",
             conv_info.max_step, state.criteria.step_max,
             conv_info.step_max_converged ? "✓" : "✗");
-  
-  if (state.criteria.use_energy_criterion && !state.first_step) {
+  if (state.criteria.use_energy_criterion && !state.first_step)
     log::info("  Energy change:   {:.5e} (threshold: {:.2e}) {}",
               conv_info.energy_change, state.criteria.energy_change,
               conv_info.energy_converged ? "✓" : "✗");
+  if (conv_info.converged) {
+    state.converged = true;
+    log::info("Optimization converged!");
+    return true;
   }
-  
-  state.converged = conv_info.converged;
+
+  // Take the step from the current point (pyberny's update_geom): the
+  // back-transformation may not reach predicted.q exactly, so the next
+  // point's coordinates are those actually reached
+  auto [new_q, new_positions] = update_geometry(
+      state.current.q, current_to_predicted, coords, state.positions, B_inv);
+  state.positions = new_positions;
+  state.future = OptPoint(new_q, 0.0, Vec::Zero(new_q.size()));
+
+  state.previous = state.current;
+  if (state.first_step || state.current.E < state.best.E) {
+    state.best = state.current;
+    log::debug("Updated best point to current: E={:.8f}", state.best.E);
+  } else {
+    log::debug("Kept previous best point: E={:.8f}", state.best.E);
+  }
 
   state.first_step = false;
   state.step_number++;
-
-  // Log state at END of step
-  log::trace("STATE AT STEP END:");
-  log::trace("  predicted.E: {:.12f}", state.predicted.E);
-  log::trace("  predicted.q: [{:.12f}]", state.predicted.q(0));
-  log::trace("  interpolated.E: {:.12f}", state.interpolated.E);
-  log::trace("  interpolated.q: [{:.12f}]", state.interpolated.q(0));
-  log::trace("  previous.E: {:.12f}", state.previous.E);
-  log::trace("  previous.q: [{:.12f}]", state.previous.q(0));
-  log::debug("===== STEP {} PROCESSING END =====", state.step_number - 1);
-
   return false;
 }
 
@@ -559,8 +366,16 @@ core::Molecule BernyOptimizer::get_next_geometry() const {
   return core::Molecule(molecule.atomic_numbers(), state.positions);
 }
 
+void BernyOptimizer::shift_energy_reference(double shift) {
+  state.energy += shift;
+  state.current.E += shift;
+  state.previous.E += shift;
+  if (state.best.E != std::numeric_limits<double>::max())
+    state.best.E += shift;
+  state.future.E += shift;
+}
+
 void BernyOptimizer::update(double energy, const Mat3N &gradient) {
-  // Validate gradient dimensions
   if (gradient.rows() != 3) {
     throw std::runtime_error(
         "BernyOptimizer::update(): Gradient must have 3 rows (x,y,z)");
@@ -572,8 +387,6 @@ void BernyOptimizer::update(double energy, const Mat3N &gradient) {
 
   state.energy = energy;
   state.gradient_cartesian = gradient;
-
-  log::trace("Updated with energy = {:.12f}", energy);
 }
 
 } // namespace occ::opt

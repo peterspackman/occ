@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <occ/core/atom.h>
 #include <occ/core/log.h>
 #include <occ/core/timings.h>
@@ -74,8 +75,25 @@ AtomGrid MolecularGrid::get_partitioned_atom_grid(size_t atom_idx) const {
       partition, grid.points, m_positions, m_atomic_radii, m_dists);
 
   // Apply weights to grid with normalization
-  grid.weights.array() *=
+  const Vec fraction =
       weights.col(atom_idx).array() / weights.array().rowwise().sum();
+  grid.weights.array() *= fraction.array();
+
+  // Drop points the partition all but removes (ORCA's WCut). Their weight
+  // derivatives are as small as the weights, so the gradient is unaffected.
+  if (m_settings.partition_weight_cutoff > 0.0) {
+    const double cutoff = m_settings.partition_weight_cutoff;
+    Eigen::Index kept = 0;
+    for (Eigen::Index g = 0; g < fraction.size(); g++) {
+      if (fraction(g) < cutoff)
+        continue;
+      grid.points.col(kept) = grid.points.col(g);
+      grid.weights(kept) = grid.weights(g);
+      kept++;
+    }
+    grid.points.conservativeResize(3, kept);
+    grid.weights.conservativeResize(kept);
+  }
 
   occ::timing::stop(occ::timing::category::grid_points);
   return grid;
@@ -291,6 +309,8 @@ void MolecularGrid::initialize_default_radii() {
   m_atomic_radii = Vec::Ones(m_atomic_numbers.rows());
   for (int i = 0; i < m_atomic_radii.rows(); i++) {
     m_atomic_radii(i) = get_atomic_radius(m_atomic_numbers(i));
+    if (m_settings.rounded_bragg_radii)
+      m_atomic_radii(i) = std::round(m_atomic_radii(i) * 1000.0) / 1000.0;
   }
 }
 

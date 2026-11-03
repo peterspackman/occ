@@ -14,6 +14,15 @@ namespace occ::driver {
 qm::Wavefunction geometry_optimization(const io::OccInput &config);
 
 /**
+ * @brief Energy and analytic gradient at the input geometry, evaluated as a
+ * converged optimisation step would be (COSX on its gradient grids).
+ *
+ * @return Wavefunction and gradient in Hartree/Bohr
+ */
+std::pair<qm::Wavefunction, Mat3N>
+energy_and_gradient(const io::OccInput &config);
+
+/**
  * @brief Perform geometry optimization with optional vibrational analysis
  * 
  * @param config Input configuration

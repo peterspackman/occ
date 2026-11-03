@@ -1,5 +1,6 @@
 #include <fmt/core.h>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <occ/core/atom.h>
 #include <occ/core/format_matrix.h>
 #include <occ/core/molecule.h>
@@ -7,6 +8,10 @@
 #include <occ/dft/dft.h>
 #include <occ/qm/scf.h>
 #include <occ/qm/gradients.h>
+#include <occ/numint/grid_utils.h>
+#include <occ/numint/molecular_grid.h>
+#include <occ/qm/cphf.h>
+#include "fd_test_utils.h"
 
 using occ::format_matrix;
 using occ::Mat3N;
@@ -516,4 +521,310 @@ TEST_CASE("wB97X-V gradient water (VV10)", "[dft][vv10][wb97xv][gradient]") {
   // needs improvement through better grid settings or VV10 parameter tuning.
   // The gradient direction and magnitude are reasonable (~0.04 vs 0.034 Ha/Bohr).
   REQUIRE(all_close(expected, gradient, 8e-3, 8e-3));
+}
+
+
+// =============================================================================
+// Grid response and second-derivative building blocks
+// =============================================================================
+
+namespace {
+
+using occ::qm::MolecularOrbitals;
+using occ::qm::SpinorbitalKind;
+using occ::test::Atoms;
+using occ::test::coarse_grid;
+using occ::test::distorted_ammonia;
+using occ::test::distorted_water;
+using occ::test::directional_difference;
+using occ::test::generic_direction;
+using occ::test::max_abs;
+using occ::Vec;
+
+struct Spin {
+  SpinorbitalKind kind{SpinorbitalKind::Restricted};
+  int charge{0}, multiplicity{1};
+  const char *label() const {
+    return kind == SpinorbitalKind::Restricted ? "RKS" : "UKS";
+  }
+};
+// The water cation: a non-degenerate doublet, so the state cannot switch
+// between displaced geometries the way OH's pi pair can.
+constexpr Spin closed_shell{};
+constexpr Spin water_cation{SpinorbitalKind::Unrestricted, 1, 2};
+
+struct Case {
+  std::string method;
+  Spin spin;
+};
+
+// Coarse-grid DFT on `atoms` (def2-SVP); `df` adds RI-J (and RI-K for the
+// exact exchange). Returns the SCF energy, the analytic gradient if asked,
+// and the gradient without the grid response if asked.
+double dft_energy(const Atoms &atoms, const Case &c, bool df,
+                  Mat3N *grad = nullptr, Mat3N *grad_frozen = nullptr) {
+  occ::dft::DFT dft(c.method, occ::gto::AOBasis::load(atoms, "def2-svp"),
+                    coarse_grid());
+  if (df)
+    dft.set_density_fitting_basis("def2-universal-jkfit");
+  occ::qm::SCF<occ::dft::DFT> scf(dft, c.spin.kind);
+  scf.set_charge_multiplicity(c.spin.charge, c.spin.multiplicity);
+  scf.convergence_settings.energy_threshold = 1e-11;
+  scf.convergence_settings.commutator_threshold = 1e-9;
+  const double e = scf.compute_scf_energy();
+  if (grad)
+    *grad = occ::qm::GradientEvaluator<occ::dft::DFT>(dft)(
+        scf.molecular_orbitals());
+  if (grad_frozen) {
+    dft.set_grid_response(false);
+    *grad_frozen = occ::qm::GradientEvaluator<occ::dft::DFT>(dft)(
+        scf.molecular_orbitals());
+  }
+  return e;
+}
+
+// sum_k v_k M_k: per-coordinate derivative matrices along v.
+occ::Mat along(const std::vector<occ::Mat> &M, const Vec &v) {
+  occ::Mat sum = occ::Mat::Zero(M[0].rows(), M[0].cols());
+  for (size_t k = 0; k < M.size(); k++)
+    sum += v(k) * M[k];
+  return sum;
+}
+
+// Coarse-grid, unscreened functional on def2-SVP.
+occ::dft::DFT coarse_dft(const std::string &method, const Atoms &atoms,
+                         double screening = 0.0) {
+  occ::dft::DFT dft(method, occ::gto::AOBasis::load(atoms, "def2-svp"),
+                    coarse_grid());
+  dft.set_xc_screening_threshold(screening);
+  return dft;
+}
+
+MolecularOrbitals scf_orbitals(occ::dft::DFT &dft, Spin spin = closed_shell) {
+  occ::qm::SCF<occ::dft::DFT> scf(dft, spin.kind);
+  scf.set_charge_multiplicity(spin.charge, spin.multiplicity);
+  scf.convergence_settings.energy_threshold = 1e-10;
+  scf.compute_scf_energy();
+  return scf.molecular_orbitals();
+}
+
+// Becke/Treutler-Ahlrichs partition on a coarse grid around `atoms`, and an
+// arbitrary fixed value per point to contract its weight derivatives with.
+struct WeightProbe {
+  occ::numint::GridSettings settings = coarse_grid();
+  bool ta;
+  explicit WeightProbe(bool treutler_ahlrichs) : ta(treutler_ahlrichs) {
+    settings.treutler_alrichs_adjustment = ta;
+  }
+  occ::numint::MolecularGrid grid(const Atoms &a) const {
+    occ::numint::MolecularGrid g(occ::gto::AOBasis::load(a, "def2-svp"),
+                                 settings);
+    g.populate_molecular_grid_points();
+    return g;
+  }
+  static occ::Vec values(size_t n) {
+    occ::Vec e(n);
+    for (size_t i = 0; i < n; i++)
+      e(i) = std::sin(0.37 * i) + 0.5 * std::cos(1.3 * i);
+    return e;
+  }
+  static occ::Mat3N positions(const Atoms &a) {
+    occ::Mat3N pos(3, a.size());
+    for (size_t i = 0; i < a.size(); i++)
+      pos.col(i) = a[i].position();
+    return pos;
+  }
+  // d/dR of sum_i e_i w_i
+  occ::Mat3N gradient(const Atoms &a, const occ::Vec &e) const {
+    const auto g = grid(a);
+    const auto &pts = g.get_molecular_grid_points();
+    return occ::numint::becke_weight_gradient(pts.points(), pts.weights(),
+                                              pts.atom_blocks(), e,
+                                              positions(a), g.atomic_radii(), ta);
+  }
+};
+
+// |g . v - fd|: an analytic gradient against the central difference of its
+// energy along the unit direction v.
+double error_along(const Mat3N &g, const Vec &v, double fd) {
+  return std::abs(occ::test::flat(g).dot(v) - fd);
+}
+
+} // namespace
+
+TEST_CASE("Becke weight derivatives vs finite differences",
+          "[dft][grid][gradient]") {
+  const WeightProbe probe(GENERATE(true, false));
+  const Atoms atoms = distorted_ammonia();
+  const size_t n = probe.grid(atoms).get_molecular_grid_points().num_points();
+  const occ::Vec e = WeightProbe::values(n);
+  const Mat3N analytic = probe.gradient(atoms, e);
+  const Vec v = generic_direction(atoms);
+  const double fd = directional_difference(atoms, v, 1e-5, [&](const Atoms &a) {
+    const auto g = probe.grid(a);
+    REQUIRE(g.get_molecular_grid_points().num_points() == n);
+    return e.dot(g.get_molecular_grid_points().weights());
+  });
+  const double gv = occ::test::flat(analytic).dot(v);
+  fmt::print("weight gradient ({}): |g.v - FD| = {:.2e}\n",
+             probe.ta ? "Treutler-Ahlrichs" : "Becke", std::abs(gv - fd));
+  REQUIRE(occ::util::is_close(gv, fd, 1e-6, 1e-7));
+  REQUIRE(analytic.rowwise().sum().norm() < 1e-10);
+}
+
+TEST_CASE("Becke weight second derivatives vs finite differences",
+          "[dft][grid][hessian]") {
+  const WeightProbe probe(GENERATE(true, false));
+  const Atoms atoms = distorted_ammonia();
+  const auto g0 = probe.grid(atoms);
+  const auto &pts = g0.get_molecular_grid_points();
+  const occ::Vec e = WeightProbe::values(pts.num_points());
+  const occ::Mat H = occ::numint::becke_weight_hessian(
+      pts.points(), pts.weights(), pts.atom_blocks(), e,
+      WeightProbe::positions(atoms), g0.atomic_radii(), probe.ta);
+  const Vec v = generic_direction(atoms);
+  const Vec fd = occ::test::flat(directional_difference(
+      atoms, v, 1e-5, [&](const Atoms &a) { return probe.gradient(a, e); }));
+  const double err = max_abs(H * v - fd);
+  fmt::print("weight hessian ({}): |H v - FD| = {:.2e} (|H| {:.2e})\n",
+             probe.ta ? "Treutler-Ahlrichs" : "Becke", err, max_abs(H));
+  REQUIRE(err < 1e-5 * std::max(1.0, max_abs(H)));
+}
+
+TEST_CASE("DFT gradient with grid response vs finite differences (coarse grid)",
+          "[dft][grid][gradient][finite_diff]") {
+  const auto c = GENERATE(Case{"pbe", closed_shell}, Case{"b3lyp", closed_shell},
+                          Case{"tpss", closed_shell}, Case{"pbe", water_cation});
+  const Atoms atoms = distorted_water();
+  Mat3N g_resp, g_frozen;
+  dft_energy(atoms, c, false, &g_resp, &g_frozen);
+  const Vec v = generic_direction(atoms);
+  const double fd = directional_difference(
+      atoms, v, 1e-3, [&](const Atoms &a) { return dft_energy(a, c, false); });
+  fmt::print("{} {}: |g.v - FD| with grid response {:.2e}, without {:.2e}\n",
+             c.method, c.spin.label(), error_along(g_resp, v, fd),
+             error_along(g_frozen, v, fd));
+  REQUIRE(error_along(g_resp, v, fd) < 1e-6);
+  REQUIRE(g_resp.rowwise().sum().norm() < 1e-9);
+}
+
+// With RI-J (and RI-K for the exact exchange) every term of the gradient
+// differentiates the energy the SCF minimised, so it matches finite
+// differences of the SCF energy.
+TEST_CASE("Density-fitted DFT gradient vs finite differences of the SCF "
+          "energy",
+          "[dft][df][gradient][finite_diff]") {
+  // RI-J alone, RI-JK open shell, and attenuated RI-K; HF with RI-JK is
+  // covered in qm_gradient_tests.
+  const auto c = GENERATE(Case{"pbe", closed_shell}, Case{"b3lyp", water_cation},
+                          Case{"wb97x", closed_shell});
+  const Atoms atoms = distorted_water();
+  Mat3N g;
+  dft_energy(atoms, c, true, &g);
+  const Vec v = generic_direction(atoms);
+  const double fd = directional_difference(
+      atoms, v, 1e-3, [&](const Atoms &a) { return dft_energy(a, c, true); });
+  const double err = error_along(g, v, fd);
+  fmt::print("{}/DF {}: |g.v - FD| {:.2e}\n", c.method, c.spin.label(),
+             err);
+  REQUIRE(err < 1e-6);
+  REQUIRE(g.rowwise().sum().norm() < 1e-9);
+}
+
+// dV_xc/dR at fixed AO density (basis functions and grid move with the
+// atoms) against central differences of V_xc.
+TEST_CASE("XC derivative Fock matrices vs finite differences",
+          "[dft][hessian][blocks]") {
+  // LDA, GGA and meta-GGA: the XC code paths (other functionals of a family
+  // differ only inside libxc).
+  const std::string method =
+      GENERATE(as<std::string>{}, "svwn5", "pbe", "tpss");
+  const Atoms atoms = distorted_water();
+  auto dft = coarse_dft(method, atoms);
+  const auto mo = scf_orbitals(dft);
+  const auto V1 = dft.compute_xc_derivative_fock(mo);
+  const Vec v = generic_direction(atoms);
+  const occ::Mat V1v = along(V1, v);
+  const occ::Mat fd = directional_difference(atoms, v, 1e-4, [&](const Atoms &a) {
+    return coarse_dft(method, a).compute_vxc(mo);
+  });
+  const double err = max_abs(fd - V1v), vmax = max_abs(V1v);
+  fmt::print("{}: |dVxc/dv - FD| = {:.2e} (|dVxc/dv| {:.2e})\n", method, err,
+             vmax);
+  REQUIRE(err < 1e-7 * std::max(1.0, vmax));
+}
+
+TEST_CASE("Analytic XC skeleton Hessian vs finite differences of the XC gradient",
+          "[dft][hessian][blocks]") {
+  // LDA, GGA and meta-GGA (restricted; unrestricted meta-GGAs are refused).
+  const auto c = GENERATE(
+      Case{"svwn5", closed_shell}, Case{"pbe", closed_shell},
+      Case{"tpss", closed_shell}, Case{"svwn5", water_cation},
+      Case{"pbe", water_cation});
+  auto dft = coarse_dft(c.method, distorted_water());
+  const auto mo = scf_orbitals(dft, c.spin);
+  const occ::Mat Ha = dft.compute_xc_hessian(mo);
+  // The XC gradient (grid response included) at fixed AO density, the basis
+  // functions and grid moving with the atoms.
+  const Atoms atoms = distorted_water();
+  const Vec v = generic_direction(atoms);
+  const Vec fd = occ::test::flat(directional_difference(
+      atoms, v, 1e-4, [&](const Atoms &a) {
+        return coarse_dft(c.method, a).compute_xc_gradient(mo);
+      }));
+  const double err = max_abs(Ha * v - fd);
+  fmt::print("{} {}: |XC Hessian v - FD| = {:.2e} (|H| {:.2e})\n", c.method,
+             c.spin.label(), err, max_abs(Ha));
+  REQUIRE(err < 1e-6);
+  REQUIRE(occ::test::asymmetry(Ha) < 1e-10 * std::max(1.0, max_abs(Ha)));
+}
+
+// The screened, C_o-contracted XC Fock derivatives against the full ones.
+TEST_CASE("Projected XC derivative Fock equals the full one times C_o",
+          "[dft][hessian]") {
+  const std::string method =
+      GENERATE(as<std::string>{}, "svwn5", "pbe", "tpss");
+  auto basis = occ::gto::AOBasis::load(distorted_water(), "def2-svpd");
+  occ::dft::DFT dft(method, basis, coarse_grid());
+  const auto mo = scf_orbitals(dft);
+  const auto F = dft.compute_xc_derivative_fock(mo);
+  const auto Fo = dft.compute_xc_derivative_fock_occ(mo);
+  const occ::Mat Co = mo.C.leftCols(mo.n_alpha);
+  double err = 0.0, scale = 0.0;
+  for (size_t k = 0; k < F.size(); k++) {
+    const occ::Mat ref = F[k] * Co;
+    err = std::max(err, max_abs(Fo[k] - ref));
+    scale = std::max(scale, max_abs(ref));
+  }
+  fmt::print("{}: |projected dV/dR - full C_o| / max = {:.2e}\n", method,
+             err / scale);
+  REQUIRE(err / scale < 1e-9);
+}
+
+// dV_xc^s/dR C_o^s (grid response included) against central differences of
+// the UKS potential at fixed density, unscreened and with the default basis
+// function screening.
+TEST_CASE("UKS XC derivative Fock matrices vs finite differences",
+          "[udft][hessian][blocks]") {
+  const std::string method =
+      GENERATE(as<std::string>{}, "svwn5", "pbe");
+  const double screening = GENERATE(0.0, 1e-10);
+  const Atoms atoms = distorted_water();
+  auto dft = coarse_dft(method, atoms, screening);
+  const auto mo = scf_orbitals(dft, water_cation);
+  const auto V1 = dft.compute_xc_derivative_fock_occ(mo);
+  const Vec v = generic_direction(atoms);
+  const occ::Mat V1v = along(V1, v);
+  const occ::Mat fd = occ::qm::cphf::contract_occupied(
+      directional_difference(atoms, v, 1e-4,
+                             [&](const Atoms &a) {
+                               return coarse_dft(method, a, screening)
+                                   .compute_vxc(mo);
+                             }),
+      mo);
+  const double err = max_abs(fd - V1v), vmax = max_abs(V1v);
+  fmt::print("U{} (screening {:.0e}): |dVxc/dv C_o - FD| = {:.2e} (max "
+             "{:.2e})\n",
+             method, screening, err, vmax);
+  REQUIRE(err < 1e-7 * std::max(1.0, vmax));
 }

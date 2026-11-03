@@ -9,6 +9,11 @@ namespace occ::driver {
  * @brief Configuration options for vibrational frequency analysis
  */
 struct VibrationalAnalysisConfig {
+    /// How the Hessian is computed. Auto uses the analytic (CPHF/CPKS)
+    /// Hessian whenever the method supports it and finite differences of
+    /// analytic gradients otherwise.
+    enum class HessianMethod { Auto, Analytic, FiniteDifferences };
+    HessianMethod hessian_method = HessianMethod::Auto;
     bool compute_frequencies = true;          ///< Compute vibrational frequencies
     bool project_tr_rot = false;              ///< Project out translation/rotation modes
     double step_size = 0.005;                 ///< Step size for finite differences (Bohr)

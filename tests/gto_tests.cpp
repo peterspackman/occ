@@ -17,6 +17,7 @@
 #include <occ/qm/integral_engine.h>
 #include <vector>
 #include "test_utils.h"
+#include <numbers>
 
 using Catch::Approx;
 using occ::format_matrix;

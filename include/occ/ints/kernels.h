@@ -229,6 +229,7 @@ void esp_contracted_batch(int na_prim, int nb_prim,
 template <typename T>
 struct PrimitivePairData {
     T p;              // Combined exponent (a + b)
+    T a, b;           // Primitive exponents
     T Px, Py, Pz;     // Product center
     T prefactor;      // 2π/p × sph_fac × ca × cb
 
@@ -313,6 +314,9 @@ ShellPairData<T> precompute_shell_pair(
     data.B = {B[0], B[1], B[2]};
 
     data.primitives.reserve(na_prim * nb_prim);
+    const T rab2 = (A[0] - B[0]) * (A[0] - B[0]) +
+                   (A[1] - B[1]) * (A[1] - B[1]) +
+                   (A[2] - B[2]) * (A[2] - B[2]);
 
     for (int ia = 0; ia < na_prim; ++ia) {
         const T a = exponents_a[ia];
@@ -322,8 +326,18 @@ ShellPairData<T> precompute_shell_pair(
             const T b = exponents_b[ib];
             const T cb = coeffs_b[ib];
 
+            // Primitive pairs whose overlap factor exp(-ab/(a+b) R_AB^2)
+            // leaves them below 1e-18 contribute nothing: tight primitives
+            // on different atoms.
+            if (std::abs(T(2) * BoysConstants<T>::pi / (a + b) * ca * cb) *
+                    std::exp(-a * b / (a + b) * rab2) <
+                T(1e-18))
+                continue;
+
             PrimitivePairData<T> prim;
             prim.p = a + b;
+            prim.a = a;
+            prim.b = b;
             prim.Px = (a * A[0] + b * B[0]) / prim.p;
             prim.Py = (a * A[1] + b * B[1]) / prim.p;
             prim.Pz = (a * A[2] + b * B[2]) / prim.p;
