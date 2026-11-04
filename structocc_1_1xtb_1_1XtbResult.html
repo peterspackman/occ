@@ -122,6 +122,8 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ae2184100359d08b20f0d0362f1e694f7" id="r_ae2184100359d08b20f0d0362f1e694f7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae2184100359d08b20f0d0362f1e694f7">atomic_dipoles</a></td></tr>
 <tr class="memdesc:ae2184100359d08b20f0d0362f1e694f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">CAMM atomic dipoles (3 × N_atoms, e·bohr) and traceless Cartesian quadrupoles (6 × N_atoms, [xx, xy, yy, xz, yz, zz], Buckingham Θ = ½Σ q (3 r r − r² δ), e·bohr²) at the converged density.  <br /></td></tr>
 <tr class="memitem:a58b75ebed538d56dcc5910744b620d1f" id="r_a58b75ebed538d56dcc5910744b620d1f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a58b75ebed538d56dcc5910744b620d1f">atomic_quadrupoles</a></td></tr>
+<tr class="memitem:a488c5ee097af46869c2b67d577a72442" id="r_a488c5ee097af46869c2b67d577a72442"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a488c5ee097af46869c2b67d577a72442">multipole_radii</a></td></tr>
+<tr class="memdesc:a488c5ee097af46869c2b67d577a72442"><td class="mdescLeft">&#160;</td><td class="mdescRight">GFN2 multipole damping radii (bohr, CN dependent), same lifetime as the moments above: the dipole and quadrupole kernels are damped by 1/(1 + 6 (r₀/r)^k) with k = aesdmp3 and aesdmp5.  <br /></td></tr>
 <tr class="memitem:a7c98a2b55aa89f13188b12e245d4a841" id="r_a7c98a2b55aa89f13188b12e245d4a841"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c98a2b55aa89f13188b12e245d4a841">orbital_energies</a></td></tr>
 <tr class="memdesc:a7c98a2b55aa89f13188b12e245d4a841"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orbital energies ε at Γ (Hartree), α channel when unrestricted.  <br /></td></tr>
 <tr class="memitem:a6338fba9e4a91d06225a7e578135d73e" id="r_a6338fba9e4a91d06225a7e578135d73e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6338fba9e4a91d06225a7e578135d73e">orbital_occupations</a></td></tr>
@@ -316,6 +318,22 @@ Public Attributes</h2></td></tr>
 
 <p>Fermi-smearing free-energy term −T·S (≤ 0), included in <span class="tt"><a class="el" href="#ab32f87ef6100a52e745c7e43bbf14cfe" title="SCC contribution (electronic + isotropic Coulomb + 3rd-order + AES + on-site polariz,...">scc_energy</a></span>. </p>
 <p>Vanishes for any system with a gap ≫ kT. </p>
+
+</div>
+</div>
+<a id="a488c5ee097af46869c2b67d577a72442" name="a488c5ee097af46869c2b67d577a72442"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a488c5ee097af46869c2b67d577a72442">&#9670;&#160;</a></span>multipole_radii</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> occ::xtb::XtbResult::multipole_radii</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>GFN2 multipole damping radii (bohr, CN dependent), same lifetime as the moments above: the dipole and quadrupole kernels are damped by 1/(1 + 6 (r₀/r)^k) with k = aesdmp3 and aesdmp5. </p>
 
 </div>
 </div>

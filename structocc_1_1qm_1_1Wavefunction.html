@@ -144,7 +144,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a010f948b01866ec5d3992b3e4c17cb5e" id="r_a010f948b01866ec5d3992b3e4c17cb5e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a010f948b01866ec5d3992b3e4c17cb5e">electric_potential</a> (const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &amp;points) const</td></tr>
 <tr class="memdesc:a010f948b01866ec5d3992b3e4c17cb5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">ESP at <span class="tt">points</span> (bohr).  <br /></td></tr>
 <tr class="memitem:afcdb479d5e424b726781a6bd2c642f96" id="r_afcdb479d5e424b726781a6bd2c642f96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afcdb479d5e424b726781a6bd2c642f96">xtb_electric_potential</a> (const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &amp;points) const</td></tr>
-<tr class="memdesc:afcdb479d5e424b726781a6bd2c642f96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undamped point-multipole ESP from the xTB atomic charges and, when present, the CAMM dipoles and quadrupoles.  <br /></td></tr>
+<tr class="memdesc:afcdb479d5e424b726781a6bd2c642f96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Point-multipole ESP from the xTB atomic charges and, when present, the CAMM dipoles and quadrupoles, with GFN2's damping of the dipole and quadrupole terms when the radii are stored.  <br /></td></tr>
 <tr class="memitem:a2b4175573369c8e98696a18796e214e3" id="r_a2b4175573369c8e98696a18796e214e3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2b4175573369c8e98696a18796e214e3">electric_field</a> (const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &amp;points) const</td></tr>
 <tr class="memitem:a75fe338f7494dfdbc765f3230106cab8" id="r_a75fe338f7494dfdbc765f3230106cab8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a75fe338f7494dfdbc765f3230106cab8">save</a> (<a class="el" href="classocc_1_1io_1_1FchkWriter.html">FchkWriter</a> &amp;)</td></tr>
 <tr class="memitem:a288032ef7130eb91c228571c27f3c1de" id="r_a288032ef7130eb91c228571c27f3c1de"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a288032ef7130eb91c228571c27f3c1de">save</a> (const std::string &amp;filename)</td></tr>
@@ -184,6 +184,8 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a12a42c27c289004df490b2805bdc477d" id="r_a12a42c27c289004df490b2805bdc477d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a12a42c27c289004df490b2805bdc477d">xtb_atomic_charges</a></td></tr>
 <tr class="memitem:aa6b7553b47720edc9738a84eebef8195" id="r_aa6b7553b47720edc9738a84eebef8195"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa6b7553b47720edc9738a84eebef8195">xtb_atomic_dipoles</a></td></tr>
 <tr class="memitem:a5e43be62d6bc481e8fc179d63242b8ba" id="r_a5e43be62d6bc481e8fc179d63242b8ba"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5e43be62d6bc481e8fc179d63242b8ba">xtb_atomic_quadrupoles</a></td></tr>
+<tr class="memitem:a93fb449ae64425f62353fd6a24a85503" id="r_a93fb449ae64425f62353fd6a24a85503"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a93fb449ae64425f62353fd6a24a85503">xtb_multipole_radii</a></td></tr>
+<tr class="memitem:aaf5c79bed87b1cd6e2d99e23545f702a" id="r_aaf5c79bed87b1cd6e2d99e23545f702a"><td class="memItemLeft" align="right" valign="top">std::array&lt; double, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aaf5c79bed87b1cd6e2d99e23545f702a">xtb_multipole_damping_exponents</a> {3.0, 4.0}</td></tr>
 <tr class="memitem:a2ee57edb4a1cd3640c1ab22bea6efa87" id="r_a2ee57edb4a1cd3640c1ab22bea6efa87"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2ee57edb4a1cd3640c1ab22bea6efa87">xtb_converged</a> {false}</td></tr>
 <tr class="memitem:a48187136cd8278649e0cd2b515ae8e78" id="r_a48187136cd8278649e0cd2b515ae8e78"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48187136cd8278649e0cd2b515ae8e78">xtb_n_iterations</a> {0}</td></tr>
 <tr class="memitem:aa988b392770da5405a51870057b28110" id="r_aa988b392770da5405a51870057b28110"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa988b392770da5405a51870057b28110">have_correlation_data</a> {false}</td></tr>
@@ -928,7 +930,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Undamped point-multipole ESP from the xTB atomic charges and, when present, the CAMM dipoles and quadrupoles. </p>
+<p>Point-multipole ESP from the xTB atomic charges and, when present, the CAMM dipoles and quadrupoles, with GFN2's damping of the dipole and quadrupole terms when the radii are stored. </p>
 <p>Requires have_xtb_data. </p>
 
 </div>
@@ -1421,6 +1423,34 @@ Public Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">double occ::qm::Wavefunction::xtb_dispersion_energy {0.0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aaf5c79bed87b1cd6e2d99e23545f702a" name="aaf5c79bed87b1cd6e2d99e23545f702a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf5c79bed87b1cd6e2d99e23545f702a">&#9670;&#160;</a></span>xtb_multipole_damping_exponents</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt;double, 2&gt; occ::qm::Wavefunction::xtb_multipole_damping_exponents {3.0, 4.0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a93fb449ae64425f62353fd6a24a85503" name="a93fb449ae64425f62353fd6a24a85503"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93fb449ae64425f62353fd6a24a85503">&#9670;&#160;</a></span>xtb_multipole_radii</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> occ::qm::Wavefunction::xtb_multipole_radii</td>
         </tr>
       </table>
 </div><div class="memdoc">

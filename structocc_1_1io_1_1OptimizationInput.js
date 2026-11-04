@@ -9,6 +9,7 @@ var structocc_1_1io_1_1OptimizationInput =
     [ "gradient_rms", "structocc_1_1io_1_1OptimizationInput.html#a06ad87d0971ff2bc06cbd5b85802b319", null ],
     [ "hessian_method", "structocc_1_1io_1_1OptimizationInput.html#ae9e44298e49d317ecfeb8cae1f69e2a0", null ],
     [ "max_iterations", "structocc_1_1io_1_1OptimizationInput.html#a9da3d8f47d703698f50dbc4a5a68bbf5", null ],
+    [ "project_tr_rot", "structocc_1_1io_1_1OptimizationInput.html#a4c1cb6eb9939e9e5bb810faac7819884", null ],
     [ "step_max", "structocc_1_1io_1_1OptimizationInput.html#aafe33bfe301b69372c38f7e782610f6d", null ],
     [ "step_rms", "structocc_1_1io_1_1OptimizationInput.html#a6eb94bb8dd6b5f93058948eaa638b69f", null ],
     [ "tight_gradient_threshold", "structocc_1_1io_1_1OptimizationInput.html#a6981cc7297883f0db2a1f7adeb439ad0", null ],

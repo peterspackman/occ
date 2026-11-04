@@ -10,6 +10,7 @@ var structocc_1_1xtb_1_1XtbResult =
     [ "density_matrix_beta", "structocc_1_1xtb_1_1XtbResult.html#a4a865a034e90ada9ab8a6d7590818b95", null ],
     [ "dispersion_energy", "structocc_1_1xtb_1_1XtbResult.html#a3edb381b76525d4ba4b4aa8c2c659677", null ],
     [ "electronic_entropy_energy", "structocc_1_1xtb_1_1XtbResult.html#a200e28384d353b5d54cfad9d743a4b3b", null ],
+    [ "multipole_radii", "structocc_1_1xtb_1_1XtbResult.html#a488c5ee097af46869c2b67d577a72442", null ],
     [ "n_iterations", "structocc_1_1xtb_1_1XtbResult.html#a59d29132938a598e16e0572643912ee0", null ],
     [ "num_unpaired_electrons", "structocc_1_1xtb_1_1XtbResult.html#a1ab8d8e3e5aea8ebe464c48b1b9d87ac", null ],
     [ "orbital_coefficients", "structocc_1_1xtb_1_1XtbResult.html#a6d417bfa9ba6d3a8299eec87d292ded2", null ],

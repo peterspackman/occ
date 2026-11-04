@@ -471,7 +471,7 @@ var searchData=
   ['multipole_5flab_468',['multipole_lab',['../structocc_1_1mults_1_1RigidBodyState.html#a040825d92db7d03cc5df83195017ed43',1,'occ::mults::RigidBodyState']]],
   ['multipole_5flab_5fvalid_469',['multipole_lab_valid',['../structocc_1_1mults_1_1RigidBodyState.html#a997553b5a1a52e81a5b889de3bc8aa88',1,'occ::mults::RigidBodyState']]],
   ['multipole_5foperator_5fgrad_470',['multipole_operator_grad',['../classocc_1_1qm_1_1IntegralEngine.html#a7bce7df6c244fad1c9321a89db0c0349',1,'occ::qm::IntegralEngine::multipole_operator_grad()'],['../classocc_1_1qm_1_1cc_1_1IntegralEngine.html#a7bce7df6c244fad1c9321a89db0c0349',1,'occ::qm::cc::IntegralEngine::multipole_operator_grad()']]],
-  ['multipole_5fradii_471',['multipole_radii',['../namespaceocc_1_1xtb.html#a37cd602d1560426ebe6a6254a6658c21',1,'occ::xtb']]],
+  ['multipole_5fradii_471',['multipole_radii',['../structocc_1_1xtb_1_1XtbResult.html#a488c5ee097af46869c2b67d577a72442',1,'occ::xtb::XtbResult::multipole_radii'],['../namespaceocc_1_1xtb.html#a37cd602d1560426ebe6a6254a6658c21',1,'occ::xtb::multipole_radii(const std::vector&lt; core::Atom &gt; &amp;atoms, const Vec &amp;cn, const Gfn2Parameters &amp;params)']]],
   ['multipole_5fradii_5fwith_5fgradient_472',['multipole_radii_with_gradient',['../namespaceocc_1_1xtb.html#acf5e54542ad90d174ea340e0dc27234f',1,'occ::xtb']]],
   ['multipole_5fshifter_2eh_473',['multipole_shifter.h',['../multipole__shifter_8h.html',1,'']]],
   ['multipole_5fsource_2eh_474',['multipole_source.h',['../multipole__source_8h.html',1,'']]],

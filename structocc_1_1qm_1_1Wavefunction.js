@@ -69,6 +69,8 @@ var structocc_1_1qm_1_1Wavefunction =
     [ "xtb_atomic_quadrupoles", "structocc_1_1qm_1_1Wavefunction.html#a5e43be62d6bc481e8fc179d63242b8ba", null ],
     [ "xtb_converged", "structocc_1_1qm_1_1Wavefunction.html#a2ee57edb4a1cd3640c1ab22bea6efa87", null ],
     [ "xtb_dispersion_energy", "structocc_1_1qm_1_1Wavefunction.html#aef9f81811cece20ad92bbd43fba23eba", null ],
+    [ "xtb_multipole_damping_exponents", "structocc_1_1qm_1_1Wavefunction.html#aaf5c79bed87b1cd6e2d99e23545f702a", null ],
+    [ "xtb_multipole_radii", "structocc_1_1qm_1_1Wavefunction.html#a93fb449ae64425f62353fd6a24a85503", null ],
     [ "xtb_n_iterations", "structocc_1_1qm_1_1Wavefunction.html#a48187136cd8278649e0cd2b515ae8e78", null ],
     [ "xtb_repulsion_energy", "structocc_1_1qm_1_1Wavefunction.html#ab9f708406cfa54edea68118a1111434f", null ],
     [ "xtb_scc_energy", "structocc_1_1qm_1_1Wavefunction.html#af4ec9d7ddd1b3784bc068cde85d80dc8", null ]
