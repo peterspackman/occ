@@ -11,6 +11,8 @@ set(OCC_CORE_INCLUDE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/element.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/energy_components.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/fraction.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/eigh.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gemm.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/gensqrtinv.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/graph.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/inertia_tensor.h"

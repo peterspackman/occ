@@ -1,5 +1,6 @@
-#include <Eigen/Eigenvalues>
 #include <fmt/core.h>
+#include <occ/core/eigh.h>
+#include <occ/core/gemm.h>
 #include <occ/core/gensqrtinv.h>
 #include <occ/gto/gto.h>
 #include <occ/gto/rotation.h>
@@ -162,35 +163,29 @@ void MolecularOrbitals::update(const Mat &ortho, const Mat &potential) {
   // where
   // F' = X.transpose() . F . X; the original C is obtained as C = X . C'
   occ::timing::start(occ::timing::category::mo);
+  // one spin block of F (nbf x nbf) into its orbitals and energies
+  auto solve = [&ortho](const auto &F, auto &&C_out, auto &&e_out) {
+    const Eigen::Index nbf = ortho.rows(), nmo = ortho.cols();
+    Mat FX(nbf, nmo), Fp(nmo, nmo);
+    occ::core::pgemm(FX, F, ortho);
+    occ::core::pgemm(Fp, ortho, FX, false, true);
+    const auto [eigenvalues, eigenvectors] = occ::core::eigh(Fp);
+    occ::core::pgemm(C_out, ortho, eigenvectors);
+    e_out = eigenvalues;
+  };
   switch (kind) {
-  case SpinorbitalKind::Unrestricted: {
-    Eigen::SelfAdjointEigenSolver<Mat> alpha_eig_solver(
-        ortho.transpose() * block::a(potential) * ortho);
-    Eigen::SelfAdjointEigenSolver<Mat> beta_eig_solver(
-        ortho.transpose() * block::b(potential) * ortho);
-
-    block::a(C) = ortho * alpha_eig_solver.eigenvectors();
-    block::b(C) = ortho * beta_eig_solver.eigenvectors();
-
-    block::a(energies) = alpha_eig_solver.eigenvalues();
-    block::b(energies) = beta_eig_solver.eigenvalues();
+  case SpinorbitalKind::Unrestricted:
+    C.resize(2 * ortho.rows(), ortho.cols());
+    energies.resize(2 * ortho.cols());
+    solve(block::a(potential), block::a(C), block::a(energies));
+    solve(block::b(potential), block::b(C), block::b(energies));
     break;
-  }
-  case SpinorbitalKind::Restricted: {
-    Mat tmp = ortho.transpose() * potential * ortho;
-    Eigen::SelfAdjointEigenSolver<Mat> eig_solver(tmp);
-    C = ortho * eig_solver.eigenvectors();
-    energies = eig_solver.eigenvalues();
+  case SpinorbitalKind::Restricted:
+  case SpinorbitalKind::General:
+    C.resize(ortho.rows(), ortho.cols());
+    energies.resize(ortho.cols());
+    solve(potential, C, energies);
     break;
-  }
-  case SpinorbitalKind::General: {
-    // same as restricted
-    Eigen::SelfAdjointEigenSolver<Mat> eig_solver(ortho.transpose() *
-                                                  potential * ortho);
-    C = ortho * eig_solver.eigenvectors();
-    energies = eig_solver.eigenvalues();
-    break;
-  }
   }
   update_occupied_orbitals();
   smearing.smear_orbitals(*this);

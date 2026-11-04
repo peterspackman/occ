@@ -1,14 +1,11 @@
-#include <Eigen/LU>
-#include <Eigen/Eigenvalues>
+#include <occ/core/eigh.h>
 #include <occ/core/gensqrtinv.h>
 
 namespace occ::core {
 
 GenSqrtInvResult gensqrtinv(Eigen::Ref<const Mat> S, bool symmetric,
                             double max_condition_number) {
-  Eigen::SelfAdjointEigenSolver<Mat> eig_solver(S);
-  auto U = eig_solver.eigenvectors();
-  auto s = eig_solver.eigenvalues();
+  const auto [s, U] = eigh(S);
   auto s_max = s.maxCoeff();
   auto condition_number = std::min(
       s_max / std::max(s.minCoeff(), std::numeric_limits<double>::min()),

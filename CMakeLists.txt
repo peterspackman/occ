@@ -108,6 +108,14 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     else()
         option(USE_SYSTEM_BLAS "Use BLAS/LAPACK installed on system" OFF)
     endif()
+    # LAPACK for the symmetric eigensolver (occ::core::eigh) alone: unlike
+    # USE_SYSTEM_BLAS it leaves Eigen's own products, which run inside TBB
+    # tasks, off the (possibly threaded) library. Accelerate ships LAPACK.
+    if(APPLE AND USE_SYSTEM_BLAS)
+        option(USE_SYSTEM_LAPACK "Use the system LAPACK for symmetric eigensolves" ON)
+    else()
+        option(USE_SYSTEM_LAPACK "Use the system LAPACK for symmetric eigensolves" OFF)
+    endif()
     option(USE_SYSTEM_EIGEN "Use EIGEN installed on system" OFF)
     option(USE_SYSTEM_TBB "Use TBB installed on system" OFF)
     option(USE_QCINT "Use SIMD optimised qcint rather than libcint" OFF)
@@ -180,6 +188,10 @@ endif()
 
 if("${USE_SYSTEM_BLAS}")
     find_package(BLAS REQUIRED)
+endif()
+
+if("${USE_SYSTEM_LAPACK}")
+    find_package(LAPACK REQUIRED)
 endif()
 
 if("${USE_SYSTEM_TBB}" AND NOT EMSCRIPTEN)

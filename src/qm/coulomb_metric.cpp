@@ -1,4 +1,5 @@
-#include <Eigen/Eigenvalues>
+#include <Eigen/Cholesky>
+#include <occ/core/eigh.h>
 #include <occ/core/log.h>
 #include <occ/qm/coulomb_metric.h>
 #include <stdexcept>
@@ -17,11 +18,7 @@ void CoulombMetric::compute(const Mat &V, double lindep) {
   // Not numerically positive definite: fall back to a symmetric
   // eigendecomposition and drop the near-null space.
   m_cholesky = false;
-  Eigen::SelfAdjointEigenSolver<Mat> es(V);
-  if (es.info() != Eigen::Success)
-    throw std::runtime_error(
-        "Eigendecomposition of the density-fitting Coulomb metric failed");
-  const Vec &w = es.eigenvalues();
+  const auto [w, U] = occ::core::eigh(V);
   const double cutoff = lindep * std::max(w.maxCoeff(), 0.0);
   Eigen::Index nkept = 0;
   for (Eigen::Index i = 0; i < w.size(); ++i)
@@ -36,7 +33,7 @@ void CoulombMetric::compute(const Mat &V, double lindep) {
   for (Eigen::Index i = 0; i < w.size(); ++i) {
     if (w(i) <= cutoff)
       continue;
-    m_half.col(col++) = es.eigenvectors().col(i) / std::sqrt(w(i));
+    m_half.col(col++) = U.col(i) / std::sqrt(w(i));
   }
   occ::log::debug("Coulomb metric eigendecomposition: discarded {} of {} "
                   "vectors (eigenvalue range [{:.3e}, {:.3e}])",

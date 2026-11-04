@@ -1,4 +1,6 @@
+#include <Eigen/Eigenvalues>
 #include <Eigen/LU>
+#include <Eigen/QR>
 #include <Eigen/Geometry>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -7,6 +9,7 @@
 #include <occ/core/dimer.h>
 #include <occ/core/eem.h>
 #include <occ/core/eeq.h>
+#include <occ/core/eigh.h>
 #include <occ/core/elastic_tensor.h>
 #include <occ/core/element.h>
 #include <occ/core/format_matrix.h>
@@ -99,6 +102,60 @@ TEST_CASE("Dimer separations", "[dimer]") {
 }
 
 // Element tests
+// eigh: A V = V diag(w), V orthonormal, w ascending, and w equal to Eigen's
+// (the reference, whichever backend eigh uses). Eigenvectors of a degenerate
+// eigenvalue are only defined up to a rotation within its eigenspace, so they
+// are checked through these identities rather than compared column by column.
+static void require_eigh_decomposes(const occ::Mat &A) {
+  const auto [w, V] = occ::core::eigh(A);
+  const Eigen::Index n = A.rows();
+  REQUIRE(w.size() == n);
+  REQUIRE(V.rows() == n);
+  REQUIRE(V.cols() == n);
+  const double scale = std::max(1.0, A.cwiseAbs().maxCoeff());
+  REQUIRE((A * V - V * w.asDiagonal()).cwiseAbs().maxCoeff() < 1e-11 * scale);
+  REQUIRE((V.transpose() * V - occ::Mat::Identity(n, n)).cwiseAbs().maxCoeff() <
+          1e-12 * std::max<double>(1.0, n));
+  for (Eigen::Index i = 1; i < n; i++)
+    REQUIRE(w(i) >= w(i - 1));
+  Eigen::SelfAdjointEigenSolver<occ::Mat> reference(A);
+  REQUIRE((w - reference.eigenvalues()).cwiseAbs().maxCoeff() < 1e-11 * scale);
+}
+
+TEST_CASE("eigh decomposes a random symmetric matrix", "[eigh]") {
+  std::srand(42);
+  for (int n : {1, 2, 7, 64, 300}) {
+    occ::Mat A = occ::Mat::Random(n, n);
+    A = (A + A.transpose()).eval();
+    INFO("n = " << n);
+    require_eigh_decomposes(A);
+  }
+}
+
+TEST_CASE("eigh decomposes degenerate spectra", "[eigh]") {
+  // Q diag(w) Q^T with repeated eigenvalues, as symmetric molecules give
+  std::srand(7);
+  const int n = 120;
+  occ::Mat Q = occ::Mat::Random(n, n).householderQr().householderQ();
+  occ::Vec w(n);
+  for (int i = 0; i < n; i++)
+    w(i) = static_cast<double>(i / 3); // each eigenvalue three times
+  require_eigh_decomposes(Q * w.asDiagonal() * Q.transpose());
+  require_eigh_decomposes(occ::Mat::Identity(n, n));
+  require_eigh_decomposes(occ::Mat::Zero(n, n));
+}
+
+TEST_CASE("eigh of an empty matrix", "[eigh]") {
+  const auto [w, V] = occ::core::eigh(occ::Mat(0, 0));
+  REQUIRE(w.size() == 0);
+  REQUIRE(V.size() == 0);
+}
+
+TEST_CASE("eigh rejects a non-square matrix", "[eigh]") {
+  REQUIRE_THROWS_AS(occ::core::eigh(occ::Mat::Zero(3, 2)),
+                    std::invalid_argument);
+}
+
 TEST_CASE("Element constructor", "[element]") {
   using occ::core::Element;
   REQUIRE(Element("H").symbol() == "H");
