@@ -1,3 +1,3 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structocc_1_1dft_1_1kernels_1_1BatchDensity.html" title="A batch&#39;s density matrix: D_s for spin s is rows [s n, (s + 1) n) of D." alt="" coords="5,5,137,50"/>
+<area shape="rect" id="Node000000" href="$structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1SecondDerivatives.html" title="First and second derivatives of the energy density (libxc layouts: unpolarized 1 column each; polariz..." alt="" coords="5,5,236,50"/>
 </map>

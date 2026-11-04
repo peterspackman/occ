@@ -1,8 +1,12 @@
 var NAVTREEINDEX45 =
 {
+"qm_2cc_2gemm_8h.html":[6,0,1,0,19,0,3],
+"qm_2opmatrix_8h.html":[6,0,1,0,19,29],
+"qm_2seminumerical__exchange_8h.html":[6,0,1,0,19,38],
+"qm_2spinorbital_8h.html":[6,0,1,0,19,40],
 "qm_2sto3g__basis_8h.html":[6,0,1,0,19,42],
 "quadrature_8h.html":[6,0,1,0,21,2],
-"quasirandom_8h.html":[6,0,1,0,1,38],
+"quasirandom_8h.html":[6,0,1,0,1,40],
 "quickhull_8h.html":[6,0,1,0,9,12],
 "range__separated__parameters_8h.html":[6,0,1,0,4,7],
 "ray_8h.html":[6,0,1,0,9,13],
@@ -20,7 +24,7 @@ var NAVTREEINDEX45 =
 "rints__specialized_8h.html#a3c4cd504b3f0f548533a1109f7a8f84c":[6,0,1,0,12,9,1],
 "rints__specialized_8h.html#afd2ab66cc5830fbd8861b245e3873900":[6,0,1,0,12,9,0],
 "rints__specialized__3c_8h.html":[6,0,1,0,12,10],
-"rotor_8h.html":[6,0,1,0,1,39],
+"rotor_8h.html":[6,0,1,0,1,41],
 "scc_8h.html":[6,0,1,0,25,21],
 "scc__state_8h.html":[6,0,1,0,25,22],
 "scf_8h.html":[6,0,1,0,19,34],
@@ -245,9 +249,5 @@ var NAVTREEINDEX45 =
 "structocc_1_1cg_1_1FreeEnergySummary.html#acddb74ce3391a248abe4636222ee480a":[5,0,2,0,13,0],
 "structocc_1_1cg_1_1FreeEnergySummary.html#add62369bc0afd1b1a0fa56b99993363d":[3,0,2,0,14,2],
 "structocc_1_1cg_1_1FreeEnergySummary.html#add62369bc0afd1b1a0fa56b99993363d":[5,0,2,0,13,2],
-"structocc_1_1cg_1_1FreeEnergySummary.html#af0c7e87611a5877b3395ce60e968cfbc":[3,0,2,0,14,9],
-"structocc_1_1cg_1_1FreeEnergySummary.html#af0c7e87611a5877b3395ce60e968cfbc":[5,0,2,0,13,9],
-"structocc_1_1cg_1_1MoleculeResult.html":[3,0,2,0,15],
-"structocc_1_1cg_1_1MoleculeResult.html":[5,0,2,0,14],
-"structocc_1_1cg_1_1MoleculeResult.html#a2f876e3b4e2c81cb5236d618ae5b62e4":[3,0,2,0,15,4]
+"structocc_1_1cg_1_1FreeEnergySummary.html#af0c7e87611a5877b3395ce60e968cfbc":[3,0,2,0,14,9]
 };

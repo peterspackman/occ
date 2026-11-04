@@ -1,5 +1,15 @@
 var NAVTREEINDEX68 =
 {
+"structocc_1_1mults_1_1CartesianMultipole.html#aeeac9526f62fd2f4c4decb507b164ee5":[5,0,2,18,13,0],
+"structocc_1_1mults_1_1CartesianSite.html":[3,0,2,24,13],
+"structocc_1_1mults_1_1CartesianSite.html":[5,0,2,18,10],
+"structocc_1_1mults_1_1CartesianSite.html#a301168cbc206fb670b6ab159a2cada89":[3,0,2,24,13,0],
+"structocc_1_1mults_1_1CartesianSite.html#a301168cbc206fb670b6ab159a2cada89":[5,0,2,18,10,0],
+"structocc_1_1mults_1_1CartesianSite.html#a4fc0c9d80fc71eebe40004e1b1dcb0f4":[3,0,2,24,13,1],
+"structocc_1_1mults_1_1CartesianSite.html#a4fc0c9d80fc71eebe40004e1b1dcb0f4":[5,0,2,18,10,1],
+"structocc_1_1mults_1_1CartesianSite.html#a5f79a12b7106e647ec4f6004d71af114":[3,0,2,24,13,2],
+"structocc_1_1mults_1_1CartesianSite.html#a5f79a12b7106e647ec4f6004d71af114":[5,0,2,18,10,2],
+"structocc_1_1mults_1_1CoordinateSystem.html":[3,0,2,24,17],
 "structocc_1_1mults_1_1CoordinateSystem.html":[5,0,2,18,14],
 "structocc_1_1mults_1_1CoordinateSystem.html#a08e158e174c41d1e796967fda0e8e19e":[3,0,2,24,17,21],
 "structocc_1_1mults_1_1CoordinateSystem.html#a08e158e174c41d1e796967fda0e8e19e":[5,0,2,18,14,21],
@@ -239,15 +249,5 @@ var NAVTREEINDEX68 =
 "structocc_1_1mults_1_1CrystalOptimizerSettings.html#a71c5801f076478111ce0db9b456ab967":[5,0,2,18,24,8],
 "structocc_1_1mults_1_1CrystalOptimizerSettings.html#a7919ae04d3f40b4cc78e0d587e025b45":[3,0,2,24,27,0],
 "structocc_1_1mults_1_1CrystalOptimizerSettings.html#a7919ae04d3f40b4cc78e0d587e025b45":[5,0,2,18,24,0],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#a86aef6a7a4e30d476a58f4a514a6eed9":[3,0,2,24,27,25],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#a86aef6a7a4e30d476a58f4a514a6eed9":[5,0,2,18,24,25],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#a8c840884fb1132d98ff7147fa95979b9":[3,0,2,24,27,12],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#a8c840884fb1132d98ff7147fa95979b9":[5,0,2,18,24,12],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#a91fd8f5839c9cb4f8f12fdb2d3d8c49a":[3,0,2,24,27,26],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#a91fd8f5839c9cb4f8f12fdb2d3d8c49a":[5,0,2,18,24,26],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#aa965f8116499a89fa31c4acedbaeaf17":[3,0,2,24,27,18],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#aa965f8116499a89fa31c4acedbaeaf17":[5,0,2,18,24,18],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#aafc2eb376ac59255e093fbf2d7c57d06":[3,0,2,24,27,17],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#aafc2eb376ac59255e093fbf2d7c57d06":[5,0,2,18,24,17],
-"structocc_1_1mults_1_1CrystalOptimizerSettings.html#ab13866cfa81b1abaa804c61ab68ed216":[3,0,2,24,27,22]
+"structocc_1_1mults_1_1CrystalOptimizerSettings.html#a86aef6a7a4e30d476a58f4a514a6eed9":[3,0,2,24,27,25]
 };

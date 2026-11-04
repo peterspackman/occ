@@ -33,7 +33,7 @@ var searchData=
   ['gaussianinputfile_30',['GaussianInputFile',['../structocc_1_1io_1_1GaussianInputFile.html',1,'occ::io::GaussianInputFile'],['../structocc_1_1io_1_1GaussianInputFile.html#afb3195f539c0a885294c889d457da274',1,'occ::io::GaussianInputFile::GaussianInputFile(const std::string &amp;)'],['../structocc_1_1io_1_1GaussianInputFile.html#ab5f6a48ed9ad124a77d876985ec26f49',1,'occ::io::GaussianInputFile::GaussianInputFile(std::istream &amp;)']]],
   ['gc_31',['gc',['../structocc_1_1disp_1_1D4Scaling.html#ae0b90cf90050594b5f249730087779fb',1,'occ::disp::D4Scaling']]],
   ['gcp_32',['gcp',['../structocc_1_1dft_1_1MethodDefinition.html#a9268aaedc78680e39f5520517021f8d3',1,'occ::dft::MethodDefinition::gcp'],['../structocc_1_1dft_1_1DFTMethod.html#aabf47e50aef49e11b8561ade9a090be5',1,'occ::dft::DFTMethod::gcp']]],
-  ['gemm_2eh_33',['gemm.h',['../gemm_8h.html',1,'']]],
+  ['gemm_2eh_33',['gemm.h',['../core_2gemm_8h.html',1,'(Global Namespace)'],['../qm_2cc_2gemm_8h.html',1,'(Global Namespace)']]],
   ['general_34',['General',['../namespaceocc_1_1core.html#a3af0c5c2ee6a3580eba6e1338efa0406a674aa7e048c3d0b40ecd0dcdb5b7ce71',1,'occ::core::General'],['../namespaceocc_1_1qm.html#a674aa7e048c3d0b40ecd0dcdb5b7ce71',1,'occ::qm::General'],['../namespaceocc_1_1qm.html#a674aa7e048c3d0b40ecd0dcdb5b7ce71',1,'occ::qm::General']]],
   ['generalgrid_35',['GeneralGrid',['../namespaceocc_1_1io.html#a5017886cee1b6795932a19248622bfcbac698b6f233f0e2c6a85d9902f5fd3bf2',1,'occ::io']]],
   ['generate_36',['generate',['../classocc_1_1ints_1_1BoysTableGenerator.html#ae8e2d19352e4067391da10e0ef2c7c37',1,'occ::ints::BoysTableGenerator']]],

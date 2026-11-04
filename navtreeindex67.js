@@ -1,5 +1,15 @@
 var NAVTREEINDEX67 =
 {
+"structocc_1_1main_1_1SurfaceCutsConfig.html#a1ccc787f05daee2ddec9c05cab064ed8":[5,0,2,17,13,0],
+"structocc_1_1main_1_1SurfaceCutsConfig.html#a9c23b65bc7648fcdf8d4c83797b70158":[3,0,2,23,14,2],
+"structocc_1_1main_1_1SurfaceCutsConfig.html#a9c23b65bc7648fcdf8d4c83797b70158":[5,0,2,17,13,2],
+"structocc_1_1main_1_1SurfaceCutsConfig.html#ae08de5fa7a3b7ac1126ee5c0ce271802":[3,0,2,23,14,1],
+"structocc_1_1main_1_1SurfaceCutsConfig.html#ae08de5fa7a3b7ac1126ee5c0ce271802":[5,0,2,17,13,1],
+"structocc_1_1main_1_1TbConfig.html":[3,0,2,23,15],
+"structocc_1_1main_1_1TbConfig.html":[5,0,2,17,14],
+"structocc_1_1main_1_1TbConfig.html#a0325f5c5e53617a03cae115b34168143":[3,0,2,23,15,5],
+"structocc_1_1main_1_1TbConfig.html#a0325f5c5e53617a03cae115b34168143":[5,0,2,17,14,5],
+"structocc_1_1main_1_1TbConfig.html#a2d405eff0eede0a1236276d6dc6e5630":[3,0,2,23,15,13],
 "structocc_1_1main_1_1TbConfig.html#a2d405eff0eede0a1236276d6dc6e5630":[5,0,2,17,14,13],
 "structocc_1_1main_1_1TbConfig.html#a3380bfa8fc5379e3ba68f54c0822a180":[3,0,2,23,15,15],
 "structocc_1_1main_1_1TbConfig.html#a3380bfa8fc5379e3ba68f54c0822a180":[5,0,2,17,14,15],
@@ -239,15 +249,5 @@ var NAVTREEINDEX67 =
 "structocc_1_1mults_1_1CartesianMultipole.html#acbf3f8447fddf602750e9dc457a446d0":[5,0,2,18,13,1],
 "structocc_1_1mults_1_1CartesianMultipole.html#ae7873990dc650172815dea1db9a72aa7":[3,0,2,24,16,2],
 "structocc_1_1mults_1_1CartesianMultipole.html#ae7873990dc650172815dea1db9a72aa7":[5,0,2,18,13,2],
-"structocc_1_1mults_1_1CartesianMultipole.html#aeeac9526f62fd2f4c4decb507b164ee5":[3,0,2,24,16,0],
-"structocc_1_1mults_1_1CartesianMultipole.html#aeeac9526f62fd2f4c4decb507b164ee5":[5,0,2,18,13,0],
-"structocc_1_1mults_1_1CartesianSite.html":[3,0,2,24,13],
-"structocc_1_1mults_1_1CartesianSite.html":[5,0,2,18,10],
-"structocc_1_1mults_1_1CartesianSite.html#a301168cbc206fb670b6ab159a2cada89":[3,0,2,24,13,0],
-"structocc_1_1mults_1_1CartesianSite.html#a301168cbc206fb670b6ab159a2cada89":[5,0,2,18,10,0],
-"structocc_1_1mults_1_1CartesianSite.html#a4fc0c9d80fc71eebe40004e1b1dcb0f4":[3,0,2,24,13,1],
-"structocc_1_1mults_1_1CartesianSite.html#a4fc0c9d80fc71eebe40004e1b1dcb0f4":[5,0,2,18,10,1],
-"structocc_1_1mults_1_1CartesianSite.html#a5f79a12b7106e647ec4f6004d71af114":[3,0,2,24,13,2],
-"structocc_1_1mults_1_1CartesianSite.html#a5f79a12b7106e647ec4f6004d71af114":[5,0,2,18,10,2],
-"structocc_1_1mults_1_1CoordinateSystem.html":[3,0,2,24,17]
+"structocc_1_1mults_1_1CartesianMultipole.html#aeeac9526f62fd2f4c4decb507b164ee5":[3,0,2,24,16,0]
 };

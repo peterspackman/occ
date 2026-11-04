@@ -692,6 +692,7 @@ var hierarchy =
     [ "occ::crystal::SurfaceCutResult", "structocc_1_1crystal_1_1SurfaceCutResult.html", null ],
     [ "occ::main::SurfaceCutsConfig", "structocc_1_1main_1_1SurfaceCutsConfig.html", null ],
     [ "occ::cg::SurfaceField", "structocc_1_1cg_1_1SurfaceField.html", null ],
+    [ "occ::core::SymmetricEigenResult", "structocc_1_1core_1_1SymmetricEigenResult.html", null ],
     [ "occ::io::SymmetryData", "structocc_1_1io_1_1SymmetryData.html", null ],
     [ "occ::crystal::SymmetryDimerLabeller", "structocc_1_1crystal_1_1SymmetryDimerLabeller.html", null ],
     [ "occ::mults::SymmetryMapping", "structocc_1_1mults_1_1SymmetryMapping.html", null ],

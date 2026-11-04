@@ -1,5 +1,15 @@
 var NAVTREEINDEX49 =
 {
+"structocc_1_1crystal_1_1ZPrimeSearchParameters.html#aee3fdd909bfdfc6952e5ca96b6d6d2a2":[5,0,2,4,26,6],
+"structocc_1_1crystal_1_1ZPrimeSearchParameters.html#afa76d9ba8ca6d4cf9ce158dfd381970c":[3,0,2,9,28,3],
+"structocc_1_1crystal_1_1ZPrimeSearchParameters.html#afa76d9ba8ca6d4cf9ce158dfd381970c":[5,0,2,4,26,3],
+"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html":[3,0,2,10,1],
+"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html":[5,0,2,5,1],
+"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#a9407f62635e89b05d3cee582ce6f1fe1":[3,0,2,10,1,0],
+"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#a9407f62635e89b05d3cee582ce6f1fe1":[5,0,2,5,1,0],
+"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#aa546383b344f0740fcbe08ad029c539b":[3,0,2,10,1,2],
+"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#aa546383b344f0740fcbe08ad029c539b":[5,0,2,5,1,2],
+"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#ab5ce64ee79a0a1844a5bc52bfd7cf1fa":[3,0,2,10,1,3],
 "structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#ab5ce64ee79a0a1844a5bc52bfd7cf1fa":[5,0,2,5,1,3],
 "structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#ae79a9221f4ce7be34dce9779f1d0667f":[3,0,2,10,1,1],
 "structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#ae79a9221f4ce7be34dce9779f1d0667f":[5,0,2,5,1,1],
@@ -239,15 +249,5 @@ var NAVTREEINDEX49 =
 "structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a68b7e62e47d58a6398c5fca0bd53195e":[5,0,2,6,1,0,0,9],
 "structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a6b1d9dbd65f2e378ca90b3d2469ed8bd":[3,0,2,11,1,0,0,1],
 "structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a6b1d9dbd65f2e378ca90b3d2469ed8bd":[5,0,2,6,1,0,0,1],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a6b51518e57c1eb49d81a96f2ca7c10a5":[3,0,2,11,1,0,0,8],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a6b51518e57c1eb49d81a96f2ca7c10a5":[5,0,2,6,1,0,0,8],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a74c5389c3f5b14349c2c518bb4fed04f":[3,0,2,11,1,0,0,5],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a74c5389c3f5b14349c2c518bb4fed04f":[5,0,2,6,1,0,0,5],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a95fb5fdb34c777019ec6d1665ae56e9e":[3,0,2,11,1,0,0,7],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a95fb5fdb34c777019ec6d1665ae56e9e":[5,0,2,6,1,0,0,7],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a96eb40c588a3e7284a7995e903a89a8b":[3,0,2,11,1,0,0,10],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a96eb40c588a3e7284a7995e903a89a8b":[5,0,2,6,1,0,0,10],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#aa97e047ba1d035aea67aeb3cc5432ed4":[3,0,2,11,1,0,0,4],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#aa97e047ba1d035aea67aeb3cc5432ed4":[5,0,2,6,1,0,0,4],
-"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#ac724de28b2fcbd98895be4699e027d39":[3,0,2,11,1,0,0,6]
+"structocc_1_1dft_1_1impl_1_1DensityFunctional_1_1Result.html#a6b51518e57c1eb49d81a96f2ca7c10a5":[3,0,2,11,1,0,0,8]
 };

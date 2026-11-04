@@ -69,7 +69,7 @@ var namespaceocc_1_1qm_1_1cc =
     [ "num_frozen_core", "namespaceocc_1_1qm_1_1cc.html#aa84cc4f46978b26cf41be9055b5fff2d", null ],
     [ "pcon", "namespaceocc_1_1qm_1_1cc.html#a879e295e988b8a2c5ce2072b43987d41", null ],
     [ "pcon2", "namespaceocc_1_1qm_1_1cc.html#a2faf7b9944d8f9d4e8d5464f0960f16c", null ],
-    [ "pgemm", "namespaceocc_1_1qm_1_1cc.html#ad175eea5c8fb01593e8261467749f11a", null ],
+    [ "pgemm", "namespaceocc_1_1qm_1_1cc.html#a9c28c21279d7aa7f50c4d4c563df1de4", null ],
     [ "ppermute", "namespaceocc_1_1qm_1_1cc.html#aa7d872bdef3c1f2f71bc8ba5dcd84e19", null ],
     [ "reconstruct_eri", "namespaceocc_1_1qm_1_1cc.html#a8b1247c176f30ee8acb8fde08e73d53f", null ],
     [ "reconstruction_error", "namespaceocc_1_1qm_1_1cc.html#a757aa371336d6f5479fc1f358e0dc151", null ],

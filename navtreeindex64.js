@@ -1,5 +1,15 @@
 var NAVTREEINDEX64 =
 {
+"structocc_1_1isosurface_1_1RInvFunc.html#a8e327bb5e86d20a69b7c4b7b589042b2":[5,0,2,16,27,0],
+"structocc_1_1isosurface_1_1SharpRefineParams.html":[3,0,2,22,26],
+"structocc_1_1isosurface_1_1SharpRefineParams.html":[5,0,2,16,24],
+"structocc_1_1isosurface_1_1SharpRefineParams.html#a74af678e3376e3b07623378935f81fcb":[3,0,2,22,26,1],
+"structocc_1_1isosurface_1_1SharpRefineParams.html#a74af678e3376e3b07623378935f81fcb":[5,0,2,16,24,1],
+"structocc_1_1isosurface_1_1SharpRefineParams.html#a8565715ac02f76c7b5fbdc6b5f124e2d":[3,0,2,22,26,2],
+"structocc_1_1isosurface_1_1SharpRefineParams.html#a8565715ac02f76c7b5fbdc6b5f124e2d":[5,0,2,16,24,2],
+"structocc_1_1isosurface_1_1SharpRefineParams.html#abeedb16832ded2f89387d237a35c05f0":[3,0,2,22,26,0],
+"structocc_1_1isosurface_1_1SharpRefineParams.html#abeedb16832ded2f89387d237a35c05f0":[5,0,2,16,24,0],
+"structocc_1_1isosurface_1_1SurfaceCurvature.html":[3,0,2,22,8],
 "structocc_1_1isosurface_1_1SurfaceCurvature.html":[5,0,2,16,6],
 "structocc_1_1isosurface_1_1SurfaceCurvature.html#a18b23924874a249c0199b9c3bca296bf":[3,0,2,22,8,3],
 "structocc_1_1isosurface_1_1SurfaceCurvature.html#a18b23924874a249c0199b9c3bca296bf":[5,0,2,16,6,3],
@@ -239,15 +249,5 @@ var NAVTREEINDEX64 =
 "structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html#a25289563a978adca0a67739a455c7cf0":[5,0,2,16,0,5,2],
 "structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html#a2d4ce28e7fd2bde3120fe70c0f42e93b":[3,0,2,22,2,5,1],
 "structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html#a2d4ce28e7fd2bde3120fe70c0f42e93b":[5,0,2,16,0,5,1],
-"structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html#ad06b49d16dec995b192098c36d6aba30":[3,0,2,22,2,5,0],
-"structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html#ad06b49d16dec995b192098c36d6aba30":[5,0,2,16,0,5,0],
-"structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html#ae43202a24cc5f38005cef359b265eec1":[3,0,2,22,2,5,3],
-"structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html#ae43202a24cc5f38005cef359b265eec1":[5,0,2,16,0,5,3],
-"structocc_1_1isosurface_1_1pointwise_1_1EEQEspFunctor.html":[3,0,2,22,2,0],
-"structocc_1_1isosurface_1_1pointwise_1_1EEQEspFunctor.html":[5,0,2,16,0,0],
-"structocc_1_1isosurface_1_1pointwise_1_1EEQEspFunctor.html#a251d6f7cd0884a5b7cf695fe0e2efef6":[3,0,2,22,2,0,3],
-"structocc_1_1isosurface_1_1pointwise_1_1EEQEspFunctor.html#a251d6f7cd0884a5b7cf695fe0e2efef6":[5,0,2,16,0,0,3],
-"structocc_1_1isosurface_1_1pointwise_1_1EEQEspFunctor.html#a376c5c56cd8f394c3e6092f43ed20cb1":[3,0,2,22,2,0,0],
-"structocc_1_1isosurface_1_1pointwise_1_1EEQEspFunctor.html#a376c5c56cd8f394c3e6092f43ed20cb1":[5,0,2,16,0,0,0],
-"structocc_1_1isosurface_1_1pointwise_1_1EEQEspFunctor.html#aa0d67fc8c94875f1e72ee137db619b45":[3,0,2,22,2,0,2]
+"structocc_1_1isosurface_1_1pointwise_1_1DeformationDensityFunctor.html#ad06b49d16dec995b192098c36d6aba30":[3,0,2,22,2,5,0]
 };

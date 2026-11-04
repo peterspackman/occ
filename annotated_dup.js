@@ -66,6 +66,7 @@ var annotated_dup =
         [ "Combinations", "classocc_1_1core_1_1Combinations.html", "classocc_1_1core_1_1Combinations" ],
         [ "ConditioningOrthogonalizerResult", "structocc_1_1core_1_1ConditioningOrthogonalizerResult.html", "structocc_1_1core_1_1ConditioningOrthogonalizerResult" ],
         [ "Dimer", "classocc_1_1core_1_1Dimer.html", "classocc_1_1core_1_1Dimer" ],
+        [ "SymmetricEigenResult", "structocc_1_1core_1_1SymmetricEigenResult.html", "structocc_1_1core_1_1SymmetricEigenResult" ],
         [ "ElasticTensor", "classocc_1_1core_1_1ElasticTensor.html", "classocc_1_1core_1_1ElasticTensor" ],
         [ "Element", "classocc_1_1core_1_1Element.html", "classocc_1_1core_1_1Element" ],
         [ "EnergyComponents", "classocc_1_1core_1_1EnergyComponents.html", "classocc_1_1core_1_1EnergyComponents" ],

@@ -1,5 +1,15 @@
 var NAVTREEINDEX79 =
 {
+"structocc_1_1scrf_1_1detail_1_1CavityGeometry.html#aa94dbb6600adc3d904ba22a5446de6f8":[5,0,2,21,0,3,1],
+"structocc_1_1scrf_1_1detail_1_1CosmoResponse.html":[3,0,2,27,0,2],
+"structocc_1_1scrf_1_1detail_1_1CosmoResponse.html":[5,0,2,21,0,2],
+"structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313":[3,0,2,27,0,2,1],
+"structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a127f3588b0de3dc4a5fe11bda47d3313":[5,0,2,21,0,2,1],
+"structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a701449cf7e1ea3e24e2b0fb7118a75fd":[3,0,2,27,0,2,0],
+"structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#a701449cf7e1ea3e24e2b0fb7118a75fd":[5,0,2,21,0,2,0],
+"structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#afd1517d6b7ccffed4313a1a7de2fa74c":[3,0,2,27,0,2,2],
+"structocc_1_1scrf_1_1detail_1_1CosmoResponse.html#afd1517d6b7ccffed4313a1a7de2fa74c":[5,0,2,21,0,2,2],
+"structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html":[3,0,2,27,0,1],
 "structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html":[5,0,2,21,0,1],
 "structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html#a09c28d57ef2f9db2ced74febc627f9d7":[3,0,2,27,0,1,2],
 "structocc_1_1scrf_1_1detail_1_1MultipoleDamping.html#a09c28d57ef2f9db2ced74febc627f9d7":[5,0,2,21,0,1,2],
@@ -239,15 +249,5 @@ var NAVTREEINDEX79 =
 "structocc_1_1solvent_1_1cosmors_1_1Segments.html#acf75d86b9b69dc5997fc87f1b0a6b1ac":[5,0,2,24,0,7,5],
 "structocc_1_1solvent_1_1cosmors_1_1Segments.html#ae5f23a45600978b0367af9fe51da9955":[3,0,2,30,1,7,7],
 "structocc_1_1solvent_1_1cosmors_1_1Segments.html#ae5f23a45600978b0367af9fe51da9955":[5,0,2,24,0,7,7],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html":[3,0,2,30,1,4],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html":[5,0,2,24,0,4],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a5492a1a82c46c23fb6d75dfad9d442d8":[3,0,2,30,1,4,2],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a5492a1a82c46c23fb6d75dfad9d442d8":[5,0,2,24,0,4,2],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a71e15d59b4dd4cab9a5bd7ab4c2578af":[3,0,2,30,1,4,6],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a71e15d59b4dd4cab9a5bd7ab4c2578af":[5,0,2,24,0,4,6],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a807c32c9c52e7042f2f912dfa5ec933a":[3,0,2,30,1,4,0],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a807c32c9c52e7042f2f912dfa5ec933a":[5,0,2,24,0,4,0],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#aaddec754a2ec015ace86687751a4aaa5":[3,0,2,30,1,4,5],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#aaddec754a2ec015ace86687751a4aaa5":[5,0,2,24,0,4,5],
-"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#ab3696416f757265579ded630bf014021":[3,0,2,30,1,4,3]
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html":[3,0,2,30,1,4]
 };

@@ -186,8 +186,6 @@ Functions</h2></td></tr>
 <tr class="memdesc:aefd09e4dc7106c82d5d502c4144031b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">a matrix as a 2-index tensor (both column-major: a plain copy)  <br /></td></tr>
 <tr class="memitem:acb5b11518cf7c9eb561ca468354b2855" id="r_acb5b11518cf7c9eb561ca468354b2855"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acb5b11518cf7c9eb561ca468354b2855">as_matrix</a> (const Eigen::Tensor&lt; double, 2 &gt; &amp;t)</td></tr>
 <tr class="memdesc:acb5b11518cf7c9eb561ca468354b2855"><td class="mdescLeft">&#160;</td><td class="mdescRight">a 2-index tensor as a matrix  <br /></td></tr>
-<tr class="memitem:ad175eea5c8fb01593e8261467749f11a" id="r_ad175eea5c8fb01593e8261467749f11a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad175eea5c8fb01593e8261467749f11a">pgemm</a> (Eigen::Ref&lt; <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt; C, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt; A, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt; B, bool accumulate=false, bool transA=false)</td></tr>
-<tr class="memdesc:ad175eea5c8fb01593e8261467749f11a"><td class="mdescLeft">&#160;</td><td class="mdescRight">C(m x n) = A(m x k) * B(k x n).  <br /></td></tr>
 <tr class="memitem:a995dc53211841536a277c3062b0559bb" id="r_a995dc53211841536a277c3062b0559bb"><td class="memItemLeft" align="right" valign="top">Eigen::Map&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a995dc53211841536a277c3062b0559bb">mat_view</a> (const Eigen::Tensor&lt; double, 4 &gt; &amp;t, Eigen::Index r, Eigen::Index c)</td></tr>
 <tr class="memdesc:a995dc53211841536a277c3062b0559bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">View a contiguous (column-major) 4-tensor's data as an (r x c) matrix.  <br /></td></tr>
 <tr class="memitem:aa7d872bdef3c1f2f71bc8ba5dcd84e19" id="r_aa7d872bdef3c1f2f71bc8ba5dcd84e19"><td class="memTemplParams" colspan="2">template&lt;int N&gt; </td></tr>
@@ -251,6 +249,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:a0794f9196fe6f44e9a9c3a6ab8b51f4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">THC spin-blocked integrals: cheap blocks (&lt;= 2 virtuals + ovvv) come from DF, and the three vvvv ladders use cross-spin THC factors (one ISDF point set, per-spin X and three cores Vaa/Vbb/Vab).  <br /></td></tr>
 <tr class="memitem:a67f1799d11f559a869b1aab34d988bd9" id="r_a67f1799d11f559a869b1aab34d988bd9"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a67f1799d11f559a869b1aab34d988bd9">uccsd_t</a> (const <a class="el" href="structocc_1_1qm_1_1cc_1_1UCCIntegrals.html">UCCIntegrals</a> &amp;e, const Eigen::Tensor&lt; double, 2 &gt; &amp;t1a, const Eigen::Tensor&lt; double, 2 &gt; &amp;t1b, const Eigen::Tensor&lt; double, 4 &gt; &amp;t2aa, const Eigen::Tensor&lt; double, 4 &gt; &amp;t2ab, const Eigen::Tensor&lt; double, 4 &gt; &amp;t2bb)</td></tr>
 <tr class="memdesc:a67f1799d11f559a869b1aab34d988bd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perturbative (T) correction for spin-adapted unrestricted CCSD, evaluated natively from the spin-blocked <a class="el" href="structocc_1_1qm_1_1cc_1_1UCCIntegrals.html" title="Spin-blocked spatial MO integrals for spin-adapted unrestricted CCSD, in chemist notation,...">UCCIntegrals</a> (no spin-orbital integral build).  <br /></td></tr>
+<tr class="memitem:a9c28c21279d7aa7f50c4d4c563df1de4" id="r_a9c28c21279d7aa7f50c4d4c563df1de4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9c28c21279d7aa7f50c4d4c563df1de4">pgemm</a> (Eigen::Ref&lt; <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt; C, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt; A, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt; B, bool accumulate=false, bool transA=false)</td></tr>
+<tr class="memdesc:a9c28c21279d7aa7f50c4d4c563df1de4"><td class="mdescLeft">&#160;</td><td class="mdescRight">C(m x n) = A(m x k) * B(k x n).  <br /></td></tr>
 </table>
 <a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
 <a id="af7d3c977e3150a5a3beabfceb4ce75e7" name="af7d3c977e3150a5a3beabfceb4ce75e7"></a>
@@ -1270,8 +1270,8 @@ template&lt;int RA, int RB, int NC&gt; </div>
 
 </div>
 </div>
-<a id="ad175eea5c8fb01593e8261467749f11a" name="ad175eea5c8fb01593e8261467749f11a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad175eea5c8fb01593e8261467749f11a">&#9670;&#160;</a></span>pgemm()</h2>
+<a id="a9c28c21279d7aa7f50c4d4c563df1de4" name="a9c28c21279d7aa7f50c4d4c563df1de4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c28c21279d7aa7f50c4d4c563df1de4">&#9670;&#160;</a></span>pgemm()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1280,7 +1280,7 @@ template&lt;int RA, int RB, int NC&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void occ::qm::cc::pgemm </td>
+          <td class="memname">void <a class="el" href="namespaceocc_1_1core.html#a9c28c21279d7aa7f50c4d4c563df1de4">occ::core::pgemm</a> </td>
           <td>(</td>
           <td class="paramtype">Eigen::Ref&lt; <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>C</em></span>, </td>
         </tr>

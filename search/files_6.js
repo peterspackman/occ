@@ -3,7 +3,7 @@ var searchData=
   ['gamma_2eh_0',['gamma.h',['../gamma_8h.html',1,'']]],
   ['gauss_5fhermite_2eh_1',['gauss_hermite.h',['../gauss__hermite_8h.html',1,'']]],
   ['gaussian_5finput_5ffile_2eh_2',['gaussian_input_file.h',['../gaussian__input__file_8h.html',1,'']]],
-  ['gemm_2eh_3',['gemm.h',['../gemm_8h.html',1,'']]],
+  ['gemm_2eh_3',['gemm.h',['../core_2gemm_8h.html',1,'(Global Namespace)'],['../qm_2cc_2gemm_8h.html',1,'(Global Namespace)']]],
   ['gensqrtinv_2eh_4',['gensqrtinv.h',['../gensqrtinv_8h.html',1,'']]],
   ['geometry_5foptimization_2eh_5',['geometry_optimization.h',['../geometry__optimization_8h.html',1,'']]],
   ['gfn2_5fengine_2eh_6',['gfn2_engine.h',['../gfn2__engine_8h.html',1,'']]],

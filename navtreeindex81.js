@@ -1,5 +1,15 @@
 var NAVTREEINDEX81 =
 {
+"structocc_1_1xtb_1_1OrbitalFilling.html#aa06930f65ac45c75f4d0283dbe8d10cc":[5,0,2,26,19,2],
+"structocc_1_1xtb_1_1PeriodicMultipoleAO.html":[3,0,2,32,23],
+"structocc_1_1xtb_1_1PeriodicMultipoleAO.html":[5,0,2,26,23],
+"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a11e1cd4f580dfc8884833e4a34d47a94":[3,0,2,32,23,3],
+"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a11e1cd4f580dfc8884833e4a34d47a94":[5,0,2,26,23,3],
+"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a26810be58718465036761d23db9b1aee":[3,0,2,32,23,0],
+"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a26810be58718465036761d23db9b1aee":[5,0,2,26,23,0],
+"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a862a075154dedaa3a476f68f49c80b36":[3,0,2,32,23,2],
+"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a862a075154dedaa3a476f68f49c80b36":[5,0,2,26,23,2],
+"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#ab9aaf3f3ea9cb0bfce49d471cf244935":[3,0,2,32,23,1],
 "structocc_1_1xtb_1_1PeriodicMultipoleAO.html#ab9aaf3f3ea9cb0bfce49d471cf244935":[5,0,2,26,23,1],
 "structocc_1_1xtb_1_1PeriodicMultipoleAOBlocks.html":[3,0,2,32,24],
 "structocc_1_1xtb_1_1PeriodicMultipoleAOBlocks.html":[5,0,2,26,24],
@@ -239,15 +249,5 @@ var NAVTREEINDEX81 =
 "structquickhull_1_1MeshBuilder_1_1Face.html#a91d96735873c036558306db5448ca6ff":[5,0,3,2,1,3],
 "structquickhull_1_1MeshBuilder_1_1Face.html#aaa4d93609ff57160e813e6bebcd15ddd":[3,0,3,3,1,8],
 "structquickhull_1_1MeshBuilder_1_1Face.html#aaa4d93609ff57160e813e6bebcd15ddd":[5,0,3,2,1,8],
-"structquickhull_1_1MeshBuilder_1_1Face.html#ab4716d5bd1dc131e8ff9d08f9a14117f":[3,0,3,3,1,7],
-"structquickhull_1_1MeshBuilder_1_1Face.html#ab4716d5bd1dc131e8ff9d08f9a14117f":[5,0,3,2,1,7],
-"structquickhull_1_1MeshBuilder_1_1Face.html#ab92770cedd8f58ed6a44e56b04aa0d2d":[3,0,3,3,1,9],
-"structquickhull_1_1MeshBuilder_1_1Face.html#ab92770cedd8f58ed6a44e56b04aa0d2d":[5,0,3,2,1,9],
-"structquickhull_1_1MeshBuilder_1_1Face.html#abe5ce0be063c4060a166ece91c8a433b":[3,0,3,3,1,11],
-"structquickhull_1_1MeshBuilder_1_1Face.html#abe5ce0be063c4060a166ece91c8a433b":[5,0,3,2,1,11],
-"structquickhull_1_1MeshBuilder_1_1Face.html#ad6e577119e698441d74e7ade014ace2a":[3,0,3,3,1,10],
-"structquickhull_1_1MeshBuilder_1_1Face.html#ad6e577119e698441d74e7ade014ace2a":[5,0,3,2,1,10],
-"structquickhull_1_1MeshBuilder_1_1Face.html#ae6ffd551b175e8268fc6d6a7357c1413":[3,0,3,3,1,4],
-"structquickhull_1_1MeshBuilder_1_1Face.html#ae6ffd551b175e8268fc6d6a7357c1413":[5,0,3,2,1,4],
-"structquickhull_1_1MeshBuilder_1_1Face.html#af4b80c6fcac338950cbf4777dfed9a14":[3,0,3,3,1,5]
+"structquickhull_1_1MeshBuilder_1_1Face.html#ab4716d5bd1dc131e8ff9d08f9a14117f":[3,0,3,3,1,7]
 };

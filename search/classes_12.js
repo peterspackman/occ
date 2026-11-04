@@ -87,12 +87,13 @@ var searchData=
   ['surfacecutresult_84',['SurfaceCutResult',['../structocc_1_1crystal_1_1SurfaceCutResult.html',1,'occ::crystal']]],
   ['surfacecutsconfig_85',['SurfaceCutsConfig',['../structocc_1_1main_1_1SurfaceCutsConfig.html',1,'occ::main']]],
   ['surfacefield_86',['SurfaceField',['../structocc_1_1cg_1_1SurfaceField.html',1,'occ::cg']]],
-  ['symmetrydata_87',['SymmetryData',['../structocc_1_1io_1_1SymmetryData.html',1,'occ::io']]],
-  ['symmetrydimerlabeller_88',['SymmetryDimerLabeller',['../structocc_1_1crystal_1_1SymmetryDimerLabeller.html',1,'occ::crystal']]],
-  ['symmetrymapping_89',['SymmetryMapping',['../structocc_1_1mults_1_1SymmetryMapping.html',1,'occ::mults']]],
-  ['symmetrymappingresult_90',['SymmetryMappingResult',['../structocc_1_1core_1_1SymmetryMappingResult.html',1,'occ::core']]],
-  ['symmetryoperation_91',['SymmetryOperation',['../classocc_1_1crystal_1_1SymmetryOperation.html',1,'occ::crystal']]],
-  ['symmetryoperationformat_92',['SymmetryOperationFormat',['../structocc_1_1crystal_1_1SymmetryOperationFormat.html',1,'occ::crystal']]],
-  ['symmetryrelateddimer_93',['SymmetryRelatedDimer',['../structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html',1,'occ::crystal::CrystalDimers']]],
-  ['symop_94',['SymOp',['../structocc_1_1core_1_1SymOp.html',1,'occ::core']]]
+  ['symmetriceigenresult_87',['SymmetricEigenResult',['../structocc_1_1core_1_1SymmetricEigenResult.html',1,'occ::core']]],
+  ['symmetrydata_88',['SymmetryData',['../structocc_1_1io_1_1SymmetryData.html',1,'occ::io']]],
+  ['symmetrydimerlabeller_89',['SymmetryDimerLabeller',['../structocc_1_1crystal_1_1SymmetryDimerLabeller.html',1,'occ::crystal']]],
+  ['symmetrymapping_90',['SymmetryMapping',['../structocc_1_1mults_1_1SymmetryMapping.html',1,'occ::mults']]],
+  ['symmetrymappingresult_91',['SymmetryMappingResult',['../structocc_1_1core_1_1SymmetryMappingResult.html',1,'occ::core']]],
+  ['symmetryoperation_92',['SymmetryOperation',['../classocc_1_1crystal_1_1SymmetryOperation.html',1,'occ::crystal']]],
+  ['symmetryoperationformat_93',['SymmetryOperationFormat',['../structocc_1_1crystal_1_1SymmetryOperationFormat.html',1,'occ::crystal']]],
+  ['symmetryrelateddimer_94',['SymmetryRelatedDimer',['../structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html',1,'occ::crystal::CrystalDimers']]],
+  ['symop_95',['SymOp',['../structocc_1_1core_1_1SymOp.html',1,'occ::core']]]
 ];

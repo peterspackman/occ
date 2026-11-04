@@ -1,5 +1,15 @@
 var NAVTREEINDEX66 =
 {
+"structocc_1_1main_1_1ElasticSettings.html#a7b1f946a80d7749a70a5d1289cda03c4":[5,0,2,17,6,0],
+"structocc_1_1main_1_1ElasticSettings.html#aca33ae0b12cb5ecd1767aeb601929c44":[3,0,2,23,7,1],
+"structocc_1_1main_1_1ElasticSettings.html#aca33ae0b12cb5ecd1767aeb601929c44":[5,0,2,17,6,1],
+"structocc_1_1main_1_1ElasticSettings.html#ad683d4f0b3770743840f1800d0fb0666":[3,0,2,23,7,3],
+"structocc_1_1main_1_1ElasticSettings.html#ad683d4f0b3770743840f1800d0fb0666":[5,0,2,17,6,3],
+"structocc_1_1main_1_1ElasticSettings.html#ae2a130784a7a542862d1b797b861709f":[3,0,2,23,7,4],
+"structocc_1_1main_1_1ElasticSettings.html#ae2a130784a7a542862d1b797b861709f":[5,0,2,17,6,4],
+"structocc_1_1main_1_1ElasticSettings.html#aff08365669eee6a4566849dc13cb94e5":[3,0,2,23,7,5],
+"structocc_1_1main_1_1ElasticSettings.html#aff08365669eee6a4566849dc13cb94e5":[5,0,2,17,6,5],
+"structocc_1_1main_1_1EmbedConfig.html":[3,0,2,23,9],
 "structocc_1_1main_1_1EmbedConfig.html":[5,0,2,17,8],
 "structocc_1_1main_1_1EmbedConfig.html#a05a1063415e8026fda83f287b010e401":[3,0,2,23,9,11],
 "structocc_1_1main_1_1EmbedConfig.html#a05a1063415e8026fda83f287b010e401":[5,0,2,17,8,11],
@@ -239,15 +249,5 @@ var NAVTREEINDEX66 =
 "structocc_1_1main_1_1SpinorbitalKindValidator.html#adf0ffde98ce16c2f18ea24c0b5e0542d":[5,0,2,17,1,0],
 "structocc_1_1main_1_1SurfaceCutsConfig.html":[3,0,2,23,14],
 "structocc_1_1main_1_1SurfaceCutsConfig.html":[5,0,2,17,13],
-"structocc_1_1main_1_1SurfaceCutsConfig.html#a1ccc787f05daee2ddec9c05cab064ed8":[3,0,2,23,14,0],
-"structocc_1_1main_1_1SurfaceCutsConfig.html#a1ccc787f05daee2ddec9c05cab064ed8":[5,0,2,17,13,0],
-"structocc_1_1main_1_1SurfaceCutsConfig.html#a9c23b65bc7648fcdf8d4c83797b70158":[3,0,2,23,14,2],
-"structocc_1_1main_1_1SurfaceCutsConfig.html#a9c23b65bc7648fcdf8d4c83797b70158":[5,0,2,17,13,2],
-"structocc_1_1main_1_1SurfaceCutsConfig.html#ae08de5fa7a3b7ac1126ee5c0ce271802":[3,0,2,23,14,1],
-"structocc_1_1main_1_1SurfaceCutsConfig.html#ae08de5fa7a3b7ac1126ee5c0ce271802":[5,0,2,17,13,1],
-"structocc_1_1main_1_1TbConfig.html":[3,0,2,23,15],
-"structocc_1_1main_1_1TbConfig.html":[5,0,2,17,14],
-"structocc_1_1main_1_1TbConfig.html#a0325f5c5e53617a03cae115b34168143":[3,0,2,23,15,5],
-"structocc_1_1main_1_1TbConfig.html#a0325f5c5e53617a03cae115b34168143":[5,0,2,17,14,5],
-"structocc_1_1main_1_1TbConfig.html#a2d405eff0eede0a1236276d6dc6e5630":[3,0,2,23,15,13]
+"structocc_1_1main_1_1SurfaceCutsConfig.html#a1ccc787f05daee2ddec9c05cab064ed8":[3,0,2,23,14,0]
 };

@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Result.html" target="_top" xlink:title=" ">
+<g id="a_Node000000"><a xlink:href="structocc_1_1dft_1_1NonLocalCorrelationFunctional_1_1Parameters.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="156.25,-33.5 0,-33.5 0,0 156.25,0 156.25,-33.5"/>
 <text xml:space="preserve" text-anchor="start" x="8" y="-20" font-family="Helvetica,sans-Serif" font-size="10.00">occ::dft::NonLocalCorrelation</text>
-<text xml:space="preserve" text-anchor="middle" x="78.12" y="-7.25" font-family="Helvetica,sans-Serif" font-size="10.00">Functional::Result</text>
+<text xml:space="preserve" text-anchor="middle" x="78.12" y="-7.25" font-family="Helvetica,sans-Serif" font-size="10.00">Functional::Parameters</text>
 </a>
 </g>
 </g>

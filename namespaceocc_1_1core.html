@@ -123,6 +123,7 @@ Classes</h2></td></tr>
 <tr class="memitem:ConditioningOrthogonalizerResult" id="r_ConditioningOrthogonalizerResult"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1ConditioningOrthogonalizerResult.html">ConditioningOrthogonalizerResult</a></td></tr>
 <tr class="memitem:Dimer" id="r_Dimer"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Dimer.html">Dimer</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Storage class for relevant information of a dimer (pair) of <a class="el" href="classocc_1_1core_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a> objects.  <a href="classocc_1_1core_1_1Dimer.html#details">More...</a><br /></td></tr>
+<tr class="memitem:SymmetricEigenResult" id="r_SymmetricEigenResult"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1core_1_1SymmetricEigenResult.html">SymmetricEigenResult</a></td></tr>
 <tr class="memitem:ElasticTensor" id="r_ElasticTensor"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1ElasticTensor.html">ElasticTensor</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class for computation of properties based on an elasticity tensor.  <a href="classocc_1_1core_1_1ElasticTensor.html#details">More...</a><br /></td></tr>
 <tr class="memitem:Element" id="r_Element"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1core_1_1Element.html">Element</a></td></tr>
@@ -274,10 +275,14 @@ Functions</h2></td></tr>
 <tr class="memitem:a062390827251be4cdda8275f26d42230" id="r_a062390827251be4cdda8275f26d42230"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a062390827251be4cdda8275f26d42230">set_bond_tolerance</a> (float t)</td></tr>
 <tr class="memitem:a80ea5632e2f6e7ab784b0168c3b67d10" id="r_a80ea5632e2f6e7ab784b0168c3b67d10"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a80ea5632e2f6e7ab784b0168c3b67d10">get_bond_tolerance</a> ()</td></tr>
 <tr class="memitem:acb1efd48a3840bc7034d3586dd2e5c6d" id="r_acb1efd48a3840bc7034d3586dd2e5c6d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1ConditioningOrthogonalizerResult.html">ConditioningOrthogonalizerResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acb1efd48a3840bc7034d3586dd2e5c6d">conditioning_orthogonalizer</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">Mat</a> &gt;, double)</td></tr>
+<tr class="memitem:a362ece1e2560ba9a7d3aee5319dea2c8" id="r_a362ece1e2560ba9a7d3aee5319dea2c8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1SymmetricEigenResult.html">SymmetricEigenResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a362ece1e2560ba9a7d3aee5319dea2c8">eigh</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">Mat</a> &gt; A)</td></tr>
+<tr class="memdesc:a362ece1e2560ba9a7d3aee5319dea2c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Eigenvalues and eigenvectors of the real symmetric matrix A (its lower triangle is read).  <br /></td></tr>
 <tr class="memitem:a92246b981947e4e0f8af40db12185a2b" id="r_a92246b981947e4e0f8af40db12185a2b"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a92246b981947e4e0f8af40db12185a2b">chemical_formula</a> (const std::vector&lt; <a class="el" href="classocc_1_1core_1_1Element.html">Element</a> &gt; &amp;elements)</td></tr>
 <tr class="memdesc:a92246b981947e4e0f8af40db12185a2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The chemical formula of a given std::vector of Elements e.g.  <br /></td></tr>
 <tr class="memitem:aa7cc2ff83621321d05ab7bd860a2bb81" id="r_aa7cc2ff83621321d05ab7bd860a2bb81"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa7cc2ff83621321d05ab7bd860a2bb81">total_atomic_mass</a> (const <a class="el" href="namespaceocc.html#ac6e3d82e4db5caf8abce0f2c0ca6a501">IVec</a> &amp;atomic_numbers)</td></tr>
 <tr class="memdesc:aa7cc2ff83621321d05ab7bd860a2bb81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate the total atomic mass of a collection of atoms.  <br /></td></tr>
+<tr class="memitem:a9c28c21279d7aa7f50c4d4c563df1de4" id="r_a9c28c21279d7aa7f50c4d4c563df1de4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9c28c21279d7aa7f50c4d4c563df1de4">pgemm</a> (Eigen::Ref&lt; <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt; C, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt; A, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt; B, bool accumulate=false, bool transA=false)</td></tr>
+<tr class="memdesc:a9c28c21279d7aa7f50c4d4c563df1de4"><td class="mdescLeft">&#160;</td><td class="mdescRight">C(m x n) = A(m x k) * B(k x n).  <br /></td></tr>
 <tr class="memitem:ab25be21637f89ed6ac96910483c65e51" id="r_ab25be21637f89ed6ac96910483c65e51"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1core_1_1GenSqrtInvResult.html">GenSqrtInvResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab25be21637f89ed6ac96910483c65e51">gensqrtinv</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">Mat</a> &gt;, bool symmetric=false, double max_condition_number=1e8)</td></tr>
 <tr class="memitem:a9201f84a536bf7194bf669c250db4707" id="r_a9201f84a536bf7194bf669c250db4707"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#ab21e648c78ef040a65e4715392fd9b86">Mat3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9201f84a536bf7194bf669c250db4707">inertia_tensor</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> &gt; masses, Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &gt; positions)</td></tr>
 <tr class="memitem:aec7ecfa2dc83b10e2e48637fdb4726e8" id="r_aec7ecfa2dc83b10e2e48637fdb4726e8"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
@@ -1002,6 +1007,26 @@ template&lt;unsigned int order = 0&gt; </div>
 
 </div>
 </div>
+<a id="a362ece1e2560ba9a7d3aee5319dea2c8" name="a362ece1e2560ba9a7d3aee5319dea2c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a362ece1e2560ba9a7d3aee5319dea2c8">&#9670;&#160;</a></span>eigh()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1core_1_1SymmetricEigenResult.html">SymmetricEigenResult</a> occ::core::eigh </td>
+          <td>(</td>
+          <td class="paramtype">Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">Mat</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>A</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Eigenvalues and eigenvectors of the real symmetric matrix A (its lower triangle is read). </p>
+<p>With a LAPACK (OCC_HAVE_LAPACK) this is the divide-and-conquer dsyevd, several times faster than <a class="el" href="namespaceEigen.html">Eigen</a>'s QR-iteration solver even on one core; otherwise <a class="el" href="namespaceEigen.html">Eigen</a>'s SelfAdjointEigenSolver. Call it outside TBB parallel regions: a threaded LAPACK runs its own threads, sized to occ's. </p>
+
+</div>
+</div>
 <a id="a4154a71b9289a3cfad52fad1c6898dd0" name="a4154a71b9289a3cfad52fad1c6898dd0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4154a71b9289a3cfad52fad1c6898dd0">&#9670;&#160;</a></span>frequencies_cm_to_hartree()</h2>
 
@@ -1446,6 +1471,57 @@ template&lt;typename T&gt; </div>
 </div><div class="memdoc">
 
 <p>returns true if two Atoms have the same element and are at the exact same point in space </p>
+
+</div>
+</div>
+<a id="a9c28c21279d7aa7f50c4d4c563df1de4" name="a9c28c21279d7aa7f50c4d4c563df1de4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c28c21279d7aa7f50c4d4c563df1de4">&#9670;&#160;</a></span>pgemm()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void occ::core::pgemm </td>
+          <td>(</td>
+          <td class="paramtype">Eigen::Ref&lt; <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>C</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>A</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">occ::Mat</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>B</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>accumulate</em></span><span class="paramdefsep"> = </span><span class="paramdefval">false</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>transA</em></span><span class="paramdefsep"> = </span><span class="paramdefval">false</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>C(m x n) = A(m x k) * B(k x n). </p>
+<p>With accumulate, C += A*B. With transA, A is passed as (k x m) and A^T*B is formed.</p>
+<p>Whether to parallelise here depends on the GEMM backend:</p><ul>
+<li>On Apple with Accelerate, the GEMM runs on the AMX matrix co-processor, which is shared per CPU cluster: one dgemm already saturates it (measured: 8 concurrent dgemms = 1.2x one) and a single AMX call (~346 GFLOP/s) beats <a class="el" href="namespaceEigen.html">Eigen</a> NEON on all 8 cores (~237). So issue exactly ONE call &ndash; TBB-blocking would only spawn contending AMX calls.</li>
+<li>Everywhere else (Linux default has no system BLAS; we do not assume a Linux BLAS is threaded) the underlying GEMM is single-threaded (<a class="el" href="namespaceEigen.html">Eigen</a>'s own NEON/AVX, ~52 GFLOP/s), so we parallelise over output blocks of the larger dimension ourselves (measured ~4.6x on 8 cores). </li>
+</ul>
 
 </div>
 </div>

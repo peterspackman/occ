@@ -1,5 +1,15 @@
 var NAVTREEINDEX80 =
 {
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html":[5,0,2,24,0,4],
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a5492a1a82c46c23fb6d75dfad9d442d8":[3,0,2,30,1,4,2],
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a5492a1a82c46c23fb6d75dfad9d442d8":[5,0,2,24,0,4,2],
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a71e15d59b4dd4cab9a5bd7ab4c2578af":[3,0,2,30,1,4,6],
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a71e15d59b4dd4cab9a5bd7ab4c2578af":[5,0,2,24,0,4,6],
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a807c32c9c52e7042f2f912dfa5ec933a":[3,0,2,30,1,4,0],
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#a807c32c9c52e7042f2f912dfa5ec933a":[5,0,2,24,0,4,0],
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#aaddec754a2ec015ace86687751a4aaa5":[3,0,2,30,1,4,5],
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#aaddec754a2ec015ace86687751a4aaa5":[5,0,2,24,0,4,5],
+"structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#ab3696416f757265579ded630bf014021":[3,0,2,30,1,4,3],
 "structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#ab3696416f757265579ded630bf014021":[5,0,2,24,0,4,3],
 "structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#ac498873ef8f6f50376aa3a4b221e985c":[3,0,2,30,1,4,1],
 "structocc_1_1solvent_1_1cosmors_1_1SolvationEnergy.html#ac498873ef8f6f50376aa3a4b221e985c":[5,0,2,24,0,4,1],
@@ -239,15 +249,5 @@ var NAVTREEINDEX80 =
 "structocc_1_1xtb_1_1OrbitalFilling.html#a2f250ed8336b7eb9061ed76b8659c07f":[5,0,2,26,19,1],
 "structocc_1_1xtb_1_1OrbitalFilling.html#a5c13a3fb5af41a7acf885841dce90603":[3,0,2,32,19,0],
 "structocc_1_1xtb_1_1OrbitalFilling.html#a5c13a3fb5af41a7acf885841dce90603":[5,0,2,26,19,0],
-"structocc_1_1xtb_1_1OrbitalFilling.html#aa06930f65ac45c75f4d0283dbe8d10cc":[3,0,2,32,19,2],
-"structocc_1_1xtb_1_1OrbitalFilling.html#aa06930f65ac45c75f4d0283dbe8d10cc":[5,0,2,26,19,2],
-"structocc_1_1xtb_1_1PeriodicMultipoleAO.html":[3,0,2,32,23],
-"structocc_1_1xtb_1_1PeriodicMultipoleAO.html":[5,0,2,26,23],
-"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a11e1cd4f580dfc8884833e4a34d47a94":[3,0,2,32,23,3],
-"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a11e1cd4f580dfc8884833e4a34d47a94":[5,0,2,26,23,3],
-"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a26810be58718465036761d23db9b1aee":[3,0,2,32,23,0],
-"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a26810be58718465036761d23db9b1aee":[5,0,2,26,23,0],
-"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a862a075154dedaa3a476f68f49c80b36":[3,0,2,32,23,2],
-"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#a862a075154dedaa3a476f68f49c80b36":[5,0,2,26,23,2],
-"structocc_1_1xtb_1_1PeriodicMultipoleAO.html#ab9aaf3f3ea9cb0bfce49d471cf244935":[3,0,2,32,23,1]
+"structocc_1_1xtb_1_1OrbitalFilling.html#aa06930f65ac45c75f4d0283dbe8d10cc":[3,0,2,32,19,2]
 };

@@ -1,5 +1,15 @@
 var NAVTREEINDEX48 =
 {
+"structocc_1_1crystal_1_1CrystalDimers_1_1SymmetryRelatedDimer.html#a826efaa431b7e107101dc25a1a2fe5e8":[5,0,2,4,2,0,0],
+"structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html":[3,0,2,9,31],
+"structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html":[5,0,2,4,29],
+"structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#a56464b6cc69f054f0b39519b6e887edb":[3,0,2,9,31,1],
+"structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#a56464b6cc69f054f0b39519b6e887edb":[5,0,2,4,29,1],
+"structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#a66dfe78dd42e31c458f7299992a76041":[3,0,2,9,31,3],
+"structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#a66dfe78dd42e31c458f7299992a76041":[5,0,2,4,29,3],
+"structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#aaea7783c48d8b7fde756f68b5c6d0353":[3,0,2,9,31,2],
+"structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#aaea7783c48d8b7fde756f68b5c6d0353":[5,0,2,4,29,2],
+"structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#ab1c1b6878e33d874775a98f98bbabdde":[3,0,2,9,31,0],
 "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#ab1c1b6878e33d874775a98f98bbabdde":[5,0,2,4,29,0],
 "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#aeab82ed5d59dd64b8cbd1b615701aba0":[3,0,2,9,31,4],
 "structocc_1_1crystal_1_1CrystalSurfaceGenerationParameters.html#aeab82ed5d59dd64b8cbd1b615701aba0":[5,0,2,4,29,4],
@@ -239,15 +249,5 @@ var NAVTREEINDEX48 =
 "structocc_1_1crystal_1_1ZPrimeSearchParameters.html#aaa239c42ed7d472bcefe85808f16fd3c":[5,0,2,4,26,0],
 "structocc_1_1crystal_1_1ZPrimeSearchParameters.html#ab0b3777b864010ceb7bb35717cacd67f":[3,0,2,9,28,2],
 "structocc_1_1crystal_1_1ZPrimeSearchParameters.html#ab0b3777b864010ceb7bb35717cacd67f":[5,0,2,4,26,2],
-"structocc_1_1crystal_1_1ZPrimeSearchParameters.html#aee3fdd909bfdfc6952e5ca96b6d6d2a2":[3,0,2,9,28,6],
-"structocc_1_1crystal_1_1ZPrimeSearchParameters.html#aee3fdd909bfdfc6952e5ca96b6d6d2a2":[5,0,2,4,26,6],
-"structocc_1_1crystal_1_1ZPrimeSearchParameters.html#afa76d9ba8ca6d4cf9ce158dfd381970c":[3,0,2,9,28,3],
-"structocc_1_1crystal_1_1ZPrimeSearchParameters.html#afa76d9ba8ca6d4cf9ce158dfd381970c":[5,0,2,4,26,3],
-"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html":[3,0,2,10,1],
-"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html":[5,0,2,5,1],
-"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#a9407f62635e89b05d3cee582ce6f1fe1":[3,0,2,10,1,0],
-"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#a9407f62635e89b05d3cee582ce6f1fe1":[5,0,2,5,1,0],
-"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#aa546383b344f0740fcbe08ad029c539b":[3,0,2,10,1,2],
-"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#aa546383b344f0740fcbe08ad029c539b":[5,0,2,5,1,2],
-"structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html#ab5ce64ee79a0a1844a5bc52bfd7cf1fa":[3,0,2,10,1,3]
+"structocc_1_1crystal_1_1ZPrimeSearchParameters.html#aee3fdd909bfdfc6952e5ca96b6d6d2a2":[3,0,2,9,28,6]
 };
