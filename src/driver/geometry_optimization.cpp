@@ -663,7 +663,8 @@ geometry_optimization_with_frequencies(const io::OccInput &config, bool run_freq
     // The solvent cavity's Lebedev points keep their orientation in space as
     // the molecule turns, so the solvated energy is not invariant to rigid
     // rotations: project them out rather than report them as low modes.
-    vib_config.project_tr_rot = !config.solvent.solvent_name.empty();
+    vib_config.project_tr_rot = config.optimization.project_tr_rot ||
+                                !config.solvent.solvent_name.empty();
     vib_config.step_size = 0.005;       // ORCA-like default
     {
       using HM = VibrationalAnalysisConfig::HessianMethod;
@@ -689,22 +690,6 @@ geometry_optimization_with_frequencies(const io::OccInput &config, bool run_freq
     
     try {
       vib_modes = vibrational_analysis(config, optimized_wfn, vib_config);
-      
-      // Check if this is a minimum (no imaginary frequencies)
-      auto sorted_freqs = vib_modes.get_all_frequencies();
-      int n_imaginary = 0;
-      for (int i = 0; i < sorted_freqs.size(); i++) {
-        if (sorted_freqs[i] < -50.0) {  // Consider frequencies < -50 cm⁻¹ as truly imaginary
-          n_imaginary++;
-        }
-      }
-      
-      if (n_imaginary == 0) {
-        occ::log::info("SUCCESS: Optimized geometry is a local minimum (no imaginary frequencies)");
-      } else {
-        occ::log::warn("WARNING: Found {} imaginary frequencies - may be a transition state or saddle point", n_imaginary);
-      }
-      
     } catch (const std::exception &e) {
       occ::log::error("Failed to compute vibrational frequencies: {}", e.what());
       occ::log::warn("Continuing with optimization result only");

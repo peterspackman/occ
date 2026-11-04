@@ -155,6 +155,7 @@ struct OptimizationInput {
   // Hessian for frequencies: "auto" (analytic where supported, else finite
   // differences), "analytic" or "fd".
   std::string hessian_method{"auto"};
+  bool project_tr_rot{false}; // Project translations/rotations out of the Hessian
 };
 
 struct DispersionCorrectionInput {

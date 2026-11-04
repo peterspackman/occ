@@ -253,20 +253,29 @@ VibrationalModes vibrational_analysis(const OccInput &config,
     occ::log::warn("Found {} imaginary frequencies", n_imaginary);
     occ::log::warn("This may indicate the structure is not a minimum on the potential energy surface");
   } else {
-    // Count near-zero frequencies (should be 6 for non-linear, 5 for linear molecules)
+    // Near-zero frequencies beyond the translations and rotations (5 if the
+    // geometry is linear, otherwise 6) are soft vibrational modes
     int n_near_zero = 0;
     for (int i = 0; i < sorted_freqs.size(); i++) {
       if (std::abs(sorted_freqs[i]) < 50.0) {
         n_near_zero++;
       }
     }
-    occ::log::info("Found {} low-frequency modes (< 50 cm⁻¹)", n_near_zero);
-    if (n_near_zero == 6) {
-      occ::log::info("This is consistent with a non-linear molecule minimum");
-    } else if (n_near_zero == 5) {
-      occ::log::info("This is consistent with a linear molecule minimum");
-    } else {
-      occ::log::warn("Unexpected number of low-frequency modes (expected 5-6)");
+    const Vec3 moments = m.principal_moments_of_inertia();
+    const bool linear = moments.minCoeff() <= 1e-3 * moments.maxCoeff();
+    const int n_tr_rot = m.size() == 1 ? 3 : (linear ? 5 : 6);
+    occ::log::info("Found {} low-frequency modes (< 50 cm⁻¹), {} expected "
+                   "for a {} molecule",
+                   n_near_zero, n_tr_rot, linear ? "linear" : "non-linear");
+    if (n_near_zero > n_tr_rot) {
+      occ::log::warn("{} vibrational modes below 50 cm⁻¹: the potential "
+                     "energy surface is very flat, e.g. a weakly bound or "
+                     "dissociating structure",
+                     n_near_zero - n_tr_rot);
+    } else if (n_near_zero < n_tr_rot) {
+      occ::log::warn("Translational/rotational modes above 50 cm⁻¹: a "
+                     "residual gradient or integration grid noise mixes "
+                     "them with the soft vibrations");
     }
   }
   

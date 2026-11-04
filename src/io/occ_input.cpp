@@ -99,6 +99,7 @@ OccInput read_occ_input_file(const std::string path) {
   result.optimization.write_wavefunction_steps = scf["opt_write_wavefunctions"].value_or(result.optimization.write_wavefunction_steps);
   result.optimization.write_step_log = scf["opt_step_log"].value_or(result.optimization.write_step_log);
   result.optimization.compute_frequencies = scf["frequencies"].value_or(result.optimization.compute_frequencies);
+  result.optimization.project_tr_rot = scf["project_tr_rot"].value_or(result.optimization.project_tr_rot);
 
   return result;
 }

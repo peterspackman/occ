@@ -434,6 +434,11 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                   "else finite differences), analytic, or fd")
       ->check(CLI::IsMember({"auto", "analytic", "fd"}))
       ->group(gOpt);
+  scf->add_flag("--project-tr-rot,--project_tr_rot",
+                config->optimization.project_tr_rot,
+                "Project translations and rotations out of the Hessian "
+                "(always on with a solvent)")
+      ->group(gOpt);
 
   scf->callback([config, driver_opt]() {
     run_scf_subcommand(*config, driver_opt->count() > 0);
