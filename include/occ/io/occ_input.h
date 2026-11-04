@@ -74,7 +74,7 @@ struct MethodInput {
   // <occ/qm/initial_guess.h>.
   occ::qm::GuessKind guess{occ::qm::GuessKind::Auto};
   RIPolicy ri_policy{RIPolicy::Auto}; // Automatic DF/COSX selection (see RIPolicy)
-  bool use_direct_df_kernels{false}; // Use direct DF kernels instead of stored for testing
+  bool use_direct_df_kernels{false}; // Store no 3-centre integrals (J by Split-RI-J)
   bool use_split_ri_j{false}; // Use Split-RI-J for Coulomb matrix (Neese 2003)
   bool use_cosx{false}; // Use COSX seminumerical exchange
   // COSX follows ORCA's grid schedule (GRIDX1 -> GRIDX2, final energy on

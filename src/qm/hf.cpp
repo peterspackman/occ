@@ -66,12 +66,8 @@ void HartreeFock::set_density_fitting_memory_limit(size_t bytes) {
 }
 
 void HartreeFock::set_coulomb_method(CoulombMethod method) {
-  if (m_df_engine) {
+  if (m_df_engine)
     m_df_engine->set_coulomb_method(method);
-    if (method == CoulombMethod::SplitRIJ) {
-      occ::log::info("Using Split-RI-J for Coulomb matrix (Neese 2003)");
-    }
-  }
 }
 
 namespace {

@@ -210,7 +210,8 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   // --- hidden tuning knobs (still parsed) ---
   scf->add_flag("--direct-df,--use-direct-df-kernels,--use_direct_df_kernels",
                 config->method.use_direct_df_kernels,
-                "use direct density fitting kernels (recompute integrals each iteration)")
+                "direct density fitting: store no 3-centre integrals (J by "
+                "Split-RI-J, DF exchange recomputed each iteration)")
       ->group(kHidden);
   scf->add_flag("--split-ri-j,--split_ri_j", config->method.use_split_ri_j,
                 "use Split-RI-J for Coulomb matrix (Neese 2003)")

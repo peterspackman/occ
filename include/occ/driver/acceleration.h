@@ -233,13 +233,22 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
           config.basis.name, occ::qm::FittingKind::JK);
   }
 
+  // Direct density fitting stores nothing, and Split-RI-J (also storage
+  // free) is the faster way to build J without a store. Under the default
+  // policy the engine switches to it by itself once the store would not fit.
+  // DF exchange instead computes J alongside K in one direct pass.
+  const bool split_ri_j =
+      config.method.use_split_ri_j ||
+      (config.method.use_direct_df_kernels &&
+       (accel.use_cosx || !has_exact_exchange));
+
   // Describe the resolved two-electron treatment in plain terms: how the
   // Coulomb (J) and exact-exchange (K) parts are evaluated. (Aligned labels:
   // "Coulomb  (J):" and "Exchange (K):" are both 13 characters.)
   if (accel.df_basis.empty() && !accel.use_cosx) {
     occ::log::info("Two-electron integrals: exact (4-center)");
   } else {
-    if (config.method.use_split_ri_j)
+    if (split_ri_j)
       occ::log::info("Coulomb  (J): Split-RI-J density fitting [{}]",
                      accel.df_basis);
     else if (!accel.df_basis.empty())
@@ -266,7 +275,7 @@ void apply_acceleration(Proc &proc, std::size_t nbf, const io::OccInput &config,
     // nbf^2 x ndf store is what exhausted its heap. The flag forces direct.
     if (config.method.use_direct_df_kernels)
       proc.set_density_fitting_policy(occ::qm::IntegralEngineDF::Policy::Direct);
-    if (config.method.use_split_ri_j)
+    if (split_ri_j)
       proc.set_coulomb_method(occ::qm::CoulombMethod::SplitRIJ);
   }
 

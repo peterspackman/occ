@@ -48,6 +48,12 @@ IntegralEngineDF::IntegralEngineDF(const AtomList &atoms, const ShellList &ao,
 }
 
 void IntegralEngineDF::set_coulomb_method(CoulombMethod method) {
+  if (method == CoulombMethod::SplitRIJ &&
+      !SplitRIJ::supports(m_ao_engine.aobasis(), m_ao_engine.auxbasis())) {
+    occ::log::warn("Split-RI-J does not support these basis sets (AO l <= 4, "
+                   "auxiliary l <= 6); using the 3-centre RI-J build");
+    method = CoulombMethod::Traditional;
+  }
   m_coulomb_method = method;
   // Reset SplitRIJ if switching away from it
   if (method != CoulombMethod::SplitRIJ) {
@@ -154,7 +160,10 @@ Mat IntegralEngineDF::coulomb(const MolecularOrbitals &mo) {
   if (split) {
     // Lazy-initialize SplitRIJ engine
     if (!m_split_rij) {
-      occ::log::debug("Initializing Split-RI-J engine");
+      if (m_coulomb_method != CoulombMethod::SplitRIJ)
+        occ::log::info("Coulomb  (J): Split-RI-J, as the 3-centre integrals "
+                       "do not fit the {:.0f} MiB store",
+                       m_integral_store_memory_limit / 1048576.0);
       m_split_rij = std::make_unique<SplitRIJ>(
           m_ao_engine.aobasis(), m_ao_engine.auxbasis(),
           m_ao_engine.shellpairs(), m_ao_engine.schwarz(), m_V_LLt_full,
