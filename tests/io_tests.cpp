@@ -5,6 +5,8 @@
 #include <fmt/core.h>
 #include <fstream>
 #include <occ/core/format_matrix.h>
+#include <occ/core/units.h>
+#include <occ/crystal/spacegroup.h>
 #include <occ/io/cifparser.h>
 #include <occ/io/cifwriter.h>
 #include <occ/io/core_json.h>
@@ -15,6 +17,7 @@
 #include <occ/io/eigen_json.h>
 #include <occ/io/gmf.h>
 #include <occ/io/json_cache.h>
+#include <occ/io/load_geometry.h>
 #include <occ/io/shelxfile.h>
 #include <occ/isosurface/isosurface_json.h>
 #include <occ/isosurface/ply.h>
@@ -617,6 +620,449 @@ TEST_CASE("Isosurface JSON", "[isosurface_json]") {
     REQUIRE_THAT(normals[5].get<float>(), Catch::Matchers::WithinRel(1.0f));
     REQUIRE_THAT(normals[8].get<float>(), Catch::Matchers::WithinRel(1.0f));
   }
+}
+
+namespace {
+
+// A monoclinic structure exercising the parts of the format that carry
+// structural information: continuation lines, comments, free variables, a
+// disordered pair whose occupancies sum to one, riding hydrogens, and a tail of
+// instructions and difference-map peaks that are not atoms.
+constexpr const char *shelx_hard_case = R"SHELX(TITL hard case ! with a comment
+CELL 0.71073 7.1234 8.2345 11.3456 90.0 102.345 90.0
+ZERR 4 0.001 0.001 0.001 0 0.02 0
+LATT 1
+SYMM -x, 1/2+y, 1/2-z
+SFAC C H N O
+UNIT 8 12 4 4
+FVAR 0.31427 0.63000
+REM this is a remark 4 and should not become an atom
+WGHT 0.05 0.1
+L.S. 10
+ACTA
+BOND $H
+CONF
+AFIX 137
+C1    1  0.11000  0.22000  0.33000  11.00000  0.02100  0.02200 =
+         0.02300  0.00100  0.00200  0.00300
+H1A   2  0.15000  0.28000  0.36000  11.00000 -1.50000
+H1B   2  0.05000  0.25000  0.29000  11.00000 -1.50000
+AFIX 0
+PART 1
+O1    4  0.41000  0.52000  0.63000  21.00000  0.03100
+PART 2
+O2    4  0.44000  0.55000  0.66000 -21.00000  0.03300
+PART 0
+N1    3  0.71000  0.12000  0.83000  10.50000  0.01900  0.02000 =
+         0.02100 -0.00100 -0.00200 -0.00300
+RESI 1 SOL
+C2    1  0.61000  0.72000  0.13000  11.00000  0.02500
+HKLF 4
+END
+Q1    1  0.90000  0.90000  0.90000  11.00000  0.05000  1.23
+Q2    1  0.80000  0.80000  0.80000  11.00000  0.05000  0.98
+)SHELX";
+
+// Two atoms on inversion centres, so the site occupation factors carry a
+// symmetry factor of a half.
+constexpr const char *shelx_nacl = R"SHELX(TITL NaCl
+CELL 0.71073 5.64020 5.64020 5.64020 90.000 90.000 90.000
+LATT 1
+SFAC NA CL
+UNIT 1 1
+NA1 1 0.000000 0.000000 0.000000 11.00000 0.05000
+CL1 2 0.500000 0.500000 0.500000 11.00000 0.05000
+END
+)SHELX";
+
+int index_of_label(const occ::crystal::Crystal &crystal,
+                   const std::string &label) {
+  const auto &labels = crystal.asymmetric_unit().labels;
+  for (size_t i = 0; i < labels.size(); i++)
+    if (labels[i] == label)
+      return static_cast<int>(i);
+  return -1;
+}
+
+} // namespace
+
+TEST_CASE("CIF symmetry: ICSD origin suffixes", "[cif][file]") {
+  // ICSD-derived files mark the origin choice with a trailing S or Z rather
+  // than the :1 / :2 gemmi expects, and 'F d -3 m Z' read as 'F d -3 m' puts
+  // the structure at the wrong origin.
+  const std::string cif = R"CIF(data_test
+_cell_length_a 11.0
+_cell_length_b 11.0
+_cell_length_c 11.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_space_group_name_H-M_alt 'F d -3 m Z'
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+C1 C 0.125 0.125 0.125
+)CIF";
+  occ::io::CifParser parser;
+  auto crystal = parser.parse_crystal_from_string(cif);
+  INFO(parser.failure_description());
+  REQUIRE(crystal.has_value());
+
+  const occ::crystal::SpaceGroup origin_two("F d -3 m :2");
+  std::vector<std::string> found, expected;
+  for (const auto &op : crystal->space_group().symmetry_operations())
+    found.push_back(op.to_string());
+  for (const auto &op : origin_two.symmetry_operations())
+    expected.push_back(op.to_string());
+  std::sort(found.begin(), found.end());
+  std::sort(expected.begin(), expected.end());
+  CHECK(found == expected);
+}
+
+TEST_CASE("CIF numeric placeholders do not become NaN", "[cif][file]") {
+  // '?' and '.' are how a CIF says it is not reporting a value. Passing them
+  // through as NaN poisons every structure factor computed from the result,
+  // and a mixed column -- anisotropic atoms with '?', isotropic ones with a
+  // number -- is entirely ordinary.
+  const std::string cif = R"CIF(data_test
+_cell_length_a 8.0
+_cell_length_b 9.0
+_cell_length_c 10.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 100.0
+_cell_angle_gamma 90.0
+_symmetry_space_group_name_H-M 'P 1'
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_occupancy
+C1 C 0.10 0.20 0.30 ? .
+H1 H 0.40 0.50 0.60 0.05 1.0
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+C1 0.02 0.03 0.04 ? ? 0.001
+)CIF";
+  occ::io::CifParser parser;
+  auto crystal = parser.parse_crystal_from_string(cif);
+  INFO(parser.failure_description());
+  REQUIRE(crystal.has_value());
+
+  const auto &asym = crystal->asymmetric_unit();
+  REQUIRE(asym.size() == 2);
+  CHECK_FALSE(asym.adps.hasNaN());
+  CHECK_FALSE(asym.occupations.hasNaN());
+  // A missing occupancy falls back to full, and the reported ADPs survive.
+  CHECK_THAT(asym.occupations(0), Catch::Matchers::WithinAbs(1.0, 1e-12));
+  CHECK_THAT(asym.adps(0, 0), Catch::Matchers::WithinAbs(0.02, 1e-12));
+  CHECK_THAT(asym.adps(3, 0), Catch::Matchers::WithinAbs(0.0, 1e-12));
+  CHECK_THAT(asym.adps(5, 0), Catch::Matchers::WithinAbs(0.001, 1e-12));
+  CHECK_THAT(asym.adps(0, 1), Catch::Matchers::WithinAbs(0.05, 1e-12));
+}
+
+TEST_CASE("CIF symmetry: the setting comes from the Hall symbol",
+          "[cif][file]") {
+  // P 4/n is one of about twenty groups with two origin choices. The
+  // Hermann-Mauguin name does not say which; the Hall symbol does, and so does
+  // the list of operations. Reading the name first puts the structure at the
+  // wrong origin, which moves every atom that should sit on a special position.
+  const std::string header = R"CIF(data_test
+_cell_length_a 10.0
+_cell_length_b 10.0
+_cell_length_c 12.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_symmetry_space_group_name_H-M 'P 4/n'
+)CIF";
+  const std::string atoms = R"CIF(
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+C1 C 0.25 0.25 0.0
+)CIF";
+
+  const auto operations = [](const occ::crystal::Crystal &crystal) {
+    std::vector<std::string> result;
+    for (const auto &op : crystal.space_group().symmetry_operations())
+      result.push_back(op.to_string());
+    std::sort(result.begin(), result.end());
+    return result;
+  };
+
+  occ::io::CifParser parser;
+  auto by_name = parser.parse_crystal_from_string(header + atoms);
+  REQUIRE(by_name.has_value());
+
+  occ::io::CifParser hall_parser;
+  auto by_hall = hall_parser.parse_crystal_from_string(
+      header + "_space_group_name_Hall '-P 4a'\n" + atoms);
+  REQUIRE(by_hall.has_value());
+
+  // Both are P 4/n, but not the same setting.
+  CHECK(by_name->space_group().number() == by_hall->space_group().number());
+  CHECK(operations(*by_name) != operations(*by_hall));
+
+  const occ::crystal::SpaceGroup origin_two("P 4/n :2");
+  std::vector<std::string> expected;
+  for (const auto &op : origin_two.symmetry_operations())
+    expected.push_back(op.to_string());
+  std::sort(expected.begin(), expected.end());
+  CHECK(operations(*by_hall) == expected);
+
+  // An explicit list of operations pins the setting down just as well.
+  std::string symops = "\nloop_\n_symmetry_equiv_pos_as_xyz\n";
+  for (const auto &op : origin_two.symmetry_operations())
+    symops += op.to_string() + "\n";
+  occ::io::CifParser symop_parser;
+  auto by_symops =
+      symop_parser.parse_crystal_from_string(header + symops + atoms);
+  REQUIRE(by_symops.has_value());
+  CHECK(operations(*by_symops) == expected);
+}
+
+TEST_CASE("CIF symmetry: operations in a non-standard basis", "[cif][file]") {
+  // P 1 21/c 1 on the C-centred cell a' = a + b, b' = -a + b of an orthogonal
+  // 7 x 8 x 9 A cell. gemmi has no table entry for that setting, and falling
+  // back to the name expands every atom with the wrong operations.
+  const std::string header = fmt::format(
+      R"CIF(data_test
+_cell_length_a {0:.12f}
+_cell_length_b {0:.12f}
+_cell_length_c 9.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma {1:.12f}
+_symmetry_space_group_name_H-M 'P 1 21/c 1'
+loop_
+_symmetry_equiv_pos_as_xyz
+)CIF",
+      std::sqrt(113.0), std::acos(15.0 / 113.0) * 180.0 / occ::units::PI);
+  const std::vector<std::string> operations{"x,y,z",
+                                            "y+1/4,x+1/4,-z+1/2",
+                                            "-x,-y,-z",
+                                            "-y+1/4,-x+1/4,z+1/2",
+                                            "x+1/2,y+1/2,z",
+                                            "y+3/4,x+3/4,-z+1/2",
+                                            "-x+1/2,-y+1/2,-z",
+                                            "-y+3/4,-x+3/4,z+1/2"};
+  const std::string atoms = R"CIF(loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+C1 C 0.11 0.23 0.37
+)CIF";
+
+  const auto images = [&](size_t num_operations) {
+    std::string cif = header;
+    for (size_t i = 0; i < num_operations; i++)
+      cif += operations[i] + "\n";
+    occ::io::CifParser parser;
+    auto crystal = parser.parse_crystal_from_string(cif + atoms);
+    INFO(parser.failure_description());
+    REQUIRE(crystal.has_value());
+    return crystal->unit_cell_atoms().size();
+  };
+
+  // The whole group is used as given: a general position has eight images.
+  CHECK(images(operations.size()) == 8);
+  // One operation short is not a group, and is not trusted over the name.
+  CHECK(images(operations.size() - 1) == 4);
+}
+
+TEST_CASE("ShelxFile reads upper-case SFAC types", "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto crystal = shelx.read_crystal_from_string(shelx_nacl);
+  INFO(shelx.error_message());
+  REQUIRE(crystal.has_value());
+
+  // SHELX writes scattering types in upper case: NA is sodium, not nitrogen.
+  const auto &numbers = crystal->asymmetric_unit().atomic_numbers;
+  REQUIRE(numbers.size() == 2);
+  CHECK(numbers(0) == 11);
+  CHECK(numbers(1) == 17);
+}
+
+TEST_CASE("CIF element types and labels", "[cif][file]") {
+  const std::string cell = R"CIF(
+_cell_length_a 10.0
+_cell_length_b 10.0
+_cell_length_c 10.0
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+_symmetry_space_group_name_H-M 'P 1'
+loop_
+_atom_site_label
+)CIF";
+
+  const auto atomic_numbers = [](const std::string &cif) {
+    occ::io::CifParser parser;
+    auto crystal = parser.parse_crystal_from_string(cif);
+    INFO(parser.failure_description());
+    REQUIRE(crystal.has_value());
+    const auto &numbers = crystal->asymmetric_unit().atomic_numbers;
+    return std::vector<int>(numbers.data(), numbers.data() + numbers.size());
+  };
+
+  // A type symbol is an element symbol, whatever its case.
+  CHECK(atomic_numbers("data_types" + cell + R"CIF(_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+NA1 NA 0.0 0.0 0.0
+CL1 CL- 0.5 0.5 0.5
+)CIF") == std::vector<int>{11, 17});
+
+  // Without a type column the label is all there is, and a label is not a
+  // symbol: HO1 is a hydrogen and CD1 a carbon.
+  CHECK(atomic_numbers("data_labels" + cell + R"CIF(_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+O1 0.10 0.10 0.10
+HO1 0.20 0.10 0.10
+CD1 0.30 0.30 0.30
+CA1 0.50 0.50 0.50
+)CIF") == std::vector<int>{8, 1, 6, 6});
+}
+
+TEST_CASE("ShelxFile reads displacement parameters", "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto crystal = shelx.read_crystal_from_string(shelx_hard_case);
+  INFO(shelx.error_message());
+  REQUIRE(crystal.has_value());
+
+  const auto &asym = crystal->asymmetric_unit();
+  // The instruction lines, the residue, and the two difference-map peaks are
+  // not atoms; the seven real ones are.
+  REQUIRE(asym.size() == 7);
+  CHECK(crystal->space_group().symbol() == "P 1 21/c 1");
+
+  // SHELX writes the off-diagonals U23 U13 U12; occ stores U12 U13 U23.
+  const int c1 = index_of_label(*crystal, "C1");
+  REQUIRE(c1 >= 0);
+  CHECK_THAT(asym.adps(0, c1), Catch::Matchers::WithinAbs(0.021, 1e-12));
+  CHECK_THAT(asym.adps(1, c1), Catch::Matchers::WithinAbs(0.022, 1e-12));
+  CHECK_THAT(asym.adps(2, c1), Catch::Matchers::WithinAbs(0.023, 1e-12));
+  CHECK_THAT(asym.adps(3, c1), Catch::Matchers::WithinAbs(0.003, 1e-12));
+  CHECK_THAT(asym.adps(4, c1), Catch::Matchers::WithinAbs(0.002, 1e-12));
+  CHECK_THAT(asym.adps(5, c1), Catch::Matchers::WithinAbs(0.001, 1e-12));
+
+  // A negative U_iso means the atom rides on the last one with a U of its own,
+  // at that multiple of its U_eq -- 1.5 * U_eq(C1) here.
+  const int h1a = index_of_label(*crystal, "H1A");
+  REQUIRE(h1a >= 0);
+  CHECK_THAT(asym.adps(0, h1a),
+             Catch::Matchers::WithinRel(0.03360569872884666, 1e-12));
+
+  const int c2 = index_of_label(*crystal, "C2");
+  REQUIRE(c2 >= 0);
+  CHECK_THAT(asym.adps(0, c2), Catch::Matchers::WithinAbs(0.025, 1e-12));
+  // An isotropic U is not diag(U, U, U) in a monoclinic cell: u13 picks up
+  // cos(beta*).
+  CHECK_THAT(asym.adps(3, c2), Catch::Matchers::WithinAbs(0.0, 1e-12));
+  CHECK(asym.adps(4, c2) != 0.0);
+  CHECK_THAT(asym.adps(5, c2), Catch::Matchers::WithinAbs(0.0, 1e-12));
+}
+
+TEST_CASE("ShelxFile decodes free variables", "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto crystal = shelx.read_crystal_from_string(shelx_hard_case);
+  REQUIRE(crystal.has_value());
+  const auto &asym = crystal->asymmetric_unit();
+
+  // 21.0 is "free variable 2", -21.0 is "one minus free variable 2", and
+  // 10.5 is a plain 0.5 held fixed.
+  CHECK_THAT(asym.occupations(index_of_label(*crystal, "O1")),
+             Catch::Matchers::WithinRel(0.63, 1e-12));
+  CHECK_THAT(asym.occupations(index_of_label(*crystal, "O2")),
+             Catch::Matchers::WithinRel(0.37, 1e-12));
+  CHECK_THAT(asym.occupations(index_of_label(*crystal, "N1")),
+             Catch::Matchers::WithinRel(0.5, 1e-12));
+  CHECK_THAT(asym.occupations(index_of_label(*crystal, "C1")),
+             Catch::Matchers::WithinRel(1.0, 1e-12));
+}
+
+TEST_CASE("ShelxFile puts site symmetry back into the occupancy",
+          "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto crystal = shelx.read_crystal_from_string(shelx_nacl);
+  INFO(shelx.error_message());
+  REQUIRE(crystal.has_value());
+
+  // LATT 1 is positive, so the structure is centrosymmetric and both atoms sit
+  // on inversion centres. SHELX halves the occupancy of such a site because its
+  // structure factor sums over both images; occ keeps one position, so the
+  // occupancy has to carry the factor instead.
+  CHECK(crystal->space_group().symbol() == "P -1");
+  const auto &asym = crystal->asymmetric_unit();
+  REQUIRE(asym.size() == 2);
+  CHECK_THAT(asym.occupations(0), Catch::Matchers::WithinRel(2.0, 1e-12));
+  CHECK_THAT(asym.occupations(1), Catch::Matchers::WithinRel(2.0, 1e-12));
+  CHECK(crystal->unit_cell_atoms().size() == 2);
+}
+
+TEST_CASE("ShelxFile reads SHELXL-style SYMM in any setting",
+          "[shelx][file]") {
+  // SHELXL writes operations in capitals with decimal translations, and a 2_1
+  // axis need not pass through a tabulated origin: here it sits at x = 1/4,
+  // z = 1/4, a setting of P2_1 gemmi does not list.
+  const auto res = [](const std::string &symm) {
+    return fmt::format("TITL t\nCELL 0.71073 5.0 6.0 7.0 90 100 90\n"
+                       "LATT -1\nSYMM {}\nSFAC C O\nUNIT 4 4\n"
+                       "C1 1 0.1 0.2 0.3 11.0 0.05\n"
+                       "O1 2 0.3 0.25 0.1 11.0 0.04\nEND\n",
+                       symm);
+  };
+  for (const std::string symm :
+       {"-X, 1/2+Y, 1/2-Z", "0.5-X, 0.5+Y, 0.5-Z", "-x, y+1/2, -z+1/2"}) {
+    INFO(symm);
+    occ::io::ShelxFile shelx;
+    auto crystal = shelx.read_crystal_from_string(res(symm));
+    INFO(shelx.error_message());
+    REQUIRE(crystal.has_value());
+    CHECK(crystal->space_group().symmetry_operations().size() == 2);
+    CHECK(crystal->unit_cell_atoms().size() == 4);
+  }
+}
+
+TEST_CASE("ShelxFile round-trips occupancies and ADPs", "[shelx][file]") {
+  occ::io::ShelxFile shelx;
+  auto original = shelx.read_crystal_from_string(shelx_hard_case);
+  REQUIRE(original.has_value());
+
+  occ::io::ShelxFile writer;
+  auto reread = writer.read_crystal_from_string(
+      writer.write_crystal_to_string(*original));
+  INFO(writer.error_message());
+  REQUIRE(reread.has_value());
+
+  const auto &before = original->asymmetric_unit();
+  const auto &after = reread->asymmetric_unit();
+  REQUIRE(before.size() == after.size());
+  CHECK((before.occupations - after.occupations).cwiseAbs().maxCoeff() < 1e-5);
+  CHECK((before.adps - after.adps).cwiseAbs().maxCoeff() < 1e-5);
+  CHECK((before.positions - after.positions).cwiseAbs().maxCoeff() < 1e-5);
+  // The SYMM lines have to leave out what LATT already implies, or a
+  // centrosymmetric group comes back as P1.
+  CHECK(original->space_group().symbol() == reread->space_group().symbol());
 }
 
 TEST_CASE("ShelxFile unified read/write", "[shelx][file]") {

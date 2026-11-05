@@ -85,8 +85,13 @@ public:
   parse_crystal_from_file(const std::string &);
   std::optional<occ::crystal::Crystal>
   parse_crystal_from_string(const std::string &);
+  /// The crystal in the document's first data block.
   std::optional<occ::crystal::Crystal>
   parse_crystal_from_document(const gemmi::cif::Document &);
+  /// The crystal in one data block. A parser accumulates what it reads, so
+  /// use a fresh CifParser for each block.
+  std::optional<occ::crystal::Crystal>
+  parse_crystal_from_block(const gemmi::cif::Block &);
 
   static bool is_likely_cif_filename(const std::string &);
 
@@ -100,6 +105,7 @@ private:
     FracZ,
     AdpType,
     Uiso,
+    Biso,
     Occupancy,
     AdpLabel,
     AdpU11,

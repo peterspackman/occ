@@ -9,7 +9,8 @@
 
 namespace occ::crystal {
 class Crystal;
-}
+class UnitCell;
+} // namespace occ::crystal
 
 namespace occ::io {
 
@@ -162,9 +163,20 @@ private:
   struct AtomData {
     std::string label;
     std::string element;
-    int sfac_index;
-    double x, y, z;
-    double occupation = 1.0;
+    int sfac_index{0};
+    double x{0.0}, y{0.0}, z{0.0};
+    double occupation{1.0};
+    /// Displacement parameters in the u_cif convention,
+    /// (u11, u22, u33, u12, u13, u23). An isotropic atom carries U on the
+    /// diagonal alone until the cell is known and the off-diagonal cosines can
+    /// be filled in.
+    Vec6 adp{Vec6::Zero()};
+    bool anisotropic{false};
+    /// SHELX lets an atom -- almost always a hydrogen -- ride on its parent,
+    /// with U_iso a fixed multiple of the parent's U_eq rather than a
+    /// parameter of its own. Resolved once the cell is available.
+    double u_eq_multiple{0.0};
+    int u_eq_pivot{-1};
   };
 
   struct CellData {
@@ -184,20 +196,43 @@ private:
     Latt,
     Sfac,
     Symm,
+    Fvar,
+    Part,
     Atom,
+    /// An electron density peak from a difference map: shaped like an atom, but
+    /// not one
+    Peak,
     End,
-    Zerr,
     Ignored
   };
 
   // Reading methods
+  /// Strip comments and join SHELX's `=` continuation lines, so each element of
+  /// the result is one complete instruction or atom.
+  static std::vector<std::string> logical_lines(const std::string &contents);
   LineType classify_line(const std::string &line) const;
   void parse_title_line(const std::string &line);
   void parse_cell_line(const std::string &line);
   void parse_latt_line(const std::string &line);
   void parse_sfac_line(const std::string &line);
   void parse_symm_line(const std::string &line);
+  void parse_fvar_line(const std::string &line);
+  void parse_part_line(const std::string &line);
   void parse_atom_line(const std::string &line);
+  /// Resolve riding U values and fill in the isotropic off-diagonals, both of
+  /// which need the unit cell.
+  void resolve_displacement_parameters(const occ::crystal::UnitCell &cell);
+
+  /**
+   * \brief Decode a SHELX refinable parameter.
+   *
+   * Any parameter may be tied to a free variable rather than given outright,
+   * encoded as `10 m + p`: `m` of 0 or 1 means the value is `p` as written,
+   * `m >= 2` means `p` times free variable `m`, and `m <= -2` means
+   * `p (fv_|m| - 1)`, which is how the two halves of a disordered site are
+   * made to sum to one.
+   */
+  double decode_variable(double coded) const;
 
   // Writing methods
   void write_title_line(std::ostream &stream);
@@ -228,10 +263,20 @@ private:
   SymmetryData m_sym;
   std::vector<std::string> m_sfac;
   std::vector<AtomData> m_atoms;
+  /// FVAR values, with the overall scale factor first
+  std::vector<double> m_free_variables;
+  /// The disorder component atoms currently belong to, and its occupancy when
+  /// the PART instruction supplied one
+  int m_part_number{0};
+  std::optional<double> m_part_occupancy;
+  /// The most recent atom whose U was its own, which is what a riding atom
+  /// takes its U_eq from
+  int m_u_eq_pivot{-1};
   std::string m_error_message;
 
-  // Ignored keywords
-  static const ankerl::unordered_dense::set<std::string> m_ignored_keywords;
+  /// Instruction names, so a line can be told from an atom by something better
+  /// than the shape of its arguments.
+  static const ankerl::unordered_dense::set<std::string> m_instructions;
 };
 
 } // namespace occ::io

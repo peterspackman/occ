@@ -3,6 +3,7 @@
 #include <cmath>
 #include <occ/core/fraction.h>
 #include <occ/core/util.h>
+#include <ankerl/unordered_dense.h>
 #include <occ/crystal/symmetryoperation.h>
 #include <regex>
 
@@ -228,6 +229,20 @@ Vec6 SymmetryOperation::rotate_adp(Eigen::Ref<const Vec6> adp) const {
   result << u_rot(0, 0), u_rot(1, 1), u_rot(2, 2), u_rot(0, 1), u_rot(0, 2),
       u_rot(1, 2);
   return result;
+}
+
+bool is_closed_group(const std::vector<SymmetryOperation> &operations) {
+  const auto canonical = [](const SymmetryOperation &op) {
+    return op.translated(occ::Vec3::Zero(), true).to_string();
+  };
+  ankerl::unordered_dense::set<std::string> present;
+  for (const auto &op : operations)
+    present.insert(canonical(op));
+  for (const auto &a : operations)
+    for (const auto &b : operations)
+      if (!present.contains(canonical(a * b)))
+        return false;
+  return true;
 }
 
 } // namespace occ::crystal

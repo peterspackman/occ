@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <occ/core/linear_algebra.h>
 #include <occ/crystal/unitcell.h>
 #include <string>
@@ -189,5 +190,10 @@ public:
 private:
   Mat4 m_seitz;
 };
+
+/// Whether a list of operations is a whole group: closed under composition, up
+/// to lattice translations. A list that is not -- an operation missing or
+/// mistyped -- cannot be used as given.
+bool is_closed_group(const std::vector<SymmetryOperation> &operations);
 
 } // namespace occ::crystal

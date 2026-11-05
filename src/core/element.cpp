@@ -153,6 +153,9 @@ Element::Element(int atomicNumber) {
 
 Element::Element(const std::string &s, bool exact_match)
     : m_data(&element_table()[0]) {
+  // Matched as written. Capitalizing here would be wrong for a site label,
+  // where whatever follows the symbol is not part of it: HO1 would become
+  // holmium.
   const auto symbol = occ::util::trim_copy(s);
   size_t match_length = 0;
   for (int i = ELEMENT_MAX; i > 0; i--) {

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <occ/core/log.h>
 #include <occ/crystal/spacegroup.h>
 #include <stdexcept>
@@ -207,6 +208,23 @@ std::pair<Mat3, Vec3> SpaceGroup::standard_setting_transform() const {
     p_shift(i) = static_cast<double>(basisop.tran[i]) / gemmi::Op::DEN;
   }
   return {p_matrix, p_shift};
+}
+
+std::vector<Eigen::Matrix3i> SpaceGroup::laue_rotations() const {
+  std::vector<Eigen::Matrix3i> result;
+  const auto already_present = [&result](const Eigen::Matrix3i &r) {
+    return std::any_of(result.begin(), result.end(),
+                       [&r](const Eigen::Matrix3i &x) { return x == r; });
+  };
+  for (const auto &symop : symmetry_operations()) {
+    const Eigen::Matrix3i rt = symop.rotation().transpose().cast<int>();
+    if (!already_present(rt))
+      result.push_back(rt);
+    const Eigen::Matrix3i minus_rt = -rt;
+    if (!already_present(minus_rt))
+      result.push_back(minus_rt);
+  }
+  return result;
 }
 
 } // namespace occ::crystal

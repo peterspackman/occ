@@ -160,6 +160,18 @@ public:
     return ReciprocalAsymmetricUnit(m_sgdata);
   }
 
+  /**
+   * \brief The distinct rotations acting on reciprocal space, as integer
+   * matrices.
+   *
+   * A reflection h maps under (R|t) to (R^T)^-1 h, and the group is closed
+   * under inversion, so the orbit of h is its orbit under {R^T}. Friedel's law
+   * adds -R^T, giving the Laue group. Translations do not enter: they change
+   * the phase of F(h), not its magnitude, so reflections related by these
+   * rotations share an intensity.
+   */
+  std::vector<Eigen::Matrix3i> laue_rotations() const;
+
 private:
   void update_from_sgdata();
   int m_number{0};

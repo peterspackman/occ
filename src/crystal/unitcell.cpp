@@ -238,4 +238,15 @@ Mat6N UnitCell::to_fractional_adp(const Mat6N &adps) const {
   return convert_adps(adps, adp_adhoc_inverse());
 }
 
+Vec6 UnitCell::isotropic_adp(double u_iso) const {
+  const Vec3 astar = m_reciprocal.colwise().norm();
+  const auto cosine = [&](int i, int j) {
+    return m_reciprocal.col(i).dot(m_reciprocal.col(j)) / (astar(i) * astar(j));
+  };
+  Vec6 result;
+  result << u_iso, u_iso, u_iso, u_iso * cosine(0, 1), u_iso * cosine(0, 2),
+      u_iso * cosine(1, 2);
+  return result;
+}
+
 } // namespace occ::crystal

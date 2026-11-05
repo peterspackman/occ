@@ -15,26 +15,6 @@ namespace {
 
 using Rot3i = Eigen::Matrix3i;
 
-// The rotations acting on reciprocal space: a face/reflection h maps under
-// (R|t) to (R^T)^-1 h, and the group is closed under inversion, so the orbit of
-// h is its orbit under {R^T}. Friedel's law adds -R^T.
-std::vector<Rot3i> laue_rotations(const SpaceGroup &sg) {
-  std::vector<Rot3i> result;
-  auto already_present = [&result](const Rot3i &r) {
-    return std::any_of(result.begin(), result.end(),
-                       [&r](const Rot3i &x) { return x == r; });
-  };
-  for (const auto &symop : sg.symmetry_operations()) {
-    Rot3i rt = symop.rotation().transpose().cast<int>();
-    if (!already_present(rt))
-      result.push_back(rt);
-    Rot3i minus_rt = -rt;
-    if (!already_present(minus_rt))
-      result.push_back(minus_rt);
-  }
-  return result;
-}
-
 inline IVec3 apply(const Rot3i &r, const IVec3 &h) { return r * h; }
 
 // Lexicographic ordering on (h, k, l), used to pick a canonical orbit
@@ -61,7 +41,7 @@ double lorentz_polarization(double two_theta) {
 std::vector<PowderPeak> unique_reflections(const Crystal &crystal,
                                            double d_min) {
   const UnitCell &uc = crystal.unit_cell();
-  const std::vector<Rot3i> rotations = laue_rotations(crystal.space_group());
+  const std::vector<Rot3i> rotations = crystal.space_group().laue_rotations();
   const HKL limits = uc.hkl_limits(d_min);
 
   std::vector<PowderPeak> result;

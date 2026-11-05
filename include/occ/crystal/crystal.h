@@ -542,10 +542,17 @@ public:
    * supercell are given in the HKL parameter, and all symmetry beyond
    * translational symmetry is removed in the resulting crystal.
    *
+   * Molecules are kept whole, so atoms may sit outside the supercell.
+   *
+   * \note Only positions and elements survive: the result carries neither the
+   * occupancies nor the displacement parameters of the original.
+   *
    * \param c The crystal lattice from which to create the primitive
    * supercell.
    * \param hkl The lattice vector triplet (h, k, l) that defines
    * the primitive supercell.
+   *
+   * \throws std::invalid_argument if any of h, k, l is less than one.
    *
    * \return A new `Crystal` object representing the primitive supercell of
    * the original lattice.
