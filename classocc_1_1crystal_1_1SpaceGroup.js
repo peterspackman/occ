@@ -9,6 +9,7 @@ var classocc_1_1crystal_1_1SpaceGroup =
     [ "apply_rotations", "classocc_1_1crystal_1_1SpaceGroup.html#afac83c7cf8a716b16db1b23293f3ca55", null ],
     [ "has_H_R_choice", "classocc_1_1crystal_1_1SpaceGroup.html#a3216f2dfca408e7ce217319fddb33e73", null ],
     [ "is_standard_setting", "classocc_1_1crystal_1_1SpaceGroup.html#a31f1e26a3514e50137eed5ed953b8ed9", null ],
+    [ "laue_rotations", "classocc_1_1crystal_1_1SpaceGroup.html#a374ae72f56c5117067964c361d685d57", null ],
     [ "number", "classocc_1_1crystal_1_1SpaceGroup.html#a07f763a7a098f648115fbe2d891469bc", null ],
     [ "reciprocal_asu", "classocc_1_1crystal_1_1SpaceGroup.html#a4fb7dcdb4f921f5b53eecf30eb6abbfb", null ],
     [ "short_name", "classocc_1_1crystal_1_1SpaceGroup.html#ad743296aaa4bf5e5ccdf0bedb53e73a3", null ],

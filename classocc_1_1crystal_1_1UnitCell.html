@@ -168,6 +168,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:acc5a410f98c801f1794229d724276a17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert ADPs from Cartesian to fractional coordinates.  <br /></td></tr>
 <tr class="memitem:a8e1904141349963059bdcbd78dd13ef4" id="r_a8e1904141349963059bdcbd78dd13ef4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a8b545e7377be5f477f8d2bad0b414ef6">Mat6N</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8e1904141349963059bdcbd78dd13ef4">to_cartesian_adp</a> (const <a class="el" href="namespaceocc.html#a8b545e7377be5f477f8d2bad0b414ef6">Mat6N</a> &amp;adp) const</td></tr>
 <tr class="memdesc:a8e1904141349963059bdcbd78dd13ef4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert ADPs from fractional to Cartesian coordinates.  <br /></td></tr>
+<tr class="memitem:aadc1fe1ae51f964da515cdcb84dbe69c" id="r_aadc1fe1ae51f964da515cdcb84dbe69c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a8e8a8e51345d2016e0065f1e731ba79c">Vec6</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aadc1fe1ae51f964da515cdcb84dbe69c">isotropic_adp</a> (double u_iso) const</td></tr>
+<tr class="memdesc:aadc1fe1ae51f964da515cdcb84dbe69c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The u_cif packing of an isotropic displacement parameter.  <br /></td></tr>
 <tr class="memitem:aa799530884afa42f47f2dee674f4464c" id="r_aa799530884afa42f47f2dee674f4464c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa799530884afa42f47f2dee674f4464c">to_fractional</a> (const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &amp;coords) const</td></tr>
 <tr class="memdesc:aa799530884afa42f47f2dee674f4464c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a given matrix of coordinates from Cartesian to fractional.  <br /></td></tr>
 <tr class="memitem:a94d048f35e37a1cf01aea93c04c396a9" id="r_a94d048f35e37a1cf01aea93c04c396a9"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a94d048f35e37a1cf01aea93c04c396a9">to_reciprocal</a> (const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &amp;coords) const</td></tr>
@@ -989,6 +991,33 @@ Static Public Member Functions</h2></td></tr>
 <p>Check if triclinic i.e. </p>
 <p>\( a \ne b \ne c, \alpha \ne \beta \ne \gamma
 \) </p>
+
+</div>
+</div>
+<a id="aadc1fe1ae51f964da515cdcb84dbe69c" name="aadc1fe1ae51f964da515cdcb84dbe69c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aadc1fe1ae51f964da515cdcb84dbe69c">&#9670;&#160;</a></span>isotropic_adp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a8e8a8e51345d2016e0065f1e731ba79c">Vec6</a> occ::crystal::UnitCell::isotropic_adp </td>
+          <td>(</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>u_iso</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The u_cif packing of an isotropic displacement parameter. </p>
+<p>ADPs are stored as U^ij referred to the reciprocal axes, and in that convention an isotropic U is diag(U, U, U) only when the cell is orthogonal. In general the off-diagonals carry the cosines of the reciprocal cell angles, and dropping them understates the temperature factor of every reflection with mixed indices.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">u_iso</td><td>the isotropic displacement parameter, in Angstrom^2 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>(u11, u22, u33, u12, u13, u23) </dd></dl>
 
 </div>
 </div>

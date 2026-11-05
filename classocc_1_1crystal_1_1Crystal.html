@@ -414,10 +414,18 @@ Static Public Member Functions</h2></td></tr>
 
 <p>Creates a primitive supercell from a crystal lattice. </p>
 <p>Given a crystal lattice, this method constructs a new lattice that is a primitive supercell of the original lattice. The dimensions of the supercell are given in the <a class="el" href="structocc_1_1crystal_1_1HKL.html" title="A struct representing a lattice vector triplet (h, k, l) in a crystal lattice.">HKL</a> parameter, and all symmetry beyond translational symmetry is removed in the resulting crystal.</p>
+<p>Molecules are kept whole, so atoms may sit outside the supercell.</p>
+<dl class="section note"><dt>Note</dt><dd>Only positions and elements survive: the result carries neither the occupancies nor the displacement parameters of the original.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">c</td><td>The crystal lattice from which to create the primitive supercell. </td></tr>
     <tr><td class="paramname">hkl</td><td>The lattice vector triplet (h, k, l) that defines the primitive supercell.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if any of h, k, l is less than one.</td></tr>
   </table>
   </dd>
 </dl>

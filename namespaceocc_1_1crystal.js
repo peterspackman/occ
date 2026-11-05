@@ -52,6 +52,7 @@ var namespaceocc_1_1crystal =
     [ "SymmetryOperationFormat", "structocc_1_1crystal_1_1SymmetryOperationFormat.html", "structocc_1_1crystal_1_1SymmetryOperationFormat" ],
     [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ],
     [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ],
+    [ "XrayFormFactor", "structocc_1_1crystal_1_1XrayFormFactor.html", "structocc_1_1crystal_1_1XrayFormFactor" ],
     [ "Molecule", "classocc_1_1crystal_1_1Molecule.html", "classocc_1_1crystal_1_1Molecule" ],
     [ "DimerMappingGraph", "namespaceocc_1_1crystal.html#a9eb8db4dcb80ba7b7fd4835fc3a23959", null ],
     [ "IVec", "namespaceocc_1_1crystal.html#ac6e3d82e4db5caf8abce0f2c0ca6a501", null ],
@@ -80,6 +81,7 @@ var namespaceocc_1_1crystal =
     [ "has_whole_molecule_asymmetric_unit", "namespaceocc_1_1crystal.html#add52911b8a271ec011dc9d782068adb3", null ],
     [ "hexagonal_cell", "namespaceocc_1_1crystal.html#a9e01d3b4dd9257ecd1fac2bfba8947c3", null ],
     [ "is_close", "namespaceocc_1_1crystal.html#a0f4b4a70d874306db9b67ccc69091f93", null ],
+    [ "is_closed_group", "namespaceocc_1_1crystal.html#a39d2260a0647dd36725aab7cbcff133a", null ],
     [ "laue_orbit_partners", "namespaceocc_1_1crystal.html#abf1fbc5a0f5df6f6150f9d5e8d40f21f", null ],
     [ "lorentz_polarization", "namespaceocc_1_1crystal.html#adbc998c55723f4de7d813ff3f01ac3e5", null ],
     [ "maximal_subgroups", "namespaceocc_1_1crystal.html#a3b7f0203ec0d8b393e116f7ac3edc647", null ],
@@ -101,5 +103,7 @@ var namespaceocc_1_1crystal =
     [ "unique_reflections", "namespaceocc_1_1crystal.html#accbfba75f6d4abdcd25e5d122c547ef2", null ],
     [ "with_grouped_asymmetric_unit", "namespaceocc_1_1crystal.html#ac9d8481c90023740eb081a238a03c61c", null ],
     [ "with_molecular_asymmetric_unit", "namespaceocc_1_1crystal.html#af0861cffd5bf3464fadc720eaf221bf4", null ],
+    [ "xray_form_factor", "namespaceocc_1_1crystal.html#a92e653463e36b04f38a1e33b55ad3019", null ],
+    [ "xray_form_factor", "namespaceocc_1_1crystal.html#a4e0cb5b029f059d06ec35bd61c1ed036", null ],
     [ "z_prime", "namespaceocc_1_1crystal.html#a623177e102798aed636a1c7c6f50f0f1", null ]
 ];

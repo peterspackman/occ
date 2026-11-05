@@ -55,5 +55,6 @@ var searchData=
   ['curvaturek1_52',['CurvatureK1',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba64ea7748b829490db974e23e5650d659',1,'occ::isosurface']]],
   ['curvaturek2_53',['CurvatureK2',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cbacb8f091ec550409bbbd173612c688519',1,'occ::isosurface']]],
   ['curvedness_54',['Curvedness',['../namespaceocc_1_1isosurface.html#a2968d7f08d3f72b1360c452c333fa5cba18e3943bcc5a590fe43753212fcece5b',1,'occ::isosurface']]],
-  ['custom_55',['Custom',['../structocc_1_1scrf_1_1Options.html#a0b9411a28016afa046f22632a68ef2cba90589c47f06eb971d548591f23c285af',1,'occ::scrf::Options::Custom'],['../namespaceocc_1_1mults.html#a8508c5621f17856df001a220173652faa90589c47f06eb971d548591f23c285af',1,'occ::mults::Custom']]]
+  ['custom_55',['Custom',['../structocc_1_1scrf_1_1Options.html#a0b9411a28016afa046f22632a68ef2cba90589c47f06eb971d548591f23c285af',1,'occ::scrf::Options::Custom'],['../namespaceocc_1_1mults.html#a8508c5621f17856df001a220173652faa90589c47f06eb971d548591f23c285af',1,'occ::mults::Custom']]],
+  ['cvgaussian_56',['CVGaussian',['../namespaceocc_1_1descriptors.html#a4e8a7d6b50935cc2afc1b10755dbb5e8adef2c8cd253525ae0323e17f18a22c89',1,'occ::descriptors']]]
 ];

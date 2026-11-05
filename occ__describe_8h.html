@@ -100,16 +100,22 @@ $(function(){initNavTree('occ__describe_8h.html','',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;CLI/App.hpp&gt;</code><br />
+<code>#include &lt;functional&gt;</code><br />
+<code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
+<code>#include &lt;optional&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for occ_describe.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" loading="lazy" frameborder="0" src="occ__describe_8h__incl.svg" width="198" height="148"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" loading="lazy" frameborder="0" src="occ__describe_8h__incl.svg" width="695" height="224"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:occ_3A_3Amain_3A_3ADescribeConfig" id="r_occ_3A_3Amain_3A_3ADescribeConfig"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1DescribeConfig.html">occ::main::DescribeConfig</a></td></tr>
+<tr class="memitem:occ_3A_3Amain_3A_3ADescribeOutcome" id="r_occ_3A_3Amain_3A_3ADescribeOutcome"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1DescribeOutcome.html">occ::main::DescribeOutcome</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">What became of one input structure: a file, or one data block of a CIF.  <a href="structocc_1_1main_1_1DescribeOutcome.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
@@ -120,7 +126,10 @@ Namespaces</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:aab9daeef6e8a7ad1a534cb6c2006a309" id="r_aab9daeef6e8a7ad1a534cb6c2006a309"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#aab9daeef6e8a7ad1a534cb6c2006a309">occ::main::add_describe_subcommand</a> (CLI::App &amp;app)</td></tr>
+<tr class="memitem:ae9b1f0f1342afd78a8ffb55f82e33057" id="r_ae9b1f0f1342afd78a8ffb55f82e33057"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1main_1_1DescribeOutcome.html">DescribeOutcome</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#ae9b1f0f1342afd78a8ffb55f82e33057">occ::main::describe_structures</a> (<a class="el" href="structocc_1_1main_1_1DescribeConfig.html">DescribeConfig</a> const &amp;, const std::function&lt; void(const <a class="el" href="structocc_1_1main_1_1DescribeOutcome.html">DescribeOutcome</a> &amp;)&gt; &amp;on_outcome={})</td></tr>
+<tr class="memdesc:ae9b1f0f1342afd78a8ffb55f82e33057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Describe every structure in the configuration in turn, logging as it goes: each data block of a multi-block CIF is a structure of its own.  <br /></td></tr>
 <tr class="memitem:a6d83b8a52ad8058c79d226ae9862255d" id="r_a6d83b8a52ad8058c79d226ae9862255d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1main.html#a6d83b8a52ad8058c79d226ae9862255d">occ::main::run_describe_subcommand</a> (<a class="el" href="structocc_1_1main_1_1DescribeConfig.html">DescribeConfig</a> const &amp;)</td></tr>
+<tr class="memdesc:a6d83b8a52ad8058c79d226ae9862255d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceocc_1_1main.html#ae9b1f0f1342afd78a8ffb55f82e33057" title="Describe every structure in the configuration in turn, logging as it goes: each data block of a multi...">describe_structures()</a>, then a summary when there was more than one input, and the RINSE records if a JSON or JSON Lines file was asked for.  <br /></td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

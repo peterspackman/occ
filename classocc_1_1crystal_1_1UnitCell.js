@@ -31,6 +31,7 @@ var classocc_1_1crystal_1_1UnitCell =
     [ "is_rhombohedral", "classocc_1_1crystal_1_1UnitCell.html#a972bcb15fcabd4c9910c2efccc0bf89a", null ],
     [ "is_tetragonal", "classocc_1_1crystal_1_1UnitCell.html#a0332267c007182bb80c218b373d89846", null ],
     [ "is_triclinic", "classocc_1_1crystal_1_1UnitCell.html#ae53bbb083a1b295251f52dd54454fd8c", null ],
+    [ "isotropic_adp", "classocc_1_1crystal_1_1UnitCell.html#aadc1fe1ae51f964da515cdcb84dbe69c", null ],
     [ "lengths", "classocc_1_1crystal_1_1UnitCell.html#aa36fe401d0a3330f60cb798f151acb02", null ],
     [ "metric_tensor", "classocc_1_1crystal_1_1UnitCell.html#a5cb89d4a9595cadb97c488fcb7e39da6", null ],
     [ "reciprocal", "classocc_1_1crystal_1_1UnitCell.html#a0e02b0d617cc63962fd5bb4c5c7fd7d1", null ],

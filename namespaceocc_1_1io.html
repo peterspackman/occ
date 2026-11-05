@@ -135,6 +135,8 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Documents on disk, one file per key. Persists between runs.  <a href="classocc_1_1io_1_1FileJsonCache.html#details">More...</a><br /></td></tr>
 <tr class="memitem:MemoryJsonCache" id="r_MemoryJsonCache"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1io_1_1MemoryJsonCache.html">MemoryJsonCache</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Documents held for the lifetime of the object; nothing touches the disk.  <a href="classocc_1_1io_1_1MemoryJsonCache.html#details">More...</a><br /></td></tr>
+<tr class="memitem:CrystalBlock" id="r_CrystalBlock"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1CrystalBlock.html">CrystalBlock</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">One structure from a file that may hold several, such as a multi-block CIF.  <a href="structocc_1_1io_1_1CrystalBlock.html#details">More...</a><br /></td></tr>
 <tr class="memitem:ElectronInput" id="r_ElectronInput"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1ElectronInput.html">ElectronInput</a></td></tr>
 <tr class="memitem:GeometryInput" id="r_GeometryInput"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1GeometryInput.html">GeometryInput</a></td></tr>
 <tr class="memitem:OutputInput" id="r_OutputInput"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1OutputInput.html">OutputInput</a></td></tr>
@@ -228,6 +230,8 @@ Functions</h2></td></tr>
 <tr class="memitem:a45be67e52d66bf3088723985f13a314d" id="r_a45be67e52d66bf3088723985f13a314d"><td class="memTemplParams" colspan="2">template&lt;typename PropertyFunctor&gt; </td></tr>
 <tr class="memitem:a45be67e52d66bf3088723985f13a314d template"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a45be67e52d66bf3088723985f13a314d">make_adaptive_bounds</a> (PropertyFunctor &amp;func, const typename <a class="el" href="classocc_1_1io_1_1AdaptiveGridBounds.html">AdaptiveGridBounds</a>&lt; PropertyFunctor &gt;::Parameters &amp;params={})</td></tr>
 <tr class="memitem:a7fb33629fa205abb730a047f5968e93f" id="r_a7fb33629fa205abb730a047f5968e93f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7fb33629fa205abb730a047f5968e93f">load_crystal</a> (const std::string &amp;filename)</td></tr>
+<tr class="memitem:a7354e81ddc00b89ce9fa990bffd3ef86" id="r_a7354e81ddc00b89ce9fa990bffd3ef86"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1io_1_1CrystalBlock.html">CrystalBlock</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7354e81ddc00b89ce9fa990bffd3ef86">load_crystal_blocks</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:a7354e81ddc00b89ce9fa990bffd3ef86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Every crystal in the file: one per data block of a CIF, otherwise the single structure <a class="el" href="#a7fb33629fa205abb730a047f5968e93f">load_crystal()</a> reads.  <br /></td></tr>
 <tr class="memitem:a07416418ded69a01d477d8c00ef8a825" id="r_a07416418ded69a01d477d8c00ef8a825"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a07416418ded69a01d477d8c00ef8a825">load_molecule</a> (const std::string &amp;filename)</td></tr>
 <tr class="memitem:a0b4154c8ab12aa7b60925e2a2b6acbe2" id="r_a0b4154c8ab12aa7b60925e2a2b6acbe2"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
 <tr class="memitem:a0b4154c8ab12aa7b60925e2a2b6acbe2 template"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1io_1_1OccInput.html">OccInput</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0b4154c8ab12aa7b60925e2a2b6acbe2">build</a> (const std::string &amp;filename)</td></tr>
@@ -814,6 +818,31 @@ template&lt;typename T&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7354e81ddc00b89ce9fa990bffd3ef86" name="a7354e81ddc00b89ce9fa990bffd3ef86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7354e81ddc00b89ce9fa990bffd3ef86">&#9670;&#160;</a></span>load_crystal_blocks()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structocc_1_1io_1_1CrystalBlock.html">CrystalBlock</a> &gt; occ::io::load_crystal_blocks </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>filename</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Every crystal in the file: one per data block of a CIF, otherwise the single structure <a class="el" href="#a7fb33629fa205abb730a047f5968e93f">load_crystal()</a> reads. </p>
+<p>A block that is not a crystal (no cell or symmetry, say) is returned with its error rather than skipped, so the result lines up with the file's blocks; so is a single-structure file that cannot be read. </p><dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if a CIF cannot be read or holds no data block. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

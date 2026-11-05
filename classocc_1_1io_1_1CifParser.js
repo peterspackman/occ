@@ -7,6 +7,7 @@ var classocc_1_1io_1_1CifParser =
     [ "crystal_valid", "classocc_1_1io_1_1CifParser.html#ad68319d0d9a18cb990d367efa5fc0087", null ],
     [ "failure_description", "classocc_1_1io_1_1CifParser.html#a330e96e6afe7dd628061b412aa3fcbab", null ],
     [ "num_atoms", "classocc_1_1io_1_1CifParser.html#afdbcf7aaaaded13adfc63df1a4141d11", null ],
+    [ "parse_crystal_from_block", "classocc_1_1io_1_1CifParser.html#a8e0e0195967c3a6c534a26f7f4be06d6", null ],
     [ "parse_crystal_from_document", "classocc_1_1io_1_1CifParser.html#a2ef912711571ffcc88987540238af6d3", null ],
     [ "parse_crystal_from_file", "classocc_1_1io_1_1CifParser.html#a9ab5255cb9d1d936746f728050185c55", null ],
     [ "parse_crystal_from_string", "classocc_1_1io_1_1CifParser.html#ada7ab051d5d8536f0e0aaa3f242412f8", null ],

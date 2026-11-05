@@ -6,6 +6,7 @@ var searchData=
   ['reference_3',['Reference',['../structocc_1_1isosurface_1_1OrbitalIndex.html#a7de04a530b8bbf2e95cca3ed9992f6f8',1,'occ::isosurface::OrbitalIndex']]],
   ['refqmode_4',['RefqMode',['../namespaceocc_1_1disp.html#ae268b9e322e6fbd4f8332f8795e7b59b',1,'occ::disp']]],
   ['responsemode_5',['ResponseMode',['../classocc_1_1qm_1_1HartreeFock.html#a7a76c1fba07685ce730da0efb9caeae1',1,'occ::qm::HartreeFock::ResponseMode'],['../classocc_1_1interaction_1_1HartreeFock.html#a7a76c1fba07685ce730da0efb9caeae1',1,'occ::interaction::HartreeFock::ResponseMode']]],
-  ['ripolicy_6',['RIPolicy',['../namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50',1,'occ::io']]],
-  ['rotor_7',['Rotor',['../namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6',1,'occ::core::rotor::Rotor'],['../namespaceocc_1_1core.html#ae72a79f0509c18c91fbbe23883c2c2c6',1,'occ::core::Rotor']]]
+  ['rinseradialbasis_6',['RinseRadialBasis',['../namespaceocc_1_1descriptors.html#a4e8a7d6b50935cc2afc1b10755dbb5e8',1,'occ::descriptors']]],
+  ['ripolicy_7',['RIPolicy',['../namespaceocc_1_1io.html#a894c92adce9e11c8a1b87d617a658b50',1,'occ::io']]],
+  ['rotor_8',['Rotor',['../namespaceocc_1_1core_1_1rotor.html#ae72a79f0509c18c91fbbe23883c2c2c6',1,'occ::core::rotor::Rotor'],['../namespaceocc_1_1core.html#ae72a79f0509c18c91fbbe23883c2c2c6',1,'occ::core::Rotor']]]
 ];

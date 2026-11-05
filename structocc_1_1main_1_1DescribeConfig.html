@@ -105,16 +105,28 @@ $(function(){initNavTree('structocc_1_1main_1_1DescribeConfig.html','','structoc
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:ac91ac77089e90af7c50e74ac1a56bbfa" id="r_ac91ac77089e90af7c50e74ac1a56bbfa"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac91ac77089e90af7c50e74ac1a56bbfa">Descriptor</a> { <a class="el" href="#ac91ac77089e90af7c50e74ac1a56bbfaa51f1f8de2cd3a22e548e17e9a419b0f8">Steinhardt</a>
+, <a class="el" href="#ac91ac77089e90af7c50e74ac1a56bbfaa3d6f9d1746c91180295273fcb4d79db7">Rinse</a>
  }</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a5a06a54b6a4332bda5ab63b391ff14fc" id="r_a5a06a54b6a4332bda5ab63b391ff14fc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5a06a54b6a4332bda5ab63b391ff14fc">writes_records</a> () const</td></tr>
+<tr class="memdesc:a5a06a54b6a4332bda5ab63b391ff14fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether RINSE records are written to a file, which restricts the run to RINSE and makes a structure that fails a record rather than an error.  <br /></td></tr>
 <tr class="memitem:a8aa5d46eaf5f5ec6a5d209ab06836efc" id="r_a8aa5d46eaf5f5ec6a5d209ab06836efc"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="#ac91ac77089e90af7c50e74ac1a56bbfa">Descriptor</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8aa5d46eaf5f5ec6a5d209ab06836efc">descriptors</a> () const</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a93a2005d18e521873a4d33499825bc5a" id="r_a93a2005d18e521873a4d33499825bc5a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a93a2005d18e521873a4d33499825bc5a">geometry_filename</a> {&quot;&quot;}</td></tr>
+<tr class="memitem:af580f243aa7d9ef179fd69775a5c0dd6" id="r_af580f243aa7d9ef179fd69775a5c0dd6"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af580f243aa7d9ef179fd69775a5c0dd6">structure_filenames</a> {}</td></tr>
+<tr class="memdesc:af580f243aa7d9ef179fd69775a5c0dd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure files to describe, each handled according to its extension: xyz for molecules, cif or res/ins for crystals.  <br /></td></tr>
 <tr class="memitem:a5e2d072d7d47e276124861b8f567d211" id="r_a5e2d072d7d47e276124861b8f567d211"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5e2d072d7d47e276124861b8f567d211">descriptor_strings</a> {}</td></tr>
+<tr class="memitem:a8ac8754606a4db9ddd2af6dbd9d752e6" id="r_a8ac8754606a4db9ddd2af6dbd9d752e6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8ac8754606a4db9ddd2af6dbd9d752e6">hash_words</a> {1}</td></tr>
+<tr class="memdesc:a8ac8754606a4db9ddd2af6dbd9d752e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Words in the RINSE hash; each carries 16 bits.  <br /></td></tr>
+<tr class="memitem:a2d595c5544e6a42bc3b3c023241da68e" id="r_a2d595c5544e6a42bc3b3c023241da68e"><td class="memItemLeft" align="right" valign="top">std::optional&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2d595c5544e6a42bc3b3c023241da68e">fixed_uiso</a> {}</td></tr>
+<tr class="memdesc:a2d595c5544e6a42bc3b3c023241da68e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Isotropic U, in A^2, given to every atom in place of its ADPs for RINSE.  <br /></td></tr>
+<tr class="memitem:a4fad4d307cede037589cfdd4f6c1184c" id="r_a4fad4d307cede037589cfdd4f6c1184c"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4fad4d307cede037589cfdd4f6c1184c">json_filename</a> {}</td></tr>
+<tr class="memdesc:a4fad4d307cede037589cfdd4f6c1184c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the RINSE records to this file as one JSON document.  <br /></td></tr>
+<tr class="memitem:a45ec1d94ff521281e0fb06869cb82288" id="r_a45ec1d94ff521281e0fb06869cb82288"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a45ec1d94ff521281e0fb06869cb82288">jsonl_filename</a> {}</td></tr>
+<tr class="memdesc:a45ec1d94ff521281e0fb06869cb82288"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stream the RINSE records to this file as JSON Lines: a header line, then one line per structure as it is described.  <br /></td></tr>
 </table>
 <a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Member Enumeration Documentation</h2>
 <a id="ac91ac77089e90af7c50e74ac1a56bbfa" name="ac91ac77089e90af7c50e74ac1a56bbfa"></a>
@@ -138,6 +150,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ac91ac77089e90af7c50e74ac1a56bbfaa51f1f8de2cd3a22e548e17e9a419b0f8" name="ac91ac77089e90af7c50e74ac1a56bbfaa51f1f8de2cd3a22e548e17e9a419b0f8"></a>Steinhardt&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac91ac77089e90af7c50e74ac1a56bbfaa3d6f9d1746c91180295273fcb4d79db7" name="ac91ac77089e90af7c50e74ac1a56bbfaa3d6f9d1746c91180295273fcb4d79db7"></a>Rinse&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -160,6 +173,33 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a5a06a54b6a4332bda5ab63b391ff14fc" name="a5a06a54b6a4332bda5ab63b391ff14fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a06a54b6a4332bda5ab63b391ff14fc">&#9670;&#160;</a></span>writes_records()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::main::DescribeConfig::writes_records </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Whether RINSE records are written to a file, which restricts the run to RINSE and makes a structure that fails a record rather than an error. </p>
+
+</div>
+</div>
 <a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a5e2d072d7d47e276124861b8f567d211" name="a5e2d072d7d47e276124861b8f567d211"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5e2d072d7d47e276124861b8f567d211">&#9670;&#160;</a></span>descriptor_strings</h2>
@@ -175,17 +215,83 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a93a2005d18e521873a4d33499825bc5a" name="a93a2005d18e521873a4d33499825bc5a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93a2005d18e521873a4d33499825bc5a">&#9670;&#160;</a></span>geometry_filename</h2>
+<a id="a2d595c5544e6a42bc3b3c023241da68e" name="a2d595c5544e6a42bc3b3c023241da68e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d595c5544e6a42bc3b3c023241da68e">&#9670;&#160;</a></span>fixed_uiso</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::string occ::main::DescribeConfig::geometry_filename {&quot;&quot;}</td>
+          <td class="memname">std::optional&lt;double&gt; occ::main::DescribeConfig::fixed_uiso {}</td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Isotropic U, in A^2, given to every atom in place of its ADPs for RINSE. </p>
+
+</div>
+</div>
+<a id="a8ac8754606a4db9ddd2af6dbd9d752e6" name="a8ac8754606a4db9ddd2af6dbd9d752e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ac8754606a4db9ddd2af6dbd9d752e6">&#9670;&#160;</a></span>hash_words</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::main::DescribeConfig::hash_words {1}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Words in the RINSE hash; each carries 16 bits. </p>
+
+</div>
+</div>
+<a id="a4fad4d307cede037589cfdd4f6c1184c" name="a4fad4d307cede037589cfdd4f6c1184c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fad4d307cede037589cfdd4f6c1184c">&#9670;&#160;</a></span>json_filename</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::main::DescribeConfig::json_filename {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Write the RINSE records to this file as one JSON document. </p>
+
+</div>
+</div>
+<a id="a45ec1d94ff521281e0fb06869cb82288" name="a45ec1d94ff521281e0fb06869cb82288"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45ec1d94ff521281e0fb06869cb82288">&#9670;&#160;</a></span>jsonl_filename</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::main::DescribeConfig::jsonl_filename {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Stream the RINSE records to this file as JSON Lines: a header line, then one line per structure as it is described. </p>
+
+</div>
+</div>
+<a id="af580f243aa7d9ef179fd69775a5c0dd6" name="af580f243aa7d9ef179fd69775a5c0dd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af580f243aa7d9ef179fd69775a5c0dd6">&#9670;&#160;</a></span>structure_filenames</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;std::string&gt; occ::main::DescribeConfig::structure_filenames {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Structure files to describe, each handled according to its extension: xyz for molecules, cif or res/ins for crystals. </p>
 
 </div>
 </div>

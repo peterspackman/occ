@@ -117,6 +117,7 @@ var annotated_dup =
         [ "JsonCache", "classocc_1_1io_1_1JsonCache.html", "classocc_1_1io_1_1JsonCache" ],
         [ "FileJsonCache", "classocc_1_1io_1_1FileJsonCache.html", "classocc_1_1io_1_1FileJsonCache" ],
         [ "MemoryJsonCache", "classocc_1_1io_1_1MemoryJsonCache.html", "classocc_1_1io_1_1MemoryJsonCache" ],
+        [ "CrystalBlock", "structocc_1_1io_1_1CrystalBlock.html", "structocc_1_1io_1_1CrystalBlock" ],
         [ "ElectronInput", "structocc_1_1io_1_1ElectronInput.html", "structocc_1_1io_1_1ElectronInput" ],
         [ "GeometryInput", "structocc_1_1io_1_1GeometryInput.html", "structocc_1_1io_1_1GeometryInput" ],
         [ "OutputInput", "structocc_1_1io_1_1OutputInput.html", "structocc_1_1io_1_1OutputInput" ],
@@ -206,6 +207,7 @@ var annotated_dup =
         [ "SymmetryOperationFormat", "structocc_1_1crystal_1_1SymmetryOperationFormat.html", "structocc_1_1crystal_1_1SymmetryOperationFormat" ],
         [ "SymmetryOperation", "classocc_1_1crystal_1_1SymmetryOperation.html", "classocc_1_1crystal_1_1SymmetryOperation" ],
         [ "UnitCell", "classocc_1_1crystal_1_1UnitCell.html", "classocc_1_1crystal_1_1UnitCell" ],
+        [ "XrayFormFactor", "structocc_1_1crystal_1_1XrayFormFactor.html", "structocc_1_1crystal_1_1XrayFormFactor" ],
         [ "Molecule", "classocc_1_1crystal_1_1Molecule.html", "classocc_1_1crystal_1_1Molecule" ]
       ] ],
       [ "descriptors", "namespaceocc_1_1descriptors.html", [
@@ -213,6 +215,9 @@ var annotated_dup =
         [ "PointwiseDistanceDistributionConfig", "structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig.html", "structocc_1_1descriptors_1_1PointwiseDistanceDistributionConfig" ],
         [ "PointwiseDistanceDistribution", "classocc_1_1descriptors_1_1PointwiseDistanceDistribution.html", "classocc_1_1descriptors_1_1PointwiseDistanceDistribution" ],
         [ "PromoleculeDensityShape", "structocc_1_1descriptors_1_1PromoleculeDensityShape.html", "structocc_1_1descriptors_1_1PromoleculeDensityShape" ],
+        [ "RinseParams", "structocc_1_1descriptors_1_1RinseParams.html", "structocc_1_1descriptors_1_1RinseParams" ],
+        [ "ReflectionList", "structocc_1_1descriptors_1_1ReflectionList.html", "structocc_1_1descriptors_1_1ReflectionList" ],
+        [ "Rinse", "classocc_1_1descriptors_1_1Rinse.html", "classocc_1_1descriptors_1_1Rinse" ],
         [ "SortedKDistances", "classocc_1_1descriptors_1_1SortedKDistances.html", "classocc_1_1descriptors_1_1SortedKDistances" ],
         [ "Steinhardt", "classocc_1_1descriptors_1_1Steinhardt.html", "classocc_1_1descriptors_1_1Steinhardt" ]
       ] ],
@@ -566,6 +571,7 @@ var annotated_dup =
         [ "CosmoRSConfig", "structocc_1_1main_1_1CosmoRSConfig.html", "structocc_1_1main_1_1CosmoRSConfig" ],
         [ "CubeConfig", "structocc_1_1main_1_1CubeConfig.html", "structocc_1_1main_1_1CubeConfig" ],
         [ "DescribeConfig", "structocc_1_1main_1_1DescribeConfig.html", "structocc_1_1main_1_1DescribeConfig" ],
+        [ "DescribeOutcome", "structocc_1_1main_1_1DescribeOutcome.html", "structocc_1_1main_1_1DescribeOutcome" ],
         [ "DimerGenerationSettings", "structocc_1_1main_1_1DimerGenerationSettings.html", "structocc_1_1main_1_1DimerGenerationSettings" ],
         [ "ElasticSettings", "structocc_1_1main_1_1ElasticSettings.html", "structocc_1_1main_1_1ElasticSettings" ],
         [ "EFSettings", "structocc_1_1main_1_1EFSettings.html", "structocc_1_1main_1_1EFSettings" ],

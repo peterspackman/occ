@@ -5,7 +5,7 @@ var searchData=
   ['v_5fab_5fcom_2',['v_ab_com',['../classocc_1_1core_1_1Dimer.html#ab346fd905aa83783b22dafcd3d021e17',1,'occ::core::Dimer']]],
   ['valid_3',['valid',['../structocc_1_1io_1_1CellData.html#af8b42e3b4791c4d9d014ba43e655e0c2',1,'occ::io::CellData::valid()'],['../structocc_1_1io_1_1SymmetryData.html#a0e076ec9966c837b08fcf05e98cfa144',1,'occ::io::SymmetryData::valid()']]],
   ['valid_5fjson_5fformat_5fstring_4',['valid_json_format_string',['../namespaceocc_1_1io.html#a03fbffee6c9f175af30275db3fe30f69',1,'occ::io']]],
-  ['validate_5',['validate',['../classocc_1_1driver_1_1CGSolvationModel.html#ac29246e8495c7e4c6c855b8cec602bbb',1,'occ::driver::CGSolvationModel::validate()'],['../classocc_1_1isosurface_1_1IsosurfaceCalculator.html#a63877b8a6ade3384af701b0009eb0781',1,'occ::isosurface::IsosurfaceCalculator::validate()']]],
+  ['validate_5',['validate',['../structocc_1_1descriptors_1_1RinseParams.html#a765327ccffd244eb416b1f2cb2b3ec6e',1,'occ::descriptors::RinseParams::validate()'],['../classocc_1_1driver_1_1CGSolvationModel.html#ac29246e8495c7e4c6c855b8cec602bbb',1,'occ::driver::CGSolvationModel::validate()'],['../classocc_1_1isosurface_1_1IsosurfaceCalculator.html#a63877b8a6ade3384af701b0009eb0781',1,'occ::isosurface::IsosurfaceCalculator::validate()']]],
   ['validate_5fgeometry_6',['validate_geometry',['../namespaceocc_1_1core.html#ac4283753a00823f1a742f5c269429378',1,'occ::core']]],
   ['values_5fon_5fgrid_5fcomplex_7',['values_on_grid_complex',['../classocc_1_1sht_1_1SHT.html#ac601e42a813de5b1acf343f059113aae',1,'occ::sht::SHT']]],
   ['values_5fon_5fgrid_5freal_8',['values_on_grid_real',['../classocc_1_1sht_1_1SHT.html#a34f47066891369db530632d4c333e986',1,'occ::sht::SHT']]],

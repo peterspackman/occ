@@ -116,6 +116,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9ab5255cb9d1d936746f728050185c55" id="r_a9ab5255cb9d1d936746f728050185c55"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9ab5255cb9d1d936746f728050185c55">parse_crystal_from_file</a> (const std::string &amp;)</td></tr>
 <tr class="memitem:ada7ab051d5d8536f0e0aaa3f242412f8" id="r_ada7ab051d5d8536f0e0aaa3f242412f8"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ada7ab051d5d8536f0e0aaa3f242412f8">parse_crystal_from_string</a> (const std::string &amp;)</td></tr>
 <tr class="memitem:a2ef912711571ffcc88987540238af6d3" id="r_a2ef912711571ffcc88987540238af6d3"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2ef912711571ffcc88987540238af6d3">parse_crystal_from_document</a> (const gemmi::cif::Document &amp;)</td></tr>
+<tr class="memdesc:a2ef912711571ffcc88987540238af6d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The crystal in the document's first data block.  <br /></td></tr>
+<tr class="memitem:a8e0e0195967c3a6c534a26f7f4be06d6" id="r_a8e0e0195967c3a6c534a26f7f4be06d6"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8e0e0195967c3a6c534a26f7f4be06d6">parse_crystal_from_block</a> (const gemmi::cif::Block &amp;)</td></tr>
+<tr class="memdesc:a8e0e0195967c3a6c534a26f7f4be06d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">The crystal in one data block.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -315,6 +318,26 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a8e0e0195967c3a6c534a26f7f4be06d6" name="a8e0e0195967c3a6c534a26f7f4be06d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e0e0195967c3a6c534a26f7f4be06d6">&#9670;&#160;</a></span>parse_crystal_from_block()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a> &gt; occ::io::CifParser::parse_crystal_from_block </td>
+          <td>(</td>
+          <td class="paramtype">const gemmi::cif::Block &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The crystal in one data block. </p>
+<p>A parser accumulates what it reads, so use a fresh <a class="el" href="classocc_1_1io_1_1CifParser.html">CifParser</a> for each block. </p>
+
+</div>
+</div>
 <a id="a2ef912711571ffcc88987540238af6d3" name="a2ef912711571ffcc88987540238af6d3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2ef912711571ffcc88987540238af6d3">&#9670;&#160;</a></span>parse_crystal_from_document()</h2>
 
@@ -329,6 +352,8 @@ Static Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>The crystal in the document's first data block. </p>
 
 </div>
 </div>

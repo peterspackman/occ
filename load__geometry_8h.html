@@ -101,12 +101,20 @@ $(function(){initNavTree('load__geometry_8h.html','',''); });
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="molecule_8h.html">occ/core/molecule.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="crystal_8h.html">occ/crystal/crystal.h</a>&gt;</code><br />
+<code>#include &lt;optional&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for load_geometry.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" loading="lazy" frameborder="0" src="load__geometry_8h__incl.svg" width="2315" height="636"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" loading="lazy" frameborder="0" src="load__geometry_8h__incl.svg" width="2175" height="636"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:occ_3A_3Aio_3A_3ACrystalBlock" id="r_occ_3A_3Aio_3A_3ACrystalBlock"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1io_1_1CrystalBlock.html">occ::io::CrystalBlock</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">One structure from a file that may hold several, such as a multi-block CIF.  <a href="structocc_1_1io_1_1CrystalBlock.html#details">More...</a><br /></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:occ" id="r_occ"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc.html">occ</a></td></tr>
@@ -116,6 +124,8 @@ Namespaces</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a7fb33629fa205abb730a047f5968e93f" id="r_a7fb33629fa205abb730a047f5968e93f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1Crystal.html">occ::crystal::Crystal</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a7fb33629fa205abb730a047f5968e93f">occ::io::load_crystal</a> (const std::string &amp;filename)</td></tr>
+<tr class="memitem:a7354e81ddc00b89ce9fa990bffd3ef86" id="r_a7354e81ddc00b89ce9fa990bffd3ef86"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1io_1_1CrystalBlock.html">CrystalBlock</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a7354e81ddc00b89ce9fa990bffd3ef86">occ::io::load_crystal_blocks</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:a7354e81ddc00b89ce9fa990bffd3ef86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Every crystal in the file: one per data block of a CIF, otherwise the single structure <a class="el" href="namespaceocc_1_1io.html#a7fb33629fa205abb730a047f5968e93f">load_crystal()</a> reads.  <br /></td></tr>
 <tr class="memitem:a07416418ded69a01d477d8c00ef8a825" id="r_a07416418ded69a01d477d8c00ef8a825"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1core_1_1Molecule.html">occ::core::Molecule</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1io.html#a07416418ded69a01d477d8c00ef8a825">occ::io::load_molecule</a> (const std::string &amp;filename)</td></tr>
 </table>
 </div><!-- contents -->

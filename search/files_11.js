@@ -9,9 +9,10 @@ var searchData=
   ['rigid_5fbody_2eh_6',['rigid_body.h',['../rigid__body_8h.html',1,'']]],
   ['rigid_5fbody_5fdynamics_2eh_7',['rigid_body_dynamics.h',['../rigid__body__dynamics_8h.html',1,'']]],
   ['rigid_5fmolecule_2eh_8',['rigid_molecule.h',['../rigid__molecule_8h.html',1,'']]],
-  ['rints_2eh_9',['rints.h',['../rints_8h.html',1,'']]],
-  ['rints_5fspecialized_2eh_10',['rints_specialized.h',['../rints__specialized_8h.html',1,'']]],
-  ['rints_5fspecialized_5f3c_2eh_11',['rints_specialized_3c.h',['../rints__specialized__3c_8h.html',1,'']]],
-  ['rotation_2eh_12',['rotation.h',['../gto_2rotation_8h.html',1,'(Global Namespace)'],['../mults_2rotation_8h.html',1,'(Global Namespace)']]],
-  ['rotor_2eh_13',['rotor.h',['../rotor_8h.html',1,'']]]
+  ['rinse_2eh_9',['rinse.h',['../rinse_8h.html',1,'']]],
+  ['rints_2eh_10',['rints.h',['../rints_8h.html',1,'']]],
+  ['rints_5fspecialized_2eh_11',['rints_specialized.h',['../rints__specialized_8h.html',1,'']]],
+  ['rints_5fspecialized_5f3c_2eh_12',['rints_specialized_3c.h',['../rints__specialized__3c_8h.html',1,'']]],
+  ['rotation_2eh_13',['rotation.h',['../gto_2rotation_8h.html',1,'(Global Namespace)'],['../mults_2rotation_8h.html',1,'(Global Namespace)']]],
+  ['rotor_2eh_14',['rotor.h',['../rotor_8h.html',1,'']]]
 ];

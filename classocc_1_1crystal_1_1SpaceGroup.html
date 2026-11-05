@@ -136,6 +136,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a42dd600370bf39a9f0226edfdf60a3d7" id="r_a42dd600370bf39a9f0226edfdf60a3d7"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#ac6e3d82e4db5caf8abce0f2c0ca6a501">IVec</a>, <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a42dd600370bf39a9f0226edfdf60a3d7">apply_all_symmetry_operations</a> (const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &amp;) const</td></tr>
 <tr class="memitem:afac83c7cf8a716b16db1b23293f3ca55" id="r_afac83c7cf8a716b16db1b23293f3ca55"><td class="memItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="namespaceocc.html#ac6e3d82e4db5caf8abce0f2c0ca6a501">IVec</a>, <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afac83c7cf8a716b16db1b23293f3ca55">apply_rotations</a> (const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &amp;) const</td></tr>
 <tr class="memitem:a4fb7dcdb4f921f5b53eecf30eb6abbfb" id="r_a4fb7dcdb4f921f5b53eecf30eb6abbfb"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4fb7dcdb4f921f5b53eecf30eb6abbfb">reciprocal_asu</a> () const</td></tr>
+<tr class="memitem:a374ae72f56c5117067964c361d685d57" id="r_a374ae72f56c5117067964c361d685d57"><td class="memItemLeft" align="right" valign="top">std::vector&lt; Eigen::Matrix3i &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a374ae72f56c5117067964c361d685d57">laue_rotations</a> () const</td></tr>
+<tr class="memdesc:a374ae72f56c5117067964c361d685d57"><td class="mdescLeft">&#160;</td><td class="mdescRight">The distinct rotations acting on reciprocal space, as integer matrices.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This class represents a space group. </p>
@@ -348,6 +350,26 @@ Public Member Functions</h2></td></tr>
 <p>Whether this space group is in the standard (ITA reference) setting.</p>
 <p>Space groups have many settings &ndash; P2_1/c, P2_1/a and P2_1/n are all space group 14 &ndash; and tabulated data (subgroup relations, Wyckoff positions) is given for the standard one. Structures in the wild often are not.</p>
 <dl class="section note"><dt>Note</dt><dd>For the 24 groups with two origin choices (Pnnn, Fddd, ...) the standard setting is origin choice 2, whereas <span class="tt">SpaceGroup(number)</span> gives origin choice 1. Use <span class="tt"><a class="el" href="#acad6d1a4b675bc7171705288f4b0130b" title="This space group in its standard (ITA reference) setting.">standard_setting()</a></span> to get the former. </dd></dl>
+
+</div>
+</div>
+<a id="a374ae72f56c5117067964c361d685d57" name="a374ae72f56c5117067964c361d685d57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a374ae72f56c5117067964c361d685d57">&#9670;&#160;</a></span>laue_rotations()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; Eigen::Matrix3i &gt; occ::crystal::SpaceGroup::laue_rotations </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The distinct rotations acting on reciprocal space, as integer matrices. </p>
+<p>A reflection h maps under (R|t) to (R^T)^-1 h, and the group is closed under inversion, so the orbit of h is its orbit under {R^T}. Friedel's law adds -R^T, giving the Laue group. Translations do not enter: they change the phase of F(h), not its magnitude, so reflections related by these rotations share an intensity. </p>
 
 </div>
 </div>

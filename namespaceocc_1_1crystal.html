@@ -163,6 +163,8 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class representing a 3D symmetry operation.  <a href="classocc_1_1crystal_1_1SymmetryOperation.html#details">More...</a><br /></td></tr>
 <tr class="memitem:UnitCell" id="r_UnitCell"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class represents a unit cell of a crystal lattice.  <a href="classocc_1_1crystal_1_1UnitCell.html#details">More...</a><br /></td></tr>
+<tr class="memitem:XrayFormFactor" id="r_XrayFormFactor"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1crystal_1_1XrayFormFactor.html">XrayFormFactor</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A neutral-atom or ion X-ray form factor from Waasmaier &amp; Kirfel (1995).  <a href="structocc_1_1crystal_1_1XrayFormFactor.html#details">More...</a><br /></td></tr>
 <tr class="memitem:Molecule" id="r_Molecule"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1crystal_1_1Molecule.html">Molecule</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Storage class for relevant information of a <a class="el" href="classocc_1_1crystal_1_1Molecule.html" title="Storage class for relevant information of a Molecule.">Molecule</a>.  <a href="classocc_1_1crystal_1_1Molecule.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
@@ -226,6 +228,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:abf1fbc5a0f5df6f6150f9d5e8d40f21f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Positions in <span class="tt">surfaces</span> that share a Laue-class orbit with <span class="tt">surfaces[i]</span>, including <span class="tt">i</span> itself.  <br /></td></tr>
 <tr class="memitem:a937f0aa58404f0dc5a1855964ce4d297" id="r_a937f0aa58404f0dc5a1855964ce4d297"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a>, <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a937f0aa58404f0dc5a1855964ce4d297">face_images</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">Crystal</a> &amp;c, const <a class="el" href="structocc_1_1crystal_1_1HKL.html">HKL</a> &amp;hkl)</td></tr>
 <tr class="memdesc:a937f0aa58404f0dc5a1855964ce4d297"><td class="mdescLeft">&#160;</td><td class="mdescRight">The distinct faces equivalent to <span class="tt">hkl</span> under the crystal's point group, each with the first symmetry operation (R|t) that produces it: the image is R^-T hkl, and a cut at offset o on <span class="tt">hkl</span> maps to o + image.t on it.  <br /></td></tr>
+<tr class="memitem:a39d2260a0647dd36725aab7cbcff133a" id="r_a39d2260a0647dd36725aab7cbcff133a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a39d2260a0647dd36725aab7cbcff133a">is_closed_group</a> (const std::vector&lt; <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a> &gt; &amp;operations)</td></tr>
+<tr class="memdesc:a39d2260a0647dd36725aab7cbcff133a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether a list of operations is a whole group: closed under composition, up to lattice translations.  <br /></td></tr>
 <tr class="memitem:a78a9c35cd26a715ea7cfbee259ea95e5" id="r_a78a9c35cd26a715ea7cfbee259ea95e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a78a9c35cd26a715ea7cfbee259ea95e5">cubic_cell</a> (double length)</td></tr>
 <tr class="memdesc:a78a9c35cd26a715ea7cfbee259ea95e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a cubic unit cell from a given length.  <br /></td></tr>
 <tr class="memitem:a007770fccb2ec3a01d53a7e8785a8753" id="r_a007770fccb2ec3a01d53a7e8785a8753"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a007770fccb2ec3a01d53a7e8785a8753">rhombohedral_cell</a> (double length, double angle)</td></tr>
@@ -240,6 +244,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:a1a44c3e06d68376a3160ea89a23cd97d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an orthorhombic unit cell from three given lengths and one angle.  <br /></td></tr>
 <tr class="memitem:a392f8e219e4cd936e2d59947cafb8f51" id="r_a392f8e219e4cd936e2d59947cafb8f51"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classocc_1_1crystal_1_1UnitCell.html">UnitCell</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a392f8e219e4cd936e2d59947cafb8f51">triclinic_cell</a> (double a, double b, double c, double <a class="el" href="core_2opmatrix_8h.html#aab769e0b637de334825b317aaac2cc2c">alpha</a>, double <a class="el" href="core_2opmatrix_8h.html#adff2ac04a289a00b32da24ad8a4aa8b6">beta</a>, double gamma)</td></tr>
 <tr class="memdesc:a392f8e219e4cd936e2d59947cafb8f51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an orthorhombic unit cell from three given lengths and three angles.  <br /></td></tr>
+<tr class="memitem:a4e0cb5b029f059d06ec35bd61c1ed036" id="r_a4e0cb5b029f059d06ec35bd61c1ed036"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="structocc_1_1crystal_1_1XrayFormFactor.html">XrayFormFactor</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4e0cb5b029f059d06ec35bd61c1ed036">xray_form_factor</a> (std::string_view label)</td></tr>
+<tr class="memdesc:a4e0cb5b029f059d06ec35bd61c1ed036"><td class="mdescLeft">&#160;</td><td class="mdescRight">Look up a form factor by scattering-type label, e.g.  <br /></td></tr>
+<tr class="memitem:a92e653463e36b04f38a1e33b55ad3019" id="r_a92e653463e36b04f38a1e33b55ad3019"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="structocc_1_1crystal_1_1XrayFormFactor.html">XrayFormFactor</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a92e653463e36b04f38a1e33b55ad3019">xray_form_factor</a> (int atomic_number)</td></tr>
+<tr class="memdesc:a92e653463e36b04f38a1e33b55ad3019"><td class="mdescLeft">&#160;</td><td class="mdescRight">Look up the neutral atom for an atomic number (1-98); nullopt if out of range.  <br /></td></tr>
 <tr class="memitem:a1a9da008728d1c41260106983703d4b3" id="r_a1a9da008728d1c41260106983703d4b3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1a9da008728d1c41260106983703d4b3">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;)</td></tr>
 <tr class="memitem:a58e0cdaffa9e0d2f161bcdf2f60ceb06" id="r_a58e0cdaffa9e0d2f161bcdf2f60ceb06"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a58e0cdaffa9e0d2f161bcdf2f60ceb06">from_json</a> (const nlohmann::json &amp;j, <a class="el" href="structocc_1_1crystal_1_1CrystalDimers.html">CrystalDimers</a> &amp;)</td></tr>
 <tr class="memitem:a8ab409801d9b3ca75a9528b748bde20f" id="r_a8ab409801d9b3ca75a9528b748bde20f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8ab409801d9b3ca75a9528b748bde20f">to_json</a> (nlohmann::json &amp;j, const <a class="el" href="structocc_1_1crystal_1_1AsymmetricUnit.html">AsymmetricUnit</a> &amp;)</td></tr>
@@ -754,6 +762,26 @@ template&lt;typename T&gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a39d2260a0647dd36725aab7cbcff133a" name="a39d2260a0647dd36725aab7cbcff133a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39d2260a0647dd36725aab7cbcff133a">&#9670;&#160;</a></span>is_closed_group()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool occ::crystal::is_closed_group </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classocc_1_1crystal_1_1SymmetryOperation.html">SymmetryOperation</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>operations</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether a list of operations is a whole group: closed under composition, up to lattice translations. </p>
+<p>A list that is not &ndash; an operation missing or mistyped &ndash; cannot be used as given. </p>
 
 </div>
 </div>
@@ -1344,6 +1372,49 @@ Subgroups are reported individually, not grouped into conjugacy classes under th
 <p>Re-choose the asymmetric unit so that whole molecules stay together. </p>
 <p><span class="tt"><a class="el" href="#ac9d8481c90023740eb081a238a03c61c" title="Re-choose a crystal&#39;s asymmetric unit so that groups of atoms stay together.">with_grouped_asymmetric_unit</a></span> with the groups taken from the crystal's own molecules. This is what makes "Z' = 1 with the whole molecule as the
 asymmetric unit" a construction rather than a coincidence. </p>
+
+</div>
+</div>
+<a id="a92e653463e36b04f38a1e33b55ad3019" name="a92e653463e36b04f38a1e33b55ad3019"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92e653463e36b04f38a1e33b55ad3019">&#9670;&#160;</a></span>xray_form_factor() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="structocc_1_1crystal_1_1XrayFormFactor.html">XrayFormFactor</a> &gt; occ::crystal::xray_form_factor </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>atomic_number</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Look up the neutral atom for an atomic number (1-98); nullopt if out of range. </p>
+<p>Hydrogen is the bonded "H". </p>
+
+</div>
+</div>
+<a id="a4e0cb5b029f059d06ec35bd61c1ed036" name="a4e0cb5b029f059d06ec35bd61c1ed036"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4e0cb5b029f059d06ec35bd61c1ed036">&#9670;&#160;</a></span>xray_form_factor() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="structocc_1_1crystal_1_1XrayFormFactor.html">XrayFormFactor</a> &gt; occ::crystal::xray_form_factor </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>label</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Look up a form factor by scattering-type label, e.g. </p>
+<p>"C", "Na1+", "O2-".</p>
+<p>Labels follow the cctbx/International Tables spelling: the element symbol, optionally followed by the charge as digit-then-sign. The table also holds the valence-state entries "Cval" and "Sival".</p>
+<p>"H" is not Waasmaier &amp; Kirfel's hydrogen but cctbx's fit to the more contracted Stewart, Davidson &amp; Simpson (1965) bonded hydrogen, which is what cctbx and rinse-descriptor scatter hydrogen with. The free atom is "Hiso".</p>
+<dl class="section return"><dt>Returns</dt><dd>nullopt if the label is not in the table. </dd></dl>
 
 </div>
 </div>

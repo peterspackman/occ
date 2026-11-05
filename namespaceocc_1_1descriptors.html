@@ -109,6 +109,12 @@ Classes</h2></td></tr>
 <tr class="memitem:PointwiseDistanceDistribution" id="r_PointwiseDistanceDistribution"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1descriptors_1_1PointwiseDistanceDistribution.html">PointwiseDistanceDistribution</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointwise Distance Distribution for crystals.  <a href="classocc_1_1descriptors_1_1PointwiseDistanceDistribution.html#details">More...</a><br /></td></tr>
 <tr class="memitem:PromoleculeDensityShape" id="r_PromoleculeDensityShape"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1descriptors_1_1PromoleculeDensityShape.html">PromoleculeDensityShape</a></td></tr>
+<tr class="memitem:RinseParams" id="r_RinseParams"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1descriptors_1_1RinseParams.html">RinseParams</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hyper-parameters for the RINSE descriptor.  <a href="structocc_1_1descriptors_1_1RinseParams.html#details">More...</a><br /></td></tr>
+<tr class="memitem:ReflectionList" id="r_ReflectionList"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1descriptors_1_1ReflectionList.html">ReflectionList</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The reflections the descriptor is built from.  <a href="structocc_1_1descriptors_1_1ReflectionList.html#details">More...</a><br /></td></tr>
+<tr class="memitem:Rinse" id="r_Rinse"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1descriptors_1_1Rinse.html">Rinse</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">RINSE &ndash; Reciprocal-space INvariant Spectral Embedding.  <a href="classocc_1_1descriptors_1_1Rinse.html#details">More...</a><br /></td></tr>
 <tr class="memitem:SortedKDistances" id="r_SortedKDistances"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1descriptors_1_1SortedKDistances.html">SortedKDistances</a></td></tr>
 <tr class="memitem:Steinhardt" id="r_Steinhardt"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classocc_1_1descriptors_1_1Steinhardt.html">Steinhardt</a></td></tr>
 </table><table class="memberdecls">
@@ -123,11 +129,32 @@ Typedefs</h2></td></tr>
 <tr class="memitem:a9c7041e01b5fa897671d418918165b66" id="r_a9c7041e01b5fa897671d418918165b66"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9c7041e01b5fa897671d418918165b66">SortedK50Distances</a> = <a class="el" href="classocc_1_1descriptors_1_1SortedKDistances.html">SortedKDistances</a>&lt;50&gt;</td></tr>
 <tr class="memitem:a3aef781f0c9e4c75ecc728eadb36b1c2" id="r_a3aef781f0c9e4c75ecc728eadb36b1c2"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3aef781f0c9e4c75ecc728eadb36b1c2">SortedK100Distances</a> = <a class="el" href="classocc_1_1descriptors_1_1SortedKDistances.html">SortedKDistances</a>&lt;100&gt;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a4e8a7d6b50935cc2afc1b10755dbb5e8" id="r_a4e8a7d6b50935cc2afc1b10755dbb5e8"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4e8a7d6b50935cc2afc1b10755dbb5e8">RinseRadialBasis</a> { <a class="el" href="#a4e8a7d6b50935cc2afc1b10755dbb5e8adef2c8cd253525ae0323e17f18a22c89">CVGaussian</a>
+, <a class="el" href="#a4e8a7d6b50935cc2afc1b10755dbb5e8ac0cd52d31b392de6a21855cbfb0d49a8">LinGaussian</a>
+ }</td></tr>
+<tr class="memdesc:a4e8a7d6b50935cc2afc1b10755dbb5e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Radial basis for the RINSE descriptor.  <a href="#a4e8a7d6b50935cc2afc1b10755dbb5e8">More...</a><br /></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:acaba97e817771dcad72be736ad51c1b9" id="r_acaba97e817771dcad72be736ad51c1b9"><td class="memTemplParams" colspan="2">template&lt;int MaxK = 256&gt; </td></tr>
 <tr class="memitem:acaba97e817771dcad72be736ad51c1b9 template"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acaba97e817771dcad72be736ad51c1b9">find_multiple_k_nearest</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">crystal::Crystal</a> &amp;<a class="el" href="namespaceocc_1_1crystal.html">crystal</a>, const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &amp;query_points, int k, <a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">Mat</a> &amp;out_distances)</td></tr>
 <tr class="memdesc:acaba97e817771dcad72be736ad51c1b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenient wrapper for multiple query points.  <br /></td></tr>
+<tr class="memitem:a02e12919ee75dcd01f8f439f435a443e" id="r_a02e12919ee75dcd01f8f439f435a443e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1descriptors_1_1ReflectionList.html">ReflectionList</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a02e12919ee75dcd01f8f439f435a443e">rinse_reflections</a> (const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">crystal::Crystal</a> &amp;<a class="el" href="namespaceocc_1_1crystal.html">crystal</a>, const <a class="el" href="structocc_1_1descriptors_1_1RinseParams.html">RinseParams</a> &amp;params={})</td></tr>
+<tr class="memdesc:a02e12919ee75dcd01f8f439f435a443e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumerate the resolution sphere and compute reflection intensities.  <br /></td></tr>
+<tr class="memitem:ad0cb76e4e52003ae984c0a314dcc539a" id="r_ad0cb76e4e52003ae984c0a314dcc539a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">Mat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad0cb76e4e52003ae984c0a314dcc539a">rinse_radial_basis</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> &gt; q, const <a class="el" href="structocc_1_1descriptors_1_1RinseParams.html">RinseParams</a> &amp;params)</td></tr>
+<tr class="memdesc:ad0cb76e4e52003ae984c0a314dcc539a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate the radial basis functions.  <br /></td></tr>
+<tr class="memitem:a5c4028fcc7da1a5896c610a8c078dd43" id="r_a5c4028fcc7da1a5896c610a8c078dd43"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5c4028fcc7da1a5896c610a8c078dd43">rinse_hash</a> (Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> &gt; descriptor, int num_words=<a class="el" href="#ac03e5eefb2d4aaa1fbb18698366eeefe">default_hash_words</a>)</td></tr>
+<tr class="memdesc:a5c4028fcc7da1a5896c610a8c078dd43"><td class="mdescLeft">&#160;</td><td class="mdescRight">A locality-sensitive hash of a descriptor, as pronounceable proquints.  <br /></td></tr>
+<tr class="memitem:af94eec18ef29a4d764d8ed5735c1595d" id="r_af94eec18ef29a4d764d8ed5735c1595d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af94eec18ef29a4d764d8ed5735c1595d">rinse_hash_to_bits</a> (std::string_view hash)</td></tr>
+<tr class="memdesc:af94eec18ef29a4d764d8ed5735c1595d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode a proquint hash back to its bits, most significant first.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a9ad752a497a01ddb4ef7f6594ce6a716" id="r_a9ad752a497a01ddb4ef7f6594ce6a716"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9ad752a497a01ddb4ef7f6594ce6a716">rinse_reference_version</a> = &quot;3.2.0&quot;</td></tr>
+<tr class="memdesc:a9ad752a497a01ddb4ef7f6594ce6a716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of proquint words produced by <a class="el" href="#a5c4028fcc7da1a5896c610a8c078dd43" title="A locality-sensitive hash of a descriptor, as pronounceable proquints.">rinse_hash()</a> unless asked otherwise.  <br /></td></tr>
+<tr class="memitem:ac03e5eefb2d4aaa1fbb18698366eeefe" id="r_ac03e5eefb2d4aaa1fbb18698366eeefe"><td class="memItemLeft" align="right" valign="top">constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac03e5eefb2d4aaa1fbb18698366eeefe">default_hash_words</a> = 1</td></tr>
 </table>
 <a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
 <a id="a10f9001c04ed8e46578e0deaecbd2d05" name="a10f9001c04ed8e46578e0deaecbd2d05"></a>
@@ -242,6 +269,40 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="a4e8a7d6b50935cc2afc1b10755dbb5e8" name="a4e8a7d6b50935cc2afc1b10755dbb5e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4e8a7d6b50935cc2afc1b10755dbb5e8">&#9670;&#160;</a></span>RinseRadialBasis</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="#a4e8a7d6b50935cc2afc1b10755dbb5e8">occ::descriptors::RinseRadialBasis</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel strong">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Radial basis for the RINSE descriptor. </p>
+<p>Both families anchor shell <em>n</em> by index through a single scale factor, so raising <span class="tt">n_max</span> extends the descriptor to higher |G| without disturbing the shells already computed. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a4e8a7d6b50935cc2afc1b10755dbb5e8adef2c8cd253525ae0323e17f18a22c89" name="a4e8a7d6b50935cc2afc1b10755dbb5e8adef2c8cd253525ae0323e17f18a22c89"></a>CVGaussian&#160;</td><td class="fielddoc"><p>Constant-volume Gaussians ("cv_gaussian"): edges at <span class="tt">scale * n^(1/3)</span>, each shell spanning an equal volume of reciprocal space, each Gaussian scaled so its q^2-weighted integral is shell-independent. </p>
+<p>|G|max = scale * n_max^(1/3). </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a4e8a7d6b50935cc2afc1b10755dbb5e8ac0cd52d31b392de6a21855cbfb0d49a8" name="a4e8a7d6b50935cc2afc1b10755dbb5e8ac0cd52d31b392de6a21855cbfb0d49a8"></a>LinGaussian&#160;</td><td class="fielddoc"><p>Linearly spaced Gaussians ("lin_gaussian") at <span class="tt">scale * n</span> of width <span class="tt">scale</span>, row-normalised to a partition of unity. </p>
+<p>|G|max = scale * (n_max - 1). </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
 <a id="acaba97e817771dcad72be736ad51c1b9" name="acaba97e817771dcad72be736ad51c1b9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acaba97e817771dcad72be736ad51c1b9">&#9670;&#160;</a></span>find_multiple_k_nearest()</h2>
@@ -275,6 +336,170 @@ template&lt;int MaxK = 256&gt; </div>
 </div><div class="memdoc">
 
 <p>Convenient wrapper for multiple query points. </p>
+
+</div>
+</div>
+<a id="a5c4028fcc7da1a5896c610a8c078dd43" name="a5c4028fcc7da1a5896c610a8c078dd43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c4028fcc7da1a5896c610a8c078dd43">&#9670;&#160;</a></span>rinse_hash()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string occ::descriptors::rinse_hash </td>
+          <td>(</td>
+          <td class="paramtype">Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>descriptor</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_words</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="#ac03e5eefb2d4aaa1fbb18698366eeefe">default_hash_words</a></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A locality-sensitive hash of a descriptor, as pronounceable proquints. </p>
+<p>PCA SimHash: centre and project the descriptor onto the leading principal components of a model fitted to the CSD, take the sign of each coefficient as a bit, and encode each 16 bits as a five-character CVCVC proquint word. Similar structures give the same or a nearby string, e.g. "lusab-babad".</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">descriptor</td><td>a flat 128-element descriptor, as returned by <a class="el" href="classocc_1_1descriptors_1_1Rinse.html#abe9ac5b4d2b578e231d84dda285816fe" title="The descriptor as a flat vector of length size(), row-major in (n, l): element n * num_l_levels + k i...">Rinse::compute()</a> with the default parameters </td></tr>
+    <tr><td class="paramname">num_words</td><td>words in the output; each carries 16 bits, at most 8 words</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if the descriptor is the wrong length or more words are asked for than the bundled model has components. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af94eec18ef29a4d764d8ed5735c1595d" name="af94eec18ef29a4d764d8ed5735c1595d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af94eec18ef29a4d764d8ed5735c1595d">&#9670;&#160;</a></span>rinse_hash_to_bits()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; bool &gt; occ::descriptors::rinse_hash_to_bits </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>hash</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decode a proquint hash back to its bits, most significant first. </p>
+
+</div>
+</div>
+<a id="ad0cb76e4e52003ae984c0a314dcc539a" name="ad0cb76e4e52003ae984c0a314dcc539a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0cb76e4e52003ae984c0a314dcc539a">&#9670;&#160;</a></span>rinse_radial_basis()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceocc.html#a13aba22f8c5f50f4866113eeab576b31">Mat</a> occ::descriptors::rinse_radial_basis </td>
+          <td>(</td>
+          <td class="paramtype">Eigen::Ref&lt; const <a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>q</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1descriptors_1_1RinseParams.html">RinseParams</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>params</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Evaluate the radial basis functions. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">q</td><td>(M,) reciprocal-space magnitudes in A^-1 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>(M, n_max) with element (i, n) = R_n(q_i) </dd></dl>
+
+</div>
+</div>
+<a id="a02e12919ee75dcd01f8f439f435a443e" name="a02e12919ee75dcd01f8f439f435a443e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02e12919ee75dcd01f8f439f435a443e">&#9670;&#160;</a></span>rinse_reflections()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structocc_1_1descriptors_1_1ReflectionList.html">ReflectionList</a> occ::descriptors::rinse_reflections </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classocc_1_1crystal_1_1Crystal.html">crystal::Crystal</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>crystal</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structocc_1_1descriptors_1_1RinseParams.html">RinseParams</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>params</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enumerate the resolution sphere and compute reflection intensities. </p>
+<p>Structure factors come from direct summation over the unit cell with Waasmaier-Kirfel (1995) X-ray form factors &ndash; hydrogen being the bonded Stewart-Davidson-Simpson form factor, see <a class="el" href="xray__form__factors_8h.html">xray_form_factors.h</a> &ndash; and Debye-Waller factors from the structure's ADPs. Anomalous dispersion is not modelled.</p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if an element has no tabulated form factor. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
+<a id="ac03e5eefb2d4aaa1fbb18698366eeefe" name="ac03e5eefb2d4aaa1fbb18698366eeefe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac03e5eefb2d4aaa1fbb18698366eeefe">&#9670;&#160;</a></span>default_hash_words</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int occ::descriptors::default_hash_words = 1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9ad752a497a01ddb4ef7f6594ce6a716" name="a9ad752a497a01ddb4ef7f6594ce6a716"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ad752a497a01ddb4ef7f6594ce6a716">&#9670;&#160;</a></span>rinse_reference_version</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* occ::descriptors::rinse_reference_version = &quot;3.2.0&quot;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Number of proquint words produced by <a class="el" href="#a5c4028fcc7da1a5896c610a8c078dd43" title="A locality-sensitive hash of a descriptor, as pronounceable proquints.">rinse_hash()</a> unless asked otherwise. </p>
+<p>The rinse-descriptor release whose descriptors and hashes this reproduces. </p>
 
 </div>
 </div>

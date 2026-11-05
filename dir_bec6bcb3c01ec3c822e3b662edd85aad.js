@@ -14,5 +14,6 @@ var dir_bec6bcb3c01ec3c822e3b662edd85aad =
     [ "subgroup.h", "subgroup_8h.html", "subgroup_8h" ],
     [ "surface.h", "crystal_2surface_8h.html", "crystal_2surface_8h" ],
     [ "symmetryoperation.h", "symmetryoperation_8h.html", "symmetryoperation_8h" ],
-    [ "unitcell.h", "unitcell_8h.html", "unitcell_8h" ]
+    [ "unitcell.h", "unitcell_8h.html", "unitcell_8h" ],
+    [ "xray_form_factors.h", "xray__form__factors_8h.html", "xray__form__factors_8h" ]
 ];

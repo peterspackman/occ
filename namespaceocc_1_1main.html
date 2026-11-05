@@ -114,6 +114,8 @@ Classes</h2></td></tr>
 <tr class="memitem:CosmoRSConfig" id="r_CosmoRSConfig"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1CosmoRSConfig.html">CosmoRSConfig</a></td></tr>
 <tr class="memitem:CubeConfig" id="r_CubeConfig"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1CubeConfig.html">CubeConfig</a></td></tr>
 <tr class="memitem:DescribeConfig" id="r_DescribeConfig"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1DescribeConfig.html">DescribeConfig</a></td></tr>
+<tr class="memitem:DescribeOutcome" id="r_DescribeOutcome"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1DescribeOutcome.html">DescribeOutcome</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">What became of one input structure: a file, or one data block of a CIF.  <a href="structocc_1_1main_1_1DescribeOutcome.html#details">More...</a><br /></td></tr>
 <tr class="memitem:DimerGenerationSettings" id="r_DimerGenerationSettings"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1DimerGenerationSettings.html">DimerGenerationSettings</a></td></tr>
 <tr class="memitem:ElasticSettings" id="r_ElasticSettings"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1ElasticSettings.html">ElasticSettings</a></td></tr>
 <tr class="memitem:EFSettings" id="r_EFSettings"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1main_1_1EFSettings.html">EFSettings</a></td></tr>
@@ -148,7 +150,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a204ffd238382becc84fee24a3048d20b" id="r_a204ffd238382becc84fee24a3048d20b"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a204ffd238382becc84fee24a3048d20b">add_cube_subcommand</a> (CLI::App &amp;app)</td></tr>
 <tr class="memitem:a45566c667887d1fe07b48523a1189a09" id="r_a45566c667887d1fe07b48523a1189a09"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a45566c667887d1fe07b48523a1189a09">run_cube_subcommand</a> (<a class="el" href="structocc_1_1main_1_1CubeConfig.html">CubeConfig</a> const &amp;)</td></tr>
 <tr class="memitem:aab9daeef6e8a7ad1a534cb6c2006a309" id="r_aab9daeef6e8a7ad1a534cb6c2006a309"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aab9daeef6e8a7ad1a534cb6c2006a309">add_describe_subcommand</a> (CLI::App &amp;app)</td></tr>
+<tr class="memitem:ae9b1f0f1342afd78a8ffb55f82e33057" id="r_ae9b1f0f1342afd78a8ffb55f82e33057"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structocc_1_1main_1_1DescribeOutcome.html">DescribeOutcome</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae9b1f0f1342afd78a8ffb55f82e33057">describe_structures</a> (<a class="el" href="structocc_1_1main_1_1DescribeConfig.html">DescribeConfig</a> const &amp;, const std::function&lt; void(const <a class="el" href="structocc_1_1main_1_1DescribeOutcome.html">DescribeOutcome</a> &amp;)&gt; &amp;on_outcome={})</td></tr>
+<tr class="memdesc:ae9b1f0f1342afd78a8ffb55f82e33057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Describe every structure in the configuration in turn, logging as it goes: each data block of a multi-block CIF is a structure of its own.  <br /></td></tr>
 <tr class="memitem:a6d83b8a52ad8058c79d226ae9862255d" id="r_a6d83b8a52ad8058c79d226ae9862255d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6d83b8a52ad8058c79d226ae9862255d">run_describe_subcommand</a> (<a class="el" href="structocc_1_1main_1_1DescribeConfig.html">DescribeConfig</a> const &amp;)</td></tr>
+<tr class="memdesc:a6d83b8a52ad8058c79d226ae9862255d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="#ae9b1f0f1342afd78a8ffb55f82e33057" title="Describe every structure in the configuration in turn, logging as it goes: each data block of a multi...">describe_structures()</a>, then a summary when there was more than one input, and the RINSE records if a JSON or JSON Lines file was asked for.  <br /></td></tr>
 <tr class="memitem:a48a6201e966a08a5d39969dc40bb03db" id="r_a48a6201e966a08a5d39969dc40bb03db"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48a6201e966a08a5d39969dc40bb03db">add_dimers_subcommand</a> (CLI::App &amp;app)</td></tr>
 <tr class="memitem:a5f883983a0b5d4e64d68868752bafe01" id="r_a5f883983a0b5d4e64d68868752bafe01"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5f883983a0b5d4e64d68868752bafe01">run_dimers_subcommand</a> (<a class="el" href="structocc_1_1main_1_1DimerGenerationSettings.html">DimerGenerationSettings</a> const &amp;)</td></tr>
 <tr class="memitem:aaf0aa6d5cb70a62ee457cf84992525f7" id="r_aaf0aa6d5cb70a62ee457cf84992525f7"><td class="memItemLeft" align="right" valign="top">CLI::App *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aaf0aa6d5cb70a62ee457cf84992525f7">add_dma_subcommand</a> (CLI::App &amp;app)</td></tr>
@@ -587,6 +592,30 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ae9b1f0f1342afd78a8ffb55f82e33057" name="ae9b1f0f1342afd78a8ffb55f82e33057"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9b1f0f1342afd78a8ffb55f82e33057">&#9670;&#160;</a></span>describe_structures()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structocc_1_1main_1_1DescribeOutcome.html">DescribeOutcome</a> &gt; occ::main::describe_structures </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structocc_1_1main_1_1DescribeConfig.html">DescribeConfig</a> const &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::function&lt; void(const <a class="el" href="structocc_1_1main_1_1DescribeOutcome.html">DescribeOutcome</a> &amp;)&gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>on_outcome</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Describe every structure in the configuration in turn, logging as it goes: each data block of a multi-block CIF is a structure of its own. </p>
+<p>A structure that cannot be read is recorded as failed rather than stopping the rest. <span class="tt">on_outcome</span>, if given, sees each outcome as soon as it is known. </p>
+
+</div>
+</div>
 <a id="ae6120cd9d924a194e7f3a1decd5cb6d8" name="ae6120cd9d924a194e7f3a1decd5cb6d8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae6120cd9d924a194e7f3a1decd5cb6d8">&#9670;&#160;</a></span>print_header()</h2>
 
@@ -690,6 +719,14 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><a class="el" href="#ae9b1f0f1342afd78a8ffb55f82e33057" title="Describe every structure in the configuration in turn, logging as it goes: each data block of a multi...">describe_structures()</a>, then a summary when there was more than one input, and the RINSE records if a JSON or JSON Lines file was asked for. </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if none was described, or, unless the records went to a file (where each failure is a record of its own), if any failed. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -99,18 +99,18 @@ $(function(){initNavTree('md__2home_2runner_2work_2occ_2occ_2docs_2js-wasm-bindi
   <div class="headertitle"><div class="title">JavaScript/WebAssembly Bindings </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md7"></a></p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md12"></a></p>
 <p>OCC provides JavaScript/WebAssembly bindings for quantum chemistry calculations in web browsers, Node.js, and other JavaScript environments. The bindings are built using Emscripten and mirror the Python API structure.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md8"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md13"></a>
 Installation</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md9"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md14"></a>
 Prerequisites</h2>
 <ul>
 <li>Emscripten SDK installed and activated</li>
 <li>CMake 3.16+</li>
 <li>Ninja build system (recommended)</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md10"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md15"></a>
 Build Instructions</h2>
 <ol type="1">
 <li>Build WASM bindings using the provided script: <div class="fragment"><div class="line">./scripts/build_wasm.sh</div>
@@ -123,9 +123,9 @@ Build Instructions</h2>
 <li><span class="tt">wasm/src/occjs.js</span> - JavaScript module</li>
 <li><span class="tt">wasm/src/occjs.wasm</span> - WebAssembly binary</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md11"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md16"></a>
 Usage</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md12"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md17"></a>
 Browser (ES6 Modules)</h2>
 <div class="fragment"><div class="line">&lt;!DOCTYPE html&gt;</div>
 <div class="line">&lt;html&gt;</div>
@@ -158,7 +158,7 @@ Browser (ES6 Modules)</h2>
 <div class="line">    &lt;h1&gt;OCC WebAssembly Demo&lt;/h1&gt;</div>
 <div class="line">&lt;/body&gt;</div>
 <div class="line">&lt;/html&gt;</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md13"></a>
+</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md18"></a>
 Node.js</h2>
 <div class="fragment"><div class="line">const createOccModule = require(&#39;./occjs.js&#39;);</div>
 <div class="line"> </div>
@@ -189,11 +189,11 @@ Node.js</h2>
 <div class="line">    </div>
 <div class="line">    console.log(&quot;SCF Energy:&quot;, energy);</div>
 <div class="line">});</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md14"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md19"></a>
 API Reference</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md15"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md20"></a>
 Core Module</h2>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md16"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md21"></a>
 Element</h3>
 <ul>
 <li><span class="tt">constructor(symbol: string)</span> - Create element from symbol</li>
@@ -203,7 +203,7 @@ Element</h3>
 <li><span class="tt">name: string</span> - Element name</li>
 <li><span class="tt">atomicNumber: number</span> - Atomic number</li>
 </ul>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md17"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md22"></a>
 Atom</h3>
 <ul>
 <li><span class="tt">constructor(atomicNumber: number, x: number, y: number, z: number)</span></li>
@@ -212,7 +212,7 @@ Atom</h3>
 <li><span class="tt">getPosition(): Vec3</span> - Get position vector</li>
 <li><span class="tt">setPosition(pos: Vec3): void</span> - Set position</li>
 </ul>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md18"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md23"></a>
 Molecule</h3>
 <ul>
 <li><span class="tt">constructor(atomicNumbers: IVec, positions: Mat3N)</span></li>
@@ -229,16 +229,16 @@ Molecule</h3>
 </ul>
 </li>
 </ul>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md19"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md24"></a>
 PointCharge</h3>
 <ul>
 <li><span class="tt">constructor(charge: number, x: number, y: number, z: number)</span></li>
 <li><span class="tt">charge: number</span> - Point charge value</li>
 <li><span class="tt">getPosition(): Vec3</span> - Position vector</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md20"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md25"></a>
 QM Module</h2>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md21"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md26"></a>
 AOBasis</h3>
 <ul>
 <li>Static <span class="tt">load(name: string, atoms: string[]): AOBasis</span> - Load basis set</li>
@@ -246,7 +246,7 @@ AOBasis</h3>
 <li><span class="tt">shells(): Shell[]</span> - Basis function shells</li>
 <li><span class="tt">atoms(): Atom[]</span> - Atoms in basis</li>
 </ul>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md22"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md27"></a>
 MolecularOrbitals</h3>
 <ul>
 <li><span class="tt">kind: SpinorbitalKind</span> - Restricted/unrestricted</li>
@@ -255,7 +255,7 @@ MolecularOrbitals</h3>
 <li><span class="tt">orbitalEnergies: Vec</span> - Orbital energies</li>
 <li><span class="tt">densityMatrix: Mat</span> - Density matrix</li>
 </ul>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md23"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md28"></a>
 Wavefunction</h3>
 <ul>
 <li><span class="tt">molecularOrbitals: MolecularOrbitals</span> - MO information</li>
@@ -271,7 +271,7 @@ Wavefunction</h3>
 </ul>
 </li>
 </ul>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md24"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md29"></a>
 HartreeFock</h3>
 <ul>
 <li><span class="tt">constructor(basis: AOBasis)</span></li>
@@ -281,28 +281,28 @@ HartreeFock</h3>
 <li><span class="tt">coulombMatrix(mo: MolecularOrbitals): Mat</span> - Coulomb matrix</li>
 <li><span class="tt">nuclearRepulsion(): number</span> - Nuclear repulsion energy</li>
 </ul>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md25"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md30"></a>
 SCF Methods</h3>
 <ul>
 <li><span class="tt">HF(hf: HartreeFock, kind?: SpinorbitalKind)</span> - SCF procedure</li>
 <li><span class="tt">run(): number</span> - Perform SCF calculation</li>
 <li><span class="tt">wavefunction(): Wavefunction</span> - Get converged wavefunction</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md26"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md31"></a>
 Enums</h2>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md27"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md32"></a>
 SpinorbitalKind</h3>
 <ul>
 <li><span class="tt">Restricted</span> - Closed shell</li>
 <li><span class="tt">Unrestricted</span> - Open shell</li>
 <li><span class="tt">General</span> - General case</li>
 </ul>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md28"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md33"></a>
 LogLevel</h3>
 <ul>
 <li><span class="tt">TRACE</span>, <span class="tt">DEBUG</span>, <span class="tt">INFO</span>, <span class="tt">WARN</span>, <span class="tt">ERROR</span>, <span class="tt">CRITICAL</span>, <span class="tt">OFF</span></li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md29"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md34"></a>
 Utilities</h1>
 <div class="fragment"><div class="line">// Set number of threads (if threading enabled)</div>
 <div class="line">Module.setNumThreads(4);</div>
@@ -313,7 +313,7 @@ Utilities</h1>
 <div class="line"> </div>
 <div class="line">// Set data directory for basis sets</div>
 <div class="line">Module.setDataDirectory(&quot;/path/to/data&quot;);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md30"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md35"></a>
 Performance Considerations</h1>
 <ol type="1">
 <li><b>Memory Management</b>: Objects are automatically managed by Emscripten</li>
@@ -321,9 +321,9 @@ Performance Considerations</h1>
 <li><b>File I/O</b>: Use Emscripten's virtual filesystem for file operations</li>
 <li><b>Matrix Operations</b>: Large matrices may impact performance</li>
 </ol>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md31"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md36"></a>
 Example Calculations</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md32"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md37"></a>
 Simple SCF Calculation</h2>
 <div class="fragment"><div class="line">createOccModule().then(Module =&gt; {</div>
 <div class="line">    // H2 molecule</div>
@@ -341,7 +341,7 @@ Simple SCF Calculation</h2>
 <div class="line">    </div>
 <div class="line">    console.log(&quot;Total energy:&quot;, energy);</div>
 <div class="line">});</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md33"></a>
+</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md38"></a>
 Density Calculation</h2>
 <div class="fragment"><div class="line">// Get converged wavefunction</div>
 <div class="line">const wfn = scf.wavefunction();</div>
@@ -353,14 +353,14 @@ Density Calculation</h2>
 <div class="line">// Calculate electron density</div>
 <div class="line">const density = wfn.electronDensity(points);</div>
 <div class="line">console.log(&quot;Density at points:&quot;, density);</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md34"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md39"></a>
 Error Handling</h1>
 <div class="fragment"><div class="line">try {</div>
 <div class="line">    const molecule = Module.Molecule.fromXyzFile(&quot;nonexistent.xyz&quot;);</div>
 <div class="line">} catch (error) {</div>
 <div class="line">    console.error(&quot;Failed to load molecule:&quot;, error.message);</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md35"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md40"></a>
 Browser Compatibility</h1>
 <ul>
 <li>Chrome 57+ (WebAssembly support)</li>

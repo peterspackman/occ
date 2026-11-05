@@ -55,6 +55,7 @@ var searchData=
   ['write_5fsegments_52',['write_segments',['../namespaceocc_1_1solvent_1_1cosmors.html#ae4c689e42cbe40243d18226167cfcff8',1,'occ::solvent::cosmors']]],
   ['write_5fstructure_5fjson_53',['write_structure_json',['../namespaceocc_1_1io.html#a5c8204b9fae922197f7ae20fa0aadec1',1,'occ::io']]],
   ['write_5fsurface_5ffile_54',['write_surface_file',['../classocc_1_1solvent_1_1ContinuumSolvationModel.html#ab48401dc5b3c9baddb3b0e5ef6b11eb8',1,'occ::solvent::ContinuumSolvationModel::write_surface_file()'],['../classocc_1_1solvent_1_1SolvationCorrectedProcedure.html#a380409236af52db48cda4bfce7b48978',1,'occ::solvent::SolvationCorrectedProcedure::write_surface_file()']]],
-  ['writewaveformobj_55',['writeWaveformOBJ',['../classquickhull_1_1ConvexHull.html#adf972161981b987b34023195687d80e0',1,'quickhull::ConvexHull']]],
-  ['wulffconstruction_56',['WulffConstruction',['../classocc_1_1geometry_1_1WulffConstruction.html#aafc421bac4476bde28c6b603086d1673',1,'occ::geometry::WulffConstruction']]]
+  ['writes_5frecords_55',['writes_records',['../structocc_1_1main_1_1DescribeConfig.html#a5a06a54b6a4332bda5ab63b391ff14fc',1,'occ::main::DescribeConfig']]],
+  ['writewaveformobj_56',['writeWaveformOBJ',['../classquickhull_1_1ConvexHull.html#adf972161981b987b34023195687d80e0',1,'quickhull::ConvexHull']]],
+  ['wulffconstruction_57',['WulffConstruction',['../classocc_1_1geometry_1_1WulffConstruction.html#aafc421bac4476bde28c6b603086d1673',1,'occ::geometry::WulffConstruction']]]
 ];
