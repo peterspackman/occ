@@ -58,7 +58,9 @@ describe('RINSE bindings', () => {
     const values = rinse.compute(crystal);
     expect(values.length).toBe(128);
     let worst = 0;
-    for (let i = 0; i < 128; i++) worst = Math.max(worst, Math.abs(values[i] - expected.descriptor[i]));
+    for (let i = 0; i < 128; i++) {
+      worst = Math.max(worst, Math.abs(values[i] - expected.descriptor[i]));
+    }
     expect(worst).toBeLessThan(1e-13);
     expect(rinse.hash(crystal, 1)).toBe(expected.oneWord);
     expect(occ.rinseHash(Array.from(values), 5)).toBe(expected.fiveWords);
