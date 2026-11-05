@@ -4,12 +4,22 @@
 #include <occ/descriptors/pdd_amd.h>
 #include <occ/descriptors/steinhardt.h>
 #include <occ/descriptors/promolecule_shape.h>
+#include <occ/descriptors/rinse.h>
 #include <occ/crystal/crystal.h>
 
 using namespace emscripten;
 using namespace occ::descriptors;
 using namespace occ::crystal;
 using namespace occ;
+
+namespace {
+val to_float64(const Vec &v) {
+  val result = val::global("Float64Array").new_(v.size());
+  for (Eigen::Index i = 0; i < v.size(); ++i)
+    result.set(i, v(i));
+  return result;
+}
+} // namespace
 
 void register_descriptors_bindings() {
   // PointwiseDistanceDistributionConfig
@@ -72,6 +82,79 @@ void register_descriptors_bindings() {
                   }
                   return result;
                 }));
+
+  // RINSE crystal descriptor
+  enum_<RinseRadialBasis>("RinseRadialBasis")
+      .value("CVGaussian", RinseRadialBasis::CVGaussian)
+      .value("LinGaussian", RinseRadialBasis::LinGaussian);
+
+  class_<RinseParams>("RinseParams")
+      .constructor<>()
+      .property("nMax", &RinseParams::n_max)
+      .property("lMin", &RinseParams::l_min)
+      .property("lMax", &RinseParams::l_max)
+      .property("radialScale", &RinseParams::radial_scale)
+      .property("qmaxFactor", &RinseParams::qmax_factor)
+      .property("radialBasis", &RinseParams::radial_basis)
+      .property("monopoleNormalisation", &RinseParams::monopole_normalisation)
+      .property("log1p", &RinseParams::log1p)
+      .property("l2", &RinseParams::l2)
+      .function("setFixedUiso", optional_override([](RinseParams &p, double u) {
+                  p.fixed_uiso = u;
+                }))
+      .function("clearFixedUiso", optional_override([](RinseParams &p) {
+                  p.fixed_uiso.reset();
+                }))
+      .function("fixedUiso", optional_override([](const RinseParams &p) {
+                  return p.fixed_uiso ? val(*p.fixed_uiso) : val::null();
+                }))
+      .function("qMax", &RinseParams::q_max)
+      .function("qCutoff", &RinseParams::q_cutoff)
+      .function("sinThetaOverLambdaMax", &RinseParams::sin_theta_over_lambda_max)
+      .function("lValues", optional_override([](const RinseParams &p) {
+                  const auto values = p.l_values();
+                  val result = val::array();
+                  for (const int l : values)
+                    result.call<void>("push", l);
+                  return result;
+                }))
+      .function("numLLevels", &RinseParams::num_l_levels)
+      .function("size", &RinseParams::size);
+
+  class_<Rinse>("Rinse")
+      .constructor<>()
+      .constructor<const RinseParams &>()
+      .function("parameters", optional_override([](const Rinse &r) {
+                  return r.parameters();
+                }))
+      // Flattened descriptor, row-major [radial][angular]
+      .function("compute", optional_override([](const Rinse &r, const Crystal &c) {
+                  return to_float64(r.compute(c));
+                }))
+      // Power spectrum as an array of nMax rows of numLLevels values
+      .function("powerSpectrum", optional_override([](const Rinse &r,
+                                                     const Crystal &c) {
+                  const Mat spectrum = r(c);
+                  val rows = val::array();
+                  for (Eigen::Index n = 0; n < spectrum.rows(); ++n)
+                    rows.call<void>("push", to_float64(spectrum.row(n).transpose()));
+                  return rows;
+                }))
+      .function("hash", optional_override([](const Rinse &r, const Crystal &c,
+                                             int numWords) {
+                  return rinse_hash(r.compute(c), numWords);
+                }));
+
+  // RINSE hash of a flattened descriptor (an array of numbers)
+  function("rinseHash", optional_override([](const val &values, int numWords) {
+             const int n = values["length"].as<int>();
+             Vec v(n);
+             for (int i = 0; i < n; ++i)
+               v(i) = values[i].as<double>();
+             return rinse_hash(v, numWords);
+           }));
+  constant("rinseReferenceVersion",
+           std::string(rinse_reference_version));
 
   // Steinhardt descriptors
   class_<Steinhardt>("Steinhardt")

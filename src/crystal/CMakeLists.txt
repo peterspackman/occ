@@ -15,6 +15,7 @@ add_library(occ_crystal_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/symmetryoperation.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/unitcell.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/xray_form_factors.cpp"
     ${occ_INCLUDE_FILES}
 )
 add_library(occ_crystal $<TARGET_OBJECTS:occ_crystal_obj>)

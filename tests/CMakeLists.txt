@@ -144,6 +144,11 @@ add_executable(descriptors_tests "${CMAKE_CURRENT_SOURCE_DIR}/descriptors_tests.
 target_link_libraries(descriptors_tests PRIVATE occ_descriptors Catch2::Catch2WithMain Threads::Threads)
 occ_discover_tests(descriptors_tests)
 
+add_executable(rinse_tests "${CMAKE_CURRENT_SOURCE_DIR}/rinse_tests.cpp")
+target_link_libraries(rinse_tests PRIVATE occ_descriptors occ_io occ_main Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(rinse_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+occ_discover_tests(rinse_tests)
+
 add_executable(solvent_tests "${CMAKE_CURRENT_SOURCE_DIR}/solvent_tests.cpp")
 target_link_libraries(solvent_tests PRIVATE occ_solvent occ_driver occ_cg occ_crystal occ_dft occ_qm occ_io Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(solvent_tests PRIVATE OCC_DATA_DIR="${CMAKE_SOURCE_DIR}/share" OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
@@ -253,6 +258,7 @@ add_custom_target(all_tests ALL
         sht_tests
         slater_tests
         descriptors_tests
+        rinse_tests
         solvent_tests
         xdm_tests
         xtb_tests
@@ -278,3 +284,17 @@ target_link_libraries(xc_bench PRIVATE occ_dft occ_io Threads::Threads)
 target_link_libraries(cosx_grid_bench PRIVATE occ_qm occ_io Threads::Threads)
 target_link_libraries(cosx_grad_bench PRIVATE occ_qm occ_io Threads::Threads)
 target_link_libraries(rij_bench PRIVATE occ_qm occ_io Threads::Threads)
+
+# Lua binding tests: scripts run through `occ lua`, failing by raising an error
+if(WITH_LUA_BINDINGS)
+    function(occ_lua_test name script)
+        add_test(NAME ${name}
+            COMMAND $<TARGET_FILE:occ> lua "${CMAKE_CURRENT_SOURCE_DIR}/lua/${script}" ${ARGN})
+        set_tests_properties(${name} PROPERTIES
+            ENVIRONMENT "OCC_DATA_PATH=${CMAKE_SOURCE_DIR}/share;OCC_TEST_THREADS=${OCC_TEST_THREADS}")
+    endfunction()
+
+    occ_lua_test(lua_rinse rinse_tests.lua
+        "${CMAKE_CURRENT_SOURCE_DIR}/data/rinse"
+        "${CMAKE_CURRENT_SOURCE_DIR}/rinse_reference_data.h")
+endif()

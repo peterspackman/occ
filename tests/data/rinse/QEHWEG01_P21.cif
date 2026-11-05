@@ -1,0 +1,325 @@
+data_qehweg_a
+_audit_block_doi                  10.5517/ccdc.csd.cc2pwxbv
+_database_code_depnum_ccdc_archive 'CCDC 2499478'
+loop_
+  _citation_id
+  _citation_doi
+  _citation_year
+  1  10.1107/S2052520625009618  2025
+
+_audit_update_record              
+;
+2025-10-30 deposited with the CCDC.	2026-07-17 downloaded from the CCDC.
+;
+
+_iucr_compatibility_tag           ACTA95
+_audit_creation_date              2025-08-22
+_audit_creation_method            
+;
+Olex2 1.5
+(compiled 2025.07.13 svn.rb7424aed for OlexSys, GUI svn.r7314)
+;
+
+_shelx_SHELXL_version_number      2018/3
+loop_
+  _audit_author_email
+  d.s.yufit@durham.ac.uk
+
+_chemical_name_common             'anilinium tetrafluoroborate'
+_chemical_name_systematic         ?
+_chemical_formula_moiety          'B F4, C6 H8 N'
+_chemical_formula_sum             'C6 H8 B F4 N'
+_chemical_formula_weight          180.94
+_chemical_absolute_configuration  unk
+_chemical_melting_point           ?
+loop_
+  _atom_type_symbol
+  _atom_type_description
+  _atom_type_scat_dispersion_real
+  _atom_type_scat_dispersion_imag
+  _atom_type_scat_source
+  C  C  0.0033  0.0016  'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+  H  H  0.0000  0.0000  'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+  B  B  0.0013  0.0007  'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+  F  F  0.0171  0.0103  'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+  N  N  0.0061  0.0033  'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+
+_shelx_space_group_comment        
+;
+The symmetry employed for this shelxl refinement is uniquely defined
+by the following loop, which should always be used as a source of
+symmetry information in preference to the above space-group names.
+They are only intended as comments.
+;
+
+_space_group_crystal_system       monoclinic
+_space_group_IT_number            4
+_space_group_name_H-M_alt         'P 1 21 1'
+_space_group_name_Hall            'P 2yb'
+loop_
+  _space_group_symop_operation_xyz
+  'x, y, z'
+  '-x, y+1/2, -z'
+
+_cell_length_a                    7.3672(9)
+_cell_length_b                    5.9633(7)
+_cell_length_c                    9.3181(11)
+_cell_angle_alpha                 90
+_cell_angle_beta                  96.520(4)
+_cell_angle_gamma                 90
+_cell_volume                      406.72(8)
+_cell_formula_units_Z             2
+_cell_measurement_reflns_used     1247
+_cell_measurement_temperature     290.0(2)
+_cell_measurement_theta_max       25.572
+_cell_measurement_theta_min       3.346
+_shelx_estimated_absorpt_T_max    0.990
+_shelx_estimated_absorpt_T_min    0.968
+_exptl_absorpt_coefficient_mu     0.151
+_exptl_absorpt_correction_T_max   0.746246
+_exptl_absorpt_correction_T_min   0.629761
+_exptl_absorpt_correction_type    multi-scan
+_exptl_absorpt_process_details    
+;
+ TWINABS-2012/1 (Bruker,2012) was used for absorption correction.
+ 
+For component 1:
+ wR2(int) was 0.0939 before and 0.0410 after correction.
+ The Ratio of minimum to maximum transmission is 0.85.
+ 
+For component 2:
+ wR2(int) was 0.0952 before and 0.0418 after correction.
+ The Ratio of minimum to maximum transmission is 0.85.
+
+Final HKLF 4 output contains 8566 reflections, Rint = 0.0778
+ (2848 with I > 3sig(I), Rint = 0.0700)
+;
+
+_exptl_absorpt_special_details    ?
+_exptl_crystal_colour             'clear colourless'
+_exptl_crystal_colour_lustre      clear
+_exptl_crystal_colour_primary     colourless
+_exptl_crystal_density_diffrn     1.477
+_exptl_crystal_density_meas       ?
+_exptl_crystal_density_method     ?
+_exptl_crystal_description        prism
+_exptl_crystal_F_000              184
+_exptl_crystal_size_max           0.22
+_exptl_crystal_size_mid           0.13
+_exptl_crystal_size_min           0.07
+_exptl_transmission_factor_max    ?
+_exptl_transmission_factor_min    ?
+_diffrn_reflns_av_R_equivalents   0.0502
+_diffrn_reflns_av_unetI/netI      0.0382
+_diffrn_reflns_Laue_measured_fraction_full 1.000
+_diffrn_reflns_Laue_measured_fraction_max 0.942
+_diffrn_reflns_limit_h_max        9
+_diffrn_reflns_limit_h_min        -10
+_diffrn_reflns_limit_k_max        7
+_diffrn_reflns_limit_k_min        -8
+_diffrn_reflns_limit_l_max        13
+_diffrn_reflns_limit_l_min        -13
+_diffrn_reflns_number             1718
+_diffrn_reflns_point_group_measured_fraction_full 0.988
+_diffrn_reflns_point_group_measured_fraction_max 0.966
+_diffrn_reflns_theta_full         25.242
+_diffrn_reflns_theta_max          26.976
+_diffrn_reflns_theta_min          2.200
+_diffrn_ambient_temperature       290.0(2)
+_diffrn_detector                  'Bruker PHOTON III C7 MM CPAD'
+_diffrn_detector_area_resol_mean  54.8
+_diffrn_detector_type             'CPA sensor'
+_diffrn_measured_fraction_theta_full 0.999
+_diffrn_measured_fraction_theta_max 0.988
+_diffrn_measurement_device        '3-circle diffractometer'
+_diffrn_measurement_device_type   'Bruker D8 Venture'
+_diffrn_measurement_method        '\w- and \f-scans'
+_diffrn_radiation_monochromator   'focusing mirrors'
+_diffrn_radiation_probe           X-ray
+_diffrn_radiation_type            MoK\a
+_diffrn_radiation_wavelength      0.71073
+_diffrn_source                    'microfocus sealed X-ray tube'
+_diffrn_source_type               'Incoatec I\mS microsource'
+_reflns_Friedel_coverage          0.781
+_reflns_Friedel_fraction_full     0.976
+_reflns_Friedel_fraction_max      0.940
+_reflns_number_gt                 1145
+_reflns_number_total              1710
+_reflns_special_details           
+;
+ Reflections were merged by SHELXL according to the crystal
+ class for the calculation of statistics and refinement.
+ 
+ _reflns_Friedel_fraction is defined as the number of unique
+ Friedel pairs measured divided by the number that would be
+ possible theoretically, ignoring centric projections and
+ systematic absences. Completness statistics refer to single and
+ composite reflections containing twin component 1 only.
+;
+
+_reflns_threshold_expression      'I > 2\s(I)'
+_computing_bruker_data_scaling    'SADABS V2012/1 (Bruker AXS Inc.)'
+_computing_cell_refinement        'SAINT v8.40A (Bruker AXS, 2019)'
+_computing_data_collection        'APEX5 v.2023.9-2 (Bruker AXS, 2022)'
+_computing_data_reduction         'SAINT v8.40A (Bruker AXS, 2019)'
+_computing_molecular_graphics     'Olex2 1.5 (Dolomanov et al., 2009)'
+_computing_publication_material   'Olex2 1.5 (Dolomanov et al., 2009)'
+_computing_structure_refinement   'SHELXL 2018/3 (Sheldrick, 2015)'
+_computing_structure_solution     'SHELXT  (Sheldrick, 2015)'
+_refine_diff_density_max          0.462
+_refine_diff_density_min          -0.300
+_refine_diff_density_rms          0.103
+_refine_ls_abs_structure_details  
+;
+ Flack x determined using 413 quotients [(I+)-(I-)]/[(I+)+(I-)]
+ (Parsons, Flack and Wagner, Acta Cryst. B69 (2013) 249-259).
+;
+
+_refine_ls_abs_structure_Flack    -0.8(10)
+_refine_ls_extinction_coef        .
+_refine_ls_extinction_method      none
+_refine_ls_goodness_of_fit_ref    1.080
+_refine_ls_hydrogen_treatment     constr
+_refine_ls_matrix_type            full
+_refine_ls_number_parameters      148
+_refine_ls_number_reflns          1710
+_refine_ls_number_restraints      236
+_refine_ls_R_factor_all           0.0899
+_refine_ls_R_factor_gt            0.0583
+_refine_ls_restrained_S_all       1.063
+_refine_ls_shift/su_max           0.000
+_refine_ls_shift/su_mean          0.000
+_refine_ls_structure_factor_coef  Fsqd
+_refine_ls_weighting_details      'w=1/[\s^2^(Fo^2^)+(0.1109P)^2^] where P=(Fo^2^+2Fc^2^)/3'
+_refine_ls_weighting_scheme       calc
+_refine_ls_wR_factor_gt           0.1612
+_refine_ls_wR_factor_ref          0.1754
+_refine_special_details           
+;
+Refined as a 2-component twin.
+BF4- anion disorder modelled across to orientations in 50:50 ratio.
+;
+
+_olex2_refinement_description     
+;
+1. Twinned data refinement
+ Scales: 0.9991(2)
+ 0.0009(2)
+2. Fixed Uiso
+ At 1.2 times of:
+  All C(H) groups, All N(H,H,H) groups
+3. Restrained distances
+ F1-B1 \\sim F1A-B1
+ with sigma of 0.02
+ F2-B1 \\sim F2A-B1
+ with sigma of 0.02
+ F3-B1 \\sim F3A-B1
+ with sigma of 0.02
+ F4-B1 \\sim F4A-B1
+ with sigma of 0.02
+ F1-F2 \\sim F1A-F2A
+ with sigma of 0.04
+ F1-F3 \\sim F1A-F3A
+ with sigma of 0.04
+ F1-F4 \\sim F1A-F4A
+ with sigma of 0.04
+ F2-F3 \\sim F2A-F3A
+ with sigma of 0.04
+ F2-F4 \\sim F2A-F4A
+ with sigma of 0.04
+ F3-F4 \\sim F3A-F4A
+ with sigma of 0.04
+4. Uiso/Uaniso restraints and constraints
+All non-hydrogen atoms have similar U: within 2A with sigma of 0.04 and sigma
+for terminal atoms of 0.08 within 2A
+5. Rigid body (RIGU) restrains
+ All non-hydrogen atoms
+ with sigma for 1-2 distances of 0.004 and sigma for 1-3 distances of 0.004
+6. Others
+ Sof(F1A)=Sof(F2A)=Sof(F3A)=Sof(F4A)=1-FVAR(1)
+ Sof(F1)=Sof(F2)=Sof(F3)=Sof(F4)=FVAR(1)
+7.a Aromatic/amide H refined with riding coordinates:
+ C2(H2), C3(H3), C4(H4), C5(H5), C6(H6)
+7.b Idealised Me refined as rotating group:
+ N1(H1A,H1B,H1C)
+;
+
+_atom_sites_solution_hydrogens    geom
+_atom_sites_solution_primary      dual
+_atom_sites_solution_secondary    ?
+loop_
+  _atom_site_label
+  _atom_site_type_symbol
+  _atom_site_fract_x
+  _atom_site_fract_y
+  _atom_site_fract_z
+  _atom_site_U_iso_or_equiv
+  _atom_site_adp_type
+  _atom_site_occupancy
+  _atom_site_site_symmetry_order
+  _atom_site_calc_flag
+  _atom_site_refinement_flags_posn
+  _atom_site_refinement_flags_adp
+  _atom_site_refinement_flags_occupancy
+  _atom_site_disorder_assembly
+  _atom_site_disorder_group
+  F1   F    0.681(3)    0.648(2)    0.421(2)    0.127(7)  Uani  0.50(4)  1  d     D  U  P  A  1
+  F2   F  0.6411(15)  0.2676(16)  0.4154(17)    0.069(4)  Uani  0.50(4)  1  d     D  U  P  A  1
+  F3   F  0.8896(16)    0.436(2)  0.3449(15)    0.068(3)  Uani  0.50(4)  1  d     D  U  P  A  1
+  F4   F    0.846(4)    0.433(6)  0.5790(15)    0.123(8)  Uani  0.50(4)  1  d     D  U  P  A  1
+  B1   B   0.7612(6)  0.4456(13)   0.4412(5)  0.0522(10)  Uani        1  1  d     D  U  .  .  .
+  N1   N   0.2703(4)   0.4512(9)   0.3454(3)   0.0549(9)  Uani        1  1  d     .  U  .  .  .
+  H1A  H    0.165410    0.399297    0.371065       0.066  Uiso        1  1  calc  R  U  .  .  .
+  H1B  H    0.288540    0.590403    0.378302       0.066  Uiso        1  1  calc  R  U  .  .  .
+  H1C  H    0.361710    0.363862    0.382674       0.066  Uiso        1  1  calc  R  U  .  .  .
+  C1   C   0.2624(4)   0.4511(8)   0.1865(3)   0.0411(8)  Uani        1  1  d     .  U  .  .  .
+  C2   C   0.1856(6)   0.2718(7)   0.1110(5)  0.0525(11)  Uani        1  1  d     .  U  .  .  .
+  H2   H    0.140543    0.150514    0.158803       0.063  Uiso        1  1  calc  R  U  .  .  .
+  C3   C   0.1762(6)   0.2750(9)  -0.0379(6)  0.0633(13)  Uani        1  1  d     .  U  .  .  .
+  H3   H    0.123713    0.154892   -0.091080       0.076  Uiso        1  1  calc  R  U  .  .  .
+  C4   C   0.2432(6)  0.4523(12)  -0.1077(4)  0.0636(12)  Uani        1  1  d     .  U  .  .  .
+  H4   H    0.236576    0.452149   -0.207995       0.076  Uiso        1  1  calc  R  U  .  .  .
+  C5   C   0.3205(6)  0.6312(10)  -0.0307(5)  0.0614(13)  Uani        1  1  d     .  U  .  .  .
+  H5   H    0.367026    0.751009   -0.078892       0.074  Uiso        1  1  calc  R  U  .  .  .
+  C6   C   0.3294(6)   0.6338(9)   0.1184(5)  0.0540(11)  Uani        1  1  d     .  U  .  .  .
+  H6   H    0.379189    0.755597    0.171398       0.065  Uiso        1  1  calc  R  U  .  .  .
+  F1A  F  0.6474(16)    0.635(2)  0.4073(13)    0.063(3)  Uani  0.50(4)  1  d     D  U  P  A  2
+  F2A  F    0.655(2)    0.267(2)    0.392(2)    0.109(6)  Uani  0.50(4)  1  d     D  U  P  A  2
+  F3A  F    0.907(2)    0.458(5)    0.379(3)    0.148(8)  Uani  0.50(4)  1  d     D  U  P  A  2
+  F4A  F    0.796(3)    0.438(3)  0.5878(11)    0.081(4)  Uani  0.50(4)  1  d     D  U  P  A  2
+
+loop_
+  _atom_site_aniso_label
+  _atom_site_aniso_U_11
+  _atom_site_aniso_U_22
+  _atom_site_aniso_U_33
+  _atom_site_aniso_U_23
+  _atom_site_aniso_U_13
+  _atom_site_aniso_U_12
+  F1    0.150(15)    0.059(6)   0.165(13)   -0.012(8)  -0.009(10)    0.033(8)
+  F2     0.041(5)    0.068(5)    0.100(8)    0.032(6)    0.013(4)   -0.006(4)
+  F3     0.055(4)    0.087(7)    0.066(5)   -0.003(5)    0.029(3)    0.012(4)
+  F4    0.098(10)   0.193(16)    0.073(6)   0.005(10)   -0.018(6)  -0.020(10)
+  B1     0.044(2)    0.064(3)    0.051(2)   -0.004(3)  0.0135(18)    0.004(3)
+  N1   0.0429(16)    0.072(2)  0.0505(18)   -0.005(3)  0.0086(13)    0.007(2)
+  C1   0.0307(15)  0.0477(19)  0.0455(18)    0.005(2)  0.0066(14)    0.003(2)
+  C2     0.046(2)    0.053(2)    0.059(3)    0.004(2)  0.0078(19)   -0.003(2)
+  C3     0.056(3)    0.064(3)    0.067(3)   -0.014(2)   -0.004(2)    0.004(3)
+  C4     0.059(2)    0.086(3)    0.047(2)    0.000(3)  0.0078(18)    0.017(3)
+  C5     0.063(3)    0.065(3)    0.059(3)    0.019(2)    0.020(2)    0.006(3)
+  C6     0.049(3)    0.051(2)    0.064(3)   -0.004(2)  0.0124(19)   -0.005(2)
+  F1A    0.035(5)    0.086(6)    0.069(6)    0.007(5)    0.007(3)    0.006(4)
+  F2A   0.115(11)    0.130(9)    0.086(7)   -0.065(8)    0.024(6)   -0.036(7)
+  F3A    0.055(5)   0.269(19)   0.127(11)  -0.002(12)    0.038(7)   -0.004(9)
+  F4A   0.117(11)    0.078(7)    0.048(4)   -0.003(5)    0.007(4)   -0.012(7)
+
+_geom_special_details             
+;
+ All esds (except the esd in the dihedral angle between two l.s. planes)
+ are estimated using the full covariance matrix.  The cell esds are taken
+ into account individually in the estimation of esds in distances, angles
+ and torsion angles; correlations between esds in cell parameters are only
+ used when they are defined by crystal symmetry.  An approximate (isotropic)
+ treatment of cell esds is used for estimating esds involving l.s. planes.
+;
+

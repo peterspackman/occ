@@ -1,0 +1,110 @@
+#------------------------------------------------------------------------------
+#$Date: 2024-05-02 12:48:35 +0200 (Thu, 02 May 2024) $
+#$Revision: 291455 $
+#$URL: svn://saulius.grazulis.lt/cod-secondary/cif/9/00/75/9007519.cif $
+#------------------------------------------------------------------------------
+#
+# This file is available in the Crystallography Open Database (COD),
+# http://www.crystallography.net/. The original data for this entry
+# were provided the American Mineralogist Crystal Structure Database,
+# http://rruff.geo.arizona.edu/AMS/amcsd.php
+#
+# The file may be used within the scientific community so long as
+# proper attribution is given to the journal article from which the
+# data were obtained.
+#
+data_9007519
+loop_
+_publ_author_name
+'Christensen, A. T.'
+'Thom, E.'
+_publ_section_title
+;
+ The crystal structure of 2-dimenthylsulfuranylidene-1,3-indanedione
+;
+_journal_name_full               'Acta Crystallographica, Section B'
+_journal_page_first              581
+_journal_page_last               586
+_journal_paper_doi               10.1107/S0567740871002590
+_journal_volume                  27
+_journal_year                    1971
+_chemical_formula_sum            'C11 H10 O2 S'
+_chemical_name_mineral           Ylid
+_space_group_IT_number           19
+_symmetry_space_group_name_Hall  'P 2ac 2ab'
+_symmetry_space_group_name_H-M   'P 21 21 21'
+_cell_angle_alpha                90
+_cell_angle_beta                 90
+_cell_angle_gamma                90
+_cell_length_a                   18.331
+_cell_length_b                   9.012
+_cell_length_c                   5.949
+_cell_formula_units_Z            4
+_cell_volume                     982.769
+_database_code_amcsd             0009387
+_exptl_crystal_density_diffrn    1.394
+_cod_original_formula_sum        'C11 O2 S H10'
+_cod_database_code               9007519
+loop_
+_space_group_symop_operation_xyz
+x,y,z
+-x,1/2+y,1/2-z
+1/2+x,1/2-y,-z
+1/2-x,-y,1/2+z
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+C1 0.03915 0.03773 0.03672 -0.00151 -0.00215 -0.00239
+C2 0.03473 0.03707 0.03749 0.00285 0.00376 0.00038
+C3 0.03558 0.03304 0.04520 -0.00084 -0.00050 -0.00187
+C4 0.03507 0.03279 0.05002 -0.00209 0.00238 -0.00391
+C5 0.03847 0.04139 0.07041 0.00226 0.00552 -0.00177
+C6 0.04171 0.04974 0.08839 -0.00109 0.01773 -0.01570
+C7 0.05005 0.05583 0.06420 -0.00527 0.02177 -0.01114
+C8 0.04801 0.05065 0.04584 -0.00285 0.01072 -0.00416
+C9 0.03660 0.03724 0.03925 -0.00552 0.00276 -0.00682
+O10 0.05822 0.05053 0.04317 0.01188 0.00304 0.01100
+O11 0.05447 0.04481 0.05813 0.00745 0.00895 0.01518
+S12 0.03779 0.03255 0.03762 0.00360 0.00784 0.00492
+C13 0.03864 0.05838 0.08674 0.00126 -0.00718 -0.00785
+C14 0.06673 0.03493 0.05090 -0.00008 0.01127 -0.00885
+loop_
+_atom_site_label
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+C1 0.10008 -0.05523 0.18330 ?
+C2 0.07783 -0.12614 0.38522 ?
+C3 0.12478 -0.24872 0.43920 ?
+C4 0.18203 -0.24824 0.26019 ?
+C5 0.24261 -0.33758 0.23448 ?
+C6 0.28770 -0.31158 0.05134 ?
+C7 0.27250 -0.20004 0.89875 ?
+C8 0.21165 -0.10923 0.92521 ?
+C9 0.16740 -0.13548 0.10749 ?
+O10 0.07282 0.05253 0.08495 ?
+O11 0.12074 -0.33904 0.59239 ?
+S12 0.00963 -0.06841 0.55985 ?
+C13 -0.07276 -0.07369 0.40039 ?
+C14 0.02129 0.12778 0.58522 ?
+H15 0.19930 -0.03881 0.80885 0.03293
+H16 0.30718 -0.19207 0.75411 0.05129
+H17 0.33384 -0.37029 0.02650 0.02634
+H18 0.25517 -0.41118 0.35533 0.05560
+H19 0.02535 0.16566 0.42299 0.02799
+H20 0.07654 0.14432 0.68686 0.04142
+H21 -0.02535 0.16008 0.67677 0.01950
+H22 -0.08700 -0.16705 0.36148 0.04357
+H23 -0.11177 -0.03064 0.51986 0.07738
+H24 -0.06271 -0.03427 0.24319 0.03103
+loop_
+_cod_related_entry_id
+_cod_related_entry_database
+_cod_related_entry_code
+1 AMCSD 0009387
