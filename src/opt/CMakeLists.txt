@@ -5,6 +5,7 @@ add_library(occ_opt_obj
     bond_coordinate.cpp
     dihedral_coordinate.cpp
     internal_coordinates.cpp
+    lbfgs_optimizer.cpp
     linear_search.cpp
     pseudoinverse.cpp
 )

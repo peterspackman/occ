@@ -8,6 +8,8 @@
 #include <occ/opt/bond_coordinate.h>
 #include <occ/opt/dihedral_coordinate.h>
 #include <occ/opt/internal_coordinates.h>
+#include <occ/opt/lbfgs_optimizer.h>
+#include <occ/core/units.h>
 #include <occ/opt/linear_search.h>
 #include <occ/opt/species_data.h>
 #include <numbers>
@@ -1070,3 +1072,139 @@ TEST_CASE("InternalCoordinates Hessian Guess",
   }
 }
 
+
+// A model surface for optimizer tests: harmonic springs between atom pairs,
+// energy in Hartree and gradient in Hartree/Bohr like the QM drivers.
+namespace {
+struct Spring {
+  int i, j;
+  double k;  // Hartree/Bohr^2
+  double r0; // Bohr
+};
+
+std::pair<double, occ::Mat3N> spring_energy(const occ::core::Molecule &m,
+                                            const std::vector<Spring> &springs) {
+  const occ::Mat3N x = m.positions() * occ::units::ANGSTROM_TO_BOHR;
+  occ::Mat3N g = occ::Mat3N::Zero(3, x.cols());
+  double e = 0.0;
+  for (const auto &s : springs) {
+    const occ::Vec3 d = x.col(s.i) - x.col(s.j);
+    const double r = d.norm();
+    e += 0.5 * s.k * (r - s.r0) * (r - s.r0);
+    const occ::Vec3 f = s.k * (r - s.r0) * d / r;
+    g.col(s.i) += f;
+    g.col(s.j) -= f;
+  }
+  return {e, g};
+}
+
+// The optimizer loop of the geometry optimization driver; returns the
+// number of gradient evaluations.
+template <typename Opt>
+int optimize(Opt &opt, const std::vector<Spring> &springs, int max_steps = 200) {
+  int evaluations = 0;
+  while (evaluations < max_steps) {
+    auto [e, g] = spring_energy(opt.get_next_geometry(), springs);
+    evaluations++;
+    opt.update(e, g);
+    if (opt.step())
+      return evaluations;
+  }
+  return evaluations;
+}
+
+double distance(const occ::core::Molecule &m, int i, int j) {
+  return (m.positions().col(i) - m.positions().col(j)).norm() *
+         occ::units::ANGSTROM_TO_BOHR;
+}
+
+occ::core::Molecule distorted_water() {
+  occ::IVec z(3);
+  z << 8, 1, 1;
+  occ::Mat3N pos(3, 3);
+  pos << 0.0, 1.1, -0.2, //
+      0.0, 0.1, 0.9,     //
+      0.0, 0.0, 0.1;
+  return occ::core::Molecule(z, pos);
+}
+
+const std::vector<Spring> water_springs{
+    {0, 1, 0.5, 1.81}, {0, 2, 0.5, 1.81}, {1, 2, 0.1, 2.86}};
+} // namespace
+
+TEST_CASE("LbfgsOptimizer reaches the minimum of a model water",
+          "[lbfgs_optimizer]") {
+  ConvergenceCriteria criteria;
+  for (bool precondition : {true, false}) {
+    CAPTURE(precondition);
+    LbfgsSettings settings;
+    settings.precondition = precondition;
+    LbfgsOptimizer opt(distorted_water(), criteria, settings);
+    const int n = optimize(opt, water_springs);
+    REQUIRE(opt.is_converged());
+    REQUIRE(n < 50);
+    const auto m = opt.get_next_geometry();
+    REQUIRE(distance(m, 0, 1) == Catch::Approx(1.81).margin(2e-3));
+    REQUIRE(distance(m, 0, 2) == Catch::Approx(1.81).margin(2e-3));
+    REQUIRE(distance(m, 1, 2) == Catch::Approx(2.86).margin(2e-3));
+  }
+}
+
+TEST_CASE("LbfgsOptimizer keeps steps within the trust radius",
+          "[lbfgs_optimizer]") {
+  LbfgsSettings settings;
+  settings.max_step = 0.1;
+  settings.precondition = false;
+  LbfgsOptimizer opt(distorted_water(), ConvergenceCriteria{}, settings);
+  auto before = opt.get_next_geometry();
+  for (int i = 0; i < 5; i++) {
+    auto [e, g] = spring_energy(before, water_springs);
+    opt.update(e, g);
+    REQUIRE_FALSE(opt.step());
+    auto after = opt.get_next_geometry();
+    const double disp =
+        ((after.positions() - before.positions()) * occ::units::ANGSTROM_TO_BOHR)
+            .colwise()
+            .norm()
+            .maxCoeff();
+    REQUIRE(disp <= opt.trust_radius() * (1 + 1e-12) + 1e-12);
+    REQUIRE(disp <= 0.1 + 1e-12);
+    before = after;
+  }
+}
+
+TEST_CASE("LbfgsOptimizer rejects a step that raises the energy",
+          "[lbfgs_optimizer]") {
+  LbfgsSettings settings;
+  settings.precondition = false;
+  LbfgsOptimizer opt(distorted_water(), ConvergenceCriteria{}, settings);
+  const auto start = opt.get_next_geometry();
+  auto [e0, g0] = spring_energy(start, water_springs);
+  opt.update(e0, g0);
+  REQUIRE_FALSE(opt.step());
+  const double trust = opt.trust_radius();
+  // Report a higher energy at the new point: the next step starts again from
+  // the first point with a smaller trust radius.
+  auto [e1, g1] = spring_energy(opt.get_next_geometry(), water_springs);
+  opt.update(e0 + 1e-3, g1);
+  REQUIRE_FALSE(opt.step());
+  REQUIRE(opt.trust_radius() < trust);
+  const double from_start =
+      ((opt.get_next_geometry().positions() - start.positions()) *
+       occ::units::ANGSTROM_TO_BOHR)
+          .colwise()
+          .norm()
+          .maxCoeff();
+  REQUIRE(from_start <= opt.trust_radius() * (1 + 1e-12));
+}
+
+TEST_CASE("BernyOptimizer reaches the minimum of a model water",
+          "[berny_optimizer]") {
+  BernyOptimizer opt(distorted_water(), ConvergenceCriteria{});
+  const int n = optimize(opt, water_springs);
+  REQUIRE(opt.is_converged());
+  REQUIRE(n < 50);
+  const auto m = opt.get_next_geometry();
+  REQUIRE(distance(m, 0, 1) == Catch::Approx(1.81).margin(2e-3));
+  REQUIRE(distance(m, 1, 2) == Catch::Approx(2.86).margin(2e-3));
+}

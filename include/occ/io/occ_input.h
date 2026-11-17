@@ -141,6 +141,12 @@ struct OptimizationInput {
   bool use_energy_criterion{Defaults{}.use_energy_criterion};
   int max_iterations{Defaults{}.max_iterations};
 
+  // "berny" (internal coordinates, RFO) or "lbfgs" (Cartesian L-BFGS)
+  std::string optimizer{"berny"};
+  int lbfgs_memory{20};
+  double lbfgs_max_step{0.3}; // Bohr, largest atomic displacement per step
+  bool lbfgs_precondition{true}; // model Hessian as H0
+
   // Integral accuracy control
   double gradient_integral_precision{1e-10}; // Final gradient integral cutoff
   double early_gradient_integral_precision{1e-8}; // Looser cutoff for early steps

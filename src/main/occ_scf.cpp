@@ -401,6 +401,23 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                 config->optimization.use_energy_criterion,
                 "Use energy change as convergence criterion")
       ->group(gOpt);
+  scf->add_option("--optimizer", config->optimization.optimizer,
+                  "Geometry optimizer: berny (internal coordinates, default) "
+                  "or lbfgs (Cartesian L-BFGS)")
+      ->check(CLI::IsMember({"berny", "lbfgs"}))
+      ->group(gOpt);
+  scf->add_option("--lbfgs-memory,--lbfgs_memory",
+                  config->optimization.lbfgs_memory,
+                  "L-BFGS correction pairs kept")
+      ->group(gOpt);
+  scf->add_option("--lbfgs-max-step,--lbfgs_max_step",
+                  config->optimization.lbfgs_max_step,
+                  "L-BFGS largest atomic displacement per step (Bohr)")
+      ->group(gOpt);
+  scf->add_flag("!--lbfgs-no-precondition,!--lbfgs_no_precondition",
+                config->optimization.lbfgs_precondition,
+                "L-BFGS: use (s.y/y.y) I rather than the model Hessian as H0")
+      ->group(gOpt);
   scf->add_option("--opt-max-iterations,--opt_max_iterations",
                   config->optimization.max_iterations,
                   "Maximum number of optimization steps")

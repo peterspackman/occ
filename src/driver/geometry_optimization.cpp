@@ -9,6 +9,7 @@
 #include <occ/driver/vibrational_analysis.h>
 #include <occ/driver/method_parser.h>
 #include <occ/opt/berny_optimizer.h>
+#include <occ/opt/lbfgs_optimizer.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
@@ -17,6 +18,7 @@
 #include <memory>
 #include <optional>
 #include <tuple>
+#include <variant>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
 
@@ -440,9 +442,39 @@ Wavefunction geometry_optimization(const OccInput &config) {
   criteria.use_energy_criterion = config.optimization.use_energy_criterion;
   criteria.max_iterations = config.optimization.max_iterations;
   
-  // Initialize Berny optimizer
-  occ::opt::BernyOptimizer optimizer(m, criteria);
-  occ::log::info("Geometry optimization convergence criteria (internal coordinates):");
+  // Berny (internal coordinates) or L-BFGS (Cartesian), behind one interface
+  using Optimizers =
+      std::variant<occ::opt::BernyOptimizer, occ::opt::LbfgsOptimizer>;
+  const bool use_lbfgs = config.optimization.optimizer == "lbfgs";
+  Optimizers optimizer_variant = [&]() -> Optimizers {
+    if (use_lbfgs) {
+      occ::opt::LbfgsSettings settings;
+      settings.memory = config.optimization.lbfgs_memory;
+      settings.max_step = config.optimization.lbfgs_max_step;
+      settings.precondition = config.optimization.lbfgs_precondition;
+      return occ::opt::LbfgsOptimizer(m, criteria, settings);
+    }
+    return occ::opt::BernyOptimizer(m, criteria);
+  }();
+  struct {
+    Optimizers &v;
+    void update(double e, const Mat3N &g) {
+      std::visit([&](auto &o) { o.update(e, g); }, v);
+    }
+    bool step() {
+      return std::visit([](auto &o) { return o.step(); }, v);
+    }
+    Molecule get_next_geometry() const {
+      return std::visit([](auto &o) { return o.get_next_geometry(); }, v);
+    }
+    void shift_energy_reference(double shift) {
+      std::visit([&](auto &o) { o.shift_energy_reference(shift); }, v);
+    }
+  } optimizer{optimizer_variant};
+  occ::log::info("Geometry optimizer: {}",
+                 use_lbfgs ? "L-BFGS (Cartesian)" : "Berny (internal coordinates)");
+  occ::log::info("Geometry optimization convergence criteria ({} coordinates):",
+                 use_lbfgs ? "Cartesian" : "internal");
   occ::log::info("  Max gradient:    {:.2e}", criteria.gradient_max);
   occ::log::info("  RMS gradient:    {:.2e}", criteria.gradient_rms);
   occ::log::info("  Max step:        {:.2e}", criteria.step_max);
