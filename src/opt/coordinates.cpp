@@ -39,6 +39,15 @@ constexpr double linear_fragment = 0.05;
 constexpr double rigid_body_floor = 0.01;
 constexpr double internal_floor = 0.005;
 
+// Rank of B, counting singular values above 1e-4 of the largest (the
+// optimizer's pseudo-inverse keeps eigenvalues of B^T B above 1e-8).
+int rank(const Mat &B) {
+  Eigen::SelfAdjointEigenSolver<Mat> es(B.transpose() * B,
+                                        Eigen::EigenvaluesOnly);
+  const Vec &ev = es.eigenvalues();
+  return (ev.array() > 1e-8 * ev.maxCoeff()).count();
+}
+
 double angle(const Vec3 &u, const Vec3 &v) {
   return std::atan2(u.cross(v).norm(), u.dot(v));
 }
@@ -277,6 +286,18 @@ TRICCoordinates::TRICCoordinates(const IVec &atomic_numbers, const Mat3N &x)
     }
   }
 
+  // out-of-plane: at a centre b with three bonded neighbours, the dihedral
+  // between the planes (b, a, c) and (a, c, d), which changes to first order
+  // as b passes through the plane of a, c and d, where the bends at b do not
+  for (int b = 0; b < n; b++) {
+    const auto &nb = neighbours[b];
+    if (nb.size() != 3)
+      continue;
+    const int a = nb[0], c = nb[1], d = nb[2];
+    if (bend(x, b, a, c) < linear_angle && bend(x, a, c, d) < linear_angle)
+      m_primitives.push_back({Primitive::Kind::Dihedral, {b, a, c, d}});
+  }
+
   // fragments: connected components of the bonds
   std::vector<int> parent(n);
   std::iota(parent.begin(), parent.end(), 0);
@@ -355,8 +376,9 @@ TRICCoordinates::TRICCoordinates(const IVec &atomic_numbers, const Mat3N &x)
                null, added);
   }
 
-  log::debug("TRIC coordinates: {} primitives over {} fragments",
-             m_primitives.size(), m_num_fragments);
+  m_rank = rank(wilson_b(x));
+  log::debug("TRIC coordinates: {} primitives over {} fragments, rank {}",
+             m_primitives.size(), m_num_fragments, m_rank);
 }
 
 Vec TRICCoordinates::values(const Mat3N &x) const {
@@ -388,6 +410,10 @@ Vec TRICCoordinates::difference(const Vec &q1, const Vec &q0) const {
 bool TRICCoordinates::degenerate(const Mat3N &x) const {
   if (covalent_bonds(m_atomic_numbers, x) != m_bonds) {
     log::debug("TRIC: bonding changed");
+    return true;
+  }
+  if (rank(wilson_b(x)) < m_rank) {
+    log::debug("TRIC: the coordinates lost a direction");
     return true;
   }
   for (const auto &p : m_primitives) {

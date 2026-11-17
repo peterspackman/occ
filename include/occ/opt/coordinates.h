@@ -67,10 +67,12 @@ private:
 
 /// Translation-rotation internal coordinates (TRIC; L.-P. Wang and C. Song,
 /// J. Chem. Phys. 144, 214108 (2016)): distances, angles, linear bends and
-/// dihedrals over the covalent bonds of each fragment, and the translation
+/// dihedrals over the covalent bonds of each fragment, an out-of-plane
+/// dihedral at every atom with three bonded neighbours, and the translation
 /// and rotation of every fragment, so fragments need no artificial bonds.
 /// Cartesian coordinates are added for any atom the rest leave undetermined,
-/// so B always has rank 3N.
+/// so B has rank 3N; the coordinates count as degenerate (to be rebuilt)
+/// where that rank drops.
 class TRICCoordinates : public CoordinateSystem {
 public:
   TRICCoordinates(const IVec &atomic_numbers, const Mat3N &x);
@@ -90,6 +92,7 @@ private:
   std::vector<std::pair<int, int>> m_bonds;
   std::vector<Primitive> m_primitives;
   int m_num_fragments{0};
+  int m_rank{0};
 };
 
 /// Covalent bonds: pairs closer than 1.3 times the sum of covalent radii.

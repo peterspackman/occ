@@ -184,3 +184,26 @@ TEST_CASE("TRIC asks for a rebuild when a bend goes linear", "[tric]") {
   const Mat3N linear = make({8, 1, 1}, {{0, 0, 0}, {0.96, 0, 0}, {-0.96, 0.01, 0}}).x;
   REQUIRE(coords.degenerate(linear));
 }
+
+TEST_CASE("TRIC sees the umbrella motion of a planar three-coordinate centre",
+          "[tric]") {
+  // planar ammonia: the bends at N change only to second order as N leaves
+  // the plane, the out-of-plane dihedral to first
+  const auto s = make({7, 1, 1, 1}, {{0.0, 0.0, 0.0},
+                                     {1.01, 0.0, 0.0},
+                                     {-0.505, 0.8747, 0.0},
+                                     {-0.505, -0.8747, 0.0}});
+  TRICCoordinates coords(s.z, s.x);
+  for (const auto &p : coords.primitives())
+    REQUIRE(p.kind != Primitive::Kind::Cartesian);
+  Vec umbrella = Vec::Zero(12);
+  umbrella(2) = 1.0;
+  for (int h = 1; h < 4; h++)
+    umbrella(3 * h + 2) = -1.0 / 3.0;
+  const Mat B = coords.wilson_b(s.x);
+  // a bend-and-stretch-only set gives B * umbrella = 0 here
+  REQUIRE((B * umbrella).norm() > 0.1);
+  Eigen::SelfAdjointEigenSolver<Mat> es(B.transpose() * B);
+  REQUIRE((es.eigenvalues().array() > 1e-8 * es.eigenvalues().maxCoeff())
+              .count() == 12);
+}
