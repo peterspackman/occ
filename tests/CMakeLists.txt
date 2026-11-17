@@ -184,6 +184,12 @@ target_compile_definitions(cg_tests PRIVATE
     OCC_GFN2_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
 occ_discover_tests(cg_tests)
 
+add_executable(driver_opt_tests "${CMAKE_CURRENT_SOURCE_DIR}/driver_opt_tests.cpp")
+target_link_libraries(driver_opt_tests PRIVATE occ_driver Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(driver_opt_tests PRIVATE
+    OCC_GFN2_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
+occ_discover_tests(driver_opt_tests)
+
 add_executable(dma_tests "${CMAKE_CURRENT_SOURCE_DIR}/dma_tests.cpp")
 target_link_libraries(dma_tests PRIVATE occ_dma occ_io occ_driver occ_mults Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(dma_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")

@@ -3,7 +3,15 @@
 #include <occ/qm/wavefunction.h>
 #include <occ/core/vibration.h>
 
+namespace occ::xtb {
+class XtbCalculator;
+}
+
 namespace occ::driver {
+
+/// Charge, spin, electronic temperature and solvent from the input.
+void configure_xtb_calculator(xtb::XtbCalculator &calc,
+                              const io::OccInput &config);
 
 /**
  * @brief Perform geometry optimization

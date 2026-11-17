@@ -1,8 +1,13 @@
 #include <occ/driver/vibrational_analysis.h>
+#include <occ/driver/geometry_optimization.h>
+#include <occ/xtb/xtb_calculator.h>
 #include <occ/driver/acceleration.h>
 #include <occ/driver/method_parser.h>
 #include <occ/core/data_directory.h>
 #include <occ/core/log.h>
+#include <occ/core/parallel.h>
+#include <occ/core/units.h>
+#include <tbb/task_arena.h>
 #include <occ/dft/dft.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/hessians.h>
@@ -143,6 +148,41 @@ Mat compute_hessian_for_method(const Molecule &m, const occ::gto::AOBasis &basis
   return hessian;
 }
 
+// GFN2-xTB Hessian by central differences of analytic gradients, the 3N
+// displacements in parallel: one calculator per thread (each SCC warm-starts
+// from that thread's previous displacement), each gradient isolated so a
+// thread waiting inside it cannot pick up another displacement and re-enter
+// its own calculator.
+Mat gfn2_hessian(const OccInput &config, const Molecule &m, double step) {
+  occ::log::info("GFN2-xTB Hessian by central differences of analytic "
+                 "gradients (step {:.4f} Bohr)",
+                 step);
+  const Mat3N x0 = m.positions() * occ::units::ANGSTROM_TO_BOHR;
+  const int n3 = 3 * m.size();
+  Mat H(n3, n3);
+  tbb::enumerable_thread_specific<std::unique_ptr<occ::xtb::XtbCalculator>>
+      calculators;
+  occ::parallel::parallel_for(size_t(0), size_t(n3), [&](size_t c) {
+    auto &calc = calculators.local();
+    Mat3N g[2];
+    tbb::this_task_arena::isolate([&] {
+      if (!calc) {
+        calc = std::make_unique<occ::xtb::XtbCalculator>(m);
+        configure_xtb_calculator(*calc, config);
+        calc->set_max_iterations(std::max(calc->max_iterations(), 250));
+      }
+      for (int side = 0; side < 2; side++) {
+        Mat3N x = x0;
+        x(c % 3, c / 3) += side == 0 ? step : -step;
+        calc->update_structure(x);
+        g[side] = calc->gradient();
+      }
+    });
+    H.col(c) = (g[0] - g[1]).reshaped() / (2.0 * step);
+  });
+  return 0.5 * (H + H.transpose());
+}
+
 /**
  * @brief Dispatch Hessian computation based on method type
  */
@@ -186,6 +226,9 @@ Mat compute_hessian_driver(const OccInput &config, const Molecule &m,
     else
       return compute_hessian_for_method<DFT, R>(m, basis, config, wfn, vib_config);
     break;
+  }
+  case MethodKind::GFN2: {
+    return gfn2_hessian(config, m, vib_config.step_size);
   }
   case MethodKind::MP2: {
     throw std::runtime_error("Not implemented: MP2 Hessians for vibrational analysis");

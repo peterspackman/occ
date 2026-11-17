@@ -247,7 +247,8 @@ scf_and_gradient(P &scf_proc, T &proc, const Molecule &m,
   return {wfn, gradient};
 }
 
-void configure(occ::xtb::XtbCalculator &calc, const OccInput &config) {
+void configure_xtb_calculator(occ::xtb::XtbCalculator &calc,
+                              const OccInput &config) {
   calc.set_charge(config.electronic.charge);
   calc.set_num_unpaired_electrons(config.electronic.multiplicity - 1);
   calc.set_spin_polarization(config.electronic.spin_polarization);
@@ -280,7 +281,7 @@ run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
   if (cached) {
     if (!cached->has_value()) {
       cached->emplace(m);
-      configure(cached->value(), config);
+      configure_xtb_calculator(cached->value(), config);
     } else {
       cached->value().update_structure(m.positions() *
                                         occ::units::ANGSTROM_TO_BOHR);
@@ -288,7 +289,7 @@ run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
     calc_ptr = &cached->value();
   } else {
     local.emplace(m);
-    configure(*local, config);
+    configure_xtb_calculator(*local, config);
     calc_ptr = &local.value();
   }
   auto &calc = *calc_ptr;
