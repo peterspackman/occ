@@ -36,19 +36,25 @@ std::pair<double, occ::Mat3N> spring_energy(const occ::core::Molecule &m,
   return {e, g};
 }
 
-// The optimizer loop of the geometry optimization driver; returns the
-// number of gradient evaluations.
-template <typename Opt>
-int optimize(Opt &opt, const std::vector<Spring> &springs, int max_steps = 200) {
-  int evaluations = 0;
-  while (evaluations < max_steps) {
-    auto [e, g] = spring_energy(opt.get_next_geometry(), springs);
-    evaluations++;
+// The optimizer loop of the geometry optimization driver on a surface
+// (energy, gradient) = surface(molecule); returns the number of gradient
+// evaluations.
+template <typename Opt, typename Surface>
+int optimize(Opt &opt, const Surface &surface, int max_steps = 300) {
+  for (int n = 1; n <= max_steps; n++) {
+    auto [e, g] = surface(opt.get_next_geometry());
     opt.update(e, g);
     if (opt.step())
-      return evaluations;
+      return n;
   }
-  return evaluations;
+  return max_steps;
+}
+
+template <typename Opt>
+int optimize(Opt &opt, const std::vector<Spring> &springs) {
+  return optimize(opt, [&](const occ::core::Molecule &m) {
+    return spring_energy(m, springs);
+  });
 }
 
 double distance(const occ::core::Molecule &m, int i, int j) {
@@ -228,16 +234,6 @@ std::pair<double, occ::Mat3N> spring_lj_energy(const occ::core::Molecule &m,
   return {e, g};
 }
 
-template <typename Opt, typename F>
-int optimize_with(Opt &opt, F energy, int max_steps = 300) {
-  for (int n = 1; n <= max_steps; n++) {
-    auto [e, g] = energy(opt.get_next_geometry());
-    opt.update(e, g);
-    if (opt.step())
-      return n;
-  }
-  return max_steps + 1;
-}
 } // namespace
 
 TEST_CASE("GeometryOptimizer reaches the minimum of a model water",
@@ -296,7 +292,7 @@ TEST_CASE("GeometryOptimizer binds two fragments without intermolecular bonds",
   GeometryOptimizer opt(occ::core::Molecule(z, pos));
   REQUIRE(dynamic_cast<const TRICCoordinates &>(opt.coordinates())
               .num_fragments() == 2);
-  const int n = optimize_with(opt, energy);
+  const int n = optimize(opt, energy);
   CAPTURE(n);
   REQUIRE(opt.is_converged());
   auto [e, g] = energy(opt.get_next_geometry());
@@ -394,18 +390,6 @@ occ::Mat hessian(const Potential &potential, const occ::core::Molecule &m) {
   return 0.5 * (H + H.transpose());
 }
 
-int optimize_on(GeometryOptimizer &opt, const Potential &potential,
-                int max_steps = 200) {
-  int evaluations = 0;
-  while (evaluations < max_steps) {
-    auto [e, g] = potential(opt.get_next_geometry());
-    evaluations++;
-    opt.update(e, g);
-    if (opt.step())
-      return evaluations;
-  }
-  return evaluations;
-}
 
 // water with O-H bonds (Bohr) r01 and r02 and an H-H spring for the bend
 occ::core::Molecule triatomic(double r01, double r02) {
@@ -432,7 +416,7 @@ TEST_CASE("GeometryOptimizer finds the saddle of a double-well bond",
     const auto start = triatomic(1.85, 1.75);
     GeometryOptimizer opt(start, {}, settings);
     opt.set_initial_hessian(hessian(potential, start));
-    const int n = optimize_on(opt, potential);
+    const int n = optimize(opt, potential);
     INFO("gradients: " << n);
     REQUIRE(opt.is_converged());
     const auto m = opt.get_next_geometry();
@@ -454,7 +438,7 @@ TEST_CASE("GeometryOptimizer follows the requested mode to its saddle",
     CAPTURE(mode);
     GeometryOptimizer opt(start, {}, OptimizerSettings::saddle_point(mode));
     opt.set_initial_hessian(hessian(potential, start));
-    const int n = optimize_on(opt, potential);
+    const int n = optimize(opt, potential);
     INFO("gradients: " << n);
     REQUIRE(opt.is_converged());
     const auto m = opt.get_next_geometry();
@@ -497,7 +481,7 @@ TEST_CASE("NEB climbing image finds the saddle of a double-well bond",
   // endpoints relaxed, as a band needs minima at its ends
   auto relaxed = [&](double r01) {
     GeometryOptimizer opt(triatomic(r01, 1.81));
-    optimize_on(opt, potential);
+    optimize(opt, potential);
     return opt.get_next_geometry();
   };
   const auto reactant = relaxed(1.6), product = relaxed(2.4);
