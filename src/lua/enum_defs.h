@@ -29,7 +29,6 @@
 #include <occ/crystal/subgroup.h>
 #include <occ/mults/crystal_optimizer.h>
 #include <occ/mults/force_field_params.h>
-#include <occ/opt/bond_coordinate.h>
 #include <occ/qm/hessians.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/integral_engine_df.h>
@@ -152,10 +151,6 @@
 
 // ---------- opt ---------------------------------------------------------
 
-#define OCC_E_BondCoordinateType ::occ::opt::BondCoordinate::Type
-#define OCC_ENUM_BondCoordinateType(X)                                         \
-  X("COVALENT", OCC_E_BondCoordinateType::COVALENT)                            \
-  X("VDW", OCC_E_BondCoordinateType::VDW)
 
 // ---------- isosurface --------------------------------------------------
 

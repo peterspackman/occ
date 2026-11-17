@@ -14,6 +14,7 @@ add_library(occ_driver_obj
     "${CMAKE_CURRENT_SOURCE_DIR}/dma_driver.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/population.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/vibrational_analysis.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/neb.cpp"
     ${OCC_DRIVER_INCLUDE_FILES}
 )
 add_library(occ_driver $<TARGET_OBJECTS:occ_driver_obj>)

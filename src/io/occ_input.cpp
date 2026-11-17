@@ -100,6 +100,19 @@ OccInput read_occ_input_file(const std::string path) {
   result.optimization.write_step_log = scf["opt_step_log"].value_or(result.optimization.write_step_log);
   result.optimization.compute_frequencies = scf["frequencies"].value_or(result.optimization.compute_frequencies);
   result.optimization.project_tr_rot = scf["project_tr_rot"].value_or(result.optimization.project_tr_rot);
+  result.optimization.optimizer = scf["optimizer"].value_or(result.optimization.optimizer);
+  result.optimization.lbfgs_memory = scf["lbfgs_memory"].value_or(result.optimization.lbfgs_memory);
+  result.optimization.lbfgs_max_step = scf["lbfgs_max_step"].value_or(result.optimization.lbfgs_max_step);
+  result.optimization.lbfgs_precondition = scf["lbfgs_precondition"].value_or(result.optimization.lbfgs_precondition);
+  result.optimization.ts_mode = scf["ts_mode"].value_or(result.optimization.ts_mode);
+  result.optimization.neb_product = scf["neb_product"].value_or(result.optimization.neb_product);
+  result.optimization.neb_images = scf["neb_images"].value_or(result.optimization.neb_images);
+  result.optimization.neb_spring = scf["neb_spring"].value_or(result.optimization.neb_spring);
+  result.optimization.neb_force_max = scf["neb_force_max"].value_or(result.optimization.neb_force_max);
+  result.optimization.neb_climbing_force_max = scf["neb_climbing_force_max"].value_or(result.optimization.neb_climbing_force_max);
+  result.optimization.neb_max_iterations = scf["neb_max_iterations"].value_or(result.optimization.neb_max_iterations);
+  result.optimization.neb_climbing_image = scf["neb_climbing_image"].value_or(result.optimization.neb_climbing_image);
+  result.optimization.neb_ts = scf["neb_ts"].value_or(result.optimization.neb_ts);
 
   return result;
 }

@@ -130,8 +130,8 @@ struct RuntimeInput {
 };
 
 struct OptimizationInput {
-  // Convergence criteria in internal coordinates, defaulting to the
-  // optimizer's own (ORCA's NormalOpt)
+  // Convergence criteria, defaulting to the optimizer's own (ORCA's
+  // NormalOpt values, applied per atom in Cartesians)
   using Defaults = occ::opt::ConvergenceCriteria;
   double gradient_max{Defaults{}.gradient_max};   // Hartree/Bohr
   double gradient_rms{Defaults{}.gradient_rms};   // Hartree/Bohr
@@ -140,6 +140,31 @@ struct OptimizationInput {
   double energy_change{Defaults{}.energy_change}; // Hartree, if enabled
   bool use_energy_criterion{Defaults{}.use_energy_criterion};
   int max_iterations{Defaults{}.max_iterations};
+
+  // "tric" (trust-region Newton in TRIC coordinates), "cartesian" (the same
+  // in Cartesians) or "lbfgs"
+  std::string optimizer{"tric"};
+  int lbfgs_memory{20};
+  double lbfgs_max_step{0.3}; // Bohr, largest atomic displacement per step
+  bool lbfgs_precondition{true}; // model Hessian as H0
+
+  // Search for a first-order saddle point (driver "ts"): from a computed
+  // Hessian, maximising along internal mode ts_mode counted from the lowest
+  bool transition_state{false};
+  int ts_mode{0};
+
+  // Nudged elastic band (driver "neb") from the input geometry to the
+  // product (an xyz file, same atoms in the same order)
+  std::string neb_product{""};
+  int neb_images{8};
+  double neb_spring{0.01};   // Hartree/Bohr^2
+  // Hartree/Bohr: convergence on the climbing image and the rest; with
+  // neb_ts at least 2e-3 and 2e-2 (ORCA's NEB-TS)
+  double neb_climbing_force_max{1e-3};
+  double neb_force_max{5e-3};
+  int neb_max_iterations{300};
+  bool neb_climbing_image{true};
+  bool neb_ts{false}; // refine the climbing image to the saddle point
 
   // Integral accuracy control
   double gradient_integral_precision{1e-10}; // Final gradient integral cutoff

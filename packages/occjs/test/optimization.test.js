@@ -47,67 +47,26 @@ H  0.0000 -1.2000  0.8000`);
       expect(criteria.stepRms).toBeCloseTo(1e-4, 6);
     });
 
-    it('should create Berny optimizer', () => {
-      const optimizer = new Module.BernyOptimizer(waterMolecule);
+    it('should create the geometry optimizer', () => {
+      const optimizer = new Module.GeometryOptimizer(waterMolecule);
 
       expect(optimizer).toBeDefined();
       expect(optimizer.currentStep()).toBe(0);
       expect(optimizer.isConverged()).toBe(false);
-      expect(optimizer.toString()).toContain('BernyOptimizer');
+      expect(optimizer.trustRadius()).toBeGreaterThan(0);
+      expect(optimizer.toString()).toContain('GeometryOptimizer');
     });
 
-    it('should create Berny optimizer with custom criteria', () => {
+    it('should create the geometry optimizer with custom criteria', () => {
       const criteria = new Module.ConvergenceCriteria();
       criteria.gradientMax = 1e-4;
       criteria.gradientRms = 1e-5;
 
-      const optimizer = new Module.BernyOptimizer(waterMolecule, criteria);
+      const optimizer = new Module.GeometryOptimizer(waterMolecule, criteria);
 
       expect(optimizer).toBeDefined();
       expect(optimizer.currentStep()).toBe(0);
       expect(optimizer.isConverged()).toBe(false);
-    });
-  });
-
-  describe('Internal Coordinates', () => {
-    it('should create internal coordinates with default options', () => {
-      const options = new Module.InternalCoordinatesOptions();
-
-      expect(options).toBeDefined();
-      expect(options.includeDihedrals).toBe(true);
-      expect(options.superweakDihedrals).toBe(false);
-    });
-
-    it('should create internal coordinates for molecule', () => {
-      const options = new Module.InternalCoordinatesOptions();
-      const internals = new Module.InternalCoordinates(waterMolecule, options);
-
-      expect(internals).toBeDefined();
-      expect(internals.size()).toBeGreaterThan(0);
-      // Note: bonds() and angles() return vectors that may not be bound properly
-      // Just check that the internal coordinates object is created successfully
-      expect(internals.toString()).toContain('InternalCoordinates');
-    });
-
-    it('should create bond coordinates', () => {
-      const bondType = Module.BondCoordinateType.COVALENT;
-      const bond = new Module.BondCoordinate(0, 1, bondType);
-
-      expect(bond).toBeDefined();
-      expect(bond.i).toBe(0);
-      expect(bond.j).toBe(1);
-      expect(bond.bondType).toBe(bondType);
-      expect(bond.toString()).toContain('BondCoordinate');
-    });
-
-    it('should create angle coordinates', () => {
-      const angle = new Module.AngleCoordinate(0, 1, 2);
-
-      expect(angle).toBeDefined();
-      expect(angle.i).toBe(0);
-      expect(angle.j).toBe(1);
-      expect(angle.k).toBe(2);
-      expect(angle.toString()).toContain('AngleCoordinate');
     });
   });
 
@@ -215,7 +174,7 @@ H  0.0000 -1.2000  0.8000`);
       criteria.gradientMax = 1e-3; // Looser criteria for test
       criteria.gradientRms = 1e-4;
 
-      const optimizer = new Module.BernyOptimizer(waterMolecule, criteria);
+      const optimizer = new Module.GeometryOptimizer(waterMolecule, criteria);
 
       // Get initial geometry
       const initialMol = optimizer.getNextGeometry();
@@ -257,7 +216,7 @@ H  0.0000 -1.2000  0.8000`);
       criteria.stepMax = 1e-3;
       criteria.stepRms = 1e-4;
 
-      const optimizer = new Module.BernyOptimizer(waterMolecule, criteria);
+      const optimizer = new Module.GeometryOptimizer(waterMolecule, criteria);
 
       let converged = false;
       const maxSteps = 5; // Limit steps for testing

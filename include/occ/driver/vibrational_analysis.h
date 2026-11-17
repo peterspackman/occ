@@ -41,6 +41,15 @@ core::VibrationalModes vibrational_analysis(const io::OccInput &config,
                                            const qm::Wavefunction &wfn,
                                            const VibrationalAnalysisConfig &vib_config = {});
 
+/// The molecular Hessian (Hartree/Bohr^2, 3N x 3N, atom-major) at the
+/// wavefunction's geometry, for the method in the input.
+Mat compute_hessian(const io::OccInput &config, const qm::Wavefunction &wfn,
+                    const VibrationalAnalysisConfig &vib_config = {});
+
+/// Frequency settings from the input's optimisation options (Hessian method,
+/// projection of rigid motions, output filenames).
+VibrationalAnalysisConfig vibrational_config(const io::OccInput &config);
+
 /**
  * @brief Convenience function for standard frequency analysis
  * 

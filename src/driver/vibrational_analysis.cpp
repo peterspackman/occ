@@ -1,13 +1,19 @@
 #include <occ/driver/vibrational_analysis.h>
+#include <occ/driver/geometry_optimization.h>
+#include <occ/xtb/xtb_calculator.h>
 #include <occ/driver/acceleration.h>
 #include <occ/driver/method_parser.h>
 #include <occ/core/data_directory.h>
 #include <occ/core/log.h>
+#include <occ/core/parallel.h>
+#include <occ/core/units.h>
+#include <tbb/task_arena.h>
 #include <occ/dft/dft.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/hessians.h>
 #include <occ/qm/scf.h>
 #include <occ/solvent/solvation_correction.h>
+#include <filesystem>
 #include <fstream>
 #include <occ/io/core_json.h>
 #include <occ/io/eigen_json.h>
@@ -143,6 +149,41 @@ Mat compute_hessian_for_method(const Molecule &m, const occ::gto::AOBasis &basis
   return hessian;
 }
 
+// GFN2-xTB Hessian by central differences of analytic gradients, the 3N
+// displacements in parallel: one calculator per thread (each SCC warm-starts
+// from that thread's previous displacement), each gradient isolated so a
+// thread waiting inside it cannot pick up another displacement and re-enter
+// its own calculator.
+Mat gfn2_hessian(const OccInput &config, const Molecule &m, double step) {
+  occ::log::info("GFN2-xTB Hessian by central differences of analytic "
+                 "gradients (step {:.4f} Bohr)",
+                 step);
+  const Mat3N x0 = m.positions() * occ::units::ANGSTROM_TO_BOHR;
+  const int n3 = 3 * m.size();
+  Mat H(n3, n3);
+  tbb::enumerable_thread_specific<std::unique_ptr<occ::xtb::XtbCalculator>>
+      calculators;
+  occ::parallel::parallel_for(size_t(0), size_t(n3), [&](size_t c) {
+    auto &calc = calculators.local();
+    Mat3N g[2];
+    tbb::this_task_arena::isolate([&] {
+      if (!calc) {
+        calc = std::make_unique<occ::xtb::XtbCalculator>(m);
+        configure_xtb_calculator(*calc, config);
+        calc->set_max_iterations(std::max(calc->max_iterations(), 250));
+      }
+      for (int side = 0; side < 2; side++) {
+        Mat3N x = x0;
+        x(c % 3, c / 3) += side == 0 ? step : -step;
+        calc->update_structure(x);
+        g[side] = calc->gradient();
+      }
+    });
+    H.col(c) = (g[0] - g[1]).reshaped() / (2.0 * step);
+  });
+  return 0.5 * (H + H.transpose());
+}
+
 /**
  * @brief Dispatch Hessian computation based on method type
  */
@@ -187,6 +228,9 @@ Mat compute_hessian_driver(const OccInput &config, const Molecule &m,
       return compute_hessian_for_method<DFT, R>(m, basis, config, wfn, vib_config);
     break;
   }
+  case MethodKind::GFN2: {
+    return gfn2_hessian(config, m, vib_config.step_size);
+  }
   case MethodKind::MP2: {
     throw std::runtime_error("Not implemented: MP2 Hessians for vibrational analysis");
     break;
@@ -195,6 +239,40 @@ Mat compute_hessian_driver(const OccInput &config, const Molecule &m,
     throw std::runtime_error("Unknown method kind for Hessian computation");
   }
   }
+}
+
+Mat compute_hessian(const OccInput &config, const Wavefunction &wfn,
+                    const VibrationalAnalysisConfig &vib_config) {
+  return compute_hessian_driver(config, Molecule(wfn.atoms), wfn, vib_config);
+}
+
+VibrationalAnalysisConfig vibrational_config(const OccInput &config) {
+  VibrationalAnalysisConfig vib_config;
+  vib_config.compute_frequencies = true;
+  // The solvent cavity's Lebedev points keep their orientation in space as
+  // the molecule turns, so the solvated energy is not invariant to rigid
+  // rotations: project them out rather than report them as low modes.
+  vib_config.project_tr_rot =
+      config.optimization.project_tr_rot || !config.solvent.solvent_name.empty();
+  vib_config.step_size = 0.005; // Bohr, as ORCA
+  using HM = VibrationalAnalysisConfig::HessianMethod;
+  const auto &hm = config.optimization.hessian_method;
+  vib_config.hessian_method = hm == "analytic" ? HM::Analytic
+                              : hm == "fd"     ? HM::FiniteDifferences
+                                               : HM::Auto;
+  vib_config.use_acoustic_sum_rule = true;
+  vib_config.save_hessian = true;
+  vib_config.save_results = true;
+  if (!config.filename.empty()) {
+    const std::string basename =
+        std::filesystem::path(config.filename).stem().string();
+    vib_config.hessian_filename = basename + "_hess.json";
+    vib_config.results_filename = basename + "_freq.json";
+  } else {
+    vib_config.hessian_filename = "optimized_hessian.json";
+    vib_config.results_filename = "optimized_frequencies.json";
+  }
+  return vib_config;
 }
 
 VibrationalModes vibrational_analysis(const OccInput &config,

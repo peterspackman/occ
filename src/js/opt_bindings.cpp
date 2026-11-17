@@ -3,12 +3,8 @@
 #include <emscripten/val.h>
 #include <occ/core/molecule.h>
 #include <occ/core/vibration.h>
-#include <occ/opt/angle_coordinate.h>
-#include <occ/opt/berny_optimizer.h>
-#include <occ/opt/bond_coordinate.h>
-#include <occ/opt/dihedral_coordinate.h>
-#include <occ/opt/internal_coordinates.h>
-#include <occ/opt/optimization_state.h>
+#include <occ/opt/geometry_optimizer.h>
+#include <occ/opt/neb.h>
 #include <occ/qm/hessians.h>
 #include <occ/qm/hf.h>
 #include <occ/dft/dft.h>
@@ -24,141 +20,95 @@ using occ::Vec;
 using occ::Mat3N;
 
 void register_opt_bindings() {
-  // Bond coordinate type enum
-  enum_<BondCoordinate::Type>("BondCoordinateType")
-      .value("COVALENT", BondCoordinate::Type::COVALENT)
-      .value("VDW", BondCoordinate::Type::VDW);
-
-  // Bond coordinate class
-  class_<BondCoordinate>("BondCoordinate")
-      .constructor<int, int, BondCoordinate::Type>()
-      .property("i", &BondCoordinate::i)
-      .property("j", &BondCoordinate::j)
-      .property("bondType", &BondCoordinate::bond_type)
-      .function("evaluate", optional_override([](const BondCoordinate &b, const Mat3N &coords) {
-                  return b(coords);
-                }))
-      .function("gradient", optional_override([](const BondCoordinate &b, const Mat3N &coords) {
-                  return b.gradient(coords);
-                }))
-      .function("toString", optional_override([](const BondCoordinate &b) {
-                  std::string type = (b.bond_type == BondCoordinate::Type::COVALENT) ? "COVALENT" : "VDW";
-                  return std::string("<BondCoordinate(") + std::to_string(b.i) + ", " + 
-                         std::to_string(b.j) + ", " + type + ")>";
-                }));
-
-  // Angle coordinate class
-  class_<AngleCoordinate>("AngleCoordinate")
-      .constructor<int, int, int>()
-      .property("i", &AngleCoordinate::i)
-      .property("j", &AngleCoordinate::j)
-      .property("k", &AngleCoordinate::k)
-      .function("evaluate", optional_override([](const AngleCoordinate &a, const Mat3N &coords) {
-                  return a(coords);
-                }))
-      .function("gradient", optional_override([](const AngleCoordinate &a, const Mat3N &coords) {
-                  return a.gradient(coords);
-                }))
-      .function("toString", optional_override([](const AngleCoordinate &a) {
-                  return std::string("<AngleCoordinate(") + std::to_string(a.i) + ", " + 
-                         std::to_string(a.j) + ", " + std::to_string(a.k) + ")>";
-                }));
-
-  // Dihedral coordinate class
-  class_<DihedralCoordinate>("DihedralCoordinate")
-      .constructor<int, int, int, int>()
-      .property("i", &DihedralCoordinate::i)
-      .property("j", &DihedralCoordinate::j)
-      .property("k", &DihedralCoordinate::k)
-      .property("l", &DihedralCoordinate::l)
-      .function("evaluate", optional_override([](const DihedralCoordinate &d, const Mat3N &coords) {
-                  return d(coords);
-                }))
-      .function("gradient", optional_override([](const DihedralCoordinate &d, const Mat3N &coords) {
-                  return d.gradient(coords);
-                }))
-      .function("toString", optional_override([](const DihedralCoordinate &d) {
-                  return std::string("<DihedralCoordinate(") + std::to_string(d.i) + ", " + 
-                         std::to_string(d.j) + ", " + std::to_string(d.k) + ", " + 
-                         std::to_string(d.l) + ")>";
-                }));
-
-  // Internal coordinates options
-  class_<InternalCoordinates::Options>("InternalCoordinatesOptions")
-      .constructor<>()
-      .property("includeDihedrals", &InternalCoordinates::Options::include_dihedrals)
-      .property("superweakDihedrals", &InternalCoordinates::Options::superweak_dihedrals);
-
-  // Internal coordinates structure
-  class_<InternalCoordinates>("InternalCoordinates")
-      .constructor<const Molecule &, const InternalCoordinates::Options &>()
-      .function("bonds", &InternalCoordinates::bonds)
-      .function("angles", &InternalCoordinates::angles) 
-      .function("dihedrals", &InternalCoordinates::dihedrals)
-      .function("weights", &InternalCoordinates::weights)
-      .function("size", &InternalCoordinates::size)
-      .function("toVector", &InternalCoordinates::to_vector)
-      .function("toVectorWithTemplate", &InternalCoordinates::to_vector_with_template)
-      .function("wilsonBMatrix", &InternalCoordinates::wilson_b_matrix)
-      .function("toString", optional_override([](const InternalCoordinates &ic) {
-                  return std::string("<InternalCoordinates: ") + std::to_string(ic.bonds().size()) + 
-                         " bonds, " + std::to_string(ic.angles().size()) + " angles, " + 
-                         std::to_string(ic.dihedrals().size()) + " dihedrals>";
-                }));
-
-  // OptPoint structure
-  class_<OptPoint>("OptPoint")
-      .constructor<>()
-      .constructor<const Vec &, double, const Vec &>()
-      .property("q", &OptPoint::q)
-      .property("E", &OptPoint::E)
-      .property("g", &OptPoint::g)
-      .function("toString", optional_override([](const OptPoint &opt) {
-                  double g_norm = opt.g.size() > 0 ? opt.g.norm() : 0.0;
-                  return std::string("<OptPoint: E=") + std::to_string(opt.E) + ", |q|=" + 
-                         std::to_string(opt.q.size()) + ", |g|=" + std::to_string(g_norm) + ">";
-                }));
-
-  // Convergence criteria structure
   class_<ConvergenceCriteria>("ConvergenceCriteria")
       .constructor<>()
       .property("gradientMax", &ConvergenceCriteria::gradient_max)
       .property("gradientRms", &ConvergenceCriteria::gradient_rms)
       .property("stepMax", &ConvergenceCriteria::step_max)
-      .property("stepRms", &ConvergenceCriteria::step_rms);
+      .property("stepRms", &ConvergenceCriteria::step_rms)
+      .property("energyChange", &ConvergenceCriteria::energy_change)
+      .property("useEnergyCriterion", &ConvergenceCriteria::use_energy_criterion)
+      .property("maxIterations", &ConvergenceCriteria::max_iterations);
 
-  // Optimization state structure
-  class_<OptimizationState>("OptimizationState")
-      .property("positions", &OptimizationState::positions)
-      .property("energy", &OptimizationState::energy)
-      .property("gradientCartesian", &OptimizationState::gradient_cartesian)
-      .property("current", &OptimizationState::current)
-      .property("best", &OptimizationState::best)
-      .property("previous", &OptimizationState::previous)
-      .property("interpolated", &OptimizationState::interpolated)
-      .property("predicted", &OptimizationState::predicted)
-      .property("future", &OptimizationState::future)
-      .property("hessian", &OptimizationState::hessian)
-      .property("trustRadius", &OptimizationState::trust_radius)
-      .property("firstStep", &OptimizationState::first_step)
-      .property("stepNumber", &OptimizationState::step_number)
-      .property("converged", &OptimizationState::converged);
+  class_<OptimizerSettings>("OptimizerSettings")
+      .constructor<>()
+      .class_function("saddlePoint", &OptimizerSettings::saddle_point)
+      .property("trust", &OptimizerSettings::trust)
+      .property("trustMin", &OptimizerSettings::trust_min)
+      .property("trustMax", &OptimizerSettings::trust_max)
+      .property("projectNetForceTorque",
+                &OptimizerSettings::project_net_force_torque)
+      .property("transitionState", &OptimizerSettings::transition_state)
+      .property("tsMode", &OptimizerSettings::ts_mode);
 
-  // Berny optimizer class
-  class_<BernyOptimizer>("BernyOptimizer")
+  // Trust-region optimizer in TRIC coordinates, for minima or first-order
+  // saddle points: update(energy, gradient) at getNextGeometry(), then
+  // step() until it returns true.
+  class_<GeometryOptimizer>("GeometryOptimizer")
       .constructor<const Molecule &>()
       .constructor<const Molecule &, const ConvergenceCriteria &>()
-      .function("step", &BernyOptimizer::step)
-      .function("update", &BernyOptimizer::update)
-      .function("getNextGeometry", &BernyOptimizer::get_next_geometry)
-      .function("isConverged", &BernyOptimizer::is_converged)
-      .function("currentStep", &BernyOptimizer::current_step)
-      .function("currentEnergy", &BernyOptimizer::current_energy)
-      .function("currentTrustRadius", &BernyOptimizer::current_trust_radius)
-      .function("toString", optional_override([](const BernyOptimizer &opt) {
-                  return std::string("<BernyOptimizer: step=") + std::to_string(opt.current_step()) + 
-                         ", converged=" + (opt.is_converged() ? "true" : "false") + ">";
+      .constructor<const Molecule &, const ConvergenceCriteria &,
+                   const OptimizerSettings &>()
+      .function("setFollowedMode", &GeometryOptimizer::set_followed_mode)
+      .function("negativeModes", &GeometryOptimizer::negative_modes)
+      .function("step", &GeometryOptimizer::step)
+      .function("update", &GeometryOptimizer::update)
+      .function("getNextGeometry", &GeometryOptimizer::get_next_geometry)
+      .function("setInitialHessian", &GeometryOptimizer::set_initial_hessian)
+      .function("isConverged", &GeometryOptimizer::is_converged)
+      .function("currentStep", &GeometryOptimizer::current_step)
+      .function("currentEnergy", &GeometryOptimizer::current_energy)
+      .function("trustRadius", &GeometryOptimizer::trust_radius)
+      .function("toString", optional_override([](const GeometryOptimizer &o) {
+                  return std::string("<GeometryOptimizer: step=") +
+                         std::to_string(o.current_step()) + ", converged=" +
+                         (o.is_converged() ? "true" : "false") + ">";
                 }));
+
+  register_vector<Molecule>("VectorMolecule");
+
+  class_<NebSettings>("NebSettings")
+      .constructor<>()
+      .property("images", &NebSettings::images)
+      .property("spring", &NebSettings::spring)
+      .property("springMax", &NebSettings::spring_max)
+      .property("idpp", &NebSettings::idpp)
+      .property("climbingImage", &NebSettings::climbing_image)
+      .property("climbThreshold", &NebSettings::climb_threshold)
+      .property("climbingForceMax", &NebSettings::climbing_force_max)
+      .property("forceMax", &NebSettings::force_max)
+      .property("maxStep", &NebSettings::max_step);
+
+  // Climbing-image nudged elastic band: setEndpointEnergies(), then
+  // update(energies, gradients) at images(), then step() until it returns
+  // true. energies and gradients are JS arrays, one entry per image.
+  class_<NudgedElasticBand>("NudgedElasticBand")
+      .constructor<const Molecule &, const Molecule &, const NebSettings &>()
+      .function("images", &NudgedElasticBand::images)
+      .function("path", &NudgedElasticBand::path)
+      .function("setEndpointEnergies", &NudgedElasticBand::set_endpoint_energies)
+      .function("update", optional_override([](NudgedElasticBand &b,
+                                               const val &energies,
+                                               const val &gradients) {
+                  std::vector<double> e;
+                  std::vector<Mat3N> g;
+                  const int n = energies["length"].as<int>();
+                  for (int i = 0; i < n; i++) {
+                    e.push_back(energies[i].as<double>());
+                    g.push_back(gradients[i].as<Mat3N>());
+                  }
+                  b.update(e, g);
+                }))
+      .function("step", &NudgedElasticBand::step)
+      .function("isConverged", &NudgedElasticBand::is_converged)
+      .function("climbing", &NudgedElasticBand::climbing)
+      .function("energies", optional_override([](const NudgedElasticBand &b) {
+                  return Vec(b.energies());
+                }))
+      .function("highestImage", &NudgedElasticBand::highest_image)
+      .function("tangent", &NudgedElasticBand::tangent)
+      .function("maxForce", &NudgedElasticBand::max_force)
+      .function("currentStep", &NudgedElasticBand::current_step);
 
   // Hessian evaluator for HartreeFock  
   class_<HessianEvaluator<HartreeFock>>("HessianEvaluatorHF")
@@ -238,7 +188,4 @@ void register_opt_bindings() {
   function("moleculeToXYZWithComment", optional_override([](const Molecule &mol, const std::string &comment) {
              return occ::io::to_xyz_string(mol, comment);
            }));
-
-  // Utility function to transform step from internal to Cartesian coordinates
-  function("transformStepToCartesian", &occ::opt::transform_step_to_cartesian);
 }

@@ -1,14 +1,9 @@
 #include "opt_bindings.h"
 #include "eigen_conv.h"
-#include "enum_stacks.h"
 #include <fmt/core.h>
 #include <occ/core/molecule.h>
-#include <occ/opt/angle_coordinate.h>
-#include <occ/opt/berny_optimizer.h>
-#include <occ/opt/bond_coordinate.h>
-#include <occ/opt/dihedral_coordinate.h>
-#include <occ/opt/internal_coordinates.h>
-#include <occ/opt/optimization_state.h>
+#include <occ/opt/geometry_optimizer.h>
+#include <occ/opt/neb.h>
 
 namespace occ::lua_bindings {
 
@@ -22,290 +17,135 @@ void register_opt_bindings(lua_State *L) {
       .beginNamespace("occ")
       .beginNamespace("opt")
 
-      OCC_LUA_ENUM_NAMESPACE("BondCoordinateType", OCC_ENUM_BondCoordinateType)
-
-      .beginClass<BondCoordinate>("BondCoordinate")
-      // Two construction shapes — default COVALENT vs explicit type.
-      .addConstructor<void (*)(int, int, BondCoordinate::Type)>()
-      .addStaticFunction(
-          "new_covalent",
-          +[](int i, int j) {
-            return new BondCoordinate{i, j, BondCoordinate::Type::COVALENT};
-          })
-      .addPropertyReadWrite("i", &BondCoordinate::i)
-      .addPropertyReadWrite("j", &BondCoordinate::j)
-      .addPropertyReadWrite("bond_type", &BondCoordinate::bond_type)
-      .addFunction(
-          "value",
-          +[](const BondCoordinate *b, const lb::LuaRef &coords) {
-            return (*b)(table_to_mat3n(coords));
-          })
-      .addFunction(
-          "gradient",
-          +[](const BondCoordinate *b, const lb::LuaRef &coords, lua_State *S) {
-            return mat_to_table(S, b->gradient(table_to_mat3n(coords)));
-          })
-      .addFunction(
-          "__tostring",
-          +[](const BondCoordinate *b) {
-            const char *type = (b->bond_type == BondCoordinate::Type::COVALENT)
-                                   ? "COVALENT"
-                                   : "VDW";
-            return fmt::format("<BondCoordinate({}, {}, {})>", b->i, b->j,
-                               type);
-          })
-      .endClass()
-
-      .beginClass<AngleCoordinate>("AngleCoordinate")
-      .addConstructor<void (*)(int, int, int)>()
-      .addPropertyReadWrite("i", &AngleCoordinate::i)
-      .addPropertyReadWrite("j", &AngleCoordinate::j)
-      .addPropertyReadWrite("k", &AngleCoordinate::k)
-      .addFunction(
-          "value",
-          +[](const AngleCoordinate *a, const lb::LuaRef &coords) {
-            return (*a)(table_to_mat3n(coords));
-          })
-      .addFunction(
-          "gradient",
-          +[](const AngleCoordinate *a, const lb::LuaRef &coords,
-              lua_State *S) {
-            return mat_to_table(S, a->gradient(table_to_mat3n(coords)));
-          })
-      .addFunction(
-          "__tostring",
-          +[](const AngleCoordinate *a) {
-            return fmt::format("<AngleCoordinate({}, {}, {})>", a->i, a->j,
-                               a->k);
-          })
-      .endClass()
-
-      .beginClass<DihedralCoordinate>("DihedralCoordinate")
-      .addConstructor<void (*)(int, int, int, int)>()
-      .addPropertyReadWrite("i", &DihedralCoordinate::i)
-      .addPropertyReadWrite("j", &DihedralCoordinate::j)
-      .addPropertyReadWrite("k", &DihedralCoordinate::k)
-      .addPropertyReadWrite("l", &DihedralCoordinate::l)
-      .addFunction(
-          "value",
-          +[](const DihedralCoordinate *d, const lb::LuaRef &coords) {
-            return (*d)(table_to_mat3n(coords));
-          })
-      .addFunction(
-          "gradient",
-          +[](const DihedralCoordinate *d, const lb::LuaRef &coords,
-              lua_State *S) {
-            return mat_to_table(S, d->gradient(table_to_mat3n(coords)));
-          })
-      .addFunction(
-          "__tostring",
-          +[](const DihedralCoordinate *d) {
-            return fmt::format("<DihedralCoordinate({}, {}, {}, {})>", d->i,
-                               d->j, d->k, d->l);
-          })
-      .endClass()
-
-      .beginClass<InternalCoordinates::Options>("InternalCoordinatesOptions")
-      .addConstructor<void (*)()>()
-      .addPropertyReadWrite("include_dihedrals",
-                            &InternalCoordinates::Options::include_dihedrals)
-      .addPropertyReadWrite("superweak_dihedrals",
-                            &InternalCoordinates::Options::superweak_dihedrals)
-      .endClass()
-
-      .beginClass<InternalCoordinates>("InternalCoordinates")
-      // Two construction shapes — molecule-only (defaults to
-      // {include_dihedrals=true, superweak_dihedrals=false}) vs
-      // options-configured.
-      .addConstructor<void (*)(const occ::core::Molecule &,
-                               const InternalCoordinates::Options &)>()
-      .addStaticFunction(
-          "new_default",
-          +[](const occ::core::Molecule &m) {
-            return new InternalCoordinates(
-                m, InternalCoordinates::Options{true, false});
-          })
-      .addFunction(
-          "bonds",
-          +[](const InternalCoordinates *ic, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &bs = ic->bonds();
-            for (size_t i = 0; i < bs.size(); ++i) {
-              t[static_cast<int>(i + 1)] = bs[i];
-            }
-            return t;
-          })
-      .addFunction(
-          "angles",
-          +[](const InternalCoordinates *ic, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &as = ic->angles();
-            for (size_t i = 0; i < as.size(); ++i) {
-              t[static_cast<int>(i + 1)] = as[i];
-            }
-            return t;
-          })
-      .addFunction(
-          "dihedrals",
-          +[](const InternalCoordinates *ic, lua_State *S) {
-            lb::LuaRef t = lb::newTable(S);
-            const auto &ds = ic->dihedrals();
-            for (size_t i = 0; i < ds.size(); ++i) {
-              t[static_cast<int>(i + 1)] = ds[i];
-            }
-            return t;
-          })
-      .addProperty(
-          "weights",
-          +[](const InternalCoordinates *ic) -> occ::Vec {
-            return ic->weights();
-          })
-      .addProperty("size", &InternalCoordinates::size)
-      .addFunction(
-          "__len",
-          +[](const InternalCoordinates *ic) {
-            return static_cast<int>(ic->size());
-          })
-      .addFunction(
-          "to_vector",
-          +[](const InternalCoordinates *ic, const lb::LuaRef &positions,
-              lua_State *S) {
-            return vec_to_table(S, ic->to_vector(table_to_mat3n(positions)));
-          })
-      .addFunction(
-          "to_vector_with_template",
-          +[](const InternalCoordinates *ic, const lb::LuaRef &positions,
-              const lb::LuaRef &template_q, lua_State *S) {
-            return vec_to_table(
-                S, ic->to_vector_with_template(table_to_mat3n(positions),
-                                               table_to_vecx(template_q)));
-          })
-      .addFunction(
-          "wilson_b_matrix",
-          +[](const InternalCoordinates *ic, const lb::LuaRef &positions,
-              lua_State *S) {
-            return mat_to_table(S,
-                                ic->wilson_b_matrix(table_to_mat3n(positions)));
-          })
-      .addFunction(
-          "__tostring",
-          +[](const InternalCoordinates *ic) {
-            return fmt::format(
-                "<InternalCoordinates: {} bonds, {} angles, {} dihedrals>",
-                ic->bonds().size(), ic->angles().size(),
-                ic->dihedrals().size());
-          })
-      .endClass()
-
-      .addFunction(
-          "transform_step_to_cartesian",
-          +[](const lb::LuaRef &internal_step,
-              const InternalCoordinates &coords, const lb::LuaRef &positions,
-              const lb::LuaRef &B_inv, lua_State *S) {
-            const int rows = B_inv.length();
-            lb::LuaRef first_row = lua_get_table(B_inv, 1);
-            const int cols = first_row.length();
-            Mat Binv(rows, cols);
-            for (int i = 0; i < rows; ++i) {
-              lb::LuaRef row = lua_get_table(B_inv, i + 1);
-              for (int j = 0; j < cols; ++j) {
-                Binv(i, j) = lua_get_num(row, j + 1);
-              }
-            }
-            return mat_to_table(S, occ::opt::transform_step_to_cartesian(
-                                       table_to_vecx(internal_step), coords,
-                                       table_to_mat3n(positions), Binv));
-          })
-
-      .beginClass<OptPoint>("OptPoint")
-      // Two construction shapes — default-empty vs full-init from
-      // tables. The full-init takes Lua tables so split into a static
-      // factory.
-      .addConstructor<void (*)()>()
-      .addStaticFunction(
-          "new_from_tables",
-          +[](const lb::LuaRef &q, double energy, const lb::LuaRef &gradient) {
-            return new OptPoint{table_to_vecx(q), energy,
-                                table_to_vecx(gradient)};
-          })
-      .addProperty(
-          "q", +[](const OptPoint *p) -> occ::Vec { return p->q; },
-          +[](OptPoint *p, const lb::LuaRef &t) { p->q = table_to_vecx(t); })
-      .addPropertyReadWrite("E", &OptPoint::E)
-      .addProperty(
-          "g", +[](const OptPoint *p) -> occ::Vec { return p->g; },
-          +[](OptPoint *p, const lb::LuaRef &t) { p->g = table_to_vecx(t); })
-      .addFunction(
-          "__tostring",
-          +[](const OptPoint *p) {
-            return fmt::format("<OptPoint: E={:.8f}, |q|={}, |g|={:.6f}>", p->E,
-                               p->q.size(),
-                               p->g.size() > 0 ? p->g.norm() : 0.0);
-          })
-      .endClass()
-
       .beginClass<ConvergenceCriteria>("ConvergenceCriteria")
       .addConstructor<void (*)()>()
       .addPropertyReadWrite("gradient_max", &ConvergenceCriteria::gradient_max)
       .addPropertyReadWrite("gradient_rms", &ConvergenceCriteria::gradient_rms)
       .addPropertyReadWrite("step_max", &ConvergenceCriteria::step_max)
       .addPropertyReadWrite("step_rms", &ConvergenceCriteria::step_rms)
+      .addPropertyReadWrite("energy_change",
+                            &ConvergenceCriteria::energy_change)
+      .addPropertyReadWrite("use_energy_criterion",
+                            &ConvergenceCriteria::use_energy_criterion)
+      .addPropertyReadWrite("max_iterations",
+                            &ConvergenceCriteria::max_iterations)
       .endClass()
 
-      // OptimizationState exposes Eigen-backed fields — wrap each via a
-      // function so we hand back a Lua table.
-      .beginClass<OptimizationState>("OptimizationState")
-      .addProperty(
-          "positions",
-          +[](const OptimizationState *o) -> occ::Mat3N {
-            return o->positions;
-          })
-      .addProperty("energy", &OptimizationState::energy)
-      .addProperty(
-          "gradient_cartesian",
-          +[](const OptimizationState *o) -> occ::Mat3N {
-            return o->gradient_cartesian;
-          })
-      .addProperty("trust_radius", &OptimizationState::trust_radius)
-      .addProperty("first_step", &OptimizationState::first_step)
-      .addProperty("step_number", &OptimizationState::step_number)
-      .addProperty("converged", &OptimizationState::converged)
+      .beginClass<OptimizerSettings>("OptimizerSettings")
+      .addConstructor<void (*)()>()
+      .addStaticFunction("saddle_point", +[](int mode) {
+        return OptimizerSettings::saddle_point(mode);
+      })
+      .addPropertyReadWrite("trust", &OptimizerSettings::trust)
+      .addPropertyReadWrite("trust_min", &OptimizerSettings::trust_min)
+      .addPropertyReadWrite("trust_max", &OptimizerSettings::trust_max)
+      .addPropertyReadWrite("project_net_force_torque",
+                            &OptimizerSettings::project_net_force_torque)
+      .addPropertyReadWrite("transition_state",
+                            &OptimizerSettings::transition_state)
+      .addPropertyReadWrite("ts_mode", &OptimizerSettings::ts_mode)
       .endClass()
 
-      .beginClass<BernyOptimizer>("BernyOptimizer")
-      // Two construction shapes — molecule-only vs criteria-configured.
+      .beginClass<GeometryOptimizer>("GeometryOptimizer")
+      // Three construction shapes: molecule only, with criteria, or with
+      // criteria and settings.
       .addConstructor<void (*)(const occ::core::Molecule &,
                                const ConvergenceCriteria &)>()
       .addStaticFunction(
           "new_default",
-          +[](const occ::core::Molecule &m) { return new BernyOptimizer(m); })
-      .addFunction("step", &BernyOptimizer::step)
-      // Accept either a Mat3N userdata (direct from
-      // compute_gradient) or a nested Lua table.
+          +[](const occ::core::Molecule &m) { return new GeometryOptimizer(m); })
+      .addStaticFunction(
+          "new_with_settings",
+          +[](const occ::core::Molecule &m, const ConvergenceCriteria &c,
+              const OptimizerSettings &s) {
+            return new GeometryOptimizer(m, c, s);
+          })
+      // a Matrix userdata or a nested table (3N x 3N, Hartree/Bohr^2)
+      .addFunction("set_initial_hessian",
+                   +[](GeometryOptimizer *o, const lb::LuaRef &h) {
+                     o->set_initial_hessian(
+                         table_to_eigen_matrix<occ::Mat>(h));
+                   })
+      .addFunction("set_followed_mode",
+                   +[](GeometryOptimizer *o, const lb::LuaRef &mode) {
+                     o->set_followed_mode(table_to_vecx(mode));
+                   })
+      .addProperty("negative_modes", &GeometryOptimizer::negative_modes)
+      .addFunction("step", &GeometryOptimizer::step)
+      // Accept either a Mat3N userdata (direct from compute_gradient) or a
+      // nested Lua table.
       .addFunction(
           "update",
-          +[](BernyOptimizer *bo, double energy, const lb::LuaRef &gradient) {
-            if (gradient.isUserdata()) {
-              const occ::Mat3N &g = gradient.unsafe_cast<const occ::Mat3N &>();
-              bo->update(energy, g);
-            } else {
-              bo->update(energy, table_to_mat3n(gradient));
-            }
+          +[](GeometryOptimizer *o, double energy, const lb::LuaRef &gradient) {
+            if (gradient.isUserdata())
+              o->update(energy, gradient.unsafe_cast<const occ::Mat3N &>());
+            else
+              o->update(energy, table_to_mat3n(gradient));
           })
       .addFunction(
           "get_next_geometry",
-          +[](const BernyOptimizer *bo) { return bo->get_next_geometry(); })
-      .addProperty("is_converged", &BernyOptimizer::is_converged)
-      .addProperty("current_step", &BernyOptimizer::current_step)
-      .addProperty("current_energy", &BernyOptimizer::current_energy)
-      .addProperty("current_trust_radius",
-                   &BernyOptimizer::current_trust_radius)
+          +[](const GeometryOptimizer *o) { return o->get_next_geometry(); })
+      .addProperty("is_converged", &GeometryOptimizer::is_converged)
+      .addProperty("current_step", &GeometryOptimizer::current_step)
+      .addProperty("current_energy", &GeometryOptimizer::current_energy)
+      .addProperty("trust_radius", &GeometryOptimizer::trust_radius)
       .addFunction(
           "__tostring",
-          +[](const BernyOptimizer *b) {
-            return fmt::format("<BernyOptimizer: step={}, converged={}>",
-                               b->current_step(), b->is_converged());
+          +[](const GeometryOptimizer *o) {
+            return fmt::format("<GeometryOptimizer: step={}, converged={}>",
+                               o->current_step(), o->is_converged());
           })
+      .endClass()
+
+      .beginClass<NebSettings>("NebSettings")
+      .addConstructor<void (*)()>()
+      .addPropertyReadWrite("images", &NebSettings::images)
+      .addPropertyReadWrite("spring", &NebSettings::spring)
+      .addPropertyReadWrite("spring_max", &NebSettings::spring_max)
+      .addPropertyReadWrite("idpp", &NebSettings::idpp)
+      .addPropertyReadWrite("climbing_image", &NebSettings::climbing_image)
+      .addPropertyReadWrite("climb_threshold", &NebSettings::climb_threshold)
+      .addPropertyReadWrite("climbing_force_max",
+                            &NebSettings::climbing_force_max)
+      .addPropertyReadWrite("force_max", &NebSettings::force_max)
+      .addPropertyReadWrite("max_step", &NebSettings::max_step)
+      .endClass()
+
+      .beginClass<NudgedElasticBand>("NudgedElasticBand")
+      .addConstructor<void (*)(const occ::core::Molecule &,
+                               const occ::core::Molecule &,
+                               const NebSettings &)>()
+      .addFunction("images", &NudgedElasticBand::images)
+      .addFunction("path", &NudgedElasticBand::path)
+      .addFunction("set_endpoint_energies",
+                   &NudgedElasticBand::set_endpoint_energies)
+      // energies: table of numbers; gradients: table of Mat3N userdata or
+      // nested tables, one per image
+      .addFunction(
+          "update",
+          +[](NudgedElasticBand *b, const lb::LuaRef &energies,
+              const lb::LuaRef &gradients) {
+            std::vector<double> e;
+            std::vector<occ::Mat3N> g;
+            for (int i = 1; i <= energies.length(); i++)
+              e.push_back(energies[i].unsafe_cast<double>());
+            for (int i = 1; i <= gradients.length(); i++) {
+              const lb::LuaRef gi = gradients[i];
+              g.push_back(gi.isUserdata()
+                              ? gi.unsafe_cast<const occ::Mat3N &>()
+                              : table_to_mat3n(gi));
+            }
+            b->update(e, g);
+          })
+      .addFunction("step", &NudgedElasticBand::step)
+      .addFunction("tangent", &NudgedElasticBand::tangent)
+      .addFunction("energies",
+                   +[](const NudgedElasticBand *b) { return b->energies(); })
+      .addProperty("is_converged", &NudgedElasticBand::is_converged)
+      .addProperty("climbing", &NudgedElasticBand::climbing)
+      .addProperty("highest_image", &NudgedElasticBand::highest_image)
+      .addProperty("max_force", &NudgedElasticBand::max_force)
+      .addProperty("current_step", &NudgedElasticBand::current_step)
       .endClass()
 
       .endNamespace()

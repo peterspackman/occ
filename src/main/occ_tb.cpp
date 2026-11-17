@@ -384,7 +384,7 @@ CLI::App *add_tb_subcommand(CLI::App &app) {
                 "symmetry-unique molecule and report lattice energy per "
                 "molecule (kJ/mol). Crystal input only.");
   tb->add_flag("--opt", cfg->optimize,
-                "Geometry optimization (Berny / internal coords). "
+                "Geometry optimization (TRIC coordinates). "
                 "Molecular only. Writes <input>_opt.xyz on convergence and "
                 "<input>_trj.xyz with the trajectory.");
   tb->add_option("--opt-max-iterations,--opt_max_iterations",

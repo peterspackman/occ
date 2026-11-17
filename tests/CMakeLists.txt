@@ -184,6 +184,12 @@ target_compile_definitions(cg_tests PRIVATE
     OCC_GFN2_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
 occ_discover_tests(cg_tests)
 
+add_executable(driver_opt_tests "${CMAKE_CURRENT_SOURCE_DIR}/driver_opt_tests.cpp")
+target_link_libraries(driver_opt_tests PRIVATE occ_driver Catch2::Catch2WithMain Threads::Threads)
+target_compile_definitions(driver_opt_tests PRIVATE
+    OCC_GFN2_DATA_DIR="${CMAKE_SOURCE_DIR}/share")
+occ_discover_tests(driver_opt_tests)
+
 add_executable(dma_tests "${CMAKE_CURRENT_SOURCE_DIR}/dma_tests.cpp")
 target_link_libraries(dma_tests PRIVATE occ_dma occ_io occ_driver occ_mults Catch2::Catch2WithMain Threads::Threads)
 target_compile_definitions(dma_tests PRIVATE OCC_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
@@ -198,7 +204,7 @@ add_executable(mesh_quality_tests "${CMAKE_CURRENT_SOURCE_DIR}/mesh_quality_test
 target_link_libraries(mesh_quality_tests PRIVATE occ_isosurface Catch2::Catch2WithMain Threads::Threads)
 occ_discover_tests(mesh_quality_tests)
 
-add_executable(opt_tests "${CMAKE_CURRENT_SOURCE_DIR}/opt_tests.cpp")
+add_executable(opt_tests "${CMAKE_CURRENT_SOURCE_DIR}/opt_tests.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/opt_coordinates_tests.cpp")
 target_link_libraries(opt_tests PRIVATE occ_opt nlohmann_json::nlohmann_json Catch2::Catch2WithMain Threads::Threads)
 occ_discover_tests(opt_tests)
 
@@ -294,6 +300,7 @@ if(WITH_LUA_BINDINGS)
             ENVIRONMENT "OCC_DATA_PATH=${CMAKE_SOURCE_DIR}/share;OCC_TEST_THREADS=${OCC_TEST_THREADS}")
     endfunction()
 
+    occ_lua_test(lua_opt opt_tests.lua)
     occ_lua_test(lua_rinse rinse_tests.lua
         "${CMAKE_CURRENT_SOURCE_DIR}/data/rinse"
         "${CMAKE_CURRENT_SOURCE_DIR}/rinse_reference_data.h")

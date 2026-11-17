@@ -8,7 +8,8 @@
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/vibrational_analysis.h>
 #include <occ/driver/method_parser.h>
-#include <occ/opt/berny_optimizer.h>
+#include <occ/opt/geometry_optimizer.h>
+#include <occ/opt/lbfgs_optimizer.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
 #include <occ/qm/scf.h>
@@ -17,6 +18,7 @@
 #include <memory>
 #include <optional>
 #include <tuple>
+#include <variant>
 #include <occ/xtb/smd_xtb.h>
 #include <occ/xtb/xtb_calculator.h>
 
@@ -240,13 +242,13 @@ scf_and_gradient(P &scf_proc, T &proc, const Molecule &m,
     }
   }
 
-  // Hartree/Bohr: the optimizer's internal coordinates are in Bohr (its
-  // Cartesian steps are converted back to Angstrom), as in pyberny.
+  // Hartree/Bohr, as the optimizers expect
   Mat3N gradient = eval(wfn.mo);
   return {wfn, gradient};
 }
 
-void configure(occ::xtb::XtbCalculator &calc, const OccInput &config) {
+void configure_xtb_calculator(occ::xtb::XtbCalculator &calc,
+                              const OccInput &config) {
   calc.set_charge(config.electronic.charge);
   calc.set_num_unpaired_electrons(config.electronic.multiplicity - 1);
   calc.set_spin_polarization(config.electronic.spin_polarization);
@@ -260,7 +262,7 @@ void configure(occ::xtb::XtbCalculator &calc, const OccInput &config) {
 // Single GFN2-xTB optimization step. Mirrors the run_method_for_optimization
 // shape: returns (Wavefunction, gradient in Hartree/Bohr). The
 // Wavefunction is a thin wrapper built from XtbCalculator's converged
-// state — enough to feed back into BernyOptimizer and to produce the same
+// state — enough to feed back into the optimizer and to produce the same
 // post-step printout as the SCF case.
 //
 // `cached` (when non-null) holds an XtbCalculator that's reused across opt
@@ -279,7 +281,7 @@ run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
   if (cached) {
     if (!cached->has_value()) {
       cached->emplace(m);
-      configure(cached->value(), config);
+      configure_xtb_calculator(cached->value(), config);
     } else {
       cached->value().update_structure(m.positions() *
                                         occ::units::ANGSTROM_TO_BOHR);
@@ -287,7 +289,7 @@ run_gfn2_for_optimization(const Molecule &m, const OccInput &config,
     calc_ptr = &cached->value();
   } else {
     local.emplace(m);
-    configure(*local, config);
+    configure_xtb_calculator(*local, config);
     calc_ptr = &local.value();
   }
   auto &calc = *calc_ptr;
@@ -394,6 +396,13 @@ void log_step_results(fmt::ostream &log, int step, const Molecule &m,
   log.flush();
 }
 
+std::pair<Wavefunction, Mat3N>
+energy_and_gradient_at(const OccInput &config, const Molecule &m,
+                       const Wavefunction *previous,
+                       std::optional<occ::xtb::XtbCalculator> *gfn2) {
+  return optimization_step_driver(config, m, previous, 0.0, gfn2);
+}
+
 std::pair<Wavefunction, Mat3N> energy_and_gradient(const OccInput &config) {
   Molecule m = config.geometry.molecule();
   // COSX on the gradient grids from the start (no GRIDX1 stage) and tight
@@ -411,7 +420,8 @@ std::pair<Wavefunction, Mat3N> energy_and_gradient(const OccInput &config) {
   return {std::move(wfn), std::move(g)};
 }
 
-Wavefunction geometry_optimization(const OccInput &config) {
+Wavefunction geometry_optimization(const OccInput &config,
+                                   const Vec &initial_mode) {
 
   Wavefunction wfn;
   Mat3N gradient;
@@ -440,9 +450,54 @@ Wavefunction geometry_optimization(const OccInput &config) {
   criteria.use_energy_criterion = config.optimization.use_energy_criterion;
   criteria.max_iterations = config.optimization.max_iterations;
   
-  // Initialize Berny optimizer
-  occ::opt::BernyOptimizer optimizer(m, criteria);
-  occ::log::info("Geometry optimization convergence criteria (internal coordinates):");
+  // The trust-region optimizer (TRIC or Cartesian) or L-BFGS
+  using Optimizers =
+      std::variant<occ::opt::GeometryOptimizer, occ::opt::LbfgsOptimizer>;
+  const auto &which = config.optimization.optimizer;
+  const bool use_lbfgs = which == "lbfgs";
+  Optimizers optimizer_variant = [&]() -> Optimizers {
+    if (which == "tric" || which == "cartesian") {
+      auto settings =
+          config.optimization.transition_state
+              ? occ::opt::OptimizerSettings::saddle_point(
+                    config.optimization.ts_mode)
+              : occ::opt::OptimizerSettings{};
+      if (which == "cartesian")
+        settings.coordinates =
+            occ::opt::OptimizerSettings::Coordinates::Cartesian;
+      // external charges exert a real net force and torque
+      settings.project_net_force_torque =
+          config.geometry.point_charges.empty();
+      return occ::opt::GeometryOptimizer(m, criteria, settings);
+    }
+    if (use_lbfgs) {
+      if (config.optimization.transition_state)
+        throw std::runtime_error("L-BFGS cannot search for a saddle point; "
+                                 "use --optimizer tric or cartesian");
+      occ::opt::LbfgsSettings settings;
+      settings.memory = config.optimization.lbfgs_memory;
+      settings.max_step = config.optimization.lbfgs_max_step;
+      settings.precondition = config.optimization.lbfgs_precondition;
+      return occ::opt::LbfgsOptimizer(m, criteria, settings);
+    }
+    throw std::runtime_error("Unknown optimizer: " + which);
+  }();
+  struct {
+    Optimizers &v;
+    void update(double e, const Mat3N &g) {
+      std::visit([&](auto &o) { o.update(e, g); }, v);
+    }
+    bool step() {
+      return std::visit([](auto &o) { return o.step(); }, v);
+    }
+    Molecule get_next_geometry() const {
+      return std::visit([](auto &o) { return o.get_next_geometry(); }, v);
+    }
+    void shift_energy_reference(double shift) {
+      std::visit([&](auto &o) { o.shift_energy_reference(shift); }, v);
+    }
+  } optimizer{optimizer_variant};
+  occ::log::info("Geometry optimization convergence criteria:");
   occ::log::info("  Max gradient:    {:.2e}", criteria.gradient_max);
   occ::log::info("  RMS gradient:    {:.2e}", criteria.gradient_rms);
   occ::log::info("  Max step:        {:.2e}", criteria.step_max);
@@ -456,8 +511,8 @@ Wavefunction geometry_optimization(const OccInput &config) {
   std::optional<fmt::ostream> step_log;
   if (config.optimization.write_step_log) {
     step_log.emplace(fmt::output_file("occ_step_log.txt"));
-    step_log->print("OCC BernyOptimizer Step-by-Step Log\n");
-    step_log->print("===================================\n\n");
+    step_log->print("OCC Geometry Optimization Step-by-Step Log\n");
+    step_log->print("==========================================\n\n");
   }
   
   // GFN2 stateful cache: reused across opt steps so the basis / engine /
@@ -529,6 +584,17 @@ Wavefunction geometry_optimization(const OccInput &config) {
     std::string wfn_filename = "opt_step_000.owf.json";
     wfn.save(wfn_filename);
     occ::log::debug("Wrote initial wavefunction to {}", wfn_filename);
+  }
+
+  // A saddle-point search starts from the computed Hessian
+  if (config.optimization.transition_state) {
+    occ::log::info("Computing the initial Hessian for the saddle-point search");
+    auto vib_config = vibrational_config(config);
+    vib_config.save_hessian = false;
+    auto &opt = std::get<occ::opt::GeometryOptimizer>(optimizer_variant);
+    opt.set_initial_hessian(compute_hessian(config, wfn, vib_config));
+    if (initial_mode.size() > 0)
+      opt.set_followed_mode(initial_mode);
   }
 
   // Update optimizer with initial data
@@ -644,11 +710,27 @@ Wavefunction geometry_optimization(const OccInput &config) {
   return wfn;
 }
 
+// A first-order saddle point has exactly one imaginary frequency.
+void report_saddle_point(const core::VibrationalModes &modes) {
+  const Vec f = modes.get_all_frequencies();
+  std::vector<double> imaginary;
+  for (int i = 0; i < f.size(); i++)
+    if (f(i) < -50.0) // cm-1; smaller ones are rigid motions or noise
+      imaginary.push_back(f(i));
+  if (imaginary.size() == 1)
+    occ::log::info("First-order saddle point: one imaginary mode, {:.1f}i "
+                   "cm-1",
+                   -imaginary.front());
+  else
+    occ::log::warn("Not a first-order saddle point: {} imaginary modes",
+                   imaginary.size());
+}
+
 std::pair<qm::Wavefunction, core::VibrationalModes> 
-geometry_optimization_with_frequencies(const io::OccInput &config, bool run_frequencies) {
-  
-  // Perform geometry optimization
-  auto optimized_wfn = geometry_optimization(config);
+geometry_optimization_with_frequencies(const io::OccInput &config,
+                                       bool run_frequencies,
+                                       const Vec &initial_mode) {
+  auto optimized_wfn = geometry_optimization(config, initial_mode);
   
   core::VibrationalModes vib_modes;
   
@@ -657,39 +739,11 @@ geometry_optimization_with_frequencies(const io::OccInput &config, bool run_freq
     occ::log::info("Geometry optimization completed successfully");
     occ::log::info("Computing vibrational frequencies at optimized geometry...");
     
-    // Configure vibrational analysis
-    VibrationalAnalysisConfig vib_config;
-    vib_config.compute_frequencies = true;
-    // The solvent cavity's Lebedev points keep their orientation in space as
-    // the molecule turns, so the solvated energy is not invariant to rigid
-    // rotations: project them out rather than report them as low modes.
-    vib_config.project_tr_rot = config.optimization.project_tr_rot ||
-                                !config.solvent.solvent_name.empty();
-    vib_config.step_size = 0.005;       // ORCA-like default
-    {
-      using HM = VibrationalAnalysisConfig::HessianMethod;
-      const auto &hm = config.optimization.hessian_method;
-      vib_config.hessian_method = hm == "analytic" ? HM::Analytic
-                                  : hm == "fd"     ? HM::FiniteDifferences
-                                                   : HM::Auto;
-    }
-    vib_config.use_acoustic_sum_rule = true;  // Efficient computation
-    vib_config.save_hessian = true;     // Save for later analysis
-    vib_config.save_results = true;     // Save frequency analysis
-    
-    // Set filenames based on input basename
-    if (!config.filename.empty()) {
-      std::filesystem::path input_path(config.filename);
-      std::string basename = input_path.stem().string();
-      vib_config.hessian_filename = basename + "_hess.json";
-      vib_config.results_filename = basename + "_freq.json";
-    } else {
-      vib_config.hessian_filename = "optimized_hessian.json";
-      vib_config.results_filename = "optimized_frequencies.json";
-    }
-    
+    const VibrationalAnalysisConfig vib_config = vibrational_config(config);
     try {
       vib_modes = vibrational_analysis(config, optimized_wfn, vib_config);
+      if (config.optimization.transition_state)
+        report_saddle_point(vib_modes);
     } catch (const std::exception &e) {
       occ::log::error("Failed to compute vibrational frequencies: {}", e.what());
       occ::log::warn("Continuing with optimization result only");

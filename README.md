@@ -184,7 +184,7 @@ Optional dependencies:
 
 Most dependencies are automatically handled through [CPM](https://github.com/cpm-cmake/CPM.cmake). System-installed versions of Eigen3 and libxc can be used if available.
 
-OCC's geometry optimization implementation for molecules made significant use of the code and documentation from [pyberny](https://github.com/jhrmnn/pyberny) - the files in the `opt` submodule are therefore subject to the MPL license.
+OCC's molecular geometry optimizer follows the translation-rotation internal coordinates (TRIC) and step control of [geomeTRIC](https://github.com/leeping/geomeTRIC) (L.-P. Wang and C. Song, *J. Chem. Phys.* **144**, 214108 (2016)), and starts from Lindh's model Hessian (R. Lindh *et al.*, *Chem. Phys. Lett.* **241**, 423 (1995)).
 
 ### Build Instructions
 
