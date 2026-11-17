@@ -4,7 +4,6 @@ var NAVTREEINDEX0 =
 "adaptive__grid_8h.html":[7,0,1,0,13,0],
 "add__qlm_8h.html":[7,0,1,0,6,0],
 "adiis_8h.html":[7,0,1,0,19,3],
-"angle__coordinate_8h.html":[7,0,1,0,18,0],
 "anisotropic_8h.html":[7,0,1,0,25,0],
 "annotated.html":[6,0],
 "asymmetric__unit_8h.html":[7,0,1,0,2,0],
@@ -13,9 +12,7 @@ var NAVTREEINDEX0 =
 "basis_8h.html":[7,0,1,0,25,1],
 "basis__g94_8h.html":[7,0,1,0,13,1],
 "becke__hole_8h.html":[7,0,1,0,24,0],
-"berny__optimizer_8h.html":[7,0,1,0,18,1],
 "binomial_8h.html":[7,0,1,0,6,1],
-"bond__coordinate_8h.html":[7,0,1,0,18,2],
 "bondgraph_8h.html":[7,0,1,0,1,2],
 "boys_8h.html":[7,0,1,0,12,0],
 "boys_8h.html#a3c4cd504b3f0f548533a1109f7a8f84c":[7,0,1,0,12,0,5],
@@ -249,5 +246,8 @@ var NAVTREEINDEX0 =
 "classocc_1_1core_1_1ElasticTensor.html#a1322d2d198365fe19faa793b8103c7b4":[6,0,2,1,11,12],
 "classocc_1_1core_1_1ElasticTensor.html#a1395d603f899107b6c83c5056d1e1b02":[4,0,2,1,13,13],
 "classocc_1_1core_1_1ElasticTensor.html#a1395d603f899107b6c83c5056d1e1b02":[6,0,2,1,11,13],
-"classocc_1_1core_1_1ElasticTensor.html#a37c229788c90e7df349246c1f0ab11c5":[4,0,2,1,13,19]
+"classocc_1_1core_1_1ElasticTensor.html#a37c229788c90e7df349246c1f0ab11c5":[4,0,2,1,13,19],
+"classocc_1_1core_1_1ElasticTensor.html#a37c229788c90e7df349246c1f0ab11c5":[6,0,2,1,11,19],
+"classocc_1_1core_1_1ElasticTensor.html#a4d9757beebf8d46bf69b6082f5f5e052":[4,0,2,1,13,18],
+"classocc_1_1core_1_1ElasticTensor.html#a4d9757beebf8d46bf69b6082f5f5e052":[6,0,2,1,11,18]
 };

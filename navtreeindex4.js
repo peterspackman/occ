@@ -1,8 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"classocc_1_1crystal_1_1SpaceGroup.html#acad6d1a4b675bc7171705288f4b0130b":[6,0,2,4,20,13],
-"classocc_1_1crystal_1_1SpaceGroup.html#ad743296aaa4bf5e5ccdf0bedb53e73a3":[4,0,2,9,22,12],
-"classocc_1_1crystal_1_1SpaceGroup.html#ad743296aaa4bf5e5ccdf0bedb53e73a3":[6,0,2,4,20,12],
 "classocc_1_1crystal_1_1SpaceGroup.html#aed742c468f30dfe809e215fab8780a28":[4,0,2,9,22,15],
 "classocc_1_1crystal_1_1SpaceGroup.html#aed742c468f30dfe809e215fab8780a28":[6,0,2,4,20,15],
 "classocc_1_1crystal_1_1SpaceGroup.html#afac83c7cf8a716b16db1b23293f3ca55":[4,0,2,9,22,6],
@@ -249,5 +246,8 @@ var NAVTREEINDEX4 =
 "classocc_1_1descriptors_1_1SortedKDistances.html#ac5b71a0c9a64bc701c78562de1f4ae7c":[6,0,2,5,7,10],
 "classocc_1_1descriptors_1_1SortedKDistances.html#adb50af26db8797f5739f047ee0c14574":[4,0,2,10,7,1],
 "classocc_1_1descriptors_1_1SortedKDistances.html#adb50af26db8797f5739f047ee0c14574":[6,0,2,5,7,1],
-"classocc_1_1descriptors_1_1SortedKDistances.html#ae042e7130b0e2460b445aefa4b27d16d":[4,0,2,10,7,15]
+"classocc_1_1descriptors_1_1SortedKDistances.html#ae042e7130b0e2460b445aefa4b27d16d":[4,0,2,10,7,15],
+"classocc_1_1descriptors_1_1SortedKDistances.html#ae042e7130b0e2460b445aefa4b27d16d":[6,0,2,5,7,15],
+"classocc_1_1descriptors_1_1SortedKDistances.html#af8165f95683fc1a823de8fb683b92898":[4,0,2,10,7,13],
+"classocc_1_1descriptors_1_1SortedKDistances.html#af8165f95683fc1a823de8fb683b92898":[6,0,2,5,7,13]
 };

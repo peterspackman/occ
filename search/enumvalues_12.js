@@ -8,5 +8,6 @@ var searchData=
   ['ri_5',['RI',['../classocc_1_1qm_1_1MP2.html#acc20390ad2998758cd83d9dea1a15707a451120ae8bb075e5d8ff6e23017d639d',1,'occ::qm::MP2']]],
   ['right_6',['right',['../structocc_1_1io_1_1ColumnConfiguration.html#a4a716f316700673552677ffd2c5e1b5fa7c4f29407893c334a6cb7a87bf045c0d',1,'occ::io::ColumnConfiguration']]],
   ['rinse_7',['Rinse',['../structocc_1_1main_1_1DescribeConfig.html#ac91ac77089e90af7c50e74ac1a56bbfaa3d6f9d1746c91180295273fcb4d79db7',1,'occ::main::DescribeConfig']]],
-  ['rinv_8',['rinv',['../namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfac2df8b4c86aa4cd120ee084969ffd4ca',1,'occ::qm::cint']]]
+  ['rinv_8',['rinv',['../namespaceocc_1_1qm_1_1cint.html#a59f3bdb46313b38dcfcfe45c8c45d1bfac2df8b4c86aa4cd120ee084969ffd4ca',1,'occ::qm::cint']]],
+  ['rotation_9',['Rotation',['../structocc_1_1opt_1_1Primitive.html#af24fa2ac4bab96429d2f7b728f412c1eaf1a42bd417390fc63b030a519624607a',1,'occ::opt::Primitive']]]
 ];

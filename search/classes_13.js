@@ -11,10 +11,11 @@ var searchData=
   ['torquecalculation_8',['TorqueCalculation',['../classocc_1_1mults_1_1TorqueCalculation.html',1,'occ::mults']]],
   ['torqueresult_9',['TorqueResult',['../structocc_1_1mults_1_1TorqueResult.html',1,'occ::mults']]],
   ['transformresult_10',['TransformResult',['../structocc_1_1interaction_1_1transform_1_1TransformResult.html',1,'occ::interaction::transform']]],
-  ['trustregion_11',['TrustRegion',['../classocc_1_1mults_1_1TrustRegion.html',1,'occ::mults']]],
-  ['trustregionresult_12',['TrustRegionResult',['../structocc_1_1mults_1_1TrustRegionResult.html',1,'occ::mults']]],
-  ['trustregionsettings_13',['TrustRegionSettings',['../structocc_1_1mults_1_1TrustRegionSettings.html',1,'occ::mults']]],
-  ['tuv_14',['TUV',['../structocc_1_1mults_1_1kernel__detail_1_1TUV.html',1,'occ::mults::kernel_detail']]],
-  ['tuvtable_15',['TUVTable',['../structocc_1_1mults_1_1kernel__detail_1_1TUVTable.html',1,'occ::mults::kernel_detail']]],
-  ['twomoleculeprojection_16',['TwoMoleculeProjection',['../classocc_1_1mults_1_1TwoMoleculeProjection.html',1,'occ::mults']]]
+  ['triccoordinates_11',['TRICCoordinates',['../classocc_1_1opt_1_1TRICCoordinates.html',1,'occ::opt']]],
+  ['trustregion_12',['TrustRegion',['../classocc_1_1mults_1_1TrustRegion.html',1,'occ::mults']]],
+  ['trustregionresult_13',['TrustRegionResult',['../structocc_1_1mults_1_1TrustRegionResult.html',1,'occ::mults']]],
+  ['trustregionsettings_14',['TrustRegionSettings',['../structocc_1_1mults_1_1TrustRegionSettings.html',1,'occ::mults']]],
+  ['tuv_15',['TUV',['../structocc_1_1mults_1_1kernel__detail_1_1TUV.html',1,'occ::mults::kernel_detail']]],
+  ['tuvtable_16',['TUVTable',['../structocc_1_1mults_1_1kernel__detail_1_1TUVTable.html',1,'occ::mults::kernel_detail']]],
+  ['twomoleculeprojection_17',['TwoMoleculeProjection',['../classocc_1_1mults_1_1TwoMoleculeProjection.html',1,'occ::mults']]]
 ];

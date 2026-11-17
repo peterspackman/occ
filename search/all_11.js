@@ -1,7 +1,7 @@
 var searchData=
 [
   ['q_0',['Q',['../structocc_1_1core_1_1KalmanEstimator.html#a90355d10c072bd3ee9127218dbacce30',1,'occ::core::KalmanEstimator']]],
-  ['q_1',['q',['../structocc_1_1dma_1_1Mult.html#a5acbfbae9387c9756ee7b8f23ed88550',1,'occ::dma::Mult::q'],['../structocc_1_1opt_1_1OptPoint.html#a912811ab2a63f71b8ead25c0cf897840',1,'occ::opt::OptPoint::q'],['../structocc_1_1qm_1_1cc_1_1MPnAmplitudes.html#a000797a5a7a4bd27bd0eaad63d12acc7',1,'occ::qm::cc::MPnAmplitudes::q'],['../structocc_1_1qm_1_1PackedDFStore_1_1Block.html#a8bb6abf4a1c16d69ede025b0ed00c085',1,'occ::qm::PackedDFStore::Block::q']]],
+  ['q_1',['q',['../structocc_1_1dma_1_1Mult.html#a5acbfbae9387c9756ee7b8f23ed88550',1,'occ::dma::Mult::q'],['../structocc_1_1qm_1_1cc_1_1MPnAmplitudes.html#a000797a5a7a4bd27bd0eaad63d12acc7',1,'occ::qm::cc::MPnAmplitudes::q'],['../structocc_1_1qm_1_1PackedDFStore_1_1Block.html#a8bb6abf4a1c16d69ede025b0ed00c085',1,'occ::qm::PackedDFStore::Block::q']]],
   ['q00_2',['Q00',['../structocc_1_1dma_1_1Mult.html#a7b1ca03f1330e831cc1a9f879d3faa4b',1,'occ::dma::Mult::Q00()'],['../structocc_1_1dma_1_1Mult.html#a4c4c4e4bd6a81b84cfefe9af5a347e40',1,'occ::dma::Mult::Q00() const']]],
   ['q10_3',['Q10',['../structocc_1_1dma_1_1Mult.html#a3de8642c9a4b82969a979312ef318237',1,'occ::dma::Mult::Q10()'],['../structocc_1_1dma_1_1Mult.html#a560b2c5416884b7ebbb5138cac2f00cb',1,'occ::dma::Mult::Q10() const']]],
   ['q11c_4',['Q11c',['../structocc_1_1dma_1_1Mult.html#aade8c1263a2162bbfb7b27e64c9abfb0',1,'occ::dma::Mult::Q11c()'],['../structocc_1_1dma_1_1Mult.html#aa14e13fd56c32f4a25abf90995f888b1',1,'occ::dma::Mult::Q11c() const']]],

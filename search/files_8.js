@@ -11,8 +11,7 @@ var searchData=
   ['interaction_5fmapper_2eh_8',['interaction_mapper.h',['../interaction__mapper_8h.html',1,'']]],
   ['interaction_5ftensor_2eh_9',['interaction_tensor.h',['../interaction__tensor_8h.html',1,'']]],
   ['interaction_5ftensor_5fsimd_2eh_10',['interaction_tensor_simd.h',['../interaction__tensor__simd_8h.html',1,'']]],
-  ['internal_5fcoordinates_2eh_11',['internal_coordinates.h',['../internal__coordinates_8h.html',1,'']]],
-  ['interpolator_2eh_12',['interpolator.h',['../interpolator_8h.html',1,'']]],
-  ['isosurface_2eh_13',['isosurface.h',['../isosurface_8h.html',1,'']]],
-  ['isosurface_5fjson_2eh_14',['isosurface_json.h',['../isosurface__json_8h.html',1,'']]]
+  ['interpolator_2eh_11',['interpolator.h',['../interpolator_8h.html',1,'']]],
+  ['isosurface_2eh_12',['isosurface.h',['../isosurface_8h.html',1,'']]],
+  ['isosurface_5fjson_2eh_13',['isosurface_json.h',['../isosurface__json_8h.html',1,'']]]
 ];

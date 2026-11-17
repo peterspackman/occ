@@ -1442,7 +1442,7 @@
 <g id="Node000070" class="node">
 <title>Node70</title>
 <g id="a_Node000070"><a xlink:href="optimization__state_8h.html" target="_top" xlink:title=" ">
-<polygon fill="#fff0f0" stroke="red" points="802.55,-330 686.8,-330 686.8,-296.5 802.55,-296.5 802.55,-330"/>
+<polygon fill="white" stroke="#666666" points="802.55,-330 686.8,-330 686.8,-296.5 802.55,-296.5 802.55,-330"/>
 <text xml:space="preserve" text-anchor="start" x="694.8" y="-316.5" font-family="Helvetica,sans-Serif" font-size="10.00">occ/opt/optimization</text>
 <text xml:space="preserve" text-anchor="middle" x="744.67" y="-303.75" font-family="Helvetica,sans-Serif" font-size="10.00">_state.h</text>
 </a>

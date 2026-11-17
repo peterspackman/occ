@@ -100,24 +100,21 @@ $(function(){initNavTree('optimization__state_8h.html','',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;<a class="el" href="linear__algebra_8h.html">occ/core/linear_algebra.h</a>&gt;</code><br />
-<code>#include &lt;cmath&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for optimization_state.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" loading="lazy" frameborder="0" src="optimization__state_8h__incl.svg" width="302" height="224"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" loading="lazy" frameborder="0" src="optimization__state_8h__incl.svg" width="251" height="224"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" loading="lazy" frameborder="0" src="optimization__state_8h__dep__incl.svg" width="2195" height="950"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" loading="lazy" frameborder="0" src="optimization__state_8h__dep__incl.svg" width="2251" height="950"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:occ_3A_3Aopt_3A_3AConvergenceCriteria" id="r_occ_3A_3Aopt_3A_3AConvergenceCriteria"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1opt_1_1ConvergenceCriteria.html">occ::opt::ConvergenceCriteria</a></td></tr>
-<tr class="memitem:occ_3A_3Aopt_3A_3AOptPoint" id="r_occ_3A_3Aopt_3A_3AOptPoint"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1opt_1_1OptPoint.html">occ::opt::OptPoint</a></td></tr>
-<tr class="memitem:occ_3A_3Aopt_3A_3AOptimizationState" id="r_occ_3A_3Aopt_3A_3AOptimizationState"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1opt_1_1OptimizationState.html">occ::opt::OptimizationState</a></td></tr>
-<tr class="memitem:occ_3A_3Aopt_3A_3AConvergenceInfo" id="r_occ_3A_3Aopt_3A_3AConvergenceInfo"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structocc_1_1opt_1_1ConvergenceInfo.html">occ::opt::ConvergenceInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Thresholds on per-atom quantities: the norm of each atom's gradient and of its displacement in the proposed step.  <a href="structocc_1_1opt_1_1ConvergenceCriteria.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
@@ -126,7 +123,8 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab8bb92bce35fb469d1c935c78b96d128" id="r_ab8bb92bce35fb469d1c935c78b96d128"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structocc_1_1opt_1_1ConvergenceInfo.html">ConvergenceInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1opt.html#ab8bb92bce35fb469d1c935c78b96d128">occ::opt::check_convergence</a> (const <a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> &amp;gradient, const <a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> &amp;step, double energy_change, const <a class="el" href="structocc_1_1opt_1_1ConvergenceCriteria.html">ConvergenceCriteria</a> &amp;criteria)</td></tr>
+<tr class="memitem:a2c46994168decfd4186a0cb6c4956300" id="r_a2c46994168decfd4186a0cb6c4956300"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceocc_1_1opt.html#a2c46994168decfd4186a0cb6c4956300">occ::opt::check_convergence</a> (const <a class="el" href="namespaceocc.html#ab6d17e19d8356947a061a4923326ab1a">Mat3N</a> &amp;gradient, const <a class="el" href="namespaceocc.html#afb4f065d0c87d84c47ba4a25f8a74e59">Vec</a> &amp;displacements, double energy_change, bool check_energy, const <a class="el" href="structocc_1_1opt_1_1ConvergenceCriteria.html">ConvergenceCriteria</a> &amp;criteria, int step)</td></tr>
+<tr class="memdesc:a2c46994168decfd4186a0cb6c4956300"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks and logs the criteria for the gradient (3 x N, Hartree/Bohr), the per-atom displacements of the proposed step (Bohr) and the energy change since the previous point (ignored when check_energy is false).  <br /></td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

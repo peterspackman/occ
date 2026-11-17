@@ -25,7 +25,7 @@ var searchData=
   ['optimize_22',['optimize',['../structocc_1_1main_1_1TbConfig.html#a2d405eff0eede0a1236276d6dc6e5630',1,'occ::main::TbConfig']]],
   ['optimize_5fcell_23',['optimize_cell',['../structocc_1_1main_1_1RoptSettings.html#a679d92c70c345fbe82fcf3e31f18a21a',1,'occ::main::RoptSettings::optimize_cell'],['../structocc_1_1mults_1_1CrystalOptimizerSettings.html#af6312a361675e2363a29c40bd085d8b0',1,'occ::mults::CrystalOptimizerSettings::optimize_cell']]],
   ['optimized_5fcrystal_24',['optimized_crystal',['../structocc_1_1mults_1_1CrystalOptimizerResult.html#a88118a8a09ca2be9318ce46340b6204d',1,'occ::mults::CrystalOptimizerResult']]],
-  ['optimizer_25',['optimizer',['../structocc_1_1main_1_1RoptSettings.html#a1b68c96a9c77539357d4d515ac0a3dfa',1,'occ::main::RoptSettings']]],
+  ['optimizer_25',['optimizer',['../structocc_1_1io_1_1OptimizationInput.html#a3b98d1bab9101e319013f80a1102fcad',1,'occ::io::OptimizationInput::optimizer'],['../structocc_1_1main_1_1RoptSettings.html#a1b68c96a9c77539357d4d515ac0a3dfa',1,'occ::main::RoptSettings::optimizer']]],
   ['opts_26',['opts',['../structocc_1_1driver_1_1CGPreparation.html#aea72cf4647e2b5d618ac20cd28e5fc73',1,'occ::driver::CGPreparation']]],
   ['orbital_5fcoefficients_27',['orbital_coefficients',['../structocc_1_1xtb_1_1XtbResult.html#a6d417bfa9ba6d3a8299eec87d292ded2',1,'occ::xtb::XtbResult']]],
   ['orbital_5fcoefficients_5fbeta_28',['orbital_coefficients_beta',['../structocc_1_1xtb_1_1XtbResult.html#acea4ed450618b0ddb3ec15a8378d2216',1,'occ::xtb::XtbResult']]],

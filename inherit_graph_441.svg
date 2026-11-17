@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1EwaldLatticeCache_1_1GVector.html" target="_top" xlink:title=" ">
+<g id="a_Node000000"><a xlink:href="structocc_1_1mults_1_1EwaldLatticeCache.html" target="_top" xlink:title="Pre&#45;computed reciprocal lattice vectors and coefficients for Ewald.">
 <polygon fill="white" stroke="#666666" points="134.5,-33.5 0,-33.5 0,0 134.5,0 134.5,-33.5"/>
 <text xml:space="preserve" text-anchor="start" x="8" y="-20" font-family="Helvetica,sans-Serif" font-size="10.00">occ::mults::EwaldLattice</text>
-<text xml:space="preserve" text-anchor="middle" x="67.25" y="-7.25" font-family="Helvetica,sans-Serif" font-size="10.00">Cache::GVector</text>
+<text xml:space="preserve" text-anchor="middle" x="67.25" y="-7.25" font-family="Helvetica,sans-Serif" font-size="10.00">Cache</text>
 </a>
 </g>
 </g>

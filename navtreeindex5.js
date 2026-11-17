@@ -1,8 +1,5 @@
 var NAVTREEINDEX5 =
 {
-"classocc_1_1descriptors_1_1SortedKDistances.html#ae042e7130b0e2460b445aefa4b27d16d":[6,0,2,5,7,15],
-"classocc_1_1descriptors_1_1SortedKDistances.html#af8165f95683fc1a823de8fb683b92898":[4,0,2,10,7,13],
-"classocc_1_1descriptors_1_1SortedKDistances.html#af8165f95683fc1a823de8fb683b92898":[6,0,2,5,7,13],
 "classocc_1_1descriptors_1_1Steinhardt.html":[4,0,2,10,8],
 "classocc_1_1descriptors_1_1Steinhardt.html":[6,0,2,5,8],
 "classocc_1_1descriptors_1_1Steinhardt.html#a0476106542478b085f43ecdd17bc9ec9":[4,0,2,10,8,4],
@@ -249,5 +246,8 @@ var NAVTREEINDEX5 =
 "classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadf":[6,0,2,6,6,3],
 "classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa03cb5b2621bd370f44ffd8953877cc62":[4,0,2,11,7,3,4],
 "classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa03cb5b2621bd370f44ffd8953877cc62":[6,0,2,6,6,3,4],
-"classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa1ed76f45b40031b7b9433783a84611c8":[4,0,2,11,7,3,3]
+"classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa1ed76f45b40031b7b9433783a84611c8":[4,0,2,11,7,3,3],
+"classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa1ed76f45b40031b7b9433783a84611c8":[6,0,2,6,6,3,3],
+"classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa39eaecd91101b7fc8fa2cc0f9df38e74":[4,0,2,11,7,3,0],
+"classocc_1_1dft_1_1DensityFunctional.html#a7b0887ed11d5b41d5cdd7c0e2d55aadfa39eaecd91101b7fc8fa2cc0f9df38e74":[6,0,2,6,6,3,0]
 };

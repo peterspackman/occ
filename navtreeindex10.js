@@ -1,8 +1,5 @@
 var NAVTREEINDEX10 =
 {
-"classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba3b7b9a7c9a788846b90d40b78577afaf":[6,0,2,6,1,0,4,326],
-"classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba3bc60be5d254b4dbfe311bc2a97cac06":[4,0,2,11,1,0,4,129],
-"classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba3bc60be5d254b4dbfe311bc2a97cac06":[6,0,2,6,1,0,4,129],
 "classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba3c36f36c28f99fe2a95f54d252dd9417":[4,0,2,11,1,0,4,354],
 "classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba3c36f36c28f99fe2a95f54d252dd9417":[6,0,2,6,1,0,4,354],
 "classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba3cea17f5b0c70fa2884da73a5922bcd4":[4,0,2,11,1,0,4,163],
@@ -249,5 +246,8 @@ var NAVTREEINDEX10 =
 "classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8a76ed50793263195c9179cd9d052943":[6,0,2,6,1,0,4,123],
 "classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8ca2218991299299429f7b9f92bf9469":[4,0,2,11,1,0,4,72],
 "classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8ca2218991299299429f7b9f92bf9469":[6,0,2,6,1,0,4,72],
-"classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8cd0abbd8124bedca632405c31264335":[4,0,2,11,1,0,4,33]
+"classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8cd0abbd8124bedca632405c31264335":[4,0,2,11,1,0,4,33],
+"classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8cd0abbd8124bedca632405c31264335":[6,0,2,6,1,0,4,33],
+"classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8ec6a6d03929da47a06b7bd86c3ce989":[4,0,2,11,1,0,4,169],
+"classocc_1_1dft_1_1impl_1_1DensityFunctional.html#a8c0802f405a3459d09459049ba7692fba8ec6a6d03929da47a06b7bd86c3ce989":[6,0,2,6,1,0,4,169]
 };

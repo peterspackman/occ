@@ -40,10 +40,11 @@ var searchData=
   ['powderpattern_37',['PowderPattern',['../classocc_1_1crystal_1_1PowderPattern.html',1,'occ::crystal']]],
   ['powderpatternsettings_38',['PowderPatternSettings',['../structocc_1_1crystal_1_1PowderPatternSettings.html',1,'occ::crystal']]],
   ['powderpeak_39',['PowderPeak',['../structocc_1_1crystal_1_1PowderPeak.html',1,'occ::crystal']]],
-  ['primitivepairdata_40',['PrimitivePairData',['../structocc_1_1ints_1_1PrimitivePairData.html',1,'occ::ints']]],
-  ['progresstracker_41',['ProgressTracker',['../classocc_1_1core_1_1ProgressTracker.html',1,'occ::core']]],
-  ['promoldensityfunctor_42',['PromolDensityFunctor',['../structocc_1_1isosurface_1_1pointwise_1_1PromolDensityFunctor.html',1,'occ::isosurface::pointwise']]],
-  ['promoleculedensity_43',['PromoleculeDensity',['../classocc_1_1slater_1_1PromoleculeDensity.html',1,'occ::slater']]],
-  ['promoleculedensityshape_44',['PromoleculeDensityShape',['../structocc_1_1descriptors_1_1PromoleculeDensityShape.html',1,'occ::descriptors']]],
-  ['propertyinfo_45',['PropertyInfo',['../structtinyply_1_1PropertyInfo.html',1,'tinyply']]]
+  ['primitive_40',['Primitive',['../structocc_1_1opt_1_1Primitive.html',1,'occ::opt']]],
+  ['primitivepairdata_41',['PrimitivePairData',['../structocc_1_1ints_1_1PrimitivePairData.html',1,'occ::ints']]],
+  ['progresstracker_42',['ProgressTracker',['../classocc_1_1core_1_1ProgressTracker.html',1,'occ::core']]],
+  ['promoldensityfunctor_43',['PromolDensityFunctor',['../structocc_1_1isosurface_1_1pointwise_1_1PromolDensityFunctor.html',1,'occ::isosurface::pointwise']]],
+  ['promoleculedensity_44',['PromoleculeDensity',['../classocc_1_1slater_1_1PromoleculeDensity.html',1,'occ::slater']]],
+  ['promoleculedensityshape_45',['PromoleculeDensityShape',['../structocc_1_1descriptors_1_1PromoleculeDensityShape.html',1,'occ::descriptors']]],
+  ['propertyinfo_46',['PropertyInfo',['../structtinyply_1_1PropertyInfo.html',1,'tinyply']]]
 ];

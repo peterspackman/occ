@@ -270,6 +270,7 @@ var menudata={children:[
 {text:"Enumerations",url:"functions_enum.html",children:[
 {text:"a",url:"functions_enum.html#index_a"},
 {text:"b",url:"functions_enum.html#index_b"},
+{text:"c",url:"functions_enum.html#index_c"},
 {text:"d",url:"functions_enum.html#index_d"},
 {text:"f",url:"functions_enum.html#index_f"},
 {text:"h",url:"functions_enum.html#index_h"},
@@ -280,8 +281,7 @@ var menudata={children:[
 {text:"o",url:"functions_enum.html#index_o"},
 {text:"p",url:"functions_enum.html#index_p"},
 {text:"r",url:"functions_enum.html#index_r"},
-{text:"s",url:"functions_enum.html#index_s"},
-{text:"t",url:"functions_enum.html#index_t"}]},
+{text:"s",url:"functions_enum.html#index_s"}]},
 {text:"Enumerator",url:"functions_eval.html",children:[
 {text:"c",url:"functions_eval.html#index_c"},
 {text:"d",url:"functions_eval_d.html#index_d"},

@@ -94,6 +94,7 @@ var namespaceocc =
     [ "disp", "namespaceocc_1_1disp.html", "namespaceocc_1_1disp" ],
     [ "dma", "namespaceocc_1_1dma.html", "namespaceocc_1_1dma" ],
     [ "driver", "namespaceocc_1_1driver.html", "namespaceocc_1_1driver" ],
+    [ "xtb", "namespaceocc_1_1xtb.html", "namespaceocc_1_1xtb" ],
     [ "elastic_fit", "namespaceocc_1_1elastic__fit.html", "namespaceocc_1_1elastic__fit" ],
     [ "geometry", "namespaceocc_1_1geometry.html", "namespaceocc_1_1geometry" ],
     [ "density", "namespaceocc_1_1density.html", [
@@ -124,7 +125,6 @@ var namespaceocc =
     [ "slater", "namespaceocc_1_1slater.html", "namespaceocc_1_1slater" ],
     [ "solvent", "namespaceocc_1_1solvent.html", "namespaceocc_1_1solvent" ],
     [ "xdm", "namespaceocc_1_1xdm.html", "namespaceocc_1_1xdm" ],
-    [ "xtb", "namespaceocc_1_1xtb.html", "namespaceocc_1_1xtb" ],
     [ "scf", "namespaceocc_1_1scf.html", null ],
     [ "MatTriple", "structocc_1_1MatTriple.html", "structocc_1_1MatTriple" ],
     [ "MatSix", "structocc_1_1MatSix.html", "structocc_1_1MatSix" ],
