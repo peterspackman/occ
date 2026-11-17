@@ -1,6 +1,7 @@
 #include <occ/core/log.h>
 #include <occ/core/units.h>
 #include <occ/opt/lbfgs_optimizer.h>
+#include <occ/opt/model_hessian.h>
 #include <stdexcept>
 
 namespace occ::opt {
@@ -21,24 +22,19 @@ LbfgsOptimizer::LbfgsOptimizer(const core::Molecule &mol,
   m_s = Mat::Zero(n, settings.memory);
   m_y = Mat::Zero(n, settings.memory);
   m_rho = Vec::Zero(settings.memory);
-  if (settings.precondition) {
-    m_coords = std::make_unique<InternalCoordinates>(
-        mol, InternalCoordinates::Options{true, false});
-    m_model_hessian = m_coords->hessian_guess();
-  }
+  m_atomic_numbers = mol.atomic_numbers();
 }
 
 void LbfgsOptimizer::build_preconditioner() {
   const Mat3N angstrom =
       m_x.reshaped(3, m_x.size() / 3) * occ::units::BOHR_TO_ANGSTROM;
-  const Mat B = m_coords->wilson_b_matrix(angstrom);
-  Mat P = B.transpose() * m_model_hessian * B;
+  Mat P = lindh_model_hessian(angstrom, m_atomic_numbers);
   P.diagonal().array() += m_settings.precondition_shift;
   m_precondition.compute(P);
 }
 
 Vec LbfgsOptimizer::apply_h0(const Vec &q) const {
-  if (m_coords)
+  if (m_settings.precondition)
     return m_precondition.solve(q);
   return q / m_settings.initial_hessian;
 }
@@ -83,7 +79,7 @@ Vec LbfgsOptimizer::direction(const Vec &g) const {
     alpha(i) = m_rho(k) * m_s.col(k).dot(q);
     q -= alpha(i) * m_y.col(k);
   }
-  if (m_coords) {
+  if (m_settings.precondition) {
     q = m_precondition.solve(q);
   } else {
     const int last = slot(m_num_stored - 1);
@@ -125,7 +121,7 @@ bool LbfgsOptimizer::step() {
     }
   }
 
-  if (m_coords)
+  if (m_settings.precondition)
     build_preconditioner();
   Vec d = direction(m_g);
   if (d.dot(m_g) > 0) {
@@ -147,26 +143,12 @@ bool LbfgsOptimizer::step() {
   }
 
   const double energy_change = m_step == 0 ? 0.0 : m_energy - m_energy_prev;
-  auto info = check_convergence(m_g, d, energy_change, m_criteria);
-  log::info("Step {:2d} convergence check (Cartesian, L-BFGS, {} pairs):",
-            m_step, m_num_stored);
-  log::info("  RMS gradient:    {:.5e} (threshold: {:.2e}) {}",
-            info.rms_gradient, m_criteria.gradient_rms,
-            info.gradient_rms_converged ? "✓" : "✗");
-  log::info("  Max gradient:    {:.5e} (threshold: {:.2e}) {}",
-            info.max_gradient, m_criteria.gradient_max,
-            info.gradient_max_converged ? "✓" : "✗");
-  log::info("  RMS step:        {:.5e} (threshold: {:.2e}) {}",
-            info.rms_step, m_criteria.step_rms,
-            info.step_rms_converged ? "✓" : "✗");
-  log::info("  Max step:        {:.5e} (threshold: {:.2e}) {}",
-            info.max_step, m_criteria.step_max,
-            info.step_max_converged ? "✓" : "✗");
-  if (m_criteria.use_energy_criterion && m_step > 0)
-    log::info("  Energy change:   {:.5e} (threshold: {:.2e}) {}",
-              info.energy_change, m_criteria.energy_change,
-              info.energy_converged ? "✓" : "✗");
-  if (info.converged && !rejected) {
+  const int n = d.size() / 3;
+  const bool converged = check_convergence(
+      m_g.reshaped(3, n), d.reshaped(3, n).colwise().norm().transpose(),
+      energy_change, m_criteria.use_energy_criterion && m_step > 0,
+      m_criteria, m_step);
+  if (converged && !rejected) {
     m_converged = true;
     log::info("Optimization converged!");
     return true;

@@ -402,9 +402,10 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                 "Use energy change as convergence criterion")
       ->group(gOpt);
   scf->add_option("--optimizer", config->optimization.optimizer,
-                  "Geometry optimizer: berny (internal coordinates, default) "
-                  "or lbfgs (Cartesian L-BFGS)")
-      ->check(CLI::IsMember({"berny", "lbfgs"}))
+                  "Geometry optimizer: tric (trust-region Newton in TRIC "
+                  "coordinates, default), cartesian (the same in Cartesians) "
+                  "or lbfgs")
+      ->check(CLI::IsMember({"tric", "cartesian", "lbfgs"}))
       ->group(gOpt);
   scf->add_option("--lbfgs-memory,--lbfgs_memory",
                   config->optimization.lbfgs_memory,

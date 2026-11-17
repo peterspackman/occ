@@ -51,7 +51,7 @@ def main():
     
     # 4. Run geometry optimization step-by-step
     print("\nRunning geometry optimization...")
-    optimizer = occ.opt.BernyOptimizer(molecule, criteria)
+    optimizer = occ.opt.GeometryOptimizer(molecule, criteria)
     
     converged = False
     max_steps = 25

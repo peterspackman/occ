@@ -198,7 +198,7 @@ add_executable(mesh_quality_tests "${CMAKE_CURRENT_SOURCE_DIR}/mesh_quality_test
 target_link_libraries(mesh_quality_tests PRIVATE occ_isosurface Catch2::Catch2WithMain Threads::Threads)
 occ_discover_tests(mesh_quality_tests)
 
-add_executable(opt_tests "${CMAKE_CURRENT_SOURCE_DIR}/opt_tests.cpp")
+add_executable(opt_tests "${CMAKE_CURRENT_SOURCE_DIR}/opt_tests.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/opt_coordinates_tests.cpp")
 target_link_libraries(opt_tests PRIVATE occ_opt nlohmann_json::nlohmann_json Catch2::Catch2WithMain Threads::Threads)
 occ_discover_tests(opt_tests)
 

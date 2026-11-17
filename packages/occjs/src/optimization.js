@@ -34,7 +34,7 @@ export async function optimizeHF(module, molecule, basisName = "3-21G", options 
   })();
 
   // Create optimizer
-  const optimizer = new module.BernyOptimizer(molecule, optCriteria);
+  const optimizer = new module.GeometryOptimizer(molecule, optCriteria);
   
   // Storage for optimization trajectory
   const trajectory = {
@@ -131,7 +131,7 @@ export async function optimizeDFT(module, molecule, functional = "b3lyp", basisN
   })();
 
   // Create optimizer
-  const optimizer = new module.BernyOptimizer(molecule, optCriteria);
+  const optimizer = new module.GeometryOptimizer(molecule, optCriteria);
   
   // Storage for optimization trajectory
   const trajectory = {

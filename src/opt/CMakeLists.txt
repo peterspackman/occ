@@ -1,13 +1,9 @@
 add_library(occ_opt_obj
     OBJECT
-    angle_coordinate.cpp
-    berny_optimizer.cpp
-    bond_coordinate.cpp
-    dihedral_coordinate.cpp
-    internal_coordinates.cpp
+    coordinates.cpp
+    geometry_optimizer.cpp
     lbfgs_optimizer.cpp
-    linear_search.cpp
-    pseudoinverse.cpp
+    model_hessian.cpp
 )
 add_library(occ_opt $<TARGET_OBJECTS:occ_opt_obj>)
 target_include_directories(occ_opt_obj PUBLIC ${OCC_INCLUDE_DIR})

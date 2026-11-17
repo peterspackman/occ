@@ -1,5 +1,5 @@
 -- examples/lua/geometry_optimization.lua
--- Parallel to examples/python/geometry_optimization.py: HF/3-21G + Berny
+-- Parallel to examples/python/geometry_optimization.py: HF/3-21G + the geometry optimizer
 -- optimizer + numerical Hessian / vibrational analysis on water.
 --
 -- Run:
@@ -37,7 +37,7 @@ criteria.gradient_max = 1e-4
 criteria.gradient_rms = 1e-5
 
 print("\nRunning geometry optimization...")
-local optimizer = occ.opt.BernyOptimizer(molecule, criteria)
+local optimizer = occ.opt.GeometryOptimizer(molecule, criteria)
 
 local converged = false
 local max_steps = 25
@@ -61,15 +61,7 @@ for step = 1, max_steps do
 
     final_hf, final_wfn = hf, wfn
 
-    -- The C++ Berny optimizer can throw `"trust radius got too small"` if
-    -- the starting geometry is too far from the minimum; catch that so we
-    -- still print the partial trajectory cleanly.
-    local ok, stepped_converged = pcall(function() return optimizer:step() end)
-    if not ok then
-        print(string.format("Optimizer aborted: %s", tostring(stepped_converged)))
-        break
-    end
-    if stepped_converged then
+    if optimizer:step() then
         print(string.format("Optimization converged in %d steps!", step))
         converged = true
         break

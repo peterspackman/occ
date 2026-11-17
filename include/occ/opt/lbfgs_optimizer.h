@@ -1,9 +1,7 @@
 #pragma once
 #include <occ/core/molecule.h>
-#include <occ/opt/internal_coordinates.h>
 #include <occ/opt/optimization_state.h>
 #include <Eigen/Cholesky>
-#include <memory>
 
 namespace occ::opt {
 
@@ -17,8 +15,8 @@ struct LbfgsSettings {
   double min_step{1e-3};
   bool reject_uphill{true};
   double initial_hessian{1.0}; // H0 for the first step (Hartree/Bohr^2)
-  // Use the Berny model Hessian in Cartesians, B^T H B + shift I, as H0
-  // (preconditioned L-BFGS) instead of (s.y / y.y) I.
+  // Use Lindh's model Hessian + shift I as H0 (preconditioned L-BFGS)
+  // instead of (s.y / y.y) I.
   bool precondition{true};
   double precondition_shift{0.01}; // Hartree/Bohr^2, keeps H0 positive definite
 };
@@ -31,8 +29,7 @@ struct LbfgsSettings {
  * with y.s <= 0 skipped and a fall back to steepest descent (history
  * cleared) when the direction goes uphill. In place of a line search the step
  * is scaled to a trust radius on the largest atomic displacement. Convergence
- * is checked on the Cartesian gradient and step with the same criteria as the
- * Berny optimizer.
+ * is checked with the same per-atom criteria as GeometryOptimizer.
  */
 class LbfgsOptimizer {
 public:
@@ -77,9 +74,8 @@ private:
   double m_energy{0.0};
   double m_energy_prev{0.0};
 
-  std::unique_ptr<InternalCoordinates> m_coords;
-  Mat m_model_hessian;                 // internal coordinates
-  Eigen::LDLT<Mat> m_precondition;     // Cartesian H0 at m_x
+  IVec m_atomic_numbers;
+  Eigen::LDLT<Mat> m_precondition; // Cartesian H0 at m_x
 
   Mat m_s, m_y; // (3N, memory) ring buffer columns
   Vec m_rho;

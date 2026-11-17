@@ -29,7 +29,7 @@ struct TbConfig {
   // symmetry-unique molecule and report the lattice binding energy
   // (E_crystal − Σ E_mol_i) per molecule, in kJ/mol.
   bool lattice_energy{false};
-  // Run a geometry optimization (Berny/internal-coords). Molecular only.
+  // Run a geometry optimization (TRIC coordinates). Molecular only.
   // Uses the analytical gradient. Writes <input>_opt.xyz on convergence and
   // <input>_trj.xyz with the trajectory.
   bool optimize{false};

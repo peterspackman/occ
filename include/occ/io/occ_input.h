@@ -130,8 +130,8 @@ struct RuntimeInput {
 };
 
 struct OptimizationInput {
-  // Convergence criteria in internal coordinates, defaulting to the
-  // optimizer's own (ORCA's NormalOpt)
+  // Convergence criteria, defaulting to the optimizer's own (ORCA's
+  // NormalOpt values, applied per atom in Cartesians)
   using Defaults = occ::opt::ConvergenceCriteria;
   double gradient_max{Defaults{}.gradient_max};   // Hartree/Bohr
   double gradient_rms{Defaults{}.gradient_rms};   // Hartree/Bohr
@@ -141,8 +141,9 @@ struct OptimizationInput {
   bool use_energy_criterion{Defaults{}.use_energy_criterion};
   int max_iterations{Defaults{}.max_iterations};
 
-  // "berny" (internal coordinates, RFO) or "lbfgs" (Cartesian L-BFGS)
-  std::string optimizer{"berny"};
+  // "tric" (trust-region Newton in TRIC coordinates), "cartesian" (the same
+  // in Cartesians) or "lbfgs"
+  std::string optimizer{"tric"};
   int lbfgs_memory{20};
   double lbfgs_max_step{0.3}; // Bohr, largest atomic displacement per step
   bool lbfgs_precondition{true}; // model Hessian as H0

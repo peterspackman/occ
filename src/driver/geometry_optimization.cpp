@@ -8,7 +8,7 @@
 #include <occ/driver/geometry_optimization.h>
 #include <occ/driver/vibrational_analysis.h>
 #include <occ/driver/method_parser.h>
-#include <occ/opt/berny_optimizer.h>
+#include <occ/opt/geometry_optimizer.h>
 #include <occ/opt/lbfgs_optimizer.h>
 #include <occ/qm/gradients.h>
 #include <occ/qm/hf.h>
@@ -242,8 +242,7 @@ scf_and_gradient(P &scf_proc, T &proc, const Molecule &m,
     }
   }
 
-  // Hartree/Bohr: the optimizer's internal coordinates are in Bohr (its
-  // Cartesian steps are converted back to Angstrom), as in pyberny.
+  // Hartree/Bohr, as the optimizers expect
   Mat3N gradient = eval(wfn.mo);
   return {wfn, gradient};
 }
@@ -262,7 +261,7 @@ void configure(occ::xtb::XtbCalculator &calc, const OccInput &config) {
 // Single GFN2-xTB optimization step. Mirrors the run_method_for_optimization
 // shape: returns (Wavefunction, gradient in Hartree/Bohr). The
 // Wavefunction is a thin wrapper built from XtbCalculator's converged
-// state — enough to feed back into BernyOptimizer and to produce the same
+// state — enough to feed back into the optimizer and to produce the same
 // post-step printout as the SCF case.
 //
 // `cached` (when non-null) holds an XtbCalculator that's reused across opt
@@ -442,11 +441,22 @@ Wavefunction geometry_optimization(const OccInput &config) {
   criteria.use_energy_criterion = config.optimization.use_energy_criterion;
   criteria.max_iterations = config.optimization.max_iterations;
   
-  // Berny (internal coordinates) or L-BFGS (Cartesian), behind one interface
+  // The trust-region optimizer (TRIC or Cartesian) or L-BFGS
   using Optimizers =
-      std::variant<occ::opt::BernyOptimizer, occ::opt::LbfgsOptimizer>;
-  const bool use_lbfgs = config.optimization.optimizer == "lbfgs";
+      std::variant<occ::opt::GeometryOptimizer, occ::opt::LbfgsOptimizer>;
+  const auto &which = config.optimization.optimizer;
+  const bool use_lbfgs = which == "lbfgs";
   Optimizers optimizer_variant = [&]() -> Optimizers {
+    if (which == "tric" || which == "cartesian") {
+      occ::opt::OptimizerSettings settings;
+      if (which == "cartesian")
+        settings.coordinates =
+            occ::opt::OptimizerSettings::Coordinates::Cartesian;
+      // external charges exert a real net force and torque
+      settings.project_net_force_torque =
+          config.geometry.point_charges.empty();
+      return occ::opt::GeometryOptimizer(m, criteria, settings);
+    }
     if (use_lbfgs) {
       occ::opt::LbfgsSettings settings;
       settings.memory = config.optimization.lbfgs_memory;
@@ -454,7 +464,7 @@ Wavefunction geometry_optimization(const OccInput &config) {
       settings.precondition = config.optimization.lbfgs_precondition;
       return occ::opt::LbfgsOptimizer(m, criteria, settings);
     }
-    return occ::opt::BernyOptimizer(m, criteria);
+    throw std::runtime_error("Unknown optimizer: " + which);
   }();
   struct {
     Optimizers &v;
@@ -471,10 +481,7 @@ Wavefunction geometry_optimization(const OccInput &config) {
       std::visit([&](auto &o) { o.shift_energy_reference(shift); }, v);
     }
   } optimizer{optimizer_variant};
-  occ::log::info("Geometry optimizer: {}",
-                 use_lbfgs ? "L-BFGS (Cartesian)" : "Berny (internal coordinates)");
-  occ::log::info("Geometry optimization convergence criteria ({} coordinates):",
-                 use_lbfgs ? "Cartesian" : "internal");
+  occ::log::info("Geometry optimization convergence criteria:");
   occ::log::info("  Max gradient:    {:.2e}", criteria.gradient_max);
   occ::log::info("  RMS gradient:    {:.2e}", criteria.gradient_rms);
   occ::log::info("  Max step:        {:.2e}", criteria.step_max);
@@ -488,8 +495,8 @@ Wavefunction geometry_optimization(const OccInput &config) {
   std::optional<fmt::ostream> step_log;
   if (config.optimization.write_step_log) {
     step_log.emplace(fmt::output_file("occ_step_log.txt"));
-    step_log->print("OCC BernyOptimizer Step-by-Step Log\n");
-    step_log->print("===================================\n\n");
+    step_log->print("OCC Geometry Optimization Step-by-Step Log\n");
+    step_log->print("==========================================\n\n");
   }
   
   // GFN2 stateful cache: reused across opt steps so the basis / engine /

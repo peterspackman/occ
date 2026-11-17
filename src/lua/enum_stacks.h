@@ -56,7 +56,6 @@ OCC_LUA_DEFINE_ENUM_STACK(OCC_E_AveragingScheme, OCC_ENUM_AveragingScheme)
 OCC_LUA_DEFINE_ENUM_STACK(OCC_E_PointGroup, OCC_ENUM_PointGroup)
 
 // ---------- opt ---------------------------------------------------------
-OCC_LUA_DEFINE_ENUM_STACK(OCC_E_BondCoordinateType, OCC_ENUM_BondCoordinateType)
 
 // ---------- isosurface --------------------------------------------------
 OCC_LUA_DEFINE_ENUM_STACK(OCC_E_SurfaceKind, OCC_ENUM_SurfaceKind)
