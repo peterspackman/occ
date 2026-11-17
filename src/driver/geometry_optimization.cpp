@@ -449,7 +449,11 @@ Wavefunction geometry_optimization(const OccInput &config) {
   const bool use_lbfgs = which == "lbfgs";
   Optimizers optimizer_variant = [&]() -> Optimizers {
     if (which == "tric" || which == "cartesian") {
-      occ::opt::OptimizerSettings settings;
+      auto settings =
+          config.optimization.transition_state
+              ? occ::opt::OptimizerSettings::saddle_point(
+                    config.optimization.ts_mode)
+              : occ::opt::OptimizerSettings{};
       if (which == "cartesian")
         settings.coordinates =
             occ::opt::OptimizerSettings::Coordinates::Cartesian;
@@ -459,6 +463,9 @@ Wavefunction geometry_optimization(const OccInput &config) {
       return occ::opt::GeometryOptimizer(m, criteria, settings);
     }
     if (use_lbfgs) {
+      if (config.optimization.transition_state)
+        throw std::runtime_error("L-BFGS cannot search for a saddle point; "
+                                 "use --optimizer tric or cartesian");
       occ::opt::LbfgsSettings settings;
       settings.memory = config.optimization.lbfgs_memory;
       settings.max_step = config.optimization.lbfgs_max_step;
@@ -569,6 +576,15 @@ Wavefunction geometry_optimization(const OccInput &config) {
     std::string wfn_filename = "opt_step_000.owf.json";
     wfn.save(wfn_filename);
     occ::log::debug("Wrote initial wavefunction to {}", wfn_filename);
+  }
+
+  // A saddle-point search starts from the computed Hessian
+  if (config.optimization.transition_state) {
+    occ::log::info("Computing the initial Hessian for the saddle-point search");
+    auto vib_config = vibrational_config(config);
+    vib_config.save_hessian = false;
+    std::get<occ::opt::GeometryOptimizer>(optimizer_variant)
+        .set_initial_hessian(compute_hessian(config, wfn, vib_config));
   }
 
   // Update optimizer with initial data
@@ -684,6 +700,22 @@ Wavefunction geometry_optimization(const OccInput &config) {
   return wfn;
 }
 
+// A first-order saddle point has exactly one imaginary frequency.
+void report_saddle_point(const core::VibrationalModes &modes) {
+  const Vec f = modes.get_all_frequencies();
+  std::vector<double> imaginary;
+  for (int i = 0; i < f.size(); i++)
+    if (f(i) < -50.0) // cm-1; smaller ones are rigid motions or noise
+      imaginary.push_back(f(i));
+  if (imaginary.size() == 1)
+    occ::log::info("First-order saddle point: one imaginary mode, {:.1f}i "
+                   "cm-1",
+                   -imaginary.front());
+  else
+    occ::log::warn("Not a first-order saddle point: {} imaginary modes",
+                   imaginary.size());
+}
+
 std::pair<qm::Wavefunction, core::VibrationalModes> 
 geometry_optimization_with_frequencies(const io::OccInput &config, bool run_frequencies) {
   
@@ -697,39 +729,11 @@ geometry_optimization_with_frequencies(const io::OccInput &config, bool run_freq
     occ::log::info("Geometry optimization completed successfully");
     occ::log::info("Computing vibrational frequencies at optimized geometry...");
     
-    // Configure vibrational analysis
-    VibrationalAnalysisConfig vib_config;
-    vib_config.compute_frequencies = true;
-    // The solvent cavity's Lebedev points keep their orientation in space as
-    // the molecule turns, so the solvated energy is not invariant to rigid
-    // rotations: project them out rather than report them as low modes.
-    vib_config.project_tr_rot = config.optimization.project_tr_rot ||
-                                !config.solvent.solvent_name.empty();
-    vib_config.step_size = 0.005;       // ORCA-like default
-    {
-      using HM = VibrationalAnalysisConfig::HessianMethod;
-      const auto &hm = config.optimization.hessian_method;
-      vib_config.hessian_method = hm == "analytic" ? HM::Analytic
-                                  : hm == "fd"     ? HM::FiniteDifferences
-                                                   : HM::Auto;
-    }
-    vib_config.use_acoustic_sum_rule = true;  // Efficient computation
-    vib_config.save_hessian = true;     // Save for later analysis
-    vib_config.save_results = true;     // Save frequency analysis
-    
-    // Set filenames based on input basename
-    if (!config.filename.empty()) {
-      std::filesystem::path input_path(config.filename);
-      std::string basename = input_path.stem().string();
-      vib_config.hessian_filename = basename + "_hess.json";
-      vib_config.results_filename = basename + "_freq.json";
-    } else {
-      vib_config.hessian_filename = "optimized_hessian.json";
-      vib_config.results_filename = "optimized_frequencies.json";
-    }
-    
+    const VibrationalAnalysisConfig vib_config = vibrational_config(config);
     try {
       vib_modes = vibrational_analysis(config, optimized_wfn, vib_config);
+      if (config.optimization.transition_state)
+        report_saddle_point(vib_modes);
     } catch (const std::exception &e) {
       occ::log::error("Failed to compute vibrational frequencies: {}", e.what());
       occ::log::warn("Continuing with optimization result only");

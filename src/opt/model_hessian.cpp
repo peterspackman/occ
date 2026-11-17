@@ -87,6 +87,31 @@ rotatable_bonds(const IVec &atomic_numbers, const Mat3N &bohr) {
 
 } // namespace
 
+Mat rigid_body_basis(const Mat3N &x) {
+  const int n = x.cols();
+  const Vec3 centroid = x.rowwise().mean();
+  Mat T = Mat::Zero(3 * n, 6);
+  for (int a = 0; a < 3; a++) {
+    Vec3 axis = Vec3::Zero();
+    axis(a) = 1.0;
+    for (int i = 0; i < n; i++) {
+      T(3 * i + a, a) = 1.0;
+      T.block<3, 1>(3 * i, 3 + a) = axis.cross(Vec3(x.col(i) - centroid));
+    }
+  }
+  Mat Q(3 * n, 0);
+  for (int c = 0; c < 6; c++) {
+    Vec v = T.col(c);
+    for (int q = 0; q < Q.cols(); q++)
+      v -= Q.col(q).dot(v) * Q.col(q);
+    if (v.norm() > 1e-6 * T.col(c).norm() && v.norm() > 1e-10) {
+      Q.conservativeResize(Eigen::NoChange, Q.cols() + 1);
+      Q.col(Q.cols() - 1) = v.normalized();
+    }
+  }
+  return Q;
+}
+
 Mat lindh_model_hessian(const Mat3N &positions, const IVec &atomic_numbers,
                         double threshold) {
   const int n = positions.cols();
@@ -201,27 +226,8 @@ Mat lindh_model_hessian(const Mat3N &positions, const IVec &atomic_numbers,
     }
   }
   // Project out rigid translations and rotations, which the near-linear
-  // bends do not quite avoid: H <- P H P with P = 1 - T T^T.
-  const Vec3 com = bohr.rowwise().mean();
-  Mat T = Mat::Zero(3 * n, 6);
-  for (int a = 0; a < 3; a++) {
-    Vec3 axis = Vec3::Zero();
-    axis(a) = 1.0;
-    for (int i = 0; i < n; i++) {
-      T(3 * i + a, a) = 1.0;
-      T.block<3, 1>(3 * i, 3 + a) = axis.cross(Vec3(bohr.col(i) - com));
-    }
-  }
-  Mat Q(3 * n, 0);
-  for (int c = 0; c < 6; c++) {
-    Vec v = T.col(c);
-    for (int q = 0; q < Q.cols(); q++)
-      v -= Q.col(q).dot(v) * Q.col(q);
-    if (v.norm() > 1e-6 * T.col(c).norm() && v.norm() > 1e-10) {
-      Q.conservativeResize(Eigen::NoChange, Q.cols() + 1);
-      Q.col(Q.cols() - 1) = v.normalized();
-    }
-  }
+  // bends do not quite avoid: H <- P H P with P = 1 - Q Q^T.
+  const Mat Q = rigid_body_basis(bohr);
   const Mat HQ = H * Q;
   H -= HQ * Q.transpose() + Q * HQ.transpose() -
        Q * (Q.transpose() * HQ) * Q.transpose();

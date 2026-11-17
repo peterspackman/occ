@@ -104,6 +104,7 @@ OccInput read_occ_input_file(const std::string path) {
   result.optimization.lbfgs_memory = scf["lbfgs_memory"].value_or(result.optimization.lbfgs_memory);
   result.optimization.lbfgs_max_step = scf["lbfgs_max_step"].value_or(result.optimization.lbfgs_max_step);
   result.optimization.lbfgs_precondition = scf["lbfgs_precondition"].value_or(result.optimization.lbfgs_precondition);
+  result.optimization.ts_mode = scf["ts_mode"].value_or(result.optimization.ts_mode);
 
   return result;
 }

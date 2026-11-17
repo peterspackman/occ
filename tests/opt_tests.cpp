@@ -1,4 +1,5 @@
 #include <Eigen/Eigenvalues>
+#include <functional>
 #include <catch2/catch_all.hpp>
 #include <occ/core/linear_algebra.h>
 #include <occ/core/molecule.h>
@@ -343,4 +344,123 @@ TEST_CASE("Net force and torque projection leaves internal forces",
     extra.col(i) = occ::Vec3(0.1, 0.0, -0.2) +
                    occ::Vec3(0.0, 0.0, 0.3).cross(occ::Vec3(x.col(i) - c));
   REQUIRE((project_net_force_torque(x, g + extra) - g).norm() < 1e-10);
+}
+
+// Saddle points: double-well bonds, V = a (r - r1)^2 (r - r2)^2, on top of
+// springs, so a bond has a barrier at (r1 + r2) / 2 with curvature
+// -a (r2 - r1)^2.
+namespace {
+struct DoubleWell {
+  int i, j;
+  double a, r1, r2; // Hartree/Bohr^4, Bohr
+};
+
+using Potential = std::function<std::pair<double, occ::Mat3N>(
+    const occ::core::Molecule &)>;
+
+Potential double_well_potential(std::vector<Spring> springs,
+                                std::vector<DoubleWell> wells) {
+  return [=](const occ::core::Molecule &m) {
+    auto [e, g] = spring_energy(m, springs);
+    const occ::Mat3N x = m.positions() * occ::units::ANGSTROM_TO_BOHR;
+    for (const auto &w : wells) {
+      const occ::Vec3 d = x.col(w.i) - x.col(w.j);
+      const double r = d.norm(), u = r - w.r1, v = r - w.r2;
+      e += w.a * u * u * v * v;
+      const occ::Vec3 f = 2.0 * w.a * u * v * (u + v) * d / r;
+      g.col(w.i) += f;
+      g.col(w.j) -= f;
+    }
+    return std::pair{e, g};
+  };
+}
+
+// Central differences of the gradient (Hartree/Bohr^2, 3N x 3N).
+occ::Mat hessian(const Potential &potential, const occ::core::Molecule &m) {
+  const double h = 1e-4; // Bohr
+  const int n = m.size();
+  occ::Mat H(3 * n, 3 * n);
+  for (int c = 0; c < 3 * n; c++) {
+    occ::Mat3N x = m.positions();
+    x(c % 3, c / 3) += h * occ::units::BOHR_TO_ANGSTROM;
+    const occ::Mat3N gp =
+        potential(occ::core::Molecule(m.atomic_numbers(), x)).second;
+    x(c % 3, c / 3) -= 2.0 * h * occ::units::BOHR_TO_ANGSTROM;
+    const occ::Mat3N gm =
+        potential(occ::core::Molecule(m.atomic_numbers(), x)).second;
+    H.col(c) = (gp - gm).reshaped() / (2.0 * h);
+  }
+  return 0.5 * (H + H.transpose());
+}
+
+int optimize_on(GeometryOptimizer &opt, const Potential &potential,
+                int max_steps = 200) {
+  int evaluations = 0;
+  while (evaluations < max_steps) {
+    auto [e, g] = potential(opt.get_next_geometry());
+    evaluations++;
+    opt.update(e, g);
+    if (opt.step())
+      return evaluations;
+  }
+  return evaluations;
+}
+
+// water with O-H bonds (Bohr) r01 and r02 and an H-H spring for the bend
+occ::core::Molecule triatomic(double r01, double r02) {
+  occ::IVec z(3);
+  z << 8, 1, 1;
+  const double half = 104.5 / 2.0 * M_PI / 180.0;
+  occ::Mat3N pos(3, 3);
+  pos.col(0) << 0.0, 0.0, 0.0;
+  pos.col(1) << r01 * std::sin(half), 0.0, r01 * std::cos(half);
+  pos.col(2) << -r02 * std::sin(half), 0.0, r02 * std::cos(half);
+  return occ::core::Molecule(z, pos * occ::units::BOHR_TO_ANGSTROM);
+}
+} // namespace
+
+TEST_CASE("GeometryOptimizer finds the saddle of a double-well bond",
+          "[geometry_optimizer][saddle]") {
+  const auto potential = double_well_potential(
+      {{0, 2, 0.5, 1.81}, {1, 2, 0.1, 2.86}}, {{0, 1, 1.0, 1.6, 2.4}});
+  for (auto coordinates : {OptimizerSettings::Coordinates::TRIC,
+                           OptimizerSettings::Coordinates::Cartesian}) {
+    CAPTURE(int(coordinates));
+    auto settings = OptimizerSettings::saddle_point();
+    settings.coordinates = coordinates;
+    const auto start = triatomic(1.85, 1.75);
+    GeometryOptimizer opt(start, {}, settings);
+    opt.set_initial_hessian(hessian(potential, start));
+    const int n = optimize_on(opt, potential);
+    INFO("gradients: " << n);
+    REQUIRE(opt.is_converged());
+    const auto m = opt.get_next_geometry();
+    CHECK(distance(m, 0, 1) == Catch::Approx(2.0).margin(2e-3));
+    CHECK(distance(m, 0, 2) == Catch::Approx(1.81).margin(2e-3));
+    CHECK(opt.negative_modes() == 1);
+  }
+}
+
+TEST_CASE("GeometryOptimizer follows the requested mode to its saddle",
+          "[geometry_optimizer][saddle]") {
+  // both bonds have barriers, the first with the more negative curvature:
+  // mode 0 leads to the saddle of bond 0-1, mode 1 to that of bond 0-2
+  const auto potential = double_well_potential(
+      {{1, 2, 0.1, 2.86}},
+      {{0, 1, 1.0, 1.6, 2.4}, {0, 2, 0.5, 1.6, 2.4}});
+  const auto start = triatomic(1.97, 2.04);
+  for (int mode : {0, 1}) {
+    CAPTURE(mode);
+    GeometryOptimizer opt(start, {}, OptimizerSettings::saddle_point(mode));
+    opt.set_initial_hessian(hessian(potential, start));
+    const int n = optimize_on(opt, potential);
+    INFO("gradients: " << n);
+    REQUIRE(opt.is_converged());
+    const auto m = opt.get_next_geometry();
+    const double top = distance(m, 0, mode == 0 ? 1 : 2);
+    const double other = distance(m, 0, mode == 0 ? 2 : 1);
+    CHECK(top == Catch::Approx(2.0).margin(2e-3));
+    CHECK(std::min(std::abs(other - 1.6), std::abs(other - 2.4)) < 2e-3);
+    CHECK(opt.negative_modes() == 1);
+  }
 }

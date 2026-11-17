@@ -16,4 +16,8 @@ namespace occ::opt {
 Mat lindh_model_hessian(const Mat3N &positions, const IVec &atomic_numbers,
                         double threshold = 1e-4);
 
+/// Orthonormal basis (3N x 6, or 5 for a linear and 3 for a single atom) of
+/// rigid translations and rotations about the centroid of x (any units).
+Mat rigid_body_basis(const Mat3N &x);
+
 } // namespace occ::opt

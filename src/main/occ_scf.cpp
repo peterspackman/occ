@@ -144,8 +144,9 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
 
   auto *driver_opt = scf->add_option(
       "--driver", config->driver.driver,
-      "calculation: energy (default), opt (geometry optimization) or grad "
-      "(energy and nuclear gradient); overrides the input file");
+      "calculation: energy (default), opt (geometry optimization), ts "
+      "(transition state: first-order saddle point, then frequencies) or "
+      "grad (energy and nuclear gradient); overrides the input file");
 
   scf->add_option("--basis-set-directory,--basis_set_directory",
                   config->basis.basis_set_directory,
@@ -443,6 +444,10 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                 config->optimization.write_step_log,
                 "Write per-step geometry and gradient to occ_step_log.txt")
       ->group(gOpt);
+  scf->add_option("--ts-mode,--ts_mode", config->optimization.ts_mode,
+                  "Transition state search: the mode to maximise along at "
+                  "the start, counting internal modes from the lowest (0)")
+      ->group(gOpt);
   scf->add_flag("--frequencies,--freq",
                 config->optimization.compute_frequencies,
                 "Compute vibrational frequencies after geometry optimization")
@@ -488,7 +493,12 @@ void run_scf_subcommand(occ::io::OccInput config, bool driver_from_cli) {
   }
 
   occ::log::info("Driver: {}", config.driver.driver);
-  if (config.driver.driver == "opt") {
+  if (config.driver.driver == "ts") {
+    config.optimization.transition_state = true;
+    auto [wfn, vib_modes] =
+        driver::geometry_optimization_with_frequencies(config, true);
+    write_output_files(config, wfn);
+  } else if (config.driver.driver == "opt") {
     if (config.optimization.compute_frequencies) {
       auto [wfn, vib_modes] = driver::geometry_optimization_with_frequencies(config, true);
       write_output_files(config, wfn);

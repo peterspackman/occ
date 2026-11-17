@@ -17,27 +17,51 @@ struct OptimizerSettings {
   double trust{0.1 * occ::units::ANGSTROM_TO_BOHR};
   double trust_min{1e-4 * occ::units::ANGSTROM_TO_BOHR};
   double trust_max{0.3 * occ::units::ANGSTROM_TO_BOHR};
-  // A step whose energy change is below this multiple of the predicted
-  // (negative) change is rejected.
+  // Minima: a step whose energy change is below this multiple of the
+  // predicted (negative) change is rejected.
   double reject_quality{-1.0};
   // Remove net force and torque from the gradient: right for an isolated
   // system, where they are numerical noise (e.g. from integration grids),
   // wrong with an external field.
   bool project_net_force_torque{true};
+
+  // Search for a first-order saddle point instead of a minimum: maximise
+  // along one Hessian mode, minimise along the rest. Start from a computed
+  // Hessian (set_initial_hessian); the model has no negative curvature.
+  bool transition_state{false};
+  // The mode maximised at the first step, counting internal modes from the
+  // lowest eigenvalue (0); later steps follow it by overlap.
+  int ts_mode{0};
+
+  /// Settings for a saddle-point search: a trust radius of 0.05 Angstrom,
+  /// at most 0.15 (geomeTRIC's 0.01 and 0.03 took about 50% more gradients
+  /// on GFN2-xTB test reactions, 0.1 and 0.3 slightly more).
+  static OptimizerSettings saddle_point(int mode = 0) {
+    OptimizerSettings s;
+    s.transition_state = true;
+    s.ts_mode = mode;
+    s.trust = 0.05 * occ::units::ANGSTROM_TO_BOHR;
+    s.trust_max = 0.15 * occ::units::ANGSTROM_TO_BOHR;
+    return s;
+  }
 };
 
-/// Geometry optimizer for minima (L.-P. Wang and C. Song, J. Chem. Phys. 144,
-/// 214108 (2016), with the step control of geomeTRIC's current releases).
+/// Geometry optimizer for minima and first-order saddle points (L.-P. Wang
+/// and C. Song, J. Chem. Phys. 144, 214108 (2016), with the step control of
+/// geomeTRIC's current releases).
 ///
-/// The step is the Newton step on a positive definite Hessian, shifted
-/// (Levenberg) to the length that moves the atoms by the trust radius (RMS,
-/// after alignment), in TRIC or Cartesian coordinates. The Hessian starts
-/// from Lindh's model and is updated by BFGS between accepted points. A step
-/// whose energy rises well beyond the model is rejected and retaken from the
-/// last accepted geometry with a smaller trust radius. Coordinates are
-/// rebuilt where they become degenerate, the Hessian carried through
-/// Cartesians. Convergence is judged on per-atom Cartesian gradients and
-/// aligned displacements.
+/// For a minimum, the step is the Newton step on a positive definite
+/// Hessian, shifted (Levenberg) to the length that moves the atoms by the
+/// trust radius (RMS, after alignment), in TRIC or Cartesian coordinates;
+/// the Hessian starts from Lindh's model and is updated by BFGS. For a saddle
+/// point, the step is the restricted-step partitioned RFO step (maximising
+/// along the followed mode, minimising along the rest), and the Hessian,
+/// best computed, is updated by Bofill's formula. A step whose energy change
+/// departs from the model too far is rejected and retaken from the last
+/// accepted geometry with a smaller trust radius. Coordinates are rebuilt
+/// where they become degenerate, the Hessian carried through Cartesians.
+/// Convergence is judged on per-atom Cartesian gradients and aligned
+/// displacements.
 ///
 /// Use: update() with the energy and gradient at get_next_geometry(), then
 /// step(), until step() returns true.
@@ -74,6 +98,11 @@ public:
   int current_step() const { return m_step; }
   double trust_radius() const { return m_trust; }
   const CoordinateSystem &coordinates() const { return *m_coordinates; }
+  /// Saddle-point search: the followed mode as a unit Cartesian displacement
+  /// (3N, atom-major), and the number of internal modes with negative
+  /// curvature, both at the last accepted point.
+  const Vec &followed_mode() const { return m_mode; }
+  int negative_modes() const { return m_negative_modes; }
 
 private:
   struct Point {
@@ -87,9 +116,11 @@ private:
     double rmsd;      // aligned RMS displacement
   };
 
-  void build_coordinates(const Mat3N &x, const Mat &cartesian_hessian);
+  void build_coordinates(const Mat3N &x, const Mat &cartesian_hessian,
+                         bool model);
   void update_hessian(const Point &from, const Point &to);
   Step next_step(const Point &p);
+  int follow_mode(const Mat3N &x, const Mat &modes, const Vec &curvature);
 
   IVec m_atomic_numbers;
   ConvergenceCriteria m_criteria;
@@ -104,6 +135,8 @@ private:
   std::optional<Step> m_last_step;
   std::optional<Mat3N> m_last_rejected;
   double m_trust;
+  Vec m_mode;
+  int m_negative_modes{0};
   int m_step{0};
   bool m_converged{false};
 };

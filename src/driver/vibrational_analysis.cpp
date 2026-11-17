@@ -13,6 +13,7 @@
 #include <occ/qm/hessians.h>
 #include <occ/qm/scf.h>
 #include <occ/solvent/solvation_correction.h>
+#include <filesystem>
 #include <fstream>
 #include <occ/io/core_json.h>
 #include <occ/io/eigen_json.h>
@@ -238,6 +239,40 @@ Mat compute_hessian_driver(const OccInput &config, const Molecule &m,
     throw std::runtime_error("Unknown method kind for Hessian computation");
   }
   }
+}
+
+Mat compute_hessian(const OccInput &config, const Wavefunction &wfn,
+                    const VibrationalAnalysisConfig &vib_config) {
+  return compute_hessian_driver(config, Molecule(wfn.atoms), wfn, vib_config);
+}
+
+VibrationalAnalysisConfig vibrational_config(const OccInput &config) {
+  VibrationalAnalysisConfig vib_config;
+  vib_config.compute_frequencies = true;
+  // The solvent cavity's Lebedev points keep their orientation in space as
+  // the molecule turns, so the solvated energy is not invariant to rigid
+  // rotations: project them out rather than report them as low modes.
+  vib_config.project_tr_rot =
+      config.optimization.project_tr_rot || !config.solvent.solvent_name.empty();
+  vib_config.step_size = 0.005; // Bohr, as ORCA
+  using HM = VibrationalAnalysisConfig::HessianMethod;
+  const auto &hm = config.optimization.hessian_method;
+  vib_config.hessian_method = hm == "analytic" ? HM::Analytic
+                              : hm == "fd"     ? HM::FiniteDifferences
+                                               : HM::Auto;
+  vib_config.use_acoustic_sum_rule = true;
+  vib_config.save_hessian = true;
+  vib_config.save_results = true;
+  if (!config.filename.empty()) {
+    const std::string basename =
+        std::filesystem::path(config.filename).stem().string();
+    vib_config.hessian_filename = basename + "_hess.json";
+    vib_config.results_filename = basename + "_freq.json";
+  } else {
+    vib_config.hessian_filename = "optimized_hessian.json";
+    vib_config.results_filename = "optimized_frequencies.json";
+  }
+  return vib_config;
 }
 
 VibrationalModes vibrational_analysis(const OccInput &config,

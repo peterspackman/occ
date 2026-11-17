@@ -148,6 +148,11 @@ struct OptimizationInput {
   double lbfgs_max_step{0.3}; // Bohr, largest atomic displacement per step
   bool lbfgs_precondition{true}; // model Hessian as H0
 
+  // Search for a first-order saddle point (driver "ts"): from a computed
+  // Hessian, maximising along internal mode ts_mode counted from the lowest
+  bool transition_state{false};
+  int ts_mode{0};
+
   // Integral accuracy control
   double gradient_integral_precision{1e-10}; // Final gradient integral cutoff
   double early_gradient_integral_precision{1e-8}; // Looser cutoff for early steps

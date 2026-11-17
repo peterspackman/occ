@@ -38,3 +38,26 @@ TEST_CASE("GFN2-xTB frequencies after an optimisation", "[driver][freq]") {
   CHECK(f(7) == Approx(3643.0).margin(2.0));
   CHECK(f(8) == Approx(3651.3).margin(2.0));
 }
+
+TEST_CASE("GFN2-xTB transition state of HCN to HNC", "[driver][ts]") {
+  occ::IVec z(3);
+  z << 6, 7, 1;
+  occ::Mat3N pos(3, 3);
+  pos.col(0) << 0.0, 0.0, 0.0;
+  pos.col(1) << 1.18, 0.0, 0.0;
+  pos.col(2) << 0.45, 1.12, 0.0;
+  occ::io::OccInput config;
+  config.method.name = "gfn2";
+  config.geometry.set_molecule(occ::core::Molecule(z, pos));
+  config.optimization.transition_state = true;
+  auto [wfn, modes] =
+      occ::driver::geometry_optimization_with_frequencies(config, true);
+  // ORCA 6.1 OptTS with xtb 6.7: E = -5.3873735 Ha, 1426i cm-1
+  CHECK(wfn.energy.total == Approx(-5.3873733).margin(1e-6));
+  const occ::Vec f = modes.get_all_frequencies();
+  int imaginary = 0;
+  for (int i = 0; i < f.size(); i++)
+    imaginary += f(i) < -50.0;
+  CHECK(imaginary == 1);
+  CHECK(f.minCoeff() == Approx(-1426.0).margin(5.0));
+}
