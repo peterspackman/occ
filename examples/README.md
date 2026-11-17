@@ -37,6 +37,8 @@ occ> mol.positions     -- bare expression auto-pretty-prints the matrix
 | Hartree–Fock SCF               | `scf.py`                        | `scf.lua`                      |
 | DFT + density fitting          | `df.py`                         | `df.lua`                       |
 | Geometry optimization + freqs  | `geometry_optimization.py`      | `geometry_optimization.lua`    |
+| Transition state (saddle point)| `transition_state.py`           | `transition_state.lua`         |
+| Nudged elastic band + TS       | `neb.py`                        | `neb.lua`                      |
 | Wavefunction analysis          | `wavefunction_analysis.py`      | `wavefunction_analysis.lua`    |
 | Isosurface (PLY mesh)          | `isosurface.py`                 | `isosurface.lua`               |
 | Cube files (density / ESP)     | `cube.py`                       | `cube.lua`                     |

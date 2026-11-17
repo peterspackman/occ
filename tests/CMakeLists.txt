@@ -300,6 +300,7 @@ if(WITH_LUA_BINDINGS)
             ENVIRONMENT "OCC_DATA_PATH=${CMAKE_SOURCE_DIR}/share;OCC_TEST_THREADS=${OCC_TEST_THREADS}")
     endfunction()
 
+    occ_lua_test(lua_opt opt_tests.lua)
     occ_lua_test(lua_rinse rinse_tests.lua
         "${CMAKE_CURRENT_SOURCE_DIR}/data/rinse"
         "${CMAKE_CURRENT_SOURCE_DIR}/rinse_reference_data.h")

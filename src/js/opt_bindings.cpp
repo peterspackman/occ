@@ -4,6 +4,7 @@
 #include <occ/core/molecule.h>
 #include <occ/core/vibration.h>
 #include <occ/opt/geometry_optimizer.h>
+#include <occ/opt/neb.h>
 #include <occ/qm/hessians.h>
 #include <occ/qm/hf.h>
 #include <occ/dft/dft.h>
@@ -29,11 +30,27 @@ void register_opt_bindings() {
       .property("useEnergyCriterion", &ConvergenceCriteria::use_energy_criterion)
       .property("maxIterations", &ConvergenceCriteria::max_iterations);
 
-  // Trust-region optimizer in TRIC coordinates: update(energy, gradient) at
-  // getNextGeometry(), then step() until it returns true.
+  class_<OptimizerSettings>("OptimizerSettings")
+      .constructor<>()
+      .class_function("saddlePoint", &OptimizerSettings::saddle_point)
+      .property("trust", &OptimizerSettings::trust)
+      .property("trustMin", &OptimizerSettings::trust_min)
+      .property("trustMax", &OptimizerSettings::trust_max)
+      .property("projectNetForceTorque",
+                &OptimizerSettings::project_net_force_torque)
+      .property("transitionState", &OptimizerSettings::transition_state)
+      .property("tsMode", &OptimizerSettings::ts_mode);
+
+  // Trust-region optimizer in TRIC coordinates, for minima or first-order
+  // saddle points: update(energy, gradient) at getNextGeometry(), then
+  // step() until it returns true.
   class_<GeometryOptimizer>("GeometryOptimizer")
       .constructor<const Molecule &>()
       .constructor<const Molecule &, const ConvergenceCriteria &>()
+      .constructor<const Molecule &, const ConvergenceCriteria &,
+                   const OptimizerSettings &>()
+      .function("setFollowedMode", &GeometryOptimizer::set_followed_mode)
+      .function("negativeModes", &GeometryOptimizer::negative_modes)
       .function("step", &GeometryOptimizer::step)
       .function("update", &GeometryOptimizer::update)
       .function("getNextGeometry", &GeometryOptimizer::get_next_geometry)
@@ -47,6 +64,51 @@ void register_opt_bindings() {
                          std::to_string(o.current_step()) + ", converged=" +
                          (o.is_converged() ? "true" : "false") + ">";
                 }));
+
+  register_vector<Molecule>("VectorMolecule");
+
+  class_<NebSettings>("NebSettings")
+      .constructor<>()
+      .property("images", &NebSettings::images)
+      .property("spring", &NebSettings::spring)
+      .property("springMax", &NebSettings::spring_max)
+      .property("idpp", &NebSettings::idpp)
+      .property("climbingImage", &NebSettings::climbing_image)
+      .property("climbThreshold", &NebSettings::climb_threshold)
+      .property("climbingForceMax", &NebSettings::climbing_force_max)
+      .property("forceMax", &NebSettings::force_max)
+      .property("maxStep", &NebSettings::max_step);
+
+  // Climbing-image nudged elastic band: setEndpointEnergies(), then
+  // update(energies, gradients) at images(), then step() until it returns
+  // true. energies and gradients are JS arrays, one entry per image.
+  class_<NudgedElasticBand>("NudgedElasticBand")
+      .constructor<const Molecule &, const Molecule &, const NebSettings &>()
+      .function("images", &NudgedElasticBand::images)
+      .function("path", &NudgedElasticBand::path)
+      .function("setEndpointEnergies", &NudgedElasticBand::set_endpoint_energies)
+      .function("update", optional_override([](NudgedElasticBand &b,
+                                               const val &energies,
+                                               const val &gradients) {
+                  std::vector<double> e;
+                  std::vector<Mat3N> g;
+                  const int n = energies["length"].as<int>();
+                  for (int i = 0; i < n; i++) {
+                    e.push_back(energies[i].as<double>());
+                    g.push_back(gradients[i].as<Mat3N>());
+                  }
+                  b.update(e, g);
+                }))
+      .function("step", &NudgedElasticBand::step)
+      .function("isConverged", &NudgedElasticBand::is_converged)
+      .function("climbing", &NudgedElasticBand::climbing)
+      .function("energies", optional_override([](const NudgedElasticBand &b) {
+                  return Vec(b.energies());
+                }))
+      .function("highestImage", &NudgedElasticBand::highest_image)
+      .function("tangent", &NudgedElasticBand::tangent)
+      .function("maxForce", &NudgedElasticBand::max_force)
+      .function("currentStep", &NudgedElasticBand::current_step);
 
   // Hessian evaluator for HartreeFock  
   class_<HessianEvaluator<HartreeFock>>("HessianEvaluatorHF")
