@@ -199,6 +199,13 @@ void GeometryOptimizer::set_initial_hessian(const Mat &cartesian_hessian) {
   build_coordinates(x, H, false);
 }
 
+void GeometryOptimizer::set_followed_mode(const Vec &cartesian_mode) {
+  if (cartesian_mode.size() != m_next.size() || cartesian_mode.norm() == 0.0)
+    throw std::invalid_argument(
+        "GeometryOptimizer: the mode must be a nonzero 3N vector");
+  m_mode = cartesian_mode.normalized();
+}
+
 void GeometryOptimizer::update(double energy, const Mat3N &gradient) {
   if (gradient.rows() != 3 || gradient.cols() != m_next.cols())
     throw std::invalid_argument(

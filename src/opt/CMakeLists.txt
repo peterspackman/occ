@@ -4,6 +4,7 @@ add_library(occ_opt_obj
     geometry_optimizer.cpp
     lbfgs_optimizer.cpp
     model_hessian.cpp
+    neb.cpp
 )
 add_library(occ_opt $<TARGET_OBJECTS:occ_opt_obj>)
 target_include_directories(occ_opt_obj PUBLIC ${OCC_INCLUDE_DIR})

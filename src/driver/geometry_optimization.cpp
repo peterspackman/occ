@@ -396,6 +396,13 @@ void log_step_results(fmt::ostream &log, int step, const Molecule &m,
   log.flush();
 }
 
+std::pair<Wavefunction, Mat3N>
+energy_and_gradient_at(const OccInput &config, const Molecule &m,
+                       const Wavefunction *previous,
+                       std::optional<occ::xtb::XtbCalculator> *gfn2) {
+  return optimization_step_driver(config, m, previous, 0.0, gfn2);
+}
+
 std::pair<Wavefunction, Mat3N> energy_and_gradient(const OccInput &config) {
   Molecule m = config.geometry.molecule();
   // COSX on the gradient grids from the start (no GRIDX1 stage) and tight
@@ -413,7 +420,8 @@ std::pair<Wavefunction, Mat3N> energy_and_gradient(const OccInput &config) {
   return {std::move(wfn), std::move(g)};
 }
 
-Wavefunction geometry_optimization(const OccInput &config) {
+Wavefunction geometry_optimization(const OccInput &config,
+                                   const Vec &initial_mode) {
 
   Wavefunction wfn;
   Mat3N gradient;
@@ -583,8 +591,10 @@ Wavefunction geometry_optimization(const OccInput &config) {
     occ::log::info("Computing the initial Hessian for the saddle-point search");
     auto vib_config = vibrational_config(config);
     vib_config.save_hessian = false;
-    std::get<occ::opt::GeometryOptimizer>(optimizer_variant)
-        .set_initial_hessian(compute_hessian(config, wfn, vib_config));
+    auto &opt = std::get<occ::opt::GeometryOptimizer>(optimizer_variant);
+    opt.set_initial_hessian(compute_hessian(config, wfn, vib_config));
+    if (initial_mode.size() > 0)
+      opt.set_followed_mode(initial_mode);
   }
 
   // Update optimizer with initial data
@@ -717,10 +727,10 @@ void report_saddle_point(const core::VibrationalModes &modes) {
 }
 
 std::pair<qm::Wavefunction, core::VibrationalModes> 
-geometry_optimization_with_frequencies(const io::OccInput &config, bool run_frequencies) {
-  
-  // Perform geometry optimization
-  auto optimized_wfn = geometry_optimization(config);
+geometry_optimization_with_frequencies(const io::OccInput &config,
+                                       bool run_frequencies,
+                                       const Vec &initial_mode) {
+  auto optimized_wfn = geometry_optimization(config, initial_mode);
   
   core::VibrationalModes vib_modes;
   

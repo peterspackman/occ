@@ -9,6 +9,7 @@
 #include <occ/core/units.h>
 #include <occ/core/util.h>
 #include <occ/driver/geometry_optimization.h>
+#include <occ/driver/neb.h>
 #include <occ/driver/single_point.h>
 #include <occ/interaction/pair_energy.h>
 #include <occ/io/cifparser.h>
@@ -145,8 +146,9 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
   auto *driver_opt = scf->add_option(
       "--driver", config->driver.driver,
       "calculation: energy (default), opt (geometry optimization), ts "
-      "(transition state: first-order saddle point, then frequencies) or "
-      "grad (energy and nuclear gradient); overrides the input file");
+      "(transition state: first-order saddle point, then frequencies), neb "
+      "(nudged elastic band to --product) or grad (energy and nuclear "
+      "gradient); overrides the input file");
 
   scf->add_option("--basis-set-directory,--basis_set_directory",
                   config->basis.basis_set_directory,
@@ -448,6 +450,39 @@ CLI::App *add_scf_subcommand(CLI::App &app) {
                   "Transition state search: the mode to maximise along at "
                   "the start, counting internal modes from the lowest (0)")
       ->group(gOpt);
+  auto *gNeb = "Nudged elastic band (--driver neb)";
+  scf->add_option("--product", config->optimization.neb_product,
+                  "Product geometry (xyz, the same atoms in the same order "
+                  "as the input)")
+      ->group(gNeb);
+  scf->add_option("--neb-images,--neb_images", config->optimization.neb_images,
+                  "Images between the endpoints")
+      ->group(gNeb);
+  scf->add_option("--neb-spring,--neb_spring", config->optimization.neb_spring,
+                  "Spring constant (Hartree/Bohr^2)")
+      ->group(gNeb);
+  scf->add_option("--neb-force-max,--neb_force_max",
+                  config->optimization.neb_force_max,
+                  "Converged when no atom of an image other than the climbing "
+                  "one feels a NEB force above this (Hartree/Bohr)")
+      ->group(gNeb);
+  scf->add_option("--neb-climbing-force-max,--neb_climbing_force_max",
+                  config->optimization.neb_climbing_force_max,
+                  "Converged when no atom of the climbing image feels a "
+                  "force above this (Hartree/Bohr)")
+      ->group(gNeb);
+  scf->add_option("--neb-max-iterations,--neb_max_iterations",
+                  config->optimization.neb_max_iterations,
+                  "Largest number of band iterations")
+      ->group(gNeb);
+  scf->add_flag("!--neb-no-climbing,!--neb_no_climbing",
+                config->optimization.neb_climbing_image,
+                "No climbing image")
+      ->group(gNeb);
+  scf->add_flag("--neb-ts,--neb_ts", config->optimization.neb_ts,
+                "Refine the highest image to the transition state (from a "
+                "computed Hessian, along the band), then frequencies")
+      ->group(gNeb);
   scf->add_flag("--frequencies,--freq",
                 config->optimization.compute_frequencies,
                 "Compute vibrational frequencies after geometry optimization")
@@ -493,7 +528,11 @@ void run_scf_subcommand(occ::io::OccInput config, bool driver_from_cli) {
   }
 
   occ::log::info("Driver: {}", config.driver.driver);
-  if (config.driver.driver == "ts") {
+  if (config.driver.driver == "neb") {
+    auto result = driver::nudged_elastic_band(config);
+    if (result.transition_state)
+      write_output_files(config, *result.transition_state);
+  } else if (config.driver.driver == "ts") {
     config.optimization.transition_state = true;
     auto [wfn, vib_modes] =
         driver::geometry_optimization_with_frequencies(config, true);

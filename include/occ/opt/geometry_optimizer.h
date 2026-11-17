@@ -75,6 +75,11 @@ public:
   /// xyz), e.g. a computed one, in place of the model.
   void set_initial_hessian(const Mat &cartesian_hessian);
 
+  /// Saddle-point search: start along the Hessian mode overlapping most with
+  /// this Cartesian displacement (3N, atom-major; e.g. a band's tangent) in
+  /// place of OptimizerSettings::ts_mode.
+  void set_followed_mode(const Vec &cartesian_mode);
+
   /// Energy (Hartree) and gradient (Hartree/Bohr, 3 x N) at the geometry
   /// last returned by get_next_geometry().
   void update(double energy, const Mat3N &gradient);

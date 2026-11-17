@@ -7,6 +7,7 @@
 #include <occ/opt/geometry_optimizer.h>
 #include <occ/opt/lbfgs_optimizer.h>
 #include <occ/opt/model_hessian.h>
+#include <occ/opt/neb.h>
 
 using namespace occ::opt;
 
@@ -462,5 +463,90 @@ TEST_CASE("GeometryOptimizer follows the requested mode to its saddle",
     CHECK(top == Catch::Approx(2.0).margin(2e-3));
     CHECK(std::min(std::abs(other - 1.6), std::abs(other - 2.4)) < 2e-3);
     CHECK(opt.negative_modes() == 1);
+  }
+}
+
+// Nudged elastic band
+namespace {
+int run_neb(NudgedElasticBand &band, const Potential &potential,
+            const occ::core::Molecule &reactant,
+            const occ::core::Molecule &product, int max_steps = 500) {
+  band.set_endpoint_energies(potential(reactant).first,
+                             potential(product).first);
+  int steps = 0;
+  for (; steps < max_steps; steps++) {
+    std::vector<double> e;
+    std::vector<occ::Mat3N> g;
+    for (const auto &image : band.images()) {
+      auto [ei, gi] = potential(image);
+      e.push_back(ei);
+      g.push_back(gi);
+    }
+    band.update(e, g);
+    if (band.step())
+      break;
+  }
+  return steps;
+}
+} // namespace
+
+TEST_CASE("NEB climbing image finds the saddle of a double-well bond",
+          "[neb]") {
+  const auto potential = double_well_potential(
+      {{0, 2, 0.5, 1.81}, {1, 2, 0.1, 2.86}}, {{0, 1, 1.0, 1.6, 2.4}});
+  // endpoints relaxed, as a band needs minima at its ends
+  auto relaxed = [&](double r01) {
+    GeometryOptimizer opt(triatomic(r01, 1.81));
+    optimize_on(opt, potential);
+    return opt.get_next_geometry();
+  };
+  const auto reactant = relaxed(1.6), product = relaxed(2.4);
+  NebSettings settings;
+  settings.images = 5;
+  NudgedElasticBand band(reactant, product, settings);
+  const int steps = run_neb(band, potential, reactant, product);
+  INFO("steps: " << steps);
+  REQUIRE(band.is_converged());
+  REQUIRE(band.climbing());
+  const auto path = band.path();
+  const int top = band.highest_image();
+  CHECK(distance(path[top], 0, 1) == Catch::Approx(2.0).margin(5e-3));
+  // the barrier, 1.0 * 0.4^4, over the reactant's energy
+  CHECK(band.energies()(top) - band.energies()(0) ==
+        Catch::Approx(0.0256).margin(2e-4));
+  // the endpoints stay put
+  CHECK((path.front().positions() - reactant.positions()).norm() < 1e-8);
+}
+
+TEST_CASE("NEB IDPP interpolation keeps atoms apart where a straight line "
+          "does not",
+          "[neb]") {
+  // a hydrogen swinging from one side of an O-C bond to the other, a
+  // reflection superposition cannot undo with the second carbon off the
+  // plane: the straight line takes it through the oxygen
+  occ::IVec z(4);
+  z << 8, 1, 6, 6;
+  occ::Mat3N r(3, 4);
+  r.col(0) << 0.0, 0.0, 0.0;
+  r.col(1) << -0.25, 0.93, 0.0;
+  r.col(2) << 1.43, 0.0, 0.0;
+  r.col(3) << 0.0, 0.0, 1.43;
+  occ::Mat3N p = r;
+  p.col(1) << -0.25, -0.93, 0.0;
+  const occ::core::Molecule reactant(z, r), product(z, p);
+  for (bool idpp : {false, true}) {
+    CAPTURE(idpp);
+    NebSettings settings;
+    settings.images = 7;
+    settings.idpp = idpp;
+    NudgedElasticBand band(reactant, product, settings);
+    double closest = 1e10;
+    for (const auto &image : band.images())
+      closest = std::min(closest, distance(image, 0, 1));
+    // Bohr: O-H is 1.82 at the ends; the straight line comes to 1.27
+    if (idpp)
+      CHECK(closest > 1.7);
+    else
+      CHECK(closest < 1.4);
   }
 }

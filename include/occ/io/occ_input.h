@@ -153,6 +153,19 @@ struct OptimizationInput {
   bool transition_state{false};
   int ts_mode{0};
 
+  // Nudged elastic band (driver "neb") from the input geometry to the
+  // product (an xyz file, same atoms in the same order)
+  std::string neb_product{""};
+  int neb_images{8};
+  double neb_spring{0.01};   // Hartree/Bohr^2
+  // Hartree/Bohr: convergence on the climbing image and the rest; with
+  // neb_ts at least 2e-3 and 2e-2 (ORCA's NEB-TS)
+  double neb_climbing_force_max{1e-3};
+  double neb_force_max{5e-3};
+  int neb_max_iterations{300};
+  bool neb_climbing_image{true};
+  bool neb_ts{false}; // refine the climbing image to the saddle point
+
   // Integral accuracy control
   double gradient_integral_precision{1e-10}; // Final gradient integral cutoff
   double early_gradient_integral_precision{1e-8}; // Looser cutoff for early steps
